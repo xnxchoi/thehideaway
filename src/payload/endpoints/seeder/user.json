@@ -1,0 +1,19 @@
+{
+  "id": "9735f921-d2e1-423f-84ed-f7518e30ab68",
+  "emailVerified": null,
+  "name": "seanschoi",
+  "image": null,
+  "foto": null,
+  "firstName": "Sean",
+  "lastName": "Choi",
+  "link": null,
+  "description": "A Patron of The Hideaway.",
+  "accounts": [],
+  "sessions": [],
+  "updatedAt": "2025-04-22T20:39:50.746Z",
+  "createdAt": "2025-04-22T20:39:50.629Z",
+  "enableAPIKey": null,
+  "apiKey": null,
+  "email": "claude@dev.com",
+  "loginAttempts": 0
+}

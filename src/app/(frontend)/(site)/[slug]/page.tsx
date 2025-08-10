@@ -1,0 +1,126 @@
+"use server";
+import type {Metadata} from "next";
+import {draftMode} from "next/headers";
+
+import {cache} from "react";
+
+import {RenderBlocks} from "@/payload/blocks/RenderBlocks";
+import {PayloadRedirects} from "@/payload/components/PayloadRedirects";
+import {RenderHero} from "@/payload/blocks/heros/RenderHero";
+import {generateMeta} from "@/utilities/generateMeta";
+import {getPayload} from "payload";
+import config from "@payload-config";
+import PageClient from "./page.client";
+import {RP_Footer} from "@/payload/collections/Footer/Component.client";
+import {RPage} from "@/components/UX/Transition";
+import {redirect} from "next/navigation";
+
+export async function generateStaticParams() {
+	const payload = await getPayload({config});
+	const pages = await payload.find({
+		collection: "pages",
+		draft: false,
+		limit: 1000,
+		overrideAccess: false,
+		select: {
+			slug: true,
+		},
+	});
+
+	const params = pages.docs.map(({slug}) => {
+		return {slug};
+	});
+	params.push({slug: "home"});
+	return params;
+}
+
+type Args = {
+	params: Promise<{
+		slug?: string;
+	}>;
+};
+
+export default async function Page({params: paramsPromise}: Args) {
+	const {slug = ""} = await paramsPromise;
+	let querySlug = slug;
+
+	if (slug.startsWith("@")) {
+		redirect(`/users/${slug.slice(1, slug.length)}`);
+	}
+	if (slug === "") {
+		querySlug = "home";
+	}
+	const url = `/${querySlug}`;
+
+	const page = await queryPageBySlug({
+		slug: querySlug,
+	});
+
+	if (!page) {
+		return <PayloadRedirects url={url} />;
+	}
+
+	const {hero, layout, pageLayout} = page;
+
+	return (
+		<RPage type="pages" slug={[querySlug]}>
+			{/* Allows redirects for valid pages too */}
+			<PayloadRedirects disableNotFound url={url} />
+			<PageClient title={page.title}>
+				<RenderHero {...hero} />
+				<RenderBlocks blocks={layout} />
+				{pageLayout?.footerType && (
+					<RP_Footer footerType={pageLayout.footerType} />
+				)}
+			</PageClient>
+		</RPage>
+	);
+}
+
+export async function generateMetadata({
+	params: paramsPromise,
+}: Args): Promise<Metadata> {
+	const {slug = "home"} = await paramsPromise;
+	let querySlug = slug;
+	if (slug === "") {
+		querySlug = "home";
+	}
+	const page = await queryPageBySlug({
+		slug: querySlug,
+	});
+
+	if (page) {
+		return generateMeta({doc: page || {}});
+	} else if (slug === "" || slug === "home") {
+		return {
+			title: "Reception || The Hideaway",
+			description: "Reception",
+		};
+	} else {
+		return {
+			title: "404...",
+			description: "Not an exit",
+		};
+	}
+}
+
+const queryPageBySlug = cache(async ({slug}: { slug: string }) => {
+	const {isEnabled: draft} = await draftMode();
+
+	const payload = await getPayload({config});
+
+	const result = await payload.find({
+		collection: "pages",
+		draft,
+		limit: 1,
+		pagination: false,
+		overrideAccess: draft,
+		where: {
+			slug: {
+				equals: slug,
+			},
+		},
+	});
+
+	return result.docs?.[0] || null;
+});

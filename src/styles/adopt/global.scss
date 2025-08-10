@@ -1,0 +1,71 @@
+@use './_reset.scss';
+@use './_easings.scss';
+@use './_functions.scss';
+@use './_layout.scss';
+@use './_utils.scss';
+@use './_font-style.scss';
+@use './_scroll.scss';
+
+:root {
+  --header-height: #{mobile-vw(58px)};
+
+  @include desktop {
+    --header-height: #{desktop-vw(98px)};
+  }
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100vh;
+}
+
+a,
+button,
+input,
+label,
+textarea,
+select {
+  color: inherit;
+
+}
+
+*::selection {
+  background-color: var(--theme-secondary);
+  color: var(--theme-primary);
+}
+
+svg.icon {
+
+  path[fill],
+  rect[fill],
+  circle[fill] {
+    fill: currentColor;
+  }
+
+  path[stroke],
+  rect[stroke],
+  circle[stroke] {
+    stroke: currentColor;
+  }
+}
+
+.link {
+  @include hover {
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+img {
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}

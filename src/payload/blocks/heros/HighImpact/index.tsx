@@ -1,0 +1,63 @@
+"use client";
+import {useHeaderTheme} from "@/providers/HeaderTheme";
+import React, {useEffect} from "react";
+
+import type {Page} from "@/payload-types";
+
+import {ReferencedLink} from "@/components/UX/Link/referencedLink";
+import {Media} from "@/components/UX/Media";
+import RichText from "@/payload/fields/RichText";
+
+export const HighImpactHero: React.FC<Page["hero"]> = ({
+	links,
+	media,
+	richText,
+}) => {
+	const {setHeaderTheme} = useHeaderTheme();
+
+	useEffect(() => {
+		setHeaderTheme("dark");
+	});
+
+	return (
+		<div className="relative -mt-[10.4rem] flex items-center justify-center text-white"
+		     data-theme="dark">
+			<div className="relative z-10 container mb-8 flex items-center justify-center">
+				<div className="max-w-[36.5rem] md:text-center">
+					{richText && (
+						<RichText className="mb-6" data={richText} enableGutter={false} />
+					)}
+					{Array.isArray(links) && links.length > 0 && (
+						<ul className="flex gap-4 md:justify-center">
+							{links.map(({link}, i) => {
+								return (
+									<li key={i}>
+										<ReferencedLink link={{
+											...link,
+											reference:
+												(link.reference &&
+													link.reference.value &&
+													link.reference.relationTo && {
+														relationTo: link.reference.relationTo,
+														value:
+															typeof link.reference.value === "object"
+																? link.reference.value.id
+																: link.reference.value,
+													}) ||
+												null!,
+										}} />
+									</li>
+								);
+							})}
+						</ul>
+					)}
+				</div>
+			</div>
+			<div className="min-h-[80vh] select-none">
+				{media && typeof media === "object" && (
+					<Media fill imgClassName="-z-10 object-cover" priority resource={media} />
+				)}
+			</div>
+		</div>
+	);
+};

@@ -1,0 +1,88 @@
+input.w-input {
+  vertical-align: middle;
+  width: 100%;
+  display: block;
+  border-style: none none solid;
+  border-width: 1px;
+  border-color: black black oklch(var(--muted-faded-bg)/.5);
+  text-transform: uppercase;
+  background-color: transparent;
+  font-family: var(--font-sans);
+  border-radius: 0;
+  height: auto;
+  margin-bottom: 0;
+  padding: 0 0 1.36rem;
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
+
+input.w-input::placeholder {
+  color: oklch(var(--fg)/0.001);
+}
+
+.input-label {
+  z-index: 1;
+  transform-origin: 0 0;
+  text-transform: capitalize;
+  font-family: var(--font-sans);
+
+  margin-bottom: 0;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1.1;
+  color: oklch(var(--muted-faded-bg)/.75);
+  transition: color .6s cubic-bezier(.16, 1, .32, 1), transform .6s cubic-bezier(.16, 1, .32, 1);
+  position: absolute;
+  inset: 0% auto auto 0%;
+}
+
+.w-input ~ label {
+  pointer-events: none;
+}
+
+.form-field {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(1.56rem);
+  transition: opacity .8s cubic-bezier(.16, 1, .32, 1), transform .8s cubic-bezier(.16, 1, .32, 1);
+  will-change: opacity, transform;
+}
+
+.form-field.active {
+  opacity: 1;
+  transform: translateY(0rem);
+  pointer-events: all;
+
+}
+
+[data-form="baseline"] {
+  transform-origin: 100%;
+  transform-style: preserve-3d;
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  inset: auto auto 0% 0%;
+  transform: scaleX(0);
+  will-change: transform;
+  transition: .8s transform cubic-bezier(.16, 1, .32, 1);
+  background-color: oklch(var(--fg)/1)
+}
+
+.w-input:not(:placeholder-shown) ~ label,
+.w-input:-webkit-autofill ~ label,
+.w-input:focus ~ label {
+  color: oklch(var(--fg)/1);
+  transform: translate3d(0, -130%, 0) scale3d(0.8, 0.8, 1);
+}
+
+.w-input:not(:placeholder-shown) {
+  padding-bottom: 1rem;
+  padding-top: .36rem;
+}
+
+.w-input:not(:placeholder-shown) ~ [data-form="baseline"],
+.w-input:-webkit-autofill ~ [data-form="baseline"],
+.w-input:focus ~ [data-form="baseline"] {
+  transform: scale3d(1, 1, 1);
+  transform-origin: 0 50%;
+}

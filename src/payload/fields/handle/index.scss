@@ -1,0 +1,29 @@
+.user-handle-component {
+  .label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .lock-button {
+    margin: 0;
+    padding-bottom: 0.3125rem;
+  }
+}
+
+@media (pointer: coarse) {
+  .multi-value-label__text {
+    cursor: none;
+
+  }
+  .multi-value-label {
+    cursor: none;
+  }
+  .multi-value {
+    cursor: none;
+  }
+  .rs__control {
+
+    cursor: none !important;
+  }
+}

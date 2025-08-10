@@ -1,0 +1,67 @@
+#profileEdits .sticky.b {
+  top: 95px !important;
+}
+
+a#destroy-sessions {
+  margin-bottom: 2rem;
+  height: 80px;
+  border: solid 1px oklch(var(--fg)/.63);
+  color: var(--red-d-1);
+}
+
+#pass-strength-result {
+  background: transparent;
+  border: none;
+  box-sizing: border-box;
+  margin: 0;
+  opacity: 1;
+  padding: 3px 5px;
+  text-align: center;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition-property: transform, color;
+  transition: .8s cubic-bezier(.16, 1, .32, 1);
+  width: 100%;
+  will-change: background, transform;
+}
+
+#pass-strength-result.short {
+  transform: scaleX(0.25);
+  background-color: var(--red-t-2);
+}
+
+#pass-strength-result.strong {
+  transform: scaleX(1);
+  background-color: var(--blue-d-1);
+}
+
+.form__row {
+  margin-bottom: 30px;
+
+  .text-input {
+    width: 100%;
+    border-bottom: solid 1px var(--border-subtle);
+  }
+}
+
+.pw-pt {
+  flex: 1 1 50%;
+  position: relative;
+  flex-direction: column;
+  transition: width, display, visibility, opacity ease .4s;
+}
+
+.pw-pt:not(:first-of-type) {
+  margin-left: 20px;
+}
+
+.toggle-new-pw {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+#profileEdits {
+  padding: 0;
+  max-width: 100vw;
+}

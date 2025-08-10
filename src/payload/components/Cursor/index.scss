@@ -1,0 +1,98 @@
+.rp__cursor {
+  display: none;
+}
+
+@media screen and (min-width: 479px) {
+
+  html,
+  html * {
+    cursor: none !important;
+  }
+
+  .rp__cursor {
+    z-index: 999;
+    width: 9.6rem;
+    height: 9.6rem;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    transform-origin: 50% 50% 0;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    opacity: 0;
+    transition-duration: 0.2s;
+    transition-property: opacity, width, height;
+    --ring-color: oklch(var(--fg) / 1);
+  }
+
+  .rp__cursor.text__cursor {
+    width: 120px;
+  }
+
+  .cursor_svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .cursor__text-container {
+    transform-origin: 50% 50% 0px;
+    overflow: visible;
+    position: relative;
+    white-space: pre;
+    outline: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .cursor__text-caption {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1.2rem;
+    transform-origin: 50% 50% 0;
+    line-height: 1.2rem;
+    pointer-events: none;
+    text-align: center;
+    position: relative;
+    display: inline-block;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    width: 100%;
+
+    line-height: 1;
+
+  }
+
+  .circleOutline {
+    transition: stroke 0.2s;
+    display: inline;
+    stroke: var(--ring-color);
+  }
+
+  .circleFilled {
+    fill: oklch(var(--fg) / 1);
+    display: inline;
+    transition: fill 0.2s;
+  }
+
+
+  .rp__cursor[data-state='FOCUS'] {
+    --ring-color: var(--bg-highlight);
+  }
+
+
+  .rp__cursor.show_cursor {
+    opacity: 1;
+  }
+
+}
