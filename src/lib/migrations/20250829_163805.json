@@ -1,5 +1,5 @@
 {
-  "id": "96417339-f155-4225-a661-ca6a6c1bf5fc",
+  "id": "8b9ca6c5-6130-4f0f-809d-4e8b00abb7e1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,10 +10,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "nanoid(12)"
+          "default": "uuidv7()"
         },
         "slug": {
           "name": "slug",
@@ -471,7 +471,7 @@
         },
         "_parent_id": {
           "name": "_parent_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
@@ -567,7 +567,7 @@
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1296,13 +1296,13 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
         "impersonated_by_id": {
           "name": "impersonated_by_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1477,7 +1477,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1789,7 +1789,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1916,7 +1916,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -2148,7 +2148,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -2299,7 +2299,7 @@
         },
         "inviter_id": {
           "name": "inviter_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -3107,7 +3107,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -3237,13 +3237,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "slug_lock": {
-          "name": "slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
-        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp(3) with time zone",
@@ -3280,21 +3273,6 @@
           "columns": [
             {
               "expression": "description",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "categories_slug_idx": {
-          "name": "categories_slug_idx",
-          "columns": [
-            {
-              "expression": "slug",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3506,7 +3484,7 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -4128,7 +4106,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -4267,7 +4245,7 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -5044,7 +5022,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -5164,7 +5142,26 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug_key": {
+          "name": "slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
+        },
+        "slug_lock": {
+          "name": "slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true
         },
@@ -5172,14 +5169,7 @@
           "name": "slug",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
-        },
-        "slug_lock": {
-          "name": "slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
+          "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
@@ -5227,11 +5217,26 @@
           "method": "btree",
           "with": {}
         },
-        "tags_slug_idx": {
-          "name": "tags_slug_idx",
+        "tags_slug_key_idx": {
+          "name": "tags_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tags_hash_id_idx": {
+          "name": "tags_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5307,7 +5312,7 @@
         },
         "recipient_id": {
           "name": "recipient_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -5630,7 +5635,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -5642,7 +5647,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -6229,7 +6234,7 @@
         },
         "_parent_id": {
           "name": "_parent_id",
-          "type": "varchar",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -6451,7 +6456,7 @@
         },
         "_parent_id": {
           "name": "_parent_id",
-          "type": "varchar",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -6958,7 +6963,7 @@
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "varchar",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -7346,18 +7351,30 @@
           "primaryKey": false,
           "notNull": false
         },
-        "slug": {
-          "name": "slug",
+        "slug_key": {
+          "name": "slug_key",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
         },
         "slug_lock": {
           "name": "slug_lock",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
-          "default": true
+          "notNull": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "locked": {
           "name": "locked",
@@ -7442,11 +7459,26 @@
           "method": "btree",
           "with": {}
         },
-        "pages_slug_idx": {
-          "name": "pages_slug_idx",
+        "pages_slug_key_idx": {
+          "name": "pages_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pages_hash_id_idx": {
+          "name": "pages_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -7695,7 +7727,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -7707,7 +7739,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -7737,6 +7769,12 @@
         },
         "categories_id": {
           "name": "categories_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags_id": {
+          "name": "tags_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -7922,6 +7960,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "pages_rels_tags_id_idx": {
+          "name": "pages_rels_tags_id_idx",
+          "columns": [
+            {
+              "expression": "tags_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -8048,6 +8101,19 @@
           "tableTo": "categories",
           "columnsFrom": [
             "categories_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pages_rels_tags_fk": {
+          "name": "pages_rels_tags_fk",
+          "tableFrom": "pages_rels",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tags_id"
           ],
           "columnsTo": [
             "id"
@@ -8327,15 +8393,15 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "rich_text": {
-          "name": "rich_text",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "_uuid": {
           "name": "_uuid",
           "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rich_text": {
+          "name": "rich_text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -8437,6 +8503,12 @@
           "notNull": true,
           "default": "uuidv7()"
         },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "size": {
           "name": "size",
           "type": "enum__pages_v_blocks_content_columns_size",
@@ -8491,12 +8563,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'default'"
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -8691,15 +8757,15 @@
           "notNull": true,
           "default": "uuidv7()"
         },
-        "media_id": {
-          "name": "media_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "_uuid": {
           "name": "_uuid",
           "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "media_id": {
+          "name": "media_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -8835,6 +8901,12 @@
           "notNull": true,
           "default": "uuidv7()"
         },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "intro_content": {
           "name": "intro_content",
           "type": "jsonb",
@@ -8863,12 +8935,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": 8
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "block_name": {
           "name": "block_name",
@@ -9058,6 +9124,12 @@
           "notNull": true,
           "default": "uuidv7()"
         },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "headline": {
           "name": "headline",
           "type": "varchar",
@@ -9085,12 +9157,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": 3
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "block_name": {
           "name": "block_name",
@@ -9196,6 +9262,12 @@
           "notNull": true,
           "default": "uuidv7()"
         },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "intro_content": {
           "name": "intro_content",
           "type": "jsonb",
@@ -9224,12 +9296,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'posts'"
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "block_name": {
           "name": "block_name",
@@ -9363,18 +9429,29 @@
           "primaryKey": false,
           "notNull": false
         },
-        "version_slug": {
-          "name": "version_slug",
+        "version_slug_key": {
+          "name": "version_slug_key",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "version_hash_id": {
+          "name": "version_hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
         },
         "version_slug_lock": {
           "name": "version_slug_lock",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
-          "default": true
+          "notNull": false
+        },
+        "version_slug": {
+          "name": "version_slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "version_locked": {
           "name": "version_locked",
@@ -9511,11 +9588,26 @@
           "method": "btree",
           "with": {}
         },
-        "_pages_v_version_version_slug_idx": {
-          "name": "_pages_v_version_version_slug_idx",
+        "_pages_v_version_version_slug_key_idx": {
+          "name": "_pages_v_version_version_slug_key_idx",
           "columns": [
             {
-              "expression": "version_slug",
+              "expression": "version_slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_pages_v_version_version_hash_id_idx": {
+          "name": "_pages_v_version_version_hash_id_idx",
+          "columns": [
+            {
+              "expression": "version_hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -9867,7 +9959,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -9879,7 +9971,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -9909,6 +10001,12 @@
         },
         "categories_id": {
           "name": "categories_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags_id": {
+          "name": "tags_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -10094,6 +10192,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "_pages_v_rels_tags_id_idx": {
+          "name": "_pages_v_rels_tags_id_idx",
+          "columns": [
+            {
+              "expression": "tags_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -10226,6 +10339,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "_pages_v_rels_tags_fk": {
+          "name": "_pages_v_rels_tags_fk",
+          "tableFrom": "_pages_v_rels",
+          "tableTo": "tags",
+          "columnsFrom": [
+            "tags_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -10240,10 +10366,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": true,
           "notNull": true,
-          "default": "nanoid(12)"
+          "default": "uuidv7()"
         },
         "title": {
           "name": "title",
@@ -10283,7 +10409,26 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug_key": {
+          "name": "slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
+        },
+        "slug_lock": {
+          "name": "slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -10292,13 +10437,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "slug_lock": {
-          "name": "slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "locked": {
           "name": "locked",
@@ -10383,11 +10521,26 @@
           "method": "btree",
           "with": {}
         },
-        "posts_slug_idx": {
-          "name": "posts_slug_idx",
+        "posts_slug_key_idx": {
+          "name": "posts_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "posts_hash_id_idx": {
+          "name": "posts_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -10537,7 +10690,7 @@
         },
         "_parent_id": {
           "name": "_parent_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
@@ -10638,7 +10791,7 @@
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -10650,7 +10803,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -10662,7 +10815,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -10832,7 +10985,7 @@
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -10874,7 +11027,25 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_slug_key": {
+          "name": "version_slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hash_id": {
+          "name": "version_hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_slug_lock": {
+          "name": "version_slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -10883,13 +11054,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "version_slug_lock": {
-          "name": "version_slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "version_locked": {
           "name": "version_locked",
@@ -11020,11 +11184,26 @@
           "method": "btree",
           "with": {}
         },
-        "_posts_v_version_version_slug_idx": {
-          "name": "_posts_v_version_version_slug_idx",
+        "_posts_v_version_version_slug_key_idx": {
+          "name": "_posts_v_version_version_slug_key_idx",
           "columns": [
             {
-              "expression": "version_slug",
+              "expression": "version_slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_posts_v_version_version_hash_id_idx": {
+          "name": "_posts_v_version_version_hash_id_idx",
+          "columns": [
+            {
+              "expression": "version_hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -11375,7 +11554,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -11387,7 +11566,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -11576,7 +11755,7 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -12232,7 +12411,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -12371,7 +12550,7 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -13182,7 +13361,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -13326,7 +13505,26 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug_key": {
+          "name": "slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
+        },
+        "slug_lock": {
+          "name": "slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -13335,13 +13533,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "slug_lock": {
-          "name": "slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "locked": {
           "name": "locked",
@@ -13426,11 +13617,26 @@
           "method": "btree",
           "with": {}
         },
-        "delta_slug_idx": {
-          "name": "delta_slug_idx",
+        "delta_slug_key_idx": {
+          "name": "delta_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "delta_hash_id_idx": {
+          "name": "delta_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -13698,13 +13904,13 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -13938,7 +14144,25 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_slug_key": {
+          "name": "version_slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hash_id": {
+          "name": "version_hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_slug_lock": {
+          "name": "version_slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -13947,13 +14171,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "version_slug_lock": {
-          "name": "version_slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "version_locked": {
           "name": "version_locked",
@@ -14084,11 +14301,26 @@
           "method": "btree",
           "with": {}
         },
-        "_delta_v_version_version_slug_idx": {
-          "name": "_delta_v_version_version_slug_idx",
+        "_delta_v_version_version_slug_key_idx": {
+          "name": "_delta_v_version_version_slug_key_idx",
           "columns": [
             {
-              "expression": "version_slug",
+              "expression": "version_slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_delta_v_version_version_hash_id_idx": {
+          "name": "_delta_v_version_version_hash_id_idx",
+          "columns": [
+            {
+              "expression": "version_hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -14444,13 +14676,13 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -14653,9 +14885,10 @@
         },
         "id": {
           "name": "id",
-          "type": "varchar(24)",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "uuidv7()"
         },
         "title": {
           "name": "title",
@@ -14770,7 +15003,7 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -14997,7 +15230,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -15121,6 +15354,12 @@
           "notNull": true,
           "default": "uuidv7()"
         },
+        "_uuid": {
+          "name": "_uuid",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "title": {
           "name": "title",
           "type": "varchar",
@@ -15136,12 +15375,6 @@
         "content": {
           "name": "content",
           "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "_uuid": {
-          "name": "_uuid",
-          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         }
@@ -15246,7 +15479,7 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -15628,7 +15861,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -15786,7 +16019,26 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug_key": {
+          "name": "slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
+        },
+        "slug_lock": {
+          "name": "slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -15795,13 +16047,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "slug_lock": {
-          "name": "slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "locked": {
           "name": "locked",
@@ -15871,11 +16116,26 @@
           "method": "btree",
           "with": {}
         },
-        "albums_slug_idx": {
-          "name": "albums_slug_idx",
+        "albums_slug_key_idx": {
+          "name": "albums_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "albums_hash_id_idx": {
+          "name": "albums_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -16017,7 +16277,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -16209,7 +16469,25 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_slug_key": {
+          "name": "version_slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hash_id": {
+          "name": "version_hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_slug_lock": {
+          "name": "version_slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -16218,13 +16496,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "version_slug_lock": {
-          "name": "version_slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "version_locked": {
           "name": "version_locked",
@@ -16346,11 +16617,26 @@
           "method": "btree",
           "with": {}
         },
-        "_albums_v_version_version_slug_idx": {
-          "name": "_albums_v_version_version_slug_idx",
+        "_albums_v_version_version_slug_key_idx": {
+          "name": "_albums_v_version_version_slug_key_idx",
           "columns": [
             {
-              "expression": "version_slug",
+              "expression": "version_slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_albums_v_version_version_hash_id_idx": {
+          "name": "_albums_v_version_version_hash_id_idx",
+          "columns": [
+            {
+              "expression": "version_hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -16595,7 +16881,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -16787,7 +17073,26 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug_key": {
+          "name": "slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
+        },
+        "slug_lock": {
+          "name": "slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -16796,13 +17101,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "slug_lock": {
-          "name": "slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "locked": {
           "name": "locked",
@@ -16926,11 +17224,26 @@
           "method": "btree",
           "with": {}
         },
-        "tracks_slug_idx": {
-          "name": "tracks_slug_idx",
+        "tracks_slug_key_idx": {
+          "name": "tracks_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "tracks_hash_id_idx": {
+          "name": "tracks_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -17087,7 +17400,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -17285,7 +17598,25 @@
         },
         "version_author_id": {
           "name": "version_author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_slug_key": {
+          "name": "version_slug_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_hash_id": {
+          "name": "version_hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_slug_lock": {
+          "name": "version_slug_lock",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },
@@ -17294,13 +17625,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "version_slug_lock": {
-          "name": "version_slug_lock",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
         },
         "version_locked": {
           "name": "version_locked",
@@ -17476,11 +17800,26 @@
           "method": "btree",
           "with": {}
         },
-        "_tracks_v_version_version_slug_idx": {
-          "name": "_tracks_v_version_version_slug_idx",
+        "_tracks_v_version_version_slug_key_idx": {
+          "name": "_tracks_v_version_version_slug_key_idx",
           "columns": [
             {
-              "expression": "version_slug",
+              "expression": "version_slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_tracks_v_version_version_hash_id_idx": {
+          "name": "_tracks_v_version_version_hash_id_idx",
+          "columns": [
+            {
+              "expression": "version_hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -17740,7 +18079,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -17912,18 +18251,30 @@
           "primaryKey": false,
           "notNull": false
         },
-        "slug": {
-          "name": "slug",
+        "slug_key": {
+          "name": "slug_key",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "hash_id": {
+          "name": "hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "nanoid(11)"
         },
         "slug_lock": {
           "name": "slug_lock",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
-          "default": true
+          "notNull": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "locked": {
           "name": "locked",
@@ -17978,11 +18329,26 @@
           "method": "btree",
           "with": {}
         },
-        "playlists_slug_idx": {
-          "name": "playlists_slug_idx",
+        "playlists_slug_key_idx": {
+          "name": "playlists_slug_key_idx",
           "columns": [
             {
-              "expression": "slug",
+              "expression": "slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "playlists_hash_id_idx": {
+          "name": "playlists_hash_id_idx",
+          "columns": [
+            {
+              "expression": "hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -18117,7 +18483,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -18323,18 +18689,29 @@
           "primaryKey": false,
           "notNull": false
         },
-        "version_slug": {
-          "name": "version_slug",
+        "version_slug_key": {
+          "name": "version_slug_key",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "version_hash_id": {
+          "name": "version_hash_id",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
         },
         "version_slug_lock": {
           "name": "version_slug_lock",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false,
-          "default": true
+          "notNull": false
+        },
+        "version_slug": {
+          "name": "version_slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
         },
         "version_locked": {
           "name": "version_locked",
@@ -18435,11 +18812,26 @@
           "method": "btree",
           "with": {}
         },
-        "_playlists_v_version_version_slug_idx": {
-          "name": "_playlists_v_version_version_slug_idx",
+        "_playlists_v_version_version_slug_key_idx": {
+          "name": "_playlists_v_version_version_slug_key_idx",
           "columns": [
             {
-              "expression": "version_slug",
+              "expression": "version_slug_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_playlists_v_version_version_hash_id_idx": {
+          "name": "_playlists_v_version_version_hash_id_idx",
+          "columns": [
+            {
+              "expression": "version_hash_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -18662,7 +19054,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -18832,13 +19224,13 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
         "target_id": {
           "name": "target_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -18966,7 +19358,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -19083,7 +19475,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -19101,7 +19493,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -19435,7 +19827,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -19609,7 +20001,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -19947,13 +20339,13 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
         "cited_id": {
           "name": "cited_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -20155,7 +20547,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -20884,6 +21276,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "enum_exports_sort_order",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
         "locale": {
           "name": "locale",
           "type": "enum_exports_locale",
@@ -21251,7 +21650,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -21404,7 +21803,7 @@
         },
         "author_id": {
           "name": "author_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -21486,7 +21885,7 @@
         },
         "allow_list_id": {
           "name": "allow_list_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -21989,7 +22388,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -22001,7 +22400,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -22950,9 +23349,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "varchar(24)",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "uuidv7()"
         },
         "global_slug": {
           "name": "global_slug",
@@ -23059,7 +23459,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -23155,7 +23555,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -24370,7 +24770,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -24866,7 +25266,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -24878,7 +25278,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -25876,7 +26276,7 @@
         },
         "posts_id": {
           "name": "posts_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -25888,7 +26288,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "varchar(12)",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -26889,6 +27289,14 @@
       "values": [
         "csv",
         "json"
+      ]
+    },
+    "public.enum_exports_sort_order": {
+      "name": "enum_exports_sort_order",
+      "schema": "public",
+      "values": [
+        "asc",
+        "desc"
       ]
     },
     "public.enum_exports_locale": {
