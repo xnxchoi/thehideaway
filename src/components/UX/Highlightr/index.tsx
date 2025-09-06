@@ -1,14 +1,19 @@
 "use client";
 import {useLenis} from "lenis/react";
 import {
-	ChangeEventHandler, ComponentProps,
+	ChangeEventHandler,
+	ComponentProps,
 	type ComponentPropsWithoutRef,
-	type ComponentPropsWithRef, createContext, CSSProperties,
-	type MouseEvent, MouseEventHandler,
-	type ReactElement,
+	type ComponentPropsWithRef,
+	createContext,
+	CSSProperties,
+	type MouseEvent,
+	MouseEventHandler,
 	ReactNode,
-	useCallback, useContext,
-	useEffect, useId,
+	useCallback,
+	useContext,
+	useEffect,
+	useId,
 	useLayoutEffect,
 	useMemo,
 	useRef,
@@ -28,7 +33,7 @@ import "./_highlightr.scss";
 import {AnimatePresence, HTMLMotionProps} from "motion/react";
 import {useDomCursor} from "@/components/core/cursorWrapper";
 import {errorToast} from "@/components/ui/sonner";
-import {type ArticleOverview, SingleArticle,} from "@/payload/collections/Posts/post-types";
+import {type ArticleOverview, AuthorOverview, SingleArticle,} from "@/payload/collections/Posts/post-types";
 import {gsap} from "gsap";
 import {FeaturedCard} from "@/payload/blocks/heros/ArtHero/FeatureHero";
 import RichText from "@/payload/fields/RichText";
@@ -37,31 +42,32 @@ import {useTabMessenger} from "@/utilities/visibilityChange";
 import {useGSAP} from "@gsap/react";
 import {Card, CardContent} from '@/components/ui/card'
 import {usePathname} from "next/navigation";
-import type {HighlightedRange, PreppedRangy, ProcessedRangy, RangeSaveParams,} from "./types";
+import type {HighlightedRange, ProcessedRangy, RangeSaveParams,} from "./types";
 import {DateTime} from "luxon";
 import {fallback} from "@/components/UX/Highlightr/Navigation/fallbacks";
 import type Lenis from "lenis";
 import {MotionBtnProps} from "@/components/UX/Link/types";
 import {
-	createUserHighlight, deleteUserHighlight,
+	createUserHighlight,
+	deleteUserHighlight,
 	fetchUserHighlights,
-	HighlightCreateError, updateUserHighlight,
+	HighlightCreateError,
+	HighlightsCollection,
+	updateUserHighlight,
 	useHighlighter,
 } from "@/components/UX/Highlightr/provider";
 import {nanoid} from "nanoid";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 import type {Where} from "payload";
 import {stringify} from "qs-esm";
-import type {Bookmark, Citation} from "@/payload-types";
-import {useQuery} from "@tanstack/react-query";
+import type {Bookmark, PayloadPreference, User} from "@/payload-types";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,} from "@/components/ui/dialog";
 import {Textarea} from "@/components/ui/textarea";
 import {successToast} from "@components/sonner";
-import {
-	getAnchestorIdentifyableNode, isIdentifyableNode, isMarkable, prevNode, walkNodes,
-} from "./utils/highlight-helpers";
+import {isMarkable,} from "./utils/highlight-helpers";
 import {HighlightColors} from './stores'
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 import {AuthUIContext, socialProviders} from "@/lib/auth/betterauth-ui/src";
 import {ProviderButton} from "@/lib/auth/betterauth-ui/src/components/auth/provider-button";
 import {GradientSeparator} from "@/components/ui/separator";
@@ -73,20 +79,21 @@ import {toast} from "sonner";
 import {Drawer} from "vaul";
 import {BookmarkFilledIcon, BookmarkIcon} from "@radix-ui/react-icons";
 import {HighlightPalette, Palettes} from "@/components/UX/Highlightr/stores";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 export type RangeRect = {
 	top: number; left: number; right: number; width: number;
 };
 export const Narrateur = ({post}: { post: SingleArticle }) => {
-	return <ReadInternal post={post} />;
+	return <SideBarProvider><ReadInternal post={post} /></SideBarProvider>;
 };
 
 export interface HighlightSidebarProps {
 	open: boolean
 	setOpen: (open: boolean) => void
 	toggle: () => void
-	setContent: (content: ReactNode) => void;
-	content: ReactNode;
+	setContent: (content: Omit<ResponseNode, 'top'> | null) => void;
+	content: Omit<ResponseNode, 'top'> | null;
 }
 
 const HighlightSidebarContext = createContext<HighlightSidebarProps>({
@@ -95,41 +102,212 @@ const HighlightSidebarContext = createContext<HighlightSidebarProps>({
 	}, setContent: (content) => {
 	}, content: null,
 })
+const CitationView = ({
+	createdAt, updatedAt, author, quote, memo, reference, ...rest
+}: Omit<ResponseNode, 'top'>) => {
+	const uDate = DateTime.fromISO(updatedAt);
+	const cDate = DateTime.fromISO(createdAt);
+	const updateValid = uDate.isValid
+	const userImage = useRPSession(r => r.image);
+	const userName = useRPSession(r => r.name);
+	const userSlug = useRPSession(r => r.slug);
+	const userId = useRPSession(r => r.id);
+	const [adding, isAdding] = useState(false);
+	let isEdited = false;
+	if (updateValid) {
+		isEdited = uDate.diff(cDate).as('hours') > 0;
+	}
+	const finalDate = updateValid ? (uDate as DateTime<true>) : cDate;
+	const locale = useLocale();
+	return <div className={'flex flex-col'}>
+		<FocusedCitation citation={{
+			author, quote, memo, reference
+
+		}} {...rest} />
+		<div className={'border-muted-foreground/20 border-b-[1px] pt-[24px] mx-[24px] my-0'}>
+			<div>
+				<div className={'leading-[20px] text-[14px]'}>
+					<div className={'leading-[20px]'}>
+						{userId && (<div className={'mb-[20px] block'}>
+							<div className={'flex items-center mb-[12px]'}>
+								<div className={'flex justify-between'}>
+									<div className={'flex items-center'}>
+										<div>
+											<div className={'inline-block'}>
+												<div className={'outline-none'} tabIndex={-1}>
+													<Link href={`/@${userSlug}`}>
+														<div className={'block relative'}><Avatar>
+															{userImage && (<AvatarImage height={32} width={32}
+															                            src={userImage} />) || (
+																<AvatarFallback className={'uppercase'}>
+																	{userName.at(0)}
+																	{userName.at(1)}
+																</AvatarFallback>)}
+														</Avatar></div>
+													</Link></div>
+											</div>
+										</div>
+										<div className={'pl-[12px] block'}>
+											<div className={'flex items-center'}>
+												<div className={'inline-block'}>
+													<div className={'outline-none'} tabIndex={-1}>
+														<Link href={`/@${userSlug}`}>
+															<div className={'items-baseline flex'}>
+																<p className={'break-all'}>
+																	{userName}
+																</p>
+															</div>
+														</Link>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div
+								className={'pb-0 flex-col rounded-[4px] bg-muted-faded-background flex transition-[background-color,padding-bottom] duration-400'}>
+								<div className={'relative flex flex-col'}>
+									{userId ? <div
+										className={'min-h-[15px] px-[12px] py-[8px] transition-[min-height,padding] duration-400'}>
+										{adding && <textarea className={'relative min-h-[24px]'} style={{
+											overflowWrap: 'break-word', whiteSpace: 'pre-wrap',
+										}} />}
+									</div> : <SignInTriggerButton />}
+								</div>
+							</div>
+						</div>)}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div className={'block'}>
+			<div className={'block'}>
+				<div className={'block mx-[24px] border-b-none'}>
+					<div>
+						<div className={'w-full h-full'}>
+							<div className={'block pt-[25px] pb-[16px]'}>
+								<div className={'flex justify-between'}>
+									<div className={'flex items-center'}>
+										<div>
+											<div className={'inline-block'}>
+												<div className={'outline-none'} tabIndex={-1}>
+													<Link href={`/@${author.slug}`}>
+														<div className={'block relative'}><Avatar>
+															{author.image && (<AvatarImage height={32} width={32}
+															                               src={author.image} />) || (
+																<AvatarFallback className={'uppercase'}>
+																	{author.name.at(0)}
+																	{author.name.at(1)}
+																</AvatarFallback>)}
+														</Avatar></div>
+													</Link></div>
+											</div>
+										</div>
+										<div className={'pl-[12px] block'}>
+											<div className={'flex items-center'}>
+												<div className={'inline-block'}>
+													<div className={'outline-none'} tabIndex={-1}>
+														<Link href={`/@${author.slug}`}>
+															<div className={'items-baseline flex'}>
+																<p className={'break-all'}>
+																	{author.displayUsername || author.name}
+																</p>
+															</div>
+														</Link>
+													</div>
+												</div>
+											</div>
+											<div>
+													<span>{finalDate.setLocale(locale).
+														toRelative()}{isEdited && (<>&nbsp;{(locale === 'ko' ? '(수정)' : '(edited)')}</>)}</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div className={'mt-[5px] break-word block'}>
+									<p className={'text-base font-suit'}>
+										{memo}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
 const SideBarProvider = ({children}: { children: ReactNode }) => {
 	const [open, setOpen] = useState(false)
-
+	const lenis = useLenis();
+	const [content, setContent] = useState<Omit<ResponseNode, 'top'> | null>(null)
+	useEffect(() => {
+		lenis && (lenis[open ? 'stop' : 'start']())
+	}, [open, lenis])
+	const currentColor = useHighlighter(r => r.currentColor);
+	useEffect(() => {
+		if (!open) {
+			setContent(null)
+		}
+	}, [open])
 	return <HighlightSidebarContext.Provider value={{
-		open, setOpen, toggle: () => setOpen(o => !o), setContent: () => {
-		}, content: null
+		open, setOpen, toggle: () => setOpen(o => !o), setContent, content: null
 	}}>
 		{children}
+		<Drawer.Root open={open} onOpenChange={setOpen} defaultOpen={false} autoFocus={true} direction={'right'}>
+			<Drawer.Portal>
+				<Drawer.Overlay className="fixed inset-0 bg-black/40 z-[249]" />
+				<Drawer.Content
+					className="flex flex-col gap-4 w-[400px] z-[250] fixed top-2 bottom-2 right-2 bg-background p-4"
+					style={{
+						'--initial-transform': 'calc(100% + 8px)', '--currentHighlight': HighlightPalette[currentColor]
+					} as CSSProperties}>
+					<Drawer.Title className="text-lg font-semibold">
+						Response
+					</Drawer.Title>
+					<Drawer.Description className="text-sm text-muted-foreground hidden">
+						Response.
+					</Drawer.Description>
+					{content && <CitationView {...content} />}
+				</Drawer.Content>
+			</Drawer.Portal>
+		</Drawer.Root>
 	</HighlightSidebarContext.Provider>
+}
+const FocusedCitation = ({citation}: {
+	citation: Partial<HighlightedRange> & { quote: string; author: AuthorOverview; reference: string; }
+}) => {
+	return <div className={'p-[6px_10px_24px] block'}>
+		<div className={'m-[10px_14px_0px] py-[20px] px-[16px] rounded-[3px] shadow-lg bg-background'}>
+			<p className={'mt-[-0.44em] text-[18px] leading-[28px] mb-[-0.46em] font-medium text-foreground'}>
+				<span className={'highlighted'}>{citation.quote}</span>
+			</p>
+		</div>
+	</div>
 }
 const useHighlightSidebar = <T extends keyof HighlightSidebarProps>(selector: T): HighlightSidebarProps[T] => {
 	const context = useContext(HighlightSidebarContext)
 	if (!context) throw new Error("useHighlightSidebar must be used within a HighlightSidebarProvider")
 	return context[selector]
 }
-const HighlightSidebar = ({children}: { children: ReactNode }) => {
-	const {open, setOpen, toggle, setContent, content} = useContext(HighlightSidebarContext)
-
-	return <Drawer.Root open={open} defaultOpen={false} onOpenChange={setOpen} autoFocus={true} direction={'right'}>
-		<Drawer.Portal>
-			<Drawer.Content className="flex flex-col gap-4 bg-background p-4" style={{
-				'--initial-transform': 'calc(100% + 8px)'
-			} as CSSProperties}>
-				<Drawer.Title className="text-lg font-semibold">
-					Highlights
-				</Drawer.Title>
-				<Drawer.Description className="text-sm text-muted-foreground">
-					Highlights are saved for your convenience.
-				</Drawer.Description>
-				<div className="flex flex-col gap-4">
-					{children}
-				</div>
-			</Drawer.Content>
-		</Drawer.Portal>
-	</Drawer.Root>
+export type BaseGhostUserField = Extract<keyof User, 'id' | 'name' | 'image' | 'displayUsername' | 'slug'>
+export const GhostUser = (userOverrides?: Pick<User, BaseGhostUserField>, additionalFields?: Pick<User, Exclude<keyof User, BaseGhostUserField>>) => ({
+	...(additionalFields || {}),
+	id: "0",
+	name: "Ghost",
+	image: "",
+	displayUsername: "Ghost",
+	slug: "/404", ...(userOverrides || {})
+}) as Partial<Omit<User, BaseGhostUserField>> & Required<Pick<User, BaseGhostUserField>>
+type ResponseNode = {
+	top: number;
+	reference: string;
+	memo: string;
+	quote: string;
+	author: AuthorOverview;
+	updatedAt: string;
+	createdAt: string;
 }
 const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const {
@@ -139,8 +317,61 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const userId = useMemo(() => user, [user]);
 	const contentRef = useRef<HTMLDivElement>(null!);
 
-	const t = useTranslations('Highlights');
+	const [responseNodes, setResponseNodes] = useState<Array<{ top: number; reference: string }>>([]);
+	const t = useTranslations();
+	const [gotUser, setGotUser] = useState(false)
+	const {
+		data: color, refetch: colorUpdate, isLoading: colorLoading, isPending: colorPending
+	} = useQuery<HighlightColors, Error, HighlightColors, ['color', string | undefined]>({
+		queryKey: ['color', userId], queryFn: async ({queryKey: [_, userd]}) => {
+			if ((typeof userd !== 'string') || !userd) throw new Error('No user ID')
+			const r = await fetch('/api/payload-preferences/highlight-color', {
+				method: 'GET', credentials: 'include',
+			}).then(t => {
+				if (t.ok) return t;
+				throw new Error('Failed to fetch color preference');
+			}).then(async (r) => await r.json() as Omit<PayloadPreference, 'id' | 'user' | 'key' | 'value'> & {
+				"_id": string; "_v": number; user: string; key: string; value: HighlightColors
+			}).then(r => {
+				if (r.key === 'highlight-color') {
+					if (Palettes.some(s => s === r.value)) return (setGotUser(true), r.value);
+					throw new Error('Invalid color preference');
+				}
+			})
+			if (!r) throw new Error('Invalid color');
+			return r;
+		}, enabled: Boolean(!!user),
+	})
+	const qc = useQueryClient();
+	const colorUpdater = useMutation({
+		onSuccess: ([newColor, userId]) => {
 
+			qc.setQueryData(['color', userId], newColor)
+			setCurrentColor(newColor);
+		},
+		mutationFn: async ({color, user}: { color: HighlightColors, user: string }) => fetch(
+			`/api/payload-preferences/highlight-color`, {
+				method: "POST", headers: {
+					"Content-Type": "application/json",
+				}, body: JSON.stringify({
+					value: color,
+				}), credentials: 'include'
+			}).then(async (r) => {
+			if (r.ok) {
+				const res = await r.json() as {
+					message: string; doc: {
+						"user": string; "userCollection": "users" | "admins"; "key": string; "value": HighlightColors;
+					}
+				}
+				if (res.doc && 'value' in res.doc && res.doc.value) {
+					return res.doc.value;
+				}
+			}
+			throw new Error('Update failed');
+		}).then(r => {
+			return [r, user] as [HighlightColors, string]
+		})
+	})
 	const {disabled} = post;
 	const {
 		data: savedHighlights, refetch, isLoading,
@@ -160,7 +391,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const highlighterRef = useRef<rangy.RangyHighlighter>(null!);
 	const classApplierRef = useRef<rangy.RangyClassApplier>(null!);
 	const [highlightMap, setHighlightMap] = useState<Array<{
-		color: string; y: number; top: number;
+		y: number; top: number;
 	}>>([]);
 	const containerRef = useRef<HTMLDivElement>(null!);
 	const menuTrackId = useRef<ReturnType<typeof setInterval>>(null!);
@@ -169,7 +400,6 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	});
 	const [progress, setProgress] = useState(0);
 	const [render, setRender] = useState(false);
-	const [highlightIntializing, setHighlightIntializing] = useState(true);
 	const isSidebarOpen = useRPStore((r) => r.sidebarOpen);
 	const toggleSidebar = useRPStore((r) => r.toggleSideDrawer);
 
@@ -181,7 +411,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	useEffect(() => {
 		const cont = contentRef.current || containerRef.current;
 		if (cont) {
-			const ratio = (document.body.clientHeight - window.innerHeight) / cont.clientHeight;
+			const ratio = window.innerHeight / cont.scrollHeight;
 			ratioRef.current = Math.max(1.2, ratio);
 			setContainerBounds(ratio);
 		}
@@ -189,7 +419,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	useEffect(() => {
 		const cont = contentRef.current || containerRef.current;
 		if (cont) {
-			const ratio = (document.body.clientHeight - window.innerHeight) / cont.clientHeight;
+			const ratio = window.innerHeight / cont.scrollHeight;
 			ratioRef.current = Math.max(1.2, ratio);
 			setContainerBounds(ratio);
 		}
@@ -202,10 +432,12 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const [preamble, setPreamble] = useState<boolean>(false);
 	const [lastColor, setLastColor] = useState<HighlightColors>('ORANGE');
 	const lastColorRef = useRef(lastColor);
-	const [currentColor, setCurrentColor] = useState<HighlightColors>('ORANGE');
+	const currentColor = useHighlighter(r => r.currentColor);
+	const setCurrentColor = useHighlighter(r => r.setCurrentColor);
 	const currentColorRef = useRef<HighlightColors>(currentColor);
-	const [highlights, setHighlights] = useState<HighlightedRange[]>([]);
-	const [focusedHighlight, setFocusedHighlight] = useState<HighlightedRange | null>(null);
+	const highlights = useHighlighter((r) => r.highlights);
+	const focusedHighlight = useHighlighter(r => r.focusedHighlight)
+	const setFocusedHighlight = useHighlighter(r => r.setFocusedHighlight)
 	const [menuPosition, setMenuPosition] = useState<{
 		top: number; left: number;
 	} | null>(null);
@@ -244,10 +476,14 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			top: 0, left: 0, right: 0, width: 0,
 		};
 		if ("els" in e) {
-			a = e.els[0]!.getBoundingClientRect();
-			e.els.length > 0 && e.els.forEach((e: Element) => {
-				a = updateRect(a, e);
-			});
+			const r = e.els[0];
+			if (r) {
+				a = r.getBoundingClientRect();
+				e.els.forEach((e: Element) => {
+					a = updateRect(a, e);
+				})
+			}
+
 		} else {
 			a = e.getBoundingClientRect();
 		}
@@ -279,15 +515,8 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const handleHighlightClick = useCallback((e: Event) => {
 		e.stopPropagation();
 		if (!e.currentTarget) return;
-		const target = e.currentTarget as HTMLElement;
-
-		const t = highlights.find((t) => {
-			let a = false;
-			t.els.forEach((t) => {
-				t === e.currentTarget && (a = true);
-			});
-			return a;
-		}) || null;
+		const target = e.currentTarget as Element;
+		const t = highlights.find((t) => t.els.some((t) => t === target)) || null;
 		const ref = target.getAttribute("data-reference");
 		t && ref && (t.reference = ref);
 		setFocusedHighlight(t);
@@ -305,7 +534,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const deleteHighlight = useCallback(async ({
 		userId, fh, hr,
 	}: {
-		userId?: string; fh: HighlightedRange | null; hr: HighlightedRange[];
+		userId: string; fh: HighlightedRange | null; hr: HighlightedRange[];
 	}) => {
 		setMenuPosition(null);
 		const selection = window.getSelection();
@@ -319,14 +548,13 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 		const deleteResult = await deleteUserHighlight({
 			author: userId, article: postId, reference: [fh.reference]
 		});
-
 		const t = document.createRange();
 		const a = fh.els[0];
 		const n = fh.els[fh.els.length - 1];
 		a && t.setStartBefore(a);
 		n && t.setEndAfter(n);
 		selection.addRange(t);
-		const positionRangeIndex = hr.findIndex((e) => e === fh);
+		const positionRangeIndex = hr.findIndex((e) => e.reference === fh.reference);
 		const isOkay = Boolean(deleteResult && positionRangeIndex !== -1);
 		if (isOkay) {
 			hr[positionRangeIndex]!.els.forEach((e) => {
@@ -343,64 +571,61 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 					(e as HTMLElement).removeAttribute("data-reference");
 				}
 			});
-
-			setHighlights((e) => {
-				const t = [...e];
-				const sele = t[positionRangeIndex];
-				if (!sele) return t;
-				const text = sele.els.reduce((prev, next, _index) => {
-					return (prev += next.innerHTML);
-				}, "");
-
-				t.splice(positionRangeIndex, 1);
-				return t.filter((r) => r.selection.text !== text);
-			});
+			removeHighlighter(deleteResult!, userId)
+			// setHighlights((e) => {
+			// 	const t = [...e];
+			// 	const sele = t[positionRangeIndex];
+			// 	if (!sele) return t;
+			// 	const text = sele.els.reduce((prev, next, _index) => {
+			// 		return (prev += next.innerHTML);
+			// 	}, "");
+			//
+			// 	t.splice(positionRangeIndex, 1);
+			// 	return t.filter((r) => r.selection.text !== text);
+			// });
 			setFocusedHighlight(null);
 			selection.removeAllRanges();
 		} else {
 			errorToast("Something went wrong while trying to delete the selection. Try again in a few secs!",);
 		}
-	}, [postId],);
+	}, [postId, removeHighlighter, setFocusedHighlight],);
 	const createHighlightAPI = useCallback(async (props: RangeSaveParams | Array<RangeSaveParams>) => {
 		const processTargets = Array.isArray(props) ? props : [props];
-		const processing = processTargets.map(async (highlight) => {
-			const selection = {
-				after: `...\"`, before: `\"...`, text: highlight.selection.text || "",
-			};
-			return createUserHighlight({
+		const processing = processTargets.flatMap(r => (r.selection.text) ? r : []).map(async (highlight) =>
+
+			createUserHighlight({
 				target: {
 					relationTo: "posts", value: postId, slug: slug,
 				}, citation: {
 					private: highlight.private || false,
 					memo: highlight.memo || "",
-					reference: highlight.reference,
-					selection,
+					reference: highlight.reference, selection: {
+						text: highlight.selection.text, before: `"...`, after: `..."`
+					},
 					color: highlight.color,
 					path: highlight.path,
 					userId: userId,
-					cited: authorId,
-					quote: `${selection.before}${selection.text}${selection.after}`,
+					cited: authorId, quote: `"...${highlight.selection.text}..."`,
+
 				},
-			});
-		});
+			}));
 		const highlighsFreal: Array<Omit<HighlightedRange, 'els' | 'range'>> = [];
 		const errors = new Set();
-		await Promise.allSettled(processing).then((result) => {
-			for (const r of result) {
-				if (r.status === "fulfilled" && r.value) {
-					const rr = r.value;
-					highlighsFreal.push({
-						...rr, color: Palettes.find(r => (r as string) === rr.color) || currentColorRef.current
-					} satisfies ProcessedRangy);
-				} else if (r.status === "rejected") {
-					if (r.reason instanceof HighlightCreateError) {
-						errors.add(r.reason.message);
-					}
-				} else {
-					errors.add("Something went wrong");
+		const fi = await Promise.allSettled(processing);
+		for (const r of fi) {
+			if (r.status === "fulfilled" && r.value) {
+				const rr = r.value;
+				highlighsFreal.push({
+					...rr, color: currentColorRef.current
+				});
+			} else if (r.status === "rejected") {
+				if (r.reason instanceof HighlightCreateError) {
+					errors.add(r.reason.message);
 				}
+			} else {
+				errors.add("Something went wrong");
 			}
-		});
+		}
 
 		if (errors.size > 0) {
 			const errorMessages = Array.from(errors).join(", ");
@@ -408,7 +633,6 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 		}
 		return highlighsFreal;
 	}, [authorId, postId, slug, userId],);
-	const tempSelection = useRef<rangy.RangySelection | null>(null);
 
 	const createHighlight = useCallback(async ({userId, memo}: { userId?: string; memo?: string }) => {
 		const base = contentRef.current;
@@ -458,16 +682,15 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 						memo: newH.memo,
 						range: rangeAt,
 						els: elements,
-						createdAt: DateTime.now().toISO(),
 					} satisfies HighlightedRange;
 					setFocusedHighlight(newHighlight);
-					setHighlights((e) => [...e, newHighlight]);
-					addHighlighter(res);
+					addHighlighter(newHighlight);
 					selection.removeAllRanges();
 					return newHighlight;
 				}
-				return;
 			}
+			selection.removeAllRanges();
+			return;
 		} else {
 			setFocusedHighlight(null);
 			setMenuPosition(null);
@@ -475,7 +698,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			return;
 		}
 
-	}, [pathName, authorId, createHighlightAPI, lastColor, addHighlighter],);
+	}, [lastColor, pathName, authorId, createHighlightAPI, setFocusedHighlight, addHighlighter],);
 	useEffect(() => {
 		lastColorRef.current = lastColor;
 	}, [lastColor]);
@@ -486,37 +709,41 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			const res = await updateUserHighlight({
 				highlights: highlightArray, saveParams, user: userId, article: postId, color: currentColorRef.current,
 			})
-			if (res && Array.isArray(res)) {
-				setHighlights(res)
-				const r = res.find(a => (a.reference === saveParams[0]!.reference));
-				if (r) {
-
-					setFocusedHighlight(r);
-				}
+			addHighlighter(res)
+			const r = res.find(a => (a.reference === saveParams[0]!.reference));
+			if (r) {
+				setFocusedHighlight(r);
 			}
-		}, [postId, userId]);
-	const changeCurrentHighlightColor = useCallback(async (colorWay: HighlightColors, fc: HighlightedRange) => {
-		const toPass: HighlightedRange = {
-			range: fc.range,
-			id: fc.id,
-			memo: fc.memo,
-			path: fc.path,
-			cited: fc.cited,
-			reference: fc.reference,
-			selection: {
-				...fc.selection
-			},
-			els: fc.els,
-			color: colorWay,
-			createdAt: fc.createdAt,
-			private: fc.private,
-			quote: fc.quote,
+		}, [addHighlighter, postId, setFocusedHighlight, userId]);
+	useEffect(() => {
+
+		if (color) {
+			setCurrentColor(color);
+			currentColorRef.current = color;
 
 		}
-		setCurrentColor(colorWay);
-		currentColorRef.current = colorWay;
-		await updateHighlight(toPass, highlights)
-	}, [updateHighlight, highlights])
+	}, [setCurrentColor, color])
+	const changeCurrentHighlightColor = useCallback((colorWay: HighlightColors) => {
+		// const toPass: HighlightedRange = {
+		// 	range: fc.range,
+		// 	id: fc.id,
+		// 	memo: fc.memo,
+		// 	path: fc.path,
+		// 	cited: fc.cited,
+		// 	reference: fc.reference,
+		// 	selection: {
+		// 		...fc.selection
+		// 	},
+		// 	els: fc.els,
+		// 	color: colorWay,
+		// 	createdAt: fc.createdAt,
+		// 	private: fc.private,
+		// 	quote: fc.quote,
+		//
+		// }
+		colorUpdater.mutate({color: colorWay, user: userId})
+
+	}, [colorUpdater, userId]);
 	/**
 	  const newE: ProcessedRangy[] = localHighlights.map((n) => {
 		let i = "";
@@ -557,24 +784,105 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			lastRangeAt.current = null;
 		}
 	}, [setFocusedHighlight, updateHighlightPosition]);
-	const updateMiniMap = useCallback(() => {
+	const updateMiniMap = useCallback(async (highlighters: HighlightedRange[]) => {
 		const a: Array<{
-			y: number; color: string; top: number;
+			y: number; top: number;
+		}> = [];
+		const b: Array<{
+			top: number; reference: string; memo: string; quote: string; author: AuthorOverview
+			updatedAt: string; createdAt: string;
 		}> = [];
 		const wh = window.innerHeight;
-		const contDimension = contentRef.current.scrollHeight + wh * 2;
-		highlights.forEach((e) => {
-			e.els.forEach((t) => {
-				const n = t.getBoundingClientRect().top + window.scrollY;
-				const i = (n / contDimension) * wh;
-				const {color: o} = e;
-				a.push({
-					y: i, color: o, top: n,
-				});
+		const cont = contentRef.current;
+		if (!cont) return;
+		const contDimension = cont.offsetHeight;
+		const contOffset = cont.offsetTop;
+		highlighters.forEach((e) => {
+			let n = 0;
+			let i = contOffset;
+			e.els.forEach((t, i) => {
+				const tt = (t as HTMLElement).offsetTop;
+				if (i > 0) {
+					n = Math.min(n, tt);
+				} else {
+					n = tt;
+				}
 			});
+			i = i + n;
+			a.push({
+				y: i, top: n / contDimension * wh * 0.85,
+			});
+			if (e.memo && e.memo.length > 0) {
+				b.push({
+					quote: e.quote || `${e.selection.before}${e.selection.text}${e.selection.after}`,
+					top: n,
+					reference: e.reference,
+					memo: e.memo,
+					author: e.author,
+					updatedAt: e.updatedAt,
+					createdAt: e.createdAt,
+				})
+			}
 		});
+		if (b.length > 0) {
+			// const r = b.reduce((prev, x) => {
+			// 	if (prev.some(r => r === x.authorId)) {
+			// 		return prev;
+			// 	}
+			// 	return [...prev, x.authorId]
+			// }, [] as string[]).map(async (v) => {
+			// 	const au = v;
+			// 	const select: UsersSelect = {
+			// 		image: true, name: true, displayUsername: true, slug: true, banned: true
+			// 	}
+			// 	return await fetch(`/api/users/${au}/${stringify(select, {addQueryPrefix: true})}`, {
+			// 		headers: {
+			// 			'Content-Type': 'application/json'
+			// 		}, credentials: 'include', method: 'GET'
+			// 	}).then(r => {
+			// 		if (r.ok) {
+			// 			return (r.json() as Promise<Pick<User, 'id' | 'image' | 'displayUsername' | 'name' | 'slug' | 'banned'>>)
+			// 		}
+			// 		throw new Error("Something went wrong")
+			// 	})
+			// });
+			// const sv = await Promise.allSettled(r);
+			// const re = sv.flatMap((tm, i) => {
+			// 	if (tm.status === 'fulfilled') {
+			// 		return( tm.value.banned ? {
+			// 			...GhostUser(),
+			// 			ogId: tm.value.id,
+			// 		} : {
+			// 			id: tm.value.id,
+			// 			ogId: tm.value.id,
+			// 			name: tm.value.name,
+			// 			slug: tm.value.slug,
+			// 			image: tm.value.image,
+			// 			displayUsername: tm.value.displayUsername || tm.value.name,
+			// 		}) satisfies AuthorOverview & { ogId: string };
+			// 	}
+			// 	return []
+			// });
+
+			setResponseNodes((vvv) => {
+				const r = [...vvv]
+				b.forEach((s) => {
+					const eI = r.findIndex(v => v.reference === s.reference);
+					if (eI > -1) {
+						r[eI] = {
+							...s
+						}
+					} else {
+						r.push(s);
+					}
+				})
+				return r;
+			})
+		} else {
+			setResponseNodes([]);
+		}
 		setHighlightMap(a);
-	}, [setHighlightMap, highlights]);
+	}, []);
 	useEffect(() => {
 		const cont = contentRef.current;
 		if (!cont) return;
@@ -591,7 +899,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			e.addEventListener("click", handleHighlightClick);
 		});
 		window.addEventListener("resize", onResizeHighlights);
-		updateMiniMap();
+		updateMiniMap(highlights);
 		return () => {
 			cont.removeEventListener("mouseup", containerMouseUp, false);
 			highlightedNodes.forEach((e) => {
@@ -601,20 +909,22 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			});
 			window.removeEventListener("resize", onResizeHighlights);
 		};
-	}, [focusedHighlight, updateHighlightPosition, containerRef, lastResize, containerMouseUp, updateMiniMap, onEn,
-		onExit, handleHighlightClick,]);
+	}, [focusedHighlight, updateHighlightPosition, containerRef, highlights, lastResize, containerMouseUp,
+		updateMiniMap, onEn, onExit, handleHighlightClick,]);
 
 	const updateColors = useRef<(props: {
-		targets: HTMLElement[]; fromColor: string; toColor: string;
+		targets: HTMLElement[]; fromColor: HighlightColors; toColor: HighlightColors;
 	}) => void>(null!);
 	const addListeners = useCallback((targets: HTMLElement[]) => {
 		targets.forEach((e) => {
 			e.addEventListener("click", handleHighlightClick);
 		});
-	}, [handleHighlightClick],);
+	}, [handleHighlightClick]);
 	useGSAP(() => {
 		updateColors.current = (props) => {
 			const {targets, fromColor, toColor} = props;
+			const from = HighlightPalette[fromColor];
+			const to = HighlightPalette[toColor];
 			gsap.to(targets, {
 				onStart: () => {
 					targets.forEach((e) => {
@@ -623,26 +933,28 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 					});
 				},
 				delay: 0.05,
-				backgroundImage: `linear-gradient(to left, oklch(${fromColor}/.001) 0%, oklch(${toColor}/.85) 50%)`,
+				backgroundImage: `linear-gradient(to left, oklch(${from}/.01) 0%, okclh(${from}/.1) 40%, oklch(${to}/.01) 50%, oklch(${to}/.85) 100%)`,
 				onComplete: () => {
 					targets.forEach((e) => {
 						e.classList.add('highlighted');
 					})
 					addListeners(targets);
+					gsap.to(targets, {
+						delay: 0.2, clearProps: "backgroundImage",
+					})
 				},
 				duration: 0.2,
 				ease: "power2.inOut",
 			});
+
 		};
 	}, {dependencies: [handleHighlightClick, addListeners], scope: containerRef},);
 
 	useEffect(() => {
-		if (highlights.length > 0) {
-			const targets = highlights.reduce((r, e) => [...r, ...(e.els as HTMLElement[])], [] as HTMLElement[]);
-			updateColors.current && (updateColors.current(
-				{targets, fromColor: lastColorRef.current, toColor: currentColor}))
 
-		}
+		const targets = highlights.reduce((r, e) => [...r, ...(e.els as HTMLElement[])], [] as HTMLElement[]);
+		targets.length > 0 && updateColors.current && (updateColors.current(
+			{targets, fromColor: lastColorRef.current, toColor: currentColor}))
 	}, [highlights, currentColor]);
 	const handleShareHighlight = useCallback((e) => {
 		e.stopPropagation();
@@ -652,8 +964,8 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			a = focusedHighlight.els.map((e) => (e as HTMLElement).innerText).join(" ");
 		}
 		navigator.clipboard.writeText(a).then((r) => {
-			successToast(t('menu.share.copy'));
-		}).catch(e => (errorToast(t('menu.error.copy'))));
+			successToast(t('Highlights.share.copy'));
+		}).catch(e => (errorToast(t('Highlights.error.share.copy'))));
 	}, [focusedHighlight, t],);
 	const handleHighlightSaveOrDelete: MouseEventHandler<HTMLButtonElement> = useCallback(async (e) => {
 		e.stopPropagation();
@@ -704,20 +1016,18 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 		};
 		return traverseNodes(e);
 	}, []);
-	const applyHighlightCallback = useCallback((t: Citation) => {
+	const applyHighlightCallback = useCallback((t: Omit<ProcessedRangy, 'author'> & { author: AuthorOverview }) => {
 		const base = contentRef.current;
 		if (!base) return;
 		const {text: a} = t.selection;
 		const n = base.textContent?.indexOf(a) || -1;
 		if (n === -1) {
-			console.log("no match");
 			return false;
 		}
 		const i = n + a.length;
 		const o = findTextNode(base, n);
 		const s = findTextNode(base, i);
 		if (!o || !s) {
-			console.log(o, s);
 			return false;
 		}
 		const r = rangey.createRange();
@@ -744,13 +1054,14 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			reference: t.reference,
 			path: t.path,
 			quote: t.quote,
-			createdAt: t.createdAt,
+			createdAt: t.createdAt, author: t.author,
+
 			range: r,
 			els: h,
 			color: (Palettes.find(r => (r as string) === t.color) as null | HighlightColors) || currentColorRef.current,
 			selection: {
-				text: a, before: "", after: "",
-			},
+				text: a, before: `"...`, after: `..."`,
+			}, updatedAt: t.updatedAt,
 		} satisfies HighlightedRange;
 		const {startOffset, endOffset, startContainer, endContainer} = r;
 		if (startContainer.nodeType === Node.TEXT_NODE && base.contains(
@@ -771,24 +1082,35 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 		} else {
 			return;
 		}
-		setHighlights((e) => {
-			const ind = e.findIndex((r) => r.reference === c.reference);
-			const newH = [...e];
-			if (ind !== -1) {
-				newH[ind] = c;
-			} else {
-				newH.push(c);
-			}
-			return newH;
-		});
-		updateColors.current && updateColors.current({
-			targets: h, fromColor: lastColorRef.current, toColor: t.color,
-		});
 
+		updateColors.current && updateColors.current({
+			targets: h, fromColor: lastColorRef.current, toColor: currentColorRef.current,
+		});
+		vv.removeAllRanges();
+		return c;
 	}, [findTextNode],);
+	const hasRun = useRef(false)
+	useEffect(() => {
+		if (savedHighlights) {
+
+			const r = savedHighlights.docs.flatMap((range) => range || [])
+			const ss: HighlightedRange[] = []
+			r.forEach(c => {
+				const r = applyHighlightCallback(c);
+				r && (ss.push(r))
+			})
+			if (ss.length > 0) addHighlighter(ss)
+		}
+	}, [savedHighlights, applyHighlightCallback, addHighlighter])
 	useLayoutEffect(() => {
+		if (hasRun.current) return;
 		rangey.init();
 		const cont = contentRef.current;
+		if (postDisabled || !userId || !cont) {
+			return () => {
+			};
+		}
+
 		if (!highlighterRef.current) {
 			highlighterRef.current = rangey.createHighlighter();
 		}
@@ -798,34 +1120,23 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 			});
 			highlighterRef.current.addClassApplier(classApplierRef.current);
 		}
-		if (postDisabled || !user) {
-			return () => {
-			};
-		}
-		if (highlights.length > 0) {
-			return () => {
-			};
-		}
 
-		if (savedHighlights) {
-			savedHighlights.docs.forEach((range) => {
-				applyHighlightCallback(range);
-			});
-		}
+		hasRun.current = true;
 
 		return () => {
 			const e = cont.querySelectorAll("mark.highlighted");
 			e.forEach((e) => {
 				e.removeEventListener("click", handleHighlightClick);
 			});
+			hasRun.current = false;
 		};
-	}, [savedHighlights, applyHighlightCallback, containerRef, handleHighlightClick, highlights, postDisabled, pathName,
-		user,]);
+	}, [savedHighlights, applyHighlightCallback, handleHighlightClick, postDisabled, pathName, userId, addHighlighter]);
 
 	return (<>
 		<div
 			className={"rp_story bg-faded-white dark:bg-faded-black z-[120] w-[calc(100vw-20px)] pb-[20px] leading-[1.28]"}
-			data-themed="background-color,color">
+			data-themed="background-color,color"
+			style={{'--currentHighlight': HighlightPalette[currentColor]} as CSSProperties}>
 			<div
 				className="border-x-muted-faded-foreground pointer-events-none absolute top-0 left-[18px] z-[30] h-full w-[calc(100%-36px)] border-0 border-x-[1px] border-solid opacity-20"
 				style={{
@@ -839,7 +1150,11 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 							<FeaturedCard post={post} />
 							<div className="mx-auto my-[28px] w-full max-w-[var(--maxContainerWidth)] px-0 py-[32px]"
 							     ref={containerRef}>
-								<div className="rp-content [&>*]:col-[main] [&>aside]:col-4" ref={contentRef}>
+								<div className="rp-content [&>*]:col-[main] [&>aside]:col-3" ref={contentRef}>
+									<Aside>
+										{responseNodes.map(r => (<ResponseIndicator key={r.reference} top={r.top}
+										                                            reference={r.reference} />))}
+									</Aside>
 									{post.disabled ? (<Locked />) : (
 										<RichText data={post.content} enableGutter={false} />)}
 								</div>
@@ -849,10 +1164,9 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 					</div>
 					<HighlightMenu createCallback={createHighlight} userId={userId} target={{
 						relationTo: "posts", value: postId, authorId: post.author.id,
-					}} visible={render} palettes={HighlightPalette} top={menuTop} left={menuLeft}
-					               handleShareHighlight={handleShareHighlight} handleUpdate={handleUpdateHighlight}
-					               handleSaveHighlight={handleHighlightSaveOrDelete} focusedHighlight={focusedHighlight}
-					               currentHighlightColor={currentColor}
+					}} visible={render} top={menuTop} left={menuLeft} handleShareHighlight={handleShareHighlight}
+					               handleUpdate={handleUpdateHighlight}
+					               handleSaveHighlight={handleHighlightSaveOrDelete}
 					               handleChangeHighlightColor={changeCurrentHighlightColor} />
 					<MiniMap highlightMap={highlightMap} scaleRatio={containerBounds} />
 				</div>
@@ -914,6 +1228,7 @@ const BookmarkButton = ({
 }: {
 	postId: string, userId: string, collection: Bookmark["target"]["relationTo"];
 }) => {
+	const qc = useQueryClient();
 	const where = useMemo(() => ({
 		and: [{
 			'target.value': {
@@ -928,7 +1243,7 @@ const BookmarkButton = ({
 				equals: `${collection}`,
 			}
 		}]
-	}) satisfies Where, [userId, postId, collection]);
+	}) as Where, [userId, postId, collection]);
 	const [initialized, setInitialized] = useState(false);
 	const fetcher = useCallback(async () => {
 		const r = await fetch(`/api/bookmarks/count/${stringify(where, {addQueryPrefix: true})}`);
@@ -941,9 +1256,7 @@ const BookmarkButton = ({
 		throw new Error('Not found');
 	}, [where,])
 	const {refetch, data: hasBookmark, isPending, isError, isFetching, isSuccess} = useQuery({
-		queryKey: ['bookmarks', userId, postId, collection], queryFn: async () => {
-			return await fetcher();
-		}, enabled: !initialized,
+		queryKey: ['bookmarks', userId, postId, collection], queryFn: fetcher, enabled: !initialized,
 	})
 	const [bookmarked, setBookmarked] = useState(Boolean(hasBookmark));
 	useEffect(() => {
@@ -957,49 +1270,86 @@ const BookmarkButton = ({
 	}, [hasBookmark, isPending, isSuccess, isError])
 	const removeBookmark = useRPSession(r => r.deleteBookmark)
 	const addBookmark = useRPSession(r => r.addBookmark)
-	const bookmarkSaveOrDelete: MouseEventHandler = useCallback(async (e) => {
-		e.preventDefault();
-		if (postId && userId) {
-			setInitialized(false)
-			if (hasBookmark) {
-				const args = stringify(where, {addQueryPrefix: true});
-				await fetch(`/api/bookmarks/${args}`, {
-					method: "DELETE", credentials: "include", headers: {
-						'Content-Type': 'application/json'
-					}
-				}).then(async r => await r.json() as { docs: Bookmark[]; errors: object[] }).then(r => {
-					if (r.docs && r.docs.length > 0) {
-						return r.docs[0] as Bookmark;
-					}
-					return null;
-				}).catch(e => {
-					console.log(e)
-					return null
-				})
+	const hasBookmarkRef = useRef(!!hasBookmark);
+	useEffect(() => {
+		hasBookmarkRef.current = !!hasBookmark;
+	}, [hasBookmark])
+	const dB = useCallback(async () => {
 
-			} else {
-				const body: Omit<Bookmark, 'id' | 'createdAt' | 'updatedAt'> = {
-					target: {
-						relationTo: collection, value: postId
-					}, user: userId,
-				}
-				await fetch('/api/bookmarks', {
-					method: "POST", headers: {
-						'Content-Type': 'application/json'
-					}, credentials: "include", body: JSON.stringify(body)
-				}).then(async r => await r.json() as { doc: Bookmark; message: object[] }).then(r => {
-					if (r.doc) {
-						return r.doc as Bookmark;
-					}
-					return null;
-				}).catch(e => {
-					console.log(e)
-					return null
-				})
+		const args = stringify({where}, {addQueryPrefix: true});
+		const res = await fetch(`/api/bookmarks/${args}`, {
+			method: "DELETE", credentials: "include", headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then(async r => await r.json() as { docs: Bookmark[]; errors: object[] }).then(r => {
+			if (r.docs && r.docs.length > 0) {
+				return r.docs[0] as Bookmark;
+			}
+			return null;
+		}).catch(e => {
+			console.log(e)
+			return null
+		})
+		if (res) {
+			removeBookmark({
+				collection: res.target.relationTo as Bookmark['target']['relationTo'], id: res.target.value as string
+			})
+			return true;
+		}
+		return false;
+	}, [removeBookmark, where])
+	const body = useMemo(() => ({
+		target: {
+			relationTo: collection, value: postId
+		}, user: userId,
+	}) as Omit<Bookmark, 'id' | 'createdAt' | 'updatedAt'>, [postId, userId, collection])
+	const cB = useCallback(async () => {
 
+
+		const res = await fetch('/api/bookmarks', {
+			method: "POST", headers: {
+				'Content-Type': 'application/json'
+			}, credentials: "include", body: JSON.stringify(body)
+		}).then(async r => await r.json() as { doc: Bookmark; message: object[] }).then(r => {
+			if (r.doc) {
+				return r.doc as Bookmark;
+			}
+			return null;
+		}).catch(e => {
+			console.log(e)
+			return null
+		})
+		if (res) {
+			addBookmark({
+				id: res.target.value as string, collection: res.target.relationTo as Bookmark['target']['relationTo']
+			})
+			return true;
+		}
+
+		return false;
+	}, [body, addBookmark])
+	const createBookmark = useMutation({
+		mutationFn: cB, onSuccess: (res) => {
+			if (res) {
+				qc.setQueryData(['bookmarks', userId, postId, collection], true);
 			}
 		}
-	}, [postId, userId, hasBookmark, where, collection])
+	})
+	const deleteBoookmark = useMutation({
+		mutationFn: dB, onSuccess: (res) => {
+			if (res) {
+				qc.setQueryData(['bookmarks', userId, postId, collection], false);
+			}
+		}
+	})
+	const bookmarkSaveOrDelete: MouseEventHandler = useCallback(async (e) => {
+		e.preventDefault();
+		if (hasBookmarkRef.current) {
+			deleteBoookmark.mutate()
+		} else {
+			createBookmark.mutate()
+		}
+	}, [deleteBoookmark, createBookmark])
 	return (!userId || !postId) ? (<></>) : (<div className={'flex'}>
 		<MotionBtn transition={{type: "spring", bounce: 0.4}} whileTap={{scale: 0.9}} whileHover={{
 			scale: 1.1,
@@ -1011,121 +1361,6 @@ const BookmarkButton = ({
 		</MotionBtn>
 	</div>)
 }
-const ReadDrawer = () => {
-	return <Drawer.Root>
-	</Drawer.Root>
-}
-/**
- *
- *   const createHighlightAPI = useCallback(
- *     async (porps: RangeSaveParams) => {
- *       const { userId, ...props } = porps;
- *       if (postDisabled) {
- *         errorToast("You can't highlight a locked article.");
- *         return null;
- *       }
- *       if (!userId) {
- *         errorToast("You must be checked in to save highlights.");
- *       }
- *       try {
- *         const body = {
- *           ...props,
- *           author: userId,
- *           target: {
- *             relationTo: "posts",
- *             value: postId,
- *           },
- *           private: props.private || false,
- *           memo: props.memo || "",
- *         };
- *         const res = await fetch(
- *           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/citations`,
- *           {
- *             method: "POST",
- *             body: JSON.stringify(body),
- *             credentials: "include",
- *             headers: {
- *               "Content-Type": "application/json",
- *             },
- *           },
- *         );
- *         if (res.ok) {
- *           const data = await res.json();
- *           if (!data.doc) {
- *             throw new Error("No data returned");
- *           }
- *           return data.doc as Citation;
- *         } else {
- *           throw new Error(
- *             "Something went wrong while trying to save the selection. Try again in a few secs!",
- *           );
- *         }
- *       } catch (e) {
- *         console.error(e);
- *         if (e instanceof Error) {
- *           throw e;
- *         } else {
- *           throw new Error(
- *             "Something went wrong while trying to save the selection. Please try again in a few secs!",
- *           );
- *         }
- *       }
- *     },
- *     [postId, postDisabled],
- *   );
- *     const deleteHighlightAPI = useCallback(
- *     async (userId: string, fc: HighlightedRange) => {
- *       const query = stringify(
- *         {
- *           where: {
- *             and: [
- *               {
- *                 reference: {
- *                   equals: fc.reference,
- *                 },
- *               },
- *               {
- *                 author: {
- *                   equals: userId,
- *                 },
- *               },
- *             ],
- *           },
- *         },
- *         { addQueryPrefix: true },
- *       );
- *       return (await fetch(`/api/citations/${query}`, {
- *         method: "DELETE",
- *         credentials: "include",
- *         headers: {
- *           "Content-Type": "application/json",
- *         },
- *       })
- *         .then((r) => r.json())
- *         .then((r) => ({
- *           result: r,
- *           error: "errors" in r ? r.errors?.length > 0 : false,
- *         }))
- *         .catch((e) => {
- *           console.error(e);
- *           return {
- *             result: {
- *               docs: [] as Citation[],
- *               errors: [e instanceof Error ? e.message : "something went wrong"],
- *             },
- *             error: true,
- *           };
- *         })) as {
- *         result: {
- *           docs: Citation[];
- *           errors: never[];
- *         };
- *         error: boolean;
- *       };
- *     },
- *     [],
- *   );
- */
 
 const ProgressBar = ({
 	progress, title, children, ...props
@@ -1135,7 +1370,7 @@ const ProgressBar = ({
 	return (<>
 		<m.div className="relative z-[120] overflow-hidden rounded-[18px] p-1"
 		       {...props} transition={{type: "spring", bounce: 0.25}} whileTap={{scale: 0.9}} whileHover={{
-			scale: 1.1, borderColor: "oklch(var(--transparent-white))",
+			scale: 1.1, borderColor: "oklch(var(--transparent-white)/0.001)",
 		}}>
 			<div className="bg-muted-off-background/35 absolute top-0 left-0 z-[120] h-full w-full"></div>
 			<m.div className="absolute top-0 left-0 z-[119] h-full w-full opacity-[0.001]"
@@ -1155,10 +1390,10 @@ const ProgressBar = ({
 							<defs>
 								<linearGradient id="col" gradientUnits="userSpaceOnUse">
 									<stop offset="0%" stopColor="oklch(var(--faded-fg)/.7)" />
-									<stop offset="85%" stopColor="oklch(var(--faded-d-gray)/0.8)" />
+									<stop offset="85%" stopColor="oklch(var(--faded-d-gray)/.8)" />
 								</linearGradient>
 							</defs>
-							<circle className={"stroke-off-l-gray/75 dark:stroke-off-d-gray/75"} cx="10" cy="10" r="8"
+							<circle className={"stroke-off-l-gray/100 dark:stroke-off-d-gray/100"} cx="10" cy="10" r="8"
 							        strokeWidth="1.25" fill="none" strokeLinecap="round"></circle>
 							<circle className={"stroke-[url(#col)]"} cx="10" cy="10" r="8" strokeWidth="1.25"
 							        fill="none" strokeDasharray={`${progress}px 1px`} strokeLinecap="round"
@@ -1182,37 +1417,31 @@ export type HighlightMenuProps = {
 	visible: boolean;
 	top: number | null;
 	left: number | null;
-	focusedHighlight: HighlightedRange | null;
+
 	createCallback: (prop: { userId?: string; memo?: string }) => Promise<HighlightedRange | null | undefined>;
 	handleShareHighlight: (e: MouseEvent<HTMLButtonElement>) => void;
 	handleSaveHighlight: (e: MouseEvent<HTMLButtonElement>) => void;
-	currentHighlightColor: string;
-	handleChangeHighlightColor: (color: HighlightColors, focusedHighlight: HighlightedRange) => Promise<void>;
-	palettes: Record<HighlightColors, string>;
+	handleChangeHighlightColor: (color: HighlightColors,) => void;
+
 	handleUpdate: (fc: HighlightedRange) => Promise<void>;
 	target: {
-		relationTo: string; value: string; authorId: string;
+		relationTo: HighlightsCollection; value: string; authorId: string;
 	};
 	userId?: string;
 };
 const HighlightMenu = ({
-	visible,
-	userId,
-	palettes,
-	handleShareHighlight, handleUpdate, createCallback,
-	top,
-	left,
-	handleSaveHighlight,
-	currentHighlightColor,
-	handleChangeHighlightColor,
-	focusedHighlight,
+	visible, userId,
+
+	handleShareHighlight, handleUpdate, createCallback, top, left, handleSaveHighlight, handleChangeHighlightColor,
+
 	target,
 }: HighlightMenuProps) => {
+	const currentHighlightColor = useHighlighter(r => r.currentColor)
 	const [render, setRender] = useState(false);
-	const {relationTo, value, authorId} = target;
+	const {authorId} = target;
 	const ref = useRef<HTMLDivElement>(null!);
 	const lastVisible = useRef(false);
-
+	const focusedHighlight = useHighlighter(r => r.focusedHighlight);
 	const lastCoords = useRef({x: 0, y: 0});
 	const lastTime = useRef(0);
 	const doMe = useCallback((e: Event) => {
@@ -1259,10 +1488,10 @@ const HighlightMenu = ({
 			duration: 0.3, ease: "easeOut",
 		}}>
 			<div className={"relative z-[210] h-full w-full p-0"}>
-				<div className={"bg-off-l-gray dark:bg-faded-l-gray absolute top-0 left-0 z-[1] h-full w-full"} />
-				<m.div className={"text-off-black z-[23] flex h-[44px] items-center gap-6 px-8"}>
+				<div className={"bg-faded-d-gray dark:bg-faded-l-gray absolute top-0 left-0 z-[1] h-full w-full"} />
+				<m.div className={"text-off-foreground z-[23] flex h-[44px] items-center px-3.5"}>
 					<HighlightSaveButton saveCallback={handleUpdate} createCallback={createCallback}
-					                     documentHandler={doMe} focusedHighlight={focusedHighlight} userId={userId}
+					                     className={'border-r-[1px]'} documentHandler={doMe} userId={userId}
 					                     authorId={authorId}>
 					</HighlightSaveButton>
 					<HighlightMenuButton onClick={handleSaveHighlight}>
@@ -1296,13 +1525,15 @@ const HighlightMenu = ({
 					}} transition={{
 						type: "tween", duration: 0.2, ease: "easeOut",
 					}} className={"z-[13] mr-[16px] ml-[16px] flex gap-[4px]"}>
-						{Object.keys(palettes).map((palette, index) => (
-							<HighlightColorPickerItem key={palette} color={palettes[palette]}
-							                          isActive={currentHighlightColor === palette}
-							                          onClick={(e) => e.stopPropagation()}
-							                          onMouseDown={(e) => (e.stopPropagation(), handleChangeHighlightColor(
-								                          palette as HighlightColors, focusedHighlight))}
-							                          onMouseUp={(e) => e.stopPropagation()}></HighlightColorPickerItem>))}
+						{Palettes.map((palette, index) => (
+							<HighlightColorPickerItem key={palette} color={HighlightPalette[palette]}
+							                          isActive={currentHighlightColor === palette} onClick={(e) => {
+								e.stopPropagation();
+								e.preventDefault();
+							}} onMouseDown={(e) => {
+								e.stopPropagation();
+								handleChangeHighlightColor(palette)
+							}} onMouseUp={(e) => e.stopPropagation()}></HighlightColorPickerItem>))}
 					</m.div>)}
 				</m.div>
 			</div>
@@ -1372,25 +1603,43 @@ const SignInCard = (props: ComponentPropsWithoutRef<'div'> & {
 			</CardContent>
 		</Card></div>)
 }
+const SignInTriggerButton = () => {
+	const [isOpen, setOpen] = useState(false);
+	return <Dialog open={isOpen} onOpenChange={setOpen}>
+		<DialogTrigger asChild>
+		</DialogTrigger>
+		<DialogContent onClick={(e) => e.stopPropagation()}>
+			<DialogHeader>
+				<DialogTitle>
+					Check In
+				</DialogTitle>
+			</DialogHeader>
+			<div className="grid gap-3">
+				<SignInCard onSignInClick={() => {
+				}} />
+			</div>
+		</DialogContent>
+	</Dialog>
+}
 const HighlightSaveButton = ({
-	focusedHighlight, userId, authorId, className, documentHandler, saveCallback, createCallback,
+	userId, authorId, className, documentHandler, saveCallback, createCallback,
 }: {
 	createCallback: (prop: { userId?: string; memo?: string }) => Promise<HighlightedRange | null | undefined>;
 	saveCallback: (saveParams: HighlightedRange) => Promise<void>;
 	documentHandler: (e: Event) => void;
-	focusedHighlight: HighlightedRange | null;
+
 	userId?: string;
 	authorId?: string;
 	className?: string;
 }) => {
 	const savedSelectionRef = useRef<rangy.savedSelection | null>(null);
-
+	const focusedHighlight = useHighlighter(r => r.focusedHighlight);
 	const [open, setOpen] = useState(false);
 	const [view, setView] = useState<"memo" | "signin">(userId ? "memo" : "signin",);
 	const docId = focusedHighlight?.id || null;
 	const [memo, setMemo] = useState<string>((focusedHighlight as any)?.memo ?? "",);
 	const [saving, setSaving] = useState(false);
-	const t = useTranslations('Highlights');
+	const t = useTranslations();
 	useEffect(() => {
 		if (open) {
 			setView(userId ? "memo" : "signin");
@@ -1404,23 +1653,28 @@ const HighlightSaveButton = ({
 
 		if (!userId) {
 			setView("signin");
-			toast(t("error.signin"));
+			toast(t("Highlights.error.save.signin"));
 			return setSaving(false);
 		}
 		if (!focusedHighlight) {
 			if (savedSelectionRef.current) {
 				setSaving(true);
 				rangey.restoreSelection(savedSelectionRef.current);
+				rangey.removeMarkers(savedSelectionRef.current);
+				savedSelectionRef.current = null;
 				await createCallback({userId, memo}).then(r => {
 					if (r) {
-						successToast(t("saved"));
-						setOpen(false);
+						successToast(t("Highlights.saved"));
 
 					} else {
-						errorToast(t("error.save"));
+						errorToast(t("Highlights.error.save.select"));
 					}
+					setOpen(false);
 				});
+
 			}
+			savedSelectionRef.current && (rangey.removeMarkers(
+				savedSelectionRef.current), savedSelectionRef.current = null);
 			setSaving(false);
 
 			return;
@@ -1436,11 +1690,13 @@ const HighlightSaveButton = ({
 			} satisfies HighlightedRange;
 			await saveCallback(body);
 			setOpen(false);
-			successToast(t("saved"));
+			successToast(t("Highlights.saved"));
 		} catch (e) {
 			console.log(e);
-			errorToast(t("error.save"));
+			errorToast(t("Highlights.error.save.default"));
 		} finally {
+			savedSelectionRef.current && (rangey.removeMarkers(
+				savedSelectionRef.current), savedSelectionRef.current = null);
 			setSaving(false);
 		}
 	}, [createCallback, focusedHighlight, memo, saveCallback, t, userId]);
@@ -1462,8 +1718,8 @@ const HighlightSaveButton = ({
 	return (<>
 		<Dialog open={isOpen} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<HighlightMenuButton className={className} focusedHighlight={!!focusedHighlight} onClick={closeOnClick}>
-					Note
+				<HighlightMenuButton className={className} focusedHighlight={true} onClick={closeOnClick}>
+					{focusedHighlight && focusedHighlight.memo ? "Edit" : "Memo"}
 					<MenuButtonCaption>
 						<svg width="8" height="8" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
 							<path d="M2 2h8v8H2z" fill="currentColor" />
@@ -1505,6 +1761,70 @@ const HighlightSaveButton = ({
 		</Dialog>
 	</>);
 };
+const ResponseIndicator = (props: ComponentPropsWithoutRef<'div'> & {
+	top: number; reference: string;
+}) => {
+	const {reference, top, ...rest} = props;
+	const highlights = useHighlighter(r => r.highlights);
+	const target = useMemo(() => highlights.find(h => (h.reference === reference) && !!(h.memo)) || null,
+		[highlights, reference]);
+	const setOpen = useHighlightSidebar('setOpen');
+	const setContent = useHighlightSidebar('setContent');
+
+	const onClick = useCallback((e: MouseEvent) => {
+		if (target) {
+			setContent({
+
+				author: target.author,
+				createdAt: target.createdAt,
+				memo: target.memo!,
+				quote: target.quote!,
+				reference,
+				updatedAt: target.updatedAt,
+			})
+		}
+
+		setOpen(true);
+	}, [target])
+
+	return <div style={{transform: `translateY(${props.top}px)`}} className={"flex items-center gap-2"}>
+		<div className={'relative'}>
+			<Button onClick={onClick}
+			        className="flex text-[calc(var(--text-base)*0.55)] items-center justify-center z-[30] aspect-[4/3] h-[var(--text-base)] w-auto px-[3px] py-[2px] border-muted border-[1px] rounded-[5px_5px_5px_0] whitespace-nowrap bg-background dark:bg-faded-background dark:border-muted-faded-foreground text-center">
+				<span
+					className={'left-[0.5px] -bottom-[3px] w-[4.5px] h-[4.5px] bg-background dark:bg-faded-background absolute [clip-path:polygon(0_0,0_100%,100%_0)] z-[20]'} />
+				<span
+					className={"absolute [clip-path:polygon(0_0,0_100%,100%_0)] bg-muted dark:bg-muted-faded-foreground -left-[0.5px] bottom-[-6px] w-[6px] h-[7px] z-[15]"} />
+				<span className="leading-[1.5] uppercase">
+                1
+            </span>
+			</Button></div>
+	</div>
+}
+const Aside = ({children}: { children: ReactNode }) => {
+	return (
+
+		<>
+			<style>
+				{`
+			aside > div{
+			 max-width: 100%;
+			 position:absolute;
+			 display:flex;
+			 align-items:center;
+			 white-space:nowrap;
+			 width: 100%;
+			 margin-left:20px;
+			 margin-top:2px;
+			 gap:8px;
+			}
+			`}
+			</style>
+			<aside className={'top-0'}>
+				{children}
+			</aside>
+		</>)
+}
 const MemoInput = (props: ComponentProps<'textarea'>) => {
 	const {maxLength = 200, onChange, placeholder} = props;
 	const id = useId()
@@ -1518,7 +1838,7 @@ const MemoInput = (props: ComponentProps<'textarea'>) => {
 	return <div className={'*:not-first:mt-2'}>
 		<Textarea placeholder={placeholder} className={'min-h-[120px]'} value={value} onChange={oC}
 		          maxLength={maxLength} id={id} />
-		<p id="«r2q»-description" className="text-muted-foreground mt-2 text-right text-xs" role="status"
+		<p id="«r2q»-description" className="text-off-foreground mt-2 text-right text-xs" role="status"
 		   aria-live="polite"><span className="tabular-nums">{characterCount}</span>/<span
 			className={'tabular-nums'}>{limit}</span></p>
 	</div>
@@ -1544,21 +1864,25 @@ const HighlightColorPickerItem = ({
 	const {onMouseEnter, onMouseLeave} = useDomCursor({
 		enterCondition: () => (isActive ? null : "FOCUS"),
 	});
+	/**
+	 * after:absolute after:rounded-[1px] after:w-[calc(100%-1px)] after:h-[calc(100%-1px)] after:border-[1px] after:border-solid after:inset-[.5px] after:content-['']
+	 */
 	return (<m.button className={cn(
-		"bg-off-foreground after:border-muted-fg relative h-[12px] w-[16px] border-[1px] border-solid after:absolute after:-top-[3px] after:right-0 after:h-[5.5px] after:w-[calc(100%+6px)] after:origin-[100%_0] after:rotate-[-33deg] after:rounded-[4px] after:border-0 after:border-t-[2px] after:border-b-[2px] after:border-solid after:bg-red-700 after:content-['']",
-		isActive ? "after:block" : "after:hidden", className,)} onClick={onClick} ref={ref} initial={"hidden"}
+		"bg-off-foreground relative h-[12px] w-[16px] border-[1px] border-solid border-transparent data-active:border-muted-background",
+		className,)} onClick={onClick} ref={ref} initial={"hidden"} whileHover={{scale: isActive ? 1 : 1.2}}
+	                  transition={{type: "spring", bounce: 0.25}} whileTap={{scale: isActive ? 1 : 0.9}}
 	                  animate={variant} variants={{
 		hidden: {
 			opacity: 0, scale: 0,
 		}, active: {
-			opacity: 1, scale: 1, borderRadius: 3, borderColor: "oklch(var(--muted-fg)/1)",
+			opacity: 1, scale: 1, borderRadius: 3,
 		}, inactive: {
-			opacity: 1, scale: 1, borderRadius: 2, borderColor: "oklch(var(--muted-fg)/0.001)",
+			opacity: 1, scale: 1, borderRadius: 2,
 		},
 	}} data-active={isActive} onMouseDown={onMouseDown} onMouseUp={onMouseUp} onMouseEnter={onMouseEnter}
 	                  onMouseLeave={onMouseLeave} style={{
 		backgroundColor: `${color ? ("oklch(" + color + "/.9)") : ("var(--color-creamy-white)")}`, ...style,
-	}}
+	}} disabled={isActive}
 	                  {...props}
 	>
 		{children}
@@ -1568,7 +1892,7 @@ const HighlightMenuButton = ({
 	children, className, focusedHighlight = true, ...props
 }: ComponentPropsWithRef<"button"> & { focusedHighlight?: boolean }) => {
 	return (<Button className={cn(
-		"text-faded-black/90 ease-in-out-2 border-muted-black/50 hover:text-piercing-orange hover:[&_path]:fill-piercing-orange z-[10] flex items-center border-0 border-dashed bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] antialiased transition-colors [&_svg]:inline-block [&:nth-of-type(2)_svg]:-left-[0.25px] [&:nth-of-type(3)_svg]:left-[0.5px]",
+		"text-faded-background/90 ease-in-out-2 !border-faded-background/90 hover:text-piercing-orange hover:[&_path]:fill-piercing-orange z-[10] flex items-center border-0 border-dashed bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] antialiased transition-colors [&_svg]:inline-block [&:nth-of-type(2)_svg]:-left-[0.25px] [&:nth-of-type(3)_svg]:left-[0.5px]",
 		className, focusedHighlight ? "border-r-[1px]" : "border-r-[0px]",)}
 	                {...props}
 	>
@@ -1589,28 +1913,28 @@ const MenuButtonCaption = ({
 	</div>);
 };
 const MiniMapItem = ({
-	color = "oklch(var(--creamy-white)/1)", onMouseEnter: onEnter, onMouseLeave: onLeave, style, ...props
-}: ComponentPropsWithRef<"div"> & {
-	color?: string;
-}) => {
+	onMouseEnter: onEnter, onMouseLeave: onLeave, style, ...props
+}: ComponentPropsWithRef<"div">) => {
 	const {onMouseEnter, onMouseLeave} = useDomCursor({
 		onEnter, onLeave,
 	});
+	const color = useHighlighter(r => r.currentColor)
 	return (<div
 		className="border-foreground/20 ease-out-power2 pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] transition-all duration-200 hover:-top-[3px] hover:h-[10px]"
 		{...props} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
-		style={{backgroundColor: color, ...style}}></div>);
+		style={{backgroundColor: `color-mix(in oklch,oklch(${HighlightPalette[color]}/1) 85%,var(--color-faded-white))`, ...style}}></div>);
 };
 const MiniMap = ({
 	highlightMap, scaleRatio, ...props
 }: ComponentPropsWithoutRef<"div"> & {
 	highlightMap: Array<{
-		y: number; color: string; top: number;
+		y: number; top: number;
 	}>; scaleRatio: number;
 }) => {
+	const currentColor = useHighlighter(r => r.currentColor)
 	const mapBackdropRef = useRef<HTMLDivElement>(null!);
 	const mapTrackRef = useRef<HTMLDivElement>(null!);
-	const [highMaps, setHighMaps] = useState<ReactElement[]>([]);
+	const highMaps = useRef<HTMLDivElement[]>([]);
 	const lastResize = useWindowResize({
 		detectVisibilityChange: false, detectHeightChange: true,
 	});
@@ -1618,16 +1942,11 @@ const MiniMap = ({
 	const [scale, setScale] = useState(1);
 	useEffect(() => {
 		setScale(scaleRatio);
-		mapBackdropRef.current.style.transform = `scaleY(${scaleRatio})`;
 	}, [lastResize, scaleRatio]);
-	useEffect(() => {
-		setHighMaps(highlightMap.map((e, t) => (<MiniMapItem onClick={() => {
-			lenis?.scrollTo(e.y - 100);
-		}} key={t} color={e.color} style={{transform: `translateY(${e.y * scale}px)`}} />)),);
-	}, [highlightMap, lenis, scale]);
+
 	useGSAP(() => {
-		highMaps.forEach((e, t) => {
-			const y = highlightMap[t]?.y;
+		highMaps.current.forEach((e, t) => {
+			const y = highlightMap[t]?.top;
 			if (!y) return;
 			gsap.to(e, {
 				translateY: y * scale, duration: 0.1, ease: "power2.inOut",
@@ -1640,7 +1959,11 @@ const MiniMap = ({
 		{...props}
 	>
 		<div ref={mapBackdropRef} className="absolute h-full w-full origin-[100%_0]"></div>
-		{highMaps}
+		{highlightMap.map((e, t) => (<MiniMapItem ref={el => {
+			(el && (highMaps.current[t] = el))
+		}} onClick={() => {
+			lenis?.scrollTo(e.y - 250);
+		}} key={'highMap' + t} color={currentColor} style={{transform: `translateY(${e.top}px)`}} />))}
 	</div>);
 };
 const PrevNext = ({
@@ -1686,9 +2009,7 @@ const PrevNext = ({
 				}
 			};
 		})();
-
 		window.addEventListener("scroll", throttledScroll);
-
 		return () => {
 			window.removeEventListener("scroll", throttledScroll);
 		};
@@ -1751,223 +2072,3 @@ const PrevNext = ({
 			}} />
 	</div>);
 };
-/**
-
-  const onShowHandler = useCallback(() => {
-	const prev = menuPrevRange.current
-	const cur = document.getSelection()?.getRangeAt(0)
-	if (!cur) return
-	const current = cur
-	if (!prev) {
-	  menuPrevRange.current = current
-	  return
-	}
-	if (isSame(prev, current)) {
-	  menuRangeSame.current++
-	  if (menuRangeSame.current > 3 && highlighter.isAndroid) {
-		const sel = document.getSelection()?.getRangeAt(0)
-		menuRangeSame.current = 0
-		sel && ((rangeKeep.current = sel), setShowMenu(true))
-	  }
-	} else {
-	  setTouchMove(true)
-	}
-	menuPrevRange.current = current
-  }, [setTouchMove])
-  const showContextMenuHandler = useCallback(() => {
-	const range = rangeKeep.current
-	if (!range) return
-
-	const id = highlighter.getId(range)
-	if (id) {
-	  const srcRange = highlighter.get({ chk: id })
-	  if (srcRange) {
-		if (!isSame(srcRange, range) && isIntersect(srcRange, range)) {
-		  return
-		}
-	  }
-	} else if (highlighter.isIntersected(range)) {
-	  return
-	}
-	setRender(true)
-  }, [setRender, onShowHandler])
-  const hideContextMenuHandler = useCallback(
-	(removeRange: boolean = false) => {
-	  menuShowId.current = null
-	  menuTrackId.current && clearInterval(menuTrackId.current)
-	  if (removeRange) document.getSelection()?.removeAllRanges()
-	},
-	[setRender],
-  )
-
-  const touchEndHandler = useCallback(
-	(e) => {
-	  setTouchMove(false)
-	},
-	[setTouchMove],
-  )
-  const mouseUpHandler = useCallback(
-	(e) => {
-	  setTouchMove(false)
-	},
-	[setTouchMove],
-  )
-  const onClickHandler = useCallback((e) => {
-	if (e.target.closest(".rp-article")) {
-	  return
-	}
-	document.getSelection()?.removeAllRanges()
-  }, [])
-
-  const lengthWarn = useRef<string | null | number>(null!)
-  const selectionHandler = useCallback(
-	(e) => {
-	  if (!containerRef.current) {
-		return
-	  }
-	  setTouchMove(true)
-	  let range: null | Range = null
-	  const selected = document.getSelection()
-	  if (!selected || selected.isCollapsed || selected.type !== "Range") {
-		setShowMenu(false)
-		return
-	  }
-	  range = selected.getRangeAt(0)
-	  if (
-		!range ||
-		range.collapsed ||
-		!containerRef.current.contains(range.commonAncestorContainer)
-	  ) {
-		setShowMenu(false)
-		return
-	  }
-	  const content = getText(range)
-	  if (content.length < 3 || content.length > highlighter.MAXLEN) {
-		if (content.length > highlighter.MAXLEN) {
-		  e.stopPropagation()
-
-		  if (!lengthWarn.current) {
-			lengthWarn.current = toast.warning("Too long to highlight", {
-			  onAutoClose: () => {
-				lengthWarn.current = null
-			  },
-			  onDismiss: () => {
-				lengthWarn.current = null
-			  },
-			  position: "bottom-center",
-			  style: {
-				backgroundColor: "oklch(var(--rouge-400)/1)",
-				color: "oklch(var(--rouge-50)/1)",
-			  },
-			})
-		  }
-		}
-		setShowMenu(false)
-		return
-	  }
-
-	  rangeKeep.current = range
-	  !menuShowId.current && (menuShowId.current = Date.now())
-	},
-	[setShowMenu],
-  )
-  useEffect(() => {
-	if (showMenu) {
-	  showContextMenuHandler()
-	} else {
-	  hideContextMenuHandler()
-	}
-  }, [showMenu])
-  const onScrollHandler = useCallback(() => {
-	if (menu.current) {
-	  rangeKeep.current && setMenuPosition(rangeKeep.current, menu.current)
-	}
-  }, [])
-  useEffect(() => {
-	document.addEventListener("selectionchange", selectionHandler)
-	// document.addEventListener("click", onClickHandler);
-
-	return () => {
-	  // document.removeEventListener("click", onClickHandler);
-	  document.removeEventListener("selectionchange", selectionHandler)
-	}
-  }, [])
-const applyHighlight = (t: ClientRange) => {
-	  const { text: a } = t.selection;
-	  const n = containerRef.current.textContent?.indexOf(a) || 0;
-	  const i = n + a.length;
-	  if (n === -1) {
-		return;
-	  }
-	  const o = findTextNode(containerRef.current, n);
-	  const s = findTextNode(containerRef.current, i);
-	  const r = rangey.createRange();
-	  r.setStart(o.node, o.offset);
-	  r.setEnd(s.node, s.offset);
-	  const l = containerRef.current.querySelectorAll(".highlighted");
-	  const h: Element[] = [];
-	  e.applyToRange(r);
-	  const d = containerRef.current.querySelectorAll(".highlighted");
-	  d.forEach((e) => {
-		if (!Array.from(l).includes(e)) {
-		  h.push(e);
-		}
-	  });
-	  gsap.to(h, {
-		backgroundImage: `linear-gradient(to left, ${t.color} 0%,${t.color} 50%)`,
-		onComplete: () => {
-		  h.forEach((e) => {
-			(e as HTMLElement).addEventListener("click", handleHighlightClick);
-		  });
-		},
-		duration: 0.2,
-		ease: "power2.inOut",
-	  });
-
-	  const c: HighlightedRange = {
-		range: r,
-		els: h,
-		color: t.color,
-		selection: {
-		  text: a.toString(),
-		  before: "",
-		  after: "",
-		},
-		path: pathName,
-		reference: t.reference,
-	  };
-	  const { startOffset, endOffset, startContainer, endContainer } = r;
-	  if (startContainer.nodeType === 3 && (startContainer as Text).data) {
-		c.selection.before = (startContainer as Text).data.substring(
-		  startOffset - 10,
-		  startOffset,
-		);
-	  } else if (
-		startContainer.previousSibling &&
-		(startContainer.previousSibling as Text).data
-	  ) {
-		c.selection.before = (
-		  startContainer.previousSibling as Text
-		).data.substring(
-		  (startContainer.previousSibling as Text).data.length - 10,
-		);
-	  }
-	  if (endContainer.nodeType === 3 && (endContainer as Text).data) {
-		c.selection.after = (endContainer as Text).data.substring(
-		  endOffset,
-		  endOffset + 10,
-		);
-	  } else if (
-		endContainer.nextSibling &&
-		(endContainer.nextSibling as Text).data
-	  ) {
-		c.selection.after = (endContainer.nextSibling as Text).data.substring(
-		  0,
-		  10,
-		);
-	  }
-	  setHighlightIntializing(true);
-	  setHighlights((e) => [...e, c]);
-	};
-
- */
