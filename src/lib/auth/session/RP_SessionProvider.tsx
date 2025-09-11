@@ -1,13 +1,5 @@
 "use client";
-import {
-	createContext,
-	type ReactNode,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import {createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState,} from "react";
 import {authClient} from "../client";
 import type {RP_SessionData, SessionType} from "./sessionType";
 import {useStore} from "zustand";
@@ -44,18 +36,14 @@ export type RP_SessionActions = {
 		};
 	}) => void;
 	addBookmark: ({
-		collection,
-		id,
+		collection, id,
 	}: {
-		collection: Bookmark["target"]["relationTo"];
-		id: Bookmark["target"]["value"];
+		collection: Bookmark["target"]["relationTo"]; id: Bookmark["target"]["value"];
 	}) => void;
 	deleteBookmark: ({
-		collection,
-		id,
+		collection, id,
 	}: {
-		collection: Bookmark["target"]["relationTo"];
-		id: Bookmark["target"]["value"];
+		collection: Bookmark["target"]["relationTo"]; id: Bookmark["target"]["value"];
 	}) => void;
 	getBookmarks: ({
 		collection,
@@ -63,18 +51,14 @@ export type RP_SessionActions = {
 		collection: Bookmark["target"]["relationTo"];
 	}) => Bookmark["target"]["value"][];
 	isBookmarked: ({
-		collection,
-		id,
+		collection, id,
 	}: {
-		collection: Bookmark["target"]["relationTo"];
-		id: Bookmark["target"]["value"];
+		collection: Bookmark["target"]["relationTo"]; id: Bookmark["target"]["value"];
 	}) => boolean;
 	getUser: (id: string) => Promise<RP_SessionUser | null>;
 	setUser: (user: Partial<RP_SessionUser>) => void;
 	setOnboarded: (onboarded: boolean) => void;
-	setNotifications: (
-		notifications: SyncedNotification[] | SyncedNotification,
-	) => void;
+	setNotifications: (notifications: SyncedNotification[] | SyncedNotification,) => void;
 	setPortrait: (portrait: string | null) => void;
 	setUsername: (username: string) => void;
 	setSlug: (slug: string) => void;
@@ -91,81 +75,58 @@ export type RP_SessionActions = {
 	setUpdatedAt: (updatedAt: Date) => void;
 };
 export type RP_LocalSession = RP_SessionUser & RP_SessionActions;
-const createSessionStore = (
-	init: RP_SessionUser = {
-		id: null!,
-		email: null!,
-		name: null!,
-		role: null!,
-		twoFactorEnabled: false,
-		bookmarks: {
-			posts: [],
-			userMedia: [],
-			delta: [],
-			profile: [],
-			albums: [],
-			tracks: [],
-			playlists: [],
-			users: [],
-		},
-		banned: false,
-		displayUsername: null!,
-		emailVerified: false,
-		image: null!,
-		firstName: "",
-		lastName: "",
-		onboarded: false,
-		collection: null!,
-		notifications: [],
-		following: {count: 0, docs: []},
-		followers: {count: 0, docs: []},
-		portrait: null!,
-		bio: "",
-		username: null!,
-		slug: null!,
+const createSessionStore = (init: RP_SessionUser = {
+	id: null!,
+	email: null!,
+	name: null!,
+	role: null!,
+	twoFactorEnabled: false,
+	bookmarks: {
+		posts: [], userMedia: [], delta: [], profile: [], albums: [], tracks: [], playlists: [], users: [],
 	},
-) => {
+	banned: false,
+	displayUsername: null!,
+	emailVerified: false,
+	image: null!,
+	firstName: "",
+	lastName: "",
+	onboarded: false,
+	collection: null!,
+	notifications: [],
+	following: {count: 0, docs: []},
+	followers: {count: 0, docs: []},
+	portrait: null!,
+	bio: "",
+	username: null!,
+	slug: null!,
+},) => {
 	return createStore<RP_LocalSession>()((set, get) => ({
-		...init,
-		setBookmarks: (bookmarks) =>
-			set((state) => {
-				const collections = Object.keys(
-					bookmarks,
-				) as Bookmark["target"]["relationTo"][];
-				const bk = state.bookmarks;
-				collections.forEach((collection) => {
-					bk[collection] = bookmarks[collection];
-				});
-				return {...state, bookmarks: bk};
-			}),
-		addBookmark: ({collection, id}) => {
+		...init, setBookmarks: (bookmarks) => set((state) => {
+			const collections = Object.keys(bookmarks,) as Bookmark["target"]["relationTo"][];
+			const bk = state.bookmarks;
+			collections.forEach((collection) => {
+				bk[collection] = bookmarks[collection];
+			});
+			return {...state, bookmarks: bk};
+		}), addBookmark: ({collection, id}) => {
 			set((state) => ({
-				...state,
-				bookmarks: {
-					...state.bookmarks,
-					[collection]: [...state.bookmarks[collection], id],
+				...state, bookmarks: {
+					...state.bookmarks, [collection]: [...(state.bookmarks?.[collection] || []), id],
 				},
 			}));
-		},
-		deleteBookmark: ({collection, id}) => {
+		}, deleteBookmark: ({collection, id}) => {
 			set((state) => ({
-				...state,
-				bookmarks: {
-					...state.bookmarks,
-					[collection]: state.bookmarks[collection].filter((i) => i !== id),
+				...state, bookmarks: {
+					...state.bookmarks, [collection]: (state.bookmarks?.[collection] || []).filter((i) => i !== id),
 				},
 			}));
-		},
-		getBookmarks: ({collection}) => {
-			return get().bookmarks[collection];
-		},
-		isBookmarked: ({collection, id}) => {
-			return get().bookmarks[collection].includes(id);
-		},
-		getUser: async (id: string) => {
+		}, getBookmarks: ({collection}) => {
+			return get().bookmarks?.[collection] || [];
+		}, isBookmarked: ({collection, id}) => {
+			return get().bookmarks[collection]?.includes(id) || false;
+		}, getUser: async (id: string) => {
 			const res = await fetch(`/api/users/${id}/details`, {
-				method: "POST",
-				credentials: "include",
+				method: "POST", credentials: "include",
 			});
 			if (!res.ok) {
 				return null;
@@ -174,101 +135,70 @@ const createSessionStore = (
 				set((state) => resJson.user, true);
 				return get();
 			}
-		},
-		setUser: (user) => {
+		}, setUser: (user) => {
 			set((state) => ({
-				...state,
-				...user,
+				...state, ...user,
 			}));
-		},
-		setOnboarded: (onboarded) => {
+		}, setOnboarded: (onboarded) => {
 			set((state) => ({
-				...state,
-				onboarded,
+				...state, onboarded,
 			}));
-		},
-		setNotifications: (notifications) => {
+		}, setNotifications: (notifications) => {
 			set((state) => {
-				const n = Array.isArray(notifications)
-					? notifications
-					: [notifications];
+				const n = Array.isArray(notifications) ? notifications : [notifications];
 				return {
-					...state,
-					notifications: n,
+					...state, notifications: n,
 				};
 			});
-		},
-		setPortrait: (portrait) => {
+		}, setPortrait: (portrait) => {
 			set((state) => ({
-				...state,
-				portrait: portrait!,
+				...state, portrait: portrait!,
 			}));
-		},
-		setUsername: (username) => {
+		}, setUsername: (username) => {
 			set((state) => ({
-				...state,
-				username,
+				...state, username,
 			}));
-		},
-		setSlug: (slug) => {
+		}, setSlug: (slug) => {
 			set((state) => ({
-				...state,
-				slug,
+				...state, slug,
 			}));
-		},
-		setDisplayUsername: (displayUsername) => {
+		}, setDisplayUsername: (displayUsername) => {
 			set((state) => ({
-				...state,
-				displayUsername,
+				...state, displayUsername,
 			}));
-		},
-		setBanned: (banned) => {
+		}, setBanned: (banned) => {
 			set((state) => ({
-				...state,
-				banned,
+				...state, banned,
 			}));
-		},
-		setEmailVerified: (emailVerified) => {
+		}, setEmailVerified: (emailVerified) => {
 			set((state) => ({
-				...state,
-				emailVerified,
+				...state, emailVerified,
 			}));
-		},
-		setImage: (image) => {
+		}, setImage: (image) => {
 			set((state) => ({
-				...state,
-				image,
+				...state, image,
 			}));
-		},
-		setName: (name) => {
+		}, setName: (name) => {
 			set((state) => ({
-				...state,
-				name,
+				...state, name,
 			}));
-		},
-		setFirstName: (firstName) => {
+		}, setFirstName: (firstName) => {
 			set((state) => ({
-				...state,
-				firstName,
+				...state, firstName,
 			}));
-		},
-		setLastName: (lastName) => {
+		}, setLastName: (lastName) => {
 			set((state) => ({
-				...state,
-				lastName,
+				...state, lastName,
 			}));
-		},
-		setEmail: (email) => {
+		}, setEmail: (email) => {
 			set((state) => ({
-				...state,
-				email,
+				...state, email,
 			}));
 		},
 
 		setUpdatedAt: (updatedAt) => {
 			set((state) => ({
-				...state,
-				updatedAt,
+				...state, updatedAt,
 			}));
 		},
 	}));
@@ -282,7 +212,7 @@ export const RP_SessionProvider = ({children}: { children: ReactNode }) => {
 	const sessionRef = useRef<SessionAPI>(null!);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const [localSession, setLocalSession] = useState<RP_SessionData | null>(null);
+	const [localSession, setLocalSession] = useState<Pick<RP_SessionData, 'user' | 'session'> | null>(null);
 	if (!sessionRef.current) {
 		sessionRef.current = createSessionStore();
 	}
@@ -290,11 +220,9 @@ export const RP_SessionProvider = ({children}: { children: ReactNode }) => {
 
 	const getUser = useCallback(async (id: string): Promise<GotUser | null> => {
 		const res = await fetch(`/api/users/${encodeURIComponent(id)}/details`, {
-			method: "GET",
-			headers: {
+			method: "GET", headers: {
 				"Content-Type": "application/json",
-			},
-			credentials: "include",
+			}, credentials: "include",
 		});
 		if (!res.ok) {
 			return null;
@@ -303,47 +231,37 @@ export const RP_SessionProvider = ({children}: { children: ReactNode }) => {
 			return resJson.user as GotUser;
 		}
 	}, []);
-	const setUserDetails = useCallback(
-		async (
-			data: Pick<RP_SessionData, "user" | "session">,
-			isPending: RP_SessionData["isPending"],
-			refetch: RP_SessionData["refetch"],
-			error: RP_SessionData["error"],
-		): Promise<void> => {
+	const fetchDetails = useCallback(
+		async (data: Pick<RP_SessionData, "user">,): Promise<RP_SessionData['user'] | null> => {
 			const user = await getUser(data.user.id);
 			if (user) {
-				setLocalSession({
-					...data,
-					user: {
-						name: data.user.name,
-						twoFactorEnabled: data.user?.twoFactorEnabled,
-						banned: data.user?.banned,
-						emailVerified: data.user.emailVerified,
-						email: data.user.email,
+				const a = {
+					name: data.user.name,
+					twoFactorEnabled: data.user?.twoFactorEnabled || false,
+					banned: data.user?.banned || false,
+					emailVerified: data.user.emailVerified,
+					email: data.user.email,
 
-						...user,
-						portrait: user.portrait!,
-					},
-					isPending,
-					refetch,
-					error,
-				});
+					...user,
+					portrait: user.portrait!,
+				} satisfies RP_SessionData['user']
+				return a;
 			}
-		},
-		[getUser, setLocalSession],
-	);
+			return null;
+		}, [getUser],);
 	useEffect(() => {
-		if (data) {
-			setUserDetails(
-				{...data, user: {...data.user, role: data.user.role as RP_Roles}},
-				isPending,
-				refetch,
-				error,
-			);
-		} else {
-			setLocalSession(null);
+		if (!isPending) {
+			if (data) {
+				fetchDetails({user: {...data.user, role: data.user.role as RP_Roles}}).then((r) => {
+					r && setLocalSession({
+						...data, user: r,
+					});
+				});
+			} else {
+				setLocalSession(null);
+			}
 		}
-	}, [data, refetch, isPending, error, setUserDetails]);
+	}, [data, isPending, fetchDetails]);
 	useEffect(() => {
 		if (!sessionRef.current) {
 			return;
@@ -358,8 +276,7 @@ export const RP_SessionProvider = ({children}: { children: ReactNode }) => {
 				link: localSession.user.link || "",
 				onboarded: localSession.user.onboarded || false,
 			}));
-			console.log("state set:", localSession);
-			console.log("current sessionRef:", sessionRef.current);
+
 		} else {
 		}
 	}, [localSession]);
@@ -368,15 +285,11 @@ export const RP_SessionProvider = ({children}: { children: ReactNode }) => {
 	 * Function to refresh the session
 	 */
 
-	return (
-		<SessionContext.Provider value={sessionRef.current}>
+	return (<SessionContext.Provider value={sessionRef.current}>
 			{children}
-		</SessionContext.Provider>
-	);
+	</SessionContext.Provider>);
 };
-export const useRPSession = <T, >(
-	selector: (store: RP_LocalSession) => T,
-): T => {
+export const useRPSession = <T, >(selector: (store: RP_LocalSession) => T,): T => {
 	const ctx = useContext(SessionContext);
 	if (!ctx) {
 		throw new Error("useRPSession must be used within SessionContext Provider");
