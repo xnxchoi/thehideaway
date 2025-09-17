@@ -1,13 +1,10 @@
 "use client";
 
-import {useRPStore} from "@/providers/RP_Pro";
-import {useRouter} from "next/navigation";
 import * as m from "motion/react-m";
+import { useTransitionRouter } from "next-transition-router";
 
 export const Redirect = ({href}: { href: string }) => {
-	const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
-	const router = useRouter();
-	setPageIsTransitioning(true);
+	const router = useTransitionRouter();
 	setTimeout(() => {
 		router.push(href);
 	}, 300);

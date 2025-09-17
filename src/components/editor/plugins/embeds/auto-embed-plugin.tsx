@@ -174,13 +174,15 @@ const debounce = (callback: (text: string) => void, delay: number) => {
 	}
 }
 
+interface EmbedModalProps {
+	embedConfig: CustomEmbedConfig
+	onClose: () => void
+}
+
 export function AutoEmbedDialog({
 	embedConfig,
 	onClose,
-}: {
-	embedConfig: CustomEmbedConfig
-	onClose: () => void
-}): JSX.Element {
+}:EmbedModalProps): JSX.Element {
 	const [text, setText] = useState("")
 	const [editor] = useLexicalComposerContext()
 	const [embedResult, setEmbedResult] = useState<EmbedMatchResult | null>(null)

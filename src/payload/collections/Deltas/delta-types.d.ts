@@ -1,8 +1,9 @@
-import type {Delta} from "@/payload-types"
+import type {Category, Delta, Tag} from "@/payload-types"
 import type {ArticleOverview, AuthorOverview} from "../Posts/post-types"
 
 export type DeltaOverview = Omit<ReqDelta, "author"> & {
 	author: AuthorOverview
+	tags: TagOverview[];
 
 	bookmarks: string[]
 	bookmarksCount: number
@@ -21,6 +22,7 @@ export type ReqDelta = Pick<Delta, "source" | "id" | "title" | "locked" | "conte
 		title: string
 		id: string
 	}
+	tags:TagOverview[] | undefined|null;
 	publishedAt: string
 
 	slug: string
@@ -30,7 +32,6 @@ export type ReqDelta = Pick<Delta, "source" | "id" | "title" | "locked" | "conte
 export type FocusedDelta = DeltaOverview &
 	Pick<
 		Delta,
-		| "tags"
 		| "relatedDeltas"
 		| "updatedAt"
 		| "createdAt"
@@ -41,3 +42,8 @@ export type SingleDelta = Omit<FocusedDelta, "author" | "relatedDeltas"> & {
 	relatedDeltas: (DeltaOverview | ArticleOverview)[]
 	queuedIDs: string[]
 }
+export type TagOverview = Pick<NonNullable<Tag>,
+	| 'title'
+	| 'id'
+	| 'slug'>
+export type CatOverview = Pick<Category, "title" | "id" | "slug">

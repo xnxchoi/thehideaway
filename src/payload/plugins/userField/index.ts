@@ -1,11 +1,14 @@
-import {
-	type CheckboxField,
-	type CollectionSlug,
+import { User } from "@/payload-types";
+import type {
+	CheckboxField,
+	CollectionConfig,
+	CollectionSlug,
+	DateField,
 	JoinField,
 	Plugin,
-	type SelectField,
-	type TabsField,
-	type TextField,
+	SelectField,
+	TabsField,
+	TextField,
 } from "payload";
 
 export type UserFieldOrganizerConfig = {
@@ -15,15 +18,34 @@ export type UserFieldOrganizerConfig = {
 export const userFieldOrganizerPlugin =
 	(pluginOptions: UserFieldOrganizerConfig): Plugin =>
 		(incomingConfig) => {
-			const config = {...incomingConfig};
+			const config = { ...incomingConfig };
 			config.collections = [...(config.collections || [])];
 			if (pluginOptions.enabled === false) {
 				return config;
 			}
-			const userCollection = config.collections.find((c) => c.slug === "users");
+			const collections = [...config.collections].map((collection) => {
+				const fields = [...(collection.fields || [])].map(f => {
+					if (f.type === 'date') {
+						return Object.entries(f).reduce((acc, [key, value]) => {
+							if (typeof value === 'function' && (key.startsWith('on'))) return acc;
+							return {
+								...acc,
+								[key]: value
+							}
+						}, {} as DateField)
+					}
+					return f
+				});
+				const r = {
+					...collection,
+					fields
+				}
+				return r;
+			}) satisfies CollectionConfig[]
+			const userCollection = collections.find((c) => c.slug === "users");
 			if (userCollection) {
 				const userFields = [...(userCollection.fields || [])];
-				const fieldsToShow = [
+				const fieldsToShow: ((keyof User) | 'foto' | 'dynamicLabel' | 'managePasskeys')[] = [
 					"foto",
 					"bio",
 					"location",
@@ -37,7 +59,7 @@ export const userFieldOrganizerPlugin =
 					"managePasskeys",
 					"meta",
 				];
-				const fieldsToModify = [
+				const fieldsToModify: ((keyof User) | 'foto' | 'dynamicLabel' | 'managePasskeys')[] = [
 					"role",
 					"banned",
 					"username",
@@ -49,19 +71,96 @@ export const userFieldOrganizerPlugin =
 				userFields.forEach((field) => {
 					if (
 						("name" in field &&
-							!fieldsToShow.includes(field.name) &&
-							!fieldsToModify.includes(field.name) &&
+							!(fieldsToShow as string[]).includes(field.name) &&
+							!(fieldsToModify as string[]).includes(field.name) &&
 							field.name !== "id") ||
 						!("name" in field)
 					) {
-						const fieldAdmin = {
+						let fieldAdmin = {
 							...field.admin,
-							condition: (data, siblingData, {user}) => {
-								if (!user) return false;
-								if (user.role === "admin") return true;
-								return false;
-							},
 						};
+						switch (field.type) {
+							case "textarea":
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Textarea/index.tsx#AdminOnlyTextareaField",
+									},
+								}
+								break;
+							case 'text':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Text/index.tsx#AdminOnlyTextField",
+									},
+								}
+								break;
+							case 'select':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Select/index.tsx#AdminOnlySelectField",
+									},
+								}
+								break;
+							case 'checkbox':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
+									},
+								}
+								break;
+							case 'number':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Number/index.tsx#AdminOnlyNumberField",
+									},
+								}
+								break;
+							case 'array':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Array/index.tsx#AdminOnlyArrayField",
+									},
+								}
+								break;
+							case 'email':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Email/index.tsx#AdminOnlyEmailField",
+									},
+								}
+								break;
+							case 'json':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Json/index.tsx#AdminOnlyJSONField",
+									},
+								}
+								break;
+
+							case 'relationship':
+								fieldAdmin = {
+									...fieldAdmin,
+									components: {
+										Field: "src/payload/fields/AdminOnly/Relationship/index.tsx#AdminOnlyRelationshipField",
+									},
+								}
+								break;
+							default:
+								fieldAdmin = {
+									...fieldAdmin,
+									readOnly: true,
+								}
+
+						}
+
 
 						field.admin = fieldAdmin;
 					}
@@ -103,7 +202,7 @@ export const userFieldOrganizerPlugin =
 					access: {
 						...role.access,
 						read: () => true,
-						update: ({req}) => {
+						update: ({ req }) => {
 							if (req.context.overrideAccess === true) return true;
 							if (req.user?.role === "admin") return true;
 							return false;
@@ -120,9 +219,7 @@ export const userFieldOrganizerPlugin =
 					admin: {
 						...onboarded.admin,
 						components: {
-							Field: {
-								path: "src/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
-							},
+							Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
 						},
 					},
 					required: true,
@@ -130,7 +227,7 @@ export const userFieldOrganizerPlugin =
 					access: {
 						...onboarded.access,
 						read: () => true,
-						update: ({req}) => {
+						update: ({ req }) => {
 							if (req.context.overrideAccess === true) return true;
 							if (req.user?.role === "admin") return true;
 							return false;
@@ -148,15 +245,13 @@ export const userFieldOrganizerPlugin =
 					admin: {
 						...banned.admin,
 						components: {
-							Field: {
-								path: "src/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
-							},
+							Field: 	"@/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
 						},
 					},
 					access: {
 						...banned.access,
 						read: () => true,
-						update: ({req, id}) => {
+						update: ({ req, id }) => {
 							if (req.context.overrideAccess === true) return true;
 							const user = req.user;
 							if (user?.role === "admin") return true;
@@ -171,7 +266,7 @@ export const userFieldOrganizerPlugin =
 				const newUsername: TextField = {
 					...username,
 					required: true,
-					defaultValue: ({req}) => {
+					defaultValue: ({ req }) => {
 						return "";
 					},
 					admin: {
@@ -189,10 +284,22 @@ export const userFieldOrganizerPlugin =
 				const emailVerified = userFields.find(
 					(f) => "name" in f && f.name === "emailVerified",
 				) as CheckboxField;
-				const newEmailVerified = {
+				const newEmailVerified: CheckboxField = {
 					...emailVerified,
 					required: true,
 					defaultValue: false,
+					access: {
+						update: ({ req }) => {
+							if (req.context.overrideAccess === true) return true;
+							if (req.user?.role === "admin") return true;
+							return false;
+						},
+					},
+					admin: {
+						components: {
+							Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
+						}
+					}
 				};
 				const name = userFields.find(
 					(f) => "name" in f && f.name === "name",
@@ -206,7 +313,8 @@ export const userFieldOrganizerPlugin =
 				const restFields = userFields.filter(
 					(f) =>
 						!("name" in f) ||
-						(!fieldsToShow.includes(f.name) && !fieldsToModify.includes(f.name)),
+						(!(fieldsToShow as string[]).includes(
+							f.name) && !(fieldsToModify as string[]).includes(f.name)),
 				);
 				const firstTab: TabsField["tabs"][number] = {
 					label: "Personal Information",
@@ -215,49 +323,48 @@ export const userFieldOrganizerPlugin =
 						slug,
 						{
 							type: "row",
-							fields: [{...firstName}, {...lastName}],
+							fields: [{ ...firstName }, { ...lastName }],
 						},
-						{...newUsername},
-						{...dynamicLabel},
-						{...bio},
-						{...location},
-						{...link},
+						{ ...newUsername },
+						{ ...dynamicLabel },
+						{ ...bio },
+						{ ...location },
+						{ ...link },
 					],
 				};
 				const secondTab: TabsField["tabs"][number] = {
 					label: "Profile",
-					fields: [{...profile}],
+					fields: [{ ...profile }],
 				};
 				const thirdTab: TabsField["tabs"][number] = {
 					label: "Account & Security",
 					fields: [
-						{...email},
-						{...managePasskeys},
-						{...newRole},
-						{...newOnboarded},
-						{...newBanned},
-						{...newTwoFactorEnabled},
-						{...newEmailVerified},
-						{...newName},
+						{ ...email },
+						{ ...managePasskeys },
+						{ ...newRole },
+						{ ...newOnboarded },
+						{ ...newBanned },
+						{ ...newTwoFactorEnabled },
+						{ ...newEmailVerified },
+						{ ...newName },
 						...restFields,
 					],
 				};
 				const fourthTab: TabsField["tabs"][number] = {
 					label: "Socials",
-					fields: [{...meta}],
+					fields: [{ ...meta }],
 				};
 				const tabField: TabsField = {
 					type: "tabs",
 					tabs: [firstTab, secondTab, thirdTab, fourthTab],
 					admin: {
 						components: {
-							Field: {
-								path: "src/payload/fields/Tabs/index.tsx",
-							},
+							Field: "@/payload/fields/Tabs/index.tsx",
 						},
 					},
 				};
 				userCollection.fields = [tabField];
 			}
+			config.collections = [...collections];
 			return config;
 		};

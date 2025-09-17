@@ -330,7 +330,6 @@ Colors
         transform: rotate(360deg) translate(-50%, -50%);
     }
 }
-
 @theme {
     --color-cold-white: oklch(97.84% 0.0106 243.4);
     --color-cold-black: oklch(10.17% 0.0106 243.4);

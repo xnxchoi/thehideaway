@@ -6,7 +6,6 @@ import {
 	ValidateOptions,
 } from "payload";
 import {DateTime} from "luxon";
-import {Holiday} from "../../payload-types";
 
 export const Holidays: CollectionConfig = {
 	slug: "holidays",

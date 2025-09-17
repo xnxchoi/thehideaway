@@ -209,63 +209,7 @@ declare module "rangy" {
 		nativeRange: Range;
 	}
 
-	interface RangySelection extends Selection {
-		nativeSelection: Selection;
-		rangeCount: number;
-		isCollapsed: boolean;
-		anchorNode: Node | null;
-		anchorOffset: number;
-		focusNode: Node | null;
-		focusOffset: number;
 
-		addRange(range: RangyRange, direction?: Direction | boolean): void;
-
-		getRangeAt(index: number): RangyRange;
-
-		isBackwards(): boolean;
-
-		removeAllRanges(): void;
-
-		removeRange(range: RangyRange): void;
-
-		refresh(checkForChanges?: boolean): any;
-
-		collapse(node: Node, offset: number): void;
-
-		collapseToStart(): void;
-
-		collapseToEnd(): void;
-
-		selectAllChildren(node: Node): void;
-
-		deleteFromDocument(): void;
-
-		toString(): string;
-
-		toHtml(): string;
-
-		getAllRanges(): RangyRange[];
-
-		getNativeTextRange(): Range;
-
-		getSingleRange(range: RangyRange, direction: Direction): any;
-
-		setRanges(ranges: RangyRange[]): any;
-
-		containsNode(node: Node, partial: boolean): boolean;
-
-		getBookmark(containerNode: Node): any;
-
-		moveToBookmark(bookmark: object): any;
-
-		saveRanges(): object;
-
-		restoreRanges(saved: object): any;
-
-		detach(): any;
-
-		inspect(): string;
-	}
 }
 
 export type Direction = | "forward" | "forwards" | "backward" | "backwards" | boolean;

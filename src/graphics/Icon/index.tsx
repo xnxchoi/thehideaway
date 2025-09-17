@@ -1,3 +1,4 @@
+'use client'
 export const Icon = () => {
 	return (
 		<svg width={18} className={"ha-ico"} viewBox="0 0 45 45" fill="currentColor"

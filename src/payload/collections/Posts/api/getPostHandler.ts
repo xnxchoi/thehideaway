@@ -11,8 +11,10 @@ import {
 	SingleArticle,
 } from "../post-types";
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {singlePostSelect} from "@collections/Posts/api/queryBase";
+import {TagOverview} from "@collections/Deltas/delta-types";
 
-export const getPostHandler = cache(
+export const getPostHandler =
 	async ({req}: { req: PayloadRequest }) => {
 		const postSlug = req.routeParams?.slug as string | undefined;
 		console.log("from routeParams", postSlug);
@@ -33,23 +35,7 @@ export const getPostHandler = cache(
 			draft: draft.isEnabled,
 			overrideAccess: true,
 
-			select: {
-				title: true,
-				subtitle: true,
-				content: true,
-				slug: true,
-				relatedPosts: true,
-				category: true,
-				allowList: true,
-				authority: true,
-				author: true,
-				publishedAt: true,
-				locked: true,
-				updatedAt: true,
-				id: true,
-				createdAt: true,
-				image: true,
-			},
+			select: singlePostSelect,
 		}).then((r) => r.docs[0] ?? null).catch((e) => {
 			console.error({
 				message: `Error while retrieving post by slug ${postSlug}`,
@@ -141,6 +127,7 @@ export const getPostHandler = cache(
 			...post,
 			bookmarks: [] as string[],
 			bookmarksCount: 0,
+			tags:post.tags?(post.tags as TagOverview[]):[],
 			id: post.id,
 			slug: post.slug,
 			publishedAt: post.publishedAt,
@@ -150,13 +137,8 @@ export const getPostHandler = cache(
 			queuedIDs: [] as string[],
 			relatedPosts: [] as ArticleOverview[],
 		};
-		const bookmarks = await getPostBookMarks({payload, id: `${post.id}`});
-		if (bookmarks instanceof Error) {
-			console.error({
-				message: `Error while retrieving bookmarks for post ${post.id}`,
-				error: bookmarks,
-			});
-		} else {
+		const bookmarks = await getPostBookMarks({  id: `${post.id}`});
+		if (bookmarks ) {
 			finalPost.bookmarks = bookmarks.bookmarks;
 			finalPost.bookmarksCount = bookmarks.count;
 		}
@@ -189,5 +171,4 @@ export const getPostHandler = cache(
 				}),
 			},
 		);
-	},
-);
+	}

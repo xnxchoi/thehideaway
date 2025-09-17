@@ -1,137 +1,153 @@
 "use client";
-import {useCallback, useEffect, useRef, useState} from "react";
-import {SoundBar} from "../Radio/soundBar";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { SoundBar } from "../Radio/soundBar";
 import * as m from "motion/react-m";
-import {Variants} from "motion/react";
-import {useCursorStore, useMenu, useRPStore} from "@/providers/RP_Pro";
-import {useDomCursor} from "@/components/core/cursorWrapper";
-import {useGSAP} from "@gsap/react";
-import gsap from "gsap";
-import {useRadioStore} from "@/providers/RadioProvider";
+import { Variants } from "motion/react";
+import { useCursorStore, useMenu, useRPStore } from "@/providers/RP_Pro";
+import { useDomCursor } from "@/components/core/cursorWrapper";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import { useRadioStore } from "@/providers/RadioProvider";
 
 type SideNotchProps = {
-	sideDrawer?: boolean;
+  sideDrawer?: boolean;
 };
 export const SideNotch = (props: SideNotchProps) => {
-	const {sideDrawer = false} = props;
-	const navIsOpen = useRPStore((state) => state.navIsOpen);
-	const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
+  const { sideDrawer = false } = props;
+  const navIsOpen = useRPStore((state) => state.navIsOpen);
+  const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
 
-	const setSidebarIsTransitioning = useRPStore(
-		(state) => state.setSideDrawerIsTransitioning,
-	);
-	const isOpen = useRPStore((state) => state.sidebarOpen);
+  const setSidebarIsTransitioning = useRPStore(
+    (state) => state.setSideDrawerIsTransitioning
+  );
+  const isOpen = useRPStore((state) => state.sidebarOpen);
 
-	const setCurTheme = useCursorStore((state) => state.setCursorTheme);
-	const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
-	const onEnter = useCallback(() => {
-		setCurTheme("dark");
-	}, [setCurTheme]);
-	const lastSidebarState = useRef(isOpen);
-	const inited = useRef(false);
-	useEffect(() => {
-		if (navIsOpen) {
-			setSidebarOpen(false);
-		}
-	}, [navIsOpen, setSidebarOpen]);
-	const {left} = useMenu((r) => r.frames);
-	const notchRef = useRef<HTMLDivElement>(null);
-	const viewportWidth = useRPStore((r) => r.viewportWidth);
-	const hasRadio = useRadioStore((r) => r.hasRadio);
-	useGSAP(
-		() => {
-			gsap.to(notchRef.current, {
-				duration: 0.6,
-				delay: 0.3,
-				ease: "power2.inOut",
-				left: sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left,
-			});
-		},
-		{dependencies: [viewportWidth, left]},
-	);
-	const variants: Variants = {
-		hidden: {
-			opacity: 0,
-			x: "-100%",
-		},
-		exit: {
-			opacity: 0,
-			x: "-100%",
-			transition: {
-				type: "tween",
-				duration: 1.2,
-				ease: [0.77, 0.0, 0.175, 1],
-			},
-		},
-		idle: {
-			opacity: 1,
-			x: 0,
-			transition: {
-				type: "tween",
-				duration: 1.2,
-				ease: "easeInOut",
-				delay: 0.6,
-			},
-		},
-		init: {
-			opacity: 1,
-			x: 0,
-			transition: {
-				type: "tween",
-				duration: 1.2,
-				ease: "easeInOut",
-			},
-		},
-	};
+  const setCurTheme = useCursorStore((state) => state.setCursorTheme);
+  const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
+  const onEnter = useCallback(() => {
+    setCurTheme("dark");
+  }, [setCurTheme]);
+  const lastSidebarState = useRef(isOpen);
+  const inited = useRef(false);
+  useEffect(() => {
+    if (navIsOpen) {
+      setSidebarOpen(false);
+    }
+  }, [navIsOpen, setSidebarOpen]);
+  const { left } = useMenu((r) => r.frames);
+  const notchRef = useRef<HTMLDivElement>(null);
+  const viewportWidth = useRPStore((r) => r.viewportWidth);
+  const hasRadio = useRadioStore((r) => r.hasRadio);
+  useGSAP(
+    () => {
+      gsap.to(notchRef.current, {
+        duration: 0.6,
+        delay: 0.3,
+        ease: "power2.inOut",
+        left: sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left
+      });
+    },
+    { dependencies: [viewportWidth, left] }
+  );
+  const variants: Variants = {
+    hidden: {
+      opacity: 0,
+      x: "-100%"
+    },
+    exit: {
+      opacity: 0,
+      x: "-100%",
+      transition: {
+        type: "tween",
+        duration: 1.2,
+        ease: [0.77, 0.0, 0.175, 1]
+      }
+    },
+    idle: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "tween",
+        duration: 1.2,
+        ease: "easeInOut",
+        delay: 0.6
+      }
+    },
+    init: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "tween",
+        duration: 1.2,
+        ease: "easeInOut"
+      }
+    }
+  };
 
-	const getVariant = useCallback((iO: boolean) => {
-		lastSidebarState.current = iO;
-		if (!inited.current) {
-			inited.current = true;
-			return "init";
-		} else {
-			return "idle";
-		}
-	}, []);
-	const [v, setV] = useState("hidden");
-	useEffect(() => {
-		setV(getVariant(isOpen));
-	}, [getVariant, isOpen]);
+  const getVariant = useCallback((iO: boolean) => {
+    lastSidebarState.current = iO;
+    if (!inited.current) {
+      inited.current = true;
+      return "init";
+    } else {
+      return "idle";
+    }
+  }, []);
+  const [v, setV] = useState("hidden");
+  useEffect(() => {
+    setV(getVariant(isOpen));
+  }, [getVariant, isOpen]);
 
-	const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
-	const cursorState = useCursorStore((state) => state.cursorState);
-	const {onMouseEnter, onMouseLeave} = useDomCursor({
-		enterCondition: () => (isOpen ? cursorState || "FOCUS" : "FOCUS"),
-		leaveCondition: () => null,
-	});
-	return (
-		<m.div className="fixed bottom-[80px] h-[24vh] w-[40px] p-0" ref={notchRef}
-		       variants={variants} animate={v} initial={"idle"} exit={{
-			opacity: 0,
-			x: "-100%",
-			transition: {
-				type: "tween",
-				duration: 1.2,
-				ease: [0.77, 0.0, 0.175, 1],
-			},
-		}}>
-			<m.div className={
-				"relative flex h-full w-full items-center justify-center bg-[oklch(var(--n-s-bg)/1)] mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[10px] py-[35px] min-lg:mask-[url(/assets/notch@2x.png)]"
-			} onMouseEnter={onEnter} onMouseLeave={resetCursorTheme}
-			       data-themed="background-color, color">
-				<m.div className={
-					"flex h-full w-full max-w-full flex-col items-center justify-evenly gap-0 overflow-hidden bg-transparent pr-[5px] pl-[0px]"
-				}>
-					<m.span onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
-					        onClick={toggleSideDrawer} style={{writingMode: "sideways-lr"}}
-					        className="z-[100] font-sans text-[12px] font-bold text-[oklch(var(--n-s-fg)/1)]">
-						CTRL
-					</m.span>
-					{hasRadio && <SoundBar />}
-				</m.div>
-			</m.div>
-		</m.div>
-	);
+  const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
+  const cursorState = useCursorStore((state) => state.cursorState);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    enterCondition: () => (isOpen ? cursorState || "FOCUS" : "FOCUS"),
+    leaveCondition: () => null
+  });
+  return (
+    <m.div
+      className="fixed bottom-[80px] h-[24vh] w-[40px] p-0"
+      ref={notchRef}
+      variants={variants}
+      animate={v}
+      initial={"idle"}
+      exit={{
+        opacity: 0,
+        x: "-100%",
+        transition: {
+          type: "tween",
+          duration: 1.2,
+          ease: [0.77, 0.0, 0.175, 1]
+        }
+      }}
+    >
+      <m.div
+        className={
+          "relative flex h-full w-full items-center justify-center bg-[oklch(var(--n-s-bg)/1)] mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[10px] py-[35px] min-lg:mask-[url(/assets/notch@2x.png)]"
+        }
+        onMouseEnter={onEnter}
+        onMouseLeave={resetCursorTheme}
+        data-themed="background-color, color"
+      >
+        <m.div
+          className={
+            "flex h-full w-full max-w-full flex-col items-center justify-evenly gap-0 overflow-hidden bg-transparent pr-[5px] pl-[0px]"
+          }
+        >
+          <m.span
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onClick={toggleSideDrawer}
+            style={{ writingMode: "sideways-lr" }}
+            className="z-[100] font-sans text-[12px] font-bold text-[oklch(var(--n-s-fg)/1)]"
+          >
+            CTRL
+          </m.span>
+          {hasRadio && <SoundBar />}
+        </m.div>
+      </m.div>
+    </m.div>
+  );
 };
 /**
  *

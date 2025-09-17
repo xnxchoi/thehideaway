@@ -1,10 +1,16 @@
-import {getPayload, PaginatedDocs, Payload, Where} from "payload";
+"use server";
+import { getPayload, PaginatedDocs, Where } from "payload";
 
 import configPromise from "@payload-config";
-import {PostsSelect} from "@/payload-types";
-import {ArticleOverview, AuthorSingle, ReqArticle} from "../post-types";
-import {cache} from "react";
-import {getPostBookMarks} from "./getPostBookmarks";
+import { PostsSelect } from "@/payload-types";
+import {
+  ArticleOverview,
+  AuthorOverview,
+  AuthorSingle,
+  ReqArticle
+} from "../post-types";
+import { cache } from "react";
+import { getPostBookMarks } from "./getPostBookmarks";
 
 /**
  * @param limit - The number of posts to return
@@ -15,12 +21,12 @@ import {getPostBookMarks} from "./getPostBookmarks";
  * @param select - The select clause to select the posts
  */
 export type QueryPostOverviewParams = {
-	limit?: number;
-	page?: number;
-	where?: Where;
-	sort?: string;
-	overrideAccess?: boolean;
-	select?: PostsSelect;
+  limit?: number;
+  page?: number;
+  where?: Where;
+  sort?: string | string[];
+  overrideAccess?: boolean;
+  select?: PostsSelect;
 };
 /**
  * A wrapper function to streamline the querying process.
@@ -36,32 +42,31 @@ export type QueryPostOverviewParams = {
  * @todo merge the query into one by setting defaultPopulate config on the {@link Users} collection config
  */
 export const queryPostOverview = async ({
-	limit = 10,
-	page = 1,
-	where = {},
-	sort = "-publishedAt",
-	overrideAccess = true,
-	select = {},
+  limit = 10,
+  page = 1,
+  where = {},
+  sort = ["-updatedAt", "-publishedAt"],
+  overrideAccess = true,
+  select = {}
 }: QueryPostOverviewParams): Promise<ArticleOverview[]> => {
-	// 1) Get the payload instance
-	const payload = await getPayload({config: configPromise});
-	const baseSelect: PostsSelect = {
-		title: true,
-		publishedAt: true,
-		image: true,
-		subtitle: true,
-		slug: true,
-		author: true,
-		locked: true,
-		category: true,
+  // 1) Get the payload instance
+  const baseSelect: PostsSelect = {
+    title: true,
+    publishedAt: true,
+    image: true,
+    subtitle: true,
+    slug: true,
+    tags: true,
+    author: true,
+    locked: true,
+    category: true,
 
-		...select,
-	};
-	// 2) Query for the posts
-	return await queryOverview({
-		payload,
-		params: {limit, page, where, sort, overrideAccess, select: baseSelect},
-	}).then((posts) => posts.docs);
+    ...select
+  };
+  // 2) Query for the posts
+  return await queryOverview({
+    params: { limit, page, where, sort, overrideAccess, select: baseSelect }
+  }).then((posts) => posts.docs);
 };
 
 /**
@@ -79,242 +84,272 @@ export const queryPostOverview = async ({
  * @param select - The select clause to select the posts
  */
 export const paginatedPosts = async (
-	params: QueryPostOverviewParams,
+  params: QueryPostOverviewParams
 ): Promise<PaginatedDocs<ArticleOverview>> => {
-	// 1) Get the payload instance
-	const payload = await getPayload({config: configPromise});
-	return queryOverview({payload, params});
+  // 1) Get the payload instance
+  return queryOverview({ params });
 };
 
-type OveerViewParams = { payload: Payload; params: QueryPostOverviewParams };
+type OveerViewParams = { params: QueryPostOverviewParams };
 export const queryOverview = cache(
-	async ({
-		payload,
-		params: {
-			limit = 10,
-			page = 1,
-			where = {},
-			sort = "-publishedAt",
-			overrideAccess = true,
-			select = {},
-		},
-	}: OveerViewParams): Promise<PaginatedDocs<ArticleOverview>> => {
-		const baseWhere: Where & { and: Where[] } = {
-			and: [
-				{
-					_status: {
-						equals: "published",
-					},
-				},
-			],
-		};
-		for (const [key, value] of Object.entries(where)) {
-			if (key === "and") {
-				baseWhere.and.push(...(value as Where[]));
-			} else if (key === "or") {
-				baseWhere.and.push({
-					or: (value as Where[]).map((w) => ({
-						...w,
-					})),
-				});
-			} else {
-				baseWhere.and.push({[key]: value});
-			}
-		}
-		const baseSelect: PostsSelect = {
-			title: true,
-			publishedAt: true,
-			image: true,
-			subtitle: true,
-			slug: true,
-			author: true,
-			locked: true,
-			category: true,
-			id: true,
-			...select,
-		};
-		// 2) Query for the posts
-		const foundPosts: PaginatedDocs<ReqArticle> = (await payload.find({
-			collection: "posts",
-			limit,
-			page,
-			where: baseWhere,
-			sort,
-			overrideAccess,
-			select: baseSelect,
-		}).catch((e) => {
-			console.error({
-				message: `Error while retrieving post overview`,
-				error: e,
-			});
-			return {
-				docs: [],
-				totalDocs: 0,
-				totalPages: 0,
-				page: 0,
-				hasNextPage: false,
-				hasPrevPage: false,
-				nextPage: 0,
-				prevPage: 0,
-				pagingCounter: 0,
-				limit: 0,
-			};
-		})) as PaginatedDocs<ReqArticle>;
-		// 3) For each post, query for the author info
-		const posts: ArticleOverview[] = (await Promise.all(
-			foundPosts.docs.flatMap(async (post) => {
-				const authorID = post.author;
-				if (!authorID || typeof authorID !== "string") {
-					return [];
-				}
-				const author = await payload.findByID({
-					collection: "users",
-					overrideAccess: true,
-					id: authorID,
-					select: {
-						name: true,
-						slug: true,
-						displayUsername: true,
-					},
-				}).then((r) => {
-					return {
-						...r,
-						displayUsername: r.displayUsername ?? r.name,
-					} as AuthorSingle;
-				}).catch((e) => {
-					console.error({
-						message: `Error while retrieving author info`,
-						error: e,
-					});
-					return null;
-				});
-				if (!author) {
-					return [];
-				}
-				const bookmarks = await getPostBookMarks({payload, id: `${post.id}`});
-				const finalPost: ArticleOverview = {
-					...post,
-					author: author,
-					category: post.category as {
-						title: string;
-						id: string;
-						slug: string;
-					},
-					...(bookmarks instanceof Error
-						? {bookmarks: [] as string[], bookmarksCount: 0}
-						: {
-							bookmarks: bookmarks.bookmarks,
-							bookmarksCount: bookmarks.count,
-						}),
-				};
-				return finalPost;
-			}),
-		)) as ArticleOverview[];
-		const {docs: _, ...rest} = foundPosts;
-		return {
-			docs: posts,
-			...rest,
-		};
-	},
+  async ({
+    params: {
+      limit = 10,
+      page = 1,
+      where = {},
+      sort = ["-updatedAt", "-publishedAt"],
+      overrideAccess = true,
+      select = {}
+    }
+  }: OveerViewParams): Promise<PaginatedDocs<ArticleOverview>> => {
+    const payload = await getPayload({ config: configPromise });
+    const baseWhere: Where & { and: Where[] } = {
+      and: [
+        {
+          _status: {
+            equals: "published"
+          }
+        }
+      ]
+    };
+    for (const [key, value] of Object.entries(where)) {
+      if (key === "and") {
+        baseWhere.and.push(...(value as Where[]));
+      } else if (key === "or") {
+        baseWhere.and.push({
+          or: (value as Where[]).map((w) => ({
+            ...w
+          }))
+        });
+      } else {
+        baseWhere.and.push({ [key]: value });
+      }
+    }
+    const baseSelect: PostsSelect = {
+      title: true,
+      publishedAt: true,
+      image: true,
+      subtitle: true,
+      slug: true,
+      author: true,
+      allowList: true,
+      authority: true,
+      locked: true,
+      category: true,
+      id: true,
+      tags: true,
+      ...select
+    };
+    // 2) Query for the posts
+    const foundPosts: PaginatedDocs<ReqArticle> = (await payload
+      .find({
+        collection: "posts",
+        limit,
+        page,
+        where: baseWhere,
+        sort,
+        overrideAccess,
+        select: baseSelect
+      })
+      .catch((e) => {
+        console.error({
+          message: `Error while retrieving post overview`,
+          error: e
+        });
+        return {
+          docs: [],
+          totalDocs: 0,
+          totalPages: 0,
+          page: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+          nextPage: 0,
+          prevPage: 0,
+          pagingCounter: 0,
+          limit: 0
+        };
+      })) as PaginatedDocs<ReqArticle>;
+    // 3) For each post, query for the author info
+    const tg = foundPosts.docs.flatMap((post) => {
+      const authorID = post.author as string;
+      if (!authorID || typeof authorID !== "string") {
+        return [];
+      }
+      return post as ReqArticle & { author: string };
+    });
+    const posts = await Promise.allSettled(
+      tg.map(async (post) => {
+        const author = await queryAuthorOverview(post.author);
+        if (!author) {
+          throw new Error("Author not found");
+        }
+        const bookmarks = await getPostBookMarks({ id: `${post.id}` });
+        const finalPost: ArticleOverview = {
+          ...post,
+          author: author,
+          category: post.category as {
+            title: string;
+            id: string;
+            slug: string;
+          },
+          bookmarks: [],
+          bookmarksCount: 0
+        };
+        if (bookmarks) {
+          finalPost.bookmarks = bookmarks.bookmarks;
+          finalPost.bookmarksCount = bookmarks.count;
+        }
+        return finalPost;
+      })
+    ).then((r) =>
+      r.flatMap((r) => {
+        if (r.status === "fulfilled") {
+          return r.value as ArticleOverview;
+        } else {
+          return [];
+        }
+      })
+    );
+
+    return {
+      ...foundPosts,
+      docs: posts,
+      totalDocs: posts.length
+    };
+  }
 );
 export const queryPostsByIDs = cache(
-	async ({
-		ids,
-	}: {
-		ids: string[];
-	}): Promise<PaginatedDocs<ArticleOverview>> => {
-		const payload = await getPayload({config: configPromise});
-		const foundPosts = await payload.find({
-			collection: "posts",
-			where: {
-				id: {
-					in: ids,
-				},
-			},
-			select: {
-				slug: true,
-				title: true,
-				publishedAt: true,
-				image: true,
-				subtitle: true,
-				id: true,
-				author: true,
-				locked: true,
-				category: true,
-			},
-			overrideAccess: true,
-		}).catch((e) => {
-			console.error({
-				message: `Error while retrieving post overview`,
-				error: e,
-			});
-			return {
-				docs: [],
-				totalDocs: 0,
-				totalPages: 0,
-				page: 0,
-				hasNextPage: false,
-				hasPrevPage: false,
-				nextPage: 0,
-				prevPage: 0,
-				pagingCounter: 0,
-				limit: 0,
-			};
-		});
-		const posts: ArticleOverview[] = (await Promise.all(
-			foundPosts.docs.flatMap(async (post) => {
-				const authorID = post.author;
-				if (!authorID || typeof authorID !== "string") {
-					return [];
-				}
-				const author = await payload.findByID({
-					collection: "users",
-					overrideAccess: true,
+  async ({
+    ids
+  }: {
+    ids: string[];
+  }): Promise<PaginatedDocs<ArticleOverview>> => {
+    const payload = await getPayload({ config: configPromise });
+    const foundPosts = await payload
+      .find({
+        collection: "posts",
+        where: {
+          id: {
+            in: ids
+          }
+        },
+        select: {
+          slug: true,
+          title: true,
+          publishedAt: true,
+          image: true,
+          subtitle: true,
+          id: true,
+          author: true,
+          allowList: true,
+          authority: true,
+          locked: true,
+          category: true
+        },
+        overrideAccess: true
+      })
+      .catch((e) => {
+        console.error({
+          message: `Error while retrieving post overview`,
+          error: e
+        });
+        return {
+          docs: [],
+          totalDocs: 0,
+          totalPages: 0,
+          page: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+          nextPage: 0,
+          prevPage: 0,
+          pagingCounter: 0,
+          limit: 0
+        };
+      });
+    const posts: ArticleOverview[] = (await Promise.all(
+      foundPosts.docs.flatMap(async (post) => {
+        const authorID = post.author;
+        if (!authorID || typeof authorID !== "string") {
+          return [];
+        }
+        const author = await payload
+          .findByID({
+            collection: "users",
+            overrideAccess: true,
 
-					id: authorID,
-					select: {
-						name: true,
-						slug: true,
-						displayUsername: true,
-					},
-				}).then((r) => {
-					return {
-						...r,
-						displayUsername: r.displayUsername ?? r.name,
-					} as AuthorSingle;
-				}).catch((e) => {
-					console.error({
-						message: `Error while retrieving author info`,
-						error: e,
-					});
-					return null;
-				});
-				if (!author) {
-					return [];
-				}
-				const bookmarks = await getPostBookMarks({payload, id: `${post.id}`});
-				const finalPost: ArticleOverview = {
-					...post,
-					author: author,
-					category: post.category as {
-						title: string;
-						id: string;
-						slug: string;
-					},
-					...(bookmarks instanceof Error
-						? {bookmarks: [] as string[], bookmarksCount: 0}
-						: {
-							bookmarks: bookmarks.bookmarks,
-							bookmarksCount: bookmarks.count,
-						}),
-				};
-				return finalPost;
-			}),
-		)) as ArticleOverview[];
-		const {docs: _, ...rest} = foundPosts;
-		return {
-			docs: posts,
-			...rest,
-		};
-	},
+            id: authorID,
+            select: {
+              name: true,
+              slug: true,
+              displayUsername: true
+            }
+          })
+          .then((r) => {
+            return {
+              ...r,
+              displayUsername: r.displayUsername ?? r.name
+            } as AuthorSingle;
+          })
+          .catch((e) => {
+            console.error({
+              message: `Error while retrieving author info`,
+              error: e
+            });
+            return null;
+          });
+        if (!author) {
+          return [];
+        }
+        const bookmarks = await getPostBookMarks({ id: `${post.id}` });
+        const finalPost: ArticleOverview = {
+          ...post,
+          author: author,
+          category: post.category as {
+            title: string;
+            id: string;
+            slug: string;
+          },
+          bookmarks: [],
+          bookmarksCount: 0
+        };
+        if (bookmarks) {
+          finalPost.bookmarks = bookmarks.bookmarks;
+          finalPost.bookmarksCount = bookmarks.count;
+        }
+        return finalPost;
+      })
+    )) as ArticleOverview[];
+    const { docs: _, ...rest } = foundPosts;
+    return {
+      docs: posts,
+      ...rest
+    };
+  }
 );
+export const queryAuthorOverview = cache(async (authorID: string) => {
+  const payload = await getPayload({ config: configPromise });
+  return await payload
+    .findByID({
+      collection: "users",
+      overrideAccess: true,
+      id: authorID,
+      select: {
+        name: true,
+        slug: true,
+        displayUsername: true
+      }
+    })
+    .then((r) => {
+      return {
+        ...r,
+        displayUsername: r.displayUsername ?? r.name
+      } as AuthorOverview;
+    })
+    .catch((e) => {
+      console.error({
+        message: `Error while retrieving author info`,
+        error: e
+      });
+      return null;
+    });
+});

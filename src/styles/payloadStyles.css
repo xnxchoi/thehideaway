@@ -133,17 +133,19 @@ color utility to any element that depends on these defaults.
     --opaque-white: 0.91 0 0;
     --opaque-black: 0.09 0 0;
     --cold-white: 97.84% 0.0106 243.4;
-    --cold-black: 12.16% 0.0106 243.4;
-    --cold-d-gray: 0.26 0.0106 243.4;
-    --cold-l-gray: 0.6 0.0106 243.4;
-    --off-white: 87.61% 0 118.54;
-    --off-d-gray: 0.26 0 118.54;
-    --off-l-gray: 0.6 0 118.54;
-    --off-black: 14.17% 0 118.54;
-    --faded-white: 84.01% 0.0006 23.79;
-    --faded-black: 15.26% 0.0083 23.79;
-    --faded-d-gray: 0.26 0.0006 23.79;
-    --faded-l-gray: 0.6 0.0083 23.79;
+    --cold-black: 10.17% 0.0106 243.4;
+    --cold-d-gray: 0.3676 0.0106 243.4;
+    --cold-l-gray: 0.7794 0.0106 243.4;
+    --off-white: 0.9735 0.0013 218.99;
+    --off-black: 10.17% 0.0013 218.99;
+    --faded-white: 0.9735 0.006 58.67;
+    --faded-black: 10.17% 0.006 58.67;
+    --l-gray: 0.705 0.015 286.06;
+    --d-gray: 0.274 0.006 286.033;
+    --off-d-gray: 0.3676 0.0013 218.99;
+    --off-l-gray: 0.7794 0.0013 218.99;
+    --faded-d-gray: 0.3676 0.006 58.67;
+    --faded-l-gray: 0.7794 0.006 58.67;
     --edge-black: 0.1822 0 20.06;
     --rosso-corsa: 0.5463 0.2239 29.2339;
     --pastel-sky-blue: 0.7456 0.1389 223.0922;
@@ -224,28 +226,28 @@ color utility to any element that depends on these defaults.
 }
 
 :root {
-    --rouge-50: oklch(93.35% 0.032 17.74);
-    --rouge-100: oklch(87.94% 0.061 18.37);
-    --rouge-200: oklch(76.3% 0.135 20.69);
-    --rouge-300: oklch(67.55% 0.2 24.21);
-    --rouge-400: oklch(62.41% 0.246 28.34);
-    --rouge-500: oklch(54.79% 0.223 29.01);
-    --rouge-600: oklch(46.33% 0.187 28.93);
-    --rouge-700: oklch(38.1% 0.153 28.79);
-    --rouge-800: oklch(28.2% 0.113 28.69);
-    --rouge-900: oklch(18.88% 0.074 28.34);
-    --rouge-950: oklch(12.53% 0.044 26.42);
-    --bleu-50: oklch(98.04% 0.008 216.62);
-    --bleu-100: oklch(96.81% 0.013 214.36);
-    --bleu-200: oklch(93.1% 0.029 210.04);
-    --bleu-300: oklch(89.47% 0.045 210.47);
-    --bleu-400: oklch(84.43% 0.065 210.91);
-    --bleu-500: oklch(79.63% 0.083 212.58);
-    --bleu-600: oklch(74.16% 0.101 212.75);
-    --bleu-700: oklch(67.18% 0.105 214.05);
-    --bleu-800: oklch(58.71% 0.09 213.86);
-    --bleu-900: oklch(45.36% 0.068 213.26);
-    --bleu-950: oklch(36.97% 0.055 213.54);
+    --rouge-50: 93.35% 0.032 17.74;
+    --rouge-100: 87.94% 0.061 18.37;
+    --rouge-200: 76.3% 0.135 20.69;
+    --rouge-300: 67.55% 0.2 24.21;
+    --rouge-400: 62.41% 0.246 28.34;
+    --rouge-500: 54.79% 0.223 29.01;
+    --rouge-600: 46.33% 0.187 28.93;
+    --rouge-700: 38.1% 0.153 28.79;
+    --rouge-800: 28.2% 0.113 28.69;
+    --rouge-900: 18.88% 0.074 28.34;
+    --rouge-950: 12.53% 0.044 26.42;
+    --bleu-50: 98.04% 0.008 216.62;
+    --bleu-100: 96.81% 0.013 214.36;
+    --bleu-200: 93.1% 0.029 210.04;
+    --bleu-300: 89.47% 0.045 210.47;
+    --bleu-400: 84.43% 0.065 210.91;
+    --bleu-500: 79.63% 0.083 212.58;
+    --bleu-600: 74.16% 0.101 212.75;
+    --bleu-700: 67.18% 0.105 214.05;
+    --bleu-800: 58.71% 0.09 213.86;
+    --bleu-900: 45.36% 0.068 213.26;
+    --bleu-950: 36.97% 0.055 213.54;
 }
 
 @media (pointer: fine) {
@@ -774,4 +776,8 @@ input[type="checkbox"]:focus {
 .inline-toolbar-popup {
     background-color: oklch(var(--faded-bg) / 0.4);
     backdrop-filter: blur(10px);
+}
+
+*::selection{
+    background-color:oklch(var(--bleu-200));
 }

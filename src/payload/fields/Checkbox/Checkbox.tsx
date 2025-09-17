@@ -100,7 +100,8 @@ const CheckboxFieldComponent: CheckboxFieldClientComponent = (props) => {
 			                       Fallback={<FieldError path={path} showError={showError} />} />
 			<CheckboxInput AfterInput={AfterInput} BeforeInput={BeforeInput} checked={checked}
 			               id={fieldID}
-				/** @ts-expect-error payload shit */ inputRef={null} Label={Label} label={label}
+				/** @ts-expect-error payload shit */
+				           inputRef={null} Label={Label} label={label}
 				           name={path} onToggle={onToggle} partialChecked={partialChecked}
 				           readOnly={readOnly || disabled} required={required} />
 			<RenderCustomComponent CustomComponent={Description}

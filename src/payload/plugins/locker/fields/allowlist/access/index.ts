@@ -13,8 +13,6 @@ export const allowListFieldAccess = (props: {
 	const {collection, overrides} = props
 	const access: PolymorphicRelationshipField['access'] = {
 		read: () => true,
-
-
 	}
 	if (collection === 'pages') {
 		access.update = updatePagesRelFieldAcess

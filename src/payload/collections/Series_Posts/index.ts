@@ -1,34 +1,16 @@
-import {
-	AccessArgs,
-	Where,
-	CollectionConfig,
-	headersWithCors,
-	PayloadRequest,
-} from "payload"
+import {AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, Where,} from "payload"
 
 import {
-	BlocksFeature,
-	FixedToolbarFeature,
-	HeadingFeature,
-	HorizontalRuleFeature,
-	InlineToolbarFeature,
-	lexicalEditor,
+	BlocksFeature, FixedToolbarFeature, HeadingFeature, HorizontalRuleFeature, InlineToolbarFeature, lexicalEditor,
 } from "@payloadcms/richtext-lexical"
 import {Banner} from "@/payload/blocks/Banner/config"
 import {Code} from "@/payload/blocks/Code/config"
 import {MediaBlock} from "@/payload/blocks/MediaBlock/config"
-import {
-	generatePreviewPath,
-	generatePreviewPathWithAuthor,
-} from "@/utilities/generatePreviewPath"
+import {generatePreviewPath, generatePreviewPathWithAuthor,} from "@/utilities/generatePreviewPath"
 import {sanitizeAuthor} from "../../fields/AuthorFields/hooks"
 import {revalidateDelete, revalidatePost} from "./hooks/revalidatePost"
 
-import {
-	MetaImageField,
-	MetaTitleField,
-	OverviewField,
-} from "@payloadcms/plugin-seo/fields"
+import {MetaImageField, MetaTitleField, OverviewField,} from "@payloadcms/plugin-seo/fields"
 import {slugField} from "@/payload/fields/slug"
 import {Post} from "@/payload-types"
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils"
@@ -126,7 +108,7 @@ export const SeriesPosts: CollectionConfig = {
 	},
 	admin: {
 		defaultColumns: ["title", "slug", "updatedAt"],
-		baseListFilter: filterDocByCurrentUser,
+		baseFilter: filterDocByCurrentUser,
 		livePreview: {
 			url: async ({
 				data,
@@ -163,17 +145,7 @@ export const SeriesPosts: CollectionConfig = {
 				req,
 			}),
 		useAsTitle: "title",
-		/*
-	   components: {
-		   views: {
-			 edit: {
-			   default: {
-				 Component: "@/payload/views/Edit/index.tsx#DefaultEditView",
-			   },
-			 },
-		   },
-		 },
-	 */
+
 	},
 	fields: [
 		{

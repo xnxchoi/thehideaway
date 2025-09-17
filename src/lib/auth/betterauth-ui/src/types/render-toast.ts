@@ -1,9 +1,9 @@
-type ToastVariant = "default" | "success" | "error" | "info" | "warning";
+type ToastVariant = "default" | "success" | "error" | "info" | "warning"
 
 export type RenderToast = ({
-	variant,
-	message,
+    variant,
+    message
 }: {
-	variant?: ToastVariant;
-	message?: string;
-}) => void;
+    variant?: ToastVariant
+    message?: string
+}) => void

@@ -7,7 +7,7 @@ import {cache} from "react";
 
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
 import type {AuthorSingle} from "../../Posts/post-types";
-import type {DeltaOverview, SingleDelta} from "../delta-types";
+import type {DeltaOverview, SingleDelta, TagOverview} from "../delta-types";
 import {getDeltaBookMarks} from "./getDeltaBookmarks";
 
 export const getDeltaHandler = cache(
@@ -109,11 +109,15 @@ export const getDeltaHandler = cache(
 				{status: 404},
 			);
 		}
-
+		const tags:TagOverview[]=[]
+		if(result.tags){
+			tags.push(...(result.tags as TagOverview[]))
+		}
 		const finalDelta: SingleDelta = {
 			...delta,
 			bookmarks: [] as string[],
 			bookmarksCount: 0,
+			tags,
 			slug: delta.slug,
 			publishedAt: delta.publishedAt,
 			category: delta.category as { title: string; id: string },

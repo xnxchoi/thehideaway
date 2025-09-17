@@ -1,58 +1,67 @@
 "use client";
 
-import * as darkAnimation from "./lottie-dark.json";
-import * as lightAnimation from "./lottie\ light.json";
-import {useEffect, useRef, useState} from "react";
-import {useRPStore} from "@/providers/RP_Pro";
-import {canUseDOM} from "@/utilities/canUseDOM";
-import {useTheme} from "@/providers/Theme";
+import { useRPStore } from "@/providers/RP_Pro";
+import { useTheme } from "@/providers/Theme";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import { useRef } from "react";
 import Lottie from "react-lottie-player";
-import gsap from "gsap";
-import {useGSAP} from "@gsap/react";
+import * as darkAnimation from "./lottie-dark.json";
+import * as lightAnimation from "./lottie-light.json";
+import { useEffect, useState } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export const LoaderLottie = () => {
-	const theme = useTheme((r) => r.theme);
-	// const [animationData, setAnimationData] = useState(darkAnimation);
-	// useEffect(() => {
-	//   setAnimationData(theme === "dark" ? darkAnimation : lightAnimation);
-	// }, [theme]);
-	const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
-	const divRef = useRef<HTMLDivElement>(null!);
+  const theme = useTheme((r) => r.theme);
+  const [animationData, setAnimationData] = useState(
+    theme === "dark"
+      ? "/assets/lottie-dark.lottie"
+      : "/assets/lottie-light.lottie"
+  );
+  useEffect(() => {
+    setAnimationData(
+      theme === "dark"
+        ? "/assets/lottie-dark.lottie"
+        : "/assets/lottie-light.lottie"
+    );
+  }, [theme]);
+  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
+  const divRef = useRef<HTMLDivElement>(null!);
 
-	useGSAP(
-		() => {
-			if (pageIsTransitioning) {
-				gsap.to(divRef.current, {
-					autoAlpha: 1,
-					duration: 0.2,
-					ease: "power4.easeIn",
-				});
-			}
-			// else {
-			//   gsap.to(divRef.current, {
-			//     autoAlpha: 0,
-			//     duration: 0.2,
-			//     ease: "power4.easeOut",
-			//   });
-			// }
-		},
-		{dependencies: [pageIsTransitioning], scope: divRef},
-	);
-	return (
-		<div data-themed="background-color,color" className={
-			"fixed inset-0 flex flex-col justify-center items-center bg-[oklch(var(--bg/1))] w-screen h-screen"
-		} ref={divRef}>
-			<div className="w-[120px] h-[120px] xl:w-[24vw] xl:h-[24vw] gap-x-2.5 gap-y-2.5 flex flex-col justify-center items-center
-    overflow-hidden contents-center m-auto">
-				<div className="w-full flex">
-					<Lottie play={true} loop={true} renderer={"svg"} animationData={darkAnimation}
-					        style={{width: "100%", height: "100%"}} rendererSettings={{
-						preserveAspectRatio: "xMidYMid slice",
-					}} />
-				</div>
-			</div>
-		</div>
-	);
+  useGSAP(
+    () => {
+      if (pageIsTransitioning) {
+        gsap.to(divRef.current, {
+          autoAlpha: 1,
+          duration: 0.2,
+          ease: "power4.easeIn"
+        });
+      }
+      // else {
+      //   gsap.to(divRef.current, {
+      //     autoAlpha: 0,
+      //     duration: 0.2,
+      //     ease: "power4.easeOut",
+      //   });
+      // }
+    },
+    { dependencies: [pageIsTransitioning], scope: divRef }
+  );
+  return (
+    <div
+      data-themed="background-color,color"
+      className={
+        "fixed inset-0 flex h-screen w-screen flex-col items-center justify-center bg-[oklch(var(--bg/1))]"
+      }
+      ref={divRef}
+    >
+      <div className="contents-center m-auto flex h-[120px] w-[120px] flex-col items-center justify-center gap-x-2.5 gap-y-2.5 overflow-hidden xl:h-[24vw] xl:w-[24vw]">
+        <div className="flex w-full">
+          <DotLottieReact src={animationData} loop={true} autoplay={true} />
+        </div>
+      </div>
+    </div>
+  );
 };
 // variants = {{
 //   start: { opacity: 0, visibility: 'hidden' }, enter: {

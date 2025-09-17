@@ -51,7 +51,7 @@ export default async function Page({params: paramsPromise}: Args) {
 		},
 	});
 	return (
-		<RPage type="tags" slug={[tag.slug]}>
+		<RPage type="tags" slug={[tagSlug]}>
 			<PageClient>
 				<div className="relative flex w-full flex-col items-center justify-center">
 					<CatTitle title={tag.title} />

@@ -6,14 +6,16 @@
  * @returns A RegExp object for validating the query string.
  */
 export function createValidQueryStringRegex(validValues: string[]): RegExp {
-	// Escape regex-special characters in valid values
-	const escapedValues = validValues.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  // Escape regex-special characters in valid values
+  const escapedValues = validValues.map((v) =>
+    v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  );
 
-	// Join them into a regex group: (posts|delta|...)
-	const validValuesPattern = `(${escapedValues.join('|')})`;
+  // Join them into a regex group: (posts|delta|...)
+  const validValuesPattern = `(${escapedValues.join("|")})`;
 
-	// Create the full pattern
-	const pattern = `^(types(\$begin:math:display$\\\\d*\\$end:math:display$)?=${validValuesPattern}(&types(\$begin:math:display$\\\\d*\\$end:math:display$)?=${validValuesPattern})*)$`;
+  // Create the full pattern
+  const pattern = `^(types(\$begin:math:display$\\\\d*\\$end:math:display$)?=${validValuesPattern}(&types(\$begin:math:display$\\\\d*\\$end:math:display$)?=${validValuesPattern})*)$`;
 
-	return new RegExp(pattern);
+  return new RegExp(pattern);
 }

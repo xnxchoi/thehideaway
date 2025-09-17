@@ -1,24 +1,13 @@
 "use client";
 
-import React, {
-	type ComponentRef,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import React, {type ComponentRef, useCallback, useEffect, useRef, useState,} from "react";
 
 import {Link} from "@/components/UX/Link";
 import {Logo} from "@/components/UX/Logo";
 import {MenuButton} from "@/components/UX/Menu/MenuButton";
 import type {Header} from "@/payload-types";
 import {useHeaderTheme} from "@/providers/HeaderTheme";
-import {
-	useCursorStore,
-	useMenu,
-	useRPStore,
-	useScroll,
-} from "@/providers/RP_Pro";
+import {useCursorStore, useMenu, useRPStore, useScroll,} from "@/providers/RP_Pro";
 import {cn} from "@/lib/utils";
 import {useGSAP} from "@gsap/react";
 import {gsap} from "gsap";
@@ -36,28 +25,32 @@ import {delay, rp_lerp} from "@/utilities/rp_utils";
 import {useLenis} from "lenis/react";
 import {useIsMobile} from "@/providers/MiddleMan";
 import {useWindowResize} from "@/utilities/use_window_resize";
-import type {RP_SessionData} from "@/lib/auth/session/sessionType";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
+import {useSession} from "@/lib/auth/client";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
 
 interface HeaderClientProps {
 	header: Header;
-	session: Pick<RP_SessionData, "user" | "session"> | null;
+
 }
 
+type TransitionType = | "animate-to-full"
+	| "transition-wipe"
+	| "animate-to-previous";
 export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
-	const {header, session} = props;
+	const {header} = props;
 
 	/* Storing the value in a useState to avoid hydration errors */
 	const main = useRef<HTMLElement>(null!);
 	const showHeader = useRPStore((store) => store.showHeader);
 	const setHeaderVisibility = useRPStore((store) => store.setHeaderVisibility);
-	const setHeaderAnimations = useRPStore((store) => store.setHeaderAnimations);
 	const transitionOutType = useRPStore((store) => store.transitionOutType);
 	const isPreloader = useRPStore((store) => store.isPreloader);
 	const theme = useTheme((r) => r.theme);
 	const [the, setTheme] = useState(theme);
+	const {data, isPending} = useSession();
+
 	const setUser = useRPSession((r) => r.setUser);
-	const setVisibleTL = useRef<GSAPTimeline>(null!);
 	const to = useRef<ReturnType<typeof setTimeout>>(null!);
 	const [visible, setVisible] = useState(true);
 	const {isMobile} = useIsMobile();
@@ -81,29 +74,29 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 		c = useRef<HTMLAnchorElement>(null!);
 	const scrollDirection = useScroll((store) => store.scrollDirection);
 	const isScrolling = useScroll((store) => store.isScrolling);
-	const sideBarIsOpen = useRPStore((store) => store.sidebarOpen);
 	const navIsOpen = useRPStore((store) => store.navIsOpen);
 	const lenis = useLenis();
 	const commandRef = useRef<ComponentRef<"button">>(null!);
 
 	useEffect(() => {
-		if (session?.user) {
-			console.log("session user in header", session.user);
-			setUser({...session.user, bio: session.user.bio || ""});
+		if (data?.user) {
+
+			console.log("session user in header", data.user);
+			setUser({...data.user, role: data.user.role as RP_Roles, bio: data.user.bio || ""});
 		}
-	}, [session, setUser]);
+	}, [data, setUser]);
 	const headerTransition = useRPStore((l) => l.headerTransition);
 	const setHeaderTransition = useRPStore((l) => l.setHeaderTransition);
 	const isTransitioningWipe = useRPStore((l) => l.isTransitioningWipe);
 	const tweenNumber = useRef(0);
 	const lerpedTween = useRef(0);
-	const getTweenPercentBasedOnScroll = (l: number) =>
-		gsap.utils.clamp(0, 1, l / 350);
-	const animateOnScroll = (l: number) => {
+	const getTweenPercentBasedOnScroll = useCallback((l: number) =>
+		gsap.utils.clamp(0, 1, l / 350), []);
+	const animateOnScroll = useCallback((l: number) => {
 		const c = getTweenPercentBasedOnScroll(l);
 		((lerpedTween.current = c),
 		headerTimeline.current && headerTimeline.current.progress(c));
-	};
+	}, [getTweenPercentBasedOnScroll]);
 	useEffect(() => {
 		(headerTheme && setTheme(headerTheme)) || setTheme(theme);
 	}, [headerTheme, theme]);
@@ -198,7 +191,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 				setHeaderVisibility(true);
 			});
 		}
-	}, [stage]);
+	}, [clearPageTheme, reset, resetCursorTheme, setCursorState, setHeaderTransition,
+		setHeaderVisibility, stage]);
 	// useGSAP(
 	//   () => {
 
@@ -221,7 +215,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 	//   { dependencies: [navIsOpen, top, left, right] },
 	// )
 	const progressRate = useRef(0);
-	const initiateAnimationTimeline = useRef<() => void>(null!);
+	const initiateAnimationTimeline = useRef<(() => void) | null>(null);
 	const btBackground = useRef(
 		navIsOpen ? "transparent" : "oklch(var(--button-background))",
 	);
@@ -249,7 +243,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 		fxTop.current = navIsOpen ? top - 10 : top;
 		transitionDelay.current = navIsOpen ? 0 : 0.2;
 		btBlur.current = navIsOpen ? "blur(0px)" : "blur(1.4rem)";
-		windowWidth.current = window.innerWidth;
+
 		condensedWidth.current = isMobile ? windowWidth.current - 2 * 16 : 645;
 		mainY.current = isMobile ? 16 - 4 : 12;
 	}, [navIsOpen, top, left, right, isMobile]);
@@ -445,19 +439,22 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 		{dependencies: [lastResize], scope: main},
 	);
 	useEffect(() => {
-		initiateAnimationTimeline.current && initiateAnimationTimeline.current();
+		initiateAnimationTimeline.current && (  initiateAnimationTimeline.current());
+		windowWidth.current = window.innerWidth;
 	}, [isMobile, lastResize, lenis]);
 
 	const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null!);
-	const setHeaderState = useCallback(
-		(
-			transitionType:
-				| "animate-to-full"
-				| "transition-wipe"
-				| "animate-to-previous",
+	const setHeaderRef = useRef<((
+		transitionType: TransitionType,
+		callback?: () => void,
+		navOpen?: boolean,
+	) => void) | null>(
+		null
+	);
+	useGSAP(() => {
+		!setHeaderRef.current && (setHeaderRef.current = (transitionType: TransitionType,
 			callback?: () => void,
-			navOpen = false,
-		) => {
+			navOpen = false,) => {
 			if (transitionType === "transition-wipe") {
 				(gsap.killTweensOf(main.current, "autoAlpha"),
 					gsap.to(main.current, {
@@ -534,9 +531,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 						gsap.ticker.remove(rafToPosition);
 					}, 1e3));
 			}
-		},
-		[],
-	);
+		})
+	}, [])
 	const enableScrollAnimation = () => {
 		headerTransitionDisabled.current = false;
 	};
@@ -554,8 +550,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 						animateOnScroll(tweenNumber.current));
 				}
 			}));
-	}, [lenis]);
+	}, [animateOnScroll, lenis]);
 	useEffect(() => {
+		if (!setHeaderRef.current) {
+			return;
+		}
+		const setHeaderState = setHeaderRef.current;
 		(timeoutRef.current && clearTimeout(timeoutRef.current),
 			(timeoutRef.current = setTimeout(() => {
 				if (isTransitioningWipe) {
@@ -589,7 +589,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 					navIsOpen,
 				);
 			}, 20)));
-	}, [navIsOpen, isTransitioningWipe, transitionOutType, setHeaderState, top]);
+	}, [navIsOpen, isTransitioningWipe, transitionOutType, top]);
 	useEffect(() => {
 		if (!isPreloader && main.current) {
 			gsap.to(main.current, {
@@ -604,7 +604,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 	useGSAP(
 		() => {
 			gsap.ticker.add(isCondensed);
-			() => {
+			return () => {
 				gsap.ticker.remove(isCondensed);
 			};
 		},
@@ -712,8 +712,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 			</div>
 			<div ref={colorRef} className={
 				"bg-off-l-gray/35 dark:bg-faded-l-gray/35 absolute top-0 left-0 z-[1] h-full w-full opacity-[0.00001]"
+			} />
+			{// "absolute top-0 left-0 w-full h-full z-[1] bg-[oklch(0.7894_0_0/0.7)] dark:bg-[oklch(0.7894_0_0/0.4)] opacity-[0.00001]"
 			}
-				// "absolute top-0 left-0 w-full h-full z-[1] bg-[oklch(0.7894_0_0/0.7)] dark:bg-[oklch(0.7894_0_0/0.4)] opacity-[0.00001]" />
 			<div ref={blurRef} className={
 				"absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
 			} />
@@ -731,12 +732,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
 				</Link>
 				<div id="r-side" ref={r} className={"z-20"}>
 					<AnimatePresence mode="wait">
-						{(session && session.user && session.user.id && (
-							<UserDropdown user={session.user} />
-						)) || <CheckInButton />}
+						{!isPending && ((data?.user && data.user.id && (
+							<><UserDropdown /><NotificationButton ref={notificationRef} /></>
+						)) || <CheckInButton />) || <></>}
 					</AnimatePresence>
 					<SearchBar ref={commandRef} />
-					<NotificationButton ref={notificationRef} />
 					<DarkmodeButton ref={darkModeRef} />
 				</div>
 			</div>

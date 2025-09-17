@@ -1,63 +1,96 @@
 "use client";
 
-import {useContext, useState} from "react";
-import {AuthUIContext} from "../../../lib/auth-ui-provider";
-import {cn} from "../../../lib/utils";
-import {CardContent} from "@/components/ui/card";
-import {SettingsCard} from "../shared/settings-card";
-import type {SettingsCardProps} from "../shared/settings-card";
-import {APIKeyCell} from "./api-key-cell";
-import {APIKeyDisplayDialog} from "./api-key-display-dialog";
-import {CreateAPIKeyDialog} from "./create-api-key-dialog";
+import { useContext, useMemo, useState } from "react";
+import { AuthUIContext } from "../../../lib/auth-ui-provider";
+import { cn } from "../../../lib/utils";
+import { CardContent } from "@/components/ui/card";
+import type { SettingsCardProps } from "../shared/settings-card";
+import { SettingsCard } from "../shared/settings-card";
+import { ApiKeyCell } from "./api-key-cell";
+import { ApiKeyDisplayDialog } from "./api-key-display-dialog";
+import { CreateApiKeyDialog } from "./create-api-key-dialog";
 
-export function APIKeysCard({
-	className,
-	classNames,
-	localization,
-	...props
-}: SettingsCardProps) {
-	const {
-		hooks: {useListApiKeys},
-		localization: contextLocalization,
-	} = useContext(AuthUIContext);
+export interface ApiKeysCardProps extends SettingsCardProps {
+  organizationId?: string;
+}
 
-	localization = {...contextLocalization, ...localization};
+export function ApiKeysCard({
+  className,
+  classNames,
+  localization,
+  organizationId,
+  ...props
+}: ApiKeysCardProps) {
+  const {
+    hooks: { useListApiKeys },
+    localization: contextLocalization
+  } = useContext(AuthUIContext);
 
-	const {data: apiKeys, isPending, refetch} = useListApiKeys();
+  localization = { ...contextLocalization, ...localization };
 
-	const [createDialogOpen, setCreateDialogOpen] = useState(false);
-	const [displayDialogOpen, setDisplayDialogOpen] = useState(false);
-	const [createdApiKey, setCreatedApiKey] = useState("");
+  const { data: apiKeys, isPending, refetch } = useListApiKeys();
 
-	const handleCreateApiKey = (apiKey: string) => {
-		setCreatedApiKey(apiKey);
-		setDisplayDialogOpen(true);
-	};
+  // Filter API keys by organizationId
+  const filteredApiKeys = useMemo(() => {
+    return apiKeys?.filter(
+      (apiKey) => organizationId === apiKey.metadata?.organizationId
+    );
+  }, [apiKeys, organizationId]);
 
-	return (
-		<>
-			<SettingsCard className={className} classNames={classNames}
-			              actionLabel={localization.CREATE_API_KEY}
-			              description={localization.API_KEYS_DESCRIPTION}
-			              instructions={localization.API_KEYS_INSTRUCTIONS} isPending={isPending}
-			              title={localization.API_KEYS} action={() => setCreateDialogOpen(true)}
-			              {...props}
-			>
-				{apiKeys && apiKeys.length > 0 && (
-					<CardContent className={cn("grid gap-4", classNames?.content)}>
-						{apiKeys?.map((apiKey) => (
-							<APIKeyCell key={apiKey.id} classNames={classNames} apiKey={apiKey}
-							            localization={localization} refetch={refetch} />
-						))}
-					</CardContent>
-				)}
-			</SettingsCard>
-			<CreateAPIKeyDialog classNames={classNames} localization={localization}
-			                    open={createDialogOpen} onOpenChange={setCreateDialogOpen}
-			                    onSuccess={handleCreateApiKey} refetch={refetch} />
-			<APIKeyDisplayDialog classNames={classNames} apiKey={createdApiKey}
-			                     localization={localization} open={displayDialogOpen}
-			                     onOpenChange={setDisplayDialogOpen} />
-		</>
-	);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [displayDialogOpen, setDisplayDialogOpen] = useState(false);
+  const [createdApiKey, setCreatedApiKey] = useState("");
+
+  const handleCreateApiKey = (apiKey: string) => {
+    setCreatedApiKey(apiKey);
+    setDisplayDialogOpen(true);
+  };
+
+  return (
+    <>
+      <SettingsCard
+        className={className}
+        classNames={classNames}
+        actionLabel={localization.CREATE_API_KEY}
+        description={localization.API_KEYS_DESCRIPTION}
+        instructions={localization.API_KEYS_INSTRUCTIONS}
+        isPending={isPending}
+        title={localization.API_KEYS}
+        action={() => setCreateDialogOpen(true)}
+        {...props}
+      >
+        {filteredApiKeys && filteredApiKeys.length > 0 && (
+          <CardContent className={cn("grid gap-4", classNames?.content)}>
+            {filteredApiKeys?.map((apiKey) => (
+              <ApiKeyCell
+                key={apiKey.id}
+                classNames={classNames}
+                apiKey={apiKey}
+                localization={localization}
+                refetch={refetch}
+              />
+            ))}
+          </CardContent>
+        )}
+      </SettingsCard>
+
+      <CreateApiKeyDialog
+        classNames={classNames}
+        localization={localization}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleCreateApiKey}
+        refetch={refetch}
+        organizationId={organizationId}
+      />
+
+      <ApiKeyDisplayDialog
+        classNames={classNames}
+        apiKey={createdApiKey}
+        localization={localization}
+        open={displayDialogOpen}
+        onOpenChange={setDisplayDialogOpen}
+      />
+    </>
+  );
 }

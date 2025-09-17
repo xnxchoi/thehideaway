@@ -5,11 +5,24 @@ import {
 	lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type {Block} from 'payload'
+import {uuidv7} from "uuidv7";
 
 export const Archive: Block = {
 	slug: "archive",
 	interfaceName: "ArchiveBlock",
 	fields: [
+		{
+			name:"id",
+			type:"text",
+			defaultValue:()=>uuidv7(),
+			access:{
+				update:()=>false,
+			},
+			required:true,
+			admin:{
+				hidden:true,
+			}
+		},
 		{
 			name: "introContent",
 			type: "richText",

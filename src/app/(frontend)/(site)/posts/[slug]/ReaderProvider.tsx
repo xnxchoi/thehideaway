@@ -17,17 +17,7 @@ export type ReadItem = {
 	lastViewed: string;
 	collection: string;
 	id: string;
-	citations: {
-		selection: {
-			text: string;
-			before: string;
-			after: string;
-		};
-		path: string;
-		reference: string;
-		color: string;
-		memo?: string;
-	}[];
+
 };
 export type ReadStore = {
 	reader: null | string;

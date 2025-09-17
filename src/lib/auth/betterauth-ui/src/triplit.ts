@@ -1,1 +1,1 @@
-export * from "./lib/triplit/use-triplit-hooks";
+export * from "./lib/triplit/use-triplit-hooks"

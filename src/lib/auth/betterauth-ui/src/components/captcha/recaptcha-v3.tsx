@@ -1,25 +1,28 @@
 import {
-	GoogleReCaptchaProvider,
-	useGoogleReCaptcha,
-} from "@wojtekmaj/react-recaptcha-v3";
-import {type ReactNode, useContext, useEffect} from "react";
+    GoogleReCaptchaProvider,
+    useGoogleReCaptcha
+} from "@wojtekmaj/react-recaptcha-v3"
+import { type ReactNode, useContext, useEffect } from "react"
 
-import {useIsHydrated} from "../../hooks/use-hydrated";
-import {useLang} from "../../hooks/use-lang";
-import {useTheme} from "@/providers/Theme";
-import {AuthUIContext} from "../../lib/auth-ui-provider";
+import { useIsHydrated } from "../../hooks/use-hydrated"
+import { useLang } from "../../hooks/use-lang"
+import { useTheme } from "../../hooks/use-theme"
+import { AuthUIContext } from "../../lib/auth-ui-provider"
 
-export function RecaptchaV3({children}: { children: ReactNode }) {
-	const isHydrated = useIsHydrated();
-	const {captcha} = useContext(AuthUIContext);
+export function RecaptchaV3({ children }: { children: ReactNode }) {
+    const isHydrated = useIsHydrated()
+    const { captcha } = useContext(AuthUIContext)
 
-	if (captcha?.provider !== "google-recaptcha-v3") return children;
+    if (captcha?.provider !== "google-recaptcha-v3") return children
 
-	return (
-		<GoogleReCaptchaProvider reCaptchaKey={captcha.siteKey} useEnterprise={captcha.enterprise}
-		                         useRecaptchaNet={captcha.recaptchaNet}>
-			{isHydrated && (
-				<style>{`
+    return (
+        <GoogleReCaptchaProvider
+            reCaptchaKey={captcha.siteKey}
+            useEnterprise={captcha.enterprise}
+            useRecaptchaNet={captcha.recaptchaNet}
+        >
+            {isHydrated && (
+                <style>{`
                     .grecaptcha-badge {
                         visibility: hidden;
                         border-radius: var(--radius) !important;
@@ -33,36 +36,38 @@ export function RecaptchaV3({children}: { children: ReactNode }) {
                         border-color: var(--input) !important;
                     }
                 `}</style>
-			)}
-			<RecaptchaV3Style />
-			{children}
-		</GoogleReCaptchaProvider>
-	);
+            )}
+
+            <RecaptchaV3Style />
+
+            {children}
+        </GoogleReCaptchaProvider>
+    )
 }
 
 function RecaptchaV3Style() {
-	const {executeRecaptcha} = useGoogleReCaptcha();
-	const theme = useTheme((r) => r.theme);
-	const {lang} = useLang();
+    const { executeRecaptcha } = useGoogleReCaptcha()
+    const { theme } = useTheme()
+    const { lang } = useLang()
 
-	useEffect(() => {
-		if (!executeRecaptcha) return;
+    useEffect(() => {
+        if (!executeRecaptcha) return
 
-		const updateRecaptcha = async () => {
-			// find iframe with title "reCAPTCHA"
-			const iframe = document.querySelector(
-				"iframe[title='reCAPTCHA']",
-			) as HTMLIFrameElement;
-			if (iframe) {
-				const iframeSrcUrl = new URL(iframe.src);
-				iframeSrcUrl.searchParams.set("theme", theme);
-				if (lang) iframeSrcUrl.searchParams.set("hl", lang);
-				iframe.src = iframeSrcUrl.toString();
-			}
-		};
+        const updateRecaptcha = async () => {
+            // find iframe with title "reCAPTCHA"
+            const iframe = document.querySelector(
+                "iframe[title='reCAPTCHA']"
+            ) as HTMLIFrameElement
+            if (iframe) {
+                const iframeSrcUrl = new URL(iframe.src)
+                iframeSrcUrl.searchParams.set("theme", theme)
+                if (lang) iframeSrcUrl.searchParams.set("hl", lang)
+                iframe.src = iframeSrcUrl.toString()
+            }
+        }
 
-		updateRecaptcha();
-	}, [executeRecaptcha, theme, lang]);
+        updateRecaptcha()
+    }, [executeRecaptcha, theme, lang])
 
-	return null;
+    return null
 }

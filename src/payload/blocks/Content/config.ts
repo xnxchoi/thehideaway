@@ -7,8 +7,20 @@ import {
 import type {Block, Field} from 'payload'
 
 import {link} from '@/payload/fields/link'
+import {uuidv7} from "uuidv7";
 
-const columnFields: Field[] = [
+const columnFields: Field[] = [{
+	name:"id",
+	type:"text",
+	defaultValue:()=>uuidv7(),
+	access:{
+		update:()=>false,
+	},
+	required:true,
+	admin:{
+		hidden:true,
+	}
+},
 	{
 		name: 'size',
 		type: 'select',

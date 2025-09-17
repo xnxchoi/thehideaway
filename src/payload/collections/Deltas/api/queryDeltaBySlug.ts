@@ -4,7 +4,7 @@ import {getPayload, Payload, Where} from "payload";
 import configPromise from "@payload-config";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 import {cache} from "react";
-import {DeltaOverview, SingleDelta} from "../delta-types";
+import {DeltaOverview, SingleDelta, TagOverview} from "../delta-types";
 import {authClient} from "@/lib/auth/client";
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
 import {getDeltaBookMarks} from "./getDeltaBookmarks";
@@ -74,6 +74,7 @@ export const queryAuthorsDelta = cache(
 				author: true,
 				publishedAt: true,
 				source: true,
+				tags:true,
 				locked: true,
 				updatedAt: true,
 				createdAt: true,
@@ -106,6 +107,7 @@ export const queryAuthorsDelta = cache(
 			publishedAt: post.publishedAt,
 			bookmarksCount: 0,
 			slug: post.slug,
+			tags:post.tags?(post.tags as Array<TagOverview>):[],
 			category: post.category as { title: string; id: string },
 			queuedIDs: null!,
 			relatedDeltas: null!,
@@ -201,24 +203,27 @@ export const queryAuthorsDelta = cache(
 export const queryDeltaBySlug = cache(
 	async ({slug}: { slug: string }): Promise<{ post: SingleDelta } | null> => {
 		const {isEnabled: draft} = await draftMode();
-		const id = slug.includes("-") ? slug.split("-")[1] : slug;
-		if (!id) {
-			return null;
-		}
+
 		const payload = await getPayload({config: configPromise});
 		const user = await authClient.getSession();
 		const se = user?.data?.user ?? null;
 
-		const result = await payload.findByID({
+		const result = await payload.find({
 			collection: "delta",
-			id,
 			draft,
+			where: {
+				slug: {
+					equals: slug,
+				}
+			},
 			overrideAccess: true,
+			limit: 1,
+			pagination: false,
 			select: {
 				title: true,
 				content: true,
 				slug: true,
-
+				tags:true,
 				relatedDeltas: true,
 				category: true,
 				allowList: true,
@@ -230,6 +235,12 @@ export const queryDeltaBySlug = cache(
 				updatedAt: true,
 				createdAt: true,
 			},
+		}).then(r=>{
+			if(r.docs){
+				const doc=r.docs[0];
+				return doc||null;
+			}
+			return null;
 		}).catch((e) => {
 			console.error({
 				message: `Error while retrieving post by slug ${slug}`,
@@ -261,6 +272,7 @@ export const queryDeltaBySlug = cache(
 			category: post.category as { title: string; id: string },
 			queuedIDs: null!,
 			relatedDeltas: null!,
+			tags:post.tags?(post.tags as Array<TagOverview>):[]
 		};
 		const bookmarks = await getDeltaBookMarks({payload, id: `${post.id}`});
 		if (bookmarks instanceof Error) {

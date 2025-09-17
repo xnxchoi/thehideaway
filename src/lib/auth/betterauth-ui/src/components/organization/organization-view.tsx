@@ -1,110 +1,222 @@
 "use client";
 
-import type {Organization} from "better-auth/plugins/organization";
-import {useContext} from "react";
-import {AuthUIContext} from "../../lib/auth-ui-provider";
-import {cn} from "../../lib/utils";
-import type {AuthLocalization} from "../../localization/auth-localization";
-import {Skeleton} from "../ui/skeleton";
+import { MenuIcon } from "lucide-react";
+import { useContext, useEffect, useMemo } from "react";
+
+import { useCurrentOrganization } from "../../hooks/use-current-organization";
+import { AuthUIContext } from "../../lib/auth-ui-provider";
+import { cn, getViewByPath } from "../../lib/utils";
+import type { OrganizationViewPath } from "../../server";
+import type { AccountViewProps } from "../account/account-view";
+import { ApiKeysCard } from "../settings/api-key/api-keys-card";
 import {
-	OrganizationLogo,
-	type OrganizationLogoClassNames,
-} from "./organization-logo";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger
+} from "../ui/drawer";
+import { Label } from "../ui/label";
+import { OrganizationInvitationsCard } from "./organization-invitations-card";
+import { OrganizationMembersCard } from "./organization-members-card";
+import { OrganizationSettingsCards } from "./organization-settings-cards";
+import { Button } from "@/components/ui/button";
 
-export interface OrganizationViewClassNames {
-	base?: string;
-	avatar?: OrganizationLogoClassNames;
-	content?: string;
-	title?: string;
-	subtitle?: string;
-	skeleton?: string;
-}
+export type OrganizationViewPageProps = Omit<AccountViewProps, "view"> & {
+  slug?: string;
+  view?: OrganizationViewPath;
+};
 
-export interface OrganizationViewProps {
-	className?: string;
-	classNames?: OrganizationViewClassNames;
-	isPending?: boolean;
-	size?: "sm" | "default" | "lg" | null;
-	organization?: Organization | null;
-	/**
-	 * @default authLocalization
-	 * @remarks `AuthLocalization`
-	 */
-	localization?: AuthLocalization;
-}
-
-/**
- * Displays organization information with logo and details in a compact view
- *
- * Renders an organization's profile information with appropriate fallbacks:
- * - Shows logo alongside organization name and slug when available
- * - Shows loading skeletons when isPending is true
- * - Falls back to generic "Organization" text when neither name nor slug is available
- * - Supports customization through classNames prop
- */
 export function OrganizationView({
-	className,
-	classNames,
-	isPending,
-	size,
-	organization,
-	localization: propLocalization,
-}: OrganizationViewProps) {
-	const {localization: contextLocalization} = useContext(AuthUIContext);
+  className,
+  classNames,
+  localization: localizationProp,
+  path: pathProp,
+  pathname,
+  view: viewProp,
+  hideNav,
+  slug: slugProp
+}: OrganizationViewPageProps) {
+  const {
+    organization: organizationOptions,
+    localization: contextLocalization,
+    account: accountOptions,
+    Link,
+    replace
+  } = useContext(AuthUIContext);
 
-	const localization = {...contextLocalization, ...propLocalization};
+  const { slug: contextSlug, viewPaths, apiKey } = organizationOptions || {};
 
-	return (
-		<div className={cn(
-			"flex items-center gap-2 truncate",
-			className,
-			classNames?.base,
-		)}>
-			<OrganizationLogo className={cn(size !== "sm" && "my-0.5")}
-			                  classNames={classNames?.avatar} isPending={isPending}
-			                  localization={localization} organization={organization} size={size} />
-			<div className={cn(
-				"flex flex-col truncate text-left leading-tight",
-				classNames?.content,
-			)}>
-				{isPending ? (
-					<>
-						<Skeleton className={cn(
-							"max-w-full",
-							size === "lg" ? "h-4.5 w-32" : "h-3.5 w-24",
-							classNames?.title,
-							classNames?.skeleton,
-						)} />
-						{size !== "sm" && (
-							<Skeleton className={cn(
-								"mt-1.5 max-w-full",
-								size === "lg" ? "h-3.5 w-24" : "h-3 w-16",
-								classNames?.subtitle,
-								classNames?.skeleton,
-							)} />
-						)}
-					</>
-				) : (
-					<>
-            <span className={cn(
-	            "truncate font-semibold",
-	            size === "lg" ? "text-base" : "text-sm",
-	            classNames?.title,
-            )}>
-              {organization?.name || localization?.ORGANIZATION}
-            </span>
-						{size !== "sm" && organization?.slug && (
-							<span className={cn(
-								"truncate opacity-70",
-								size === "lg" ? "text-sm" : "text-xs",
-								classNames?.subtitle,
-							)}>
-                {organization.slug}
-              </span>
-						)}
-					</>
-				)}
-			</div>
-		</div>
-	);
+  const localization = useMemo(
+    () => ({ ...contextLocalization, ...localizationProp }),
+    [contextLocalization, localizationProp]
+  );
+
+  const path = pathProp ?? pathname?.split("/").pop();
+
+  const view = viewProp || getViewByPath(viewPaths!, path) || "SETTINGS";
+
+  const slug = slugProp || contextSlug;
+
+  const {
+    data: organization,
+    isPending: organizationPending,
+    isRefetching: organizationRefetching
+  } = useCurrentOrganization({ slug });
+
+  const navItems: {
+    view: OrganizationViewPath;
+    label: string;
+  }[] = [
+    { view: "SETTINGS", label: localization.SETTINGS },
+    { view: "MEMBERS", label: localization.MEMBERS }
+  ];
+
+  if (apiKey) {
+    navItems.push({
+      view: "API_KEYS",
+      label: localization.API_KEYS
+    });
+  }
+
+  useEffect(() => {
+    if (organization || organizationPending || organizationRefetching) return;
+
+    replace(
+      `${accountOptions?.basePath}/${accountOptions?.viewPaths?.ORGANIZATIONS}`
+    );
+  }, [
+    organization,
+    organizationPending,
+    organizationRefetching,
+    accountOptions?.basePath,
+    accountOptions?.viewPaths?.ORGANIZATIONS,
+    replace
+  ]);
+
+  return (
+    <div
+      className={cn(
+        "flex w-full grow flex-col gap-4 md:flex-row md:gap-12",
+        className,
+        classNames?.base
+      )}
+    >
+      {!hideNav && (
+        <div className="flex justify-between gap-2 md:hidden">
+          <Label className="text-base font-semibold">
+            {navItems.find((i) => i.view === view)?.label}
+          </Label>
+
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant="outline">
+                <MenuIcon />
+              </Button>
+            </DrawerTrigger>
+
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle className="hidden">
+                  {localization.ORGANIZATION}
+                </DrawerTitle>
+              </DrawerHeader>
+              <div className="flex flex-col px-4 pb-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.view}
+                    href={`${organizationOptions?.basePath}${organizationOptions?.pathMode === "slug" ? `/${slug}` : ""}/${organizationOptions?.viewPaths[item.view]}`}
+                  >
+                    <Button
+                      size="lg"
+                      className={cn(
+                        "w-full justify-start px-4 transition-none",
+                        classNames?.drawer?.menuItem,
+                        view === item.view
+                          ? "font-semibold"
+                          : "text-foreground/70"
+                      )}
+                      variant="ghost"
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </div>
+      )}
+
+      {!hideNav && (
+        <div className="hidden md:block">
+          <div
+            className={cn(
+              "flex w-48 flex-col gap-1 lg:w-60",
+              classNames?.sidebar?.base
+            )}
+          >
+            {navItems.map((item) => (
+              <Link
+                key={item.view}
+                href={`${organizationOptions?.basePath}${organizationOptions?.pathMode === "slug" ? `/${slug}` : ""}/${organizationOptions?.viewPaths[item.view]}`}
+              >
+                <Button
+                  size="lg"
+                  className={cn(
+                    "w-full justify-start px-4 transition-none",
+                    classNames?.sidebar?.button,
+                    view === item.view ? "font-semibold" : "text-foreground/70",
+                    view === item.view && classNames?.sidebar?.buttonActive
+                  )}
+                  variant="ghost"
+                >
+                  {item.label}
+                </Button>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {view === "MEMBERS" && (
+        <div
+          className={cn(
+            "flex w-full flex-col gap-4 md:gap-6",
+            className,
+            classNames?.cards
+          )}
+        >
+          <OrganizationMembersCard
+            classNames={classNames?.card}
+            localization={localization}
+            slug={slug}
+          />
+
+          <OrganizationInvitationsCard
+            classNames={classNames?.card}
+            localization={localization}
+            slug={slug}
+          />
+        </div>
+      )}
+
+      {view === "API_KEYS" && (
+        <ApiKeysCard
+          classNames={classNames?.card}
+          localization={localization}
+          isPending={organizationPending}
+          organizationId={organization?.id}
+        />
+      )}
+
+      {view === "SETTINGS" && (
+        <OrganizationSettingsCards
+          classNames={classNames}
+          localization={localization}
+          slug={slug}
+        />
+      )}
+    </div>
+  );
 }

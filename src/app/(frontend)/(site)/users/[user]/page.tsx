@@ -54,18 +54,40 @@ type Args = {
 };
 
 export default async function Page({params: paramsPromise}: Args) {
-	const {user = "@"} = await paramsPromise;
+	const {user = ""} = await paramsPromise;
 	const userSlug = user.startsWith("@") ? user.split("@")[1] : user;
 	if (!userSlug || userSlug.length < 1) {
 		return redirect("/404");
 	}
-	const page = await queryUserBySlug({userSlug});
 	const payload = await getPayload({config});
+	const page = await payload.find({
+		collection:'users',
+		where:{
+			slug:{
+				like:userSlug,
+			}
+		},pagination:false,
+		select:{
+
+			profile:true,
+		},
+		limit:1,
+		depth:1,
+	}).then(r=>
+		r.docs[0]
+	).then(r=>r||null).catch(err=>{
+		payload.logger.error(err);
+		return null;
+	})
+	console.log('user query for {profile:true}',page)
+	if(!page){
+		return redirect("/404");
+	}
 	const slides = await payload.find({
 		collection: "profile",
 		where: {
 			author: {
-				equals: page?.id,
+				equals: page.id,
 			},
 		},
 		pagination: false,
@@ -191,7 +213,6 @@ export default async function Page({params: paramsPromise}: Args) {
 		})
 		: [firstSlide, secondSlide, thirdSlide, fourthSlide];
 
-	if (!page) return <PayloadRedirects url={"/users"} />;
 	return (
 		<>
 			<ProfileSlide userId={page.id} name={user} bio={user} places={["", "", ""]} image={""}
@@ -227,7 +248,7 @@ export async function generateMetadata({
 	return generateMeta({
 		doc: {
 			...rest,
-			portrait: portrait?.url || "",
+			portrait: portrait?.url||rest.image || "",
 		},
 	});
 }

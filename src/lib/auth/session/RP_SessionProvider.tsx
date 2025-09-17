@@ -9,21 +9,9 @@ import {Bookmark} from "@/payload-types";
 import type {RP_Roles} from "@/stores/Notification/NotificationStore";
 import {SyncedNotification} from "@collections/Notifications/hooks/types";
 
-interface Props {
-	/**
-	 * The session from the server
-	 *
-	 * @default null
-	 */
-	session: RP_SessionData | null;
-	/**
-	 * The children to render
-	 */
-	children: ReactNode;
-}
-
-export type RP_Bookmark = {
-	[x in Bookmark["target"]["relationTo"]]: Bookmark["target"]["value"][];
+type BookmarkedCollectionSlug =Bookmark["target"]["relationTo"];
+type RP_Bookmark = {
+	[x in BookmarkedCollectionSlug]?:string[];
 };
 export type RP_SessionUser = SessionType["user"] & { bookmarks: RP_Bookmark };
 export type RP_SessionActions = {
@@ -31,29 +19,29 @@ export type RP_SessionActions = {
 		bookmarks,
 	}: {
 		bookmarks: {
-			collection: Bookmark["target"]["relationTo"];
-			ids: Bookmark["target"]["value"] | Bookmark["target"]["value"][];
+			collection: BookmarkedCollectionSlug;
+			ids: string[];
 		};
 	}) => void;
 	addBookmark: ({
 		collection, id,
 	}: {
-		collection: Bookmark["target"]["relationTo"]; id: Bookmark["target"]["value"];
+		collection: BookmarkedCollectionSlug; id:string;
 	}) => void;
 	deleteBookmark: ({
 		collection, id,
 	}: {
-		collection: Bookmark["target"]["relationTo"]; id: Bookmark["target"]["value"];
+		collection: BookmarkedCollectionSlug; id: string;
 	}) => void;
 	getBookmarks: ({
 		collection,
 	}: {
-		collection: Bookmark["target"]["relationTo"];
-	}) => Bookmark["target"]["value"][];
+		collection:BookmarkedCollectionSlug ;
+	}) => string[];
 	isBookmarked: ({
 		collection, id,
 	}: {
-		collection: Bookmark["target"]["relationTo"]; id: Bookmark["target"]["value"];
+		collection: BookmarkedCollectionSlug; id: string;
 	}) => boolean;
 	getUser: (id: string) => Promise<RP_SessionUser | null>;
 	setUser: (user: Partial<RP_SessionUser>) => void;
@@ -101,8 +89,8 @@ const createSessionStore = (init: RP_SessionUser = {
 	slug: null!,
 },) => {
 	return createStore<RP_LocalSession>()((set, get) => ({
-		...init, setBookmarks: (bookmarks) => set((state) => {
-			const collections = Object.keys(bookmarks,) as Bookmark["target"]["relationTo"][];
+		...init, setBookmarks: ({bookmarks}) => set((state) => {
+			const collections = Object.keys(bookmarks) as BookmarkedCollectionSlug[] ;
 			const bk = state.bookmarks;
 			collections.forEach((collection) => {
 				bk[collection] = bookmarks[collection];

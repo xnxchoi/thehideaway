@@ -1,11 +1,10 @@
 "use client";
 
-import {useRouter} from "next/navigation";
+import {useTransitionRouter} from "next-transition-router";
 import type {RefObject} from "react";
 import {useCallback, useEffect, useRef} from "react";
 import {useCursorStore, useRPStore} from "@/providers/RP_Pro";
 import {delay} from "@/utilities/rp_utils";
-import gsap from "gsap";
 
 type UseClickableCardType<T extends HTMLElement> = {
 	card: {
@@ -27,7 +26,7 @@ export function useClickableCard<T extends HTMLElement>({
 	newTab = false,
 	scroll = true,
 }: Props): UseClickableCardType<T> {
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const card = useRef<T>(null);
 	const link = useRef<HTMLAnchorElement>(null);
 	const timeDown = useRef<number>(0);
@@ -72,15 +71,7 @@ export function useClickableCard<T extends HTMLElement>({
 							window.open(link.current.href, target);
 						} else {
 							e.preventDefault();
-							setPageIsTransitioning(true);
-							gsap.to(".rp-container .page", {
-								opacity: 0,
-								ease: "power2.inOut",
-								duration: 0.2,
-							});
-							delay(40).then(() => {
-								router.push(link.current!.href, {scroll});
-							});
+							router.push(link.current!.href, {scroll});
 						}
 					}
 				}
@@ -123,7 +114,7 @@ export function useClickableCardRP<T extends HTMLElement>({
 	newTab = false,
 	scroll = true,
 }: Props): UseClickableCardType<T> {
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const card = useRef<T>(null);
 	const link = useRef<HTMLAnchorElement>(null);
 	const timeDown = useRef<number>(0);
@@ -168,20 +159,13 @@ export function useClickableCardRP<T extends HTMLElement>({
 							window.open(link.current.href, target);
 						} else {
 							setPageIsTransitioning(true);
-							gsap.to(".rp-container .page", {
-								duration: 0.2,
-								opacity: 0,
-								ease: "power2.inOut",
-							});
-							delay(40).then(() => {
-								router.push(link.current!.href);
-							});
+							router.push(link.current!.href, {scroll});
 						}
 					}
 				}
 			}
 		}, // eslint-disable-next-line react-hooks/exhaustive-deps
-		[router, card, link, timeDown],
+		[router, card, link, timeDown, scroll],
 	);
 	const handleMouseEnter = useCallback(() => {
 		setCursorState("FOCUS");
@@ -214,7 +198,7 @@ export function useClickableCardRP<T extends HTMLElement>({
 			}
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [card, link, router]);
+	}, [card, link, router, scroll]);
 
 	return {
 		card: {

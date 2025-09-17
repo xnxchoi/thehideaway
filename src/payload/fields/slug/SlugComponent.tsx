@@ -13,26 +13,23 @@ import {
 import type {TextFieldClientProps} from "payload";
 import React, {useCallback, useEffect, useState} from "react";
 import {formatSlug} from "./formatSlug";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip";
 import {LockClosedIcon, LockOpen2Icon} from "@radix-ui/react-icons";
+import {useCursorStore} from "@/providers/RP_Pro";
 
 type SlugComponentProps = {
 	fieldToUse: string;
 	checkboxFieldPath: string;
 } & TextFieldClientProps;
 
-export const SlugComponent: React.FC<SlugComponentProps> = ({
+export const SlugComponent = ({
 	field,
 	fieldToUse,
 	checkboxFieldPath: checkboxFieldPathFromProps,
 	path,
 
 	readOnly: readOnlyFromProps,
-}) => {
+}: SlugComponentProps) => {
 	const {label} = field;
 	const checkboxFieldPath = path?.includes(".")
 		? `${path}.${checkboxFieldPathFromProps}`
@@ -48,17 +45,21 @@ export const SlugComponent: React.FC<SlugComponentProps> = ({
 	const targetFieldValue = useFormFields(([fields]) => {
 		return fields[fieldToUse]?.value as string;
 	});
-	const {id} = useDocumentInfo();
+
+	const hash = useFormFields(([field]) => {
+		return field['hashId']?.value as string
+	})
 
 	// const { onMouseEnter, onMouseLeave } = useDomCursor({})
-
+	useEffect(() => {
+	}, [])
 	const [ghostValue, setGhostValue] = useState("");
 	const [ghostSize, setGhostSize] = useState(0);
 	useEffect(() => {
-		const ghost = value?.length > 0 && id ? `-${id}` : "";
+		const ghost = (value && value.length > 0 && hash.length > 0) && `-${hash}` || "";
 		setGhostValue(ghost);
-		setGhostSize(ghost?.length + 1);
-	}, [id, value]);
+		setGhostSize(ghost.length + 1);
+	}, [hash, value]);
 
 	useEffect(() => {
 		if (checkboxValue) {
@@ -67,7 +68,7 @@ export const SlugComponent: React.FC<SlugComponentProps> = ({
 
 				setValue(formattedSlug);
 			} else {
-				if (value !== "") setValue("");
+				setValue("");
 			}
 		}
 	}, [targetFieldValue, checkboxValue, setValue, value]);
@@ -84,7 +85,13 @@ export const SlugComponent: React.FC<SlugComponentProps> = ({
 		},
 		[checkboxValue, checkboxFieldPath, dispatchFields],
 	);
-	// const setCursor = useCursorStore((l) => l.setCursorState)
+	const setCursor = useCursorStore((l) => l.setCursorState)
+	const onMouseEnter = useCallback(() => {
+		setCursor("FOCUS")
+	}, [setCursor])
+	const onMouseLeave = useCallback(() => {
+		setCursor(null)
+	}, [setCursor])
 
 	const readOnly = readOnlyFromProps || checkboxValue;
 
@@ -94,9 +101,7 @@ export const SlugComponent: React.FC<SlugComponentProps> = ({
 				<label htmlFor={`field-${path}`} className="text-muted-foreground">
 					Slug :{" "}
 				</label>
-				<div
-					// onMouseEnter={onMouseEnter}
-					// onMouseLeave={onMouseLeave} className="flex">
+				<div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} className="flex">
 					<Button className="flex gap-2 justify-center items-center" buttonStyle="none"
 					        onClick={handleLock}>
 						{checkboxValue ? (
@@ -162,8 +167,10 @@ export const SlugComponent: React.FC<SlugComponentProps> = ({
 									       }} data-active={checkboxValue} readOnly={true} />
 								</TooltipTrigger>
 								<TooltipContent sideOffset={-10} align={"start"} alignOffset={5}>
-									<span className="text-warm-beige">ID</span>
-									<span> of this post.</span>
+									<div
+										className={'block p-0 m-0 border-none bg-transparent text-foreground'}>A <span
+										className="text-warm-beige">unique identifier</span>
+										<span> for this post.</span></div>
 								</TooltipContent>
 							</div>
 						</Tooltip>

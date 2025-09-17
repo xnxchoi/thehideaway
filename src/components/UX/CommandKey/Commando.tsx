@@ -1,5 +1,5 @@
 "use client";
-import React, {ReactNode, useEffect, useState} from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import {
 	CommandEmpty,
 	CommandGroup,
@@ -7,16 +7,14 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
-import {useDebounce} from "@/utilities/useDebounce";
-import {useSearchBar} from "@/providers/RP_Pro";
-import {useLenis} from "lenis/react";
-import {isInternalLink} from "@/utilities/isInternalLink";
-import {useVoyageur} from "@/stores/Routing/RP_Voyageur";
-import {CreditCard, Settings, User} from "lucide-react";
-import {useRouter} from "next/navigation";
-import {delay} from "@/utilities/rp_utils";
-import gsap from "gsap";
-import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
+import { useDebounce } from "@/utilities/useDebounce";
+import { useSearchBar } from "@/providers/RP_Pro";
+import { useLenis } from "lenis/react";
+import { isInternalLink } from "@/utilities/isInternalLink";
+import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { CreditCard, Settings, User } from "lucide-react";
+import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
+import { useTransitionRouter } from "next-transition-router";
 
 export function Commando() {
 	const user = useRPSession((l) => l);
@@ -140,9 +138,9 @@ export const LinkedCommandItem = (props: {
 	children?: ReactNode;
 	[x: string]: any;
 }) => {
-	const {href, title, value, ...rest} = props;
+	const { href, title, value, ...rest } = props;
 	const lenis = useLenis();
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const setOpen = useSearchBar((l) => l.setOpen);
 	const url = useVoyageur((l) => l.url);
 	const pathName = useVoyageur((l) => l.pathName);
@@ -152,13 +150,12 @@ export const LinkedCommandItem = (props: {
 		if (isAnchor) {
 			lenis && lenis.scrollTo(href);
 		} else {
-			gsap.to(".rp-container .page", {opacity: 0, duration: 0.2});
-			delay(40).then(() => router.push(decodeURIComponent(href)));
+			router.push(decodeURIComponent(href));
 		}
 	};
 	return (
 		<CommandItem data-themed={"color,background-color"} value={value ?? href}
-		             onSelect={handleClick}>
+			onSelect={handleClick}>
 			{rest.children}
 			{title}
 			{rest.type && (
@@ -191,7 +188,7 @@ export const LinkedItem = (props: {
 	title?: string;
 	updatedAt: string;
 }) => {
-	const {doc, category, createdAt, updatedAt, id, name, meta, slug, title} =
+	const { doc, category, createdAt, updatedAt, id, name, meta, slug, title } =
 		props;
 
 	const href = `${doc?.relationTo === "pages" ? "" : (doc?.relationTo ?? "")}/${doc?.relationTo === "users" ? meta.title : slug || meta.title}`;
@@ -203,7 +200,7 @@ export const LinkedItem = (props: {
 	};
 	return (
 		<LinkedCommandItem href={href} value={meta.title || title || name || href}
-		                   title={meta.title || title || name || ""} type={doc?.relationTo}
-		                   {...internalLinkProps} />
+			title={meta.title || title || name || ""} type={doc?.relationTo}
+			{...internalLinkProps} />
 	);
 };

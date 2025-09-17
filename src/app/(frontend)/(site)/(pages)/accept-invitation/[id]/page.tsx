@@ -11,17 +11,19 @@ import {
 } from "@/components/ui/card";
 import {CheckIcon, XIcon} from "lucide-react";
 import {useEffect, useState} from "react";
-import {useParams, useRouter} from "next/navigation";
+import {useParams, } from "next/navigation";
+
 import {Skeleton} from "@/components/ui/skeleton";
 import {authClient, organization} from "@/lib/auth/client";
 import {InvitationError} from "./invitation-error";
 import {RPage} from "@/components/UX/Transition";
+import { useTransitionRouter } from "next-transition-router";
 
 export default function InvitationPage() {
 	const params = useParams<{
 		id: string;
 	}>();
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const [invitationStatus, setInvitationStatus] = useState<
 		"pending" | "accepted" | "rejected"
 	>("pending");

@@ -17,7 +17,7 @@ import {
 import {authClient} from "@/lib/auth/client"
 import {useBetterAuth} from "@/lib/auth/context"
 import {ChevronDown, PlusCircle} from "lucide-react"
-import {useRouter} from "next/navigation"
+import {useTransitionRouter} from "next-transition-router"
 import {use, useState} from "react"
 import {User} from "@/payload-types"
 
@@ -28,7 +28,7 @@ export default function AccountSwitcher() {
 		| null
 	const deviceSessions = use(deviceSessionsPromise)
 	const [open, setOpen] = useState(false)
-	const router = useRouter()
+	const router = useTransitionRouter()
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -57,6 +57,7 @@ export default function AccountSwitcher() {
 						<CommandGroup heading="Current Account"
 						              className={" [&_[cmdk-group-heading]]:text-foreground!"}>
 							<CommandItem onSelect={() => {
+								setOpen(false);
 							}} className="hover:bg-accent/50 w-full justify-between"
 							             key={`current-account-${currentUser?.id}`}>
 								<div className="flex items-center">
@@ -105,8 +106,8 @@ export default function AccountSwitcher() {
 					<CommandList>
 						<CommandGroup>
 							<CommandItem onSelect={() => {
-								router.push("/sign-in")
 								setOpen(false)
+								router.push("/sign-in")
 							}}
 							             className="hover:bg-rouge-400 hover:text-rouge-400 group transition-colors duration-200">
 								<PlusCircle

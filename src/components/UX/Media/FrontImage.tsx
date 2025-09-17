@@ -35,7 +35,7 @@ export const FrontImage = (props: FrontImageProps) => {
 		} else {
 			setImageMedia(isUser ? (image as UserMedia) : (image as Media));
 		}
-	}, []);
+	}, [image, isUser]);
 	useEffect(() => {
 		if (!imageMedia) return;
 		if (imageMedia.darkmode === null || imageMedia.darkmode === undefined) {
@@ -44,7 +44,7 @@ export const FrontImage = (props: FrontImageProps) => {
 					setImageMedia(res);
 				});
 		}
-	}, []);
+	}, [imageMedia]);
 	useEffect(() => {
 		if (
 			!imageMedia ||
@@ -55,14 +55,13 @@ export const FrontImage = (props: FrontImageProps) => {
 		setImageTheme(imageMedia.darkmode ? "dark" : "light");
 	}, [imageMedia]);
 	useEffect(() => {
-		console.log("hover", hover);
-		console.log("imageTheme", imageTheme);
+
 		if (hover) {
 			setCursorTheme(imageTheme);
 		} else {
 			resetCursorTheme();
 		}
-	}, [hover]);
+	}, [hover, imageTheme, resetCursorTheme, setCursorTheme]);
 	return (
 		<div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
 			{(imageMedia && (

@@ -1,1 +1,1 @@
-export * from "./lib/tanstack/auth-ui-provider-tanstack";
+export * from "./lib/tanstack/auth-ui-provider-tanstack"

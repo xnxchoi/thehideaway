@@ -2028,7 +2028,7 @@ label,
 }
 
 .ha-breadcrumb {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -2152,7 +2152,7 @@ label,
 }
 
 .fotd h1 {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-weight: 900;
   color: rgb(241 241 241/85%);
   font-size: 35px;
@@ -3408,7 +3408,7 @@ input:autofill:active {
 
 .marq {
   font-size: var(--text-h6);
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-weight: 300;
   letter-spacing: 0.03em;
 }
@@ -4111,7 +4111,7 @@ body.writers-block #rp-header.sticky {
   font-size: var(--text-h6);
   margin: 0;
   margin-bottom: 0.5rem;
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
 }
 
 .story-list-item:first-of-type > div {
@@ -5874,7 +5874,7 @@ table.tb-stats {
   box-shadow: 0 0 1px 1px var(--dark-grey);
   border-width: 1px;
   border-color: oklch(var(--fg) / 0.63);
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   overflow: hidden;
 }
 
@@ -6514,7 +6514,7 @@ li {
   border: 1px solid;
   border-radius: 50%;
   color: oklch(var(--foreground) / 0.86);
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 8px;
   font-weight: 400;
   height: 14px;

@@ -3,6 +3,7 @@ import {createRichtext} from "@collections/Users/helpers/createRichtext";
 import {DateTime} from "luxon";
 import {User} from "@/payload-types";
 import {randomNumber} from "@/utilities/randomNumber";
+import {uuidv7} from "uuidv7";
 
 type AfterChangeArgs = Parameters<CollectionAfterChangeHook<User>>[0];
 type ReqArgs = Pick<AfterChangeArgs, "req" | "doc">;
@@ -90,18 +91,22 @@ export const createProfile = async ({req, doc}: Rest & ReqArgs) => {
 			},
 			slides: [
 				{
+					id:uuidv7(),
 					title: `About ${doc.firstName}`,
 					content: createRichtext([
 						`${doc.firstName} ${doc.lastName} is a ${doc?.role ?? "user"} of The Hideaway since ${doc?.createdAt ? DateTime.fromISO(
 							doc.createdAt).toLocaleString(DateTime.DATE_MED) : DateTime.now().
 							toLocaleString(DateTime.DATE_MED)}`,
 					]),
+					visuals:null,
 				},
-				{
+				{id:uuidv7(),
 					title: `${doc.firstName}: Archive`,
 					content: createRichtext([
 						`${doc.firstName}'s writings and creations to this date`,
 					]),
+					visuals:null,
+
 				},
 			],
 		},

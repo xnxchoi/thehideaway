@@ -1,24 +1,22 @@
-import type {PayloadRequest, Where} from "payload";
+import type { BaseFilter, Where } from "payload";
 
-type Args = {
-	req: PayloadRequest;
-};
-export const filterDocByCurrentUser = ({req}: Args): null | Where => {
+export const filterDocByCurrentUser: BaseFilter = ({ req }) => {
 	const user = req.user;
-	if (!user) return null;
-	if (user?.role === "admin") return {};
-	const userID = user.id;
-	if (userID) {
-		return {
-			author: {
-				equals: userID,
-			},
-		};
+	const w1: Where & { or: Where[] } = {
+		or: [
+			{
+				_status: {
+					equals: "published",
+				}
+			}, { author: { exists: false } }
+		]
 	}
-
+	if (!user) return w1;
+	if (user.role === "admin") return null;
 	return {
-		_status: {
-			equals: "published",
+		author: {
+			equals: user.id,
 		},
 	};
+
 };

@@ -25,6 +25,7 @@ import {cn} from "@/lib/utils";
 import * as m from "motion/react-m";
 import {useBetterAuth} from "@/lib/auth/context";
 import {User} from "@/payload-types";
+import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 
 interface SlitProps extends HTMLAttributes<HTMLDivElement> {
 	style: HTMLAttributes<HTMLDivElement>["style"] & {
@@ -60,7 +61,8 @@ interface DDUser {
 	image?: string | null;
 }
 
-export function UserDropdown({user}: { user: DDUser }) {
+export function UserDropdown() {
+	const user=useRPSession(r=>r)
 	const dropdownOpen = useRPStore((store) => store.dropdownOpen);
 	const setD = useRPStore((store) => store.setDropdownOpen);
 	const [isOpen, setIsOpen] = useState(false);
@@ -73,7 +75,12 @@ export function UserDropdown({user}: { user: DDUser }) {
 	}, [dropdownOpen]);
 
 	return (
-		<m.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} key={user.id}
+		<m.div initial={{opacity: 0,scaleX:0.01}} animate={{opacity: 1,
+		scaleX:1,
+		}} exit={{opacity: 0
+		,
+			scaleX:0.01,
+		}} key={user.id}
 		       transition={{duration: 0.3, ease: "easeOut"}}>
 			<DropdownMenu open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
 				<DropdownMenuTrigger asChild>
@@ -96,7 +103,6 @@ export function UserDropdown({user}: { user: DDUser }) {
 						                    title={"Profile"}></LinkedDropdownItem>
 						<LinkedDropdownItem href={`/prive`} title={"Settings"}></LinkedDropdownItem>
 						<LinkedDropdownItem
-							disabled={!["admin", "editor", "author"].includes(user.role)}
 							href={"/vault/collections/posts"}
 							title="Your Posts"></LinkedDropdownItem>
 					</DropdownMenuGroup>

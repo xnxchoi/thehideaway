@@ -1,11 +1,13 @@
 import type {FieldAccess, TextField} from "payload";
 import {formatUserHandleHook} from "@/payload/fields/handle/formatUserHandle";
 import {User} from "@/payload-types";
+import {nanoid} from "nanoid";
 
 type Overrides = {
 	userHandleOverrides?: Partial<TextField>;
 };
 
+// type UserHandle = (overrides?: Overrides) => [TextField, TextField];
 type UserHandle = (overrides?: Overrides) => [TextField];
 
 export const userHandleField: UserHandle = (overrides = {}) => {
@@ -14,12 +16,7 @@ export const userHandleField: UserHandle = (overrides = {}) => {
 	// Expect ts error here because of typescript mismatching Partial<TextField> with TextField
 	// @ts-expect-error
 	const userHandleField: TextField = {
-		name: "slug",
-		unique: true,
-		required: true,
-		type: "text",
-		index: true,
-		access: {
+		name: "slug", unique: true, required: true, type: "text", index: true, access: {
 			update: ({data, req, id, doc}: Parameters<FieldAccess<User>>[0]) => {
 				const docId = id || doc?.id || data?.id;
 				if (req.context.overrideAccess === true) return true;
@@ -30,21 +27,26 @@ export const userHandleField: UserHandle = (overrides = {}) => {
 			},
 		},
 
-		saveToJWT: true,
-		...(userHandleOverrides || {}),
-		hooks: {
+		saveToJWT: true, ...(userHandleOverrides || {}), hooks: {
 			// Kept this in for hook or API based updates
 			beforeValidate: [formatUserHandleHook],
-		},
-		admin: {
-			...(userHandleOverrides?.admin || {}),
-			components: {
+		}, admin: {
+			...(userHandleOverrides?.admin || {}), components: {
 				Field: {
 					path: "@/payload/fields/handle/ServerHandle.tsx",
 				},
 			},
 		},
 	};
+	const hashId: TextField = {
+		type: "text", name: "hashId", defaultValue: () => nanoid(11), access: {
+			update: () => false,
+		}, required: true,
+		label:"Your ID",
+		admin:{
+			readOnly:true,
 
+		},
+	}
 	return [userHandleField];
 };

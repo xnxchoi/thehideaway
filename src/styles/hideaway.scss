@@ -87,13 +87,13 @@ html {
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   //color: oklch(var(--foreground)/1);
-  font-family: var(--rp-sans), sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-size: 62.5%;
   background: oklch(var(--bg) / 0);
 }
 
 body {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   min-width: 100vw;
   min-height: calc(var(--vh) * 100);
   padding-top: 0;
@@ -398,7 +398,7 @@ body {
   --bell-pad: 2rem;
   //padding:0 var(--bell-pad) 0 calc(var(--bell-pad) * .26)!important;
   padding: 0 8px !important;
-  gap: 2px;
+  gap: 3px;
   transition-property: color, background-color, width;
   position: relative;
   overflow: hidden;
@@ -426,7 +426,7 @@ body {
 .bell-link-text {
   font-style: normal;
   font-weight: 350;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   line-height: 114%;
   letter-spacing: -0.01em;
   //right: calc(var(--button-height) - 4px);
@@ -436,7 +436,7 @@ body {
 
 @media (min-width: 767px) {
   .bell-link-text {
-    font-size: 1.2rem;
+    //font-size: 1.2rem;
     line-height: 120%;
     display: block;
     min-width: fit-content;
@@ -444,10 +444,9 @@ body {
 }
 
 svg.bell-icon {
-  stroke-width: 1.5px;
+  stroke-width: 1.25px;
   background: transparent;
-  min-height: 1.3rem;
-  min-width: 1.3rem;
+  aspect-ratio: 1;
   //position: absolute;
   width: 1.3rem;
 }

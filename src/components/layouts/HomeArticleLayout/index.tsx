@@ -5,12 +5,12 @@ import {DateTime} from 'luxon'
 import {HomeSquare} from '@/components/layouts/HomeSquare'
 import {RP_BadgeTag} from '@/components/UX/RP_BadgeTag'
 import {FrontImage} from '@/components/UX/Media/FrontImage'
-import {FoundArticle} from '@/payload/collections/Posts/post-types'
+import {ArticleOverview} from '@/payload/collections/Posts/post-types'
 import {cn} from "@/lib/utils"
 import {useTheme} from "@/providers/Theme"
 
 export const HomeArticleLayout = (props: {
-	posts: FoundArticle[]
+	posts: ArticleOverview[]
 	className?: string
 }) => {
 	const {posts, className} = props
@@ -83,7 +83,7 @@ export const HomeArticleLayout = (props: {
 		</div>
 	)
 }
-const ArticleList = (props: { posts: (FoundArticle)[] } & ComponentProps<'div'>) => {
+const ArticleList = (props: { posts: (ArticleOverview)[] } & ComponentProps<'div'>) => {
 	const {posts, ...rest} = props
 
 	return (
@@ -105,12 +105,12 @@ const ArticleList = (props: { posts: (FoundArticle)[] } & ComponentProps<'div'>)
 						category,
 						id,
 						bookmarks,
-						bookmarksCount,
+						bookmarksCount,tags
 					} = doc
 
 					return (
 						<Article articleID={id} index={index} bookmarks={bookmarks}
-						         bookmarksCount={bookmarksCount} category={category} image={image}
+						   tags={tags}      bookmarksCount={bookmarksCount} category={category} image={image}
 						         author={author} subtitle={subtitle} title={title!}
 						         publishedAt={publishedAt || ""} slug={slug ?? ""} key={index} />
 					)
@@ -125,7 +125,7 @@ const ArticleList = (props: { posts: (FoundArticle)[] } & ComponentProps<'div'>)
 	)
 }
 
-const Article = (props: ComponentPropsWithoutRef<'div'> & Omit<FoundArticle, 'id'> & {
+const Article = (props: ComponentPropsWithoutRef<'div'> & Omit<ArticleOverview, 'id'> & {
 	articleID: string;
 	index: number
 }) => {

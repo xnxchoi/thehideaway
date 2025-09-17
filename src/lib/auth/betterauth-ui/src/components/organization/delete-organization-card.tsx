@@ -1,48 +1,101 @@
-"use client";
+"use client"
 
-import {useContext, useState} from "react";
+import type { Organization } from "better-auth/plugins/organization"
+import { useContext, useMemo, useState } from "react"
 
-import {AuthUIContext} from "../../lib/auth-ui-provider";
-import {SettingsCard} from "../settings/shared/settings-card";
-import type {SettingsCardProps} from "../settings/shared/settings-card";
-import {DeleteOrganizationDialog} from "./delete-organization-dialog";
+import { useCurrentOrganization } from "../../hooks/use-current-organization"
+import { AuthUIContext } from "../../lib/auth-ui-provider"
+import type { SettingsCardProps } from "../settings/shared/settings-card"
+import { SettingsCard } from "../settings/shared/settings-card"
+import { DeleteOrganizationDialog } from "./delete-organization-dialog"
 
 export function DeleteOrganizationCard({
-	className,
-	classNames,
-	localization,
-}: SettingsCardProps) {
-	const {
-		hooks: {useActiveOrganization, useSession},
-		localization: contextLocalization,
-	} = useContext(AuthUIContext);
+    className,
+    classNames,
+    localization: localizationProp,
+    slug,
+    ...props
+}: SettingsCardProps & { slug?: string }) {
+    const { localization: contextLocalization } = useContext(AuthUIContext)
 
-	localization = {...contextLocalization, ...localization};
+    const localization = useMemo(
+        () => ({ ...contextLocalization, ...localizationProp }),
+        [contextLocalization, localizationProp]
+    )
 
-	const [showDialog, setShowDialog] = useState(false);
+    const { data: organization } = useCurrentOrganization({ slug })
 
-	const {data: activeOrganization, isPending: organizationPending} =
-		useActiveOrganization();
-	const {data: sessionData, isPending: sessionPending} = useSession();
+    if (!organization)
+        return (
+            <SettingsCard
+                className={className}
+                classNames={classNames}
+                actionLabel={localization?.DELETE_ORGANIZATION}
+                description={localization?.DELETE_ORGANIZATION_DESCRIPTION}
+                isPending
+                title={localization?.DELETE_ORGANIZATION}
+                variant="destructive"
+            />
+        )
 
-	const isPending = organizationPending || sessionPending;
+    return (
+        <DeleteOrganizationForm
+            className={className}
+            classNames={classNames}
+            localization={localization}
+            organization={organization}
+            {...props}
+        />
+    )
+}
 
-	const membership = activeOrganization?.members?.find(
-		(member) => member.userId === sessionData?.user.id,
-	);
-	const isOwner = membership?.role === "owner";
+function DeleteOrganizationForm({
+    className,
+    classNames,
+    localization: localizationProp,
+    organization
+}: SettingsCardProps & { organization: Organization }) {
+    const {
+        localization: contextLocalization,
+        hooks: { useHasPermission }
+    } = useContext(AuthUIContext)
 
-	if (!isPending && !isOwner) return null;
+    const localization = useMemo(
+        () => ({ ...contextLocalization, ...localizationProp }),
+        [contextLocalization, localizationProp]
+    )
 
-	return (
-		<>
-			<SettingsCard className={className} classNames={classNames}
-			              actionLabel={localization?.DELETE_ORGANIZATION}
-			              description={localization?.DELETE_ORGANIZATION_DESCRIPTION}
-			              isPending={isPending} title={localization?.DELETE_ORGANIZATION}
-			              variant="destructive" action={() => setShowDialog(true)} />
-			<DeleteOrganizationDialog classNames={classNames} localization={localization}
-			                          open={showDialog} onOpenChange={setShowDialog} />
-		</>
-	);
+    const { data: hasPermission, isPending } = useHasPermission({
+        organizationId: organization.id,
+        permissions: {
+            organization: ["delete"]
+        }
+    })
+
+    const [showDialog, setShowDialog] = useState(false)
+
+    if (!hasPermission?.success) return null
+
+    return (
+        <>
+            <SettingsCard
+                className={className}
+                classNames={classNames}
+                actionLabel={localization?.DELETE_ORGANIZATION}
+                description={localization?.DELETE_ORGANIZATION_DESCRIPTION}
+                isPending={isPending}
+                title={localization?.DELETE_ORGANIZATION}
+                variant="destructive"
+                action={() => setShowDialog(true)}
+            />
+
+            <DeleteOrganizationDialog
+                classNames={classNames}
+                localization={localization}
+                open={showDialog}
+                onOpenChange={setShowDialog}
+                organization={organization}
+            />
+        </>
+    )
 }

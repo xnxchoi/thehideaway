@@ -5,11 +5,23 @@ import {
 	lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type {Block} from 'payload'
+import {uuidv7} from "uuidv7";
 
 export const HeroSquare: Block = {
 	slug: "heroSquare",
 	interfaceName: "HeroSquareBlock",
-	fields: [
+	fields: [{
+		name:"id",
+		type:"text",
+		defaultValue:()=>uuidv7(),
+		access:{
+			update:()=>false,
+		},
+		required:true,
+		admin:{
+			hidden:true,
+		}
+	},
 		{
 			name: "introContent",
 			type: "richText",

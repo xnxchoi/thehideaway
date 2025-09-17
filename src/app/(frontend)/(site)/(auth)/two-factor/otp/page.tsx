@@ -12,9 +12,9 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {authClient} from "@/lib/auth/client";
 import {AlertCircle, CheckCircle2, Mail} from "lucide-react";
-import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {RPage} from "@/components/UX/Transition";
+import { useTransitionRouter } from "next-transition-router";
 
 export default function Component() {
 	const [otp, setOtp] = useState("");
@@ -33,7 +33,7 @@ export default function Component() {
 		setIsError(false);
 		setIsOtpSent(true);
 	};
-	const router = useRouter();
+	const router = useTransitionRouter();
 
 	const validateOTP = async () => {
 		const res = await authClient.twoFactor.verifyOtp({

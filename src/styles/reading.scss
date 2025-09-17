@@ -230,7 +230,7 @@
   column-gap: 4px;
 
   display: flex;
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 14.4px;
   font-weight: 800;
   line-height: .6;
@@ -301,7 +301,7 @@
 
 
 .rp_author--info {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 10px;
   line-height: 1.17;
   text-transform: uppercase;
@@ -488,7 +488,7 @@
 .rp_caption {
   display: block;
   color: oklch(var(--faded-fg)/0.8);
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 7.20px;
   line-height: 1;
   z-index: 9
@@ -507,7 +507,7 @@
 }
 
 .rAY {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 10px;
   line-height: 1.17;
   text-transform: uppercase
@@ -583,7 +583,7 @@
 
 .rp__sub-t {
   grid-row: 4;
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   margin-top: 5px
 }
 
@@ -654,7 +654,7 @@
 }
 
 .rp_story figcaption {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   line-height: 1;
   font-size: 14px;
   z-index: 9;
@@ -733,7 +733,7 @@
 
 
 .LD0 h2 {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: var(--titleSize);
   line-height: 1;
   letter-spacing: -.01em;
@@ -755,7 +755,7 @@
 
 
 .eBX p {
-  font-family: var(--rp-sans)
+  font-family: var(--font-sans)
 }
 
 
@@ -781,7 +781,7 @@
 
 
 .xn_ .ZIL h2 {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 22px;
   letter-spacing: -.01em
 }
@@ -843,7 +843,7 @@
 }
 
 .ZXG .M4S * {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   margin: 0 0 16px
 }
 
@@ -1009,7 +1009,7 @@
 .VU5 {
   border: none;
   border-radius: 10px;
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 16px;
   order: 1;
   padding: 12px 16px;
@@ -1023,7 +1023,7 @@
 
 .g-0 {
   color: oklch(var(--faded-fg)/1);
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 12px;
   line-height: 1.2;
   margin-top: 16px;
@@ -1650,17 +1650,6 @@ aside.rhF {
         grid-row: 6;
         align-self: end;
         margin-top: 0;
-
-        &:before {
-          background: currentColor;
-          clip-path: var(--clipPathSun);
-          content: "";
-          height: 13px;
-          left: 0;
-          top: -1px;
-          position: absolute;
-          width: 13px;
-        }
 
         a {
           color: inherit;

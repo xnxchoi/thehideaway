@@ -1,149 +1,112 @@
-import type {Metadata} from "next";
+import type { Metadata } from "next";
 
-import {PayloadRedirects} from "@/payload/components/PayloadRedirects";
-import {generateMeta} from "@/utilities/generateMeta";
-import {queryPostBySlug} from "@/payload/collections/Posts/api/queryPostBySlug";
-import {Media} from "@/payload-types";
-import {getPayload} from "payload";
+import { Narrateur } from "@/components/UX/Highlightr";
+import { PrevNext } from "@/components/UX/Highlightr/prevNext";
+import { RPage } from "@/components/UX/Transition";
+import { queryPostBySlug } from "@/payload/collections/Posts/api/queryPostBySlug";
+import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
+import { generateMeta } from "@/utilities/generateMeta";
+import { getServerSideURL } from "@/utilities/getURL";
 import configPromise from "@payload-config";
-import config from "@payload-config";
-import {getUserServer} from "@/app/(frontend)/(site)/posts/[slug]/getUserServer";
-import {RPage} from "@/components/UX/Transition";
-import {ProcessedRangy} from "@/components/UX/Highlightr/types";
-import {HighlighterProvider} from "@/components/UX/Highlightr/provider";
-import {currentUser} from "@/lib/auth/context/servers";
-import {Narrateur} from "@/components/UX/Highlightr";
-
+import { getPayload } from "payload";
+import PageClient from "./page.client";
 // export const dynamic = "force-static";
 export const revalidate = 600;
 
 export async function generateStaticParams() {
-	const payload = await getPayload({config: configPromise});
-	const posts = await payload.find({
-		collection: "posts",
-		draft: false,
-		limit: 1000,
-		overrideAccess: true,
-		select: {
-			slug: true,
-		},
-	});
+  const payload = await getPayload({ config: configPromise });
+  const posts = await payload.find({
+    collection: "posts",
+    draft: false,
+    limit: 1000,
+    overrideAccess: false,
+    select: {
+      slug: true
+    },
+    user: null
+  });
 
-	const postSlug = posts.docs.map(({slug, id}) => {
-		return {slug: slug};
-	});
-	return [...postSlug];
+  const postSlug = posts.docs.map(({ slug, id }) => {
+    return { slug: slug };
+  });
+  return [...postSlug];
 }
 
 type Args = {
-	params: Promise<{
-		slug?: string;
-	}>;
+  params: Promise<{
+    slug?: string;
+  }>;
 };
 
-export default async function Post({params: paramsPromise}: Args) {
-	const {slug = ""} = await paramsPromise;
-	if (slug.length < 1) return <PayloadRedirects url={"/home"} />;
-	const payload = await getPayload({config});
-	const post = await queryPostBySlug({slug: slug});
-	const user = await currentUser();
-	if (!post) return <PayloadRedirects url={"/home"} />;
-	const citations: ProcessedRangy[] = [];
-	if (user) {
-		console.log("hey currr", user);
-		const ct = await payload.find({
-			collection: "citations",
-			overrideAccess: true,
-			where: {
-				and: [
-					{
-						author: {
-							equals: user.id,
-						},
-					},
-					{
-						"target.value": {
-							equals: post.post.id,
-						},
-					},
-				],
-			},
-			limit: 100,
-			sort: "-createdAt",
-			select: {
-				selection: true,
-				quote: true,
-				reference: true,
-				createdAt: true,
-				memo: true,
-				private: true,
-				color: true,
-				path: true,
-			},
-		}).then(
-			(r) =>
-				r.docs.flatMap((r) =>
-					r.selection.text
-						? {
-							...r,
-							selection: {
-								before: r.selection.before || "",
-								after: r.selection.after || "",
-								text: r.selection.text,
-							},
-						}
-						: [],
-				) satisfies ProcessedRangy[],
-		).catch((e) => (payload.logger.error(e), null));
-		if (ct) {
-			citations.push(...ct);
-		}
-	} else {
-		console.log("lmao no user");
-	}
+export default async function Post({ params: paramsPromise }: Args) {
+  const { slug = "" } = await paramsPromise;
+  if (slug.length < 1) return <PayloadRedirects url={"/home"} />;
+  const p = await queryPostBySlug({ slug });
+  if (!p) return <PayloadRedirects url={"/home"} />;
+  const { post, prev, next } = p;
 
-	return (
-		<HighlighterProvider target={{
-			relationTo: "posts",
-			slug,
-			author: post.post.author.id,
-			value: post.post.id,
-		}} highlights={citations}>
-			<RPage type={"posts"} slug={[slug]}>
-				<div className="flex h-full w-full flex-col items-center justify-center">
-					<div className={
-						"dark:bg-faded-white bg-faded-black fixed inset-0 z-[0] h-svh w-svw"
-					}></div>
-					<Narrateur post={post.post} />
-				</div>
-			</RPage>
-		</HighlighterProvider>
-	);
+  return (
+    <RPage type={"posts"} slug={[slug]}>
+      <div className="flex h-full w-full flex-col items-center justify-center">
+        <div
+          className={
+            "fixed inset-0 z-[0] h-svh w-svw bg-faded-black dark:bg-faded-white"
+          }
+        ></div>
+        <PageClient
+          target={{
+            relationTo: "posts",
+            value: post.id,
+            disabled: post.disabled,
+            author: post.author.id,
+            slug
+          }}
+        >
+          <Narrateur post={post} />
+        </PageClient>
+        <div
+          className="relative"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, oklch(var(--faded-bg)/1) 22%, oklch(var(--faded-bg)/0.95) 35%, oklch(var(--faded-bg)/0.6) 58%, oklch(var(--faded-bg)/0.2) 65%, oklch(var(--faded-bg)/0.05) 82%, oklch(var(--faded-bg)/0.001) 96%)`,
+            zIndex: 100,
+            height: "20vh",
+            width: "100vw",
+            top: "0px",
+            marginTop: "0px",
+            marginBottom: "-5vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative"
+          }}
+        >
+          <div className="absolute top-0 left-0 z-[50] h-px w-screen bg-gradient-to-r from-[oklch(var(--muted-faded-fg)/0.15)] from-10% via-[oklch(var(--muted-faded-fg)/0.75)] via-50% to-[oklch(var(--muted-faded-fg)/0.15)] to-90%" />
+        </div>
+        {<PrevNext prev={prev} next={next} />}
+      </div>
+    </RPage>
+  );
 }
 
 // queuedIDs={post.post.queuedIDs}
 
 export async function generateMetadata({
-	params: paramsPromise,
+  params: paramsPromise
 }: Args): Promise<Metadata> {
-	const {slug = ""} = await paramsPromise;
-	const post = await queryPostBySlug({slug});
-
-	if (!post || !post.post)
-		return {
-			title: "The Hideaway",
-			description: "The Hideaway",
-		};
-	return generateMeta({
-		doc: {
-			title: `${post.post.title} | @${post.post.author.displayUsername}`,
-			image:
-				(
-					post.post.image as Pick<
-						Media,
-						"url" | "thumbnailURL" | "id" | "filename"
-					>
-				)?.url ?? undefined,
-		},
-	});
+  const { slug = "" } = await paramsPromise;
+  const p = await queryPostBySlug({ slug });
+  if (!p)
+    return {
+      title: "The Hideaway",
+      description: "The Hideaway"
+    };
+  const url = getServerSideURL();
+  const { post } = p;
+  const author = post.author;
+  return generateMeta({
+    doc: {
+      title: `${post.title} | @${author.displayUsername || author.name}`,
+      image: post.image?.thumbnailURL || post.image?.url || `${url}/assets/`
+    }
+  });
 }

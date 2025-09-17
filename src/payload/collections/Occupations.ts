@@ -1,9 +1,6 @@
 import type {CollectionConfig} from "payload"
 import {
-	isAdmin,
-	authenticated,
-	standardUpdateAccess,
-	standardCreateAccess,
+	authenticated, isAdmin, standardCreateAccess, standardUpdateAccess,
 } from "@/payload/plugins/locker/access/accessCheckers"
 
 export const Occupations: CollectionConfig = {
@@ -16,17 +13,7 @@ export const Occupations: CollectionConfig = {
 	},
 	admin: {
 		useAsTitle: "title",
-		/*
-	   components: {
-		   views: {
-			 edit: {
-			   default: {
-				 Component: "@/payload/views/Edit/index.tsx#DefaultEditView",
-			   },
-			 },
-		   },
-		 },
-	 */
+
 	},
 	defaultPopulate: {
 		title: true,

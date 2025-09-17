@@ -28,18 +28,18 @@ const LexicalTypeaheadMenuPlugin = dynamic(
 	() => import("./default/lexical-typeahead-menu-plugin"),
 	{ssr: false}
 )
-
-export function ComponentPickerMenuPlugin({
-	baseOptions = [],
-	dynamicOptionsFn,
-}: {
+export interface ComponentPickerMenuPluginProps {
 	baseOptions?: Array<ComponentPickerOption>
 	dynamicOptionsFn?: ({
 		queryString,
 	}: {
 		queryString: string
 	}) => Array<ComponentPickerOption>
-}): JSX.Element {
+}
+export function ComponentPickerMenuPlugin({
+	baseOptions = [],
+	dynamicOptionsFn,
+}: ComponentPickerMenuPluginProps ): JSX.Element {
 	const [editor] = useLexicalComposerContext()
 	const [modal, showModal] = useEditorModal()
 	const [queryString, setQueryString] = useState<string | null>(null)

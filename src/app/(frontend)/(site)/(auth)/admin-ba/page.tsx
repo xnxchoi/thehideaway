@@ -22,7 +22,7 @@ import {
 import {toast, Toaster} from "sonner";
 import {authClient as client} from "@/lib/auth/client";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {useRouter} from "next/navigation";
+
 import {
 	Loader2,
 	Plus,
@@ -47,10 +47,11 @@ import {
 } from "@/components/ui/popover";
 import {cn} from "@/lib/utils";
 import {Badge} from "@/components/ui/badge";
+import { useTransitionRouter } from "next-transition-router";
 
 export default function AdminDashboard() {
 	const queryClient = useQueryClient();
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newUser, setNewUser] = useState({
 		email: "",

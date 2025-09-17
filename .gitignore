@@ -4,11 +4,14 @@
 # Ignore node_modules folder
 node_modules/
 
-.env
+# Environment files with secrets (DO NOT COMMIT)
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+
+# .env file can be committed as it contains only example values
 .grave/
 # Ignore MacOS .DS_Store file
 .DS_Store

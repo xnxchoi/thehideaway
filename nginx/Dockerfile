@@ -10,10 +10,11 @@ COPY nginx.conf .
 COPY headers.conf .
 COPY ssl.conf .
 
-# Copy SSL certs
-COPY certs/example/live/local.hideawayseoul.com/local.hideawayseoul.com.pem ./certs/local.hideawayseoul.com/local.hideawayseoul.com.pem
-COPY certs/example/live/local.hideawayseoul.com/local.hideawayseoul.com-key.pem ./certs/local.hideawayseoul.com/local.hideawayseoul.com-key.pem
+# Copy dhparam file (always needed for SSL)
 COPY certs/example/dhparam-2048.pem ./certs/dhparam-2048.pem
+
+# Note: SSL certificates are mounted as volumes in production
+# They are generated on the server using Let's Encrypt
 
 # Copy sites files
 COPY sites-enabled/ ./

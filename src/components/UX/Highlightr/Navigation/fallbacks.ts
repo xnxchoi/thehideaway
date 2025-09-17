@@ -1,4 +1,5 @@
 import {DateTime} from "luxon";
+import {TagOverview} from "@collections/Deltas/delta-types";
 
 export const fallback = ({direction}: { direction: "prev" | "next" }) =>
 	direction === "prev"
@@ -11,10 +12,11 @@ export const fallback = ({direction}: { direction: "prev" | "next" }) =>
 			},
 			publishedAt: DateTime.now().set({year: 2022, month: 1, day: 22}).toISODate(),
 			bookmarks: [],
+		tags:[] as TagOverview[],
 			bookmarksCount: 0,
-			title: "Back to Reception",
-			subtitle: "We can always go for more tea",
-			slug: "/",
+			title: "All Essays & Articles",
+			subtitle: "More of where this came from.",
+			slug: "/posts",
 			author: {
 				name: "The Hideaway",
 				id: "1-1",
@@ -32,9 +34,10 @@ export const fallback = ({direction}: { direction: "prev" | "next" }) =>
 			publishedAt: DateTime.now().set({year: 2022, month: 1, day: 22}).toISODate(),
 			bookmarks: [],
 			bookmarksCount: 0,
-			title: "Back to Reception",
-			subtitle: "We can always go for more tea",
-			slug: "/",
+			tags:[] as TagOverview[],
+			title: "Deltas",
+			subtitle: "Explore tangential thoughts and discourse",
+			slug: "/deltas",
 			author: {
 				name: "The Hideaway",
 				id: "1-1",

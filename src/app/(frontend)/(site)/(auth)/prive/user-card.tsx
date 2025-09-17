@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import {AnimatePresence} from "motion/react";
 import Image from "next/image";
-import {useRouter} from "next/navigation";
+import {useTransitionRouter} from "next-transition-router";
 import {
 	type ClipboardEventHandler,
 	type DragEventHandler,
@@ -68,9 +68,10 @@ import {cn} from "@/lib/utils";
 import {errorToast, successToast} from "@/components/ui/sonner";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 import {useFormatter, useNow} from "next-intl";
+ 
 
 export function UserCard() {
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const {
 		sessionPromise,
 		userAccountsPromise,
@@ -585,8 +586,8 @@ function EditUserDialog() {
 	const currentUser = use(currentUserPromise);
 	const [name, setName] = useState<string>();
 	const [firstName, setFirstName] = useState<string>();
-	const [lastName, setLastName] = useState<string>();
-	const router = useRouter();
+	const [lastName, setLastName] = useState<string>();	
+	const router = useTransitionRouter();
 	const [image, setImage] = useState<File | null>(null);
 	const [isUploadedImage, setIsUploadedImage] = useState(false);
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -903,8 +904,8 @@ function EditUserDialog() {
 						setIsLoading(true);
 						let imageURL: string | null = null;
 						let portraitURL: string | null = null;
-						if (user && isUploadedImage && removeImage && user.portrait) {
-							await fetch(`${clientUrl}/api/userMedia/${user.portrait}`, {
+						if (user && isUploadedImage && removeImage && (user as User).portrait) {
+							await fetch(`${clientUrl}/api/userMedia/${(user as User).portrait}`, {
 								method: "DELETE",
 								credentials: "include",
 							});

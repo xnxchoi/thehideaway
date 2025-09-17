@@ -121,7 +121,7 @@ export const InkedTitle = (
 		}
 	}, [inView]);
 	return (
-		<div className={"h-screen w-full p-6"}>
+		<div className={"h-screen w-full p-6"} ref={containerRef} >
 			<div className={"relative w-full h-full"}>
 				<div id={"title-container"} className={
 					"absolute left-1/2 top-1/2 w-[50vw] z-[10] -translate-x-1/2 -translate-y-1/2 group"

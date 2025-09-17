@@ -1,6 +1,6 @@
 'use client'
 
-import {useRouter} from 'next/navigation'
+import {useTransitionRouter} from 'next-transition-router'
 import React, {useEffect, useState} from 'react'
 
 import {Input} from '@/components/ui/input'
@@ -9,7 +9,7 @@ import {useDebounce} from '@/utilities/useDebounce'
 
 export const Search: React.FC = () => {
 	const [value, setValue] = useState('')
-	const router = useRouter()
+	const router = useTransitionRouter()
 
 	const debouncedValue = useDebounce(value)
 

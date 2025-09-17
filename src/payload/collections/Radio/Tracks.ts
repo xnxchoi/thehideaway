@@ -1,184 +1,174 @@
-import {CollectionConfig, Where} from "payload"
-import path from "path"
-import {fileURLToPath} from "url"
+import { CollectionConfig, Where } from "payload";
+import path from "path";
+import { fileURLToPath } from "url";
 import {
-	isAdmin, standardCreateAccess,
-	standardUpdateAccess
-} from "@/payload/plugins/locker/access/accessCheckers"
-import {StreamHandler} from "@/payload/collections/Radio/endpoints/stream"
-import {populatePublishedAt} from "@/hooks/populatePublishedAt"
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField"
-import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks"
-import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser"
-import {slugField} from "@/payload/fields/slug"
-import {createCuid} from "@/utilities/stringUtilities"
+  isAdmin,
+  standardCreateAccess,
+  standardUpdateAccess
+} from "@/payload/plugins/locker/access/accessCheckers";
+import { StreamHandler } from "@/payload/collections/Radio/endpoints/stream";
+import { populatePublishedAt } from "@/hooks/populatePublishedAt";
+import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
+import { sanitizeAuthor } from "@/payload/fields/AuthorFields/hooks";
+import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
+import { slugField } from "@/payload/fields/slug";
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 export const Tracks: CollectionConfig = {
-	slug: "tracks",
-	admin: {
-		useAsTitle: "filename",
-		baseListFilter: filterDocByCurrentUser,
-		/*
-	   components: {
-		   views: {
-			 edit: {
-			   default: {
-				 Component: "@/payload/views/Edit/index.tsx#DefaultEditView",
-			   },
-			 },
-		   },
-		 },
-	 */
-	},
-	defaultPopulate: {
-		title: true,
-		artist: true,
-		track_number: true,
-		url: true,
-		filename: true,
-		mimeType: true,
-	},
-	access: {
-		create: standardCreateAccess,
-		delete: standardUpdateAccess,
-		read: ({req: {user}}) => {
-			if (!user)
-				return {
-					_status: {
-						equals: "published",
-					},
-				}
-			if (["admin", "editor"].includes(user?.role ?? "")) return true
-			const stat: Where = {
-				_status: {equals: "published"},
-			}
-			return {
-				or: [
-					stat,
-					{
-						author: {
-							equals: user.id,
-						},
-					},
-				],
-			} as Where
-		},
-		update: standardUpdateAccess,
-	},
-	fields: [
-		{
-			name: "title",
-			type: "text",
-			required: true,
-		},
-		{
-			name: "publishedAt",
-			type: "date",
-		},
-		{
-			name: "track_number",
-			type: "number",
-			required: true,
-		},
-		{
-			name: "album",
-			type: "relationship",
-			relationTo: "albums",
-			hasMany: false,
-			required: true,
-			admin: {
-				allowCreate: true,
-			},
-			hooks: {
-				beforeChange: [
-					async ({req, siblingData, value}) => {
-						if (value) {
-							const album = await req.payload.findByID({
-								collection: "albums",
-								id: value,
-								select: {
-									slug: true,
-								},
-							})
-							if (album) {
-								siblingData.albumSlug = album.slug
-							}
-							return value
-						}
-					},
-				],
-			},
-		},
-		{
-			name: "albumSlug",
-			type: "text",
-		},
-		{
-			name: "bookmarks",
-			collection: "bookmarks",
-			type: "join",
-			on: "target",
-		},
-		{
-			name: "tags",
-			type: "relationship",
-			relationTo: "tags",
-			hasMany: true,
-			admin: {
-				allowCreate: true,
-				allowEdit: false,
-			},
-			access: {
-				read: () => true,
-			},
-			maxDepth: 1,
-			maxRows: 5,
-			index: true,
-		},
-		{
-			name: "artist",
-			type: "text",
-			required: true,
-		},
-		{name: "description", type: "text"},
-		{
-			name: "visibility",
-			type: "select",
-			hasMany: false,
-			required: true,
-			options: ["public", "private"],
-			defaultValue: "public",
-		},
-		...AuthorField(),
-		...slugField("title", {
-			checkboxOverrides: {
-				admin: {
-					readOnly: !isAdmin,
-				},
-			},
-		}),
-	],
-	upload: {
-		staticDir: path.resolve(dirname, "../../../../public/track_media"),
-		adminThumbnail: "thumbnail",
-		filenameCompoundIndex: ["filename"],
-		mimeTypes: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"],
-	},
-	versions: {
-		drafts: {
-			autosave: {
-				interval: 3000,
-				showSaveDraftButton: true,
-			},
-		},
-		maxPerDoc: 3,
-	},
-	endpoints: [{path: "stream/:id", method: "get", handler: StreamHandler}],
-	hooks: {
+  slug: "tracks",
+  lockDocuments: false,
 
-		beforeChange: [sanitizeAuthor(false), populatePublishedAt],
-	},
-}
+  admin: {
+    useAsTitle: "filename",
+    baseFilter: filterDocByCurrentUser
+  },
+  defaultPopulate: {
+    title: true,
+    artist: true,
+    track_number: true,
+    url: true,
+    filename: true,
+    mimeType: true
+  },
+  access: {
+    create: standardCreateAccess,
+    delete: standardUpdateAccess,
+    read: ({ req: { user } }) => {
+      if (!user)
+        return {
+          _status: {
+            equals: "published"
+          }
+        };
+      if (["admin", "editor"].includes(user?.role ?? "")) return true;
+      const stat: Where = {
+        _status: { equals: "published" }
+      };
+      return {
+        or: [
+          stat,
+          {
+            author: {
+              equals: user.id
+            }
+          }
+        ]
+      } as Where;
+    },
+    update: standardUpdateAccess
+  },
+  fields: [
+    {
+      name: "title",
+      type: "text",
+      required: true
+    },
+    {
+      name: "publishedAt",
+      type: "date"
+    },
+    {
+      name: "track_number",
+      type: "number",
+      required: true
+    },
+    {
+      name: "album",
+      type: "relationship",
+      relationTo: "albums",
+      hasMany: false,
+      required: true,
+      admin: {
+        allowCreate: true
+      },
+      hooks: {
+        beforeChange: [
+          async ({ req, siblingData, value }) => {
+            if (value) {
+              const album = await req.payload.findByID({
+                collection: "albums",
+                id: value,
+                select: {
+                  slug: true
+                }
+              });
+              if (album) {
+                siblingData.albumSlug = album.slug;
+              }
+              return value;
+            }
+          }
+        ]
+      }
+    },
+    {
+      name: "albumSlug",
+      type: "text"
+    },
+    {
+      name: "bookmarks",
+      collection: "bookmarks",
+      type: "join",
+      on: "target"
+    },
+    {
+      name: "tagged",
+      type: "relationship",
+      relationTo: "tags",
+      hasMany: true,
+      admin: {
+        allowCreate: true,
+        allowEdit: false
+      },
+      access: {
+        read: () => true
+      },
+      maxDepth: 1,
+      maxRows: 5,
+      index: true
+    },
+    {
+      name: "artist",
+      type: "text",
+      required: true
+    },
+    { name: "description", type: "text" },
+    {
+      name: "visibility",
+      type: "select",
+      hasMany: false,
+      required: true,
+      options: ["public", "private"],
+      defaultValue: "public"
+    },
+    ...AuthorField(),
+    ...slugField("title", {
+      checkboxOverrides: {
+        admin: {
+          readOnly: !isAdmin
+        }
+      }
+    })
+  ],
+  upload: {
+    staticDir: path.resolve(dirname, "../../../../public/track_media"),
+    adminThumbnail: "thumbnail",
+    filenameCompoundIndex: ["filename"],
+    mimeTypes: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"]
+  },
+  versions: {
+    drafts: {
+      autosave: {
+        interval: 3000,
+        showSaveDraftButton: true
+      }
+    },
+    maxPerDoc: 3
+  },
+  endpoints: [{ path: "stream/:id", method: "get", handler: StreamHandler }],
+  hooks: {
+    beforeChange: [sanitizeAuthor(false), populatePublishedAt]
+  }
+};

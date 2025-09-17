@@ -1,11 +1,6 @@
 :root {
 
-  --rp-sans: 'SUIT Variable', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-  'Segoe ui', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
-  'Segoe ui Emoji', 'Segoe ui Symbol', 'Noto Color Emoji', sans-serif;
-  --rp-serif: 'Narcissian Nectare', 'Blase', 'Times New Roman', ui-serif, system-ui, -apple-system, BlinkMacSystemFont, serif;
-  --fontFamilyWide: 'Bricolage Grotesque', 'Space Grotesk', sans-serif;
-  --rp-wide: 'Bricolage Grotesque', 'Space Grotesk', sans-serif;
+
   --pad-grid: clamp(20px, 5vw, 92px);
   --min-width-col: 200px;
   --grid-gutter: 36px var(--gutter);

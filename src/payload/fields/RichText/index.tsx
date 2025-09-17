@@ -1,25 +1,13 @@
 import {MediaBlock} from "@/payload/blocks/MediaBlock/Component";
 import {
-	DefaultNodeTypes,
-	type DefaultTypedEditorState,
-	SerializedBlockNode,
-	SerializedLinkNode,
-	SerializedTextNode,
+	DefaultNodeTypes, type DefaultTypedEditorState, SerializedBlockNode, SerializedLinkNode,
 } from "@payloadcms/richtext-lexical";
-import {
-	JSXConvertersFunction,
-	RichText as ConvertRichText,
-} from "@payloadcms/richtext-lexical/react";
+import {JSXConvertersFunction, RichText as ConvertRichText,} from "@payloadcms/richtext-lexical/react";
 
-import {
-	CodeBlock,
-	Props as CodeBlockProps,
-} from "@/payload/blocks/Code/Component";
+import {CodeBlock, Props as CodeBlockProps,} from "@/payload/blocks/Code/Component";
 
 import type {
-	BannerBlock as BannerBlockProps,
-	CallToActionBlock as CTABlockProps,
-	MediaBlock as MediaBlockProps,
+	BannerBlock as BannerBlockProps, CallToActionBlock as CTABlockProps, MediaBlock as MediaBlockProps,
 } from "@/payload-types";
 import {BannerBlock} from "@/payload/blocks/Banner/Component";
 import {CallToActionBlock} from "@/payload/blocks/CallToAction/Component";
@@ -28,16 +16,7 @@ import {CollectionSlug} from "payload";
 import React, {ComponentPropsWithoutRef} from "react";
 import {createId} from "@paralleldrive/cuid2";
 import {Link} from "@/components/UX/Link";
-import {
-	IS_BOLD,
-	IS_CODE,
-	IS_ITALIC,
-	IS_STRIKETHROUGH,
-	IS_SUBSCRIPT,
-	IS_SUPERSCRIPT,
-	IS_UNDERLINE,
-} from "./nodeFormat";
-import {md5} from "hash-wasm";
+import {IS_BOLD, IS_CODE, IS_ITALIC, IS_STRIKETHROUGH, IS_SUBSCRIPT, IS_SUPERSCRIPT, IS_UNDERLINE,} from "./nodeFormat";
 import {nanoid} from "nanoid";
 
 type NodeTypes =

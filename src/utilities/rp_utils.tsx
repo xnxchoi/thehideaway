@@ -1,5 +1,5 @@
 import {DateTime, Interval} from 'luxon'
-
+import {AppConfig, Locale} from 'next-intl'
 export function basename(str, sep) {
 	return str.substr(str.lastIndexOf(sep) + 1)
 }
@@ -187,7 +187,7 @@ export function htmlDecode(input) {
 	return doc.documentElement.textContent
 }
 
-export function formatDate(dateString: string) {
+export function formatDate(dateString: string,locale:Locale) {
 	const now = DateTime.now()
 	const date = DateTime.fromJSDate(new Date(dateString))
 	const interval = Interval.fromDateTimes(date, now)

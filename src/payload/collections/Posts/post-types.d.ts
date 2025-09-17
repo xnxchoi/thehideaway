@@ -1,7 +1,6 @@
-import type {User, Post} from "@/payload-types"
-import {queryPostOverview} from "./api/queryPostOverview"
+import type {Media, Post, User} from "@/payload-types"
 import type {Users} from "@/payload/collections/Users/index"
-import type {Media} from "@/payload-types"
+import {TagOverview} from "@collections/Deltas/delta-types";
 
 export type ArticleOverview = Omit<ReqArticle, "author"> & {
 	author: AuthorOverview
@@ -29,13 +28,14 @@ export type MediaReq = Pick<
  * **Warning** this is only meant to be used for {@link queryPostOverview queryPostOverview}
  * @todo merge the query into one by setting defaultPopulate config on the {@link Users} collection config
  */
-export type ReqArticle = Pick<Post, "id" | "title" | "locked" | "subtitle"> & {
+export type ReqArticle = Pick<Post, "id" | "title" | "locked" |"authority"|'allowList'| "subtitle"> & {
 	author: string | User
 	category: {
 		title: string
 		id: string
 		slug: string
 	}
+	tags:Array<TagOverview>
 	publishedAt: string
 	image?: MediaReq | null
 	id: string
@@ -43,10 +43,9 @@ export type ReqArticle = Pick<Post, "id" | "title" | "locked" | "subtitle"> & {
 }
 export type AuthorOverview = Pick<
 	User,
-	"name" | "slug" | "displayUsername" | "id"
+	"name" | "slug" | "displayUsername" | "id"|"image"
 >
 export type AuthorSingle = AuthorOverview
-export type FoundArticle = ArticleOverview
 export type FocusedArticle = ArticleOverview &
 	Pick<
 		Post,
@@ -62,4 +61,6 @@ export type SingleArticle = Omit<FocusedArticle, "author" | "relatedPosts"> & {
 	disabled?: boolean
 	relatedPosts: ArticleOverview[]
 	queuedIDs: string[]
+	prev?:ArticleOverview
+	next?:ArticleOverview
 }

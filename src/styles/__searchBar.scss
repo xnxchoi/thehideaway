@@ -61,10 +61,10 @@ kbd {
 [cmdk-raycast-top-shine] {
   .dark {
     background: linear-gradient(90deg,
-            rgba(56, 189, 248, 0),
-            oklch(var(--off-white) / 0.5) 20%,
-            oklch(var(--faded-black) / 0.5) 67.19%,
-            rgba(236, 72, 153, 0));
+        rgba(56, 189, 248, 0),
+        oklch(var(--off-white) / 0.5) 20%,
+        oklch(var(--faded-black) / 0.5) 67.19%,
+        rgba(236, 72, 153, 0));
     height: 1px;
     position: absolute;
     top: -1px;

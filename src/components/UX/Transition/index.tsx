@@ -1,34 +1,36 @@
 "use client";
-import {ScrollTrigger} from "gsap/ScrollTrigger";
-import {useLenis} from "lenis/react";
+import { cn } from "@/lib/utils";
+import {
+  useCursorStore,
+  useRPStore,
+  useRPTransition
+} from "@/providers/RP_Pro";
+import { useTheme } from "@/providers/Theme";
+import { Theme } from "@/providers/Theme/types";
+import {
+  FrontEndCollections,
+  PageType,
+  useVoyageur
+} from "@/stores/Routing/RP_Voyageur";
+import { useIsMobile } from "@/utilities/getBreakpoints";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useLenis } from "lenis/react";
+import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import {
-	ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
+  useTransitionRouter,
+  useTransitionState
+} from "next-transition-router";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
 } from "react";
-import {gsap} from "gsap";
-import {
-	useCursorStore,
-	useRPStore,
-	useRPTransition,
-} from "@/providers/RP_Pro";
-import {useIsMobile} from "@/utilities/getBreakpoints";
-import {cn} from "@/lib/utils";
-import {useGSAP} from "@gsap/react";
-import {
-	FrontEndCollections,
-	PageType,
-	useVoyageur,
-} from "@/stores/Routing/RP_Voyageur";
-import {useTheme} from "@/providers/Theme";
-import {Theme} from "@/providers/Theme/types";
-import {useRouter} from "next/navigation";
-import {useTransitionState} from "next-transition-router";
-import {HTMLMotionProps} from "motion/react";
 
 export type PageTransitionType = "FADE" | "FROM_MENU" | "CURTAIN" | "IMMEDIATE";
 /**
@@ -63,436 +65,427 @@ export type PageTransitionType = "FADE" | "FROM_MENU" | "CURTAIN" | "IMMEDIATE";
  * @example {origin:"link",target:"pages"}
  */
 export type TransitionTrigger = {
-	origin: "link" | "menu" | "scroll" | "navigation" | null;
-	collection?: FrontEndCollections;
-	target: PageType;
-	subtype?: string;
+  origin: "link" | "menu" | "scroll" | "navigation" | null;
+  collection?: FrontEndCollections;
+  target: PageType;
+  subtype?: string;
 };
 const tz = {
-	position: "fixed",
-	top: 0,
-	left: 0,
-	width: "100%",
-	height: "100%",
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
 
-	overflow: "hidden",
+  overflow: "hidden"
 };
 const tU = {
-	position: "relative",
-	top: 0,
-	left: 0,
-	width: "100%",
-	height: "auto",
-	overflow: "visible",
+  position: "relative",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "auto",
+  overflow: "visible"
 };
 const dlay = 0.7;
 type PageTargets = [
-	"users",
-	"pages",
-	"posts",
-	"delta",
-	"search",
-	"account",
-	"archive",
+  "users",
+  "pages",
+  "posts",
+  "delta",
+  "search",
+  "account",
+  "archive"
 ];
 
 type PairwiseConcatWithReverse<
-	Arr extends string[],
-	Conn extends string,
-	Result extends string = never,
+  Arr extends string[],
+  Conn extends string,
+  Result extends string = never
 > = Arr extends [infer First extends string, ...infer Rest extends string[]]
-	? PairwiseConcatWithReverse<
-		Rest,
-		Conn,
-		| Result
-		| (Rest[number] extends string
-		? Uppercase<`${First}_${Conn}_${First}`>
-		: never)
-	>
-	: Result;
+  ? PairwiseConcatWithReverse<
+      Rest,
+      Conn,
+      | Result
+      | (Rest[number] extends string
+          ? Uppercase<`${First}_${Conn}_${First}`>
+          : never)
+    >
+  : Result;
 
 type Transitions = PairwiseConcatWithReverse<PageTargets, "_TO_">;
 type TransitionMap<Transitions> = {
-	[K in Transitions as string]: {
-		[T in "start" | "enter" | "exit"]: {
-			[S: string]: any;
-		};
-	};
+  [K in Transitions as string]: {
+    [T in "start" | "enter" | "exit"]: {
+      [S: string]: any;
+    };
+  };
 };
 const _transMap: TransitionMap<Transitions> = {
-	SEARCH_TO_USERS: {
-		start: {
-			...tz,
-			opacity: 0,
-		},
-		enter: {
-			...tU,
-			opacity: 1,
-		},
-		exit: {
-			...tz,
-			opacity: 0,
-		},
-	},
+  SEARCH_TO_USERS: {
+    start: {
+      ...tz,
+      opacity: 0
+    },
+    enter: {
+      ...tU,
+      opacity: 1
+    },
+    exit: {
+      ...tz,
+      opacity: 0
+    }
+  }
 };
 
 export const transitionMappings: TransitionMap<Transitions> = {
-	FADE: {
-		start: {
-			...tz,
-			opacity: 0,
-		},
-		enter: {
-			...tU,
-			opacity: 1,
-			transition: {
-				ease: "easeIn",
-				duration: 0.3,
-				delay: dlay,
-			},
-		},
-		exit: {
-			...tz,
-			opacity: 0,
-			transition: {
-				delay: dlay,
-				duration: 0.3,
-				ease: "easeOut",
-			},
-		},
-	},
-	FROM_MENU: {
-		start: {
-			...tz,
-		},
-		enter: {
-			...tU,
-			opacity: 1,
-			transition: {
-				duration: 0,
-				delay: 0,
-			},
-		},
-		exit: {
-			transition: {
-				duration: 0,
-				delay: 0,
-			},
-		},
-	},
-	CURTAIN: {
-		start: {
-			...tz,
-		},
-		enter: {
-			...tU,
-			opacity: 1,
-			transition: {
-				delay: 0,
-				duration: 0,
-			},
-		},
-		exit: {
-			opacity: 0,
-			position: "relative",
-			transition: {
-				delay: 0,
-				duration: 0,
-			},
-		},
-	},
-	IMMEDIATE: {
-		start: {},
-		enter: {
-			opacity: 1,
-			transition: {
-				delay: 0,
-				duration: 0.1,
-				ease: "easeIn",
-			},
-		},
-		exit: {
-			opacity: 0,
-			transition: {
-				delay: 0,
-				duration: 0.1,
-				ease: "easeOut",
-			},
-		},
-	},
+  FADE: {
+    start: {
+      ...tz,
+      opacity: 0
+    },
+    enter: {
+      ...tU,
+      opacity: 1,
+      transition: {
+        ease: "easeIn",
+        duration: 0.3,
+        delay: dlay
+      }
+    },
+    exit: {
+      ...tz,
+      opacity: 0,
+      transition: {
+        delay: dlay,
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  },
+  FROM_MENU: {
+    start: {
+      ...tz
+    },
+    enter: {
+      ...tU,
+      opacity: 1,
+      transition: {
+        duration: 0,
+        delay: 0
+      }
+    },
+    exit: {
+      transition: {
+        duration: 0,
+        delay: 0
+      }
+    }
+  },
+  CURTAIN: {
+    start: {
+      ...tz
+    },
+    enter: {
+      ...tU,
+      opacity: 1,
+      transition: {
+        delay: 0,
+        duration: 0
+      }
+    },
+    exit: {
+      opacity: 0,
+      position: "relative",
+      transition: {
+        delay: 0,
+        duration: 0
+      }
+    }
+  },
+  IMMEDIATE: {
+    start: {},
+    enter: {
+      opacity: 1,
+      transition: {
+        delay: 0,
+        duration: 0.1,
+        ease: "easeIn"
+      }
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        delay: 0,
+        duration: 0.1,
+        ease: "easeOut"
+      }
+    }
+  }
 };
 export const getPageTransitionVariants = (l: PageTransitionType) => {
-	let c: any = transitionMappings.FADE;
-	return (
-		l === "FROM_MENU" && (c = transitionMappings.FROM_MENU),
-		l === "CURTAIN" && (c = transitionMappings.CURTAIN),
-		l === "IMMEDIATE" && (c = transitionMappings.IMMEDIATE),
-			c
-	);
+  let c: any = transitionMappings.FADE;
+  return (
+    l === "FROM_MENU" && (c = transitionMappings.FROM_MENU),
+    l === "CURTAIN" && (c = transitionMappings.CURTAIN),
+    l === "IMMEDIATE" && (c = transitionMappings.IMMEDIATE),
+    c
+  );
 };
 export type PortalFrameTransitions = "top" | "bottom" | "right" | "left";
 export const portalFrameTransitions: Map<
-	PortalFrameTransitions,
-	{ x: string; y: string }
+  PortalFrameTransitions,
+  { x: string; y: string }
 > = new Map([
-	["top", {x: "0", y: "-100%"}],
-	["bottom", {x: "0", y: "100%"}],
-	["right", {x: "100%", y: "0"}],
-	["left", {x: "-100% ", y: "0"}],
+  ["top", { x: "0", y: "-100%" }],
+  ["bottom", { x: "0", y: "100%" }],
+  ["right", { x: "100%", y: "0" }],
+  ["left", { x: "-100% ", y: "0" }]
 ]);
 
 gsap.registerPlugin(ScrollTrigger);
 export const PageRedirect = ({
-	pageType,
-	slug,
-	message = "Redirecting...",
+  pageType,
+  slug,
+  message = "Redirecting..."
 }: {
-	pageType: PageType;
-	slug: string;
-	message?: string;
+  pageType: PageType;
+  slug: string;
+  message?: string;
 }) => {
-	const toR = useRef<ReturnType<typeof setTimeout>>(null!);
-	const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
-	const clearPageTheme = useTheme((r) => r.clearPageTheme);
-	const router = useRouter();
-	const setCurrentPhase = useRPTransition((l) => l.setCurrentPhase);
-	return (
-		<m.div
-			className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-15 backdrop-blur-sm"
-			initial={{opacity: 0}} animate={{opacity: 1, zIndex: 1000}}
-			exit={{opacity: 0, zIndex: 0}} onAnimationStart={() => {
-			(setPageIsTransitioning(true),
-				clearPageTheme(),
-			toR.current && clearTimeout(toR.current),
-				(toR.current = setTimeout(() => {
-					router.push(`/${pageType}/${slug}`);
-				}, 50)));
-		}} onAnimationComplete={() => {
-			setPageIsTransitioning(false);
-		}} transition={{type: "tween", duration: 0.5, ease: "easeInOut"}}>
-			<m.div initial={{opacity: 0}} animate={{
-				opacity: 1,
-				transition: {
-					type: "tween",
-					duration: 0.3,
-					delay: 0.2,
-					ease: "easeInOut",
-				},
-			}} className="text-2xl font-bold text-white">
-				{message}
-			</m.div>
-		</m.div>
-	);
+  const toR = useRef<ReturnType<typeof setTimeout>>(null!);
+  const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
+  const router = useTransitionRouter();
+  return (
+    <m.div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-15 backdrop-blur-sm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, zIndex: 1000 }}
+      exit={{ opacity: 0, zIndex: 0 }}
+      onAnimationStart={() => {
+        (toR.current && clearTimeout(toR.current),
+          (toR.current = setTimeout(() => {
+            router.push(`/${pageType}/${slug}`);
+          }, 50)));
+      }}
+      onAnimationComplete={() => {
+        setPageIsTransitioning(false);
+      }}
+      transition={{ type: "tween", duration: 0.5, ease: "easeInOut" }}
+    >
+      <m.div
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          transition: {
+            type: "tween",
+            duration: 0.3,
+            delay: 0.2,
+            ease: "easeInOut"
+          }
+        }}
+        className="text-2xl font-bold text-white"
+      >
+        {message}
+      </m.div>
+    </m.div>
+  );
 };
 export type TransitionWrapperProps = {
-	type: PageType;
-	slug: string[];
-	children: ReactNode;
-	headerVisibility?: boolean;
-	theme?: Theme;
+  type: PageType;
+  slug: string[];
+  children: ReactNode;
+  headerVisibility?: boolean;
+  theme?: Theme;
 } & HTMLMotionProps<"div">;
 // Main PageTransition Component
 export const RPage = (props: TransitionWrapperProps) => {
-	const {type, slug} = props;
-	const setPage = useVoyageur((l) => l.setPage);
-	const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
-	useEffect(() => {
-		setPage({pageType: type, slug: slug});
-	}, [setPage, type, slug]);
+  const { type, slug } = props;
+  const setPage = useVoyageur((l) => l.setPage);
+  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
+  useEffect(() => {
+    setPage({ pageType: type, slug: slug });
+  }, [setPage, type, slug]);
 
-	return !pageIsTransitioning && <TransitionInternal {...props} />;
+  return !pageIsTransitioning && <TransitionInternal {...props} />;
 };
 const TransitionInternal = (props: TransitionWrapperProps) => {
-	const {children, headerVisibility = true, theme, ref: pageRef} = props;
-	const navIsOpen = useRPStore((l) => l.navIsOpen);
-	const navIsOpenDebounced = useRPStore((l) => l.navIsOpenDebounced);
-	const setN = useRPStore((l) => l.setNavIsOpen);
-	const isPreloader = useRPStore((l) => l.isPreloader);
-	const setCanInteract = useRPStore((l) => l.setCanInteract);
+  const { children, headerVisibility = true, theme, ref: pageRef } = props;
+  const navIsOpen = useRPStore((l) => l.navIsOpen);
+  const navIsOpenDebounced = useRPStore((l) => l.navIsOpenDebounced);
+  const setN = useRPStore((l) => l.setNavIsOpen);
+  const isPreloader = useRPStore((l) => l.isPreloader);
+  const setCanInteract = useRPStore((l) => l.setCanInteract);
 
-	const setPageTheme = useTheme((r) => r.setPageTheme);
-	const setCursorState = useCursorStore((l) => l.setCursorState);
-	const transitionOutType = useRPStore((l) => l.transitionOutType);
-	const setCurrentPhase = useRPTransition((l) => l.setCurrentPhase);
-	const setCurrentStep = useRPTransition((l) => l.setCurrentStep);
-	const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
-	const {stage} = useTransitionState();
-	const scroll = useLenis(),
-		{isMobile} = useIsMobile(),
-		scrollToTop = () => window.scroll(0, 0);
-	useEffect(() => {
-		Array.from(
-			document.querySelectorAll('head > link[rel="stylesheet"][data-n-p]'),
-		).forEach((l) => {
-			l.removeAttribute("data-n-p");
-		});
-		const l = new MutationObserver((l) => {
-			l.forEach((l) => {
-				const c = l.target;
-				c.nodeName === "STYLE" &&
-				(c as HTMLElement).getAttribute("media") === "x" &&
-				(c as HTMLElement).removeAttribute("media");
-			});
-		});
-		return (
-			l.observe(document.head, {
-				subtree: !0,
-				attributeFilter: ["media"],
-			}),
-				() => {
-					l.disconnect();
-				}
-		);
-	}, []);
+  const setPageTheme = useTheme((r) => r.setPageTheme);
+  const setCursorState = useCursorStore((l) => l.setCursorState);
+  const transitionOutType = useRPStore((l) => l.transitionOutType);
+  const setCurrentPhase = useRPTransition((l) => l.setCurrentPhase);
+  const setCurrentStep = useRPTransition((l) => l.setCurrentStep);
+  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
+  const { stage } = useTransitionState();
+  const scroll = useLenis(),
+    { isMobile } = useIsMobile();
+  useEffect(() => {
+    Array.from(
+      document.querySelectorAll('head > link[rel="stylesheet"][data-n-p]')
+    ).forEach((l) => {
+      l.removeAttribute("data-n-p");
+    });
+    const l = new MutationObserver((l) => {
+      l.forEach((l) => {
+        const c = l.target;
+        c.nodeName === "STYLE" &&
+          (c as HTMLElement).getAttribute("media") === "x" &&
+          (c as HTMLElement).removeAttribute("media");
+      });
+    });
+    return (
+      l.observe(document.head, {
+        subtree: !0,
+        attributeFilter: ["media"]
+      }),
+      () => {
+        l.disconnect();
+      }
+    );
+  }, []);
 
-	// useEffect(() => {
-	//   timeOutRef.current && clearTimeout(timeOutRef.current),
-	//     navigationPageItemSelected !== -1 && setCurrentKey(navigationPageItemSelected),
-	//     (timeOutRef.current = setTimeout(() => {
-	//       setCurrentKey(navigationPageItemSelected)
-	//     }, 1400))
-	// }, [navigationPageItemSelected])
+  // useEffect(() => {
+  //   timeOutRef.current && clearTimeout(timeOutRef.current),
+  //     navigationPageItemSelected !== -1 && setCurrentKey(navigationPageItemSelected),
+  //     (timeOutRef.current = setTimeout(() => {
+  //       setCurrentKey(navigationPageItemSelected)
+  //     }, 1400))
+  // }, [navigationPageItemSelected])
 
-	const scrollRefresher = useCallback(() => {
-		scroll && scroll.resize();
-	}, [scroll]);
-	const navOpeningElement = useRPStore((l) => l.navOpeningElement);
+  const navOpeningElement = useRPStore((l) => l.navOpeningElement);
 
-	const [scaled, setScaled] = useState(1.1);
-	const transitionMa = useRPTransition((r) => r.transitionAnimations);
-	const transitionMap = useMemo(() => transitionMa, [transitionMa]);
-	const transitionArray = useRef(
-		Object.keys(transitionMap) as PageTransitionType[],
-	);
-	const [currentVariants, setCurrentVariants] = useState(transitionMap["FADE"]);
-	useEffect(() => {
-		if (navOpeningElement) {
-			setScaled(1.1 * (navOpeningElement.offsetHeight / window.innerHeight));
-		}
-	}, [navOpeningElement]);
-	const isSidebarOpen = useRPStore((r) => r.sidebarOpen);
-	useEffect(() => {
-		setCurrentVariants(
-			transitionOutType &&
-			transitionArray.current.some((r) => r === transitionOutType)
-				? transitionMap[transitionOutType as PageTransitionType]
-				: transitionMap["FADE"],
-		);
-	}, [transitionMap, transitionOutType]);
-	useGSAP(
-		() => {
-			if (typeof pageRef === "function" || !pageRef) return;
-			if (!pageRef.current || !scroll || navIsOpen) return;
-			gsap.killTweensOf(pageRef.current);
-			pageRef.current.style.removeProperty("transform");
-			let scaleDown = scaled * 0.95;
-			let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
-			isMobile && ((scaledScrollY = 0), (scaleDown = 1));
-			gsap.to(pageRef.current, {
-				y: isSidebarOpen ? scaledScrollY : 0,
-				scale: isSidebarOpen ? scaleDown : 1,
-				ease: "Power3.in",
-				duration: 0.6,
-				onComplete: () => {
-					!isSidebarOpen &&
-					!navIsOpen &&
-					gsap.to(pageRef.current, {delay: 0.4, clearProps: "transform"});
-				},
-			});
-		},
-		{dependencies: [isSidebarOpen]},
-	);
-	useGSAP(
-		() => {
-			if (
-				!pageRef ||
-				typeof pageRef === "function" ||
-				!pageRef.current ||
-				!scroll
-			)
-				return;
-			const ref = "current" in pageRef ? pageRef.current : pageRef;
-			gsap.killTweensOf(ref);
-			ref.style.removeProperty("transform");
-			let scaleDown = scaled;
-			let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
-			isMobile && ((scaledScrollY = 0), (scaleDown = 1));
-			gsap.to(pageRef, {
-				y: navIsOpen ? scaledScrollY : 0,
-				scale: navIsOpen ? scaleDown : 1,
-				ease: "Power3.inOut",
-				duration: 1.2,
-				onComplete: () => {
-					!navIsOpen &&
-					gsap.to(pageRef, {delay: 0.4, clearProps: "transform"});
-				},
-			});
-		},
-		{dependencies: [navIsOpen]},
-	);
-	const setHeaderVisibility = useRPStore((l) => l.setHeaderVisibility);
-	const toR = useRef<ReturnType<typeof setTimeout>>(null!);
-	const onComplete = useCallback(
-		(headerVisible: boolean = true, theme?: Theme) => {
-			ScrollTrigger.refresh();
-			scrollRefresher();
+  const [scaled, setScaled] = useState(1.1);
+  const transitionMa = useRPTransition((r) => r.transitionAnimations);
+  const transitionMap = useMemo(() => transitionMa, [transitionMa]);
+  const transitionArray = useRef(
+    Object.keys(transitionMap) as PageTransitionType[]
+  );
+  const [currentVariants, setCurrentVariants] = useState(transitionMap["FADE"]);
+  useEffect(() => {
+    if (navOpeningElement) {
+      setScaled(1.1 * (navOpeningElement.offsetHeight / window.innerHeight));
+    }
+  }, [navOpeningElement]);
+  const isSidebarOpen = useRPStore((r) => r.sidebarOpen);
+  useEffect(() => {
+    setCurrentVariants(
+      transitionOutType &&
+        transitionArray.current.some((r) => r === transitionOutType)
+        ? transitionMap[transitionOutType as PageTransitionType]
+        : transitionMap["FADE"]
+    );
+  }, [transitionMap, transitionOutType]);
+  useGSAP(
+    () => {
+      if (typeof pageRef === "function" || !pageRef) return;
+      if (!pageRef.current || !scroll || navIsOpen) return;
+      gsap.killTweensOf(pageRef.current);
+      pageRef.current.style.removeProperty("transform");
+      let scaleDown = scaled * 0.95;
+      let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
+      isMobile && ((scaledScrollY = 0), (scaleDown = 1));
+      gsap.to(pageRef.current, {
+        y: isSidebarOpen ? scaledScrollY : 0,
+        scale: isSidebarOpen ? scaleDown : 1,
+        ease: "Power3.in",
+        duration: 0.6,
+        onComplete: () => {
+          !isSidebarOpen &&
+            !navIsOpen &&
+            gsap.to(pageRef.current, { delay: 0.4, clearProps: "transform" });
+        }
+      });
+    },
+    { dependencies: [isSidebarOpen] }
+  );
+  useGSAP(
+    () => {
+      if (
+        !pageRef ||
+        typeof pageRef === "function" ||
+        !pageRef.current ||
+        !scroll
+      )
+        return;
+      const ref = "current" in pageRef ? pageRef.current : pageRef;
+      gsap.killTweensOf(ref);
+      ref.style.removeProperty("transform");
+      let scaleDown = scaled;
+      let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
+      isMobile && ((scaledScrollY = 0), (scaleDown = 1));
+      gsap.to(pageRef, {
+        y: navIsOpen ? scaledScrollY : 0,
+        scale: navIsOpen ? scaleDown : 1,
+        ease: "Power3.inOut",
+        duration: 1.2,
+        onComplete: () => {
+          !navIsOpen &&
+            gsap.to(pageRef, { delay: 0.4, clearProps: "transform" });
+        }
+      });
+    },
+    { dependencies: [navIsOpen] }
+  );
+  const setHeaderVisibility = useRPStore((l) => l.setHeaderVisibility);
+  const toR = useRef<ReturnType<typeof setTimeout>>(null!);
+  const onComplete = useCallback(
+    (headerVisible: boolean = true, theme?: Theme) => {
+      setHeaderVisibility(headerVisible);
+      theme && setPageTheme(theme, true);
+    },
+    [setHeaderVisibility, setPageTheme]
+  );
 
-			setCurrentPhase(null);
-			setCurrentStep(null);
-			setHeaderVisibility(headerVisible);
-			setCanInteract(true);
-			theme && setPageTheme(theme, true);
-		},
-		[
-			scrollRefresher,
-			setCurrentPhase,
-			setCurrentStep,
-			setHeaderVisibility,
-			setCanInteract,
-			setPageTheme,
-		],
-	);
+  return (
+    <m.div
+      key="navigation"
+      initial="none"
+      animate="entering"
+      exit="leaving"
+      data-themed="background-color,color"
+      ref={pageRef}
+      variants={currentVariants}
+      className={cn("page", { transitioning: pageIsTransitioning })}
+      onAnimationStart={(phase) => {
+        setCurrentStep("start");
+        switch (phase) {
+          case "none":
+            break;
 
-	return (
-		<m.div key="navigation" initial="none" animate="entering" exit="leaving"
-		       data-themed="background-color,color" ref={pageRef} variants={currentVariants}
-		       className={cn("page", {transitioning: pageIsTransitioning})}
-		       onAnimationStart={(phase) => {
-			       setCurrentStep("start");
-			       switch (phase) {
-				       case "none":
-					       break;
+          case "entering":
+            (toR.current && clearTimeout(toR.current),
+              !isMobile && setCursorState(null),
+              (toR.current = setTimeout(() => {
+                setN(!1);
+              }, 50)));
+            break;
+          default:
+            break;
+        }
+      }}
+      onAnimationComplete={(phase) => {
+        setCurrentStep("complete");
 
-				       case "entering":
-					       (toR.current && clearTimeout(toR.current),
-					       !isMobile && setCursorState(null),
-						       (toR.current = setTimeout(() => {
-							       setN(!1);
-						       }, 50)));
-					       break;
-				       default:
-					       break;
-			       }
-		       }} onAnimationComplete={(phase) => {
-			setCurrentStep("complete");
+        switch (phase) {
+          case "entering":
+            onComplete(headerVisibility, theme);
+            break;
 
-			switch (phase) {
-				case "entering":
-					onComplete(headerVisibility, theme);
-
-					break;
-				case "leaving":
-					setTimeout(() => {
-						(scrollRefresher(), scrollToTop());
-					}, 40);
-					break;
-				default:
-					break;
-			}
-		}}>
-			{children}
-		</m.div>
-	);
+          default:
+            break;
+        }
+      }}
+    >
+      {children}
+    </m.div>
+  );
 };
 //let M = 0.7;
 

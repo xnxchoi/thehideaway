@@ -1,14 +1,14 @@
-import AccountSwitcher from "@/components/account-switch";
-import {UserCard} from "./user-card";
 import {RPage} from "@/components/UX/Transition";
+import {PageClient} from "./page.client";
+import AccountSwitcher from "@/components/account-switch";
+import {UserCard} from "@/app/(frontend)/(site)/(auth)/prive/user-card";
 import {authClient} from "@/lib/auth/client";
 import {redirect} from "next/navigation";
-
 export default async function Page() {
-	const user = await authClient.getSession();
-	if (!user) return redirect("/");
+
 	return (
 		<RPage type="account" slug={["prive"]}>
+			<PageClient />
 			<div
 				className="flex w-full flex-col pt-[80px] pb-[80px] text-base max-md:max-w-[calc(100vw-20px)] md:min-h-screen md:w-screen lg:pt-[100px]"
 				data-lenis-prevent>

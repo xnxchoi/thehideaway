@@ -28,7 +28,7 @@ services:
         BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
         EXCHANGE_RATE_KEY: ${EXCHANGE_RATE_KEY}
         HOLIDAY_API_KEY: ${HOLIDAY_API_KEY}
-        DATABASE_URI: ${DATABASE_URI}
+        DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD}@host.docker.internal:5432/${POSTGRES_DB}
     env_file:
       - .env
       - .env.local
@@ -37,24 +37,21 @@ services:
         condition: service_healthy
     networks:
       - hideaway
-  #
-  #   nginx:
-  #     restart: always
-  #     container_name: nginx
-  #     build:
-  #       context: ./nginx
-  #       dockerfile: Dockerfile
-  #     volumes:
-  #       - ./nginx/sites-enabled:/etc/nginx/sites-enabled
-  #       - ./nginx/logs:/var/log/nginx
-  #     ports:
-  #       - "80:80"
-  #       - "443:443"
-  #       - "3000:3000"
-  #     depends_on:
-  #       - payload
-  #     networks:
-  #      - hideaway
+  nginx:
+    restart: always
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/sites-enabled/default.conf:/etc/nginx/sites-enabled/default.conf
+      - ./nginx/logs:/var/log/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - payload
+    networks:
+     - hideaway
 
 
   # Ensure your DATABASE_URI uses 'postgresql' as the hostname ie. postgresql://127.0.0.1:5432/your-database-name

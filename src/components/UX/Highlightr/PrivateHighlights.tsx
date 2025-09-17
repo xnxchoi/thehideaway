@@ -1,318 +1,474 @@
 "use client";
-
-import {errorToast, successToast} from "@/components/ui/sonner";
-import {useCharacterLimit} from "@/hooks/use-character-limit";
+import { errorToast, successToast } from "@/components/ui/sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { HighlightMenuProps } from "@/components/UX/Highlightr/index";
+import { useCharacterLimit } from "@/hooks/use-character-limit";
+import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
+import { cn } from "@/lib/utils";
 import {
-	autoUpdate,
-	FloatingFocusManager,
-	FloatingPortal,
-	offset,
-	useClick,
-	useDismiss,
-	useFloating,
-	UseFloatingReturn,
-	useInteractions,
-	UseInteractionsReturn,
-	useMergeRefs,
-	useRole,
-	useTransitionStatus
+  autoUpdate,
+  FloatingFocusManager,
+  FloatingPortal,
+  offset,
+  useClick,
+  useDismiss,
+  useFloating,
+  UseFloatingReturn,
+  useInteractions,
+  UseInteractionsReturn,
+  useMergeRefs,
+  useRole,
+  useTransitionStatus
 } from "@floating-ui/react";
-import {Button} from "@payloadcms/ui";
-import {useQueryClient} from "@tanstack/react-query";
-import {useTranslations} from "next-intl";
+import { Button } from "@payloadcms/ui";
+import { ComponentPropsWithRef } from "@react-spring/three";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import {
-	ChangeEventHandler, createContext, ReactNode, useCallback, useContext, useEffect, useId, useMemo, useRef, useState
+  ChangeEventHandler,
+  createContext,
+  MouseEventHandler,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState
 } from "react";
-import {HighlightedRange, RangeSaveParams} from "./types";
-import {useHighlighter} from "./provider";
-import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
-import * as rangey from "rangy";
-import "rangy/lib/rangy-classapplier";
-import "rangy/lib/rangy-highlighter";
-import 'rangy/lib/rangy-selectionsaverestore';
-import "rangy/lib/rangy-textrange";
-import {Textarea} from "@/components/ui/textarea";
-import {Dialog, DialogContent, DialogHeading} from "./floatDialog";
-import {UserBar} from "./sideBarProvider";
-import {ComponentPropsWithRef} from "@react-spring/three";
+import { Dialog, DialogContent, DialogHeading } from "./floatDialog";
+import { useHighlighter } from "./provider";
+import { useRanger } from "./RangerProvider";
+import { SignInCard, UserBar } from "./sideBarProvider";
+import "./styles/_privateNote.scss";
+import { HighlightedRange, RangeSaveParams } from "./types";
 
 export type PrivateHighlights = {
-	memo: string;
-	setMemo: (memo: string) => void;
-	setOpen: (open: boolean) => void;
-	disabled: boolean;
-	setDisabled: (disabled: boolean) => void;
-	toggleOpen: () => void;
-	open: boolean;
-	view: 'edit' | 'view';
-	setView: (view: 'edit' | 'view') => void;
-	ctx: Omit<UseFloatingReturn, 'refs'> & UseInteractionsReturn;
-	isMounted: boolean;
-	status: "initial" | "unmounted" | "open" | "close";
-	refs: UseFloatingReturn['refs'];
+  memo: string;
+  setMemo: (memo: string) => void;
+  setOpen: (open: boolean) => void;
+  saving: boolean;
+  setSaving: (disabled: boolean) => void;
+  toggleOpen: () => void;
+  open: boolean;
+  view: "edit" | "view";
+  setView: (view: "edit" | "view") => void;
+  ctx: Omit<UseFloatingReturn, "refs" | "floatingStyles"> &
+    UseInteractionsReturn;
+  isMounted: boolean;
+  status: "initial" | "unmounted" | "open" | "close";
+  refs: UseFloatingReturn["refs"];
+  floatingStyles: UseFloatingReturn["floatingStyles"];
 };
-export const PrivateMemoContext = createContext<PrivateHighlights>(null!)
+export const PrivateMemoContext = createContext<PrivateHighlights>(null!);
 export const PrivateMemoizer = (props: {
-	createCallback: (prop: Pick<RangeSaveParams, 'private' | 'memo'>) => Promise<HighlightedRange>;
-	saveCallback: (saveParams: HighlightedRange) => Promise<HighlightedRange>;
-	children: ReactNode;
+  createCallback: (
+    prop: Pick<RangeSaveParams, "private" | "memo">
+  ) => Promise<HighlightedRange>;
+  saveCallback: (saveParams: HighlightedRange) => Promise<HighlightedRange>;
+  children: ReactNode;
 }) => {
+  const { saveCallback, createCallback, children } = props;
+  const [memo, setMemo] = useState<string>("");
+  const [open, setOpen] = useState(false);
+  const toggleOpen = () => {
+    setOpen(!open);
+  };
+  const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations();
+  const ctx = useFloating({
+    placement: "right-start",
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    middleware: [offset(10)],
+    whileElementsMounted: autoUpdate
+  });
+  const { refs, floatingStyles, ...context } = ctx;
+  const { status, isMounted } = useTransitionStatus(context.context);
 
+  const click = useClick(context.context);
+  const dismiss = useDismiss(context.context, {
+    outsidePressEvent: "mousedown"
+  });
+  const role = useRole(context.context);
+  const interactions = useInteractions([click, dismiss, role]);
+  const [view, setView] = useState<"edit" | "view">("view");
+  const target = useHighlighter((r) => r.target);
+  const postId = useMemo(() => target?.value, [target]);
+  const userId = useRPSession((r) => r.id as null | string);
+  const highlights = useHighlighter((r) => r.highlights);
+  const userName = useRPSession((r) => r.name);
+  const userImage = useRPSession((r) => r.image);
+  const userD = useRPSession((r) => r.displayUsername);
+  const userS = useRPSession((r) => r.slug);
+  const [saving, setSaving] = useState(false);
 
-	const {saveCallback, createCallback, children} = props;
-	const [memo, setMemo] = useState<string>("");
-	const [open, setOpen] = useState(false);
-	const toggleOpen = () => {
-		setOpen(!open);
-	}
-	const [isOpen, setIsOpen] = useState(false);
-	const t = useTranslations();
-	const ctx = useFloating({
-		placement: "right-start",
-		open: isOpen,
-		onOpenChange: setIsOpen,
-		middleware: [offset(10)],
-		whileElementsMounted: autoUpdate
-	});
-	const {refs, ...context} = ctx;
-	const {status, isMounted} = useTransitionStatus(context.context);
+  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
+  const fc = useRef(focusedHighlight);
+  useEffect(() => {
+    fc.current = focusedHighlight;
+  }, [focusedHighlight]);
 
-	const click = useClick(context.context);
-	const dismiss = useDismiss(context.context, {
-		outsidePressEvent: 'mousedown',
+  return (
+    <PrivateMemoContext.Provider
+      value={{
+        memo,
+        setMemo,
+        setOpen,
+        setView,
+        toggleOpen,
+        open: isOpen,
+        view,
+        saving,
+        setSaving,
+        refs,
+        ctx: { ...ctx, ...interactions },
+        floatingStyles,
+        isMounted,
+        status
+      }}
+    >
+      {children}
+      {isOpen && (
+        <Dialog open={isOpen} onOpenChange={setOpen}>
+          <DialogContent
+            focusManager={{
+              modal: false
+            }}
+          >
+            <div
+              className={
+                "flex items-center bg-muted-faded-background/85 p-[12px_20px]"
+              }
+            >
+              <div
+                className={"mr-[8px] -ml-[4px] block [&_svg]:align-middle"}
+              ></div>
+              <div className={"relative top-px block flex-[1_1_auto]"}>
+                <DialogHeading
+                  className={
+                    "text-[13px] leading-[18px] tracking-[0.077em] text-muted-foreground uppercase"
+                  }
+                >
+                  <span
+                    className={
+                      "text-[13px] leading-[20px] text-muted-foreground"
+                    }
+                  >
+                    {view === "view" ? "Private Note" : "Edit"}
+                  </span>
+                </DialogHeading>
+              </div>
+              <div className={"relative top-px block flex-[1_1_auto]"}>
+                <p className={"text-[13px] leading-[20px]"}>Learn More </p>
+              </div>
+            </div>
+            {userId ? (
+              (view === "edit" && userId && (
+                <PrivateNoteEditor
+                  user={userId}
+                  createCallback={createCallback}
+                  handleUpdate={saveCallback}
+                />
+              )) || (
+                <div className={"block p-[0_20px]"}>
+                  <div className={"block p-[12px_0]"}>
+                    <div className={"mb-[12px] flex items-center"}>
+                      {userId && (
+                        <UserBar
+                          user={{
+                            name: userName,
+                            image: userImage,
+                            displayUsername: userD,
+                            slug: userS,
+                            id: userId
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div className={"block whitespace-pre-wrap"}>{memo}</div>
+                  </div>
+                  <div
+                    className={
+                      "border-t-px mt-[8px] mb-0 flex border-solid border-muted-faded-background/65 p-[12px_0]"
+                    }
+                  >
+                    <div className={"text-[14px]"}></div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <SignInCard
+                onSignInClick={(e) => {
+                  e.preventDefault();
+                  setSaving(true);
+                }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
+    </PrivateMemoContext.Provider>
+  );
+};
+const PrivateNoteEditor = ({
+  createCallback,
+  handleUpdate,
+  user,
+  initialValue = "",
+  savedSelection
+}: {
+  user: string;
+  initialValue?: string;
+  savedSelection?: rangy.savedSelection | null;
+} & Pick<HighlightMenuProps, "createCallback" | "handleUpdate">) => {
+  const fc = useHighlighter((r) => r.focusedHighlight);
+  const [memoValue, setMemoValue] = useState(initialValue);
+  const textAreaId = useId();
+  const {
+    value,
+    characterCount,
+    handleChange,
+    maxLength: limit
+  } = useCharacterLimit({ maxLength: 200, initialValue });
+  const ranger = useRanger((r) => r.ranger);
+  const lastValue = useRef("");
+  const t = useTranslations();
+  const [saving, setSaving] = useState(false);
+  const setSavingState = usePrivateNote((r) => r.setSaving);
+  useEffect(() => {
+    setSavingState(saving);
+  }, [saving, setSavingState]);
+  const oC: ChangeEventHandler<HTMLTextAreaElement> = useCallback(
+    (e) => {
+      if (e.target.disabled) return;
+      handleChange(e);
+    },
+    [handleChange]
+  );
+  useEffect(() => {
+    if (lastValue.current !== value) {
+      setDirty(true);
+    }
+    lastValue.current = value;
+    setMemoValue(value);
+  }, [value]);
+  const setOpen = usePrivateNote((r) => r.setOpen);
+  const qc = useQueryClient();
+  const [dirty, setDirty] = useState<boolean>(false);
+  const onSave = useCallback(
+    async (e) => {
+      e.stopPropagation();
+      if (memoValue.length < 1) {
+        return setSaving(false);
+      }
+      if (!fc) {
+        if (savedSelection) {
+          setSaving(true);
+          ranger.restoreSelection(savedSelection);
+          await createCallback({ private: true, memo: memoValue }).then((r) => {
+            if (r) {
+              successToast(t("Highlights.saved"));
+              ranger.removeMarkers(savedSelection);
+            } else {
+              errorToast(t("Highlights.error.save.select"));
+            }
+            qc.invalidateQueries({
+              queryKey: ["savedHighlights"]
+            });
+            setOpen(false);
+            setDirty(false);
+          });
+        }
+        setSaving(false);
 
-	});
-	const role = useRole(context.context);
-	const interactions = useInteractions([click, dismiss, role]);
-	const [disabled, setDisabled] = useState(false);
-	const [view, setView] = useState<'edit' | 'view'>('view');
-	const target = useHighlighter(r => r.target);
-	const postId = useMemo(() => target?.value, [target]);
-	const userId = useRPSession(r => r.id as null | string);
-	const highlights = useHighlighter(r => r.highlights);
-	const userName = useRPSession((r) => r.name);
-	const userImage = useRPSession(r => r.image);
-	const userD = useRPSession(r => r.displayUsername);
-	const userS = useRPSession(r => r.slug);
-	const savedSelectionRef = useRef<rangy.savedSelection | null>(null);
-	const [saving, setSaving] = useState(false);
+        return;
+      }
+      try {
+        setSaving(true);
+        // const where: Where = {
+        // 	reference: {equals: focusedHighlight.reference},
+        // };
+        const body = {
+          ...fc,
+          memo: memoValue,
+          private: true
+        } satisfies HighlightedRange;
+        await handleUpdate(body);
+        qc.invalidateQueries({
+          queryKey: ["savedHighlights"]
+        });
+        successToast(t("Highlights.saved"));
+      } catch (e) {
+        console.log(e);
+        errorToast(t("Highlights.error.save.default"));
+      } finally {
+        setSaving(false);
+      }
+    },
+    [createCallback, fc, handleUpdate, memoValue, qc, setOpen, t]
+  );
+  const cancelBtnClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (e.currentTarget.disabled) return;
+      setOpen(false);
+    },
+    [setOpen]
+  );
+  return (
+    <div className={"block p-[12px_20px]"}>
+      <div className={"block"}>
+        <div className={"mb-[12px] flex items-center"}></div>
+        <div className={"mb-[12px] block"}>
+          <div className={"*:not-first:mt-2"}>
+            <Textarea
+              placeholder={"Something on this note for your eyes only.."}
+              className={cn(
+                "min-h-[120px]",
+                saving ? "pointer-events-none" : "pointer-events-auto"
+              )}
+              value={value}
+              onChange={oC}
+              maxLength={limit}
+              id={textAreaId}
+              disabled={saving}
+            />
+            <p
+              id={`${textAreaId}-description`}
+              className="mt-2 text-right text-xs text-off-foreground"
+              role="status"
+              aria-live="polite"
+            >
+              <span className="tabular-nums">{characterCount}</span>/
+              <span className={"tabular-nums"}>{limit}</span>
+            </p>
+          </div>
+        </div>
+        <div className={"text-[14px] leading-[20px] text-muted-foreground"}>
+          <div className={"flex justify-between"}>
+            <div className={"flex"}>
+              <Button
+                className={
+                  "bg-transparent text-background opacity-30 transition-[color,opacity] duration-200 ease-in-out-2 disabled:pointer-events-none data-active:not-disabled:opacity-100"
+                }
+                onClick={onSave}
+                disabled={saving || !dirty}
+                data-active={dirty}
+                {...((saving && { "data-saving": saving }) || {})}
+              >
+                {saving ? "Saving…" : "Save"}
+              </Button>
+            </div>
+            <div className={"flex"}>
+              <Button disabled={saving} onClick={cancelBtnClick}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+const PrivateNoteHeader = (props: {}) => {
+  const view = usePrivateNote((r) => r.view);
 
-	const focusedHighlight = useHighlighter(r => r.focusedHighlight);
-	const fc = useRef(focusedHighlight);
-	useEffect(() => {
-		setDisabled(!userId || saving);
-	}, [userId, saving])
-	useEffect(() => {
-		fc.current = focusedHighlight;
-	}, [focusedHighlight])
-	const lastValue = useRef("");
-	useEffect(() => {
-		if (!userId) {
-			setIsOpen(false);
-			return;
-		}
-		if (open) {
-			savedSelectionRef.current = fc.current ? null : rangey.saveSelection();
-			lastValue.current = fc.current?.memo || "";
-			setMemo(fc.current?.memo || "");
-			if (!fc.current) {
-				setView('edit');
-			}
-			setDirty(false);
-			setIsOpen(true);
-		} else {
-			savedSelectionRef.current = null;
-			setMemo("");
-			lastValue.current = ""
-			setDirty(false);
-			setIsOpen(false);
-		}
-	}, [open, userId])
-	const qc = useQueryClient();
-	const [dirty, setDirty] = useState<boolean>(false)
-	const onSave = useCallback(async (e) => {
-		e.stopPropagation();
-		if (!userId || !postId || !memo || memo.length < 1) {
-			return setSaving(false);
-		}
-		if (!fc.current) {
-			if (savedSelectionRef.current) {
-				setSaving(true);
-				rangey.restoreSelection(savedSelectionRef.current);
-				rangey.removeMarkers(savedSelectionRef.current);
-				savedSelectionRef.current = null;
-				await createCallback({private: true, memo}).then(r => {
-					if (r) {
-						successToast(t("Highlights.saved"));
+  return (
+    <div
+      className={"flex items-center bg-muted-faded-background/85 p-[12px_20px]"}
+    >
+      <div className={"mr-[8px] -ml-[4px] block [&_svg]:align-middle"}></div>
+      <div className={"relative top-px block flex-[1_1_auto]"}>
+        <h2
+          className={
+            "text-[13px] leading-[18px] tracking-[0.077em] text-muted-foreground uppercase"
+          }
+        >
+          <span className={"text-[13px] leading-[20px] text-muted-foreground"}>
+            {view === "view" ? "Private Note" : "Edit"}
+          </span>
+        </h2>
+      </div>
+      <div className={"relative top-px block flex-[1_1_auto]"}>
+        <p className={"text-[13px] leading-[20px]"}>Learn More </p>
+      </div>
+    </div>
+  );
+};
+const PrivateDialog = (
+  props: ComponentPropsWithRef<"div"> & { children: ReactNode }
+) => {
+  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
+  const floatingStyles = usePrivateNote((r) => r.floatingStyles);
+  const fc = useRef(focusedHighlight);
+  useEffect(() => {
+    fc.current = focusedHighlight;
+  }, [focusedHighlight]);
+  const status = usePrivateNote((r) => r.status);
+  const innerRef = useRef<HTMLDivElement>(null!);
+  const { context: floatingContext, ...context } = usePrivateNote((r) => r.ctx);
+  const isMounted = usePrivateNote((r) => r.isMounted);
+  const refs = usePrivateNote((r) => r.refs);
+  const open = usePrivateNote((r) => r.open);
+  const { ref: propRef, ...reste } = props;
+  const ref = useMergeRefs([refs.setFloating, propRef]);
+  const view = usePrivateNote((r) => r.view);
+  const [opening, setOpening] = useState(false);
+  const savedSelection = useRef<rangy.savedSelection | null>(null);
+  const ranger = useRanger((r) => r.ranger);
+  useEffect(() => {
+    if (isMounted && view === "edit" && !fc.current) {
+      savedSelection.current = ranger.saveSelection();
+    } else {
+      savedSelection.current &&
+        (ranger.removeMarkers(savedSelection.current),
+        (savedSelection.current = null));
+    }
+    setOpening(isMounted);
+  }, [isMounted, view]);
 
-					} else {
-						errorToast(t("Highlights.error.save.select"));
-					}
-					qc.invalidateQueries({
-						queryKey: ["savedHighlights", postId]
-					})
-					setOpen(false);
-					setDirty(false);
-				});
-
-			}
-			savedSelectionRef.current && (rangey.removeMarkers(
-				savedSelectionRef.current), savedSelectionRef.current = null);
-			setSaving(false);
-
-			return;
-		}
-		try {
-			setSaving(true);
-			// const where: Where = {
-			// 	reference: {equals: focusedHighlight.reference},
-			// };
-			const body = {
-				...fc.current, memo, private: true,
-
-			} satisfies HighlightedRange;
-			await saveCallback(body);
-			qc.invalidateQueries({
-				queryKey: ["savedHighlights", postId]
-			})
-			successToast(t("Highlights.saved"));
-
-		} catch (e) {
-			console.log(e);
-			errorToast(t("Highlights.error.save.default"));
-		} finally {
-			savedSelectionRef.current && (rangey.removeMarkers(
-				savedSelectionRef.current), savedSelectionRef.current = null);
-			setSaving(false);
-		}
-	}, [createCallback, memo, postId, qc, saveCallback, t, userId]);
-	const textAreaId = useId()
-	const {
-		value, characterCount, handleChange, maxLength: limit,
-	} = useCharacterLimit({maxLength: 200, initialValue: memo})
-	const oC: ChangeEventHandler<HTMLTextAreaElement> = useCallback((e) => {
-		if (e.target.disabled) return;
-		handleChange(e);
-	}, [handleChange])
-	useEffect(() => {
-		if (lastValue.current !== value) {
-			setDirty(true);
-		}
-		lastValue.current = value;
-		setMemo(value);
-	}, [value, setMemo]);
-	return <PrivateMemoContext.Provider value={{
-		memo,
-		setMemo,
-		setOpen,
-		setView,
-		toggleOpen,
-		open: isOpen,
-		view,
-		disabled,
-		setDisabled,
-		refs,
-		ctx: {...ctx, ...interactions},
-		isMounted,
-		status
-	}}>
-		{children}
-		{isOpen && (<Dialog open={isOpen} onOpenChange={setOpen}>
-			<DialogContent focusManager={{
-				modal: false,
-
-			}}>
-				<div className={'flex p-[12px_20px] items-center bg-muted-faded-background/85 '}>
-					<div className={'-ml-[4px] block mr-[8px] [&_svg]:align-middle'}></div>
-					<div className={'top-px flex-[1_1_auto] relative block'}>
-						<DialogHeading
-							className={'uppercase text-[13px] leading-[18px] text-muted-foreground  tracking-[0.077em]'}>
-						<span className={'text-[13px] leading-[20px] text-muted-foreground'}>
-						{view === 'view' ? 'Private Note' : 'Edit'}
-						</span>
-						</DialogHeading>
-					</div>
-					<div className={'top-px flex-[1_1_auto] relative block'}>
-						<p className={'text-[13px] leading-[20px]'}>
-							Learn More </p>
-					</div>
-				</div>
-				{view === 'edit' ? (<div className={'block p-[12px_20px]'}>
-					<div className={'block'}>
-						<div className={'flex items-center mb-[12px]'}></div>
-						<div className={'mb-[12px] block'}>
-							<div className={'*:not-first:mt-2'}>
-								<Textarea placeholder={"Something on this note for your eyes only.."}
-								          className={'min-h-[120px]'} value={value} onChange={oC} maxLength={limit}
-								          id={textAreaId} disabled={saving || !userId} />
-								<p id={`${textAreaId}-description`}
-								   className="text-off-foreground mt-2 text-right text-xs" role="status"
-								   aria-live="polite"><span className="tabular-nums">{characterCount}</span>/<span
-									className={'tabular-nums'}>{limit}</span></p>
-							</div>
-						</div>
-						<div className={'text-[14px] leading-[20px] text-muted-foreground'}>
-							<div className={'flex justify-between'}>
-								<div className={'flex'}><Button
-									className={'disabled:opacity-30 bg-transparent disabled:fg-muted-background'}
-									onClick={onSave} disabled={saving || !userId || !dirty || !memo || memo.length < 1}>
-									{saving ? "Saving…" : "Save"}
-								</Button></div>
-								<div className={'flex'}><Button disabled={saving} onClick={(e) => {
-									e.preventDefault();
-									setOpen(false);
-								}}>Cancel</Button></div>
-							</div>
-						</div>
-					</div>
-				</div>) : (<div className={'p-[0_20px] block'}>
-					<div className={'p-[12px_0] block'}>
-						<div className={'mb-[12px] flex items-center'}>{userId && <UserBar user={{
-							name: userName, image: userImage, displayUsername: userD, slug: userS, id: userId
-						}} />}</div>
-						<div className={'block whitespace-pre-wrap'}>
-							{memo}
-						</div>
-					</div>
-					<div
-						className={'mb-0 p-[12px_0] border-t-px border-solid border-muted-faded-background/65 mt-[8px] flex'}>
-						<div className={'text-[14px]'}></div>
-					</div>
-				</div>)}</DialogContent>
-		</Dialog>)}
-	</PrivateMemoContext.Provider>
-}
-const PrivateDialog = (props: ComponentPropsWithRef<'div'> & { children: ReactNode }) => {
-	const disabled = usePrivateNote(r => r.disabled);
-	const focusedHighlight = useHighlighter(r => r.focusedHighlight);
-	const fc = useRef(focusedHighlight);
-	useEffect(() => {
-		fc.current = focusedHighlight
-	}, [focusedHighlight]);
-	const {context: floatingContext, ...context} = usePrivateNote(r => r.ctx);
-	const isMounted = usePrivateNote(r => r.isMounted);
-	const refs = usePrivateNote(r => r.refs);
-	const open = usePrivateNote(r => r.open);
-	const {ref: propRef, ...reste} = props;
-	const ref = useMergeRefs([refs.setFloating, propRef]);
-	const view = usePrivateNote(r => r.view);
-	useEffect(() => {
-		if (isMounted) {
-			if (fc.current) {
-
-			}
-		}
-
-	}, [open])
-
-	return isMounted && (<FloatingPortal><FloatingFocusManager context={floatingContext} modal={false}
-	                                                           disabled={disabled || !open || view !== 'edit'}>
-		<div
-			{...reste} ref={ref} {...context.getFloatingProps(reste)}>{reste.children}</div>
-	</FloatingFocusManager></FloatingPortal>);
-}
-export const usePrivateNote = <T, >(selector: (state: PrivateHighlights) => T) => {
-	const context = useContext(PrivateMemoContext);
-	if (!context) throw new Error('usePrivateNote must be used within a PrivateMemoizer');
-	return selector(context);
-}
+  return (
+    opening && (
+      <FloatingPortal>
+        <FloatingFocusManager
+          context={floatingContext}
+          modal={false}
+          disabled={!open || view !== "edit"}
+        >
+          <div
+            className={
+              "z-[250] m-0 flex overflow-hidden rounded-2xl border-none"
+            }
+            {...reste}
+            ref={ref}
+            {...context.getFloatingProps(reste)}
+            style={{ ...floatingStyles }}
+          >
+            <div
+              ref={innerRef}
+              data-status={status}
+              className={"privateNote relative z-[210] h-full w-full p-0"}
+            >
+              <div
+                className={
+                  "absolute top-0 left-0 z-[1] h-full w-full bg-faded-d-gray dark:bg-faded-l-gray"
+                }
+              />
+              {reste.children}
+            </div>
+          </div>
+        </FloatingFocusManager>
+      </FloatingPortal>
+    )
+  );
+};
+export const usePrivateNote = <T,>(
+  selector: (state: PrivateHighlights) => T
+) => {
+  const context = useContext(PrivateMemoContext);
+  if (!context)
+    throw new Error("usePrivateNote must be used within a PrivateMemoizer");
+  return selector(context);
+};

@@ -8,12 +8,10 @@ import {cn} from "@/lib/utils";
 import {useRPStore} from "@/providers/RP_Pro";
 
 import {useLenis} from "lenis/react";
-import {useRouter} from "next/navigation";
 import {useVoyageur} from "@/stores/Routing/RP_Voyageur";
-import gsap from "gsap";
-import {delay} from "@/utilities/rp_utils";
 import {useCursorHandlers} from "../core/cursorWrapper";
 import {useCallback} from "react";
+import { useTransitionRouter } from "next-transition-router";
 
 function DropdownMenu({
 	...props
@@ -93,7 +91,7 @@ export const DropOutButton = () => {
 				"content-type": "application/json",
 			},
 		});
-		location.reload();
+		location.replace('/home');
 	}, []);
 	return (
 		<DropdownMenuItem variant={"destructive"} onSelect={onSelect}>
@@ -117,7 +115,7 @@ export const LinkedDropdownItem = ({
 }) => {
 	const {href, title, value, ...rest} = props;
 	const lenis = useLenis();
-	const router = useRouter();
+	const router = useTransitionRouter();
 	const setOpen = useRPStore((store) => store.setDropdownOpen);
 	const url = useVoyageur((l) => l.url);
 	const pathName = useVoyageur((l) => l.pathName);
@@ -127,8 +125,7 @@ export const LinkedDropdownItem = ({
 		if (isAnchor) {
 			lenis && lenis.scrollTo(href);
 		} else {
-			gsap.to(".rp-container .page", {opacity: 0, duration: 0.2});
-			delay(40).then(() => router.push(href));
+			router.push(href);
 		}
 	};
 	return (

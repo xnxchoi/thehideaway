@@ -1,19 +1,6 @@
 import {errorToast} from "@/components/ui/sonner";
-import {
-	MutationCache,
-	QueryCache,
-	QueryClient,
-	QueryClientProvider,
-} from "@tanstack/react-query";
-import {
-	createContext,
-	ReactNode,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import {QueryClient, QueryClientProvider,} from "@tanstack/react-query";
+import {createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState,} from "react";
 import {useStore} from "zustand";
 import {createStore} from "zustand/vanilla";
 
@@ -268,16 +255,6 @@ export function QueryProvider({children}: { children: ReactNode }) {
 				staleTime: 1000 * 60 * 2,
 			},
 		},
-		queryCache: new QueryCache({
-			onError: (error: any, query) => {
-				console.error(JSON.stringify(error));
-			},
-		}),
-		mutationCache: new MutationCache({
-			onError: (error: any, query) => {
-				console.error(JSON.stringify(error));
-			},
-		}),
 	});
 	return (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

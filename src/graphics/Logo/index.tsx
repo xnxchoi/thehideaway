@@ -1,3 +1,4 @@
+'use client'
 export const Logo = () => (
 	<svg viewBox={'0 0 45 45'} width={45} height={45} xmlns="http://www.w3.org/2000/svg"
 	     className={'ha-ico bg-transparent!'} fill="transparent">

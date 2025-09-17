@@ -1,7 +1,8 @@
 import {randomNumber} from "./randomNumber"
 import {init} from "@paralleldrive/cuid2"
+import {cache} from "react";
 
-export const extractKeywords = (input: string) => {
+const extractKeywords = (input: string) => {
 	const needles = ['a', 'an', 'the',]
 	const considered = ['across', 'after', 'upon', 'versus', 'against', 'but', 'by', 'for', 'from',
 		'in', 'of', 'on', 'per', 'than', 'to', 'and', 'or', 'but', 'as', 'at', 'until', 'up', 'via',

@@ -1,16 +1,16 @@
 export type PasswordValidation = {
-	/**
-	 * Maximum password length
-	 */
-	maxLength?: number;
+    /**
+     * Maximum password length
+     */
+    maxLength?: number
 
-	/**
-	 * Minimum password length
-	 */
-	minLength?: number;
+    /**
+     * Minimum password length
+     */
+    minLength?: number
 
-	/**
-	 * Password validation regex
-	 */
-	regex?: RegExp;
-};
+    /**
+     * Password validation regex
+     */
+    regex?: RegExp
+}

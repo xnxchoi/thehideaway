@@ -1,9 +1,11 @@
-import type {FilterOptionsProps, GlobalConfig, Where} from "payload";
+import type { FilterOptionsProps, GlobalConfig, Where } from "payload";
 
-import {link} from "@/payload/fields/link";
+import { link } from "@/payload/fields/link";
 
-import {revalidateFooter} from "./hooks/revalidateFooter";
-import {Media} from "@/payload-types";
+import { Media } from "@/payload-types";
+import { uuidv7 } from "uuidv7";
+import { revalidateFooter } from "./hooks/revalidateFooter";
+import { hideIfNotAdmin } from "../helpers";
 
 export const Footer: GlobalConfig = {
 	slug: "footer",
@@ -11,13 +13,19 @@ export const Footer: GlobalConfig = {
 		read: () => true,
 	},
 	admin: {
-		hidden: ({user}) => {
-			if (!user) return true;
-			if (user?.role === "admin") return false;
-			return true;
-		},
+				hidden:(args)=>args.user?.role!=='admin'
+		
 	},
 	fields: [
+		{
+			name: "id",
+			type: "text",
+			defaultValue: () => uuidv7(),
+			access: {
+				update: () => false,
+
+			}
+		},
 		{
 			name: "title",
 			type: "text",

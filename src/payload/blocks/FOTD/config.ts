@@ -4,11 +4,23 @@ import {
 	InlineToolbarFeature,
 	lexicalEditor
 } from '@payloadcms/richtext-lexical'
+import {uuidv7} from "uuidv7";
 
 export const FOTD: Block = {
 	slug: "fotd",
 	interfaceName: "FOTDBlock",
-	fields: [
+	fields: [{
+		name:"id",
+		type:"text",
+		defaultValue:()=>uuidv7(),
+		access:{
+			update:()=>false,
+		},
+		required:true,
+		admin:{
+			hidden:true,
+		}
+	},
 		{
 			name: "headline",
 			type: "text",

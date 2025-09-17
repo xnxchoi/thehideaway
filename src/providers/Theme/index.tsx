@@ -1,11 +1,11 @@
 "use client"
 
-import React, {Context, createContext, useContext, useRef} from "react"
+import React, { Context, createContext, useContext, useRef } from "react"
 
-import {getImplicitPreference} from "./shared"
-import type {Theme, ThemeContextType} from "./types"
-import {createStore} from "zustand"
-import {useStore} from "zustand/index"
+import { createStore } from "zustand"
+import { useStore } from "zustand/index"
+import { getImplicitPreference } from "./shared"
+import type { Theme, ThemeContextType } from "./types"
 
 const initialContext: ThemeContextType = {
 	savedTheme: "dark",

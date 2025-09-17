@@ -32,7 +32,7 @@
 }
 
 .article-card_time {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 11px;
   order: 3;
   text-transform: uppercase;
@@ -63,7 +63,7 @@ img {
 }
 
 .article-card_tag {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   font-size: 11px;
   text-transform: uppercase;
 
@@ -89,7 +89,7 @@ img {
 }
 
 .article-card_author {
-  font-family: var(--rp-sans);
+  font-family: var(--font-sans);
   display: inline-block;
   font-size: 11px;
   order: 2;

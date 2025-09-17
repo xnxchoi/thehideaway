@@ -1,4 +1,4 @@
-export const randomNumber = (min: number, max: number): number => {
+ export const randomNumber = (min: number, max: number): number => {
 	let last = -1;
 	const uInt32 = new Uint32Array(1);
 	const rand = crypto.getRandomValues(uInt32)[0]!;

@@ -92,18 +92,9 @@ export async function generateMetadata({
 	const tag = await payload.find({
 		collection: "tags",
 		where: {
-			or: [
-				{
-					slug: {
-						equals: slug,
-					},
-				},
-				{
-					id: {
-						equals: slug.includes("-") ? slug.split("-")[1] : slug,
-					},
-				},
-			],
+			slug: {
+				equals: slug,
+			},
 		},
 		limit: 1,
 		select: {

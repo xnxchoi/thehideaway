@@ -1,1 +1,1 @@
-export type Refetch = () => Promise<unknown> | unknown;
+export type Refetch = () => Promise<unknown> | unknown

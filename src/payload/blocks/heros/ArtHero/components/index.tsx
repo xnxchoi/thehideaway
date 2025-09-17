@@ -89,7 +89,7 @@ export const CoverTag = (
 
 	return (
 		<div className={cn("rp_title-tag")}>
-			<Link href={`/archive/${category?.slug}`} className={cn("rp_tag", className)}>
+			<Link href={`/archives/${category?.slug}`} className={cn("rp_tag", className)}>
 				{category?.title || "Untitled category"}
 			</Link>
 		</div>
@@ -130,7 +130,7 @@ export const CoverSubtitle = (
 				"m-0 !text-[14.4px] leading-[1.3] md:!text-[17.6px]",
 				subtitleClassName,
 			)}>
-				{subtitle} ✷ </p>
+				{subtitle}</p>
 		</div>
 	);
 };

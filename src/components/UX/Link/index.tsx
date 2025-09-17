@@ -6,20 +6,17 @@ import {
 	type ComponentPropsWithRef,
 	ReactNode,
 	RefAttributes,
+	MouseEventHandler,
+	useCallback,
 	useEffect,
 	useMemo,
-	useRef,
 	useState,
 } from "react";
 import {cn} from "@/lib/utils";
-import gsap from "gsap";
 import {isInternalLink} from "@/utilities/isInternalLink";
 import {useVoyageur} from "@/stores/Routing/RP_Voyageur";
-import {delay} from "@/utilities/rp_utils";
-import {useRouter} from "next/navigation";
+import {useTransitionRouter} from "next-transition-router";
 import {useDomCursor} from "@/components/core/cursorWrapper";
-import {useGSAP} from "@gsap/react";
-import {useRPStore} from "@/providers/RP_Pro";
 import * as m from "motion/react-m";
 import {
 	MotionBtnProps,
@@ -38,22 +35,6 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
 		...rest
 	} = props;
 
-	const clickRef = useRef<() => void>(null!);
-	const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
-	useGSAP((context, contextSafe) => {
-		clickRef.current = () =>
-			gsap.to(".rp-container .page", {
-				opacity: 0,
-				duration: 0.2,
-				ease: "power2.inOut",
-				onComplete: () => {
-					setPageIsTransitioning(true);
-					delay(200).then(() => {
-						rout.push(href);
-					});
-				},
-			});
-	}, {});
 	const lenis = useLenis();
 
 	const {onMouseEnter, onMouseLeave} = useDomCursor({
@@ -61,7 +42,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
 		onLeave: doML,
 	});
 	const currentPath = useVoyageur((r) => r.pathName);
-	const rout = useRouter();
+	const rout = useTransitionRouter();
 	const propsToPass = useMemo(() => {
 		const toPass: Partial<RPLinkProps> = {};
 		if (!isInternalLink(href)) {
@@ -77,10 +58,20 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
 	useEffect(() => {
 		setIsAnchor(href.startsWith("#") || href.startsWith(`${currentPath}#`));
 	}, [href, currentPath]);
-
+	const handleClick:MouseEventHandler = useCallback((e) => {
+		e.preventDefault();
+		if (isAnchor) {
+		onClick?.();
+			lenis && lenis.scrollTo(href);
+		} else {
+			onClick?.();
+			rout.push(href);
+		}
+	}, [href, isAnchor, lenis, rout, onClick]);
 	if (!href || typeof href !== "string") {
 		return <div className={className}>{props.children}</div>;
 	}
+
 	return (
 		<NextLink className={cn(
 			{
@@ -92,15 +83,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
 			className,
 		)}
 		          {...rest}
-		          {...propsToPass} href={href} onClick={(e) => {
-			e.preventDefault();
-			onClick?.();
-			if (isAnchor) {
-				lenis && lenis.scrollTo(href);
-			} else {
-				clickRef.current();
-			}
-		}} ref={ref as RefAttributes<HTMLAnchorElement>["ref"]} onMouseEnter={onMouseEnter}
+		          {...propsToPass} href={href} onClick={handleClick} ref={ref as RefAttributes<HTMLAnchorElement>["ref"]} onMouseEnter={onMouseEnter}
 		          onMouseLeave={onMouseLeave} />
 	);
 };

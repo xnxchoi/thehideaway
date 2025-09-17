@@ -234,7 +234,7 @@ export const VoyageurProvider = (l: { children: ReactNode }) => {
 					return "page";
 			}
 		},
-		[isArchive],
+		[],
 	);
 	const frontSlugs = Object.keys(frontSlu).filter(
 		(k) => frontSlu[k as PageType],

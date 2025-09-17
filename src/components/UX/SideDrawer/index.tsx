@@ -105,14 +105,14 @@ export const SideDrawer = () => {
 							resetCursor();
 						}}>
 							<div className={"col-[2/8] row-[2/3] flex flex-col justify-center"}>
-								<Drawer.Title className={"text-h3"} title={"Quick Access"}>
-									Quick Access
+								<Drawer.Title className={"text-h3"} title={"Shortcuts"}>
 								</Drawer.Title>
 							</div>
 							<div className="col-[2/8] row-[3/10] px-4">
 								<div className="flex flex-col gap-5 text-[23px] font-sans">
+									<Link href="/home">Home</Link>
 									<Link href="/users">Directory</Link>
-									<Link href="/latest">Latest</Link>
+									<Link href="/archives">Archives</Link>
 									<Link href="/posts">Latest</Link>
 								</div>
 							</div>

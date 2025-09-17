@@ -1,9 +1,9 @@
 import {getPayload, PaginatedDocs, Payload, Where} from "payload"
 
 import configPromise from "@payload-config"
-import {PostsSelect} from "@/payload-types"
+import {DeltaSelect, PostsSelect} from "@/payload-types"
 
-import type {ReqDelta, DeltaOverview} from "../delta-types"
+import type {ReqDelta, DeltaOverview, TagOverview} from "../delta-types"
 import {cache} from "react"
 import {getDeltaBookMarks} from "./getDeltaBookmarks"
 import type {AuthorOverview, AuthorSingle} from "../../Posts/post-types"
@@ -48,7 +48,7 @@ export const queryPostOverview = cache(
 	}: QueryPostOverviewParams): Promise<DeltaOverview[]> => {
 		// 1) Get the payload instance
 		const payload = await getPayload({config: configPromise})
-		const baseSelect: PostsSelect = {
+		const baseSelect: DeltaSelect = {
 			title: true,
 			publishedAt: true,
 			image: true,
@@ -125,12 +125,13 @@ export const queryOverview = cache(
 				baseWhere.and.push({[key]: value})
 			}
 		}
-		const baseSelect: PostsSelect = {
+		const baseSelect: DeltaSelect = {
 			title: true,
 			publishedAt: true,
 			image: true,
 			subtitle: true,
 			slug: true,
+			tags:true,
 			author: true,
 			locked: true,
 			category: true,
@@ -203,6 +204,7 @@ export const queryOverview = cache(
 						title: string
 						id: string
 					},
+					tags:delta.tags?(delta.tags as Array<TagOverview>):[],
 					...(bookmarks instanceof Error
 						? {bookmarks: [] as string[], bookmarksCount: 0}
 						: {

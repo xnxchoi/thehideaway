@@ -1,2 +1,2 @@
-FROM postgres:18beta2-alpine
+FROM postgres:18rc1-alpine
 COPY nanoid.sql /docker-entrypoint-initdb.d/

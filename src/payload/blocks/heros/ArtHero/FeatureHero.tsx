@@ -11,9 +11,9 @@ import {
 	CoverTitleCard,
 	CoverWrap,
 } from "./components";
-
+type INN='category'|'title'|'subtitle'|'publishedAt'| 'author'
 export const FeaturedCard: React.FC<{
-	post: SingleArticle;
+	post: Required<Pick<SingleArticle,INN>>&Partial<Omit<SingleArticle, INN>>;
 }> = ({post}) => {
 	const {category, image, author, publishedAt, title, subtitle} = post;
 	const darkmode = image?.darkmode || false;

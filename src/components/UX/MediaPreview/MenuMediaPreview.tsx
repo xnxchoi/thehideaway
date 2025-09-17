@@ -1,315 +1,447 @@
-'use client'
-import {useRPStore} from '@/providers/RP_Pro'
-import {useCallback, useEffect, useRef, useState} from 'react'
-import gsap from 'gsap'
-import {getIsMobile, useIsMobile} from '@/utilities/getBreakpoints'
-import {cn} from '@/lib/utils'
-import {useWindowResize} from '@/utilities/use_window_resize'
-import {useCurrentPage} from '@/hooks/useCurrentPage'
-import {VGradient} from '../Gradient/Gradient'
+"use client";
 
+import { useRPStore } from "@/providers/RP_Pro";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { getIsMobile, useIsMobile } from "@/utilities/getBreakpoints";
+import { cn } from "@/lib/utils";
+import { useWindowResize } from "@/utilities/use_window_resize";
+import { useCurrentPage } from "@/hooks/useCurrentPage";
+import { VGradient } from "../Gradient/Gradient";
+
+// Types and Interfaces
 interface PreviewItem extends Partial<HTMLDivElement> {
-	resetElement: () => void
-	setVisibility: () => void
+  resetElement: () => void;
+  setVisibility: () => void;
 }
 
-const y = {
-	in: 0.4,
-}
-const defaultConfig = {
-	debounce: 100,
-}
-
-export const MenuMediaPreview = (l) => {
-	const navOpeningElement = useRPStore((l) => l.navOpeningElement)
-	const getDefaultSizingValues = () => {
-		if (!navOpeningElement) return false
-		let l = {
-			width: window.innerWidth,
-			height: window.innerHeight,
-			scale: 1.1 * (navOpeningElement.offsetHeight / window.innerHeight),
-			y: 0,
-		}
-		if (getIsMobile(window.innerWidth)) {
-			let d = window.innerWidth,
-				h = 1.32 * window.innerWidth,
-				p =
-					(null == navOpeningElement ? void 0 : navOpeningElement.getBoundingClientRect().top) || 0,
-				m = (null == navOpeningElement ? void 0 : navOpeningElement.offsetHeight) || 0
-			l = {
-				width: d,
-				height: h,
-				scale: 1,
-				y: p - (0.5 * h - 0.5 * m),
-			}
-		}
-		return l
-	}
-	let {className: c} = l,
-		navigationPreviewMedia = useRPStore((l) => l.navigationPageItemData),
-		navigationPreviewMediaByKey = useRPStore((l) => l.navigationPreviewMediaByKey),
-		navigationPreviewMediaKey = useRPStore((l) => l.navigationPageItemKeys),
-		navigationPageItemSelected = useRPStore((l) => l.navigationPageItemSelected),
-		navIsOpen = useRPStore((l) => l.navIsOpen),
-		currentStateRef = useRef<boolean>(false),
-		previewRef = useRef(null),
-		windowResize = useWindowResize(),
-		previewItems = useRef<PreviewItem[]>([]),
-		selectedItemIndex = useRef<string | -1>(-1),
-		{isMobile} = useIsMobile(),
-		fallbackRef = useRef<PreviewItem>(null!),
-		R = (function (l) {
-			let c = {
-					...defaultConfig,
-				},
-				[lastTimeout, setLastTimeout] = useState(0)
-			return (
-				useEffect(() => {
-					let toID: null | ReturnType<typeof setTimeout> = null
-
-					function handleVisibilityChange() {
-						toID && clearTimeout(toID),
-							(toID = setTimeout(() => {
-								setLastTimeout(Date.now())
-							}, c.debounce))
-					}
-
-					return (
-						window.removeEventListener('visibilitychange', handleVisibilityChange),
-							window.addEventListener('visibilitychange', handleVisibilityChange),
-							() => {
-								window.removeEventListener('visibilitychange',
-									handleVisibilityChange)
-							}
-					)
-				}, [c.debounce]),
-					lastTimeout
-			)
-		})(),
-		{currentPageKey} = useCurrentPage(),
-		hasSomethingToShow =
-			!!navigationPreviewMediaByKey[navigationPageItemSelected] || !!currentPageKey
-	useEffect(() => {
-		currentStateRef.current = navIsOpen
-	}, [navIsOpen])
-
-	const showPreviewCallback = useCallback(() => {
-		gsap.set(previewRef.current, {
-			autoAlpha: 1,
-		})
-	}, [navIsOpen, previewRef, y.in])
-	const previewSizingCallback = useCallback(() => {
-		let l = {
-			scale: 1,
-			y: window.innerHeight,
-			duration: navIsOpen ? 1.2 : 0,
-		}
-		if (isMobile) {
-			let c = getDefaultSizingValues()
-			if (!c) return l
-			let d = window.innerHeight,
-				h = d / c.height,
-				p = d - c.height
-			h < 1 && (h = 1),
-				(l = {
-					scale: h,
-					y: 0 + 0.5 * p + window.innerHeight + 50,
-					duration: navIsOpen ? 1.2 : 0,
-				})
-		}
-		return l
-	}, [isMobile])
-	const resetPreview = useCallback(() => {
-		if (!previewRef.current) return
-		let l = previewSizingCallback() || {}
-		gsap.killTweensOf(previewRef.current)
-		gsap[navIsOpen ? 'to' : 'set'](previewRef.current, {
-			...l,
-			duration: navIsOpen ? 1 : 0,
-			delay: navIsOpen ? 0.2 : 0,
-		})
-	}, [previewSizingCallback])
-	let H = useCallback(() => {
-		if (!previewRef.current) return
-		let l = getDefaultSizingValues() || {}
-		gsap.killTweensOf(previewRef.current)
-		gsap.to(previewRef.current, {
-			...l,
-			duration: y.in,
-			delay: navIsOpen ? 0.2 : 0,
-			ease: 'Power4.easeInOut',
-		})
-	}, [previewRef, getDefaultSizingValues, y])
-	const showPreviewAfterResizeCallback = useCallback(() => {
-		if (!previewRef.current) return
-		gsap.killTweensOf(previewRef.current)
-		const onComplete = () => {
-			fallbackRef.current && fallbackRef.current.setVisibility(),
-				previewItems.current.forEach((l) => {
-					l.resetElement()
-				}),
-				showPreviewCallback()
-		}
-		if (isMobile) {
-			let l = previewSizingCallback()
-			gsap.to(previewRef.current, {
-				scale: l.scale,
-				y: l.y,
-				duration: 1.2,
-				delay: navIsOpen ? 0.2 : 0,
-				ease: 'Power4.easeInOut',
-				onComplete: onComplete,
-			})
-		} else {
-			gsap.to(previewRef.current, {
-				y: window.innerHeight,
-				scale: 1,
-				delay: navIsOpen ? 0.2 : 0,
-				duration: 1.2,
-				ease: 'Power4.easeInOut',
-				onComplete: onComplete,
-			})
-		}
-	}, [isMobile, previewSizingCallback, showPreviewCallback, previewRef, fallbackRef,
-		previewItems])
-	let hidePreviewCallback = useCallback(() => {
-		gsap.to(previewRef.current, {
-			autoAlpha: 0,
-			duration: 0.4,
-			onComplete: () => {
-				resetPreview(),
-				fallbackRef.current && fallbackRef.current.resetElement(),
-					previewItems.current.forEach((l) => {
-						l.resetElement()
-					}),
-					showPreviewCallback()
-			},
-		})
-	}, [resetPreview, showPreviewCallback, previewRef, fallbackRef, previewItems])
-	let selectionChangeShowCallback = useCallback(() => {
-		if (!previewRef.current) return
-		gsap.killTweensOf(previewRef.current)
-		const onComplete = () => {
-			fallbackRef.current && fallbackRef.current.setVisibility(),
-				previewItems.current.forEach((l) => {
-					l.resetElement()
-				}),
-				showPreviewCallback()
-		}
-		if (isMobile) {
-			let l = getDefaultSizingValues()
-			if (!l) return
-			let c = window.innerHeight,
-				d = c - l.height,
-				h = previewSizingCallback()
-			gsap.to(previewRef.current, {
-				scale: h.scale,
-				y: 0 + 0.5 * d,
-				delay: navIsOpen ? 0.2 : 0,
-				duration: 1.2,
-				ease: 'Power4.easeInOut',
-				onComplete: () => {
-					gsap.to(previewRef.current, {
-						y: h.y,
-						duration: 1.2,
-						ease: 'Power4.easeInOut',
-					})
-				},
-			})
-		} else {
-			gsap.to(previewRef.current, {
-				scale: 1,
-				delay: navIsOpen ? 0.2 : 0,
-				duration: 1.2,
-				ease: 'Power4.easeInOut',
-				onComplete: () => {
-					gsap.to(previewRef.current, {
-						y: window.innerHeight,
-						duration: 1.2,
-						ease: 'Power4.easeInOut',
-						onComplete: onComplete,
-					})
-				},
-			})
-		}
-	}, [isMobile, previewRef, previewSizingCallback, showPreviewCallback, fallbackRef,
-		previewItems])
-
-	useEffect(() => {
-		navIsOpen
-			? H()
-			: (resetPreview(),
-			fallbackRef.current && fallbackRef.current.resetElement(),
-				previewItems.current.forEach((l) => {
-					l.resetElement()
-				}),
-				showPreviewCallback())
-	}, [resetPreview, R, H, showPreviewCallback])
-	useEffect(() => {
-		navIsOpen && H(),
-		(selectedItemIndex.current !== navigationPageItemSelected &&
-			-1 !== navigationPageItemSelected) ||
-		navIsOpen ||
-		(!!navigationPreviewMediaByKey[navigationPageItemSelected] || !!currentPageKey
-			? showPreviewAfterResizeCallback()
-			: hidePreviewCallback())
-	}, [
-		windowResize,
-		resetPreview,
-		navIsOpen,
-		H,
-		showPreviewAfterResizeCallback,
-		navigationPageItemSelected,
-		hasSomethingToShow,
-		hidePreviewCallback,
-	])
-	const setHoveredNavItem = useRPStore((l) => l.setNavigationPageItemHovered)
-	// useEffect(() => {
-	//   navigationPageItemSelected !== -1 &&
-	//     selectedItemIndex.current !== navigationPageItemSelected &&
-	//     ((selectedItemIndex.current = navigationPageItemSelected),
-	//     !!navigationPreviewMediaByKey[navigationPageItemSelected] || !!currentPageKey
-	//       ? selectionChangeShowCallback()
-	//       : hidePreviewCallback())
-	// }, [
-	//   navigationPageItemSelected,
-	//   selectionChangeShowCallback,
-	//   hasSomethingToShow,
-	//   hidePreviewCallback,
-	// ])
-
-	return (
-		<div ref={previewRef} className={cn('menu__preview-preview', c)} style={{
-			visibility: navIsOpen ? 'visible' : 'hidden',
-		}}>
-			<VGradient />
-		</div>
-	)
+interface SizingValues {
+  width: number;
+  height: number;
+  scale: number;
+  y: number;
 }
 
-const Temp = () => {
-	//
-	// return (  {fallbackMedia && (
-	//   <MediaPreviewItem
-	//     ref={fallbackRef}
-	//     mediaSrcToUse={fallbackMedia[isMobile ? 'mobile' : 'desktop']}
-	//     pageKey="default"
-	//   />
-	// )}
-	// {navigationPreviewMedia.map((l, index) => {
-	//   return (
-	//     <MediaPreviewItem
-	//       key={l.id + '' + index}
-	//       ref={(el) => {
-	//         el && (previewItems.current[index] = el)
-	//       }}
-	//       pageKey={navigationPreviewMediaKey[index]}
-	//       mediaSrcToUse={
-	//         l.previewMedia?.[isMobile ? 'mobile' : 'desktop'] ??
-	//         fallbackMedia?.[isMobile ? 'mobile' : 'desktop'] ??
-	//         ''
-	//       }
-	//     />
-	//   )
-	// })})
+interface AnimationConfig {
+  scale: number;
+  y: number;
+  duration: number;
 }
+
+interface MenuMediaPreviewProps {
+  className?: string;
+}
+
+// Constants
+const ANIMATION_CONFIG = {
+  DURATION_IN: 0.4,
+  DEBOUNCE_DELAY: 100,
+  MOBILE_SCALE_MULTIPLIER: 1.32,
+  DESKTOP_SCALE_MULTIPLIER: 1.1,
+  ANIMATION_DURATION: 1.2,
+  HIDE_DURATION: 0.4,
+  SHOW_DELAY: 0.2
+} as const;
+
+const EASING = {
+  POWER4_IN_OUT: "Power4.easeInOut"
+} as const;
+
+/**
+ * Custom hook for handling visibility change events with debouncing
+ */
+const useVisibilityChangeDebounced = (
+  debounceMs: number = ANIMATION_CONFIG.DEBOUNCE_DELAY
+) => {
+  const [lastTimeout, setLastTimeout] = useState(0);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const handleVisibilityChange = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        setLastTimeout(Date.now());
+      }, debounceMs);
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [debounceMs]);
+
+  return lastTimeout;
+};
+
+/**
+ * Custom hook for calculating default sizing values based on navigation element and screen size
+ */
+const useDefaultSizing = (navOpeningElement: HTMLElement | null) => {
+  return useCallback((): SizingValues | null => {
+    if (!navOpeningElement) return null;
+
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const isMobileDevice = getIsMobile(windowWidth);
+
+    if (isMobileDevice) {
+      const width = windowWidth;
+      const height = ANIMATION_CONFIG.MOBILE_SCALE_MULTIPLIER * windowWidth;
+      const elementTop = navOpeningElement.getBoundingClientRect().top || 0;
+      const elementHeight = navOpeningElement.offsetHeight || 0;
+
+      return {
+        width,
+        height,
+        scale: 1,
+        y: elementTop - (0.5 * height - 0.5 * elementHeight)
+      };
+    }
+
+    return {
+      width: windowWidth,
+      height: windowHeight,
+      scale:
+        ANIMATION_CONFIG.DESKTOP_SCALE_MULTIPLIER *
+        (navOpeningElement.offsetHeight / windowHeight),
+      y: 0
+    };
+  }, [navOpeningElement]);
+};
+
+/**
+ * Custom hook for preview sizing calculations
+ */
+const usePreviewSizing = (
+  getDefaultSizingValues: () => SizingValues | null,
+  isMobile: boolean,
+  navIsOpen: boolean
+) => {
+  return useCallback((): AnimationConfig => {
+    const defaultConfig: AnimationConfig = {
+      scale: 1,
+      y: window.innerHeight,
+      duration: navIsOpen ? ANIMATION_CONFIG.ANIMATION_DURATION : 0
+    };
+
+    if (!isMobile) return defaultConfig;
+
+    const sizingValues = getDefaultSizingValues();
+    if (!sizingValues) return defaultConfig;
+
+    const windowHeight = window.innerHeight;
+    const heightDifference = windowHeight - sizingValues.height;
+    let scale = windowHeight / sizingValues.height;
+
+    if (scale < 1) scale = 1;
+
+    return {
+      scale,
+      y: 0.5 * heightDifference + windowHeight + 50,
+      duration: navIsOpen ? ANIMATION_CONFIG.ANIMATION_DURATION : 0
+    };
+  }, [getDefaultSizingValues, isMobile, navIsOpen]);
+};
+
+/**
+ * MenuMediaPreview Component
+ * Handles the preview display for navigation menu items with smooth animations
+ */
+export const MenuMediaPreview: React.FC<MenuMediaPreviewProps> = ({
+  className
+}) => {
+  // Store state
+  const navOpeningElement = useRPStore((state) => state.navOpeningElement);
+  const navigationPreviewMediaByKey = useRPStore(
+    (state) => state.navigationPreviewMediaByKey
+  );
+  const navigationPageItemSelected = useRPStore(
+    (state) => state.navigationPageItemSelected
+  );
+  const navIsOpen = useRPStore((state) => state.navIsOpen);
+
+  // Refs
+  const currentStateRef = useRef<boolean>(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const previewItems = useRef<PreviewItem[]>([]);
+  const selectedItemIndex = useRef<string | number>(-1);
+  const fallbackRef = useRef<PreviewItem>(null!);
+
+  // Hooks
+  const windowResize = useWindowResize();
+  const { isMobile } = useIsMobile();
+  const { currentPageKey } = useCurrentPage();
+  const visibilityChangeTimestamp = useVisibilityChangeDebounced();
+  const getDefaultSizingValues = useDefaultSizing(navOpeningElement);
+  const getPreviewSizing = usePreviewSizing(
+    getDefaultSizingValues,
+    isMobile,
+    navIsOpen
+  );
+
+  // Computed values
+  const hasSomethingToShow = Boolean(
+    navigationPreviewMediaByKey[navigationPageItemSelected] || currentPageKey
+  );
+
+  // Update current state ref
+  useEffect(() => {
+    currentStateRef.current = navIsOpen;
+  }, [navIsOpen]);
+
+  /**
+   * Shows the preview with fade in animation
+   */
+  const showPreview = useCallback(() => {
+    if (!previewRef.current) return;
+
+    gsap.set(previewRef.current, {
+      autoAlpha: 1
+    });
+  }, []);
+
+  /**
+   * Resets preview to initial position
+   */
+  const resetPreview = useCallback(() => {
+    if (!previewRef.current) return;
+
+    const animationConfig = getPreviewSizing();
+    gsap.killTweensOf(previewRef.current);
+
+    const method = navIsOpen ? "to" : "set";
+    gsap[method](previewRef.current, {
+      ...animationConfig,
+      duration: navIsOpen ? 1 : 0,
+      delay: navIsOpen ? ANIMATION_CONFIG.SHOW_DELAY : 0
+    });
+  }, [navIsOpen, getPreviewSizing]);
+
+  /**
+   * Animates preview to show position
+   */
+  const animateToShowPosition = useCallback(() => {
+    if (!previewRef.current) return;
+
+    const sizingValues = getDefaultSizingValues();
+    if (!sizingValues) return;
+
+    gsap.killTweensOf(previewRef.current);
+    gsap.to(previewRef.current, {
+      ...sizingValues,
+      duration: ANIMATION_CONFIG.DURATION_IN,
+      delay: navIsOpen ? ANIMATION_CONFIG.SHOW_DELAY : 0,
+      ease: EASING.POWER4_IN_OUT
+    });
+  }, [getDefaultSizingValues, navIsOpen]);
+
+  /**
+   * Shows preview after window resize with proper positioning
+   */
+  const showPreviewAfterResize = useCallback(() => {
+    if (!previewRef.current) return;
+
+    gsap.killTweensOf(previewRef.current);
+
+    const onComplete = () => {
+      if (fallbackRef.current) {
+        fallbackRef.current.setVisibility();
+      }
+
+      previewItems.current.forEach((item) => {
+        item.resetElement();
+      });
+
+      showPreview();
+    };
+
+    const animationProps = {
+      delay: navIsOpen ? ANIMATION_CONFIG.SHOW_DELAY : 0,
+      duration: ANIMATION_CONFIG.ANIMATION_DURATION,
+      ease: EASING.POWER4_IN_OUT,
+      onComplete
+    };
+
+    if (isMobile) {
+      const sizingConfig = getPreviewSizing();
+      gsap.to(previewRef.current, {
+        scale: sizingConfig.scale,
+        y: sizingConfig.y,
+        ...animationProps
+      });
+    } else {
+      gsap.to(previewRef.current, {
+        y: window.innerHeight,
+        scale: 1,
+        ...animationProps
+      });
+    }
+  }, [isMobile, getPreviewSizing, showPreview, navIsOpen]);
+
+  /**
+   * Hides the preview with fade out animation
+   */
+  const hidePreview = useCallback(() => {
+    if (!previewRef.current) return;
+
+    gsap.to(previewRef.current, {
+      autoAlpha: 0,
+      duration: ANIMATION_CONFIG.HIDE_DURATION,
+      onComplete: () => {
+        resetPreview();
+
+        if (fallbackRef.current) {
+          fallbackRef.current.resetElement();
+        }
+
+        previewItems.current.forEach((item) => {
+          item.resetElement();
+        });
+
+        showPreview();
+      }
+    });
+  }, [resetPreview, showPreview]);
+
+  /**
+   * Handles selection change with smooth transition
+   */
+  const handleSelectionChange = useCallback(() => {
+    if (!previewRef.current) return;
+
+    gsap.killTweensOf(previewRef.current);
+
+    const onComplete = () => {
+      if (fallbackRef.current) {
+        fallbackRef.current.setVisibility();
+      }
+
+      previewItems.current.forEach((item) => {
+        item.resetElement();
+      });
+
+      showPreview();
+    };
+
+    const baseAnimationProps = {
+      delay: navIsOpen ? ANIMATION_CONFIG.SHOW_DELAY : 0,
+      duration: ANIMATION_CONFIG.ANIMATION_DURATION,
+      ease: EASING.POWER4_IN_OUT
+    };
+
+    if (isMobile) {
+      const sizingValues = getDefaultSizingValues();
+      if (!sizingValues) return;
+
+      const windowHeight = window.innerHeight;
+      const heightDifference = windowHeight - sizingValues.height;
+      const sizingConfig = getPreviewSizing();
+
+      gsap.to(previewRef.current, {
+        scale: sizingConfig.scale,
+        y: 0.5 * heightDifference,
+        ...baseAnimationProps,
+        onComplete: () => {
+          gsap.to(previewRef.current, {
+            y: sizingConfig.y,
+            duration: ANIMATION_CONFIG.ANIMATION_DURATION,
+            ease: EASING.POWER4_IN_OUT
+          });
+        }
+      });
+    } else {
+      gsap.to(previewRef.current, {
+        scale: 1,
+        ...baseAnimationProps,
+        onComplete: () => {
+          gsap.to(previewRef.current, {
+            y: window.innerHeight,
+            duration: ANIMATION_CONFIG.ANIMATION_DURATION,
+            ease: EASING.POWER4_IN_OUT,
+            onComplete
+          });
+        }
+      });
+    }
+  }, [
+    isMobile,
+    getDefaultSizingValues,
+    getPreviewSizing,
+    showPreview,
+    navIsOpen
+  ]);
+
+  // Effect for nav open/close state changes
+  useEffect(() => {
+    if (navIsOpen) {
+      animateToShowPosition();
+    } else {
+      resetPreview();
+
+      if (fallbackRef.current) {
+        fallbackRef.current.resetElement();
+      }
+
+      previewItems.current.forEach((item) => {
+        item.resetElement();
+      });
+
+      showPreview();
+    }
+  }, [
+    resetPreview,
+    visibilityChangeTimestamp,
+    animateToShowPosition,
+    showPreview,
+    navIsOpen
+  ]);
+
+  // Effect for window resize and selection changes
+  useEffect(() => {
+    if (navIsOpen) {
+      animateToShowPosition();
+      return;
+    }
+
+    const hasSelectionChanged =
+      selectedItemIndex.current !== navigationPageItemSelected &&
+      navigationPageItemSelected !== -1;
+
+    if (hasSelectionChanged || !navIsOpen) {
+      if (hasSomethingToShow) {
+        showPreviewAfterResize();
+      } else {
+        hidePreview();
+      }
+    }
+  }, [
+    windowResize,
+    resetPreview,
+    navIsOpen,
+    animateToShowPosition,
+    showPreviewAfterResize,
+    navigationPageItemSelected,
+    hasSomethingToShow,
+    hidePreview
+  ]);
+
+  return (
+    <div
+      ref={previewRef}
+      className={cn("menu__preview-preview", className)}
+      style={{
+        visibility: navIsOpen ? "visible" : "hidden"
+      }}
+    >
+      <VGradient />
+    </div>
+  );
+};

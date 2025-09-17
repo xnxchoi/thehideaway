@@ -1,9 +1,21 @@
 import type {Block} from "payload"
+import {uuidv7} from "uuidv7";
 
 export const Code: Block = {
 	slug: "code",
 	interfaceName: "CodeBlock",
-	fields: [
+	fields: [{
+		name:"id",
+		type:"text",
+		defaultValue:()=>uuidv7(),
+		access:{
+			update:()=>false,
+		},
+		required:true,
+		admin:{
+			hidden:true,
+		}
+	},
 		{
 			name: "language",
 			type: "select",

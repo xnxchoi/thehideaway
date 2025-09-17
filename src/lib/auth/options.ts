@@ -1,36 +1,44 @@
-import type {
-	BetterAuthOptions as BetterAuthOptionsType,
-	BetterAuthPluginOptions as BetterAuthPluginOptionsType,
-} from "payload-auth/better-auth";
-import {emailHarmony} from "better-auth-harmony";
-import {nextCookies} from "better-auth/next-js";
-import {
-	admin as adminPlugin,
-	multiSession,
-	openAPI,
-	organization,
-	twoFactor,
-	username,
-} from "better-auth/plugins";
-import {passkey} from "better-auth/plugins/passkey";
-import {accessControl} from "@/lib/auth/permissions";
-import {admin, author, editor, patron, user} from "@/lib/auth/roles";
-import {canCreateOrg} from "./hooks/canCreateOrg";
-import {type Where} from "payload";
-import {uuidv7} from "uuidv7";
+import type { BetterAuthOptions as BetterAuthOptionsType } from "better-auth";
+import { username } from "better-auth/plugins/username";
+import { emailHarmony } from "better-auth-harmony";
+import { twoFactor } from "better-auth/plugins/two-factor";
+import { magicLink } from "better-auth/plugins/magic-link";
+import { emailOTP } from "better-auth/plugins/email-otp";
+import { passkey } from "better-auth/plugins/passkey";
+import { admin as adminPlugin } from "better-auth/plugins/admin";
+import { organization } from "better-auth/plugins/organization";
+import { multiSession } from "better-auth/plugins/multi-session";
+// import { openAPI } from "better-auth/plugins/open-api";
+// import { nextCookies } from "better-auth/plugins/next-cookies";
+import { uuidv7 } from "uuidv7";
+import { BetterAuthEmailService } from "@/lib/email/better-auth-integration";
+import { accessControl } from "@/lib/auth/permissions";
+import { admin, author, editor, patron, user } from "@/lib/auth/roles";
+import { canCreateOrg } from "./hooks/canCreateOrg";
+import { type Where } from "payload";
+import type { BetterAuthPluginOptions as BetterAuthPluginOptionsType } from "payload-auth";
+
+// Initialize email service
+const emailService = new BetterAuthEmailService();
 
 const options = {
 	appName: "hideaway-validator",
 	baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
 	trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
-	// emailAndPassword: {
-	//   enabled: true,
-	//   requireEmailVerification: true,
-	//   // autoSignIn: true,
-	//   async sendResetPassword({ user, url }) {
-	//     console.log("Send reset password for user: ", user.id, "at url", url);
-	//   },
-	// },
+	emailAndPassword: {
+	  enabled: true,
+	  requireEmailVerification: true,
+	  // autoSignIn: true,
+	  async sendResetPassword({ user, url }) {
+	    try {
+	      await emailService.sendPasswordReset(user.email, url);
+	    } catch (error) {
+	      console.error("Failed to send password reset email:", error);
+	      // Fallback to console log if email fails
+	      console.log("Send reset password for user: ", user.id, "at url", url);
+	    }
+	  },
+	},
 	socialProviders: {
 		google: {
 			clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -55,7 +63,12 @@ const options = {
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
 		async sendVerificationEmail({user, url}) {
-			console.log("Send verification email for user: ", url);
+			try {
+				await emailService.sendOTP(user.email, url.split('=').pop() || '', 'email-verification');
+			} catch (error) {
+				console.error("Failed to send verification email:", error);
+				console.log("Send verification email for user: ", url);
+			}
 		},
 	},
 	user: {
@@ -117,20 +130,37 @@ export const betterAuthPlugins = [
 		issuer: "hideaway-validator",
 		otpOptions: {
 			async sendOTP({user, otp}) {
-				console.log("Send OTP for user: ", user, otp);
+				try {
+					// UserWithTwoFactor doesn't have email property directly, need to get it from the user object
+					const userEmail = (user as any).email || '';
+					await emailService.send2FACode(userEmail, otp);
+				} catch (error) {
+					console.error("Failed to send 2FA OTP:", error);
+					console.log("Send OTP for user: ", user, otp);
+				}
 			},
 		},
 	}),
-	// magicLink({
-	//   sendMagicLink: async ({ email, token, url }, request) => {
-	//     console.log("Send magic link for user: ", email, token, url);
-	//   },
-	// }),
-	// emailOTP({
-	//   async sendVerificationOTP({ email, otp, type }) {
-	//     console.log("Send verification OTP for user: ", email, otp, type)
-	//   },
-	// }),
+	magicLink({
+	  sendMagicLink: async ({ email, token, url }, _request) => {
+	    try {
+	      await emailService.sendMagicLink(email, token, url);
+	    } catch (error) {
+	      console.error("Failed to send magic link:", error);
+	      console.log("Send magic link for user: ", email, token, url);
+	    }
+	  },
+	}),
+	emailOTP({
+	  async sendVerificationOTP({ email, otp, type }) {
+	    try {
+	      await emailService.sendOTP(email, otp, type as 'sign-in' | 'email-verification');
+	    } catch (error) {
+	      console.error("Failed to send verification OTP:", error);
+	      console.log("Send verification OTP for user: ", email, otp, type);
+	    }
+	  },
+	}),
 	passkey({
 		rpID: "localhost",
 		rpName: "Localhost",
@@ -161,8 +191,8 @@ export const betterAuthPlugins = [
 		},
 	}),
 	multiSession(),
-	openAPI(),
-	nextCookies(),
+	// openAPI(),
+	// nextCookies(),
 ] satisfies BetterAuthOptionsType["plugins"];
 
 export type BetterAuthPlugins = typeof betterAuthPlugins;
