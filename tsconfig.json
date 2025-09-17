@@ -1,0 +1,77 @@
+{
+  "compilerOptions": {
+    "strict": false,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "jsx": "preserve",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@payload-config": [
+        "./src/payload.config.ts"
+      ],
+      "@/*": [
+        "./src/*"
+      ],
+
+      "@/fonts": [
+        "./src/fonts"
+      ],
+      "@hooks/*": [
+        "./src/payload/hooks/*"
+      ],
+      "@components/*": [
+        "./src/payload/components/*"
+      ],
+      "@collections/*": [
+        "./src/payload/collections/*"
+      ]
+    },
+
+  },
+  "files": [
+      "node_modules/@types/react",
+    "node_modules/gsap/dist/gsap.d.ts",
+	"./src/components/UX/Highlightr/PrivateHighlights.tsx",
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "redirects.js",
+    "next-env.d.ts",
+    "next-sitemap.config.cjs",
+    "next.config.ts",
+  ],
+  "exclude": [
+    "src/payload/collections/Comments.ts",
+    "src/payload/collections/Comments",
+    "node_modules",
+    ".graveyard",
+    ".graveyard/metalab.js"
+  ]
+}

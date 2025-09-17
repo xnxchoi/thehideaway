@@ -1,0 +1,25 @@
+# Ignore log files
+*.log
+
+# Ignore node_modules folder
+node_modules/
+
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.grave/
+# Ignore MacOS .DS_Store file
+.DS_Store
+.vscode/
+.idea/
+.next/
+.pnpm-store/
+.turbo/
+packages/
+src/app/(frontend)/(site)/(auth)/prive/Screenshot 2025-06-23 at 01.00.34.png
+
+src/payload/components/Header/metalab.js!/src/payload/collections/Users/c/dd.js
+!/src/payload/collections/Users/c/dd.js
+!/src/components/layouts/Profile/temp.tsx

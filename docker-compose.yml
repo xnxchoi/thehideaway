@@ -1,0 +1,33 @@
+services:
+   payload:
+     image: node:20-alpine
+     ports:
+       - '3000:3000'
+     volumes:
+       - .:/home/node/app
+       - node_modules:/home/node/app/node_modules
+     working_dir: /home/node/app/
+     command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
+     depends_on:
+       - postgres
+
+     env_file:
+       - .env
+  # Ensure your DATABASE_URI uses 'postgresql' as the hostname ie. postgresql://127.0.0.1:5432/your-database-name
+   postgres:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    hostname: 'postgresql'
+    environment:
+      POSTGRES_PASSWORD: H1dden!
+      POSTGRES_USER: postgres
+      POSTGRES_DB: theestate # THIS MUST MATCH YOUR DB NAME IN .env
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+volumes:
+  pgdata:
+  node_modules:

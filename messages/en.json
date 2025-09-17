@@ -1,0 +1,85 @@
+{
+  "Highlights": {
+      "error": {
+        "share": {
+          "copy": "Copy failed. Try again after some time!"
+        },
+        "save": {
+          "default":  "Failed to save for some reasons... Try again after some time!",
+
+          "signin": "Check in to save highlights.",
+          "select": "Select some text first.",
+          "empty": "You can't save an empty highlight."
+        }
+      },
+      "share": {
+        "copy": "Copied! Go paste it wherever you want."
+      },"saved": "Saved!"
+  },
+  "UI": {
+    "SignIn":{
+      "separator":"Or check in with",
+      "providers": "Password || Passkey"
+    },
+    "Justification": {
+      "question": "What am I paying for?"
+    },
+    "Radio": {
+      "play": "Play",
+      "pause": "Pause",
+      "next": "Next",
+      "previous": "Previous"
+    }
+  },
+  "Plans": {
+    "title": "Life is only meaningful in retrospect.",
+    "subtitle": "Memories are the product of two things - action and recollection.",
+    "description": "We hand you the tools to capture the spark."
+  },
+  "Policies": {
+    "Refunds": {
+      "headline": "In order to ensure your total satisfaction, a Customer or a recipient of a gift of The Hideaway products (a “Gift Recipient”) may return The Hideaway products in accordance with the return and exchange policy set forth below. Returns of The Hideaway products that are not in compliance with the conditions and timeframes set forth below may be rejected by The Hideaway and will be sent back to the Customer or Gift Recipient, as the case may be.",
+      "period": {
+        "title": "Return Period",
+        "body": "The Hideaway products purchased through The Hideaway may be exchanged or returned for a refund or merchandise credit within seven (7) days following delivery. Please allow up to fourteen (14) business days for full refund, if applicable. Merchandise must be presented in its original packaging and accompanied by the appropriate sales receipt. Engraved, embossed, special order, personalized, made to order creations and items that show sign of wear cannot be exchanged or returned. All returns and exchanges are subject to the further terms and conditions set forth below."
+
+      },
+      "process": {
+        "title": "Return Process",
+        "body": "The Customer or Gift Recipient, as the case may be, must keep a proof of return shipment and the FedEx tracking number, and The Hideaway accepts no liability in the event that such proof cannot be produced. Only merchandise received by the The Hideaway distribution center will be eligible for a refund or exchange. Upon receiving a return, The Hideaway will verify that the returned product satisfies the conditions of the return policy and, if so, then proceed with the applicable refund or exchange."
+
+      },
+      "conditions": {
+        "title": "Return Conditions",
+        "body": "The Hideaway products must be returned in a new and unused state, in perfect condition, with all protective materials in place and tags and stickers attached to them (if applicable), as well as with the original The Hideaway box and delivery package, including all accessories and documents. The Hideaway will not accept any return if the product shows signs of wear, or has been used or altered from its original condition in any way. Engraved or embossed products, as well as special order, personalized and made-to-order creations, cannot be returned to The Hideaway for exchange, merchandise credit or refund. All returns will be subject to strict Quality Control (QC) by The Hideaway to ensure that the returned products satisfy these requirements. If the products do not meet QC standards, The Hideaway will refuse the return, and the products will be sent back to the Customer or the Gift Recipient, as applicable. If the returned product satisfies Quality Control (QC), The Hideaway will proceed with the applicable refund or exchange."
+
+      }
+    }
+  },
+  "Register": {
+    "error": {
+      "password": {
+        "minLength": "Password must be at least 8 characters long",
+        "maxLength": "Password must be at most 20 characters long",
+        "uppercase": "Password must contain at least one uppercase letter",
+        "lowercase": "Password must contain at least one lowercase letter",
+        "number": "Password must contain at least one number",
+        "specialCharacter": "Password must contain at least one special character"
+      },
+      "portrait": {
+        "invalidFile": "Invalid file. choose either JPEG ,jpg , webp PNG image",
+        "maxFileSize": "Max file size allowed is 2MB."
+      },
+      "username": {
+        "minLength": "Username must be at least 2 characters long",
+        "maxLength": "Username must be at most 40 characters long",
+        "regex": "Username must contain only lowercase letters, numbers, and underscores"
+      },
+      "name": {
+        "minLength": "Name must be at least 2 characters long",
+        "maxLength": "Name must be at most 40 characters long",
+        "specialCharacter": "Special characters are not allowed"
+      }
+    }
+  }
+}

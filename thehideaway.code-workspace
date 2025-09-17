@@ -1,0 +1,15 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "workbench.colorTheme": "Night Owl",
+    "javascript.preferGoToSourceDefinition": true,
+    "typescript.preferGoToSourceDefinition": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "explorer.autoReveal": "focusNoScroll",
+    "git.ignoreLimitWarning": true,
+  },
+}

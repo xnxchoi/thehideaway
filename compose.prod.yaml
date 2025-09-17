@@ -1,0 +1,107 @@
+name: theestate
+services:
+  payload:
+    container_name: payload
+    volumes:
+      - .:/home/node/app
+      - node_modules:/home/node/app/node_modules
+    ports:
+      - '3000:3000'
+
+    environment:
+      PAYLOAD_SECRET: cbe489d0c389041f8aa77fa0
+      PREVIEW_SECRET: cbe489d0c389041f8aa77fa0
+      AUTH_NAVER_ID: I8ZvzV6f2jDy4XSHvG1s
+      AUTH_NAVER_SECRET: jh2nVe0TPM
+      GOOGLE_CLIENT_ID: 969293287204-ljsaa5nels91a2qnbs5v8qtncobo8urr.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: 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
+      AUTH_ADMINS_GOOGLE_ID: 702699540217-odgd4ns81lt8rm4c6aobn0su2p5jtrj8.apps.googleusercontent.com
+      AUTH_ADMINS_GOOGLE_SECRET: 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
+      BETTER_AUTH_SECRET: u4p6bzXbycr4gY5DsBbVVitu5qNjpWGI
+      EXCHANGE_RATE_KEY: pHzkgs2XmvPUaPYx7eeJeLz1trwDKUh6
+      HOLIDAY_API_KEY: 3ez2JFKHzIp60jx+iitrkYcmbxazHwQTEErroDYZzbWIopXx8r5qAhppxBr3oMWCOdN64gVJSfxUNpqYh0XTbw==
+      DATABASE_URI: postgresql://postgres:H1dden!@host.docker.internal:5432/theestate
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      COOKIE_DOMAIN: localhost
+      NEXT_PUBLIC_IMAGE_MAX_FILE_SIZE: 3*1024*1024
+      NEXT_PUBLIC_VIDEO_MAX_FILE_SIZE: 10*1024*1024
+      NEXT_PUBLIC_BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_EXCHANGE_RATE_URL: https://www.koreaexim.go.kr/site/program/financial/exchangeJSON
+      NEXT_PUBLIC_HOLIDAY_API_URL: https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
+    build:
+      context: ./
+      dockerfile: prod.Dockerfile
+      args:
+        PAYLOAD_SECRET: cbe489d0c389041f8aa77fa0
+        PREVIEW_SECRET: cbe489d0c389041f8aa77fa0
+        AUTH_NAVER_ID: I8ZvzV6f2jDy4XSHvG1s
+        AUTH_NAVER_SECRET: jh2nVe0TPM
+        GOOGLE_CLIENT_ID: 969293287204-ljsaa5nels91a2qnbs5v8qtncobo8urr.apps.googleusercontent.com
+        GOOGLE_CLIENT_SECRET: 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
+        AUTH_ADMINS_GOOGLE_ID: 702699540217-odgd4ns81lt8rm4c6aobn0su2p5jtrj8.apps.googleusercontent.com
+        AUTH_ADMINS_GOOGLE_SECRET: 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
+        BETTER_AUTH_SECRET: u4p6bzXbycr4gY5DsBbVVitu5qNjpWGI
+        EXCHANGE_RATE_KEY: pHzkgs2XmvPUaPYx7eeJeLz1trwDKUh6
+        HOLIDAY_API_KEY: 3ez2JFKHzIp60jx+iitrkYcmbxazHwQTEErroDYZzbWIopXx8r5qAhppxBr3oMWCOdN64gVJSfxUNpqYh0XTbw==
+        DATABASE_URI: postgresql://postgres:H1dden!@host.docker.internal:5432/theestate
+        NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+        COOKIE_DOMAIN: localhost
+        NEXT_PUBLIC_IMAGE_MAX_FILE_SIZE: 3*1024*1024
+        NEXT_PUBLIC_VIDEO_MAX_FILE_SIZE: 10*1024*1024
+        NEXT_PUBLIC_BETTER_AUTH_URL: http://localhost:3000
+        NEXT_PUBLIC_EXCHANGE_RATE_URL: https://www.koreaexim.go.kr/site/program/financial/exchangeJSON
+        NEXT_PUBLIC_HOLIDAY_API_URL: https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hideaway
+  #
+  #   nginx:
+  #     restart: always
+  #     container_name: nginx
+  #     build:
+  #       context: ./nginx
+  #       dockerfile: Dockerfile
+  #     volumes:
+  #       - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+  #       - ./nginx/logs:/var/log/nginx
+  #     ports:
+  #       - 80:80
+  #       - 443:443
+  #       - 3000:3000
+  #     depends_on:
+  #       - payload
+  #     networks:
+  #      - hideaway
+
+
+  # Ensure your DATABASE_URI uses 'postgresql' as the hostname ie. postgresql://127.0.0.1:5432/your-database-name
+  postgres:
+    restart: always
+    container_name: postgres
+    image: postgres:18beta2-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '5432:5432'
+    hostname: postgresql
+    environment:
+      POSTGRES_PASSWORD: H1dden!
+      POSTGRES_USER: postgres
+      TZ: Asia/Seoul
+      POSTGRES_DB: theestate # THIS MUST MATCH YOUR DB NAME IN .env
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - hideaway
+volumes:
+  pgdata:
+  node_modules:
+networks:
+  hideaway:
+    external: true
