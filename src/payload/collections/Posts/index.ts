@@ -32,7 +32,7 @@ import { Post } from "@/payload-types";
 import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
 import { slugField } from "@/payload/fields/slug";
 import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
-import { CatOverview } from "@collections/Deltas/delta-types";
+import { CatOverview } from "@/payload/collections/Deltas/delta-types";
 import {
   MetaImageField,
   MetaTitleField,
@@ -121,7 +121,6 @@ export const Posts: CollectionConfig<"posts"> = {
     slug: true,
     category: true
   },
-  lockDocuments: false,
 
   admin: {
     defaultColumns: ["title", "slug", "updatedAt"],
@@ -423,6 +422,7 @@ export const Posts: CollectionConfig<"posts"> = {
         position: "sidebar"
       }
     },
+
     ...AuthorField(false),
     ...slugField("title", {
       slugOverrides: {
@@ -431,16 +431,17 @@ export const Posts: CollectionConfig<"posts"> = {
         },
         required: true
       }
-    }),
-    {
-      name: "bookmarks",
-      collection: "bookmarks",
-      type: "join",
-      on: "target",
-      admin: {
-        hidden: true
-      }
-    }
+    })
+    // Temporarily commented out join field to isolate Drizzle adapter error
+    // {
+    //   name: "bookmarks",
+    //   collection: "bookmarks",
+    //   type: "join",
+    //   on: "target",
+    //   admin: {
+    //     hidden: true
+    //   }
+    // }
   ],
   hooks: {
     beforeChange: [

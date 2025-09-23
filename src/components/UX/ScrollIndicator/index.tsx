@@ -33,6 +33,7 @@ import { useWindowResize } from "@/utilities/use_window_resize";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Transition } from "motion";
 import dynamic from "next/dynamic";
+import { useShallow } from "zustand/shallow";
 
 const SideDrawer = dynamic(
   () => import("../SideDrawer").then((mod) => mod.SideDrawer),
@@ -44,14 +45,18 @@ export const ScrollIndicator = () => {
   const blobRef = useRef<SVGSVGElement>(null!);
   const pathRef = useRef<SVGPathElement>(null!);
   const scrollerRef = useRef<HTMLDivElement>(null!);
-  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
-  const setCursor = useCursorStore((r) => r.setCursorState);
+  const pageIsTransitioning = useRPStore(
+    useShallow((l) => l.pageIsTransitioning)
+  );
+  const setCursor = useCursorStore(useShallow((r) => r.setCursorState));
   const lastResize = useWindowResize({
     debounce: 100,
     detectHeightChange: true
   });
-  const navIsTransitioning = useRPStore((r) => r.navIsTransitioning);
-  const navIsOpen = useRPStore((r) => r.navIsOpen);
+  const navIsTransitioning = useRPStore(
+    useShallow((r) => r.navIsTransitioning)
+  );
+  const navIsOpen = useRPStore(useShallow((r) => r.navIsOpen));
   const [showSidebar, setShowSidebar] = useState(
     !navIsTransitioning && !navIsOpen
   );
@@ -68,7 +73,7 @@ export const ScrollIndicator = () => {
     }
   }, [lastResize]);
   const scrolle = useRef<HTMLDivElement>(null!);
-  const mouseCoords = useCursorStore((r) => r.mouseCoordinates);
+  const mouseCoords = useCursorStore(useShallow((r) => r.mouseCoordinates));
   const { subscribe } = useCursorAPI();
   const unSub = useRef<() => void>(null!);
 
@@ -233,9 +238,8 @@ export const ScrollIndicator = () => {
       if (typeof pt1 === "boolean") {
         typeof pt0 === "boolean" ? pt0 && pt1 : pt1;
       }
-      const pt2 = pt1[pageType];
     },
-    [layoutType]
+    [pageTypeToShow]
   );
   useEffect(() => {
     setShow(
@@ -255,7 +259,7 @@ export const ScrollIndicator = () => {
     } else {
       resetCursorTheme();
     }
-  }, [enteredLeft]);
+  }, [enteredLeft, resetCursorTheme, setCursorTheme]);
   const sharedTransition: Transition = {
     ease: "easeInOut",
     duration: 0.2,

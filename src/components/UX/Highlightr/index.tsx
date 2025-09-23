@@ -44,7 +44,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
 import type Lenis from "lenis";
 import { useLenis } from "lenis/react";
-import { AnimatePresence, type HTMLMotionProps } from "motion/react";
+import {
+  AnimatePresence,
+  useAnimate,
+  useMotionValue,
+  useMotionValueEvent,
+  type HTMLMotionProps,
+  type MotionValue
+} from "motion/react";
 import * as m from "motion/react-m";
 import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
@@ -85,6 +92,7 @@ import {
   getAnchestorIdentifyableNode,
   isMarkable
 } from "./utils/highlight-helpers";
+import { useShallow } from "zustand/shallow";
 
 export type RangeRect = {
   top: number;
@@ -128,12 +136,12 @@ const Article = ({
   const authorId = useMemo(() => author.id, [author]);
   const addHighlighter = useHighlighter((r) => r.addHighlight);
   const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
-  const currentColor = useHighlighter((r) => r.currentColor);
+  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
   const currentColorRef = useRef(currentColor);
   useEffect(() => {
     currentColorRef.current = currentColor;
   }, [currentColor]);
-  const userId = useRPSession((r) => r.id);
+  const userId = useRPSession(useShallow((r) => r.id));
   const postId = useMemo(() => id, [id]);
   const contentiner = useRanger((r) => r.targetContainer);
   const setVisi = useFloater((r) => r.setOpen);
@@ -242,7 +250,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   useEffect(() => {
     setNaved(direction === null);
   }, [direction]);
-  const user = useRPSession((r) => r.id);
+  const user = useRPSession(useShallow((r) => r?.id));
   const userId = useMemo(() => user, [user]);
   const [enableHighlight, setEnableHighlight] = useState(!!user && !disabled);
   const contentRef = useRef<HTMLDivElement>(null!);
@@ -250,7 +258,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const highlighter = useRanger((r) => r.highlighter);
   const classApplier = useRanger((r) => r.classApplier);
   const { isReady } = useTransitionState();
-  const visi = useFloater((r) => r.open);
+  const visi = useFloater(useShallow((r) => r.open));
   const setVisi = useFloater((r) => r.setOpen);
   const { refs, floatingStyles, context } = useFloating({
     placement: "top",
@@ -335,8 +343,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       );
     },
     enabled: enableHighlight,
-    staleTime: 30 * 1000,
-    gcTime: 30000,
+    staleTime: Infinity,
+    gcTime: 60 * 1000,
     refetchOnWindowFocus: false
   });
   const pathName = usePathname();
@@ -352,7 +360,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     debounce: 100,
     detectHeightChange: true
   });
-  const [progress, setProgress] = useState(0);
+  const progress = useMotionValue(0);
 
   const postDisabled = useMemo(() => !!disabled, [disabled]);
   const [containerBounds, setContainerBounds] = useState(0.25);
@@ -372,11 +380,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const [preamble, setPreamble] = useState<boolean>(false);
   const [lastColor, setLastColor] = useState<HighlightColors>("ORANGE");
   const lastColorRef = useRef(lastColor);
-  const currentColor = useHighlighter((r) => r.currentColor);
+  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
 
   const currentColorRef = useRef<HighlightColors>(currentColor);
-  const highlights = useHighlighter((r) => r.highlights);
-  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
+  const highlights = useHighlighter(useShallow((r) => r.highlights));
+  const focusedHighlight = useHighlighter(
+    useShallow((r) => r.focusedHighlight)
+  );
   const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
 
   const scrollYRef = useRef(0);
@@ -384,10 +394,10 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const scrollCB = useCallback(
     (lenis: Lenis) => {
       if (!contentRef.current) return;
-      setProgress(lenis.progress * ratioRef.current);
+      progress.set(lenis.progress * ratioRef.current);
       scrollYRef.current = lenis.scroll;
     },
-    [setProgress]
+    [progress]
   );
   useEffect(() => {
     scr && scr.on("scroll", scrollCB);
@@ -1318,45 +1328,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         <div className={"grid grid-cols-[auto_1fr_auto] items-stretch gap-y-5"}>
           <div className="relative col-[2] justify-self-center">
             <AnimatePresence mode={"wait"}>
-              {progress > 0.05 && progress < 1 && (
-                <m.div
-                  initial={"hidden"}
-                  variants={{
-                    hidden: {
-                      y: 60,
-                      opacity: 0,
-                      zIndex: -1,
-                      transition: {
-                        type: "spring",
-                        bounce: 0.4,
-                        delay: 0.4
-                      }
-                    },
-                    visible: {
-                      y: 0,
-                      opacity: 1,
-                      zIndex: 120,
-                      transition: {
-                        type: "spring",
-                        delay: 0.1,
-                        bounce: 0.4
-                      }
-                    }
-                  }}
-                  onMouseEnter={onEn}
-                  onMouseLeave={onExit}
-                  animate={"visible"}
-                  exit={"hidden"}
-                >
-                  <ProgressBar progress={progress} title={post.title}>
-                    <BookmarkButton
-                      postId={postId}
-                      userId={userId}
-                      collection={"posts"}
-                    />
-                  </ProgressBar>
-                </m.div>
-              )}
+              <ProgressBar progress={progress} title={post.title}>
+                <BookmarkButton
+                  postId={postId}
+                  userId={userId}
+                  collection={"posts"}
+                />
+              </ProgressBar>
             </AnimatePresence>
           </div>
         </div>
@@ -1629,98 +1607,146 @@ const ProgressBar = ({
   children,
   ...props
 }: Omit<HTMLMotionProps<"div">, "ref"> & {
-  progress: number;
+  progress: MotionValue<number>;
   title: string;
 }) => {
+  const [show, setShow] = useState(false);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({});
+
+  const [scope, animate] = useAnimate();
+  useMotionValueEvent(progress, "change", (v) => {
+    const doShow = v > 0.05 && v < 1;
+    setShow(doShow);
+    if (doShow) {
+      setShow(false);
+    }
+  });
   return (
-    <>
-      <m.div
-        className="relative z-[120] overflow-hidden rounded-[18px] p-1"
-        {...props}
-        transition={{ type: "spring", bounce: 0.25 }}
-        whileHover={{
-          scale: 1.1,
-          borderColor: "oklch(var(--transparent-white)/0.001)"
-        }}
-      >
-        <div className="absolute top-0 left-0 z-[120] h-full w-full bg-muted-off-background/35"></div>
+    show && (
+      <>
         <m.div
-          className="absolute top-0 left-0 z-[119] h-full w-full opacity-[0.001]"
-          transition={{ type: "spring", bounce: 0.25 }}
+          initial={"hidden"}
           variants={{
-            active: {
-              opacity: 1,
-              backdropFilter: "blur(20px) saturate(1.15)"
-            },
             hidden: {
-              backdropFilter: "blur(0px) saturate(1)",
-              opacity: 0.001
+              y: 60,
+              opacity: 0,
+              zIndex: -1,
+              transition: {
+                type: "spring",
+                bounce: 0.4,
+                delay: 0.4
+              }
+            },
+            visible: {
+              y: 0,
+              opacity: 1,
+              zIndex: 120,
+              transition: {
+                type: "spring",
+                delay: 0.1,
+                bounce: 0.4
+              }
             }
           }}
-          animate={"active"}
-          initial={"hidden"}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          animate={"visible"}
           exit={"hidden"}
-        ></m.div>
-        <div className="relative z-[120] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-0 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.1)] px-[12px] py-[6px] select-none">
-          <div className="filter-blur-0 transform-origin-[50%_50%_0px] flex w-full transform-none items-center gap-4 opacity-100">
-            <div className="h-8 w-8 origin-[50%_50%_0px] rounded-[50%]">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                style={{ transform: "rotate(-90deg)" }}
-              >
-                <defs>
-                  <linearGradient id="col" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="oklch(var(--faded-fg)/.7)" />
-                    <stop
-                      offset="85%"
-                      stopColor="oklch(var(--faded-d-gray)/.8)"
-                    />
-                  </linearGradient>
-                </defs>
-                <circle
-                  className={"stroke-off-l-gray/100 dark:stroke-off-d-gray/100"}
-                  cx="10"
-                  cy="10"
-                  r="8"
-                  strokeWidth="1.25"
-                  fill="none"
-                  strokeLinecap="round"
-                ></circle>
-                <circle
-                  className={"stroke-[url(#col)]"}
-                  cx="10"
-                  cy="10"
-                  r="8"
-                  strokeWidth="1.25"
-                  fill="none"
-                  strokeDasharray={`${progress}px 1px`}
-                  strokeLinecap="round"
-                  pathLength="1"
-                  strokeDashoffset="0px"
-                ></circle>
-              </svg>
+        >
+          <m.div
+            className="relative z-[120] overflow-hidden rounded-[18px] p-1"
+            {...props}
+            transition={{ type: "spring", bounce: 0.25 }}
+            whileHover={{
+              scale: 1.1,
+              borderColor: "oklch(var(--transparent-white)/0.001)"
+            }}
+          >
+            <div className="absolute top-0 left-0 z-[120] h-full w-full bg-muted-off-background/35"></div>
+            <m.div
+              className="absolute top-0 left-0 z-[119] h-full w-full opacity-[0.001]"
+              transition={{ type: "spring", bounce: 0.25 }}
+              variants={{
+                active: {
+                  opacity: 1,
+                  backdropFilter: "blur(20px) saturate(1.15)"
+                },
+                hidden: {
+                  backdropFilter: "blur(0px) saturate(1)",
+                  opacity: 0.001
+                }
+              }}
+              animate={"active"}
+              initial={"hidden"}
+              exit={"hidden"}
+            ></m.div>
+            <div className="relative z-[120] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-0 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.1)] px-[12px] py-[6px] select-none">
+              <div className="filter-blur-0 transform-origin-[50%_50%_0px] flex w-full transform-none items-center gap-4 opacity-100">
+                <div className="h-8 w-8 origin-[50%_50%_0px] rounded-[50%]">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    style={{ transform: "rotate(-90deg)" }}
+                  >
+                    <defs>
+                      <linearGradient id="col" gradientUnits="userSpaceOnUse">
+                        <stop
+                          offset="0%"
+                          stopColor="oklch(var(--faded-fg)/.7)"
+                        />
+                        <stop
+                          offset="85%"
+                          stopColor="oklch(var(--faded-d-gray)/.8)"
+                        />
+                      </linearGradient>
+                    </defs>
+                    <m.circle
+                      className={
+                        "stroke-off-l-gray/100 dark:stroke-off-d-gray/100"
+                      }
+                      cx="10"
+                      cy="10"
+                      r="8"
+                      strokeWidth="1.25"
+                      fill="none"
+                      strokeLinecap="round"
+                    ></m.circle>
+                    <m.circle
+                      className={"stroke-[url(#col)]"}
+                      cx="10"
+                      cy="10"
+                      r="8"
+                      strokeWidth="1.25"
+                      fill="none"
+                      strokeDasharray={`${progress}px 1px`}
+                      strokeLinecap="round"
+                      pathLength="1"
+                      strokeDashoffset="0px"
+                    ></m.circle>
+                  </svg>
+                </div>
+                <div
+                  className={
+                    "m-0 overflow-hidden p-0 text-center align-middle font-sans text-lg font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
+                  }
+                >
+                  {title}
+                </div>
+                {children && (
+                  <m.div
+                    className={"flex h-full items-center justify-center gap-2"}
+                  >
+                    {children}
+                  </m.div>
+                )}
+              </div>
             </div>
-            <div
-              className={
-                "m-0 overflow-hidden p-0 text-center align-middle font-sans text-lg font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
-              }
-            >
-              {title}
-            </div>
-            {children && (
-              <m.div
-                className={"flex h-full items-center justify-center gap-2"}
-              >
-                {children}
-              </m.div>
-            )}
-          </div>
-        </div>
-      </m.div>
-      <div className="relative"></div>
-    </>
+          </m.div>
+          <div className="relative"></div>
+        </m.div>
+      </>
+    )
   );
 };
 export type HighlightMenuProps = {
@@ -1749,7 +1775,7 @@ const ResponseIndicator = (
   }
 ) => {
   const { top, ref, reference: refer, ...rest } = props;
-  const highlights = useHighlighter((r) => r.highlights);
+  const highlights = useHighlighter(useShallow((r) => r.highlights));
   const setOpen = useHighlightSidebar("setOpen");
   const setContent = useHighlightSidebar("setContent");
 
@@ -1932,7 +1958,7 @@ const MiniMapItem = ({
     onEnter,
     onLeave
   });
-  const color = useHighlighter((r) => r.currentColor);
+  const color = useHighlighter(useShallow((r) => r.currentColor));
   return (
     <div
       className="pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] border-foreground/20 transition-all duration-200 ease-out-power2 hover:-top-[3px] hover:h-[10px]"
@@ -1957,7 +1983,7 @@ const MiniMap = ({
   }>;
   scaleRatio: number;
 }) => {
-  const currentColor = useHighlighter((r) => r.currentColor);
+  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
   const mapBackdropRef = useRef<HTMLDivElement>(null!);
   const mapTrackRef = useRef<HTMLDivElement>(null!);
   const highMaps = useRef<HTMLDivElement[]>([]);

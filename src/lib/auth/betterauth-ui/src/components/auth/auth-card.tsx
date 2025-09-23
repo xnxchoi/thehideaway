@@ -5,9 +5,9 @@ import { type ReactNode, useContext, useEffect, useState } from "react";
 
 import { useIsHydrated } from "../../hooks/use-hydrated";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import type { AuthView } from "../../lib/view-paths";
+import type { AuthViewPath as AuthView } from "../../lib/view-paths";
 import { socialProviders } from "../../lib/social-providers";
-import { cn, getAuthViewByPath } from "../../lib/utils";
+import { cn } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import { AcceptInvitationCard } from "../organization/accept-invitation-card";
 import {
@@ -97,7 +97,7 @@ export function AuthCard({
     emailOTP,
     oneTap,
     passkey,
-    settings,
+    account,
     signUp,
     social,
     genericOAuth,
@@ -116,8 +116,7 @@ export function AuthCard({
         : "vertical";
   }
 
-  const path = pathname?.split("/").pop();
-  view = view || getAuthViewByPath(viewPaths, path) || "SIGN_IN";
+  view = view || "SIGN_IN";
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -134,11 +133,6 @@ export function AuthCard({
     };
   }, []);
 
-  useEffect(() => {
-    if (view === "SETTINGS" && settings?.url) replace(settings.url);
-    if (view === "SETTINGS" && !settings) replace(redirectTo || "/");
-  }, [replace, settings, view, redirectTo]);
-
   if (view === "CALLBACK") return <AuthCallback redirectTo={redirectTo} />;
   if (view === "SIGN_OUT") return <SignOut />;
 
@@ -148,18 +142,6 @@ export function AuthCard({
         className={className}
         classNames={classNames}
         localization={localization}
-      />
-    );
-
-  if (settingsViews.includes(view as SettingsView))
-    return !settings || settings.url ? (
-      <Loader2 className="animate-spin" />
-    ) : (
-      <SettingsCards
-        className={cn(className)}
-        classNames={classNames?.settings}
-        localization={localization}
-        view={view as SettingsView}
       />
     );
 
@@ -199,9 +181,12 @@ export function AuthCard({
         </CardHeader>
         <CardContent className={cn("grid gap-9", classNames?.content)}>
           {oneTap &&
-            ["SIGN_IN", "SIGN_UP", "MAGIC_LINK", "EMAIL_OTP"].includes(
-              view
-            ) && <OneTap localization={localization} redirectTo={redirectTo} />}
+            view &&
+            (
+              ["SIGN_IN", "SIGN_UP", "MAGIC_LINK", "EMAIL_OTP"] as AuthView[]
+            ).includes(view) && (
+              <OneTap localization={localization} redirectTo={redirectTo} />
+            )}
           {(credentials || magicLink || emailOTP) && ( // <div className="grid gap-4">
             <div className="flex flex-col gap-7">
               <AuthForm
@@ -214,7 +199,8 @@ export function AuthCard({
                 redirectTo={redirectTo}
                 setIsSubmitting={setIsSubmitting}
               />
-              {magicLink &&
+              {view &&
+                magicLink &&
                 ((credentials &&
                   [
                     "FORGOT_PASSWORD",
@@ -231,7 +217,8 @@ export function AuthCard({
                     isSubmitting={isSubmitting}
                   />
                 )}
-              {emailOTP &&
+              {view &&
+                emailOTP &&
                 ((credentials &&
                   [
                     "FORGOT_PASSWORD",
@@ -327,6 +314,7 @@ export function AuthCard({
                     </div>
                   )}
                   {passkey &&
+                    view &&
                     [
                       "SIGN_IN",
                       "MAGIC_LINK",

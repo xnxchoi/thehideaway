@@ -6,7 +6,7 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 
 import { afterSchemaInit } from "@/afterSchemaInit";
-import { createBrevoEmailAdapter } from "@/lib/email";
+import { createBrevoEmailAdapter as brevoEmailAdapter } from "@/lib/email";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
@@ -15,8 +15,8 @@ import { EmailQuota } from "@/payload/collections/EmailQuota";
 import { Footer } from "@/payload/collections/Footer/config";
 import { Header } from "@/payload/collections/Header";
 import { plugins } from "@/payload/plugins";
-import { createProfile } from "@collections/Profile/operations/createProfile";
-import { createN } from "@collections/Users/hooks/afterChange";
+import { createProfile } from "@/payload/collections/Profile/operations/createProfile";
+import { createN } from "@/payload/collections/Users/hooks/afterChange";
 import { uuidv7 } from "uuidv7";
 import { getServerSideURL } from "./utilities/getURL";
 
@@ -79,7 +79,7 @@ export default buildConfig({
       ]
     }
   }, // This config helps us configure global or default features that the other editors can inherit
-  email: createBrevoEmailAdapter,
+  email: brevoEmailAdapter,
   editor: defaultLexical,
   db: postgresAdapter({
     push: false,
@@ -120,6 +120,9 @@ export default buildConfig({
             }
           });
         }
+      })
+      .catch((error) => {
+        payload.logger.error("Error creating uncategorized category:", error);
       });
   },
   plugins,

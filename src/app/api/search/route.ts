@@ -20,7 +20,7 @@ type CollectionSlug =
 const collectionConfigs = {
   users: {
     table: "users",
-    urlPattern: "/profile/{slug}",
+    urlPattern: "/users/{slug}",
     selectFields: [
       "id",
       "username",
@@ -84,7 +84,7 @@ const collectionConfigs = {
   },
   tags: {
     table: "tags",
-    urlPattern: "/tags/{slug}",
+    urlPattern: "/tagged/{slug}",
     selectFields: ["id", "title", "slug", "author_id"],
     filters: "1=1"
   }

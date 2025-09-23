@@ -9,7 +9,7 @@ import { Article } from "@/components/content/article";
 import { useScroll } from "@/providers/RP_Pro";
 import { useTabMessenger } from "@/utilities/visibilityChange";
 import { wait } from "@/utilities/wait";
-import { PayloadRedirects } from "@components/PayloadRedirects";
+import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
 import { SingleArticle } from "@/payload/collections/Posts/post-types";
 import { useLenis } from "lenis/react";
 import { useTheme } from "@/providers/Theme";

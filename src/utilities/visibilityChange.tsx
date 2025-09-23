@@ -58,7 +58,7 @@ export const useTabMessenger = <T,>(
   }
   return useStore(store, selector);
 };
-const InternalTabMessenger = ({ children }: { children: React.ReactNode }) => {
+const InternalTabMessenger = () => {
   const ogDocTitle = useRef(document.title);
   const FALLBACK_TITLE = "THE HIDEAWAY";
   const emojis = useMemo(() => tabMessages.icons, []);
@@ -67,43 +67,65 @@ const InternalTabMessenger = ({ children }: { children: React.ReactNode }) => {
   const screenSaverTitle = useRef(FALLBACK_TITLE);
   const pathName = usePathname();
   const [visible, setVisible] = useState(true);
+  const lastPathName = useRef<string>(null!);
   useEffect(() => {
-    ogDocTitle.current = document.title;
+    if (lastPathName.current !== pathName) {
+      ogDocTitle.current = document.title;
+    }
+    lastPathName.current = pathName;
   }, [pathName]);
 
   const visibleCallback = useCallback(() => {
     const isVisible = !document.hidden;
     setVisible(isVisible);
     document.title = isVisible ? ogDocTitle.current : screenSaverTitle.current;
-  }, [setVisible]);
+  }, []);
 
   useEffect(() => {
     document.addEventListener("visibilitychange", visibleCallback);
     return () => {
+      document.title = ogDocTitle.current;
+      ogDocTitle.current = document.title;
       document.removeEventListener("visibilitychange", visibleCallback);
     };
   }, [visibleCallback]);
-
+  const lastScreenSaverTitle = useRef("");
+  const lastScreenSaverEmoji = useRef("");
   const delayerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const screensaver = useCallback(() => {
-    screenSaverTitle.current = `${emojis[randomNumber(0, emojis.length - 1)]}   ${
-      messages[randomNumber(0, messages.length - 1)]
-    }`;
+    let message = messages[randomNumber(0, messages.length - 1)];
+    let emoji = emojis[randomNumber(0, emojis.length - 1)];
+    let totalRetries = 3;
+    while (message === lastScreenSaverTitle.current && totalRetries > 0) {
+      totalRetries--;
+      message = messages[randomNumber(0, messages.length - 1)];
+    }
+    totalRetries = 3;
+    while (emoji === lastScreenSaverEmoji.current && totalRetries > 0) {
+      totalRetries--;
+      emoji = emojis[randomNumber(0, emojis.length - 1)];
+    }
+    screenSaverTitle.current = `${emoji} ${message}`;
+    lastScreenSaverTitle.current = message;
+    lastScreenSaverEmoji.current = emoji;
+    document.title = screenSaverTitle.current;
   }, [emojis, messages]);
   useEffect(() => {
     delayerRef.current && clearInterval(delayerRef.current);
-    delayerRef.current = visible ? null : setInterval(screensaver, 1000);
+    delayerRef.current = visible
+      ? ((document.title = ogDocTitle.current), null)
+      : setInterval(screensaver, 20000);
     return () => {
       delayerRef.current && clearInterval(delayerRef.current);
       delayerRef.current = null;
     };
   }, [screensaver, visible]);
-  return <>{children}</>;
+  return <></>;
 };
-export const TabMessenger = ({ children }: { children: React.ReactNode }) => {
+export const TabMessenger = () => {
   return (
     <TabMessengerProvider>
-      <InternalTabMessenger>{children}</InternalTabMessenger>
+      <InternalTabMessenger />
     </TabMessengerProvider>
   );
 };

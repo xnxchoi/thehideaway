@@ -16,6 +16,7 @@ import { useInView } from "@/hooks/useInView";
 import { useTheme } from "@/providers/Theme";
 import { useIsMobile as useIsNarrow } from "@/providers/MiddleMan";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
+import { useShallow } from "zustand/shallow";
 
 gsap.registerPlugin(ScrollTrigger);
 const iUnit = 420;
@@ -114,8 +115,8 @@ export const RP_POLAROID = () => {
   const [frameWidth, setFrameWidth] = useState(720);
   const [sectionBG, setSectionBG] = useState(theme === "dark" ? black : white);
   const [sectionFG, setSectionFG] = useState(theme === "dark" ? white : black);
-  const wW = useRPStore((r) => r.viewportWidth);
-  const wH = useRPStore((r) => r.viewportHeight);
+  const wW = useRPStore(useShallow((r) => r.viewportWidth));
+  const wH = useRPStore(useShallow((r) => r.viewportHeight));
   useEffect(() => {
     setSectionBG(theme === "dark" ? black : white);
     setSectionFG(theme === "dark" ? white : black);
@@ -146,12 +147,14 @@ export const RP_POLAROID = () => {
   const offCursor = useCallback(() => {
     resetCursor();
   }, [resetCursor]);
-  const [contrast, setContrast] = useState(theme === "dark" ? "light" : "dark");
+  const [contrast, setContrast] = useState<"dark" | "light">(
+    theme === "dark" ? "light" : "dark"
+  );
   useEffect(() => {
     setContrast(theme === "dark" ? "light" : "dark");
   }, [theme]);
   const onCursor = useCallback(
-    (thema) => {
+    (thema: "dark" | "light") => {
       setCursorTheme(thema);
     },
     [setCursorTheme]
@@ -294,7 +297,7 @@ export const RP_POLAROID = () => {
               ref={img}
               resource={{
                 url: config.image,
-                id: 1,
+                id: "",
                 width: wW,
                 height: (wW / polar.pictureWidth) * polar.pictureHeight
               }}

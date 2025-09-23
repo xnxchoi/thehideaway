@@ -1,6 +1,6 @@
-import { Category, Search, Tag } from "@/payload-types";
-import { CatOverview } from "@collections/Deltas/delta-types";
-import { P_Tag } from "@collections/Tags";
+import { Category, Tag } from "@/payload-types";
+import { CatOverview } from "@/payload/collections/Deltas/delta-types";
+import { P_Tag } from "@/payload/collections/Tags";
 import type { BeforeSync, DocToSync } from "@payloadcms/plugin-search/types";
 import { CollectionSlug, DataFromCollectionSlug } from "payload";
 import { nanoid } from "nanoid";

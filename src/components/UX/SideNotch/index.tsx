@@ -8,19 +8,20 @@ import { useDomCursor } from "@/components/core/cursorWrapper";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useRadioStore } from "@/providers/RadioProvider";
+import { useShallow } from "zustand/shallow";
 
 type SideNotchProps = {
   sideDrawer?: boolean;
 };
 export const SideNotch = (props: SideNotchProps) => {
   const { sideDrawer = false } = props;
-  const navIsOpen = useRPStore((state) => state.navIsOpen);
+  const navIsOpen = useRPStore(useShallow((state) => state.navIsOpen));
   const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
 
   const setSidebarIsTransitioning = useRPStore(
     (state) => state.setSideDrawerIsTransitioning
   );
-  const isOpen = useRPStore((state) => state.sidebarOpen);
+  const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
 
   const setCurTheme = useCursorStore((state) => state.setCursorTheme);
   const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
@@ -36,8 +37,8 @@ export const SideNotch = (props: SideNotchProps) => {
   }, [navIsOpen, setSidebarOpen]);
   const { left } = useMenu((r) => r.frames);
   const notchRef = useRef<HTMLDivElement>(null);
-  const viewportWidth = useRPStore((r) => r.viewportWidth);
-  const hasRadio = useRadioStore((r) => r.hasRadio);
+  const viewportWidth = useRPStore(useShallow((r) => r.viewportWidth));
+  const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
   useGSAP(
     () => {
       gsap.to(notchRef.current, {
@@ -99,14 +100,14 @@ export const SideNotch = (props: SideNotchProps) => {
   }, [getVariant, isOpen]);
 
   const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
-  const cursorState = useCursorStore((state) => state.cursorState);
+  const cursorState = useCursorStore(useShallow((state) => state.cursorState));
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => (isOpen ? cursorState || "FOCUS" : "FOCUS"),
     leaveCondition: () => null
   });
   return (
     <m.div
-      className="fixed bottom-[80px] h-[24vh] w-[40px] p-0"
+      className="fixed bottom-[80px] z-[239] h-[17vh] w-[35px] p-0"
       ref={notchRef}
       variants={variants}
       animate={v}
@@ -123,7 +124,7 @@ export const SideNotch = (props: SideNotchProps) => {
     >
       <m.div
         className={
-          "relative flex h-full w-full items-center justify-center bg-[oklch(var(--n-s-bg)/1)] mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[10px] py-[35px] min-lg:mask-[url(/assets/notch@2x.png)]"
+          "relative flex h-full w-full items-center justify-center bg-[oklch(var(--n-s-bg)/1)] mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[5px] py-[15px] min-lg:mask-[url(/assets/notch@2x.png)]"
         }
         onMouseEnter={onEnter}
         onMouseLeave={resetCursorTheme}

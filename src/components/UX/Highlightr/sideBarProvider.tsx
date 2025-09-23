@@ -1,4 +1,5 @@
 "use client";
+import { useCitations } from "@/app/(frontend)/(site)/posts/[slug]/layout.client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button as UIBtn } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { GradientSeparator } from "@/components/ui/separator";
-import { errorToast } from "@/components/ui/sonner";
+import { errorToast, successToast } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 import {
   HighlightMenuButton,
@@ -32,14 +33,15 @@ import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useCursorStore } from "@/providers/RP_Pro";
 import { delay } from "@/utilities/rp_utils";
-import { AuthorOverview } from "@collections/Posts/post-types";
-import { successToast } from "@/components/ui/sonner";
+import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
+import { AuthorOverview } from "@/payload/collections/Posts/post-types";
 import { useQueryClient } from "@tanstack/react-query";
+import { Power2 } from "gsap";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";
 import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
 import { useLocale, useTranslations } from "next-intl";
-import { Power2 } from "gsap";
 import { useTransitionRouter } from "next-transition-router";
 import {
   ChangeEventHandler,
@@ -59,11 +61,8 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
-import { useRanger } from "./RangerProvider";
-import * as m from "motion/react-m";
-import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
-import { useCitations } from "@/app/(frontend)/(site)/posts/[slug]/layout.client";
 import { useShallow } from "zustand/shallow";
+import { useRanger } from "./RangerProvider";
 export interface HighlightSidebarProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -136,10 +135,10 @@ const CitationView = ({
   const uDate = DateTime.fromISO(updatedAt);
   const cDate = DateTime.fromISO(createdAt);
   const updateValid = uDate.isValid;
-  const userImage = useRPSession((r) => r.image);
-  const userName = useRPSession((r) => r.name);
-  const userSlug = useRPSession((r) => r.slug);
-  const userId = useRPSession((r) => r.id as string | null);
+  const userImage = useRPSession(useShallow((r) => r.image));
+  const userName = useRPSession(useShallow((r) => r.name));
+  const userSlug = useRPSession(useShallow((r) => r.slug));
+  const userId = useRPSession(useShallow((r) => r.id as string | null));
   let isEdited = false;
   if (updateValid) {
     isEdited = uDate.diff(cDate).as("hours") > 0;
@@ -310,7 +309,7 @@ const ResponseItem = ({
   );
 };
 const MemoInputField = ({ reference }: { reference: string }) => {
-  const user = useRPSession((r) => r.id as string | null);
+  const user = useRPSession(useShallow((r) => r.id as string | null));
   const writing = useHighlightSidebar("writing");
   const setIsWriting = useHighlightSidebar("setWriting");
   const [value, setValue] = useState("");
@@ -499,7 +498,7 @@ export const SideBarProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     lenis && lenis[open ? "stop" : "start"]();
   }, [open, lenis]);
-  const currentColor = useHighlighter((r) => r.currentColor);
+  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
   useEffect(() => {
     if (!open) {
       setContent(null);
@@ -760,7 +759,9 @@ export const MemoButton = ({
 }) => {
   const userId = useRPSession((r) => r.id as string | null);
   const savedSelectionRef = useRef<rangy.savedSelection | null>(null);
-  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
+  const focusedHighlight = useHighlighter(
+    useShallow((r) => r.focusedHighlight)
+  );
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"memo" | "signin">(
     userId ? "memo" : "signin"

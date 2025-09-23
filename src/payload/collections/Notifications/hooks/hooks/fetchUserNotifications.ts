@@ -1,7 +1,7 @@
 "use server";
 import type {PayloadHandler, Where} from "payload";
 import {cache} from "react";
-import {SyncedNotification} from "@collections/Notifications/hooks/types";
+import {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
 
 export const userNotificationHandler: PayloadHandler = cache(async (req) => {
 	const user = req.user;

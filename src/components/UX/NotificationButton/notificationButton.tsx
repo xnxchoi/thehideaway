@@ -1,108 +1,538 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
 import { useRPStore } from "@/providers/RP_Pro";
-import { Icon } from "src/components/UX/Icon";
-import { cn } from "@/lib/utils";
-import { Button, ButtonTotalProps } from "@/components/ui/button";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
-import NumberFlow, { continuous } from "@number-flow/react";
-import { useWindowResize } from "@/utilities/use_window_resize";
+import { Popover } from "@base-ui-components/react/popover";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
-import { MotionBtn, RP_Btn } from "@/components/UX/Link";
-import { MotionBtnProps } from "@/components/UX/Link/types";
-
-interface ExpandButtonProps extends MotionBtnProps {
+import { useWindowResize } from "@/utilities/use_window_resize";
+import { useGSAP } from "@gsap/react";
+import NumberFlow, { continuous } from "@number-flow/react";
+import { gsap } from "gsap";
+import { AnimatePresence, stagger, type HTMLMotionProps } from "motion/react";
+import * as m from "motion/react-m";
+import { useShallow } from "zustand/shallow";
+import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import { sortByDate } from "@/stores/Notification/NotificationStore";
+import { useDomCursor } from "../../core/cursorWrapper";
+import { ReferencedLink } from "../Link/referencedLink";
+import { FrontImage } from "../Media/FrontImage";
+import { useQuery } from "@tanstack/react-query";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Cross1Icon } from "@radix-ui/react-icons";
+import { Link, Button, MotionBtn } from "@/components/UX/Link";
+import type { CollectionSlug } from "payload";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useHumanTime } from "@/payload/collections/Deltas/component/useLocaleDate";
+import type { AuthorOverview } from "@/payload/collections/Posts/post-types";
+interface ExpandButtonProps {
   defaultWidth?: number;
   onContract?: () => void;
   onExpand?: () => void;
 }
-
+const MotionPopoverTrigger = m.create(Popover.Trigger);
 export const NotificationButton = (config: ExpandButtonProps) => {
-  const { onContract, onExpand, ref, ...props } = config;
-  const widths = {
-    mobile: 32,
-    desktop: 24
-  };
+  const { onContract, onExpand, ...props } = config;
+  const { setDismissed, notifications, setRead, setAllRead } =
+    useNotifications();
+  const [open, setOpen] = useState(false);
+  const widths = useMemo(() => {
+    return {
+      mobile: 32,
+      desktop: 24
+    };
+  }, []);
+  const ref = useRef<typeof MotionPopoverTrigger>(null!);
 
-  const padding = 8;
-  const [defaultW, setDefaultW] = useState(widths.desktop);
-  const [expW, setExpW] = useState(24),
-    [expanded, setExpanded] = useState(true),
-    setNavIsOpen = useRPStore((store) => store.setNavIsOpen),
-    navIsOpen = useRPStore((store) => store.navIsOpen),
+  const [expanded, setExpanded] = useState(true),
+    navIsOpen = useRPStore(useShallow((store) => store.navIsOpen)),
     windowReside = useWindowResize({
       detectHeightChange: false,
       debounce: 100
     });
   const { isMobile } = useIsMobile();
-
-  useEffect(() => {
-    setDefaultW(widths[isMobile ? "mobile" : "desktop"]);
-  }, [windowReside, widths, isMobile]);
-  useEffect(() => {
-    setExpW(isMobile ? defaultW : Math.max(40, padding * 0.5 + defaultW));
-  }, [defaultW, isMobile, padding]);
-
+  const onDismiss = useCallback(
+    ({ ids }: { ids: string[] }) => {
+      setDismissed({ ids });
+    },
+    [setDismissed]
+  );
+  const onRead = useCallback(
+    ({ ids }: { ids: string[] }) => {
+      setRead({ ids });
+    },
+    [setRead]
+  );
+  const [nItems, setNItems] = useState(notifications);
+  const [empty, setEmpty] = useState(false);
   const icon = useRef<SVGSVGElement>(null!),
     txt = useRef<HTMLDivElement>(null!);
-  const { count, isLoading } = useNotifications();
-  useGSAP(
-    () => {
-      if (!ref) return;
-      gsap.to(ref, {
-        minWidth: expanded ? expW : defaultW,
-        ease: "Power3.easeOut",
-        duration: 0.2
-      });
-      (expanded && onExpand && onExpand()) || (onContract && onContract());
-    },
-    { dependencies: [expanded, defaultW, expW] }
+  const { count } = useNotifications();
+  const variants = useMemo(
+    () => ({
+      expanded: {
+        minWidth: 32,
+        scaleX: 1,
+        opacity: 1
+      },
+      collapsed: {
+        minWidth: 24,
+        scaleX: 0,
+        opacity: 0
+      }
+    }),
+    []
   );
+  const [animation, setAnimation] =
+    useState<keyof typeof variants>("collapsed");
+  useEffect(() => {
+    if (expanded) {
+      setAnimation("expanded");
+    } else {
+      setAnimation("collapsed");
+    }
+  }, [expanded]);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({});
+  useEffect(() => {
+    setNItems((r) => {
+      const rxx = [...r];
+      notifications.forEach((i) => {
+        const idx = r.findIndex((vss) => vss.id === i.id);
+        if (idx > -1) {
+          if (i.dismissed) {
+            rxx.splice(idx, 1);
+          } else {
+            rxx.splice(idx, 1, i);
+          }
+        } else {
+          rxx.push(i);
+        }
+      });
 
+      return [...rxx].sort((a, b) =>
+        sortByDate({ order: "DESC" })(a.updatedAt, b.updatedAt)
+      );
+    });
+  }, [notifications]);
+  useEffect(() => {
+    setEmpty(nItems.length === 0);
+  }, [nItems]);
   return (
-    <MotionBtn
-      ref={ref}
-      type={"button"}
-      initial={{
-        opacity: 0,
-        scaleX: 0.01
-      }}
-      animate={{
-        opacity: 1,
-        scaleX: 1
-      }}
-      exit={{
-        opacity: 0,
-        scaleX: 0.01
-      }}
-      transition={{
-        duration: 0.2,
-        ease: "easeOut"
-      }}
-      className={cn("rp_btn", "bt_sm", "bell-button", { hover: navIsOpen })}
-      {...props}
-    >
-      <div ref={txt} className="bell-link-text">
-        <NumberFlow
-          respectMotionPreference={false}
-          locales={"en-US"}
-          plugins={[continuous]}
-          value={count}
-          format={{ notation: "compact", compactDisplay: "short" }}
-        />
-      </div>
-      <svg
-        ref={icon}
-        className="bell-icon"
-        viewBox="0 0 45 45"
-        data-themed={"stroke,fill"}
-        fill="oklch(var(--n-s-btn)/1)"
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <MotionPopoverTrigger
+        ref={ref}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        initial={{
+          opacity: 0,
+          scaleX: 0.01
+        }}
+        variants={variants}
+        animate={animation}
+        exit={{
+          opacity: 0,
+          scaleX: 0.01
+        }}
+        transition={{
+          duration: 0.2,
+          ease: "easeOut"
+        }}
+        nativeButton={true}
+        data-expanded={expanded}
+        className={"rp_btn bt_sm bell-button !gap-2 px-2"}
+        {...props}
       >
-        <path d="m40.7,34.79c-1.21-1.07-2.26-2.31-3.14-3.66-.96-1.87-1.53-3.92-1.69-6.01v-6.18c.02-6.81-5.04-12.57-11.8-13.44v-1.61c0-.92-.75-1.67-1.67-1.67s-1.67.75-1.67,1.67v1.64c-6.69.93-11.68,6.65-11.66,13.41v6.18c-.16,2.1-.73,4.14-1.69,6.01-.86,1.35-1.9,2.58-3.09,3.66-.27.24-.42.58-.42.94v1.7c0,.69.56,1.25,1.25,1.25h34.75c.69,0,1.25-.56,1.25-1.25v-1.7c0-.36-.16-.7-.43-.94Zm-34.22,1.39c1.16-1.12,2.19-2.38,3.05-3.75,1.21-2.26,1.91-4.75,2.06-7.31v-6.18c-.2-6.03,4.52-11.08,10.55-11.29,6.03-.2,11.08,4.52,11.29,10.55,0,.25,0,.49,0,.74v6.18c.15,2.56.86,5.05,2.06,7.31.86,1.37,1.89,2.63,3.05,3.75H6.48Z"></path>
-        <path d="m22.56,42.85c1.63-.04,2.99-1.24,3.22-2.85h-6.58c.24,1.66,1.68,2.87,3.35,2.85Z"></path>
-      </svg>
-    </MotionBtn>
+        <AnimatePresence initial={true} mode="sync">
+          {expanded && (
+            <m.div
+              ref={txt}
+              initial={{
+                opacity: 0
+              }}
+              animate={{
+                opacity: 1
+              }}
+              exit={{
+                opacity: 0
+              }}
+              transition={{
+                duration: 0.2,
+                ease: "easeInOut"
+              }}
+              className="pointer-events-none text-sm leading-[114%] tracking-[-0.01em] whitespace-nowrap min-md:block min-md:min-w-fit min-md:leading-[120%]"
+            >
+              <NumberFlow
+                className={"text-sm"}
+                respectMotionPreference={false}
+                locales={"en-US"}
+                plugins={[continuous]}
+                value={count}
+                format={{ notation: "compact", compactDisplay: "short" }}
+              />
+            </m.div>
+          )}
+        </AnimatePresence>
+        <svg
+          ref={icon}
+          className="aspect-square w-[1.2rem] bg-transparent fill-[oklch(var(--n-s-btn)/0.8)] stroke-[1px] min-md:w-[1.4rem]"
+          viewBox="0 0 45 45"
+          data-themed={"stroke,fill"}
+          fill="oklch(var(--n-s-btn)/1)"
+        >
+          <path d="m40.7,34.79c-1.21-1.07-2.26-2.31-3.14-3.66-.96-1.87-1.53-3.92-1.69-6.01v-6.18c.02-6.81-5.04-12.57-11.8-13.44v-1.61c0-.92-.75-1.67-1.67-1.67s-1.67.75-1.67,1.67v1.64c-6.69.93-11.68,6.65-11.66,13.41v6.18c-.16,2.1-.73,4.14-1.69,6.01-.86,1.35-1.9,2.58-3.09,3.66-.27.24-.42.58-.42.94v1.7c0,.69.56,1.25,1.25,1.25h34.75c.69,0,1.25-.56,1.25-1.25v-1.7c0-.36-.16-.7-.43-.94Zm-34.22,1.39c1.16-1.12,2.19-2.38,3.05-3.75,1.21-2.26,1.91-4.75,2.06-7.31v-6.18c-.2-6.03,4.52-11.08,10.55-11.29,6.03-.2,11.08,4.52,11.29,10.55,0,.25,0,.49,0,.74v6.18c.15,2.56.86,5.05,2.06,7.31.86,1.37,1.89,2.63,3.05,3.75H6.48Z"></path>
+          <path d="m22.56,42.85c1.63-.04,2.99-1.24,3.22-2.85h-6.58c.24,1.66,1.68,2.87,3.35,2.85Z"></path>
+        </svg>
+      </MotionPopoverTrigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={10} positionMethod={"fixed"}>
+          <Popover.Popup className="relative min-w-[25rem] origin-[var(--transform-origin)] rounded-lg bg-button-background px-4.5 py-4 text-faded-foreground/90 shadow-lg shadow-muted-faded-background/30 backdrop-blur-xs transition-[transform,scale,opacity,background-color,color,box-shadow] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0">
+            <div
+              className={"absolute inset-0 opacity-30 mix-blend-multiply"}
+              style={{
+                backgroundImage: "url(/assets/noise.png)",
+                backgroundSize: "20%",
+                backgroundPosition: "center"
+              }}
+            />
+            <Popover.Title className="mb-4 text-base font-semibold tracking-[-0.01em]">
+              Notification Center
+            </Popover.Title>
+
+            <m.div
+              layoutScroll={true}
+              className="flex min-h-[15rem] flex-col gap-2.5 overflow-x-hidden overflow-y-scroll px-3 py-3"
+              transition={{
+                delayChildren: stagger(0.05)
+              }}
+            >
+              <AnimatePresence mode="sync" initial={true} propagate={true}>
+                {nItems.map((item, index) => {
+                  if (item.trigger) {
+                    switch (item.trigger.relationTo) {
+                      case "users": {
+                        switch (item.type) {
+                          case "follow":
+                            return (
+                              <UserNotification
+                                key={item.id + index}
+                                id={item.trigger.value as string}
+                                item={{
+                                  ...item,
+                                  trigger: {
+                                    relationTo: "users",
+                                    value: item.trigger.value as string
+                                  },
+                                  type: "follow",
+                                  id: item.id
+                                }}
+                                onDismiss={onDismiss}
+                                onRead={onRead}
+                              />
+                            );
+                        }
+                      }
+                      default:
+                        return (
+                          <NotificationItem
+                            key={item.id + index}
+                            item={{
+                              ...item,
+                              id: item.id
+                            }}
+                            onDismiss={onDismiss}
+                            onRead={onRead}
+                          />
+                        );
+                    }
+                  } else {
+                    return (
+                      <NotificationItem
+                        key={item.id + index}
+                        item={{
+                          ...item,
+                          id: item.id
+                        }}
+                        onDismiss={onDismiss}
+                        onRead={onRead}
+                      />
+                    );
+                  }
+                })}
+
+                {nItems.length < 1 && (
+                  <m.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex h-[10rem] w-full items-center justify-center"
+                  >
+                    <Popover.Description className="text-sm leading-[114%] font-medium tracking-[-0.01em]">
+                      You are all caught up!
+                    </Popover.Description>
+                  </m.div>
+                )}
+              </AnimatePresence>
+            </m.div>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 };
+
+const NotificationItem = (
+  props: HTMLMotionProps<"div"> & {
+    item: SyncedNotification;
+    onDismiss: ({ ids }: { ids: string[] }) => void;
+    onRead: ({ ids }: { ids: string[] }) => void;
+  }
+) => {
+  const {
+    ref,
+    className,
+    transition,
+    item,
+    onDismiss: oD,
+    onRead: oR,
+    ...rest
+  } = props;
+  const onDismiss = () => {
+    oD({ ids: [item.id] });
+  };
+  const onRead = () => {
+    oR({ ids: [item.id] });
+  };
+  const { title, id, dismissed, type, thumbnail, actionLink, content } = item;
+  const [hovered, setHovered] = useState(false);
+  const [mutating, setMutating] = useState(false);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    onEnter: (e) => {
+      setHovered(true);
+    },
+    enterCondition: () => null,
+
+    onLeave: (e) => {
+      setHovered(false);
+    }
+  });
+  return (
+    <m.div
+      key={props.title}
+      ref={ref}
+      className="relative h-full overflow-hidden rounded-[8px] bg-transparent max-lg:w-[90vw] max-lg:min-w-[20rem] min-lg:min-h-[6rem] min-lg:w-[15vw]"
+      data-themed="background-color,border-color"
+      initial={{
+        translateX: "50%"
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      animate={{
+        translateX: "0%",
+        transition: {
+          type: "spring",
+          damping: 12,
+          mass: 0.5,
+          visualDuration: 0.1
+        }
+      }}
+      exit={{
+        translateX: "-100%"
+      }}
+      {...(hovered ? { "data-hovered": true } : {})}
+    >
+      <div className="relative flex h-full w-full">
+        <div className="absolute inset-0 z-[5] rounded-[8px] bg-transparent-base/5 backdrop-blur-[0.5px]" />
+        <article
+          className="relative z-20 flex h-full w-full items-center justify-center gap-5 p-4"
+          data-type="type"
+        >
+          <MotionBtn
+            className="absolute top-2 right-2 z-[12] flex aspect-square h-[2rem] items-center justify-center rounded-full outline-[1px]"
+            aria-label="Close notification"
+            initial={{
+              scale: 0.9
+            }}
+            animate={{
+              scale: 0.9,
+
+              transition: {
+                type: "tween",
+                ease: "easeOut",
+                duration: 0.2
+              }
+            }}
+            onClick={onDismiss}
+          >
+            <svg
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-[1rem] w-[1rem]"
+            >
+              <path
+                data-themed="stroke"
+                d="M2.625 2.625L9.375 9.375"
+                stroke="currentColor"
+                style={{}}
+              />
+              <path
+                data-themed="stroke"
+                d="M2.625 9.375L9.375 2.625"
+                stroke="currentColor"
+                style={{}}
+              />
+            </svg>
+          </MotionBtn>
+
+          <div className="grid w-full grid-cols-[4.8rem_1fr] items-center gap-5 min-lg:items-start">
+            <div className="aspect-square h-auto w-full [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full">
+              <FrontImage resource={thumbnail} />
+            </div>
+            <h1
+              className="mb-[6px] font-sans text-sm leading-[114%] font-semibold tracking-[-0.01em] min-lg:mb-[12px] min-lg:leading-[120%]"
+              data-themed="color"
+              style={{}}
+            >
+              <ReferencedLink
+                onClick={onRead}
+                link={actionLink}
+                className="z-[5] inline-block bg-transparent"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {title}
+              </ReferencedLink>
+            </h1>
+          </div>
+        </article>
+      </div>
+    </m.div>
+  );
+};
+
+function UserNotification({
+  item,
+  onDismiss: oD,
+  onRead: oR,
+  id
+}: {
+  item: SyncedNotification & {
+    trigger: { relationTo: Extract<CollectionSlug, "users">; value: string };
+  };
+  id: string | number;
+  onDismiss: ({ ids }: { ids: string[] }) => void;
+  onRead: ({ ids }: { ids: string[] }) => void;
+}) {
+  const { id: itemId, title, content, actionLink, createdAt } = item;
+  const onDismiss = useCallback(() => {
+    oD({ ids: [] });
+  }, [oD]);
+  const onRead = useCallback(() => {
+    oR({ ids: [itemId] });
+  }, [itemId, oR]);
+  const { data, isLoading, isPending } = useQuery({
+    placeholderData: {
+      name: "",
+      displayUsername: "",
+      image: "",
+      id: "",
+      slug: ""
+    } as AuthorOverview,
+    queryKey: ["user", item.trigger.value],
+    queryFn: async ({ queryKey }: { queryKey: ["user", string] }) => {
+      const res = await fetch(`/api/users/${queryKey[1]}/overview`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch user overview");
+      }
+      const r = (await res.json()) as { data: AuthorOverview };
+      if ("data" in r && r.data) {
+        return r.data as AuthorOverview;
+      }
+      throw new Error("Failed to fetch user overview");
+    },
+    staleTime: Infinity,
+    enabled: !!item.trigger.value
+  });
+  const humanTime = useHumanTime(createdAt);
+
+  return (
+    // To make the notification fixed, add classes like `fixed bottom-4 right-4` to the container element.
+
+    <div className="z-50 max-w-[400px] rounded-md border bg-background p-4 shadow-lg">
+      <div className="flex gap-3">
+        {(!isLoading && (
+          <Avatar>
+            {(data?.image && (
+              <AvatarImage src={data.image} width={32} height={32} alt="" />
+            )) || (
+              <AvatarFallback>
+                {(data?.displayUsername || data?.name)?.at(0)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+        )) || <Skeleton className="size-[32px] rounded-full" />}
+        <div className="flex grow flex-col gap-3">
+          <div className="space-y-3">
+            {(isLoading && (
+              <>
+                <Skeleton className="h-[12px] w-[250px]" />
+                <Skeleton className="h-[12px] w-[250px]" />
+              </>
+            )) || (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  <Link
+                    className="relative z-[4] inline-block font-medium text-foreground hover:underline"
+                    href={`/@${data?.slug}`}
+                  >
+                    {data?.displayUsername || data?.name}
+                  </Link>
+                  {(item.type === "mention" && "mentioned you") ||
+                    (item.type === "follow" && "followed you") ||
+                    (item.type === "comment" && "commented") ||
+                    (item.type === "bookmark" && "bookmarked")}
+                  <ReferencedLink
+                    link={actionLink}
+                    onClick={onRead}
+                    className={
+                      "absolute inset-0 z-[0] bg-faded-foreground/10 opacity-0 transition-opacity duration-200 ease-out-power2 hover:opacity-100"
+                    }
+                  />
+                  .
+                </p>
+                <p className="text-xs text-muted-foreground">{humanTime}</p>
+              </>
+            )}
+          </div>
+
+          {/* <div className="flex gap-2">
+            <Button
+              className={
+                "bg-faded-foreground text-[oklch(var(--n-s-btn-inverted))]"
+              }
+            >
+              Accept
+            </Button>
+            <Button
+              className={
+                "border-[1px] border-solid border-[oklch(var(--n-s-bb))] text-[oklch(var(--n-s-btn))]"
+              }
+            >
+              Decline
+            </Button>
+          </div> */}
+        </div>
+        <Button
+          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+          aria-label="Close notification"
+          onClick={onDismiss}
+        >
+          <Cross1Icon
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            aria-hidden="true"
+          />
+        </Button>
+      </div>
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import {type ReactNode, useContext} from "react";
-import {AuthUIContext} from "../lib/auth-ui-provider";
+import { type ReactNode, useContext } from "react"
+import { AuthUIContext } from "../lib/auth-ui-provider"
 
 /**
  * Conditionally renders content for unauthenticated users only
@@ -10,11 +10,11 @@ import {AuthUIContext} from "../lib/auth-ui-provider";
  * state is not pending. If a session exists or is being loaded, nothing is rendered.
  * Useful for displaying sign-in prompts or content exclusive to guests.
  */
-export function SignedOut({children}: { children: ReactNode }) {
-	const {
-		hooks: {useSession},
-	} = useContext(AuthUIContext);
-	const {data, isPending} = useSession();
+export function SignedOut({ children }: { children: ReactNode }) {
+    const {
+        hooks: { useSession }
+    } = useContext(AuthUIContext)
+    const { data, isPending } = useSession()
 
-	return !data && !isPending ? children : null;
+    return !data && !isPending ? children : null
 }

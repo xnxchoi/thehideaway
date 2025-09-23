@@ -50,6 +50,7 @@ import {
 import { CreditCard, Settings, User } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useTransitionRouter } from "next-transition-router";
+import type { CollectionSlug } from "payload";
 
 export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
   const { ref: toggle, ...rest } = props;
@@ -235,7 +236,26 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
           {value.length > 0 && (
             <CommandGroup heading="Search Results">
               {items.map((doc) => (
-                <LinkedItem key={doc.id + "command_doc"} {...doc}></LinkedItem>
+                <LinkedItem
+                  content={null!}
+                  key={doc.id + "command_doc"}
+                  {...{
+                    ...doc,
+                    doc: {
+                      relationTo: doc.doc.relationTo as Extract<
+                        CollectionSlug,
+                        | "tags"
+                        | "categories"
+                        | "users"
+                        | "articles"
+                        | "delta"
+                        | "posts"
+                        | "pages"
+                      >,
+                      value: doc.doc.value as string
+                    }
+                  }}
+                ></LinkedItem>
               ))}
               {!loading && items.length === 0 && (
                 <CommandEmpty>Nothing found :(</CommandEmpty>
@@ -372,7 +392,7 @@ function SubCommand({
       a: `Login${nanoid()}`
     };
   }, []);
-  const keys = Object.keys(kv);
+  const keys = Object.keys(kv) as (keyof typeof kv)[];
   useEffect(() => {
     const dispatcher = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {

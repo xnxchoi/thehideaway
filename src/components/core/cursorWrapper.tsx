@@ -59,9 +59,9 @@ type CursorHandlersOptions<T extends EventType, E> = Partial<{
     };
   };
 }>;
-type DomCursorOptions<E> = Partial<{
-  onEnter: (e: React.MouseEvent<E>) => void;
-  onLeave: (e: React.MouseEvent<E>) => void;
+type DomCursorOptions<E extends HTMLElement> = Partial<{
+  onEnter: React.MouseEventHandler<E>;
+  onLeave: React.MouseEventHandler<E>;
   marquee?: {
     enter?: (e: React.MouseEvent<E>) => boolean;
     leave?: (e: React.MouseEvent<E>) => boolean;
@@ -69,9 +69,9 @@ type DomCursorOptions<E> = Partial<{
   enterCondition?: (e: React.MouseEvent<E>) => CursorStated;
   leaveCondition?: (e: React.MouseEvent<E>) => CursorStated;
 }>;
-type DomHandlers<E> = {
-  onMouseEnter: (e: React.MouseEvent<E>) => void;
-  onMouseLeave: (e: React.MouseEvent<E>) => void;
+type DomHandlers<E extends HTMLElement> = {
+  onMouseEnter: React.MouseEventHandler<E>;
+  onMouseLeave: React.MouseEventHandler<E>;
 };
 
 export function useDomCursor<E extends HTMLElement>({

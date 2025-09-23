@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { useShallow } from "zustand/shallow";
 
 type ElementTypMap = HTMLElementTagNameMap &
   Pick<
@@ -42,8 +43,8 @@ function isOneOf(c: ElementTyp): c is TargetElementType {
 }
 
 export const DarkmodeButton = (props: ComponentPropsWithRef<"button">) => {
-  const navIsOpen = useRPStore((l) => l.navIsOpen);
-  const theme = useTheme((r) => r.theme);
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
+  const theme = useTheme(useShallow((r) => r.theme));
   const togggleTheme = useTheme((r) => r.toggleTheme);
   const locked = useTheme((r) => r.locked);
   const { ref: btRef } = props;
@@ -53,8 +54,8 @@ export const DarkmodeButton = (props: ComponentPropsWithRef<"button">) => {
     darkmodeIcon = useRef<HTMLSpanElement>(null!);
   const toRef = useRef<ReturnType<typeof setTimeout>>(null!);
 
-  const is404 = useVoyageur((l) => l.is404),
-    isHome = useVoyageur((r) => r.isHome);
+  const is404 = useVoyageur(useShallow((l) => l.is404)),
+    isHome = useVoyageur(useShallow((r) => r.isHome));
   const animateAllComponents = function (reset: boolean = false) {
     const targetNodes = document.querySelectorAll("[data-themed]");
     const targets: Array<TargetElementType> = [];
@@ -111,7 +112,7 @@ export const DarkmodeButton = (props: ComponentPropsWithRef<"button">) => {
       autoAlpha: shouldShut5 ? 0 : 1,
       zIndex: shouldShut5 ? 0 : 248
     });
-  }, [isHome, is404]);
+  }, [isHome, is404, btRef, navIsOpen]);
   return (
     <Button
       className={cn("circ-bt theme-toggle-btn", { hover: navIsOpen })}

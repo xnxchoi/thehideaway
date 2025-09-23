@@ -17,16 +17,19 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@collections/*": ["./src/payload/collections/*"],
+      "@payload-types": ["./src/payload-types.ts"],
       "@payload-config": ["./src/payload.config.ts"],
-      "@components/*": ["./src/payload/components/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/providers/*": ["./src/providers/*"],
-      "@/payload/*": ["./src/payload/*"]
-    }
+      "@types/*": ["./types/*"],
+      "@betterauth-ui": ["./src/lib/auth/betterauth-ui/src"],
+      "@betterauth-ui/*": ["./src/lib/auth/betterauth-ui/src/*"],
+      "@adminOnlyFields/*": ["./src/payload/fields/AdminOnly/*"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }

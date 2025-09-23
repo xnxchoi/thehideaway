@@ -1,5 +1,11 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type UIEventHandler
+} from "react";
 import { useIsMobile } from "@/utilities/getBreakpoints";
 import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
@@ -15,6 +21,8 @@ import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { useWindowResize } from "@/utilities/use_window_resize";
 
 import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
+import type { RP_Roles } from "../../../stores/Notification/NotificationStore";
+import { useShallow } from "zustand/shallow";
 
 type Person = Pick<
   User,
@@ -24,7 +32,7 @@ type Person = Pick<
 };
 export type Credited = Person & {
   patronage: boolean;
-  position: "admin" | "editor" | "author" | "user";
+  position: RP_Roles;
 };
 
 export type MemberList = {
@@ -44,14 +52,18 @@ export const Credits = ({ people }: { people: MemberList["members"] }) => {
     title: "Authors",
     members: people.filter((p) => p.position === "author")
   };
+  const patron: MemberList = {
+    title: "Patrons",
+    members: people.filter((p) => p.position === "patron")
+  };
   const user: MemberList = {
     title: "Members",
     members: people.filter((p) => p.position === "user")
   };
-  return CreditsInner({ positions: { admin, editor, author, user } });
+  return CreditsInner({ positions: { admin, editor, author, patron, user } });
 };
 type Team = {
-  [x in "admin" | "editor" | "author" | "user"]: MemberList;
+  [x in RP_Roles]: MemberList;
 };
 type CreditComponentProps = {
   positions: Team;
@@ -60,10 +72,10 @@ const CreditsInner = (props: CreditComponentProps) => {
   const { positions } = props;
   const movied = useRef<HTMLDivElement>(null!);
   const initial = Object.values(positions).reduce(
-    (previousValue, currentValue, currentIndex, array) => {
+    (previousValue, currentValue, _currentIndex) => {
       return [...previousValue, ...currentValue.members];
     },
-    []
+    [] as Credited[]
   );
   const [teamData, setTeamData] = useState<MemberList["members"]>(initial);
   useEffect(() => {
@@ -94,8 +106,8 @@ const CreditsInner = (props: CreditComponentProps) => {
   const [dpr, setDPR] = useState(1);
   const lastIndex = useRef<string>(null!);
   const canvasCtx = useRef<CanvasRenderingContext2D>(null!);
-  const wW = useRPStore((r) => r.viewportWidth);
-  const wH = useRPStore((r) => r.viewportHeight);
+  const wW = useRPStore(useShallow((r) => r.viewportWidth));
+  const wH = useRPStore(useShallow((r) => r.viewportHeight));
   const deltaY = useRef(0);
   useEffect(() => {
     if (window === undefined) return;
@@ -304,7 +316,7 @@ const CreditsInner = (props: CreditComponentProps) => {
     { scope: movied }
   );
   const activeTO = useRef<ReturnType<typeof setTimeout>>(null!);
-  const ySet = contextSafe((pos) => {
+  const ySet = contextSafe((pos: number) => {
     ySetter.current(pos);
   });
   const initCanvas = useCallback(() => {
@@ -351,7 +363,7 @@ const CreditsInner = (props: CreditComponentProps) => {
   }, [confettisCount, wW, wH, colors, setIsParty]);
 
   const animate = useCallback(
-    (time, dt) => {
+    (time: number, dt: number) => {
       const e = 1 - Math.pow(0.9, dt);
       const intent = inten.current;
       const posax = posX.current;
@@ -440,7 +452,7 @@ const CreditsInner = (props: CreditComponentProps) => {
     { scope: movied }
   );
   const to = useRef<ReturnType<typeof setTimeout>>(null!);
-  const onMobileListScroll = useCallback(
+  const onMobileListScroll: UIEventHandler<HTMLUListElement> = useCallback(
     (e) => {
       to.current && clearTimeout(to.current);
       to.current = setTimeout(setIndex, 100);
@@ -467,7 +479,6 @@ const CreditsInner = (props: CreditComponentProps) => {
       }),
       null !== (t = activeProfile) &&
         void 0 !== t &&
-        t.birthDay &&
         !isParty &&
         initConfettis());
   }, [teamData, activeProfile, isParty]);
@@ -654,11 +665,12 @@ const CreditsInner = (props: CreditComponentProps) => {
               >
                 <p className="">
                   {(activeProfile &&
-                    activeProfile.position &&
-                    (positions[activeProfile.position].title.endsWith("s")
-                      ? positions[activeProfile.position].title.slice(-1)
-                      : positions[activeProfile.position].title)) ||
-                    null}
+                  activeProfile.position &&
+                  positions[activeProfile.position] &&
+                  positions[activeProfile.position].title &&
+                  positions[activeProfile.position].title.endsWith("s")
+                    ? positions[activeProfile.position].title.slice(-1)
+                    : positions[activeProfile.position].title) || null}
                 </p>
               </m.div>
               {portraitState === "focus" && (
@@ -979,9 +991,9 @@ const CreditsInner = (props: CreditComponentProps) => {
     </m.div>
   );
 };
-const randomize = (t, e) => {
+const randomize = (t: number, e: number) => {
   return Math.floor(Math.random() * (t - e + 1)) + e;
 };
-const anotherMathFunc = function (e, t, n) {
+const anotherMathFunc = function (e: number, t: number, n: number) {
   return e < t ? t : e > n ? n : e;
 };

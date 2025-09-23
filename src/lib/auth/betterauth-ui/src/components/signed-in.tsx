@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import {type ReactNode, useContext} from "react";
-import {AuthUIContext} from "../lib/auth-ui-provider";
+import { type ReactNode, useContext } from "react"
+import { AuthUIContext } from "../lib/auth-ui-provider"
 
 /**
  * Conditionally renders content for authenticated users only
@@ -10,11 +10,11 @@ import {AuthUIContext} from "../lib/auth-ui-provider";
  * If no session exists, nothing is rendered. Useful for displaying protected
  * content or UI elements that should only be visible to signed-in users.
  */
-export function SignedIn({children}: { children: ReactNode }) {
-	const {
-		hooks: {useSession},
-	} = useContext(AuthUIContext);
-	const {data} = useSession();
+export function SignedIn({ children }: { children: ReactNode }) {
+    const {
+        hooks: { useSession }
+    } = useContext(AuthUIContext)
+    const { data } = useSession()
 
-	return data ? children : null;
+    return data ? children : null
 }

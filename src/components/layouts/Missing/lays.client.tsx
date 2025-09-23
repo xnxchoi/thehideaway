@@ -81,16 +81,16 @@ export function MissingLayout() {
     () => {
       gsap.to(["#l-side", "#r-side", "#c-side"], {
         autoAlpha: Number(toogled),
-        duration: 0.5,
-        delay: 0.2,
+        duration: 0.3,
+        delay: 0.1,
         ease: "power2.inOut"
       });
       return () => {
         gsap.killTweensOf(["#l-side", "#r-side", "#c-side"]);
         gsap.to(["#l-side", "#r-side", "#c-side"], {
           autoAlpha: 1,
-          duration: 0.5,
-          delay: 0.2,
+          duration: 0.3,
+          delay: 0.1,
           ease: "power2.inOut"
         });
       };

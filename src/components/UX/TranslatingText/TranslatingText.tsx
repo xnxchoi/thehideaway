@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { wait } from "@/utilities/wait";
 import { cva } from "class-variance-authority"; // CSS Module
 import { useIsMobile } from "@/providers/MiddleMan";
+import { useShallow } from "zustand/shallow";
 
 const ANIMATION_CONFIG = {
   DURATION: 1,
@@ -112,12 +113,14 @@ const TranslatingText = ({
   positionsMobile = [],
   hideMobile = false
 }: TranslatingTextProps) => {
-  const wrapperRef = useRef(null);
-  const mainTextRef = useRef(null);
-  const timelineRef = useRef(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const mainTextRef = useRef<HTMLSpanElement>(null);
+  const timelineRef = useRef<GSAPTimeline>(null);
 
   const { isMobile } = useIsMobile();
-  const enableAnimation = useRPStore((state) => state.enablePreloaderAnimation);
+  const enableAnimation = useRPStore(
+    useShallow((state) => state.enablePreloaderAnimation)
+  );
   const initiatedRef = useRef(false);
 
   const getSize = useCallback(() => {
@@ -232,7 +235,4 @@ const TranslatingText = ({
       <span className={styles.textLeftMiddle}>{text}</span>
     </p>
   );
-};
-const PreloaderText = () => {
-  <TranslatingText text={} />;
 };

@@ -1,20 +1,15 @@
 import { ReactNode, useRef } from "react";
-import { ContentMask } from "../UX/ContentMask";
-import { PageTransitionPortal } from "../UX/Transition/PageTransitionPortal";
 
-import { FXFrame } from "../UX/FXFrame/FXFrame";
-import { MenuMediaPreview } from "../UX/MediaPreview/MenuMediaPreview";
-import { Canvas } from "@react-three/fiber";
 import { OrthographicCamera, View } from "@react-three/drei";
-import { Linus } from "../UX/Scroll";
+import { Canvas } from "@react-three/fiber";
 import { PerformanceRegress } from "../UX/Gradient/Gradient";
-import { Controlbar } from "@/components/UX/Controlbar";
+import { Linus } from "../UX/Scroll";
 
 export const Main = ({ children }: { children: ReactNode }) => {
   const mainRef = useRef<HTMLElement>(null!);
 
   return (
-    <main ref={mainRef}>
+    <main ref={mainRef} className={"root"}>
       {children}
       <Canvas
         performance={{ min: 0.2 }}

@@ -10,7 +10,7 @@ import { useWindowResize } from "@/utilities/use_window_resize";
 import { useDeviceInfo } from "@/providers/RP_Pro";
 import { useGSAP } from "@gsap/react";
 import { useRPStore } from "@/providers/RP_Pro";
-
+import { useShallow } from "zustand/shallow";
 gsap.registerPlugin(ScrollTrigger);
 export type RPImage = Partial<
   Pick<Media, "height" | "width" | "alt" | "sizes">
@@ -34,9 +34,9 @@ export const ParallaxGrid = (
     imagesList = useRef<HTMLUListElement>(null!);
   const scrollTrigger = useRef<GSAPTimeline>(null!);
 
-  const wW = useRPStore((r) => r.viewportWidth);
+  const wW = useRPStore(useShallow((r) => r.viewportWidth));
   const windowResize = useWindowResize({ detectHeightChange: true });
-  const { isMobile } = useDeviceInfo();
+  const isMobile = useDeviceInfo(useShallow((r) => r.isMobile));
   useEffect(() => {
     gsap.to(section.current, {
       autoAlpha: 1,

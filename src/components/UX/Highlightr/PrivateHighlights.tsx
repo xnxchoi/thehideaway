@@ -28,6 +28,7 @@ import {
   ChangeEventHandler,
   createContext,
   MouseEventHandler,
+  MouseEvent,
   ReactNode,
   useCallback,
   useContext,
@@ -43,6 +44,7 @@ import { useRanger } from "./RangerProvider";
 import { SignInCard, UserBar } from "./sideBarProvider";
 import "./styles/_privateNote.scss";
 import { HighlightedRange, RangeSaveParams } from "./types";
+import { useShallow } from "zustand/shallow";
 
 export type PrivateHighlights = {
   memo: string;
@@ -94,17 +96,19 @@ export const PrivateMemoizer = (props: {
   const role = useRole(context.context);
   const interactions = useInteractions([click, dismiss, role]);
   const [view, setView] = useState<"edit" | "view">("view");
-  const target = useHighlighter((r) => r.target);
+  const target = useHighlighter(useShallow((r) => r.target));
   const postId = useMemo(() => target?.value, [target]);
-  const userId = useRPSession((r) => r.id as null | string);
-  const highlights = useHighlighter((r) => r.highlights);
-  const userName = useRPSession((r) => r.name);
-  const userImage = useRPSession((r) => r.image);
-  const userD = useRPSession((r) => r.displayUsername);
-  const userS = useRPSession((r) => r.slug);
+  const userId = useRPSession(useShallow((r) => r.id as null | string));
+  const highlights = useHighlighter(useShallow((r) => r.highlights));
+  const userName = useRPSession(useShallow((r) => r.name));
+  const userImage = useRPSession(useShallow((r) => r.image));
+  const userD = useRPSession(useShallow((r) => r.displayUsername));
+  const userS = useRPSession(useShallow((r) => r.slug));
   const [saving, setSaving] = useState(false);
 
-  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
+  const focusedHighlight = useHighlighter(
+    useShallow((r) => r.focusedHighlight)
+  );
   const fc = useRef(focusedHighlight);
   useEffect(() => {
     fc.current = focusedHighlight;
@@ -258,7 +262,7 @@ const PrivateNoteEditor = ({
   const qc = useQueryClient();
   const [dirty, setDirty] = useState<boolean>(false);
   const onSave = useCallback(
-    async (e) => {
+    (e: MouseEvent) => {
       e.stopPropagation();
       if (memoValue.length < 1) {
         return setSaving(false);
@@ -267,21 +271,26 @@ const PrivateNoteEditor = ({
         if (savedSelection) {
           setSaving(true);
           ranger.restoreSelection(savedSelection);
-          await createCallback({ private: true, memo: memoValue }).then((r) => {
-            if (r) {
-              successToast(t("Highlights.saved"));
-              ranger.removeMarkers(savedSelection);
-            } else {
-              errorToast(t("Highlights.error.save.select"));
-            }
-            qc.invalidateQueries({
-              queryKey: ["savedHighlights"]
+          createCallback({ private: true, memo: memoValue })
+            .then((r) => {
+              if (r) {
+                successToast(t("Highlights.saved"));
+                ranger.removeMarkers(savedSelection);
+              } else {
+                errorToast(t("Highlights.error.save.select"));
+              }
+              qc.invalidateQueries({
+                queryKey: ["savedHighlights"]
+              });
+              setOpen(false);
+              setDirty(false);
+            })
+            .then(() => {
+              setSaving(false);
             });
-            setOpen(false);
-            setDirty(false);
-          });
+        } else {
+          setSaving(false);
         }
-        setSaving(false);
 
         return;
       }
@@ -295,11 +304,16 @@ const PrivateNoteEditor = ({
           memo: memoValue,
           private: true
         } satisfies HighlightedRange;
-        await handleUpdate(body);
-        qc.invalidateQueries({
-          queryKey: ["savedHighlights"]
-        });
-        successToast(t("Highlights.saved"));
+        handleUpdate(body)
+          .then(() => {
+            qc.invalidateQueries({
+              queryKey: ["savedHighlights"]
+            });
+            successToast(t("Highlights.saved"));
+          })
+          .then(() => {
+            setSaving(false);
+          });
       } catch (e) {
         console.log(e);
         errorToast(t("Highlights.error.save.default"));
@@ -307,12 +321,22 @@ const PrivateNoteEditor = ({
         setSaving(false);
       }
     },
-    [createCallback, fc, handleUpdate, memoValue, qc, setOpen, t]
+    [
+      createCallback,
+      fc,
+      handleUpdate,
+      memoValue,
+      qc,
+      ranger,
+      savedSelection,
+      setOpen,
+      t
+    ]
   );
-  const cancelBtnClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-    (e) => {
+  const cancelBtnClick = useCallback(
+    (e: React.MouseEvent) => {
       e.preventDefault();
-      if (e.currentTarget.disabled) return;
+      if ((e.currentTarget as HTMLButtonElement)?.disabled) return;
       setOpen(false);
     },
     [setOpen]

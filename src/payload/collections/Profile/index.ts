@@ -8,7 +8,7 @@ import {
   generatePreviewPath,
   generatePreviewPathWithAuthor
 } from "@/utilities/generatePreviewPath";
-import { revalidateDeleteProfile } from "@collections/Profile/hooks/afterDelete";
+import { revalidateDeleteProfile } from "@/payload/collections/Profile/hooks/afterDelete";
 import { CollectionConfig, Where } from "payload";
 import { uuidv7 } from "uuidv7";
 import { getProfileBookmarks } from "./endpoints/getProfileBookmarks";

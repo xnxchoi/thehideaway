@@ -31,6 +31,7 @@ import {
   useRef,
   useState
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export type PageTransitionType = "FADE" | "FROM_MENU" | "CURTAIN" | "IMMEDIATE";
 /**
@@ -311,18 +312,22 @@ export const RPage = (props: TransitionWrapperProps) => {
 };
 const TransitionInternal = (props: TransitionWrapperProps) => {
   const { children, headerVisibility = true, theme, ref: pageRef } = props;
-  const navIsOpen = useRPStore((l) => l.navIsOpen);
-  const navIsOpenDebounced = useRPStore((l) => l.navIsOpenDebounced);
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
+  const navIsOpenDebounced = useRPStore(
+    useShallow((l) => l.navIsOpenDebounced)
+  );
   const setN = useRPStore((l) => l.setNavIsOpen);
   const isPreloader = useRPStore((l) => l.isPreloader);
   const setCanInteract = useRPStore((l) => l.setCanInteract);
 
   const setPageTheme = useTheme((r) => r.setPageTheme);
   const setCursorState = useCursorStore((l) => l.setCursorState);
-  const transitionOutType = useRPStore((l) => l.transitionOutType);
+  const transitionOutType = useRPStore(useShallow((l) => l.transitionOutType));
   const setCurrentPhase = useRPTransition((l) => l.setCurrentPhase);
   const setCurrentStep = useRPTransition((l) => l.setCurrentStep);
-  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
+  const pageIsTransitioning = useRPStore(
+    useShallow((l) => l.pageIsTransitioning)
+  );
   const { stage } = useTransitionState();
   const scroll = useLenis(),
     { isMobile } = useIsMobile();
@@ -359,10 +364,12 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   //     }, 1400))
   // }, [navigationPageItemSelected])
 
-  const navOpeningElement = useRPStore((l) => l.navOpeningElement);
+  const navOpeningElement = useRPStore(useShallow((l) => l.navOpeningElement));
 
   const [scaled, setScaled] = useState(1.1);
-  const transitionMa = useRPTransition((r) => r.transitionAnimations);
+  const transitionMa = useRPTransition(
+    useShallow((r) => r.transitionAnimations)
+  );
   const transitionMap = useMemo(() => transitionMa, [transitionMa]);
   const transitionArray = useRef(
     Object.keys(transitionMap) as PageTransitionType[]
@@ -373,7 +380,7 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       setScaled(1.1 * (navOpeningElement.offsetHeight / window.innerHeight));
     }
   }, [navOpeningElement]);
-  const isSidebarOpen = useRPStore((r) => r.sidebarOpen);
+  const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
   useEffect(() => {
     setCurrentVariants(
       transitionOutType &&

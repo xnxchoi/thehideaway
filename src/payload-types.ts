@@ -101,7 +101,6 @@ export interface Config {
     'deferred-emails': DeferredEmail;
     exports: Export;
     redirects: Redirect;
-    search: Search;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
@@ -117,7 +116,6 @@ export interface Config {
       notifications: 'notifications';
     };
     posts: {
-      bookmarks: 'bookmarks';
       responses: 'responses' | 'citations';
     };
     userMedia: {
@@ -177,7 +175,6 @@ export interface Config {
     'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
-    search: SearchSelect<false> | SearchSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -599,11 +596,6 @@ export interface Post {
   hashId: string;
   slugLock: boolean;
   slug: string;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
@@ -1101,6 +1093,10 @@ export interface Notification {
     | ({
         relationTo: 'follows';
         value: string | Follow;
+      } | null)
+    | ({
+        relationTo: 'responses';
+        value: string | Response;
       } | null);
   thumbnail?: (string | null) | Asset;
   type:
@@ -2095,85 +2091,6 @@ export interface Redirect {
   createdAt: string;
 }
 /**
- * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "search".
- */
-export interface Search {
-  id: string;
-  slug: string;
-  author?:
-    | {
-        authorId?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  allowList?:
-    | {
-        allowListId?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  locked?: boolean | null;
-  authority?: number | null;
-  tags?:
-    | {
-        tagTitle: string;
-        tagKey: string;
-        weight: number;
-        id?: string | null;
-      }[]
-    | null;
-  category?: {
-    categoryKey?: string | null;
-    categoryTitle?: string | null;
-    categorySlug?: string | null;
-  };
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    image?: (string | null) | Media;
-  };
-  title?: string | null;
-  priority?: number | null;
-  doc:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }
-    | {
-        relationTo: 'delta';
-        value: string | Delta;
-      }
-    | {
-        relationTo: 'albums';
-        value: string | Album;
-      }
-    | {
-        relationTo: 'categories';
-        value: string | Category;
-      }
-    | {
-        relationTo: 'tags';
-        value: string | Tag;
-      }
-    | {
-        relationTo: 'playlists';
-        value: string | Playlist;
-      }
-    | {
-        relationTo: 'tracks';
-        value: string | Track;
-      }
-    | {
-        relationTo: 'pages';
-        value: string | Page;
-      };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
@@ -2404,10 +2321,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'redirects';
         value: string | Redirect;
-      } | null)
-    | ({
-        relationTo: 'search';
-        value: string | Search;
       } | null)
     | ({
         relationTo: 'payload-jobs';
@@ -3076,7 +2989,6 @@ export interface PostsSelect<T extends boolean = true> {
   hashId?: T;
   slugLock?: T;
   slug?: T;
-  bookmarks?: T;
   locked?: T;
   allowList?: T;
   authority?: T;
@@ -3512,55 +3424,6 @@ export interface RedirectsSelect<T extends boolean = true> {
         reference?: T;
         url?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "search_select".
- */
-export interface SearchSelect<T extends boolean = true> {
-  id?: T;
-  slug?: T;
-  author?:
-    | T
-    | {
-        authorId?: T;
-        id?: T;
-      };
-  allowList?:
-    | T
-    | {
-        allowListId?: T;
-        id?: T;
-      };
-  locked?: T;
-  authority?: T;
-  tags?:
-    | T
-    | {
-        tagTitle?: T;
-        tagKey?: T;
-        weight?: T;
-        id?: T;
-      };
-  category?:
-    | T
-    | {
-        categoryKey?: T;
-        categoryTitle?: T;
-        categorySlug?: T;
-      };
-  meta?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        image?: T;
-      };
-  title?: T;
-  priority?: T;
-  doc?: T;
   updatedAt?: T;
   createdAt?: T;
 }

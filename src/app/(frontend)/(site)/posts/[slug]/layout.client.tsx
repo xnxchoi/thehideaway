@@ -37,6 +37,7 @@ import {
   clearSelection
 } from "@/components/UX/Highlightr/utils/highlight-helpers";
 import { nanoid } from "nanoid";
+import { useShallow } from "zustand/shallow";
 const RangerProvider = dynamic(
   () =>
     import("@/components/UX/Highlightr/RangerProvider").then(
@@ -49,11 +50,13 @@ const RangerProvider = dynamic(
 
 export function LayoutClient({ children }: { children: ReactNode }) {
   const setCurrentColor = useHighlighter((r) => r.setCurrentColor);
-  const currentColor = useHighlighter((r) => r.currentColor);
+  const currentColor = useHighlighter(
+    useShallow((r) => r.currentColor)
+  ) as HighlightColors;
   const [currentPalette, setCurrentPalette] = useState<
     HIGHLIGHT_PALETTE[HighlightColors]
   >(HighlightPalette[currentColor]);
-  const uId = useRPSession((r) => r.id as string | null);
+  const uId = useRPSession(useShallow((r) => r.id as string | null));
   const addHighlighter = useHighlighter((r) => r.addHighlight);
   const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
   const [userId, setUserId] = useState(uId || "");
@@ -101,7 +104,10 @@ export function LayoutClient({ children }: { children: ReactNode }) {
       if (!r) throw new Error("Invalid color");
       return r;
     },
-    enabled: loggedIn
+    enabled: loggedIn,
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+    gcTime: 60 * 1000
   });
   useEffect(() => {
     if (color) {

@@ -1779,6 +1779,7 @@ export const notifications_rels = pgTable(
     profileID: uuid("profile_id"),
     bookmarksID: varchar("bookmarks_id"),
     followsID: uuid("follows_id"),
+    responsesID: varchar("responses_id"),
     pagesID: uuid("pages_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -1808,6 +1809,9 @@ export const notifications_rels = pgTable(
     notifications_rels_follows_id_idx: index(
       "notifications_rels_follows_id_idx"
     ).on(columns.followsID),
+    notifications_rels_responses_id_idx: index(
+      "notifications_rels_responses_id_idx"
+    ).on(columns.responsesID),
     notifications_rels_pages_id_idx: index(
       "notifications_rels_pages_id_idx"
     ).on(columns.pagesID),
@@ -1860,6 +1864,11 @@ export const notifications_rels = pgTable(
       columns: [columns["followsID"]],
       foreignColumns: [follows.id],
       name: "notifications_rels_follows_fk"
+    }).onDelete("cascade"),
+    responsesIdFk: foreignKey({
+      columns: [columns["responsesID"]],
+      foreignColumns: [responses.id],
+      name: "notifications_rels_responses_fk"
     }).onDelete("cascade"),
     pagesIdFk: foreignKey({
       columns: [columns["pagesID"]],
@@ -7255,6 +7264,11 @@ export const relations_notifications_rels = relations(
       fields: [notifications_rels.followsID],
       references: [follows.id],
       relationName: "follows"
+    }),
+    responsesID: one(responses, {
+      fields: [notifications_rels.responsesID],
+      references: [responses.id],
+      relationName: "responses"
     }),
     pagesID: one(pages, {
       fields: [notifications_rels.pagesID],

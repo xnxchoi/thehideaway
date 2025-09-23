@@ -1,36 +1,41 @@
-import {cn} from "@/lib/utils";
-import {useState} from "react";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export const Marquee = ({
-	direction,
-	texts,
+  direction,
+  texts
 }: {
-	direction: "ltr" | "rtl";
-	texts: string[];
+  direction: "ltr" | "rtl";
+  texts: string[];
 }) => {
-	const [state, setState] = useState<"playing" | "paused">("playing");
-	return (
-		<div
-			className="relative z-200 flex overflow-hidden w-full h-[40px] justify-start items-center bg-[oklch(var(--button-background)/1)] text-[oklch(var(--n-s-btn)/1)]  ">
-			<div className={cn(
-				"absolute whitespace-nowrap will-change-transform",
-				direction === "ltr"
-					? "marquee-horizontal-ltr"
-					: "marquee-horizontal-rtl",
-			)} onMouseEnter={() => setState("paused")} onMouseLeave={() => setState("playing")}
-			     data-state={state}>
-				{[1, 2, 3, 4, 5, 6].map((_, idex) =>
-						texts.map((text, index) => (
-							<span key={index + text + idex} className={
-								"flex-[0_0_auto] uppercase inline-block mr-[8vw] text-[14px]"
-							}>
+  const [state, setState] = useState<"playing" | "paused">("playing");
+  return (
+    <div className="relative z-200 flex h-[40px] w-full items-center justify-start overflow-hidden bg-transparent-base/100 text-[oklch(var(--n-s-btn)/1)]">
+      <div
+        className={cn(
+          "absolute whitespace-nowrap will-change-transform",
+          direction === "ltr"
+            ? "marquee-horizontal-ltr"
+            : "marquee-horizontal-rtl"
+        )}
+        onMouseEnter={() => setState("paused")}
+        onMouseLeave={() => setState("playing")}
+        data-state={state}
+      >
+        {[1, 2, 3, 4, 5, 6].map((_, idex) =>
+          texts.map((text, index) => (
+            <span
+              key={index + text + idex}
+              className={
+                "mr-[8vw] inline-block flex-[0_0_auto] text-[14px] uppercase"
+              }
+            >
               {text}
             </span>
-						)),
-				)}
-			</div>
-		</div>
-	);
+          ))
+        )}
+      </div>
+    </div>
+  );
 };
-export const CursorMarquee = () => {
-};
+export const CursorMarquee = () => {};

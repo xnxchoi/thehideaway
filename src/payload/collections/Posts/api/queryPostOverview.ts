@@ -7,10 +7,12 @@ import {
   ArticleOverview,
   AuthorOverview,
   AuthorSingle,
-  ReqArticle
+  ReqArticle,
+  type MediaReq
 } from "../post-types";
 import { cache } from "react";
 import { getPostBookMarks } from "./getPostBookmarks";
+import type { TagOverview } from "../../Deltas/delta-types";
 
 /**
  * @param limit - The number of posts to return
@@ -137,6 +139,7 @@ export const queryOverview = cache(
       locked: true,
       category: true,
       id: true,
+      updatedAt: true,
       tags: true,
       ...select
     };
@@ -237,12 +240,14 @@ export const queryPostsByIDs = cache(
           slug: true,
           title: true,
           publishedAt: true,
+          updatedAt: true,
           image: true,
           subtitle: true,
           id: true,
           author: true,
           allowList: true,
           authority: true,
+          tags: true,
           locked: true,
           category: true
         },
@@ -300,15 +305,46 @@ export const queryPostsByIDs = cache(
         if (!author) {
           return [];
         }
+        let image: MediaReq | null = post.image
+          ? typeof post.image === "string"
+            ? null
+            : post.image
+          : null;
+        if (!image && typeof post.image === "string") {
+          const img = await payload.findByID({
+            collection: "media",
+            id: post.image as string,
+            overrideAccess: true,
+            select: {
+              url: true,
+              darkmode: true,
+              alt: true,
+              caption: true,
+              createdAt: true,
+              updatedAt: true,
+              filename: true,
+              mimeType: true,
+              size: true,
+              width: true,
+              height: true
+            }
+          });
+          if (img) {
+            image = img;
+          }
+        }
         const bookmarks = await getPostBookMarks({ id: `${post.id}` });
         const finalPost: ArticleOverview = {
           ...post,
           author: author,
+          publishedAt: post.publishedAt ?? "",
+          image,
           category: post.category as {
             title: string;
             id: string;
             slug: string;
           },
+          tags: post.tags as TagOverview[],
           bookmarks: [],
           bookmarksCount: 0
         };
@@ -336,6 +372,7 @@ export const queryAuthorOverview = cache(async (authorID: string) => {
       select: {
         name: true,
         slug: true,
+        image: true,
         displayUsername: true
       }
     })

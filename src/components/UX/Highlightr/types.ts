@@ -1,7 +1,7 @@
 import type * as rangey from "rangy";
 import { Citation } from "@/payload-types";
 import { HighlightColors } from "@/components/UX/Highlightr/stores";
-import { AuthorOverview } from "@collections/Posts/post-types";
+import { AuthorOverview } from "@/payload/collections/Posts/post-types";
 
 export type RangeSaveParams = {
   author: string;

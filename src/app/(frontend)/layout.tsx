@@ -9,7 +9,7 @@ import "@/styles/hideaway.scss";
 import "@/styles/reading.scss";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
-import { Header } from "@components/Header/Component";
+import { Header } from "@/payload/components/Header/Component";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "lenis/dist/lenis.css";
@@ -41,6 +41,7 @@ import { PageTransitionPortal } from "../../components/UX/Transition/PageTransit
 // Client Components (imported dynamically to create islands)
 import { ClientLayout } from "./ClientLayout";
 import { ClientProviders } from "./ClientProviders";
+import { TabMessenger } from "../../utilities/visibilityChange";
 
 export default async function RootLayout({
   children

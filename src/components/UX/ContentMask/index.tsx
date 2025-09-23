@@ -4,6 +4,7 @@ import { useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { gsap } from "gsap";
 import { Fragment, ReactNode, useCallback, useEffect, useRef } from "react";
+import { useShallow } from "zustand/shallow";
 
 export function ContentMask(l: { children: ReactNode }) {
   const windowResize = useWindowResize();
@@ -13,7 +14,7 @@ export function ContentMask(l: { children: ReactNode }) {
       window.innerHeight * 0.01 + "px"
     );
   }, [windowResize]);
-  const canInteract = useRPStore((l) => l.canInteract);
+  const canInteract = useRPStore(useShallow((l) => l.canInteract));
   const clipType = "content-mask-clipping",
     k = 1.8,
     easeType = "Power3.easeInOut",
@@ -23,14 +24,16 @@ export function ContentMask(l: { children: ReactNode }) {
     middlePositioningRef = useRef<HTMLDivElement>(null!),
     contentMaskRef = useRef<HTMLDivElement>(null!),
     contentRef = useRef<HTMLDivElement>(null!),
-    isPreloader = useRPStore((l) => l.isPreloader),
+    isPreloader = useRPStore(useShallow((l) => l.isPreloader)),
     setIsPreloader = useRPStore((l) => l.setIsPreloader),
     setIsAnimatingOutPreloader = useRPStore(
       (l) => l.setIsAnimatingOutPreloader
     ),
     enablePreloaderAnimation = useRPStore((l) => l.enablePreloaderAnimation),
     timelineRef = useRef<GSAPTimeline>(null),
-    preloaderAnimationType = useRPStore((l) => l.preloaderAnimationType);
+    preloaderAnimationType = useRPStore(
+      useShallow((l) => l.preloaderAnimationType)
+    );
   const setPositioningRectDimensions = useCallback(() => {
       if (
         !svgRef.current ||

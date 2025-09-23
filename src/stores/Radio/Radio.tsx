@@ -1,311 +1,293 @@
-import {createStore} from "zustand/vanilla"
-import {subscribeWithSelector} from "zustand/middleware"
-import {randomNumber} from "@/utilities/randomNumber"
+import { createStore } from "zustand/vanilla";
+import { subscribeWithSelector } from "zustand/middleware";
+import { randomNumber } from "@/utilities/randomNumber";
+import { clamp } from "../../utilities/mathUtilities";
 
 export interface RP_Track {
-	title: string
-	url: string
-	album: string
-	artist: string
-	id: string
+  title: string;
+  url: string;
+  album: string;
+  artist: string;
+  id: string;
 }
 
-export const PAUSE_DURATION = 1000
-export const AUTOPLAYED_KEY = "rp_autoplayed"
-export const LAST_TRACK_KEY = "rp_last_track"
-export const LAST_TIME_KEY = "rp_last_time"
+export type PlayMode = "default" | "reverse" | "shuffle";
+
+export const PAUSE_DURATION = 1000;
+export const AUTOPLAYED_KEY = "rp_autoplayed";
+export const LAST_TRACK_KEY = "rp_last_track";
+export const LAST_TIME_KEY = "rp_last_time";
 
 const radioInit: RadioStoreState = {
-	tracks: [],
-	trackLength: 0,
-	currentIndex: 0,
-	currentTrack: null!,
-	crossFading: false,
-	playing: false,
-	trackStatus: "paused",
-	elapsedTime: 0,
-	remainingTime: 12220,
-	hasRadio: false,
-	currentTrackInfo: {
-		title: "",
-		artist: "",
-		album: "",
-	},
-}
+  tracks: [],
+  currentIndex: 0,
+  nextIndex: 1,
+  hasNext: false,
+  crossFading: false,
+  playing: false,
+  trackStatus: "paused",
+  elapsedTime: 0,
+  remainingTime: 12220,
+  hasRadio: false,
+  playMode: "default"
+};
 
 type RadioStoreState = {
-	tracks: RP_Track[]
-	trackLength: number
-	currentIndex: number
-	currentTrack: RP_Track
-	crossFading: boolean
-	playing: boolean
-	trackStatus: "playing" | "paused" | "ended" | "loading" | "error"
-	elapsedTime: number
-	remainingTime: number
-	hasRadio: boolean
-	currentTrackInfo: {
-		title: string
-		artist: string
-		album: string
+  tracks: RP_Track[];
+  currentIndex: number;
+  nextIndex: number;
+  hasNext: boolean;
+  crossFading: boolean;
+  playing: boolean;
+  trackStatus: "playing" | "paused" | "ended" | "loading" | "error";
+  elapsedTime: number;
+  remainingTime: number;
+  hasRadio: boolean;
+  playMode: PlayMode;
+};
 
-	}
-}
+type TrackIndicesResult = {
+  currentIndex: number;
+  nextIndex: number;
+  hasNext: boolean;
+  playMode: PlayMode;
+};
+
+/**
+ * Calculates track indices based on the requested index and play mode
+ * @param requestedIndex - The index requested (can be out of bounds)
+ * @param tracksLength - Length of the tracks array
+ * @param currentPlayMode - Current play mode
+ * @returns Object with calculated currentIndex, nextIndex, hasNext, and playMode
+ */
+const calculateTrackIndices = (
+  requestedIndex: number,
+  tracksLength: number,
+  currentPlayMode: PlayMode = "default"
+): TrackIndicesResult => {
+  // Handle empty array
+  if (tracksLength === 0) {
+    return {
+      currentIndex: 0,
+      nextIndex: 0,
+      hasNext: false,
+      playMode: currentPlayMode
+    };
+  }
+
+  // Handle single element array
+  if (tracksLength === 1) {
+    return {
+      currentIndex: 0,
+      nextIndex: 0,
+      hasNext: false,
+      playMode: currentPlayMode
+    };
+  }
+
+  let currentIndex: number;
+  let nextIndex: number;
+  let playMode = currentPlayMode;
+
+  // Determine current index and play mode based on requested index
+  if (requestedIndex >= 0 && requestedIndex < tracksLength) {
+    // Within range - use default behavior
+    currentIndex = requestedIndex;
+    playMode = "default";
+  } else if (requestedIndex < 0) {
+    // Negative index - reverse play mode
+    const absIndex = Math.abs(requestedIndex);
+    currentIndex = clamp(
+      0,
+      tracksLength - (absIndex % tracksLength),
+      tracksLength - 1
+    );
+    playMode = "reverse";
+  } else {
+    // Positive index exceeding range - shuffle mode
+    currentIndex = randomNumber(0, tracksLength - 1);
+    playMode = "shuffle";
+  }
+
+  // Calculate next index based on play mode
+  switch (playMode) {
+    case "reverse":
+      nextIndex = currentIndex - 1;
+      if (nextIndex < 0) {
+        nextIndex = tracksLength - 1; // Loop to end
+      }
+      break;
+
+    case "shuffle":
+      // Find a random index that's not the current one
+      let attempts = 0;
+      do {
+        nextIndex = randomNumber(0, tracksLength - 1);
+        attempts++;
+      } while (nextIndex === currentIndex && attempts < 10);
+
+      // Fallback if we can't find a different index
+      if (nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % tracksLength;
+      }
+      break;
+
+    case "default":
+    default:
+      nextIndex = currentIndex + 1;
+      if (nextIndex >= tracksLength) {
+        nextIndex = 0; // Loop to beginning
+      }
+      break;
+  }
+
+  const hasNext = tracksLength > 1;
+
+  return {
+    currentIndex,
+    nextIndex,
+    hasNext,
+    playMode
+  };
+};
 
 type RadioStoreActions = {
-	setTracks: (tracks: RP_Track[]) => void
-	setCurrentTrack: (index: number) => void
-	setCrossFading: (crossFading: boolean) => void
-	setTrackStatus: (
-		status: "playing" | "paused" | "ended" | "loading" | "error",
-	) => void
-	setTrackTime: (elapsedTime: number, duration: number) => void
-	cleanTrack: () => void
+  setTracks: (tracks: RP_Track[]) => void;
+  setCurrentTrack: (index: number) => void;
+  setNextTrack: () => void;
+  setPlayMode: (mode: PlayMode) => void;
+  setCrossFading: (crossFading: boolean) => void;
+  setTrackStatus: (
+    status: "playing" | "paused" | "ended" | "loading" | "error"
+  ) => void;
+  setTrackTime: (elapsedTime: number, duration: number) => void;
+  cleanTrack: () => void;
+  setPlaying: () => void;
+  setPaused: () => void;
+  toggle: () => void;
+  setHasRadio: (hasRadio: boolean) => void;
+};
 
-	setPlaying: () => void
-	setPaused: () => void
-	toggle: () => void
-	setHasRadio: (hasRadio: boolean) => void
-}
-export type RadioStore = RadioStoreState & RadioStoreActions
+export type RadioStore = RadioStoreState & RadioStoreActions;
+
 export const createRadioStore = (initState: RadioStoreState = radioInit) => {
-	return createStore<RadioStore>()(
-		subscribeWithSelector((set) => ({
-			...initState,
+  return createStore<RadioStore>()(
+    subscribeWithSelector((set, get) => ({
+      ...initState,
 
-			setHasRadio: (hasRadio) => set({hasRadio}),
-			setTracks: (tracks) =>
-				set((state) => {
-					const trackLength = tracks.length
-					const currentIndex = randomNumber(0, trackLength - 1)
-					const currentTrack = tracks[currentIndex]
-					return {
-						...state,
-						currentIndex,
-						trackLength,
-						currentTrack,
-						tracks,
-						hasRadio: trackLength > 2,
-					}
-				}),
-			setCrossFading: (crossFading) => set({crossFading}),
-			setTrackStatus: (status) => set({trackStatus: status}),
-			setTrackTime: (elapsedTime: number, duration) =>
-				set({elapsedTime, remainingTime: duration - elapsedTime}),
-			setCurrentTrack: (index) =>
-				set((state) => {
-					const stacks = state.tracks.length
-					if (stacks < 1) {
-						return {
-							...state,
-							trackLength: stacks,
-							currentIndex: 0,
-							currentTrack: null!,
-							currentTrackInfo: {
-								title: "",
-								artist: "",
-								album: "",
-							},
-						}
-					}
-					let trueIndex = index
-					if (trueIndex < 0) {
-						const absIndex = Math.abs(trueIndex)
-						trueIndex = stacks - (absIndex % stacks)
-					} else if (trueIndex > stacks - 1) {
-						trueIndex = index % stacks
-					}
-					//most definitely will be a defined RP_Track.. but we could always be vigilant
-					const track = state.tracks[trueIndex]
-					if (track) {
-						return {
-							...state,
-							trackLength: stacks,
-							currentTrack: track,
-							currentIndex: trueIndex,
-							currentTrackInfo: {
-								title: track.title,
-								artist: track.artist,
-								album: track.album,
-							},
-						}
-					}
-					return {...state, trackLength: stacks}
-				}),
-			setPaused: () => set({playing: false}),
-			setPlaying: () => set({playing: true}),
-			cleanTrack: () =>
-				set({
-					elapsedTime: 11210,
-					remainingTime: 11210,
-				}),
-			toggle: () => set((state) => ({playing: !state.playing})),
-		})),
-	)
-}
+      setHasRadio: (hasRadio) => set({ hasRadio }),
 
-// export type RP_Playlist = Pick<Playlist, "id" | "title"> & {
-//   tracks: RP_Track[]
-// };
-// export type PlayDirection = "next" | "prev"
-// export type HA_RA = {
-//   playing: boolean;
-//   autoPlayed: boolean;
-//   lastVolume: number;
-//   lastIndex: number;
-//   lastTime: number;
-// }
+      setTracks: (tracks) =>
+        set((state) => {
+          const trackLength = tracks.length;
+          if (trackLength === 0) {
+            return {
+              ...state,
+              tracks,
+              currentIndex: 0,
+              nextIndex: 0,
+              hasNext: false,
+              hasRadio: false,
+              playMode: "default"
+            };
+          }
 
-// export type RADIO_RP = {
-//   currentIndex: number;
+          const currentIndex = randomNumber(0, trackLength - 1);
+          const { nextIndex, hasNext } = calculateTrackIndices(
+            currentIndex,
+            trackLength,
+            "default"
+          );
 
-//   play: (index?: number) => void
-//     | Promise<void>;
-//   pause: () => void;
-//   skipTo: (index: number) => void
-//   skip: (direction?: PlayDirection) => void
-//   volume: (vol: number) => void
-//   seek: (percentage: number) => void
-//   step: () => void
-//   playlist: RP_Playlist;
-// }
+          return {
+            ...state,
+            currentIndex,
+            nextIndex,
+            tracks,
+            hasNext,
+            hasRadio: trackLength > 2,
+            playMode: "default"
+          };
+        }),
 
-// export type HA_RA_ACT = {
-//   setAutoPlayed: (l: boolean) => void;
-//   setPlaylist: (p: RP_Playlist) => void;
-//   togglePlay: () => void;
-//   hydrateFromCookies: () => void;
-//   persistToCookies: () => void;
-// };
+      setCrossFading: (crossFading) => set({ crossFading }),
 
-// export interface RP_FM extends HA_RA, HA_RA_ACT, RADIO_RP {
+      setTrackStatus: (status) => set({ trackStatus: status }),
 
-// }
+      setTrackTime: (elapsedTime: number, duration) =>
+        set({ elapsedTime, remainingTime: duration - elapsedTime }),
 
-// const radioInitSt: HA_RA = {
-//   lastVolume: 0.5,
-//   lastIndex: 0,
-//   lastTime: 0,
-//   playing: false,
-//   autoPlayed: false,
-// };
+      setCurrentTrack: (requestedIndex) =>
+        set((state) => {
+          const { currentIndex, nextIndex, hasNext, playMode } =
+            calculateTrackIndices(
+              requestedIndex,
+              state.tracks.length,
+              state.playMode
+            );
 
-// export const createRadioStore = (initial = radioInitSt) =>
-//   createStore<RP_FM>()(
-//     subscribeWithSelector((set, get) => ({
-//       ...initial,
-//       currentIndex: 0,
+          return {
+            ...state,
+            currentIndex,
+            nextIndex,
+            hasNext,
+            hasRadio: state.tracks.length > 0,
+            playMode
+          };
+        }),
 
-//       playlist: {
-//         id: 0,
-//         title: "",
-//         tracks: [],
-//       },
-//       togglePlay: () => set((s) => ({ ...s, playing: !s.playing })),
-//       setAutoPlayed: (l) => set(() => ({ autoPlayed: l })),
-//       setPlaylist: (p) => set((s) => ({ ...s, playlist: { ...s.playlist, ...p, tracks: p.tracks.flatMap(t => ({ ...t, howl: null, duration: null })) } })),
-//       setCurrentIndex: (i) => set(() => ({ currentIndex: i })),
-//       setLastIndex: (i) => set(() => ({ lastIndex: i })),
-//       setPlaying: (b) => set(() => ({ playing: b })),
-//       setLastTime: (t) => set(() => ({ lastTime: t })),
+      setNextTrack: () =>
+        set((state) => {
+          if (state.tracks.length === 0) return state;
 
-//       volume: (v) => {
-//         Howler.volume(v);
-//         set(() => ({ lastVolume: v }));
-//         localStorage.set("rp_fm_vol", String(v));
-//       },
-//       play: async (indexOverride) => {
-//         const state = get();
-//         const index = indexOverride ?? state.currentIndex;
-//         const track = state.playlist.tracks[index];
-//         const currentIndex = state.currentIndex;
-//         if (!track) return;
-//         if (!track.howl) {
-//           track.howl = new Howl({
-//             src: [track.url],
-//             volume: state.lastVolume,
-//             onseek: () => set(() => ({ lastTime: get().lastTime })),
-//             html5: true,
-//             preload: true,
-//             onend: () => get().skip("next"),
-//             onplay: () => {
-//               set((s) => ({
-//                 ...s,
-//                 currentIndex: index,
-//                 lastIndex: currentIndex,
-//                 playing: true,
-//               }))
-//               requestAnimationFrame(get().step);
-//             },
-//             onpause: () => set(() => ({ playing: false })),
-//             onstop: () => set(() => ({ playing: false })),
+          const { currentIndex, nextIndex, hasNext, playMode } =
+            calculateTrackIndices(
+              state.nextIndex,
+              state.tracks.length,
+              state.playMode
+            );
 
-//           });
-//         }
-//         track.howl.play();
-//       },
-//       seek: (time) => {
-//         const track = get().playlist.tracks?.[get().currentIndex];
-//         if (track?.howl) track.howl.seek(time);
-//       },
-//       pause: () => {
-//         const howl = get().playlist.tracks?.[get().currentIndex]?.howl;
-//         if (howl?.playing()) howl.pause();
-//       },
+          return {
+            ...state,
+            currentIndex,
+            nextIndex,
+            hasNext,
+            playMode
+          };
+        }),
 
-//       skipTo: async (i) => {
-//         get().playlist.tracks?.[get().currentIndex]?.howl?.stop();
-//         await get().play(i);
-//       },
-//       step: () => {
-//         const { currentIndex, playlist } = get();
-//         const track = playlist.tracks[currentIndex];
-//         if (!track || !track.howl) return;
-//         const duration = track.howl.duration();
-//         const seek = track.howl.seek();
-//         const progress = ((seek / duration) * 100) || 0;
-//         set(() => ({ lastTime: seek, lastIndex: currentIndex, }));
-//         if (track.howl?.playing()) {
-//           requestAnimationFrame(get().step);
-//         }
-//       },
-//       skip: async (dir) => {
-//         const { currentIndex, playlist } = get();
-//         const len = playlist.tracks?.length ?? 0;
-//         let next = dir === "next" ? currentIndex + 1 : currentIndex - 1;
-//         if (next < 0) next = Math.max(0, (len - 1) + next);
-//         if (next >= len) next = next % len;
-//         await get().skipTo(next);
-//       },
+      setPlayMode: (mode) =>
+        set((state) => {
+          if (state.tracks.length === 0) {
+            return { ...state, playMode: mode };
+          }
 
-//       hydrateFromCookies: () => {
-//         if (typeof localStorage === "undefined") return;
-//         const vol = localStorage.get("rp_fm_vol");
-//         const timeRaw = localStorage.get("rp_fm_time");
-//         const pref = localStorage.get("rp_fm_pref");
+          // Recalculate next index based on new play mode
+          const { nextIndex, hasNext } = calculateTrackIndices(
+            state.currentIndex,
+            state.tracks.length,
+            mode
+          );
 
-//         if (vol) get().volume(parseFloat(vol));
-//         if (pref) {
-//           const parsed = JSON.parse(pref);
-//           get().setPlaylist(parsed.playlist || []);
-//         }
+          return {
+            ...state,
+            playMode: mode,
+            nextIndex,
+            hasNext
+          };
+        }),
 
-//         if (timeRaw) {
-//           const timeObj = JSON.parse(timeRaw);
-//           const tracks = get().playlist.tracks;
-//           const matchIdx = tracks?.findIndex((t) => t.id === timeObj.lastIndex) ?? -1;
-//           const index = matchIdx !== -1 ? matchIdx : 0;
-//           get().setCurrentIndex(index);
-//           get().setLastTime(timeObj.lastTime); // sync index just in case
-//         }
-//       },
+      setPaused: () => set({ playing: false }),
 
-//       persistToCookies: () => {
-//         const { volume, playlist, lastTime, lastIndex } = get();
-//         if (typeof localStorage === "undefined") return;
-//         localStorage.set("rp_fm_vol", String(volume));
-//         localStorage.set("rp_fm_time", JSON.stringify({ lastTime, lastIndex }));
-//         localStorage.set("rp_fm_pref", JSON.stringify({ ...playlist }));
-//       },
-//     })),
-//   );
+      setPlaying: () => set({ playing: true }),
+
+      cleanTrack: () =>
+        set({
+          elapsedTime: 0,
+          remainingTime: 0
+        }),
+
+      toggle: () => set((state) => ({ playing: !state.playing }))
+    }))
+  );
+};

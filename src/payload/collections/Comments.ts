@@ -392,7 +392,7 @@ export const commentsPlugin =
               position: "sidebar",
               components: {
                 Field: {
-                  path: "@/payload/fields/AdminOnly/Checkbox/index.tsx#AdminOnlyCheckboxField",
+                  path: "@/payload/fields/AdminOnly/Checkbox/index.tsx",
                   serverProps: {
                     allowedRoles: ["admin", "editor"],
                     allowAuthor: true

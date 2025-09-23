@@ -6,6 +6,7 @@ import { gsap } from "gsap/all";
 import { CustomEase } from "gsap/CustomEase";
 import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
 import { useInView } from "react-intersection-observer";
+import { useShallow } from "zustand/shallow";
 
 gsap.registerPlugin(CustomEase);
 CustomEase.create("star", ".12,.23,.5,1");
@@ -168,10 +169,10 @@ export const Starliner = () => {
     },
     { scope: container, dependencies: [oH, oW] }
   );
-  const navIsOpen = useRPStore((l) => l.navIsOpen);
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
 
   useEffect(() => {
-    const pausePlay = (e) => {
+    const pausePlay = (e: Event) => {
       document.visibilityState === "hidden"
         ? gsapLoop.current.pause()
         : gsapLoop.current.play();

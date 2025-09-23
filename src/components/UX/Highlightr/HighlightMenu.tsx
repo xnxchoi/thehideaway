@@ -23,7 +23,8 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  type MouseEventHandler
 } from "react";
 import { toast } from "sonner";
 import {
@@ -40,6 +41,7 @@ import { HighlightColors, HighlightPalette, Palettes } from "./stores";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { MotionBtnProps } from "@/components/UX/Link/types";
 import { useRanger } from "./RangerProvider";
+import { useShallow } from "zustand/shallow";
 type ViewStates = "edit" | "signin" | "new";
 type DialogText = "header" | "title" | "description";
 type ViewStateMap = Record<ViewStates, Record<DialogText, string>>;
@@ -72,15 +74,19 @@ export const FloatHighlightMenu = ({
   const [memoOpen, setMemoOpen] = useState(false);
   const t = useTranslations();
   const ranger = useRanger((r) => r.ranger);
-  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
+  const focusedHighlight = useHighlighter(
+    useShallow((r) => r.focusedHighlight)
+  );
   const fc = useRef(focusedHighlight);
   useEffect(() => {
     fc.current = focusedHighlight;
   }, [focusedHighlight]);
-  const target = useHighlighter((r) => r.target);
-  const userId = useRPSession((r) => r.id as null | string);
+  const target = useHighlighter(useShallow((r) => r.target));
+  const userId = useRPSession(useShallow((r) => r.id as null | string));
   const postId = useMemo(() => target?.value || "", [target]);
-  const currentHighlightColor = useHighlighter((r) => r.currentColor);
+  const currentHighlightColor = useHighlighter(
+    useShallow((r) => r.currentColor)
+  );
   const lastVisible = useRef(false);
   const [memo, setMemo] = useState("");
   const [editorEnabled, setEditorEnabled] = useState(!!userId);
@@ -92,7 +98,7 @@ export const FloatHighlightMenu = ({
     setEditorEnabled(!!userId);
   }, [userId]);
 
-  const onSave = useCallback(
+  const onSave: MouseEventHandler<HTMLButtonElement> = useCallback(
     async (e) => {
       e.preventDefault();
       if (!userId) {
@@ -215,34 +221,35 @@ export const FloatHighlightMenu = ({
     setMemo(e);
     lastValue.current = e;
   }, []);
-  const handleShareHighlight = useCallback(
-    (e) => {
-      e.stopPropagation();
-      const se = ranger.getSelection();
-      let a = se?.toString();
-      if (!a && focusedHighlight) {
-        a = focusedHighlight.els
-          .map((e) => (e as HTMLElement).innerText)
-          .join(" ");
-      }
-      if (!a) {
-        errorToast(t("Highlights.error.share.copy"));
-        return;
-      }
-      navigator.clipboard
-        .writeText(a)
-        .then((r) => {
-          successToast(t("Highlights.share.copy"));
-        })
-        .catch(() => errorToast(t("Highlights.error.share.copy")));
-    },
-    [focusedHighlight, ranger, t]
-  );
+  const handleShareHighlight: MouseEventHandler<HTMLButtonElement> =
+    useCallback(
+      (e) => {
+        e.stopPropagation();
+        const se = ranger.getSelection();
+        let a = se?.toString();
+        if (!a && focusedHighlight) {
+          a = focusedHighlight.els
+            .map((e) => (e as HTMLElement).innerText)
+            .join(" ");
+        }
+        if (!a) {
+          errorToast(t("Highlights.error.share.copy"));
+          return;
+        }
+        navigator.clipboard
+          .writeText(a)
+          .then((r) => {
+            successToast(t("Highlights.share.copy"));
+          })
+          .catch(() => errorToast(t("Highlights.error.share.copy")));
+      },
+      [focusedHighlight, ranger, t]
+    );
 
   const setPrivateNotary = usePrivateNote((r) => r.setOpen);
   const setPrivateView = usePrivateNote((r) => r.setView);
 
-  const onPrivateClick = useCallback(
+  const onPrivateClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.preventDefault();
       setPrivateView("edit");
@@ -425,7 +432,7 @@ const HighlightColorPickerItem = ({
   const currentColor = useHighlighter((r) => r.currentColor);
   const [isActive, setIsActive] = useState(currentColor === color);
   const palette = useMemo(() => HighlightPalette[color], [color]);
-  const onMouseDown = useCallback(
+  const onMouseDown: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.preventDefault();
       e.stopPropagation();

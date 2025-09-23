@@ -29,6 +29,7 @@ import { Physics } from "@react-three/rapier";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useKinetics } from "@/components/layouts/Registration/KineticProvider";
+import { useShallow } from "zustand/shallow";
 
 const glbPath = "/assets/plate/pl/PACKAGE_2.glb";
 const color = {
@@ -366,8 +367,8 @@ export function RP_Plate({
     }),
     [cardSize, scaledVec]
   );
-  const transitionOutType = useRPStore((l) => l.transitionOutType),
-    pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
+  const transitionOutType = useRPStore(useShallow((l) => l.transitionOutType)),
+    pageIsTransitioning = useRPStore(useShallow((l) => l.pageIsTransitioning));
   const [m, ss] = useState(0);
   useEffect(() => {
     if (

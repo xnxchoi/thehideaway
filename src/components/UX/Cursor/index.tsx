@@ -1,44 +1,33 @@
 "use client";
 
-import { gsap } from "gsap";
-import {
-  Fragment,
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  useCursorAPI,
-  useCursorStore,
-  useDeviceInfo,
-  useRaf,
-  useRPStore
-} from "@/providers/RP_Pro";
-import { lerp } from "@/utilities/Helpers";
 import { cn } from "@/lib/utils";
+import { useCursorStore, useDeviceInfo, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 
-import { useGSAP } from "@gsap/react";
-import * as m from "motion/react-m";
-import { AnimatePresence } from "motion/react";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { clamp } from "@/utilities/mathUtilities";
-import { Dots } from "fonts";
+import {
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  type Variant
+} from "motion/react";
+import * as m from "motion/react-m";
 import { useShallow } from "zustand/shallow";
-
+import { EASING } from "@/constants/animations";
 const validCursors = ["HOVER", "DRAG", "CLICK TO TURN", "CLOSE", "LOCKED"];
 
 const cursorTheme = "dark";
 
 // Initialize cursor
 export default function RP_Cursor() {
+  const cursorX = useMotionValue(window.innerWidth / 2);
+  const cursorY = useMotionValue(window.innerHeight / 2);
   const { isMobile } = useIsMobile();
   const textWidth = useRef(12);
-  const cursorSizes = useMemo(
+  const c = useMemo(
     () => ({
       LARGE: 48,
       MEDIUM: 17,
@@ -46,13 +35,27 @@ export default function RP_Cursor() {
     }),
     []
   );
+
+  useEffect(() => {
+    const updatePosition = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+    };
+
+    document.addEventListener("mousemove", updatePosition);
+
+    return () => {
+      document.removeEventListener("mousemove", updatePosition);
+    };
+  }, [cursorX, cursorY]);
+  const springConfig = useMemo(() => ({ duration: 0 }), []);
   const isTouchDevice = useDeviceInfo(useShallow((r) => r.isTouchDevice));
   const [isTextCursor, setIsTextCursor] = useState(!1);
   const marquee = useCursorStore(useShallow((l) => l.marquee));
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
+  const cursorXSpring = useSpring(cursorX, springConfig || { duration: 0 });
+  const cursorYSpring = useSpring(cursorY, springConfig || { duration: 0 });
 
-  const setCoord = useCursorStore(useShallow((l) => l.setMouseCoordinates));
-  const { subscribe } = useCursorAPI();
   const cursorState = useCursorStore(useShallow((l) => l.cursorState));
   const oCircle = useRef(null);
   const iCircle = useRef(null);
@@ -64,170 +67,223 @@ export default function RP_Cursor() {
   const pageIsTransitioning = useRPStore(
     useShallow((l) => l.pageIsTransitioning)
   );
-  const rafAdd = useRaf((r) => r.addToRaf);
-  const rafRem = useRaf((r) => r.removeFromRaf);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  // const xTo = useRef<Function>(null!);
-  // // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  // const yTo = useRef<Function>(null!);
   const cursorTheme = useCursorStore(useShallow((l) => l.cursorTheme));
+
+  const colors = useMemo(
+    () => ({
+      rouge: "62.41% 0.246 28.34",
+      light: "0.9735 0.0013 218.99",
+      dark: "10.17% 0.0013 218.99"
+    }),
+    []
+  );
+  const { rouge } = colors;
+  const [currentBase, setCurrentBase] = useState(colors[cursorTheme]);
+
+  useEffect(() => {
+    setCurrentBase(colors[cursorTheme]);
+  }, [cursorTheme, colors]);
   const theme = useTheme((r) => r.theme);
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
-  const handleMouseOver = useCallback(
-    (c: MouseEvent | TouchEvent) => {
-      const x =
-        "changedTouches" in c ? c.changedTouches[0]?.clientX || 0 : c.clientX;
-      const y =
-        "changedTouches" in c ? c.changedTouches[0]?.clientY || 0 : c.clientY;
-      setCoord({ x, y });
-    },
-    [setCoord]
-  );
 
   const [isEnabled, setIsEnabled] = useState(!(isTouchDevice && isMobile));
   useEffect(() => {
     setIsEnabled(!(isTouchDevice && isMobile));
   }, [isTouchDevice, isMobile]);
-  useEffect(() => {
-    return (
-      document.removeEventListener("pointerdown", handleMouseOver),
-      document.removeEventListener("pointermove", handleMouseOver),
-      document.removeEventListener("mousemove", handleMouseOver),
-      document.addEventListener("pointerdown", handleMouseOver),
-      document.addEventListener("pointermove", handleMouseOver),
-      document.addEventListener("mousemove", handleMouseOver),
-      () => {
-        (document.removeEventListener("pointerdown", handleMouseOver),
-          document.removeEventListener("pointermove", handleMouseOver),
-          document.removeEventListener("mousemove", handleMouseOver));
-      }
-    );
-  }, [handleMouseOver]);
-  const smoothCoordinates = useRef({ x: 0, y: 0 });
-  const mouseCoordinates = useRef({
-    x: 0,
-    y: 0
-  });
-  const Unsub: RefObject<null | (() => void)> = useRef(null);
-  const rif = useCallback((l: boolean) => {
-    smoothCoordinates.current = l
-      ? {
-          x: mouseCoordinates.current.x,
-          y: mouseCoordinates.current.y
-        }
-      : {
-          x: lerp(smoothCoordinates.current.x, mouseCoordinates.current.x, 1),
-          y: lerp(smoothCoordinates.current.y, mouseCoordinates.current.y, 1)
-        };
-    cursr.current &&
-      gsap.set(cursr.current, {
-        x: smoothCoordinates.current.x - 0.5 * cursr.current.offsetWidth,
-        y: smoothCoordinates.current.y - 0.5 * cursr.current.offsetWidth
-      });
-  }, []);
-  const raf = useCallback(() => {
-    smoothCoordinates.current = {
-      x: mouseCoordinates.current.x,
-      y: mouseCoordinates.current.y
-    };
-    cursr.current &&
-      gsap.set(cursr.current, {
-        x: smoothCoordinates.current.x - 0.5 * cursr.current.offsetWidth,
-        y: smoothCoordinates.current.y - 0.5 * cursr.current.offsetWidth
-      });
-  }, []);
 
   const lastTextCursor = useRef(isTextCursor);
-
-  useGSAP(
-    () => {
-      const isFocus = cursorState === "FOCUS";
-      const isTC = !!cursorState && !isFocus;
-
-      const outerRad = isFocus ? cursorSizes.MEDIUM : cursorSizes.SMALL;
-      const innerRad = isFocus ? 1 : outerRad;
-
-      setIsTextCursor(isTC);
-      if (!isTC) {
-        gsap.killTweensOf([oCircle.current, iCircle.current, domEl.current]);
-        lastTextCursor.current &&
-          (gsap.set([oCircle.current, iCircle.current], {
-            autoAlpha: 0,
-            attr: {
-              r: 0
-            }
-          }),
-          gsap.to(domEl.current, {
-            width: 1,
-            height: 1,
-            autoAlpha: 0,
-
-            delay: 0.1,
-            duration: 0.3,
-            ease: "Power3.easeOut"
-          }),
-          gsap.to([oCircle.current, iCircle.current], {
-            autoAlpha: 1,
-            duration: 0.12,
-            ease: "Power3.easeOut",
-            delay: 0.1
-          }));
-        (gsap.to(oCircle.current, {
-          attr: {
-            r: outerRad
-          },
-          autoAlpha: 1,
-          ease: "Power3.easeOut",
-          duration: 0.3,
-          delay: lastTextCursor.current ? 0.12 : 0
-        }),
-          gsap.to(iCircle.current, {
-            attr: {
-              r: innerRad
-            },
-            autoAlpha: 1,
-            ease: "Power3.easeOut",
-            duration: 0.3,
-            delay: lastTextCursor.current ? 0.12 : 0
-          }));
-      } else {
-        gsap.set(domEl.current, {
-          autoAlpha: 1,
-          delay: 0.1
-        });
-        const width =
-          textWidth.current * cursorState.length +
-          0.25 * textWidth.current * (cursorState.length - 1) +
-          2 * textWidth.current;
-        if (!lastTextCursor.current) {
-          gsap.set(domEl.current, {
-            width: outerRad,
-            height: outerRad
-          });
-
-          gsap.set([oCircle.current, iCircle.current], {
-            autoAlpha: 0,
-            delay: 0.12
-          });
-          gsap.to(domEl.current, {
-            duration: 0.3,
-
-            height: 40,
-            delay: 0.14,
-            ease: "Power3.easeOut"
-          });
-        }
-        gsap.to(domEl.current, {
-          width: clamp(85, width, 120),
-          delay: 0.14,
-          duration: 0.3,
-          ease: "Power3.easeOut"
-        });
-      }
-      lastTextCursor.current = isTC;
-    },
-    { dependencies: [cursorState], scope: cursr }
+  const easeLikeSpring = useMemo(
+    () => ({
+      visualDuration: 0.3,
+      stiffness: 500,
+      damping: 30
+    }),
+    []
   );
+  const containerWidth = useMotionValue(100);
+  const containerHeight = useMotionValue(40);
+  const outerRad = useMotionValue(c.SMALL);
+  const innerRad = useMotionValue(c.SMALL);
+
+  const outerRadius = useSpring(outerRad, easeLikeSpring);
+  const innerRadius = useSpring(innerRad, easeLikeSpring);
+
+  const circleVariants = useMemo(
+    () => ({
+      hidden: {
+        opacity: 0,
+        visibility: "hidden",
+        scale: 0
+      },
+
+      focus: {
+        opacity: 1,
+        visibility: "visible",
+        scale: 1
+      },
+      default: {
+        opacity: 1,
+        visibility: "visible",
+        scale: 1
+      }
+    }),
+    []
+  );
+  const strokeColor = useMotionValue(`oklch(${currentBase}/1)`);
+
+  const outerVariants = useMemo(
+    () => ({
+      ...circleVariants
+    }),
+    [circleVariants]
+  );
+  const innerVariants = useMemo(
+    () => ({ ...circleVariants }),
+    [circleVariants]
+  );
+
+  type CircleKeys = keyof typeof circleVariants;
+
+  const [circleVariant, setCircleVariant] = useState<CircleKeys>("hidden");
+
+  useEffect(() => {
+    const isFocus = cursorState === "FOCUS";
+    const isTC = !isFocus && !!cursorState;
+    const target = isFocus ? rouge : currentBase;
+    strokeColor.set(`oklch(${target}/1)`);
+    const rr = isFocus ? c.MEDIUM : c.SMALL;
+    const ii = isFocus ? 1 : rr;
+    outerRad.set(rr);
+    innerRad.set(ii);
+    const width = !isTC
+      ? 1
+      : clamp(85, ((cursorState.length * 5 + 7) / 4) * textWidth.current, 120);
+    const height = !isTC ? 1 : 40;
+    const currentW = containerWidth.get();
+    const currentH = containerHeight.get();
+    if (width !== currentW) {
+      containerWidth.set(width);
+    }
+    if (height !== currentH) {
+      containerHeight.set(height);
+    }
+    lastTextCursor.current !== isTC && setIsTextCursor(isTC);
+    setCircleVariant(isFocus ? "focus" : "default");
+    lastTextCursor.current = isTC;
+  }, [
+    cursorState,
+    setCircleVariant,
+    containerWidth,
+    containerHeight,
+    c,
+    innerRad,
+    outerRad,
+    rouge,
+    currentBase,
+    strokeColor
+  ]);
+  const textCursorVariants = useMemo(
+    () => ({
+      hidden: { opacity: 0, visibility: "hidden", scale: 0 },
+      animate: {
+        opacity: 1,
+        visibility: "visible",
+        scale: 1
+      }
+    }),
+    []
+  );
+
+  // useGSAP(
+  //   () => {
+  //     const isFocus = cursorState === "FOCUS";
+  //     const isTC = !!cursorState && !isFocus;
+
+  //     const outerRad = isFocus ? c.MEDIUM : c.SMALL;
+  //     const innerRad = isFocus ? 1 : outerRad;
+
+  //     setIsTextCursor(isTC);
+  //     if (!isTC) {
+  //       gsap.killTweensOf([oCircle.current, iCircle.current, domEl.current]);
+  //       lastTextCursor.current &&
+  //         (gsap.set([oCircle.current, iCircle.current], {
+  //           autoAlpha: 0,
+  //           attr: {
+  //             r: 0
+  //           }
+  //         }),
+  //         gsap.to(domEl.current, {
+  //           width: 1,
+  //           height: 1,
+  //           autoAlpha: 0,
+
+  //           delay: 0.1,
+  //           duration: 0.3,
+  //           ease: "Power3.easeOut"
+  //         }),
+  //         gsap.to([oCircle.current, iCircle.current], {
+  //           autoAlpha: 1,
+  //           duration: 0.12,
+  //           ease: "Power3.easeOut",
+  //           delay: 0.1
+  //         }));
+  //       (gsap.to(oCircle.current, {
+  //         attr: {
+  //           r: outerRad
+  //         },
+  //         autoAlpha: 1,
+  //         ease: "Power3.easeOut",
+  //         duration: 0.3,
+  //         delay: lastTextCursor.current ? 0.12 : 0
+  //       }),
+  //         gsap.to(iCircle.current, {
+  //           attr: {
+  //             r: innerRad
+  //           },
+  //           autoAlpha: 1,
+  //           ease: "Power3.easeOut",
+  //           duration: 0.3,
+  //           delay: lastTextCursor.current ? 0.12 : 0
+  //         }));
+  //     } else {
+  //       gsap.set(domEl.current, {
+  //         autoAlpha: 1,
+  //         delay: 0.1
+  //       });
+  //       const width =
+  //         textWidth.current * cursorState.length +
+  //         0.25 * textWidth.current * (cursorState.length - 1) +
+  //         2 * textWidth.current;
+  //       if (!lastTextCursor.current) {
+  //         gsap.set(domEl.current, {
+  //           width: outerRad,
+  //           height: outerRad
+  //         });
+
+  //         gsap.set([oCircle.current, iCircle.current], {
+  //           autoAlpha: 0,
+  //           delay: 0.12
+  //         });
+  //         gsap.to(domEl.current, {
+  //           duration: 0.3,
+
+  //           height: 40,
+  //           delay: 0.14,
+  //           ease: "Power3.easeOut"
+  //         });
+  //       }
+  //       gsap.to(domEl.current, {
+  //         width: clamp(85, width, 120),
+  //         delay: 0.14,
+  //         duration: 0.3,
+  //         ease: "Power3.easeOut"
+  //       });
+  //     }
+  //     lastTextCursor.current = isTC;
+  //   },
+  //   { dependencies: [cursorState], scope: cursr }
+  // );
+
   const baseTheme = useCursorStore(useShallow((l) => l.baseCursorTheme));
   const setBaseCursorTheme = useCursorStore(
     useShallow((l) => l.setBaseCursorTheme)
@@ -246,204 +302,199 @@ export default function RP_Cursor() {
     pageIsTransitioning
   ]);
 
-  useEffect(() => {
-    return (
-      rafRem("cursor"),
-      isEnabled &&
-        rafAdd({
-          key: "cursor",
-          callback: raf
-        }),
-      () => {
-        rafRem("cursor");
-      }
-    );
-  }, [isEnabled, rafAdd, raf, rafRem]);
-  useEffect(() => {
-    Unsub.current && Unsub.current();
-    Unsub.current = subscribe(
-      (state) => state.mouseCoordinates,
-      (l) => {
-        ((mouseCoordinates.current.x = l.x),
-          (mouseCoordinates.current.y = l.y));
-        l.x === 0 || l.y === 0 || isEnabled || (setIsEnabled(!0), raf());
-      },
-      {
-        fireImmediately: true
-      }
-    );
-    return () => {
-      Unsub.current && Unsub.current();
-    };
-  }, [isEnabled, subscribe, raf]);
   const [textMarq, setTextMarq] = useState(false);
   useEffect(() => {
     setTextMarq(Boolean(cursorState) && isTextCursor && marquee);
     setDirection((r) => (r === "ltr" ? "rtl" : "ltr"));
   }, [marquee, cursorState, isTextCursor]);
+
   return (
-    <span
+    <m.span
       className={cn("cursor rp__cursor", {
         text__cursor: isTextCursor,
         "show_cursor cursor-none": isEnabled
       })}
       style={{
-        cursor: "none"
+        x: cursorXSpring,
+        y: cursorYSpring,
+        translateX: "-50%",
+        translateY: "-50%"
       }}
       data-theme={cursorTheme}
       data-state={cursorState || "null"}
       ref={cursr}
       aria-hidden={!0}
     >
-      <span
-        ref={domEl}
-        className={cn(
-          "cursor__text-container cursor-none transition-[background-color] duration-100",
-          {
-            "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] backdrop-blur-[4px] perspective-[1200px]":
-              isTextCursor,
-            "rounded-full bg-transparent": !isTextCursor
-          }
-        )}
-        data-text={isTextCursor}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {isTextCursor &&
-            (textMarq ? (
+      <AnimatePresence mode="sync" propagate={true} initial={true}>
+        {!isEnabled ? (
+          <></>
+        ) : (
+          <>
+            {(isTextCursor && (
               <m.span
-                data-themed="color, background-color"
+                key={"wrap"}
                 className={cn(
-                  "cursor__text-caption cursor-none text-[1.2rem] font-bold text-[oklch(var(--n-s-fg)/1)]",
-                  Dots.className
+                  "pointer-events-none flex shrink-0 cursor-none flex-col items-center justify-center overflow-hidden outline-none",
+                  "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] backdrop-blur-[4px] perspective-[1200px]"
                 )}
-                key={cursorState}
-                data-theme={cursorTheme}
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: 1,
-                  transition: {
-                    type: "tween",
-                    duration: 0.225,
-                    ease: [0.55, 0.055, 0.675, 0.19],
-                    delay: 0.15
-                  }
-                }}
-                exit={{
-                  opacity: 0,
-                  transition: {
-                    type: "tween",
-                    duration: 0.25,
-                    ease: [0.55, 0.055, 0.675, 0.19]
-                  }
-                }}
-                style={{
-                  overflow: "hidden",
-                  width: "100%",
-                  height: "100%"
-                }}
+                style={{ width: containerWidth, height: containerHeight }}
+                variants={textCursorVariants}
+                initial="hidden"
+                animate={"animate"}
+                exit="hidden"
               >
                 <m.span
-                  className={cn(
-                    "absolute flex h-full items-center justify-start text-nowrap whitespace-nowrap will-change-transform",
-                    Dots.className,
-                    direction === "ltr"
-                      ? "marquee-horizontal-ltr"
-                      : "marquee-horizontal-rtl"
-                  )}
+                  data-themed="color, background-color"
+                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-[1] font-bold tracking-[0.05rem] whitespace-nowrap text-[oklch(var(--n-s-fg)/1)] mix-blend-difference"
+                  key={cursorState}
+                  style={{
+                    fontFeatureSettings: "normal",
+                    fontVariationSettings: "normal"
+                  }}
+                  data-theme={cursorTheme}
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: 1,
+                    transition: {
+                      type: "tween",
+                      duration: 0.225,
+                      ease: [0.55, 0.055, 0.675, 0.19],
+                      delay: 0.15
+                    }
+                  }}
+                  exit={{
+                    opacity: 0,
+                    transition: {
+                      type: "tween",
+                      duration: 0.25,
+                      ease: [0.55, 0.055, 0.675, 0.19]
+                    }
+                  }}
                 >
-                  {[...Array(mqArr)].map((_, idex) => (
-                    <m.span
-                      initial={{
-                        opacity: 0
-                      }}
-                      animate={{
-                        opacity: 1,
-                        transition: {
-                          type: "tween",
-                          duration: 0.225,
-                          ease: [0.55, 0.055, 0.675, 0.19],
-                          delay: 0.15
-                        }
-                      }}
-                      exit={{
-                        opacity: 0,
-                        transition: {
-                          type: "tween",
-                          duration: 0.25
-                        }
-                      }}
-                      key={
-                        (cursorState ?? "") +
-                        ((Math.random() * 133) % (idex + 1))
-                      }
-                      className={cn(
-                        "mr-[12px] inline-block flex-[0_0_auto] text-[1.2rem] font-bold uppercase",
-                        Dots.className
-                      )}
-                    >
-                      {cursorState}
-                    </m.span>
-                  ))}
+                  {textMarq ? (
+                    <Marquee caption={cursorState || ""} />
+                  ) : (
+                    cursorState || <></>
+                  )}
                 </m.span>
               </m.span>
-            ) : (
-              <m.span
-                data-themed="color, background-color"
-                className="cursor__text-caption cursor-none font-dots text-[1.2rem] font-bold text-[oklch(var(--n-s-fg)/1)] mix-blend-exclusion"
-                key={cursorState}
-                data-theme={cursorTheme}
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: 1,
-                  transition: {
-                    type: "tween",
-                    duration: 0.225,
-                    ease: [0.55, 0.055, 0.675, 0.19],
-                    delay: 0.15
-                  }
-                }}
-                exit={{
-                  opacity: 0,
-                  transition: {
-                    type: "tween",
-                    duration: 0.25,
-                    ease: [0.55, 0.055, 0.675, 0.19]
-                  }
-                }}
+            )) || (
+              <m.svg
+                key={"not_text"}
+                viewBox="0 0 100 100"
+                style={{ backgroundColor: "transparent" }}
+                className="absolute top-0 left-0 z-[999] h-full w-full cursor-none"
               >
-                {cursorState && <Fragment>{cursorState}</Fragment>}
-              </m.span>
-            ))}
-        </AnimatePresence>
-      </span>
-
-      <svg
-        viewBox="0 0 100 100"
-        style={{ backgroundColor: "transparent" }}
-        className="cursor_svg z-[999] cursor-none"
-      >
-        <circle
-          ref={oCircle}
-          className="inline stroke-[oklch(var(--n-s-btn)/1)] data-focus:stroke-rouge-400!"
-          cx={50}
-          cy={50}
-          r={0}
-          strokeWidth={1}
-          fill="transparent"
-          {...(cursorState === "FOCUS" && { "data-focus": "" })}
-          data-themed="stroke"
-        />
-        <circle
-          ref={iCircle}
-          className="inline fill-[oklch(var(--n-s-btn)/1)]"
-          {...(cursorState === "FOCUS" && { "data-focus": "" })}
-          cx={50}
-          cy={50}
-          r={0}
-          strokeWidth={0}
-          data-themed="fill"
-        />
-      </svg>
-    </span>
+                <m.circle
+                  ref={oCircle}
+                  className="inline bg-transparent fill-transparent stroke-[oklch(var(--n-s-btn)/1)] transition-[stroke] duration-150 ease-out-power3 data-[focus]:stroke-rouge-400"
+                  cx={50}
+                  cy={50}
+                  r={outerRadius}
+                  strokeWidth={1}
+                  {...(cursorState === "FOCUS" && { "data-focus": true })}
+                  variants={outerVariants}
+                  initial={"hidden"}
+                  animate={circleVariant}
+                  style={{ stroke: strokeColor }}
+                  exit={{
+                    opacity: 0,
+                    visibility: "hidden",
+                    scale: 0,
+                    transition: {
+                      type: "tween",
+                      delay: 0.1,
+                      duration: 0.2,
+                      ease: EASING.power3.out
+                    }
+                  }}
+                  fill="transparent"
+                />
+                <m.circle
+                  ref={iCircle}
+                  className="inline fill-[oklch(var(--n-s-btn)/1)] stroke-0"
+                  cx={50}
+                  cy={50}
+                  variants={innerVariants}
+                  initial={"hidden"}
+                  animate={circleVariant}
+                  exit={"hidden"}
+                  r={innerRadius}
+                  strokeWidth={0}
+                  data-themed="fill"
+                />
+              </m.svg>
+            )}
+          </>
+        )}
+      </AnimatePresence>
+    </m.span>
   );
 }
+const Marquee = ({
+  caption,
+
+  reverse = false,
+  className
+}: {
+  caption: string;
+
+  reverse?: boolean;
+  className?: string;
+}) => {
+  const variants: Record<"initial" | "animate" | "exit", Variant> =
+    useMemo(() => {
+      return {
+        initial: {
+          opacity: 0
+        },
+        animate: {
+          opacity: 1,
+          transition: {
+            type: "tween",
+            duration: 0.225,
+            ease: [0.55, 0.055, 0.675, 0.19],
+            delay: 0.15
+          }
+        },
+        exit: {
+          opacity: 0,
+          transition: {
+            type: "tween",
+            duration: 0.25
+          }
+        }
+      };
+    }, []);
+  const mqArr = useMemo(() => {
+    return [...Array(Math.ceil(120 / (caption.length + 1)))];
+  }, [caption]);
+  return (
+    <m.span
+      className={cn(
+        "absolute flex h-full items-center justify-start text-nowrap whitespace-nowrap will-change-transform",
+        !reverse ? "marquee-horizontal-ltr" : "marquee-horizontal-rtl",
+        className
+      )}
+    >
+      {mqArr.map((_, idex) => (
+        <m.span
+          key={idex + caption}
+          className={cn(
+            "mr-[12px] inline-block flex-[0_0_auto] font-dots text-[1.2rem] font-bold uppercase"
+          )}
+          variants={variants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{
+            type: "tween",
+            ease: [0.55, 0.055, 0.675, 0.19]
+          }}
+        >
+          {caption}
+        </m.span>
+      ))}
+    </m.span>
+  );
+};

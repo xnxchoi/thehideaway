@@ -3,13 +3,10 @@
 import { useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { useRef } from "react";
-import Lottie from "react-lottie-player";
-import * as darkAnimation from "./lottie-dark.json";
-import * as lightAnimation from "./lottie-light.json";
-import { useEffect, useState } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { gsap } from "gsap";
+import { useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/shallow";
 
 export const LoaderLottie = () => {
   const theme = useTheme((r) => r.theme);
@@ -25,7 +22,9 @@ export const LoaderLottie = () => {
         : "/assets/lottie-light.lottie"
     );
   }, [theme]);
-  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
+  const pageIsTransitioning = useRPStore(
+    useShallow((l) => l.pageIsTransitioning)
+  );
   const divRef = useRef<HTMLDivElement>(null!);
 
   useGSAP(

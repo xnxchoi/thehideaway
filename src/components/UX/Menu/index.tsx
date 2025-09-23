@@ -29,6 +29,7 @@ import { useGSAP } from "@gsap/react";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import * as m from "motion/react-m";
 import { useTheme } from "@/providers/Theme";
+import { useShallow } from "zustand/shallow";
 
 const B = "navWindow";
 export const getNavId = () => B;
@@ -98,16 +99,18 @@ export const RP_Menu = () => {
   const navigationSettings = useRPStore((l) => l.globalSettings.navigation);
 
   const setNavIsOpenDebounced = useRPStore((l) => l.setNavIsOpenDebounced);
-  const menuPageItemKeys = useRPStore((l) => l.navigationPageItemKeys);
+  const menuPageItemKeys = useRPStore(
+    useShallow((l) => l.navigationPageItemKeys)
+  );
   const lastAdjustRealTime = useRef(DateTime.now().year);
-  const currentPageKey = useVoyageur((l) => l.pageKey);
+  const currentPageKey = useVoyageur(useShallow((l) => l.pageKey));
   const setNavItemHovered = useRPStore((l) => l.setNavigationPageItemHovered);
   const setNavItemSelected = useRPStore((l) => l.setNavigationPageItemSelected);
   const focusedTO = useRef<ReturnType<typeof setTimeout>>(null!);
   const menuWrap = useRef<HTMLDivElement>(null!);
   useEffect(() => {
     setNavOpeningElement(navWindow.current);
-  }, []);
+  }, [setNavOpeningElement]);
   const handlePagePreviewMouseEnter = (pagekey: string | -1) => {
     currentPageKey !== pagekey && setNavItemHovered(pagekey);
   };
@@ -116,8 +119,12 @@ export const RP_Menu = () => {
   };
   const serverurl = getServerSideURL();
 
-  const hoveredNavItem = useRPStore((l) => l.navigationPageItemHovered);
-  const activeNavItem = useRPStore((l) => l.navigationPageItemSelected);
+  const hoveredNavItem = useRPStore(
+    useShallow((l) => l.navigationPageItemHovered)
+  );
+  const activeNavItem = useRPStore(
+    useShallow((l) => l.navigationPageItemSelected)
+  );
   const activeTO = useRef<ReturnType<typeof setTimeout>>(null!);
   useEffect(() => {
     if (hoveredNavItem === -1) {
@@ -128,7 +135,7 @@ export const RP_Menu = () => {
         }, 450);
       }
     }
-  }, [hoveredNavItem]);
+  }, [currentPageKey, hoveredNavItem]);
   const menuToPageCallback = useCallback(
     (pagekey: string) => {
       (setTransitionOutType("FROM_MENU"),
@@ -141,11 +148,11 @@ export const RP_Menu = () => {
       }, 6000);
     },
     [
-      setCanInteract,
-      setNavIsOpen,
+      setTransitionOutType,
+      setNavItemSelected,
       setNavigationPageIsTransitioning,
-      setActiveIndex,
-      setTransitionOutType
+      setCanInteract,
+      setNavIsOpen
     ]
   );
   const handlePagePreviewClick = (pageKey: string) => {
@@ -247,9 +254,11 @@ export const RP_Menu = () => {
           }, 400);
         }
       });
-  }, [isHome, isMobile]);
-  const links = useRPStore((r) => r.navigationPageItemData);
-  const previewMedia = useRPStore((r) => r.navigationPreviewMediaByKey);
+  }, [isHome, isMobile, menuPageItemKeys]);
+  const links = useRPStore(useShallow((r) => r.navigationPageItemData));
+  const previewMedia = useRPStore(
+    useShallow((r) => r.navigationPreviewMediaByKey)
+  );
 
   const toggleMenuCallback = useCallback(
     (
@@ -403,7 +412,7 @@ export const RP_Menu = () => {
         }
       });
     },
-    [isMobile, setNavIsTransitioning]
+    [isMobile, setNavIsTransitioning, isAndroid]
   );
 
   useEffect(() => {
@@ -456,10 +465,10 @@ export const RP_Menu = () => {
 
   const onMouseEnter = useCallback(() => {
     setCursorTheme("dark");
-  }, []);
+  }, [setCursorTheme]);
   const onMouseLeave = useCallback(() => {
     resetCursorTheme();
-  }, []);
+  }, [resetCursorTheme]);
   return (
     <>
       <div
@@ -647,7 +656,7 @@ const CornerStone = (
   const [de, setDe] = useState<string>("");
   useEffect(() => {
     setDe(Corner[isMobile ? "mobile" : "desktop"][side as CornerSide]);
-  }, []);
+  }, [isMobile, side]);
 
   useEffect(() => {
     gsap.to(`#cs_${side}`, {
@@ -662,7 +671,7 @@ const CornerStone = (
       duration: 0.4,
       autoAlpha: 1
     });
-  }, [isMobile]);
+  }, [isMobile, side]);
   const size = isMobile ? "2rem" : "2.2rem";
   return (
     <>

@@ -2,7 +2,7 @@ import type { GlobalConfig } from "payload";
 
 import { link } from "@/payload/fields/link";
 
-import { revalidateHeader } from "@components/Header/hooks/revalidateHeader";
+import { revalidateHeader } from "@/payload/components/Header/hooks/revalidateHeader";
 import { uuidv7 } from "uuidv7";
 
 export const Header: GlobalConfig = {

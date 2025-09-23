@@ -7,6 +7,7 @@ import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import { ReactNode } from "react";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
 import { ScrollIndicator } from "@/components/UX/ScrollIndicator";
+import { RadioProvider } from "@/providers/RadioProvider";
 
 export default async function RootLayout({
   children
@@ -18,7 +19,9 @@ export default async function RootLayout({
   return (
     <>
       <Layout>{children}</Layout>
-      <ScrollIndicator />
+      <RadioProvider>
+        <ScrollIndicator />
+      </RadioProvider>
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
 import { CollectionBeforeChangeHook, CollectionConfig, Where } from "payload";
 import { Citation } from "@/payload-types";
-import { citationHandler } from "@collections/Citations/endpoints";
+import { citationHandler } from "@/payload/collections/Citations/endpoints";
 import { filterByCurrentUser } from "../helpers";
 import { hashContent } from "@/payload/fields/slug/HashId/hasher";
 export const Citations: CollectionConfig = {

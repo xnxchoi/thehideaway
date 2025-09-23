@@ -1,11 +1,11 @@
-import { queryUserBySlug } from "@collections/Users/operations/queryMemberBySlug";
-import { PayloadRedirects } from "@components/PayloadRedirects";
+import { queryUserBySlug } from "@/payload/collections/Users/operations/queryMemberBySlug";
+import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ProfileSlide } from "@/components/layouts/Profile/ProfileSlide";
 import React from "react";
 import { redirect } from "next/navigation";
-import { createRichtext } from "@collections/Users/helpers/createRichtext";
+import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";
 import type { Metadata } from "next";
 import { generateMeta } from "@/utilities/generateMeta";
 import { randomNumber } from "@/utilities/randomNumber";

@@ -11,5 +11,19 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "explorer.autoReveal": "focusNoScroll",
     "git.ignoreLimitWarning": true,
-  },
+    "sqltools.connections": [
+      {
+        "ssh": "Disabled",
+        "previewLimit": 50,
+        "server": "localhost",
+        "driver": "PostgreSQL",
+        "name": "hideaway",
+        "connectString": "postgresql://postgres:H1dden!@localhost:5432/theestate"
+      }
+    ],
+    "workbench.settings.editor": "ui",
+    "workbench.settings.openDefaultKeybindings": true,
+    "editor.wordBasedSuggestions": "currentDocument",
+    "typescript.suggest.completeFunctionCalls": true
+  }
 }

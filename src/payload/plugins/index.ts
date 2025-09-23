@@ -33,10 +33,7 @@ import { Media } from "../collections/Media";
 import { UserMedia } from "../collections/UserMedia";
 import { userFieldOrganizerPlugin } from "./userField";
 import { imageSearchPlugin } from "@payload-bites/image-search";
-import { searchPlugin } from "@payloadcms/plugin-search";
-import { searchFields } from "@/payload/search/fieldOverrides";
-import { beforeSyncWithSearch } from "@/payload/search/beforeSync";
-import { commentsPlugin } from "@collections/Comments";
+import { commentsPlugin } from "@/payload/collections/Comments";
 import { LikesPlugin } from "./Likes";
 
 const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
@@ -115,7 +112,6 @@ export type SiteMapCollectionSlug = Extract<
   | "tracks"
   | "organizations"
   | "tags"
-  | "search"
 >;
 export type SiteMapCollection = DataFromCollectionSlug<SiteMapCollectionSlug>;
 
@@ -137,7 +133,6 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
     playlists: "/rp.fm/mix/:slug",
     categories: "/categories/:slug",
     tracks: "/rp.fm/album/:albumSlug?track=:trackSlug",
-    search: "/surf/:slug",
     organizations: "/clubs/:slug",
     tags: "/tagged/:slug"
   };
@@ -159,8 +154,6 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
       return `${url}/categories/${doc.slug}`;
     case "tracks":
       return `${url}/rp.fm/album/${(doc as Track)?.albumSlug}?track=${doc.slug}`;
-    case "search":
-      return `${url}/surf/${doc.slug}`;
     case "organizations":
       return `${url}/clubs/${doc.slug}`;
     case "tags":
@@ -244,25 +237,6 @@ export const plugins: Plugin[] = [
     generateURL
   }),
 
-  searchPlugin({
-    collections: [
-      "posts",
-      "delta",
-      "albums",
-      "categories",
-      "tags",
-      // "users", // Temporarily excluded to prevent sync errors during user creation
-      "playlists",
-      "tracks",
-      "pages"
-    ],
-    beforeSync: beforeSyncWithSearch,
-    searchOverrides: {
-      fields: ({ defaultFields }) => {
-        return [...searchFields, ...defaultFields];
-      }
-    }
-  }),
   betterAuthPlugin(betterAuthPluginOptions),
   imageSearchPlugin({
     // providerAccess: ({ req }) => {

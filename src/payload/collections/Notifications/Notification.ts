@@ -1,8 +1,63 @@
-import { CollectionConfig } from "payload";
 import { link } from "@/payload/fields/link";
+import { fetchMyNotifications } from "@/payload/collections/Users/endpoints/fetchMyNotifications";
+import { Notification } from "@payload-types";
 import { DateTime } from "luxon";
-import { fetchMyNotifications } from "@collections/Users/endpoints/fetchMyNotifications";
+import { CollectionConfig, type CollectionBeforeValidateHook } from "payload";
 import { hideIfNotAdmin } from "../helpers";
+import { DismissNotification } from "./endpoints/dismiss/dismiss";
+import { ReadAllNotifications } from "./endpoints/read-all/readAll";
+import { ReadNotification } from "./endpoints/read/read";
+
+const fillDataHook: CollectionBeforeValidateHook<Notification> = async ({
+  data,
+  operation,
+  originalDoc,
+  req
+}) => {
+  if (operation !== "update") return data;
+  if (!data) return data;
+  if (!originalDoc) {
+    req.payload.logger.error(
+      "Original document not found for notification:",
+      data
+    );
+    return data;
+  }
+  const ogDocRead = originalDoc.read;
+  const ogDocDismissed = originalDoc.dismissed;
+  const toPass: Notification = {
+    ...originalDoc,
+    ...data
+  };
+  if ("read" in data) {
+    if (data.read !== ogDocRead && data.read) {
+      toPass.readAt = data.readAt || DateTime.now().toISO();
+    } else {
+      toPass.readAt = originalDoc.readAt;
+      toPass.read = ogDocRead;
+    }
+  }
+  if ("dismissed" in data) {
+    if (data.dismissed !== ogDocDismissed) {
+      if (data.dismissed) {
+        toPass.read = true;
+        toPass.readAt =
+          data.readAt || originalDoc.readAt || DateTime.now().toISO();
+        toPass.dismissed = true;
+      } else {
+        toPass.dismissed = false;
+      }
+    } else {
+      toPass.dismissed = ogDocDismissed;
+    }
+  }
+  toPass.status = toPass.dismissed
+    ? "dismissed"
+    : toPass.read
+      ? "read"
+      : "unread";
+  return toPass;
+};
 
 /**
  * Notifications Collection Configuration
@@ -19,6 +74,13 @@ export const Notifications: CollectionConfig = {
 
     defaultColumns: ["recipient", "type", "status", "createdAt"],
     description: "User notifications for system events and social interactions"
+  },
+  forceSelect: {
+    read: true,
+    status: true,
+    readAt: true,
+    dismissed: true,
+    recipient: true
   },
   defaultPopulate: {
     recipient: true,
@@ -81,10 +143,12 @@ export const Notifications: CollectionConfig = {
         "users",
         "profile",
         "bookmarks",
-        "follows"
+        "follows",
+        "responses"
       ],
-      hasMany: false,
 
+      hasMany: false,
+      index: true,
       maxDepth: 0
     },
     {
@@ -253,6 +317,7 @@ export const Notifications: CollectionConfig = {
   ],
   timestamps: true, // Automatically adds createdAt and updatedAt
   hooks: {
+    beforeValidate: [fillDataHook],
     beforeChange: [
       ({ data, operation, originalDoc }) => {
         // Set readAt timestamp when status changes to 'read'
@@ -283,12 +348,29 @@ export const Notifications: CollectionConfig = {
         }
       }
     ]
+    // afterChange: [afterNotificationChange],
+    // afterDelete: [afterNotificationDelete]
   },
   endpoints: [
     {
       path: "/me",
       method: "get",
       handler: fetchMyNotifications
+    },
+    {
+      path: "/:id/read",
+      method: "patch",
+      handler: ReadNotification
+    },
+    {
+      path: "/:id/dismiss",
+      method: "patch",
+      handler: DismissNotification
+    },
+    {
+      path: "/read-all",
+      method: "patch",
+      handler: ReadAllNotifications
     }
   ]
 };
