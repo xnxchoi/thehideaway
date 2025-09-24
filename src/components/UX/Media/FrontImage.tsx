@@ -5,10 +5,12 @@ import { ImageMedia } from "@/components/UX/Media/ImageMedia";
 import { useEffect, useState } from "react";
 import { useCursorStore } from "@/providers/RP_Pro";
 import { getClientSideURL } from "@/utilities/getURL";
-import type { Props as MediaProps } from "@/components/UX/Media/types";
+import type { MediaProps as MediaProps } from "@/components/UX/Media/types";
 import { useTheme } from "@/providers/Theme";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "../../ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { nanoid } from "nanoid";
 
 export type FrontImageProps = MediaProps & {
   className?: string;
@@ -22,9 +24,7 @@ export const FrontImage = (props: FrontImageProps) => {
   const setCursorTheme = useCursorStore((store) => store.setCursorTheme);
   const resetCursorTheme = useCursorStore((store) => store.resetCursorTheme);
   const theme = useTheme((store) => store.theme);
-  const [imageTheme, setImageTheme] = useState<"light" | "dark" | string>(
-    "light"
-  );
+  const [imageTheme, setImageTheme] = useState<"light" | "dark">("light");
   useEffect(() => {
     if (!image) return;
     if (typeof image === "string") {
@@ -92,3 +92,14 @@ export const FrontImage = (props: FrontImageProps) => {
     </div>
   );
 };
+
+function QueriedImage(props: FrontImageProps) {
+  const {
+    resource: image,
+    imgClassName,
+    className,
+    src,
+    isUser,
+    ...rest
+  } = props;
+}
