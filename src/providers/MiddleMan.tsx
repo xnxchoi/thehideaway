@@ -34,20 +34,28 @@ const MobileContext = createContext<{ isMobile: boolean; isTouch: boolean }>({
 const MobileProvider = ({ children }: { children: React.ReactNode }) => {
   const [isTouch, setIsTouch] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const MOBILE_BREAKPOINT = 968;
+  const MOBILE_BREAKPOINT = 1024;
   const setViewportDimensions = useRPStore((r) => r.setViewportDimensions);
   const setSnapPoints = useRPStore((r) => r.setSnapPoints);
   const frames = useMenu((r) => r.frames);
   const { left, bottom } = frames;
+
   const viewportWidth = useRPStore((r) => r.viewportWidth);
   const viewportHeight = useRPStore((r) => r.viewportHeight);
-  const lastMobile = useRef(isMobile);
   const onResize = useCallback(() => {
     setViewportDimensions({
       width: window.innerWidth,
       height: window.innerHeight
     });
   }, [setViewportDimensions]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setSnapPoints([viewportWidth * 0.76 + left + "px", 1]);
+    } else {
+      setSnapPoints([viewportHeight * 0.25 + bottom + "px", 1]);
+    }
+  }, [bottom, isMobile, viewportWidth, viewportHeight, left, setSnapPoints]);
   useEffect(() => {
     window.addEventListener("resize", onResize);
     onResize();
@@ -55,13 +63,6 @@ const MobileProvider = ({ children }: { children: React.ReactNode }) => {
       window.removeEventListener("resize", onResize);
     };
   }, [onResize]);
-  useEffect(() => {
-    if (!isMobile) {
-      setSnapPoints([viewportWidth * 0.76 + left + "px", 1]);
-    } else {
-      setSnapPoints([viewportHeight * 0.26 + bottom + "px", 1]);
-    }
-  }, [left, viewportWidth, isMobile, viewportHeight, bottom, setSnapPoints]);
 
   // useEffect(() => {
   //   if (viewportWidth > MOBILE_BREAKPOINT) {
@@ -86,7 +87,7 @@ const MobileProvider = ({ children }: { children: React.ReactNode }) => {
     };
     mql.addEventListener("change", onChange);
     touchQ.addEventListener("change", onTouchChange);
-    setIsTouch(window.innerWidth < MOBILE_BREAKPOINT);
+
     return () => {
       mql.removeEventListener("change", onChange);
       touchQ.removeEventListener("change", onTouchChange);
@@ -132,7 +133,7 @@ export const MiddleMan = ({ children }: { children: React.ReactNode }) => {
       }
       saveTheme(implicitPreference);
     }
-  }, []);
+  }, [saveTheme, setLocalStorageEnabled]);
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.classList.toggle("dark", theme === "dark");

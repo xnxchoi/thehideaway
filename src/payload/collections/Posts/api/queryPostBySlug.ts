@@ -10,7 +10,7 @@ import {
   AuthorSingle,
   MediaReq,
   SingleArticle
-} from "../post-types";
+} from "../../../../types/collections/posts";
 import { authClient } from "@/lib/auth/client";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { getPostBookMarks } from "./getPostBookmarks";
@@ -20,10 +20,7 @@ import {
   queryOverview,
   queryPostOverview
 } from "./queryPostOverview";
-import {
-  CatOverview,
-  TagOverview
-} from "@/payload/collections/Deltas/delta-types";
+import { CatOverview, TagOverview } from "@/types/collections/delta";
 import {
   singlePostSelect,
   SinglePostKeys,
@@ -141,7 +138,7 @@ export const queryAuthorsPost = cache(
       bookmarks: [] as string[],
       publishedAt: post.publishedAt,
       image: image,
-      tags: post?.tags ? (post.tags as TagOverview[]) : [],
+      tagged: post?.tagged ? (post.tagged as TagOverview[]) : [],
       bookmarksCount: 0,
       slug: post.slug,
       category: post.category as { title: string; id: string; slug: string },
@@ -263,7 +260,7 @@ export const queryPostBySlug = async ({
     publishedAt: true,
     locked: true,
     updatedAt: true,
-    tags: true,
+    tagged: true,
     createdAt: true,
     image: true
   };
@@ -292,7 +289,7 @@ export const queryPostBySlug = async ({
     })) as {
     docs: Array<
       Pick<Post, Exclude<SinglePostKeys, "tags">> & {
-        tags: Array<TagOverview> | undefined | null;
+        tagged: Array<TagOverview> | undefined | null;
       }
     >;
   };
@@ -370,7 +367,7 @@ export const queryPostBySlug = async ({
     bookmarks: [] as string[],
     publishedAt: post.publishedAt,
     image: image,
-    tags: post.tags || [],
+    tagged: post.tagged || [],
     bookmarksCount: 0,
     slug: post.slug,
     category: post.category as { title: string; id: string; slug: string },
@@ -616,7 +613,7 @@ export const queryRelatedPosts = cache(
         r
           ? {
               ...r,
-              tags: (r.tags || []) as TagOverview[],
+              tagged: (r.tagged || []) as TagOverview[],
               publishedAt: r.publishedAt as string,
               author: r.author as string,
               locked: r.locked || false,
@@ -658,7 +655,7 @@ export const queryRelatedPosts = cache(
           r
             ? {
                 ...r,
-                tags: (r.tags || []) as TagOverview[],
+                tagged: (r.tagged || []) as TagOverview[],
                 publishedAt: r.publishedAt as string,
                 author: r.author as string,
                 locked: r.locked || false,
@@ -756,7 +753,7 @@ export const queryRelatedPosts = cache(
         r
           ? {
               ...r,
-              tags: (r.tags || []) as TagOverview[],
+              tagged: (r.tagged || []) as TagOverview[],
               publishedAt: r.publishedAt as string,
               author: r.author as string,
               locked: r.locked || false,
@@ -798,7 +795,7 @@ export const queryRelatedPosts = cache(
           r
             ? {
                 ...r,
-                tags: (r.tags || []) as TagOverview[],
+                tagged: (r.tagged || []) as TagOverview[],
                 publishedAt: r.publishedAt as string,
                 author: r.author as string,
                 locked: r.locked || false,

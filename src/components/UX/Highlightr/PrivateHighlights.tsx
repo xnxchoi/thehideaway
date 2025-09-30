@@ -1,7 +1,6 @@
 "use client";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
-import { HighlightMenuProps } from "@/components/UX/Highlightr/index";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
@@ -27,7 +26,6 @@ import { useTranslations } from "next-intl";
 import {
   ChangeEventHandler,
   createContext,
-  MouseEventHandler,
   MouseEvent,
   ReactNode,
   useCallback,
@@ -39,12 +37,14 @@ import {
   useState
 } from "react";
 import { Dialog, DialogContent, DialogHeading } from "./floatDialog";
-import { useHighlighter } from "./provider";
-import { useRanger } from "./RangerProvider";
-import { SignInCard, UserBar } from "./sideBarProvider";
-import "./styles/_privateNote.scss";
-import { HighlightedRange, RangeSaveParams } from "./types";
+import { useHighlighter } from "./providers/HighlighterProvider";
+import { useRanger } from "./providers/RangerProvider";
+
+import { useCitations } from "./providers/CitationProvider";
 import { useShallow } from "zustand/shallow";
+import { SignInCard, UserBar } from "./providers/sideBarProvider";
+import "./styles/_privateNote.scss";
+import { HighlightedRange } from "./types";
 
 export type PrivateHighlights = {
   memo: string;
@@ -64,21 +64,16 @@ export type PrivateHighlights = {
   floatingStyles: UseFloatingReturn["floatingStyles"];
 };
 export const PrivateMemoContext = createContext<PrivateHighlights>(null!);
-export const PrivateMemoizer = (props: {
-  createCallback: (
-    prop: Pick<RangeSaveParams, "private" | "memo">
-  ) => Promise<HighlightedRange>;
-  saveCallback: (saveParams: HighlightedRange) => Promise<HighlightedRange>;
-  children: ReactNode;
-}) => {
-  const { saveCallback, createCallback, children } = props;
+export const PrivateMemoizer = (props: { children: ReactNode }) => {
+  const { children } = props;
+
   const [memo, setMemo] = useState<string>("");
   const [open, setOpen] = useState(false);
   const toggleOpen = () => {
     setOpen(!open);
   };
   const [isOpen, setIsOpen] = useState(false);
-  const t = useTranslations();
+
   const ctx = useFloating({
     placement: "right-start",
     open: isOpen,
@@ -96,23 +91,12 @@ export const PrivateMemoizer = (props: {
   const role = useRole(context.context);
   const interactions = useInteractions([click, dismiss, role]);
   const [view, setView] = useState<"edit" | "view">("view");
-  const target = useHighlighter(useShallow((r) => r.target));
-  const postId = useMemo(() => target?.value, [target]);
   const userId = useRPSession(useShallow((r) => r.id as null | string));
-  const highlights = useHighlighter(useShallow((r) => r.highlights));
   const userName = useRPSession(useShallow((r) => r.name));
   const userImage = useRPSession(useShallow((r) => r.image));
   const userD = useRPSession(useShallow((r) => r.displayUsername));
   const userS = useRPSession(useShallow((r) => r.slug));
   const [saving, setSaving] = useState(false);
-
-  const focusedHighlight = useHighlighter(
-    useShallow((r) => r.focusedHighlight)
-  );
-  const fc = useRef(focusedHighlight);
-  useEffect(() => {
-    fc.current = focusedHighlight;
-  }, [focusedHighlight]);
 
   return (
     <PrivateMemoContext.Provider
@@ -169,13 +153,7 @@ export const PrivateMemoizer = (props: {
               </div>
             </div>
             {userId ? (
-              (view === "edit" && userId && (
-                <PrivateNoteEditor
-                  user={userId}
-                  createCallback={createCallback}
-                  handleUpdate={saveCallback}
-                />
-              )) || (
+              (view === "edit" && userId && <PrivateNoteEditor />) || (
                 <div className={"block p-[0_20px]"}>
                   <div className={"block p-[12px_0]"}>
                     <div className={"mb-[12px] flex items-center"}>
@@ -217,18 +195,20 @@ export const PrivateMemoizer = (props: {
   );
 };
 const PrivateNoteEditor = ({
-  createCallback,
-  handleUpdate,
-  user,
   initialValue = "",
   savedSelection
 }: {
-  user: string;
   initialValue?: string;
   savedSelection?: rangy.savedSelection | null;
-} & Pick<HighlightMenuProps, "createCallback" | "handleUpdate">) => {
+}) => {
   const fc = useHighlighter((r) => r.focusedHighlight);
+  const createCallback = useCitations((r) => r.create);
+  const handleUpdate = useCitations((r) => r.update);
   const [memoValue, setMemoValue] = useState(initialValue);
+  const memoRef = useRef(memoValue);
+  useEffect(() => {
+    memoRef.current = memoValue;
+  }, [memoValue]);
   const textAreaId = useId();
   const {
     value,
@@ -237,10 +217,19 @@ const PrivateNoteEditor = ({
     maxLength: limit
   } = useCharacterLimit({ maxLength: 200, initialValue });
   const ranger = useRanger((r) => r.ranger);
+  const container = useRanger(useShallow((r) => r.targetContainer));
   const lastValue = useRef("");
   const t = useTranslations();
   const [saving, setSaving] = useState(false);
   const setSavingState = usePrivateNote((r) => r.setSaving);
+  const currentFocus = useRef(fc);
+  const savedRef = useRef(savedSelection);
+  useEffect(() => {
+    currentFocus.current = fc;
+  }, [fc]);
+  useEffect(() => {
+    savedRef.current = savedSelection;
+  }, [savedSelection]);
   useEffect(() => {
     setSavingState(saving);
   }, [saving, setSavingState]);
@@ -264,18 +253,23 @@ const PrivateNoteEditor = ({
   const onSave = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation();
-      if (memoValue.length < 1) {
+      const sv = savedRef.current;
+      const mem = memoRef.current;
+      if (mem.length < 1) {
         return setSaving(false);
       }
-      if (!fc) {
-        if (savedSelection) {
+      if (!currentFocus.current) {
+        if (sv) {
           setSaving(true);
-          ranger.restoreSelection(savedSelection);
-          createCallback({ private: true, memo: memoValue })
+          ranger.restoreSelection(sv);
+          createCallback({
+            params: { private: true, memo: mem },
+            container
+          })
             .then((r) => {
               if (r) {
                 successToast(t("Highlights.saved"));
-                ranger.removeMarkers(savedSelection);
+                ranger.removeMarkers(sv);
               } else {
                 errorToast(t("Highlights.error.save.select"));
               }
@@ -300,8 +294,8 @@ const PrivateNoteEditor = ({
         // 	reference: {equals: focusedHighlight.reference},
         // };
         const body = {
-          ...fc,
-          memo: memoValue,
+          ...currentFocus.current,
+          memo: mem,
           private: true
         } satisfies HighlightedRange;
         handleUpdate(body)
@@ -321,17 +315,7 @@ const PrivateNoteEditor = ({
         setSaving(false);
       }
     },
-    [
-      createCallback,
-      fc,
-      handleUpdate,
-      memoValue,
-      qc,
-      ranger,
-      savedSelection,
-      setOpen,
-      t
-    ]
+    [container, createCallback, handleUpdate, qc, ranger, setOpen, t]
   );
   const cancelBtnClick = useCallback(
     (e: React.MouseEvent) => {

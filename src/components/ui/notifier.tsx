@@ -9,7 +9,7 @@ import { Toaster as Sonner, toast as sonnerToast, ToasterProps } from "sonner";
 import { useShallow } from "zustand/shallow";
 import { useHumanTime } from "../../payload/collections/Deltas/component/useLocaleDate";
 import type { SyncedNotification } from "../../payload/collections/Notifications/hooks/types";
-import type { AuthorOverview } from "../../payload/collections/Posts/post-types";
+import type { AuthorOverview } from "../../types/collections/posts";
 import { useDomCursor } from "../core/cursorWrapper";
 import { Button, Link } from "../UX/Link";
 import { ReferencedLink } from "../UX/Link/referencedLink";

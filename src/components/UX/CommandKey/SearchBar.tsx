@@ -266,7 +266,7 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
             <CommandGroup heading={"Suggestions"}>
               <LinkedCommandItem
                 value="posts"
-                href="/posts"
+                href="/essays"
                 title="Latest Posts"
               >
                 <ReaderIcon />

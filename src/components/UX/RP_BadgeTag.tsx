@@ -1,11 +1,23 @@
-import {ComponentPropsWithoutRef} from 'react'
-import {cn} from '@/lib/utils'
+import { ComponentPropsWithoutRef } from "react";
+import { cn } from "@/lib/utils";
 
-export const RP_BadgeTag = (props: { content: string } & ComponentPropsWithoutRef<'span'>) => {
-	const {content, className, ...rest} = props
-	return <div className="text-[1.1rem]">
-    <span className={cn(
-	    'text-[10px] border-solid border-[1px] border-[oklch(var(--n-s-fg)/1)] text-[oklch(var(--n-s-fg)/1)] inline-block leading-[.95] tracking-[-.01em] text-center uppercase pt-[5px] pl-[9px] pr-[9px] pb-[5px] rounded-[20px] font-medium',
-	    className)} {...rest}>{content}</span>
-	</div>
-}
+export const RP_BadgeTag = (
+  props: { content: string } & {
+    wrapperClassName?: string;
+  } & ComponentPropsWithoutRef<"span">
+) => {
+  const { content, wrapperClassName, className, ...rest } = props;
+  return (
+    <div className={cn("text-[1.1rem]", wrapperClassName)}>
+      <span
+        className={cn(
+          "inline-block rounded-[20px] border-[1px] border-solid border-[oklch(var(--n-s-fg)/1)] pt-[5px] pr-[9px] pb-[5px] pl-[9px] text-center text-[10px] leading-[.95] font-medium tracking-[-.01em] text-[oklch(var(--n-s-fg)/1)] uppercase",
+          className
+        )}
+        {...rest}
+      >
+        {content}
+      </span>
+    </div>
+  );
+};

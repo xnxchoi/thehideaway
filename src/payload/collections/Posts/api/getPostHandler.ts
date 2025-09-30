@@ -9,10 +9,10 @@ import {
   AuthorSingle,
   MediaReq,
   SingleArticle
-} from "../post-types";
+} from "../../../../types/collections/posts";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { singlePostSelect } from "@/payload/collections/Posts/api/queryBase";
-import { TagOverview } from "@/payload/collections/Deltas/delta-types";
+import { TagOverview } from "@/types/collections/delta";
 
 export const getPostHandler = async ({ req }: { req: PayloadRequest }) => {
   const postSlug = req.routeParams?.slug as string | undefined;

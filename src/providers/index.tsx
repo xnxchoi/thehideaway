@@ -20,6 +20,7 @@ import { MiddleMan } from "./MiddleMan";
 import { QueryProvider } from "./QueryProvider";
 import { SessionProvider } from "./Session/providers";
 import { ThemeProvider } from "./Theme";
+import { PortalProvider } from "@/components/UX/Transition/Portaller";
 
 const motion = () => import("./Motion").then((r) => r.default);
 export const Providers: React.FC<{
@@ -36,19 +37,21 @@ export const Providers: React.FC<{
                   <LazyMotion features={motion} strict={true}>
                     <ScrollProvider>
                       <CurProvider>
-                        <TransProvider>
-                          <RafProvider>
-                            <MenuProvider>
-                              <MiddleMan>
-                                <SearchBarProvider>
-                                  <HeaderThemeProvider>
-                                    {children}
-                                  </HeaderThemeProvider>
-                                </SearchBarProvider>
-                              </MiddleMan>
-                            </MenuProvider>
-                          </RafProvider>
-                        </TransProvider>
+                        <PortalProvider>
+                          <TransProvider>
+                            <RafProvider>
+                              <MenuProvider>
+                                <MiddleMan>
+                                  <SearchBarProvider>
+                                    <HeaderThemeProvider>
+                                      {children}
+                                    </HeaderThemeProvider>
+                                  </SearchBarProvider>
+                                </MiddleMan>
+                              </MenuProvider>
+                            </RafProvider>
+                          </TransProvider>
+                        </PortalProvider>
                       </CurProvider>
                     </ScrollProvider>
                   </LazyMotion>

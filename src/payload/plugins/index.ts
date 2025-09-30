@@ -1,7 +1,7 @@
+import { blurDataUrlsPlugin } from "@oversightstudio/blur-data-urls";
 import { importExportPlugin } from "@payloadcms/plugin-import-export";
 import { redirectsPlugin } from "@payloadcms/plugin-redirects";
 import { seoPlugin } from "@payloadcms/plugin-seo";
-import { blurDataUrlsPlugin } from "@oversightstudio/blur-data-urls";
 import type {
   GenerateImage,
   GenerateTitle,
@@ -11,8 +11,8 @@ import type { CollectionSlug, DataFromCollectionSlug, Plugin } from "payload";
 import { getPayload } from "payload";
 import { betterAuthPlugin } from "payload-auth/better-auth";
 
-import { betterAuthPluginOptions } from "@/lib/auth/options";
 import { revalidateRedirects } from "@/hooks/revalidateRedirects";
+import { betterAuthPluginOptions } from "@/lib/auth/options";
 import type {
   Album,
   Category,
@@ -24,17 +24,18 @@ import type {
   Track,
   User
 } from "@/payload-types";
-import { getServerSideURL } from "@/utilities/getURL";
 import { lockerPlugin } from "@/payload/plugins/locker/plugin";
+import { getServerSideURL } from "@/utilities/getURL";
 import config from "@payload-config";
 import { getAssetThumb } from "./getAssetThumb";
 
+import { commentsPlugin } from "@/payload/collections/Comments";
+import { imageSearchPlugin } from "@payload-bites/image-search";
+import { Assets } from "../collections/Assets";
 import { Media } from "../collections/Media";
 import { UserMedia } from "../collections/UserMedia";
-import { userFieldOrganizerPlugin } from "./userField";
-import { imageSearchPlugin } from "@payload-bites/image-search";
-import { commentsPlugin } from "@/payload/collections/Comments";
 import { LikesPlugin } from "./Likes";
+import { userFieldOrganizerPlugin } from "./userField";
 
 const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
   if (doc) {
@@ -125,7 +126,7 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
   }
   const collectionSlug = collectionConfig.slug as CollectionSlug;
   const urlMap: { [x in SiteMapCollectionSlug]: string } = {
-    posts: "/posts/:slug",
+    posts: "/essays/:slug",
     pages: "/",
     delta: "/delta/:slug",
     users: "/users/:slug",
@@ -139,7 +140,7 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
   const docCollection = collectionConfig.slug as SiteMapCollectionSlug;
   switch (docCollection) {
     case "posts":
-      return `${url}/posts/${doc.slug}`;
+      return `${url}/essays/${doc.slug}`;
     case "pages":
       return `${url}/${doc.slug}`;
     case "delta":
@@ -252,7 +253,7 @@ export const plugins: Plugin[] = [
   }),
   blurDataUrlsPlugin({
     enabled: true,
-    collections: [Media, UserMedia],
+    collections: [Media, UserMedia, Assets],
     // Blur data URLs Settings (Optional)
     blurOptions: {
       blur: 18,

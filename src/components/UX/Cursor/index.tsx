@@ -17,10 +17,11 @@ import {
 import * as m from "motion/react-m";
 import { useShallow } from "zustand/shallow";
 import { EASING } from "@/constants/animations";
-const validCursors = ["HOVER", "DRAG", "CLICK TO TURN", "CLOSE", "LOCKED"];
 
-const cursorTheme = "dark";
-
+type FOCUS = "FOCUS";
+type DRAG = "DRAG";
+type DEFAULT = null;
+export type CursorStates = FOCUS | DRAG | DEFAULT;
 // Initialize cursor
 export default function RP_Cursor() {
   const cursorX = useMotionValue(window.innerWidth / 2);
@@ -115,13 +116,17 @@ export default function RP_Cursor() {
         visibility: "hidden",
         scale: 0
       },
-
-      focus: {
+      DRAG: {
+        scale: 0.9,
+        opacity: 1,
+        visibility: "visible"
+      },
+      FOCUS: {
         opacity: 1,
         visibility: "visible",
         scale: 1
       },
-      default: {
+      DEFAULT: {
         opacity: 1,
         visibility: "visible",
         scale: 1
@@ -148,11 +153,12 @@ export default function RP_Cursor() {
 
   useEffect(() => {
     const isFocus = cursorState === "FOCUS";
-    const isTC = !isFocus && !!cursorState;
-    const target = isFocus ? rouge : currentBase;
+    const isDrag = cursorState === "DRAG";
+    const isTC = !(isFocus || isDrag) && !!cursorState;
+    const target = isFocus || isDrag ? rouge : currentBase;
     strokeColor.set(`oklch(${target}/1)`);
-    const rr = isFocus ? c.MEDIUM : c.SMALL;
-    const ii = isFocus ? 1 : rr;
+    const rr = isFocus || isDrag ? c.MEDIUM : c.SMALL;
+    const ii = isDrag ? 0 : isFocus ? 1 : rr;
     outerRad.set(rr);
     innerRad.set(ii);
     const width = !isTC
@@ -168,7 +174,7 @@ export default function RP_Cursor() {
       containerHeight.set(height);
     }
     lastTextCursor.current !== isTC && setIsTextCursor(isTC);
-    setCircleVariant(isFocus ? "focus" : "default");
+    setCircleVariant(isFocus ? "FOCUS" : isDrag ? "DRAG" : "DEFAULT");
     lastTextCursor.current = isTC;
   }, [
     cursorState,
@@ -335,7 +341,7 @@ export default function RP_Cursor() {
                 key={"wrap"}
                 className={cn(
                   "pointer-events-none flex shrink-0 cursor-none flex-col items-center justify-center overflow-hidden outline-none",
-                  "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] backdrop-blur-[4px] perspective-[1200px]"
+                  "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] font-dots backdrop-blur-[4px] perspective-[1200px]"
                 )}
                 style={{ width: containerWidth, height: containerHeight }}
                 variants={textCursorVariants}
@@ -387,12 +393,14 @@ export default function RP_Cursor() {
               >
                 <m.circle
                   ref={oCircle}
-                  className="inline bg-transparent fill-transparent stroke-[oklch(var(--n-s-btn)/1)] transition-[stroke] duration-150 ease-out-power3 data-[focus]:stroke-rouge-400"
+                  className="inline bg-transparent fill-transparent stroke-[oklch(var(--n-s-btn)/1)] transition-[stroke] duration-150 ease-out-power3 data-[FOCUS]:stroke-rouge-400"
                   cx={50}
                   cy={50}
                   r={outerRadius}
                   strokeWidth={1}
-                  {...(cursorState === "FOCUS" && { "data-focus": true })}
+                  {...((cursorState === "FOCUS" || cursorState === "DRAG") && {
+                    "data-focus": true
+                  })}
                   variants={outerVariants}
                   initial={"hidden"}
                   animate={circleVariant}

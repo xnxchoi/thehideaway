@@ -1,31 +1,20 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import { errorToast } from "@/components/ui/sonner";
 import LockedGate from "@/components/UX/Highlightr/Gated";
-import type { HighlightsCollection } from "@/components/UX/Highlightr/provider";
 import {
-  createUserHighlight,
-  deleteUserHighlight,
   fetchUserHighlights,
-  HighlightCreateError,
-  updateUserHighlight,
   useHighlighter
-} from "@/components/UX/Highlightr/provider";
-import { useHighlightSidebar } from "@/components/UX/Highlightr/sideBarProvider";
-import { HighlightPalette, Palettes } from "@/components/UX/Highlightr/stores";
+} from "@/components/UX/Highlightr/providers/HighlighterProvider";
+import { HighlightPalette } from "@/components/UX/Highlightr/stores";
 import { Button, MotionBtn } from "@/components/UX/Link";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { Bookmark, User } from "@/payload-types";
 import { FeaturedCard } from "@/payload/blocks/heros/ArtHero/FeatureHero";
-import type {
-  AuthorOverview,
-  SingleArticle
-} from "@/payload/collections/Posts/post-types";
+import type { AuthorOverview, SingleArticle } from "@/types/collections/posts";
 import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursorStore } from "@/providers/RP_Pro";
-import { delay } from "@/utilities/rp_utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   autoUpdate,
@@ -44,55 +33,45 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
 import type Lenis from "lenis";
 import { useLenis } from "lenis/react";
-import {
-  AnimatePresence,
-  useAnimate,
-  useMotionValue,
-  useMotionValueEvent,
-  type HTMLMotionProps,
-  type MotionValue
-} from "motion/react";
-import * as m from "motion/react-m";
-import { nanoid } from "nanoid";
-import { useTranslations } from "next-intl";
+import { AnimatePresence, useMotionValue } from "motion/react";
 import { useTransitionState } from "next-transition-router";
-import { usePathname } from "next/navigation";
 import type { Where } from "payload";
 import { stringify } from "qs-esm";
-import { useRanger } from "./RangerProvider";
+import { useRanger } from "./providers/RangerProvider";
 
-import { useCitations } from "@/app/(frontend)/(site)/posts/[slug]/layout.client";
 import {
   type ComponentPropsWithoutRef,
   type ComponentPropsWithRef,
-  createContext,
   type MouseEvent,
   MouseEventHandler,
   ReactNode,
   useCallback,
-  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState
 } from "react";
+import { useShallow } from "zustand/shallow";
+import { SignedFooter } from "../Signature";
+import { DynamicBreadcrumb } from "./DynamicIsland";
 import { FloatHighlightMenu } from "./HighlightMenu";
-import { PrivateMemoizer, usePrivateNote } from "./PrivateHighlights";
+import { usePrivateNote } from "./PrivateHighlights";
+import { useArticle } from "./providers/ArticleProvider";
+import { useFloater } from "./providers/FloatProvider";
+import { useHighlightSidebar } from "./providers/sideBarProvider";
 import type { HighlightColors } from "./stores";
 import "./styles/_highlightr.scss";
 import type {
+  FetchedCitation,
   HighlightedRange,
-  ProcessedRangy,
-  RangeSaveParams
+  ProcessedRangy
 } from "./types";
 import {
-  clearSelection,
   ensureRange,
   getAnchestorIdentifyableNode,
   isMarkable
 } from "./utils/highlight-helpers";
-import { useShallow } from "zustand/shallow";
 
 export type RangeRect = {
   top: number;
@@ -100,116 +79,16 @@ export type RangeRect = {
   right: number;
   width: number;
 };
-type FloaterHightlight = {
-  setOpen: (open: boolean) => void;
-  open: boolean;
-};
-const FloaterContext = createContext<FloaterHightlight>({
-  setOpen: (open: boolean) => {},
-  open: false
-});
-const FloatMenuProvider = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <FloaterContext.Provider value={{ setOpen, open }}>
-      {children}
-    </FloaterContext.Provider>
-  );
-};
-export const useFloater = <T,>(selector: (state: FloaterHightlight) => T) => {
-  const ctx = useContext(FloaterContext);
-  return selector(ctx);
+export const Narrateur = ({ post }: { post: SingleArticle }) => {
+  return <Article post={post} />;
 };
 
-export const Narrateur = ({ post }: { post: SingleArticle }) => {
-  return (
-    <FloatMenuProvider>
-      <Article post={post} />
-    </FloatMenuProvider>
-  );
-};
 const Article = ({
   post: { id, slug, author, ...rest }
 }: {
   post: SingleArticle;
 }) => {
-  const authorId = useMemo(() => author.id, [author]);
-  const addHighlighter = useHighlighter((r) => r.addHighlight);
-  const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
-  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
-  const currentColorRef = useRef(currentColor);
-  useEffect(() => {
-    currentColorRef.current = currentColor;
-  }, [currentColor]);
-  const userId = useRPSession(useShallow((r) => r.id));
-  const postId = useMemo(() => id, [id]);
-  const contentiner = useRanger((r) => r.targetContainer);
-  const setVisi = useFloater((r) => r.setOpen);
-  const coreCreate = useCitations((r) => r.create);
-  const createHighlight = useCallback(
-    async (params: Pick<RangeSaveParams, "memo" | "private">) => {
-      const base = contentiner;
-      if (!base) throw new HighlightCreateError("unknown");
-      if (!userId) throw new HighlightCreateError("user");
-
-      try {
-        const toPass = {
-          ...params,
-
-          color: currentColorRef.current,
-          author: userId,
-
-          path: slug,
-          cited: authorId,
-          target: {
-            value: postId,
-            relationTo: "posts"
-          }
-        } satisfies Omit<RangeSaveParams, "reference" | "selection" | "quote">;
-
-        const newH = await coreCreate({
-          params: toPass,
-          container: base,
-          slug
-        });
-        if (!newH) throw new HighlightCreateError("create");
-        return newH;
-      } catch (e) {
-        setFocusedHighlight(null);
-        setVisi(false);
-
-        if (e instanceof HighlightCreateError) {
-          throw e;
-        }
-        throw new HighlightCreateError("unknown");
-      }
-    },
-    [
-      contentiner,
-      userId,
-      slug,
-      authorId,
-      postId,
-      coreCreate,
-      setFocusedHighlight,
-      setVisi
-    ]
-  );
-  const updd = useCitations((r) => r.update);
-  const handleUpdateHighlight = useCallback(
-    async (toSave: HighlightedRange) => {
-      return await updd({ ...toSave, article: postId, user: userId });
-    },
-    [updd, postId, userId]
-  );
-  return (
-    <PrivateMemoizer
-      saveCallback={handleUpdateHighlight}
-      createCallback={createHighlight}
-    >
-      <ReadInternal post={{ id, slug, author, ...rest }} />
-    </PrivateMemoizer>
-  );
+  return <ReadInternal post={{ id, slug, author, ...rest }} />;
 };
 
 export type BaseGhostUserField = Extract<
@@ -230,32 +109,37 @@ export const GhostUser = (
     ...(userOverrides || {})
   }) as Partial<Omit<User, BaseGhostUserField>> &
     Required<Pick<User, BaseGhostUserField>>;
-type AV<A extends Record<any, any>> = {
+type AV<A extends Record<string, unknown>> = {
   -readonly [key in keyof A]: A[key];
 };
 type VirtualDOMRect = AV<Omit<DOMRect, "toJSON">>;
 
 const ReadInternal = ({ post }: { post: SingleArticle }) => {
-  const {
-    id: postId,
-    slug,
-    author: { id: authorId },
-    content: postContent,
-    disabled,
-    locked
-  } = post;
-
+  const { id: postId, content: postContent, disabled: d, locked, slug } = post;
+  const valueRef = useRef(postId);
+  useEffect(() => {
+    valueRef.current = postId;
+  }, [postId]);
+  const slugRef = useRef(slug);
+  useEffect(() => {
+    slugRef.current = slug;
+  }, [slug]);
   const { direction } = useNavEvents();
   const [naved, setNaved] = useState(true);
   useEffect(() => {
     setNaved(direction === null);
   }, [direction]);
-  const user = useRPSession(useShallow((r) => r?.id));
-  const userId = useMemo(() => user, [user]);
-  const [enableHighlight, setEnableHighlight] = useState(!!user && !disabled);
+  const user = useRPSession(useShallow((r) => r.id as string | null));
+  const userRef = useRef(user);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+  const [enableHighlight, setEnableHighlight] = useState(
+    !!user && !d && !locked
+  );
   const contentRef = useRef<HTMLDivElement>(null!);
-  const ranger = useRanger((r) => r.ranger, contentRef);
-  const highlighter = useRanger((r) => r.highlighter);
+  const ranger = useRanger((r) => r.ranger);
+  const setTargetContainer = useRanger((r) => r.setTargetContainer);
   const classApplier = useRanger((r) => r.classApplier);
   const { isReady } = useTransitionState();
   const visi = useFloater(useShallow((r) => r.open));
@@ -267,6 +151,11 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     middleware: [offset(10), inline(), shift(), flip()],
     whileElementsMounted: autoUpdate
   });
+  useEffect(() => {
+    if (!visi) {
+      refs.setReference(null);
+    }
+  }, [visi, refs]);
   const { status, isMounted } = useTransitionStatus(context);
   const prefs = usePrivateNote((r) => r.refs);
   const dismiss = useDismiss(context);
@@ -278,12 +167,12 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const [privateNodes, setPrivateNodes] = useState<
     Array<{ top: number; reference: string }>
   >([]);
-  const t = useTranslations();
+
   const setCurrentColor = useHighlighter((r) => r.setCurrentColor);
   const qc = useQueryClient();
   const colorUpdater = useMutation({
-    onSuccess: ([newColor, userId]) => {
-      qc.setQueryData(["color"], (old) => {
+    onSuccess: ([newColor, _]) => {
+      qc.setQueryData(["color"], (old: HighlightColors) => {
         return newColor;
       });
       setCurrentColor(newColor);
@@ -323,31 +212,28 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       })
   });
   useEffect(() => {
-    setEnableHighlight(!!user && !disabled);
-  }, [user, disabled]);
+    setEnableHighlight(!!user && !d);
+  }, [user, d]);
   const {
     data: savedHighlights,
-    refetch,
     isLoading: hLoading,
-    isPending: hPending,
-    isSuccess: hSuccess
+    isPending: hPending
   } = useQuery({
-    queryKey: ["savedHighlights", postId],
-    queryFn: async ({ queryKey: [_, postId] }) => {
-      return await delay(150).then(
-        async () =>
-          await fetchUserHighlights({
-            collection: "posts",
-            id: postId!
-          }).then((r) => r.docs)
-      );
-    },
+    placeholderData: [] as FetchedCitation[],
+    queryKey: ["savedHighlights", { value: postId, userId: user!, slug }],
+    queryFn: async ({
+      queryKey: [_, { value: postId, userId: _l, slug: _s }]
+    }: {
+      queryKey: [string, { value: string; userId: string; slug: string }];
+    }) =>
+      await fetchUserHighlights({
+        collection: "posts",
+        id: postId
+      }),
     enabled: enableHighlight,
     staleTime: Infinity,
-    gcTime: 60 * 1000,
-    refetchOnWindowFocus: false
+    gcTime: 60 * 100
   });
-  const pathName = usePathname();
 
   const [highlightMap, setHighlightMap] = useState<
     Array<{
@@ -360,13 +246,10 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     debounce: 100,
     detectHeightChange: true
   });
-  const progress = useMotionValue(0);
 
-  const postDisabled = useMemo(() => !!disabled, [disabled]);
   const [containerBounds, setContainerBounds] = useState(0.25);
   const scr = useLenis();
   const addHighlighter = useHighlighter((r) => r.addHighlight);
-  const removeHighlighter = useHighlighter((r) => r.removeHighlight);
 
   useEffect(() => {
     const cont = contentRef.current;
@@ -376,11 +259,10 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       setContainerBounds(ratio);
     }
   }, [lastResize, scr]);
+  const progress = useMotionValue(0);
 
-  const [preamble, setPreamble] = useState<boolean>(false);
-  const [lastColor, setLastColor] = useState<HighlightColors>("ORANGE");
-  const lastColorRef = useRef(lastColor);
   const currentColor = useHighlighter(useShallow((r) => r.currentColor));
+  const lastColorRef = useRef(currentColor);
 
   const currentColorRef = useRef<HighlightColors>(currentColor);
   const highlights = useHighlighter(useShallow((r) => r.highlights));
@@ -394,8 +276,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const scrollCB = useCallback(
     (lenis: Lenis) => {
       if (!contentRef.current) return;
-      progress.set(lenis.progress * ratioRef.current);
       scrollYRef.current = lenis.scroll;
+      progress.set(lenis.progress);
     },
     [progress]
   );
@@ -433,6 +315,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     []
   );
   useEffect(() => {
+    lastColorRef.current = currentColorRef.current;
     currentColorRef.current = currentColor;
   }, [currentColor]);
   const getHighlightsRect = useCallback(
@@ -477,6 +360,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     [setFocusedHighlight]
   );
   useEffect(() => {
+    //We only handle cases where a highlight is focused, because null cases vary in expected float menu visibility
     if (focusedHighlight) {
       if (focusedHighlight.private) {
         const ance = getAnchestorIdentifyableNode(
@@ -487,15 +371,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
           setPrivView("view");
           setPrivOpen(true);
         }
-      } else {
-        refs.setReference({
-          getBoundingClientRect: () => getHighlightsRect(focusedHighlight),
-          getClientRects: () => getHighlightsRects(focusedHighlight)
-        });
-
-        setVisi(true);
       }
-    } else {
+      refs.setReference({
+        getBoundingClientRect: () => getHighlightsRect(focusedHighlight),
+        getClientRects: () => getHighlightsRects(focusedHighlight)
+      });
+
+      setVisi(true);
     }
   }, [
     focusedHighlight,
@@ -515,237 +397,12 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     setCursor(null);
   }, [setCursor]);
 
-  const deleteHighlight = useCallback(
-    async ({
-      userId,
-      fh,
-      hr
-    }: {
-      userId: string;
-      fh: HighlightedRange | null;
-      hr: Map<string, HighlightedRange>;
-    }) => {
-      setVisi(false);
-      const selection = window.getSelection();
-      if (!selection) return;
-      if (!userId) {
-        errorToast("You must be checked in to delete highlights.");
-        return;
-      }
-      selection.removeAllRanges();
-      if (!fh || !("els" in fh) || !fh.els) return;
-      const deleteResult = await deleteUserHighlight({
-        author: userId,
-        article: postId,
-        reference: [fh.reference]
-      });
-      const t = document.createRange();
-      const a = fh.els[0];
-      const n = fh.els[fh.els.length - 1];
-      a && t.setStartBefore(a);
-      n && t.setEndAfter(n);
-      selection.addRange(t);
-      const tat = hr.get(fh.reference);
-      if (deleteResult && tat) {
-        tat.els.forEach((e) => {
-          const parentNode = e.parentNode;
-          if (parentNode) {
-            if (e.className === "highlighted") {
-              while (e.firstChild) {
-                parentNode.insertBefore(e.firstChild, e);
-              }
-              e.remove();
-            }
-            (e as HTMLElement).style.backgroundImage = "none";
-            (e as HTMLElement).classList.remove("highlighted");
-            (e as HTMLElement).removeAttribute("data-reference");
-            (e as HTMLElement).removeEventListener(
-              "click",
-              handleHighlightClick
-            );
-          }
-        });
-        removeHighlighter(deleteResult, userId);
-      } else {
-        errorToast(
-          "Something went wrong while trying to delete the selection. Try again in a few secs!"
-        );
-      }
-      setFocusedHighlight(null);
-      refs.setReference(null);
-      setVisi(false);
-      selection.removeAllRanges();
-    },
-    [
-      handleHighlightClick,
-      postId,
-      refs,
-      removeHighlighter,
-      setFocusedHighlight,
-      setVisi
-    ]
-  );
-
-  const createHighlight = useCallback(
-    async (params: Pick<RangeSaveParams, "memo" | "private">) => {
-      const base = contentRef.current;
-      if (!base) throw new HighlightCreateError("unknown");
-      if (!userId) throw new HighlightCreateError("user");
-      const selection = ranger.getSelection();
-      const rangeAt = ensureRange(selection);
-      if (
-        !rangeAt ||
-        !base.contains(selection.anchorNode) ||
-        !isMarkable(selection)
-      ) {
-        clearSelection(selection);
-        throw new HighlightCreateError("selection");
-      }
-
-      try {
-        const nanoid1 = nanoid(17);
-        const text = rangeAt.toString();
-        if (!text || text.length < 1) {
-          throw new HighlightCreateError("selection");
-        }
-        const toPass = {
-          ...params,
-          reference: nanoid1,
-          color: currentColorRef.current,
-          author: userId,
-          selection: {
-            text: text,
-            before: '"...',
-            after: '..."'
-          },
-          path: pathName,
-          cited: authorId,
-          quote: `"...${text}..."`,
-          target: {
-            value: postId,
-            relationTo: "posts"
-          }
-        } satisfies RangeSaveParams;
-
-        const newH = await createUserHighlight({
-          target: {
-            slug: slug
-          },
-          citation: {
-            target: {
-              relationTo: "posts",
-              value: postId
-            },
-            private: toPass.private || false,
-            memo: toPass.memo || "",
-            reference: toPass.reference,
-            selection: {
-              text: toPass.selection.text,
-              before: `"...`,
-              after: `..."`
-            },
-            color: toPass.color,
-            path: toPass.path,
-            author: userId,
-            cited: authorId,
-            quote: `"...${toPass.selection.text}..."`
-          }
-        });
-
-        if (!newH) throw new HighlightCreateError("create");
-        const previousHighlight =
-          contentRef.current.querySelectorAll(".highlighted");
-        classApplier.applyToSelection();
-        const highLightedNodes =
-          contentRef.current.querySelectorAll(".highlighted");
-        const elements: Element[] = [];
-        const previousHighlightArray = Array.from(previousHighlight);
-        highLightedNodes.forEach((e) => {
-          if (!previousHighlightArray.includes(e)) {
-            e.setAttribute("data-reference", nanoid1);
-            elements.push(e);
-          }
-        });
-        const newHighlight: HighlightedRange = {
-          ...newH,
-          selection: {
-            ...newH.selection
-          },
-          quote: newH.quote,
-          id: newH.id,
-          cited: newH.cited,
-          reference: newH.reference,
-          memo: newH.memo,
-          range: rangeAt,
-          els: elements
-        };
-        addHighlighter(newHighlight);
-        setFocusedHighlight(newH.reference);
-        selection.removeAllRanges();
-        return newHighlight;
-      } catch (e) {
-        setFocusedHighlight(null);
-        setVisi(false);
-
-        if (e instanceof HighlightCreateError) {
-          throw e;
-        }
-        throw new HighlightCreateError("unknown");
-      }
-    },
-    [
-      userId,
-      ranger,
-      pathName,
-      authorId,
-      postId,
-      slug,
-      classApplier,
-      addHighlighter,
-      setFocusedHighlight,
-      setVisi
-    ]
-  );
-  useEffect(() => {
-    lastColorRef.current = lastColor;
-  }, [lastColor]);
-  const updateHighlight = useCallback(
-    async (toSave: HighlightedRange | Array<HighlightedRange>) => {
-      const saveParams = Array.isArray(toSave) ? toSave : [toSave];
-      if (saveParams.length === 0) return;
-      try {
-        const res = await updateUserHighlight({
-          saveParams,
-          user: userId,
-          article: postId,
-          color: currentColorRef.current
-        });
-
-        addHighlighter(res);
-        const rv = res[0];
-        if (!rv) throw new HighlightCreateError("create");
-        const r = rv.reference;
-        if (!r) {
-          setVisi(false);
-          refs.setReference(null);
-        }
-        setFocusedHighlight(r);
-        return rv;
-      } catch (e) {
-        if (e instanceof HighlightCreateError) {
-          throw e;
-        }
-        throw new HighlightCreateError("unknown");
-      }
-    },
-    [addHighlighter, postId, refs, setFocusedHighlight, setVisi, userId]
-  );
-
   const changeCurrentHighlightColor = useCallback(
     (colorWay: HighlightColors) => {
-      colorUpdater.mutate({ color: colorWay, user: userId });
+      if (!userRef.current) return;
+      colorUpdater.mutate({ color: colorWay, user: userRef.current });
     },
-    [colorUpdater, userId]
+    [colorUpdater]
   );
   const lastRangeAt = useRef<rangy.RangyRange | null>(null);
 
@@ -935,7 +592,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     highlights,
     updaterC,
     isReady,
-    naved,
+
     containerMouseUp,
     handleHighlightClick,
     onEn,
@@ -957,6 +614,15 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     },
     [handleHighlightClick]
   );
+  const removeListeners = useCallback(
+    (targets: HTMLElement[]) => {
+      targets.forEach((e) => {
+        e.classList.remove("highlighted");
+        e.removeEventListener("click", handleHighlightClick);
+      });
+    },
+    [handleHighlightClick]
+  );
   useGSAP(
     () => {
       updateColors.current = (props) => {
@@ -965,10 +631,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         const to = HighlightPalette[toColor];
         gsap.to(targets, {
           onStart: () => {
-            targets.forEach((e) => {
-              e.classList.remove("highlighted");
-              e.removeEventListener("click", handleHighlightClick);
-            });
+            removeListeners(targets);
           },
           delay: 0.05,
           backgroundImage: `linear-gradient(to left, oklch(${from}/.01) 0%, okclh(${from}/.1) 40%, oklch(${to}/.01) 50%, oklch(${to}/.85) 100%)`,
@@ -1004,62 +667,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       });
   }, [highlights, currentColor]);
 
-  const handleHighlightSaveOrDelete: MouseEventHandler<HTMLButtonElement> =
-    useCallback(
-      async (e) => {
-        e.stopPropagation();
-        if (!user) {
-          errorToast("You must be checked in to save highlights.");
-          return;
-        }
-        if (postDisabled) {
-          errorToast("You can't save highlights on a disabled post.");
-          return;
-        }
-        if (focusedHighlight) {
-          await deleteHighlight({
-            hr: highlights,
-            userId: userId,
-            fh: focusedHighlight
-          });
-        } else {
-          await createHighlight({ private: false }).catch((e) => {
-            if (e instanceof HighlightCreateError) {
-              errorToast(e.message);
-            } else {
-              errorToast(t("Highlights.error.save.default"));
-            }
-          });
-        }
-      },
-      [
-        user,
-        postDisabled,
-        focusedHighlight,
-        deleteHighlight,
-        highlights,
-        userId,
-        createHighlight,
-        t
-      ]
-    );
-  const handleUpdateHighlight = useCallback(
-    async (fc: HighlightedRange) => {
-      const c = await updateHighlight(fc)
-        .then((r) => {
-          if (!r) throw new HighlightCreateError("create");
-          return r as HighlightedRange;
-        })
-        .catch((e) => {
-          if (e instanceof HighlightCreateError) {
-            throw e;
-          }
-          throw new HighlightCreateError("unknown");
-        });
-      return c;
-    },
-    [updateHighlight]
-  );
   const lastVisi = useRef(visi);
   useEffect(() => {
     if (lastVisi.current !== visi) {
@@ -1093,7 +700,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     return traverseNodes(e);
   }, []);
   const applyHighlightCallback = useCallback(
-    (t: Omit<ProcessedRangy, "author"> & { author: AuthorOverview }) => {
+    (t: ProcessedRangy) => {
       const base = contentRef.current;
       if (!base) return;
       const { text: a } = t.selection;
@@ -1122,6 +729,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       ) as HTMLElement[];
       h.forEach((el) => el.setAttribute("data-reference", t.reference));
       const c = {
+        ...t,
         id: t.id,
         cited: t.cited as string,
         private: t.private,
@@ -1134,10 +742,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
 
         range: r,
         els: h,
-        color:
-          (Palettes.find(
-            (r) => (r as string) === t.color
-          ) as null | HighlightColors) || currentColorRef.current,
         selection: {
           text: a,
           before: `"...`,
@@ -1204,7 +808,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const hasRun = useRef(false);
   useEffect(() => {
     if (!hPending && !hLoading) {
-      if (hSuccess && savedHighlights) {
+      if (savedHighlights) {
         const ss = savedHighlights.flatMap((c) => {
           const r = applyHighlightCallback(c);
           return r ? r : [];
@@ -1215,29 +819,31 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   }, [
     savedHighlights,
     applyHighlightCallback,
-    hSuccess,
     hPending,
     hLoading,
     addHighlighter
   ]);
   useLayoutEffect(() => {
+    if (!window) return;
     if (hasRun.current) return;
     if (!isReady) return;
-
     const cont = contentRef.current;
-    if (postDisabled || !userId || !cont) {
-      return () => {};
+    if (!enableHighlight) {
+      return () => {
+        const e = cont.querySelectorAll("mark.highlighted");
+        e.forEach((e) => {
+          e.removeEventListener("click", handleHighlightClick);
+        });
+      };
     }
     const ratio = window.innerHeight / cont.offsetHeight;
-    ratioRef.current = Math.max(0.25, ratio);
     setContainerBounds(ratio);
 
-    if (direction !== null) {
-      qc.invalidateQueries({ queryKey: ["savedHighlights"] });
-    }
     hasRun.current = true;
 
     return () => {
+      setHighlightMap([]);
+      setPrivateNodes([]);
       const e = cont.querySelectorAll("mark.highlighted");
       e.forEach((e) => {
         e.removeEventListener("click", handleHighlightClick);
@@ -1245,26 +851,21 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       hasRun.current = false;
     };
   }, [
-    savedHighlights,
     isReady,
     applyHighlightCallback,
     handleHighlightClick,
-    postDisabled,
-    pathName,
-    userId,
-    addHighlighter,
-    direction,
-    qc
+    enableHighlight,
+    addHighlighter
   ]);
 
   return (
     <>
       <div
-        className="pointer-events-none absolute top-0 left-[18px] z-[30] h-full w-[calc(100%-36px)] border-0 border-x-[1px] border-solid border-x-muted-faded-foreground opacity-20"
+        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-[30] h-full w-[calc(100%-54px)] border-0 border-x-[1px] border-solid border-x-muted-faded-foreground opacity-20"
         style={{
           borderImage: "initial"
         }}
-      />
+      />{" "}
       <div className="h-full w-full">
         <div className="z-[3] h-full w-full">
           <div className={"w-full"}>
@@ -1280,7 +881,9 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
               >
                 <div
                   className="rp-content [&>*]:col-[main] [&>aside]:col-3"
-                  ref={contentRef}
+                  ref={(el) => {
+                    el && ((contentRef.current = el), setTargetContainer(el));
+                  }}
                 >
                   <Aside>
                     <ResponseMap responseNodes={responseNodes} />
@@ -1292,7 +895,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                       />
                     ))}
                   </Aside>
-                  {locked || disabled ? (
+                  {locked ? (
                     <LockedGate id={postId} collection={"posts"} />
                   ) : (
                     <RichText data={postContent} enableGutter={false} />
@@ -1300,41 +903,31 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                 </div>
               </div>
               <div className="f-divider mt-[50px] h-[1px] w-full min-w-[1px]" />
+              <SignedFooter />
             </article>
           </div>
-          {/*<HighlightMenu createCallback={createHighlight} target={{*/}
-          {/*	relationTo: "posts", value: postId, authorId: post.author.id,*/}
-          {/*}} visible={render} top={menuTop} left={menuLeft} handleUpdate={handleUpdateHighlight}*/}
-          {/*               handleSaveHighlight={handleHighlightSaveOrDelete}*/}
-          {/*               handleChangeHighlightColor={changeCurrentHighlightColor} />*/}
-          {
-            <FloatHighlightMenu
-              ref={refs.setFloating}
-              handleSaveHighlight={handleHighlightSaveOrDelete}
-              handleChangeHighlightColor={changeCurrentHighlightColor}
-              handleUpdate={handleUpdateHighlight}
-              createCallback={createHighlight}
-              floatingStyles={floatingStyles}
-              style={{}}
-              status={status}
-              {...getFloatingProps()}
-              mounted={isMounted}
-            />
-          }
+
+          <FloatHighlightMenu
+            ref={refs.setFloating}
+            handleChangeHighlightColor={changeCurrentHighlightColor}
+            floatingStyles={floatingStyles}
+            postDisabled={!enableHighlight}
+            style={{}}
+            status={status}
+            {...getFloatingProps()}
+            mounted={isMounted}
+          />
+
           <MiniMap highlightMap={highlightMap} scaleRatio={containerBounds} />
         </div>
       </div>
       <div className="fixed right-0 bottom-[30px] left-0 z-[120] mx-auto mb-[24px] w-full">
         <div className={"grid grid-cols-[auto_1fr_auto] items-stretch gap-y-5"}>
           <div className="relative col-[2] justify-self-center">
-            <AnimatePresence mode={"wait"}>
-              <ProgressBar progress={progress} title={post.title}>
-                <BookmarkButton
-                  postId={postId}
-                  userId={userId}
-                  collection={"posts"}
-                />
-              </ProgressBar>
+            <AnimatePresence mode={"sync"} initial={true} propagate={true}>
+              <DynamicBreadcrumb title={post.title} progress={progress}>
+                <BookmarkButton />
+              </DynamicBreadcrumb>
             </AnimatePresence>
           </div>
         </div>
@@ -1407,41 +1000,48 @@ const ResponseMap = ({
     </>
   );
 };
-const BookmarkButton = ({
-  postId,
-  userId,
-  collection
-}: {
-  postId: string;
-  userId: string;
-  collection: Bookmark["target"]["relationTo"];
-}) => {
+const BookmarkButton = () => {
   const qc = useQueryClient();
-  const where = useMemo(
-    () =>
-      ({
-        and: [
-          {
-            "target.value": {
-              equals: postId
-            }
-          },
-          {
-            user: {
-              equals: userId
-            }
-          },
-          {
-            "target.relationTo": {
-              equals: `${collection}`
-            }
-          }
-        ]
-      }) as Where,
-    [userId, postId, collection]
-  );
+  const post = useArticle(useShallow((r) => r.id as null | string));
+  const user = useRPSession(useShallow((r) => r.id as null | string));
+  const collection = useArticle(useShallow((r) => r.collection));
+  const cR = useRef(collection);
+  const pR = useRef(post);
+  const uR = useRef(user);
+  const [disabled, setDisabled] = useState(!user || !post);
+  useEffect(() => {
+    cR.current = collection;
+    pR.current = post;
+    setDisabled((r) => r || !collection || !post);
+  }, [collection, post]);
+  useEffect(() => {
+    uR.current = user;
+    setDisabled((r) => r || !user);
+  }, [user]);
   const [initialized, setInitialized] = useState(false);
   const fetcher = useCallback(async () => {
+    const postId = pR.current;
+    const userId = uR.current;
+    if (!userId) {
+      throw new Error("Not found");
+    }
+    if (!postId) {
+      throw new Error("Not found");
+    }
+    const where: Where = {
+      and: [
+        {
+          "target.value": {
+            equals: postId
+          }
+        },
+        {
+          user: {
+            equals: userId
+          }
+        }
+      ]
+    };
     const r = await fetch(
       `/api/bookmarks/count/${stringify(where, { addQueryPrefix: true })}`
     );
@@ -1453,16 +1053,22 @@ const BookmarkButton = ({
       return res.totalDocs > 0;
     }
     throw new Error("Not found");
-  }, [where]);
+  }, []);
   const {
-    refetch,
     data: hasBookmark,
     isPending,
     isError,
     isFetching,
     isSuccess
   } = useQuery({
-    queryKey: ["bookmarks", userId, postId, collection],
+    queryKey: [
+      "bookmarks",
+      {
+        collection: cR.current,
+        article: pR.current,
+        user: uR.current
+      }
+    ],
     queryFn: fetcher,
     enabled: !initialized
   });
@@ -1479,6 +1085,28 @@ const BookmarkButton = ({
     hasBookmarkRef.current = !!hasBookmark;
   }, [hasBookmark]);
   const dB = useCallback(async () => {
+    const postId = pR.current;
+    const userId = uR.current;
+    if (!userId) {
+      return;
+    }
+    if (!postId) {
+      return;
+    }
+    const where: Where = {
+      and: [
+        {
+          "target.value": {
+            equals: postId
+          }
+        },
+        {
+          user: {
+            equals: userId
+          }
+        }
+      ]
+    };
     const args = stringify({ where }, { addQueryPrefix: true });
     const res = await fetch(`/api/bookmarks/${args}`, {
       method: "DELETE",
@@ -1508,19 +1136,23 @@ const BookmarkButton = ({
       return true;
     }
     return false;
-  }, [removeBookmark, where]);
-  const body = useMemo(
-    () =>
-      ({
-        target: {
-          relationTo: collection,
-          value: postId
-        },
-        user: userId
-      }) as Omit<Bookmark, "id" | "createdAt" | "updatedAt">,
-    [postId, userId, collection]
-  );
+  }, [removeBookmark]);
   const cB = useCallback(async () => {
+    const postId = pR.current;
+    const userId = uR.current;
+    if (!userId) {
+      return;
+    }
+    if (!postId) {
+      return;
+    }
+    const body: Pick<Bookmark, "target" | "user"> = {
+      target: {
+        value: postId,
+        relationTo: cR.current
+      },
+      user: userId
+    };
     const res = await fetch("/api/bookmarks", {
       method: "POST",
       headers: {
@@ -1536,11 +1168,11 @@ const BookmarkButton = ({
         if (r.doc) {
           return r.doc as Bookmark;
         }
-        return null;
+        throw new Error("Failed to create bookmark");
       })
       .catch((e) => {
         console.log(e);
-        return null;
+        throw new Error("Failed to create bookmark");
       });
     if (res) {
       addBookmark({
@@ -1549,14 +1181,23 @@ const BookmarkButton = ({
       });
       return true;
     }
-
-    return false;
-  }, [body, addBookmark]);
+    throw new Error("Failed to create bookmark");
+  }, [addBookmark]);
   const createBookmark = useMutation({
     mutationFn: cB,
     onSuccess: (res) => {
       if (res) {
-        qc.setQueryData(["bookmarks", userId, postId, collection], true);
+        qc.setQueryData(
+          [
+            "bookmarks",
+            {
+              collection: cR.current,
+              article: pR.current,
+              user: uR.current
+            }
+          ],
+          true
+        );
       }
     }
   });
@@ -1564,7 +1205,17 @@ const BookmarkButton = ({
     mutationFn: dB,
     onSuccess: (res) => {
       if (res) {
-        qc.setQueryData(["bookmarks", userId, postId, collection], false);
+        qc.setQueryData(
+          [
+            "bookmarks",
+            {
+              collection: cR.current,
+              article: pR.current,
+              user: uR.current
+            }
+          ],
+          false
+        );
       }
     }
   });
@@ -1579,10 +1230,10 @@ const BookmarkButton = ({
     },
     [deleteBoookmark, createBookmark, hasBookmark]
   );
-  return !userId || !postId ? (
+  return disabled ? (
     <></>
   ) : (
-    <div className={"flex"}>
+    <div className={"flex h-8 min-w-8"}>
       <MotionBtn
         transition={{ type: "spring", bounce: 0.4 }}
         whileTap={{ scale: 0.9 }}
@@ -1591,7 +1242,7 @@ const BookmarkButton = ({
         }}
         onClick={bookmarkSaveOrDelete}
         className={
-          "flex h-full items-center justify-center [&_svg]:fill-off-d-gray/55 [&_svg]:stroke-none [&_svg]:outline-none dark:[&_svg]:fill-off-l-gray/55"
+          "flex h-full items-center justify-center [&_path]:fill-muted-faded-background/55 [&_path]:stroke-none [&_path]:outline-none dark:[&_path]:fill-muted-faded-foreground/55 [&_svg]:size-8"
         }
         disabled={isFetching || isPending}
       >
@@ -1601,171 +1252,10 @@ const BookmarkButton = ({
   );
 };
 
-const ProgressBar = ({
-  progress,
-  title,
-  children,
-  ...props
-}: Omit<HTMLMotionProps<"div">, "ref"> & {
-  progress: MotionValue<number>;
-  title: string;
-}) => {
-  const [show, setShow] = useState(false);
-  const { onMouseEnter, onMouseLeave } = useDomCursor({});
-
-  const [scope, animate] = useAnimate();
-  useMotionValueEvent(progress, "change", (v) => {
-    const doShow = v > 0.05 && v < 1;
-    setShow(doShow);
-    if (doShow) {
-      setShow(false);
-    }
-  });
-  return (
-    show && (
-      <>
-        <m.div
-          initial={"hidden"}
-          variants={{
-            hidden: {
-              y: 60,
-              opacity: 0,
-              zIndex: -1,
-              transition: {
-                type: "spring",
-                bounce: 0.4,
-                delay: 0.4
-              }
-            },
-            visible: {
-              y: 0,
-              opacity: 1,
-              zIndex: 120,
-              transition: {
-                type: "spring",
-                delay: 0.1,
-                bounce: 0.4
-              }
-            }
-          }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          animate={"visible"}
-          exit={"hidden"}
-        >
-          <m.div
-            className="relative z-[120] overflow-hidden rounded-[18px] p-1"
-            {...props}
-            transition={{ type: "spring", bounce: 0.25 }}
-            whileHover={{
-              scale: 1.1,
-              borderColor: "oklch(var(--transparent-white)/0.001)"
-            }}
-          >
-            <div className="absolute top-0 left-0 z-[120] h-full w-full bg-muted-off-background/35"></div>
-            <m.div
-              className="absolute top-0 left-0 z-[119] h-full w-full opacity-[0.001]"
-              transition={{ type: "spring", bounce: 0.25 }}
-              variants={{
-                active: {
-                  opacity: 1,
-                  backdropFilter: "blur(20px) saturate(1.15)"
-                },
-                hidden: {
-                  backdropFilter: "blur(0px) saturate(1)",
-                  opacity: 0.001
-                }
-              }}
-              animate={"active"}
-              initial={"hidden"}
-              exit={"hidden"}
-            ></m.div>
-            <div className="relative z-[120] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-0 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.1)] px-[12px] py-[6px] select-none">
-              <div className="filter-blur-0 transform-origin-[50%_50%_0px] flex w-full transform-none items-center gap-4 opacity-100">
-                <div className="h-8 w-8 origin-[50%_50%_0px] rounded-[50%]">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    style={{ transform: "rotate(-90deg)" }}
-                  >
-                    <defs>
-                      <linearGradient id="col" gradientUnits="userSpaceOnUse">
-                        <stop
-                          offset="0%"
-                          stopColor="oklch(var(--faded-fg)/.7)"
-                        />
-                        <stop
-                          offset="85%"
-                          stopColor="oklch(var(--faded-d-gray)/.8)"
-                        />
-                      </linearGradient>
-                    </defs>
-                    <m.circle
-                      className={
-                        "stroke-off-l-gray/100 dark:stroke-off-d-gray/100"
-                      }
-                      cx="10"
-                      cy="10"
-                      r="8"
-                      strokeWidth="1.25"
-                      fill="none"
-                      strokeLinecap="round"
-                    ></m.circle>
-                    <m.circle
-                      className={"stroke-[url(#col)]"}
-                      cx="10"
-                      cy="10"
-                      r="8"
-                      strokeWidth="1.25"
-                      fill="none"
-                      strokeDasharray={`${progress}px 1px`}
-                      strokeLinecap="round"
-                      pathLength="1"
-                      strokeDashoffset="0px"
-                    ></m.circle>
-                  </svg>
-                </div>
-                <div
-                  className={
-                    "m-0 overflow-hidden p-0 text-center align-middle font-sans text-lg font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
-                  }
-                >
-                  {title}
-                </div>
-                {children && (
-                  <m.div
-                    className={"flex h-full items-center justify-center gap-2"}
-                  >
-                    {children}
-                  </m.div>
-                )}
-              </div>
-            </div>
-          </m.div>
-          <div className="relative"></div>
-        </m.div>
-      </>
-    )
-  );
-};
 export type HighlightMenuProps = {
-  visible: boolean;
-  top: number | null;
-  left: number | null;
+  postDisabled: boolean;
 
-  createCallback: (
-    prop: Pick<RangeSaveParams, "memo" | "private">
-  ) => Promise<HighlightedRange>;
-  handleSaveHighlight: (e: MouseEvent<HTMLButtonElement>) => void;
   handleChangeHighlightColor: (color: HighlightColors) => void;
-
-  handleUpdate: (fc: HighlightedRange) => Promise<HighlightedRange>;
-  target: {
-    relationTo: HighlightsCollection;
-    value: string;
-    authorId: string;
-  };
 };
 
 const ResponseIndicator = (
@@ -1774,7 +1264,7 @@ const ResponseIndicator = (
     reference: string;
   }
 ) => {
-  const { top, ref, reference: refer, ...rest } = props;
+  const { top: _, ref, reference: refer, ...rest } = props;
   const highlights = useHighlighter(useShallow((r) => r.highlights));
   const setOpen = useHighlightSidebar("setOpen");
   const setContent = useHighlightSidebar("setContent");
@@ -1837,7 +1327,7 @@ const PrivateIndicator = (
     reference: string;
   }
 ) => {
-  const { top, reference: refer, ...rest } = props;
+  const { top: _, reference: refer, ...rest } = props;
 
   const setOpen = usePrivateNote((r) => r.setOpen);
   const setView = usePrivateNote((r) => r.setView);
@@ -1869,9 +1359,6 @@ const PrivateIndicator = (
   );
 };
 
-const DialogProvider = ({ children }: { children: ReactNode }) => {
-  const [open, setOpen] = useState(false);
-};
 const Aside = ({ children }: { children: ReactNode }) => {
   return (
     <>
@@ -1898,9 +1385,8 @@ const Aside = ({ children }: { children: ReactNode }) => {
 export const HighlightMenuButton = ({
   children,
   className,
-  focusedHighlight = true,
   ...props
-}: ComponentPropsWithRef<"button"> & { focusedHighlight?: boolean }) => {
+}: ComponentPropsWithRef<"button">) => {
   return (
     <Button
       className={cn(

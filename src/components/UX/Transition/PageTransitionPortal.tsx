@@ -1,40 +1,35 @@
 "use client";
-import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
+import { useRPStore } from "@/providers/RP_Pro";
 
 import { useLenis } from "lenis/react";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useMemo, useRef } from "react";
 
 import { useIsMobile } from "@/utilities/getBreakpoints";
-import { wait } from "@/utilities/wait";
-import { SvgIco } from "../svgIco";
-import { portalFrameTransitions, PortalFrameTransitions } from ".";
+import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShallow } from "zustand/shallow";
-
+import { portalFrameTransitions, PortalFrameTransitions } from ".";
+import { usePortaller } from "./Portaller";
 export const PageTransitionPortal = () => {
-  const frameDir: Array<PortalFrameTransitions> = [
-    "top",
-    "right",
-    "bottom",
-    "left"
-  ];
-  const cornDir: Array<[string, string]> = [
-    ["topLeft", "M500 0H0V500C0 223.858 223.858 0 500 0Z"],
-    [
-      "topRight",
-      "M500 500L500 4.19617e-05L1.90735e-05 -2.18557e-05C276.142 0.000249614 500 223.858 500 500Z"
-    ],
-    ["bottomRight", "M0 500L500 500L500 0C500 276.142 276.142 500 0 500Z"],
-    [
-      "bottomLeft",
-      "M-2.18557e-05 0L0 500L500 500C223.858 500 -9.78513e-06 276.142 -2.18557e-05 0Z"
-    ]
-  ];
-  const frameRefs = useRef<HTMLElement[]>([]),
-    cornerRefs = useRef<HTMLElement[]>([]),
-    svgRefs = useRef<HTMLElement[]>([]),
+  const frameDir: Array<PortalFrameTransitions> = useMemo(
+    () => ["top", "right", "bottom", "left"],
+    []
+  );
+  const cornDir = useMemo(
+    () => ({
+      topleft: "M500 0H0V500C0 223.858 223.858 0 500 0Z",
+      topright:
+        "M500 500L500 4.19617e-05L1.90735e-05 -2.18557e-05C276.142 0.000249614 500 223.858 500 500Z",
+      bottomright: "M0 500L500 500L500 0C500 276.142 276.142 500 0 500Z",
+      bottomleft:
+        "M-2.18557e-05 0L0 500L500 500C223.858 500 -9.78513e-06 276.142 -2.18557e-05 0Z"
+    }),
+    []
+  );
+  const frameRefs = useRef<HTMLDivElement[]>([]),
+    cornerRefs = useRef<HTMLDivElement[]>([]),
+    svgRefs = useRef<HTMLDivElement[]>([]),
     m = useRef(null),
     { isMobile: isMobile } = useIsMobile(),
     pageIsTransitioning = useRPStore(useShallow((l) => l.pageIsTransitioning)),
@@ -43,19 +38,21 @@ export const PageTransitionPortal = () => {
     setCanInteract = useRPStore((l) => l.setCanInteract),
     isTransitioningWipe = useRPStore(useShallow((l) => l.isTransitioningWipe)),
     alreadyReset = useRef(false),
-    scroll = useLenis(),
-    navOpeningElement = useRPStore(useShallow((l) => l.navOpeningElement));
-  const VW = useRPStore(useShallow((r) => r.viewportWidth));
-  const VH = useRPStore(useShallow((r) => r.viewportHeight));
-  const animateTransition = useCallback(
-    (h: boolean, p: () => void) => {
+    scroll = useLenis();
+  const setAnimateFn = usePortaller((l) => l.setAnimateFn);
+  const animateTransition = useRef<(h: boolean, p?: () => void) => void>(null!);
+  useGSAP(() => {
+    ((animateTransition.current = (h: boolean, p?: () => void) => {
+      const navOpeningElement = document.getElementById("navWindow");
       if (
         !frameRefs.current.length ||
         !cornerRefs.current.length ||
         !svgRefs.current.length ||
         !navOpeningElement
-      )
+      ) {
+        console.log("transition failed");
         return;
+      }
       const g = navOpeningElement.getBoundingClientRect(),
         v = g.top;
       frameRefs.current.forEach((l, c) => {
@@ -81,7 +78,7 @@ export const PageTransitionPortal = () => {
           x: xMove,
           y: yMove,
           duration: 0.7,
-          ease: h ? "Power4.easeInOut" : "Power3.easeInOut",
+          ease: h ? "power4.inOut" : "power3.inOut",
           onComplete: () => {
             0 === c && p && p();
           }
@@ -92,7 +89,7 @@ export const PageTransitionPortal = () => {
         gsap.killTweensOf(l);
         let d = 0;
         let p = 0;
-        const m = 0.5 * VW;
+        const m = 0.5 * window.innerWidth;
         if (h)
           switch (c) {
             case 0:
@@ -111,7 +108,7 @@ export const PageTransitionPortal = () => {
           x: d,
           y: p,
           duration: 0.7,
-          ease: h ? "Power4.easeInOut" : "Power3.easeInOut"
+          ease: h ? "power4.inOut" : "power3.inOut"
         });
       });
       svgRefs.current.forEach((l) => {
@@ -120,102 +117,51 @@ export const PageTransitionPortal = () => {
           gsap.to(l, {
             scale: h ? 1 : 0,
             duration: 0.7,
-            ease: h ? "Power4.easeInOut" : "Power3.easeInOut"
+            ease: h ? "power4.inOut" : "power3.inOut"
           }));
       });
-    },
-    [frameRefs, cornerRefs, svgRefs]
-  );
-  const setCur = useCursorStore((r) => r.setCursorState);
-  useEffect(() => {
-    if (pageIsTransitioning) {
-      setCur(null);
-    }
-  }, [pageIsTransitioning]);
-  useEffect(() => {
-    if (!isTransitioningWipe || alreadyReset.current) return;
-    alreadyReset.current = true;
-    const fire = async () => {
-      (await wait(10),
-        animateTransition(!0, async () => {
-          (setCanInteract(!1),
-            window.scroll(0, 0),
-            scroll &&
-              scroll.scrollTo(0, {
-                immediate: !0
-              }),
-            await wait(500),
-            window.scroll(0, 0),
-            ScrollTrigger.refresh(),
-            scroll &&
-              scroll.scrollTo(0, {
-                immediate: !0
-              }),
-            scroll && scroll.resize(),
-            animateTransition(!1, () => {
-              (setIsTransitioningWipe(!1),
-                setCanInteract(!0),
-                (alreadyReset.current = false),
-                scroll && scroll.resize(),
-                ScrollTrigger.refresh());
-            }));
-        }));
-    };
-    fire();
-  }, [
-    isMobile,
-    pageIsTransitioning,
-    transitionOutType,
-    animateTransition,
-    isTransitioningWipe,
-    setIsTransitioningWipe,
-    setCanInteract,
-    scroll
-  ]);
+      setAnimateFn(animateTransition.current);
+    }),
+      []);
+  });
+
   return (
     <div ref={m} className="pt_container">
       {frameDir.map((v, index) => (
         <div
           data-themed="background-color"
-          className={`pt_mask` + ` pt_${v}`}
-          style={{
-            transform: `translate(${
-              portalFrameTransitions.get(v)?.x
-            },${portalFrameTransitions.get(v)?.y})`
-          }}
+          className={`pt_mask pt_${v}`}
           key={v + "pt"}
           ref={(el) => {
-            frameRefs.current[index] = el!;
+            el && (frameRefs.current[index] = el);
           }}
         ></div>
       ))}
-      {cornDir.map((v, index) => (
+      {Object.entries(cornDir).map(([key, value], index) => (
         <div
-          className={`pt_cornerstones pt_${v[0]}`}
-          key={v[0] + "corner"}
+          className={`pt_cornerstones pt_${key}`}
+          key={key + "corner"}
           ref={(el) => {
-            cornerRefs.current[index] = el!;
+            el && (cornerRefs.current[index] = el);
           }}
         >
           <div
             className="pt_cs_svg"
             ref={(el) => {
-              svgRefs.current[index] = el!;
+              el && (svgRefs.current[index] = el);
             }}
           >
-            <SvgIco
-              viewBox="0 0 500 500"
-              fill="none"
-              paths={[
-                v[1]!,
-                {
+            <svg viewBox="0 0 500 500" fill="none">
+              <path
+                d={value}
+                {...{
                   fillRule: "evenodd",
                   clipRule: "evenodd",
                   fill: "currentColor",
                   "data-themed": "fill,color"
-                }
-              ]}
-            />
+                }}
+              />
+            </svg>
           </div>
         </div>
       ))}

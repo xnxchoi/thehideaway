@@ -6,8 +6,8 @@ import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import { ReactNode } from "react";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
-import { ScrollIndicator } from "@/components/UX/ScrollIndicator";
 import { RadioProvider } from "@/providers/RadioProvider";
+import { SideDrawer } from "@/components/UX/SideDrawer";
 
 export default async function RootLayout({
   children
@@ -20,7 +20,7 @@ export default async function RootLayout({
     <>
       <Layout>{children}</Layout>
       <RadioProvider>
-        <ScrollIndicator />
+        <SideDrawer />
       </RadioProvider>
     </>
   );

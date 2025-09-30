@@ -72,6 +72,12 @@ export const Categories: CollectionConfig = {
           }
         ]
       }
+    },
+    {
+      type: "join",
+      name: "categorized",
+      collection: ["delta", "posts"],
+      on: "category"
     }
   ],
   hooks: {

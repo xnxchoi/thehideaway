@@ -52,8 +52,7 @@ export const RP_Menu = () => {
   ];
 
   const size = isMobile ? "2rem" : "2.2rem";
-  const pageType = useVoyageur((l) => l.pageType);
-  const pageSlug = useVoyageur((l) => l.slug);
+
   const focusedRef = useRef<-1 | string>(-1),
     activeRef = useRef<string | -1>(-1),
     [activeIndex, setActiveIndex] = useState<string | -1>(-1);
@@ -108,9 +107,7 @@ export const RP_Menu = () => {
   const setNavItemSelected = useRPStore((l) => l.setNavigationPageItemSelected);
   const focusedTO = useRef<ReturnType<typeof setTimeout>>(null!);
   const menuWrap = useRef<HTMLDivElement>(null!);
-  useEffect(() => {
-    setNavOpeningElement(navWindow.current);
-  }, [setNavOpeningElement]);
+
   const handlePagePreviewMouseEnter = (pagekey: string | -1) => {
     currentPageKey !== pagekey && setNavItemHovered(pagekey);
   };
@@ -477,7 +474,9 @@ export const RP_Menu = () => {
       >
         <div
           className="menu__window-pos"
-          ref={navWindow}
+          ref={(el) => {
+            el && ((navWindow.current = el), setNavOpeningElement(el));
+          }}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           onClick={() => {

@@ -1,3 +1,4 @@
+import { RPage } from "@/components/UX/Transition";
 import { AuthView, authViewPaths } from "@betterauth-ui";
 
 export const dynamicParams = false;
@@ -12,8 +13,10 @@ export default async function AuthPage({
   const { path } = await params;
 
   return (
-    <main className="container flex grow flex-col items-center justify-center self-center p-4 md:p-6">
-      <AuthView path={path} />
-    </main>
+    <RPage type="auth" slug={[path]}>
+      <main className="container flex grow flex-col items-center justify-center self-center p-4 md:p-6">
+        <AuthView path={path} />
+      </main>
+    </RPage>
   );
 }

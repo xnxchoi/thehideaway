@@ -4,10 +4,12 @@ import { OrthographicCamera, View } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { PerformanceRegress } from "../UX/Gradient/Gradient";
 import { Linus } from "../UX/Scroll";
+import { useShallow } from "zustand/shallow";
+import { useRPStore } from "@/providers/RP_Pro";
 
 export const Main = ({ children }: { children: ReactNode }) => {
   const mainRef = useRef<HTMLElement>(null!);
-
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   return (
     <main ref={mainRef} className={"root"}>
       {children}
@@ -16,7 +18,7 @@ export const Main = ({ children }: { children: ReactNode }) => {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 40,
+          zIndex: navIsOpen ? 120 : 40,
           width: "100vw",
           height: "100vh"
         }}

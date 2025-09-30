@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { TagOverview } from "@/payload/collections/Deltas/delta-types";
+import { TagOverview } from "@/types/collections/delta";
 
 export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
   direction === "prev"
@@ -8,7 +8,7 @@ export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
         category: {
           title: "Uncategorized",
           id: "",
-          slug: "/archive/uncategorized"
+          slug: "/archived/uncategorized"
         },
         publishedAt: DateTime.now()
           .set({ year: 2022, month: 1, day: 22 })
@@ -18,7 +18,7 @@ export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
         bookmarksCount: 0,
         title: "All Essays & Articles",
         subtitle: "More of where this came from.",
-        slug: "/posts",
+        slug: "/essays",
         author: {
           name: "The Hideaway",
           id: "1-1",
@@ -31,7 +31,7 @@ export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
         category: {
           title: "Uncategorized",
           id: "",
-          slug: "/archive/uncategorized"
+          slug: "/archived/uncategorized"
         },
         publishedAt: DateTime.now()
           .set({ year: 2022, month: 1, day: 22 })
@@ -41,7 +41,7 @@ export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
         tags: [] as TagOverview[],
         title: "Deltas",
         subtitle: "Explore tangential thoughts and discourse",
-        slug: "/deltas",
+        slug: "/delta",
         author: {
           name: "The Hideaway",
           id: "1-1",

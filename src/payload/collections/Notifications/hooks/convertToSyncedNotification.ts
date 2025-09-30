@@ -22,7 +22,7 @@ export function convertToSyncedNotification(
               : doc.trigger.value?.id || ""
         }
       : null,
-    thumbnail: doc.thumbnail
+    thumbnail: doc?.thumbnail
       ? {
           id:
             typeof doc.thumbnail === "string"

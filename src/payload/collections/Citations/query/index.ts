@@ -12,7 +12,7 @@ import {
   RequestContext
 } from "payload";
 import configPromise from "@payload-config";
-import { HighlightsCollection } from "@/components/UX/Highlightr/provider";
+import { HighlightsCollectionSlug } from "@/components/UX/Highlightr/types";
 import { cache } from "react";
 
 export const queryCitations = cache(
@@ -21,7 +21,7 @@ export const queryCitations = cache(
     collection,
     userId
   }: {
-    collection: HighlightsCollection;
+    collection: HighlightsCollectionSlug;
     id: string;
     userId: string;
   }) => {
@@ -51,6 +51,7 @@ export const queryCitations = cache(
           color: true,
           createdAt: true,
           quote: true,
+          target: true,
           author: true,
           path: true,
           memo: true,
@@ -61,7 +62,7 @@ export const queryCitations = cache(
         limit: 100,
 
         pagination: false,
-        sort: "-createdAt"
+        sort: "-createdAt -updatedAt"
       })
       .then((r) => r.docs || ([] as CitationRange[]));
 
@@ -81,7 +82,10 @@ export const queryCitations = cache(
           quote: cite.quote,
           updatedAt: cite.updatedAt,
           id: cite.id,
-          color: cite.color as HighlightColors,
+          target: {
+            value: cite.target.value as string,
+            relationTo: cite.target.relationTo
+          },
           path: cite.path,
           reference: cite.reference,
           private: cite.private || false,

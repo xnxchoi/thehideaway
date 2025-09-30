@@ -436,10 +436,11 @@ export const MenuMediaPreview: React.FC<MenuMediaPreviewProps> = ({
   return (
     <div
       ref={previewRef}
-      className={cn("menu__preview-preview", className)}
-      style={{
-        visibility: navIsOpen ? "visible" : "hidden"
-      }}
+      className={cn(
+        "menu__preview-preview [visibility:hidden] z-[1] data-active:visible",
+        className
+      )}
+      data-active={navIsOpen}
     >
       <VGradient />
     </div>

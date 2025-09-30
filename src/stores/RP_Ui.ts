@@ -488,7 +488,6 @@ export type HA_ANIMATION_ACT = {
   setNavIsTransitioning: (l: boolean) => void;
   setPageIsTransitioning: (l: boolean) => void;
   setNavOpeningElement: (l: HTMLElement | null) => void;
-  setTransitionType: (l: string | PageTransitionType) => void;
   setIsPreloader: (isPreloader: boolean) => void;
   togglePreloaderAnimation: (state: boolean) => void;
   setHeaderAnimations: (
@@ -650,9 +649,15 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
       setPageIsTransitioning: (l: boolean) =>
         set((state) => ({ pageIsTransitioning: l })),
       setTransitionOutType: (l: string | PageTransitionType | null) =>
-        set((state) => ({ transitionOutType: l })),
-      setTransitionType: (l: string | PageTransitionType) =>
-        set((state) => ({ transitionType: l })),
+        set((state) => {
+          const current = { ...state };
+          const transition = l;
+          current.isTransitioningWipe = Boolean(l && l === "CURTAIN");
+          current.transitionOutType = transition;
+          return {
+            ...current
+          };
+        }),
       setNavigationPageItemData: (c: NavItem[]) =>
         set(
           (state) => ({
@@ -793,12 +798,14 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
           const newPoint = sidebarOpen ? c[c.length - 1]! : c[0]!;
           const newState = {
             ...state,
-            snapPoints: c
+            snapPoints: [...c]
           };
           if (activeSnapPoint != newPoint) {
             newState.activeSnapPoint = newPoint;
           }
-          return newState;
+          return {
+            ...newState
+          };
         }),
       setActiveSnapPoint: (c: number | string | null) =>
         set((state) => {

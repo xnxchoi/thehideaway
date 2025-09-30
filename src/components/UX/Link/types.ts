@@ -68,6 +68,8 @@ export type RPLinkPropsWithRef = RPLinkProps &
     | RefAttributes<HTMLAnchorElement>
     | RefAttributes<HTMLDivElement>
     | RefAttributes<HTMLButtonElement>
-  );
+  ) & {
+    disabled?: boolean;
+  };
 export type MotionBtnProps = HTMLMotionProps<"button"> &
   ComponentPropsWithoutRef<"button">;

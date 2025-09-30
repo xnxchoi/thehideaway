@@ -2,7 +2,7 @@
 import { PayloadHandler } from "payload";
 import { ProcessedRangy } from "@/components/UX/Highlightr/types";
 import { queryCitations } from "@/payload/collections/Citations/query";
-import { HighlightsCollection } from "@/components/UX/Highlightr/provider";
+import { HighlightsCollectionSlug } from "@/components/UX/Highlightr/types";
 
 export const citationHandler: PayloadHandler = async (req) => {
   const user = req.user;
@@ -53,7 +53,7 @@ export const citationHandler: PayloadHandler = async (req) => {
   try {
     const citations = await queryCitations({
       userId: user.id,
-      collection: collection as HighlightsCollection,
+      collection: collection as HighlightsCollectionSlug,
       id
     });
     return Response.json(

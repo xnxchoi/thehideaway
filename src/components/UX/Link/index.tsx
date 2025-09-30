@@ -9,11 +9,14 @@ import {
 import { cn } from "@/lib/utils";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { isInternalLink } from "@/utilities/isInternalLink";
+import type { LinkProps } from "@react-email/components";
 import { useLenis } from "lenis/react";
+import type { HTMLMotionProps, MotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import { useTransitionRouter } from "next-transition-router";
 import NextLink from "next/link";
 import {
+  type ComponentProps,
   type ComponentPropsWithRef,
   MouseEventHandler,
   ReactNode,
@@ -32,6 +35,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     onMouseEnter: doME,
     className,
     ref,
+    disabled = false,
     ...rest
   } = props;
 
@@ -89,10 +93,16 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
       {...rest}
       {...propsToPass}
       href={href}
-      onClick={handleClick}
+      onClick={
+        disabled
+          ? (e) => {
+              e.preventDefault();
+            }
+          : handleClick
+      }
       ref={ref as RefAttributes<HTMLAnchorElement>["ref"]}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      onMouseEnter={disabled ? void 0 : onMouseEnter}
+      onMouseLeave={disabled ? void 0 : onMouseLeave}
     />
   );
 };
@@ -259,7 +269,10 @@ export const MotionBtn = (props: MotionBtnProps) => {
     />
   );
 };
-
+const NextMotion = m.create(RP_Link);
+export function MotionLink(props: ComponentProps<typeof NextMotion>) {
+  return <NextMotion {...props} />;
+}
 export function Button(props: ComponentPropsWithRef<"button">) {
   return RP_Btn(props);
 }

@@ -32,7 +32,7 @@ import { Post } from "@/payload-types";
 import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
 import { slugField } from "@/payload/fields/slug";
 import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
-import { CatOverview } from "@/payload/collections/Deltas/delta-types";
+import { CatOverview } from "@/types/collections/delta";
 import {
   MetaImageField,
   MetaTitleField,
@@ -364,7 +364,7 @@ export const Posts: CollectionConfig<"posts"> = {
       ]
     },
     {
-      name: "tags",
+      name: "tagged",
       type: "relationship",
       relationTo: "tags",
       hasMany: true,
@@ -376,6 +376,7 @@ export const Posts: CollectionConfig<"posts"> = {
         read: () => true
       },
       maxDepth: 1,
+
       maxRows: 5,
       index: true
     },

@@ -14,8 +14,8 @@
   min-height: 88rem;
 }
 
-body[data-browser=chrome][data-device=mobile] .review__card-bg_card {
-  height: 100vh
+body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
+  height: 100vh;
 }
 
 .review__card-bg_frame-positioning {
@@ -27,30 +27,27 @@ body[data-browser=chrome][data-device=mobile] .review__card-bg_card {
   --top-offset: 20rem;
 }
 
-@media(min-width: 768px) {
+@media (min-width: 768px) {
   .review__card-bg_frame-positioning {
     grid-column: 4/10;
-    --top-offset: 11rem
+    --top-offset: 11rem;
   }
 }
 
 .review__card-bg_image-container {
   position: absolute;
   top: 0;
-  left: 0;
+
   width: 100%;
   height: 100%;
-  background-color: oklch(var(--n-s-fg)/.8);
-  border-radius: 8px
+  background-color: oklch(var(--n-s-fg) / 0.8);
+  border-radius: 8px;
 }
 
 .review__card-bg_image {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover
+  inset: 0;
+  object-fit: cover;
 }
 
 .review__card-bg_frame-container {
@@ -61,14 +58,15 @@ body[data-browser=chrome][data-device=mobile] .review__card-bg_card {
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  border: var(--gutter) solid oklch(var(--fg)/1)
+  border: var(--gutter) solid oklch(var(--fg) / 1);
 }
 
 .review__card-bg_safari__lRNlz .review__card-bg_frame-container {
-  perspective: none
+  perspective: none;
 }
 
 .review__card-bg_frame-content {
@@ -79,37 +77,37 @@ body[data-browser=chrome][data-device=mobile] .review__card-bg_card {
 .review__card-bg_frame-content-inner {
   padding: 3.2rem 0 1.6rem;
   margin: 0 auto;
-  position: relative
+  position: relative;
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_frame-content-inner {
-    padding: var(--gutter) 3rem
+    padding: var(--gutter) 3rem;
   }
 }
 
 .review__card-bg_quote {
-  color: oklch(var(--bg)/.9);
+  color: oklch(var(--bg) / 0.9);
   font-family: var(--fontFamilyWide);
   font-size: 2.4rem;
   font-style: normal;
   font-weight: 400;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
   line-height: 120%;
   margin-bottom: 3.4rem;
   position: relative;
   border: none;
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_quote {
-    font-size: 4rem
+    font-size: 4rem;
   }
 }
 
-@media(min-width: 1512px) {
+@media (min-width: 1512px) {
   .review__card-bg_quote {
-    font-size: 4rem
+    font-size: 4rem;
   }
 }
 
@@ -117,29 +115,29 @@ body[data-browser=chrome][data-device=mobile] .review__card-bg_card {
   position: absolute;
   top: auto;
   right: 100%;
-  content: "“"
+  content: "“";
 }
 
 .review__card-bg_quote:after {
-  content: "”"
+  content: "”";
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_quote {
-    margin-bottom: 4rem
+    margin-bottom: 4rem;
   }
 }
 
-@media(min-width: 1200px) {
+@media (min-width: 1200px) {
   .review__card-bg_quote {
-    margin-bottom: 8.4rem
+    margin-bottom: 8.4rem;
   }
 }
 
 .review__card-bg_footer {
   display: flex;
   align-items: center;
-  justify-content: space-between
+  justify-content: space-between;
 }
 
 .review__card-bg_author {
@@ -148,53 +146,55 @@ body[data-browser=chrome][data-device=mobile] .review__card-bg_card {
   font-weight: 400;
   font-size: 1.4rem;
   line-height: 140%;
-  letter-spacing: -.01em;
-  color: oklch(var(--faded-bg)/.75);
-  font-weight: 500
+  letter-spacing: -0.01em;
+  color: oklch(var(--faded-bg) / 0.75);
+  font-weight: 500;
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_author {
-    font-size: 1.6rem
+    font-size: 1.6rem;
   }
 }
 
 .review__card-bg_authorDash {
   display: none;
-  color: oklch(var(--faded-bg)/.75);
+  color: oklch(var(--faded-bg) / 0.75);
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_authorDash {
-    display: inline-block
+    display: inline-block;
   }
 }
 
 .review__card-bg_source {
-  font-family: Basis Grotesque Pro, sans-serif;
+  font-family:
+    Basis Grotesque Pro,
+    sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 1.4rem;
   line-height: 140%;
-  letter-spacing: -.01em;
-  color: oklch(var(--faded-bg)/.75);
-  display: block
+  letter-spacing: -0.01em;
+  color: oklch(var(--faded-bg) / 0.75);
+  display: block;
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_source {
     font-size: 1.6rem;
-    display: inline-block
+    display: inline-block;
   }
 }
 
 .review__card-bg_logo {
   width: 1.8rem;
-  color: oklch(var(--faded-bg)/.75);
+  color: oklch(var(--faded-bg) / 0.75);
 }
 
-@media(min-width: 967px) {
+@media (min-width: 967px) {
   .review__card-bg_logo {
-    width: 2.4rem
+    width: 2.4rem;
   }
 }

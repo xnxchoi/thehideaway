@@ -12,20 +12,20 @@ module.exports = {
     "/pages-sitemap.xml",
     "/users-sitemap.xml",
     "/*",
-    "/posts/*",
-    "/users/*",
+    "/essays/*",
+    "/users/*"
   ],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: "*",
-        disallow: "/vault/*",
-      },
+        disallow: "/vault/*"
+      }
     ],
     additionalSitemaps: [
       `${SITE_URL}/pages-sitemap.xml`,
       `${SITE_URL}/posts-sitemap.xml`,
-      `${SITE_URL}/users-sitemap.xml`,
-    ],
-  },
+      `${SITE_URL}/users-sitemap.xml`
+    ]
+  }
 };

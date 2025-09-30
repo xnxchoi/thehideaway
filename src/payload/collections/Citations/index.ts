@@ -1,9 +1,126 @@
 import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { CollectionBeforeChangeHook, CollectionConfig, Where } from "payload";
+import {
+  CollectionBeforeChangeHook,
+  CollectionConfig,
+  Where,
+  type CollectionAfterReadHook,
+  type CollectionBeforeValidateHook,
+  type Operation
+} from "payload";
 import { Citation } from "@/payload-types";
 import { citationHandler } from "@/payload/collections/Citations/endpoints";
 import { filterByCurrentUser } from "../helpers";
 import { hashContent } from "@/payload/fields/slug/HashId/hasher";
+import type {
+  CitationCreateParamKeys,
+  CitationData,
+  CitationUpdateParamKeys,
+  CreateCitationData,
+  ReturnedCitationData,
+  UpdateCitationData
+} from "@/components/UX/Highlightr/types";
+import type { AuthorOverview } from "../../../types/collections/posts";
+import { queryAuthorOverview } from "../Posts/api/queryPostOverview";
+
+const beforeValidateCitation: CollectionBeforeValidateHook<Citation> = async (
+  args
+) => {
+  const { data: dt, operation, req, context, originalDoc } = args;
+  if (!dt) return dt;
+
+  const before = `...\"`;
+  const after = `...\"`;
+
+  switch (operation) {
+    case "update": {
+      const data = dt as UpdateCitationData;
+      if (!originalDoc) {
+        req.payload.logger.error(
+          {
+            message: "Original doc not found",
+            data,
+            operation,
+            req,
+            context,
+            originalDoc
+          },
+          "Original doc not found"
+        );
+        throw new Error("Original doc not found");
+      }
+      const newData: ReturnedCitationData = {
+        reference: originalDoc.reference,
+        selection: { ...originalDoc.selection },
+        path: originalDoc.path,
+        author: originalDoc.author as string,
+        quote: originalDoc.quote,
+        cited: originalDoc.cited as string,
+        target: {
+          value: originalDoc.target.value as string,
+          relationTo: originalDoc.target.relationTo
+        },
+        memo: originalDoc.memo,
+        private: originalDoc.private
+      };
+      const dm = data?.memo;
+      const dp = data?.private;
+      const dataHasMemo = dm !== undefined;
+      const dataHasPrivate = dp !== undefined;
+      if (dataHasPrivate) {
+        newData.private = dp;
+      }
+      if (dataHasMemo) {
+        newData.memo = dm;
+      }
+      if (typeof newData.memo !== "string") {
+        newData.private = true;
+      }
+      const text = data?.selection;
+      if (text) {
+        newData.selection = {
+          ...text
+        };
+        newData.path = await hashContent(text.text);
+        newData.quote = `${before}${newData.selection.text}${after}`;
+      }
+
+      return newData;
+    }
+    case "create": {
+      const data = dt as CreateCitationData;
+      const newData: ReturnedCitationData = {
+        reference: data.reference,
+        selection: data.selection,
+        path: await hashContent(data.selection.text),
+        author: data.author,
+        quote: `${before}${data.selection.text}${after}`,
+        cited: data.cited,
+        target: {
+          value: data.target.value,
+          relationTo: data.target.relationTo
+        },
+        memo: data.memo,
+        private: data.private
+      };
+      if (typeof newData.memo !== "string") {
+        newData.private = true;
+      }
+      return newData;
+    }
+  }
+};
+const afterReadCitation: CollectionAfterReadHook<Citation> = async (args) => {
+  const { req, context, doc } = args;
+  if (!doc || !doc.author) return doc;
+  //Author field is always a 0-depth value
+  const { author: ad, ...rest } = doc;
+  const authorId = typeof ad === "string" ? ad : ad.id;
+  const author = await queryAuthorOverview(authorId as string);
+  return {
+    ...rest,
+    author
+  };
+};
 export const Citations: CollectionConfig = {
   slug: "citations",
   lockDocuments: false,
@@ -107,13 +224,6 @@ export const Citations: CollectionConfig = {
   },
   fields: [
     {
-      name: "color",
-      type: "text",
-      defaultValue: () => "ORANGE",
-      required: true,
-      index: true
-    },
-    {
       name: "path",
       type: "text",
       required: true,
@@ -121,14 +231,12 @@ export const Citations: CollectionConfig = {
       access: {},
       admin: {
         hidden: true
-      },
-      index: true
+      }
     },
     {
       name: "reference",
       type: "text",
       required: true,
-      defaultValue: "",
       admin: {
         hidden: true
       },
@@ -261,74 +369,7 @@ export const Citations: CollectionConfig = {
     }
   ],
   hooks: {
-    beforeValidate: [
-      async ({
-        data,
-        operation,
-        req,
-        context,
-        originalDoc
-      }: Parameters<CollectionBeforeChangeHook<Citation>>[0]) => {
-        if (operation === "update" || operation === "create") {
-          const before = `...\"`;
-          const after = `...\"`;
-          switch (operation) {
-            case "update": {
-              if (!originalDoc) {
-                req.payload.logger.error(
-                  {
-                    message: "Original doc not found",
-                    data,
-                    operation,
-                    req,
-                    context,
-                    originalDoc
-                  },
-                  "Original doc not found"
-                );
-                throw new Error("Original doc not found");
-              }
-              const text = data?.selection?.text || originalDoc.selection.text;
-
-              const selection = {
-                before,
-                text: `${text}`,
-                after
-              };
-              const quote = `${before}${text}${after}`;
-              const reference = originalDoc.reference;
-              data.selection = selection;
-              data.quote = quote;
-              data.path = await hashContent(text);
-              data.reference = reference;
-              return data;
-            }
-            case "create": {
-              if (!data?.selection?.text) {
-                req.payload.logger.error({
-                  message: "Selection not found",
-                  data,
-                  operation,
-                  req,
-                  context
-                });
-                throw new Error("Selection not found");
-              }
-              const selection = {
-                before,
-                text: `${data?.selection?.text}`,
-                after
-              };
-              const quote = `${before}${selection.text}${after}`;
-              data.selection = selection;
-              data.quote = quote;
-              data.path = await hashContent(selection.text);
-              return data;
-            }
-          }
-        }
-        return data;
-      }
-    ]
+    afterRead: [afterReadCitation],
+    beforeValidate: [beforeValidateCitation]
   }
 };

@@ -12,7 +12,7 @@ const postSelector = {
   publishedAt: true,
   locked: true,
   updatedAt: true,
-  tags: true,
+  tagged: true,
   createdAt: true,
   image: true
 } as const;
@@ -32,7 +32,7 @@ const postOverviewSelector = {
   locked: true,
   category: true,
   id: true,
-  tags: true
+  tagged: true
 } as const;
 export type PostOverviewKeys = keyof typeof postOverviewSelector;
 export type PostOverviewSelector = Record<PostOverviewKeys, true>;

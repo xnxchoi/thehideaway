@@ -1,15 +1,14 @@
 import { RP_Menu } from "@/components/UX/Menu";
 import { EscapeInAppBrowser } from "@/components/UX/escapeInAppBrowser";
-import { Main } from "@/components/core/Main";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { Header } from "@/payload/components/Header/Component";
 import { LivePreviewListener } from "@/payload/components/LivePreviewListener";
 import { InitTheme } from "@/providers/Theme/InitTheme";
 import "@/styles/hideaway.scss";
 import "@/styles/reading.scss";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
-import { Header } from "@/payload/components/Header/Component";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "lenis/dist/lenis.css";
@@ -32,16 +31,11 @@ import {
   Siegfried,
   Suit
 } from "../../../fonts";
-import { ContentMask } from "../../components/UX/ContentMask";
-import { Controlbar } from "../../components/UX/Controlbar";
-import { FXFrame } from "../../components/UX/FXFrame/FXFrame";
-import { MenuMediaPreview } from "../../components/UX/MediaPreview/MenuMediaPreview";
-import { PageTransitionPortal } from "../../components/UX/Transition/PageTransitionPortal";
 
 // Client Components (imported dynamically to create islands)
+import { ScrollIndicator } from "@/components/UX/ScrollIndicator";
 import { ClientLayout } from "./ClientLayout";
 import { ClientProviders } from "./ClientProviders";
-import { TabMessenger } from "../../utilities/visibilityChange";
 
 export default async function RootLayout({
   children
@@ -83,6 +77,7 @@ export default async function RootLayout({
               <LivePreviewListener />
               <Header />
               <RP_Menu />
+              <ScrollIndicator />
 
               <ClientLayout>{children}</ClientLayout>
             </ClientProviders>

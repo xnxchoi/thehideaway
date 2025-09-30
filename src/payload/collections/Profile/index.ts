@@ -209,6 +209,15 @@ export const Profile: CollectionConfig = {
       collection: "bookmarks",
       type: "join",
       on: "target"
+    },
+    {
+      name: "tagged",
+      relationTo: "tags",
+      type: "relationship",
+      hasMany: true,
+      maxDepth: 1,
+      maxRows: 5,
+      index: true
     }
   ],
   hooks: {

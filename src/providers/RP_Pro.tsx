@@ -10,6 +10,17 @@ import React, {
   useState
 } from "react";
 
+import { NavEventsProvider } from "@/providers/Navigation/_client-nav-events";
+import { createSearchBarStore, RP_SearchBar } from "@/stores/CMDK/SearchStore";
+import { createCursorStore, HA_CURS } from "@/stores/Cursor/CursorStore";
+import { OSNames } from "@/stores/Device/browserNames";
+import {
+  createDeviceStore,
+  DeviceStore,
+  HA_DEVICE
+} from "@/stores/Device/DeviceStore";
+import { createMenuStructure, RP_BluePrint } from "@/stores/Frame_Ctrl";
+import { equalPageType, useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import {
   createHAStore,
   createRafStore,
@@ -21,30 +32,21 @@ import {
   RAF,
   RPT
 } from "@/stores/RP_Ui";
-import {
-  createDeviceStore,
-  DeviceStore,
-  HA_DEVICE
-} from "@/stores/Device/DeviceStore";
-import { createCursorStore, HA_CURS } from "@/stores/Cursor/CursorStore";
-import { useStore } from "zustand/index";
-import { createSearchBarStore, RP_SearchBar } from "@/stores/CMDK/SearchStore";
-import { createMenuStructure, RP_BluePrint } from "@/stores/Frame_Ctrl";
-import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import { TransitionRouter } from "next-transition-router";
-import InAppSpy from "inapp-spy";
-import { isAIBot, isBot } from "ua-parser-js/helpers";
-import { OSNames } from "@/stores/Device/browserNames";
-import { UAParser } from "ua-parser-js";
-import { getThumbmark } from "@thumbmarkjs/thumbmarkjs";
 import { createId } from "@paralleldrive/cuid2";
-import { useStoreWithEqualityFn } from "zustand/traditional";
-import { shallow } from "zustand/shallow";
+import { getThumbmark } from "@thumbmarkjs/thumbmarkjs";
 import { gsap } from "gsap";
-import { useTheme } from "./Theme";
-import { useLenis } from "lenis/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { NavEventsProvider } from "@/providers/Navigation/_client-nav-events";
+import InAppSpy from "inapp-spy";
+import { useLenis } from "lenis/react";
+import { TransitionRouter } from "next-transition-router";
+import { UAParser } from "ua-parser-js";
+import { isAIBot, isBot } from "ua-parser-js/helpers";
+import { useStore } from "zustand/index";
+import { shallow } from "zustand/shallow";
+import { useStoreWithEqualityFn } from "zustand/traditional";
+import { useTheme } from "./Theme";
+import { useGSAP } from "@gsap/react";
+import { usePortaller } from "@/components/UX/Transition/Portaller";
 
 export type RafAPI = ReturnType<typeof createRafStore>;
 export type HAAPI = ReturnType<typeof createHAStore>;
@@ -237,7 +239,8 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   const currentStep = useRPTransition((l) => l.currentStep);
   const getCallback = useRPTransition((l) => l.getCallback);
   const pageType = useVoyageur((l) => l.pageType);
-  const setTransitionType = useRPStore((l) => l.setTransitionOutType);
+  const setTransitionOutType = useRPStore((l) => l.setTransitionOutType);
+
   const scroll = useLenis();
   gsap.registerPlugin(ScrollTrigger);
 
@@ -251,6 +254,8 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   const [currentPhaseStep, setCurrentPhaseStep] = useState<PhaseStep | null>(
     null
   );
+  const animateCurtain = usePortaller((l) => l.animateTransition);
+  const navIsOpen = useRPStore((l) => l.navIsOpen);
   const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
   const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
   const setCanInteract = useRPStore((l) => l.setCanInteract);
@@ -265,10 +270,22 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   return (
     <TransitionRouter
       leave={(next, from, to) => {
+        console.log("router,from:", from);
+        console.log("router,to:", to);
+        const isE =
+          !navIsOpen && Boolean(!from || (to && equalPageType(from, to)));
+
         gsap.to(".rp-container", {
           autoAlpha: 0,
           duration: 0.3,
+
           ease: "power2.inOut",
+          onStart: () => {
+            setTransitionOutType(navIsOpen ? "FROM_MENU" : "FADE");
+            if (isE) {
+              animateCurtain(false);
+            }
+          },
           onComplete: () => (
             scrollToTop(),
             setPageIsTransitioning(true),
@@ -279,30 +296,29 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
         });
       }}
       enter={(next, from, to) => {
+        const isE =
+          !navIsOpen && Boolean(!from || (to && equalPageType(from, to)));
         gsap.set(".rp-container", {
           autoAlpha: 0
         });
-        gsap.fromTo(
-          ".rp-container",
-          {
-            autoAlpha: 0
+        gsap.to(".rp-container", {
+          onStart: () => {
+            next();
+            setCanInteract(false);
           },
-          {
-            onStart: () => {
-              next();
-              setCanInteract(false);
-            },
-            autoAlpha: 1,
-            duration: 0.3,
-            ease: "power2.inOut",
-            delay: 0.2,
-            onComplete: () => {
-              setPageIsTransitioning(false);
-              setCanInteract(true);
-              document.body.style.setProperty("pointer-events", "auto");
+          autoAlpha: 1,
+          duration: 0.3,
+          ease: "power2.inOut",
+          delay: 0.2,
+          onComplete: () => {
+            setPageIsTransitioning(false);
+            setCanInteract(true);
+            document.body.style.setProperty("pointer-events", "auto");
+            if (isE) {
+              animateCurtain(true);
             }
           }
-        );
+        });
       }}
     >
       {children}

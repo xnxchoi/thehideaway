@@ -1,9 +1,6 @@
-import { NextRequest } from "next/server";
-import { getPayload, type PayloadHandler } from "payload";
-import config from "@payload-config";
-import type { SyncedNotification } from "../../hooks/types";
-import { convertToSyncedNotification } from "../../hooks/convertToSyncedNotification";
 import { Notification } from "@payload-types";
+import { type PayloadHandler } from "payload";
+import { convertToSyncedNotification } from "../../hooks/convertToSyncedNotification";
 
 export const DismissNotification: PayloadHandler = async (request) => {
   const params = request.routeParams as { id: string };
@@ -52,22 +49,22 @@ export const DismissNotification: PayloadHandler = async (request) => {
     const r: Notification = {
       ...notification,
       thumbnail: notification.thumbnail?.id || null,
-      dismissed: true
+      dismissed: true,
+      actionLink: {
+        ...notification.actionLink,
+        newTab: false,
+        label: notification.actionLink?.label || "Link"
+      }
     };
     // Update the notification
-    const result = await payload
-      .update({
-        collection: "notifications",
-        data: r,
-        where: {
-          recipient: { equals: user.id },
-          id: { equals: id }
-        }
-      })
-      .catch((e) => {
-        payload.logger.error("Error dismissing notification:", e);
-        return null;
-      });
+    const result = await payload.update({
+      collection: "notifications",
+      data: r,
+      where: {
+        recipient: { equals: user.id },
+        id: { equals: id }
+      }
+    });
     if (!result) {
       return new Response("Internal Server Error", { status: 500 });
     }

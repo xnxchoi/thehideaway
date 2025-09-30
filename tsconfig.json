@@ -30,6 +30,13 @@
       }
     ]
   },
-  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    ".grave/HighlightMenu_0929.tsx",
+    ".grave/Component.client copy.tsx"
+  ],
   "exclude": ["node_modules"]
 }

@@ -77,7 +77,7 @@ export const NotificationTable = () => {
           break;
       }
     }
-  }, [rowAction]);
+  }, [rowAction, setDismissed, setRead]);
   const columns = useMemo<ColumnDef<SyncedNotification>[]>(
     () => [
       {
@@ -154,7 +154,8 @@ export const NotificationTable = () => {
             { label: "Dismissed", value: "dismissed", icon: XCircle }
           ]
         },
-        enableColumnFilter: true
+        enableColumnFilter: true,
+        enableSorting: true
       },
       {
         id: "createdAt",
@@ -182,7 +183,7 @@ export const NotificationTable = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button>
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-[14px] w-[14px]" />
                   <span className="sr-only">Open menu</span>
                 </Button>
               </DropdownMenuTrigger>

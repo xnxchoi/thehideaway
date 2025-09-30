@@ -400,54 +400,54 @@ export const commentsPlugin =
                 }
               }
             }
-          },
-          {
-            name: "responses",
-            type: "join",
-            collection: ["responses", "citations"],
-            on: "target",
-            hooks: {
-              afterRead: [
-                ({ req, data, siblingData, value }) => {
-                  const user = req.user;
-                  const userId = user?.id;
-                  let enabled =
-                    (siblingData?.commentsEnabled as undefined | boolean) ??
-                    false;
-                  const isAuthor = Boolean(
-                    userId &&
-                      (data as Delta | Post).author &&
-                      userId === (data!.author as string)
-                  );
-                  const isAdminOrEditor = ["admin", "editor"].some(
-                    (r) => r === user?.role
-                  );
-                  enabled = enabled || isAuthor || isAdminOrEditor;
-                  if (!enabled) {
-                    delete siblingData["responses"];
-                    return {
-                      docs: []
-                    };
-                  } else if (!(isAuthor || isAdminOrEditor)) {
-                    return ((value || []) as Array<Response | Citation>).filter(
-                      (r) => {
-                        if ("_status" in r) {
-                          return r._status === "published";
-                        }
-                        if ("private" in r) {
-                          return r.private === false;
-                        }
-                        return true;
-                      }
-                    );
-                  }
-                  return value;
-                }
-              ]
-            },
-            hasMany: true,
-            defaultSort: ["isSticky", "-createdAt"]
           }
+          // {
+          //   name: "responses",
+          //   type: "join",
+          //   collection: ["responses", "citations"],
+          //   on: "target",
+          //   hooks: {
+          //     afterRead: [
+          //       ({ req, data, siblingData, value }) => {
+          //         const user = req.user;
+          //         const userId = user?.id;
+          //         let enabled =
+          //           (siblingData?.commentsEnabled as undefined | boolean) ??
+          //           false;
+          //         const isAuthor = Boolean(
+          //           userId &&
+          //             (data as Delta | Post).author &&
+          //             userId === (data!.author as string)
+          //         );
+          //         const isAdminOrEditor = ["admin", "editor"].some(
+          //           (r) => r === user?.role
+          //         );
+          //         enabled = enabled || isAuthor || isAdminOrEditor;
+          //         if (!enabled) {
+          //           delete siblingData["responses"];
+          //           return {
+          //             docs: []
+          //           };
+          //         } else if (!(isAuthor || isAdminOrEditor)) {
+          //           return ((value || []) as Array<Response | Citation>).filter(
+          //             (r) => {
+          //               if ("_status" in r) {
+          //                 return r._status === "published";
+          //               }
+          //               if ("private" in r) {
+          //                 return r.private === false;
+          //               }
+          //               return true;
+          //             }
+          //           );
+          //         }
+          //         return value;
+          //       }
+          //     ]
+          //   },
+          //   hasMany: true,
+          //   defaultSort: ["isSticky", "-createdAt"]
+          // }
         ];
         collection.hooks = {
           ...collection.hooks,

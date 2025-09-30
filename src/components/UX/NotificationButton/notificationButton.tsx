@@ -1,30 +1,42 @@
 "use client";
 import { useRPStore } from "@/providers/RP_Pro";
 import { Popover } from "@base-ui-components/react/popover";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from "react";
 
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button, Link, MotionBtn, MotionLink } from "@/components/UX/Link";
+import { useHumanTime } from "@/payload/collections/Deltas/component/useLocaleDate";
+import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import type { AuthorOverview } from "@/types/collections/posts";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
+import { sortByDate } from "@/stores/Notification/NotificationStore";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { useGSAP } from "@gsap/react";
 import NumberFlow, { continuous } from "@number-flow/react";
-import { gsap } from "gsap";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Cross1Icon } from "@radix-ui/react-icons";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, stagger, type HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
+import { usePathname } from "next/navigation";
+import type { CollectionSlug } from "payload";
 import { useShallow } from "zustand/shallow";
-import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
-import { sortByDate } from "@/stores/Notification/NotificationStore";
 import { useDomCursor } from "../../core/cursorWrapper";
 import { ReferencedLink } from "../Link/referencedLink";
 import { FrontImage } from "../Media/FrontImage";
-import { useQuery } from "@tanstack/react-query";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { Cross1Icon } from "@radix-ui/react-icons";
-import { Link, Button, MotionBtn } from "@/components/UX/Link";
-import type { CollectionSlug } from "payload";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useHumanTime } from "@/payload/collections/Deltas/component/useLocaleDate";
-import type { AuthorOverview } from "@/payload/collections/Posts/post-types";
+import {
+  MotionBlurScrollArea,
+  ProgressiveScrollArea
+} from "../Blur/ScrollArea";
+import { useLenis } from "lenis/react";
+import Lenis from "lenis";
 interface ExpandButtonProps {
   defaultWidth?: number;
   onContract?: () => void;
@@ -35,6 +47,8 @@ export const NotificationButton = (config: ExpandButtonProps) => {
   const { onContract, onExpand, ...props } = config;
   const { setDismissed, notifications, setRead, setAllRead } =
     useNotifications();
+  const pathname = usePathname();
+
   const [open, setOpen] = useState(false);
   const widths = useMemo(() => {
     return {
@@ -65,6 +79,9 @@ export const NotificationButton = (config: ExpandButtonProps) => {
   );
   const [nItems, setNItems] = useState(notifications);
   const [empty, setEmpty] = useState(false);
+  const closer = useCallback(() => {
+    setOpen(false);
+  }, []);
   const icon = useRef<SVGSVGElement>(null!),
     txt = useRef<HTMLDivElement>(null!);
   const { count } = useNotifications();
@@ -117,6 +134,7 @@ export const NotificationButton = (config: ExpandButtonProps) => {
   useEffect(() => {
     setEmpty(nItems.length === 0);
   }, [nItems]);
+
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <MotionPopoverTrigger
@@ -184,8 +202,8 @@ export const NotificationButton = (config: ExpandButtonProps) => {
         </svg>
       </MotionPopoverTrigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={10} positionMethod={"fixed"}>
-          <Popover.Popup className="relative min-w-[25rem] origin-[var(--transform-origin)] rounded-lg bg-button-background px-4.5 py-4 text-faded-foreground/90 shadow-lg shadow-muted-faded-background/30 backdrop-blur-xs transition-[transform,scale,opacity,background-color,color,box-shadow] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0">
+        <Popover.Positioner sideOffset={20} positionMethod={"fixed"}>
+          <Popover.Popup className="relative max-h-[25rem] min-h-[15rem] min-w-[25rem] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-faded-background/30 px-4.5 py-6 text-faded-foreground/90 shadow-lg/25 shadow-lg shadow-muted-faded-background/30 outline-1 outline-[oklch(var(--muted-faded-fg)/.2)] backdrop-blur-xs transition-[transform,scale,opacity,background-color,color,box-shadow] duration-200 data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:bg-faded-background/60 dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-[oklch(var(--muted-faded-fg)/.4)]">
             <div
               className={"absolute inset-0 opacity-30 mix-blend-multiply"}
               style={{
@@ -194,89 +212,203 @@ export const NotificationButton = (config: ExpandButtonProps) => {
                 backgroundPosition: "center"
               }}
             />
-            <Popover.Title className="mb-4 text-base font-semibold tracking-[-0.01em]">
+            <Popover.Title className="mb-1 text-base font-semibold tracking-[-0.01em]">
               Notification Center
             </Popover.Title>
 
-            <m.div
-              layoutScroll={true}
-              className="flex min-h-[15rem] flex-col gap-2.5 overflow-x-hidden overflow-y-scroll px-3 py-3"
-              transition={{
-                delayChildren: stagger(0.05)
-              }}
-            >
-              <AnimatePresence mode="sync" initial={true} propagate={true}>
-                {nItems.map((item, index) => {
-                  if (item.trigger) {
-                    switch (item.trigger.relationTo) {
-                      case "users": {
-                        switch (item.type) {
-                          case "follow":
-                            return (
-                              <UserNotification
-                                key={item.id + index}
-                                id={item.trigger.value as string}
-                                item={{
-                                  ...item,
-                                  trigger: {
-                                    relationTo: "users",
-                                    value: item.trigger.value as string
-                                  },
-                                  type: "follow",
-                                  id: item.id
-                                }}
-                                onDismiss={onDismiss}
-                                onRead={onRead}
-                              />
-                            );
-                        }
-                      }
-                      default:
-                        return (
-                          <NotificationItem
-                            key={item.id + index}
-                            item={{
-                              ...item,
-                              id: item.id
-                            }}
-                            onDismiss={onDismiss}
-                            onRead={onRead}
-                          />
-                        );
-                    }
-                  } else {
-                    return (
-                      <NotificationItem
-                        key={item.id + index}
-                        item={{
-                          ...item,
-                          id: item.id
-                        }}
-                        onDismiss={onDismiss}
-                        onRead={onRead}
-                      />
-                    );
+            <NotificationScroll
+              nItems={nItems}
+              onDismiss={onDismiss}
+              onRead={onRead}
+              closer={closer}
+            />
+            <AnimatePresence>
+              {pathname !== "/me/notifications" && nItems.length > 0 && (
+                <MotionLink
+                  className={
+                    "absolute right-0 bottom-1 left-0 flex w-full items-center justify-center px-3 py-1 font-sans"
                   }
-                })}
-
-                {nItems.length < 1 && (
-                  <m.div
-                    key="empty"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex h-[10rem] w-full items-center justify-center"
-                  >
-                    <Popover.Description className="text-sm leading-[114%] font-medium tracking-[-0.01em]">
-                      You are all caught up!
-                    </Popover.Description>
-                  </m.div>
-                )}
-              </AnimatePresence>
-            </m.div>
+                  initial={{
+                    opacity: 0,
+                    translateY: "50%"
+                  }}
+                  animate={{
+                    opacity: 1,
+                    translateY: "0%"
+                  }}
+                  transition={{
+                    type: "tween",
+                    duration: 0.15,
+                    ease: "easeOut"
+                  }}
+                  href="/me/notifications"
+                  onClick={closer}
+                >
+                  See All
+                </MotionLink>
+              )}
+            </AnimatePresence>
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>
+  );
+};
+const NotificationScroll = (props: {
+  nItems: SyncedNotification[];
+  onDismiss: ({ ids }: { ids: string[] }) => void;
+  onRead: ({ ids }: { ids: string[] }) => void;
+  closer: () => void;
+}) => {
+  const { nItems, onDismiss, onRead, closer } = props;
+  const wrapperRef = useRef<HTMLDivElement>(null!);
+  const scrollRef = useRef<HTMLDivElement>(null!);
+  const lenisRef = useRef<Lenis>(null!);
+  const ogLenis = useLenis();
+  const onEnter = useCallback(() => {
+    ogLenis?.stop();
+  }, [ogLenis]);
+  const onLeave = useCallback(() => {
+    ogLenis?.start();
+  }, [ogLenis]);
+  const onScroll = useCallback(
+    (lenis: Lenis) => {
+      const { progress, isScrolling, direction } = lenis;
+      if (isScrolling) {
+        const isNearEnd =
+          (direction === 1 && progress < 0.01) ||
+          (progress > 0.99 && direction === -1);
+
+        if (isNearEnd) {
+          // requestAnimationFrame(() => {
+          //   return requestAnimationFrame(() => {
+          //     if (lenis.direction === direction) {
+          //       const isStillSame =
+          //         direction === 1
+          //           ? lenis.progress < progress
+          //           : lenis.progress > progress;
+          //       if (isStillSame) {
+          //         ogLenis?.start();
+          //       }
+          //     }
+          //   });
+          // });
+        }
+      }
+    },
+    [ogLenis]
+  );
+  useEffect(() => {
+    if (lenisRef.current) return;
+    const content = scrollRef.current;
+    const wrapper = wrapperRef.current;
+    const container = wrapper.parentElement;
+    if (!content || !wrapper || !container)
+      return console.log("No content or wrapper");
+    console.log("wrapper and content found");
+    const lenny = new Lenis({
+      wrapper,
+      content,
+      autoRaf: true
+    });
+    lenisRef.current = lenny;
+    lenny.on("scroll", onScroll);
+    container.addEventListener("mouseover", onEnter);
+    container.addEventListener("mouseout", onLeave);
+    return () => {
+      if (lenisRef.current) {
+        lenisRef.current.off("scroll", onScroll);
+        container.removeEventListener("mouseover", onEnter);
+        container.removeEventListener("mouseout", onLeave);
+        lenisRef.current.destroy();
+        ogLenis?.start();
+        lenisRef.current = null!;
+      }
+    };
+  }, [onScroll, onEnter, onLeave, ogLenis]);
+  return (
+    <m.div
+      className="relative mb-4 max-h-[17rem] w-full flex-col items-center justify-start overflow-y-auto overscroll-contain px-3 py-6"
+      ref={wrapperRef}
+      layoutScroll={true}
+    >
+      <m.div
+        ref={scrollRef}
+        className={"flex flex-col gap-2.5"}
+        transition={{
+          delayChildren: stagger(0.05)
+        }}
+      >
+        <AnimatePresence mode="sync" initial={false}>
+          {nItems.map((item, index) => {
+            if (item.trigger) {
+              switch (item.trigger.relationTo) {
+                case "users": {
+                  switch (item.type) {
+                    case "follow":
+                      return (
+                        <UserNotification
+                          key={item.id + index}
+                          id={item.trigger.value as string}
+                          item={{
+                            ...item,
+                            trigger: {
+                              relationTo: "users",
+                              value: item.trigger.value as string
+                            },
+                            type: "follow",
+                            id: item.id
+                          }}
+                          onDismiss={onDismiss}
+                          onRead={onRead}
+                        />
+                      );
+                  }
+                }
+                default:
+                  return (
+                    <NotificationItem
+                      key={item.id + index}
+                      item={{
+                        ...item,
+                        id: item.id
+                      }}
+                      onDismiss={onDismiss}
+                      onRead={onRead}
+                    />
+                  );
+              }
+            } else {
+              return (
+                <NotificationItem
+                  key={item.id + index}
+                  item={{
+                    ...item,
+                    id: item.id
+                  }}
+                  onDismiss={onDismiss}
+                  onRead={onRead}
+                />
+              );
+            }
+          })}
+
+          {nItems.length < 1 && (
+            <m.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex h-[10rem] w-full items-center justify-center"
+            >
+              <Popover.Description className="text-sm leading-[114%] font-medium tracking-[-0.01em]">
+                You are all caught up!
+              </Popover.Description>
+            </m.div>
+          )}
+          {/* {nItems.length > 5 && ( */}
+        </AnimatePresence>
+      </m.div>
+    </m.div>
   );
 };
 
@@ -319,7 +451,7 @@ const NotificationItem = (
     <m.div
       key={props.title}
       ref={ref}
-      className="relative h-full overflow-hidden rounded-[8px] bg-transparent max-lg:w-[90vw] max-lg:min-w-[20rem] min-lg:min-h-[6rem] min-lg:w-[15vw]"
+      className="relative h-full overflow-hidden rounded-[8px] bg-transparent text-base outline-1 outline-muted-faded-foreground/0 transition-colors duration-150 ease-out-power2 hover:outline-muted-faded-foreground/50 max-lg:w-[90vw] max-lg:min-w-[20rem] min-lg:min-h-[6rem] min-lg:w-[15vw]"
       data-themed="background-color,border-color"
       initial={{
         translateX: "50%"
@@ -343,11 +475,11 @@ const NotificationItem = (
       <div className="relative flex h-full w-full">
         <div className="absolute inset-0 z-[5] rounded-[8px] bg-transparent-base/5 backdrop-blur-[0.5px]" />
         <article
-          className="relative z-20 flex h-full w-full items-center justify-center gap-5 p-4"
+          className="relative z-20 flex h-full w-full items-center justify-center gap-5 p-4 text-base"
           data-type="type"
         >
           <MotionBtn
-            className="absolute top-2 right-2 z-[12] flex aspect-square h-[2rem] items-center justify-center rounded-full outline-[1px]"
+            className="absolute top-2 right-2 z-[12] flex aspect-square h-[2rem] items-center justify-center rounded-full"
             aria-label="Close notification"
             initial={{
               scale: 0.9
@@ -393,15 +525,17 @@ const NotificationItem = (
               data-themed="color"
               style={{}}
             >
-              <ReferencedLink
-                onClick={onRead}
-                link={actionLink}
-                className="z-[5] inline-block bg-transparent"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {title}
-              </ReferencedLink>
+              {(actionLink && (
+                <ReferencedLink
+                  onClick={onRead}
+                  link={actionLink}
+                  className="z-[5] inline-block bg-transparent"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {title}
+                </ReferencedLink>
+              )) || <span>{title}</span>}
             </h1>
           </div>
         </article>

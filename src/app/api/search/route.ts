@@ -34,7 +34,7 @@ const collectionConfigs = {
   },
   posts: {
     table: "posts",
-    urlPattern: "/posts/{slug}",
+    urlPattern: "/essays/{slug}",
     selectFields: [
       "id",
       "title",

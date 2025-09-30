@@ -127,7 +127,15 @@ export const Notifications: CollectionConfig = {
         update: () => false
       },
       admin: {
-        hidden: true
+        components: {
+          Field: {
+            path: "@adminOnlyFields/Relationship",
+            serverProps: {
+              allowAuthor: false,
+              allowedRoles: ["admin"]
+            }
+          }
+        }
       },
       hasMany: false,
       maxDepth: 0

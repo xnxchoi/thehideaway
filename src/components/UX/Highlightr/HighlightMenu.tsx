@@ -27,48 +27,50 @@ import {
   type MouseEventHandler
 } from "react";
 import { toast } from "sonner";
-import {
-  HighlightMenuButton,
-  HighlightMenuProps,
-  MenuButtonCaption,
-  useFloater
-} from ".";
+import { HighlightMenuButton, HighlightMenuProps, MenuButtonCaption } from ".";
 import { usePrivateNote } from "./PrivateHighlights";
-import { HighlightCreateError, useHighlighter } from "./provider";
-import { MemoInput, SignInCard } from "./sideBarProvider";
+import { useFloater } from "./providers/FloatProvider";
+import { useHighlighter } from "./providers/HighlighterProvider";
+import { HighlightCreateError, HighlightError } from "./HighlightErrors";
+import { MemoInput, SignInCard } from "./providers/sideBarProvider";
 import { HighlightColors, HighlightPalette, Palettes } from "./stores";
 
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { MotionBtnProps } from "@/components/UX/Link/types";
-import { useRanger } from "./RangerProvider";
+import { useMotionValue, useTransform } from "motion/react";
 import { useShallow } from "zustand/shallow";
+import { useCitations } from "./providers/CitationProvider";
+import { useRanger } from "./providers/RangerProvider";
+import { useArticle } from "./providers/ArticleProvider";
 type ViewStates = "edit" | "signin" | "new";
 type DialogText = "header" | "title" | "description";
 type ViewStateMap = Record<ViewStates, Record<DialogText, string>>;
 
 export const FloatHighlightMenu = ({
   mounted,
-  handleUpdate,
-  handleSaveHighlight,
+
   handleChangeHighlightColor,
-  createCallback,
+  postDisabled,
+
   ref,
   style,
   floatingStyles,
   status,
   ...rest
 }: ComponentPropsWithRef<"div"> &
-  Pick<
-    HighlightMenuProps,
-    | "handleUpdate"
-    | "handleSaveHighlight"
-    | "handleChangeHighlightColor"
-    | "createCallback"
-  > & {
+  HighlightMenuProps & {
     floatingStyles: CSSProperties;
     mounted: boolean;
     status: "close" | "initial" | "open" | "unmounted";
   }) => {
+  const createCallback = useCitations((r) => r.create);
+  const handleUpdate = useCitations((r) => r.update);
+  const deleteHighlight = useCitations((r) => r.delete);
+  const tg = useRanger((r) => r.targetContainer);
+  const containerRef = useRef(tg);
+  useEffect(() => {
+    containerRef.current = tg;
+  }, [tg]);
   const palettee = useMemo(() => Palettes, []);
   const privateMemoOpen = usePrivateNote((r) => r.open);
   const [memoOpen, setMemoOpen] = useState(false);
@@ -81,50 +83,123 @@ export const FloatHighlightMenu = ({
   useEffect(() => {
     fc.current = focusedHighlight;
   }, [focusedHighlight]);
-  const target = useHighlighter(useShallow((r) => r.target));
-  const userId = useRPSession(useShallow((r) => r.id as null | string));
-  const postId = useMemo(() => target?.value || "", [target]);
+  const targetId = useArticle(useShallow((r) => r.id));
+  const aID = useRef(targetId);
+  useEffect(() => {
+    aID.current = targetId;
+  }, [targetId]);
+  const targetSlug = useArticle(useShallow((r) => r.slug));
+  const aSlug = useRef(targetSlug);
+  useEffect(() => {
+    aSlug.current = targetSlug;
+  }, [targetSlug]);
+  const user = useRPSession(useShallow((r) => r.id as null | string));
+  const userIdRef = useRef(user);
+  useEffect(() => {
+    userIdRef.current = user;
+    setEditorEnabled(!!user);
+  }, [user]);
+
   const currentHighlightColor = useHighlighter(
     useShallow((r) => r.currentColor)
   );
   const lastVisible = useRef(false);
   const [memo, setMemo] = useState("");
-  const [editorEnabled, setEditorEnabled] = useState(!!userId);
+  const memoRef = useRef(memo);
+  useEffect(() => {
+    memoRef.current = memo;
+  }, [memo]);
+  const [editorEnabled, setEditorEnabled] = useState(!!user);
   const savedSelectionRef = useRef<rangy.savedSelection | null>(null);
   const qc = useQueryClient();
   const [memoView, setMemoView] = useState<ViewStates>("signin");
   const setFocused = useHighlighter((r) => r.setFocusedHighlight);
-  useEffect(() => {
-    setEditorEnabled(!!userId);
-  }, [userId]);
 
+  const handleSaveHighlight: MouseEventHandler = useCallback(
+    async (e) => {
+      e.stopPropagation();
+      const focus = fc.current;
+      const container = containerRef.current;
+      if (!container) {
+        return;
+      }
+      const userId = userIdRef.current;
+
+      try {
+        if (!userId) {
+          throw new HighlightCreateError("user", "not_authenticated");
+        }
+        if (postDisabled) {
+          throw new HighlightCreateError("target", "disabled");
+        }
+        if (focus) {
+          await deleteHighlight({
+            focusedHighlight: focus
+          });
+        } else {
+          await createCallback({ params: { private: false }, container });
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          if (e instanceof HighlightError) {
+            errorToast(e.message);
+          }
+        }
+      }
+    },
+    [createCallback, deleteHighlight, postDisabled]
+  );
   const onSave: MouseEventHandler<HTMLButtonElement> = useCallback(
     async (e) => {
       e.preventDefault();
-      if (!userId) {
-        setMemoView("signin");
-        toast(t("Highlights.error.save.signin"));
-        return setSaving(false);
-      }
+
       try {
+        const container = containerRef.current;
+        const value = aID.current;
+        const slug = aSlug.current;
+        if (!container) {
+          throw new HighlightCreateError("params", "container");
+        }
+        if (!value) {
+          throw new HighlightCreateError("target", "invalid");
+        }
+        if (!slug) {
+          throw new HighlightCreateError("target", "invalid");
+        }
+        const userId = userIdRef.current;
+        if (!userId) {
+          setMemoView("signin");
+          toast(t("Highlights.error.save.signin"));
+          return setSaving(false);
+        }
+        const mamu = memoRef.current;
+        if (!mamu) {
+          throw new HighlightCreateError("memo", "empty");
+        }
+        if (mamu.length < 1) {
+          throw new HighlightCreateError("memo", "empty");
+        }
         setSaving(true);
         const ff = fc.current;
         if (!ff && !savedSelectionRef.current) {
-          throw new HighlightCreateError("selection");
+          throw new HighlightCreateError("selection", "invalid");
         }
         const r = await (ff
           ? handleUpdate({
               ...ff,
-              memo
+              memo: mamu
             })
           : (ranger.restoreSelection(
               savedSelectionRef.current as rangy.savedSelection
             ),
-            createCallback({ private: false, memo })));
+            createCallback({
+              params: { private: false, memo: mamu },
+              container
+            })));
         setFocused(r.reference);
         successToast(t("Highlights.saved"));
         qc.invalidateQueries({
-          queryKey: ["savedHighlights", postId]
+          queryKey: ["savedHighlights", { value: value, userId, slug: slug }]
         });
         savedSelectionRef.current &&
           ranger.removeMarkers(savedSelectionRef.current);
@@ -142,17 +217,7 @@ export const FloatHighlightMenu = ({
         setSaving(false);
       }
     },
-    [
-      userId,
-      t,
-      handleUpdate,
-      memo,
-      ranger,
-      createCallback,
-      setFocused,
-      qc,
-      postId
-    ]
+    [handleUpdate, ranger, createCallback, setFocused, t, qc]
   );
   const setRender = useFloater((r) => r.setOpen);
   const [saving, setSaving] = useState(false);
@@ -275,7 +340,7 @@ export const FloatHighlightMenu = ({
         (savedSelectionRef.current = null));
     }
     setDOpen(memoOpen);
-  }, [editorEnabled, memoOpen, ranger, userId]);
+  }, [editorEnabled, memoOpen, ranger]);
   return (
     mounted && (
       <div
@@ -309,10 +374,7 @@ export const FloatHighlightMenu = ({
           >
             <Dialog open={dOpen} onOpenChange={setMemoOpen}>
               <DialogTrigger asChild>
-                <HighlightMenuButton
-                  focusedHighlight={true}
-                  onClick={() => setMemoOpen(true)}
-                >
+                <HighlightMenuButton onClick={() => setMemoOpen(true)}>
                   <MenuButtonCaption icon={false}>
                     {viewMap[memoView].header}
                   </MenuButtonCaption>
@@ -368,10 +430,7 @@ export const FloatHighlightMenu = ({
             <HighlightMenuButton onClick={onPrivateClick}>
               <MenuButtonCaption icon={false}>Private Note</MenuButtonCaption>
             </HighlightMenuButton>
-            <HighlightMenuButton
-              focusedHighlight={!!focusedHighlight}
-              onClick={handleShareHighlight}
-            >
+            <HighlightMenuButton onClick={handleShareHighlight}>
               <MenuButtonCaption icon={false}>Share</MenuButtonCaption>
             </HighlightMenuButton>
             {focusedHighlight && (
@@ -429,9 +488,13 @@ const HighlightColorPickerItem = ({
   color: HighlightColors;
   handleSelect: (color: HighlightColors) => void;
 }) => {
-  const currentColor = useHighlighter((r) => r.currentColor);
+  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
   const [isActive, setIsActive] = useState(currentColor === color);
-  const palette = useMemo(() => HighlightPalette[color], [color]);
+  const palette = useMotionValue(color);
+  const paletteColor = useTransform(
+    palette,
+    (c) => `oklch(${HighlightPalette[c]}/.9)`
+  );
   const onMouseDown: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.preventDefault();
@@ -440,7 +503,26 @@ const HighlightColorPickerItem = ({
     },
     [color, handleSelect]
   );
-  const [variant, setVariant] = useState<"active" | "inactive">(
+  const variants = useMemo(
+    () => ({
+      hidden: {
+        opacity: 0,
+        scale: 0
+      },
+      active: {
+        opacity: 1,
+        scale: 1,
+        borderRadius: 3
+      },
+      inactive: {
+        opacity: 1,
+        scale: 1,
+        borderRadius: 2
+      }
+    }),
+    []
+  );
+  const [variant, setVariant] = useState<keyof typeof variants>(
     isActive ? "active" : "inactive"
   );
   const lastActive = useRef(isActive);
@@ -470,29 +552,14 @@ const HighlightColorPickerItem = ({
       transition={{ type: "spring", bounce: 0.25 }}
       whileTap={{ scale: isActive ? 1 : 0.9 }}
       animate={variant}
-      variants={{
-        hidden: {
-          opacity: 0,
-          scale: 0
-        },
-        active: {
-          opacity: 1,
-          scale: 1,
-          borderRadius: 3
-        },
-        inactive: {
-          opacity: 1,
-          scale: 1,
-          borderRadius: 2
-        }
-      }}
+      variants={variants}
       data-active={isActive}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={{
-        backgroundColor: `oklch(${palette}/.9)`,
+        backgroundColor: paletteColor,
         ...style
       }}
       disabled={isActive}

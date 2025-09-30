@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
@@ -38,7 +38,7 @@ interface DataTableSliderFilterProps<TData> {
 
 export function DataTableSliderFilter<TData>({
   column,
-  title,
+  title
 }: DataTableSliderFilterProps<TData>) {
   const id = React.useId();
 
@@ -95,7 +95,7 @@ export function DataTableSliderFilter<TData>({
         column.setFilterValue([numValue, range[1]]);
       }
     },
-    [column, min, range],
+    [column, min, range]
   );
 
   const onToInputChange = React.useCallback(
@@ -105,7 +105,7 @@ export function DataTableSliderFilter<TData>({
         column.setFilterValue([range[0], numValue]);
       }
     },
-    [column, max, range],
+    [column, max, range]
   );
 
   const onSliderValueChange = React.useCallback(
@@ -114,7 +114,7 @@ export function DataTableSliderFilter<TData>({
         column.setFilterValue(value);
       }
     },
-    [column],
+    [column]
   );
 
   const onReset = React.useCallback(
@@ -124,7 +124,7 @@ export function DataTableSliderFilter<TData>({
       }
       column.setFilterValue(undefined);
     },
-    [column],
+    [column]
   );
 
   return (
@@ -136,7 +136,7 @@ export function DataTableSliderFilter<TData>({
               role="button"
               aria-label={`Clear ${title} filter`}
               tabIndex={0}
-              className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
               onClick={onReset}
             >
               <XCircle />
@@ -149,7 +149,7 @@ export function DataTableSliderFilter<TData>({
             <>
               <Separator
                 orientation="vertical"
-                className="mx-0.5 data-[orientation=vertical]:h-4"
+                className="mx-[2px] data-[orientation=vertical]:h-[16px]"
               />
               {formatValue(columnFilterValue[0])} -{" "}
               {formatValue(columnFilterValue[1])}
@@ -158,12 +158,12 @@ export function DataTableSliderFilter<TData>({
           ) : null}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="flex w-auto flex-col gap-4">
-        <div className="flex flex-col gap-3">
-          <p className="font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+      <PopoverContent align="start" className="flex w-auto flex-col gap-[16px]">
+        <div className="flex flex-col gap-[12px]">
+          <p className="leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
             {title}
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-[16px]">
             <Label htmlFor={`${id}-from`} className="sr-only">
               From
             </Label>
@@ -180,10 +180,10 @@ export function DataTableSliderFilter<TData>({
                 max={max}
                 value={range[0]?.toString()}
                 onChange={onFromInputChange}
-                className={cn("h-8 w-24", unit && "pr-8")}
+                className={cn("h-[32px] w-[96px]", unit && "pr-[32px]")}
               />
               {unit && (
-                <span className="absolute top-0 right-0 bottom-0 flex items-center rounded-r-md bg-accent px-2 text-muted-foreground text-sm">
+                <span className="text-md absolute top-0 right-0 bottom-0 flex items-center rounded-r-lg bg-accent px-[8px] text-muted-foreground">
                   {unit}
                 </span>
               )}
@@ -204,10 +204,10 @@ export function DataTableSliderFilter<TData>({
                 max={max}
                 value={range[1]?.toString()}
                 onChange={onToInputChange}
-                className={cn("h-8 w-24", unit && "pr-8")}
+                className={cn("h-[32px] w-[96px]", unit && "pr-[32px]")}
               />
               {unit && (
-                <span className="absolute top-0 right-0 bottom-0 flex items-center rounded-r-md bg-accent px-2 text-muted-foreground text-sm">
+                <span className="text-md absolute top-0 right-0 bottom-0 flex items-center rounded-r-lg bg-accent px-[8px] text-muted-foreground">
                   {unit}
                 </span>
               )}

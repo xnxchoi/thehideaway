@@ -9,10 +9,10 @@ import {
   AuthorSingle,
   ReqArticle,
   type MediaReq
-} from "../post-types";
+} from "../../../../types/collections/posts";
 import { cache } from "react";
 import { getPostBookMarks } from "./getPostBookmarks";
-import type { TagOverview } from "../../Deltas/delta-types";
+import type { TagOverview } from "../../../../types/collections/delta";
 
 /**
  * @param limit - The number of posts to return

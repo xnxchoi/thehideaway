@@ -1,8 +1,9 @@
+import type { ImageCollectionOverview } from "@/components/UX/Media/types";
 import { type Asset, Notification } from "@/payload-types";
 import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
 
-export type SyncedAsset = Partial<Omit<Asset, keyof NotificationThumb>> &
-  RequiredAndNonNullable<NotificationThumb>;
+export type SyncedAsset = Partial<Omit<Asset, keyof ImageCollectionOverview>> &
+  RequiredAndNonNullable<ImageCollectionOverview>;
 
 export type SyncedNotification = Omit<ResponseNotification, "trigger"> & {
   trigger: {
@@ -54,7 +55,3 @@ export type NotificationDoc = Omit<
 export type ResponseNotification = Omit<NotificationDoc, "thumbnail"> & {
   thumbnail: SyncedAsset | null;
 };
-type NotificationThumb = Pick<
-  Asset,
-  "alt" | "id" | "mimeType" | "url" | "thumbnailURL" | "darkmode"
->;

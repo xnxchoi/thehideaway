@@ -26,7 +26,7 @@ export function DataTableToolbar<TData>({
 
   const columns = React.useMemo(
     () => table.getAllColumns().filter((column) => column.getCanFilter()),
-    [table],
+    [table]
   );
 
   const onReset = React.useCallback(() => {
@@ -38,12 +38,12 @@ export function DataTableToolbar<TData>({
       role="toolbar"
       aria-orientation="horizontal"
       className={cn(
-        "flex w-full items-start justify-between gap-2 p-1",
-        className,
+        "flex w-full items-start justify-between gap-3.5 p-1.5",
+        className
       )}
       {...props}
     >
-      <div className="flex flex-1 flex-wrap items-center gap-2">
+      <div className="flex flex-1 flex-wrap items-center gap-3.5">
         {columns.map((column) => (
           <DataTableToolbarFilter key={column.id} column={column} />
         ))}
@@ -60,7 +60,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3.5">
         {children}
         <DataTableViewOptions table={table} />
       </div>
@@ -72,7 +72,7 @@ interface DataTableToolbarFilterProps<TData> {
 }
 
 function DataTableToolbarFilter<TData>({
-  column,
+  column
 }: DataTableToolbarFilterProps<TData>) {
   {
     const columnMeta = column.columnDef.meta;
@@ -103,7 +103,7 @@ function DataTableToolbarFilter<TData>({
                 className={cn("h-8 w-[120px]", columnMeta.unit && "pr-8")}
               />
               {columnMeta.unit && (
-                <span className="absolute top-0 right-0 bottom-0 flex items-center rounded-r-md bg-accent px-2 text-muted-foreground text-sm">
+                <span className="absolute top-0 right-0 bottom-0 flex items-center rounded-r-md bg-accent px-2 text-sm text-muted-foreground">
                   {columnMeta.unit}
                 </span>
               )}

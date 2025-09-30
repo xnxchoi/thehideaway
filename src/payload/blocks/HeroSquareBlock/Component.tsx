@@ -1,52 +1,52 @@
-import {Where} from "payload";
+import { Where } from "payload";
 import React from "react";
 
-import {HomeArticleLayout} from "@/components/layouts/HomeArticleLayout";
-import type {HeroSquareBlock as HeroSquareBlockProps} from "@/payload-types";
-import {ArticleOverview} from "@/payload/collections/Posts/post-types";
-import {queryPostOverview} from "@/payload/collections/Posts/api/queryPostOverview";
+import { HomeArticleLayout } from "@/components/layouts/HomeArticleLayout";
+import type { HeroSquareBlock as HeroSquareBlockProps } from "@/payload-types";
+import { ArticleOverview } from "@/types/collections/posts";
+import { queryPostOverview } from "@/payload/collections/Posts/api/queryPostOverview";
 
 export const HeroSquareBlock: React.FC<
-	{
-		id?: string;
-	} & HeroSquareBlockProps
+  {
+    id?: string;
+  } & HeroSquareBlockProps
 > = async (props) => {
-	const {
-		id,
-		categories,
-		introContent,
-		limit: limitFromProps,
-		populateBy,
-		selectedDocs,
-	} = props;
-	const limit = limitFromProps || 8;
-	const posts: ArticleOverview[] = [];
+  const {
+    id,
+    categories,
+    introContent,
+    limit: limitFromProps,
+    populateBy,
+    selectedDocs
+  } = props;
+  const limit = limitFromProps || 8;
+  const posts: ArticleOverview[] = [];
 
-	if (populateBy === "collection") {
-		const flattenedCategories = categories?.map((category) => {
-			if (typeof category === "object") return category.id;
-			return category;
-		});
-		const where: Where = {};
-		if (flattenedCategories) {
-			where.category = {
-				in: flattenedCategories,
-			};
-		}
-		const fetchedPosts = await queryPostOverview({
-			where,
-			limit,
-		});
-		if (fetchedPosts instanceof Error) {
-			console.error(fetchedPosts);
-		} else {
-			posts.push(...fetchedPosts);
-		}
+  if (populateBy === "collection") {
+    const flattenedCategories = categories?.map((category) => {
+      if (typeof category === "object") return category.id;
+      return category;
+    });
+    const where: Where = {};
+    if (flattenedCategories) {
+      where.category = {
+        in: flattenedCategories
+      };
+    }
+    const fetchedPosts = await queryPostOverview({
+      where,
+      limit
+    });
+    if (fetchedPosts instanceof Error) {
+      console.error(fetchedPosts);
+    } else {
+      posts.push(...fetchedPosts);
+    }
 
-		return <HomeArticleLayout posts={posts} />;
-	} else {
-		return <></>;
-	}
+    return <HomeArticleLayout posts={posts} />;
+  } else {
+    return <></>;
+  }
 };
 /**
  *  } else if (selectedDocs?.length) {

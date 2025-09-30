@@ -1,8 +1,9 @@
 import { createStore } from "zustand/vanilla";
 import { subscribeWithSelector } from "zustand/middleware";
+import type { CursorStates } from "@/components/UX/Cursor";
 
 export type HA_CURSOR = {
-  cursorState: "FOCUS" | null | string;
+  cursorState: CursorStates | string;
   mouseCoordinates: {
     x: number;
     y: number;
@@ -22,7 +23,7 @@ export type HA_CURSOR_ACT = {
 };
 
 const curInit: HA_CURSOR = {
-  cursorState: null,
+  cursorState: "DEFAULT",
   mouseCoordinates: {
     x: 0,
     y: 0

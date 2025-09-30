@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SoundBar } from "../Radio/soundBar";
 import * as m from "motion/react-m";
 import { Variants } from "motion/react";
@@ -9,20 +9,44 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useRadioStore } from "@/providers/RadioProvider";
 import { useShallow } from "zustand/shallow";
+import { useIsMobile } from "@/providers/MiddleMan";
+import {
+  Component1Icon,
+  DragHandleDots1Icon,
+  DragHandleDots2Icon
+} from "@radix-ui/react-icons";
+import { TimeComponent } from "./TimeComponent";
 
 type SideNotchProps = {
   sideDrawer?: boolean;
 };
 export const SideNotch = (props: SideNotchProps) => {
   const { sideDrawer = false } = props;
-  const navIsOpen = useRPStore(useShallow((state) => state.navIsOpen));
-  const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
-
+  const { isMobile } = useIsMobile();
+  const lastMobile = useRef(isMobile);
   const setSidebarIsTransitioning = useRPStore(
     (state) => state.setSideDrawerIsTransitioning
   );
-  const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
+  const [wantMobile, setWantMobile] = useState(isMobile);
+  const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
+  useEffect(() => {
+    if (lastMobile.current !== isMobile) {
+      setWantMobile(isMobile);
+    }
+    lastMobile.current = isMobile;
+  }, [isMobile]);
+  return wantMobile ? (
+    <MobileNotch sideDrawer={sideDrawer} />
+  ) : (
+    <DeskNotch sideDrawer={sideDrawer} />
+  );
+};
+const DeskNotch = (props: SideNotchProps) => {
+  const { sideDrawer = false } = props;
+  const navIsOpen = useRPStore(useShallow((state) => state.navIsOpen));
+  const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
 
+  const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
   const setCurTheme = useCursorStore((state) => state.setCursorTheme);
   const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
   const onEnter = useCallback(() => {
@@ -35,7 +59,7 @@ export const SideNotch = (props: SideNotchProps) => {
       setSidebarOpen(false);
     }
   }, [navIsOpen, setSidebarOpen]);
-  const { left } = useMenu((r) => r.frames);
+  const { left, bottom } = useMenu(useShallow((r) => r.frames));
   const notchRef = useRef<HTMLDivElement>(null);
   const viewportWidth = useRPStore(useShallow((r) => r.viewportWidth));
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
@@ -98,7 +122,6 @@ export const SideNotch = (props: SideNotchProps) => {
   useEffect(() => {
     setV(getVariant(isOpen));
   }, [getVariant, isOpen]);
-
   const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
   const cursorState = useCursorStore(useShallow((state) => state.cursorState));
   const { onMouseEnter, onMouseLeave } = useDomCursor({
@@ -132,17 +155,151 @@ export const SideNotch = (props: SideNotchProps) => {
       >
         <m.div
           className={
-            "flex h-full w-full max-w-full flex-col items-center justify-evenly gap-0 overflow-hidden bg-transparent pr-[5px] pl-[0px]"
+            "flex h-full w-full max-w-full flex-col items-center justify-around gap-0 overflow-hidden bg-transparent pr-[5px] pl-[0px]"
           }
         >
           <m.span
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             onClick={toggleSideDrawer}
-            style={{ writingMode: "sideways-lr" }}
-            className="z-[100] font-sans text-[12px] font-bold text-[oklch(var(--n-s-fg)/1)]"
+            className="z-[100] flex items-center justify-center gap-[6px] font-sans text-xs font-bold text-[oklch(var(--n-s-fg)/1)]"
           >
-            CTRL
+            <span className="relative flex h-full w-full items-center justify-start overflow-hidden">
+              <TimeComponent />
+            </span>
+          </m.span>
+          {hasRadio && <SoundBar />}
+        </m.div>
+      </m.div>
+    </m.div>
+  );
+};
+const MobileNotch = (props: SideNotchProps) => {
+  const { sideDrawer = false } = props;
+  const navIsOpen = useRPStore(useShallow((state) => state.navIsOpen));
+  const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
+  const setSidebarIsTransitioning = useRPStore(
+    (state) => state.setSideDrawerIsTransitioning
+  );
+  const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
+
+  const setCurTheme = useCursorStore((state) => state.setCursorTheme);
+  const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
+  const onEnter = useCallback(() => {
+    setCurTheme("dark");
+  }, [setCurTheme]);
+  const lastSidebarState = useRef(isOpen);
+  const inited = useRef(false);
+  useEffect(() => {
+    if (navIsOpen) {
+      setSidebarOpen(false);
+    }
+  }, [navIsOpen, setSidebarOpen]);
+  const { bottom } = useMenu(useShallow((r) => r.frames));
+  const notchRef = useRef<HTMLDivElement>(null);
+
+  const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
+  useGSAP(
+    () => {
+      gsap.to(notchRef.current, {
+        duration: 0.6,
+        delay: 0.3,
+        ease: "power2.inOut",
+        bottom: sideDrawer ? window.innerHeight * 0.1 : bottom
+      });
+    },
+    { dependencies: [bottom] }
+  );
+  const variants: Variants = useMemo(
+    () => ({
+      hidden: {
+        opacity: 0,
+        y: "100%"
+      },
+      exit: {
+        opacity: 0,
+        y: "100%",
+        transition: {
+          type: "tween",
+          duration: 1.2,
+          ease: [0.77, 0.0, 0.175, 1]
+        }
+      },
+      idle: {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        transition: {
+          type: "tween",
+          duration: 1.2,
+          ease: [0.77, 0.0, 0.175, 1]
+        }
+      },
+      init: {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        transition: {
+          type: "tween",
+          duration: 1.2,
+          ease: "easeInOut"
+        }
+      }
+    }),
+    []
+  );
+
+  const getVariant = useCallback((iO: boolean) => {
+    lastSidebarState.current = iO;
+    if (!inited.current) {
+      inited.current = true;
+      return "init";
+    } else {
+      return "idle";
+    }
+  }, []);
+
+  const [v, setV] = useState<"init" | "idle" | "exit" | "hidden">("hidden");
+  useEffect(() => {
+    setV(getVariant(isOpen));
+  }, [getVariant, isOpen]);
+  const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
+  const cursorState = useCursorStore(useShallow((state) => state.cursorState));
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    enterCondition: () => (isOpen ? cursorState || "FOCUS" : "FOCUS"),
+    leaveCondition: () => null
+  });
+  return (
+    <m.div
+      className="fixed bottom-[30px] z-[239] h-[70px] w-[45vw] p-0"
+      ref={notchRef}
+      variants={variants}
+      animate={v}
+      initial={"idle"}
+      exit={"exit"}
+    >
+      <m.div
+        className={
+          "relative flex h-full w-full items-center justify-center bg-[oklch(var(--n-s-bg)/1)] mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[15px] py-[5px]"
+        }
+        onMouseEnter={onEnter}
+        onMouseLeave={resetCursorTheme}
+        data-themed="background-color, color"
+      >
+        <m.div
+          className={
+            "flex h-full w-full max-w-full items-center justify-evenly gap-0 overflow-hidden bg-transparent pr-[5px] pl-[0px]"
+          }
+        >
+          <m.span
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            onClick={toggleSideDrawer}
+            className="z-[100] flex flex-col items-center justify-center gap-[2.5px] font-sans text-[12px] font-bold text-[oklch(var(--n-s-fg)/1)]"
+          >
+            <div className="h-[2px] w-[8px] bg-[oklch(var(--n-s-fg)/1)]"></div>
+            <div className="h-[2px] w-[8px] bg-[oklch(var(--n-s-fg)/1)]"></div>
+            <div className="h-[2px] w-[8px] bg-[oklch(var(--n-s-fg)/1)]"></div>
           </m.span>
           {hasRadio && <SoundBar />}
         </m.div>

@@ -40,7 +40,21 @@ export const Tags: CollectionConfig<"tags"> = {
     },
 
     ...AuthorField(false),
-    ...slugField("title")
+    ...slugField("title"),
+    {
+      name: "tagged",
+      type: "join",
+      on: "tagged",
+      collection: [
+        "posts",
+        "delta",
+        "profile",
+        "pages",
+        "albums",
+        "playlists",
+        "tracks"
+      ]
+    }
   ],
   hooks: {
     beforeChange: [sanitizeAuthor(false)]

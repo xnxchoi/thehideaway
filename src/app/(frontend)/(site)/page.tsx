@@ -12,7 +12,7 @@ export default async function HomePage() {
   });
 
   return (
-    <RPage slug={["home"]} type={"pages"}>
+    <RPage key={"home"} slug={["home"]} type={"pages"}>
       <div className="pt-[23px] pb-10 lg:pt-[80px]">
         <div className="mx-2.5 my-0 max-w-[600px] sm:mx-auto lg:max-w-[98vw]">
           <HomeArticleLayout posts={posts} />

@@ -1,19 +1,18 @@
 "use client";
-import {usePathname} from "next/navigation";
+import { usePathname } from "next/navigation";
 
-import {createStore} from "zustand/vanilla";
+import { getMenuPagePreviewKey } from "@/utilities/Helpers";
+import type { CollectionSlug } from "payload";
 import {
-	createContext,
-	ReactNode,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef
 } from "react";
-import {useStore} from "zustand/index";
-import {getMenuPagePreviewKey} from "@/utilities/Helpers";
-import type {CollectionSlug} from "payload";
-import {playlists} from "../../payload-generated-schema";
+import { useStore } from "zustand/index";
+import { createStore } from "zustand/vanilla";
 
 /**
  *
@@ -22,17 +21,19 @@ import {playlists} from "../../payload-generated-schema";
  * @todo confirm the collections are exhaustive & security vulnerabilities don't exist
  *
  */
-type ContentCollections<T extends CollectionSlug> = Extract<CollectionSlug, T>;
-export type FrontEndCollections = ContentCollections<
-	| "pages"
-	| "posts"
-	| "delta"
-	| "users"
-	| "categories"
-	| "albums"
-	| "playlists"
-	| "search"
-	| "tags"
+
+export type FrontEndCollections = Extract<
+  CollectionSlug,
+  | "pages"
+  | "posts"
+  | "delta"
+  | "users"
+  | "tags"
+  | "albums"
+  | "playlists"
+  | "categories"
+  | "profile"
+  | "series"
 >;
 
 /**
@@ -65,12 +66,102 @@ export type FrontEndCollections = ContentCollections<
  *
  */
 export type PageType =
-	| FrontEndCollections
-	| "account"
-	| "404"
-	| "private"
-	| "archives"
-	| "search";
+  | "auth"
+  | FrontEndCollections
+  | "account"
+  | "404"
+  | "home"
+  | "search"
+  | "me";
+
+export interface PageTypeSlugMap {
+  auth: ["/auth"];
+  account: ["/account"];
+  home: ["/", "/home"];
+  search: ["/search"];
+  categories: ["/archived"];
+  tags: ["/tagged"];
+  profile: ["/users/:id", "/users/:id/profile", "/@:userHandle"];
+  albums: ["/rp.fm/albums"];
+  playlists: ["/rp.fm/playlists"];
+  posts: ["/essays"];
+  delta: ["/delta"];
+  series: ["/series"];
+  users: ["/users", "/@:userHandle"];
+  me: ["/me"];
+}
+const pageTypeMap: Record<PageType, string[]> = {
+  auth: ["/auth"],
+  account: ["/account"],
+  home: ["/", "/home"],
+  search: ["/search"],
+  categories: ["/archived"],
+  tags: ["/tagged"],
+  profile: ["/users/:id", "/users/:id/profile", "/@:userHandle"],
+  albums: ["/rp.fm/albums"],
+  playlists: ["/rp.fm/playlists"],
+  posts: ["/essays"],
+  delta: ["/delta"],
+  //   series: ["/series"],
+  pages: ["/:slug"],
+  404: ["/404"],
+  users: ["/users", "/@:userHandle"],
+  me: ["/me"]
+};
+const pathPageTypeMap = {
+  "/auth": "auth",
+  "/account": "account",
+  "/home": "home",
+  "/search": "search",
+  "/archived": "categories",
+  "/tagged": "tags",
+  "/@:userHandle": "profiles",
+  "/@:userHandle/:slug": "users",
+  "/users/:id": "profiles",
+  "/users/:id/profile": "profiles",
+  "/rp.fm/albums": "albums",
+  "/rp.fm/playlists": "playlists",
+  "/essays": "posts",
+  "/delta": "delta",
+  "/series": "series",
+  "/users": "users",
+
+  "/me": "me"
+};
+export const authRegex =
+  /^\/auth((?:\/[\p{L}\p{N}]+(?:[-._]+[\p{L}\p{N}]+)*){0,3})$/gu;
+export const accountRegex =
+  /^\/account((?:\/[\p{L}\p{N}]+(?:[-._]+[\p{L}\p{N}]+)*){0,3})$/gu;
+export const userRegex =
+  /^\/((users((?:\/[\p{L}\p{N}]+(?:[-._]+[\p{L}\p{N}]+)*){0,3}))|(@[\p{L}\p{N}]+))$/gu;
+export const categoryRegex = /^\/archived(\/.+)?$/gu;
+export const tagRegex = /^\/tagged(\/.+)?$/gu;
+export const pathNameToPageType = (pn: string) => {
+  if (authRegex.test(pn)) return "auth";
+  if (accountRegex.test(pn)) return "account";
+  if (userRegex.test(pn)) return "users";
+  if (categoryRegex.test(pn)) return "categories";
+  if (tagRegex.test(pn)) return "tags";
+  if (pn === "/") return "home";
+  if (pn === "/home") return "home";
+  if (pn === "/search") return "search";
+  if (pn.startsWith("/me")) return "me";
+  if (pn.startsWith("/essays")) return "posts";
+  if (pn.startsWith("/delta")) return "delta";
+  if (pn.startsWith("/rp.fm/albums")) return "albums";
+  if (pn.startsWith("/rp.fm/playlists")) return "playlists";
+  if (pn.startsWith("/series")) return "series";
+  if (pn.startsWith("/users")) return "users";
+  if (pn === "/404") return "404";
+  return "pages";
+};
+export const equalPageType = (pathName1: string, pathName2: string) => {
+  const p1 = pathName1.split("/")[1];
+  const p2 = pathName2.split("/")[1];
+  const isSame = Boolean(p1 && p2) && Boolean(p1 === p2);
+  console.log("isSame", isSame);
+  return isSame;
+};
 /**
  *
  * archive: Sort of like the "Front Page" for a certain type of content.
@@ -90,208 +181,206 @@ export type PageType =
  *
  */
 export type LayoutType =
-	| "archive"
-	| "single"
-	| "paginated"
-	| "page"
-	| "dynamic";
+  | "archive"
+  | "single"
+  | "paginated"
+  | "page"
+  | "dynamic";
 export type RP_Voyage = {
-	url: string;
-	pathName: string;
-	slug: string[];
-	showScrollIndicator: boolean | null;
-	pageType: PageType;
-	layoutType: LayoutType;
-	is404: boolean;
-	isHome: boolean;
+  url: string;
+  pathName: string;
+  slug: string[];
+  showScrollIndicator: boolean | null;
+  pageType: PageType;
+  layoutType: LayoutType;
+  is404: boolean;
+  isHome: boolean;
 
-	pageKey: string | -1;
+  pageKey: string | -1;
 };
 
 export type PageSlug = string[];
 export type PageURL = {
-	pageType: PageType;
-	slug: PageSlug;
+  pageType: PageType;
+  slug: PageSlug;
 };
 
 export type RP_Voyaget = {
-	reset: () => void;
-	setSlug: (l: string[]) => void;
-	setPageType: (l: PageType) => void;
-	setPage: (l: {
-		pageType: PageType;
-		slug: string[];
-		layoutType?: LayoutType;
-	}) => void;
-	setIs404: (l: boolean) => void;
-	setIsHome: (l: boolean) => void;
+  reset: () => void;
+  setSlug: (l: string[]) => void;
+  setPageType: (l: PageType) => void;
+  setPage: (l: {
+    pageType: PageType;
+    slug: string[];
+    layoutType?: LayoutType;
+  }) => void;
+  setIs404: (l: boolean) => void;
+  setIsHome: (l: boolean) => void;
 
-	setUrl: (l: string) => void;
-	setPageKey: (l: string | -1) => void;
-	setPathName: (l: string) => void;
-	setShowScrollIndicator: (l: boolean | null) => void;
+  setUrl: (l: string) => void;
+  setPageKey: (l: string | -1) => void;
+  setPathName: (l: string) => void;
+  setShowScrollIndicator: (l: boolean | null) => void;
 };
 export type RP_Voyages = RP_Voyage & RP_Voyaget;
 
 const initialState: RP_Voyage = {
-	pageKey: -1,
-	pageType: "pages",
-	layoutType: "page",
-	slug: [],
+  pageKey: -1,
+  pageType: "pages",
+  layoutType: "page",
+  slug: [],
 
-	is404: false,
-	isHome: false,
-	url: "/",
-	pathName: "/",
-	showScrollIndicator: null,
+  is404: false,
+  isHome: false,
+  url: "/",
+  pathName: "/",
+  showScrollIndicator: null
 };
 
 const setHome = (pathName: string) => pathName === "/" || pathName === "/home";
 const setPageK = (slug: string[]) =>
-	slug.length > 0 ? getMenuPagePreviewKey("pages", slug[0]!) : "default";
+  slug.length > 0 ? getMenuPagePreviewKey("pages", slug[0]!) : "default";
 export const createVoyageur = (initState: RP_Voyage = initialState) => {
-	return createStore<RP_Voyages>()((set) => ({
-		...initState,
-		setIs404: (l: boolean) => set((state) => ({is404: l})),
+  return createStore<RP_Voyages>()((set) => ({
+    ...initState,
+    setIs404: (l: boolean) => set((state) => ({ is404: l })),
 
-		setPageType: (l: PageType) => set((state) => ({pageType: l})),
-		setSlug: (l: string[]) => set((state) => ({slug: l})),
-		setIsHome: (l: boolean) => set((state) => ({isHome: l})),
-		setPageKey: (l: string | -1) => set((state) => ({pageKey: l})),
-		setUrl: (l: string) => set((state) => ({url: l})),
-		setPathName: (l: string) => set((state) => ({pathName: l})),
-		setPage: (l: {
-			pageType: PageType;
-			slug: string[];
-			layoutType?: LayoutType;
-		}) =>
-			set((state) => ({
-				...state,
-				pageType: l.pageType,
-				slug: l.slug,
-				pageKey: setPageK(l.slug),
-				layoutType: l.layoutType || "page",
-			})),
-		setShowScrollIndicator: (l: boolean | null) =>
-			set((state) => ({showScrollIndicator: l})),
-		reset: () =>
-			set(
-				(state) => ({
-					...state,
-					showScrollIndicator: null,
-					is404: false,
+    setPageType: (l: PageType) => set((state) => ({ pageType: l })),
+    setSlug: (l: string[]) => set((state) => ({ slug: l })),
+    setIsHome: (l: boolean) => set((state) => ({ isHome: l })),
+    setPageKey: (l: string | -1) => set((state) => ({ pageKey: l })),
+    setUrl: (l: string) => set((state) => ({ url: l })),
+    setPathName: (l: string) => set((state) => ({ pathName: l })),
+    setPage: (l: {
+      pageType: PageType;
+      slug: string[];
+      layoutType?: LayoutType;
+    }) =>
+      set((state) => ({
+        ...state,
+        pageType: l.pageType,
+        slug: l.slug,
+        pageKey: setPageK(l.slug),
+        layoutType: l.layoutType || "page"
+      })),
+    setShowScrollIndicator: (l: boolean | null) =>
+      set((state) => ({ showScrollIndicator: l })),
+    reset: () =>
+      set(
+        (state) => ({
+          ...state,
+          showScrollIndicator: null,
+          is404: false,
 
-					isHome: false,
-					pageKey: -1,
-					slug: [],
-				}),
-				true,
-			),
-	}));
+          isHome: false,
+          pageKey: -1,
+          slug: []
+        }),
+        true
+      )
+  }));
 };
 export type VoyageAPI = ReturnType<typeof createVoyageur>;
+const voyagePaths = {
+  posts: {},
+  delta: {},
+  account: {},
+  auth: {},
+  archived: {},
+  me: {},
+  register: {},
+  "rp.fm": {},
+  series: {},
+  surf: {},
+  tagged: {},
+  users: {}
+} as const;
+
 export const archiveRegex = new RegExp(
-	`^\/(posts|delta|albums|playlists|categories|tags)?\/archives(\/d+)?$`,
+  `^\/(posts|delta|albums|playlists|categories|tags)?\/archives(\/d+)?$`
 );
 export const isArchive = (pn: string) =>
-	archiveRegex.test(pn) ? "archive" : "single";
+  archiveRegex.test(pn) ? "archive" : "single";
 export const VoyageContext = createContext<VoyageAPI | undefined>(undefined);
 export const VoyageurProvider = (l: { children: ReactNode }) => {
-	const {children} = l;
-	const vy = useRef<VoyageAPI>(undefined!);
-	const pathName = usePathname();
-	const frontSlu: { [x in PageType]: boolean } = {
-		pages: true,
-		posts: true,
-		delta: true,
-		search: true,
-		users: true,
+  const { children } = l;
+  const vy = useRef<VoyageAPI>(undefined!);
+  const pathName = usePathname();
 
-		account: true,
-		"404": true,
-		categories: true,
-		albums: true,
-		playlists: true,
-		tags: true,
-		private: true,
-		archives: true,
-	};
-	const pageAndPathToLayoutType = useCallback(
-		({pn, pageType}: { pn: string; pageType: PageType }) => {
-			switch (pageType) {
-				case "pages":
-				case "account":
-					return "page";
-				case "posts":
-				case "delta":
-				case "albums":
-				case "playlists":
-				case "categories":
+  const pageAndPathToLayoutType = useCallback(
+    ({ pn, pageType }: { pn: string; pageType: PageType }) => {
+      switch (pageType) {
+        case "pages":
+        case "account":
+          return "page";
+        case "posts":
+        case "delta":
+        case "albums":
+        case "playlists":
+        case "categories":
 
-				case "tags":
-					return isArchive(pn);
-				default:
-					return "page";
-			}
-		},
-		[],
-	);
-	const frontSlugs = Object.keys(frontSlu).filter(
-		(k) => frontSlu[k as PageType],
-	) as PageType[];
-	if (!vy.current) {
-		const pathnames = pathName.split("/").slice(1);
-		const pathToType =
-			(pathnames.length > 0 &&
-				frontSlugs.some((s) => s === pathnames[0]) &&
-				(pathnames[0] as PageType)) ||
-			"pages";
-		vy.current = createVoyageur({
-			...initialState,
-			pathName: pathName,
-			isHome: setHome(pathName),
-			pageType: pathToType,
-			layoutType: pageAndPathToLayoutType({
-				pn: pathName,
-				pageType: pathToType,
-			}),
-		});
-	}
+        case "tags":
+          return isArchive(pn);
+        default:
+          return "page";
+      }
+    },
+    []
+  );
+  const frontSlugs = Object.keys(voyagePaths);
+  if (!vy.current) {
+    const pathnames = pathName.split("/").slice(1);
+    const pathToType =
+      (pathnames.length > 0 &&
+        frontSlugs.some((s) => s === pathnames[0]) &&
+        (pathnames[0] as PageType)) ||
+      "pages";
+    vy.current = createVoyageur({
+      ...initialState,
+      pathName: pathName,
+      isHome: setHome(pathName),
+      pageType: pathToType,
+      layoutType: pageAndPathToLayoutType({
+        pn: pathName,
+        pageType: pathToType
+      })
+    });
+  }
 
-	return (
-		<VoyageContext.Provider value={vy.current}>
-			{children}
-		</VoyageContext.Provider>
-	);
+  return (
+    <VoyageContext.Provider value={vy.current}>
+      {children}
+    </VoyageContext.Provider>
+  );
 };
-export const useVoyageur = <T, >(selector: (store: RP_Voyages) => T): T => {
-	const context = useContext(VoyageContext);
-	if (context === undefined) {
-		throw new Error("useVoyageur must be used within a VoyageurProvider");
-	}
+export const useVoyageur = <T,>(selector: (store: RP_Voyages) => T): T => {
+  const context = useContext(VoyageContext);
+  if (context === undefined) {
+    throw new Error("useVoyageur must be used within a VoyageurProvider");
+  }
 
-	return useStore(context, selector);
+  return useStore(context, selector);
 };
-const VB = ({children}: { children: ReactNode }) => {
-	const setPathName = useVoyageur((l) => l.setPathName);
-	const pathName = useVoyageur((l) => l.pathName);
-	const setIsHome = useVoyageur((l) => l.setIsHome);
-	const pathname = usePathname();
-	useEffect(() => {
-		setPathName(pathname);
-	}, []);
-	useEffect(() => {
-		setPathName(pathname);
-	}, [pathname]);
-	useEffect(() => {
-		setIsHome(pathName === "/" || pathName.startsWith("/home"));
-	}, [pathName]);
-	return <>{children}</>;
+const VB = ({ children }: { children: ReactNode }) => {
+  const setPathName = useVoyageur((l) => l.setPathName);
+  const pathName = useVoyageur((l) => l.pathName);
+  const setIsHome = useVoyageur((l) => l.setIsHome);
+  const pathname = usePathname();
+  useEffect(() => {
+    setPathName(pathname);
+  }, []);
+  useEffect(() => {
+    setPathName(pathname);
+  }, [pathname]);
+  useEffect(() => {
+    setIsHome(pathName === "/" || pathName.startsWith("/home"));
+  }, [pathName]);
+  return <>{children}</>;
 };
-export const Voyageur = ({children}: { children: ReactNode }) => {
-	return (
-		<VoyageurProvider>
-			<VB>{children}</VB>
-		</VoyageurProvider>
-	);
+export const Voyageur = ({ children }: { children: ReactNode }) => {
+  return (
+    <VoyageurProvider>
+      <VB>{children}</VB>
+    </VoyageurProvider>
+  );
 };

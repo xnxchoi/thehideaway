@@ -1,5 +1,5 @@
 import { Category, Tag } from "@/payload-types";
-import { CatOverview } from "@/payload/collections/Deltas/delta-types";
+import { CatOverview } from "@/types/collections/delta";
 import { P_Tag } from "@/payload/collections/Tags";
 import type { BeforeSync, DocToSync } from "@payloadcms/plugin-search/types";
 import { CollectionSlug, DataFromCollectionSlug } from "payload";

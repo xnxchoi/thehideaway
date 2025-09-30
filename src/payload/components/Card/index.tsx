@@ -1,56 +1,63 @@
 "use client";
 import React from "react";
-import type {ArticleOverview} from "@/payload/collections/Posts/post-types";
-import {useClickableCardRP} from "@/utilities/useClickableCard";
-import {Link} from "@/components/UX/Link";
-import {FrontImage} from "@/components/UX/Media/FrontImage";
+import type { ArticleOverview } from "@/types/collections/posts";
+import { useClickableCardRP } from "@/utilities/useClickableCard";
+import { Link } from "@/components/UX/Link";
+import { FrontImage } from "@/components/UX/Media/FrontImage";
 
 export type CardPostData = ArticleOverview;
 export const RPCard: React.FC<{
-	alignItems?: "center";
-	className?: string;
-	doc?: CardPostData;
-	relationTo?: "posts";
-	showCategories?: boolean;
-	title?: string;
+  alignItems?: "center";
+  className?: string;
+  doc?: CardPostData;
+  relationTo?: "posts";
+  showCategories?: boolean;
+  title?: string;
 }> = (props) => {
-	const {card, link} = useClickableCardRP({});
-	const {
-		className,
-		doc,
-		relationTo,
-		showCategories,
-		title: titleFromProps,
-	} = props;
-	const {slug, category, title, subtitle, image} = doc || {};
-	const titleToUse = titleFromProps || title;
-	const href = `/${relationTo}/${slug}`;
+  const { card, link } = useClickableCardRP({});
+  const {
+    className,
+    doc,
+    relationTo,
+    showCategories,
+    title: titleFromProps
+  } = props;
+  const { slug, category, title, subtitle, image } = doc || {};
+  const titleToUse = titleFromProps || title;
+  const href = `/${relationTo}/${slug}`;
 
-	return (
-		<article className="more-link relative" ref={card.ref}>
-			<div className="OO4">
-				<div className="more-thumb ap2" style={{paddingTop: "100%"}}>
-					{image && (
-						<FrontImage imgClassName={"more-img css-filter size-thumbnail"}
-						            resource={image} size="(max-width: 150px) 100vw, 150px" />
-					)}
-				</div>
-			</div>
-			<div className="more-wrap">
-				{(category && typeof category !== "string" && (
-						<div className="more-tags">{category.title}</div>
-					)) ||
-					null}
-				{titleToUse && (
-					<div className="more-title text-[16px] leading-[1.1] m-0 font-extrabold">
-						{titleToUse}
-					</div>
-				)}
-			</div>
-			<Link className="absolute" href={href} ref={link.ref}
-			      style={{position: "absolute", inset: "0"}} />
-		</article>
-	);
+  return (
+    <article className="more-link relative" ref={card.ref}>
+      <div className="OO4">
+        <div className="more-thumb ap2" style={{ paddingTop: "100%" }}>
+          {image && (
+            <FrontImage
+              imgClassName={"more-img css-filter size-thumbnail"}
+              resource={image}
+              size="(max-width: 150px) 100vw, 150px"
+            />
+          )}
+        </div>
+      </div>
+      <div className="more-wrap">
+        {(category && typeof category !== "string" && (
+          <div className="more-tags">{category.title}</div>
+        )) ||
+          null}
+        {titleToUse && (
+          <div className="more-title m-0 text-[16px] leading-[1.1] font-extrabold">
+            {titleToUse}
+          </div>
+        )}
+      </div>
+      <Link
+        className="absolute"
+        href={href}
+        ref={link.ref}
+        style={{ position: "absolute", inset: "0" }}
+      />
+    </article>
+  );
 };
 
 /**

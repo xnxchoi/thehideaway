@@ -6,7 +6,7 @@
   height: 100%;
   background: transparent !important;
   height: calc(var(--vh, 1vh) * 100);
-  z-index: 248;
+  z-index: 250;
   overflow: hidden;
   cursor: none;
   pointer-events: none;
@@ -20,7 +20,7 @@ body .pt_container {
 
 .pt_mask {
   position: absolute;
-  background-color: oklch(var(--n-s-fg) / 1);
+  background-color: oklch(var(--n-s-bg) / 1);
 }
 
 .pt_mask.pt_bottom,

@@ -17,7 +17,7 @@ import { useTheme } from "@/providers/Theme";
 import { useIsMobile as useIsNarrow } from "@/providers/MiddleMan";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
 import { useShallow } from "zustand/shallow";
-
+import imager from "./ff.jpeg";
 gsap.registerPlugin(ScrollTrigger);
 const iUnit = 420;
 const yEdge = iUnit * 0.153;
@@ -131,16 +131,21 @@ export const RP_POLAROID = () => {
   }, []);
 
   const calculatePositioning = useCallback(() => {
-    setY(wW >= 767 ? -5 : -100);
-    setHeight(wW >= 967 ? 30 : wW >= 767 ? -70 : 160);
-  }, [setHeight, setY]);
+    const wwi = window.innerWidth;
+    const y = wwi >= 767 ? -5 : -100;
+    const height = wwi >= 967 ? 30 : wwi >= 767 ? -70 : 160;
+
+    return { y, height };
+  }, []);
   const setCursorTheme = useCursorStore((r) => r.setCursorTheme);
   const resetCursor = useCursorStore((r) => r.resetCursorTheme);
   useEffect(() => {
     setOsH(container.current.offsetHeight);
     setFrameWidth(framePositioning.current.offsetWidth);
-    calculatePositioning();
-  }, [windowResize]);
+    const { y, height } = calculatePositioning();
+    setY(y);
+    setHeight(height);
+  }, [calculatePositioning, windowResize]);
   useEffect(() => {
     setPolar(isNarrow ? polaroid.narrow : polaroid.wide);
   }, [isNarrow]);
@@ -172,8 +177,9 @@ export const RP_POLAROID = () => {
         return;
       }
       const picWidth = framePositioning.current.offsetWidth;
-      const picHeight = framePositioning.current.offsetHeight + height;
-      const picOffsetTop = framePositioning.current.offsetTop + y;
+      const { y: yval, height: hval } = calculatePositioning();
+      const picHeight = framePositioning.current.offsetHeight + hval;
+      const picOffsetTop = framePositioning.current.offsetTop + yval;
 
       const newX = framePositioning.current.offsetLeft;
       const borderWidth =
@@ -193,8 +199,8 @@ export const RP_POLAROID = () => {
         .timeline({
           scrollTrigger: {
             trigger: section.current,
-            start: "top+=20% bottom",
-            end: `top+=${osH + 40}px bottom`,
+            start: "top+=30% bottom",
+            end: `bottom 98%`,
             scrub: true,
             markers: false,
             onEnter: () => {
@@ -213,11 +219,32 @@ export const RP_POLAROID = () => {
           { backgroundColor: sectionFG, color: sectionBG },
           0
         )
+
+        .fromTo(
+          imageContainer.current,
+          {
+            scale: 1.1,
+            y: "-20%",
+            width: imageContainer.current.offsetWidth,
+            x: "-50%",
+            left: "50%"
+          },
+          {
+            scale: 1,
+            width: picWidth - 32,
+            height: picWidth * (3 / 4) - 24,
+            y: "20%",
+            x: "-50%",
+            left: "50%",
+            ease: "Power2.out"
+          },
+          0
+        )
         .fromTo(
           frameContainer.current,
           {
-            width: wW + 48,
-            height: wH + 48,
+            width: window.innerWidth + 48,
+            height: window.innerHeight + 48,
             y: -24,
             x: -24,
             borderWidth: 40,
@@ -225,49 +252,32 @@ export const RP_POLAROID = () => {
           },
           {
             width: picWidth,
-            height: picHeight - picOffsetTop,
-            y: 2 * picOffsetTop,
+            height: picHeight,
+            y: picOffsetTop,
             x: newX,
             borderWidth: 16,
-            ease: "Power2.easeInOut",
+            ease: "Power2.inOut",
             borderColor: sectionFG
           },
-          "<"
+          "<+=6%"
         )
         .fromTo(
           frameContent.current,
           {
             y: "405%",
-            scale: 1.1,
+            scale: 1.01,
             backgroundColor: sectionBG,
             color: sectionFG
           },
           {
             y: 0,
             scale: 1.01,
-            ease: "Power2.easeOut",
+            ease: "Power2.out",
+            height: picHeight - picWidth * (3 / 4) + 8,
             backgroundColor: sectionFG,
             color: sectionBG
           },
           "<"
-        )
-        .fromTo(
-          imageContainer.current,
-          {
-            width: wW + 160,
-            height: picHeight,
-            scale: 1.01,
-            y: "-20%",
-            x: 0
-          },
-          {
-            y: 2 * picOffsetTop + 15,
-            x: picWidth / 2 + 30,
-            height: (picWidth / 2 + 30) * polar.pictureHeight,
-            width: picWidth - 20,
-            ease: "Power2.easeOut"
-          },
-          "<+=.09"
         );
     },
     {
@@ -291,16 +301,14 @@ export const RP_POLAROID = () => {
             onMouseEnter={() => onCursor(contrast)}
             onMouseLeave={offCursor}
           />
-          <div ref={imageContainer} className="review__card-bg_image-container">
+          <div
+            ref={imageContainer}
+            className="review__card-bg_image-container transform-origin-center"
+          >
             <FrontImage
               alt={"an image of a reviewer"}
               ref={img}
-              resource={{
-                url: config.image,
-                id: "",
-                width: wW,
-                height: (wW / polar.pictureWidth) * polar.pictureHeight
-              }}
+              src={imager}
               className="review__card-bg_image"
             />
           </div>

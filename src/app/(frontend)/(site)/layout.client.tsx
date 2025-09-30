@@ -53,19 +53,9 @@ export function Layout(l: { children: ReactNode }) {
       className="rp-container"
       data-themed={"background-color"}
     >
-      <AnimatePresence mode="sync" propagate={true}>
+      <AnimatePresence mode="sync" propagate={false}>
         {children}
       </AnimatePresence>
-      <div
-        className={cn(
-          "fixed inset-0 flex h-screen w-screen items-center justify-center transition-all duration-300 ease-in-out-power2",
-          pageIsTransitioning
-            ? "z-[100] opacity-100 delay-150"
-            : "pointer-events-none z-[-1] opacity-0"
-        )}
-      >
-        <LoaderLottie />
-      </div>
     </div>
   );
 }

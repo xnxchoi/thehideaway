@@ -67,7 +67,7 @@ function DataTableActionBar<TData>({
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2, ease: EASING.power2.out }}
           className={cn(
-            "fixed inset-x-0 bottom-26 z-230 mx-auto flex w-fit flex-wrap items-center justify-center gap-3.5 rounded-xl border bg-background p-4 font-sans text-base text-foreground shadow-sm",
+            "fixed inset-x-0 bottom-26 z-230 mx-auto flex w-fit flex-wrap items-center justify-center gap-[16px] rounded-xl border bg-background p-[8px] font-sans text-base text-foreground shadow-md",
             className
           )}
           {...props}
@@ -100,8 +100,8 @@ function DataTableActionBarAction({
       variant="secondary"
       size={size}
       className={cn(
-        "gap-2.5 border border-secondary bg-secondary/50 hover:bg-secondary/70 [&>svg]:size-3.5",
-        size === "icon" ? "size-13" : "h-13",
+        "gap-[6px] border border-secondary bg-secondary/50 hover:bg-secondary/70 [&>svg]:size-[14px]",
+        size === "icon" ? "size-[28px]" : "h-[28px]",
         className
       )}
       disabled={disabled || isPending}

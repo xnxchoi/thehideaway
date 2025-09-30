@@ -19,12 +19,12 @@ import { useShallow } from "zustand/shallow";
 import type {
   ArticleOverview,
   AuthorOverview
-} from "../../../payload/collections/Posts/post-types";
+} from "../../../types/collections/posts";
 import type {
   CatOverview,
   DeltaOverview,
   TagOverview
-} from "../../../payload/collections/Deltas/delta-types";
+} from "../../../types/collections/delta";
 import { useQuery } from "@tanstack/react-query";
 import type { CollectionSlug } from "payload";
 

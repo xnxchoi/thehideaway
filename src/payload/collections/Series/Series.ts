@@ -4,7 +4,7 @@ import { AccessArgs, CollectionConfig, Where } from "payload";
 import { Series, type Admin, type User } from "@/payload-types";
 import { uuidv7 } from "uuidv7";
 import { getServerSideURL } from "../../../utilities/getURL";
-import type { RelAuthor } from "../Posts/post-types";
+import type { RelAuthor } from "../../../types/collections/posts";
 import { getSeriesBookMarks } from "./endpoints/getSeriesBookmarks";
 import { populatePublishedAt } from "../../../hooks/populatePublishedAt";
 import { sanitizeAuthor } from "../../fields/AuthorFields/hooks";

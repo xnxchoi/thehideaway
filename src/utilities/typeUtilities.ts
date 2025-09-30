@@ -1,8 +1,8 @@
 export type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
-export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export type RequiredKeys<T> = {
   [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K;
 }[keyof T];
+export type RequiredFields<T> = Pick<T, RequiredKeys<T>>;
 export type Concat<T extends string[]> = T extends [
   infer F extends string,
   ...infer R extends string[]
@@ -116,3 +116,11 @@ export type InsertAtAllPositions<
 > = T extends [infer Head, ...infer Tail]
   ? InsertAtAllPositions<Tail, U, [...Acc, Head]> | [...Acc, U, ...T]
   : [...Acc, U];
+export type NestedKeysUnion<T> = T extends any
+  ? {
+      [K in keyof T & string]: T[K] extends object
+        ? keyof T[K] & string
+        : never;
+    }[keyof T & string]
+  : never;
+export type KeysOfUnion<T> = T extends object ? keyof T : never;

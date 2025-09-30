@@ -3,7 +3,7 @@ import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
 import { Link } from "@/components/UX/Link";
 import { useCursorStore, useMenu } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import type { ArticleOverview } from "@/payload/collections/Posts/post-types";
+import type { ArticleOverview } from "@/types/collections/posts";
 import { useEffect, useRef, useState } from "react";
 
 export const PrevNext = ({

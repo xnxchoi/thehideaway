@@ -53,7 +53,12 @@ export const ReadNotification: PayloadHandler = async (request) => {
       ...notification,
       thumbnail: notification.thumbnail?.id || null,
       read: true,
-      readAt: new Date().toISOString()
+      readAt: new Date().toISOString(),
+      actionLink: {
+        ...notification.actionLink,
+        newTab: false,
+        label: notification.actionLink?.label || "Link"
+      }
     };
     // Update the notification
     const result = await payload

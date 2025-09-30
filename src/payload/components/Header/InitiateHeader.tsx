@@ -42,7 +42,7 @@ export const InitiateHeader = ({ header }: { header: Header }) => {
   // }, [])
   const links: (PayloadLinkProps & { url: string })[] = [
     link("/", "Reception"),
-    link("/posts", "Latest"),
+    link("/essays", "Latest"),
     link("/plans", "Plans"),
     link("/the-team", "The Team"),
     link("/lostinseoul", "LOSTINSEOUL"),

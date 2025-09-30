@@ -18,7 +18,8 @@ const dirname = path.dirname(filename);
 const MediaFields: CollectionConfig["fields"] = [
   {
     name: "alt",
-    type: "text" //required: true,
+    type: "text",
+    defaultValue: "an image"
   },
   {
     name: "caption",
@@ -151,9 +152,9 @@ export const Media: CollectionConfig = {
   },
   hooks: {
     beforeOperation: [
-      async ({ operation, context, req }) => {
-        if (operation === "create" || operation === "update") {
-          if (req.file && req.file.mimetype.indexOf("image") > -1) {
+      async ({ operation, context, req, args }) => {
+        if (operation === "create") {
+          if (req.file && req.file.mimetype.startsWith("image/")) {
             const targetUser =
               (req.data?.author as User["id"] | undefined) ??
               req.user?.id ??
