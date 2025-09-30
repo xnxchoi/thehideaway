@@ -12,6 +12,7 @@ import { extractImageInfo } from "@/utilities/extractImageInfo";
 import path from "path";
 import { fileURLToPath } from "url";
 import type { User } from "@/payload-types";
+import { webpConversionHook } from "./Media/hooks/webpConversionHook";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -196,6 +197,7 @@ export const Media: CollectionConfig = {
       }
     ],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]
+    // afterOperation: [webpConversionHook]
   },
   versions: {
     drafts: {

@@ -388,23 +388,23 @@ export const Posts: CollectionConfig<"posts"> = {
       relationTo: "userMedia",
       admin: {
         position: "sidebar"
-      },
-      filterOptions: ({ req }) => {
-        return {
-          and: [
-            {
-              mimeType: {
-                like: "image/"
-              }
-            },
-            {
-              author: {
-                equals: req.user?.id
-              }
-            }
-          ]
-        } as Where;
       }
+      // filterOptions: ({ req }) => {
+      //   return {
+      //     //     and: [
+      //     //       {
+      //     //         mimeType: {
+      //     //           like: "image/"
+      //     //         }
+      //     //       },
+      //     //       {
+      //     author: {
+      //       equals: req.user?.id
+      //     }
+      //     //       }
+      //     //     ]
+      //   } as Where;
+      // }
     },
     {
       name: "subtitle",

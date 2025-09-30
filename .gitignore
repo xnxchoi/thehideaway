@@ -22,7 +22,7 @@ node_modules/
 .turbo/
 packages/
 src/app/(frontend)/(site)/(auth)/prive/Screenshot 2025-06-23 at 01.00.34.png
-
+public/
 src/payload/components/Header/metalab.js!/src/payload/collections/Users/c/dd.js
 !/src/payload/collections/Users/c/dd.js
 !/src/components/layouts/Profile/temp.tsx

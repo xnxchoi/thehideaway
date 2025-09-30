@@ -311,8 +311,9 @@ export const queryPostBySlug = async ({
       : post.image
     : null;
   if (!image && typeof post.image === "string") {
+    console.log("image searching", post.image);
     const img = await payload.findByID({
-      collection: "media",
+      collection: "userMedia",
       id: post.image as string,
       overrideAccess: true,
       select: {
@@ -330,6 +331,7 @@ export const queryPostBySlug = async ({
       }
     });
     if (img) {
+      console.log("image found", img);
       image = img;
     }
   }
@@ -420,7 +422,7 @@ export const queryRelatedPosts = cache(
   async ({
     postID,
     relatedPosts,
-    limit = 5,
+    limit = 2,
     author,
     isAuthorPage = false,
     user
@@ -576,15 +578,7 @@ export const queryRelatedPosts = cache(
         relatedIDs.push(...queuedPosts.map((r) => r.id));
       }
     }
-    const less_than_date: Where = (postDate.publishedAt && {
-      publishedAt: {
-        less_than: postDate.publishedAt
-      }
-    }) || {
-      updatedAt: {
-        less_than: postDate.updatedAt
-      }
-    };
+
     let prev: ArticleOverview | null = null;
     let prevv = await payload
       .find({
@@ -601,7 +595,20 @@ export const queryRelatedPosts = cache(
                 not_equals: postID
               }
             },
-            { ...less_than_date }
+            {
+              or: [
+                {
+                  publishedAt: {
+                    greater_than: postDate.publishedAt || postDate.updatedAt
+                  }
+                },
+                {
+                  updatedAt: {
+                    greater_than: postDate.updatedAt
+                  }
+                }
+              ]
+            }
           ]
         },
         limit: 1,
@@ -732,12 +739,12 @@ export const queryRelatedPosts = cache(
               or: [
                 {
                   publishedAt: {
-                    greater_than: postDate.publishedAt || postDate.updatedAt
+                    less_than: postDate.publishedAt
                   }
                 },
                 {
                   updatedAt: {
-                    greater_than: postDate.updatedAt
+                    less_than: postDate.updatedAt
                   }
                 }
               ]

@@ -118,9 +118,6 @@ export interface Config {
     categories: {
       categorized: 'delta' | 'posts';
     };
-    tags: {
-      tagged: 'posts' | 'delta' | 'profile' | 'pages' | 'albums' | 'playlists' | 'tracks';
-    };
     userMedia: {
       bookmarks: 'bookmarks';
     };
@@ -721,181 +718,8 @@ export interface Tag {
   hashId: string;
   slugLock: boolean;
   slug: string;
-  tagged?: {
-    docs?: (
-      | {
-          relationTo?: 'posts';
-          value: string | Post;
-        }
-      | {
-          relationTo?: 'delta';
-          value: string | Delta;
-        }
-      | {
-          relationTo?: 'profile';
-          value: string | Profile;
-        }
-      | {
-          relationTo?: 'pages';
-          value: string | Page;
-        }
-      | {
-          relationTo?: 'albums';
-          value: string | Album;
-        }
-      | {
-          relationTo?: 'playlists';
-          value: string | Playlist;
-        }
-      | {
-          relationTo?: 'tracks';
-          value: string | Track;
-        }
-    )[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pages".
- */
-export interface Page {
-  id: string;
-  title: string;
-  hero: {
-    id: string;
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    links?:
-      | {
-          link: {
-            type: 'reference' | 'custom';
-            newTab: boolean;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: string | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: string | Post;
-                } | null)
-              | ({
-                  relationTo: 'delta';
-                  value: string | Delta;
-                } | null)
-              | ({
-                  relationTo: 'users';
-                  value: string | User;
-                } | null)
-              | ({
-                  relationTo: 'albums';
-                  value: string | Album;
-                } | null)
-              | ({
-                  relationTo: 'tracks';
-                  value: string | Track;
-                } | null)
-              | ({
-                  relationTo: 'playlists';
-                  value: string | Playlist;
-                } | null)
-              | ({
-                  relationTo: 'organizations';
-                  value: string | Organization;
-                } | null)
-              | ({
-                  relationTo: 'categories';
-                  value: string | Category;
-                } | null);
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-    media?: (string | null) | Media;
-  };
-  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
-  pageLayout?: {
-    footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
-  };
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (string | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
-  tagged?: (string | Tag)[] | null;
-  slugKey: string;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  authority?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "albums".
- */
-export interface Album {
-  id: string;
-  title: string;
-  release_date?: string | null;
-  cover?: (string | null) | Media;
-  artist: string;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  tagged?: (string | Tag)[] | null;
-  description?: string | null;
-  visibility: 'public' | 'private';
-  publishedAt?: string | null;
-  author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -988,6 +812,75 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "albums".
+ */
+export interface Album {
+  id: string;
+  title: string;
+  release_date?: string | null;
+  cover?: (string | null) | Media;
+  artist: string;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  tagged?: (string | Tag)[] | null;
+  description?: string | null;
+  visibility: 'public' | 'private';
+  publishedAt?: string | null;
+  author: string | User;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playlists".
+ */
+export interface Playlist {
+  id: string;
+  cover?: (string | null) | UserMedia;
+  title: string;
+  description?: string | null;
+  tracks?: (string | Track)[] | null;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  tagged?: (string | Tag)[] | null;
+  author: (string | User)[];
+  visibility: 'public' | 'private';
+  publishedAt?: string | null;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tracks".
  */
 export interface Track {
@@ -1030,340 +923,6 @@ export interface Track {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playlists".
- */
-export interface Playlist {
-  id: string;
-  cover?: (string | null) | UserMedia;
-  title: string;
-  description?: string | null;
-  tracks?: (string | Track)[] | null;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  tagged?: (string | Tag)[] | null;
-  author: (string | User)[];
-  visibility: 'public' | 'private';
-  publishedAt?: string | null;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * Organizations are groups of users that share access to certain resources.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
- */
-export interface Organization {
-  id: string;
-  /**
-   * The name of the organization.
-   */
-  name: string;
-  /**
-   * The slug of the organization.
-   */
-  slug?: string | null;
-  /**
-   * The logo of the organization.
-   */
-  logo?: string | null;
-  createdAt: string;
-  /**
-   * Additional metadata for the organization.
-   */
-  metadata?: string | null;
-  updatedAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
- */
-export interface CallToActionBlock {
-  id: string | null;
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type: 'reference' | 'custom';
-          newTab: boolean;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null)
-            | ({
-                relationTo: 'delta';
-                value: string | Delta;
-              } | null)
-            | ({
-                relationTo: 'users';
-                value: string | User;
-              } | null)
-            | ({
-                relationTo: 'albums';
-                value: string | Album;
-              } | null)
-            | ({
-                relationTo: 'tracks';
-                value: string | Track;
-              } | null)
-            | ({
-                relationTo: 'playlists';
-                value: string | Playlist;
-              } | null)
-            | ({
-                relationTo: 'organizations';
-                value: string | Organization;
-              } | null)
-            | ({
-                relationTo: 'categories';
-                value: string | Category;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  blockName?: string | null;
-  blockType: 'cta';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
- */
-export interface ContentBlock {
-  columns?:
-    | {
-        id: string;
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type: 'reference' | 'custom';
-          newTab: boolean;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null)
-            | ({
-                relationTo: 'delta';
-                value: string | Delta;
-              } | null)
-            | ({
-                relationTo: 'users';
-                value: string | User;
-              } | null)
-            | ({
-                relationTo: 'albums';
-                value: string | Album;
-              } | null)
-            | ({
-                relationTo: 'tracks';
-                value: string | Track;
-              } | null)
-            | ({
-                relationTo: 'playlists';
-                value: string | Playlist;
-              } | null)
-            | ({
-                relationTo: 'organizations';
-                value: string | Organization;
-              } | null)
-            | ({
-                relationTo: 'categories';
-                value: string | Category;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  id: string | null;
-  media: string | Media;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock".
- */
-export interface ArchiveBlock {
-  id: string | null;
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | null;
-  categories?: (string | Category)[] | null;
-  limit?: number | null;
-  selectedDocs?:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }[]
-    | null;
-  blockName?: string | null;
-  blockType: 'archive';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FOTDBlock".
- */
-export interface FOTDBlock {
-  id: string | null;
-  headline: string;
-  subheading: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: ('posts' | 'delta')[] | null;
-  categories?: (string | Category)[] | null;
-  limit?: number | null;
-  selectedDocs?:
-    | (
-        | {
-            relationTo: 'posts';
-            value: string | Post;
-          }
-        | {
-            relationTo: 'pages';
-            value: string | Page;
-          }
-      )[]
-    | null;
-  blockName?: string | null;
-  blockType: 'fotd';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HeroSquareBlock".
- */
-export interface HeroSquareBlock {
-  id: string | null;
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  populateBy?: ('collection' | 'selection') | null;
-  limit?: number | null;
-  relationTo?: 'posts' | null;
-  categories?: (string | Category)[] | null;
-  selectedDocs?:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }[]
-    | null;
-  blockName?: string | null;
-  blockType: 'heroSquare';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1679,6 +1238,410 @@ export interface Asset {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: string;
+  title: string;
+  hero: {
+    id: string;
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+      | {
+          link: {
+            type: 'reference' | 'custom';
+            newTab: boolean;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: string | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: string | Post;
+                } | null)
+              | ({
+                  relationTo: 'delta';
+                  value: string | Delta;
+                } | null)
+              | ({
+                  relationTo: 'users';
+                  value: string | User;
+                } | null)
+              | ({
+                  relationTo: 'albums';
+                  value: string | Album;
+                } | null)
+              | ({
+                  relationTo: 'tracks';
+                  value: string | Track;
+                } | null)
+              | ({
+                  relationTo: 'playlists';
+                  value: string | Playlist;
+                } | null)
+              | ({
+                  relationTo: 'organizations';
+                  value: string | Organization;
+                } | null)
+              | ({
+                  relationTo: 'categories';
+                  value: string | Category;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (string | null) | Media;
+  };
+  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
+  pageLayout?: {
+    footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
+  };
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (string | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  tagged?: (string | Tag)[] | null;
+  slugKey: string;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  authority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Organizations are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: string;
+  /**
+   * The name of the organization.
+   */
+  name: string;
+  /**
+   * The slug of the organization.
+   */
+  slug?: string | null;
+  /**
+   * The logo of the organization.
+   */
+  logo?: string | null;
+  createdAt: string;
+  /**
+   * Additional metadata for the organization.
+   */
+  metadata?: string | null;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CallToActionBlock".
+ */
+export interface CallToActionBlock {
+  id: string | null;
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type: 'reference' | 'custom';
+          newTab: boolean;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null)
+            | ({
+                relationTo: 'delta';
+                value: string | Delta;
+              } | null)
+            | ({
+                relationTo: 'users';
+                value: string | User;
+              } | null)
+            | ({
+                relationTo: 'albums';
+                value: string | Album;
+              } | null)
+            | ({
+                relationTo: 'tracks';
+                value: string | Track;
+              } | null)
+            | ({
+                relationTo: 'playlists';
+                value: string | Playlist;
+              } | null)
+            | ({
+                relationTo: 'organizations';
+                value: string | Organization;
+              } | null)
+            | ({
+                relationTo: 'categories';
+                value: string | Category;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentBlock".
+ */
+export interface ContentBlock {
+  columns?:
+    | {
+        id: string;
+        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        enableLink?: boolean | null;
+        link?: {
+          type: 'reference' | 'custom';
+          newTab: boolean;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null)
+            | ({
+                relationTo: 'delta';
+                value: string | Delta;
+              } | null)
+            | ({
+                relationTo: 'users';
+                value: string | User;
+              } | null)
+            | ({
+                relationTo: 'albums';
+                value: string | Album;
+              } | null)
+            | ({
+                relationTo: 'tracks';
+                value: string | Track;
+              } | null)
+            | ({
+                relationTo: 'playlists';
+                value: string | Playlist;
+              } | null)
+            | ({
+                relationTo: 'organizations';
+                value: string | Organization;
+              } | null)
+            | ({
+                relationTo: 'categories';
+                value: string | Category;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  id: string | null;
+  media: string | Media;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArchiveBlock".
+ */
+export interface ArchiveBlock {
+  id: string | null;
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  populateBy?: ('collection' | 'selection') | null;
+  relationTo?: 'posts' | null;
+  categories?: (string | Category)[] | null;
+  limit?: number | null;
+  selectedDocs?:
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }[]
+    | null;
+  blockName?: string | null;
+  blockType: 'archive';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FOTDBlock".
+ */
+export interface FOTDBlock {
+  id: string | null;
+  headline: string;
+  subheading: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  populateBy?: ('collection' | 'selection') | null;
+  relationTo?: ('posts' | 'delta')[] | null;
+  categories?: (string | Category)[] | null;
+  limit?: number | null;
+  selectedDocs?:
+    | (
+        | {
+            relationTo: 'posts';
+            value: string | Post;
+          }
+        | {
+            relationTo: 'pages';
+            value: string | Page;
+          }
+      )[]
+    | null;
+  blockName?: string | null;
+  blockType: 'fotd';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroSquareBlock".
+ */
+export interface HeroSquareBlock {
+  id: string | null;
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  populateBy?: ('collection' | 'selection') | null;
+  limit?: number | null;
+  relationTo?: 'posts' | null;
+  categories?: (string | Category)[] | null;
+  selectedDocs?:
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }[]
+    | null;
+  blockName?: string | null;
+  blockType: 'heroSquare';
 }
 /**
  * Sessions are active sessions for users. They are used to authenticate users with a session token
@@ -2790,7 +2753,6 @@ export interface TagsSelect<T extends boolean = true> {
   hashId?: T;
   slugLock?: T;
   slug?: T;
-  tagged?: T;
   updatedAt?: T;
   createdAt?: T;
 }

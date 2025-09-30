@@ -167,8 +167,28 @@
     }
   }
 }
-
 .rp-content {
+  p {
+    margin: 21.6px 0;
+    font-size: 18px;
+    line-height: 1.75;
+    letter-spacing: 0.02em;
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1.1;
+    margin: 32px 0 var(--storyPad);
+  }
+
+  b,
+  strong {
+    font-weight: 800;
+  }
+
   h1,
   h2,
   h3,
@@ -178,10 +198,8 @@
     line-height: 1.2;
   }
 
-  p,
   blockquote {
-    margin-bottom: 21.6px;
-    margin-top: 0;
+    margin: 21.6px 0;
   }
 
   cite {
@@ -1110,29 +1128,6 @@ aside.rhF {
   text-decoration: underline;
 }
 
-.rp-content {
-  p {
-    margin-top: 0;
-    font-size: 17px;
-    line-height: 1.75;
-    letter-spacing: 0.02em;
-  }
-
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    line-height: 1.1;
-    margin: 32px 0 var(--storyPad);
-  }
-
-  b,
-  strong {
-    font-weight: 800;
-  }
-}
-
 .rp-content h2 a,
 .rp-content h3 a,
 .rp-content h4 a {
@@ -1255,10 +1250,12 @@ aside.rhF {
 .rp-content {
   --gutter: 2.5rem;
   display: grid;
-  grid-template-columns: [full-start] var(--gutter) [main-start] minmax(
+  grid-template-columns:
+    [full-start] var(--gutter) [main-start] minmax(
       calc(63% - 6rem),
       var(--maxBodyWidth)
-    ) [main-end] var(--gutter) [full-end];
+    )
+    [main-end] var(--gutter) [full-end];
 
   margin: 0 auto;
   color: oklch(var(--off-fg) / 1);
@@ -1286,8 +1283,6 @@ aside.rhF {
   }
 
   p {
-    font-size: 16px;
-
     & + p:last-of-type:after {
       background: oklch(var(--fg) / 1);
       -webkit-clip-path: var(--clipPathSun);
@@ -1398,14 +1393,18 @@ aside.rhF {
   }
 
   .rp-content {
-    grid-template-columns: [full-start] var(--gutter) [main-start] minmax(
+    grid-template-columns:
+      [full-start] var(--gutter) [main-start] minmax(
         calc(65% - var(--gutter) * 1.5),
         var(--maxBodyWidth)
-      ) [main-end] var(--gutter) minmax(300px, auto) var(--gutter) [full-end];
-    grid-template-columns: [full-start] var(--gutter) [main-start] minmax(
+      )
+      [main-end] var(--gutter) minmax(300px, auto) var(--gutter) [full-end];
+    grid-template-columns:
+      [full-start] var(--gutter) [main-start] minmax(
         calc(63% - var(--gutter) * 1.5),
         var(--maxBodyWidth)
-      ) [main-end] var(--gutter) [full-end];
+      )
+      [main-end] var(--gutter) [full-end];
 
     margin: 0;
   }
@@ -1460,14 +1459,10 @@ aside.rhF {
     font-size: 19px;
     --bod: calc(65% - var(--gutter) * 1.5);
     //grid-template-columns: [full-start] var(--gutter) [main-start] minmax(calc(65% - var(--gutter) * 1.5), var(--maxBodyWidth)) [main-end] var(--gutter) minmax(300px, auto) var(--gutter) [full-end];
-    grid-template-columns: [full-start] minmax(
-        var(--gutter),
-        auto
-      ) [main-start] clamp(
-        45%,
-        var(--bod),
-        var(--maxBodyWidth)
-      ) [main-end] minmax(var(--gutter), auto) [full-end];
+    grid-template-columns:
+      [full-start] minmax(var(--gutter), auto)
+      [main-start] clamp(45%, var(--bod), var(--maxBodyWidth))
+      [main-end] minmax(var(--gutter), auto) [full-end];
   }
 
   .rp__sub-t {
@@ -1575,7 +1570,7 @@ aside.rhF {
 
         .rp_tag {
           color: var(--highlight, --color-soft-peach);
-          background-color: oklch(var(--faded-black) / 0.8);
+          background-color: oklch(var(--transparent-base) / 0.2);
         }
       }
 

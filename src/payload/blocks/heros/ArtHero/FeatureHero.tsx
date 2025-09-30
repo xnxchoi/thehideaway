@@ -34,11 +34,11 @@ export const FeaturedCard: React.FC<{
             <CoverImage image={image} />
             <ProgressiveBlur
               className={
-                "absolute right-0 bottom-0 left-0 z-10 h-[35%] rounded-b-[var(--cardBorder)]"
+                "absolute right-0 bottom-0 left-0 z-10 h-[45%] rounded-b-[var(--cardBorder)]"
               }
               direction={"bottom"}
             />
-            <div className="absolute right-0 bottom-0 left-0 z-[5] h-[45%] rounded-b-[var(--cardBorder)] bg-transparent backdrop-brightness-110 dark:backdrop-brightness-90" />
+            <div className="absolute right-0 bottom-0 left-0 z-[5] h-full rounded-b-[var(--cardBorder)] bg-transparent backdrop-brightness-110 dark:backdrop-brightness-90" />
           </div>
         </CoverTitleCard>
       </CoverCard>

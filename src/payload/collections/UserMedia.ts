@@ -12,6 +12,7 @@ import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUs
 import { extractImageInfo } from "@/utilities/extractImageInfo";
 import path from "path";
 import { fileURLToPath } from "url";
+import { webpConversionHook } from "./UserMedia/hooks/webpConversionHook";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -339,6 +340,7 @@ export const UserMedia: CollectionConfig = {
       //   return doc;
       // },
     ]
+    // afterOperation: [webpConversionHook]
   },
   versions: {
     drafts: {

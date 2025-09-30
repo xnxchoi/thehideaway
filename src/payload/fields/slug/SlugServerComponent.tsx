@@ -1,7 +1,5 @@
-import type { CollectionSlug, TextFieldServerProps, TextField } from "payload";
-import type { TextFieldClient, FieldServerComponent } from "payload";
-import { TextField as TextFieldComponent } from "@payloadcms/ui";
 import { SlugComponent } from "@/payload/fields/slug/SlugComponent";
+import type { CollectionSlug, TextFieldServerProps } from "payload";
 
 // Define collections that have author fields locally
 type IndexedCollections = Extract<
@@ -15,7 +13,9 @@ type SlugServerComponentProps = TextFieldServerProps & {
   checkboxFieldPath: string;
 };
 
-export const SlugServerComponent = async (props: SlugServerComponentProps) => {
+export default async function SlugServerComponent(
+  props: SlugServerComponentProps
+) {
   const {
     field,
     readOnly,
@@ -79,20 +79,12 @@ export const SlugServerComponent = async (props: SlugServerComponentProps) => {
   }
   const read = readOnly || !(userIsAdmin || userIsAuthor);
   return (
-    <TextFieldComponent
+    <SlugComponent
+      checkboxFieldPath={checkboxFieldPath}
+      field={clientField}
       path={path}
-      permissions={permissions}
-      field={() => (
-        <SlugComponent
-          checkboxFieldPath={checkboxFieldPath}
-          field={clientField}
-          path={path}
-          fieldToUse={fieldToUse}
-          readOnly={read}
-        />
-      )}
+      fieldToUse={fieldToUse}
       readOnly={read}
-      schemaPath={schemaPath}
     />
   );
-};
+}

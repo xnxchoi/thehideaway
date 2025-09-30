@@ -17,6 +17,9 @@ export type DefaultTag = typeof tagPop;
 export type P_Tag = Pick<Tag, keyof DefaultTag>;
 export const Tags: CollectionConfig<"tags"> = {
   slug: "tags",
+  admin: {
+    useAsTitle: "title"
+  },
   access: {
     read: () => true,
     create: standardCreateAccess,
@@ -40,21 +43,7 @@ export const Tags: CollectionConfig<"tags"> = {
     },
 
     ...AuthorField(false),
-    ...slugField("title"),
-    {
-      name: "tagged",
-      type: "join",
-      on: "tagged",
-      collection: [
-        "posts",
-        "delta",
-        "profile",
-        "pages",
-        "albums",
-        "playlists",
-        "tracks"
-      ]
-    }
+    ...slugField("title")
   ],
   hooks: {
     beforeChange: [sanitizeAuthor(false)]

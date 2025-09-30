@@ -53,7 +53,7 @@ export const TaggedItem = (props: ListArticleProps) => {
       </div>
       <time
         dateTime={publishedAt}
-        className="col-[2] row-[5] mt-[6px] opacity-60 lg:col-[1/3] lg:row-[4]"
+        className="col-[2] row-[5] mt-[6px] opacity-90 lg:col-[1/3] lg:row-[4]"
       >
         {DateTime.fromISO(publishedAt)
           .setLocale(locale)
@@ -73,7 +73,7 @@ export const TaggedItem = (props: ListArticleProps) => {
       </div>
       <div
         className={
-          "order-2 col-[2] row-[4] inline-block font-serif text-[11.2px] uppercase opacity-60 lg:col-[1/3] lg:row-[3]"
+          "order-2 col-[2] row-[4] inline-block font-sans text-[11.2px] uppercase opacity-90 lg:col-[1/3] lg:row-[3]"
         }
       >
         {author.name}
