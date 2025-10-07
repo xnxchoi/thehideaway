@@ -3,7 +3,7 @@ import DoubleSwitch from "@/components/ui/DoubleSwitch";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { Starliner } from "@/components/sections/Starliner/Starliner";
 import { cn } from "@/lib/utils";
-import { Link } from "src/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useShallow } from "zustand/shallow";

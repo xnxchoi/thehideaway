@@ -11,7 +11,7 @@ import {
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useInView } from "@/hooks/useInView";
 import { useTheme } from "@/providers/Theme";
 import { useIsMobile as useIsNarrow } from "@/providers/MiddleMan";
@@ -137,8 +137,8 @@ export const RP_POLAROID = () => {
 
     return { y, height };
   }, []);
-  const setCursorTheme = useCursorStore((r) => r.setCursorTheme);
-  const resetCursor = useCursorStore((r) => r.resetCursorTheme);
+  const setCursorTheme = useCursor((r) => r.setCursorTheme);
+  const resetCursor = useCursor((r) => r.resetCursorTheme);
   useEffect(() => {
     setOsH(container.current.offsetHeight);
     setFrameWidth(framePositioning.current.offsetWidth);
@@ -236,7 +236,7 @@ export const RP_POLAROID = () => {
             y: "20%",
             x: "-50%",
             left: "50%",
-            ease: "Power2.out"
+            ease: "power2.out"
           },
           0
         )
@@ -256,7 +256,7 @@ export const RP_POLAROID = () => {
             y: picOffsetTop,
             x: newX,
             borderWidth: 16,
-            ease: "Power2.inOut",
+            ease: "power2.inOut",
             borderColor: sectionFG
           },
           "<+=6%"
@@ -272,7 +272,7 @@ export const RP_POLAROID = () => {
           {
             y: 0,
             scale: 1.01,
-            ease: "Power2.out",
+            ease: "power2.out",
             height: picHeight - picWidth * (3 / 4) + 8,
             backgroundColor: sectionFG,
             color: sectionBG

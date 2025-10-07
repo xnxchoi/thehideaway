@@ -1,5 +1,5 @@
 "use client";
-import { Link } from "src/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { Logo } from "@/components/UX/Logo";
 import { z } from "zod/v4";
 import {
