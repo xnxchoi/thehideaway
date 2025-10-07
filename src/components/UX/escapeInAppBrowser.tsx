@@ -1,7 +1,7 @@
 "use client";
 import { useDeviceInfo } from "@/providers/RP_Pro";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "next-transition-router";
 import {
   Dialog,
   DialogContent,

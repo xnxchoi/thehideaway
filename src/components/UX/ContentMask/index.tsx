@@ -3,21 +3,16 @@ import { cn } from "@/lib/utils";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { gsap } from "gsap";
+import { useMotionValue } from "motion/react";
 import { Fragment, ReactNode, useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 export function ContentMask(l: { children: ReactNode }) {
-  const windowResize = useWindowResize();
-  useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--vh",
-      window.innerHeight * 0.01 + "px"
-    );
-  }, [windowResize]);
+  const windowResize = useWindowResize({ detectHeightChange: true });
+
   const canInteract = useRPStore(useShallow((l) => l.canInteract));
   const clipType = "content-mask-clipping",
     k = 1.8,
-    easeType = "Power3.easeInOut",
     { children: c } = l,
     svgRef = useRef<SVGSVGElement>(null!),
     rectRef = useRef<SVGRectElement>(null!),
@@ -34,6 +29,20 @@ export function ContentMask(l: { children: ReactNode }) {
     preloaderAnimationType = useRPStore(
       useShallow((l) => l.preloaderAnimationType)
     );
+  const svgWidth = useMotionValue(1440);
+  const svgHeight = useMotionValue(950);
+  useEffect(() => {
+    svgWidth.set(window.innerWidth);
+    svgHeight.set(window.innerHeight);
+  }, [svgHeight, svgWidth]);
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--vh",
+      window.innerHeight * 0.01 + "px"
+    );
+    svgWidth.set(window.innerWidth);
+    svgHeight.set(window.innerHeight);
+  }, [svgHeight, svgWidth, windowResize]);
   const setPositioningRectDimensions = useCallback(() => {
       if (
         !svgRef.current ||
@@ -84,7 +93,7 @@ export function ContentMask(l: { children: ReactNode }) {
             },
             delay: 0.2,
             duration: 1,
-            ease: "Power3.easeInOut"
+            ease: "power3.inOut"
           });
       const delayTime = "FAST" === preloaderAnimationType ? 0 : 3,
         g = k;
@@ -99,7 +108,7 @@ export function ContentMask(l: { children: ReactNode }) {
             rx: 0
           },
           duration: g,
-          ease: easeType,
+          ease: "power3.inOut",
           delay: delayTime,
           onStart: () => {
             setIsAnimatingOutPreloader(!0);

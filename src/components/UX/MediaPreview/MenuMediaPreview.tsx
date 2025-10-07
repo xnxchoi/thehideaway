@@ -44,7 +44,7 @@ const ANIMATION_CONFIG = {
 } as const;
 
 const EASING = {
-  POWER4_IN_OUT: "Power4.easeInOut"
+  POWER4_IN_OUT: "power4.inOut"
 } as const;
 
 /**

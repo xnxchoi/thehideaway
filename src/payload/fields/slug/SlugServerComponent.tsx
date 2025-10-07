@@ -64,7 +64,13 @@ export default async function SlugServerComponent(
           req
         })
         .then((r) => {
-          return "author" in r ? r.author : null;
+          return "author" in r
+            ? Array.isArray(r.author)
+              ? r.author.map((r) => (typeof r === "string" ? r : r.id))
+              : typeof r.author === "string"
+                ? r.author
+                : r.author.id
+            : null;
         })
         .catch((e) => {
           req.payload.logger.error(e);

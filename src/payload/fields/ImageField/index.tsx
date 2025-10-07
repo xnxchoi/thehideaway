@@ -16,27 +16,26 @@ import {
   useState
 } from "react";
 
-import { stringify } from "qs-esm";
-import { cn } from "@/lib/utils";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import { cn } from "@/lib/utils";
+import { Media, type Asset, type UserMedia } from "@/payload-types";
+import { capitalize } from "lodash-es";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
+import Image from "next/image";
+import {
+  PopulateDocs,
+  ReloadDoc
+} from "node_modules/@payloadcms/ui/dist/fields/Upload/types";
 import type {
   CollectionSlug,
   DataFromCollectionSlug,
   FilterOptionsResult,
   JsonObject,
   PaginatedDocs,
-  UploadField,
   Where
 } from "payload";
-import {
-  PopulateDocs,
-  ReloadDoc
-} from "node_modules/@payloadcms/ui/dist/fields/Upload/types";
-import { Media, type Asset, type UserMedia } from "@/payload-types";
-import Image from "next/image";
-import { capitalize } from "lodash-es";
+import { stringify } from "qs-esm";
 
 import { errorToast, successToast } from "@/payload/components/sonner";
 import type { ImageCollectionSlug } from "../../../types/payload-api-helpers";
@@ -79,12 +78,7 @@ export default function ImageField(props: ImageFieldProps) {
   const { setValue: setIDValue } = useField<string>({ path: idPath });
   const { setValue: setUrlValue } = useField<string>({ path: urlPath });
   const { value: labelValue } = useField<string>({ path: "label" });
-  const [populatedDocs, setPopulatedDocs] = useState<
-    {
-      relationTo: ImageCollectionSlug;
-      value: JsonObject;
-    }[]
-  >();
+  const [populatedDocs, setPopulatedDocs] = useState<PopulatedDocs>();
   const { permissions } = useAuth();
 
   const [image, setImage] = useState<string>(initURLValue || null!);
@@ -111,8 +105,9 @@ export default function ImageField(props: ImageFieldProps) {
   const loadedValueDocsRef = useRef<boolean>(false);
 
   const onChange = useCallback(
-    async (newValue: Pick<Media, "id" | "thumbnailURL" | "url"> | null) => {
-      console.log("onChange: ", newValue);
+    async (
+      newValue: Pick<Media | UserMedia, "id" | "thumbnailURL" | "url"> | null
+    ) => {
       if (!newValue) {
         setIDValue(null);
         setUrlValue("");
@@ -279,7 +274,7 @@ export default function ImageField(props: ImageFieldProps) {
         }
       }
     },
-    [relationTo]
+    [doUpload]
   );
 
   const onDocCreate = useCallback(
@@ -342,7 +337,7 @@ export default function ImageField(props: ImageFieldProps) {
                 relationTo: CollectionSlug;
                 value:
                   | string
-                  | DataFromCollectionSlug<CollectionSlug>
+                  | DataFromCollectionSlug<ImageCollectionSlug>
                   | ({
                       isPlaceHolder?: boolean;
                     } & any);
@@ -355,7 +350,7 @@ export default function ImageField(props: ImageFieldProps) {
           if (existingDocIndex > -1) {
             const updatedDocs = [...(currentDocs || [])];
             updatedDocs[existingDocIndex] = {
-              relationTo: collectionSlug as CollectionSlug,
+              relationTo: collectionSlug as ImageCollectionSlug,
               value: docs[0]
             };
 
@@ -364,7 +359,7 @@ export default function ImageField(props: ImageFieldProps) {
         });
       }
     },
-    [populateDocs, onChange]
+    [populateDocs]
   );
   const onRemove = useCallback(
     (newValue?: PopulatedDocs) => {

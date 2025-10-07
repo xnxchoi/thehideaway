@@ -155,11 +155,14 @@ export const pathNameToPageType = (pn: string) => {
   if (pn === "/404") return "404";
   return "pages";
 };
+const regexForDomainName = /^(?:https?:\/\/[^\/]+)?\/([^\/?#]+)/;
 export const equalPageType = (pathName1: string, pathName2: string) => {
-  const p1 = pathName1.split("/")[1];
-  const p2 = pathName2.split("/")[1];
-  const isSame = Boolean(p1 && p2) && Boolean(p1 === p2);
-  console.log("isSame", isSame);
+  const p1 = pathName1.match(regexForDomainName);
+  const p2 = pathName2.match(regexForDomainName);
+  const g1 = p1 ? p1[1] : null;
+  //different fallback values to ensure comparison fails even if both are undefined
+  const g2 = p2 ? p2[1] : false;
+  const isSame = Boolean(g1 && g2) && Boolean(g1 === g2);
   return isSame;
 };
 /**

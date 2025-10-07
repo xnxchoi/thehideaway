@@ -58,7 +58,7 @@ export const queryPostOverview = async ({
     image: true,
     subtitle: true,
     slug: true,
-    tags: true,
+    tagged: true,
     author: true,
     locked: true,
     category: true,
@@ -140,7 +140,7 @@ export const queryOverview = cache(
       category: true,
       id: true,
       updatedAt: true,
-      tags: true,
+      tagged: true,
       ...select
     };
     // 2) Query for the posts
@@ -247,7 +247,7 @@ export const queryPostsByIDs = cache(
           author: true,
           allowList: true,
           authority: true,
-          tags: true,
+          tagged: true,
           locked: true,
           category: true
         },
@@ -312,7 +312,7 @@ export const queryPostsByIDs = cache(
           : null;
         if (!image && typeof post.image === "string") {
           const img = await payload.findByID({
-            collection: "media",
+            collection: "userMedia",
             id: post.image as string,
             overrideAccess: true,
             select: {
@@ -344,7 +344,7 @@ export const queryPostsByIDs = cache(
             id: string;
             slug: string;
           },
-          tags: post.tags as TagOverview[],
+          tagged: post.tagged as TagOverview[],
           bookmarks: [],
           bookmarksCount: 0
         };

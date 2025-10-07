@@ -12,7 +12,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { cn } from "../../../lib/utils";
-import { Button } from "../Link";
+import { Button } from "../Link/Link";
 import { BASETRACK } from "./constants";
 import LP_Small from "./disk.png";
 import LP_Large from "./disk@2x.png";

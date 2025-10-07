@@ -11,7 +11,7 @@ import { useShallow } from "zustand/shallow";
 
 const ANIMATION_CONFIG = {
   DURATION: 1,
-  EASE: "Power3.easeInOut"
+  EASE: "power3.inOut"
 };
 const variants = cva("absolute z-[10] opacity-0 font-normal", {
   variants: {

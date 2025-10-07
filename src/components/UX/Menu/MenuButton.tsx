@@ -43,22 +43,22 @@ export const MenuButton = (props: ButtonTotalProps) => {
       (gsap[l ? "set" : "to"](menuRef, {
         width: parseInt(buttonPaddingPx, 10) * 4 + textWidth,
         duration: 0.6,
-        ease: "Power4.easeOut"
+        ease: "power4.out"
       }),
         gsap[l ? "set" : "to"](menuTextRef.current, {
           y: isNavOpen ? "-105%" : 0,
           duration: 0.6,
-          ease: "Power4.easeOut"
+          ease: "power4.out"
         }),
         gsap[l ? "set" : "to"](closeTextRef.current, {
           y: isNavOpen ? 0 : "105%",
           duration: 0.6,
-          ease: "Power4.easeOut"
+          ease: "power4.out"
         }),
         gsap[l ? "set" : "to"](menuIconRef.current, {
           y: isNavOpen ? 0 : "50%",
           duration: 0.6,
-          ease: "Power4.easeOut",
+          ease: "power4.out",
           delay: isNavOpen ? 0.075 : 0
         }));
     },

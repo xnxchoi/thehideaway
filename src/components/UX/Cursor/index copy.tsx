@@ -13,7 +13,7 @@ import {
 
 import {
   useCursorAPI,
-  useCursorStore,
+  useCursor,
   useDeviceInfo,
   useRaf,
   useRPStore
@@ -48,12 +48,12 @@ export default function RP_Cursor() {
   );
   const isTouchDevice = useDeviceInfo(useShallow((r) => r.isTouchDevice));
   const [isTextCursor, setIsTextCursor] = useState(!1);
-  const marquee = useCursorStore(useShallow((l) => l.marquee));
+  const marquee = useCursor(useShallow((l) => l.marquee));
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
 
-  const setCoord = useCursorStore(useShallow((l) => l.setMouseCoordinates));
+  const setCoord = useCursor(useShallow((l) => l.setMouseCoordinates));
   const { subscribe } = useCursorAPI();
-  const cursorState = useCursorStore(useShallow((l) => l.cursorState));
+  const cursorState = useCursor(useShallow((l) => l.cursorState));
   const oCircle = useRef(null);
   const iCircle = useRef(null);
   const cursr = useRef<HTMLSpanElement>(null!);
@@ -70,7 +70,7 @@ export default function RP_Cursor() {
   // const xTo = useRef<Function>(null!);
   // // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   // const yTo = useRef<Function>(null!);
-  const cursorTheme = useCursorStore(useShallow((l) => l.cursorTheme));
+  const cursorTheme = useCursor(useShallow((l) => l.cursorTheme));
   const theme = useTheme((r) => r.theme);
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const handleMouseOver = useCallback(
@@ -164,12 +164,12 @@ export default function RP_Cursor() {
 
             delay: 0.1,
             duration: 0.3,
-            ease: "Power3.easeOut"
+            ease: "power3.out"
           }),
           gsap.to([oCircle.current, iCircle.current], {
             autoAlpha: 1,
             duration: 0.12,
-            ease: "Power3.easeOut",
+            ease: "power3.out",
             delay: 0.1
           }));
         (gsap.to(oCircle.current, {
@@ -177,7 +177,7 @@ export default function RP_Cursor() {
             r: outerRad
           },
           autoAlpha: 1,
-          ease: "Power3.easeOut",
+          ease: "power3.out",
           duration: 0.3,
           delay: lastTextCursor.current ? 0.12 : 0
         }),
@@ -186,7 +186,7 @@ export default function RP_Cursor() {
               r: innerRad
             },
             autoAlpha: 1,
-            ease: "Power3.easeOut",
+            ease: "power3.out",
             duration: 0.3,
             delay: lastTextCursor.current ? 0.12 : 0
           }));
@@ -214,27 +214,23 @@ export default function RP_Cursor() {
 
             height: 40,
             delay: 0.14,
-            ease: "Power3.easeOut"
+            ease: "power3.out"
           });
         }
         gsap.to(domEl.current, {
           width: clamp(85, width, 120),
           delay: 0.14,
           duration: 0.3,
-          ease: "Power3.easeOut"
+          ease: "power3.out"
         });
       }
       lastTextCursor.current = isTC;
     },
     { dependencies: [cursorState], scope: cursr }
   );
-  const baseTheme = useCursorStore(useShallow((l) => l.baseCursorTheme));
-  const setBaseCursorTheme = useCursorStore(
-    useShallow((l) => l.setBaseCursorTheme)
-  );
-  const resetCursorTheme = useCursorStore(
-    useShallow((l) => l.resetCursorTheme)
-  );
+  const baseTheme = useCursor(useShallow((l) => l.baseCursorTheme));
+  const setBaseCursorTheme = useCursor(useShallow((l) => l.setBaseCursorTheme));
+  const resetCursorTheme = useCursor(useShallow((l) => l.resetCursorTheme));
 
   useEffect(() => {
     theme && (setBaseCursorTheme(theme), !navIsOpen && resetCursorTheme());

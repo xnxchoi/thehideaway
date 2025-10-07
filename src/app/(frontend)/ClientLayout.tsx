@@ -5,9 +5,8 @@ import { ContentMask } from "@/components/UX/ContentMask";
 import { Controlbar } from "@/components/UX/Controlbar";
 import { FXFrame } from "@/components/UX/FXFrame/FXFrame";
 import { MenuMediaPreview } from "@/components/UX/MediaPreview/MenuMediaPreview";
-import { PageTransitionPortal } from "@/components/UX/Transition/PageTransitionPortal";
-import { ReactNode } from "react";
 import dynamic from "next/dynamic";
+import { ReactNode } from "react";
 const TabMessenger = dynamic(
   () => import("@/utilities/visibilityChange").then((m) => m.TabMessenger),
   { ssr: false }
@@ -21,7 +20,6 @@ export function ClientLayout({ children }: { children: ReactNode }) {
     <Main>
       <MenuMediaPreview />
       <ContentMask>{children}</ContentMask>
-      <PageTransitionPortal />
       <FXFrame />
       <Controlbar />
       <TabMessenger />

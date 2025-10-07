@@ -4,7 +4,7 @@ import { useGSAP } from "@gsap/react";
 import "@/styles/__stars.scss";
 import { gsap } from "gsap/all";
 import { CustomEase } from "gsap/CustomEase";
-import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useInView } from "react-intersection-observer";
 import { useShallow } from "zustand/shallow";
 
@@ -197,8 +197,8 @@ export const Starliner = () => {
       }
     }
   }, [inView, navIsOpen]);
-  const colorCursor = useCursorStore((r) => r.setCursorTheme);
-  const resetCursor = useCursorStore((r) => r.resetCursorTheme);
+  const colorCursor = useCursor((r) => r.setCursorTheme);
+  const resetCursor = useCursor((r) => r.resetCursorTheme);
   return (
     <div
       ref={ref}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next/types";
 
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { RPage } from "@/components/UX/Transition";
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";

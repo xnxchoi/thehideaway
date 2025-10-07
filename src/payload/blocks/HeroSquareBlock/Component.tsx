@@ -3,8 +3,8 @@ import React from "react";
 
 import { HomeArticleLayout } from "@/components/layouts/HomeArticleLayout";
 import type { HeroSquareBlock as HeroSquareBlockProps } from "@/payload-types";
-import { ArticleOverview } from "@/types/collections/posts";
 import { queryPostOverview } from "@/payload/collections/Posts/api/queryPostOverview";
+import { ArticleOverview } from "@/types/collections/posts";
 
 export const HeroSquareBlock: React.FC<
   {

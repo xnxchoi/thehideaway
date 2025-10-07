@@ -440,7 +440,6 @@ export const getSections: (content: SectionContent) => Array<
   return content.sections;
 };
 
-// @ts-ignore
 const OrgStructuredData = ({
   companyTitle,
   companyDescription,
@@ -451,6 +450,16 @@ const OrgStructuredData = ({
   foundingDate,
   numberOfEmployees,
   otherLinks
+}: {
+  companyTitle: string;
+  companyDescription: string;
+  image: any;
+  addressInfo: any;
+  telephone: string;
+  email: string;
+  foundingDate: Date;
+  numberOfEmployees: number;
+  otherLinks: any;
 }) => {
   if (!companyTitle) {
     return null;

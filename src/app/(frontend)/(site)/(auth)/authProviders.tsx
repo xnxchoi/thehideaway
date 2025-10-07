@@ -1,7 +1,7 @@
 "use client";
 import { AuthUIProvider } from "@/lib/auth/betterauth-ui/src";
 import { authClient } from "@/lib/auth/client";
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {

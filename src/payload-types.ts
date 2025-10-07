@@ -423,7 +423,6 @@ export interface UserMedia {
   caption?: string | null;
   darkmode?: boolean | null;
   author: string | User;
-  publishedAt?: string | null;
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
@@ -440,7 +439,6 @@ export interface UserMedia {
   folder?: (string | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -562,6 +560,7 @@ export interface Bookmark {
  */
 export interface Post {
   id: string;
+  image?: (string | null) | UserMedia;
   title: string;
   content: {
     root: {
@@ -588,11 +587,10 @@ export interface Post {
     image?: (string | null) | Media;
   };
   tagged?: (string | Tag)[] | null;
-  image?: (string | null) | UserMedia;
   subtitle: string;
   publishedAt?: string | null;
   author: string | User;
-  slugKey: string;
+  slugKey?: string | null;
   hashId: string;
   slugLock: boolean;
   slug: string;
@@ -731,7 +729,6 @@ export interface Media {
   caption?: string | null;
   darkmode?: boolean | null;
   author: string | User;
-  publishedAt?: string | null;
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
@@ -741,7 +738,6 @@ export interface Media {
   blurDataUrl?: string | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -1332,7 +1328,7 @@ export interface Page {
   };
   publishedAt?: string | null;
   tagged?: (string | Tag)[] | null;
-  slugKey: string;
+  slugKey?: string | null;
   hashId: string;
   slugLock: boolean;
   slug: string;
@@ -2650,14 +2646,12 @@ export interface MediaSelect<T extends boolean = true> {
   caption?: T;
   darkmode?: T;
   author?: T;
-  publishedAt?: T;
   locked?: T;
   allowList?: T;
   authority?: T;
   blurDataUrl?: T;
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;
@@ -2958,6 +2952,7 @@ export interface HeroSquareBlockSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   id?: T;
+  image?: T;
   title?: T;
   content?: T;
   relatedPosts?: T;
@@ -2969,7 +2964,6 @@ export interface PostsSelect<T extends boolean = true> {
         image?: T;
       };
   tagged?: T;
-  image?: T;
   subtitle?: T;
   publishedAt?: T;
   author?: T;
@@ -2995,7 +2989,6 @@ export interface UserMediaSelect<T extends boolean = true> {
   caption?: T;
   darkmode?: T;
   author?: T;
-  publishedAt?: T;
   bookmarks?: T;
   locked?: T;
   allowList?: T;
@@ -3005,7 +2998,6 @@ export interface UserMediaSelect<T extends boolean = true> {
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;
@@ -3947,16 +3939,8 @@ export interface TaskSchedulePublish {
     locale?: string | null;
     doc?:
       | ({
-          relationTo: 'media';
-          value: string | Media;
-        } | null)
-      | ({
           relationTo: 'posts';
           value: string | Post;
-        } | null)
-      | ({
-          relationTo: 'userMedia';
-          value: string | UserMedia;
         } | null)
       | ({
           relationTo: 'delta';

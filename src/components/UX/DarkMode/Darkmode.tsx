@@ -80,7 +80,7 @@ export const DarkmodeButton = (props: ComponentPropsWithRef<"button">) => {
   const iconTransitioner = useCallback((l: string, c = false) => {
     if (!lightmodeIcon.current || !darkmodeIcon.current) return;
     gsap.killTweensOf([lightmodeIcon.current, darkmodeIcon.current]);
-    const d = "Power3.easeOut";
+    const d = "power3.out";
     (gsap[c ? "set" : "to"](lightmodeIcon.current, {
       y: "light" === l ? 0 : "-105%",
       duration: H,

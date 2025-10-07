@@ -8,7 +8,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { errorToast, successToast } from "@/components/ui/sonner";
-import { Button } from "@/components/UX/Link";
+import { Button } from "@/components/UX/Link/Link";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -369,7 +369,7 @@ export const FloatHighlightMenu = ({
           />
           <m.div
             className={
-              "z-[23] flex h-[44px] items-center px-3.5 text-off-foreground"
+              "text-off-background z-[23] flex h-[44px] items-center px-3.5"
             }
           >
             <Dialog open={dOpen} onOpenChange={setMemoOpen}>
@@ -542,7 +542,7 @@ const HighlightColorPickerItem = ({
   return (
     <m.button
       className={cn(
-        "relative h-[12px] w-[16px] border-[1px] border-solid border-transparent bg-off-foreground data-[active=true]:border-[1px] data-[active=true]:border-muted-faded-background/60",
+        "bg-off-foreground relative h-[12px] w-[16px] border-[1px] border-solid border-transparent data-[active=true]:border-[1px] data-[active=true]:border-muted-faded-background/60",
         className
       )}
       onClick={onClick}

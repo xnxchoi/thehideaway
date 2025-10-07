@@ -2,7 +2,7 @@
 import { useRPStore } from "@/providers/RP_Pro";
 import { Header } from "@/payload-types";
 import { getMenuPagePreviewKey, getPageTypeFromUrl } from "@/utilities/Helpers";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { PayloadLinkProps } from "@/components/UX/Link/types";
 
 export const InitiateHeader = ({ header }: { header: Header }) => {
@@ -40,17 +40,20 @@ export const InitiateHeader = ({ header }: { header: Header }) => {
   //     }
   //   }
   // }, [])
-  const links: (PayloadLinkProps & { url: string })[] = [
-    link("/", "Reception"),
-    link("/essays", "Latest"),
-    link("/plans", "Plans"),
-    link("/the-team", "The Team"),
-    link("/lostinseoul", "LOSTINSEOUL"),
-    link("/register", "Register"),
-    ...(process.env.NODE_ENV === "development"
-      ? [link("/dev", "DEV"), link("/dashboard", "Dashboard")]
-      : [])
-  ];
+  const links: (PayloadLinkProps & { url: string })[] = useMemo(
+    () => [
+      link("/", "Reception"),
+      link("/essays", "Latest"),
+      link("/plans", "Plans"),
+      link("/the-team", "The Team"),
+      link("/lostinseoul", "LOSTINSEOUL"),
+      link("/register", "Register"),
+      ...(process.env.NODE_ENV === "development"
+        ? [link("/dev", "DEV"), link("/dashboard", "Dashboard")]
+        : [])
+    ],
+    []
+  );
   useEffect(() => {
     setNavigationItems(
       links.map((l, index) => ({

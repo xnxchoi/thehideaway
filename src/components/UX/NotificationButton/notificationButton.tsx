@@ -11,7 +11,7 @@ import {
 } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button, Link, MotionBtn, MotionLink } from "@/components/UX/Link";
+import { Button, Link, MotionBtn, MotionLink } from "@/components/UX/Link/Link";
 import { useHumanTime } from "@/payload/collections/Deltas/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import type { AuthorOverview } from "@/types/collections/posts";

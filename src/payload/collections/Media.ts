@@ -32,16 +32,7 @@ const MediaFields: CollectionConfig["fields"] = [
     defaultValue: false,
     index: true
   },
-  ...AuthorField(false),
-  {
-    name: "publishedAt",
-    type: "date",
-    admin: {
-      date: {
-        pickerAppearance: "dayAndTime"
-      }
-    }
-  }
+  ...AuthorField(false)
 ];
 
 export const Media: CollectionConfig = {
@@ -62,29 +53,7 @@ export const Media: CollectionConfig = {
   access: {
     create: authenticated,
     delete: standardUpdateAccess,
-    read: ({ req }) => {
-      const user = req.user;
-      if (!user || !user.role)
-        return {
-          _status: {
-            equals: "published"
-          }
-        };
-      if (["editor", "admin"].includes(user?.role)) return true;
-      const stat: Where = {
-        _status: { equals: "published" }
-      };
-      return {
-        or: [
-          stat,
-          {
-            author: {
-              equals: user.id
-            }
-          }
-        ]
-      } as Where;
-    },
+    read: () => true,
     update: standardUpdateAccess
   },
   fields: MediaFields,
@@ -198,14 +167,5 @@ export const Media: CollectionConfig = {
     ],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]
     // afterOperation: [webpConversionHook]
-  },
-  versions: {
-    drafts: {
-      autosave: {
-        interval: 1500 // We set this interval for optimal live preview
-      },
-      schedulePublish: true
-    },
-    maxPerDoc: 5
   }
 };

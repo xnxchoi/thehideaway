@@ -1,12 +1,9 @@
 "use client";
 import { cn } from "@/lib/utils";
-import {
-  useCursorStore,
-  useRPStore,
-  useRPTransition
-} from "@/providers/RP_Pro";
+import { useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
+import { useRPTransition } from "@/providers/TransitionProvider";
 import {
   FrontEndCollections,
   PageType,
@@ -19,10 +16,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
-import {
-  useTransitionRouter,
-  useTransitionState
-} from "next-transition-router";
+import { useTransitionRouter } from "next-transition-router";
 import {
   ReactNode,
   useCallback,
@@ -312,23 +306,15 @@ export const RPage = (props: TransitionWrapperProps) => {
 };
 const TransitionInternal = (props: TransitionWrapperProps) => {
   const { children, headerVisibility = true, theme, ref: pageRef } = props;
-  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
-  const navIsOpenDebounced = useRPStore(
-    useShallow((l) => l.navIsOpenDebounced)
-  );
-  const setN = useRPStore((l) => l.setNavIsOpen);
-  const isPreloader = useRPStore((l) => l.isPreloader);
-  const setCanInteract = useRPStore((l) => l.setCanInteract);
 
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
+  const ref = useRef<HTMLDivElement>(null!);
   const setPageTheme = useTheme((r) => r.setPageTheme);
-  const setCursorState = useCursorStore((l) => l.setCursorState);
   const transitionOutType = useRPStore(useShallow((l) => l.transitionOutType));
-  const setCurrentPhase = useRPTransition((l) => l.setCurrentPhase);
   const setCurrentStep = useRPTransition((l) => l.setCurrentStep);
   const pageIsTransitioning = useRPStore(
     useShallow((l) => l.pageIsTransitioning)
   );
-  const { stage } = useTransitionState();
   const scroll = useLenis(),
     { isMobile } = useIsMobile();
   useEffect(() => {
@@ -391,57 +377,48 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   }, [transitionMap, transitionOutType]);
   useGSAP(
     () => {
-      if (typeof pageRef === "function" || !pageRef) return;
-      if (!pageRef.current || !scroll || navIsOpen) return;
-      gsap.killTweensOf(pageRef.current);
-      pageRef.current.style.removeProperty("transform");
+      if (typeof ref !== "object" || !ref || !scroll || !ref.current) return;
+      gsap.killTweensOf(ref.current);
+      ref.current.style.removeProperty("transform");
       let scaleDown = scaled * 0.95;
       let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
       isMobile && ((scaledScrollY = 0), (scaleDown = 1));
-      gsap.to(pageRef.current, {
+      gsap.to(ref.current, {
         y: isSidebarOpen ? scaledScrollY : 0,
         scale: isSidebarOpen ? scaleDown : 1,
-        ease: "Power3.in",
+        ease: "power3.in",
         duration: 0.6,
         onComplete: () => {
           !isSidebarOpen &&
             !navIsOpen &&
-            gsap.to(pageRef.current, { delay: 0.4, clearProps: "transform" });
+            gsap.to(ref.current, { delay: 0.4, clearProps: "transform" });
         }
       });
     },
-    { dependencies: [isSidebarOpen] }
+    { dependencies: [] }
   );
   useGSAP(
     () => {
-      if (
-        !pageRef ||
-        typeof pageRef === "function" ||
-        !pageRef.current ||
-        !scroll
-      )
-        return;
-      const ref = "current" in pageRef ? pageRef.current : pageRef;
-      gsap.killTweensOf(ref);
-      ref.style.removeProperty("transform");
+      if (typeof ref !== "object" || !ref || !scroll || !ref.current) return;
+      gsap.killTweensOf(ref.current);
+      ref.current.style.removeProperty("transform");
       let scaleDown = scaled;
       let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
       isMobile && ((scaledScrollY = 0), (scaleDown = 1));
-      gsap.to(pageRef, {
+      gsap.to(ref.current, {
         y: navIsOpen ? scaledScrollY : 0,
         scale: navIsOpen ? scaleDown : 1,
-        ease: "Power3.inOut",
+        ease: "power3.inOut",
         duration: 1.2,
         onComplete: () => {
           !navIsOpen &&
-            gsap.to(pageRef, { delay: 0.4, clearProps: "transform" });
+            gsap.to(ref.current, { delay: 0.4, clearProps: "transform" });
         }
       });
     },
     { dependencies: [navIsOpen] }
   );
   const setHeaderVisibility = useRPStore((l) => l.setHeaderVisibility);
-  const toR = useRef<ReturnType<typeof setTimeout>>(null!);
   const onComplete = useCallback(
     (headerVisible: boolean = true, theme?: Theme) => {
       setHeaderVisibility(headerVisible);
@@ -460,23 +437,6 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       ref={pageRef}
       variants={currentVariants}
       className={cn("page", { transitioning: pageIsTransitioning })}
-      onAnimationStart={(phase) => {
-        setCurrentStep("start");
-        switch (phase) {
-          case "none":
-            break;
-
-          case "entering":
-            (toR.current && clearTimeout(toR.current),
-              !isMobile && setCursorState(null),
-              (toR.current = setTimeout(() => {
-                setN(!1);
-              }, 50)));
-            break;
-          default:
-            break;
-        }
-      }}
       onAnimationComplete={(phase) => {
         setCurrentStep("complete");
 
@@ -490,7 +450,7 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
         }
       }}
     >
-      {children}
+      <m.div ref={ref}>{children}</m.div>
     </m.div>
   );
 };

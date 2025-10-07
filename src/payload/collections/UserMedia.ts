@@ -31,32 +31,19 @@ export const UserMedia: CollectionConfig = {
   },
   folders: true,
   admin: {
-    baseFilter: filterDocByCurrentUser
+    baseFilter: ({ req }) => {
+      if (req.user?.role === "admin") return null;
+      return {
+        author: {
+          equals: req.user?.id
+        }
+      };
+    }
   },
   access: {
     create: authenticated,
     delete: standardUpdateAccess,
-    read: ({ req: { user } }) => {
-      if (!user)
-        return {
-          _status: {
-            equals: "published"
-          }
-        };
-      if (user?.role === "admin") return true;
-      return {
-        or: [
-          {
-            _status: { equals: "published" }
-          },
-          {
-            author: {
-              equals: user.id
-            }
-          }
-        ]
-      } as Where;
-    },
+    read: () => true,
     update: standardUpdateAccess
   },
   fields: [
@@ -75,15 +62,7 @@ export const UserMedia: CollectionConfig = {
       index: true
     },
     ...AuthorField(),
-    {
-      name: "publishedAt",
-      type: "date",
-      admin: {
-        date: {
-          pickerAppearance: "dayAndTime"
-        }
-      }
-    },
+
     {
       name: "bookmarks",
       collection: "bookmarks",
@@ -202,7 +181,7 @@ export const UserMedia: CollectionConfig = {
     ],
     beforeChange: [
       sanitizeAuthor(false),
-      populatePublishedAt,
+      // populatePublishedAt,
       async ({ data, operation, req, context, originalDoc }) => {
         if (operation === "create" || operation === "update") {
           const user = req.user;
@@ -341,14 +320,5 @@ export const UserMedia: CollectionConfig = {
       // },
     ]
     // afterOperation: [webpConversionHook]
-  },
-  versions: {
-    drafts: {
-      autosave: {
-        interval: 450 // We set this interval for optimal live preview
-      },
-      schedulePublish: true
-    },
-    maxPerDoc: 1
   }
 };

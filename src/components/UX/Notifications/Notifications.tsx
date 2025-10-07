@@ -1,7 +1,7 @@
 import { useRPStore } from "@/providers/RP_Pro";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { Link } from "src/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { useNotifications } from "@/providers/Notifications";
 import { useIsMobile } from "@/providers/MiddleMan";

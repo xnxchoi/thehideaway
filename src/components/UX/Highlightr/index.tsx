@@ -6,7 +6,7 @@ import {
   useHighlighter
 } from "@/components/UX/Highlightr/providers/HighlighterProvider";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
-import { Button, MotionBtn } from "@/components/UX/Link";
+import { Button, MotionBtn } from "@/components/UX/Link/Link";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { Bookmark, User } from "@/payload-types";
@@ -14,7 +14,7 @@ import { FeaturedCard } from "@/payload/blocks/heros/ArtHero/FeatureHero";
 import type { AuthorOverview, SingleArticle } from "@/types/collections/posts";
 import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   autoUpdate,
@@ -389,7 +389,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     setPrivView,
     setVisi
   ]);
-  const setCursor = useCursorStore((r) => r.setCursorState);
+  const setCursor = useCursor((r) => r.setCursorState);
   const onEn = useCallback(() => {
     setCursor("FOCUS");
   }, [setCursor]);
@@ -1302,11 +1302,11 @@ const ResponseIndicator = (
       <div className={"relative"}>
         <Button
           onClick={onClick}
-          className="z-[30] flex aspect-[4/3] h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border-[1px] border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground dark:bg-faded-background"
+          className="dark:bg-faded-background z-[30] flex aspect-[4/3] h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border-[1px] border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground"
         >
           <span
             className={
-              "absolute -bottom-[3px] left-[0.5px] z-[20] h-[4.5px] w-[4.5px] bg-background [clip-path:polygon(0_0,0_100%,100%_0)] dark:bg-faded-background"
+              "dark:bg-faded-background absolute -bottom-[3px] left-[0.5px] z-[20] h-[4.5px] w-[4.5px] bg-background [clip-path:polygon(0_0,0_100%,100%_0)]"
             }
           />
           <span
@@ -1352,7 +1352,7 @@ const PrivateIndicator = (
       <div className={"relative"}>
         <Button
           onClick={onClick}
-          className="z-[30] flex aspect-[4/3] h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border-[1px] border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground dark:bg-faded-background"
+          className="dark:bg-faded-background z-[30] flex aspect-[4/3] h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border-[1px] border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground"
         ></Button>
       </div>
     </div>
@@ -1390,7 +1390,7 @@ export const HighlightMenuButton = ({
   return (
     <Button
       className={cn(
-        "z-[10] flex items-center border-0 border-r-[1px] border-dashed !border-faded-background/90 bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] text-faded-background/90 antialiased transition-colors ease-in-out-2 last-of-type:border-r-0 hover:text-piercing-orange hover:[&_path]:fill-piercing-orange [&_svg]:inline-block nth-of-type-[2]:[&_svg]:-left-[0.25px] nth-last-of-type-[2]:[&_svg]:left-[0.5px]",
+        "!border-faded-background/90 !text-faded-background/90 z-[10] flex items-center border-0 border-r-[1px] border-dashed bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] antialiased transition-colors ease-in-out-2 last-of-type:border-r-0 hover:text-piercing-orange hover:[&_path]:fill-piercing-orange [&_svg]:inline-block nth-of-type-[2]:[&_svg]:-left-[0.25px] nth-last-of-type-[2]:[&_svg]:left-[0.5px]",
         className
       )}
       {...props}
@@ -1418,7 +1418,7 @@ export const MenuButtonCaption = ({
         className,
         icon
           ? "lowercase"
-          : "border-r-px border-dashed border-faded-background/80"
+          : "border-r-px border-faded-background/80 border-dashed"
       )}
       {...props}
     >

@@ -1,4 +1,4 @@
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { FrontImage, FrontImageProps } from "@/components/UX/Media/FrontImage";
 import { cn } from "@/lib/utils";
 import { MediaReq, SingleArticle } from "@/types/collections/posts";

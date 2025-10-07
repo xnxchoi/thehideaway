@@ -33,22 +33,6 @@ type NavItem = {
 };
 export type NavigationProps = NavItem[];
 
-export type HA_Scroll = {
-  scrollY: number;
-  scrollProgress: number;
-  scrollDirection: "up" | "down" | string;
-  isScrolling: boolean;
-};
-export type HA_ScrollActions = {
-  setScroll: (l: {
-    direction: number;
-    isScrolling: boolean;
-    scrollY: number;
-    progress: number;
-  }) => void;
-  setScrollY: (y: number) => void;
-  setScrollProgress: (y: number) => void;
-};
 export type HA_UI = {
   globalSettings: {
     navigation: NavigationProps;
@@ -128,7 +112,7 @@ const tz = {
   left: 0,
   width: "100%",
   height: "100%",
-
+  pointerEvents: "none",
   overflow: "hidden"
 };
 
@@ -138,6 +122,7 @@ const tU = {
   left: 0,
   width: "100%",
   height: "auto",
+  pointerEvents: "auto",
   overflow: "visible"
 };
 const dlay = 0.7;
@@ -151,14 +136,24 @@ type TransitionMap = Record<PageTransitionType, SingleTransition>;
 const transitionMappings: TransitionMap = {
   FADE: {
     none: {
-      ...tz,
-      opacity: 0,
-      pointerEvents: "none"
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      overflow: "hidden",
+      opacity: 0
     },
     entering: {
-      ...tU,
-      opacity: 1,
+      position: "relative",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "auto",
       pointerEvents: "auto",
+      overflow: "visible",
+      opacity: 1,
       transition: {
         ease: "easeIn",
         duration: 0.3,
@@ -166,9 +161,15 @@ const transitionMappings: TransitionMap = {
       }
     },
     leaving: {
-      ...tz,
-      opacity: 0,
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
       pointerEvents: "none",
+      overflow: "hidden",
+      opacity: 0,
+
       transition: {
         delay: dlay,
         duration: 0.3,
@@ -178,10 +179,22 @@ const transitionMappings: TransitionMap = {
   },
   FROM_MENU: {
     none: {
-      ...tz
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      overflow: "hidden"
     },
     entering: {
-      ...tU,
+      position: "relative",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "auto",
+      pointerEvents: "auto",
+      overflow: "visible",
       opacity: 1,
       transition: {
         duration: 0,
@@ -197,11 +210,22 @@ const transitionMappings: TransitionMap = {
   },
   CURTAIN: {
     none: {
-      ...tz
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      overflow: "hidden"
     },
     entering: {
-      ...tU,
+      position: "relative",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "auto",
       pointerEvents: "auto",
+      overflow: "visible",
       transition: {
         delay: 0,
         duration: 0
@@ -461,7 +485,7 @@ export const createTransStore = (initState: TransitionState = initTrans) => {
 export type HA_ANIMATION = {
   navIsTransitioning: boolean;
   transitionType: null | string | PageTransitionType;
-  transitionOutType: null | string | PageTransitionType;
+  transitionOutType: null | PageTransitionType;
   navOpeningElement: HTMLElement | null;
   isPreloader: boolean;
   enablePreloaderAnimation: boolean;
@@ -503,18 +527,11 @@ export type HA_ANIMATION_ACT = {
   setNavigationPageItemData: (c: NavItem[]) => void;
   setNavigationPageItemSelected: (c: -1 | string) => void;
   setNavigationPageIsTransitioning: (c: boolean) => void;
-  setTransitionOutType: (c: PageTransitionType) => void;
+  setTransitionOutType: (c: PageTransitionType | null) => void;
   setIsTransitioningWipe: (l: boolean) => void;
   setNavigationPageItemsToFetch: (c: any[]) => void;
   setNavigationPreviewMediaByKey: (c: { [key: string]: any }) => void;
   setNavigationPageItemHovered: (c: -1 | string) => void;
-};
-
-const scrollInitState: HA_Scroll = {
-  scrollDirection: "down",
-  isScrolling: false,
-  scrollY: 0,
-  scrollProgress: 0
 };
 const uiInitState: HA_UI = {
   sidebarOpen: false,
@@ -570,7 +587,6 @@ const pageInit: HA_PAGE = {
   homepageIsScrollingMobile: false
 };
 
-export type HA_SCROLLED = HA_Scroll & HA_ScrollActions;
 export type HA_VLT = HA_UI & HA_MENU & HA_ANIMATION & HA_PAGE;
 export type HA_ACT = HA_UI_ACT & HA_MENU_ACT & HA_ANIMATION_ACT & HA_PAGE_ACT;
 export type HA_VAULT = HA_VLT & HA_ACT;
@@ -578,8 +594,7 @@ export const HA_INIT: HA_VLT = {
   ...uiInitState,
   ...navIn,
   ...transIn,
-  ...pageInit,
-  ...scrollInitState
+  ...pageInit
 };
 export type RafRaf = {
   raf: null | number | RefObject<number | null>;
@@ -648,16 +663,8 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
         set((state) => ({ navIsTransitioning: l })),
       setPageIsTransitioning: (l: boolean) =>
         set((state) => ({ pageIsTransitioning: l })),
-      setTransitionOutType: (l: string | PageTransitionType | null) =>
-        set((state) => {
-          const current = { ...state };
-          const transition = l;
-          current.isTransitioningWipe = Boolean(l && l === "CURTAIN");
-          current.transitionOutType = transition;
-          return {
-            ...current
-          };
-        }),
+      setTransitionOutType: (l: PageTransitionType | null) =>
+        set((state) => ({ transitionOutType: l })),
       setNavigationPageItemData: (c: NavItem[]) =>
         set(
           (state) => ({
@@ -837,19 +844,4 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
         })
     }))
   );
-};
-export const createScrollStore = (initState: HA_Scroll = scrollInitState) => {
-  return createStore<HA_SCROLLED>()((set) => ({
-    ...initState,
-    setScroll: (l) =>
-      set((state) => ({
-        isScrolling: l.isScrolling,
-        scrollDirection: l.direction > 0 ? "down" : "up",
-        scrollY: l.scrollY,
-        scrollProgress: l.progress
-      })),
-    setScrollY: (scrollY: number) => set((state) => ({ scrollY })),
-    setScrollProgress: (scrollProgress: number) =>
-      set((state) => ({ scrollProgress }))
-  }));
 };

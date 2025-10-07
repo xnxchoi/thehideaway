@@ -18,7 +18,6 @@ import { UserMedia } from "@/payload/collections/UserMedia";
 import { Users } from "@/payload/collections/Users";
 import { UserViews } from "@/payload/collections/UserViews";
 import { CollectionConfig } from "payload";
-import { SeriesConfig } from "./Series/Series";
 
 export const collections: CollectionConfig[] = [
   Users,

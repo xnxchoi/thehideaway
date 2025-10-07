@@ -3,14 +3,18 @@ import { useRPStore } from "@/providers/RP_Pro";
 
 import { useLenis } from "lenis/react";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useIsMobile } from "@/utilities/getBreakpoints";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useShallow } from "zustand/shallow";
-import { portalFrameTransitions, PortalFrameTransitions } from ".";
+import { PortalFrameTransitions } from ".";
 import { usePortaller } from "./Portaller";
+import { useTransitionState } from "next-transition-router";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { delay } from "@/utilities/rp_utils";
+import { waiting } from "../Highlightr/providers/RangerProvider";
 export const PageTransitionPortal = () => {
   const frameDir: Array<PortalFrameTransitions> = useMemo(
     () => ["top", "right", "bottom", "left"],
@@ -31,18 +35,15 @@ export const PageTransitionPortal = () => {
     cornerRefs = useRef<HTMLDivElement[]>([]),
     svgRefs = useRef<HTMLDivElement[]>([]),
     m = useRef(null),
-    { isMobile: isMobile } = useIsMobile(),
-    pageIsTransitioning = useRPStore(useShallow((l) => l.pageIsTransitioning)),
-    transitionOutType = useRPStore(useShallow((l) => l.transitionOutType)),
-    setIsTransitioningWipe = useRPStore((l) => l.setIsTransitioningWipe),
-    setCanInteract = useRPStore((l) => l.setCanInteract),
-    isTransitioningWipe = useRPStore(useShallow((l) => l.isTransitioningWipe)),
-    alreadyReset = useRef(false),
-    scroll = useLenis();
-  const setAnimateFn = usePortaller((l) => l.setAnimateFn);
-  const animateTransition = useRef<(h: boolean, p?: () => void) => void>(null!);
-  useGSAP(() => {
-    ((animateTransition.current = (h: boolean, p?: () => void) => {
+    { isMobile: isMobile } = useIsMobile();
+
+  const { contextSafe } = useGSAP();
+  const transitionOutType = useRPStore(
+    useShallow((state) => state.transitionOutType)
+  );
+  const setCanInteract = useRPStore((r) => r.setCanInteract);
+  const animateTransition = contextSafe(
+    (animateOut: boolean, p?: () => void | Promise<void>) => {
       const navOpeningElement = document.getElementById("navWindow");
       if (
         !frameRefs.current.length ||
@@ -60,7 +61,7 @@ export const PageTransitionPortal = () => {
         gsap.killTweensOf(l);
         let xMove: number | string = 0,
           yMove: number | string = 0;
-        if (!h)
+        if (!animateOut) {
           switch (c) {
             case 0:
               yMove = "-100%";
@@ -74,11 +75,12 @@ export const PageTransitionPortal = () => {
             case 3:
               xMove = "-100%";
           }
+        }
         gsap.to(l, {
           x: xMove,
           y: yMove,
           duration: 0.7,
-          ease: h ? "power4.inOut" : "power3.inOut",
+          ease: animateOut ? "power4.inOut" : "power3.inOut",
           onComplete: () => {
             0 === c && p && p();
           }
@@ -90,7 +92,7 @@ export const PageTransitionPortal = () => {
         let d = 0;
         let p = 0;
         const m = 0.5 * window.innerWidth;
-        if (h)
+        if (animateOut) {
           switch (c) {
             case 0:
               ((p = v - 1), (d = m - 1));
@@ -104,26 +106,94 @@ export const PageTransitionPortal = () => {
             case 3:
               ((d = m - 1), (p = -v + 1));
           }
+        }
         gsap.to(l, {
           x: d,
           y: p,
           duration: 0.7,
-          ease: h ? "power4.inOut" : "power3.inOut"
+          ease: animateOut ? "power4.inOut" : "power3.inOut"
         });
       });
       svgRefs.current.forEach((l) => {
         l &&
           (gsap.killTweensOf(l),
           gsap.to(l, {
-            scale: h ? 1 : 0,
+            scale: animateOut ? 1 : 0,
             duration: 0.7,
-            ease: h ? "power4.inOut" : "power3.inOut"
+            ease: animateOut ? "power4.inOut" : "power3.inOut"
           }));
       });
-      setAnimateFn(animateTransition.current);
-    }),
-      []);
+    }
+  );
+  const setIsTransitioningWipe = useRPStore((r) => r.setIsTransitioningWipe);
+  const setAnimate = usePortaller((r) => r.setAnimateFn);
+  useEffect(() => {
+    setAnimate(animateTransition);
+  }, [animateTransition, setAnimate]);
+  const isTransitioningWipe = useRPStore((r) => r.isTransitioningWipe);
+  const { stage, isReady } = useTransitionState();
+  const hasRun = useRef(false);
+  const lenis = useLenis();
+  const isReadyRef = useRef(isReady);
+  useEffect(() => {
+    console.log("isReady", isReady);
+    isReadyRef.current = isReady;
+  }, [isReady]);
+  const fadeInPage = contextSafe(() => {
+    gsap.to(".rp-container", {
+      autoAlpha: 1,
+      duration: 0.3,
+      ease: "power3.inOut",
+      onStart: () => {
+        console.log("curtain here setting rp to visible");
+      }
+    });
   });
+  useEffect(() => {
+    if (transitionOutType !== null || !isTransitioningWipe || hasRun.current) {
+      return;
+    }
+    hasRun.current = true;
+    const fire = async () => {
+      await delay(50);
+
+      animateTransition(true, async () => {
+        setCanInteract(false);
+        (window.scroll(0, 0),
+          lenis &&
+            lenis.scrollTo(0, {
+              immediate: !0
+            }),
+          await delay(500),
+          window.scroll(0, 0),
+          ScrollTrigger.refresh(),
+          lenis &&
+            lenis.scrollTo(0, {
+              immediate: !0
+            }),
+          lenis && lenis.resize(),
+          animateTransition(false, () => {
+            setIsTransitioningWipe(false);
+            delay(50).then(() => {
+              setCanInteract(true);
+              hasRun.current = false;
+              lenis && lenis.resize();
+              ScrollTrigger.refresh();
+              fadeInPage();
+            });
+          }));
+      });
+    };
+    fire();
+  }, [
+    animateTransition,
+    transitionOutType,
+    setCanInteract,
+    lenis,
+    setIsTransitioningWipe,
+    isTransitioningWipe,
+    fadeInPage
+  ]);
 
   return (
     <div ref={m} className="pt_container">

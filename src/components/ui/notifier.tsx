@@ -11,7 +11,7 @@ import { useHumanTime } from "../../payload/collections/Deltas/component/useLoca
 import type { SyncedNotification } from "../../payload/collections/Notifications/hooks/types";
 import type { AuthorOverview } from "../../types/collections/posts";
 import { useDomCursor } from "../core/cursorWrapper";
-import { Button, Link } from "../UX/Link";
+import { Button, Link } from "../UX/Link/Link";
 import { ReferencedLink } from "../UX/Link/referencedLink";
 import { FrontImage } from "../UX/Media/FrontImage";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";

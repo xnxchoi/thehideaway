@@ -36,7 +36,12 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     ".grave/HighlightMenu_0929.tsx",
-    ".grave/Component.client copy.tsx"
+    ".grave/Component.client copy.tsx",
+    ".grave/migrate_1003/20250922_120041.ts",
+    ".grave/migrate_1003/20250925_111558.ts",
+    ".grave/migrate_1003/20250927_162602.ts",
+    ".grave/migrate_1003/20250928_195131.ts",
+    ".grave/migrate_1003/20251006_025047.ts"
   ],
   "exclude": ["node_modules"]
 }

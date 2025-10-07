@@ -1,16 +1,7 @@
 "use client";
 
-import React, {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 
-import { NavEventsProvider } from "@/providers/Navigation/_client-nav-events";
 import { createSearchBarStore, RP_SearchBar } from "@/stores/CMDK/SearchStore";
 import { createCursorStore, HA_CURS } from "@/stores/Cursor/CursorStore";
 import { OSNames } from "@/stores/Device/browserNames";
@@ -20,47 +11,27 @@ import {
   HA_DEVICE
 } from "@/stores/Device/DeviceStore";
 import { createMenuStructure, RP_BluePrint } from "@/stores/Frame_Ctrl";
-import { equalPageType, useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import {
-  createHAStore,
-  createRafStore,
-  createScrollStore,
-  createTransStore,
-  HA_SCROLLED,
-  HA_VAULT,
-  PhaseStep,
-  RAF,
-  RPT
-} from "@/stores/RP_Ui";
+
+import { createHAStore, HA_VAULT, RPT } from "@/stores/RP_Ui";
+
 import { createId } from "@paralleldrive/cuid2";
 import { getThumbmark } from "@thumbmarkjs/thumbmarkjs";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 import InAppSpy from "inapp-spy";
-import { useLenis } from "lenis/react";
-import { TransitionRouter } from "next-transition-router";
+
 import { UAParser } from "ua-parser-js";
 import { isAIBot, isBot } from "ua-parser-js/helpers";
 import { useStore } from "zustand/index";
 import { shallow } from "zustand/shallow";
 import { useStoreWithEqualityFn } from "zustand/traditional";
-import { useTheme } from "./Theme";
-import { useGSAP } from "@gsap/react";
-import { usePortaller } from "@/components/UX/Transition/Portaller";
 
-export type RafAPI = ReturnType<typeof createRafStore>;
 export type HAAPI = ReturnType<typeof createHAStore>;
 export type HACPI = ReturnType<typeof createCursorStore>;
 export type DeviceAPI = ReturnType<typeof createDeviceStore>;
-export type TransAPI = ReturnType<typeof createTransStore>;
-export type ScrollAPI = ReturnType<typeof createScrollStore>;
+
 export const DeviceContext = createContext<DeviceAPI | undefined>(undefined);
-export const TransContext = createContext<TransAPI | undefined>(undefined);
 export const HAStoreContext = createContext<HAAPI | undefined>(undefined);
 export const CurContext = createContext<HACPI | undefined>(undefined);
-export const RafContext = createContext<RafAPI | undefined>(undefined);
-export const ScrollContext = createContext<ScrollAPI | undefined>(undefined);
-
 export interface DeviceProviderProps {
   children: ReactNode;
 }
@@ -73,10 +44,26 @@ export interface CurProviderProps {
   children: ReactNode;
 }
 
-export interface TransProviderProps {
-  children: ReactNode;
-}
-
+type OSEnvTestTargets =
+  | "ios"
+  | "android"
+  | "mac"
+  | "windows"
+  | "linux"
+  | "node";
+type InAppTestTargets =
+  | "instagram"
+  | "pinterest"
+  | "facebook"
+  | "whatsApp"
+  | "twitter"
+  | "kakaotalk"
+  | "weChat"
+  | "naver"
+  | "threads"
+  | "messenger"
+  | "line"
+  | "tikTok";
 const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
   const storeRef = useRef<DeviceAPI>(null!);
   if (!storeRef.current) {
@@ -112,7 +99,7 @@ const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
       firefox: browser.name === "Firefox",
       safari: browser.name === "Safari"
     };
-    const apps = {
+    const apps: Record<InAppTestTargets, boolean> = {
       instagram: appName === "Instagram",
       pinterest: /pinterest/i.test(navigator.userAgent),
       facebook: appName === "Facebook",
@@ -129,18 +116,40 @@ const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
       line: appName === "Line" || browser.name === "Line",
       tikTok: appName === "TikTok" || browser.name === "TikTok"
     };
-    const oss = {
-      ios: os.name === "iOS",
-      android: os.name === "Android",
-      mac: os.name === "macOS",
-      windows: os.name === "Windows",
-      linux: os.name === "Linux",
-      node: os.name === "node"
+    const oss: Record<OSEnvTestTargets, boolean> = {
+      ios: false,
+      android: false,
+      mac: false,
+      windows: false,
+      linux: false,
+      node: false
     };
+    switch (os.name) {
+      case "iOS":
+        oss.ios = true;
+        break;
+      case "Android":
+        oss.android = true;
+        break;
+      case "macOS":
+        oss.mac = true;
+        break;
+      case "Windows":
+        oss.windows = true;
+        break;
+      case "Linux":
+        oss.linux = true;
+        break;
+      case "node":
+        oss.node = true;
+        break;
+    }
 
-    const isInAppGuess =
-      Object.values(apps).some((v) => v) || isInApp || browser.type === "inapp";
-
+    const inApp: boolean =
+      isInApp ||
+      browser.type === "inapp" ||
+      Object.values(apps).some((v) => v) ||
+      false;
     const l: HA_DEVICE = {
       fingerprint: null,
       device: {
@@ -149,9 +158,9 @@ const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
         type: device.type || "Unknown"
       },
       browser: {
-        type: isInAppGuess ? "inapp" : browser.type || "Unknown",
+        type: inApp ? "inapp" : browser.type || "Unknown",
         name: browser.name || appName || "Unknown",
-        inApp: isInAppGuess,
+        inApp,
         isChrome: majorBrowsers.chrome,
         isSafari: majorBrowsers.safari
       },
@@ -202,24 +211,6 @@ export const DeviceProvider = ({ children }: DeviceProviderProps) => {
   );
 };
 
-export const ScrollProvider = ({ children }: { children: ReactNode }) => {
-  const storeRef = useRef<ScrollAPI>(null!);
-  if (!storeRef.current) {
-    storeRef.current = createScrollStore();
-  }
-  return (
-    <ScrollContext.Provider value={storeRef.current}>
-      {children}
-    </ScrollContext.Provider>
-  );
-};
-export const useScroll = <T,>(selector: (store: HA_SCROLLED) => T): T => {
-  const scrollContext = useContext(ScrollContext);
-  if (!scrollContext) {
-    throw new Error("useScroll must be used within ScrollProvider");
-  }
-  return useStore(scrollContext, selector);
-};
 export const HAStoreProvider = ({ children }: HAStoreProviderProps) => {
   const storeRef = useRef<HAAPI>(null!);
   if (!storeRef.current) {
@@ -232,161 +223,7 @@ export const HAStoreProvider = ({ children }: HAStoreProviderProps) => {
     </HAStoreContext.Provider>
   );
 };
-const TransitionManager = ({ children }: { children: ReactNode }) => {
-  const setCurrentPhase = useRPTransition((l) => l.setCurrentPhase);
-  const clearPageTheme = useTheme((l) => l.clearPageTheme);
-  const currentPhase = useRPTransition((l) => l.currentPhase);
-  const currentStep = useRPTransition((l) => l.currentStep);
-  const getCallback = useRPTransition((l) => l.getCallback);
-  const pageType = useVoyageur((l) => l.pageType);
-  const setTransitionOutType = useRPStore((l) => l.setTransitionOutType);
-
-  const scroll = useLenis();
-  gsap.registerPlugin(ScrollTrigger);
-
-  const scrollRefresher = useCallback(() => {
-    scroll && scroll.resize();
-  }, [scroll]);
-  const slug = useVoyageur((l) => l.slug);
-  const pageRef = useRef({ type: pageType, pageSlug: slug });
-  const to = useRef<ReturnType<typeof setTimeout>>(null!);
-  const cleanCallbacks = useRPTransition((l) => l.cleanCallbacks);
-  const [currentPhaseStep, setCurrentPhaseStep] = useState<PhaseStep | null>(
-    null
-  );
-  const animateCurtain = usePortaller((l) => l.animateTransition);
-  const navIsOpen = useRPStore((l) => l.navIsOpen);
-  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
-  const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
-  const setCanInteract = useRPStore((l) => l.setCanInteract);
-  const setCursor = useCursorStore((r) => r.setCursorState);
-  const resetCursorTheme = useCursorStore((r) => r.resetCursorTheme);
-  const resetCursor = useCallback(
-    () => (setCursor(null), resetCursorTheme()),
-    [resetCursorTheme, setCursor]
-  );
-  const scrollToTop = useCallback(() => window.scroll(0, 0), []);
-
-  return (
-    <TransitionRouter
-      leave={(next, from, to) => {
-        console.log("router,from:", from);
-        console.log("router,to:", to);
-        const isE =
-          !navIsOpen && Boolean(!from || (to && equalPageType(from, to)));
-
-        gsap.to(".rp-container", {
-          autoAlpha: 0,
-          duration: 0.3,
-
-          ease: "power2.inOut",
-          onStart: () => {
-            setTransitionOutType(navIsOpen ? "FROM_MENU" : "FADE");
-            if (isE) {
-              animateCurtain(false);
-            }
-          },
-          onComplete: () => (
-            scrollToTop(),
-            setPageIsTransitioning(true),
-            next(),
-            clearPageTheme(),
-            resetCursor()
-          )
-        });
-      }}
-      enter={(next, from, to) => {
-        const isE =
-          !navIsOpen && Boolean(!from || (to && equalPageType(from, to)));
-        gsap.set(".rp-container", {
-          autoAlpha: 0
-        });
-        gsap.to(".rp-container", {
-          onStart: () => {
-            next();
-            setCanInteract(false);
-          },
-          autoAlpha: 1,
-          duration: 0.3,
-          ease: "power2.inOut",
-          delay: 0.2,
-          onComplete: () => {
-            setPageIsTransitioning(false);
-            setCanInteract(true);
-            document.body.style.setProperty("pointer-events", "auto");
-            if (isE) {
-              animateCurtain(true);
-            }
-          }
-        });
-      }}
-    >
-      {children}
-    </TransitionRouter>
-  );
-};
-const TransContextProvider = ({ children }: TransProviderProps) => {
-  const storeRef = useRef<TransAPI>(undefined);
-  if (!storeRef.current) {
-    storeRef.current = createTransStore();
-  }
-  return (
-    <TransContext.Provider value={storeRef.current}>
-      {children}{" "}
-    </TransContext.Provider>
-  );
-};
-export const TransProvider = ({ children }: TransProviderProps) => {
-  return (
-    <TransContextProvider>
-      <TransitionManager>
-        <NavEventsProvider>{children}</NavEventsProvider>
-      </TransitionManager>
-    </TransContextProvider>
-  );
-};
-export const useRPTransition = <T,>(selector: (store: RPT) => T): T => {
-  const transContext = useContext(TransContext);
-  if (!transContext) {
-    throw new Error("useRPTransition must be used within TransProvider");
-  }
-  return useStore(transContext, selector);
-};
-export const RafProvider = (l: { children: ReactNode }) => {
-  const { children } = l;
-  const animations = useRef(0);
-  const [animationList, setAnimation] = useState<
-    Record<string, (l?: any) => void>
-  >({});
-  const storeRef = useRef<RafAPI>(null!);
-  if (!storeRef.current) {
-    storeRef.current = createRafStore({
-      addToRaf: ({ key, callback }) =>
-        setAnimation({
-          ...animationList,
-          [key]: callback
-        }),
-      removeFromRaf: (l) =>
-        setAnimation(() => (delete animationList[l], animationList))
-    });
-  }
-  useEffect(() => {
-    animations.current && cancelAnimationFrame(animations.current);
-    const render = () => {
-      Object.keys(animationList).forEach((l) => {
-        animationList[l] && animationList[l]();
-      });
-      animations.current = requestAnimationFrame(render);
-    };
-    render();
-  }, [animationList]);
-  return (
-    <RafContext.Provider value={storeRef.current}>
-      {children}
-    </RafContext.Provider>
-  );
-};
-export const CurProvider = ({ children }: CurProviderProps) => {
+export const CursorProvider = ({ children }: CurProviderProps) => {
   const sRef = useRef<HACPI>(null!);
   if (!sRef.current) {
     sRef.current = createCursorStore();
@@ -395,19 +232,12 @@ export const CurProvider = ({ children }: CurProviderProps) => {
     <CurContext.Provider value={sRef.current}>{children}</CurContext.Provider>
   );
 };
-export const useCursorStore = <T,>(selector: (store: HA_CURS) => T): T => {
+export const useCursor = <T,>(selector: (store: HA_CURS) => T): T => {
   const haStoreContext = useContext(CurContext);
   if (!haStoreContext) {
     throw new Error(`useCursorStore must be used within CurStoreProvider`);
   }
   return useStoreWithEqualityFn(haStoreContext, selector, shallow);
-};
-export const useCursorAPI = () => {
-  const haStoreContext = useContext(CurContext);
-  if (!haStoreContext) {
-    throw new Error(`useCursorStore must be used within CurStoreProvider`);
-  }
-  return haStoreContext;
 };
 export const useRPStore = <T,>(selector: (store: HA_VAULT) => T): T => {
   const haStoreContext = useContext(HAStoreContext);
@@ -415,23 +245,6 @@ export const useRPStore = <T,>(selector: (store: HA_VAULT) => T): T => {
     throw new Error("useRPStore must be used within RPStoreProvider");
   }
   return useStore(haStoreContext, selector);
-};
-export const useRPStoreWithSelector = <T,>(
-  selector: (store: HA_VAULT) => T
-): [T, HAAPI] => {
-  const haStoreContext = useContext(HAStoreContext);
-  if (!haStoreContext) {
-    throw new Error("useRPStore must be used within RPStoreProvider");
-  }
-  return [useStore(haStoreContext, selector), haStoreContext];
-};
-
-export const useRaf = <T,>(selector: (store: RAF) => T) => {
-  const rafContext = useContext(RafContext);
-  if (!rafContext) {
-    throw new Error("useRafStore must be used within RafStoreProvider");
-  }
-  return useStore(rafContext, selector);
 };
 export type SearchAPI = ReturnType<typeof createSearchBarStore>;
 const SearchBarContext = createContext<SearchAPI | undefined>(undefined);

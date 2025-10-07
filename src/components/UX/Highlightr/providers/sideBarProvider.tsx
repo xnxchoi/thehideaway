@@ -22,13 +22,13 @@ import { useHighlighter } from "@/components/UX/Highlightr/providers/Highlighter
 import { HighlightCreateError } from "@/components/UX/Highlightr/HighlightErrors";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
 import type { HighlightedRange } from "@/components/UX/Highlightr/types";
-import { Button, Link } from "@/components/UX/Link";
+import { Button, Link } from "@/components/UX/Link/Link";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
 import { AuthUIContext, socialProviders } from "@/lib/auth/betterauth-ui/src";
 import { ProviderButton } from "@/lib/auth/betterauth-ui/src/components/auth/provider-button";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 import { delay } from "@/utilities/rp_utils";
 import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
 import { AuthorOverview } from "@/types/collections/posts";
@@ -313,7 +313,7 @@ const MemoInputField = () => {
   const writing = useHighlightSidebar("writing");
   const setIsWriting = useHighlightSidebar("setWriting");
   const [value, setValue] = useState("");
-  const setCursorState = useCursorStore((r) => r.setCursorState);
+  const setCursorState = useCursor((r) => r.setCursorState);
   const cInputWrapperRef = useRef<HTMLDivElement>(null!);
   const targetContainer = useHighlighter(useShallow((r) => r.targetContainer));
   const focusedHighlight = useHighlighter(

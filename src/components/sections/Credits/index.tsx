@@ -1,4 +1,16 @@
 "use client";
+import { useCursorHandlers } from "@/components/core/cursorWrapper";
+import { Link } from "@/components/UX/Link/Link";
+import { FrontImage } from "@/components/UX/Media/FrontImage";
+import { cn } from "@/lib/utils";
+import type { User, UserMedia } from "@/payload-types";
+import { useIsMobile } from "@/utilities/getBreakpoints";
+import { useWindowResize } from "@/utilities/use_window_resize";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import { useLenis } from "lenis/react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
 import {
   useCallback,
   useEffect,
@@ -6,23 +18,11 @@ import {
   useState,
   type UIEventHandler
 } from "react";
-import { useIsMobile } from "@/utilities/getBreakpoints";
-import { gsap } from "gsap";
-import { useLenis } from "lenis/react";
 import "./__credits.scss";
-import { Link } from "@/components/UX/Link";
-import { useGSAP } from "@gsap/react";
-import { AnimatePresence } from "motion/react";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
-import * as m from "motion/react-m";
-import type { User, UserMedia } from "@/payload-types";
-import { cn } from "@/lib/utils";
-import { useCursorHandlers } from "@/components/core/cursorWrapper";
-import { useWindowResize } from "@/utilities/use_window_resize";
 
-import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
-import type { RP_Roles } from "../../../stores/Notification/NotificationStore";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useShallow } from "zustand/shallow";
+import type { RP_Roles } from "../../../stores/Notification/NotificationStore";
 
 type Person = Pick<
   User,
@@ -512,7 +512,7 @@ const CreditsInner = (props: CreditComponentProps) => {
       pause();
     }
   }, [playing, locked, hidden]);
-  const setCursor = useCursorStore((state) => state.setCursorState);
+  const setCursor = useCursor((state) => state.setCursorState);
 
   return (
     <m.div ref={movied}>
@@ -561,7 +561,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                   >
                     <FrontImage
                       imgClassName={`imgFond absolute`}
-                      resource={perso.portrait}
+                      resource={perso.image}
                       isUser={true}
                       alt=""
                     />
@@ -631,7 +631,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                 <FrontImage
                   key={`bgImg-${activeProfile.id}`}
                   imgClassName={`w-full h-full object-cover absolute`}
-                  resource={activeProfile.portrait}
+                  resource={activeProfile.image}
                   isUser={true}
                   alt=""
                 />
@@ -821,7 +821,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                           {person.image && (
                             <FrontImage
                               imgClassName="w-full h-full object-cover absolute"
-                              resource={person.portrait}
+                              resource={person.image}
                               isUser={true}
                               alt=""
                               loading="lazy"

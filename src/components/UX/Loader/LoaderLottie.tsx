@@ -33,14 +33,14 @@ export const LoaderLottie = () => {
         gsap.to(divRef.current, {
           autoAlpha: 1,
           duration: 0.2,
-          ease: "power4.easeIn"
+          ease: "power4.out"
         });
       }
       // else {
       //   gsap.to(divRef.current, {
       //     autoAlpha: 0,
       //     duration: 0.2,
-      //     ease: "power4.easeOut",
+      //     ease: "power4.out",
       //   });
       // }
     },

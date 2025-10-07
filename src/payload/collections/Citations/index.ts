@@ -1,25 +1,19 @@
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import {
-  CollectionBeforeChangeHook,
-  CollectionConfig,
-  Where,
-  type CollectionAfterReadHook,
-  type CollectionBeforeValidateHook,
-  type Operation
-} from "payload";
-import { Citation } from "@/payload-types";
-import { citationHandler } from "@/payload/collections/Citations/endpoints";
-import { filterByCurrentUser } from "../helpers";
-import { hashContent } from "@/payload/fields/slug/HashId/hasher";
 import type {
-  CitationCreateParamKeys,
-  CitationData,
-  CitationUpdateParamKeys,
   CreateCitationData,
   ReturnedCitationData,
   UpdateCitationData
 } from "@/components/UX/Highlightr/types";
-import type { AuthorOverview } from "../../../types/collections/posts";
+import { Citation } from "@/payload-types";
+import { citationHandler } from "@/payload/collections/Citations/endpoints";
+import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
+import { hashContent } from "@/payload/fields/slug/HashId/hasher";
+import {
+  CollectionConfig,
+  Where,
+  type CollectionAfterReadHook,
+  type CollectionBeforeValidateHook
+} from "payload";
+import { filterByCurrentUser } from "../helpers";
 import { queryAuthorOverview } from "../Posts/api/queryPostOverview";
 
 const beforeValidateCitation: CollectionBeforeValidateHook<Citation> = async (

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import {
   useCursorAPI,
-  useCursorStore,
+  useCursor,
   useMenu,
   useRPStore
 } from "@/providers/RP_Pro";
@@ -48,7 +48,7 @@ export const ScrollIndicator = () => {
   const pageIsTransitioning = useRPStore(
     useShallow((l) => l.pageIsTransitioning)
   );
-  const setCursor = useCursorStore(useShallow((r) => r.setCursorState));
+  const setCursor = useCursor(useShallow((r) => r.setCursorState));
   const lastResize = useWindowResize({
     debounce: 100,
     detectHeightChange: true
@@ -71,7 +71,7 @@ export const ScrollIndicator = () => {
     }
   }, [lastResize]);
   const scrolle = useRef<HTMLDivElement>(null!);
-  const mouseCoords = useCursorStore(useShallow((r) => r.mouseCoordinates));
+  const mouseCoords = useCursor(useShallow((r) => r.mouseCoordinates));
   const { subscribe } = useCursorAPI();
   const unSub = useRef<() => void>(null!);
 
@@ -227,8 +227,8 @@ export const ScrollIndicator = () => {
       page: true
     };
   }, []);
-  const setCursorTheme = useCursorStore((r) => r.setCursorTheme);
-  const resetCursorTheme = useCursorStore((r) => r.resetCursorTheme);
+  const setCursorTheme = useCursor((r) => r.setCursorTheme);
+  const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const setVisibility = useCallback(
     ({ layout, pageType }: { layout: LayoutType; pageType: PageType }) => {
       const pt0 = pageTypeToShow[pageType];

@@ -1,9 +1,9 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Drawer } from "@/components/vaul";
-import { Link } from "../Link";
+import { Link } from "../Link/Link";
 import { RP_FM } from "../Radio/RP_FM";
 import { SideNotch } from "../SideNotch";
 import { useRadioStore } from "@/providers/RadioProvider";
@@ -39,7 +39,7 @@ export const SideDrawer = () => {
     detectVisibilityChange: false
   });
   const { isMobile } = useIsMobile();
-  const setCursor = useCursorStore((r) => r.setCursorState);
+  const setCursor = useCursor((r) => r.setCursorState);
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
   const [direction, setDirection] = useState<
     "bottom" | "left" | "top" | "right" | undefined
@@ -62,8 +62,8 @@ export const SideDrawer = () => {
     );
   }, [isMobile]);
 
-  const setCursorTheme = useCursorStore((r) => r.setCursorTheme);
-  const resetCursor = useCursorStore((r) => r.resetCursorTheme);
+  const setCursorTheme = useCursor((r) => r.setCursorTheme);
+  const resetCursor = useCursor((r) => r.resetCursorTheme);
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => "CLOSE",
     onEnter: (e) => setCursorTheme("dark"),

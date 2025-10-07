@@ -1,4 +1,4 @@
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 import { useIsMobile } from "@/utilities/getBreakpoints";
 import { ComponentProps, useCallback, useMemo } from "react";
 import { ThreeEvent } from "@react-three/fiber";
@@ -83,8 +83,8 @@ export function useDomCursor<E extends HTMLElement>({
 }: DomCursorOptions<E>): DomHandlers<E> {
   const { enter, leave } = marquee;
   const { isMobile } = useIsMobile();
-  const setCur = useCursorStore(useShallow((l) => l.setCursorState));
-  const setMarquee = useCursorStore(useShallow((l) => l.setMarquee));
+  const setCur = useCursor(useShallow((l) => l.setCursorState));
+  const setMarquee = useCursor(useShallow((l) => l.setMarquee));
   const onEnterMarquee = useMemo<
     ((e: React.MouseEvent<E>) => boolean) | undefined
   >(() => enter, [enter]);
@@ -149,7 +149,7 @@ export function useCursorHandlers<T extends EventType, E = HTMLElement>(
   { onEnter, onLeave }: CursorHandlersOptions<T, E> = {}
 ): EventHandlers<T, E> {
   const { isMobile } = useIsMobile();
-  const setCur = useCursorStore((l) => l.setCursorState);
+  const setCur = useCursor((l) => l.setCursorState);
   const handleEnter = useCallback(
     (e: any) => {
       setCur("FOCUS");

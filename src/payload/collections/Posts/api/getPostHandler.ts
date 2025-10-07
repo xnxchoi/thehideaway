@@ -1,18 +1,17 @@
 "use server";
+import { singlePostSelect } from "@/payload/collections/Posts/api/queryBase";
 import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
+import { RP_Roles } from "@/stores/Notification/NotificationStore";
+import { TagOverview } from "@/types/collections/delta";
 import { draftMode } from "next/headers";
 import { headersWithCors, type PayloadRequest } from "payload";
-import { getPostBookMarks } from "./getPostBookmarks";
-import { cache } from "react";
 import {
   ArticleOverview,
   AuthorSingle,
   MediaReq,
   SingleArticle
 } from "../../../../types/collections/posts";
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
-import { singlePostSelect } from "@/payload/collections/Posts/api/queryBase";
-import { TagOverview } from "@/types/collections/delta";
+import { getPostBookMarks } from "./getPostBookmarks";
 
 export const getPostHandler = async ({ req }: { req: PayloadRequest }) => {
   const postSlug = req.routeParams?.slug as string | undefined;
@@ -107,7 +106,7 @@ export const getPostHandler = async ({ req }: { req: PayloadRequest }) => {
     : null;
   if (!image && typeof post.image === "string") {
     const img = await payload.findByID({
-      collection: "media",
+      collection: "userMedia",
       id: post.image as string,
       overrideAccess: true,
       select: {
@@ -132,7 +131,7 @@ export const getPostHandler = async ({ req }: { req: PayloadRequest }) => {
     ...post,
     bookmarks: [] as string[],
     bookmarksCount: 0,
-    tags: post.tags ? (post.tags as TagOverview[]) : [],
+    tagged: post.tagged ? (post.tagged as TagOverview[]) : [],
     id: post.id,
     slug: post.slug,
     publishedAt: post.publishedAt,

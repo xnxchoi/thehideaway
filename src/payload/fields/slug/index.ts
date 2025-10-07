@@ -1,6 +1,6 @@
+import { nanoid } from "nanoid";
 import type { CheckboxField, TextField } from "payload";
 import { formatSlugHook } from "./formatSlug";
-import { nanoid } from "nanoid";
 
 type Overrides = {
   slugOverrides?: Partial<TextField>;
@@ -172,7 +172,6 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
     }
   };
   // Expect ts error here because of typescript mismatching Partial<TextField> with TextField
-  // @ts-expect-error
   const slugField: TextField = {
     name: "slugKey",
     type: "text",
@@ -193,7 +192,13 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
     },
     admin: {
       position: "sidebar",
-      ...(slugOverrides?.admin || {}),
+      hidden: true
+    }
+  };
+  const realSlug: TextField = {
+    type: "text",
+    name: "slug",
+    admin: {
       components: {
         Field: {
           path: "@/payload/fields/slug/SlugServerComponent.tsx",
@@ -202,15 +207,8 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
             checkboxFieldPath: checkBoxField.name
           }
         }
-      }
-    },
-    ...(slugOverrides || {})
-  };
-  const realSlug: TextField = {
-    type: "text",
-    name: "slug",
-    admin: {
-      hidden: true
+      },
+      ...(slugOverrides?.admin || {})
     },
     access: {
       read: () => true

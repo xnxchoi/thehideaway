@@ -1,5 +1,5 @@
 "use client";
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { useHumanTime } from "./useLocaleDate";
 import { DateTime } from "luxon";
 import { CommentBubble } from "@/components/content/CommentBubble";

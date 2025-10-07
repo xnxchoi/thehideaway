@@ -1,138 +1,150 @@
 "use client";
-import type {ElementType, HTMLAttributes} from "react";
+import type { ElementType, HTMLAttributes } from "react";
 import React from "react"; // TODO: abstract this out to support all routers
-import {useDomCursor} from "@/payload/components/Cursor";
-import {useDraggableSortable} from "@/payload/elements/DraggableSortable/useDraggableSortable";
-import {Hink} from "./Link";
+import { useDomCursor } from "@/components/core/cursorWrapper";
+import { useDraggableSortable } from "@/payload/elements/DraggableSortable/useDraggableSortable";
+import { Hink } from "./Link";
 
 export type PillProps = {
-	alignIcon?: "left" | "right";
-	"aria-checked"?: boolean;
-	"aria-controls"?: string;
-	"aria-expanded"?: boolean;
-	"aria-label"?: string;
-	children?: React.ReactNode;
-	className?: string;
-	draggable?: boolean;
-	elementProps?: {
-		ref: React.RefCallback<HTMLElement>;
-	} & HTMLAttributes<HTMLElement>;
-	icon?: React.ReactNode;
-	id?: string;
-	onClick?: () => void;
-	pillStyle?:
-		| "always-white"
-		| "dark"
-		| "error"
-		| "light"
-		| "light-gray"
-		| "success"
-		| "warning"
-		| "white";
-	rounded?: boolean;
-	size?: "medium" | "small";
-	to?: string;
+  alignIcon?: "left" | "right";
+  "aria-checked"?: boolean;
+  "aria-controls"?: string;
+  "aria-expanded"?: boolean;
+  "aria-label"?: string;
+  children?: React.ReactNode;
+  className?: string;
+  draggable?: boolean;
+  elementProps?: {
+    ref: React.RefCallback<HTMLElement>;
+  } & HTMLAttributes<HTMLElement>;
+  icon?: React.ReactNode;
+  id?: string;
+  onClick?: () => void;
+  pillStyle?:
+    | "always-white"
+    | "dark"
+    | "error"
+    | "light"
+    | "light-gray"
+    | "success"
+    | "warning"
+    | "white";
+  rounded?: boolean;
+  size?: "medium" | "small";
+  to?: string;
 };
 
 export type RenderedTypeProps = {
-	children: React.ReactNode;
-	className?: string;
-	onClick?: () => void;
-	to: string;
-	type?: "button";
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  to: string;
+  type?: "button";
 };
 
 const baseClass = "pill";
 
 const DraggablePill: React.FC<PillProps> = (props) => {
-	const {id, className} = props;
+  const { id, className } = props;
 
-	const {attributes, isDragging, listeners, setNodeRef, transform} =
-		useDraggableSortable({
-			id: id ?? "",
-		});
+  const { attributes, isDragging, listeners, setNodeRef, transform } =
+    useDraggableSortable({
+      id: id ?? ""
+    });
 
-	return (
-		<StaticPill
-			{...props}
-			className={[isDragging && `${baseClass}--is-dragging`, className].filter(Boolean).
-				join(" ")} elementProps={{
-			...listeners,
-			...attributes,
-			ref: setNodeRef,
-			style: {
-				transform,
-			},
-		}} />
-	);
+  return (
+    <StaticPill
+      {...props}
+      className={[isDragging && `${baseClass}--is-dragging`, className]
+        .filter(Boolean)
+        .join(" ")}
+      elementProps={{
+        ...listeners,
+        ...attributes,
+        ref: setNodeRef,
+        style: {
+          transform
+        }
+      }}
+    />
+  );
 };
 
 const StaticPill: React.FC<PillProps> = (props) => {
-	const {
-		id,
-		alignIcon = "right",
-		"aria-checked": ariaChecked,
-		"aria-controls": ariaControls,
-		"aria-expanded": ariaExpanded,
-		"aria-label": ariaLabel,
-		children,
-		className,
-		draggable,
-		elementProps,
-		icon,
-		onClick,
-		pillStyle = "light",
-		rounded,
-		size = "medium",
-		to,
-	} = props;
+  const {
+    id,
+    alignIcon = "right",
+    "aria-checked": ariaChecked,
+    "aria-controls": ariaControls,
+    "aria-expanded": ariaExpanded,
+    "aria-label": ariaLabel,
+    children,
+    className,
+    draggable,
+    elementProps,
+    icon,
+    onClick,
+    pillStyle = "light",
+    rounded,
+    size = "medium",
+    to
+  } = props;
 
-	const classes = [
-		baseClass,
-		`${baseClass}--style-${pillStyle}`,
-		`${baseClass}--size-${size}`,
-		className && className,
-		to && `${baseClass}--has-link`,
-		(to || onClick) && `${baseClass}--has-action`,
-		icon && `${baseClass}--has-icon`,
-		icon && `${baseClass}--align-icon-${alignIcon}`,
-		draggable && `${baseClass}--draggable`,
-		rounded && `${baseClass}--rounded`,
-	].filter(Boolean).join(" ");
+  const classes = [
+    baseClass,
+    `${baseClass}--style-${pillStyle}`,
+    `${baseClass}--size-${size}`,
+    className && className,
+    to && `${baseClass}--has-link`,
+    (to || onClick) && `${baseClass}--has-action`,
+    icon && `${baseClass}--has-icon`,
+    icon && `${baseClass}--align-icon-${alignIcon}`,
+    draggable && `${baseClass}--draggable`,
+    rounded && `${baseClass}--rounded`
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-	let Element: ElementType | React.FC<RenderedTypeProps> = "div";
+  let Element: ElementType | React.FC<RenderedTypeProps> = "div";
 
-	const {onMouseEnter, onMouseLeave} = useDomCursor({});
-	if (onClick && !to) {
-		Element = "button";
-		return (
-			<Element
-				{...elementProps} aria-checked={ariaChecked} aria-controls={ariaControls}
-				aria-expanded={ariaExpanded} className={classes} id={id} onMouseEnter={onMouseEnter}
-				onMouseLeave={onMouseLeave} onClick={onClick}
-				type={Element === "button" ? "button" : undefined}>
-				<span className={`${baseClass}__label`}>{children}</span>
-				{Boolean(icon) && <span className={`${baseClass}__icon`}>{icon}</span>}
-			</Element>
-		);
-	}
+  const { onMouseEnter, onMouseLeave } = useDomCursor({});
+  if (onClick && !to) {
+    Element = "button";
+    return (
+      <Element
+        {...elementProps}
+        aria-checked={ariaChecked}
+        aria-controls={ariaControls}
+        aria-expanded={ariaExpanded}
+        className={classes}
+        id={id}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+        type={Element === "button" ? "button" : undefined}
+      >
+        <span className={`${baseClass}__label`}>{children}</span>
+        {Boolean(icon) && <span className={`${baseClass}__icon`}>{icon}</span>}
+      </Element>
+    );
+  }
 
-	if (to) {
-		Element = Hink;
-		return (
-			<Element {...elementProps} className={classes} href={to || null}>
-				<span className={`${baseClass}__label`}>{children}</span>
-				{Boolean(icon) && <span className={`${baseClass}__icon`}>{icon}</span>}
-			</Element>
-		);
-	}
+  if (to) {
+    Element = Hink;
+    return (
+      <Element {...elementProps} className={classes} href={to || null}>
+        <span className={`${baseClass}__label`}>{children}</span>
+        {Boolean(icon) && <span className={`${baseClass}__icon`}>{icon}</span>}
+      </Element>
+    );
+  }
 };
 
 export const Pill: React.FC<PillProps> = (props) => {
-	const {draggable} = props;
+  const { draggable } = props;
 
-	if (draggable) {
-		return <DraggablePill {...props} />;
-	}
-	return <StaticPill {...props} />;
+  if (draggable) {
+    return <DraggablePill {...props} />;
+  }
+  return <StaticPill {...props} />;
 };

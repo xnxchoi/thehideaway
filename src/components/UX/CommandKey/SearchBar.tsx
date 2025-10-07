@@ -13,7 +13,7 @@ import {
   Command as Commands
 } from "@/components/ui/command";
 import { DialogTitle } from "@/components/ui/dialog";
-import { useCursorStore, useRPStore, useSearchBar } from "@/providers/RP_Pro";
+import { useCursor, useRPStore, useSearchBar } from "@/providers/RP_Pro";
 import "@/styles/__searchBar.scss";
 import { Command, Command as CommandPrimitive } from "cmdk";
 import {
@@ -137,20 +137,6 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
   }, [open, setNav]);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey) {
-        switch (e.key) {
-          case "k":
-            return (e.preventDefault(), toggleOpen());
-          case "h":
-            return (e.preventDefault(), toggleTheme());
-        }
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, [toggleOpen, toggleTheme]);
-  useEffect(() => {
     const ddd = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         return (e.preventDefault(), setOpen(false));
@@ -173,6 +159,7 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
       setValue("");
       document.removeEventListener("keydown", ddd);
     }
+    return () => document.removeEventListener("keydown", ddd);
   }, [open, setOpen, setValue]);
   return (
     <>
@@ -352,7 +339,7 @@ function SubCommand({
   const setValue = useSearchBar((l) => l.setValue);
   const toggleTheme = useTheme((store) => store.toggleTheme);
   const { isMobile } = useIsMobile();
-  const setCur = useCursorStore((l) => l.setCursorState);
+  const setCur = useCursor((l) => l.setCursorState);
   const focusCur = () => {
     !isMobile && setCur("FOCUS");
   };

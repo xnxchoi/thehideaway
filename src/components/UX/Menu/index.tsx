@@ -8,11 +8,12 @@ import {
   SVGAttributes,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
 import {
-  useCursorStore,
+  useCursor,
   useDeviceInfo,
   useMenu,
   useRPStore
@@ -23,13 +24,22 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { SvgIco } from "@/components/UX/svgIco";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import { Link } from "@/components/UX/Link";
+import { Button, Link } from "@/components/UX/Link/Link";
 import { getServerSideURL } from "@/utilities/getURL";
+import { useTransitionRouter } from "next-transition-router";
 import { useGSAP } from "@gsap/react";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import * as m from "motion/react-m";
 import { useTheme } from "@/providers/Theme";
 import { useShallow } from "zustand/shallow";
+import {
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  type MotionValue,
+  type Variants
+} from "motion/react";
+import { EASING } from "@/constants/animations";
 
 const B = "navWindow";
 export const getNavId = () => B;
@@ -37,7 +47,11 @@ export const getNavId = () => B;
 export const RP_Menu = () => {
   const H = 590;
   const setBase = useMenu((l) => l.setBase);
-  const { top, bottom, right, left } = useMenu((l) => l.frames);
+  const top = useMenu(useShallow((l) => l.top));
+  const bottom = useMenu(useShallow((l) => l.bottom));
+  const right = useMenu(useShallow((l) => l.right));
+  const left = useMenu(useShallow((l) => l.left));
+  const router = useTransitionRouter();
   const { isMobile } = useIsMobile();
   const isAndroid = useDeviceInfo((r) => r.os.isAndroid);
   const frames: FrameSide[] = ["top", "right", "bottom", "left"];
@@ -50,9 +64,36 @@ export const RP_Menu = () => {
     "bottomright",
     "bottomleft"
   ];
+  const corn = useMemo(
+    () => ({
+      mobile: {
+        topright:
+          "M.07.01c50.62,2.79,51.7,3.82,56.01,56.12,0-.45,0-3.7,0-8.44,0-13.09.02-35.5-.01-47.69C40.43,0,14.98,0,0,0h.07Z",
+        topleft:
+          "M56.07,0C41.09,0,15.65,0,.01,0,0,12.23,0,34.57,0,47.69c0,4.74,0,8,0,8.44C.92,3.75,2.1,2.82,56,.01h.07Z",
+        bottomright:
+          "M0,56.13c14.99,0,40.42.01,56.06,0,.02-12.23.01-34.56.01-47.69,0-4.74,0-8,0-8.44C53.76,52.46,52.63,53.43.07,56.12h-.07Z",
+        bottomleft:
+          "M0,0c.02,10.34-.01,29.22,0,40.94,0,8.72,0,15.31,0,15.18,2.85.03,7.55-.02,15.18,0,10.22,0,22.94,0,32.7,0,4.69,0,7.88,0,8.24,0,0,0,.05,0,0,0h-.3c-35.4-1.47-50.86,1.97-54.23-24.43C.39,22.32.28,10.22,0,.06v-.06Z"
+      },
+      desktop: {
+        topright: "M0,0q25.73,1.58,28.07,28.07V0H0Z",
+        bottomleft: "M0,0v28.07h28.07Q.65,27.54,0,0Z",
+        bottomright: "M0,28.07h28.07V0Q26.73,26.54,0,28.07Z",
+        topleft: "M28.07,0H0v28.07Q.65,1.58,28.07,0Z"
+      }
+    }),
+    []
+  );
 
-  const size = isMobile ? "2rem" : "2.2rem";
-
+  const size = useMotionValue(isMobile ? "2rem" : "2.2rem");
+  const viewbox = useMotionValue(
+    isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`
+  );
+  useEffect(() => {
+    viewbox.set(isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`);
+    size.set(isMobile ? "2rem" : "2.2rem");
+  }, [isMobile, size, viewbox]);
   const focusedRef = useRef<-1 | string>(-1),
     activeRef = useRef<string | -1>(-1),
     [activeIndex, setActiveIndex] = useState<string | -1>(-1);
@@ -79,48 +120,69 @@ export const RP_Menu = () => {
   /**
    * Cursor Functions
    */
-  const setCursorTheme = useCursorStore((l) => l.setCursorTheme);
-  const resetCursorTheme = useCursorStore((l) => l.resetCursorTheme);
+  const setCursorTheme = useCursor((l) => l.setCursorTheme);
+  const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
   /**
    *  Transition / UI Functions
    */
-  const theme = useRPStore((l) => l.theme);
+
   const setCanInteract = useRPStore((store) => store.setCanInteract);
-  const setTransitionOutType = useRPStore(
-    (store) => store.setTransitionOutType
-  );
   const setNavigationPageIsTransitioning = useRPStore(
     (store) => store.setNavigationPageIsTransitioning
   );
-  const navIsOpen = useRPStore((l) => l.navIsOpen);
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const setNavIsTransitioning = useRPStore((l) => l.setNavIsTransitioning);
   const setNavIsOpen = useRPStore((l) => l.setNavIsOpen);
-  const navigationSettings = useRPStore((l) => l.globalSettings.navigation);
-
+  const setTransitionOutType = useRPStore((l) => l.setTransitionOutType);
+  const setIsTransitioningWipe = useRPStore((l) => l.setIsTransitioningWipe);
   const setNavIsOpenDebounced = useRPStore((l) => l.setNavIsOpenDebounced);
   const menuPageItemKeys = useRPStore(
     useShallow((l) => l.navigationPageItemKeys)
   );
-  const lastAdjustRealTime = useRef(DateTime.now().year);
+  const lastAdjustRealTime = useMemo(() => DateTime.now().year, []);
   const currentPageKey = useVoyageur(useShallow((l) => l.pageKey));
   const setNavItemHovered = useRPStore((l) => l.setNavigationPageItemHovered);
   const setNavItemSelected = useRPStore((l) => l.setNavigationPageItemSelected);
-  const focusedTO = useRef<ReturnType<typeof setTimeout>>(null!);
   const menuWrap = useRef<HTMLDivElement>(null!);
-
-  const handlePagePreviewMouseEnter = (pagekey: string | -1) => {
-    currentPageKey !== pagekey && setNavItemHovered(pagekey);
-  };
-  const handlePagePreviewMouseLeave = () => {
+  const pathVariants: Variants = useMemo(
+    () => ({
+      initial: {
+        opacity: 0,
+        visibility: "hidden"
+      },
+      animate: {
+        opacity: 1,
+        visibility: "visible",
+        transition: {
+          duration: 0.2,
+          ease: EASING.power2.out,
+          type: "tween"
+        }
+      },
+      exit: {
+        opacity: 0,
+        visibility: "hidden",
+        transition: {
+          duration: 0.2,
+          ease: EASING.power2.out,
+          type: "tween"
+        }
+      }
+    }),
+    []
+  );
+  const handlePagePreviewMouseEnter = useCallback(
+    (pagekey: string | -1) => {
+      currentPageKey !== pagekey && setNavItemHovered(pagekey);
+    },
+    [currentPageKey, setNavItemHovered]
+  );
+  const handlePagePreviewMouseLeave = useCallback(() => {
     setNavItemHovered(-1);
-  };
-  const serverurl = getServerSideURL();
+  }, [setNavItemHovered]);
 
   const hoveredNavItem = useRPStore(
     useShallow((l) => l.navigationPageItemHovered)
-  );
-  const activeNavItem = useRPStore(
-    useShallow((l) => l.navigationPageItemSelected)
   );
   const activeTO = useRef<ReturnType<typeof setTimeout>>(null!);
   useEffect(() => {
@@ -135,24 +197,25 @@ export const RP_Menu = () => {
   }, [currentPageKey, hoveredNavItem]);
   const menuToPageCallback = useCallback(
     (pagekey: string) => {
-      (setTransitionOutType("FROM_MENU"),
-        setNavItemSelected(pagekey),
-        setNavigationPageIsTransitioning(true),
-        setCanInteract(false));
+      (setNavItemSelected(pagekey),
+        setTransitionOutType("FROM_MENU"),
+        setNavigationPageIsTransitioning(true));
       setTimeout(() => {
         setCanInteract(true);
         setNavIsOpen(!1);
-      }, 6000);
+        setTransitionOutType(null);
+      }, 1200);
     },
     [
-      setTransitionOutType,
       setNavItemSelected,
       setNavigationPageIsTransitioning,
       setCanInteract,
-      setNavIsOpen
+      setNavIsOpen,
+      setTransitionOutType
     ]
   );
-  const handlePagePreviewClick = (pageKey: string) => {
+  const handlePagePreviewClick = useCallback(
+    (pageKey: string) => {
       isMobile
         ? (handlePagePreviewMouseEnter(pageKey),
           setTimeout(() => {
@@ -160,7 +223,9 @@ export const RP_Menu = () => {
           }, 300))
         : menuToPageCallback(pageKey);
     },
-    er = useRef(null),
+    [handlePagePreviewMouseEnter, isMobile, menuToPageCallback]
+  );
+  const er = useRef(null),
     resizeTime = useWindowResize({ debounce: 100 }),
     lastResize = useRef(0);
   const focusResetTO = useRef<ReturnType<typeof setTimeout>>(null!);
@@ -216,13 +281,13 @@ export const RP_Menu = () => {
             {
               x: 0,
               duration: 0.6,
-              ease: "Power3.easeOut"
+              ease: "power3.out"
             }
           );
           gsap.to(currentButton, {
             autoAlpha: 1,
             duration: 0.6,
-            ease: "Power3.easeOut"
+            ease: "power3.out"
           });
         } else if (
           menuPageItemKeys[h] === activeRef.current ||
@@ -253,19 +318,27 @@ export const RP_Menu = () => {
       });
   }, [isHome, isMobile, menuPageItemKeys]);
   const links = useRPStore(useShallow((r) => r.navigationPageItemData));
-  const previewMedia = useRPStore(
-    useShallow((r) => r.navigationPreviewMediaByKey)
-  );
 
   const toggleMenuCallback = useCallback(
-    (
-      isNavOpen: boolean,
-      needsResizing: boolean,
-      top: number,
-      right: number,
-      bottom: number,
-      left: number
-    ) => {
+    ({
+      isNavOpen,
+      needsResizing,
+      top,
+      right,
+      bottom,
+      left,
+      isMobile,
+      isAndroid
+    }: {
+      isNavOpen: boolean;
+      needsResizing: boolean;
+      top: number;
+      right: number;
+      bottom: number;
+      left: number;
+      isMobile: boolean;
+      isAndroid: boolean;
+    }) => {
       if (!er.current || !navWindow.current) {
         return;
       }
@@ -311,7 +384,7 @@ export const RP_Menu = () => {
           y: yOff,
           autoAlpha: 1,
           duration: isNavOpen ? 1.2 : 1.2,
-          ease: isNavOpen ? "Power4.easeInOut" : "Power3.easeInOut"
+          ease: isNavOpen ? "power4.inOut" : "power3.inOut"
         });
       });
       menuCorners.current.forEach((corner, indx) => {
@@ -376,7 +449,7 @@ export const RP_Menu = () => {
           x: xoffse,
           y: yoffse,
           duration: isNavOpen ? 1.2 : 1.2,
-          ease: isNavOpen ? "Power4.easeInOut" : "Power3.easeInOut"
+          ease: isNavOpen ? "power4.inOut" : "power3.inOut"
         });
       });
       menuSVgs.current.forEach((svg) => {
@@ -384,7 +457,7 @@ export const RP_Menu = () => {
           const m = {
             scale: 1,
             duration: isNavOpen ? 1.2 : 1.2,
-            ease: isNavOpen ? "Power4.easeInOut" : "Power3.easeInOut"
+            ease: isNavOpen ? "power4.inOut" : "power3.inOut"
           };
           needsResizing ? gsap.set(svg, m) : gsap.to(svg, m);
         }
@@ -398,7 +471,7 @@ export const RP_Menu = () => {
         autoAlpha: isNavOpen ? 1 : 0,
         delay: isNavOpen ? 0.75 : 0,
         duration: isNavOpen ? 1.2 : 1.2 * 0.75,
-        ease: "Power3.easeOut"
+        ease: "power3.out"
       });
       gsap[needsResizing ? "set" : "to"](er.current, {
         autoAlpha: isNavOpen ? 1 : 0,
@@ -409,7 +482,7 @@ export const RP_Menu = () => {
         }
       });
     },
-    [isMobile, setNavIsTransitioning, isAndroid]
+    [setNavIsTransitioning]
   );
 
   useEffect(() => {
@@ -435,14 +508,17 @@ export const RP_Menu = () => {
     document.body.classList[navIsOpen ? "add" : "remove"]("menu__open");
     const needsResizing =
       lastResize.current === 0 || lastResize.current !== resizeTime;
-    toggleMenuCallback(
-      navIsOpen,
-      lastResize.current !== resizeTime,
+    toggleMenuCallback({
+      isNavOpen: navIsOpen,
+
+      needsResizing,
       top,
       right,
       bottom,
-      left
-    );
+      left,
+      isAndroid,
+      isMobile
+    });
     if (lastNavOpen.current !== navIsOpen || needsResizing) {
       lastResize.current = resizeTime;
     }
@@ -457,7 +533,9 @@ export const RP_Menu = () => {
     top,
     right,
     bottom,
-    left
+    left,
+    isAndroid,
+    isMobile
   ]);
 
   const onMouseEnter = useCallback(() => {
@@ -491,8 +569,6 @@ export const RP_Menu = () => {
             ref={navigationList}
           >
             {links.map((l, index) => {
-              const type = getPageTypeFromUrl(l.link.url);
-              const slug = l.link.url.split("/")[1]!;
               const theKey = menuPageItemKeys[index];
               const href = l.link.url;
               return (
@@ -510,16 +586,16 @@ export const RP_Menu = () => {
                     ref={(el: HTMLAnchorElement) => {
                       el && (navButtons.current[index] = el);
                     }}
+                    href={href}
                     key={index + "-" + theKey}
                     className={"button__scroll lift__button"}
-                    href={href}
                     onMouseEnter={() =>
                       handlePagePreviewMouseEnter(theKey || -1)
                     }
                     onMouseLeave={() =>
                       isMobile || handlePagePreviewMouseLeave()
                     }
-                    onClick={async () => {
+                    onClick={() => {
                       handlePagePreviewClick(theKey || "default");
                     }}
                   >
@@ -552,7 +628,7 @@ export const RP_Menu = () => {
           />
         </div>
         <p ref={er} className="menu__year" data-themed="color">
-          {`\xa9${lastAdjustRealTime.current}`}
+          {`\xa9${lastAdjustRealTime}`}
         </p>
         <div>
           {frames.map((frame, ind) => {
@@ -584,7 +660,7 @@ export const RP_Menu = () => {
                 id={`corner-${corner}`}
                 key={corner + "frame"}
               >
-                <div
+                <m.div
                   className="menu__corner-svg"
                   ref={(el) => {
                     if (el) {
@@ -603,8 +679,14 @@ export const RP_Menu = () => {
                     height: size
                   }}
                 >
-                  <CornerStone side={corner} />
-                </div>
+                  <CornerStone
+                    side={corner}
+                    path={corn[isMobile ? "mobile" : "desktop"][corner]}
+                    size={size}
+                    viewbox={viewbox}
+                    pathVariants={pathVariants}
+                  />
+                </m.div>
               </div>
             );
           })}
@@ -614,159 +696,84 @@ export const RP_Menu = () => {
   );
 };
 
-const Corner = {
-  mobile: {
-    topright:
-      "M.07.01c50.62,2.79,51.7,3.82,56.01,56.12,0-.45,0-3.7,0-8.44,0-13.09.02-35.5-.01-47.69C40.43,0,14.98,0,0,0h.07Z",
-    topleft:
-      "M56.07,0C41.09,0,15.65,0,.01,0,0,12.23,0,34.57,0,47.69c0,4.74,0,8,0,8.44C.92,3.75,2.1,2.82,56,.01h.07Z",
-    bottomright:
-      "M0,56.13c14.99,0,40.42.01,56.06,0,.02-12.23.01-34.56.01-47.69,0-4.74,0-8,0-8.44C53.76,52.46,52.63,53.43.07,56.12h-.07Z",
-    bottomleft:
-      "M0,0c.02,10.34-.01,29.22,0,40.94,0,8.72,0,15.31,0,15.18,2.85.03,7.55-.02,15.18,0,10.22,0,22.94,0,32.7,0,4.69,0,7.88,0,8.24,0,0,0,.05,0,0,0h-.3c-35.4-1.47-50.86,1.97-54.23-24.43C.39,22.32.28,10.22,0,.06v-.06Z"
-  },
-  desktop: {
-    topright: "M0,0q25.73,1.58,28.07,28.07V0H0Z",
-    bottomleft: "M0,0v28.07h28.07Q.65,27.54,0,0Z",
-    bottomright: "M0,28.07h28.07V0Q26.73,26.54,0,28.07Z",
-    topleft: "M28.07,0H0v28.07Q.65,1.58,28.07,0Z"
-  }
-};
-
 const CornerStone = (
-  props: { side: string } & SVGAttributes<SVGPathElement>
+  props: {
+    side: CornerSide;
+    path: string;
+    size: MotionValue<string>;
+    viewbox: MotionValue<string>;
+    pathVariants: Variants;
+  } & SVGAttributes<SVGPathElement>
 ) => {
   const ref = useRef<SVGSVGElement>(null);
-  const refMobile = useRef<SVGSVGElement>(null);
-  const refDark = useRef<SVGSVGElement>(null);
-  const { side, ...rest } = props;
-  const { isMobile } = useIsMobile();
 
-  const dimes = {
-    mobile: 56.15,
-    desktop: 28.07
-  };
+  const { side, path, size, viewbox, pathVariants } = props;
+
   const theme = useTheme((state) => state.theme);
-  const sides = ["t", "b"].flatMap((side) => {
-    return ["r", "l"].flatMap((suf) => {
-      return `${side}${suf}`;
-    });
-  });
-  const [de, setDe] = useState<string>("");
-  useEffect(() => {
-    setDe(Corner[isMobile ? "mobile" : "desktop"][side as CornerSide]);
-  }, [isMobile, side]);
 
-  useEffect(() => {
-    gsap.to(`#cs_${side}`, {
-      autoAlpha: 0,
-      duration: 0.4,
-      onComplete: () =>
-        setDe(Corner[isMobile ? "mobile" : "desktop"][side as CornerSide])
-    });
-
-    gsap.to(`#cs_${side}`, {
-      delay: 0.5,
-      duration: 0.4,
-      autoAlpha: 1
-    });
-  }, [isMobile, side]);
-  const size = isMobile ? "2rem" : "2.2rem";
   return (
-    <>
-      <SvgIco
-        ref={ref}
-        id={`cs_${side}`}
-        viewBox={isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`}
-        style={{
-          width: size,
-          height: size,
-          display: "inline-block",
-          position: "absolute",
-          inset: 0
-        }}
-        paths={[
-          {
-            d: de,
-            "data-themed": "fill,color",
-            clipRule: "evenodd",
-            fillRule: "evenodd",
-            ...rest
-          }
-        ]}
-      />
-      {theme === "dark" && (
-        <m.svg
-          ref={refDark}
-          id={`cs_${side}_dark`}
-          viewBox={isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`}
-          initial={{
-            opacity: 0,
-            visibility: "hidden"
-          }}
-          animate={{
-            opacity: 1,
-            visibility: "visible",
-            transition: {
-              duration: 0.4,
-              delay: 0.5,
-              ease: "easeInOut",
-              type: "tween"
-            }
-          }}
-          exit={{
-            opacity: 0,
-            visibility: "hidden",
-            transition: {
-              duration: 0.4,
+    <m.svg
+      id={`cs_${side}`}
+      ref={ref}
+      className={"absolute inset-0 inline-block"}
+      viewBox={viewbox}
+      style={{ width: size, height: size }}
+      variants={{
+        initial: {
+          opacity: 0,
+          visibility: "hidden"
+        },
+        animate: {
+          opacity: 1,
+          visibility: "visible",
+          transition: {
+            duration: 0.4,
 
-              ease: "easeInOut",
-              type: "tween"
-            }
-          }}
-          style={{
-            width: size,
-            height: size,
-            display: "inline-block",
-            position: "absolute",
-            inset: 0,
-            fill: "none"
-          }}
-        >
+            ease: "easeInOut",
+            type: "tween"
+          }
+        },
+        exit: {
+          opacity: 0,
+          visibility: "hidden",
+          transition: {
+            duration: 0.4,
+
+            ease: "easeInOut",
+            type: "tween"
+          }
+        }
+      }}
+      animate="animate"
+      exit="exit"
+    >
+      <AnimatePresence mode="sync">
+        {theme === "dark" ? (
           <m.path
-            d={de}
+            d={path}
             data-themed="stroke,color"
             clipRule="evenodd"
             fillRule="evenodd"
             strokeWidth={1.2}
             stroke="oklch(var(--n-s-bbg)/.04)"
-            initial={{
-              opacity: 0,
-              visibility: "hidden"
-            }}
-            animate={{
-              opacity: 1,
-              visibility: "visible",
-              transition: {
-                duration: 0.4,
-                delay: 0.5,
-                ease: "easeInOut",
-                type: "tween"
-              }
-            }}
-            exit={{
-              opacity: 0,
-              visibility: "hidden",
-              transition: {
-                duration: 0.4,
-
-                ease: "easeInOut",
-                type: "tween"
-              }
-            }}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pathVariants}
           />
-        </m.svg>
-      )}
-    </>
+        ) : (
+          <m.path
+            d={path}
+            data-themed="fill,color"
+            clipRule="evenodd"
+            fillRule="evenodd"
+            variants={pathVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          />
+        )}
+      </AnimatePresence>
+    </m.svg>
   );
 };

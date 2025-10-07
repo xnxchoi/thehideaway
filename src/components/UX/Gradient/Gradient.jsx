@@ -304,7 +304,7 @@ const VGradientModuleInner = () => {
         b: colours[0].b,
         duration: 0.3,
 
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }),
       gsap.to(gradientt.current.u_color[1], {
         r: colours[1].r,
@@ -312,21 +312,21 @@ const VGradientModuleInner = () => {
         b: colours[1].b,
         duration: 0.3,
 
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       })),
       gsap.to(gradientt.current.u_color[2], {
         r: colours[2].r,
         g: colours[2].g,
         b: colours[2].b,
         duration: 0.3,
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }),
       gsap.to(gradientt.current.u_color[3], {
         r: colours[3].r,
         g: colours[3].g,
         b: colours[3].b,
         duration: 0.3,
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }));
   }, [theme]);
   return (
@@ -456,7 +456,7 @@ const GradientModuleInner = () => {
         b: colours[0].b,
         duration: 0.3,
 
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }),
       gsap.to(gradientt.current.u_color[1], {
         r: colours[1].r,
@@ -464,21 +464,21 @@ const GradientModuleInner = () => {
         b: colours[1].b,
         duration: 0.3,
 
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       })),
       gsap.to(gradientt.current.u_color[2], {
         r: colours[2].r,
         g: colours[2].g,
         b: colours[2].b,
         duration: 0.3,
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }),
       gsap.to(gradientt.current.u_color[3], {
         r: colours[3].r,
         g: colours[3].g,
         b: colours[3].b,
         duration: 0.3,
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }));
   }, [theme]);
   return (
@@ -629,7 +629,7 @@ function GradientInner() {
           b: colours[0].b,
           duration: 1.1,
           delay: 0.3,
-          ease: "Power4.easeInOut"
+          ease: "power4.inOut"
         }),
         gsap.to(gradientt.current.u_color[1], {
           r: colours[1].r,
@@ -637,7 +637,7 @@ function GradientInner() {
           b: colours[1].b,
           duration: 1.1,
           delay: 0.3,
-          ease: "Power4.easeInOut"
+          ease: "power4.inOut"
         }));
     }
   }, [navItemSelected, navItemHovered]);

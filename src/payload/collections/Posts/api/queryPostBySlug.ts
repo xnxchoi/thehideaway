@@ -687,7 +687,7 @@ export const queryRelatedPosts = cache(
         : null;
       if (!image && typeof prevv.image === "string") {
         const img = await payload.findByID({
-          collection: "media",
+          collection: "userMedia",
           id: prevv.image as string,
           overrideAccess: true,
           select: {

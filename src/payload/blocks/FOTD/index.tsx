@@ -1,6 +1,6 @@
 import { ComponentProps, ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
-import { Link } from "src/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { DateTime } from "luxon";
 import { HomeSquare } from "@/components/layouts/HomeSquare";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";

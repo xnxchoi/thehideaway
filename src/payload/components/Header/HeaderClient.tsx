@@ -11,7 +11,7 @@ import React, {
 import { SearchBar } from "@/components/UX/CommandKey/SearchBar";
 import { DarkmodeButton } from "@/components/UX/DarkMode/Darkmode";
 import { UserDropdown } from "@/components/UX/Dropdown/RPDropDown";
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { Logo } from "@/components/UX/Logo";
 import { MenuButton } from "@/components/UX/Menu/MenuButton";
 import { NotificationButton } from "@/components/UX/NotificationButton/notificationButton";
@@ -34,11 +34,10 @@ import { NotificationProvider } from "../../../providers/Notifications";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
 import { useIsMobile } from "@/providers/MiddleMan";
 import {
-  useCursorStore,
+  useCursor,
   useDeviceInfo,
   useMenu,
-  useRPStore,
-  useScroll
+  useRPStore
 } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
@@ -46,7 +45,7 @@ import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { delay, rp_lerp } from "@/utilities/rp_utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { CheckInButton } from "@/payload/components/Header/CheckInButton";
-
+type VerticalDirection = "up" | "down";
 type TransitionType =
   | "animate-to-full"
   | "transition-wipe"
@@ -68,8 +67,11 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const [visible, setVisible] = useState(true);
   const isMobile = useDeviceInfo(useShallow((r) => r.isMobile));
   const notificationRef = useRef<ComponentRef<"button">>(null!);
-  const frames = useMenu(useShallow((l) => l.frames));
-  const { top, left, right } = frames;
+  const left = useMenu(useShallow((r) => r.left));
+  const right = useMenu(useShallow((r) => r.right));
+
+  const top = useMenu(useShallow((l) => l.top));
+  const bottom = useMenu(useShallow((r) => r.bottom));
   const blurRef = useRef<HTMLDivElement>(null!);
   const colorRef = useRef<HTMLDivElement>(null!);
   const fxRef = useRef<HTMLDivElement>(null!);
@@ -86,12 +88,15 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     l = useRef<HTMLDivElement>(null!),
     r = useRef<HTMLDivElement>(null!),
     c = useRef<HTMLAnchorElement>(null!);
-  const scrollDirection = useScroll(
-    useShallow((store) => store.scrollDirection)
-  );
-  const isScrolling = useScroll(useShallow((store) => store.isScrolling));
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollDirection, setScrollDirection] =
+    useState<VerticalDirection>("up");
   const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
   const lenis = useLenis();
+  useLenis((lenis) => {
+    setIsScrolling(!!lenis.isScrolling);
+    setScrollDirection(lenis.direction > -1 ? "up" : "down");
+  });
   const commandRef = useRef<ComponentRef<"button">>(null!);
   const user = useRPSession(useShallow((r) => r.id));
   useEffect(() => {
@@ -133,30 +138,30 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         gsap.to([l.current, c.current, r.current], {
           autoAlpha: visible ? 1 : 0,
           duration: 0.4,
-          ease: "Power4.inOut"
+          ease: "power4.inOut"
         });
         switch (headerTransition) {
           case "slide":
             (gsap.to(inner.current, {
               duration: 0.4,
-              ease: "Power4.inOut",
+              ease: "power4.inOut",
               y: visible ? 0 : "-100%",
               delay: 0.4
             }),
               (gsap.to(l.current, {
                 duration: 0.4,
-                ease: "Power4.inOut",
+                ease: "power4.inOut",
                 x: visible ? 0 : "-100%",
                 y: visible ? 0 : "-100%"
               }),
               gsap.to(c.current, {
                 duration: 0.4,
-                ease: "Power4.inOut",
+                ease: "power4.inOut",
                 y: visible ? 0 : "-100%"
               }),
               gsap.to(r.current, {
                 duration: 0.4,
-                ease: "Power4.inOut",
+                ease: "power4.inOut",
                 x: visible ? 0 : "100%",
                 y: visible ? 0 : "-100%"
               })));
@@ -169,13 +174,13 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
           x: 0,
           y: 0,
           duration: 0.4,
-          ease: "Power4.inOut"
+          ease: "power4.inOut"
         });
       }
       gsap.to(inner.current, {
         autoAlpha: showHeader || visible ? 1 : 0,
         duration: 0.4,
-        ease: "Power4.inOut"
+        ease: "power4.inOut"
       });
     },
     { scope: main, dependencies: [headerTransition, visible] }
@@ -184,8 +189,8 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const clearPageTheme = useTheme((l) => l.clearPageTheme);
   const initiatedScroll = useRef(false);
   const reset = useVoyageur((l) => l.reset);
-  const resetCursorTheme = useCursorStore((l) => l.resetCursorTheme);
-  const setCursorState = useCursorStore((l) => l.setCursorState);
+  const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
+  const setCursorState = useCursor((l) => l.setCursorState);
   useEffect(() => {
     setVisible(showHeader);
   }, [showHeader]);
@@ -196,7 +201,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   //     gsap.to(inner.current, {
   //       autoAlpha: showHeader || visible ? 1 : 0,
   //       duration: 0.4,
-  //       ease: "Power4.inOut",
+  //       ease: "power4.inOut",
   //     })
   //   },
   //   { scope: main, dependencies: [visible, showHeader] },
@@ -463,7 +468,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
           gsap.to(main.current, {
             autoAlpha: 0,
             duration: 0.3,
-            ease: "Power3.inOut",
+            ease: "power3.inOut",
             onComplete: () => {
               gsap.killTweensOf(lerpedTween);
               tweenNumber.current = 0;
@@ -474,7 +479,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
                 duration: 0.3,
                 delay: 0.6 * 1.4,
                 top: fxTop.current,
-                ease: "Power3.inOut",
+                ease: "power3.inOut",
                 onComplete: () => {
                   callback && callback();
                 }
@@ -489,7 +494,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         (gsap.to(lerpedTween, {
           current: 0,
           duration: 0.8 * 1.2,
-          ease: "Power3.inOut",
+          ease: "power3.inOut",
           onUpdate: () => {
             headerTimeline.current &&
               headerTimeline.current.progress(lerpedTween.current);
@@ -503,7 +508,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
             zIndex: 249,
             top: fxTop.current,
             delay: 0.2,
-            ease: "Power4.inOut"
+            ease: "power4.inOut"
           }));
       else {
         callback && callback();
@@ -524,6 +529,9 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       }
     },
     [getTweenPercentBasedOnScroll]
+  );
+  const pageIsTransitioning = useRPStore(
+    useShallow((r) => r.pageIsTransitioning)
   );
   const enableScrollAnimation = () => {
     headerTransitionDisabled.current = false;
@@ -557,7 +565,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
           (haltScrollAnimation(), setHeaderState("animate-to-full"));
           return;
         }
-        if ("string" == typeof transitionOutType) {
+        if (typeof transitionOutType === "string") {
           ((lerpedTween.current = 0),
             haltScrollAnimation(),
             setHeaderState("animate-to-full"),

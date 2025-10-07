@@ -1,5 +1,5 @@
 "use client";
-import { Link } from "src/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { ArticleOverview } from "@/types/collections/posts";
 import {
   ComponentPropsWithoutRef,
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 
 export const HomeSquare = (
   props: { article: ArticleOverview } & ComponentPropsWithoutRef<"div">
@@ -23,8 +23,8 @@ export const HomeSquare = (
     typeof article.category === "object"
       ? article.category.title
       : "Uncategorized";
-  const setCursorTheme = useCursorStore((r) => r.setCursorTheme);
-  const resetCursorTheme = useCursorStore((r) => r.resetCursorTheme);
+  const setCursorTheme = useCursor((r) => r.setCursorTheme);
+  const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const theme = useTheme((r) => r.theme);
   const [inverse, setInverse] = useState<Theme>(
     theme === "dark" ? "light" : "dark"
@@ -65,7 +65,7 @@ export const HomeSquare = (
       <div className="flex w-full flex-col items-center justify-center pb-8">
         <span
           className={cn(
-            "m-0 font-serif text-[2.8rem] leading-[1] lg:text-[4rem]"
+            "m-0 font-serif text-[2.8rem] leading-[1.75] lg:text-[4rem]"
           )}
         >
           {article.title}
@@ -75,7 +75,7 @@ export const HomeSquare = (
         </span>
       </div>
       <div className="inline-block max-w-[70%] text-[1.1rem] uppercase lg:mt-[-10px] lg:text-[1.2rem]">
-        By {article.author.name}
+        {article.author.name}
       </div>
     </Link>
   );

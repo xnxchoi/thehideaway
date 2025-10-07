@@ -52,7 +52,7 @@ export const PortalProvider = ({ children }: { children: ReactNode }) => {
     <PortallerContext.Provider
       value={{
         isAnimating,
-        animateFn: animateTransition,
+        animateFn: fnRef.current,
         animateTransition,
         setAnimateFn
       }}

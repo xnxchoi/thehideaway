@@ -3,7 +3,7 @@
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { cn } from "@/lib/utils";
 import { useRadio, useRadioStore } from "@/providers/RadioProvider";
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -13,10 +13,10 @@ export const SoundBar = ({}: SoundBarProps) => {
   const [hovered, setHovered] = useState(false);
 
   const trackStatus = useRadioStore((t) => t.trackStatus);
-  const cursorState = useCursorStore((state) => state.cursorState);
+  const cursorState = useCursor((state) => state.cursorState);
   const lastHovered = useRef<boolean>(hovered);
   const lastCursorState = useRef<string | null>(cursorState);
-  const setMarquee = useCursorStore((l) => l.setMarquee);
+  const setMarquee = useCursor((l) => l.setMarquee);
 
   useEffect(() => {
     if (
@@ -28,7 +28,7 @@ export const SoundBar = ({}: SoundBarProps) => {
     lastHovered.current = hovered;
     lastCursorState.current = cursorState;
   }, [hovered, cursorState]);
-  const setCursor = useCursorStore((state) => state.setCursorState);
+  const setCursor = useCursor((state) => state.setCursorState);
 
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () =>

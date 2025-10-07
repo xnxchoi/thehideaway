@@ -1,5 +1,5 @@
 import { Missing } from "@/components/layouts/Missing/Missing";
-import { LinkUnderlined } from "@/components/UX/Link";
+import { LinkUnderlined } from "@/components/UX/Link/Link";
 
 import { MissingLayout } from "../../components/layouts/Missing/lays.client";
 

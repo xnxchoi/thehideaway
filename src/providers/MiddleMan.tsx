@@ -1,5 +1,4 @@
 "use client";
-import dynamic from "next/dynamic";
 import { useDeviceInfo, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import {
@@ -7,19 +6,19 @@ import {
   getImplicitPreference,
   themeLocalStorageKey
 } from "@/providers/Theme/shared";
+import { themeIsValid } from "@/providers/Theme/types";
+import canUseDOM from "@/utilities/canUseDOM";
+import { storageAvailable } from "@/utilities/isLocalStorageAvailable";
+import { useWindowResize } from "@/utilities/use_window_resize";
+import dynamic from "next/dynamic";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState
 } from "react";
-import { storageAvailable } from "@/utilities/isLocalStorageAvailable";
-import { themeIsValid } from "@/providers/Theme/types";
-import canUseDOM from "@/utilities/canUseDOM";
-import { useWindowResize } from "@/utilities/use_window_resize";
-import { PageType, useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { useShallow } from "zustand/shallow";
 
 const RP_Cursor = dynamic(
   () => import("@/components/UX/Cursor").then((m) => m.default),
@@ -37,8 +36,8 @@ const MobileProvider = ({ children }: { children: React.ReactNode }) => {
   const MOBILE_BREAKPOINT = 1024;
   const setViewportDimensions = useRPStore((r) => r.setViewportDimensions);
   const setSnapPoints = useRPStore((r) => r.setSnapPoints);
-  const frames = useMenu((r) => r.frames);
-  const { left, bottom } = frames;
+  const left = useMenu(useShallow((r) => r.left));
+  const bottom = useMenu(useShallow((r) => r.bottom));
 
   const viewportWidth = useRPStore((r) => r.viewportWidth);
   const viewportHeight = useRPStore((r) => r.viewportHeight);
@@ -109,8 +108,6 @@ export const useIsMobile = () => {
   return mobileCtx;
 };
 export const MiddleMan = ({ children }: { children: React.ReactNode }) => {
-  const pageType = useVoyageur((l) => l.pageType);
-  const lastPageType = useRef<PageType>(pageType);
   const localStorageEnabled = useDeviceInfo((r) => r.localStorage),
     setLocalStorageEnabled = useDeviceInfo((r) => r.setStorageAvailable);
   const locked = useTheme((r) => r.locked);

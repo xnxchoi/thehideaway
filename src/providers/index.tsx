@@ -1,14 +1,11 @@
 "use client";
 
 import {
-  CurProvider,
+  CursorProvider,
   DeviceProvider,
   HAStoreProvider,
   MenuProvider,
-  RafProvider,
-  ScrollProvider,
-  SearchBarProvider,
-  TransProvider
+  SearchBarProvider
 } from "@/providers/RP_Pro";
 
 import { Providers as AuthProviders } from "@/app/(frontend)/(site)/(auth)/authProviders";
@@ -21,6 +18,7 @@ import { QueryProvider } from "./QueryProvider";
 import { SessionProvider } from "./Session/providers";
 import { ThemeProvider } from "./Theme";
 import { PortalProvider } from "@/components/UX/Transition/Portaller";
+import { TransitionProvider } from "./TransitionProvider";
 
 const motion = () => import("./Motion").then((r) => r.default);
 export const Providers: React.FC<{
@@ -35,25 +33,21 @@ export const Providers: React.FC<{
               <HAStoreProvider>
                 <ThemeProvider>
                   <LazyMotion features={motion} strict={true}>
-                    <ScrollProvider>
-                      <CurProvider>
-                        <PortalProvider>
-                          <TransProvider>
-                            <RafProvider>
-                              <MenuProvider>
-                                <MiddleMan>
-                                  <SearchBarProvider>
-                                    <HeaderThemeProvider>
-                                      {children}
-                                    </HeaderThemeProvider>
-                                  </SearchBarProvider>
-                                </MiddleMan>
-                              </MenuProvider>
-                            </RafProvider>
-                          </TransProvider>
-                        </PortalProvider>
-                      </CurProvider>
-                    </ScrollProvider>
+                    <CursorProvider>
+                      <PortalProvider>
+                        <TransitionProvider>
+                          <MenuProvider>
+                            <MiddleMan>
+                              <SearchBarProvider>
+                                <HeaderThemeProvider>
+                                  {children}
+                                </HeaderThemeProvider>
+                              </SearchBarProvider>
+                            </MiddleMan>
+                          </MenuProvider>
+                        </TransitionProvider>
+                      </PortalProvider>
+                    </CursorProvider>
                   </LazyMotion>
                 </ThemeProvider>
               </HAStoreProvider>

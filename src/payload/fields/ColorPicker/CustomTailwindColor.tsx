@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { Paintbrush } from "lucide-react";
 import TailWindColors from "./TailwindColors";
 import { SelectFieldClientProps } from "payload";
-import { useDomCursor } from "@/payload/components/Cursor";
+import { useDomCursor } from "@/components/core/cursorWrapper";
 import {
   Tooltip,
   TooltipContent,

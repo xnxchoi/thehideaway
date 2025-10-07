@@ -3,7 +3,7 @@
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import type { OverviewItem } from "./ArchiveFeatureCard";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 
 export function ThreeFeatureCard({

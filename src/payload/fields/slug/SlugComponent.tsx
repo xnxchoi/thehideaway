@@ -24,7 +24,7 @@ import {
   TooltipTrigger
 } from "@/components/ui/tooltip";
 import { LockClosedIcon, LockOpen2Icon } from "@radix-ui/react-icons";
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 
 type SlugComponentProps = {
   fieldToUse: string;
@@ -94,7 +94,7 @@ export const SlugComponent = ({
     },
     [checkboxValue, checkboxFieldPath, dispatchFields]
   );
-  const setCursor = useCursorStore((l) => l.setCursorState);
+  const setCursor = useCursor((l) => l.setCursorState);
   const onMouseEnter = useCallback(() => {
     setCursor("FOCUS");
   }, [setCursor]);
@@ -162,7 +162,6 @@ export const SlugComponent = ({
                   boxShadow: "none"
                 }}
               >
-                {" "}
                 {value}
               </span>
               <Tooltip>
@@ -198,12 +197,14 @@ export const SlugComponent = ({
                   >
                     <div
                       className={
-                        "m-0 block border-none bg-transparent p-0 text-foreground"
+                        "m-0 block border-none bg-transparent p-0 font-mono text-background"
                       }
                     >
-                      A{" "}
-                      <span className="text-warm-beige">unique identifier</span>
-                      <span> for this post.</span>
+                      A
+                      <span className="text-warm-beige font-mono">
+                        unique identifier
+                      </span>
+                      <span className="font-mono"> for this post.</span>
                     </div>
                   </TooltipContent>
                 </div>

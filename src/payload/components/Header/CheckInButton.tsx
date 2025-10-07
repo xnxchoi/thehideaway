@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { useGSAP } from "@gsap/react";
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { gsap } from "gsap";
 import * as m from "motion/react-m";
 
@@ -17,7 +17,7 @@ export const CheckInButton = () => {
     gsap.to("#checker", {
       autoAlpha: isCheckInPage ? 0 : 1,
       duration: 0.3,
-      ease: "Power4.easeInOut"
+      ease: "power4.inOut"
     });
   }, [isCheckInPage]);
   return (

@@ -165,7 +165,7 @@ export const SectionPreview = (props: SectionPreviewProps) => {
           }),
           gsap.to(sectionPreviewRef.current, {
             autoAlpha: 1,
-            ease: "Power3.easeInOut",
+            ease: "power3.inOut",
             duration: 1.2,
             start: () => {
               setHasFiredForNow(!0);
@@ -195,7 +195,7 @@ export const SectionPreview = (props: SectionPreviewProps) => {
             }
           }),
           gsap.to(sectionsContainerRef.current, {
-            ease: "Power3.easeInOut",
+            ease: "power3.inOut",
             duration: 1.2,
             pointerEvents: "all"
           })));

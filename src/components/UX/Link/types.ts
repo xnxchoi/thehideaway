@@ -1,7 +1,11 @@
 import type { HTMLMotionProps } from "motion/react";
 import type { LinkProps as NextLinkProps } from "next/link";
 import { DataFromCollectionSlug } from "payload";
-import { ComponentPropsWithoutRef, RefAttributes } from "react";
+import {
+  ComponentPropsWithoutRef,
+  RefAttributes,
+  type ComponentProps
+} from "react";
 
 export type PayloadLinkProps = {
   type: "reference" | "custom";
@@ -47,7 +51,7 @@ export type PayloadLinkProps = {
 };
 type AllowedTags = HTMLAnchorElement | HTMLSpanElement | HTMLDivElement;
 export type RPLinkProps = Omit<
-  ComponentPropsWithoutRef<"a">,
+  ComponentProps<"a">,
   "onMouseEnter" | "onClick" | "onMouseLeave"
 > &
   Omit<NextLinkProps, "onMouseEnter" | "onClick" | "onMouseLeave"> & {
@@ -63,13 +67,8 @@ export type RPButtonProps = Omit<
   onMouseEnter?: () => void;
   onClick?: () => void;
 };
-export type RPLinkPropsWithRef = RPLinkProps &
-  (
-    | RefAttributes<HTMLAnchorElement>
-    | RefAttributes<HTMLDivElement>
-    | RefAttributes<HTMLButtonElement>
-  ) & {
-    disabled?: boolean;
-  };
+export type RPLinkPropsWithRef = RPLinkProps & {
+  disabled?: boolean;
+};
 export type MotionBtnProps = HTMLMotionProps<"button"> &
   ComponentPropsWithoutRef<"button">;

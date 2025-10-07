@@ -250,8 +250,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
         "_payload",
         JSON.stringify({
           alt: "",
-          caption: "An optional description for the file",
-          _status: "published"
+          caption: "An optional description for the file"
         })
       );
       try {

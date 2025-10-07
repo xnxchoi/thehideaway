@@ -1,6 +1,6 @@
 import { RPage } from "@/components/UX/Transition";
 import { AuthView as AuthCard } from "@/lib/auth/betterauth-ui/src";
-import { Link } from "@/components/UX/Link";
+import { Link } from "@/components/UX/Link/Link";
 import { Logo } from "@/components/UX/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient";
 

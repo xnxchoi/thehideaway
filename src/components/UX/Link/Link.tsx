@@ -7,14 +7,11 @@ import {
   RPLinkPropsWithRef
 } from "@/components/UX/Link/types";
 import { cn } from "@/lib/utils";
-import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { isInternalLink } from "@/utilities/isInternalLink";
-import type { LinkProps } from "@react-email/components";
 import { useLenis } from "lenis/react";
-import type { HTMLMotionProps, MotionProps } from "motion/react";
 import * as m from "motion/react-m";
-import { useTransitionRouter } from "next-transition-router";
-import NextLink from "next/link";
+import { Link as NextLink } from "next-transition-router";
+// import NextLink from "next/link";
 import {
   type ComponentProps,
   type ComponentPropsWithRef,
@@ -22,11 +19,14 @@ import {
   ReactNode,
   RefAttributes,
   useCallback,
-  useEffect,
   useMemo,
   useState
 } from "react";
-
+import { gsap } from "gsap";
+import { useTransitionSetter } from "../Transition/useTransitionSetter";
+import { usePathname } from "next/navigation";
+import { useGSAP } from "@gsap/react";
+import { delay } from "@/utilities/rp_utils";
 const RP_Link = (props: RPLinkPropsWithRef) => {
   const {
     href,
@@ -45,8 +45,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     onEnter: doME,
     onLeave: doML
   });
-  const currentPath = useVoyageur((r) => r.pathName);
-  const rout = useTransitionRouter();
+  const currentPath = usePathname();
   const propsToPass = useMemo(() => {
     const toPass: Partial<RPLinkProps> = {};
     if (!isInternalLink(href)) {
@@ -56,24 +55,35 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     return toPass;
   }, [href]);
 
-  const [isAnchor, setIsAnchor] = useState(
-    href.startsWith("#") || href.startsWith(`${currentPath}#`)
+  const isAnchor = useMemo(
+    () => href.startsWith("#") || href.startsWith(`${currentPath}#`),
+    [href, currentPath]
   );
-  useEffect(() => {
-    setIsAnchor(href.startsWith("#") || href.startsWith(`${currentPath}#`));
-  }, [href, currentPath]);
+  const { setGenericPageTransition } = useTransitionSetter();
+  const { contextSafe } = useGSAP();
+  const fadeOutPage = contextSafe(() => {
+    gsap.to(".rp-container", {
+      autoAlpha: 0,
+
+      onStart: () => {
+        console.log("link here setting rp to hidden");
+      },
+      duration: 0.3,
+      ease: "power3.inOut"
+    });
+  });
+
   const handleClick: MouseEventHandler = useCallback(
     (e) => {
-      e.preventDefault();
+      onClick?.();
       if (isAnchor) {
-        onClick?.();
+        e.preventDefault();
         lenis && lenis.scrollTo(href);
       } else {
-        onClick?.();
-        rout.push(href);
+        setGenericPageTransition();
       }
     },
-    [href, isAnchor, lenis, rout, onClick]
+    [onClick, isAnchor, lenis, href, setGenericPageTransition]
   );
   if (!href || typeof href !== "string") {
     return <div className={className}>{props.children}</div>;
@@ -91,7 +101,6 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
         className
       )}
       {...rest}
-      {...propsToPass}
       href={href}
       onClick={
         disabled

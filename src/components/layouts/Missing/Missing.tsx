@@ -19,7 +19,7 @@ export function Missing() {
         autoAlpha: 1,
         delay: 0.3,
         duration: 0.3,
-        ease: "Power4.EaseInOut"
+        ease: "power4.inOut"
       });
     }
     return () => {

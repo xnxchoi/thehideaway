@@ -38,7 +38,7 @@ export const DefButtons = (props: {
       {
         width: "100%",
         duration: 0.4,
-        ease: "Power4.easeInOut"
+        ease: "power4.inOut"
       }
     );
   }, [defaultWidth, ref]);
@@ -147,7 +147,7 @@ export const DefButtons = (props: {
   const gsapTL = useRef(
     gsap.timeline({
       defaults: {
-        ease: "Power4.easeInOut",
+        ease: "power4.inOut",
         duration: 0.4
       }
     })

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useCursorStore, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import {
   LayoutType,
   PageType,
@@ -33,7 +33,7 @@ export const ScrollIndicator = () => {
   const pageIsTransitioning = useRPStore(
     useShallow((l) => l.pageIsTransitioning)
   );
-  const setCursor = useCursorStore(useShallow((r) => r.setCursorState));
+  const setCursor = useCursor(useShallow((r) => r.setCursorState));
   const lastResize = useWindowResize({
     debounce: 100,
     detectHeightChange: true
@@ -65,7 +65,7 @@ export const ScrollIndicator = () => {
 
   const scrollYr = useSpring(scrollLocation, {
     stiffness: 1000,
-    damping: 30,
+    damping: 53,
     visualDuration: 0.1
   });
 
@@ -203,8 +203,8 @@ export const ScrollIndicator = () => {
       page: true
     };
   }, []);
-  const setCursorTheme = useCursorStore((r) => r.setCursorTheme);
-  const resetCursorTheme = useCursorStore((r) => r.resetCursorTheme);
+  const setCursorTheme = useCursor((r) => r.setCursorTheme);
+  const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const setVisibility = useCallback(
     ({ layout, pageType }: { layout: LayoutType; pageType: PageType }) => {
       const pt0 = pageTypeToShow[pageType];

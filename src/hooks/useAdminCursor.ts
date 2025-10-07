@@ -1,4 +1,4 @@
-import { useCursorStore } from "@/providers/RP_Pro";
+import { useCursor } from "@/providers/RP_Pro";
 import { useEffect } from "react";
 
 const INTERACTIVE_ELEMENTS_SELECTOR = [
@@ -15,7 +15,7 @@ const INTERACTIVE_ELEMENTS_SELECTOR = [
 ].join(", ");
 
 export const useAdminCursor = () => {
-  const setCursorState = useCursorStore((s) => s.setCursorState);
+  const setCursorState = useCursor((s) => s.setCursorState);
 
   useEffect(() => {
     const handleMouseOver = (event: MouseEvent) => {

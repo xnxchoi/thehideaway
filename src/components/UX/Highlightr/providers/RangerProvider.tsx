@@ -41,7 +41,7 @@ export const createRanger = ({ ranger }: { ranger: rangy.RangyStatic }) => {
   }));
 };
 
-export const waiting = async (tg: RefObject<HTMLElement>) => {
+export const waiting = async <T,>(tg: RefObject<T>) => {
   let msCount = 0;
   while (!tg.current) {
     await new Promise((resolve) => requestAnimationFrame(resolve));

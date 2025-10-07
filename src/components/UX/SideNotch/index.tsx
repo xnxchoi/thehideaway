@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SoundBar } from "../Radio/soundBar";
 import * as m from "motion/react-m";
 import { Variants } from "motion/react";
-import { useCursorStore, useMenu, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
@@ -47,8 +47,8 @@ const DeskNotch = (props: SideNotchProps) => {
   const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
 
   const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
-  const setCurTheme = useCursorStore((state) => state.setCursorTheme);
-  const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
+  const setCurTheme = useCursor((state) => state.setCursorTheme);
+  const resetCursorTheme = useCursor((state) => state.resetCursorTheme);
   const onEnter = useCallback(() => {
     setCurTheme("dark");
   }, [setCurTheme]);
@@ -59,7 +59,7 @@ const DeskNotch = (props: SideNotchProps) => {
       setSidebarOpen(false);
     }
   }, [navIsOpen, setSidebarOpen]);
-  const { left, bottom } = useMenu(useShallow((r) => r.frames));
+  const left = useMenu(useShallow((r) => r.left));
   const notchRef = useRef<HTMLDivElement>(null);
   const viewportWidth = useRPStore(useShallow((r) => r.viewportWidth));
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
@@ -123,7 +123,7 @@ const DeskNotch = (props: SideNotchProps) => {
     setV(getVariant(isOpen));
   }, [getVariant, isOpen]);
   const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
-  const cursorState = useCursorStore(useShallow((state) => state.cursorState));
+  const cursorState = useCursor(useShallow((state) => state.cursorState));
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => (isOpen ? cursorState || "FOCUS" : "FOCUS"),
     leaveCondition: () => null
@@ -183,8 +183,8 @@ const MobileNotch = (props: SideNotchProps) => {
   );
   const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
 
-  const setCurTheme = useCursorStore((state) => state.setCursorTheme);
-  const resetCursorTheme = useCursorStore((state) => state.resetCursorTheme);
+  const setCurTheme = useCursor((state) => state.setCursorTheme);
+  const resetCursorTheme = useCursor((state) => state.resetCursorTheme);
   const onEnter = useCallback(() => {
     setCurTheme("dark");
   }, [setCurTheme]);
@@ -195,7 +195,7 @@ const MobileNotch = (props: SideNotchProps) => {
       setSidebarOpen(false);
     }
   }, [navIsOpen, setSidebarOpen]);
-  const { bottom } = useMenu(useShallow((r) => r.frames));
+  const bottom = useMenu(useShallow((r) => r.bottom));
   const notchRef = useRef<HTMLDivElement>(null);
 
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
@@ -264,7 +264,7 @@ const MobileNotch = (props: SideNotchProps) => {
     setV(getVariant(isOpen));
   }, [getVariant, isOpen]);
   const toggleSideDrawer = useRPStore((state) => state.toggleSideDrawer);
-  const cursorState = useCursorStore(useShallow((state) => state.cursorState));
+  const cursorState = useCursor(useShallow((state) => state.cursorState));
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => (isOpen ? cursorState || "FOCUS" : "FOCUS"),
     leaveCondition: () => null

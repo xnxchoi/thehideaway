@@ -45,6 +45,15 @@ import {
 } from "./api/bookmarkPostHandler";
 import { getPostHandler } from "./api/getPostHandler";
 import { postBookmarksHandler } from "./api/postBookmarksHandler";
+const INLINE_RICH_TEXT_FIELDS = [
+  "toolbarInline",
+  "bold",
+  "italic",
+  "underline",
+  "strikethrough",
+  "inlineCode",
+  "align"
+];
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced
@@ -164,44 +173,71 @@ export const Posts: CollectionConfig<"posts"> = {
   },
   fields: [
     {
+      name: "id",
+      type: "text",
+      required: true,
+      defaultValue: () => uuidv7(),
+      admin: {
+        hidden: true
+      },
+      access: {
+        read: () => true,
+        create: () => true,
+        update: () => false
+      }
+    },
+    {
+      name: "image",
+      label: "Cover Image",
+      type: "upload",
+      maxDepth: 1,
+      relationTo: "userMedia",
+      admin: {},
+      filterOptions: ({ req }) => {
+        return {
+          //     and: [
+          //       {
+          //         mimeType: {
+          //           like: "image/"
+          //         }
+          //       },
+          //       {
+          author: {
+            equals: req.user?.id
+          }
+          //       }
+          //     ]
+        } as Where;
+      }
+    },
+    {
       type: "tabs",
 
       tabs: [
         {
           fields: [
             {
-              name: "id",
-              type: "text",
-              required: true,
-              defaultValue: () => uuidv7(),
-              admin: {
-                hidden: true
-              },
-              access: {
-                read: () => true,
-                create: () => true,
-                update: () => false
-              }
-            },
-
-            {
               name: "title",
               type: "text",
               label: "Title",
-              required: true,
-              admin: {}
+              required: true
             },
 
             {
               name: "content",
               type: "richText",
               editor: lexicalEditor({
+                admin: {
+                  hideGutter: true
+                },
                 features: ({ rootFeatures }) => {
                   return [
                     ...rootFeatures,
+
                     HeadingFeature({
                       enabledHeadingSizes: ["h1", "h2", "h3", "h4"]
                     }),
+
                     BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
@@ -370,7 +406,8 @@ export const Posts: CollectionConfig<"posts"> = {
       hasMany: true,
       admin: {
         allowCreate: true,
-        allowEdit: false
+        allowEdit: false,
+        position: "sidebar"
       },
       access: {
         read: () => true
@@ -380,32 +417,7 @@ export const Posts: CollectionConfig<"posts"> = {
       maxRows: 5,
       index: true
     },
-    {
-      name: "image",
-      label: "Hero Image",
-      type: "upload",
-      maxDepth: 1,
-      relationTo: "userMedia",
-      admin: {
-        position: "sidebar"
-      }
-      // filterOptions: ({ req }) => {
-      //   return {
-      //     //     and: [
-      //     //       {
-      //     //         mimeType: {
-      //     //           like: "image/"
-      //     //         }
-      //     //       },
-      //     //       {
-      //     author: {
-      //       equals: req.user?.id
-      //     }
-      //     //       }
-      //     //     ]
-      //   } as Where;
-      // }
-    },
+
     {
       name: "subtitle",
       type: "text",

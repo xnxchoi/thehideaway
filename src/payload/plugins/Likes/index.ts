@@ -41,6 +41,13 @@ export const LikesPlugin =
       const fields = [...(collectionConfig?.fields || [])];
       fields.push({
         name: "likes",
+        admin: {
+          components: {
+            Field: {
+              path: "@adminOnlyFields/number"
+            }
+          }
+        },
         type: "number",
         min: 0,
         hooks: {

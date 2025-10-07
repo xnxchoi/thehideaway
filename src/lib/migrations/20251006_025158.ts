@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres";
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
@@ -84,9 +84,6 @@ END \$\$;
   CREATE TYPE "public"."enum__users_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__users_v_published_locale" AS ENUM('en', 'ko');
   CREATE TYPE "public"."enum_admin_invitations_role" AS ENUM('admin', 'author', 'editor', 'user', 'patron');
-  CREATE TYPE "public"."enum_media_status" AS ENUM('draft', 'published');
-  CREATE TYPE "public"."enum__media_v_version_status" AS ENUM('draft', 'published');
-  CREATE TYPE "public"."enum__media_v_published_locale" AS ENUM('en', 'ko');
   CREATE TYPE "public"."enum_notifications_type" AS ENUM('comment', 'follow', 'mention', 'system', 'access', 'bookmark', 'profile', 'post', 'delta', 'notification');
   CREATE TYPE "public"."enum_notifications_status" AS ENUM('unread', 'read', 'dismissed');
   CREATE TYPE "public"."enum_notifications_action_link_type" AS ENUM('reference', 'custom');
@@ -127,9 +124,6 @@ END \$\$;
   CREATE TYPE "public"."enum_posts_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__posts_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__posts_v_published_locale" AS ENUM('en', 'ko');
-  CREATE TYPE "public"."enum_user_media_status" AS ENUM('draft', 'published');
-  CREATE TYPE "public"."enum__user_media_v_version_status" AS ENUM('draft', 'published');
-  CREATE TYPE "public"."enum__user_media_v_published_locale" AS ENUM('en', 'ko');
   CREATE TYPE "public"."enum_delta_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__delta_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__delta_v_published_locale" AS ENUM('en', 'ko');
@@ -360,6 +354,7 @@ END \$\$;
   	"darkmode" boolean DEFAULT false,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
+  	"blur_data_url" varchar,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"url" varchar,
@@ -442,17 +437,16 @@ END \$\$;
   
   CREATE TABLE "media" (
   	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
-  	"alt" varchar,
+  	"alt" varchar DEFAULT 'an image',
   	"caption" varchar,
   	"darkmode" boolean DEFAULT false,
-  	"author_id" uuid,
+  	"author_id" uuid NOT NULL,
   	"published_at" timestamp(3) with time zone,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
   	"blur_data_url" varchar,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"_status" "enum_media_status" DEFAULT 'draft',
   	"url" varchar,
   	"thumbnail_u_r_l" varchar,
   	"filename" varchar,
@@ -507,87 +501,6 @@ END \$\$;
   );
   
   CREATE TABLE "media_rels" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"order" integer,
-  	"parent_id" uuid NOT NULL,
-  	"path" varchar NOT NULL,
-  	"users_id" uuid
-  );
-  
-  CREATE TABLE "_media_v" (
-  	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
-  	"parent_id" uuid,
-  	"version_alt" varchar,
-  	"version_caption" varchar,
-  	"version_darkmode" boolean DEFAULT false,
-  	"version_author_id" uuid,
-  	"version_published_at" timestamp(3) with time zone,
-  	"version_locked" boolean DEFAULT false,
-  	"version_authority" numeric DEFAULT 0,
-  	"version_blur_data_url" varchar,
-  	"version_updated_at" timestamp(3) with time zone,
-  	"version_created_at" timestamp(3) with time zone,
-  	"version__status" "enum__media_v_version_status" DEFAULT 'draft',
-  	"version_url" varchar,
-  	"version_thumbnail_u_r_l" varchar,
-  	"version_filename" varchar,
-  	"version_mime_type" varchar,
-  	"version_filesize" numeric,
-  	"version_width" numeric,
-  	"version_height" numeric,
-  	"version_focal_x" numeric,
-  	"version_focal_y" numeric,
-  	"version_sizes_thumbnail_url" varchar,
-  	"version_sizes_thumbnail_width" numeric,
-  	"version_sizes_thumbnail_height" numeric,
-  	"version_sizes_thumbnail_mime_type" varchar,
-  	"version_sizes_thumbnail_filesize" numeric,
-  	"version_sizes_thumbnail_filename" varchar,
-  	"version_sizes_square_url" varchar,
-  	"version_sizes_square_width" numeric,
-  	"version_sizes_square_height" numeric,
-  	"version_sizes_square_mime_type" varchar,
-  	"version_sizes_square_filesize" numeric,
-  	"version_sizes_square_filename" varchar,
-  	"version_sizes_small_url" varchar,
-  	"version_sizes_small_width" numeric,
-  	"version_sizes_small_height" numeric,
-  	"version_sizes_small_mime_type" varchar,
-  	"version_sizes_small_filesize" numeric,
-  	"version_sizes_small_filename" varchar,
-  	"version_sizes_medium_url" varchar,
-  	"version_sizes_medium_width" numeric,
-  	"version_sizes_medium_height" numeric,
-  	"version_sizes_medium_mime_type" varchar,
-  	"version_sizes_medium_filesize" numeric,
-  	"version_sizes_medium_filename" varchar,
-  	"version_sizes_large_url" varchar,
-  	"version_sizes_large_width" numeric,
-  	"version_sizes_large_height" numeric,
-  	"version_sizes_large_mime_type" varchar,
-  	"version_sizes_large_filesize" numeric,
-  	"version_sizes_large_filename" varchar,
-  	"version_sizes_xlarge_url" varchar,
-  	"version_sizes_xlarge_width" numeric,
-  	"version_sizes_xlarge_height" numeric,
-  	"version_sizes_xlarge_mime_type" varchar,
-  	"version_sizes_xlarge_filesize" numeric,
-  	"version_sizes_xlarge_filename" varchar,
-  	"version_sizes_og_url" varchar,
-  	"version_sizes_og_width" numeric,
-  	"version_sizes_og_height" numeric,
-  	"version_sizes_og_mime_type" varchar,
-  	"version_sizes_og_filesize" numeric,
-  	"version_sizes_og_filename" varchar,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"snapshot" boolean,
-  	"published_locale" "enum__media_v_published_locale",
-  	"latest" boolean,
-  	"autosave" boolean
-  );
-  
-  CREATE TABLE "_media_v_rels" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"order" integer,
   	"parent_id" uuid NOT NULL,
@@ -1056,7 +969,7 @@ END \$\$;
   	"alt" varchar,
   	"caption" varchar,
   	"darkmode" boolean DEFAULT false,
-  	"author_id" uuid,
+  	"author_id" uuid NOT NULL,
   	"published_at" timestamp(3) with time zone,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
@@ -1065,7 +978,6 @@ END \$\$;
   	"folder_id" uuid,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"_status" "enum_user_media_status" DEFAULT 'draft',
   	"url" varchar,
   	"thumbnail_u_r_l" varchar,
   	"filename" varchar,
@@ -1120,89 +1032,6 @@ END \$\$;
   );
   
   CREATE TABLE "user_media_rels" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"order" integer,
-  	"parent_id" uuid NOT NULL,
-  	"path" varchar NOT NULL,
-  	"users_id" uuid
-  );
-  
-  CREATE TABLE "_user_media_v" (
-  	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
-  	"parent_id" uuid,
-  	"version_alt" varchar,
-  	"version_caption" varchar,
-  	"version_darkmode" boolean DEFAULT false,
-  	"version_author_id" uuid,
-  	"version_published_at" timestamp(3) with time zone,
-  	"version_locked" boolean DEFAULT false,
-  	"version_authority" numeric DEFAULT 0,
-  	"version_blur_data_url" varchar,
-  	"version_likes" numeric,
-  	"version_folder_id" uuid,
-  	"version_updated_at" timestamp(3) with time zone,
-  	"version_created_at" timestamp(3) with time zone,
-  	"version__status" "enum__user_media_v_version_status" DEFAULT 'draft',
-  	"version_url" varchar,
-  	"version_thumbnail_u_r_l" varchar,
-  	"version_filename" varchar,
-  	"version_mime_type" varchar,
-  	"version_filesize" numeric,
-  	"version_width" numeric,
-  	"version_height" numeric,
-  	"version_focal_x" numeric,
-  	"version_focal_y" numeric,
-  	"version_sizes_thumbnail_url" varchar,
-  	"version_sizes_thumbnail_width" numeric,
-  	"version_sizes_thumbnail_height" numeric,
-  	"version_sizes_thumbnail_mime_type" varchar,
-  	"version_sizes_thumbnail_filesize" numeric,
-  	"version_sizes_thumbnail_filename" varchar,
-  	"version_sizes_square_url" varchar,
-  	"version_sizes_square_width" numeric,
-  	"version_sizes_square_height" numeric,
-  	"version_sizes_square_mime_type" varchar,
-  	"version_sizes_square_filesize" numeric,
-  	"version_sizes_square_filename" varchar,
-  	"version_sizes_small_url" varchar,
-  	"version_sizes_small_width" numeric,
-  	"version_sizes_small_height" numeric,
-  	"version_sizes_small_mime_type" varchar,
-  	"version_sizes_small_filesize" numeric,
-  	"version_sizes_small_filename" varchar,
-  	"version_sizes_medium_url" varchar,
-  	"version_sizes_medium_width" numeric,
-  	"version_sizes_medium_height" numeric,
-  	"version_sizes_medium_mime_type" varchar,
-  	"version_sizes_medium_filesize" numeric,
-  	"version_sizes_medium_filename" varchar,
-  	"version_sizes_large_url" varchar,
-  	"version_sizes_large_width" numeric,
-  	"version_sizes_large_height" numeric,
-  	"version_sizes_large_mime_type" varchar,
-  	"version_sizes_large_filesize" numeric,
-  	"version_sizes_large_filename" varchar,
-  	"version_sizes_xlarge_url" varchar,
-  	"version_sizes_xlarge_width" numeric,
-  	"version_sizes_xlarge_height" numeric,
-  	"version_sizes_xlarge_mime_type" varchar,
-  	"version_sizes_xlarge_filesize" numeric,
-  	"version_sizes_xlarge_filename" varchar,
-  	"version_sizes_og_url" varchar,
-  	"version_sizes_og_width" numeric,
-  	"version_sizes_og_height" numeric,
-  	"version_sizes_og_mime_type" varchar,
-  	"version_sizes_og_filesize" numeric,
-  	"version_sizes_og_filename" varchar,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"snapshot" boolean,
-  	"published_locale" "enum__user_media_v_published_locale",
-  	"latest" boolean,
-  	"autosave" boolean
-  );
-  
-  CREATE TABLE "_user_media_v_rels" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"order" integer,
   	"parent_id" uuid NOT NULL,
@@ -1326,6 +1155,7 @@ END \$\$;
   	"order" integer,
   	"parent_id" uuid NOT NULL,
   	"path" varchar NOT NULL,
+  	"tags_id" uuid,
   	"users_id" uuid
   );
   
@@ -1365,6 +1195,7 @@ END \$\$;
   	"order" integer,
   	"parent_id" uuid NOT NULL,
   	"path" varchar NOT NULL,
+  	"tags_id" uuid,
   	"users_id" uuid
   );
   
@@ -1646,9 +1477,8 @@ END \$\$;
   
   CREATE TABLE "citations" (
   	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
-  	"color" varchar NOT NULL,
   	"path" varchar DEFAULT '' NOT NULL,
-  	"reference" varchar DEFAULT '' NOT NULL,
+  	"reference" varchar NOT NULL,
   	"selection_text" varchar NOT NULL,
   	"selection_before" varchar DEFAULT '' NOT NULL,
   	"selection_after" varchar DEFAULT '' NOT NULL,
@@ -2084,10 +1914,6 @@ END \$\$;
   ALTER TABLE "media" ADD CONSTRAINT "media_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "media_rels" ADD CONSTRAINT "media_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."media"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "media_rels" ADD CONSTRAINT "media_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_media_v" ADD CONSTRAINT "_media_v_parent_id_media_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_media_v" ADD CONSTRAINT "_media_v_version_author_id_users_id_fk" FOREIGN KEY ("version_author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_media_v_rels" ADD CONSTRAINT "_media_v_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."_media_v"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_media_v_rels" ADD CONSTRAINT "_media_v_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "tags" ADD CONSTRAINT "tags_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_users_id_fk" FOREIGN KEY ("recipient_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "notifications" ADD CONSTRAINT "notifications_thumbnail_id_assets_id_fk" FOREIGN KEY ("thumbnail_id") REFERENCES "public"."assets"("id") ON DELETE set null ON UPDATE no action;
@@ -2179,11 +2005,6 @@ END \$\$;
   ALTER TABLE "user_media" ADD CONSTRAINT "user_media_folder_id_payload_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."payload_folders"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "user_media_rels" ADD CONSTRAINT "user_media_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."user_media"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "user_media_rels" ADD CONSTRAINT "user_media_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_user_media_v" ADD CONSTRAINT "_user_media_v_parent_id_user_media_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."user_media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_user_media_v" ADD CONSTRAINT "_user_media_v_version_author_id_users_id_fk" FOREIGN KEY ("version_author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_user_media_v" ADD CONSTRAINT "_user_media_v_version_folder_id_payload_folders_id_fk" FOREIGN KEY ("version_folder_id") REFERENCES "public"."payload_folders"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_user_media_v_rels" ADD CONSTRAINT "_user_media_v_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."_user_media_v"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_user_media_v_rels" ADD CONSTRAINT "_user_media_v_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "delta" ADD CONSTRAINT "delta_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "delta" ADD CONSTRAINT "delta_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "delta_locales" ADD CONSTRAINT "delta_locales_meta_image_id_media_id_fk" FOREIGN KEY ("meta_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
@@ -2207,12 +2028,14 @@ END \$\$;
   ALTER TABLE "profile_slides" ADD CONSTRAINT "profile_slides_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."profile"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "profile" ADD CONSTRAINT "profile_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "profile_rels" ADD CONSTRAINT "profile_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."profile"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "profile_rels" ADD CONSTRAINT "profile_rels_tags_fk" FOREIGN KEY ("tags_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "profile_rels" ADD CONSTRAINT "profile_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_profile_v_version_slides" ADD CONSTRAINT "_profile_v_version_slides_visuals_id_user_media_id_fk" FOREIGN KEY ("visuals_id") REFERENCES "public"."user_media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_profile_v_version_slides" ADD CONSTRAINT "_profile_v_version_slides_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_profile_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_profile_v" ADD CONSTRAINT "_profile_v_parent_id_profile_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."profile"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_profile_v" ADD CONSTRAINT "_profile_v_version_author_id_users_id_fk" FOREIGN KEY ("version_author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_profile_v_rels" ADD CONSTRAINT "_profile_v_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."_profile_v"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "_profile_v_rels" ADD CONSTRAINT "_profile_v_rels_tags_fk" FOREIGN KEY ("tags_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_profile_v_rels" ADD CONSTRAINT "_profile_v_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "albums" ADD CONSTRAINT "albums_cover_id_media_id_fk" FOREIGN KEY ("cover_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "albums" ADD CONSTRAINT "albums_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
@@ -2477,7 +2300,6 @@ END \$\$;
   CREATE INDEX "media_authority_idx" ON "media" USING btree ("authority");
   CREATE INDEX "media_updated_at_idx" ON "media" USING btree ("updated_at");
   CREATE INDEX "media_created_at_idx" ON "media" USING btree ("created_at");
-  CREATE INDEX "media__status_idx" ON "media" USING btree ("_status");
   CREATE INDEX "media_filename_idx" ON "media" USING btree ("filename");
   CREATE INDEX "media_sizes_thumbnail_sizes_thumbnail_filename_idx" ON "media" USING btree ("sizes_thumbnail_filename");
   CREATE INDEX "media_sizes_square_sizes_square_filename_idx" ON "media" USING btree ("sizes_square_filename");
@@ -2490,31 +2312,6 @@ END \$\$;
   CREATE INDEX "media_rels_parent_idx" ON "media_rels" USING btree ("parent_id");
   CREATE INDEX "media_rels_path_idx" ON "media_rels" USING btree ("path");
   CREATE INDEX "media_rels_users_id_idx" ON "media_rels" USING btree ("users_id");
-  CREATE INDEX "_media_v_parent_idx" ON "_media_v" USING btree ("parent_id");
-  CREATE INDEX "_media_v_version_version_darkmode_idx" ON "_media_v" USING btree ("version_darkmode");
-  CREATE INDEX "_media_v_version_version_author_idx" ON "_media_v" USING btree ("version_author_id");
-  CREATE INDEX "_media_v_version_version_authority_idx" ON "_media_v" USING btree ("version_authority");
-  CREATE INDEX "_media_v_version_version_updated_at_idx" ON "_media_v" USING btree ("version_updated_at");
-  CREATE INDEX "_media_v_version_version_created_at_idx" ON "_media_v" USING btree ("version_created_at");
-  CREATE INDEX "_media_v_version_version__status_idx" ON "_media_v" USING btree ("version__status");
-  CREATE INDEX "_media_v_version_version_filename_idx" ON "_media_v" USING btree ("version_filename");
-  CREATE INDEX "_media_v_version_sizes_thumbnail_version_sizes_thumbnail_idx" ON "_media_v" USING btree ("version_sizes_thumbnail_filename");
-  CREATE INDEX "_media_v_version_sizes_square_version_sizes_square_filen_idx" ON "_media_v" USING btree ("version_sizes_square_filename");
-  CREATE INDEX "_media_v_version_sizes_small_version_sizes_small_filenam_idx" ON "_media_v" USING btree ("version_sizes_small_filename");
-  CREATE INDEX "_media_v_version_sizes_medium_version_sizes_medium_filen_idx" ON "_media_v" USING btree ("version_sizes_medium_filename");
-  CREATE INDEX "_media_v_version_sizes_large_version_sizes_large_filenam_idx" ON "_media_v" USING btree ("version_sizes_large_filename");
-  CREATE INDEX "_media_v_version_sizes_xlarge_version_sizes_xlarge_filen_idx" ON "_media_v" USING btree ("version_sizes_xlarge_filename");
-  CREATE INDEX "_media_v_version_sizes_og_version_sizes_og_filename_idx" ON "_media_v" USING btree ("version_sizes_og_filename");
-  CREATE INDEX "_media_v_created_at_idx" ON "_media_v" USING btree ("created_at");
-  CREATE INDEX "_media_v_updated_at_idx" ON "_media_v" USING btree ("updated_at");
-  CREATE INDEX "_media_v_snapshot_idx" ON "_media_v" USING btree ("snapshot");
-  CREATE INDEX "_media_v_published_locale_idx" ON "_media_v" USING btree ("published_locale");
-  CREATE INDEX "_media_v_latest_idx" ON "_media_v" USING btree ("latest");
-  CREATE INDEX "_media_v_autosave_idx" ON "_media_v" USING btree ("autosave");
-  CREATE INDEX "_media_v_rels_order_idx" ON "_media_v_rels" USING btree ("order");
-  CREATE INDEX "_media_v_rels_parent_idx" ON "_media_v_rels" USING btree ("parent_id");
-  CREATE INDEX "_media_v_rels_path_idx" ON "_media_v_rels" USING btree ("path");
-  CREATE INDEX "_media_v_rels_users_id_idx" ON "_media_v_rels" USING btree ("users_id");
   CREATE UNIQUE INDEX "tags_title_idx" ON "tags" USING btree ("title");
   CREATE INDEX "tags_author_idx" ON "tags" USING btree ("author_id");
   CREATE INDEX "tags_slug_key_idx" ON "tags" USING btree ("slug_key");
@@ -2703,7 +2500,6 @@ END \$\$;
   CREATE INDEX "user_media_folder_idx" ON "user_media" USING btree ("folder_id");
   CREATE INDEX "user_media_updated_at_idx" ON "user_media" USING btree ("updated_at");
   CREATE INDEX "user_media_created_at_idx" ON "user_media" USING btree ("created_at");
-  CREATE INDEX "user_media__status_idx" ON "user_media" USING btree ("_status");
   CREATE INDEX "user_media_filename_idx" ON "user_media" USING btree ("filename");
   CREATE INDEX "user_media_sizes_thumbnail_sizes_thumbnail_filename_idx" ON "user_media" USING btree ("sizes_thumbnail_filename");
   CREATE INDEX "user_media_sizes_square_sizes_square_filename_idx" ON "user_media" USING btree ("sizes_square_filename");
@@ -2716,32 +2512,6 @@ END \$\$;
   CREATE INDEX "user_media_rels_parent_idx" ON "user_media_rels" USING btree ("parent_id");
   CREATE INDEX "user_media_rels_path_idx" ON "user_media_rels" USING btree ("path");
   CREATE INDEX "user_media_rels_users_id_idx" ON "user_media_rels" USING btree ("users_id");
-  CREATE INDEX "_user_media_v_parent_idx" ON "_user_media_v" USING btree ("parent_id");
-  CREATE INDEX "_user_media_v_version_version_darkmode_idx" ON "_user_media_v" USING btree ("version_darkmode");
-  CREATE INDEX "_user_media_v_version_version_author_idx" ON "_user_media_v" USING btree ("version_author_id");
-  CREATE INDEX "_user_media_v_version_version_authority_idx" ON "_user_media_v" USING btree ("version_authority");
-  CREATE INDEX "_user_media_v_version_version_folder_idx" ON "_user_media_v" USING btree ("version_folder_id");
-  CREATE INDEX "_user_media_v_version_version_updated_at_idx" ON "_user_media_v" USING btree ("version_updated_at");
-  CREATE INDEX "_user_media_v_version_version_created_at_idx" ON "_user_media_v" USING btree ("version_created_at");
-  CREATE INDEX "_user_media_v_version_version__status_idx" ON "_user_media_v" USING btree ("version__status");
-  CREATE INDEX "_user_media_v_version_version_filename_idx" ON "_user_media_v" USING btree ("version_filename");
-  CREATE INDEX "_user_media_v_version_sizes_thumbnail_version_sizes_thum_idx" ON "_user_media_v" USING btree ("version_sizes_thumbnail_filename");
-  CREATE INDEX "_user_media_v_version_sizes_square_version_sizes_square__idx" ON "_user_media_v" USING btree ("version_sizes_square_filename");
-  CREATE INDEX "_user_media_v_version_sizes_small_version_sizes_small_fi_idx" ON "_user_media_v" USING btree ("version_sizes_small_filename");
-  CREATE INDEX "_user_media_v_version_sizes_medium_version_sizes_medium__idx" ON "_user_media_v" USING btree ("version_sizes_medium_filename");
-  CREATE INDEX "_user_media_v_version_sizes_large_version_sizes_large_fi_idx" ON "_user_media_v" USING btree ("version_sizes_large_filename");
-  CREATE INDEX "_user_media_v_version_sizes_xlarge_version_sizes_xlarge__idx" ON "_user_media_v" USING btree ("version_sizes_xlarge_filename");
-  CREATE INDEX "_user_media_v_version_sizes_og_version_sizes_og_filename_idx" ON "_user_media_v" USING btree ("version_sizes_og_filename");
-  CREATE INDEX "_user_media_v_created_at_idx" ON "_user_media_v" USING btree ("created_at");
-  CREATE INDEX "_user_media_v_updated_at_idx" ON "_user_media_v" USING btree ("updated_at");
-  CREATE INDEX "_user_media_v_snapshot_idx" ON "_user_media_v" USING btree ("snapshot");
-  CREATE INDEX "_user_media_v_published_locale_idx" ON "_user_media_v" USING btree ("published_locale");
-  CREATE INDEX "_user_media_v_latest_idx" ON "_user_media_v" USING btree ("latest");
-  CREATE INDEX "_user_media_v_autosave_idx" ON "_user_media_v" USING btree ("autosave");
-  CREATE INDEX "_user_media_v_rels_order_idx" ON "_user_media_v_rels" USING btree ("order");
-  CREATE INDEX "_user_media_v_rels_parent_idx" ON "_user_media_v_rels" USING btree ("parent_id");
-  CREATE INDEX "_user_media_v_rels_path_idx" ON "_user_media_v_rels" USING btree ("path");
-  CREATE INDEX "_user_media_v_rels_users_id_idx" ON "_user_media_v_rels" USING btree ("users_id");
   CREATE INDEX "delta_source_idx" ON "delta" USING btree ("source");
   CREATE INDEX "delta_category_idx" ON "delta" USING btree ("category_id");
   CREATE INDEX "delta_author_idx" ON "delta" USING btree ("author_id");
@@ -2799,6 +2569,7 @@ END \$\$;
   CREATE INDEX "profile_rels_order_idx" ON "profile_rels" USING btree ("order");
   CREATE INDEX "profile_rels_parent_idx" ON "profile_rels" USING btree ("parent_id");
   CREATE INDEX "profile_rels_path_idx" ON "profile_rels" USING btree ("path");
+  CREATE INDEX "profile_rels_tags_id_idx" ON "profile_rels" USING btree ("tags_id");
   CREATE INDEX "profile_rels_users_id_idx" ON "profile_rels" USING btree ("users_id");
   CREATE INDEX "_profile_v_version_slides_order_idx" ON "_profile_v_version_slides" USING btree ("_order");
   CREATE INDEX "_profile_v_version_slides_parent_id_idx" ON "_profile_v_version_slides" USING btree ("_parent_id");
@@ -2820,6 +2591,7 @@ END \$\$;
   CREATE INDEX "_profile_v_rels_order_idx" ON "_profile_v_rels" USING btree ("order");
   CREATE INDEX "_profile_v_rels_parent_idx" ON "_profile_v_rels" USING btree ("parent_id");
   CREATE INDEX "_profile_v_rels_path_idx" ON "_profile_v_rels" USING btree ("path");
+  CREATE INDEX "_profile_v_rels_tags_id_idx" ON "_profile_v_rels" USING btree ("tags_id");
   CREATE INDEX "_profile_v_rels_users_id_idx" ON "_profile_v_rels" USING btree ("users_id");
   CREATE INDEX "albums_cover_idx" ON "albums" USING btree ("cover_id");
   CREATE INDEX "albums_author_idx" ON "albums" USING btree ("author_id");
@@ -2953,8 +2725,6 @@ END \$\$;
   CREATE INDEX "user_views_rels_profile_id_idx" ON "user_views_rels" USING btree ("profile_id");
   CREATE INDEX "user_views_rels_albums_id_idx" ON "user_views_rels" USING btree ("albums_id");
   CREATE INDEX "user_views_rels_tracks_id_idx" ON "user_views_rels" USING btree ("tracks_id");
-  CREATE INDEX "citations_color_idx" ON "citations" USING btree ("color");
-  CREATE INDEX "citations_path_idx" ON "citations" USING btree ("path");
   CREATE INDEX "citations_reference_idx" ON "citations" USING btree ("reference");
   CREATE INDEX "citations_private_idx" ON "citations" USING btree ("private");
   CREATE INDEX "citations_author_idx" ON "citations" USING btree ("author_id");
@@ -3147,14 +2917,10 @@ END \$\$;
   CREATE INDEX "footer_rels_tracks_id_idx" ON "footer_rels" USING btree ("tracks_id");
   CREATE INDEX "footer_rels_playlists_id_idx" ON "footer_rels" USING btree ("playlists_id");
   CREATE INDEX "footer_rels_organizations_id_idx" ON "footer_rels" USING btree ("organizations_id");
-  CREATE INDEX "footer_rels_categories_id_idx" ON "footer_rels" USING btree ("categories_id");`);
+  CREATE INDEX "footer_rels_categories_id_idx" ON "footer_rels" USING btree ("categories_id");`)
 }
 
-export async function down({
-  db,
-  payload,
-  req
-}: MigrateDownArgs): Promise<void> {
+export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    DROP TABLE "users" CASCADE;
   DROP TABLE "users_locales" CASCADE;
@@ -3175,8 +2941,6 @@ export async function down({
   DROP TABLE "categories_rels" CASCADE;
   DROP TABLE "media" CASCADE;
   DROP TABLE "media_rels" CASCADE;
-  DROP TABLE "_media_v" CASCADE;
-  DROP TABLE "_media_v_rels" CASCADE;
   DROP TABLE "tags" CASCADE;
   DROP TABLE "notifications" CASCADE;
   DROP TABLE "notifications_rels" CASCADE;
@@ -3214,8 +2978,6 @@ export async function down({
   DROP TABLE "_posts_v_rels" CASCADE;
   DROP TABLE "user_media" CASCADE;
   DROP TABLE "user_media_rels" CASCADE;
-  DROP TABLE "_user_media_v" CASCADE;
-  DROP TABLE "_user_media_v_rels" CASCADE;
   DROP TABLE "delta" CASCADE;
   DROP TABLE "delta_locales" CASCADE;
   DROP TABLE "delta_rels" CASCADE;
@@ -3284,9 +3046,6 @@ export async function down({
   DROP TYPE "public"."enum__users_v_version_status";
   DROP TYPE "public"."enum__users_v_published_locale";
   DROP TYPE "public"."enum_admin_invitations_role";
-  DROP TYPE "public"."enum_media_status";
-  DROP TYPE "public"."enum__media_v_version_status";
-  DROP TYPE "public"."enum__media_v_published_locale";
   DROP TYPE "public"."enum_notifications_type";
   DROP TYPE "public"."enum_notifications_status";
   DROP TYPE "public"."enum_notifications_action_link_type";
@@ -3327,9 +3086,6 @@ export async function down({
   DROP TYPE "public"."enum_posts_status";
   DROP TYPE "public"."enum__posts_v_version_status";
   DROP TYPE "public"."enum__posts_v_published_locale";
-  DROP TYPE "public"."enum_user_media_status";
-  DROP TYPE "public"."enum__user_media_v_version_status";
-  DROP TYPE "public"."enum__user_media_v_published_locale";
   DROP TYPE "public"."enum_delta_status";
   DROP TYPE "public"."enum__delta_v_version_status";
   DROP TYPE "public"."enum__delta_v_published_locale";
@@ -3373,5 +3129,5 @@ export async function down({
   DROP TYPE "public"."enum_footer_nav_items_link_type";
   DROP TYPE "public"."enum_footer_column1_links_link_type";
   DROP TYPE "public"."enum_footer_column2_links_link_type";
-  DROP TYPE "public"."enum_footer_column3_links_link_type";`);
+  DROP TYPE "public"."enum_footer_column3_links_link_type";`)
 }
