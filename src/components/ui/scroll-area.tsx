@@ -25,33 +25,30 @@ function ScrollArea({
   const onLeave = useCallback(() => {
     ogLenis?.start();
   }, [ogLenis]);
-  const onScroll = useCallback(
-    (lenis: Lenis) => {
-      const { progress, isScrolling, direction } = lenis;
-      if (isScrolling) {
-        const isNearEnd =
-          (direction === 1 && progress < 0.01) ||
-          (progress > 0.99 && direction === -1);
+  const onScroll = useCallback((lenis: Lenis) => {
+    const { progress, isScrolling, direction } = lenis;
+    if (isScrolling) {
+      const isNearEnd =
+        (direction === 1 && progress < 0.01) ||
+        (progress > 0.99 && direction === -1);
 
-        if (isNearEnd) {
-          // requestAnimationFrame(() => {
-          //   return requestAnimationFrame(() => {
-          //     if (lenis.direction === direction) {
-          //       const isStillSame =
-          //         direction === 1
-          //           ? lenis.progress < progress
-          //           : lenis.progress > progress;
-          //       if (isStillSame) {
-          //         ogLenis?.start();
-          //       }
-          //     }
-          //   });
-          // });
-        }
+      if (isNearEnd) {
+        // requestAnimationFrame(() => {
+        //   return requestAnimationFrame(() => {
+        //     if (lenis.direction === direction) {
+        //       const isStillSame =
+        //         direction === 1
+        //           ? lenis.progress < progress
+        //           : lenis.progress > progress;
+        //       if (isStillSame) {
+        //         ogLenis?.start();
+        //       }
+        //     }
+        //   });
+        // });
       }
-    },
-    [ogLenis]
-  );
+    }
+  }, []);
   useEffect(() => {
     if (lenisRef.current) return;
     const content = scrollRef.current;

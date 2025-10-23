@@ -159,10 +159,7 @@ function CommandSeparator({
   return (
     <CommandPrimitive.Separator
       data-slot="command-separator"
-      className={cn(
-        "-mx-1.5 h-px bg-[oklch(var(--muted-faded-bg)/.1)]",
-        className
-      )}
+      className={cn("-mx-1.5 h-px bg-faded-foreground/10", className)}
       {...props}
     />
   );
@@ -181,7 +178,7 @@ function CommandItem({
   return (
     <CommandPrimitive.Item
       className={cn(
-        "group relative flex min-h-[2.5rem] items-center gap-3.5 rounded-sm px-3.5 py-2.5 text-lg text-[oklch(var(--faded-fg)/1)] outline-hidden transition-colors duration-170 ease-out-power3 select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-[oklch(var(--off-fg)/.5)] data-[selected=true]:text-[oklch(var(--faded-bg)/1)] [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0",
+        "group relative flex min-h-[2.5rem] items-center gap-3.5 rounded-sm px-3.5 py-2.5 text-lg text-faded-foreground outline-hidden transition-colors duration-170 ease-out-power3 select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-off-foreground/50 data-[selected=true]:text-faded-background [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0",
         className
       )}
       {...props}

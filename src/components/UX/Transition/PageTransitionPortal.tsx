@@ -6,15 +6,14 @@ import { useLenis } from "lenis/react";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useIsMobile } from "@/utilities/getBreakpoints";
+import { delay } from "@/utilities/rp_utils";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useTransitionState } from "next-transition-router";
 import { useShallow } from "zustand/shallow";
 import { PortalFrameTransitions } from ".";
 import { usePortaller } from "./Portaller";
-import { useTransitionState } from "next-transition-router";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { delay } from "@/utilities/rp_utils";
-import { waiting } from "../Highlightr/providers/RangerProvider";
 export const PageTransitionPortal = () => {
   const frameDir: Array<PortalFrameTransitions> = useMemo(
     () => ["top", "right", "bottom", "left"],
@@ -197,7 +196,31 @@ export const PageTransitionPortal = () => {
 
   return (
     <div ref={m} className="pt_container">
-      {frameDir.map((v, index) => (
+      <div
+        className={"pt_mask pt_top"}
+        ref={(el) => {
+          el && (frameRefs.current[0] = el);
+        }}
+      />
+      <div
+        className={"pt_mask pt_right"}
+        ref={(el) => {
+          el && (frameRefs.current[1] = el);
+        }}
+      />
+      <div
+        className={"pt_mask pt_bottom"}
+        ref={(el) => {
+          el && (frameRefs.current[2] = el);
+        }}
+      />
+      <div
+        className={"pt_mask pt_left"}
+        ref={(el) => {
+          el && (frameRefs.current[3] = el);
+        }}
+      />
+      {/* {frameDir.map((v, index) => (
         <div
           data-themed="background-color"
           className={`pt_mask pt_${v}`}
@@ -206,8 +229,8 @@ export const PageTransitionPortal = () => {
             el && (frameRefs.current[index] = el);
           }}
         ></div>
-      ))}
-      {Object.entries(cornDir).map(([key, value], index) => (
+      ))} */}
+      {/* {Object.entries(cornDir).map(([key, value], index) => (
         <div
           className={`pt_cornerstones pt_${key}`}
           key={key + "corner"}
@@ -234,7 +257,99 @@ export const PageTransitionPortal = () => {
             </svg>
           </div>
         </div>
-      ))}
+      ))} */}
+      <div
+        className={"pt_cornerstones pt_topleft"}
+        ref={(el) => {
+          el && (cornerRefs.current[0] = el);
+        }}
+      >
+        <div
+          ref={(el) => {
+            el && (svgRefs.current[0] = el);
+          }}
+          className="pt_cs_svg"
+        >
+          <svg viewBox="0 0 500 500" fill="none">
+            <path
+              fill="currentColor"
+              data-themed="fill,color"
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d={cornDir.topleft}
+            />
+          </svg>
+        </div>
+      </div>
+      <div
+        className={"pt_cornerstones pt_topright"}
+        ref={(el) => {
+          el && (cornerRefs.current[1] = el);
+        }}
+      >
+        <div
+          ref={(el) => {
+            el && (svgRefs.current[1] = el);
+          }}
+          className="pt_cs_svg"
+        >
+          <svg viewBox="0 0 500 500" fill="none">
+            <path
+              fill="currentColor"
+              data-themed="fill,color"
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d={cornDir.topright}
+            />
+          </svg>
+        </div>
+      </div>
+      <div
+        className={"pt_cornerstones pt_bottomright"}
+        ref={(el) => {
+          el && (cornerRefs.current[2] = el);
+        }}
+      >
+        <div
+          ref={(el) => {
+            el && (svgRefs.current[2] = el);
+          }}
+          className="pt_cs_svg"
+        >
+          <svg viewBox="0 0 500 500" fill="none">
+            <path
+              fill="currentColor"
+              data-themed="fill,color"
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d={cornDir.bottomright}
+            />
+          </svg>
+        </div>
+      </div>
+      <div
+        className={"pt_cornerstones pt_bottomleft"}
+        ref={(el) => {
+          el && (cornerRefs.current[3] = el);
+        }}
+      >
+        <div
+          ref={(el) => {
+            el && (svgRefs.current[3] = el);
+          }}
+          className="pt_cs_svg"
+        >
+          <svg viewBox="0 0 500 500" fill="none">
+            <path
+              fill="currentColor"
+              data-themed="fill,color"
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d={cornDir.bottomleft}
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 };

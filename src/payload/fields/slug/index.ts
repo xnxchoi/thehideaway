@@ -199,6 +199,7 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
     type: "text",
     name: "slug",
     admin: {
+      position: "sidebar",
       components: {
         Field: {
           path: "@/payload/fields/slug/SlugServerComponent.tsx",

@@ -4,7 +4,7 @@ import { CircleCheckIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { RP_Btn } from "@/components/UX/Link/Link";
+import { RP_Btn } from "../../Button";
 import {
   ComponentProps,
   EventHandler,

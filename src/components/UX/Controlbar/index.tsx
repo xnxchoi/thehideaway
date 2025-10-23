@@ -1,7 +1,7 @@
 import "@/styles/executor.scss";
-import { useCursor } from "@/providers/RP_Pro";
-import { type ReactNode, useCallback } from "react";
-import { Button } from "@/components/UX/Link/Link";
+import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
+import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { Button } from "../Button";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +9,10 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useShallow } from "zustand/shallow";
+import { useMotionValue, useSpring } from "motion/react";
+import { springGSAP } from "@/constants/animations";
+import * as m from "motion/react-m";
 
 export const Controlbar = () => {
   const setCursorTheme = useCursor((r) => r.setCursorTheme);
@@ -16,13 +20,48 @@ export const Controlbar = () => {
   const setCur = useCallback(() => {
     setCursorTheme("dark");
   }, []);
-
+  const ctrlRef = useRef<HTMLDivElement>(null!);
+  const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
+  const snapPoints = useRPStore(useShallow((r) => r.snapPoints));
+  const bott = useMenu((r) => r.bottom);
+  const op = useMotionValue(1);
+  const locationBottom = useMotionValue(bott + "px");
+  const opacity = useSpring(op, {
+    ...springGSAP.power3.out,
+    visualDuration: 0.2,
+    damping: 40,
+    stiffness: 1000
+  });
+  const bottom = useSpring(locationBottom, {
+    ...springGSAP.power3.out,
+    visualDuration: 0.4,
+    damping: 40,
+    stiffness: 1000
+  });
+  useEffect(() => {
+    // if (isSidebarOpen) {
+    op.set(0);
+    locationBottom.set(0 + "px");
+    op.set(1);
+    // } else {
+    //   op.set(0);
+    //   locationBottom.set(
+    //     window.innerHeight * 0.65 - (ctrlRef.current?.offsetHeight || 50) + "px"
+    //   );
+    //   op.set(1);
+    // }
+  }, [isSidebarOpen, locationBottom, op, snapPoints]);
   return (
     <>
-      <div
-        className="fixed right-0 bottom-0 left-0 z-[250] h-[30px] auto-cols-[1fr] grid-cols-[.5fr_2fr_.5fr] place-content-center place-items-center-safe gap-6 px-5"
+      <m.div
+        ref={ctrlRef}
+        className="fixed right-0 left-0 z-[251] h-[30px] auto-cols-[1fr] grid-cols-[.5fr_2fr_.5fr] place-content-center place-items-center-safe gap-6 px-5"
         onMouseEnter={setCur}
         onMouseLeave={resetCursorTheme}
+        style={{
+          bottom,
+          opacity
+        }}
       >
         <div className="mx-auto flex h-[99%] items-center justify-center gap-x-4 rounded-[4px] px-8">
           <BTPopup
@@ -83,7 +122,7 @@ export const Controlbar = () => {
             popup={"Help"}
           />
         </div>
-      </div>
+      </m.div>
     </>
   );
 };
@@ -133,17 +172,19 @@ const SubListItem = (props: { title: string; content: string }) => {
         }
       >
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className={
-                "flex items-center justify-center border-[1px] border-transparent text-[.875rem]"
-              }
-            >
-              <div className="text-center font-sans font-medium text-[oklch(var(--n-s-fg)/1)] uppercase">
-                {props.title}
-              </div>
-            </Button>
-          </TooltipTrigger>
+          <TooltipTrigger
+            render={() => (
+              <Button
+                className={
+                  "flex items-center justify-center border-[1px] border-transparent text-[.875rem]"
+                }
+              >
+                <div className="text-center font-sans font-medium text-[oklch(var(--n-s-fg)/1)] uppercase">
+                  {props.title}
+                </div>
+              </Button>
+            )}
+          />
           <TooltipContent className="bg-cold-d-gray text-cold-l-gray">
             <p>{props.content}</p>
           </TooltipContent>
@@ -210,17 +251,19 @@ const BTPopup = (props: { content: ReactNode | string; popup: string }) => {
       }
     >
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className={
-              "flex items-center justify-center border-[1px] border-transparent px-[6px] py-1 text-[1rem]"
-            }
-          >
-            <div className="text-center text-[oklch(var(--n-s-fg)/1)] uppercase">
-              {props.content}
-            </div>
-          </Button>
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={() => (
+            <Button
+              className={
+                "flex items-center justify-center border-[1px] border-transparent px-[6px] py-1 text-[1rem]"
+              }
+            >
+              <div className="text-center text-[oklch(var(--n-s-fg)/1)] uppercase">
+                {props.content}
+              </div>
+            </Button>
+          )}
+        />
         <TooltipContent className="bg-[oklch(var(--n-s-bg)/1)]">
           <p>{props.popup}</p>
         </TooltipContent>

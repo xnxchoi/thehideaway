@@ -5,7 +5,7 @@
     }
   ],
   "settings": {
-    "workbench.colorTheme": "Night Owl",
+    "workbench.colorTheme": "Abyss",
     "javascript.preferGoToSourceDefinition": true,
     "typescript.preferGoToSourceDefinition": true,
     "typescript.tsdk": "node_modules/typescript/lib",
@@ -23,7 +23,38 @@
     ],
     "workbench.settings.editor": "ui",
     "workbench.settings.openDefaultKeybindings": true,
-    "editor.wordBasedSuggestions": "currentDocument",
-    "typescript.suggest.completeFunctionCalls": true
+    "editor.wordBasedSuggestions": "matchingDocuments",
+    "typescript.suggest.completeFunctionCalls": true,
+    "files.autoSave": "onFocusChange",
+    "tailwindCSS.rootFontSize": 10,
+    "tailwindCSS.validate": true,
+
+    "tailwindCSS.classFunctions": ["cn", "twMerge", "clsx"],
+    "tailwindCSS.experimental.configFile": {
+      "./src/styles/globals.css": [
+        "./src/app/(frontend)/**",
+        "./src/components/**",
+        "./src/app/api/**",
+        "./src/lib/**",
+
+        "./src/stores/**",
+        "./src/hooks/**",
+        "./src/providers/**",
+        "./src/blocks/**"
+      ],
+      "./src/styles/payloadStyles.css": [
+        "./src/app/(payload)/**",
+        "./src/payload/**",
+        "./src/graphics/**"
+      ]
+    },
+    "editor.wordWrap": "on",
+    "editor.suggest.showStatusBar": true,
+    "javascript.suggest.completeFunctionCalls": true,
+    "editor.quickSuggestions": {
+      "comments": "on",
+      "strings": "on"
+    },
+    "editor.suggest.localityBonus": true
   }
 }

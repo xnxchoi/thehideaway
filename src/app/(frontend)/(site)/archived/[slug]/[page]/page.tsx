@@ -10,6 +10,7 @@ import { queryPostOverview } from "@/payload/collections/Posts/api/queryPostOver
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import config from "@payload-config";
 
+export const dynamic = "force-static";
 export const revalidate = 600;
 
 type Args = {

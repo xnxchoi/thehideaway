@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  type ComponentProps,
   type ComponentPropsWithRef
 } from "react";
 import { SvgIco } from "@/components/UX/svgIco";
@@ -14,6 +15,8 @@ import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { useShallow } from "zustand/shallow";
+import { useGSAP } from "@gsap/react";
+import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 
 type ElementTypMap = HTMLElementTagNameMap &
   Pick<
@@ -25,92 +28,85 @@ type TargetTagMap = Pick<
   ElementTypMap,
   "svg" | "circle" | "span" | "div" | "button" | "rect" | "path"
 >;
-type TargetElementType = TargetTagMap[keyof TargetTagMap];
+export type TargetElementType = TargetTagMap[keyof TargetTagMap];
 
-function isOneOf(c: ElementTyp): c is TargetElementType {
-  if (
-    c instanceof HTMLElement ||
-    c instanceof HTMLSpanElement ||
-    c instanceof SVGRectElement ||
-    c instanceof SVGSVGElement ||
-    c instanceof SVGPathElement ||
-    c instanceof HTMLDivElement ||
-    c instanceof HTMLButtonElement ||
-    c instanceof SVGCircleElement
-  )
-    return true as const;
-  return false as const;
+export function isOneOf(c: Element): c is TargetElementType {
+  switch (c.tagName) {
+    case "SVG":
+    case "CIRCLE":
+    case "RECT":
+    case "PATH":
+    case "SPAN":
+    case "DIV":
+    case "BUTTON":
+      return true;
+    default:
+      return c instanceof HTMLElement;
+  }
 }
-
 export const DarkmodeButton = (props: ComponentPropsWithRef<"button">) => {
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const theme = useTheme(useShallow((r) => r.theme));
   const togggleTheme = useTheme((r) => r.toggleTheme);
   const locked = useTheme((r) => r.locked);
   const { ref: btRef } = props;
-  const vice: Theme = theme === "light" ? "dark" : "light";
-  const H = 0.3;
+
   const lightmodeIcon = useRef<HTMLSpanElement>(null!),
     darkmodeIcon = useRef<HTMLSpanElement>(null!);
   const toRef = useRef<ReturnType<typeof setTimeout>>(null!);
 
   const is404 = useVoyageur(useShallow((l) => l.is404)),
     isHome = useVoyageur(useShallow((r) => r.isHome));
-  const animateAllComponents = function (reset: boolean = false) {
+  const animateAllComponents = useCallback((reset: boolean = false) => {
     const targetNodes = document.querySelectorAll("[data-themed]");
-    const targets: Array<TargetElementType> = [];
-    for (let l = 0; l < targetNodes.length; l++) {
-      targets.push(targetNodes[l] as TargetElementType);
-    }
+    if (!targetNodes || targetNodes.length === 0) return;
+    const targets: Array<TargetElementType> =
+      Array.from(targetNodes).filter(isOneOf);
     for (const c of targets) {
-      if (isOneOf(c)) {
-        if (!c) return;
-        if (reset) {
-          c.style.removeProperty("transition");
-          continue;
-        }
-        if (!c.dataset.themed) return;
-        const d = c.dataset.themed.split(",");
-        c.style.transition = d
-          .map((l) => "".concat(l, " ").concat("" + H, "s"))
-          .join(",");
+      if (!c) return;
+      if (reset) {
+        c.style.removeProperty("transition");
+        continue;
       }
+      if (!c.dataset.themed) return;
+      const d = c.dataset.themed.split(",");
+      c.style.transition = d
+        .map((l) => "".concat(l, " ").concat("" + 0.2, "s"))
+        .join(",");
     }
-  };
-  const iconTransitioner = useCallback((l: string, c = false) => {
+  }, []);
+  const iconTransitioner = useCallback((l: string) => {
     if (!lightmodeIcon.current || !darkmodeIcon.current) return;
     gsap.killTweensOf([lightmodeIcon.current, darkmodeIcon.current]);
     const d = "power3.out";
-    (gsap[c ? "set" : "to"](lightmodeIcon.current, {
+    (gsap.to(lightmodeIcon.current, {
       y: "light" === l ? 0 : "-105%",
-      duration: H,
+      duration: 0.2,
       ease: d
     }),
-      gsap[c ? "set" : "to"](darkmodeIcon.current, {
+      gsap.to(darkmodeIcon.current, {
         y: "light" === l ? "105%" : 0,
-        duration: H,
+        duration: 0.2,
         ease: d
       }));
   }, []);
   useEffect(() => {
-    theme && iconTransitioner(theme);
+    iconTransitioner(theme);
   }, [theme, iconTransitioner]);
   useEffect(() => {
-    theme &&
-      (toRef.current && clearTimeout(toRef.current),
+    (toRef.current && clearTimeout(toRef.current),
       animateAllComponents(),
       (toRef.current = setTimeout(() => {
         animateAllComponents(!0);
-      }, 1100 * H)));
-  }, [theme]);
+      }, 1100 * 0.2)));
+  }, [animateAllComponents, theme]);
 
-  useEffect(() => {
+  useGSAP(() => {
     if (!btRef) return;
     gsap.killTweensOf(btRef);
     const shouldShut5 = (isHome || is404) && !navIsOpen;
     gsap.to(btRef, {
-      autoAlpha: shouldShut5 ? 0 : 1,
-      zIndex: shouldShut5 ? 0 : 248
+      autoAlpha: shouldShut5 ? 0 : 1
     });
   }, [isHome, is404, btRef, navIsOpen]);
   return (
@@ -118,7 +114,7 @@ export const DarkmodeButton = (props: ComponentPropsWithRef<"button">) => {
       className={cn("circ-bt theme-toggle-btn", { hover: navIsOpen })}
       ref={btRef}
       data-themed="background-color,border-color,color"
-      aria-label={`Switch to ${vice} mode.`}
+      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode.`}
       onClick={() => !locked && togggleTheme()}
     >
       <span className={cn("theme-toggle-icon-container")} ref={lightmodeIcon}>

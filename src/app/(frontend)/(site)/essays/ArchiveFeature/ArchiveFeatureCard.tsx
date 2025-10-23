@@ -2,7 +2,7 @@ import { Link } from "@/components/UX/Link/Link";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { CoverCard } from "@/payload/blocks/heros/ArtHero/components";
+import { CoverCard } from "@/blocks/heros/ArtHero/components";
 import type { ArticleOverview } from "@/types/collections/posts";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -171,13 +171,17 @@ function SideHero({
       />
       <div
         className={
-          "relative col-[1/-1] row-[1/8] self-start rounded-[1rem] pt-[177%] lg:h-full lg:pt-0"
+          "relative col-[1/-1] row-[1/8] self-start rounded-[1rem] lg:h-full"
         }
       >
         {"image" in item && (
           <FrontImage
             imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
             resource={item.image}
+            aspectRatio={{
+              def: 100 / 177,
+              lg: 0
+            }}
           />
         )}
       </div>
@@ -286,11 +290,12 @@ function SplitBar({
           className={"absolute inset-0 z-0 h-full w-full"}
           href={`/${item2.collection === "posts" ? "essays" : "delta"}/${slug2}`}
         />
-        <div className="relative col-[1] row-[1/4] min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:aspect-square">
+        <div className="relative col-[1] row-[1/4] min-h-[1px] w-full min-w-[1px] self-start rounded-[5px]">
           {"image" in item2 && (
             <FrontImage
               imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
               resource={item2.image}
+              aspectRatio={1}
             />
           )}
         </div>

@@ -8,13 +8,13 @@ import {
 import type { CollectionConfig } from "payload";
 
 import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import { Archive } from "@/payload/blocks/ArchiveBlock/config";
-import { CallToAction } from "@/payload/blocks/CallToAction/config";
-import { Content } from "@/payload/blocks/Content/config";
-import { FOTD } from "@/payload/blocks/FOTD/config";
-import { hero } from "@/payload/blocks/heros/config";
-import { HeroSquare } from "@/payload/blocks/HeroSquareBlock/config";
-import { MediaBlock } from "@/payload/blocks/MediaBlock/config";
+import { Archive } from "@/blocks/ArchiveBlock/config";
+import { CallToAction } from "@/blocks/CallToAction/config";
+import { Content } from "@/blocks/Content/config";
+import { FOTD } from "@/blocks/FOTD/config";
+import { hero } from "@/blocks/heros/config";
+import { HeroSquare } from "@/blocks/HeroSquareBlock/config";
+import { MediaBlock } from "@/blocks/MediaBlock/config";
 import { slugField } from "@/payload/fields/slug";
 import { pagesAccess } from "@/payload/plugins/locker/access";
 import { generatePreviewPath } from "@/utilities/generatePreviewPath";

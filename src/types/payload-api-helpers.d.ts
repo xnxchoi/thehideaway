@@ -6,3 +6,15 @@ export type ImageCollectionSlug = Extract<
 >;
 
 export type ImageCollection = DataFromCollectionSlug<ImageCollectionSlug>;
+export type ImageBaseSelect = Pick<
+  ImageCollection,
+  | "id"
+  | "filename"
+  | "mimeType"
+  | "width"
+  | "height"
+  | "darkmode"
+  | "url"
+  | "blurDataUrl"
+  | "thumbnailURL"
+>;

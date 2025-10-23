@@ -54,4 +54,5 @@ export type NotificationDoc = Omit<
 };
 export type ResponseNotification = Omit<NotificationDoc, "thumbnail"> & {
   thumbnail: SyncedAsset | null;
+  fallbackImage: { path: string; sizes: string } | null;
 };

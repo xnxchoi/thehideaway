@@ -141,11 +141,12 @@ const sortNotifications = (notifications: Map<string, SyncedNotification>) => {
     )
   );
 };
-export const createNotificationStore = ({ user }: { user: string }) => {
+export const createNotificationStore = (props?: { user?: string }) => {
+  const user = props?.user || "guest";
   return createStore<NotificationStore>()((set, get) => ({
     lastFetched: 0,
     count: 0,
-    user,
+    user: user,
     notifications: new Map<string, SyncedNotification>(),
     setNotifications: (nextState) =>
       set((state) => {

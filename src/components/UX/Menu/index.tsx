@@ -1,8 +1,31 @@
 "use client";
 
+import { Link } from "@/components/UX/Link/Link";
+import { EASING } from "@/constants/animations";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/providers/MiddleMan";
+import {
+  useCursor,
+  useDeviceInfo,
+  useMenu,
+  useRPStore
+} from "@/providers/RP_Pro";
+import { useTheme } from "@/providers/Theme";
+import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
+import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { useWindowResize } from "@/utilities/use_window_resize";
+import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";
+import {
+  AnimatePresence,
+  useMotionValue,
+  type MotionValue,
+  type Variants
+} from "motion/react";
+import * as m from "motion/react-m";
+import { useTransitionRouter } from "next-transition-router";
 import {
   RefObject,
   SVGAttributes,
@@ -12,46 +35,17 @@ import {
   useRef,
   useState
 } from "react";
-import {
-  useCursor,
-  useDeviceInfo,
-  useMenu,
-  useRPStore
-} from "@/providers/RP_Pro";
-import { getPageTypeFromUrl } from "@/utilities/Helpers";
-import { useWindowResize } from "@/utilities/use_window_resize";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/providers/MiddleMan";
-import { SvgIco } from "@/components/UX/svgIco";
-import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import { Button, Link } from "@/components/UX/Link/Link";
-import { getServerSideURL } from "@/utilities/getURL";
-import { useTransitionRouter } from "next-transition-router";
-import { useGSAP } from "@gsap/react";
-import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
-import * as m from "motion/react-m";
-import { useTheme } from "@/providers/Theme";
 import { useShallow } from "zustand/shallow";
-import {
-  AnimatePresence,
-  useMotionValue,
-  useSpring,
-  type MotionValue,
-  type Variants
-} from "motion/react";
-import { EASING } from "@/constants/animations";
 
 const B = "navWindow";
 export const getNavId = () => B;
 
 export const RP_Menu = () => {
   const H = 590;
-  const setBase = useMenu((l) => l.setBase);
   const top = useMenu(useShallow((l) => l.top));
   const bottom = useMenu(useShallow((l) => l.bottom));
   const right = useMenu(useShallow((l) => l.right));
   const left = useMenu(useShallow((l) => l.left));
-  const router = useTransitionRouter();
   const { isMobile } = useIsMobile();
   const isAndroid = useDeviceInfo((r) => r.os.isAndroid);
   const frames: FrameSide[] = ["top", "right", "bottom", "left"];
@@ -68,32 +62,40 @@ export const RP_Menu = () => {
     () => ({
       mobile: {
         topright:
-          "M.07.01c50.62,2.79,51.7,3.82,56.01,56.12,0-.45,0-3.7,0-8.44,0-13.09.02-35.5-.01-47.69C40.43,0,14.98,0,0,0h.07Z",
+          // "M.07.01c50.62,2.79,51.7,3.82,56.01,56.12,0-.45,0-3.7,0-8.44,0-13.09.02-35.5-.01-47.69C40.43,0,14.98,0,0,0h.07Z",
+          "M270 270V0H0c182.34 14.03 252.47 84.16 270 270",
         topleft:
-          "M56.07,0C41.09,0,15.65,0,.01,0,0,12.23,0,34.57,0,47.69c0,4.74,0,8,0,8.44C.92,3.75,2.1,2.82,56,.01h.07Z",
+          // "M56.07,0C41.09,0,15.65,0,.01,0,0,12.23,0,34.57,0,47.69c0,4.74,0,8,0,8.44C.92,3.75,2.1,2.82,56,.01h.07Z",
+          "M270 0H0v270C14.03 87.66 84.16 17.53 270 0",
         bottomright:
-          "M0,56.13c14.99,0,40.42.01,56.06,0,.02-12.23.01-34.56.01-47.69,0-4.74,0-8,0-8.44C53.76,52.46,52.63,53.43.07,56.12h-.07Z",
+          // "M0,56.13c14.99,0,40.42.01,56.06,0,.02-12.23.01-34.56.01-47.69,0-4.74,0-8,0-8.44C53.76,52.46,52.63,53.43.07,56.12h-.07Z",
+          "M0 270h270V0C255.97 182.34 185.84 252.47 0 270",
         bottomleft:
-          "M0,0c.02,10.34-.01,29.22,0,40.94,0,8.72,0,15.31,0,15.18,2.85.03,7.55-.02,15.18,0,10.22,0,22.94,0,32.7,0,4.69,0,7.88,0,8.24,0,0,0,.05,0,0,0h-.3c-35.4-1.47-50.86,1.97-54.23-24.43C.39,22.32.28,10.22,0,.06v-.06Z"
+          // "M0,0c.02,10.34-.01,29.22,0,40.94,0,8.72,0,15.31,0,15.18,2.85.03,7.55-.02,15.18,0,10.22,0,22.94,0,32.7,0,4.69,0,7.88,0,8.24,0,0,0,.05,0,0,0h-.3c-35.4-1.47-50.86,1.97-54.23-24.43C.39,22.32.28,10.22,0,.06v-.06Z"
+          "M0 0v270h270C87.66 255.97 17.53 185.84 0 0"
       },
       desktop: {
-        topright: "M0,0q25.73,1.58,28.07,28.07V0H0Z",
-        bottomleft: "M0,0v28.07h28.07Q.65,27.54,0,0Z",
-        bottomright: "M0,28.07h28.07V0Q26.73,26.54,0,28.07Z",
-        topleft: "M28.07,0H0v28.07Q.65,1.58,28.07,0Z"
+        // topright: "M0,0q25.73,1.58,28.07,28.07V0H0Z",
+        topright: "M270 270V0H0c182.34 14.03 252.47 84.16 270 270",
+        topleft: "M270 0H0v270C14.03 87.66 84.16 17.53 270 0",
+
+        // "M0,0v28.07h28.07Q.65,27.54,0,0Z",
+        bottomleft: "M0 0v270h270C87.66 255.97 17.53 185.84 0 0",
+        // bottomright: "M0,28.07h28.07V0Q26.73,26.54,0,28.07Z",
+        bottomright: "M0 270h270V0C255.97 182.34 185.84 252.47 0 270"
+        // topleft: "M28.07,0H0v28.07Q.65,1.58,28.07,0Z"
       }
     }),
     []
   );
 
   const size = useMotionValue(isMobile ? "2rem" : "2.2rem");
-  const viewbox = useMotionValue(
-    isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`
-  );
+
   useEffect(() => {
-    viewbox.set(isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`);
+    // viewbox.set(isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`);
+
     size.set(isMobile ? "2rem" : "2.2rem");
-  }, [isMobile, size, viewbox]);
+  }, [isMobile, size]);
   const focusedRef = useRef<-1 | string>(-1),
     activeRef = useRef<string | -1>(-1),
     [activeIndex, setActiveIndex] = useState<string | -1>(-1);
@@ -113,9 +115,9 @@ export const RP_Menu = () => {
   /**
    *  Menu Frame ref Objects
    */
-  const menuFrames: RefObject<Array<HTMLDivElement>> = useRef([]);
-  const menuCorners: RefObject<Array<HTMLDivElement>> = useRef([]);
-  const menuSVgs: RefObject<Array<HTMLDivElement>> = useRef([]);
+  const menuFrames = useRef<Array<HTMLDivElement>>([]);
+  const menuCorners = useRef<Array<HTMLDivElement>>([]);
+  const menuSVgs = useRef<Array<HTMLDivElement>>([]);
 
   /**
    * Cursor Functions
@@ -134,7 +136,6 @@ export const RP_Menu = () => {
   const setNavIsTransitioning = useRPStore((l) => l.setNavIsTransitioning);
   const setNavIsOpen = useRPStore((l) => l.setNavIsOpen);
   const setTransitionOutType = useRPStore((l) => l.setTransitionOutType);
-  const setIsTransitioningWipe = useRPStore((l) => l.setIsTransitioningWipe);
   const setNavIsOpenDebounced = useRPStore((l) => l.setNavIsOpenDebounced);
   const menuPageItemKeys = useRPStore(
     useShallow((l) => l.navigationPageItemKeys)
@@ -152,21 +153,11 @@ export const RP_Menu = () => {
       },
       animate: {
         opacity: 1,
-        visibility: "visible",
-        transition: {
-          duration: 0.2,
-          ease: EASING.power2.out,
-          type: "tween"
-        }
+        visibility: "visible"
       },
       exit: {
         opacity: 0,
-        visibility: "hidden",
-        transition: {
-          duration: 0.2,
-          ease: EASING.power2.out,
-          type: "tween"
-        }
+        visibility: "hidden"
       }
     }),
     []
@@ -365,7 +356,7 @@ export const RP_Menu = () => {
               yOff = -frameRect.height + top;
               break;
             case 1:
-              xOff = isMobile ? right : frame.offsetWidth - right;
+              xOff = isMobile ? right - 3 : frame.offsetWidth - right;
               break;
             case 2:
               // yOff = isMobile && os.name === 'android' ? frame.offsetHeight : '100%'
@@ -376,7 +367,7 @@ export const RP_Menu = () => {
                 : frameRect.height - bottom;
               break;
             case 3:
-              xOff = isMobile ? -left : -frameRect.width + left;
+              xOff = isMobile ? -left + 3 : -frameRect.width + left;
           }
         }
         gsap.to(frame, {
@@ -683,7 +674,7 @@ export const RP_Menu = () => {
                     side={corner}
                     path={corn[isMobile ? "mobile" : "desktop"][corner]}
                     size={size}
-                    viewbox={viewbox}
+                    viewbox={"0 0 270 270"}
                     pathVariants={pathVariants}
                   />
                 </m.div>
@@ -701,7 +692,7 @@ const CornerStone = (
     side: CornerSide;
     path: string;
     size: MotionValue<string>;
-    viewbox: MotionValue<string>;
+    viewbox: MotionValue<string> | string;
     pathVariants: Variants;
   } & SVGAttributes<SVGPathElement>
 ) => {
@@ -747,33 +738,24 @@ const CornerStone = (
       animate="animate"
       exit="exit"
     >
-      <AnimatePresence mode="sync">
-        {theme === "dark" ? (
+       
           <m.path
             d={path}
-            data-themed="stroke,color"
+            data-themed={theme === "dark" ? "stroke,color" : "fill,color"}
             clipRule="evenodd"
             fillRule="evenodd"
-            strokeWidth={1.2}
-            stroke="oklch(var(--n-s-bbg)/.04)"
+            strokeWidth={theme === "dark" ? 1.2 : 0}
+            stroke={theme === "dark" ? "oklch(var(--n-s-bbg)/.04)" : "none"}
             initial="initial"
             animate="animate"
             exit="exit"
             variants={pathVariants}
+            transition={{
+              duration: 0.2,
+              ease: EASING.power2.out,
+              type: "tween"
+            }}
           />
-        ) : (
-          <m.path
-            d={path}
-            data-themed="fill,color"
-            clipRule="evenodd"
-            fillRule="evenodd"
-            variants={pathVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          />
-        )}
-      </AnimatePresence>
     </m.svg>
   );
 };

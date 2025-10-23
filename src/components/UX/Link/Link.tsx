@@ -1,11 +1,7 @@
 "use client";
 
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import {
-  MotionBtnProps,
-  RPLinkProps,
-  RPLinkPropsWithRef
-} from "@/components/UX/Link/types";
+import { RPLinkProps, RPLinkPropsWithRef } from "@/components/UX/Link/types";
 import { cn } from "@/lib/utils";
 import { isInternalLink } from "@/utilities/isInternalLink";
 import { useLenis } from "lenis/react";
@@ -14,13 +10,11 @@ import { Link as NextLink } from "next-transition-router";
 // import NextLink from "next/link";
 import {
   type ComponentProps,
-  type ComponentPropsWithRef,
   MouseEventHandler,
   ReactNode,
   RefAttributes,
   useCallback,
-  useMemo,
-  useState
+  useMemo
 } from "react";
 import { gsap } from "gsap";
 import { useTransitionSetter } from "../Transition/useTransitionSetter";
@@ -115,177 +109,10 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     />
   );
 };
-export const PillButton = ({
-  size = "sm",
-  inverted = false,
-  ...props
-}: {
-  size?: "sm" | "md" | "lg";
-  inverted?: boolean;
-} & ComponentPropsWithRef<"button">) => {
-  const [isHovered, setHovered] = useState(false);
-  const {
-    onClick,
-    disabled,
-    onMouseLeave: doML,
-    onMouseEnter: doME,
-    ref,
-    ...rest
-  } = props;
-  const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLButtonElement>({
-    onEnter: doME,
-    enterCondition: () => (disabled ? null : "FOCUS"),
-    onLeave: doML
-  });
-  return (
-    <button
-      disabled={disabled}
-      className={cn(
-        `flex appearance-none items-center justify-center overflow-hidden border-[0.1rem] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] transition-[border-color,background-color,padding] duration-200 outline-none [text-decoration:none] max-md:px-[1.4rem]`,
-        size === "sm"
-          ? "h-[2.4rem] max-md:h-[2rem]"
-          : size === "md"
-            ? "h-[3.2rem] max-md:h-[2.56rem]"
-            : "h-[3.6rem] text-3xl max-md:h-[2.88rem]",
-        inverted
-          ? "bg-button-background-inverted text-background/90 data-hover:border-off-foreground/80"
-          : "bg-button-background text-foreground/90 data-hover:border-off-background/80",
-        props?.className
-      )}
-      {...(isHovered && { "data-hovered": true })}
-      onClick={onClick}
-      ref={ref as RefAttributes<HTMLButtonElement>["ref"]}
-      {...rest}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    />
-  );
-};
-export const MotionPillButton = ({
-  size = "sm",
-  inverted = false,
-  hover = false,
-  ...props
-}: {
-  size?: "sm" | "md" | "lg";
-  inverted?: boolean;
-  hover?: boolean;
-} & MotionBtnProps) => {
-  const {
-    onClick,
-    disabled,
-    onMouseLeave: doML,
-    onMouseEnter: doME,
-    className,
-    ...rest
-  } = props;
-  const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLButtonElement>({
-    onEnter: (e) => {
-      doME?.(e);
-    },
-    enterCondition: () => (disabled ? null : "FOCUS"),
-    onLeave: (e) => {
-      doML?.(e);
-    }
-  });
-
-  return (
-    <m.button
-      disabled={disabled}
-      className={cn(
-        `flex appearance-none items-center justify-center overflow-hidden border-[0.1rem] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
-        size === "sm"
-          ? "h-[2.4rem] max-md:h-[2rem]"
-          : size === "md"
-            ? "h-[3.2rem] max-md:h-[2.56rem]"
-            : "h-[3.6rem] text-3xl max-md:h-[2.88rem]",
-        inverted
-          ? "bg-button-background-inverted text-[oklch(var(--n-s-btn-inverted)/0.9)] hover:border-[oklch(var(--n-s-bb-inverted)/0.8)] data-[hover=true]:border-[oklch(var(--n-s-bb-inverted)/0.8)]"
-          : "bg-button-background text-[oklch(var(--n-s-btn)/0.9)] hover:border-[oklch(var(--n-s-bb)/0.8)] data-[hover=true]:border-[oklch(var(--n-s-bb)/0.8)]",
-        className
-      )}
-      data-hover={hover}
-      onClick={onClick}
-      {...rest}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    />
-  );
-};
-export const RP_Btn = (props: ComponentPropsWithRef<"button">) => {
-  const {
-    onClick,
-    disabled,
-    onMouseLeave: doML,
-    onMouseEnter: doME,
-    ref,
-    ...rest
-  } = props;
-  const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLButtonElement>({
-    onEnter: doME,
-    enterCondition: () => (disabled ? null : "FOCUS"),
-    onLeave: doML
-  });
-
-  return (
-    <button
-      disabled={disabled}
-      className={cn(props?.className)}
-      onClick={onClick}
-      ref={ref as RefAttributes<HTMLButtonElement>["ref"]}
-      {...rest}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    />
-  );
-};
-export const MotionBtn = (props: MotionBtnProps) => {
-  const {
-    onClick,
-    disabled,
-    onMouseLeave: doML,
-    onMouseEnter: doME,
-    ref,
-    initial,
-    animate,
-    ...rest
-  } = props;
-  const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLButtonElement>({
-    onEnter: doME,
-    enterCondition: () => (disabled ? null : "FOCUS"),
-    onLeave: doML
-  });
-
-  return (
-    <m.button
-      disabled={disabled}
-      className={cn(props?.className)}
-      onClick={onClick}
-      ref={ref}
-      initial={
-        initial || {
-          opacity: 0
-        }
-      }
-      animate={
-        animate || {
-          opacity: 1
-        }
-      }
-      {...rest}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    />
-  );
-};
 const NextMotion = m.create(RP_Link);
 export function MotionLink(props: ComponentProps<typeof NextMotion>) {
   return <NextMotion {...props} />;
 }
-export function Button(props: ComponentPropsWithRef<"button">) {
-  return RP_Btn(props);
-}
-
 export function Link(props: RPLinkPropsWithRef) {
   return RP_Link(props);
 }

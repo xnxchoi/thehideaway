@@ -1,21 +1,17 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SoundBar } from "../Radio/soundBar";
-import * as m from "motion/react-m";
-import { Variants } from "motion/react";
-import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import { useIsMobile } from "@/providers/MiddleMan";
+import { useRadioStore } from "@/providers/RadioProvider";
+import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { useRadioStore } from "@/providers/RadioProvider";
+import { useMotionValue, useSpring, Variants } from "motion/react";
+import * as m from "motion/react-m";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { useIsMobile } from "@/providers/MiddleMan";
-import {
-  Component1Icon,
-  DragHandleDots1Icon,
-  DragHandleDots2Icon
-} from "@radix-ui/react-icons";
+import { SoundBar } from "../Radio/soundBar";
 import { TimeComponent } from "./TimeComponent";
+import { springGSAP } from "@/constants/animations";
 
 type SideNotchProps = {
   sideDrawer?: boolean;
@@ -63,17 +59,26 @@ const DeskNotch = (props: SideNotchProps) => {
   const notchRef = useRef<HTMLDivElement>(null);
   const viewportWidth = useRPStore(useShallow((r) => r.viewportWidth));
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
-  useGSAP(
-    () => {
-      gsap.to(notchRef.current, {
-        duration: 0.6,
-        delay: 0.3,
-        ease: "power2.inOut",
-        left: sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left
-      });
-    },
-    { dependencies: [viewportWidth, left] }
-  );
+  const notchLeft = useMotionValue(left);
+
+  const notchSpring = useSpring(notchLeft, {
+    ...springGSAP.power2.inOut,
+    visualDuration: 0.6
+  });
+  useEffect(() => {
+    notchSpring.set(sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left);
+  }, [left, viewportWidth, sideDrawer, notchSpring]);
+  // useGSAP(
+  //   () => {
+  //     gsap.to(notchRef.current, {
+  //       duration: 0.6,
+  //       delay: 0.3,
+  //       ease: "power2.inOut",
+  //       left: sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left
+  //     });
+  //   },
+  //   { dependencies: [viewportWidth, left] }
+  // );
   const variants: Variants = {
     hidden: {
       opacity: 0,
@@ -135,6 +140,9 @@ const DeskNotch = (props: SideNotchProps) => {
       variants={variants}
       animate={v}
       initial={"idle"}
+      style={{
+        left: notchSpring
+      }}
       exit={{
         opacity: 0,
         x: "-100%",
@@ -183,11 +191,6 @@ const MobileNotch = (props: SideNotchProps) => {
   );
   const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
 
-  const setCurTheme = useCursor((state) => state.setCursorTheme);
-  const resetCursorTheme = useCursor((state) => state.resetCursorTheme);
-  const onEnter = useCallback(() => {
-    setCurTheme("dark");
-  }, [setCurTheme]);
   const lastSidebarState = useRef(isOpen);
   const inited = useRef(false);
   useEffect(() => {
@@ -282,8 +285,6 @@ const MobileNotch = (props: SideNotchProps) => {
         className={
           "relative flex h-full w-full items-center justify-center bg-[oklch(var(--n-s-bg)/1)] mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[15px] py-[5px]"
         }
-        onMouseEnter={onEnter}
-        onMouseLeave={resetCursorTheme}
         data-themed="background-color, color"
       >
         <m.div

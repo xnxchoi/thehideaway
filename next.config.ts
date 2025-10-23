@@ -3,7 +3,7 @@ import redirects from "./redirects.js";
 
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next/types";
-
+import path from "path";
 const withNextIntl = createNextIntlPlugin();
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -35,10 +35,15 @@ const nextConfig: NextConfig = {
       }
     }
   },
+
   serverExternalPackages: ["pdfmake"],
   webpack: (config, { isServer, webpack }) => {
     config.resolve.alias = {
       ...config.resolve.alias
+      // "@payloadcms/ui/elements/DocumentControls": path.resolve(
+      //   __dirname,
+      //   "src/payload/elements/DocumentControls"
+      // )
     };
     config.resolve.extensionAlias = {
       ".cjs": [".cts", ".cjs"],

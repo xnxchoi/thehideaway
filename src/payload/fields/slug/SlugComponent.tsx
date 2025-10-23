@@ -3,28 +3,28 @@
 import "./index.scss";
 
 import {
-  Button,
-  TextInput,
-  useDocumentInfo,
-  useField,
-  useForm,
-  useFormFields
-} from "@payloadcms/ui";
-import type { TextFieldClientProps } from "payload";
-import React, {
-  useCallback,
-  useEffect,
-  useState,
-  type MouseEventHandler
-} from "react";
-import { formatSlug } from "./formatSlug";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { LockClosedIcon, LockOpen2Icon } from "@radix-ui/react-icons";
 import { useCursor } from "@/providers/RP_Pro";
+import {
+  Button,
+  TextInput,
+  useField,
+  useForm,
+  useFormFields
+} from "@payloadcms/ui";
+import { LockClosedIcon, LockOpen2Icon } from "@radix-ui/react-icons";
+import type { TextFieldClientProps } from "payload";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type MouseEventHandler
+} from "react";
+import { formatSlug } from "./formatSlug";
 
 type SlugComponentProps = {
   fieldToUse: string;
@@ -81,6 +81,9 @@ export const SlugComponent = ({
       }
     }
   }, [targetFieldValue, checkboxValue, setValue, value]);
+  const handleGhostChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setGhostValue(e.target.value);
+  }, []);
 
   const handleLock: MouseEventHandler = useCallback(
     (e) => {
@@ -171,25 +174,27 @@ export const SlugComponent = ({
                   // onMouseEnter={() => setCursor("FOCUS")}
                   // onMouseLeave={() => setCursor(null)}
                 >
-                  <TooltipTrigger asChild>
-                    <input
-                      value={ghostValue}
-                      type="text"
-                      onChange={(e) => setGhostValue(e.target.value)}
-                      size={ghostSize}
-                      className="ghost -z-[1] border-transparent text-[oklch(var(--muted-faded-fg)/.5)] transition-all duration-300 ease-power4 group-hover:text-foreground"
-                      style={{
-                        boxShadow: "none",
-                        fontFamily: "var(--font-mono)",
-                        background: "transparent",
-                        borderColor: "transparent",
-                        paddingLeft: 0,
-                        flex: "1 1 0%"
-                      }}
-                      data-active={checkboxValue}
-                      readOnly={true}
-                    />
-                  </TooltipTrigger>
+                  <TooltipTrigger
+                    render={() => (
+                      <input
+                        value={ghostValue}
+                        type="text"
+                        onChange={handleGhostChange}
+                        size={ghostSize}
+                        className="ghost -z-[1] border-transparent text-[oklch(var(--muted-faded-fg)/.5)] transition-all duration-300 ease-power4 group-hover:text-foreground"
+                        style={{
+                          boxShadow: "none",
+                          fontFamily: "var(--font-mono)",
+                          background: "transparent",
+                          borderColor: "transparent",
+                          paddingLeft: 0,
+                          flex: "1 1 0%"
+                        }}
+                        data-active={checkboxValue}
+                        readOnly={true}
+                      />
+                    )}
+                  />
                   <TooltipContent
                     sideOffset={-10}
                     align={"start"}

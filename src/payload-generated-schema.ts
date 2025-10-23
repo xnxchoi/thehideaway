@@ -56,18 +56,6 @@ export const enum_admin_invitations_role = pgEnum(
   "enum_admin_invitations_role",
   ["admin", "author", "editor", "user", "patron"]
 );
-export const enum_media_status = pgEnum("enum_media_status", [
-  "draft",
-  "published"
-]);
-export const enum__media_v_version_status = pgEnum(
-  "enum__media_v_version_status",
-  ["draft", "published"]
-);
-export const enum__media_v_published_locale = pgEnum(
-  "enum__media_v_published_locale",
-  ["en", "ko"]
-);
 export const enum_notifications_type = pgEnum("enum_notifications_type", [
   "comment",
   "follow",
@@ -237,18 +225,6 @@ export const enum__posts_v_version_status = pgEnum(
 );
 export const enum__posts_v_published_locale = pgEnum(
   "enum__posts_v_published_locale",
-  ["en", "ko"]
-);
-export const enum_user_media_status = pgEnum("enum_user_media_status", [
-  "draft",
-  "published"
-]);
-export const enum__user_media_v_version_status = pgEnum(
-  "enum__user_media_v_version_status",
-  ["draft", "published"]
-);
-export const enum__user_media_v_published_locale = pgEnum(
-  "enum__user_media_v_published_locale",
   ["en", "ko"]
 );
 export const enum_delta_status = pgEnum("enum_delta_status", [
@@ -485,31 +461,25 @@ export const users = pgTable(
     }),
     _status: enum_users_status("_status").default("draft")
   },
-  (columns) => ({
-    users_slug_idx: uniqueIndex("users_slug_idx").on(columns.slug),
-    users_first_name_idx: index("users_first_name_idx").on(columns.firstName),
-    users_last_name_idx: index("users_last_name_idx").on(columns.lastName),
-    users_username_idx: uniqueIndex("users_username_idx").on(columns.username),
-    users_bio_idx: index("users_bio_idx").on(columns.bio),
-    users_location_idx: index("users_location_idx").on(columns.location),
-    users_link_idx: index("users_link_idx").on(columns.link),
-    users_email_idx: uniqueIndex("users_email_idx").on(columns.email),
-    users_role_idx: index("users_role_idx").on(columns.role),
-    users_onboarded_idx: index("users_onboarded_idx").on(columns.onboarded),
-    users_name_idx: index("users_name_idx").on(columns.name),
-    users_created_at_idx: index("users_created_at_idx").on(columns.createdAt),
-    users_updated_at_idx: index("users_updated_at_idx").on(columns.updatedAt),
-    users_normalized_email_idx: uniqueIndex("users_normalized_email_idx").on(
-      columns.normalizedEmail
-    ),
-    users_updated_at_1_idx: index("users_updated_at_1_idx").on(
-      columns.updatedAt
-    ),
-    users_created_at_1_idx: index("users_created_at_1_idx").on(
-      columns.createdAt
-    ),
-    users__status_idx: index("users__status_idx").on(columns._status)
-  })
+  (columns) => [
+    uniqueIndex("users_slug_idx").on(columns.slug),
+    index("users_first_name_idx").on(columns.firstName),
+    index("users_last_name_idx").on(columns.lastName),
+    uniqueIndex("users_username_idx").on(columns.username),
+    index("users_bio_idx").on(columns.bio),
+    index("users_location_idx").on(columns.location),
+    index("users_link_idx").on(columns.link),
+    uniqueIndex("users_email_idx").on(columns.email),
+    index("users_role_idx").on(columns.role),
+    index("users_onboarded_idx").on(columns.onboarded),
+    index("users_name_idx").on(columns.name),
+    index("users_created_at_idx").on(columns.createdAt),
+    index("users_updated_at_idx").on(columns.updatedAt),
+    uniqueIndex("users_normalized_email_idx").on(columns.normalizedEmail),
+    index("users_updated_at_1_idx").on(columns.updatedAt),
+    index("users_created_at_1_idx").on(columns.createdAt),
+    index("users__status_idx").on(columns._status)
+  ]
 );
 
 export const users_locales = pgTable(
@@ -524,21 +494,18 @@ export const users_locales = pgTable(
     _locale: enum__locales("_locale").notNull(),
     _parentID: varchar("_parent_id").notNull()
   },
-  (columns) => ({
-    users_meta_meta_image_idx: index("users_meta_meta_image_idx").on(
-      columns.meta_image,
-      columns._locale
-    ),
-    _localeParent: uniqueIndex("users_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("users_meta_meta_image_idx").on(columns.meta_image, columns._locale),
+    uniqueIndex("users_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [users.id],
       name: "users_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _users_v = pgTable(
@@ -604,71 +571,47 @@ export const _users_v = pgTable(
     publishedLocale: enum__users_v_published_locale("published_locale"),
     latest: boolean("latest")
   },
-  (columns) => ({
-    _users_v_parent_idx: index("_users_v_parent_idx").on(columns.parent),
-    _users_v_version_version_slug_idx: index(
-      "_users_v_version_version_slug_idx"
-    ).on(columns.version_slug),
-    _users_v_version_version_first_name_idx: index(
-      "_users_v_version_version_first_name_idx"
-    ).on(columns.version_firstName),
-    _users_v_version_version_last_name_idx: index(
-      "_users_v_version_version_last_name_idx"
-    ).on(columns.version_lastName),
-    _users_v_version_version_username_idx: index(
-      "_users_v_version_version_username_idx"
-    ).on(columns.version_username),
-    _users_v_version_version_bio_idx: index(
-      "_users_v_version_version_bio_idx"
-    ).on(columns.version_bio),
-    _users_v_version_version_location_idx: index(
-      "_users_v_version_version_location_idx"
-    ).on(columns.version_location),
-    _users_v_version_version_link_idx: index(
-      "_users_v_version_version_link_idx"
-    ).on(columns.version_link),
-    _users_v_version_version_email_idx: index(
-      "_users_v_version_version_email_idx"
-    ).on(columns.version_email),
-    _users_v_version_version_role_idx: index(
-      "_users_v_version_version_role_idx"
-    ).on(columns.version_role),
-    _users_v_version_version_onboarded_idx: index(
-      "_users_v_version_version_onboarded_idx"
-    ).on(columns.version_onboarded),
-    _users_v_version_version_name_idx: index(
-      "_users_v_version_version_name_idx"
-    ).on(columns.version_name),
-    _users_v_version_version_created_at_idx: index(
-      "_users_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _users_v_version_version_updated_at_idx: index(
-      "_users_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _users_v_version_version_normalized_email_idx: index(
-      "_users_v_version_version_normalized_email_idx"
-    ).on(columns.version_normalizedEmail),
-    _users_v_version_version_updated_at_1_idx: index(
-      "_users_v_version_version_updated_at_1_idx"
-    ).on(columns.version_updatedAt),
-    _users_v_version_version_created_at_1_idx: index(
-      "_users_v_version_version_created_at_1_idx"
-    ).on(columns.version_createdAt),
-    _users_v_version_version__status_idx: index(
-      "_users_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _users_v_created_at_idx: index("_users_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_users_v_parent_idx").on(columns.parent),
+    index("_users_v_version_version_slug_idx").on(columns.version_slug),
+    index("_users_v_version_version_first_name_idx").on(
+      columns.version_firstName
     ),
-    _users_v_updated_at_idx: index("_users_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_users_v_version_version_last_name_idx").on(
+      columns.version_lastName
     ),
-    _users_v_snapshot_idx: index("_users_v_snapshot_idx").on(columns.snapshot),
-    _users_v_published_locale_idx: index("_users_v_published_locale_idx").on(
-      columns.publishedLocale
+    index("_users_v_version_version_username_idx").on(columns.version_username),
+    index("_users_v_version_version_bio_idx").on(columns.version_bio),
+    index("_users_v_version_version_location_idx").on(columns.version_location),
+    index("_users_v_version_version_link_idx").on(columns.version_link),
+    index("_users_v_version_version_email_idx").on(columns.version_email),
+    index("_users_v_version_version_role_idx").on(columns.version_role),
+    index("_users_v_version_version_onboarded_idx").on(
+      columns.version_onboarded
     ),
-    _users_v_latest_idx: index("_users_v_latest_idx").on(columns.latest)
-  })
+    index("_users_v_version_version_name_idx").on(columns.version_name),
+    index("_users_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_users_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_users_v_version_version_normalized_email_idx").on(
+      columns.version_normalizedEmail
+    ),
+    index("_users_v_version_version_updated_at_1_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_users_v_version_version_created_at_1_idx").on(
+      columns.version_createdAt
+    ),
+    index("_users_v_version_version__status_idx").on(columns.version__status),
+    index("_users_v_created_at_idx").on(columns.createdAt),
+    index("_users_v_updated_at_idx").on(columns.updatedAt),
+    index("_users_v_snapshot_idx").on(columns.snapshot),
+    index("_users_v_published_locale_idx").on(columns.publishedLocale),
+    index("_users_v_latest_idx").on(columns.latest)
+  ]
 );
 
 export const _users_v_locales = pgTable(
@@ -686,20 +629,21 @@ export const _users_v_locales = pgTable(
     _locale: enum__locales("_locale").notNull(),
     _parentID: uuid("_parent_id").notNull()
   },
-  (columns) => ({
-    _users_v_version_meta_version_meta_image_idx: index(
-      "_users_v_version_meta_version_meta_image_idx"
-    ).on(columns.version_meta_image, columns._locale),
-    _localeParent: uniqueIndex("_users_v_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("_users_v_version_meta_version_meta_image_idx").on(
+      columns.version_meta_image,
+      columns._locale
+    ),
+    uniqueIndex("_users_v_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_users_v.id],
       name: "_users_v_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const sessions = pgTable(
@@ -736,29 +680,23 @@ export const sessions = pgTable(
     impersonatedBy: uuid("impersonated_by_id").references(() => users.id, {
       onDelete: "set null"
     }),
-    activeOrganization: uuid("active_organization_id").references(
+    activeOrganizationId: uuid("active_organization_id_id").references(
       () => organizations.id,
       {
         onDelete: "set null"
       }
     )
   },
-  (columns) => ({
-    sessions_token_idx: uniqueIndex("sessions_token_idx").on(columns.token),
-    sessions_created_at_idx: index("sessions_created_at_idx").on(
-      columns.createdAt
-    ),
-    sessions_updated_at_idx: index("sessions_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    sessions_user_idx: index("sessions_user_idx").on(columns.user),
-    sessions_impersonated_by_idx: index("sessions_impersonated_by_idx").on(
-      columns.impersonatedBy
-    ),
-    sessions_active_organization_idx: index(
-      "sessions_active_organization_idx"
-    ).on(columns.activeOrganization)
-  })
+  (columns) => [
+    uniqueIndex("sessions_token_idx").on(columns.token),
+    index("sessions_created_at_idx").on(columns.createdAt),
+    index("sessions_updated_at_idx").on(columns.updatedAt),
+    index("sessions_user_idx").on(columns.user),
+    index("sessions_impersonated_by_idx").on(columns.impersonatedBy),
+    index("sessions_active_organization_id_idx").on(
+      columns.activeOrganizationId
+    )
+  ]
 );
 
 export const accounts = pgTable(
@@ -802,24 +740,18 @@ export const accounts = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    accounts_account_id_idx: index("accounts_account_id_idx").on(
-      columns.accountId
+  (columns) => [
+    index("accounts_account_id_idx").on(columns.accountId),
+    index("accounts_user_idx").on(columns.user),
+    index("accounts_access_token_expires_at_idx").on(
+      columns.accessTokenExpiresAt
     ),
-    accounts_user_idx: index("accounts_user_idx").on(columns.user),
-    accounts_access_token_expires_at_idx: index(
-      "accounts_access_token_expires_at_idx"
-    ).on(columns.accessTokenExpiresAt),
-    accounts_refresh_token_expires_at_idx: index(
-      "accounts_refresh_token_expires_at_idx"
-    ).on(columns.refreshTokenExpiresAt),
-    accounts_created_at_idx: index("accounts_created_at_idx").on(
-      columns.createdAt
+    index("accounts_refresh_token_expires_at_idx").on(
+      columns.refreshTokenExpiresAt
     ),
-    accounts_updated_at_idx: index("accounts_updated_at_idx").on(
-      columns.updatedAt
-    )
-  })
+    index("accounts_created_at_idx").on(columns.createdAt),
+    index("accounts_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const verifications = pgTable(
@@ -848,20 +780,12 @@ export const verifications = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    verifications_identifier_idx: index("verifications_identifier_idx").on(
-      columns.identifier
-    ),
-    verifications_expires_at_idx: index("verifications_expires_at_idx").on(
-      columns.expiresAt
-    ),
-    verifications_created_at_idx: index("verifications_created_at_idx").on(
-      columns.createdAt
-    ),
-    verifications_updated_at_idx: index("verifications_updated_at_idx").on(
-      columns.updatedAt
-    )
-  })
+  (columns) => [
+    index("verifications_identifier_idx").on(columns.identifier),
+    index("verifications_expires_at_idx").on(columns.expiresAt),
+    index("verifications_created_at_idx").on(columns.createdAt),
+    index("verifications_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const two_factors = pgTable(
@@ -890,16 +814,12 @@ export const two_factors = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    two_factors_secret_idx: index("two_factors_secret_idx").on(columns.secret),
-    two_factors_user_idx: index("two_factors_user_idx").on(columns.user),
-    two_factors_updated_at_idx: index("two_factors_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    two_factors_created_at_idx: index("two_factors_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("two_factors_secret_idx").on(columns.secret),
+    index("two_factors_user_idx").on(columns.user),
+    index("two_factors_updated_at_idx").on(columns.updatedAt),
+    index("two_factors_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const passkeys = pgTable(
@@ -934,15 +854,11 @@ export const passkeys = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    passkeys_public_key_idx: index("passkeys_public_key_idx").on(
-      columns.publicKey
-    ),
-    passkeys_user_idx: index("passkeys_user_idx").on(columns.user),
-    passkeys_updated_at_idx: index("passkeys_updated_at_idx").on(
-      columns.updatedAt
-    )
-  })
+  (columns) => [
+    index("passkeys_public_key_idx").on(columns.publicKey),
+    index("passkeys_user_idx").on(columns.user),
+    index("passkeys_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const organizations = pgTable(
@@ -968,14 +884,10 @@ export const organizations = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    organizations_slug_idx: uniqueIndex("organizations_slug_idx").on(
-      columns.slug
-    ),
-    organizations_updated_at_idx: index("organizations_updated_at_idx").on(
-      columns.updatedAt
-    )
-  })
+  (columns) => [
+    uniqueIndex("organizations_slug_idx").on(columns.slug),
+    index("organizations_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const members = pgTable(
@@ -1008,15 +920,11 @@ export const members = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    members_organization_idx: index("members_organization_idx").on(
-      columns.organization
-    ),
-    members_user_idx: index("members_user_idx").on(columns.user),
-    members_updated_at_idx: index("members_updated_at_idx").on(
-      columns.updatedAt
-    )
-  })
+  (columns) => [
+    index("members_organization_idx").on(columns.organization),
+    index("members_user_idx").on(columns.user),
+    index("members_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const invitations = pgTable(
@@ -1056,21 +964,13 @@ export const invitations = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    invitations_organization_idx: index("invitations_organization_idx").on(
-      columns.organization
-    ),
-    invitations_email_idx: index("invitations_email_idx").on(columns.email),
-    invitations_inviter_idx: index("invitations_inviter_idx").on(
-      columns.inviter
-    ),
-    invitations_updated_at_idx: index("invitations_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    invitations_created_at_idx: index("invitations_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("invitations_organization_idx").on(columns.organization),
+    index("invitations_email_idx").on(columns.email),
+    index("invitations_inviter_idx").on(columns.inviter),
+    index("invitations_updated_at_idx").on(columns.updatedAt),
+    index("invitations_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const admin_invitations = pgTable(
@@ -1094,17 +994,11 @@ export const admin_invitations = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    admin_invitations_token_idx: index("admin_invitations_token_idx").on(
-      columns.token
-    ),
-    admin_invitations_updated_at_idx: index(
-      "admin_invitations_updated_at_idx"
-    ).on(columns.updatedAt),
-    admin_invitations_created_at_idx: index(
-      "admin_invitations_created_at_idx"
-    ).on(columns.createdAt)
-  })
+  (columns) => [
+    index("admin_invitations_token_idx").on(columns.token),
+    index("admin_invitations_updated_at_idx").on(columns.updatedAt),
+    index("admin_invitations_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const assets = pgTable(
@@ -1116,6 +1010,7 @@ export const assets = pgTable(
     darkmode: boolean("darkmode").default(false),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
+    blurDataUrl: varchar("blur_data_url"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1182,36 +1077,32 @@ export const assets = pgTable(
     sizes_og_filesize: numeric("sizes_og_filesize"),
     sizes_og_filename: varchar("sizes_og_filename")
   },
-  (columns) => ({
-    assets_darkmode_idx: index("assets_darkmode_idx").on(columns.darkmode),
-    assets_authority_idx: index("assets_authority_idx").on(columns.authority),
-    assets_updated_at_idx: index("assets_updated_at_idx").on(columns.updatedAt),
-    assets_created_at_idx: index("assets_created_at_idx").on(columns.createdAt),
-    assets_filename_idx: uniqueIndex("assets_filename_idx").on(
-      columns.filename
+  (columns) => [
+    index("assets_darkmode_idx").on(columns.darkmode),
+    index("assets_authority_idx").on(columns.authority),
+    index("assets_updated_at_idx").on(columns.updatedAt),
+    index("assets_created_at_idx").on(columns.createdAt),
+    uniqueIndex("assets_filename_idx").on(columns.filename),
+    index("assets_sizes_thumbnail_sizes_thumbnail_filename_idx").on(
+      columns.sizes_thumbnail_filename
     ),
-    assets_sizes_thumbnail_sizes_thumbnail_filename_idx: index(
-      "assets_sizes_thumbnail_sizes_thumbnail_filename_idx"
-    ).on(columns.sizes_thumbnail_filename),
-    assets_sizes_square_sizes_square_filename_idx: index(
-      "assets_sizes_square_sizes_square_filename_idx"
-    ).on(columns.sizes_square_filename),
-    assets_sizes_small_sizes_small_filename_idx: index(
-      "assets_sizes_small_sizes_small_filename_idx"
-    ).on(columns.sizes_small_filename),
-    assets_sizes_medium_sizes_medium_filename_idx: index(
-      "assets_sizes_medium_sizes_medium_filename_idx"
-    ).on(columns.sizes_medium_filename),
-    assets_sizes_large_sizes_large_filename_idx: index(
-      "assets_sizes_large_sizes_large_filename_idx"
-    ).on(columns.sizes_large_filename),
-    assets_sizes_xlarge_sizes_xlarge_filename_idx: index(
-      "assets_sizes_xlarge_sizes_xlarge_filename_idx"
-    ).on(columns.sizes_xlarge_filename),
-    assets_sizes_og_sizes_og_filename_idx: index(
-      "assets_sizes_og_sizes_og_filename_idx"
-    ).on(columns.sizes_og_filename)
-  })
+    index("assets_sizes_square_sizes_square_filename_idx").on(
+      columns.sizes_square_filename
+    ),
+    index("assets_sizes_small_sizes_small_filename_idx").on(
+      columns.sizes_small_filename
+    ),
+    index("assets_sizes_medium_sizes_medium_filename_idx").on(
+      columns.sizes_medium_filename
+    ),
+    index("assets_sizes_large_sizes_large_filename_idx").on(
+      columns.sizes_large_filename
+    ),
+    index("assets_sizes_xlarge_sizes_xlarge_filename_idx").on(
+      columns.sizes_xlarge_filename
+    ),
+    index("assets_sizes_og_sizes_og_filename_idx").on(columns.sizes_og_filename)
+  ]
 );
 
 export const assets_rels = pgTable(
@@ -1223,24 +1114,22 @@ export const assets_rels = pgTable(
     path: varchar("path").notNull(),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("assets_rels_order_idx").on(columns.order),
-    parentIdx: index("assets_rels_parent_idx").on(columns.parent),
-    pathIdx: index("assets_rels_path_idx").on(columns.path),
-    assets_rels_users_id_idx: index("assets_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("assets_rels_order_idx").on(columns.order),
+    index("assets_rels_parent_idx").on(columns.parent),
+    index("assets_rels_path_idx").on(columns.path),
+    index("assets_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [assets.id],
       name: "assets_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "assets_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const categories = pgTable(
@@ -1265,18 +1154,12 @@ export const categories = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    categories_title_idx: index("categories_title_idx").on(columns.title),
-    categories_description_idx: index("categories_description_idx").on(
-      columns.description
-    ),
-    categories_updated_at_idx: index("categories_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    categories_created_at_idx: index("categories_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("categories_title_idx").on(columns.title),
+    index("categories_description_idx").on(columns.description),
+    index("categories_updated_at_idx").on(columns.updatedAt),
+    index("categories_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const categories_rels = pgTable(
@@ -1288,41 +1171,36 @@ export const categories_rels = pgTable(
     path: varchar("path").notNull(),
     categoriesID: uuid("categories_id")
   },
-  (columns) => ({
-    order: index("categories_rels_order_idx").on(columns.order),
-    parentIdx: index("categories_rels_parent_idx").on(columns.parent),
-    pathIdx: index("categories_rels_path_idx").on(columns.path),
-    categories_rels_categories_id_idx: index(
-      "categories_rels_categories_id_idx"
-    ).on(columns.categoriesID),
-    parentFk: foreignKey({
+  (columns) => [
+    index("categories_rels_order_idx").on(columns.order),
+    index("categories_rels_parent_idx").on(columns.parent),
+    index("categories_rels_path_idx").on(columns.path),
+    index("categories_rels_categories_id_idx").on(columns.categoriesID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [categories.id],
       name: "categories_rels_parent_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "categories_rels_categories_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const media = pgTable(
   "media",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    alt: varchar("alt"),
+    alt: varchar("alt").default("an image"),
     caption: varchar("caption"),
     darkmode: boolean("darkmode").default(false),
-    author: uuid("author_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    publishedAt: timestamp("published_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
+    author: uuid("author_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
     blurDataUrl: varchar("blur_data_url"),
@@ -1340,7 +1218,6 @@ export const media = pgTable(
     })
       .defaultNow()
       .notNull(),
-    _status: enum_media_status("_status").default("draft"),
     url: varchar("url"),
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
@@ -1393,36 +1270,33 @@ export const media = pgTable(
     sizes_og_filesize: numeric("sizes_og_filesize"),
     sizes_og_filename: varchar("sizes_og_filename")
   },
-  (columns) => ({
-    media_darkmode_idx: index("media_darkmode_idx").on(columns.darkmode),
-    media_author_idx: index("media_author_idx").on(columns.author),
-    media_authority_idx: index("media_authority_idx").on(columns.authority),
-    media_updated_at_idx: index("media_updated_at_idx").on(columns.updatedAt),
-    media_created_at_idx: index("media_created_at_idx").on(columns.createdAt),
-    media__status_idx: index("media__status_idx").on(columns._status),
-    media_filename_idx: index("media_filename_idx").on(columns.filename),
-    media_sizes_thumbnail_sizes_thumbnail_filename_idx: index(
-      "media_sizes_thumbnail_sizes_thumbnail_filename_idx"
-    ).on(columns.sizes_thumbnail_filename),
-    media_sizes_square_sizes_square_filename_idx: index(
-      "media_sizes_square_sizes_square_filename_idx"
-    ).on(columns.sizes_square_filename),
-    media_sizes_small_sizes_small_filename_idx: index(
-      "media_sizes_small_sizes_small_filename_idx"
-    ).on(columns.sizes_small_filename),
-    media_sizes_medium_sizes_medium_filename_idx: index(
-      "media_sizes_medium_sizes_medium_filename_idx"
-    ).on(columns.sizes_medium_filename),
-    media_sizes_large_sizes_large_filename_idx: index(
-      "media_sizes_large_sizes_large_filename_idx"
-    ).on(columns.sizes_large_filename),
-    media_sizes_xlarge_sizes_xlarge_filename_idx: index(
-      "media_sizes_xlarge_sizes_xlarge_filename_idx"
-    ).on(columns.sizes_xlarge_filename),
-    media_sizes_og_sizes_og_filename_idx: index(
-      "media_sizes_og_sizes_og_filename_idx"
-    ).on(columns.sizes_og_filename)
-  })
+  (columns) => [
+    index("media_darkmode_idx").on(columns.darkmode),
+    index("media_author_idx").on(columns.author),
+    index("media_authority_idx").on(columns.authority),
+    index("media_updated_at_idx").on(columns.updatedAt),
+    index("media_created_at_idx").on(columns.createdAt),
+    index("media_filename_idx").on(columns.filename),
+    index("media_sizes_thumbnail_sizes_thumbnail_filename_idx").on(
+      columns.sizes_thumbnail_filename
+    ),
+    index("media_sizes_square_sizes_square_filename_idx").on(
+      columns.sizes_square_filename
+    ),
+    index("media_sizes_small_sizes_small_filename_idx").on(
+      columns.sizes_small_filename
+    ),
+    index("media_sizes_medium_sizes_medium_filename_idx").on(
+      columns.sizes_medium_filename
+    ),
+    index("media_sizes_large_sizes_large_filename_idx").on(
+      columns.sizes_large_filename
+    ),
+    index("media_sizes_xlarge_sizes_xlarge_filename_idx").on(
+      columns.sizes_xlarge_filename
+    ),
+    index("media_sizes_og_sizes_og_filename_idx").on(columns.sizes_og_filename)
+  ]
 );
 
 export const media_rels = pgTable(
@@ -1434,221 +1308,22 @@ export const media_rels = pgTable(
     path: varchar("path").notNull(),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("media_rels_order_idx").on(columns.order),
-    parentIdx: index("media_rels_parent_idx").on(columns.parent),
-    pathIdx: index("media_rels_path_idx").on(columns.path),
-    media_rels_users_id_idx: index("media_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("media_rels_order_idx").on(columns.order),
+    index("media_rels_parent_idx").on(columns.parent),
+    index("media_rels_path_idx").on(columns.path),
+    index("media_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [media.id],
       name: "media_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "media_rels_users_fk"
     }).onDelete("cascade")
-  })
-);
-
-export const _media_v = pgTable(
-  "_media_v",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    parent: uuid("parent_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-    version_alt: varchar("version_alt"),
-    version_caption: varchar("version_caption"),
-    version_darkmode: boolean("version_darkmode").default(false),
-    version_author: uuid("version_author_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    version_publishedAt: timestamp("version_published_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version_locked: boolean("version_locked").default(false),
-    version_authority: numeric("version_authority").default("0"),
-    version_blurDataUrl: varchar("version_blur_data_url"),
-    version_updatedAt: timestamp("version_updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version_createdAt: timestamp("version_created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version__status:
-      enum__media_v_version_status("version__status").default("draft"),
-    version_url: varchar("version_url"),
-    version_thumbnailURL: varchar("version_thumbnail_u_r_l"),
-    version_filename: varchar("version_filename"),
-    version_mimeType: varchar("version_mime_type"),
-    version_filesize: numeric("version_filesize"),
-    version_width: numeric("version_width"),
-    version_height: numeric("version_height"),
-    version_focalX: numeric("version_focal_x"),
-    version_focalY: numeric("version_focal_y"),
-    version_sizes_thumbnail_url: varchar("version_sizes_thumbnail_url"),
-    version_sizes_thumbnail_width: numeric("version_sizes_thumbnail_width"),
-    version_sizes_thumbnail_height: numeric("version_sizes_thumbnail_height"),
-    version_sizes_thumbnail_mimeType: varchar(
-      "version_sizes_thumbnail_mime_type"
-    ),
-    version_sizes_thumbnail_filesize: numeric(
-      "version_sizes_thumbnail_filesize"
-    ),
-    version_sizes_thumbnail_filename: varchar(
-      "version_sizes_thumbnail_filename"
-    ),
-    version_sizes_square_url: varchar("version_sizes_square_url"),
-    version_sizes_square_width: numeric("version_sizes_square_width"),
-    version_sizes_square_height: numeric("version_sizes_square_height"),
-    version_sizes_square_mimeType: varchar("version_sizes_square_mime_type"),
-    version_sizes_square_filesize: numeric("version_sizes_square_filesize"),
-    version_sizes_square_filename: varchar("version_sizes_square_filename"),
-    version_sizes_small_url: varchar("version_sizes_small_url"),
-    version_sizes_small_width: numeric("version_sizes_small_width"),
-    version_sizes_small_height: numeric("version_sizes_small_height"),
-    version_sizes_small_mimeType: varchar("version_sizes_small_mime_type"),
-    version_sizes_small_filesize: numeric("version_sizes_small_filesize"),
-    version_sizes_small_filename: varchar("version_sizes_small_filename"),
-    version_sizes_medium_url: varchar("version_sizes_medium_url"),
-    version_sizes_medium_width: numeric("version_sizes_medium_width"),
-    version_sizes_medium_height: numeric("version_sizes_medium_height"),
-    version_sizes_medium_mimeType: varchar("version_sizes_medium_mime_type"),
-    version_sizes_medium_filesize: numeric("version_sizes_medium_filesize"),
-    version_sizes_medium_filename: varchar("version_sizes_medium_filename"),
-    version_sizes_large_url: varchar("version_sizes_large_url"),
-    version_sizes_large_width: numeric("version_sizes_large_width"),
-    version_sizes_large_height: numeric("version_sizes_large_height"),
-    version_sizes_large_mimeType: varchar("version_sizes_large_mime_type"),
-    version_sizes_large_filesize: numeric("version_sizes_large_filesize"),
-    version_sizes_large_filename: varchar("version_sizes_large_filename"),
-    version_sizes_xlarge_url: varchar("version_sizes_xlarge_url"),
-    version_sizes_xlarge_width: numeric("version_sizes_xlarge_width"),
-    version_sizes_xlarge_height: numeric("version_sizes_xlarge_height"),
-    version_sizes_xlarge_mimeType: varchar("version_sizes_xlarge_mime_type"),
-    version_sizes_xlarge_filesize: numeric("version_sizes_xlarge_filesize"),
-    version_sizes_xlarge_filename: varchar("version_sizes_xlarge_filename"),
-    version_sizes_og_url: varchar("version_sizes_og_url"),
-    version_sizes_og_width: numeric("version_sizes_og_width"),
-    version_sizes_og_height: numeric("version_sizes_og_height"),
-    version_sizes_og_mimeType: varchar("version_sizes_og_mime_type"),
-    version_sizes_og_filesize: numeric("version_sizes_og_filesize"),
-    version_sizes_og_filename: varchar("version_sizes_og_filename"),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    snapshot: boolean("snapshot"),
-    publishedLocale: enum__media_v_published_locale("published_locale"),
-    latest: boolean("latest"),
-    autosave: boolean("autosave")
-  },
-  (columns) => ({
-    _media_v_parent_idx: index("_media_v_parent_idx").on(columns.parent),
-    _media_v_version_version_darkmode_idx: index(
-      "_media_v_version_version_darkmode_idx"
-    ).on(columns.version_darkmode),
-    _media_v_version_version_author_idx: index(
-      "_media_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _media_v_version_version_authority_idx: index(
-      "_media_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _media_v_version_version_updated_at_idx: index(
-      "_media_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _media_v_version_version_created_at_idx: index(
-      "_media_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _media_v_version_version__status_idx: index(
-      "_media_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _media_v_version_version_filename_idx: index(
-      "_media_v_version_version_filename_idx"
-    ).on(columns.version_filename),
-    _media_v_version_sizes_thumbnail_version_sizes_thumbnail_idx: index(
-      "_media_v_version_sizes_thumbnail_version_sizes_thumbnail_idx"
-    ).on(columns.version_sizes_thumbnail_filename),
-    _media_v_version_sizes_square_version_sizes_square_filen_idx: index(
-      "_media_v_version_sizes_square_version_sizes_square_filen_idx"
-    ).on(columns.version_sizes_square_filename),
-    _media_v_version_sizes_small_version_sizes_small_filenam_idx: index(
-      "_media_v_version_sizes_small_version_sizes_small_filenam_idx"
-    ).on(columns.version_sizes_small_filename),
-    _media_v_version_sizes_medium_version_sizes_medium_filen_idx: index(
-      "_media_v_version_sizes_medium_version_sizes_medium_filen_idx"
-    ).on(columns.version_sizes_medium_filename),
-    _media_v_version_sizes_large_version_sizes_large_filenam_idx: index(
-      "_media_v_version_sizes_large_version_sizes_large_filenam_idx"
-    ).on(columns.version_sizes_large_filename),
-    _media_v_version_sizes_xlarge_version_sizes_xlarge_filen_idx: index(
-      "_media_v_version_sizes_xlarge_version_sizes_xlarge_filen_idx"
-    ).on(columns.version_sizes_xlarge_filename),
-    _media_v_version_sizes_og_version_sizes_og_filename_idx: index(
-      "_media_v_version_sizes_og_version_sizes_og_filename_idx"
-    ).on(columns.version_sizes_og_filename),
-    _media_v_created_at_idx: index("_media_v_created_at_idx").on(
-      columns.createdAt
-    ),
-    _media_v_updated_at_idx: index("_media_v_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    _media_v_snapshot_idx: index("_media_v_snapshot_idx").on(columns.snapshot),
-    _media_v_published_locale_idx: index("_media_v_published_locale_idx").on(
-      columns.publishedLocale
-    ),
-    _media_v_latest_idx: index("_media_v_latest_idx").on(columns.latest),
-    _media_v_autosave_idx: index("_media_v_autosave_idx").on(columns.autosave)
-  })
-);
-
-export const _media_v_rels = pgTable(
-  "_media_v_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    usersID: varchar("users_id")
-  },
-  (columns) => ({
-    order: index("_media_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_media_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_media_v_rels_path_idx").on(columns.path),
-    _media_v_rels_users_id_idx: index("_media_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [_media_v.id],
-      name: "_media_v_rels_parent_fk"
-    }).onDelete("cascade"),
-    usersIdFk: foreignKey({
-      columns: [columns["usersID"]],
-      foreignColumns: [users.id],
-      name: "_media_v_rels_users_fk"
-    }).onDelete("cascade")
-  })
+  ]
 );
 
 export const tags = pgTable(
@@ -1680,14 +1355,14 @@ export const tags = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    tags_title_idx: uniqueIndex("tags_title_idx").on(columns.title),
-    tags_author_idx: index("tags_author_idx").on(columns.author),
-    tags_slug_key_idx: index("tags_slug_key_idx").on(columns.slugKey),
-    tags_hash_id_idx: index("tags_hash_id_idx").on(columns.hashId),
-    tags_updated_at_idx: index("tags_updated_at_idx").on(columns.updatedAt),
-    tags_created_at_idx: index("tags_created_at_idx").on(columns.createdAt)
-  })
+  (columns) => [
+    uniqueIndex("tags_title_idx").on(columns.title),
+    index("tags_author_idx").on(columns.author),
+    index("tags_slug_key_idx").on(columns.slugKey),
+    index("tags_hash_id_idx").on(columns.hashId),
+    index("tags_updated_at_idx").on(columns.updatedAt),
+    index("tags_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const notifications = pgTable(
@@ -1739,31 +1414,17 @@ export const notifications = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    notifications_recipient_idx: index("notifications_recipient_idx").on(
-      columns.recipient
-    ),
-    notifications_thumbnail_idx: index("notifications_thumbnail_idx").on(
-      columns.thumbnail
-    ),
-    notifications_type_idx: index("notifications_type_idx").on(columns.type),
-    notifications_read_idx: index("notifications_read_idx").on(columns.read),
-    notifications_dismissed_idx: index("notifications_dismissed_idx").on(
-      columns.dismissed
-    ),
-    notifications_read_at_idx: index("notifications_read_at_idx").on(
-      columns.readAt
-    ),
-    notifications_sticky_idx: index("notifications_sticky_idx").on(
-      columns.sticky
-    ),
-    notifications_updated_at_idx: index("notifications_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    notifications_created_at_idx: index("notifications_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("notifications_recipient_idx").on(columns.recipient),
+    index("notifications_thumbnail_idx").on(columns.thumbnail),
+    index("notifications_type_idx").on(columns.type),
+    index("notifications_read_idx").on(columns.read),
+    index("notifications_dismissed_idx").on(columns.dismissed),
+    index("notifications_read_at_idx").on(columns.readAt),
+    index("notifications_sticky_idx").on(columns.sticky),
+    index("notifications_updated_at_idx").on(columns.updatedAt),
+    index("notifications_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const notifications_rels = pgTable(
@@ -1787,120 +1448,96 @@ export const notifications_rels = pgTable(
     organizationsID: uuid("organizations_id"),
     categoriesID: uuid("categories_id")
   },
-  (columns) => ({
-    order: index("notifications_rels_order_idx").on(columns.order),
-    parentIdx: index("notifications_rels_parent_idx").on(columns.parent),
-    pathIdx: index("notifications_rels_path_idx").on(columns.path),
-    notifications_rels_posts_id_idx: index(
-      "notifications_rels_posts_id_idx"
-    ).on(columns.postsID),
-    notifications_rels_delta_id_idx: index(
-      "notifications_rels_delta_id_idx"
-    ).on(columns.deltaID),
-    notifications_rels_users_id_idx: index(
-      "notifications_rels_users_id_idx"
-    ).on(columns.usersID),
-    notifications_rels_profile_id_idx: index(
-      "notifications_rels_profile_id_idx"
-    ).on(columns.profileID),
-    notifications_rels_bookmarks_id_idx: index(
-      "notifications_rels_bookmarks_id_idx"
-    ).on(columns.bookmarksID),
-    notifications_rels_follows_id_idx: index(
-      "notifications_rels_follows_id_idx"
-    ).on(columns.followsID),
-    notifications_rels_responses_id_idx: index(
-      "notifications_rels_responses_id_idx"
-    ).on(columns.responsesID),
-    notifications_rels_pages_id_idx: index(
-      "notifications_rels_pages_id_idx"
-    ).on(columns.pagesID),
-    notifications_rels_albums_id_idx: index(
-      "notifications_rels_albums_id_idx"
-    ).on(columns.albumsID),
-    notifications_rels_tracks_id_idx: index(
-      "notifications_rels_tracks_id_idx"
-    ).on(columns.tracksID),
-    notifications_rels_playlists_id_idx: index(
-      "notifications_rels_playlists_id_idx"
-    ).on(columns.playlistsID),
-    notifications_rels_organizations_id_idx: index(
-      "notifications_rels_organizations_id_idx"
-    ).on(columns.organizationsID),
-    notifications_rels_categories_id_idx: index(
-      "notifications_rels_categories_id_idx"
-    ).on(columns.categoriesID),
-    parentFk: foreignKey({
+  (columns) => [
+    index("notifications_rels_order_idx").on(columns.order),
+    index("notifications_rels_parent_idx").on(columns.parent),
+    index("notifications_rels_path_idx").on(columns.path),
+    index("notifications_rels_posts_id_idx").on(columns.postsID),
+    index("notifications_rels_delta_id_idx").on(columns.deltaID),
+    index("notifications_rels_users_id_idx").on(columns.usersID),
+    index("notifications_rels_profile_id_idx").on(columns.profileID),
+    index("notifications_rels_bookmarks_id_idx").on(columns.bookmarksID),
+    index("notifications_rels_follows_id_idx").on(columns.followsID),
+    index("notifications_rels_responses_id_idx").on(columns.responsesID),
+    index("notifications_rels_pages_id_idx").on(columns.pagesID),
+    index("notifications_rels_albums_id_idx").on(columns.albumsID),
+    index("notifications_rels_tracks_id_idx").on(columns.tracksID),
+    index("notifications_rels_playlists_id_idx").on(columns.playlistsID),
+    index("notifications_rels_organizations_id_idx").on(
+      columns.organizationsID
+    ),
+    index("notifications_rels_categories_id_idx").on(columns.categoriesID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [notifications.id],
       name: "notifications_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "notifications_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "notifications_rels_delta_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "notifications_rels_users_fk"
     }).onDelete("cascade"),
-    profileIdFk: foreignKey({
+    foreignKey({
       columns: [columns["profileID"]],
       foreignColumns: [profile.id],
       name: "notifications_rels_profile_fk"
     }).onDelete("cascade"),
-    bookmarksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["bookmarksID"]],
       foreignColumns: [bookmarks.id],
       name: "notifications_rels_bookmarks_fk"
     }).onDelete("cascade"),
-    followsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["followsID"]],
       foreignColumns: [follows.id],
       name: "notifications_rels_follows_fk"
     }).onDelete("cascade"),
-    responsesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["responsesID"]],
       foreignColumns: [responses.id],
       name: "notifications_rels_responses_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "notifications_rels_pages_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "notifications_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "notifications_rels_tracks_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "notifications_rels_playlists_fk"
     }).onDelete("cascade"),
-    organizationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["organizationsID"]],
       foreignColumns: [organizations.id],
       name: "notifications_rels_organizations_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "notifications_rels_categories_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_hero_links = pgTable(
@@ -1919,15 +1556,15 @@ export const pages_hero_links = pgTable(
         "default"
       )
   },
-  (columns) => ({
-    _orderIdx: index("pages_hero_links_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_hero_links_parent_id_idx").on(columns._parentID),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("pages_hero_links_order_idx").on(columns._order),
+    index("pages_hero_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_hero_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_cta_links = pgTable(
@@ -1946,17 +1583,15 @@ export const pages_blocks_cta_links = pgTable(
         "default"
       )
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_cta_links_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_cta_links_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_cta_links_order_idx").on(columns._order),
+    index("pages_blocks_cta_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages_blocks_cta.id],
       name: "pages_blocks_cta_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_cta = pgTable(
@@ -1969,16 +1604,16 @@ export const pages_blocks_cta = pgTable(
     richText: jsonb("rich_text"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_cta_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_cta_parent_id_idx").on(columns._parentID),
-    _pathIdx: index("pages_blocks_cta_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_cta_order_idx").on(columns._order),
+    index("pages_blocks_cta_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_cta_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_blocks_cta_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_content_columns = pgTable(
@@ -2002,19 +1637,15 @@ export const pages_blocks_content_columns = pgTable(
         "link_appearance"
       ).default("default")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_content_columns_order_idx").on(
-      columns._order
-    ),
-    _parentIDIdx: index("pages_blocks_content_columns_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_content_columns_order_idx").on(columns._order),
+    index("pages_blocks_content_columns_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages_blocks_content.id],
       name: "pages_blocks_content_columns_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_content = pgTable(
@@ -2026,18 +1657,16 @@ export const pages_blocks_content = pgTable(
     id: varchar("id").primaryKey(),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_content_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_content_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("pages_blocks_content_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_content_order_idx").on(columns._order),
+    index("pages_blocks_content_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_content_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_blocks_content_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_media_block = pgTable(
@@ -2052,21 +1681,17 @@ export const pages_blocks_media_block = pgTable(
     }),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_media_block_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_media_block_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("pages_blocks_media_block_path_idx").on(columns._path),
-    pages_blocks_media_block_media_idx: index(
-      "pages_blocks_media_block_media_idx"
-    ).on(columns.media),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_media_block_order_idx").on(columns._order),
+    index("pages_blocks_media_block_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_media_block_path_idx").on(columns._path),
+    index("pages_blocks_media_block_media_idx").on(columns.media),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_blocks_media_block_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_archive = pgTable(
@@ -2086,18 +1711,16 @@ export const pages_blocks_archive = pgTable(
     limit: numeric("limit").default("8"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_archive_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_archive_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("pages_blocks_archive_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_archive_order_idx").on(columns._order),
+    index("pages_blocks_archive_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_archive_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_blocks_archive_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_fotd_relation_to = pgTable(
@@ -2108,19 +1731,15 @@ export const pages_blocks_fotd_relation_to = pgTable(
     value: enum_pages_blocks_fotd_relation_to("value"),
     id: uuid("id").defaultRandom().primaryKey()
   },
-  (columns) => ({
-    orderIdx: index("pages_blocks_fotd_relation_to_order_idx").on(
-      columns.order
-    ),
-    parentIdx: index("pages_blocks_fotd_relation_to_parent_idx").on(
-      columns.parent
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_fotd_relation_to_order_idx").on(columns.order),
+    index("pages_blocks_fotd_relation_to_parent_idx").on(columns.parent),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [pages_blocks_fotd.id],
       name: "pages_blocks_fotd_relation_to_parent_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_fotd = pgTable(
@@ -2137,18 +1756,16 @@ export const pages_blocks_fotd = pgTable(
     limit: numeric("limit").default("3"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_fotd_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_fotd_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("pages_blocks_fotd_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_fotd_order_idx").on(columns._order),
+    index("pages_blocks_fotd_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_fotd_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_blocks_fotd_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_blocks_hero_square = pgTable(
@@ -2168,18 +1785,16 @@ export const pages_blocks_hero_square = pgTable(
       enum_pages_blocks_hero_square_relation_to("relation_to").default("posts"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("pages_blocks_hero_square_order_idx").on(columns._order),
-    _parentIDIdx: index("pages_blocks_hero_square_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("pages_blocks_hero_square_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("pages_blocks_hero_square_order_idx").on(columns._order),
+    index("pages_blocks_hero_square_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_hero_square_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_blocks_hero_square_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages = pgTable(
@@ -2222,21 +1837,19 @@ export const pages = pgTable(
       .notNull(),
     _status: enum_pages_status("_status").default("draft")
   },
-  (columns) => ({
-    pages_title_idx: index("pages_title_idx").on(columns.title),
-    pages_hero_hero_media_idx: index("pages_hero_hero_media_idx").on(
-      columns.hero_media
+  (columns) => [
+    index("pages_title_idx").on(columns.title),
+    index("pages_hero_hero_media_idx").on(columns.hero_media),
+    index("pages_page_layout_page_layout_footer_type_idx").on(
+      columns.pageLayout_footerType
     ),
-    pages_page_layout_page_layout_footer_type_idx: index(
-      "pages_page_layout_page_layout_footer_type_idx"
-    ).on(columns.pageLayout_footerType),
-    pages_slug_key_idx: index("pages_slug_key_idx").on(columns.slugKey),
-    pages_hash_id_idx: index("pages_hash_id_idx").on(columns.hashId),
-    pages_authority_idx: index("pages_authority_idx").on(columns.authority),
-    pages_updated_at_idx: index("pages_updated_at_idx").on(columns.updatedAt),
-    pages_created_at_idx: index("pages_created_at_idx").on(columns.createdAt),
-    pages__status_idx: index("pages__status_idx").on(columns._status)
-  })
+    index("pages_slug_key_idx").on(columns.slugKey),
+    index("pages_hash_id_idx").on(columns.hashId),
+    index("pages_authority_idx").on(columns.authority),
+    index("pages_updated_at_idx").on(columns.updatedAt),
+    index("pages_created_at_idx").on(columns.createdAt),
+    index("pages__status_idx").on(columns._status)
+  ]
 );
 
 export const pages_locales = pgTable(
@@ -2251,21 +1864,18 @@ export const pages_locales = pgTable(
     _locale: enum__locales("_locale").notNull(),
     _parentID: uuid("_parent_id").notNull()
   },
-  (columns) => ({
-    pages_meta_meta_image_idx: index("pages_meta_meta_image_idx").on(
-      columns.meta_image,
-      columns._locale
-    ),
-    _localeParent: uniqueIndex("pages_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("pages_meta_meta_image_idx").on(columns.meta_image, columns._locale),
+    uniqueIndex("pages_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
       name: "pages_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const pages_rels = pgTable(
@@ -2286,94 +1896,76 @@ export const pages_rels = pgTable(
     categoriesID: uuid("categories_id"),
     tagsID: uuid("tags_id")
   },
-  (columns) => ({
-    order: index("pages_rels_order_idx").on(columns.order),
-    parentIdx: index("pages_rels_parent_idx").on(columns.parent),
-    pathIdx: index("pages_rels_path_idx").on(columns.path),
-    pages_rels_pages_id_idx: index("pages_rels_pages_id_idx").on(
-      columns.pagesID
-    ),
-    pages_rels_posts_id_idx: index("pages_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    pages_rels_delta_id_idx: index("pages_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    pages_rels_users_id_idx: index("pages_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    pages_rels_albums_id_idx: index("pages_rels_albums_id_idx").on(
-      columns.albumsID
-    ),
-    pages_rels_tracks_id_idx: index("pages_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    pages_rels_playlists_id_idx: index("pages_rels_playlists_id_idx").on(
-      columns.playlistsID
-    ),
-    pages_rels_organizations_id_idx: index(
-      "pages_rels_organizations_id_idx"
-    ).on(columns.organizationsID),
-    pages_rels_categories_id_idx: index("pages_rels_categories_id_idx").on(
-      columns.categoriesID
-    ),
-    pages_rels_tags_id_idx: index("pages_rels_tags_id_idx").on(columns.tagsID),
-    parentFk: foreignKey({
+  (columns) => [
+    index("pages_rels_order_idx").on(columns.order),
+    index("pages_rels_parent_idx").on(columns.parent),
+    index("pages_rels_path_idx").on(columns.path),
+    index("pages_rels_pages_id_idx").on(columns.pagesID),
+    index("pages_rels_posts_id_idx").on(columns.postsID),
+    index("pages_rels_delta_id_idx").on(columns.deltaID),
+    index("pages_rels_users_id_idx").on(columns.usersID),
+    index("pages_rels_albums_id_idx").on(columns.albumsID),
+    index("pages_rels_tracks_id_idx").on(columns.tracksID),
+    index("pages_rels_playlists_id_idx").on(columns.playlistsID),
+    index("pages_rels_organizations_id_idx").on(columns.organizationsID),
+    index("pages_rels_categories_id_idx").on(columns.categoriesID),
+    index("pages_rels_tags_id_idx").on(columns.tagsID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [pages.id],
       name: "pages_rels_parent_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "pages_rels_pages_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "pages_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "pages_rels_delta_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "pages_rels_users_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "pages_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "pages_rels_tracks_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "pages_rels_playlists_fk"
     }).onDelete("cascade"),
-    organizationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["organizationsID"]],
       foreignColumns: [organizations.id],
       name: "pages_rels_organizations_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "pages_rels_categories_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "pages_rels_tags_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_version_hero_links = pgTable(
@@ -2395,19 +1987,15 @@ export const _pages_v_version_hero_links = pgTable(
       ).default("default"),
     _uuid: varchar("_uuid")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_version_hero_links_order_idx").on(
-      columns._order
-    ),
-    _parentIDIdx: index("_pages_v_version_hero_links_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("_pages_v_version_hero_links_order_idx").on(columns._order),
+    index("_pages_v_version_hero_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_version_hero_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_cta_links = pgTable(
@@ -2429,17 +2017,15 @@ export const _pages_v_blocks_cta_links = pgTable(
       ),
     _uuid: varchar("_uuid")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_cta_links_order_idx").on(columns._order),
-    _parentIDIdx: index("_pages_v_blocks_cta_links_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_cta_links_order_idx").on(columns._order),
+    index("_pages_v_blocks_cta_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v_blocks_cta.id],
       name: "_pages_v_blocks_cta_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_cta = pgTable(
@@ -2453,18 +2039,16 @@ export const _pages_v_blocks_cta = pgTable(
     richText: jsonb("rich_text"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_cta_order_idx").on(columns._order),
-    _parentIDIdx: index("_pages_v_blocks_cta_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("_pages_v_blocks_cta_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_cta_order_idx").on(columns._order),
+    index("_pages_v_blocks_cta_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_cta_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_blocks_cta_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_content_columns = pgTable(
@@ -2489,19 +2073,17 @@ export const _pages_v_blocks_content_columns = pgTable(
         "link_appearance"
       ).default("default")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_content_columns_order_idx").on(
-      columns._order
-    ),
-    _parentIDIdx: index("_pages_v_blocks_content_columns_parent_id_idx").on(
+  (columns) => [
+    index("_pages_v_blocks_content_columns_order_idx").on(columns._order),
+    index("_pages_v_blocks_content_columns_parent_id_idx").on(
       columns._parentID
     ),
-    _parentIDFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v_blocks_content.id],
       name: "_pages_v_blocks_content_columns_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_content = pgTable(
@@ -2514,18 +2096,16 @@ export const _pages_v_blocks_content = pgTable(
     _uuid: varchar("_uuid"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_content_order_idx").on(columns._order),
-    _parentIDIdx: index("_pages_v_blocks_content_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("_pages_v_blocks_content_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_content_order_idx").on(columns._order),
+    index("_pages_v_blocks_content_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_content_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_blocks_content_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_media_block = pgTable(
@@ -2541,23 +2121,17 @@ export const _pages_v_blocks_media_block = pgTable(
     }),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_media_block_order_idx").on(
-      columns._order
-    ),
-    _parentIDIdx: index("_pages_v_blocks_media_block_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("_pages_v_blocks_media_block_path_idx").on(columns._path),
-    _pages_v_blocks_media_block_media_idx: index(
-      "_pages_v_blocks_media_block_media_idx"
-    ).on(columns.media),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_media_block_order_idx").on(columns._order),
+    index("_pages_v_blocks_media_block_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_media_block_path_idx").on(columns._path),
+    index("_pages_v_blocks_media_block_media_idx").on(columns.media),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_blocks_media_block_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_archive = pgTable(
@@ -2578,18 +2152,16 @@ export const _pages_v_blocks_archive = pgTable(
     limit: numeric("limit").default("8"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_archive_order_idx").on(columns._order),
-    _parentIDIdx: index("_pages_v_blocks_archive_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("_pages_v_blocks_archive_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_archive_order_idx").on(columns._order),
+    index("_pages_v_blocks_archive_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_archive_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_blocks_archive_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_fotd_relation_to = pgTable(
@@ -2600,19 +2172,15 @@ export const _pages_v_blocks_fotd_relation_to = pgTable(
     value: enum__pages_v_blocks_fotd_relation_to("value"),
     id: uuid("id").defaultRandom().primaryKey()
   },
-  (columns) => ({
-    orderIdx: index("_pages_v_blocks_fotd_relation_to_order_idx").on(
-      columns.order
-    ),
-    parentIdx: index("_pages_v_blocks_fotd_relation_to_parent_idx").on(
-      columns.parent
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_fotd_relation_to_order_idx").on(columns.order),
+    index("_pages_v_blocks_fotd_relation_to_parent_idx").on(columns.parent),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_pages_v_blocks_fotd.id],
       name: "_pages_v_blocks_fotd_relation_to_parent_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_fotd = pgTable(
@@ -2632,18 +2200,16 @@ export const _pages_v_blocks_fotd = pgTable(
     limit: numeric("limit").default("3"),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_fotd_order_idx").on(columns._order),
-    _parentIDIdx: index("_pages_v_blocks_fotd_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("_pages_v_blocks_fotd_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_fotd_order_idx").on(columns._order),
+    index("_pages_v_blocks_fotd_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_fotd_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_blocks_fotd_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_blocks_hero_square = pgTable(
@@ -2666,20 +2232,16 @@ export const _pages_v_blocks_hero_square = pgTable(
       ),
     blockName: varchar("block_name")
   },
-  (columns) => ({
-    _orderIdx: index("_pages_v_blocks_hero_square_order_idx").on(
-      columns._order
-    ),
-    _parentIDIdx: index("_pages_v_blocks_hero_square_parent_id_idx").on(
-      columns._parentID
-    ),
-    _pathIdx: index("_pages_v_blocks_hero_square_path_idx").on(columns._path),
-    _parentIdFk: foreignKey({
+  (columns) => [
+    index("_pages_v_blocks_hero_square_order_idx").on(columns._order),
+    index("_pages_v_blocks_hero_square_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_hero_square_path_idx").on(columns._path),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_blocks_hero_square_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v = pgTable(
@@ -2745,48 +2307,34 @@ export const _pages_v = pgTable(
     latest: boolean("latest"),
     autosave: boolean("autosave")
   },
-  (columns) => ({
-    _pages_v_parent_idx: index("_pages_v_parent_idx").on(columns.parent),
-    _pages_v_version_version_title_idx: index(
-      "_pages_v_version_version_title_idx"
-    ).on(columns.version_title),
-    _pages_v_version_hero_version_hero_media_idx: index(
-      "_pages_v_version_hero_version_hero_media_idx"
-    ).on(columns.version_hero_media),
-    _pages_v_version_page_layout_version_page_layout_footer__idx: index(
-      "_pages_v_version_page_layout_version_page_layout_footer__idx"
-    ).on(columns.version_pageLayout_footerType),
-    _pages_v_version_version_slug_key_idx: index(
-      "_pages_v_version_version_slug_key_idx"
-    ).on(columns.version_slugKey),
-    _pages_v_version_version_hash_id_idx: index(
-      "_pages_v_version_version_hash_id_idx"
-    ).on(columns.version_hashId),
-    _pages_v_version_version_authority_idx: index(
-      "_pages_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _pages_v_version_version_updated_at_idx: index(
-      "_pages_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _pages_v_version_version_created_at_idx: index(
-      "_pages_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _pages_v_version_version__status_idx: index(
-      "_pages_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _pages_v_created_at_idx: index("_pages_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_pages_v_parent_idx").on(columns.parent),
+    index("_pages_v_version_version_title_idx").on(columns.version_title),
+    index("_pages_v_version_hero_version_hero_media_idx").on(
+      columns.version_hero_media
     ),
-    _pages_v_updated_at_idx: index("_pages_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_pages_v_version_page_layout_version_page_layout_footer__idx").on(
+      columns.version_pageLayout_footerType
     ),
-    _pages_v_snapshot_idx: index("_pages_v_snapshot_idx").on(columns.snapshot),
-    _pages_v_published_locale_idx: index("_pages_v_published_locale_idx").on(
-      columns.publishedLocale
+    index("_pages_v_version_version_slug_key_idx").on(columns.version_slugKey),
+    index("_pages_v_version_version_hash_id_idx").on(columns.version_hashId),
+    index("_pages_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _pages_v_latest_idx: index("_pages_v_latest_idx").on(columns.latest),
-    _pages_v_autosave_idx: index("_pages_v_autosave_idx").on(columns.autosave)
-  })
+    index("_pages_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_pages_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_pages_v_version_version__status_idx").on(columns.version__status),
+    index("_pages_v_created_at_idx").on(columns.createdAt),
+    index("_pages_v_updated_at_idx").on(columns.updatedAt),
+    index("_pages_v_snapshot_idx").on(columns.snapshot),
+    index("_pages_v_published_locale_idx").on(columns.publishedLocale),
+    index("_pages_v_latest_idx").on(columns.latest),
+    index("_pages_v_autosave_idx").on(columns.autosave)
+  ]
 );
 
 export const _pages_v_locales = pgTable(
@@ -2804,20 +2352,21 @@ export const _pages_v_locales = pgTable(
     _locale: enum__locales("_locale").notNull(),
     _parentID: uuid("_parent_id").notNull()
   },
-  (columns) => ({
-    _pages_v_version_meta_version_meta_image_idx: index(
-      "_pages_v_version_meta_version_meta_image_idx"
-    ).on(columns.version_meta_image, columns._locale),
-    _localeParent: uniqueIndex("_pages_v_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("_pages_v_version_meta_version_meta_image_idx").on(
+      columns.version_meta_image,
+      columns._locale
+    ),
+    uniqueIndex("_pages_v_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _pages_v_rels = pgTable(
@@ -2838,111 +2387,97 @@ export const _pages_v_rels = pgTable(
     categoriesID: uuid("categories_id"),
     tagsID: uuid("tags_id")
   },
-  (columns) => ({
-    order: index("_pages_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_pages_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_pages_v_rels_path_idx").on(columns.path),
-    _pages_v_rels_pages_id_idx: index("_pages_v_rels_pages_id_idx").on(
-      columns.pagesID
-    ),
-    _pages_v_rels_posts_id_idx: index("_pages_v_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    _pages_v_rels_delta_id_idx: index("_pages_v_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    _pages_v_rels_users_id_idx: index("_pages_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    _pages_v_rels_albums_id_idx: index("_pages_v_rels_albums_id_idx").on(
-      columns.albumsID
-    ),
-    _pages_v_rels_tracks_id_idx: index("_pages_v_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    _pages_v_rels_playlists_id_idx: index("_pages_v_rels_playlists_id_idx").on(
-      columns.playlistsID
-    ),
-    _pages_v_rels_organizations_id_idx: index(
-      "_pages_v_rels_organizations_id_idx"
-    ).on(columns.organizationsID),
-    _pages_v_rels_categories_id_idx: index(
-      "_pages_v_rels_categories_id_idx"
-    ).on(columns.categoriesID),
-    _pages_v_rels_tags_id_idx: index("_pages_v_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_pages_v_rels_order_idx").on(columns.order),
+    index("_pages_v_rels_parent_idx").on(columns.parent),
+    index("_pages_v_rels_path_idx").on(columns.path),
+    index("_pages_v_rels_pages_id_idx").on(columns.pagesID),
+    index("_pages_v_rels_posts_id_idx").on(columns.postsID),
+    index("_pages_v_rels_delta_id_idx").on(columns.deltaID),
+    index("_pages_v_rels_users_id_idx").on(columns.usersID),
+    index("_pages_v_rels_albums_id_idx").on(columns.albumsID),
+    index("_pages_v_rels_tracks_id_idx").on(columns.tracksID),
+    index("_pages_v_rels_playlists_id_idx").on(columns.playlistsID),
+    index("_pages_v_rels_organizations_id_idx").on(columns.organizationsID),
+    index("_pages_v_rels_categories_id_idx").on(columns.categoriesID),
+    index("_pages_v_rels_tags_id_idx").on(columns.tagsID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_pages_v.id],
       name: "_pages_v_rels_parent_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "_pages_v_rels_pages_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "_pages_v_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "_pages_v_rels_delta_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_pages_v_rels_users_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "_pages_v_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "_pages_v_rels_tracks_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "_pages_v_rels_playlists_fk"
     }).onDelete("cascade"),
-    organizationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["organizationsID"]],
       foreignColumns: [organizations.id],
       name: "_pages_v_rels_organizations_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "_pages_v_rels_categories_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_pages_v_rels_tags_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const posts = pgTable(
   "posts",
   {
     id: varchar("id").primaryKey(),
-    title: varchar("title"),
-    content: jsonb("content"),
-    category: uuid("category_id").references(() => categories.id, {
-      onDelete: "set null"
-    }),
     image: uuid("image_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
+    title: varchar("title"),
+    richTitle: jsonb("rich_title"),
+    content: jsonb("content"),
     subtitle: varchar("subtitle"),
+    category: uuid("category_id").references(() => categories.id, {
+      onDelete: "set null"
+    }),
+    slugKey: varchar("slug_key"),
+    commentsEnabled: boolean("comments_enabled").default(true),
+    hashId: varchar("hash_id"),
+    slugLock: boolean("slug_lock"),
+    slug: varchar("slug"),
     publishedAt: timestamp("published_at", {
       mode: "string",
       withTimezone: true,
@@ -2951,13 +2486,8 @@ export const posts = pgTable(
     author: uuid("author_id").references(() => users.id, {
       onDelete: "set null"
     }),
-    slugKey: varchar("slug_key"),
-    hashId: varchar("hash_id"),
-    slugLock: boolean("slug_lock"),
-    slug: varchar("slug"),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
-    commentsEnabled: boolean("comments_enabled"),
     likes: numeric("likes"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -2975,20 +2505,18 @@ export const posts = pgTable(
       .notNull(),
     _status: enum_posts_status("_status").default("draft")
   },
-  (columns) => ({
-    posts_category_idx: index("posts_category_idx").on(columns.category),
-    posts_image_idx: index("posts_image_idx").on(columns.image),
-    posts_author_idx: index("posts_author_idx").on(columns.author),
-    posts_slug_key_idx: index("posts_slug_key_idx").on(columns.slugKey),
-    posts_hash_id_idx: index("posts_hash_id_idx").on(columns.hashId),
-    posts_authority_idx: index("posts_authority_idx").on(columns.authority),
-    posts_comments_enabled_idx: index("posts_comments_enabled_idx").on(
-      columns.commentsEnabled
-    ),
-    posts_updated_at_idx: index("posts_updated_at_idx").on(columns.updatedAt),
-    posts_created_at_idx: index("posts_created_at_idx").on(columns.createdAt),
-    posts__status_idx: index("posts__status_idx").on(columns._status)
-  })
+  (columns) => [
+    index("posts_image_idx").on(columns.image),
+    index("posts_category_idx").on(columns.category),
+    index("posts_slug_key_idx").on(columns.slugKey),
+    index("posts_comments_enabled_idx").on(columns.commentsEnabled),
+    index("posts_hash_id_idx").on(columns.hashId),
+    index("posts_author_idx").on(columns.author),
+    index("posts_authority_idx").on(columns.authority),
+    index("posts_updated_at_idx").on(columns.updatedAt),
+    index("posts_created_at_idx").on(columns.createdAt),
+    index("posts__status_idx").on(columns._status)
+  ]
 );
 
 export const posts_locales = pgTable(
@@ -2998,25 +2526,23 @@ export const posts_locales = pgTable(
     meta_image: uuid("meta_image_id").references(() => media.id, {
       onDelete: "set null"
     }),
+    meta_description: varchar("meta_description"),
     id: serial("id").primaryKey(),
     _locale: enum__locales("_locale").notNull(),
     _parentID: varchar("_parent_id").notNull()
   },
-  (columns) => ({
-    posts_meta_meta_image_idx: index("posts_meta_meta_image_idx").on(
-      columns.meta_image,
-      columns._locale
-    ),
-    _localeParent: uniqueIndex("posts_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("posts_meta_meta_image_idx").on(columns.meta_image, columns._locale),
+    uniqueIndex("posts_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [posts.id],
       name: "posts_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const posts_rels = pgTable(
@@ -3026,63 +2552,65 @@ export const posts_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-    postsID: varchar("posts_id"),
     tagsID: uuid("tags_id"),
+    postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("posts_rels_order_idx").on(columns.order),
-    parentIdx: index("posts_rels_parent_idx").on(columns.parent),
-    pathIdx: index("posts_rels_path_idx").on(columns.path),
-    posts_rels_posts_id_idx: index("posts_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    posts_rels_tags_id_idx: index("posts_rels_tags_id_idx").on(columns.tagsID),
-    posts_rels_users_id_idx: index("posts_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("posts_rels_order_idx").on(columns.order),
+    index("posts_rels_parent_idx").on(columns.parent),
+    index("posts_rels_path_idx").on(columns.path),
+    index("posts_rels_tags_id_idx").on(columns.tagsID),
+    index("posts_rels_posts_id_idx").on(columns.postsID),
+    index("posts_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [posts.id],
       name: "posts_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
-      columns: [columns["postsID"]],
-      foreignColumns: [posts.id],
-      name: "posts_rels_posts_fk"
-    }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "posts_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
+      columns: [columns["postsID"]],
+      foreignColumns: [posts.id],
+      name: "posts_rels_posts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "posts_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _posts_v = pgTable(
   "_posts_v",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    parent: uuid("parent_id").references(() => posts.id, {
+    parent: varchar("parent_id").references(() => posts.id, {
+      onDelete: "set null"
+    }),
+    version_image: uuid("version_image_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
     version_title: varchar("version_title"),
+    version_richTitle: jsonb("version_rich_title"),
     version_content: jsonb("version_content"),
+    version_subtitle: varchar("version_subtitle"),
     version_category: uuid("version_category_id").references(
       () => categories.id,
       {
         onDelete: "set null"
       }
     ),
-    version_image: uuid("version_image_id").references(() => user_media.id, {
-      onDelete: "set null"
-    }),
-    version_subtitle: varchar("version_subtitle"),
+    version_slugKey: varchar("version_slug_key"),
+    version_commentsEnabled: boolean("version_comments_enabled").default(true),
+    version_hashId: varchar("version_hash_id"),
+    version_slugLock: boolean("version_slug_lock"),
+    version_slug: varchar("version_slug"),
     version_publishedAt: timestamp("version_published_at", {
       mode: "string",
       withTimezone: true,
@@ -3091,13 +2619,8 @@ export const _posts_v = pgTable(
     version_author: uuid("version_author_id").references(() => users.id, {
       onDelete: "set null"
     }),
-    version_slugKey: varchar("version_slug_key"),
-    version_hashId: varchar("version_hash_id"),
-    version_slugLock: boolean("version_slug_lock"),
-    version_slug: varchar("version_slug"),
     version_locked: boolean("version_locked").default(false),
     version_authority: numeric("version_authority").default("0"),
-    version_commentsEnabled: boolean("version_comments_enabled"),
     version_likes: numeric("version_likes"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
@@ -3129,50 +2652,32 @@ export const _posts_v = pgTable(
     publishedLocale: enum__posts_v_published_locale("published_locale"),
     latest: boolean("latest")
   },
-  (columns) => ({
-    _posts_v_parent_idx: index("_posts_v_parent_idx").on(columns.parent),
-    _posts_v_version_version_category_idx: index(
-      "_posts_v_version_version_category_idx"
-    ).on(columns.version_category),
-    _posts_v_version_version_image_idx: index(
-      "_posts_v_version_version_image_idx"
-    ).on(columns.version_image),
-    _posts_v_version_version_author_idx: index(
-      "_posts_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _posts_v_version_version_slug_key_idx: index(
-      "_posts_v_version_version_slug_key_idx"
-    ).on(columns.version_slugKey),
-    _posts_v_version_version_hash_id_idx: index(
-      "_posts_v_version_version_hash_id_idx"
-    ).on(columns.version_hashId),
-    _posts_v_version_version_authority_idx: index(
-      "_posts_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _posts_v_version_version_comments_enabled_idx: index(
-      "_posts_v_version_version_comments_enabled_idx"
-    ).on(columns.version_commentsEnabled),
-    _posts_v_version_version_updated_at_idx: index(
-      "_posts_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _posts_v_version_version_created_at_idx: index(
-      "_posts_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _posts_v_version_version__status_idx: index(
-      "_posts_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _posts_v_created_at_idx: index("_posts_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_posts_v_parent_idx").on(columns.parent),
+    index("_posts_v_version_version_image_idx").on(columns.version_image),
+    index("_posts_v_version_version_category_idx").on(columns.version_category),
+    index("_posts_v_version_version_slug_key_idx").on(columns.version_slugKey),
+    index("_posts_v_version_version_comments_enabled_idx").on(
+      columns.version_commentsEnabled
     ),
-    _posts_v_updated_at_idx: index("_posts_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_posts_v_version_version_hash_id_idx").on(columns.version_hashId),
+    index("_posts_v_version_version_author_idx").on(columns.version_author),
+    index("_posts_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _posts_v_snapshot_idx: index("_posts_v_snapshot_idx").on(columns.snapshot),
-    _posts_v_published_locale_idx: index("_posts_v_published_locale_idx").on(
-      columns.publishedLocale
+    index("_posts_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
     ),
-    _posts_v_latest_idx: index("_posts_v_latest_idx").on(columns.latest)
-  })
+    index("_posts_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_posts_v_version_version__status_idx").on(columns.version__status),
+    index("_posts_v_created_at_idx").on(columns.createdAt),
+    index("_posts_v_updated_at_idx").on(columns.updatedAt),
+    index("_posts_v_snapshot_idx").on(columns.snapshot),
+    index("_posts_v_published_locale_idx").on(columns.publishedLocale),
+    index("_posts_v_latest_idx").on(columns.latest)
+  ]
 );
 
 export const _posts_v_locales = pgTable(
@@ -3185,24 +2690,26 @@ export const _posts_v_locales = pgTable(
         onDelete: "set null"
       }
     ),
+    version_meta_description: varchar("version_meta_description"),
     id: serial("id").primaryKey(),
     _locale: enum__locales("_locale").notNull(),
     _parentID: uuid("_parent_id").notNull()
   },
-  (columns) => ({
-    _posts_v_version_meta_version_meta_image_idx: index(
-      "_posts_v_version_meta_version_meta_image_idx"
-    ).on(columns.version_meta_image, columns._locale),
-    _localeParent: uniqueIndex("_posts_v_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("_posts_v_version_meta_version_meta_image_idx").on(
+      columns.version_meta_image,
+      columns._locale
+    ),
+    uniqueIndex("_posts_v_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_posts_v.id],
       name: "_posts_v_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _posts_v_rels = pgTable(
@@ -3212,44 +2719,38 @@ export const _posts_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-    postsID: varchar("posts_id"),
     tagsID: uuid("tags_id"),
+    postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_posts_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_posts_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_posts_v_rels_path_idx").on(columns.path),
-    _posts_v_rels_posts_id_idx: index("_posts_v_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    _posts_v_rels_tags_id_idx: index("_posts_v_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    _posts_v_rels_users_id_idx: index("_posts_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_posts_v_rels_order_idx").on(columns.order),
+    index("_posts_v_rels_parent_idx").on(columns.parent),
+    index("_posts_v_rels_path_idx").on(columns.path),
+    index("_posts_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_posts_v_rels_posts_id_idx").on(columns.postsID),
+    index("_posts_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_posts_v.id],
       name: "_posts_v_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
-      columns: [columns["postsID"]],
-      foreignColumns: [posts.id],
-      name: "_posts_v_rels_posts_fk"
-    }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_posts_v_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
+      columns: [columns["postsID"]],
+      foreignColumns: [posts.id],
+      name: "_posts_v_rels_posts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_posts_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const user_media = pgTable(
@@ -3259,14 +2760,11 @@ export const user_media = pgTable(
     alt: varchar("alt"),
     caption: varchar("caption"),
     darkmode: boolean("darkmode").default(false),
-    author: uuid("author_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    publishedAt: timestamp("published_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
+    author: uuid("author_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
     blurDataUrl: varchar("blur_data_url"),
@@ -3288,7 +2786,6 @@ export const user_media = pgTable(
     })
       .defaultNow()
       .notNull(),
-    _status: enum_user_media_status("_status").default("draft"),
     url: varchar("url"),
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
@@ -3341,47 +2838,36 @@ export const user_media = pgTable(
     sizes_og_filesize: numeric("sizes_og_filesize"),
     sizes_og_filename: varchar("sizes_og_filename")
   },
-  (columns) => ({
-    user_media_darkmode_idx: index("user_media_darkmode_idx").on(
-      columns.darkmode
+  (columns) => [
+    index("user_media_darkmode_idx").on(columns.darkmode),
+    index("user_media_author_idx").on(columns.author),
+    index("user_media_authority_idx").on(columns.authority),
+    index("user_media_folder_idx").on(columns.folder),
+    index("user_media_updated_at_idx").on(columns.updatedAt),
+    index("user_media_created_at_idx").on(columns.createdAt),
+    index("user_media_filename_idx").on(columns.filename),
+    index("user_media_sizes_thumbnail_sizes_thumbnail_filename_idx").on(
+      columns.sizes_thumbnail_filename
     ),
-    user_media_author_idx: index("user_media_author_idx").on(columns.author),
-    user_media_authority_idx: index("user_media_authority_idx").on(
-      columns.authority
+    index("user_media_sizes_square_sizes_square_filename_idx").on(
+      columns.sizes_square_filename
     ),
-    user_media_folder_idx: index("user_media_folder_idx").on(columns.folder),
-    user_media_updated_at_idx: index("user_media_updated_at_idx").on(
-      columns.updatedAt
+    index("user_media_sizes_small_sizes_small_filename_idx").on(
+      columns.sizes_small_filename
     ),
-    user_media_created_at_idx: index("user_media_created_at_idx").on(
-      columns.createdAt
+    index("user_media_sizes_medium_sizes_medium_filename_idx").on(
+      columns.sizes_medium_filename
     ),
-    user_media__status_idx: index("user_media__status_idx").on(columns._status),
-    user_media_filename_idx: index("user_media_filename_idx").on(
-      columns.filename
+    index("user_media_sizes_large_sizes_large_filename_idx").on(
+      columns.sizes_large_filename
     ),
-    user_media_sizes_thumbnail_sizes_thumbnail_filename_idx: index(
-      "user_media_sizes_thumbnail_sizes_thumbnail_filename_idx"
-    ).on(columns.sizes_thumbnail_filename),
-    user_media_sizes_square_sizes_square_filename_idx: index(
-      "user_media_sizes_square_sizes_square_filename_idx"
-    ).on(columns.sizes_square_filename),
-    user_media_sizes_small_sizes_small_filename_idx: index(
-      "user_media_sizes_small_sizes_small_filename_idx"
-    ).on(columns.sizes_small_filename),
-    user_media_sizes_medium_sizes_medium_filename_idx: index(
-      "user_media_sizes_medium_sizes_medium_filename_idx"
-    ).on(columns.sizes_medium_filename),
-    user_media_sizes_large_sizes_large_filename_idx: index(
-      "user_media_sizes_large_sizes_large_filename_idx"
-    ).on(columns.sizes_large_filename),
-    user_media_sizes_xlarge_sizes_xlarge_filename_idx: index(
-      "user_media_sizes_xlarge_sizes_xlarge_filename_idx"
-    ).on(columns.sizes_xlarge_filename),
-    user_media_sizes_og_sizes_og_filename_idx: index(
-      "user_media_sizes_og_sizes_og_filename_idx"
-    ).on(columns.sizes_og_filename)
-  })
+    index("user_media_sizes_xlarge_sizes_xlarge_filename_idx").on(
+      columns.sizes_xlarge_filename
+    ),
+    index("user_media_sizes_og_sizes_og_filename_idx").on(
+      columns.sizes_og_filename
+    )
+  ]
 );
 
 export const user_media_rels = pgTable(
@@ -3393,239 +2879,22 @@ export const user_media_rels = pgTable(
     path: varchar("path").notNull(),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("user_media_rels_order_idx").on(columns.order),
-    parentIdx: index("user_media_rels_parent_idx").on(columns.parent),
-    pathIdx: index("user_media_rels_path_idx").on(columns.path),
-    user_media_rels_users_id_idx: index("user_media_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("user_media_rels_order_idx").on(columns.order),
+    index("user_media_rels_parent_idx").on(columns.parent),
+    index("user_media_rels_path_idx").on(columns.path),
+    index("user_media_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [user_media.id],
       name: "user_media_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "user_media_rels_users_fk"
     }).onDelete("cascade")
-  })
-);
-
-export const _user_media_v = pgTable(
-  "_user_media_v",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    parent: uuid("parent_id").references(() => user_media.id, {
-      onDelete: "set null"
-    }),
-    version_alt: varchar("version_alt"),
-    version_caption: varchar("version_caption"),
-    version_darkmode: boolean("version_darkmode").default(false),
-    version_author: uuid("version_author_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    version_publishedAt: timestamp("version_published_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version_locked: boolean("version_locked").default(false),
-    version_authority: numeric("version_authority").default("0"),
-    version_blurDataUrl: varchar("version_blur_data_url"),
-    version_likes: numeric("version_likes"),
-    version_folder: uuid("version_folder_id").references(
-      () => payload_folders.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    version_updatedAt: timestamp("version_updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version_createdAt: timestamp("version_created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version__status:
-      enum__user_media_v_version_status("version__status").default("draft"),
-    version_url: varchar("version_url"),
-    version_thumbnailURL: varchar("version_thumbnail_u_r_l"),
-    version_filename: varchar("version_filename"),
-    version_mimeType: varchar("version_mime_type"),
-    version_filesize: numeric("version_filesize"),
-    version_width: numeric("version_width"),
-    version_height: numeric("version_height"),
-    version_focalX: numeric("version_focal_x"),
-    version_focalY: numeric("version_focal_y"),
-    version_sizes_thumbnail_url: varchar("version_sizes_thumbnail_url"),
-    version_sizes_thumbnail_width: numeric("version_sizes_thumbnail_width"),
-    version_sizes_thumbnail_height: numeric("version_sizes_thumbnail_height"),
-    version_sizes_thumbnail_mimeType: varchar(
-      "version_sizes_thumbnail_mime_type"
-    ),
-    version_sizes_thumbnail_filesize: numeric(
-      "version_sizes_thumbnail_filesize"
-    ),
-    version_sizes_thumbnail_filename: varchar(
-      "version_sizes_thumbnail_filename"
-    ),
-    version_sizes_square_url: varchar("version_sizes_square_url"),
-    version_sizes_square_width: numeric("version_sizes_square_width"),
-    version_sizes_square_height: numeric("version_sizes_square_height"),
-    version_sizes_square_mimeType: varchar("version_sizes_square_mime_type"),
-    version_sizes_square_filesize: numeric("version_sizes_square_filesize"),
-    version_sizes_square_filename: varchar("version_sizes_square_filename"),
-    version_sizes_small_url: varchar("version_sizes_small_url"),
-    version_sizes_small_width: numeric("version_sizes_small_width"),
-    version_sizes_small_height: numeric("version_sizes_small_height"),
-    version_sizes_small_mimeType: varchar("version_sizes_small_mime_type"),
-    version_sizes_small_filesize: numeric("version_sizes_small_filesize"),
-    version_sizes_small_filename: varchar("version_sizes_small_filename"),
-    version_sizes_medium_url: varchar("version_sizes_medium_url"),
-    version_sizes_medium_width: numeric("version_sizes_medium_width"),
-    version_sizes_medium_height: numeric("version_sizes_medium_height"),
-    version_sizes_medium_mimeType: varchar("version_sizes_medium_mime_type"),
-    version_sizes_medium_filesize: numeric("version_sizes_medium_filesize"),
-    version_sizes_medium_filename: varchar("version_sizes_medium_filename"),
-    version_sizes_large_url: varchar("version_sizes_large_url"),
-    version_sizes_large_width: numeric("version_sizes_large_width"),
-    version_sizes_large_height: numeric("version_sizes_large_height"),
-    version_sizes_large_mimeType: varchar("version_sizes_large_mime_type"),
-    version_sizes_large_filesize: numeric("version_sizes_large_filesize"),
-    version_sizes_large_filename: varchar("version_sizes_large_filename"),
-    version_sizes_xlarge_url: varchar("version_sizes_xlarge_url"),
-    version_sizes_xlarge_width: numeric("version_sizes_xlarge_width"),
-    version_sizes_xlarge_height: numeric("version_sizes_xlarge_height"),
-    version_sizes_xlarge_mimeType: varchar("version_sizes_xlarge_mime_type"),
-    version_sizes_xlarge_filesize: numeric("version_sizes_xlarge_filesize"),
-    version_sizes_xlarge_filename: varchar("version_sizes_xlarge_filename"),
-    version_sizes_og_url: varchar("version_sizes_og_url"),
-    version_sizes_og_width: numeric("version_sizes_og_width"),
-    version_sizes_og_height: numeric("version_sizes_og_height"),
-    version_sizes_og_mimeType: varchar("version_sizes_og_mime_type"),
-    version_sizes_og_filesize: numeric("version_sizes_og_filesize"),
-    version_sizes_og_filename: varchar("version_sizes_og_filename"),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    snapshot: boolean("snapshot"),
-    publishedLocale: enum__user_media_v_published_locale("published_locale"),
-    latest: boolean("latest"),
-    autosave: boolean("autosave")
-  },
-  (columns) => ({
-    _user_media_v_parent_idx: index("_user_media_v_parent_idx").on(
-      columns.parent
-    ),
-    _user_media_v_version_version_darkmode_idx: index(
-      "_user_media_v_version_version_darkmode_idx"
-    ).on(columns.version_darkmode),
-    _user_media_v_version_version_author_idx: index(
-      "_user_media_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _user_media_v_version_version_authority_idx: index(
-      "_user_media_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _user_media_v_version_version_folder_idx: index(
-      "_user_media_v_version_version_folder_idx"
-    ).on(columns.version_folder),
-    _user_media_v_version_version_updated_at_idx: index(
-      "_user_media_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _user_media_v_version_version_created_at_idx: index(
-      "_user_media_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _user_media_v_version_version__status_idx: index(
-      "_user_media_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _user_media_v_version_version_filename_idx: index(
-      "_user_media_v_version_version_filename_idx"
-    ).on(columns.version_filename),
-    _user_media_v_version_sizes_thumbnail_version_sizes_thum_idx: index(
-      "_user_media_v_version_sizes_thumbnail_version_sizes_thum_idx"
-    ).on(columns.version_sizes_thumbnail_filename),
-    _user_media_v_version_sizes_square_version_sizes_square__idx: index(
-      "_user_media_v_version_sizes_square_version_sizes_square__idx"
-    ).on(columns.version_sizes_square_filename),
-    _user_media_v_version_sizes_small_version_sizes_small_fi_idx: index(
-      "_user_media_v_version_sizes_small_version_sizes_small_fi_idx"
-    ).on(columns.version_sizes_small_filename),
-    _user_media_v_version_sizes_medium_version_sizes_medium__idx: index(
-      "_user_media_v_version_sizes_medium_version_sizes_medium__idx"
-    ).on(columns.version_sizes_medium_filename),
-    _user_media_v_version_sizes_large_version_sizes_large_fi_idx: index(
-      "_user_media_v_version_sizes_large_version_sizes_large_fi_idx"
-    ).on(columns.version_sizes_large_filename),
-    _user_media_v_version_sizes_xlarge_version_sizes_xlarge__idx: index(
-      "_user_media_v_version_sizes_xlarge_version_sizes_xlarge__idx"
-    ).on(columns.version_sizes_xlarge_filename),
-    _user_media_v_version_sizes_og_version_sizes_og_filename_idx: index(
-      "_user_media_v_version_sizes_og_version_sizes_og_filename_idx"
-    ).on(columns.version_sizes_og_filename),
-    _user_media_v_created_at_idx: index("_user_media_v_created_at_idx").on(
-      columns.createdAt
-    ),
-    _user_media_v_updated_at_idx: index("_user_media_v_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    _user_media_v_snapshot_idx: index("_user_media_v_snapshot_idx").on(
-      columns.snapshot
-    ),
-    _user_media_v_published_locale_idx: index(
-      "_user_media_v_published_locale_idx"
-    ).on(columns.publishedLocale),
-    _user_media_v_latest_idx: index("_user_media_v_latest_idx").on(
-      columns.latest
-    ),
-    _user_media_v_autosave_idx: index("_user_media_v_autosave_idx").on(
-      columns.autosave
-    )
-  })
-);
-
-export const _user_media_v_rels = pgTable(
-  "_user_media_v_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    usersID: varchar("users_id")
-  },
-  (columns) => ({
-    order: index("_user_media_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_user_media_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_user_media_v_rels_path_idx").on(columns.path),
-    _user_media_v_rels_users_id_idx: index(
-      "_user_media_v_rels_users_id_idx"
-    ).on(columns.usersID),
-    parentFk: foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [_user_media_v.id],
-      name: "_user_media_v_rels_parent_fk"
-    }).onDelete("cascade"),
-    usersIdFk: foreignKey({
-      columns: [columns["usersID"]],
-      foreignColumns: [users.id],
-      name: "_user_media_v_rels_users_fk"
-    }).onDelete("cascade")
-  })
+  ]
 );
 
 export const delta = pgTable(
@@ -3633,11 +2902,18 @@ export const delta = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     title: varchar("title"),
+    richTitle: jsonb("rich_title"),
     source: varchar("source"),
     content: jsonb("content"),
+    subtitle: varchar("subtitle"),
     category: uuid("category_id").references(() => categories.id, {
       onDelete: "set null"
     }),
+    slugKey: varchar("slug_key"),
+    commentsEnabled: boolean("comments_enabled").default(true),
+    hashId: varchar("hash_id"),
+    slugLock: boolean("slug_lock"),
+    slug: varchar("slug"),
     publishedAt: timestamp("published_at", {
       mode: "string",
       withTimezone: true,
@@ -3646,13 +2922,8 @@ export const delta = pgTable(
     author: uuid("author_id").references(() => users.id, {
       onDelete: "set null"
     }),
-    slugKey: varchar("slug_key"),
-    hashId: varchar("hash_id"),
-    slugLock: boolean("slug_lock"),
-    slug: varchar("slug"),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
-    commentsEnabled: boolean("comments_enabled"),
     likes: numeric("likes"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -3670,20 +2941,18 @@ export const delta = pgTable(
       .notNull(),
     _status: enum_delta_status("_status").default("draft")
   },
-  (columns) => ({
-    delta_source_idx: index("delta_source_idx").on(columns.source),
-    delta_category_idx: index("delta_category_idx").on(columns.category),
-    delta_author_idx: index("delta_author_idx").on(columns.author),
-    delta_slug_key_idx: index("delta_slug_key_idx").on(columns.slugKey),
-    delta_hash_id_idx: index("delta_hash_id_idx").on(columns.hashId),
-    delta_authority_idx: index("delta_authority_idx").on(columns.authority),
-    delta_comments_enabled_idx: index("delta_comments_enabled_idx").on(
-      columns.commentsEnabled
-    ),
-    delta_updated_at_idx: index("delta_updated_at_idx").on(columns.updatedAt),
-    delta_created_at_idx: index("delta_created_at_idx").on(columns.createdAt),
-    delta__status_idx: index("delta__status_idx").on(columns._status)
-  })
+  (columns) => [
+    index("delta_source_idx").on(columns.source),
+    index("delta_category_idx").on(columns.category),
+    index("delta_slug_key_idx").on(columns.slugKey),
+    index("delta_comments_enabled_idx").on(columns.commentsEnabled),
+    index("delta_hash_id_idx").on(columns.hashId),
+    index("delta_author_idx").on(columns.author),
+    index("delta_authority_idx").on(columns.authority),
+    index("delta_updated_at_idx").on(columns.updatedAt),
+    index("delta_created_at_idx").on(columns.createdAt),
+    index("delta__status_idx").on(columns._status)
+  ]
 );
 
 export const delta_locales = pgTable(
@@ -3698,21 +2967,18 @@ export const delta_locales = pgTable(
     _locale: enum__locales("_locale").notNull(),
     _parentID: uuid("_parent_id").notNull()
   },
-  (columns) => ({
-    delta_meta_meta_image_idx: index("delta_meta_meta_image_idx").on(
-      columns.meta_image,
-      columns._locale
-    ),
-    _localeParent: uniqueIndex("delta_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("delta_meta_meta_image_idx").on(columns.meta_image, columns._locale),
+    uniqueIndex("delta_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [delta.id],
       name: "delta_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const delta_rels = pgTable(
@@ -3727,46 +2993,40 @@ export const delta_rels = pgTable(
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("delta_rels_order_idx").on(columns.order),
-    parentIdx: index("delta_rels_parent_idx").on(columns.parent),
-    pathIdx: index("delta_rels_path_idx").on(columns.path),
-    delta_rels_tags_id_idx: index("delta_rels_tags_id_idx").on(columns.tagsID),
-    delta_rels_delta_id_idx: index("delta_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    delta_rels_posts_id_idx: index("delta_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    delta_rels_users_id_idx: index("delta_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("delta_rels_order_idx").on(columns.order),
+    index("delta_rels_parent_idx").on(columns.parent),
+    index("delta_rels_path_idx").on(columns.path),
+    index("delta_rels_tags_id_idx").on(columns.tagsID),
+    index("delta_rels_delta_id_idx").on(columns.deltaID),
+    index("delta_rels_posts_id_idx").on(columns.postsID),
+    index("delta_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [delta.id],
       name: "delta_rels_parent_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "delta_rels_tags_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "delta_rels_delta_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "delta_rels_posts_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "delta_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _delta_v = pgTable(
@@ -3777,14 +3037,21 @@ export const _delta_v = pgTable(
       onDelete: "set null"
     }),
     version_title: varchar("version_title"),
+    version_richTitle: jsonb("version_rich_title"),
     version_source: varchar("version_source"),
     version_content: jsonb("version_content"),
+    version_subtitle: varchar("version_subtitle"),
     version_category: uuid("version_category_id").references(
       () => categories.id,
       {
         onDelete: "set null"
       }
     ),
+    version_slugKey: varchar("version_slug_key"),
+    version_commentsEnabled: boolean("version_comments_enabled").default(true),
+    version_hashId: varchar("version_hash_id"),
+    version_slugLock: boolean("version_slug_lock"),
+    version_slug: varchar("version_slug"),
     version_publishedAt: timestamp("version_published_at", {
       mode: "string",
       withTimezone: true,
@@ -3793,13 +3060,8 @@ export const _delta_v = pgTable(
     version_author: uuid("version_author_id").references(() => users.id, {
       onDelete: "set null"
     }),
-    version_slugKey: varchar("version_slug_key"),
-    version_hashId: varchar("version_hash_id"),
-    version_slugLock: boolean("version_slug_lock"),
-    version_slug: varchar("version_slug"),
     version_locked: boolean("version_locked").default(false),
     version_authority: numeric("version_authority").default("0"),
-    version_commentsEnabled: boolean("version_comments_enabled"),
     version_likes: numeric("version_likes"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
@@ -3831,50 +3093,32 @@ export const _delta_v = pgTable(
     publishedLocale: enum__delta_v_published_locale("published_locale"),
     latest: boolean("latest")
   },
-  (columns) => ({
-    _delta_v_parent_idx: index("_delta_v_parent_idx").on(columns.parent),
-    _delta_v_version_version_source_idx: index(
-      "_delta_v_version_version_source_idx"
-    ).on(columns.version_source),
-    _delta_v_version_version_category_idx: index(
-      "_delta_v_version_version_category_idx"
-    ).on(columns.version_category),
-    _delta_v_version_version_author_idx: index(
-      "_delta_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _delta_v_version_version_slug_key_idx: index(
-      "_delta_v_version_version_slug_key_idx"
-    ).on(columns.version_slugKey),
-    _delta_v_version_version_hash_id_idx: index(
-      "_delta_v_version_version_hash_id_idx"
-    ).on(columns.version_hashId),
-    _delta_v_version_version_authority_idx: index(
-      "_delta_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _delta_v_version_version_comments_enabled_idx: index(
-      "_delta_v_version_version_comments_enabled_idx"
-    ).on(columns.version_commentsEnabled),
-    _delta_v_version_version_updated_at_idx: index(
-      "_delta_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _delta_v_version_version_created_at_idx: index(
-      "_delta_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _delta_v_version_version__status_idx: index(
-      "_delta_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _delta_v_created_at_idx: index("_delta_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_delta_v_parent_idx").on(columns.parent),
+    index("_delta_v_version_version_source_idx").on(columns.version_source),
+    index("_delta_v_version_version_category_idx").on(columns.version_category),
+    index("_delta_v_version_version_slug_key_idx").on(columns.version_slugKey),
+    index("_delta_v_version_version_comments_enabled_idx").on(
+      columns.version_commentsEnabled
     ),
-    _delta_v_updated_at_idx: index("_delta_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_delta_v_version_version_hash_id_idx").on(columns.version_hashId),
+    index("_delta_v_version_version_author_idx").on(columns.version_author),
+    index("_delta_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _delta_v_snapshot_idx: index("_delta_v_snapshot_idx").on(columns.snapshot),
-    _delta_v_published_locale_idx: index("_delta_v_published_locale_idx").on(
-      columns.publishedLocale
+    index("_delta_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
     ),
-    _delta_v_latest_idx: index("_delta_v_latest_idx").on(columns.latest)
-  })
+    index("_delta_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_delta_v_version_version__status_idx").on(columns.version__status),
+    index("_delta_v_created_at_idx").on(columns.createdAt),
+    index("_delta_v_updated_at_idx").on(columns.updatedAt),
+    index("_delta_v_snapshot_idx").on(columns.snapshot),
+    index("_delta_v_published_locale_idx").on(columns.publishedLocale),
+    index("_delta_v_latest_idx").on(columns.latest)
+  ]
 );
 
 export const _delta_v_locales = pgTable(
@@ -3892,20 +3136,21 @@ export const _delta_v_locales = pgTable(
     _locale: enum__locales("_locale").notNull(),
     _parentID: uuid("_parent_id").notNull()
   },
-  (columns) => ({
-    _delta_v_version_meta_version_meta_image_idx: index(
-      "_delta_v_version_meta_version_meta_image_idx"
-    ).on(columns.version_meta_image, columns._locale),
-    _localeParent: uniqueIndex("_delta_v_locales_locale_parent_id_unique").on(
+  (columns) => [
+    index("_delta_v_version_meta_version_meta_image_idx").on(
+      columns.version_meta_image,
+      columns._locale
+    ),
+    uniqueIndex("_delta_v_locales_locale_parent_id_unique").on(
       columns._locale,
       columns._parentID
     ),
-    _parentIdFk: foreignKey({
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_delta_v.id],
       name: "_delta_v_locales_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _delta_v_rels = pgTable(
@@ -3920,48 +3165,40 @@ export const _delta_v_rels = pgTable(
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_delta_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_delta_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_delta_v_rels_path_idx").on(columns.path),
-    _delta_v_rels_tags_id_idx: index("_delta_v_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    _delta_v_rels_delta_id_idx: index("_delta_v_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    _delta_v_rels_posts_id_idx: index("_delta_v_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    _delta_v_rels_users_id_idx: index("_delta_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_delta_v_rels_order_idx").on(columns.order),
+    index("_delta_v_rels_parent_idx").on(columns.parent),
+    index("_delta_v_rels_path_idx").on(columns.path),
+    index("_delta_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_delta_v_rels_delta_id_idx").on(columns.deltaID),
+    index("_delta_v_rels_posts_id_idx").on(columns.postsID),
+    index("_delta_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_delta_v.id],
       name: "_delta_v_rels_parent_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_delta_v_rels_tags_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "_delta_v_rels_delta_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "_delta_v_rels_posts_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_delta_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const profile_slides = pgTable(
@@ -3976,18 +3213,16 @@ export const profile_slides = pgTable(
     }),
     content: jsonb("content")
   },
-  (columns) => ({
-    _orderIdx: index("profile_slides_order_idx").on(columns._order),
-    _parentIDIdx: index("profile_slides_parent_id_idx").on(columns._parentID),
-    profile_slides_visuals_idx: index("profile_slides_visuals_idx").on(
-      columns.visuals
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("profile_slides_order_idx").on(columns._order),
+    index("profile_slides_parent_id_idx").on(columns._parentID),
+    index("profile_slides_visuals_idx").on(columns.visuals),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [profile.id],
       name: "profile_slides_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const profile = pgTable(
@@ -4019,23 +3254,15 @@ export const profile = pgTable(
       .notNull(),
     _status: enum_profile_status("_status").default("draft")
   },
-  (columns) => ({
-    profile_author_idx: index("profile_author_idx").on(columns.author),
-    profile_hero_hero_title_idx: index("profile_hero_hero_title_idx").on(
-      columns.hero_title
-    ),
-    profile_hero_hero_subtitle_idx: index("profile_hero_hero_subtitle_idx").on(
-      columns.hero_subtitle
-    ),
-    profile_authority_idx: index("profile_authority_idx").on(columns.authority),
-    profile_updated_at_idx: index("profile_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    profile_created_at_idx: index("profile_created_at_idx").on(
-      columns.createdAt
-    ),
-    profile__status_idx: index("profile__status_idx").on(columns._status)
-  })
+  (columns) => [
+    index("profile_author_idx").on(columns.author),
+    index("profile_hero_hero_title_idx").on(columns.hero_title),
+    index("profile_hero_hero_subtitle_idx").on(columns.hero_subtitle),
+    index("profile_authority_idx").on(columns.authority),
+    index("profile_updated_at_idx").on(columns.updatedAt),
+    index("profile_created_at_idx").on(columns.createdAt),
+    index("profile__status_idx").on(columns._status)
+  ]
 );
 
 export const profile_rels = pgTable(
@@ -4045,26 +3272,31 @@ export const profile_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
+    tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("profile_rels_order_idx").on(columns.order),
-    parentIdx: index("profile_rels_parent_idx").on(columns.parent),
-    pathIdx: index("profile_rels_path_idx").on(columns.path),
-    profile_rels_users_id_idx: index("profile_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("profile_rels_order_idx").on(columns.order),
+    index("profile_rels_parent_idx").on(columns.parent),
+    index("profile_rels_path_idx").on(columns.path),
+    index("profile_rels_tags_id_idx").on(columns.tagsID),
+    index("profile_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [profile.id],
       name: "profile_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
+      columns: [columns["tagsID"]],
+      foreignColumns: [tags.id],
+      name: "profile_rels_tags_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "profile_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _profile_v_version_slides = pgTable(
@@ -4080,20 +3312,16 @@ export const _profile_v_version_slides = pgTable(
     }),
     content: jsonb("content")
   },
-  (columns) => ({
-    _orderIdx: index("_profile_v_version_slides_order_idx").on(columns._order),
-    _parentIDIdx: index("_profile_v_version_slides_parent_id_idx").on(
-      columns._parentID
-    ),
-    _profile_v_version_slides_visuals_idx: index(
-      "_profile_v_version_slides_visuals_idx"
-    ).on(columns.visuals),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("_profile_v_version_slides_order_idx").on(columns._order),
+    index("_profile_v_version_slides_parent_id_idx").on(columns._parentID),
+    index("_profile_v_version_slides_visuals_idx").on(columns.visuals),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_profile_v.id],
       name: "_profile_v_version_slides_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _profile_v = pgTable(
@@ -4147,46 +3375,32 @@ export const _profile_v = pgTable(
     latest: boolean("latest"),
     autosave: boolean("autosave")
   },
-  (columns) => ({
-    _profile_v_parent_idx: index("_profile_v_parent_idx").on(columns.parent),
-    _profile_v_version_version_author_idx: index(
-      "_profile_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _profile_v_version_hero_version_hero_title_idx: index(
-      "_profile_v_version_hero_version_hero_title_idx"
-    ).on(columns.version_hero_title),
-    _profile_v_version_hero_version_hero_subtitle_idx: index(
-      "_profile_v_version_hero_version_hero_subtitle_idx"
-    ).on(columns.version_hero_subtitle),
-    _profile_v_version_version_authority_idx: index(
-      "_profile_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _profile_v_version_version_updated_at_idx: index(
-      "_profile_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _profile_v_version_version_created_at_idx: index(
-      "_profile_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _profile_v_version_version__status_idx: index(
-      "_profile_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _profile_v_created_at_idx: index("_profile_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_profile_v_parent_idx").on(columns.parent),
+    index("_profile_v_version_version_author_idx").on(columns.version_author),
+    index("_profile_v_version_hero_version_hero_title_idx").on(
+      columns.version_hero_title
     ),
-    _profile_v_updated_at_idx: index("_profile_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_profile_v_version_hero_version_hero_subtitle_idx").on(
+      columns.version_hero_subtitle
     ),
-    _profile_v_snapshot_idx: index("_profile_v_snapshot_idx").on(
-      columns.snapshot
+    index("_profile_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _profile_v_published_locale_idx: index(
-      "_profile_v_published_locale_idx"
-    ).on(columns.publishedLocale),
-    _profile_v_latest_idx: index("_profile_v_latest_idx").on(columns.latest),
-    _profile_v_autosave_idx: index("_profile_v_autosave_idx").on(
-      columns.autosave
-    )
-  })
+    index("_profile_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_profile_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_profile_v_version_version__status_idx").on(columns.version__status),
+    index("_profile_v_created_at_idx").on(columns.createdAt),
+    index("_profile_v_updated_at_idx").on(columns.updatedAt),
+    index("_profile_v_snapshot_idx").on(columns.snapshot),
+    index("_profile_v_published_locale_idx").on(columns.publishedLocale),
+    index("_profile_v_latest_idx").on(columns.latest),
+    index("_profile_v_autosave_idx").on(columns.autosave)
+  ]
 );
 
 export const _profile_v_rels = pgTable(
@@ -4196,26 +3410,31 @@ export const _profile_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
+    tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_profile_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_profile_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_profile_v_rels_path_idx").on(columns.path),
-    _profile_v_rels_users_id_idx: index("_profile_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_profile_v_rels_order_idx").on(columns.order),
+    index("_profile_v_rels_parent_idx").on(columns.parent),
+    index("_profile_v_rels_path_idx").on(columns.path),
+    index("_profile_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_profile_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_profile_v.id],
       name: "_profile_v_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
+      columns: [columns["tagsID"]],
+      foreignColumns: [tags.id],
+      name: "_profile_v_rels_tags_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_profile_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const albums = pgTable(
@@ -4265,16 +3484,16 @@ export const albums = pgTable(
       .notNull(),
     _status: enum_albums_status("_status").default("draft")
   },
-  (columns) => ({
-    albums_cover_idx: index("albums_cover_idx").on(columns.cover),
-    albums_author_idx: index("albums_author_idx").on(columns.author),
-    albums_slug_key_idx: index("albums_slug_key_idx").on(columns.slugKey),
-    albums_hash_id_idx: index("albums_hash_id_idx").on(columns.hashId),
-    albums_authority_idx: index("albums_authority_idx").on(columns.authority),
-    albums_updated_at_idx: index("albums_updated_at_idx").on(columns.updatedAt),
-    albums_created_at_idx: index("albums_created_at_idx").on(columns.createdAt),
-    albums__status_idx: index("albums__status_idx").on(columns._status)
-  })
+  (columns) => [
+    index("albums_cover_idx").on(columns.cover),
+    index("albums_author_idx").on(columns.author),
+    index("albums_slug_key_idx").on(columns.slugKey),
+    index("albums_hash_id_idx").on(columns.hashId),
+    index("albums_authority_idx").on(columns.authority),
+    index("albums_updated_at_idx").on(columns.updatedAt),
+    index("albums_created_at_idx").on(columns.createdAt),
+    index("albums__status_idx").on(columns._status)
+  ]
 );
 
 export const albums_rels = pgTable(
@@ -4287,32 +3506,28 @@ export const albums_rels = pgTable(
     tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("albums_rels_order_idx").on(columns.order),
-    parentIdx: index("albums_rels_parent_idx").on(columns.parent),
-    pathIdx: index("albums_rels_path_idx").on(columns.path),
-    albums_rels_tags_id_idx: index("albums_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    albums_rels_users_id_idx: index("albums_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("albums_rels_order_idx").on(columns.order),
+    index("albums_rels_parent_idx").on(columns.parent),
+    index("albums_rels_path_idx").on(columns.path),
+    index("albums_rels_tags_id_idx").on(columns.tagsID),
+    index("albums_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [albums.id],
       name: "albums_rels_parent_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "albums_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "albums_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _albums_v = pgTable(
@@ -4381,47 +3596,29 @@ export const _albums_v = pgTable(
     latest: boolean("latest"),
     autosave: boolean("autosave")
   },
-  (columns) => ({
-    _albums_v_parent_idx: index("_albums_v_parent_idx").on(columns.parent),
-    _albums_v_version_version_cover_idx: index(
-      "_albums_v_version_version_cover_idx"
-    ).on(columns.version_cover),
-    _albums_v_version_version_author_idx: index(
-      "_albums_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _albums_v_version_version_slug_key_idx: index(
-      "_albums_v_version_version_slug_key_idx"
-    ).on(columns.version_slugKey),
-    _albums_v_version_version_hash_id_idx: index(
-      "_albums_v_version_version_hash_id_idx"
-    ).on(columns.version_hashId),
-    _albums_v_version_version_authority_idx: index(
-      "_albums_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _albums_v_version_version_updated_at_idx: index(
-      "_albums_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _albums_v_version_version_created_at_idx: index(
-      "_albums_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _albums_v_version_version__status_idx: index(
-      "_albums_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _albums_v_created_at_idx: index("_albums_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_albums_v_parent_idx").on(columns.parent),
+    index("_albums_v_version_version_cover_idx").on(columns.version_cover),
+    index("_albums_v_version_version_author_idx").on(columns.version_author),
+    index("_albums_v_version_version_slug_key_idx").on(columns.version_slugKey),
+    index("_albums_v_version_version_hash_id_idx").on(columns.version_hashId),
+    index("_albums_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _albums_v_updated_at_idx: index("_albums_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_albums_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
     ),
-    _albums_v_snapshot_idx: index("_albums_v_snapshot_idx").on(
-      columns.snapshot
+    index("_albums_v_version_version_created_at_idx").on(
+      columns.version_createdAt
     ),
-    _albums_v_published_locale_idx: index("_albums_v_published_locale_idx").on(
-      columns.publishedLocale
-    ),
-    _albums_v_latest_idx: index("_albums_v_latest_idx").on(columns.latest),
-    _albums_v_autosave_idx: index("_albums_v_autosave_idx").on(columns.autosave)
-  })
+    index("_albums_v_version_version__status_idx").on(columns.version__status),
+    index("_albums_v_created_at_idx").on(columns.createdAt),
+    index("_albums_v_updated_at_idx").on(columns.updatedAt),
+    index("_albums_v_snapshot_idx").on(columns.snapshot),
+    index("_albums_v_published_locale_idx").on(columns.publishedLocale),
+    index("_albums_v_latest_idx").on(columns.latest),
+    index("_albums_v_autosave_idx").on(columns.autosave)
+  ]
 );
 
 export const _albums_v_rels = pgTable(
@@ -4434,32 +3631,28 @@ export const _albums_v_rels = pgTable(
     tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_albums_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_albums_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_albums_v_rels_path_idx").on(columns.path),
-    _albums_v_rels_tags_id_idx: index("_albums_v_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    _albums_v_rels_users_id_idx: index("_albums_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_albums_v_rels_order_idx").on(columns.order),
+    index("_albums_v_rels_parent_idx").on(columns.parent),
+    index("_albums_v_rels_path_idx").on(columns.path),
+    index("_albums_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_albums_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_albums_v.id],
       name: "_albums_v_rels_parent_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_albums_v_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_albums_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const tracks = pgTable(
@@ -4515,17 +3708,17 @@ export const tracks = pgTable(
     focalX: numeric("focal_x"),
     focalY: numeric("focal_y")
   },
-  (columns) => ({
-    tracks_album_idx: index("tracks_album_idx").on(columns.album),
-    tracks_author_idx: index("tracks_author_idx").on(columns.author),
-    tracks_slug_key_idx: index("tracks_slug_key_idx").on(columns.slugKey),
-    tracks_hash_id_idx: index("tracks_hash_id_idx").on(columns.hashId),
-    tracks_authority_idx: index("tracks_authority_idx").on(columns.authority),
-    tracks_updated_at_idx: index("tracks_updated_at_idx").on(columns.updatedAt),
-    tracks_created_at_idx: index("tracks_created_at_idx").on(columns.createdAt),
-    tracks__status_idx: index("tracks__status_idx").on(columns._status),
-    tracks_filename_idx: index("tracks_filename_idx").on(columns.filename)
-  })
+  (columns) => [
+    index("tracks_album_idx").on(columns.album),
+    index("tracks_author_idx").on(columns.author),
+    index("tracks_slug_key_idx").on(columns.slugKey),
+    index("tracks_hash_id_idx").on(columns.hashId),
+    index("tracks_authority_idx").on(columns.authority),
+    index("tracks_updated_at_idx").on(columns.updatedAt),
+    index("tracks_created_at_idx").on(columns.createdAt),
+    index("tracks__status_idx").on(columns._status),
+    index("tracks_filename_idx").on(columns.filename)
+  ]
 );
 
 export const tracks_rels = pgTable(
@@ -4538,32 +3731,28 @@ export const tracks_rels = pgTable(
     tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("tracks_rels_order_idx").on(columns.order),
-    parentIdx: index("tracks_rels_parent_idx").on(columns.parent),
-    pathIdx: index("tracks_rels_path_idx").on(columns.path),
-    tracks_rels_tags_id_idx: index("tracks_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    tracks_rels_users_id_idx: index("tracks_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("tracks_rels_order_idx").on(columns.order),
+    index("tracks_rels_parent_idx").on(columns.parent),
+    index("tracks_rels_path_idx").on(columns.path),
+    index("tracks_rels_tags_id_idx").on(columns.tagsID),
+    index("tracks_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [tracks.id],
       name: "tracks_rels_parent_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "tracks_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "tracks_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _tracks_v = pgTable(
@@ -4638,50 +3827,32 @@ export const _tracks_v = pgTable(
     latest: boolean("latest"),
     autosave: boolean("autosave")
   },
-  (columns) => ({
-    _tracks_v_parent_idx: index("_tracks_v_parent_idx").on(columns.parent),
-    _tracks_v_version_version_album_idx: index(
-      "_tracks_v_version_version_album_idx"
-    ).on(columns.version_album),
-    _tracks_v_version_version_author_idx: index(
-      "_tracks_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _tracks_v_version_version_slug_key_idx: index(
-      "_tracks_v_version_version_slug_key_idx"
-    ).on(columns.version_slugKey),
-    _tracks_v_version_version_hash_id_idx: index(
-      "_tracks_v_version_version_hash_id_idx"
-    ).on(columns.version_hashId),
-    _tracks_v_version_version_authority_idx: index(
-      "_tracks_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _tracks_v_version_version_updated_at_idx: index(
-      "_tracks_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _tracks_v_version_version_created_at_idx: index(
-      "_tracks_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _tracks_v_version_version__status_idx: index(
-      "_tracks_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _tracks_v_version_version_filename_idx: index(
-      "_tracks_v_version_version_filename_idx"
-    ).on(columns.version_filename),
-    _tracks_v_created_at_idx: index("_tracks_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_tracks_v_parent_idx").on(columns.parent),
+    index("_tracks_v_version_version_album_idx").on(columns.version_album),
+    index("_tracks_v_version_version_author_idx").on(columns.version_author),
+    index("_tracks_v_version_version_slug_key_idx").on(columns.version_slugKey),
+    index("_tracks_v_version_version_hash_id_idx").on(columns.version_hashId),
+    index("_tracks_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _tracks_v_updated_at_idx: index("_tracks_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_tracks_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
     ),
-    _tracks_v_snapshot_idx: index("_tracks_v_snapshot_idx").on(
-      columns.snapshot
+    index("_tracks_v_version_version_created_at_idx").on(
+      columns.version_createdAt
     ),
-    _tracks_v_published_locale_idx: index("_tracks_v_published_locale_idx").on(
-      columns.publishedLocale
+    index("_tracks_v_version_version__status_idx").on(columns.version__status),
+    index("_tracks_v_version_version_filename_idx").on(
+      columns.version_filename
     ),
-    _tracks_v_latest_idx: index("_tracks_v_latest_idx").on(columns.latest),
-    _tracks_v_autosave_idx: index("_tracks_v_autosave_idx").on(columns.autosave)
-  })
+    index("_tracks_v_created_at_idx").on(columns.createdAt),
+    index("_tracks_v_updated_at_idx").on(columns.updatedAt),
+    index("_tracks_v_snapshot_idx").on(columns.snapshot),
+    index("_tracks_v_published_locale_idx").on(columns.publishedLocale),
+    index("_tracks_v_latest_idx").on(columns.latest),
+    index("_tracks_v_autosave_idx").on(columns.autosave)
+  ]
 );
 
 export const _tracks_v_rels = pgTable(
@@ -4694,32 +3865,28 @@ export const _tracks_v_rels = pgTable(
     tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_tracks_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_tracks_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_tracks_v_rels_path_idx").on(columns.path),
-    _tracks_v_rels_tags_id_idx: index("_tracks_v_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    _tracks_v_rels_users_id_idx: index("_tracks_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_tracks_v_rels_order_idx").on(columns.order),
+    index("_tracks_v_rels_parent_idx").on(columns.parent),
+    index("_tracks_v_rels_path_idx").on(columns.path),
+    index("_tracks_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_tracks_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_tracks_v.id],
       name: "_tracks_v_rels_parent_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_tracks_v_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_tracks_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const playlists = pgTable(
@@ -4760,21 +3927,15 @@ export const playlists = pgTable(
       .notNull(),
     _status: enum_playlists_status("_status").default("draft")
   },
-  (columns) => ({
-    playlists_cover_idx: index("playlists_cover_idx").on(columns.cover),
-    playlists_slug_key_idx: index("playlists_slug_key_idx").on(columns.slugKey),
-    playlists_hash_id_idx: index("playlists_hash_id_idx").on(columns.hashId),
-    playlists_authority_idx: index("playlists_authority_idx").on(
-      columns.authority
-    ),
-    playlists_updated_at_idx: index("playlists_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    playlists_created_at_idx: index("playlists_created_at_idx").on(
-      columns.createdAt
-    ),
-    playlists__status_idx: index("playlists__status_idx").on(columns._status)
-  })
+  (columns) => [
+    index("playlists_cover_idx").on(columns.cover),
+    index("playlists_slug_key_idx").on(columns.slugKey),
+    index("playlists_hash_id_idx").on(columns.hashId),
+    index("playlists_authority_idx").on(columns.authority),
+    index("playlists_updated_at_idx").on(columns.updatedAt),
+    index("playlists_created_at_idx").on(columns.createdAt),
+    index("playlists__status_idx").on(columns._status)
+  ]
 );
 
 export const playlists_rels = pgTable(
@@ -4788,40 +3949,34 @@ export const playlists_rels = pgTable(
     tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("playlists_rels_order_idx").on(columns.order),
-    parentIdx: index("playlists_rels_parent_idx").on(columns.parent),
-    pathIdx: index("playlists_rels_path_idx").on(columns.path),
-    playlists_rels_tracks_id_idx: index("playlists_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    playlists_rels_tags_id_idx: index("playlists_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    playlists_rels_users_id_idx: index("playlists_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("playlists_rels_order_idx").on(columns.order),
+    index("playlists_rels_parent_idx").on(columns.parent),
+    index("playlists_rels_path_idx").on(columns.path),
+    index("playlists_rels_tracks_id_idx").on(columns.tracksID),
+    index("playlists_rels_tags_id_idx").on(columns.tagsID),
+    index("playlists_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [playlists.id],
       name: "playlists_rels_parent_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "playlists_rels_tracks_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "playlists_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "playlists_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _playlists_v = pgTable(
@@ -4882,45 +4037,33 @@ export const _playlists_v = pgTable(
     publishedLocale: enum__playlists_v_published_locale("published_locale"),
     latest: boolean("latest")
   },
-  (columns) => ({
-    _playlists_v_parent_idx: index("_playlists_v_parent_idx").on(
-      columns.parent
+  (columns) => [
+    index("_playlists_v_parent_idx").on(columns.parent),
+    index("_playlists_v_version_version_cover_idx").on(columns.version_cover),
+    index("_playlists_v_version_version_slug_key_idx").on(
+      columns.version_slugKey
     ),
-    _playlists_v_version_version_cover_idx: index(
-      "_playlists_v_version_version_cover_idx"
-    ).on(columns.version_cover),
-    _playlists_v_version_version_slug_key_idx: index(
-      "_playlists_v_version_version_slug_key_idx"
-    ).on(columns.version_slugKey),
-    _playlists_v_version_version_hash_id_idx: index(
-      "_playlists_v_version_version_hash_id_idx"
-    ).on(columns.version_hashId),
-    _playlists_v_version_version_authority_idx: index(
-      "_playlists_v_version_version_authority_idx"
-    ).on(columns.version_authority),
-    _playlists_v_version_version_updated_at_idx: index(
-      "_playlists_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _playlists_v_version_version_created_at_idx: index(
-      "_playlists_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _playlists_v_version_version__status_idx: index(
-      "_playlists_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _playlists_v_created_at_idx: index("_playlists_v_created_at_idx").on(
-      columns.createdAt
+    index("_playlists_v_version_version_hash_id_idx").on(
+      columns.version_hashId
     ),
-    _playlists_v_updated_at_idx: index("_playlists_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_playlists_v_version_version_authority_idx").on(
+      columns.version_authority
     ),
-    _playlists_v_snapshot_idx: index("_playlists_v_snapshot_idx").on(
-      columns.snapshot
+    index("_playlists_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
     ),
-    _playlists_v_published_locale_idx: index(
-      "_playlists_v_published_locale_idx"
-    ).on(columns.publishedLocale),
-    _playlists_v_latest_idx: index("_playlists_v_latest_idx").on(columns.latest)
-  })
+    index("_playlists_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_playlists_v_version_version__status_idx").on(
+      columns.version__status
+    ),
+    index("_playlists_v_created_at_idx").on(columns.createdAt),
+    index("_playlists_v_updated_at_idx").on(columns.updatedAt),
+    index("_playlists_v_snapshot_idx").on(columns.snapshot),
+    index("_playlists_v_published_locale_idx").on(columns.publishedLocale),
+    index("_playlists_v_latest_idx").on(columns.latest)
+  ]
 );
 
 export const _playlists_v_rels = pgTable(
@@ -4934,40 +4077,34 @@ export const _playlists_v_rels = pgTable(
     tagsID: uuid("tags_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_playlists_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_playlists_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_playlists_v_rels_path_idx").on(columns.path),
-    _playlists_v_rels_tracks_id_idx: index(
-      "_playlists_v_rels_tracks_id_idx"
-    ).on(columns.tracksID),
-    _playlists_v_rels_tags_id_idx: index("_playlists_v_rels_tags_id_idx").on(
-      columns.tagsID
-    ),
-    _playlists_v_rels_users_id_idx: index("_playlists_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_playlists_v_rels_order_idx").on(columns.order),
+    index("_playlists_v_rels_parent_idx").on(columns.parent),
+    index("_playlists_v_rels_path_idx").on(columns.path),
+    index("_playlists_v_rels_tracks_id_idx").on(columns.tracksID),
+    index("_playlists_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_playlists_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_playlists_v.id],
       name: "_playlists_v_rels_parent_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "_playlists_v_rels_tracks_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_playlists_v_rels_tags_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_playlists_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const follows = pgTable(
@@ -4999,16 +4136,12 @@ export const follows = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    follows_user_idx: index("follows_user_idx").on(columns.user),
-    follows_target_idx: index("follows_target_idx").on(columns.target),
-    follows_updated_at_idx: index("follows_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    follows_created_at_idx: index("follows_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("follows_user_idx").on(columns.user),
+    index("follows_target_idx").on(columns.target),
+    index("follows_updated_at_idx").on(columns.updatedAt),
+    index("follows_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const bookmarks = pgTable(
@@ -5035,15 +4168,11 @@ export const bookmarks = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    bookmarks_user_idx: index("bookmarks_user_idx").on(columns.user),
-    bookmarks_updated_at_idx: index("bookmarks_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    bookmarks_created_at_idx: index("bookmarks_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("bookmarks_user_idx").on(columns.user),
+    index("bookmarks_updated_at_idx").on(columns.updatedAt),
+    index("bookmarks_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const bookmarks_rels = pgTable(
@@ -5062,80 +4191,64 @@ export const bookmarks_rels = pgTable(
     tracksID: uuid("tracks_id"),
     userMediaID: uuid("user_media_id")
   },
-  (columns) => ({
-    order: index("bookmarks_rels_order_idx").on(columns.order),
-    parentIdx: index("bookmarks_rels_parent_idx").on(columns.parent),
-    pathIdx: index("bookmarks_rels_path_idx").on(columns.path),
-    bookmarks_rels_posts_id_idx: index("bookmarks_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    bookmarks_rels_delta_id_idx: index("bookmarks_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    bookmarks_rels_profile_id_idx: index("bookmarks_rels_profile_id_idx").on(
-      columns.profileID
-    ),
-    bookmarks_rels_users_id_idx: index("bookmarks_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    bookmarks_rels_albums_id_idx: index("bookmarks_rels_albums_id_idx").on(
-      columns.albumsID
-    ),
-    bookmarks_rels_playlists_id_idx: index(
-      "bookmarks_rels_playlists_id_idx"
-    ).on(columns.playlistsID),
-    bookmarks_rels_tracks_id_idx: index("bookmarks_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    bookmarks_rels_user_media_id_idx: index(
-      "bookmarks_rels_user_media_id_idx"
-    ).on(columns.userMediaID),
-    parentFk: foreignKey({
+  (columns) => [
+    index("bookmarks_rels_order_idx").on(columns.order),
+    index("bookmarks_rels_parent_idx").on(columns.parent),
+    index("bookmarks_rels_path_idx").on(columns.path),
+    index("bookmarks_rels_posts_id_idx").on(columns.postsID),
+    index("bookmarks_rels_delta_id_idx").on(columns.deltaID),
+    index("bookmarks_rels_profile_id_idx").on(columns.profileID),
+    index("bookmarks_rels_users_id_idx").on(columns.usersID),
+    index("bookmarks_rels_albums_id_idx").on(columns.albumsID),
+    index("bookmarks_rels_playlists_id_idx").on(columns.playlistsID),
+    index("bookmarks_rels_tracks_id_idx").on(columns.tracksID),
+    index("bookmarks_rels_user_media_id_idx").on(columns.userMediaID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [bookmarks.id],
       name: "bookmarks_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "bookmarks_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "bookmarks_rels_delta_fk"
     }).onDelete("cascade"),
-    profileIdFk: foreignKey({
+    foreignKey({
       columns: [columns["profileID"]],
       foreignColumns: [profile.id],
       name: "bookmarks_rels_profile_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "bookmarks_rels_users_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "bookmarks_rels_albums_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "bookmarks_rels_playlists_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "bookmarks_rels_tracks_fk"
     }).onDelete("cascade"),
-    userMediaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["userMediaID"]],
       foreignColumns: [user_media.id],
       name: "bookmarks_rels_user_media_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const user_views = pgTable(
@@ -5170,19 +4283,13 @@ export const user_views = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    user_views_user_idx: index("user_views_user_idx").on(columns.user),
-    user_views_viewed_idx: index("user_views_viewed_idx").on(columns.viewed),
-    user_views_progress_idx: index("user_views_progress_idx").on(
-      columns.progress
-    ),
-    user_views_updated_at_idx: index("user_views_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    user_views_created_at_idx: index("user_views_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("user_views_user_idx").on(columns.user),
+    index("user_views_viewed_idx").on(columns.viewed),
+    index("user_views_progress_idx").on(columns.progress),
+    index("user_views_updated_at_idx").on(columns.updatedAt),
+    index("user_views_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const user_views_rels = pgTable(
@@ -5199,73 +4306,60 @@ export const user_views_rels = pgTable(
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id")
   },
-  (columns) => ({
-    order: index("user_views_rels_order_idx").on(columns.order),
-    parentIdx: index("user_views_rels_parent_idx").on(columns.parent),
-    pathIdx: index("user_views_rels_path_idx").on(columns.path),
-    user_views_rels_posts_id_idx: index("user_views_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    user_views_rels_delta_id_idx: index("user_views_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    user_views_rels_playlists_id_idx: index(
-      "user_views_rels_playlists_id_idx"
-    ).on(columns.playlistsID),
-    user_views_rels_profile_id_idx: index("user_views_rels_profile_id_idx").on(
-      columns.profileID
-    ),
-    user_views_rels_albums_id_idx: index("user_views_rels_albums_id_idx").on(
-      columns.albumsID
-    ),
-    user_views_rels_tracks_id_idx: index("user_views_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("user_views_rels_order_idx").on(columns.order),
+    index("user_views_rels_parent_idx").on(columns.parent),
+    index("user_views_rels_path_idx").on(columns.path),
+    index("user_views_rels_posts_id_idx").on(columns.postsID),
+    index("user_views_rels_delta_id_idx").on(columns.deltaID),
+    index("user_views_rels_playlists_id_idx").on(columns.playlistsID),
+    index("user_views_rels_profile_id_idx").on(columns.profileID),
+    index("user_views_rels_albums_id_idx").on(columns.albumsID),
+    index("user_views_rels_tracks_id_idx").on(columns.tracksID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [user_views.id],
       name: "user_views_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "user_views_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "user_views_rels_delta_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "user_views_rels_playlists_fk"
     }).onDelete("cascade"),
-    profileIdFk: foreignKey({
+    foreignKey({
       columns: [columns["profileID"]],
       foreignColumns: [profile.id],
       name: "user_views_rels_profile_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "user_views_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "user_views_rels_tracks_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const citations = pgTable(
   "citations",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    color: varchar("color").notNull(),
     path: varchar("path").notNull().default(""),
-    reference: varchar("reference").notNull().default(""),
+    reference: varchar("reference").notNull(),
     selection_text: varchar("selection_text").notNull(),
     selection_before: varchar("selection_before").notNull().default(""),
     selection_after: varchar("selection_after").notNull().default(""),
@@ -5298,22 +4392,14 @@ export const citations = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    citations_color_idx: index("citations_color_idx").on(columns.color),
-    citations_path_idx: index("citations_path_idx").on(columns.path),
-    citations_reference_idx: index("citations_reference_idx").on(
-      columns.reference
-    ),
-    citations_private_idx: index("citations_private_idx").on(columns.private),
-    citations_author_idx: index("citations_author_idx").on(columns.author),
-    citations_cited_idx: index("citations_cited_idx").on(columns.cited),
-    citations_updated_at_idx: index("citations_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    citations_created_at_idx: index("citations_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("citations_reference_idx").on(columns.reference),
+    index("citations_private_idx").on(columns.private),
+    index("citations_author_idx").on(columns.author),
+    index("citations_cited_idx").on(columns.cited),
+    index("citations_updated_at_idx").on(columns.updatedAt),
+    index("citations_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const citations_rels = pgTable(
@@ -5326,32 +4412,28 @@ export const citations_rels = pgTable(
     deltaID: uuid("delta_id"),
     postsID: varchar("posts_id")
   },
-  (columns) => ({
-    order: index("citations_rels_order_idx").on(columns.order),
-    parentIdx: index("citations_rels_parent_idx").on(columns.parent),
-    pathIdx: index("citations_rels_path_idx").on(columns.path),
-    citations_rels_delta_id_idx: index("citations_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    citations_rels_posts_id_idx: index("citations_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("citations_rels_order_idx").on(columns.order),
+    index("citations_rels_parent_idx").on(columns.parent),
+    index("citations_rels_path_idx").on(columns.path),
+    index("citations_rels_delta_id_idx").on(columns.deltaID),
+    index("citations_rels_posts_id_idx").on(columns.postsID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [citations.id],
       name: "citations_rels_parent_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "citations_rels_delta_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "citations_rels_posts_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const responses = pgTable(
@@ -5383,21 +4465,15 @@ export const responses = pgTable(
       .notNull(),
     _status: enum_responses_status("_status").default("draft")
   },
-  (columns) => ({
-    responses_author_idx: index("responses_author_idx").on(columns.author),
-    responses_depth_idx: index("responses_depth_idx").on(columns.depth),
-    responses_hash_idx: index("responses_hash_idx").on(columns.hash),
-    responses_is_sticky_idx: index("responses_is_sticky_idx").on(
-      columns.isSticky
-    ),
-    responses_updated_at_idx: index("responses_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    responses_created_at_idx: index("responses_created_at_idx").on(
-      columns.createdAt
-    ),
-    responses__status_idx: index("responses__status_idx").on(columns._status)
-  })
+  (columns) => [
+    index("responses_author_idx").on(columns.author),
+    index("responses_depth_idx").on(columns.depth),
+    index("responses_hash_idx").on(columns.hash),
+    index("responses_is_sticky_idx").on(columns.isSticky),
+    index("responses_updated_at_idx").on(columns.updatedAt),
+    index("responses_created_at_idx").on(columns.createdAt),
+    index("responses__status_idx").on(columns._status)
+  ]
 );
 
 export const responses_rels = pgTable(
@@ -5413,56 +4489,46 @@ export const responses_rels = pgTable(
     citationsID: uuid("citations_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("responses_rels_order_idx").on(columns.order),
-    parentIdx: index("responses_rels_parent_idx").on(columns.parent),
-    pathIdx: index("responses_rels_path_idx").on(columns.path),
-    responses_rels_posts_id_idx: index("responses_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    responses_rels_delta_id_idx: index("responses_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    responses_rels_responses_id_idx: index(
-      "responses_rels_responses_id_idx"
-    ).on(columns.responsesID),
-    responses_rels_citations_id_idx: index(
-      "responses_rels_citations_id_idx"
-    ).on(columns.citationsID),
-    responses_rels_users_id_idx: index("responses_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("responses_rels_order_idx").on(columns.order),
+    index("responses_rels_parent_idx").on(columns.parent),
+    index("responses_rels_path_idx").on(columns.path),
+    index("responses_rels_posts_id_idx").on(columns.postsID),
+    index("responses_rels_delta_id_idx").on(columns.deltaID),
+    index("responses_rels_responses_id_idx").on(columns.responsesID),
+    index("responses_rels_citations_id_idx").on(columns.citationsID),
+    index("responses_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [responses.id],
       name: "responses_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "responses_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "responses_rels_delta_fk"
     }).onDelete("cascade"),
-    responsesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["responsesID"]],
       foreignColumns: [responses.id],
       name: "responses_rels_responses_fk"
     }).onDelete("cascade"),
-    citationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["citationsID"]],
       foreignColumns: [citations.id],
       name: "responses_rels_citations_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "responses_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const _responses_v = pgTable(
@@ -5511,45 +4577,29 @@ export const _responses_v = pgTable(
     publishedLocale: enum__responses_v_published_locale("published_locale"),
     latest: boolean("latest")
   },
-  (columns) => ({
-    _responses_v_parent_idx: index("_responses_v_parent_idx").on(
-      columns.parent
+  (columns) => [
+    index("_responses_v_parent_idx").on(columns.parent),
+    index("_responses_v_version_version_author_idx").on(columns.version_author),
+    index("_responses_v_version_version_depth_idx").on(columns.version_depth),
+    index("_responses_v_version_version_hash_idx").on(columns.version_hash),
+    index("_responses_v_version_version_is_sticky_idx").on(
+      columns.version_isSticky
     ),
-    _responses_v_version_version_author_idx: index(
-      "_responses_v_version_version_author_idx"
-    ).on(columns.version_author),
-    _responses_v_version_version_depth_idx: index(
-      "_responses_v_version_version_depth_idx"
-    ).on(columns.version_depth),
-    _responses_v_version_version_hash_idx: index(
-      "_responses_v_version_version_hash_idx"
-    ).on(columns.version_hash),
-    _responses_v_version_version_is_sticky_idx: index(
-      "_responses_v_version_version_is_sticky_idx"
-    ).on(columns.version_isSticky),
-    _responses_v_version_version_updated_at_idx: index(
-      "_responses_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _responses_v_version_version_created_at_idx: index(
-      "_responses_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _responses_v_version_version__status_idx: index(
-      "_responses_v_version_version__status_idx"
-    ).on(columns.version__status),
-    _responses_v_created_at_idx: index("_responses_v_created_at_idx").on(
-      columns.createdAt
+    index("_responses_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
     ),
-    _responses_v_updated_at_idx: index("_responses_v_updated_at_idx").on(
-      columns.updatedAt
+    index("_responses_v_version_version_created_at_idx").on(
+      columns.version_createdAt
     ),
-    _responses_v_snapshot_idx: index("_responses_v_snapshot_idx").on(
-      columns.snapshot
+    index("_responses_v_version_version__status_idx").on(
+      columns.version__status
     ),
-    _responses_v_published_locale_idx: index(
-      "_responses_v_published_locale_idx"
-    ).on(columns.publishedLocale),
-    _responses_v_latest_idx: index("_responses_v_latest_idx").on(columns.latest)
-  })
+    index("_responses_v_created_at_idx").on(columns.createdAt),
+    index("_responses_v_updated_at_idx").on(columns.updatedAt),
+    index("_responses_v_snapshot_idx").on(columns.snapshot),
+    index("_responses_v_published_locale_idx").on(columns.publishedLocale),
+    index("_responses_v_latest_idx").on(columns.latest)
+  ]
 );
 
 export const _responses_v_rels = pgTable(
@@ -5565,56 +4615,46 @@ export const _responses_v_rels = pgTable(
     citationsID: uuid("citations_id"),
     usersID: varchar("users_id")
   },
-  (columns) => ({
-    order: index("_responses_v_rels_order_idx").on(columns.order),
-    parentIdx: index("_responses_v_rels_parent_idx").on(columns.parent),
-    pathIdx: index("_responses_v_rels_path_idx").on(columns.path),
-    _responses_v_rels_posts_id_idx: index("_responses_v_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    _responses_v_rels_delta_id_idx: index("_responses_v_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    _responses_v_rels_responses_id_idx: index(
-      "_responses_v_rels_responses_id_idx"
-    ).on(columns.responsesID),
-    _responses_v_rels_citations_id_idx: index(
-      "_responses_v_rels_citations_id_idx"
-    ).on(columns.citationsID),
-    _responses_v_rels_users_id_idx: index("_responses_v_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("_responses_v_rels_order_idx").on(columns.order),
+    index("_responses_v_rels_parent_idx").on(columns.parent),
+    index("_responses_v_rels_path_idx").on(columns.path),
+    index("_responses_v_rels_posts_id_idx").on(columns.postsID),
+    index("_responses_v_rels_delta_id_idx").on(columns.deltaID),
+    index("_responses_v_rels_responses_id_idx").on(columns.responsesID),
+    index("_responses_v_rels_citations_id_idx").on(columns.citationsID),
+    index("_responses_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [_responses_v.id],
       name: "_responses_v_rels_parent_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "_responses_v_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "_responses_v_rels_delta_fk"
     }).onDelete("cascade"),
-    responsesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["responsesID"]],
       foreignColumns: [responses.id],
       name: "_responses_v_rels_responses_fk"
     }).onDelete("cascade"),
-    citationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["citationsID"]],
       foreignColumns: [citations.id],
       name: "_responses_v_rels_citations_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "_responses_v_rels_users_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const admins = pgTable(
@@ -5649,16 +4689,16 @@ export const admins = pgTable(
     apiKey: varchar("api_key"),
     apiKeyIndex: varchar("api_key_index")
   },
-  (columns) => ({
-    admins_name_idx: index("admins_name_idx").on(columns.name),
-    admins_email_idx: uniqueIndex("admins_email_idx").on(columns.email),
-    admins_foto_idx: index("admins_foto_idx").on(columns.foto),
-    admins_first_name_idx: index("admins_first_name_idx").on(columns.firstName),
-    admins_last_name_idx: index("admins_last_name_idx").on(columns.lastName),
-    admins_bio_idx: index("admins_bio_idx").on(columns.bio),
-    admins_updated_at_idx: index("admins_updated_at_idx").on(columns.updatedAt),
-    admins_created_at_idx: index("admins_created_at_idx").on(columns.createdAt)
-  })
+  (columns) => [
+    index("admins_name_idx").on(columns.name),
+    uniqueIndex("admins_email_idx").on(columns.email),
+    index("admins_foto_idx").on(columns.foto),
+    index("admins_first_name_idx").on(columns.firstName),
+    index("admins_last_name_idx").on(columns.lastName),
+    index("admins_bio_idx").on(columns.bio),
+    index("admins_updated_at_idx").on(columns.updatedAt),
+    index("admins_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const _admins_v = pgTable(
@@ -5708,39 +4748,27 @@ export const _admins_v = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    _admins_v_parent_idx: index("_admins_v_parent_idx").on(columns.parent),
-    _admins_v_version_version_name_idx: index(
-      "_admins_v_version_version_name_idx"
-    ).on(columns.version_name),
-    _admins_v_version_version_email_idx: index(
-      "_admins_v_version_version_email_idx"
-    ).on(columns.version_email),
-    _admins_v_version_version_foto_idx: index(
-      "_admins_v_version_version_foto_idx"
-    ).on(columns.version_foto),
-    _admins_v_version_version_first_name_idx: index(
-      "_admins_v_version_version_first_name_idx"
-    ).on(columns.version_firstName),
-    _admins_v_version_version_last_name_idx: index(
-      "_admins_v_version_version_last_name_idx"
-    ).on(columns.version_lastName),
-    _admins_v_version_version_bio_idx: index(
-      "_admins_v_version_version_bio_idx"
-    ).on(columns.version_bio),
-    _admins_v_version_version_updated_at_idx: index(
-      "_admins_v_version_version_updated_at_idx"
-    ).on(columns.version_updatedAt),
-    _admins_v_version_version_created_at_idx: index(
-      "_admins_v_version_version_created_at_idx"
-    ).on(columns.version_createdAt),
-    _admins_v_created_at_idx: index("_admins_v_created_at_idx").on(
-      columns.createdAt
+  (columns) => [
+    index("_admins_v_parent_idx").on(columns.parent),
+    index("_admins_v_version_version_name_idx").on(columns.version_name),
+    index("_admins_v_version_version_email_idx").on(columns.version_email),
+    index("_admins_v_version_version_foto_idx").on(columns.version_foto),
+    index("_admins_v_version_version_first_name_idx").on(
+      columns.version_firstName
     ),
-    _admins_v_updated_at_idx: index("_admins_v_updated_at_idx").on(
-      columns.updatedAt
-    )
-  })
+    index("_admins_v_version_version_last_name_idx").on(
+      columns.version_lastName
+    ),
+    index("_admins_v_version_version_bio_idx").on(columns.version_bio),
+    index("_admins_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_admins_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_admins_v_created_at_idx").on(columns.createdAt),
+    index("_admins_v_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const email_quota = pgTable(
@@ -5764,15 +4792,11 @@ export const email_quota = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    email_quota_date_idx: uniqueIndex("email_quota_date_idx").on(columns.date),
-    email_quota_updated_at_idx: index("email_quota_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    email_quota_created_at_idx: index("email_quota_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    uniqueIndex("email_quota_date_idx").on(columns.date),
+    index("email_quota_updated_at_idx").on(columns.updatedAt),
+    index("email_quota_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const deferred_emails = pgTable(
@@ -5809,14 +4833,10 @@ export const deferred_emails = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    deferred_emails_updated_at_idx: index("deferred_emails_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    deferred_emails_created_at_idx: index("deferred_emails_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("deferred_emails_updated_at_idx").on(columns.updatedAt),
+    index("deferred_emails_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const exports = pgTable(
@@ -5857,17 +4877,11 @@ export const exports = pgTable(
     focalX: numeric("focal_x"),
     focalY: numeric("focal_y")
   },
-  (columns) => ({
-    exports_updated_at_idx: index("exports_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    exports_created_at_idx: index("exports_created_at_idx").on(
-      columns.createdAt
-    ),
-    exports_filename_idx: uniqueIndex("exports_filename_idx").on(
-      columns.filename
-    )
-  })
+  (columns) => [
+    index("exports_updated_at_idx").on(columns.updatedAt),
+    index("exports_created_at_idx").on(columns.createdAt),
+    uniqueIndex("exports_filename_idx").on(columns.filename)
+  ]
 );
 
 export const exports_texts = pgTable(
@@ -5879,17 +4893,14 @@ export const exports_texts = pgTable(
     path: varchar("path").notNull(),
     text: varchar("text")
   },
-  (columns) => ({
-    orderParentIdx: index("exports_texts_order_parent_idx").on(
-      columns.order,
-      columns.parent
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("exports_texts_order_parent_idx").on(columns.order, columns.parent),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [exports.id],
       name: "exports_texts_parent_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const redirects = pgTable(
@@ -5914,15 +4925,11 @@ export const redirects = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    redirects_from_idx: uniqueIndex("redirects_from_idx").on(columns.from),
-    redirects_updated_at_idx: index("redirects_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    redirects_created_at_idx: index("redirects_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    uniqueIndex("redirects_from_idx").on(columns.from),
+    index("redirects_updated_at_idx").on(columns.updatedAt),
+    index("redirects_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const redirects_rels = pgTable(
@@ -5935,32 +4942,28 @@ export const redirects_rels = pgTable(
     pagesID: uuid("pages_id"),
     postsID: varchar("posts_id")
   },
-  (columns) => ({
-    order: index("redirects_rels_order_idx").on(columns.order),
-    parentIdx: index("redirects_rels_parent_idx").on(columns.parent),
-    pathIdx: index("redirects_rels_path_idx").on(columns.path),
-    redirects_rels_pages_id_idx: index("redirects_rels_pages_id_idx").on(
-      columns.pagesID
-    ),
-    redirects_rels_posts_id_idx: index("redirects_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("redirects_rels_order_idx").on(columns.order),
+    index("redirects_rels_parent_idx").on(columns.parent),
+    index("redirects_rels_path_idx").on(columns.path),
+    index("redirects_rels_pages_id_idx").on(columns.pagesID),
+    index("redirects_rels_posts_id_idx").on(columns.postsID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [redirects.id],
       name: "redirects_rels_parent_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "redirects_rels_pages_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "redirects_rels_posts_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const payload_jobs_log = pgTable(
@@ -5986,15 +4989,15 @@ export const payload_jobs_log = pgTable(
     state: enum_payload_jobs_log_state("state").notNull(),
     error: jsonb("error")
   },
-  (columns) => ({
-    _orderIdx: index("payload_jobs_log_order_idx").on(columns._order),
-    _parentIDIdx: index("payload_jobs_log_parent_id_idx").on(columns._parentID),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("payload_jobs_log_order_idx").on(columns._order),
+    index("payload_jobs_log_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [payload_jobs.id],
       name: "payload_jobs_log_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const payload_jobs = pgTable(
@@ -6034,36 +5037,18 @@ export const payload_jobs = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    payload_jobs_completed_at_idx: index("payload_jobs_completed_at_idx").on(
-      columns.completedAt
-    ),
-    payload_jobs_total_tried_idx: index("payload_jobs_total_tried_idx").on(
-      columns.totalTried
-    ),
-    payload_jobs_has_error_idx: index("payload_jobs_has_error_idx").on(
-      columns.hasError
-    ),
-    payload_jobs_workflow_slug_idx: index("payload_jobs_workflow_slug_idx").on(
-      columns.workflowSlug
-    ),
-    payload_jobs_task_slug_idx: index("payload_jobs_task_slug_idx").on(
-      columns.taskSlug
-    ),
-    payload_jobs_queue_idx: index("payload_jobs_queue_idx").on(columns.queue),
-    payload_jobs_wait_until_idx: index("payload_jobs_wait_until_idx").on(
-      columns.waitUntil
-    ),
-    payload_jobs_processing_idx: index("payload_jobs_processing_idx").on(
-      columns.processing
-    ),
-    payload_jobs_updated_at_idx: index("payload_jobs_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    payload_jobs_created_at_idx: index("payload_jobs_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("payload_jobs_completed_at_idx").on(columns.completedAt),
+    index("payload_jobs_total_tried_idx").on(columns.totalTried),
+    index("payload_jobs_has_error_idx").on(columns.hasError),
+    index("payload_jobs_workflow_slug_idx").on(columns.workflowSlug),
+    index("payload_jobs_task_slug_idx").on(columns.taskSlug),
+    index("payload_jobs_queue_idx").on(columns.queue),
+    index("payload_jobs_wait_until_idx").on(columns.waitUntil),
+    index("payload_jobs_processing_idx").on(columns.processing),
+    index("payload_jobs_updated_at_idx").on(columns.updatedAt),
+    index("payload_jobs_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const payload_folders_folder_type = pgTable(
@@ -6074,17 +5059,15 @@ export const payload_folders_folder_type = pgTable(
     value: enum_payload_folders_folder_type("value"),
     id: uuid("id").defaultRandom().primaryKey()
   },
-  (columns) => ({
-    orderIdx: index("payload_folders_folder_type_order_idx").on(columns.order),
-    parentIdx: index("payload_folders_folder_type_parent_idx").on(
-      columns.parent
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("payload_folders_folder_type_order_idx").on(columns.order),
+    index("payload_folders_folder_type_parent_idx").on(columns.parent),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [payload_folders.id],
       name: "payload_folders_folder_type_parent_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const payload_folders = pgTable(
@@ -6113,20 +5096,12 @@ export const payload_folders = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    payload_folders_name_idx: index("payload_folders_name_idx").on(
-      columns.name
-    ),
-    payload_folders_folder_idx: index("payload_folders_folder_idx").on(
-      columns.folder
-    ),
-    payload_folders_updated_at_idx: index("payload_folders_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    payload_folders_created_at_idx: index("payload_folders_created_at_idx").on(
-      columns.createdAt
-    )
-  })
+  (columns) => [
+    index("payload_folders_name_idx").on(columns.name),
+    index("payload_folders_folder_idx").on(columns.folder),
+    index("payload_folders_updated_at_idx").on(columns.updatedAt),
+    index("payload_folders_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const payload_locked_documents = pgTable(
@@ -6149,17 +5124,11 @@ export const payload_locked_documents = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    payload_locked_documents_global_slug_idx: index(
-      "payload_locked_documents_global_slug_idx"
-    ).on(columns.globalSlug),
-    payload_locked_documents_updated_at_idx: index(
-      "payload_locked_documents_updated_at_idx"
-    ).on(columns.updatedAt),
-    payload_locked_documents_created_at_idx: index(
-      "payload_locked_documents_created_at_idx"
-    ).on(columns.createdAt)
-  })
+  (columns) => [
+    index("payload_locked_documents_global_slug_idx").on(columns.globalSlug),
+    index("payload_locked_documents_updated_at_idx").on(columns.updatedAt),
+    index("payload_locked_documents_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const payload_locked_documents_rels = pgTable(
@@ -6205,298 +5174,268 @@ export const payload_locked_documents_rels = pgTable(
     "payload-jobsID": varchar("payload_jobs_id"),
     "payload-foldersID": uuid("payload_folders_id")
   },
-  (columns) => ({
-    order: index("payload_locked_documents_rels_order_idx").on(columns.order),
-    parentIdx: index("payload_locked_documents_rels_parent_idx").on(
-      columns.parent
+  (columns) => [
+    index("payload_locked_documents_rels_order_idx").on(columns.order),
+    index("payload_locked_documents_rels_parent_idx").on(columns.parent),
+    index("payload_locked_documents_rels_path_idx").on(columns.path),
+    index("payload_locked_documents_rels_users_id_idx").on(columns.usersID),
+    index("payload_locked_documents_rels_sessions_id_idx").on(
+      columns.sessionsID
     ),
-    pathIdx: index("payload_locked_documents_rels_path_idx").on(columns.path),
-    payload_locked_documents_rels_users_id_idx: index(
-      "payload_locked_documents_rels_users_id_idx"
-    ).on(columns.usersID),
-    payload_locked_documents_rels_sessions_id_idx: index(
-      "payload_locked_documents_rels_sessions_id_idx"
-    ).on(columns.sessionsID),
-    payload_locked_documents_rels_accounts_id_idx: index(
-      "payload_locked_documents_rels_accounts_id_idx"
-    ).on(columns.accountsID),
-    payload_locked_documents_rels_verifications_id_idx: index(
-      "payload_locked_documents_rels_verifications_id_idx"
-    ).on(columns.verificationsID),
-    payload_locked_documents_rels_two_factors_id_idx: index(
-      "payload_locked_documents_rels_two_factors_id_idx"
-    ).on(columns.twoFactorsID),
-    payload_locked_documents_rels_passkeys_id_idx: index(
-      "payload_locked_documents_rels_passkeys_id_idx"
-    ).on(columns.passkeysID),
-    payload_locked_documents_rels_organizations_id_idx: index(
-      "payload_locked_documents_rels_organizations_id_idx"
-    ).on(columns.organizationsID),
-    payload_locked_documents_rels_members_id_idx: index(
-      "payload_locked_documents_rels_members_id_idx"
-    ).on(columns.membersID),
-    payload_locked_documents_rels_invitations_id_idx: index(
-      "payload_locked_documents_rels_invitations_id_idx"
-    ).on(columns.invitationsID),
-    payload_locked_documents_rels_admin_invitations_id_idx: index(
-      "payload_locked_documents_rels_admin_invitations_id_idx"
-    ).on(columns["admin-invitationsID"]),
-    payload_locked_documents_rels_assets_id_idx: index(
-      "payload_locked_documents_rels_assets_id_idx"
-    ).on(columns.assetsID),
-    payload_locked_documents_rels_categories_id_idx: index(
-      "payload_locked_documents_rels_categories_id_idx"
-    ).on(columns.categoriesID),
-    payload_locked_documents_rels_media_id_idx: index(
-      "payload_locked_documents_rels_media_id_idx"
-    ).on(columns.mediaID),
-    payload_locked_documents_rels_tags_id_idx: index(
-      "payload_locked_documents_rels_tags_id_idx"
-    ).on(columns.tagsID),
-    payload_locked_documents_rels_notifications_id_idx: index(
-      "payload_locked_documents_rels_notifications_id_idx"
-    ).on(columns.notificationsID),
-    payload_locked_documents_rels_pages_id_idx: index(
-      "payload_locked_documents_rels_pages_id_idx"
-    ).on(columns.pagesID),
-    payload_locked_documents_rels_posts_id_idx: index(
-      "payload_locked_documents_rels_posts_id_idx"
-    ).on(columns.postsID),
-    payload_locked_documents_rels_user_media_id_idx: index(
-      "payload_locked_documents_rels_user_media_id_idx"
-    ).on(columns.userMediaID),
-    payload_locked_documents_rels_delta_id_idx: index(
-      "payload_locked_documents_rels_delta_id_idx"
-    ).on(columns.deltaID),
-    payload_locked_documents_rels_profile_id_idx: index(
-      "payload_locked_documents_rels_profile_id_idx"
-    ).on(columns.profileID),
-    payload_locked_documents_rels_albums_id_idx: index(
-      "payload_locked_documents_rels_albums_id_idx"
-    ).on(columns.albumsID),
-    payload_locked_documents_rels_tracks_id_idx: index(
-      "payload_locked_documents_rels_tracks_id_idx"
-    ).on(columns.tracksID),
-    payload_locked_documents_rels_playlists_id_idx: index(
-      "payload_locked_documents_rels_playlists_id_idx"
-    ).on(columns.playlistsID),
-    payload_locked_documents_rels_follows_id_idx: index(
-      "payload_locked_documents_rels_follows_id_idx"
-    ).on(columns.followsID),
-    payload_locked_documents_rels_bookmarks_id_idx: index(
-      "payload_locked_documents_rels_bookmarks_id_idx"
-    ).on(columns.bookmarksID),
-    payload_locked_documents_rels_user_views_id_idx: index(
-      "payload_locked_documents_rels_user_views_id_idx"
-    ).on(columns.userViewsID),
-    payload_locked_documents_rels_citations_id_idx: index(
-      "payload_locked_documents_rels_citations_id_idx"
-    ).on(columns.citationsID),
-    payload_locked_documents_rels_responses_id_idx: index(
-      "payload_locked_documents_rels_responses_id_idx"
-    ).on(columns.responsesID),
-    payload_locked_documents_rels_admins_id_idx: index(
-      "payload_locked_documents_rels_admins_id_idx"
-    ).on(columns.adminsID),
-    payload_locked_documents_rels_email_quota_id_idx: index(
-      "payload_locked_documents_rels_email_quota_id_idx"
-    ).on(columns["email-quotaID"]),
-    payload_locked_documents_rels_deferred_emails_id_idx: index(
-      "payload_locked_documents_rels_deferred_emails_id_idx"
-    ).on(columns["deferred-emailsID"]),
-    payload_locked_documents_rels_exports_id_idx: index(
-      "payload_locked_documents_rels_exports_id_idx"
-    ).on(columns.exportsID),
-    payload_locked_documents_rels_redirects_id_idx: index(
-      "payload_locked_documents_rels_redirects_id_idx"
-    ).on(columns.redirectsID),
-    payload_locked_documents_rels_payload_jobs_id_idx: index(
-      "payload_locked_documents_rels_payload_jobs_id_idx"
-    ).on(columns["payload-jobsID"]),
-    payload_locked_documents_rels_payload_folders_id_idx: index(
-      "payload_locked_documents_rels_payload_folders_id_idx"
-    ).on(columns["payload-foldersID"]),
-    parentFk: foreignKey({
+    index("payload_locked_documents_rels_accounts_id_idx").on(
+      columns.accountsID
+    ),
+    index("payload_locked_documents_rels_verifications_id_idx").on(
+      columns.verificationsID
+    ),
+    index("payload_locked_documents_rels_two_factors_id_idx").on(
+      columns.twoFactorsID
+    ),
+    index("payload_locked_documents_rels_passkeys_id_idx").on(
+      columns.passkeysID
+    ),
+    index("payload_locked_documents_rels_organizations_id_idx").on(
+      columns.organizationsID
+    ),
+    index("payload_locked_documents_rels_members_id_idx").on(columns.membersID),
+    index("payload_locked_documents_rels_invitations_id_idx").on(
+      columns.invitationsID
+    ),
+    index("payload_locked_documents_rels_admin_invitations_id_idx").on(
+      columns["admin-invitationsID"]
+    ),
+    index("payload_locked_documents_rels_assets_id_idx").on(columns.assetsID),
+    index("payload_locked_documents_rels_categories_id_idx").on(
+      columns.categoriesID
+    ),
+    index("payload_locked_documents_rels_media_id_idx").on(columns.mediaID),
+    index("payload_locked_documents_rels_tags_id_idx").on(columns.tagsID),
+    index("payload_locked_documents_rels_notifications_id_idx").on(
+      columns.notificationsID
+    ),
+    index("payload_locked_documents_rels_pages_id_idx").on(columns.pagesID),
+    index("payload_locked_documents_rels_posts_id_idx").on(columns.postsID),
+    index("payload_locked_documents_rels_user_media_id_idx").on(
+      columns.userMediaID
+    ),
+    index("payload_locked_documents_rels_delta_id_idx").on(columns.deltaID),
+    index("payload_locked_documents_rels_profile_id_idx").on(columns.profileID),
+    index("payload_locked_documents_rels_albums_id_idx").on(columns.albumsID),
+    index("payload_locked_documents_rels_tracks_id_idx").on(columns.tracksID),
+    index("payload_locked_documents_rels_playlists_id_idx").on(
+      columns.playlistsID
+    ),
+    index("payload_locked_documents_rels_follows_id_idx").on(columns.followsID),
+    index("payload_locked_documents_rels_bookmarks_id_idx").on(
+      columns.bookmarksID
+    ),
+    index("payload_locked_documents_rels_user_views_id_idx").on(
+      columns.userViewsID
+    ),
+    index("payload_locked_documents_rels_citations_id_idx").on(
+      columns.citationsID
+    ),
+    index("payload_locked_documents_rels_responses_id_idx").on(
+      columns.responsesID
+    ),
+    index("payload_locked_documents_rels_admins_id_idx").on(columns.adminsID),
+    index("payload_locked_documents_rels_email_quota_id_idx").on(
+      columns["email-quotaID"]
+    ),
+    index("payload_locked_documents_rels_deferred_emails_id_idx").on(
+      columns["deferred-emailsID"]
+    ),
+    index("payload_locked_documents_rels_exports_id_idx").on(columns.exportsID),
+    index("payload_locked_documents_rels_redirects_id_idx").on(
+      columns.redirectsID
+    ),
+    index("payload_locked_documents_rels_payload_jobs_id_idx").on(
+      columns["payload-jobsID"]
+    ),
+    index("payload_locked_documents_rels_payload_folders_id_idx").on(
+      columns["payload-foldersID"]
+    ),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [payload_locked_documents.id],
       name: "payload_locked_documents_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "payload_locked_documents_rels_users_fk"
     }).onDelete("cascade"),
-    sessionsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["sessionsID"]],
       foreignColumns: [sessions.id],
       name: "payload_locked_documents_rels_sessions_fk"
     }).onDelete("cascade"),
-    accountsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["accountsID"]],
       foreignColumns: [accounts.id],
       name: "payload_locked_documents_rels_accounts_fk"
     }).onDelete("cascade"),
-    verificationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["verificationsID"]],
       foreignColumns: [verifications.id],
       name: "payload_locked_documents_rels_verifications_fk"
     }).onDelete("cascade"),
-    twoFactorsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["twoFactorsID"]],
       foreignColumns: [two_factors.id],
       name: "payload_locked_documents_rels_two_factors_fk"
     }).onDelete("cascade"),
-    passkeysIdFk: foreignKey({
+    foreignKey({
       columns: [columns["passkeysID"]],
       foreignColumns: [passkeys.id],
       name: "payload_locked_documents_rels_passkeys_fk"
     }).onDelete("cascade"),
-    organizationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["organizationsID"]],
       foreignColumns: [organizations.id],
       name: "payload_locked_documents_rels_organizations_fk"
     }).onDelete("cascade"),
-    membersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["membersID"]],
       foreignColumns: [members.id],
       name: "payload_locked_documents_rels_members_fk"
     }).onDelete("cascade"),
-    invitationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["invitationsID"]],
       foreignColumns: [invitations.id],
       name: "payload_locked_documents_rels_invitations_fk"
     }).onDelete("cascade"),
-    "admin-invitationsIdFk": foreignKey({
+    foreignKey({
       columns: [columns["admin-invitationsID"]],
       foreignColumns: [admin_invitations.id],
       name: "payload_locked_documents_rels_admin_invitations_fk"
     }).onDelete("cascade"),
-    assetsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["assetsID"]],
       foreignColumns: [assets.id],
       name: "payload_locked_documents_rels_assets_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "payload_locked_documents_rels_categories_fk"
     }).onDelete("cascade"),
-    mediaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["mediaID"]],
       foreignColumns: [media.id],
       name: "payload_locked_documents_rels_media_fk"
     }).onDelete("cascade"),
-    tagsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "payload_locked_documents_rels_tags_fk"
     }).onDelete("cascade"),
-    notificationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["notificationsID"]],
       foreignColumns: [notifications.id],
       name: "payload_locked_documents_rels_notifications_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "payload_locked_documents_rels_pages_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "payload_locked_documents_rels_posts_fk"
     }).onDelete("cascade"),
-    userMediaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["userMediaID"]],
       foreignColumns: [user_media.id],
       name: "payload_locked_documents_rels_user_media_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "payload_locked_documents_rels_delta_fk"
     }).onDelete("cascade"),
-    profileIdFk: foreignKey({
+    foreignKey({
       columns: [columns["profileID"]],
       foreignColumns: [profile.id],
       name: "payload_locked_documents_rels_profile_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "payload_locked_documents_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "payload_locked_documents_rels_tracks_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "payload_locked_documents_rels_playlists_fk"
     }).onDelete("cascade"),
-    followsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["followsID"]],
       foreignColumns: [follows.id],
       name: "payload_locked_documents_rels_follows_fk"
     }).onDelete("cascade"),
-    bookmarksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["bookmarksID"]],
       foreignColumns: [bookmarks.id],
       name: "payload_locked_documents_rels_bookmarks_fk"
     }).onDelete("cascade"),
-    userViewsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["userViewsID"]],
       foreignColumns: [user_views.id],
       name: "payload_locked_documents_rels_user_views_fk"
     }).onDelete("cascade"),
-    citationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["citationsID"]],
       foreignColumns: [citations.id],
       name: "payload_locked_documents_rels_citations_fk"
     }).onDelete("cascade"),
-    responsesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["responsesID"]],
       foreignColumns: [responses.id],
       name: "payload_locked_documents_rels_responses_fk"
     }).onDelete("cascade"),
-    adminsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["adminsID"]],
       foreignColumns: [admins.id],
       name: "payload_locked_documents_rels_admins_fk"
     }).onDelete("cascade"),
-    "email-quotaIdFk": foreignKey({
+    foreignKey({
       columns: [columns["email-quotaID"]],
       foreignColumns: [email_quota.id],
       name: "payload_locked_documents_rels_email_quota_fk"
     }).onDelete("cascade"),
-    "deferred-emailsIdFk": foreignKey({
+    foreignKey({
       columns: [columns["deferred-emailsID"]],
       foreignColumns: [deferred_emails.id],
       name: "payload_locked_documents_rels_deferred_emails_fk"
     }).onDelete("cascade"),
-    exportsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["exportsID"]],
       foreignColumns: [exports.id],
       name: "payload_locked_documents_rels_exports_fk"
     }).onDelete("cascade"),
-    redirectsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["redirectsID"]],
       foreignColumns: [redirects.id],
       name: "payload_locked_documents_rels_redirects_fk"
     }).onDelete("cascade"),
-    "payload-jobsIdFk": foreignKey({
+    foreignKey({
       columns: [columns["payload-jobsID"]],
       foreignColumns: [payload_jobs.id],
       name: "payload_locked_documents_rels_payload_jobs_fk"
     }).onDelete("cascade"),
-    "payload-foldersIdFk": foreignKey({
+    foreignKey({
       columns: [columns["payload-foldersID"]],
       foreignColumns: [payload_folders.id],
       name: "payload_locked_documents_rels_payload_folders_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const payload_preferences = pgTable(
@@ -6520,17 +5459,11 @@ export const payload_preferences = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    payload_preferences_key_idx: index("payload_preferences_key_idx").on(
-      columns.key
-    ),
-    payload_preferences_updated_at_idx: index(
-      "payload_preferences_updated_at_idx"
-    ).on(columns.updatedAt),
-    payload_preferences_created_at_idx: index(
-      "payload_preferences_created_at_idx"
-    ).on(columns.createdAt)
-  })
+  (columns) => [
+    index("payload_preferences_key_idx").on(columns.key),
+    index("payload_preferences_updated_at_idx").on(columns.updatedAt),
+    index("payload_preferences_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const payload_preferences_rels = pgTable(
@@ -6543,32 +5476,28 @@ export const payload_preferences_rels = pgTable(
     usersID: varchar("users_id"),
     adminsID: uuid("admins_id")
   },
-  (columns) => ({
-    order: index("payload_preferences_rels_order_idx").on(columns.order),
-    parentIdx: index("payload_preferences_rels_parent_idx").on(columns.parent),
-    pathIdx: index("payload_preferences_rels_path_idx").on(columns.path),
-    payload_preferences_rels_users_id_idx: index(
-      "payload_preferences_rels_users_id_idx"
-    ).on(columns.usersID),
-    payload_preferences_rels_admins_id_idx: index(
-      "payload_preferences_rels_admins_id_idx"
-    ).on(columns.adminsID),
-    parentFk: foreignKey({
+  (columns) => [
+    index("payload_preferences_rels_order_idx").on(columns.order),
+    index("payload_preferences_rels_parent_idx").on(columns.parent),
+    index("payload_preferences_rels_path_idx").on(columns.path),
+    index("payload_preferences_rels_users_id_idx").on(columns.usersID),
+    index("payload_preferences_rels_admins_id_idx").on(columns.adminsID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [payload_preferences.id],
       name: "payload_preferences_rels_parent_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "payload_preferences_rels_users_fk"
     }).onDelete("cascade"),
-    adminsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["adminsID"]],
       foreignColumns: [admins.id],
       name: "payload_preferences_rels_admins_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const payload_migrations = pgTable(
@@ -6592,14 +5521,10 @@ export const payload_migrations = pgTable(
       .defaultNow()
       .notNull()
   },
-  (columns) => ({
-    payload_migrations_updated_at_idx: index(
-      "payload_migrations_updated_at_idx"
-    ).on(columns.updatedAt),
-    payload_migrations_created_at_idx: index(
-      "payload_migrations_created_at_idx"
-    ).on(columns.createdAt)
-  })
+  (columns) => [
+    index("payload_migrations_updated_at_idx").on(columns.updatedAt),
+    index("payload_migrations_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const header_nav_items = pgTable(
@@ -6631,21 +5556,21 @@ export const header_nav_items = pgTable(
       }
     )
   },
-  (columns) => ({
-    _orderIdx: index("header_nav_items_order_idx").on(columns._order),
-    _parentIDIdx: index("header_nav_items_parent_id_idx").on(columns._parentID),
-    header_nav_items_preview_media_preview_media_desktop_idx: index(
-      "header_nav_items_preview_media_preview_media_desktop_idx"
-    ).on(columns.previewMedia_desktop),
-    header_nav_items_preview_media_preview_media_mobile_idx: index(
-      "header_nav_items_preview_media_preview_media_mobile_idx"
-    ).on(columns.previewMedia_mobile),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("header_nav_items_order_idx").on(columns._order),
+    index("header_nav_items_parent_id_idx").on(columns._parentID),
+    index("header_nav_items_preview_media_preview_media_desktop_idx").on(
+      columns.previewMedia_desktop
+    ),
+    index("header_nav_items_preview_media_preview_media_mobile_idx").on(
+      columns.previewMedia_mobile
+    ),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [header.id],
       name: "header_nav_items_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const header = pgTable(
@@ -6666,9 +5591,7 @@ export const header = pgTable(
       precision: 3
     })
   },
-  (columns) => ({
-    header_radio_idx: index("header_radio_idx").on(columns.radio)
-  })
+  (columns) => [index("header_radio_idx").on(columns.radio)]
 );
 
 export const header_rels = pgTable(
@@ -6688,88 +5611,70 @@ export const header_rels = pgTable(
     organizationsID: uuid("organizations_id"),
     categoriesID: uuid("categories_id")
   },
-  (columns) => ({
-    order: index("header_rels_order_idx").on(columns.order),
-    parentIdx: index("header_rels_parent_idx").on(columns.parent),
-    pathIdx: index("header_rels_path_idx").on(columns.path),
-    header_rels_pages_id_idx: index("header_rels_pages_id_idx").on(
-      columns.pagesID
-    ),
-    header_rels_posts_id_idx: index("header_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    header_rels_delta_id_idx: index("header_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    header_rels_users_id_idx: index("header_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    header_rels_albums_id_idx: index("header_rels_albums_id_idx").on(
-      columns.albumsID
-    ),
-    header_rels_tracks_id_idx: index("header_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    header_rels_playlists_id_idx: index("header_rels_playlists_id_idx").on(
-      columns.playlistsID
-    ),
-    header_rels_organizations_id_idx: index(
-      "header_rels_organizations_id_idx"
-    ).on(columns.organizationsID),
-    header_rels_categories_id_idx: index("header_rels_categories_id_idx").on(
-      columns.categoriesID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("header_rels_order_idx").on(columns.order),
+    index("header_rels_parent_idx").on(columns.parent),
+    index("header_rels_path_idx").on(columns.path),
+    index("header_rels_pages_id_idx").on(columns.pagesID),
+    index("header_rels_posts_id_idx").on(columns.postsID),
+    index("header_rels_delta_id_idx").on(columns.deltaID),
+    index("header_rels_users_id_idx").on(columns.usersID),
+    index("header_rels_albums_id_idx").on(columns.albumsID),
+    index("header_rels_tracks_id_idx").on(columns.tracksID),
+    index("header_rels_playlists_id_idx").on(columns.playlistsID),
+    index("header_rels_organizations_id_idx").on(columns.organizationsID),
+    index("header_rels_categories_id_idx").on(columns.categoriesID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [header.id],
       name: "header_rels_parent_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "header_rels_pages_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "header_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "header_rels_delta_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "header_rels_users_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "header_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "header_rels_tracks_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "header_rels_playlists_fk"
     }).onDelete("cascade"),
-    organizationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["organizationsID"]],
       foreignColumns: [organizations.id],
       name: "header_rels_organizations_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "header_rels_categories_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const footer_nav_items = pgTable(
@@ -6785,15 +5690,15 @@ export const footer_nav_items = pgTable(
     link_url: varchar("link_url"),
     link_label: varchar("link_label").notNull()
   },
-  (columns) => ({
-    _orderIdx: index("footer_nav_items_order_idx").on(columns._order),
-    _parentIDIdx: index("footer_nav_items_parent_id_idx").on(columns._parentID),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("footer_nav_items_order_idx").on(columns._order),
+    index("footer_nav_items_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [footer.id],
       name: "footer_nav_items_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const footer_column1_links = pgTable(
@@ -6809,17 +5714,15 @@ export const footer_column1_links = pgTable(
     link_url: varchar("link_url"),
     link_label: varchar("link_label").notNull()
   },
-  (columns) => ({
-    _orderIdx: index("footer_column1_links_order_idx").on(columns._order),
-    _parentIDIdx: index("footer_column1_links_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("footer_column1_links_order_idx").on(columns._order),
+    index("footer_column1_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [footer.id],
       name: "footer_column1_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const footer_column2_links = pgTable(
@@ -6835,17 +5738,15 @@ export const footer_column2_links = pgTable(
     link_url: varchar("link_url"),
     link_label: varchar("link_label").notNull()
   },
-  (columns) => ({
-    _orderIdx: index("footer_column2_links_order_idx").on(columns._order),
-    _parentIDIdx: index("footer_column2_links_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("footer_column2_links_order_idx").on(columns._order),
+    index("footer_column2_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [footer.id],
       name: "footer_column2_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const footer_column3_links = pgTable(
@@ -6861,17 +5762,15 @@ export const footer_column3_links = pgTable(
     link_url: varchar("link_url"),
     link_label: varchar("link_label").notNull()
   },
-  (columns) => ({
-    _orderIdx: index("footer_column3_links_order_idx").on(columns._order),
-    _parentIDIdx: index("footer_column3_links_parent_id_idx").on(
-      columns._parentID
-    ),
-    _parentIDFk: foreignKey({
+  (columns) => [
+    index("footer_column3_links_order_idx").on(columns._order),
+    index("footer_column3_links_parent_id_idx").on(columns._parentID),
+    foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [footer.id],
       name: "footer_column3_links_parent_id_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const footer = pgTable(
@@ -6907,20 +5806,16 @@ export const footer = pgTable(
       precision: 3
     })
   },
-  (columns) => ({
-    footer_defaults_defaults_desktop_idx: index(
-      "footer_defaults_defaults_desktop_idx"
-    ).on(columns.defaults_desktop),
-    footer_defaults_defaults_mobile_idx: index(
-      "footer_defaults_defaults_mobile_idx"
-    ).on(columns.defaults_mobile),
-    footer_video_loop_video_loop_desktop_idx: index(
-      "footer_video_loop_video_loop_desktop_idx"
-    ).on(columns.videoLoop_desktop),
-    footer_video_loop_video_loop_mobile_idx: index(
-      "footer_video_loop_video_loop_mobile_idx"
-    ).on(columns.videoLoop_mobile)
-  })
+  (columns) => [
+    index("footer_defaults_defaults_desktop_idx").on(columns.defaults_desktop),
+    index("footer_defaults_defaults_mobile_idx").on(columns.defaults_mobile),
+    index("footer_video_loop_video_loop_desktop_idx").on(
+      columns.videoLoop_desktop
+    ),
+    index("footer_video_loop_video_loop_mobile_idx").on(
+      columns.videoLoop_mobile
+    )
+  ]
 );
 
 export const footer_rels = pgTable(
@@ -6940,88 +5835,70 @@ export const footer_rels = pgTable(
     organizationsID: uuid("organizations_id"),
     categoriesID: uuid("categories_id")
   },
-  (columns) => ({
-    order: index("footer_rels_order_idx").on(columns.order),
-    parentIdx: index("footer_rels_parent_idx").on(columns.parent),
-    pathIdx: index("footer_rels_path_idx").on(columns.path),
-    footer_rels_pages_id_idx: index("footer_rels_pages_id_idx").on(
-      columns.pagesID
-    ),
-    footer_rels_posts_id_idx: index("footer_rels_posts_id_idx").on(
-      columns.postsID
-    ),
-    footer_rels_delta_id_idx: index("footer_rels_delta_id_idx").on(
-      columns.deltaID
-    ),
-    footer_rels_users_id_idx: index("footer_rels_users_id_idx").on(
-      columns.usersID
-    ),
-    footer_rels_albums_id_idx: index("footer_rels_albums_id_idx").on(
-      columns.albumsID
-    ),
-    footer_rels_tracks_id_idx: index("footer_rels_tracks_id_idx").on(
-      columns.tracksID
-    ),
-    footer_rels_playlists_id_idx: index("footer_rels_playlists_id_idx").on(
-      columns.playlistsID
-    ),
-    footer_rels_organizations_id_idx: index(
-      "footer_rels_organizations_id_idx"
-    ).on(columns.organizationsID),
-    footer_rels_categories_id_idx: index("footer_rels_categories_id_idx").on(
-      columns.categoriesID
-    ),
-    parentFk: foreignKey({
+  (columns) => [
+    index("footer_rels_order_idx").on(columns.order),
+    index("footer_rels_parent_idx").on(columns.parent),
+    index("footer_rels_path_idx").on(columns.path),
+    index("footer_rels_pages_id_idx").on(columns.pagesID),
+    index("footer_rels_posts_id_idx").on(columns.postsID),
+    index("footer_rels_delta_id_idx").on(columns.deltaID),
+    index("footer_rels_users_id_idx").on(columns.usersID),
+    index("footer_rels_albums_id_idx").on(columns.albumsID),
+    index("footer_rels_tracks_id_idx").on(columns.tracksID),
+    index("footer_rels_playlists_id_idx").on(columns.playlistsID),
+    index("footer_rels_organizations_id_idx").on(columns.organizationsID),
+    index("footer_rels_categories_id_idx").on(columns.categoriesID),
+    foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [footer.id],
       name: "footer_rels_parent_fk"
     }).onDelete("cascade"),
-    pagesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["pagesID"]],
       foreignColumns: [pages.id],
       name: "footer_rels_pages_fk"
     }).onDelete("cascade"),
-    postsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["postsID"]],
       foreignColumns: [posts.id],
       name: "footer_rels_posts_fk"
     }).onDelete("cascade"),
-    deltaIdFk: foreignKey({
+    foreignKey({
       columns: [columns["deltaID"]],
       foreignColumns: [delta.id],
       name: "footer_rels_delta_fk"
     }).onDelete("cascade"),
-    usersIdFk: foreignKey({
+    foreignKey({
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "footer_rels_users_fk"
     }).onDelete("cascade"),
-    albumsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["albumsID"]],
       foreignColumns: [albums.id],
       name: "footer_rels_albums_fk"
     }).onDelete("cascade"),
-    tracksIdFk: foreignKey({
+    foreignKey({
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "footer_rels_tracks_fk"
     }).onDelete("cascade"),
-    playlistsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["playlistsID"]],
       foreignColumns: [playlists.id],
       name: "footer_rels_playlists_fk"
     }).onDelete("cascade"),
-    organizationsIdFk: foreignKey({
+    foreignKey({
       columns: [columns["organizationsID"]],
       foreignColumns: [organizations.id],
       name: "footer_rels_organizations_fk"
     }).onDelete("cascade"),
-    categoriesIdFk: foreignKey({
+    foreignKey({
       columns: [columns["categoriesID"]],
       foreignColumns: [categories.id],
       name: "footer_rels_categories_fk"
     }).onDelete("cascade")
-  })
+  ]
 );
 
 export const relations_users_locales = relations(users_locales, ({ one }) => ({
@@ -7077,10 +5954,10 @@ export const relations_sessions = relations(sessions, ({ one }) => ({
     references: [users.id],
     relationName: "impersonatedBy"
   }),
-  activeOrganization: one(organizations, {
-    fields: [sessions.activeOrganization],
+  activeOrganizationId: one(organizations, {
+    fields: [sessions.activeOrganizationId],
     references: [organizations.id],
-    relationName: "activeOrganization"
+    relationName: "activeOrganizationId"
   })
 }));
 export const relations_accounts = relations(accounts, ({ one }) => ({
@@ -7190,33 +6067,6 @@ export const relations_media = relations(media, ({ one, many }) => ({
     relationName: "author"
   }),
   _rels: many(media_rels, {
-    relationName: "_rels"
-  })
-}));
-export const relations__media_v_rels = relations(_media_v_rels, ({ one }) => ({
-  parent: one(_media_v, {
-    fields: [_media_v_rels.parent],
-    references: [_media_v.id],
-    relationName: "_rels"
-  }),
-  usersID: one(users, {
-    fields: [_media_v_rels.usersID],
-    references: [users.id],
-    relationName: "users"
-  })
-}));
-export const relations__media_v = relations(_media_v, ({ one, many }) => ({
-  parent: one(media, {
-    fields: [_media_v.parent],
-    references: [media.id],
-    relationName: "parent"
-  }),
-  version_author: one(users, {
-    fields: [_media_v.version_author],
-    references: [users.id],
-    relationName: "version_author"
-  }),
-  _rels: many(_media_v_rels, {
     relationName: "_rels"
   })
 }));
@@ -7780,15 +6630,15 @@ export const relations_posts_rels = relations(posts_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "_rels"
   }),
-  postsID: one(posts, {
-    fields: [posts_rels.postsID],
-    references: [posts.id],
-    relationName: "posts"
-  }),
   tagsID: one(tags, {
     fields: [posts_rels.tagsID],
     references: [tags.id],
     relationName: "tags"
+  }),
+  postsID: one(posts, {
+    fields: [posts_rels.postsID],
+    references: [posts.id],
+    relationName: "posts"
   }),
   usersID: one(users, {
     fields: [posts_rels.usersID],
@@ -7797,15 +6647,15 @@ export const relations_posts_rels = relations(posts_rels, ({ one }) => ({
   })
 }));
 export const relations_posts = relations(posts, ({ one, many }) => ({
-  category: one(categories, {
-    fields: [posts.category],
-    references: [categories.id],
-    relationName: "category"
-  }),
   image: one(user_media, {
     fields: [posts.image],
     references: [user_media.id],
     relationName: "image"
+  }),
+  category: one(categories, {
+    fields: [posts.category],
+    references: [categories.id],
+    relationName: "category"
   }),
   author: one(users, {
     fields: [posts.author],
@@ -7840,15 +6690,15 @@ export const relations__posts_v_rels = relations(_posts_v_rels, ({ one }) => ({
     references: [_posts_v.id],
     relationName: "_rels"
   }),
-  postsID: one(posts, {
-    fields: [_posts_v_rels.postsID],
-    references: [posts.id],
-    relationName: "posts"
-  }),
   tagsID: one(tags, {
     fields: [_posts_v_rels.tagsID],
     references: [tags.id],
     relationName: "tags"
+  }),
+  postsID: one(posts, {
+    fields: [_posts_v_rels.postsID],
+    references: [posts.id],
+    relationName: "posts"
   }),
   usersID: one(users, {
     fields: [_posts_v_rels.usersID],
@@ -7862,15 +6712,15 @@ export const relations__posts_v = relations(_posts_v, ({ one, many }) => ({
     references: [posts.id],
     relationName: "parent"
   }),
-  version_category: one(categories, {
-    fields: [_posts_v.version_category],
-    references: [categories.id],
-    relationName: "version_category"
-  }),
   version_image: one(user_media, {
     fields: [_posts_v.version_image],
     references: [user_media.id],
     relationName: "version_image"
+  }),
+  version_category: one(categories, {
+    fields: [_posts_v.version_category],
+    references: [categories.id],
+    relationName: "version_category"
   }),
   version_author: one(users, {
     fields: [_posts_v.version_author],
@@ -7914,44 +6764,6 @@ export const relations_user_media = relations(user_media, ({ one, many }) => ({
     relationName: "_rels"
   })
 }));
-export const relations__user_media_v_rels = relations(
-  _user_media_v_rels,
-  ({ one }) => ({
-    parent: one(_user_media_v, {
-      fields: [_user_media_v_rels.parent],
-      references: [_user_media_v.id],
-      relationName: "_rels"
-    }),
-    usersID: one(users, {
-      fields: [_user_media_v_rels.usersID],
-      references: [users.id],
-      relationName: "users"
-    })
-  })
-);
-export const relations__user_media_v = relations(
-  _user_media_v,
-  ({ one, many }) => ({
-    parent: one(user_media, {
-      fields: [_user_media_v.parent],
-      references: [user_media.id],
-      relationName: "parent"
-    }),
-    version_author: one(users, {
-      fields: [_user_media_v.version_author],
-      references: [users.id],
-      relationName: "version_author"
-    }),
-    version_folder: one(payload_folders, {
-      fields: [_user_media_v.version_folder],
-      references: [payload_folders.id],
-      relationName: "version_folder"
-    }),
-    _rels: many(_user_media_v_rels, {
-      relationName: "_rels"
-    })
-  })
-);
 export const relations_delta_locales = relations(delta_locales, ({ one }) => ({
   _parentID: one(delta, {
     fields: [delta_locales._parentID],
@@ -8095,6 +6907,11 @@ export const relations_profile_rels = relations(profile_rels, ({ one }) => ({
     references: [profile.id],
     relationName: "_rels"
   }),
+  tagsID: one(tags, {
+    fields: [profile_rels.tagsID],
+    references: [tags.id],
+    relationName: "tags"
+  }),
   usersID: one(users, {
     fields: [profile_rels.usersID],
     references: [users.id],
@@ -8136,6 +6953,11 @@ export const relations__profile_v_rels = relations(
       fields: [_profile_v_rels.parent],
       references: [_profile_v.id],
       relationName: "_rels"
+    }),
+    tagsID: one(tags, {
+      fields: [_profile_v_rels.tagsID],
+      references: [tags.id],
+      relationName: "tags"
     }),
     usersID: one(users, {
       fields: [_profile_v_rels.usersID],
@@ -9183,9 +8005,6 @@ type DatabaseSchema = {
   enum__users_v_version_status: typeof enum__users_v_version_status;
   enum__users_v_published_locale: typeof enum__users_v_published_locale;
   enum_admin_invitations_role: typeof enum_admin_invitations_role;
-  enum_media_status: typeof enum_media_status;
-  enum__media_v_version_status: typeof enum__media_v_version_status;
-  enum__media_v_published_locale: typeof enum__media_v_published_locale;
   enum_notifications_type: typeof enum_notifications_type;
   enum_notifications_status: typeof enum_notifications_status;
   enum_notifications_action_link_type: typeof enum_notifications_action_link_type;
@@ -9226,9 +8045,6 @@ type DatabaseSchema = {
   enum_posts_status: typeof enum_posts_status;
   enum__posts_v_version_status: typeof enum__posts_v_version_status;
   enum__posts_v_published_locale: typeof enum__posts_v_published_locale;
-  enum_user_media_status: typeof enum_user_media_status;
-  enum__user_media_v_version_status: typeof enum__user_media_v_version_status;
-  enum__user_media_v_published_locale: typeof enum__user_media_v_published_locale;
   enum_delta_status: typeof enum_delta_status;
   enum__delta_v_version_status: typeof enum__delta_v_version_status;
   enum__delta_v_published_locale: typeof enum__delta_v_published_locale;
@@ -9292,8 +8108,6 @@ type DatabaseSchema = {
   categories_rels: typeof categories_rels;
   media: typeof media;
   media_rels: typeof media_rels;
-  _media_v: typeof _media_v;
-  _media_v_rels: typeof _media_v_rels;
   tags: typeof tags;
   notifications: typeof notifications;
   notifications_rels: typeof notifications_rels;
@@ -9331,8 +8145,6 @@ type DatabaseSchema = {
   _posts_v_rels: typeof _posts_v_rels;
   user_media: typeof user_media;
   user_media_rels: typeof user_media_rels;
-  _user_media_v: typeof _user_media_v;
-  _user_media_v_rels: typeof _user_media_v_rels;
   delta: typeof delta;
   delta_locales: typeof delta_locales;
   delta_rels: typeof delta_rels;
@@ -9413,8 +8225,6 @@ type DatabaseSchema = {
   relations_categories: typeof relations_categories;
   relations_media_rels: typeof relations_media_rels;
   relations_media: typeof relations_media;
-  relations__media_v_rels: typeof relations__media_v_rels;
-  relations__media_v: typeof relations__media_v;
   relations_tags: typeof relations_tags;
   relations_notifications_rels: typeof relations_notifications_rels;
   relations_notifications: typeof relations_notifications;
@@ -9452,8 +8262,6 @@ type DatabaseSchema = {
   relations__posts_v: typeof relations__posts_v;
   relations_user_media_rels: typeof relations_user_media_rels;
   relations_user_media: typeof relations_user_media;
-  relations__user_media_v_rels: typeof relations__user_media_v_rels;
-  relations__user_media_v: typeof relations__user_media_v;
   relations_delta_locales: typeof relations_delta_locales;
   relations_delta_rels: typeof relations_delta_rels;
   relations_delta: typeof relations_delta;

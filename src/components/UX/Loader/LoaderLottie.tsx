@@ -50,7 +50,7 @@ export const LoaderLottie = () => {
     <div
       data-themed="background-color,color"
       className={
-        "fixed inset-0 flex h-screen w-screen flex-col items-center justify-center bg-[oklch(var(--bg/1))]"
+        "fixed inset-0 flex h-screen w-screen flex-col items-center justify-center bg-[oklch(var(--bg)/1)]"
       }
       ref={divRef}
     >

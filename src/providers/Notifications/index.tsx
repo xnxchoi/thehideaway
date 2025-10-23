@@ -60,7 +60,13 @@ const NotifyContext = createContext<{
   setAllRead: () => {}
 });
 
-const NotifyProxy = ({ children }: { children: ReactNode }) => {
+const NotifyProxy = ({
+  children,
+  isMe = false
+}: {
+  children: ReactNode;
+  isMe?: boolean;
+}) => {
   const lastFetched = useNore((s) => s.lastFetched);
   const updateNo = useNore((s) => s.setNotifications);
   // const handleSSEUpdate = useNore((s) => s.handleSSEUpdate);
@@ -83,13 +89,13 @@ const NotifyProxy = ({ children }: { children: ReactNode }) => {
     placeholderData: Array.from(notifications.values()),
     queryKey: ["NOTIFY", { user: user }, queryString],
     queryFn: fn,
-    enabled: !!user,
+    enabled: isMe || !!user,
     // Increase stale time since we have real-time updates via SSE
-    staleTime: 90 * 1000, // 5 minutes if SSE connected, 90 seconds otherwise
+    staleTime: isMe ? 30 * 1000 : 90 * 1000, // 5 minutes if SSE connected, 90 seconds otherwise
     // Reduce refetch interval when SSE is connected
 
     networkMode: "online",
-    gcTime: 60 * 1000
+    gcTime: isMe ? 60 * 1000 : 10 * 1000
   });
   useEffect(() => {
     if (data) {

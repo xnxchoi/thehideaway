@@ -7,6 +7,10 @@ import { hideIfNotAdmin } from "../helpers";
 import { DismissNotification } from "./endpoints/dismiss/dismiss";
 import { ReadAllNotifications } from "./endpoints/read-all/readAll";
 import { ReadNotification } from "./endpoints/read/read";
+import type { ImageCollectionOverview } from "@/components/UX/Media/types";
+import { randomNumber } from "@/utilities/randomNumber";
+import { getThumbnail } from "./hooks/getThumbnail";
+import { getFallbackImage } from "@/utilities/getFallbackImage";
 
 const fillDataHook: CollectionBeforeValidateHook<Notification> = async ({
   data,
@@ -129,7 +133,7 @@ export const Notifications: CollectionConfig = {
       admin: {
         components: {
           Field: {
-            path: "@adminOnlyFields/Relationship",
+            path: "@/payload/adminOnly/Relationship",
             serverProps: {
               allowAuthor: false,
               allowedRoles: ["admin"]
@@ -325,9 +329,25 @@ export const Notifications: CollectionConfig = {
   ],
   timestamps: true, // Automatically adds createdAt and updatedAt
   hooks: {
+    afterRead: [
+      async ({ doc: d, req }) => {
+        const doc = d as Notification;
+        if (!doc.thumbnail) {
+          const t = await getFallbackImage();
+          return {
+            ...doc,
+            fallbackImage: t
+          };
+        }
+        return {
+          ...doc,
+          fallbackImage: null
+        };
+      }
+    ],
     beforeValidate: [fillDataHook],
     beforeChange: [
-      ({ data, operation, originalDoc }) => {
+      async ({ req, data, operation, originalDoc }) => {
         // Set readAt timestamp when status changes to 'read'
         if (operation === "update") {
           if (data.read || data.dismissed) {
@@ -348,6 +368,10 @@ export const Notifications: CollectionConfig = {
         if (operation === "create") {
           if (data.trigger) {
             data.importance = Math.max(data.importance, data.sticky ? 2 : 1);
+          }
+          const image = data.thumbnail as undefined | null | string;
+          if (!image) {
+            data.thumbnail = await getThumbnail({});
           }
           data.readAt = null;
           data.status = "unread";

@@ -3,7 +3,7 @@ import { Bookmarks } from "@/payload/collections/Bookmarks";
 import { Categories } from "@/payload/collections/Categories";
 import { Citations } from "@/payload/collections/Citations";
 import { Comments } from "@/payload/collections/Comments";
-import { Deltas } from "@/payload/collections/Deltas";
+import { Deltas } from "@/payload/collections/Delta";
 import { Follows } from "@/payload/collections/Follows";
 import { Media } from "@/payload/collections/Media";
 import { Notifications } from "@/payload/collections/Notifications/Notification";

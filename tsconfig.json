@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -12,17 +16,31 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@payload-types": ["./src/payload-types.ts"],
-      "@payload-config": ["./src/payload.config.ts"],
-      "@types/*": ["./types/*"],
-      "@betterauth-ui": ["./src/lib/auth/betterauth-ui/src"],
-      "@betterauth-ui/*": ["./src/lib/auth/betterauth-ui/src/*"],
-      "@adminOnlyFields/*": ["./src/payload/fields/AdminOnly/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@payload-types": [
+        "src/payload-types.ts"
+      ],
+      "@payload-config": [
+        "src/payload.config.ts"
+      ],
+      "@types/*": [
+        "types/*"
+      ],
+      "@betterauth-ui": [
+        "src/lib/auth/betterauth-ui/src"
+      ],
+      "@betterauth-ui/*": [
+        "src/lib/auth/betterauth-ui/src/*"
+      ],
+      "@/payload/adminOnly/*": [
+        "src/payload/fields/AdminOnly/*"
+      ]
     },
     "plugins": [
       {
@@ -35,13 +53,10 @@
     "**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    ".grave/HighlightMenu_0929.tsx",
-    ".grave/Component.client copy.tsx",
-    ".grave/migrate_1003/20250922_120041.ts",
-    ".grave/migrate_1003/20250925_111558.ts",
-    ".grave/migrate_1003/20250927_162602.ts",
-    ".grave/migrate_1003/20250928_195131.ts",
-    ".grave/migrate_1003/20251006_025047.ts"
+    "src/payload/fields/ArticleTitleField/clien.b",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -3,7 +3,7 @@
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/UX/Link/Link";
+import { Button } from "@/components/UX/Button";
 import {
   Card,
   CardContent,

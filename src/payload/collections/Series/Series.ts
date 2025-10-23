@@ -608,7 +608,7 @@ export const SeriesConfig: CollectionConfig = {
 //     },admin:{
 //       components:{
 //        Field:{
-//         path:"@adminOnlyFields/Checkbox",
+//         path:"@/payload/adminOnly/Checkbox",
 //         serverProps:{
 //           allowedRoles:["admin","editor","author"],
 //           allowAuthor:true
@@ -627,7 +627,7 @@ export const SeriesConfig: CollectionConfig = {
 //     admin:{
 //       position:"sidebar",
 //       components:{
-//         Field:{path:"@adminOnlyFields/Relationship", serverProps:{allowedRoles:["admin","editor","author"]}}
+//         Field:{path:"@/payload/adminOnly/Relationship", serverProps:{allowedRoles:["admin","editor","author"]}}
 //       }
 //     },
 //     access:{

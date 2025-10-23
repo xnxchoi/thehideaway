@@ -8,7 +8,7 @@ type Transitionn = typeof paths.transitions;
 type SignatureKeys = keyof Transitionn;
 export const Signature = () => {
   const ref = useRef<HTMLDivElement>(null!);
-  const isVisible = useInView(ref);
+  const isVisible = useInView(ref, { once: true });
 
   const signatureSvgVariants = useMemo(
     () => ({
@@ -55,12 +55,15 @@ export const Signature = () => {
         variants={signatureSvgVariants}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 14248.91 2723.74"
+        style={{
+          color: "oklch(var(--faded-fg)/.9)"
+        }}
       >
         <defs>
           <filter id="goo-1">
             <feGaussianBlur
               in="SourceGraphic"
-              stdDeviation="1.5"
+              stdDeviation="20"
               result="blur"
               edgeMode="extend"
             ></feGaussianBlur>
@@ -78,7 +81,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -93,7 +96,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -108,7 +111,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -123,7 +126,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -138,7 +141,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -153,7 +156,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -168,7 +171,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -183,7 +186,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -198,7 +201,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
         <m.path
@@ -213,7 +216,7 @@ export const Signature = () => {
             fill: "none",
             stroke: "currentColor",
             strokeLinecap: "round",
-            strokeWidth: 96
+            strokeWidth: 116
           }}
         />
       </m.svg>

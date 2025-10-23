@@ -1,0 +1,31 @@
+.estate-container {
+  .doc-controls {
+    position: fixed;
+    top: 44px;
+    width: var(--maxBodyWidth);
+    transition-duration: 0.5s;
+    transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    transition-property: width;
+    will-change: width;
+    left: auto;
+    right: auto;
+    z-index: 10003;
+    background: oklch(var(--faded-bg) / 0.3);
+    backdrop-filter: blur(8px);
+    display: flex;
+    padding-block: 6px;
+    padding-inline: 15px;
+    &__controls-wrapper {
+      transition: all cubic-bezier(0.32, 0.72, 0, 1) 0.5s;
+    }
+  }
+}
+button,
+a {
+  font-family: var(--font-sans);
+  text-decoration: none;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 0;
+}

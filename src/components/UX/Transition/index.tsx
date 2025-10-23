@@ -297,12 +297,11 @@ export type TransitionWrapperProps = {
 export const RPage = (props: TransitionWrapperProps) => {
   const { type, slug } = props;
   const setPage = useVoyageur((l) => l.setPage);
-  const pageIsTransitioning = useRPStore((l) => l.pageIsTransitioning);
   useEffect(() => {
     setPage({ pageType: type, slug: slug });
   }, [setPage, type, slug]);
 
-  return !pageIsTransitioning && <TransitionInternal {...props} />;
+  return <TransitionInternal {...props} />;
 };
 const TransitionInternal = (props: TransitionWrapperProps) => {
   const { children, headerVisibility = true, theme, ref: pageRef } = props;
@@ -450,7 +449,7 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
         }
       }}
     >
-      <m.div ref={ref}>{children}</m.div>
+      <div ref={ref}>{children}</div>
     </m.div>
   );
 };

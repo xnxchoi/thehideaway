@@ -38,6 +38,6 @@ export function Missing() {
       ref={curt}
       className="curtains-canvas"
       style={{ opacity: 0, visibility: "hidden" }}
-    ></div>
+    />
   );
 }

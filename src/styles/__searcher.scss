@@ -51,7 +51,7 @@
         z-index: -1;
 
         .search-result {
-          background-color: oklch(var(--button-background-inverted));
+          background-color: var(--button-background-inverted);
           border-radius: 40px;
           padding: 12.5px 20px;
           width: 100%;

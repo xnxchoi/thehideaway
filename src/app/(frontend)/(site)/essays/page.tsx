@@ -4,7 +4,7 @@ import { Link } from "@/components/UX/Link/Link";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { RPage } from "@/components/UX/Transition";
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
-import { CoverCard } from "@/payload/blocks/heros/ArtHero/components";
+import { CoverCard } from "@/blocks/heros/ArtHero/components";
 import { paginatedPosts } from "@/payload/collections/Posts/api/queryPostOverview";
 import configPromise from "@payload-config";
 import { getPayload } from "payload";

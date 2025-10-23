@@ -1,3 +1,3 @@
-export function ActionsPlugin({children}: { children: React.ReactNode }) {
-	return children
+export function ActionsPlugin({ children }: { children: React.ReactNode }) {
+  return children
 }

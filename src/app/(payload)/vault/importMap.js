@@ -4,7 +4,7 @@ import { default as default_8f094572d1e27757fe361f99ef6d3bce } from 'src/payload
 import { Passkeys as Passkeys_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { default as default_9c1b31be28199a3ad1310637f34c608c } from '@/payload/fields/AdminOnly/Checkbox/index.tsx'
 import { TwoFactorAuth as TwoFactorAuth_5a568d0e24198ca3140489e0d330f424 } from 'payload-auth/better-auth/plugin/client'
-import { default as default_06f735cf169ed830e4db12d16d834961 } from 'src/payload/fields/AdminOnly/Text/index.tsx'
+import { default as default_39627a1497fa3de33b6cd2a70a9b3519 } from '@/payload/adminOnly/Text/index.tsx'
 import { OverviewComponent as OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
@@ -14,10 +14,11 @@ import { AdminInviteButton as AdminInviteButton_5a568d0e24198ca3140489e0d330f424
 import { AdminButtons as AdminButtons_5a568d0e24198ca3140489e0d330f424 } from 'payload-auth/better-auth/plugin/client'
 import { GenerateUuidButton as GenerateUuidButton_ce3a59fe00f4e2209a6e5804babc005e } from 'payload-auth/shared/payload/fields'
 import { FieldCopyButton as FieldCopyButton_ce3a59fe00f4e2209a6e5804babc005e } from 'payload-auth/shared/payload/fields'
+import { default as default_c52f3fc25b86b81ff0e64e1f6d08a61d } from '@/payload/fields/SidebarControls/index.tsx'
 import { ExportListMenuItem as ExportListMenuItem_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
-import { ImageSearch as ImageSearch_18763abdf72285ba4b0ce56755000778 } from '@payload-bites/image-search/client'
+import { ImageSearch as ImageSearch_93dc10d2bce5ec3b5bf50b2a1ef5fb64 } from '@/payload/plugins/image-search/components/ImageSearch/index.tsx'
 import { default as default_b7b4d68dce65c32db97206d12ed4d8ca } from '@/payload/fields/slug/SlugServerComponent.tsx'
-import { default as default_b51e333273924ea0eb3b1d6e4aeea4d8 } from '@adminOnlyFields/Relationship'
+import { default as default_2473588dda3fd0934972e134a6780492 } from '@/payload/adminOnly/Relationship'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -36,9 +37,13 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { LinkFeatureClient as LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
+import { default as default_70e08ea543371b6697323d7aa8bdcacb } from '@/payload/fields/ArticleTitleField/CoverImage/index.tsx'
+import { RichTextField as RichTextField_92b7cd7af8c7bb10266836837266a305 } from '@/payload/fields/ArticleTitleField/index.tsx'
+import { ContentHandOffClientFeature as ContentHandOffClientFeature_aa22751c66f745fa6b4a72c66eb2fd35 } from '@/payload/Lexical/Features/HandOff/feature.client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { default as default_11f9a99c6df60d632482e8ff4af9501f } from '@adminOnlyFields/number'
+import { default as default_aa5b4816cc615fb3aae40de62b8fe691 } from '@/payload/adminOnly/Number'
+import { EditView as EditView_3fe0e77a71bd0241dce7f71480de2b18 } from '@/payload/views/Edit/index.tsx'
 import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { SelectColorFont as SelectColorFont_49e2daebc51d3df8679574a7e7bc2d2c } from '@/payload/fields/ColorPicker/CustomTailwindColor.tsx'
@@ -57,8 +62,11 @@ import { Icon as Icon_537d74cd4b75d6c420c521af18c7f707 } from '@/graphics/Icon/i
 import { Logo as Logo_6c8490617bef60039b781082d4fedeae } from '@/graphics/Logo/index.tsx'
 import { default as default_2d94be9e35107002a3ac73af900b9642 } from '@/payload/components/Actions/index.tsx'
 import { RSCRedirect as RSCRedirect_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
-import { default as default_6d0ca2bba18529dbd181b6eed71d7f89 } from '@/providers/Admins/index.tsx'
+import { LogoutButton as LogoutButton_f9fdd33fe909385816dbc77e133c4e52 } from '@/payload/elements/LogOut/index.tsx'
+import { default as default_61dde8fe48d1ab07294e3aa42f2af54e } from '@/payload/providers/Admins/index.tsx'
 import { ImportExportProvider as ImportExportProvider_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { DefaultDashboard as DefaultDashboard_5574a0e7ce5ea250597cc2ef604f9520 } from '@/payload/views/Dashboard/index.tsx'
+import { DefaultEditView as DefaultEditView_014484cd1e43542dee747727fb3919a8 } from '@/payload/views/Edit/index.client.tsx'
 import { AdminLogin as AdminLogin_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { AdminSignup as AdminSignup_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
 import { ForgotPassword as ForgotPassword_5afe2312a68aef77a0242fe42f239ed0 } from 'payload-auth/better-auth/plugin/rsc'
@@ -72,7 +80,7 @@ export const importMap = {
   "payload-auth/better-auth/plugin/rsc#Passkeys": Passkeys_5afe2312a68aef77a0242fe42f239ed0,
   "@/payload/fields/AdminOnly/Checkbox/index.tsx#default": default_9c1b31be28199a3ad1310637f34c608c,
   "payload-auth/better-auth/plugin/client#TwoFactorAuth": TwoFactorAuth_5a568d0e24198ca3140489e0d330f424,
-  "src/payload/fields/AdminOnly/Text/index.tsx#default": default_06f735cf169ed830e4db12d16d834961,
+  "@/payload/adminOnly/Text/index.tsx#default": default_39627a1497fa3de33b6cd2a70a9b3519,
   "@payloadcms/plugin-seo/client#OverviewComponent": OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaTitleComponent": MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
@@ -82,10 +90,11 @@ export const importMap = {
   "payload-auth/better-auth/plugin/client#AdminButtons": AdminButtons_5a568d0e24198ca3140489e0d330f424,
   "payload-auth/shared/payload/fields#GenerateUuidButton": GenerateUuidButton_ce3a59fe00f4e2209a6e5804babc005e,
   "payload-auth/shared/payload/fields#FieldCopyButton": FieldCopyButton_ce3a59fe00f4e2209a6e5804babc005e,
+  "@/payload/fields/SidebarControls/index.tsx#default": default_c52f3fc25b86b81ff0e64e1f6d08a61d,
   "@payloadcms/plugin-import-export/rsc#ExportListMenuItem": ExportListMenuItem_cdf7e044479f899a31f804427d568b36,
-  "@payload-bites/image-search/client#ImageSearch": ImageSearch_18763abdf72285ba4b0ce56755000778,
+  "@/payload/plugins/image-search/components/ImageSearch/index.tsx#ImageSearch": ImageSearch_93dc10d2bce5ec3b5bf50b2a1ef5fb64,
   "@/payload/fields/slug/SlugServerComponent.tsx#default": default_b7b4d68dce65c32db97206d12ed4d8ca,
-  "@adminOnlyFields/Relationship#default": default_b51e333273924ea0eb3b1d6e4aeea4d8,
+  "@/payload/adminOnly/Relationship#default": default_2473588dda3fd0934972e134a6780492,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -104,9 +113,13 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#LinkFeatureClient": LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
+  "@/payload/fields/ArticleTitleField/CoverImage/index.tsx#default": default_70e08ea543371b6697323d7aa8bdcacb,
+  "@/payload/fields/ArticleTitleField/index.tsx#RichTextField": RichTextField_92b7cd7af8c7bb10266836837266a305,
+  "@/payload/Lexical/Features/HandOff/feature.client#ContentHandOffClientFeature": ContentHandOffClientFeature_aa22751c66f745fa6b4a72c66eb2fd35,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@adminOnlyFields/number#default": default_11f9a99c6df60d632482e8ff4af9501f,
+  "@/payload/adminOnly/Number#default": default_aa5b4816cc615fb3aae40de62b8fe691,
+  "@/payload/views/Edit/index.tsx#EditView": EditView_3fe0e77a71bd0241dce7f71480de2b18,
   "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
   "@/payload/fields/ColorPicker/CustomTailwindColor.tsx#SelectColorFont": SelectColorFont_49e2daebc51d3df8679574a7e7bc2d2c,
@@ -125,8 +138,11 @@ export const importMap = {
   "@/graphics/Logo/index.tsx#Logo": Logo_6c8490617bef60039b781082d4fedeae,
   "@/payload/components/Actions/index.tsx#default": default_2d94be9e35107002a3ac73af900b9642,
   "payload-auth/better-auth/plugin/rsc#RSCRedirect": RSCRedirect_5afe2312a68aef77a0242fe42f239ed0,
-  "@/providers/Admins/index.tsx#default": default_6d0ca2bba18529dbd181b6eed71d7f89,
+  "@/payload/elements/LogOut/index.tsx#LogoutButton": LogoutButton_f9fdd33fe909385816dbc77e133c4e52,
+  "@/payload/providers/Admins/index.tsx#default": default_61dde8fe48d1ab07294e3aa42f2af54e,
   "@payloadcms/plugin-import-export/rsc#ImportExportProvider": ImportExportProvider_cdf7e044479f899a31f804427d568b36,
+  "@/payload/views/Dashboard/index.tsx#DefaultDashboard": DefaultDashboard_5574a0e7ce5ea250597cc2ef604f9520,
+  "@/payload/views/Edit/index.client.tsx#DefaultEditView": DefaultEditView_014484cd1e43542dee747727fb3919a8,
   "payload-auth/better-auth/plugin/rsc#AdminLogin": AdminLogin_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#AdminSignup": AdminSignup_5afe2312a68aef77a0242fe42f239ed0,
   "payload-auth/better-auth/plugin/rsc#ForgotPassword": ForgotPassword_5afe2312a68aef77a0242fe42f239ed0,

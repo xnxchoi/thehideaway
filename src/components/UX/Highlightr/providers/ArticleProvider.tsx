@@ -2,9 +2,9 @@
 import type { CatOverview, TagOverview } from "@/types/collections/delta";
 import type { AuthorOverview } from "@/types/collections/posts";
 import type { DataFromCollectionSlug } from "payload";
-import type { HighlightsCollectionSlug } from "../types";
-import { type ReactNode, useRef, useContext, createContext } from "react";
+import { type ReactNode, createContext, useContext, useRef } from "react";
 import { type StoreApi, createStore, useStore } from "zustand";
+import type { HighlightsCollectionSlug } from "../types";
 
 export type HighlightsCollection =
   DataFromCollectionSlug<HighlightsCollectionSlug>;

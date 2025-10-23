@@ -28,17 +28,24 @@ export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
   admin: {
     routes: {
-      browseByFolder: "/vault/folio",
-      login: "/vault/login"
+      browseByFolder: "/vault/folio"
     },
     components: {
-      providers: ["@/providers/Admins/index.tsx"],
+      providers: ["@/payload/providers/Admins/index.tsx"],
       graphics: {
         Logo: "@/graphics/Logo/index.tsx#Logo",
         Icon: "@/graphics/Icon/index.tsx#Icon"
       },
+      afterNavLinks: ["@/payload/elements/LogOut/index.tsx#LogoutButton"],
       actions: ["@/payload/components/Actions/index.tsx"],
-      views: {}
+      views: {
+        dashboard: {
+          Component: "@/payload/views/Dashboard/index.tsx#DefaultDashboard"
+        },
+        account: {
+          Component: "@/payload/views/Edit/index.client.tsx#DefaultEditView"
+        }
+      }
     },
     user: "users",
     importMap: {

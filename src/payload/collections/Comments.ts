@@ -10,10 +10,13 @@ import {
   CollectionConfig,
   CollectionSlug,
   FieldAccess,
-  Plugin
+  Plugin,
+  type CollapsibleField
 } from "payload";
 import { uuidv7 } from "uuidv7";
 import { Delta, Post, Response, type Citation } from "../../payload-types";
+import { PROPS_COLLAPSIBLE } from "./constants";
+import type { CheckboxField } from "payload";
 
 // Access control functions
 const isAdminOrAuthor: Access = ({ req: { user } }) => {
@@ -334,7 +337,44 @@ export const Comments: CollectionConfig<"responses"> = {
     maxPerDoc: 2
   }
 };
-
+const commentsField: CheckboxField = {
+  name: "commentsEnabled",
+  label: "Enable responses",
+  type: "checkbox",
+  defaultValue: true,
+  access: {
+    update: ({ req, data, doc }) => {
+      if (req.context.overrideAccess) return true;
+      if (
+        req.user &&
+        req.user.role &&
+        ["editor", "admin"].includes(req.user.role)
+      ) {
+        return true;
+      }
+      if (doc) {
+        if (doc.author && doc.author === req.user?.id) {
+          return true;
+        }
+      }
+      return false;
+    }
+  },
+  required: true,
+  index: true,
+  admin: {
+    position: "sidebar",
+    components: {
+      Field: {
+        path: "@/payload/fields/AdminOnly/Checkbox/index.tsx",
+        serverProps: {
+          allowedRoles: ["admin", "editor"],
+          allowAuthor: true
+        }
+      }
+    }
+  }
+};
 export const commentsPlugin =
   (pluginOptions: CommentsPluginOptions): Plugin =>
   (incomingConfig) => {
@@ -353,7 +393,6 @@ export const commentsPlugin =
     commentsCollection.admin = {
       ...commentsCollection.admin,
       hidden: ({ user }) => {
-        console.log("clientUser object looks like this", user);
         return !["admin", "editor"].some((r) => r === user?.role);
       }
     };
@@ -362,93 +401,71 @@ export const commentsPlugin =
         (c) => (r as string) === c.slug
       );
       if (collection) {
-        collection.fields = [
-          ...collection.fields,
-          {
-            name: "commentsEnabled",
-            type: "checkbox",
-            defaultValue: () => true,
-            access: {
-              update: ({ req, data, doc }) => {
-                if (req.context.overrideAccess) return true;
-                if (
-                  req.user &&
-                  req.user.role &&
-                  ["editor", "admin"].includes(req.user.role)
-                ) {
-                  return true;
-                }
-                if (doc) {
-                  if (doc.author && doc.author === req.user?.id) {
-                    return true;
-                  }
-                }
-                return false;
-              }
-            },
-            required: true,
-            index: true,
-            admin: {
-              position: "sidebar",
-              components: {
-                Field: {
-                  path: "@/payload/fields/AdminOnly/Checkbox/index.tsx",
-                  serverProps: {
-                    allowedRoles: ["admin", "editor"],
-                    allowAuthor: true
-                  }
-                }
-              }
-            }
-          }
-          // {
-          //   name: "responses",
-          //   type: "join",
-          //   collection: ["responses", "citations"],
-          //   on: "target",
-          //   hooks: {
-          //     afterRead: [
-          //       ({ req, data, siblingData, value }) => {
-          //         const user = req.user;
-          //         const userId = user?.id;
-          //         let enabled =
-          //           (siblingData?.commentsEnabled as undefined | boolean) ??
-          //           false;
-          //         const isAuthor = Boolean(
-          //           userId &&
-          //             (data as Delta | Post).author &&
-          //             userId === (data!.author as string)
-          //         );
-          //         const isAdminOrEditor = ["admin", "editor"].some(
-          //           (r) => r === user?.role
-          //         );
-          //         enabled = enabled || isAuthor || isAdminOrEditor;
-          //         if (!enabled) {
-          //           delete siblingData["responses"];
-          //           return {
-          //             docs: []
-          //           };
-          //         } else if (!(isAuthor || isAdminOrEditor)) {
-          //           return ((value || []) as Array<Response | Citation>).filter(
-          //             (r) => {
-          //               if ("_status" in r) {
-          //                 return r._status === "published";
-          //               }
-          //               if ("private" in r) {
-          //                 return r.private === false;
-          //               }
-          //               return true;
-          //             }
-          //           );
-          //         }
-          //         return value;
-          //       }
-          //     ]
-          //   },
-          //   hasMany: true,
-          //   defaultSort: ["isSticky", "-createdAt"]
-          // }
-        ];
+        const collectionFields = [...collection.fields];
+        const f = collectionFields.find(
+          (r) =>
+            r.type === "collapsible" && r.label && r.label === PROPS_COLLAPSIBLE
+        ) as null | CollapsibleField;
+        if (f) {
+          const ff = f.fields.slice(0, 3),
+            ff2 = f.fields.slice(3);
+          f.fields = [...ff, commentsField, ...ff2];
+          collection.fields = collectionFields;
+        } else {
+          collection.fields = [
+            ...collectionFields,
+            commentsField
+
+            // {
+            //   name: "responses",
+            //   type: "join",
+            //   collection: ["responses", "citations"],
+            //   on: "target",
+            //   hooks: {
+            //     afterRead: [
+            //       ({ req, data, siblingData, value }) => {
+            //         const user = req.user;
+            //         const userId = user?.id;
+            //         let enabled =
+            //           (siblingData?.commentsEnabled as undefined | boolean) ??
+            //           false;
+            //         const isAuthor = Boolean(
+            //           userId &&
+            //             (data as Delta | Post).author &&
+            //             userId === (data!.author as string)
+            //         );
+            //         const isAdminOrEditor = ["admin", "editor"].some(
+            //           (r) => r === user?.role
+            //         );
+            //         enabled = enabled || isAuthor || isAdminOrEditor;
+            //         if (!enabled) {
+            //           delete siblingData["responses"];
+            //           return {
+            //             docs: []
+            //           };
+            //         } else if (!(isAuthor || isAdminOrEditor)) {
+            //           return ((value || []) as Array<Response | Citation>).filter(
+            //             (r) => {
+            //               if ("_status" in r) {
+            //                 return r._status === "published";
+            //               }
+            //               if ("private" in r) {
+            //                 return r.private === false;
+            //               }
+            //               return true;
+            //             }
+            //           );
+            //         }
+            //         return value;
+            //       }
+            //     ]
+            //   },
+            //   hasMany: true,
+            //   defaultSort: ["isSticky", "-createdAt"]
+            // }
+          ];
+        }
+
         collection.hooks = {
           ...collection.hooks,
           afterDelete: [

@@ -51,7 +51,22 @@ import { CreditCard, Settings, User } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useTransitionRouter } from "next-transition-router";
 import type { CollectionSlug } from "payload";
-
+import type { ImageCollectionOverview } from "../Media/types";
+import type { CatOverview } from "@/types/collections/delta";
+type SearchItem = {
+  category: CatOverview[];
+  createdAt: string;
+  doc: { relationTo: string; value: string };
+  id: string;
+  meta: {
+    description: string;
+    image: ImageCollectionOverview;
+    title: string;
+  };
+  slug: string;
+  title: string;
+  updatedAt: string;
+};
 export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
   const { ref: toggle, ...rest } = props;
   const navIsOpen = useRPStore((store) => store.navIsOpen);
@@ -70,28 +85,7 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
   const user = useRPSession((l) => l);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [items, setItems] = useState<
-    {
-      category: any[];
-      createdAt: string;
-      doc: { relationTo: string; value: string };
-      id: string;
-      meta: {
-        description: string;
-        image: {
-          id: string;
-          alt: string;
-          caption: { [x: string]: any };
-          filename: string;
-          mimeType: string;
-        };
-        title: string;
-      };
-      slug: string;
-      title: string;
-      updatedAt: string;
-    }[]
-  >([]);
+  const [items, setItems] = useState<SearchItem[]>([]);
   const [init, setInit] = useState(true);
   const debouncedValue = useDebounce(value);
   useEffect(() => {
@@ -108,7 +102,7 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
         if (ite.ok) {
           const a = await ite.json();
           if (a.docs && a.docs.length > 0) {
-            setItems(a.docs.map((doc) => doc));
+            setItems(a.docs.map((doc: SearchItem) => doc));
           } else {
             setItems([]);
           }

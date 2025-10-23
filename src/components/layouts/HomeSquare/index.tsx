@@ -46,12 +46,17 @@ export const HomeSquare = (
       onMouseEnter={() => onEnter(inverse)}
       onMouseLeave={() => onLeave()}
       href={"/essays/" + `${article.slug}`}
-      className="col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] bg-[oklch(var(--faded-fg)/.95)] p-[20px] text-center text-[oklch(var(--faded-bg)/1)] lg:col-[1/-1] dark:bg-off-white/95"
+      className="col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] bg-[oklch(var(--faded-fg)/.95)] p-[20px] text-center text-[oklch(var(--faded-bg)/1)] lg:col-span-full dark:bg-off-white/95"
     >
-      <div className="relative min-h-[1px] w-full min-w-[1px] overflow-hidden rounded-[5px] pt-[56%]">
+      <div
+        className={cn(
+          "relative min-h-px w-full min-w-px overflow-hidden rounded-[5px]"
+        )}
+      >
         {article.image ? (
           <FrontImage
             resource={article.image}
+            aspectRatio={100 / 56}
             imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full transition-opacity duration-400"
           />
         ) : (
@@ -59,7 +64,7 @@ export const HomeSquare = (
         )}
       </div>
       <RP_BadgeTag
-        className="border-[color:oklch(var(--bg)/1)] text-[oklch(var(--bg)/1)]"
+        className="border-[oklch(var(--bg)/1)] text-[oklch(var(--bg)/1)]"
         content={category}
       />
       <div className="flex w-full flex-col items-center justify-center pb-8">

@@ -1,14 +1,14 @@
-/* Define the Tailwind layers in the correct order */
 @layer theme, base, components, utilities;
+/* Import Tailwind CSS 4 utilities only - exclude preflight to preserve PayloadCMS admin styles */
+@import "tailwindcss/theme" layer(theme) theme(inline) theme(static);
 
-/* Import the Tailwind theme styles */
-@import "tailwindcss/theme.css" layer(theme);
-
-/* Skip the preflight reset to avoid conflicts with Payload's admin styles */
-@import "tailwindcss/preflight.css" layer(base);
-
-/* Import Tailwind utilities */
-@import "tailwindcss/utilities.css" layer(utilities);
+@import "tailwindcss/utilities" layer(utilities) source("../../src");
+@source not "../../src/app/(frontend)";
+@source not "../../src/components";
+@source not "../../src/providers";
+@source not "../../src/lib";
+@source not "../../src/stores";
+@source not "../../src/hooks";
 @import "tw-animate-css";
 html {
   font-size: 62.5%;
@@ -16,9 +16,9 @@ html {
 .table {
   display: block;
 }
-:root {
-  --maxContainerWidth: 1440px;
-}
+/*
+---break---
+*/
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *,.dark, .dark *));
 
 @custom-variant data-active (&[data-active ~ ='true']);
@@ -60,6 +60,18 @@ color utility to any element that depends on these defaults.
   --text-9xl--line-height: 1;
 }
 
+/***
+---breakpoint---
+***/
+@theme {
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1440px;
+}
+
 @layer base {
   *,
   ::after,
@@ -74,9 +86,7 @@ color utility to any element that depends on these defaults.
   body {
     transition-property: background-color, color, height, overflow;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
@@ -86,79 +96,114 @@ color utility to any element that depends on these defaults.
   }
 
   h1 {
-    font-size: var(--text-4xl);
+    @apply text-4xl leading-[var(--font-4xl--line-height)] font-medium;
   }
 
   h2 {
-    font-size: var(--text-3xl);
+    @apply text-3xl leading-[var(--font-3xl--line-height)] font-normal;
   }
 
   h3 {
-    font-size: var(--text-2xl);
+    @apply text-2xl leading-[var(--font-2xl--line-height)] font-normal;
   }
 
   h4 {
-    font-size: var(--text-xl);
+    @apply text-xl leading-[var(--font-xl--line-height)] font-normal;
   }
 
   h5 {
-    font-size: var(--text-lg);
+    @apply text-lg leading-[var(--font-lg--line-height)] font-normal;
   }
 
   h6 {
-    font-size: calc(var(--text-base) * 1.125);
+    @apply text-base leading-[var(--font-base--line-height)] font-normal;
   }
 
   p {
-    font-size: var(--text-base);
+    @apply text-base leading-[var(--font-base--line-height)] font-normal;
   }
 
   body {
     @apply bg-background text-foreground;
   }
+
+  hr {
+    border-top-width: 0px;
+    height: 1px;
+    background-image: linear-gradient(
+      to right,
+      transparent 1%,
+      oklch(var(--off-fg) / 0.1) 5%,
+      oklch(var(--off-fg) / 0.2) 15%,
+      oklch(var(--off-fg) / 0.75) 45%,
+      oklch(var(--off-fg) / 0.75) 55%,
+      oklch(var(--off-fg) / 0.2) 85%,
+      oklch(var(--off-fg) / 0.1) 95%,
+      transparent 99%
+    );
+  }
+
+  blockquote {
+    @apply m-0 mx-auto w-full max-w-[1024px] px-2 py-13 text-center font-serif text-4xl leading-[1.618] font-medium italic;
+  }
+
+  code {
+    @apply font-mono text-lg leading-[1.75] tracking-[0.03px];
+  }
 }
 
+/**
+** Base variables
+**/
 :root {
-  --rouge-50: 93.35% 0.032 17.74;
-  --rouge-100: 87.94% 0.061 18.37;
-  --rouge-200: 76.3% 0.135 20.69;
-  --rouge-300: 67.55% 0.2 24.21;
-  --rouge-400: 62.41% 0.246 28.34;
-  --rouge-500: 54.79% 0.223 29.01;
-  --rouge-600: 46.33% 0.187 28.93;
-  --rouge-700: 38.1% 0.153 28.79;
-  --rouge-800: 28.2% 0.113 28.69;
-  --rouge-900: 18.88% 0.074 28.34;
-  --rouge-950: 12.53% 0.044 26.42;
-  --bleu-50: 98.04% 0.008 216.62;
-  --bleu-100: 96.81% 0.013 214.36;
-  --bleu-200: 93.1% 0.029 210.04;
-  --bleu-300: 89.47% 0.045 210.47;
-  --bleu-400: 84.43% 0.065 210.91;
-  --bleu-500: 79.63% 0.083 212.58;
-  --bleu-600: 74.16% 0.101 212.75;
-  --bleu-700: 67.18% 0.105 214.05;
-  --bleu-800: 58.71% 0.09 213.86;
-  --bleu-900: 45.36% 0.068 213.26;
-  --bleu-950: 36.97% 0.055 213.54;
-  --white: 98.5% 0.001 23.79;
+  --maxContainerWidth: 1440px;
+  --vw100: calc(100vw - calc(100vw - 100%));
+  --site-width: calc(calc(var(--vw100) / 100) * 99);
+  --mobile-width: calc(calc(var(--vw100) / 100) * 95);
+  --wide-width: min(var(--site-width), 1022px);
+  --color-dotteds-rgb: 134, 134, 134;
+  --headerHeight: 50px;
+  --content-width: min(var(--site-width), 840px);
+  --pad-header: calc(calc(100% - var(--site-width)) / 2);
+  --gutter: 2rem;
+  --gutter-sm: 1.6rem;
+  --gutter-xs: 0.8rem;
+  --vertical-gutter: 14rem;
+  --pad-inner: 5.2rem;
+  --halfGutter: calc(var(--gutter) * 0.5);
+  --radius: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --gutter: 1.6rem;
+    --gutter-sm: 1.2rem;
+    --gutter-xs: 0.6rem;
+  }
+}
+/**
+** Color variables
+**/
+:root {
+  --white: 98.52% 0.001 23.79;
+  --black: 9.69% 0.0175 23.79;
+  --grey-black: 0.22 0.0055 26.85;
   --opaque-white: 0.91 0 0;
   --opaque-black: 0.09 0 0;
   --cold-white: 97.84% 0.0106 243.4;
   --cold-black: 10.17% 0.0106 243.4;
   --cold-d-gray: 0.3676 0.0106 243.4;
   --cold-l-gray: 0.7794 0.0106 243.4;
-  --off-white: 97.5% 0.0013 218.99;
+  --off-white: 0.975 0.0013 218.99;
   --off-black: 10.17% 0.0013 218.99;
-  --faded-white: 97.5% 0.003 59;
+  --faded-white: 0.975 0.003 58.67;
   --faded-black: 10.17% 0.003 58.67;
-
   --l-gray: 0.705 0.015 286.06;
-  --d-gray: 0.274 0.001 286.033;
+  --d-gray: 0.274 0.003 286.033;
   --off-d-gray: 0.3676 0.0013 218.99;
   --off-l-gray: 0.7794 0.0013 218.99;
-  --faded-d-gray: 0.3676 0.001 58.67;
-  --faded-l-gray: 0.7794 0.001 58.67;
+  --faded-d-gray: 0.3676 0.003 58.67;
+  --faded-l-gray: 0.7794 0.003 58.67;
   --edge-black: 0.1822 0 20.06;
   --rosso-corsa: 0.5463 0.2239 29.2339;
   --pastel-sky-blue: 0.7456 0.1389 223.0922;
@@ -168,14 +213,13 @@ color utility to any element that depends on these defaults.
   --warm-yellow: 0.8455 0.161 82.9;
   --piercing-orange: 0.7858 0.165791 74.9677;
   --piercing-green: 0.9124 0.228 124.65;
-  --black: 9.69% 0.0175 23.79;
   --border-subtle: 31.14% 0.0055 26.85;
   --border-subtle-inverted: 82.97% 0 234.47;
   --red: 54.74% 0.2224 29.01;
   --green-white: 96.25% 0.0198 159.76;
   --melon: 81.7% 0.092 29.96;
   --blue-gray: 66.76% 0.0939 249.39;
-  --grey-black: 0.22 0.0055 26.85;
+
   --bg: var(--grey-black);
   --fg: var(--white);
   --gray1: hsl(0, 60%, 1%);
@@ -194,13 +238,21 @@ color utility to any element that depends on these defaults.
   --piercing-blue: 0.452 0.313214 264.052;
   --neutral-white: 78.94% 0.008 176.48;
   --neutral-black: 0.5 0 56.57;
+  --transparent-white: var(--neutral-white) / 25%;
+  --transparent-black: var(--neutral-black) / 25%;
+  --button-background: var(--transparent-white);
+  --button-background-inverted: var(--transparent-black);
+  --button-foreground: var(--n-s-fg);
+  --card: var(--faded-black);
+  --card-foreground: var(--faded-white);
+  --popover: oklch(var(--button-background));
+  --popover-foreground: oklch(var(--n-s-fg));
 
   --accent: var(--blue-gray);
   --accent-foreground: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.396 0.141 25.723);
   --border: oklch(var(--n-s-fg) / 0.65);
 
-  --radius: 0.8rem;
   --muted-background: oklch(var(--muted-bg));
   --muted-foreground: oklch(var(--muted-fg));
   --faded-background: oklch(var(--faded-bg));
@@ -228,14 +280,10 @@ color utility to any element that depends on these defaults.
   --sidebar-ring: oklch(0.871 0.006 286.286);
   --background: oklch(var(--bg));
   --foreground: oklch(var(--fg));
-  font-size: 62.5%;
 }
-@media (max-width: 768px) {
-  :root {
-    --gutter: 1.6rem;
-  }
-}
-
+/**
+Colors
+*/
 :root {
   --rouge-50: 93.35% 0.032 17.74;
   --rouge-100: 87.94% 0.061 18.37;
@@ -269,7 +317,7 @@ color utility to any element that depends on these defaults.
 }
 
 ::selection {
-  background-color: oklch(var(--rouge-500) / 1);
+  background-color: oklch(var(--bleu-200) / 1);
   color: oklch(var(--off-black) / 1);
 }
 
@@ -321,9 +369,26 @@ color utility to any element that depends on these defaults.
   }
 }
 
+/***
+---easings---
+***/
 @theme {
-  --color-white: oklch(var(--white));
-  --color-black: oklch(var(--black));
+  --ease-linear: cubic-bezier(1, 0, 0.3, 1);
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-power2: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-power3: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ease-power4: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-out: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-out-power2: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-power3: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-out-power4: cubic-bezier(0.895, 0.03, 0.685, 0.22);
+  --ease-in: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+  --ease-Sine: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+  --ease-in-out-2: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  --ease-in-out-power2: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --ease-in-out-power3: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+@theme inline {
   --color-cold-white: oklch(var(--cold-white));
   --color-cold-black: oklch(var(--cold-black));
   --color-cold-d-gray: oklch(var(--cold-d-gray));
@@ -358,9 +423,11 @@ color utility to any element that depends on these defaults.
   --color-bleu-800: oklch(var(--bleu-800));
   --color-bleu-900: oklch(var(--bleu-900));
   --color-bleu-950: oklch(var(--bleu-950));
+  --color-neutral-white: oklch(var(--neutral-white));
+  --color-neutral-black: oklch(var(--neutral-black));
   --color-edge-black: oklch(var(--edge-black));
   --color-rosso-corsa: oklch(var(--rosso-corsa));
-  --color-pastel-sky-blue: oklch(var(--pastel-sky-blue));
+  --color-pastel-sky-blue: oklch(var(--pastel-sky));
   --color-piercing-blue: oklch(var(--piercing-blue));
   --color-soft-peach: oklch(var(--soft-peach));
   --color-creamy-white: oklch(var(--creamy-white));
@@ -368,6 +435,9 @@ color utility to any element that depends on these defaults.
   --color-warm-yellow: oklch(var(--warm-yellow));
   --color-piercing-orange: oklch(var(--piercing-orange));
   --color-piercing-green: oklch(var(--piercing-green));
+}
+
+@theme inline {
   --gradient-rosso-to-peach: linear-gradient(
     45deg,
     var(--color-rosso-corsa),
@@ -419,36 +489,7 @@ color utility to any element that depends on these defaults.
     var(--color-piercing-orange),
     var(--color-pastel-sky-blue)
   );
-  --breakpoint-xs: 480px;
-  --breakpoint-sm: 640px;
 
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
-  --text-body: var(--text-base);
-  --text-small: var(--text-xs);
-  --text-h1: var(--text-4xl);
-  --text-h2: var(--text-3xl);
-  --text-h3: var(--text-2xl);
-  --text-h4: var(--text-xl);
-  --text-h5: var(--text-lg);
-  --text-h6: calc(var(--text-base) * 1.125);
-  --text-p: var(--text-base);
-  --ease-linear: cubic-bezier(1, 0, 0.3, 1);
-  --ease-out: cubic-bezier(0.165, 0.84, 0.44, 1);
-  --ease-in: cubic-bezier(0.755, 0.05, 0.855, 0.06);
-  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ease-in-out-2: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  --ease-power2: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-power3: cubic-bezier(0.645, 0.045, 0.355, 1);
-  --ease-power4: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-Sine: cubic-bezier(0.445, 0.05, 0.55, 0.95);
-  --ease-out-power2: cubic-bezier(0.55, 0.085, 0.68, 0.53);
-  --ease-out-power3: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  --ease-out-power4: cubic-bezier(0.895, 0.03, 0.685, 0.22);
-  --ease-out-power2: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --breakpoint-2xl: 1440px;
-  --ease-out-power3: cubic-bezier(0.215, 0.61, 0.355, 1);
   --clipPathSun: polygon(
     50% 0%,
     54% 40%,
@@ -647,12 +688,19 @@ color utility to any element that depends on these defaults.
 /*
 ---break---
 */
-
+:root {
+  --font-sans: var(--font-suit);
+  --font-serif: var(--font-narcissianNectare);
+  --font-dots: var(--font-dots);
+  --font-siegfried: var(--font-siegfried);
+}
 @theme inline {
-  --theme-bg: var(--background);
-  --theme-text: var(--foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-faded-background: var(--faded-background);
+  --color-faded-foreground: var(--faded-foreground);
+  --color-off-background: var(--off-background);
+  --color-off-foreground: var(--off-foreground);
   --color-muted-background: var(--muted-background);
   --color-muted-faded-foreground: var(--muted-faded-foreground);
   --color-muted-faded-background: var(--muted-faded-background);

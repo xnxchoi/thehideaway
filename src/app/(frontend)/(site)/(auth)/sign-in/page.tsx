@@ -23,7 +23,7 @@ export default function Page() {
             </div>
             The Hideaway.
           </Link>
-          <AuthCard view="SIGN_IN" />
+          <AuthCard view="SIGN_IN" redirectTo={"/me"} />
         </div>
         <VGradientModule />
       </div>

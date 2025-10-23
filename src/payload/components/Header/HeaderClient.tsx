@@ -233,7 +233,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const progressRate = useRef(0);
   const initiateAnimationTimeline = useRef<(() => void) | null>(null);
   const btBackground = useRef(
-    navIsOpen ? "transparent" : "oklch(var(--button-background))"
+    navIsOpen ? "transparent" : "var(--button-background)"
   );
 
   const themeRef = useRef(theme);
@@ -251,7 +251,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     btBackground.current = navIsOpen
       ? "oklch(var(--transparent-base)/0)"
-      : "oklch(var(--button-background))";
+      : "var(--button-background)";
     fxInnerTop.current = navIsOpen ? -top : 0;
     innerLeft.current = navIsOpen ? -left : 0;
     innerRight.current = navIsOpen ? -right : 0;

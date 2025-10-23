@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/UX/Link/Link";
+import { Button } from "./UX/Button";
 import {
   Command,
   CommandGroup,

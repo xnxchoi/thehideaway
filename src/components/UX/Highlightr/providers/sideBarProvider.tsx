@@ -22,7 +22,8 @@ import { useHighlighter } from "@/components/UX/Highlightr/providers/Highlighter
 import { HighlightCreateError } from "@/components/UX/Highlightr/HighlightErrors";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
 import type { HighlightedRange } from "@/components/UX/Highlightr/types";
-import { Button, Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/UX/Link/Link";
+import { Button } from "../../Button";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
 import { AuthUIContext, socialProviders } from "@/lib/auth/betterauth-ui/src";
 import { ProviderButton } from "@/lib/auth/betterauth-ui/src/components/auth/provider-button";

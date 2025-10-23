@@ -44,7 +44,7 @@ export const LikesPlugin =
         admin: {
           components: {
             Field: {
-              path: "@adminOnlyFields/number"
+              path: "@/payload/adminOnly/Number"
             }
           }
         },

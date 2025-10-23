@@ -39,15 +39,24 @@ import { UserMedia } from "@/payload-types";
 import Image from "next/image";
 import { capitalize } from "lodash-es";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import type { ImageCollectionOverview } from "@/components/UX/Media/types";
+import type {
+  ImageBaseSelect,
+  ImageCollection,
+  ImageCollectionSlug
+} from "@/types/payload-api-helpers";
 
-type PopulatedDocs = { relationTo: string; value: JsonObject }[];
+type PopulatedDocs = {
+  relationTo: string;
+  value: ImageBaseSelect;
+}[];
 
 export type ProfileImageProps = {
   readonly allowCreate?: boolean;
   readonly filterOptions?: FilterOptionsResult;
   readonly path: string;
   readonly readOnly?: boolean;
-  readonly relationTo: UploadField["relationTo"];
+  readonly relationTo: ImageCollectionSlug;
   readonly required?: boolean;
   readonly serverURL?: string;
   readonly idValue?: string;
@@ -80,12 +89,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
     path: urlPath
   });
 
-  const [populatedDocs, setPopulatedDocs] = useState<
-    {
-      relationTo: string;
-      value: JsonObject;
-    }[]
-  >();
+  const [populatedDocs, setPopulatedDocs] = useState<PopulatedDocs>();
   const { permissions } = useAuth();
 
   const [image, setImage] = useState<string | null>(initURLValue || null);
@@ -93,7 +97,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
   const [inserted, setInserted] = useState<boolean>(Boolean(initIDValue));
   const [hover, setHover] = useState<boolean>(false);
   const [activeRelationTo, setActiveRelationTo] =
-    useState<Extract<CollectionSlug, "userMedia" | "media">>("userMedia");
+    useState<ImageCollectionSlug>("userMedia");
   const filterOptions: FilterOptionsResult = useMemo(() => {
     return {
       ...filterOptionsFromProps,
@@ -112,10 +116,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
   const loadedValueDocsRef = useRef<boolean>(false);
 
   const onChange = useCallback(
-    async (
-      newValue: Pick<UserMedia, "id" | "thumbnailURL" | "url"> | null,
-      fallback?: string
-    ) => {
+    async (newValue: ImageBaseSelect | null, fallback?: string) => {
       console.log("onChange: ", newValue);
       if (!newValue) {
         setIDValue(null);
@@ -165,9 +166,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
     async (
       ids,
       relatedCollectionSlug
-    ): Promise<PaginatedDocs<
-      Pick<UserMedia, "id" | "thumbnailURL" | "url">
-    > | null> => {
+    ): Promise<PaginatedDocs<ImageBaseSelect> | null> => {
       if (!ids.length) {
         return null;
       }
@@ -208,11 +207,12 @@ export default function ProfileImageField(props: ProfileImageProps) {
         }
       );
       if (response.ok) {
-        const json = await response.json();
-        const sortedDocs = ids.map((id) =>
-          json.docs.find((doc) => {
-            return String(doc.id) === String(id);
-          })
+        const json = (await response.json()) as PaginatedDocs<ImageBaseSelect>;
+        const sortedDocs = ids.flatMap(
+          (id) =>
+            json.docs.find((doc) => {
+              return String(doc.id) === String(id);
+            }) || []
         );
 
         return { ...json, docs: sortedDocs };
@@ -223,10 +223,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
     [serverURL]
   );
   const onUploadSuccess = useCallback(
-    (
-      newDocs: Pick<UserMedia, "url" | "id" | "thumbnailURL">[],
-      fallback: string
-    ) => {
+    (newDocs: ImageBaseSelect[], fallback: string) => {
       const firstDoc = newDocs[0];
       if (firstDoc) {
         successToast("Image uploaded successfully");
@@ -297,17 +294,18 @@ export default function ProfileImageField(props: ProfileImageProps) {
   );
 
   const onDocCreate = useCallback(
-    (data) => {
-      if (data.doc) {
+    (data: { doc?: ImageBaseSelect }) => {
+      if (data.doc && data.doc !== undefined) {
+        const d = data.doc;
         setPopulatedDocs((currentDocs) => [
           ...(currentDocs || []),
           {
             relationTo: activeRelationTo,
-            value: data.doc
+            value: d
           }
         ]);
 
-        onChange(data.doc, urlValue);
+        onChange(d, urlValue);
       }
     },
     [activeRelationTo, onChange, urlValue]
@@ -325,7 +323,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
           return [
             {
               relationTo: activeRelationTo,
-              value: doc
+              value: doc as ImageBaseSelect
             }
           ];
         }
@@ -368,8 +366,8 @@ export default function ProfileImageField(props: ProfileImageProps) {
           if (existingDocIndex > -1) {
             const updatedDocs = [...(currentDocs || [])];
             updatedDocs[existingDocIndex] = {
-              relationTo: collectionSlug as CollectionSlug,
-              value: docs[0]
+              relationTo: collectionSlug as ImageCollectionSlug,
+              value: docs[0] as ImageBaseSelect
             };
 
             return updatedDocs;
@@ -379,16 +377,16 @@ export default function ProfileImageField(props: ProfileImageProps) {
     },
     [populateDocs, onChange]
   );
-  const onRemove = useCallback(
-    (newValue?: PopulatedDocs) => {
-      const newValueIDs = newValue
-        ? newValue.map(({ value }) => value.id)
-        : null;
-      onChange(newValueIDs ? newValueIDs[0] : null, "");
-      setPopulatedDocs(newValue ? newValue : []);
-    },
-    [onChange]
-  );
+  // const onRemove = useCallback(
+  //   (newValue?: PopulatedDocs) => {
+  //     const newValueIDs = newValue
+  //       ? newValue.map(({ value }) => value.id)
+  //       : null;
+  //     onChange(newValueIDs ? newValueIDs[0] : null, "");
+  //     setPopulatedDocs(newValue ? newValue : []);
+  //   },
+  //   [onChange]
+  // );
   useEffect(() => {
     const imageRemove = async () => {
       if (idValue) {
@@ -418,7 +416,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
           setPopulatedDocs(
             loadedDocs.docs.map((doc) => ({
               relationTo: activeRelationTo,
-              value: doc
+              value: doc as ImageBaseSelect
             }))
           );
         }
@@ -457,7 +455,11 @@ export default function ProfileImageField(props: ProfileImageProps) {
     },
     [onLocalFileSelection, urlValue]
   );
-  const { onMouseEnter, onMouseLeave } = useDomCursor({});
+  const [trashHovered, setTrashHovered] = useState(false);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    onEnter: () => setTrashHovered(true),
+    onLeave: () => setTrashHovered(false)
+  });
   const handleDragOver: DragEventHandler<HTMLDivElement> = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -491,56 +493,63 @@ export default function ProfileImageField(props: ProfileImageProps) {
         onPaste={handlePaste}
       >
         <div
-          className={cn(
-            "ease relative rounded-xl border-[1px] border-solid border-off-background p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:bg-muted-faded-background hover:text-off-background"
-          )}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
+          className={cn("flex w-full items-center justify-between", {
+            hidden: !!image
+          })}
         >
-          {!image && (
-            <input
-              id={"user_settings_photo_file"}
-              name={"user_settings[photo][file]"}
-              className={cn(
-                "absolute inset-0 z-[10] h-full w-full cursor-none overflow-hidden opacity-0",
-                { hidden: inserted }
-              )}
-              onChange={(e) => {
-                if (e.target.files) {
-                  onLocalFileSelection(e.target.files, urlValue || "");
-                }
-              }}
-              accept="image/*"
-              type={"file"}
-            />
-          )}
-          <label className={"cursor-none"} htmlFor="user_settings_photo_file">
-            <p>
-              Upload File
-              <svg
-                className="relative inline-block h-auto bg-transparent transition-colors duration-300 outline-none"
-                viewBox="0 0 20 20"
-                width="30"
-              >
-                <path
-                  xmlns="http://www.w3.org/2000/svg"
-                  d="M16.3,8.2C15.9,5.3,13.2,3,10,3C7.4,3,5.2,4.5,4.2,6.6C1.8,7.2,0,9.2,0,11.7c0,3,2.5,5.3,5.5,5.3 c0.6,0,1-0.4,1-1c0-0.6-0.4-1-1-1c-2,0-3.5-1.5-3.5-3.3c0-1.6,1.3-3,3-3.2c0.4,0,0.7-0.3,0.8-0.6C6.4,6.2,8,5,10,5 c2.5,0,4.4,1.9,4.4,4.1c0,0.6,0.4,1,1,1c1.5,0,2.6,1.1,2.6,2.4c0,1.3-1.1,2.4-2.6,2.4c-0.6,0-1,0.4-1,1c0,0.6,0.4,1,1,1 c2.5,0,4.6-1.9,4.6-4.4C20,10.4,18.4,8.7,16.3,8.2z"
-                  fill={"currentColor"}
-                />
-              </svg>
-            </p>
-          </label>
+          <div
+            className={cn(
+              "ease relative rounded-xl border-[1px] border-solid border-off-background p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:bg-muted-faded-background hover:text-off-background",
+              {
+                hidden: !!image
+              }
+            )}
+            role="button"
+          >
+            {!image && (
+              <input
+                id={"user_settings_photo_file"}
+                name={"user_settings[photo][file]"}
+                className={cn(
+                  "absolute inset-0 z-[10] h-full w-full cursor-none overflow-hidden opacity-0",
+                  { hidden: inserted }
+                )}
+                onChange={(e) => {
+                  if (e.target.files) {
+                    onLocalFileSelection(e.target.files, urlValue || "");
+                  }
+                }}
+                accept="image/*"
+                type={"file"}
+              />
+            )}
+            <label className={"cursor-none"} htmlFor="user_settings_photo_file">
+              <p>
+                Upload File
+                <svg
+                  className="relative inline-block h-auto bg-transparent transition-colors duration-300 outline-none"
+                  viewBox="0 0 20 20"
+                  width="30"
+                >
+                  <path
+                    xmlns="http://www.w3.org/2000/svg"
+                    d="M16.3,8.2C15.9,5.3,13.2,3,10,3C7.4,3,5.2,4.5,4.2,6.6C1.8,7.2,0,9.2,0,11.7c0,3,2.5,5.3,5.5,5.3 c0.6,0,1-0.4,1-1c0-0.6-0.4-1-1-1c-2,0-3.5-1.5-3.5-3.3c0-1.6,1.3-3,3-3.2c0.4,0,0.7-0.3,0.8-0.6C6.4,6.2,8,5,10,5 c2.5,0,4.4,1.9,4.4,4.1c0,0.6,0.4,1,1,1c1.5,0,2.6,1.1,2.6,2.4c0,1.3-1.1,2.4-2.6,2.4c-0.6,0-1,0.4-1,1c0,0.6,0.4,1,1,1 c2.5,0,4.6-1.9,4.6-4.4C20,10.4,18.4,8.7,16.3,8.2z"
+                    fill={"currentColor"}
+                  />
+                </svg>
+              </p>
+            </label>
+          </div>
+          <span className={"mx-5"}>OR</span>
+          <span
+            className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)] data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:opacity-100`}
+            data-visible={!image}
+            onClick={openListDrawer}
+            role="button"
+          >
+            Choose from library
+          </span>
         </div>
-        <span className={"mx-5"}>OR</span>
-        <span
-          className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)] data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:opacity-100`}
-          data-visible={!image}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onClick={openListDrawer}
-        >
-          Choose from library
-        </span>
         <AnimatePresence initial={false} mode={"sync"}>
           {image && (
             <m.div
@@ -565,7 +574,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
                 }
               }}
               className={cn(
-                "ease absolute inset-0 z-[1] transition-[filter] duration-200",
+                "absolute inset-0 z-[1] transition-[filter] duration-200 ease-out-power3",
                 hover && "blur-lg brightness-75"
               )}
             >
@@ -587,13 +596,19 @@ export default function ProfileImageField(props: ProfileImageProps) {
             )}
           >
             <span
-              onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
-              className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] transition-colors duration-300 hover:bg-off-background/50 hover:text-rouge-700/85"
+              className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] text-faded-white transition-colors duration-200 ease-out-power2 hover:bg-off-background/50 hover:text-rouge-700/85"
               onClick={onClickRemove}
+              onMouseEnter={onMouseEnter}
+              style={{
+                color: trashHovered
+                  ? "oklch(var(--rouge-700)/.85)"
+                  : "oklch(var(--faded-white)/.85)"
+              }}
+              onMouseLeave={onMouseLeave}
+              role="button"
             >
               <svg
-                className="relative mr-[.5em] inline-block h-auto w-[21px] cursor-none border-none bg-transparent fill-current align-middle transition-[fill] duration-300 outline-none"
+                className="relative mr-[.5em] inline-block h-auto w-[21px] cursor-none border-none bg-transparent fill-current align-middle transition-[fill] duration-200 ease-out-power2 outline-none"
                 viewBox="0 0 20 20"
                 width="16"
               >

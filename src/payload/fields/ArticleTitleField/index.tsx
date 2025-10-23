@@ -1,165 +1,135 @@
 "use client";
 
-import type { User } from "@/payload-types";
-import type {
-  DefaultTypedEditorState,
-  SerializedHeadingNode,
-  SerializedParagraphNode,
-  SerializedTextNode
-} from "@payloadcms/richtext-lexical";
+import type { RichTextFieldClient } from "payload";
+
 import {
-  buildEditorState,
-  InlineCodeFeatureClient,
+  type FeatureProviderClient,
+  type SanitizedClientEditorConfig
+} from "@payloadcms/richtext-lexical";
+import { ShimmerEffect, useConfig } from "@payloadcms/ui";
+import { lazy, Suspense, useEffect, useMemo, useState, type FC } from "react";
+
+import {
+  BoldFeatureClient,
+  defaultEditorLexicalConfig,
   InlineToolbarFeatureClient,
   ItalicFeatureClient,
-  RenderLexical,
-  RichTextField,
-  StrikethroughFeatureClient,
-  SubscriptFeatureClient,
-  SuperscriptFeatureClient
+  sanitizeClientEditorConfig
 } from "@payloadcms/richtext-lexical/client";
-import { useAuth, useField } from "@payloadcms/ui";
-import { DateTime } from "luxon";
-import type {
-  RichTextFieldClientComponent,
-  RichTextFieldClientProps,
-  TextFieldClientComponent
-} from "payload";
-import { useEffect, useRef, useState, type ComponentProps } from "react";
-import "./styles.scss";
-import type { ParagraphNode, SerializedEditorState, TextNode } from "lexical";
-import type { HeadingNode } from "@lexical/rich-text";
-import { convertLexicalToPlaintext } from "@payloadcms/richtext-lexical/plaintext";
-type RichTextValue = {
-  root: {
-    type: string;
-    children: {
-      type: string;
-      version: number;
-      [k: string]: unknown;
-    }[];
-    direction: ("ltr" | "rtl") | null;
-    format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
-    indent: number;
-    version: number;
-  };
-  [k: string]: unknown;
-};
-type RichTextFieldProps = ComponentProps<typeof RichTextField>;
+import type { LexicalRichTextFieldProps } from "node_modules/@payloadcms/richtext-lexical/dist/types";
+import { loadClientFeatures } from "./loader";
 
-const InlineRichText = (args: {
-  field: RichTextFieldProps["field"];
-  path: RichTextFieldProps["path"];
-  schemaPath: string;
-}) => {
-  const { field, path, schemaPath } = args;
-  const se = useAuth();
-  const date = DateTime.now().toLocaleString(DateTime.DATETIME_MED);
-  const user = se?.user;
-  const author =
-    (user &&
-      user.collection === "users" &&
-      (user as User & { collection: "users" }).name) ||
-    false;
-  const clientFeatures = {
-    toolbarInline: {
-      clientFeatureProps: {
-        featureKey: "toolbarInline",
-        order: 0
-      },
-      clientFeatureProvider: InlineToolbarFeatureClient
-    },
+const RichTextEditor = lazy(() =>
+  import("./inline").then((module) => ({ default: module.RichText }))
+);
 
-    strikethrough: {
-      clientFeatureProps: {
-        featureKey: "strikethrough",
-        order: 1
+export const RichTextField: FC<LexicalRichTextFieldProps> = (props) => {
+  const {
+    admin = {},
+    clientFeatures: vc,
+    featureClientImportMap,
+    path,
+    field,
+    lexicalEditorConfig = defaultEditorLexicalConfig,
+    schemaPath
+  } = props;
+  const featureClientSchemaMap = useMemo(() => ({}), []);
+  const { config } = useConfig();
+  const clientFeatures = useMemo(
+    () => ({
+      toolbarInline: {
+        clientFeatureProps: {
+          featureKey: "toolbarInline",
+          order: 0
+        },
+        clientFeatureProvider: InlineToolbarFeatureClient
       },
-      clientFeatureProvider: StrikethroughFeatureClient
-    },
-    italic: {
-      clientFeatureProps: {
-        featureKey: "italic",
-        order: 2
+
+      bold: {
+        clientFeatureProps: {
+          featureKey: "bold",
+          order: 1
+        },
+        clientFeatureProvider: BoldFeatureClient
       },
-      clientFeatureProvider: ItalicFeatureClient
-    },
-    superScript: {
-      clientFeatureProps: {
-        featureKey: "superScript",
-        order: 3
-      },
-      clientFeatureProvider: SuperscriptFeatureClient
-    },
-    subScript: {
-      clientFeatureProps: {
-        featureKey: "subScript",
-        order: 4
-      },
-      clientFeatureProvider: SubscriptFeatureClient
-    }
-  };
-  const { value: plainValue, setValue: setPlainValue } = useField<string>({
-    path: "title"
-  });
-  const { value, setValue } = useField<RichTextValue>({ path });
-  const [richValue, setRichValue] = useState<RichTextValue>(value);
-  const lastTime = useRef(performance.now());
-  const isRun = useRef(false);
-  useEffect(() => {
-    const children = value?.root?.children;
-    if (!isRun.current) {
-      if (children && children.length > 1) {
-        setRichValue({
-          root: {
-            ...(value.root ?? {}),
-            children: [children[0]]
-          }
-        });
-      } else {
-        setRichValue(value);
+      italic: {
+        clientFeatureProps: {
+          featureKey: "italic",
+          order: 2
+        },
+        clientFeatureProvider: ItalicFeatureClient
       }
-    }
-  }, [setValue, value]);
-  const to = useRef<ReturnType<typeof setTimeout> | null>(null);
+    }),
+    []
+  );
+  const [finalSanitizedEditorConfig, setFinalSanitizedEditorConfig] =
+    useState<null | SanitizedClientEditorConfig>(null);
+
   useEffect(() => {
-    if (!to.current) {
-      to.current = setTimeout(() => {
-        isRun.current = true;
-        setValue(richValue);
-        to.current = null;
-      }, 50);
+    if (finalSanitizedEditorConfig) {
+      return;
     }
-    return () => {
-      if (to.current) {
-        clearTimeout(to.current);
+    if (!clientFeatures) {
+      console.error("clientFeatures is undefined");
+      return;
+    }
+    const featureProvidersLocal: FeatureProviderClient<any, any>[] = [];
+
+    for (const [_featureKey, clientFeature] of Object.entries(clientFeatures)) {
+      if (!clientFeature.clientFeatureProvider) {
+        continue;
       }
-    };
-  }, [richValue, setValue]);
-  return author ? (
-    <div className="inline-rich-text">
-      <RichTextField
-        path={path}
-        schemaPath={schemaPath}
-        initialLexicalFormState={{}}
-        field={field}
-        admin={{ hideGutter: true }}
-        permissions={true}
-        clientFeatures={clientFeatures}
-        lexicalEditorConfig={undefined}
-        featureClientImportMap={{
-          toolbarInline: InlineToolbarFeatureClient,
-          strikethrough: StrikethroughFeatureClient,
-          italic: ItalicFeatureClient,
-          superScript: SuperscriptFeatureClient,
-          subScript: SubscriptFeatureClient
-        }}
-        featureClientSchemaMap={{}}
-      />
-    </div>
-  ) : (
-    <></>
+      featureProvidersLocal.push(
+        clientFeature.clientFeatureProvider(clientFeature.clientFeatureProps)
+      ); // Execute the clientFeatureProvider function here, as the server cannot execute functions imported from use client files
+    }
+    const finalLexicalEditorConfig = lexicalEditorConfig
+      ? lexicalEditorConfig
+      : defaultEditorLexicalConfig;
+
+    const resolvedClientFeatures = loadClientFeatures({
+      config,
+      featureClientImportMap,
+      featureClientSchemaMap,
+      field: field as RichTextFieldClient,
+      schemaPath: schemaPath ?? field.name,
+      unSanitizedEditorConfig: {
+        features: featureProvidersLocal,
+        lexical: finalLexicalEditorConfig
+      }
+    });
+
+    setFinalSanitizedEditorConfig(
+      sanitizeClientEditorConfig(
+        resolvedClientFeatures,
+        finalLexicalEditorConfig,
+        admin
+      )
+    );
+  }, [
+    lexicalEditorConfig,
+    admin,
+    finalSanitizedEditorConfig,
+    clientFeatures,
+    featureClientImportMap,
+    featureClientSchemaMap,
+    field,
+    config,
+    schemaPath
+  ]); // TODO: Optimize this and use useMemo for this in the future. This might break sub-richtext-blocks from the blocks feature. Need to investigate
+
+  return (
+    <Suspense fallback={<ShimmerEffect height="40px" />}>
+      {finalSanitizedEditorConfig && (
+        <RichTextEditor
+          {...props}
+          clientFeatures={clientFeatures}
+          schemaPath={schemaPath}
+          featureClientSchemaMap={featureClientSchemaMap}
+          initialLexicalFormState={{}}
+          editorConfig={finalSanitizedEditorConfig}
+        />
+      )}
+    </Suspense>
   );
 };
-
-export default InlineRichText;

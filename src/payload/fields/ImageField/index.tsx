@@ -489,7 +489,7 @@ export default function ImageField(props: ImageFieldProps) {
               type={"file"}
             />
           )}
-          <label className={"cursor-none"} htmlFor="image_file">
+          <label className={"cursor-none"} htmlFor="image_file" role="button">
             <p>
               Upload File
               <svg
@@ -513,6 +513,7 @@ export default function ImageField(props: ImageFieldProps) {
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           onClick={openListDrawer}
+          role="button"
         >
           Choose from library
         </span>
@@ -560,10 +561,9 @@ export default function ImageField(props: ImageFieldProps) {
           >
             {populatedDocs && populatedDocs.length > 0 && (
               <span
-                onMouseEnter={onMouseEnter}
-                onMouseLeave={onMouseLeave}
                 className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] transition-colors duration-300 hover:bg-[oklch(var(--off-bg)/.5)] hover:text-[oklch(var(--rouge-700)/1)]"
                 onClick={onClickRemove}
+                role="button"
               >
                 <svg
                   className="relative mr-[.5em] inline-block h-auto w-[21px] cursor-none border-none bg-transparent fill-current align-middle transition-[fill] duration-300 outline-none"

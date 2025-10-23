@@ -118,6 +118,9 @@ export interface Config {
     categories: {
       categorized: 'delta' | 'posts';
     };
+    posts: {
+      bookmarks: 'bookmarks';
+    };
     userMedia: {
       bookmarks: 'bookmarks';
     };
@@ -423,6 +426,10 @@ export interface UserMedia {
   caption?: string | null;
   darkmode?: boolean | null;
   author: string | User;
+  source: {
+    provider: 'unsplash' | 'hideaway';
+    sourceId: string;
+  };
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
@@ -562,6 +569,21 @@ export interface Post {
   id: string;
   image?: (string | null) | UserMedia;
   title: string;
+  richTitle?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   content: {
     root: {
       type: string;
@@ -577,30 +599,36 @@ export interface Post {
     };
     [k: string]: unknown;
   };
-  relatedPosts?: (string | Post)[] | null;
+  subtitle: string;
   category: string | Category;
+  slugKey?: string | null;
+  commentsEnabled: boolean;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  publishedAt?: string | null;
+  author: string | User;
+  tagged?: (string | Tag)[] | null;
+  relatedPosts?: (string | Post)[] | null;
   meta?: {
     title?: string | null;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
     image?: (string | null) | Media;
+    description?: string | null;
   };
-  tagged?: (string | Tag)[] | null;
-  subtitle: string;
-  publishedAt?: string | null;
-  author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
-  commentsEnabled: boolean;
   likes?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -640,7 +668,21 @@ export interface Category {
 export interface Delta {
   id: string;
   title: string;
-  tagged?: (string | Tag)[] | null;
+  richTitle?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
    * Provide the source of the delta spot.
    */
@@ -660,6 +702,16 @@ export interface Delta {
     };
     [k: string]: unknown;
   };
+  subtitle?: string | null;
+  category: string | Category;
+  slugKey?: string | null;
+  commentsEnabled: boolean;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  publishedAt?: string | null;
+  author: string | User;
+  tagged?: (string | Tag)[] | null;
   relatedDeltas?:
     | (
         | {
@@ -672,7 +724,6 @@ export interface Delta {
           }
       )[]
     | null;
-  category: string | Category;
   meta?: {
     title?: string | null;
     /**
@@ -681,24 +732,17 @@ export interface Delta {
     image?: (string | null) | Media;
     description?: string | null;
   };
-  publishedAt?: string | null;
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
-  commentsEnabled: boolean;
   likes?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -729,6 +773,10 @@ export interface Media {
   caption?: string | null;
   darkmode?: boolean | null;
   author: string | User;
+  source: {
+    provider: 'unsplash' | 'hideaway';
+    sourceId: string;
+  };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
@@ -1314,7 +1362,7 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
+  layout?: (CallToActionBlock | ContentBlock | Media1 | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
   pageLayout?: {
     footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
   };
@@ -1522,9 +1570,9 @@ export interface ContentBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
+ * via the `definition` "Media".
  */
-export interface MediaBlock {
+export interface Media1 {
   id: string | null;
   media: string | Media;
   blockName?: string | null;
@@ -1676,7 +1724,7 @@ export interface Session {
   /**
    * The currently active organization for the session
    */
-  activeOrganization?: (string | null) | Organization;
+  activeOrganizationId?: (string | null) | Organization;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -2419,7 +2467,7 @@ export interface SessionsSelect<T extends boolean = true> {
   userAgent?: T;
   user?: T;
   impersonatedBy?: T;
-  activeOrganization?: T;
+  activeOrganizationId?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2646,6 +2694,12 @@ export interface MediaSelect<T extends boolean = true> {
   caption?: T;
   darkmode?: T;
   author?: T;
+  source?:
+    | T
+    | {
+        provider?: T;
+        sourceId?: T;
+      };
   locked?: T;
   allowList?: T;
   authority?: T;
@@ -2814,7 +2868,7 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        mediaBlock?: T | MediaSelect1<T>;
         archive?: T | ArchiveBlockSelect<T>;
         fotd?: T | FOTDBlockSelect<T>;
         heroSquare?: T | HeroSquareBlockSelect<T>;
@@ -2896,9 +2950,9 @@ export interface ContentBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock_select".
+ * via the `definition` "Media_select".
  */
-export interface MediaBlockSelect<T extends boolean = true> {
+export interface MediaSelect1<T extends boolean = true> {
   id?: T;
   media?: T;
   blockName?: T;
@@ -2954,27 +3008,30 @@ export interface PostsSelect<T extends boolean = true> {
   id?: T;
   image?: T;
   title?: T;
+  richTitle?: T;
   content?: T;
-  relatedPosts?: T;
+  subtitle?: T;
   category?: T;
+  slugKey?: T;
+  commentsEnabled?: T;
+  hashId?: T;
+  slugLock?: T;
+  slug?: T;
+  publishedAt?: T;
+  author?: T;
+  tagged?: T;
+  relatedPosts?: T;
   meta?:
     | T
     | {
         title?: T;
         image?: T;
+        description?: T;
       };
-  tagged?: T;
-  subtitle?: T;
-  publishedAt?: T;
-  author?: T;
-  slugKey?: T;
-  hashId?: T;
-  slugLock?: T;
-  slug?: T;
+  bookmarks?: T;
   locked?: T;
   allowList?: T;
   authority?: T;
-  commentsEnabled?: T;
   likes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2989,6 +3046,12 @@ export interface UserMediaSelect<T extends boolean = true> {
   caption?: T;
   darkmode?: T;
   author?: T;
+  source?:
+    | T
+    | {
+        provider?: T;
+        sourceId?: T;
+      };
   bookmarks?: T;
   locked?: T;
   allowList?: T;
@@ -3088,11 +3151,20 @@ export interface UserMediaSelect<T extends boolean = true> {
  */
 export interface DeltaSelect<T extends boolean = true> {
   title?: T;
-  tagged?: T;
+  richTitle?: T;
   source?: T;
   content?: T;
-  relatedDeltas?: T;
+  subtitle?: T;
   category?: T;
+  slugKey?: T;
+  commentsEnabled?: T;
+  hashId?: T;
+  slugLock?: T;
+  slug?: T;
+  publishedAt?: T;
+  author?: T;
+  tagged?: T;
+  relatedDeltas?: T;
   meta?:
     | T
     | {
@@ -3100,17 +3172,10 @@ export interface DeltaSelect<T extends boolean = true> {
         image?: T;
         description?: T;
       };
-  publishedAt?: T;
   bookmarks?: T;
-  author?: T;
-  slugKey?: T;
-  hashId?: T;
-  slugLock?: T;
-  slug?: T;
   locked?: T;
   allowList?: T;
   authority?: T;
-  commentsEnabled?: T;
   likes?: T;
   updatedAt?: T;
   createdAt?: T;

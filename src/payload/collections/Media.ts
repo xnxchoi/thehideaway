@@ -1,6 +1,7 @@
-import { CollectionConfig, Where } from "payload";
+import { CollectionConfig } from "payload";
 
 import { populatePublishedAt } from "@/hooks/populatePublishedAt";
+import type { User } from "@/payload-types";
 import { hideIfNotAdmin } from "@/payload/collections/helpers";
 import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
 import { sanitizeAuthor } from "@/payload/fields/AuthorFields/hooks";
@@ -11,8 +12,7 @@ import {
 import { extractImageInfo } from "@/utilities/extractImageInfo";
 import path from "path";
 import { fileURLToPath } from "url";
-import type { User } from "@/payload-types";
-import { webpConversionHook } from "./Media/hooks/webpConversionHook";
+import { uuidv7 } from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -32,7 +32,36 @@ const MediaFields: CollectionConfig["fields"] = [
     defaultValue: false,
     index: true
   },
-  ...AuthorField(false)
+  ...AuthorField(false),
+  {
+    type: "group",
+    name: "source",
+    access: {
+      create: () => true,
+      update: () => false,
+      read: () => true
+    },
+    admin: {
+      hidden: true
+    },
+    fields: [
+      {
+        type: "select",
+        name: "provider",
+        options: [
+          { value: "unsplash", label: "Unsplash" },
+          { value: "hideaway", label: "Hideaway" }
+        ],
+        defaultValue: "hideaway",
+        required: true
+      },
+      {
+        type: "text",
+        name: "sourceId",
+        required: true
+      }
+    ]
+  }
 ];
 
 export const Media: CollectionConfig = {
@@ -46,6 +75,8 @@ export const Media: CollectionConfig = {
     filename: true,
     mimeType: true,
     width: true,
+    thumbnailURL: true,
+    blurDataURL: true,
     height: true,
     darkmode: true
   },
@@ -163,6 +194,31 @@ export const Media: CollectionConfig = {
             }
           }
         }
+      }
+    ],
+    beforeValidate: [
+      async ({ req, context, operation, data, originalDoc }) => {
+        let dt = data;
+        if (operation === "create") {
+          if (context.sourceId && context.sourceId.length > 0) {
+            dt = {
+              ...dt,
+              source: {
+                sourceId: context.sourceId,
+                provider: "unsplash"
+              }
+            };
+          }
+        } else {
+          dt = {
+            ...dt,
+            source: {
+              ...originalDoc.source
+            }
+          };
+        }
+        context.sourceId = undefined;
+        return dt;
       }
     ],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]

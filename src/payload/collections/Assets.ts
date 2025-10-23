@@ -4,16 +4,19 @@ import { CollectionConfig } from "payload";
 import { fileURLToPath } from "url";
 import { DateTime } from "luxon";
 import { hideIfNotAdmin } from "./helpers";
+import type { ImageCollectionOverview } from "@/components/UX/Media/types";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 export const Assets: CollectionConfig = {
   slug: "assets",
   defaultPopulate: {
-    filename: true,
     url: true,
-
+    filename: true,
+    mimeType: true,
     width: true,
+    thumbnailURL: true,
+    blurDataURL: true,
     height: true,
     darkmode: true
   },

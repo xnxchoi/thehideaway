@@ -1,7 +1,7 @@
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
+import "@/styles/payloadStyles.css";
 import "@payloadcms/next/css";
-import "../../styles/payloadStyles.css";
 import "./custom.scss";
 import config from "@payload-config";
 import "@payloadcms/next/css";
@@ -11,7 +11,7 @@ import React from "react";
 
 import { importMap } from "./vault/importMap";
 import { cn } from "@/lib/utils";
-import { NarcissianNectare, Suit } from "fonts";
+import { Blase, NarcissianNectare, Suit, Dots } from "fonts";
 import { GeistMono } from "geist/font/mono";
 
 type Args = {
@@ -35,8 +35,10 @@ const Layout = ({ children }: Args) => (
   >
     <div
       className={cn(
-        Suit.variable,
+        Blase.variable,
         NarcissianNectare.variable,
+        Suit.variable,
+        Dots.variable,
         GeistMono.variable,
         "relative min-h-screen w-screen"
       )}

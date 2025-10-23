@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-m";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, PillButton } from "@/components/UX/Button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
@@ -33,7 +33,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { ReferencedLink } from "@/components/UX/Link/referencedLink";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
-import { useHumanDate } from "@/payload/collections/Deltas/component/useLocaleDate";
+import { useHumanDate } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";
 import { BookmarkIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
@@ -59,63 +59,86 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [sortType, setSortType] = useState<SortType>("newest");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const filterNotifications = useCallback(
+    ({
+      notifications,
+      searchQuery,
+      filterType,
+      sortType
+    }: {
+      notifications: SyncedNotification[];
+      searchQuery: string;
+      filterType: FilterType;
+      sortType: SortType;
+    }) => {
+      let filtered = notifications;
 
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (notification) =>
+            notification.title.toLowerCase().includes(query) ||
+            notification.content?.toLowerCase().includes(query) ||
+            notification.type.toLowerCase().includes(query)
+        );
+      }
+
+      // Apply status filter
+      switch (filterType) {
+        case "unread":
+          filtered = filtered.filter((n) => !n.read);
+          break;
+        case "read":
+          filtered = filtered.filter((n) => n.read && !n.dismissed);
+          break;
+        case "dismissed":
+          filtered = filtered.filter((n) => n.dismissed);
+          break;
+        default:
+          filtered = filtered.filter((n) => !n.dismissed);
+      }
+
+      // Apply sorting
+      switch (sortType) {
+        case "oldest":
+          filtered = [...filtered].sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+          break;
+        case "type":
+          filtered = [...filtered].sort((a, b) => a.type.localeCompare(b.type));
+          break;
+        default: // newest
+          filtered = [...filtered].sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+      }
+
+      return filtered;
+    },
+    []
+  );
   // Filter and sort notifications
-  const filteredNotifications = useMemo(() => {
-    let filtered = notifications;
+  const [filteredNotifications, setFilteredNotifications] = useState<
+    SyncedNotification[]
+  >([]);
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (notification) =>
-          notification.title.toLowerCase().includes(query) ||
-          notification.content?.toLowerCase().includes(query) ||
-          notification.type.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply status filter
-    switch (filterType) {
-      case "unread":
-        filtered = filtered.filter((n) => !n.read);
-        break;
-      case "read":
-        filtered = filtered.filter((n) => n.read && !n.dismissed);
-        break;
-      case "dismissed":
-        filtered = filtered.filter((n) => n.dismissed);
-        break;
-      default:
-        filtered = filtered.filter((n) => !n.dismissed);
-    }
-
-    // Apply sorting
-    switch (sortType) {
-      case "oldest":
-        filtered = [...filtered].sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        break;
-      case "type":
-        filtered = [...filtered].sort((a, b) => a.type.localeCompare(b.type));
-        break;
-      default: // newest
-        filtered = [...filtered].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-    }
-
-    return filtered;
-  }, [notifications, searchQuery, filterType, sortType]);
-
-  // Group notifications by date
-  const groupedNotifications = useMemo(() => {
+  const [groupedNotifications, setGroupedNotifications] = useState<
+    Record<string, SyncedNotification[]>
+  >({});
+  useEffect(() => {
+    const filtered = filterNotifications({
+      notifications,
+      searchQuery,
+      filterType,
+      sortType
+    });
     const groups: Record<string, SyncedNotification[]> = {};
 
-    filteredNotifications.forEach((notification) => {
+    filtered.forEach((notification) => {
       const date = new Date(notification.createdAt);
       const today = new Date();
       const yesterday = new Date(today);
@@ -139,14 +162,12 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
       }
       groups[groupKey].push(notification);
     });
+    setFilteredNotifications(filtered);
+    setGroupedNotifications(groups);
+    setUnreadCount(filtered.filter((n) => !n.read && !n.dismissed).length);
+  }, [notifications, searchQuery, filterType, sortType, filterNotifications]);
 
-    return groups;
-  }, [filteredNotifications]);
-
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read && !n.dismissed).length,
-    [notifications]
-  );
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.size === filteredNotifications.length) {
@@ -186,12 +207,12 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
 
   return (
     <div
-      className={`mx-auto my-10 mt-[10rem] flex h-full max-w-[90vw] flex-col font-sans ${className}`}
+      className={`mx-auto my-[40px] mt-[10rem] flex h-full max-w-[90vw] flex-col font-sans ${className}`}
     >
       {/* Header */}
-      <div className="sticky top-0 z-10 flex flex-col gap-4 border-b bg-background/50 p-6 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 flex flex-col gap-[16px] border-b bg-background/50 p-[24px] backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-[12px]">
             <Bell className="h-[24px] w-[24px] text-foreground" />
             <div>
               <h1 className="text-3xl font-bold">Notifications</h1>
@@ -202,36 +223,30 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           </div>
 
           {unreadCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAllRead()}
-              disabled={isLoading}
-            >
-              <CheckCircle2 className="mr-2 h-[16px] w-[16px]" />
-              Mark all read
-            </Button>
+            <PillButton onClick={() => setAllRead()} disabled={isLoading}>
+              Clear
+            </PillButton>
           )}
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-[12px] sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3 h-[16px] w-[16px] -translate-y-1/2 transform text-muted-foreground" />
+            <Search className="absolute top-1/2 left-[12px] h-[16px] w-[16px] -translate-y-1/2 transform text-muted-foreground" />
             <Input
               placeholder="Search notifications..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-[40px]"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-[8px]">
             <Select
               value={filterType}
               onValueChange={(value: FilterType) => setFilterType(value)}
             >
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-[128px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -246,7 +261,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
               value={sortType}
               onValueChange={(value: SortType) => setSortType(value)}
             >
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-[128px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -263,36 +278,29 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 rounded-lg border bg-background/5 p-3"
+              className="flex items-center gap-[12px] rounded-lg border bg-background/5 p-[12px]"
             >
               <span className="text-base font-medium">
                 {selectedIds.size} selected
               </span>
               <Separator orientation="vertical" className="h-[16px]" />
-              <div className="flex gap-2">
+              <div className="flex gap-[8px]">
                 <Button
-                  size="sm"
-                  variant="outline"
                   onClick={() => handleBulkAction("read")}
+                  className={"flex items-center gap-[4px]"}
                   disabled={isLoading}
                 >
-                  <Eye className="mr-1 h-[16px] w-[16px]" />
+                  <Eye className="mr-[4px] h-[16px] w-[16px]" />
                   Mark read
                 </Button>
                 <Button
-                  size="sm"
-                  variant="outline"
                   onClick={() => handleBulkAction("dismiss")}
                   disabled={isLoading}
                 >
-                  <Archive className="mr-1 h-[16px] w-[16px]" />
+                  <Archive className="mr-[4px] h-[16px] w-[16px]" />
                   Dismiss
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setSelectedIds(new Set())}
-                >
+                <Button onClick={() => setSelectedIds(new Set())}>
                   Cancel
                 </Button>
               </div>
@@ -303,13 +311,13 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
 
       {/* Content */}
       <ScrollArea className="max-h-[75vh] flex-1">
-        <div className="p-6">
+        <div className="p-[24px]">
           {isLoading && filteredNotifications.length === 0 ? (
             <NotificationSkeleton />
           ) : Object.keys(groupedNotifications).length === 0 ? (
             <EmptyState searchQuery={searchQuery} filterType={filterType} />
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-[24px]">
               {Object.entries(groupedNotifications).map(
                 ([date, notifications]) => (
                   <motion.div
@@ -318,11 +326,11 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h3 className="sticky top-0 mb-3 bg-background/80 py-2 text-base font-semibold text-muted-foreground backdrop-blur-sm">
+                    <h3 className="sticky top-0 mb-[12px] bg-background/80 py-[8px] text-base font-semibold text-muted-foreground backdrop-blur-sm">
                       {date}
                     </h3>
                     <motion.div
-                      className="space-y-3"
+                      className="space-y-[12px]"
                       initial="hidden"
                       animate="visible"
                       variants={{
@@ -420,7 +428,7 @@ const NotificationCard = ({
     >
       <Card
         className={cn(
-          "group cursor-pointer transition-all duration-200",
+          "group transition-all duration-200",
           !notification.read && !notification.dismissed
             ? "border-muted-faded-background/20 bg-muted-faded-background/5"
             : notification.dismissed
@@ -431,10 +439,10 @@ const NotificationCard = ({
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => onToggleSelect(notification.id)}
       >
-        <CardContent className="p-4">
-          <div className="flex gap-4">
+        <CardContent className="p-[16px]">
+          <div className="flex gap-[16px]">
             {/* Selection Checkbox */}
-            <div className="flex items-start pt-1">
+            <div className="flex items-start pt-[4px]">
               <div
                 className={cn(
                   "flex h-[16px] w-[16px] items-center justify-center rounded border-2 transition-all",
@@ -451,7 +459,7 @@ const NotificationCard = ({
 
             {/* Thumbnail */}
             {notification.thumbnail && (
-              <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg">
+              <div className="h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg">
                 <FrontImage
                   resource={notification.thumbnail}
                   className="h-full w-full object-cover"
@@ -461,9 +469,9 @@ const NotificationCard = ({
 
             {/* Content */}
             <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-[12px]">
                 <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-2">
+                  <div className="mb-[4px] flex items-center gap-[8px]">
                     <span className="text-lg">
                       {getNotificationIcon(notification.type)}
                     </span>
@@ -477,7 +485,7 @@ const NotificationCard = ({
 
                   <h4
                     className={cn(
-                      "mb-1 text-base font-semibold",
+                      "mb-[4px] text-base font-semibold",
                       getStatusColor(notification)
                     )}
                   >
@@ -500,7 +508,7 @@ const NotificationCard = ({
                     </p>
                   )}
 
-                  <p className="mt-2 text-base text-muted-foreground">
+                  <p className="mt-[8px] text-base text-muted-foreground">
                     {getRelativeTime({ timestamp: notification.createdAt })}
                   </p>
                 </div>
@@ -512,13 +520,11 @@ const NotificationCard = ({
                       initial={{ opacity: 0, translateZ: 0 }}
                       animate={{ opacity: 1, translateZ: 10 }}
                       exit={{ opacity: 0, translateZ: 0 }}
-                      className="flex gap-1"
+                      className="flex gap-[4px]"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {!notification.read && (
                         <Button
-                          size="sm"
-                          variant="ghost"
                           onClick={handleMarkRead}
                           className="h-[32px] w-[32px] p-0"
                         >
@@ -526,8 +532,6 @@ const NotificationCard = ({
                         </Button>
                       )}
                       <Button
-                        size="sm"
-                        variant="ghost"
                         onClick={handleDismiss}
                         className="h-[32px] w-[32px] p-0 text-muted-foreground hover:text-destructive"
                       >
@@ -556,10 +560,10 @@ const EmptyState = ({
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="flex flex-col items-center justify-center py-12 text-center"
+    className="flex flex-col items-center justify-center py-[48px] text-center"
   >
-    <BellOff className="mb-4 h-16 w-16 text-muted-foreground/50" />
-    <h3 className="mb-2 text-lg font-semibold">
+    <BellOff className="mb-[16px] h-[64px] w-[64px] text-muted-foreground/50" />
+    <h3 className="mb-[8px] text-lg font-semibold">
       {searchQuery
         ? "No notifications found"
         : filterType === "unread"
@@ -578,21 +582,21 @@ const EmptyState = ({
 
 // Loading Skeleton
 const NotificationSkeleton = () => (
-  <div className="space-y-6">
+  <div className="space-y-[24px]">
     {[1, 2, 3].map((group) => (
       <div key={group}>
-        <Skeleton className="mb-3 h-[16px] w-20" />
-        <div className="space-y-3">
+        <Skeleton className="mb-[12px] h-[16px] w-[80px]" />
+        <div className="space-y-[12px]">
           {[1, 2, 3].map((item) => (
             <Card key={item}>
-              <CardContent className="p-4">
-                <div className="flex gap-4">
+              <CardContent className="p-[16px]">
+                <div className="flex gap-[16px]">
                   <Skeleton className="h-[16px] w-[16px] rounded" />
-                  <Skeleton className="h-12 w-12 rounded-lg" />
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-[16px] w-6" />
-                      <Skeleton className="h-[16px] w-16" />
+                  <Skeleton className="h-[48px] w-[48px] rounded-lg" />
+                  <div className="flex-1 space-y-[8px]">
+                    <div className="flex items-center gap-[8px]">
+                      <Skeleton className="h-[16px] w-[24px]" />
+                      <Skeleton className="h-[16px] w-[64px]" />
                     </div>
                     <Skeleton className="h-[16px] w-3/4" />
                     <Skeleton className="h-[12px] w-full" />

@@ -13,6 +13,7 @@ import { extractImageInfo } from "@/utilities/extractImageInfo";
 import path from "path";
 import { fileURLToPath } from "url";
 import { webpConversionHook } from "./UserMedia/hooks/webpConversionHook";
+import { uuidv7 } from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -26,6 +27,8 @@ export const UserMedia: CollectionConfig = {
     filename: true,
     mimeType: true,
     width: true,
+    thumbnailURL: true,
+    blurDataURL: true,
     height: true,
     darkmode: true
   },
@@ -62,6 +65,35 @@ export const UserMedia: CollectionConfig = {
       index: true
     },
     ...AuthorField(),
+    {
+      type: "group",
+      name: "source",
+      access: {
+        create: () => true,
+        update: () => false,
+        read: () => true
+      },
+      admin: {
+        hidden: true
+      },
+      fields: [
+        {
+          type: "select",
+          name: "provider",
+          options: [
+            { value: "unsplash", label: "Unsplash" },
+            { value: "hideaway", label: "Hideaway" }
+          ],
+          defaultValue: "hideaway",
+          required: true
+        },
+        {
+          type: "text",
+          name: "sourceId",
+          required: true
+        }
+      ]
+    },
 
     {
       name: "bookmarks",
@@ -163,6 +195,10 @@ export const UserMedia: CollectionConfig = {
               req.payload.logger.error("This user is banned.");
               throw new Error("This user is banned.");
             }
+            if (req.file.name.startsWith("unsplash-")) {
+              const unsplashId = req.file.name.split("-")[1];
+              unsplashId && (context.sourceId = unsplashId);
+            }
 
             const file = req.file as unknown as { md5: string };
             const hash = file.md5;
@@ -177,6 +213,31 @@ export const UserMedia: CollectionConfig = {
             }
           }
         }
+      }
+    ],
+    beforeValidate: [
+      async ({ req, context, operation, data, originalDoc }) => {
+        let dt = data;
+        if (operation === "create") {
+          if (context.sourceId && context.sourceId.length > 0) {
+            dt = {
+              ...dt,
+              source: {
+                sourceId: context.sourceId,
+                provider: "unsplash"
+              }
+            };
+          }
+        } else {
+          dt = {
+            ...dt,
+            source: {
+              ...originalDoc.source
+            }
+          };
+        }
+        context.sourceId = undefined;
+        return dt;
       }
     ],
     beforeChange: [

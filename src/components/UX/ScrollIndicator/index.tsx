@@ -244,6 +244,15 @@ export const ScrollIndicator = () => {
     }),
     []
   );
+  const [trackVar, setTrackVar] = useState("idle");
+  const trackEnter = useCallback(
+    () => setTrackVar((r) => (r === "dragging" ? r : "hovered")),
+    []
+  );
+  const trackLeave = useCallback(
+    () => setTrackVar((r) => (r === "dragging" ? r : "idle")),
+    []
+  );
   const onEnter = useCallback(
     () => setTrackk((r) => (r === "dragging" ? r : "hovered")),
     []
@@ -266,19 +275,19 @@ export const ScrollIndicator = () => {
         <m.div
           key="scroller"
           className={cn(
-            "scroll-indicator fixed top-[5px] right-[0px] bottom-[5px] z-[300] flex w-[40px] justify-end bg-transparent transition-colors duration-150 ease-out-power2 not-data-[drag=true]:hover:animate-pulse not-data-[drag=true]:hover:bg-muted-faded-background/20 md:top-[15px] md:bottom-[40px]"
+            "scroll-indicator fixed top-[5px] right-[0px] bottom-[5px] z-[300] flex w-[40px] justify-end bg-gradient-to-r from-background/0 via-muted-faded-background/10 via-55% to-[oklch(var(--edge-black)/.5)] transition-colors duration-150 ease-out-power2 not-data-[drag=true]:hover:animate-pulse md:top-[10px] md:bottom-[20px]"
           )}
           data-drag={dragging}
           variants={{
             default: {
               width: "40px"
             },
-            draggig: {
+            dragging: {
               width: "15vw"
             }
           }}
           initial="default"
-          animate={dragging ? "draggig" : "default"}
+          animate={dragging ? "dragging" : "default"}
           exit="default"
           ref={scrollerRef}
           onPointerDown={startDrag}

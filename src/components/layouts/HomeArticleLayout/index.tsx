@@ -33,9 +33,10 @@ export const HomeArticleLayout = (props: {
                 href={"/essays/" + `${posts[1].slug}`}
                 className="grid gap-y-[20px] border-t-[1px] border-r-[1px] border-b-[1px] border-solid border-[color:oklch(var(--fg)/.5)] bg-transparent p-[20px] pl-0 break-words decoration-[none] lg:col-[1/3] lg:row-[2] lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
-                <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:row-[1/3]">
+                <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3]">
                   {posts[1].image && (
                     <FrontImage
+                      aspectRatio={1}
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
                       resource={posts[1].image as any}
                     />
@@ -61,9 +62,10 @@ export const HomeArticleLayout = (props: {
                 href={"/essays/" + `${posts[2].slug}`}
                 className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-[color:oklch(var(--fg)/.5)] bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
-                <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:row-[1/3] lg:aspect-square">
+                <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3] lg:aspect-square">
                   {posts[2].image && (
                     <FrontImage
+                      aspectRatio={1}
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
                       resource={posts[2].image as any}
                     />
@@ -183,6 +185,7 @@ const Article = (
         <div className="relative ml-[16px] aspect-[4/3] h-[75px] self-start bg-[oklch(var(--off-bg)/.1)]">
           {image && (
             <FrontImage
+              aspectRatio={4 / 3}
               alt={title}
               className="border-color-[oklch(var(--off-bg)/.9)] radius-[4px] absolute inset-0 border-[1px] border-solid"
               resource={image}

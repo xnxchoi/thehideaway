@@ -30,12 +30,12 @@ import config from "@payload-config";
 import { getAssetThumb } from "./getAssetThumb";
 
 import { commentsPlugin } from "@/payload/collections/Comments";
-import { imageSearchPlugin } from "@payload-bites/image-search";
 import { Assets } from "../collections/Assets";
 import { Media } from "../collections/Media";
 import { UserMedia } from "../collections/UserMedia";
 import { LikesPlugin } from "./Likes";
 import { userFieldOrganizerPlugin } from "./userField";
+import { imageSearchPlugin } from "./image-search";
 
 const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
   if (doc) {

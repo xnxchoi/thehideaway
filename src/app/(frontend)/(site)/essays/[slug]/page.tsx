@@ -49,7 +49,7 @@ export default async function Post({ params: paramsPromise }: Args) {
     <RPage type={"posts"} slug={[slug]} key={slug}>
       <PageClient post={post}>
         <Narrateur post={post} />
-      </PageClient>{" "}
+      </PageClient>
       <div
         className={
           "fixed inset-0 z-[0] h-svh w-svw bg-faded-black dark:bg-faded-white"

@@ -1,20 +1,26 @@
-import { Banner } from "@/payload/blocks/Banner/config";
-import { Code } from "@/payload/blocks/Code/config";
-import { MediaBlock } from "@/payload/blocks/MediaBlock/config";
+import { Banner } from "@/blocks/Banner/config";
+import { Code } from "@/blocks/Code/config";
+import { MediaBlock } from "@/blocks/MediaBlock/config";
 import {
   generatePreviewPath,
   generatePreviewPathWithAuthor
 } from "@/utilities/generatePreviewPath";
 import {
   BlocksFeature,
+  BoldFeature,
   type DefaultNodeTypes,
   FixedToolbarFeature,
   HeadingFeature,
   HorizontalRuleFeature,
   InlineToolbarFeature,
+  ItalicFeature,
   lexicalEditor,
   LinkFeature,
-  type LinkFields
+  type LinkFields,
+  ParagraphFeature,
+  StrikethroughFeature,
+  TextStateFeature,
+  UnderlineFeature
 } from "@payloadcms/richtext-lexical";
 import {
   AccessArgs,
@@ -34,9 +40,11 @@ import { slugField } from "@/payload/fields/slug";
 import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
 import { CatOverview } from "@/types/collections/delta";
 import {
+  MetaDescriptionField,
   MetaImageField,
   MetaTitleField,
-  OverviewField
+  OverviewField,
+  PreviewField
 } from "@payloadcms/plugin-seo/fields";
 import { uuidv7 } from "uuidv7";
 import {
@@ -45,15 +53,9 @@ import {
 } from "./api/bookmarkPostHandler";
 import { getPostHandler } from "./api/getPostHandler";
 import { postBookmarksHandler } from "./api/postBookmarksHandler";
-const INLINE_RICH_TEXT_FIELDS = [
-  "toolbarInline",
-  "bold",
-  "italic",
-  "underline",
-  "strikethrough",
-  "inlineCode",
-  "align"
-];
+import { PROPS_COLLAPSIBLE } from "../constants";
+import { ContentHandOffFeature } from "@/payload/Lexical/Features/HandOff/feature";
+import { RichTitle } from "./richTitle";
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced
@@ -169,7 +171,16 @@ export const Posts: CollectionConfig<"posts"> = {
         collection: "posts",
         req
       }),
-    useAsTitle: "title"
+    useAsTitle: "title",
+    components: {
+      views: {
+        edit: {
+          default: {
+            Component: "@/payload/views/Edit/index.tsx#EditView"
+          }
+        }
+      }
+    }
   },
   fields: [
     {
@@ -192,7 +203,16 @@ export const Posts: CollectionConfig<"posts"> = {
       type: "upload",
       maxDepth: 1,
       relationTo: "userMedia",
-      admin: {},
+      admin: {
+        components: {
+          Field: {
+            path: "@/payload/fields/ArticleTitleField/CoverImage/index.tsx",
+            serverProps: {
+              relationTo: "userMedia"
+            }
+          }
+        }
+      },
       filterOptions: ({ req }) => {
         return {
           //     and: [
@@ -211,178 +231,248 @@ export const Posts: CollectionConfig<"posts"> = {
       }
     },
     {
-      type: "tabs",
+      name: "coverPosition",
+      type: "number",
+      min: 0,
+      max: 100,
+      defaultValue: 35,
+      admin: {
+        hidden: true
+      }
+    },
+    {
+      name: "title",
+      type: "text",
+      label: "Title",
+      required: true,
+      admin: {
+        hidden: true
+      }
+    },
+    RichTitle(),
+    {
+      name: "content",
+      type: "richText",
+      editor: lexicalEditor({
+        admin: {
+          hideGutter: true,
+          hideInsertParagraphAtEnd: true
+        },
+        features: ({ rootFeatures }) => {
+          return [
+            ...rootFeatures,
 
-      tabs: [
-        {
-          fields: [
-            {
-              name: "title",
-              type: "text",
-              label: "Title",
-              required: true
-            },
+            HeadingFeature({
+              enabledHeadingSizes: ["h1", "h2", "h3", "h4"]
+            }),
 
-            {
-              name: "content",
-              type: "richText",
-              editor: lexicalEditor({
-                admin: {
-                  hideGutter: true
-                },
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
+            BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
 
-                    HeadingFeature({
-                      enabledHeadingSizes: ["h1", "h2", "h3", "h4"]
-                    }),
-
-                    BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
-                    FixedToolbarFeature(),
-                    InlineToolbarFeature(),
-                    HorizontalRuleFeature(),
-                    LinkFeature({
-                      enabledCollections: ["pages", "posts", "delta"],
-                      fields: ({ defaultFields }) => {
-                        const defaultFieldsWithoutUrl = defaultFields.filter(
-                          (field) => {
-                            if ("name" in field && field.name === "url")
-                              return false;
-                            return true;
-                          }
-                        );
-
-                        return [
-                          ...defaultFieldsWithoutUrl,
-                          {
-                            name: "url",
-                            type: "text",
-                            admin: {
-                              condition: (_data, siblingData) =>
-                                siblingData?.linkType !== "internal"
-                            },
-                            label: ({ t }) => t("fields:enterURL"),
-                            required: true,
-                            validate: ((value, options) => {
-                              if (
-                                (options?.siblingData as LinkFields)
-                                  ?.linkType === "internal"
-                              ) {
-                                return true; // no validation needed, as no url should exist for internal links
-                              }
-                              return value ? true : "URL is required";
-                            }) as TextFieldSingleValidation
-                          }
-                        ];
-                      }
-                    })
-                  ];
-                }
-              }),
-              custom: {
-                hashes: []
-              },
-              hooks: {
-                beforeChange: [
-                  ({ data, value, path, req, context }) => {
-                    const r = value;
-                    if (!r) return;
-
-                    const targetTypes: DefaultNodeTypes["type"][] = [
-                      "text",
-                      "quote",
-                      "heading",
-                      "paragraph",
-                      "link",
-                      "autolink"
-                    ];
+            InlineToolbarFeature(),
+            HorizontalRuleFeature(),
+            LinkFeature({
+              enabledCollections: ["pages", "posts", "delta"],
+              fields: ({ defaultFields }) => {
+                const defaultFieldsWithoutUrl = defaultFields.filter(
+                  (field) => {
+                    if ("name" in field && field.name === "url") return false;
+                    return true;
                   }
-                ]
-              },
-              label: false,
-              required: true
-            }
-          ],
-          label: "Content",
-          access: {
-            read: () => true
+                );
+
+                return [
+                  ...defaultFieldsWithoutUrl,
+                  {
+                    name: "url",
+                    type: "text",
+                    admin: {
+                      condition: (_data, siblingData) =>
+                        siblingData?.linkType !== "internal"
+                    },
+                    label: ({ t }) => t("fields:enterURL"),
+                    required: true,
+                    validate: ((value, options) => {
+                      if (
+                        (options?.siblingData as LinkFields)?.linkType ===
+                        "internal"
+                      ) {
+                        return true; // no validation needed, as no url should exist for internal links
+                      }
+                      return value ? true : "URL is required";
+                    }) as TextFieldSingleValidation
+                  }
+                ];
+              }
+            }),
+            ContentHandOffFeature()
+          ];
+        }
+      }),
+      custom: {
+        hashes: []
+      },
+      hooks: {
+        beforeChange: [
+          ({ data, value, path, req, context }) => {
+            const r = value;
+            if (!r) return;
+
+            const targetTypes: DefaultNodeTypes["type"][] = [
+              "text",
+              "quote",
+              "heading",
+              "paragraph",
+              "link",
+              "autolink"
+            ];
+          }
+        ]
+      },
+      label: false,
+      required: true
+    },
+    {
+      label: PROPS_COLLAPSIBLE,
+      type: "collapsible",
+      admin: {
+        position: "sidebar"
+      },
+      fields: [
+        {
+          name: "subtitle",
+          type: "text",
+          label: "Subtitle",
+
+          required: true
+        },
+        {
+          name: "category",
+          type: "relationship",
+          admin: {
+            position: "sidebar",
+            allowCreate: false,
+            allowEdit: false
+          },
+          hasMany: false,
+          required: true,
+          relationTo: "categories",
+          maxDepth: 1,
+          defaultValue: async ({ user, req }) => {
+            return await req.payload
+              .find({
+                collection: "categories",
+                where: {
+                  slug: {
+                    equals: "uncategorized"
+                  }
+                },
+                depth: 1,
+                limit: 1
+              })
+              .then((res) => res.docs)
+              .then((docs) => docs[0])
+              .catch((err) => {
+                console.error(err);
+                return null;
+              });
           }
         },
+        ...slugField(),
         {
-          fields: [
-            {
-              name: "relatedPosts",
-              type: "relationship",
-              admin: {
-                position: "sidebar"
-              },
-              filterOptions: ({ req, id }) => {
-                const user = req.user;
-                if (!user) {
-                  return {
-                    author: {
-                      exists: false
-                    }
-                  } as Where;
-                }
-                return {
-                  and: [
-                    {
-                      id: {
-                        not_in: [id]
-                      }
-                    },
-                    {
-                      _status: {
-                        equals: "published"
-                      }
-                    },
-                    {
-                      author: {
-                        equals: user.id
-                      }
-                    }
-                  ]
-                };
-              },
-              hasMany: true,
-              maxRows: 5,
-              relationTo: "posts",
-
-              maxDepth: 0
-            },
-            {
-              name: "category",
-              type: "relationship",
-              label: "Category",
-              required: true,
-              defaultValue: async ({ req }) => {
-                const categories = await req.payload.find({
-                  collection: "categories",
-                  where: {
-                    slug: {
-                      equals: "uncategorized"
-                    }
-                  },
-                  depth: 0
-                });
-                return categories.docs[0] as CatOverview;
-              },
-              hasMany: false,
-              maxDepth: 1,
-              relationTo: "categories",
-              admin: {
-                allowCreate: false,
-                allowEdit: false
-              }
+          name: "publishedAt",
+          type: "date",
+          admin: {
+            date: {
+              pickerAppearance: "dayAndTime"
             }
-          ],
-          label: "Meta"
+          }
+        }
+      ]
+    },
+    {
+      label: "Properties",
+      type: "collapsible",
+      admin: { position: "sidebar" },
+      fields: [
+        ...AuthorField(false),
+        {
+          name: "tagged",
+          label: "Tags",
+          type: "relationship",
+          relationTo: "tags",
+          hasMany: true,
+          admin: {
+            allowCreate: true,
+            allowEdit: false
+          },
+          access: {
+            read: () => true
+          },
+          maxDepth: 1,
+          maxRows: 5,
+          index: true
         },
         {
+          name: "relatedPosts",
+          type: "relationship",
+
+          label: "Related",
+          filterOptions: ({ id }) => {
+            return {
+              id: {
+                not_in: [id]
+              }
+            };
+          },
+          hasMany: true,
+          defaultValue: async ({ user, req }) => {
+            const where = {
+              and: [
+                {
+                  _status: {
+                    equals: "published"
+                  }
+                },
+                {
+                  author: {
+                    equals: user?.id
+                  }
+                }
+              ]
+            } as Where;
+
+            const posts = await req.payload
+              .find({
+                collection: "posts",
+                where,
+                select: {
+                  title: true
+                }
+              })
+              .then((res) => res.docs)
+              .then((docs) => docs.map((doc) => doc.id))
+              .catch((err) => {
+                console.error(err);
+                return [];
+              });
+            return [...posts];
+          },
+          relationTo: "posts",
+          maxDepth: 1
+        }
+      ]
+    },
+
+    {
+      label: "SEO",
+      type: "collapsible",
+      admin: { position: "sidebar" },
+      fields: [
+        {
           name: "meta",
+          type: "group",
           label: "SEO",
+
           fields: [
             OverviewField({
               titlePath: "meta.title",
@@ -394,67 +484,31 @@ export const Posts: CollectionConfig<"posts"> = {
             }),
             MetaImageField({
               relationTo: "media"
+            }),
+
+            MetaDescriptionField({}),
+            PreviewField({
+              // if the `generateUrl` function is configured
+              hasGenerateFn: true,
+
+              // field paths to match the target field for data
+              titlePath: "meta.title",
+              descriptionPath: "meta.description"
             })
           ]
         }
       ]
     },
-    {
-      name: "tagged",
-      type: "relationship",
-      relationTo: "tags",
-      hasMany: true,
-      admin: {
-        allowCreate: true,
-        allowEdit: false,
-        position: "sidebar"
-      },
-      access: {
-        read: () => true
-      },
-      maxDepth: 1,
-
-      maxRows: 5,
-      index: true
-    },
 
     {
-      name: "subtitle",
-      type: "text",
-      label: "Subtitle",
+      name: "bookmarks",
+      collection: "bookmarks",
+      type: "join",
+      on: "target",
       admin: {
-        position: "sidebar"
-      },
-      required: true
-    },
-    {
-      name: "publishedAt",
-      label: "Publish Date",
-      type: "date",
-      admin: {
-        position: "sidebar"
+        hidden: true
       }
-    },
-
-    ...AuthorField(false),
-    ...slugField("title", {
-      slugOverrides: {
-        admin: {
-          position: "sidebar"
-        },
-        required: true
-      }
-    })
-    // Temporarily commented out join field to isolate Drizzle adapter error
-    // {
-    //   name: "bookmarks",
-    //   collection: "bookmarks",
-    //   type: "join",
-    //   on: "target",
-    //   admin: {
-    //     hidden: true
-    //   }
-    // }
+    }
   ],
   hooks: {
     beforeChange: [

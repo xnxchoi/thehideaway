@@ -1,4 +1,4 @@
-import { MediaBlock } from "@/payload/blocks/MediaBlock/Component";
+import { MediaBlock } from "@/blocks/MediaBlock/Component";
 import {
   DefaultNodeTypes,
   type DefaultTypedEditorState,
@@ -10,18 +10,15 @@ import {
   RichText as ConvertRichText
 } from "@payloadcms/richtext-lexical/react";
 
-import {
-  CodeBlock,
-  Props as CodeBlockProps
-} from "@/payload/blocks/Code/Component";
+import { CodeBlock, Props as CodeBlockProps } from "@/blocks/Code/Component";
 
 import type {
   BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
-  MediaBlock as MediaBlockProps
+  Media1 as MediaBlockProps
 } from "@/payload-types";
-import { BannerBlock } from "@/payload/blocks/Banner/Component";
-import { CallToActionBlock } from "@/payload/blocks/CallToAction/Component";
+import { BannerBlock } from "@/blocks/Banner/Component";
+import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 import { cn } from "@/lib/utils";
 import { CollectionSlug } from "payload";
 import React, { ComponentPropsWithoutRef } from "react";
@@ -37,6 +34,7 @@ import {
   IS_UNDERLINE
 } from "./nodeFormat";
 import { nanoid } from "nanoid";
+import type { SerializedParagraphNode } from "lexical";
 
 type NodeTypes =
   | DefaultNodeTypes
@@ -244,17 +242,6 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
         </p>
       );
     }
-    const walker = (node) => {
-      let a = "";
-      a += node.children.reduce((prev, next) => {
-        return "text" in next
-          ? prev + next.text
-          : "children" in next
-            ? prev + walker(next)
-            : prev;
-      }, "");
-      return a;
-    };
     return (
       <p data-key={childIndex} data-selectable={true}>
         {children}
@@ -267,9 +254,10 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
     ),
     mediaBlock: ({ node }) => (
       <MediaBlock
-        className="col-span-3 col-start-1"
+        className="relative flex flex-col overflow-hidden rounded-[12px]"
         imgClassName="m-0"
         {...node.fields}
+        aspectRatio={698 / 400}
         captionClassName="mx-auto max-w-[48rem]"
         enableGutter={false}
         disableInnerContainer={true}

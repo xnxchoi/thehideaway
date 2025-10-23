@@ -12,6 +12,7 @@ import { PageType } from "./Routing/RP_Voyageur";
 import { isEqual } from "lodash-es";
 import { subscribeWithSelector } from "zustand/middleware";
 import { PayloadLinkProps } from "@/components/UX/Link/types";
+import { ViewportSizes } from "@/components/UX/Media/types";
 
 type CommonLinkProps = Omit<PayloadLinkProps, "reference" | "url" | "type">;
 
@@ -38,6 +39,7 @@ export type HA_UI = {
     navigation: NavigationProps;
     footer: Footer | null;
   };
+  viewportSize: ViewportSizes;
   viewportWidth: number;
   viewportHeight: number;
   headerTheme: string;
@@ -69,6 +71,7 @@ export type HA_UI_ACT = {
   setSideDrawerDragPosition: (
     nextState: HA_UI["sideDrawerDragPosition"]
   ) => void;
+  setViewportSize: (nextState: HA_UI["viewportSize"]) => void;
   setIsDraggingSideDrawer: (nextState: HA_UI["isDraggingSideDrawer"]) => void;
   setSideDrawerOpen: (c: boolean) => void;
   setSideDrawerIsTransitioning: (
@@ -538,6 +541,7 @@ const uiInitState: HA_UI = {
   sidebarIsTransitioning: false,
   sideDrawerRendered: true,
   isDraggingSideDrawer: false,
+  viewportSize: "lg",
   snapPoints: [],
   activeSnapPoint: null!,
   sideDrawerDragPosition: 0,
@@ -640,6 +644,8 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
         set((state) => ({
           canInteract: c
         })),
+      setViewportSize: (c: ViewportSizes) =>
+        set((state) => ({ viewportSize: c })),
       setIsTransitioningWipe: (l: boolean) =>
         set((state) => ({ isTransitioningWipe: l })),
       setGlobalSettings: (c: {

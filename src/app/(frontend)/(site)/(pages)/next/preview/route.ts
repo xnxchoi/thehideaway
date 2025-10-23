@@ -1,73 +1,67 @@
-import type {CollectionSlug, PayloadRequest} from "payload";
-import {getPayload} from "@/lib/payload";
+import type { CollectionSlug, PayloadRequest } from "payload";
+import { getPayload } from "payload";
 
-import {draftMode} from "next/headers";
-import {redirect} from "next/navigation";
+import { draftMode } from "next/headers";
+import { redirect } from "next/navigation";
 
-export async function GET(
-	req: {
-		cookies: {
-			get: (name: string) => {
-				value: string;
-			};
-		};
-	} & Request,
-): Promise<Response> {
-	const payload = await getPayload();
+import configPromise from "@payload-config";
 
-	const {searchParams} = new URL(req.url);
+export async function GET(req: Request): Promise<Response> {
+  const payload = await getPayload({ config: configPromise });
 
-	const path = searchParams.get("path");
-	const collection = searchParams.get("collection") as CollectionSlug;
-	const slug = searchParams.get("slug");
-	const previewSecret = searchParams.get("previewSecret");
+  const { searchParams } = new URL(req.url);
 
-	if (previewSecret !== process.env.PREVIEW_SECRET) {
-		return new Response("You are not allowed to preview this page", {
-			status: 403,
-		});
-	}
+  const path = searchParams.get("path");
+  const collection = searchParams.get("collection") as CollectionSlug;
+  const slug = searchParams.get("slug");
+  const previewSecret = searchParams.get("previewSecret");
 
-	if (!path || !collection || !slug) {
-		return new Response("Insufficient search params", {status: 404});
-	}
+  if (previewSecret !== process.env.PREVIEW_SECRET) {
+    return new Response("You are not allowed to preview this page", {
+      status: 403
+    });
+  }
 
-	if (!path.startsWith("/")) {
-		return new Response(
-			"This endpoint can only be used for relative previews",
-			{status: 500},
-		);
-	}
+  if (!path || !collection || !slug) {
+    return new Response("Insufficient search params", { status: 404 });
+  }
 
-	let user;
+  if (!path.startsWith("/")) {
+    return new Response(
+      "This endpoint can only be used for relative previews",
+      { status: 500 }
+    );
+  }
 
-	try {
-		user = await payload.auth({
-			req: req as unknown as PayloadRequest,
-			headers: req.headers,
-		});
-	} catch (error) {
-		payload.logger.error(
-			{err: error},
-			"Error verifying token for live preview",
-		);
-		return new Response("You are not allowed to preview this page", {
-			status: 403,
-		});
-	}
+  let user;
 
-	const draft = await draftMode();
+  try {
+    user = await payload.auth({
+      req: req as unknown as PayloadRequest,
+      headers: req.headers
+    });
+  } catch (error) {
+    payload.logger.error(
+      { err: error },
+      "Error verifying token for live preview"
+    );
+    return new Response("You are not allowed to preview this page", {
+      status: 403
+    });
+  }
 
-	if (!user) {
-		draft.disable();
-		return new Response("You are not allowed to preview this page", {
-			status: 403,
-		});
-	}
+  const draft = await draftMode();
 
-	// You can add additional checks here to see if the user is allowed to preview this page
+  if (!user) {
+    draft.disable();
+    return new Response("You are not allowed to preview this page", {
+      status: 403
+    });
+  }
 
-	draft.enable();
+  // You can add additional checks here to see if the user is allowed to preview this page
 
-	redirect(path);
+  draft.enable();
+
+  redirect(path);
 }

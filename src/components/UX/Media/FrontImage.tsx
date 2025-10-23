@@ -23,6 +23,7 @@ import {
 import { Skeleton } from "../../ui/skeleton";
 
 import { getFallbackImage } from "@/utilities/getFallbackImage";
+import { nanoid } from "nanoid";
 import type { SelectFromCollectionSlug } from "node_modules/payload/dist/collections/config/types";
 import { stringify } from "qs-esm";
 
@@ -41,41 +42,44 @@ export const FrontImage = (props: FrontImageProps) => {
     alt,
     ...rest
   } = props;
-
+  const hashId = useMemo(() => nanoid(), []);
   return image ? (
     <QueriedImage
       resource={image}
       alt={alt}
-      className={imgClassName}
+      className={className}
+      imgClassName={imgClassName}
       collection={isUser ? "userMedia" : "media"}
       {...rest}
     />
   ) : src ? (
-    <StaticImage
-      src={src}
-      className={cn("block h-full w-full", className)}
-      imgClassName={imgClassName}
-      {...rest}
-      alt={alt || ""}
-    />
+    <ImageMedia className={"relative"} {...props} alt={alt || ""} />
   ) : (
-    <FallbackImage imgClassName={imgClassName} alt={alt} {...rest} />
+    <FallbackImage
+      hashId={hashId}
+      imgClassName={imgClassName}
+      alt={alt}
+      {...rest}
+    />
   );
 };
-function FallbackImage(props: Omit<FrontImageProps, "src" | "resource">) {
-  const { imgClassName, className, alt, ...rest } = props;
+function FallbackImage(
+  props: { hashId: string } & Omit<FrontImageProps, "src" | "resource">
+) {
+  const { hashId, imgClassName, className, alt, aspectRatio, ...rest } = props;
   const [isTransitioning, startTransition] = useTransition();
   const [backupImage, setBackupImage] = useState<{
     path: string;
     sizes: string;
   } | null>(null);
+
   const getBackupImage = useCallback(() => {
     startTransition(async () => {
-      await getFallbackImage().then((res) => {
+      await getFallbackImage(hashId).then((res) => {
         setBackupImage(res);
       });
     });
-  }, []);
+  }, [hashId]);
   useEffect(() => {
     getBackupImage();
   }, [getBackupImage]);
@@ -87,89 +91,18 @@ function FallbackImage(props: Omit<FrontImageProps, "src" | "resource">) {
       )}
     />
   ) : (
-    <StaticImage
+    <ImageMedia
       src={backupImage.path}
-      className={cn("block h-full w-full", className)}
-      sizes={backupImage.sizes}
+      className={className || "relative"}
+      size={backupImage.sizes}
       imgClassName={imgClassName}
       fill={true}
+      aspectRatio={aspectRatio}
       {...rest}
       alt={alt || ""}
     />
   );
 }
-/**
- *  const [imageMedia, setImageMedia] = useState<FrontImageResource>(null!);
-  const [hover, setHover] = useState<boolean>(false);
-  const setCursorTheme = useCursorStore((store) => store.setCursorTheme);
-  const resetCursorTheme = useCursorStore((store) => store.resetCursorTheme);
-  const theme = useTheme((store) => store.theme);
-  const [imageTheme, setImageTheme] = useState<"light" | "dark">("light");
-  useEffect(() => {
-    if (!image) return;
-    if (typeof image === "string") {
-      const path = isUser ? "userMedia" : "media";
-      fetch(`${getClientSideURL()}/api/${path}/${image}`)
-        .then((res) => res.json())
-        .then((res) => {
-          setImageMedia(res);
-        });
-    } else {
-      setImageMedia(image);
-    }
-  }, [image, isUser]);
-  useEffect(() => {
-    if (!imageMedia) return;
-    if (imageMedia.darkmode === null || imageMedia.darkmode === undefined) {
-      fetch(`${getClientSideURL()}/api/media/${imageMedia.id}`)
-        .then((res) => res.json())
-        .then((res) => {
-          setImageMedia(res);
-        });
-    }
-  }, [imageMedia]);
-  useEffect(() => {
-    if (
-      !imageMedia ||
-      imageMedia.darkmode === null ||
-      imageMedia.darkmode === undefined
-    )
-      return;
-    setImageTheme(imageMedia.darkmode ? "dark" : "light");
-  }, [imageMedia]);
-  useEffect(() => {
-    if (hover) {
-      setCursorTheme(imageTheme);
-    } else {
-      resetCursorTheme();
-    }
-  }, [hover, imageTheme, resetCursorTheme, setCursorTheme]);
-  return (
-    <div
-      className={"block h-full w-full"}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      {(imageMedia && (
-        <ImageMedia
-          fill
-          priority={false}
-          loading="lazy"
-          imgClassName={cn(imgClassName, "rp_lazy")}
-          resource={imageMedia}
-          {...rest}
-        />
-      )) || (
-        <Skeleton
-          className={cn(
-            imgClassName,
-            "block h-full w-full rounded-2xl bg-[oklch(var(--faded-fg)/0.2)] object-cover"
-          )}
-        />
-      )}
-    </div>
-  );
- */
 function QueriedImage(
   props: MediaProps & {
     resource: string | FrontImageResource;
@@ -179,6 +112,7 @@ function QueriedImage(
   const {
     imgClassName,
     className,
+    aspectRatio,
     collection = "media",
     resource: rs,
     ...rest
@@ -222,7 +156,8 @@ function QueriedImage(
       thumbnailURL: "",
       id: "",
       createdAt: "",
-      updatedAt: ""
+      updatedAt: "",
+      ...((typeof rs === "object" && rs && rs) || {})
     } as FrontImageResource,
     queryKey: [collection, tId],
     queryFn: async () => {
@@ -270,54 +205,15 @@ function QueriedImage(
     </div>
   ) : (
     <ImageMedia
-      fill
       priority={false}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       loading="lazy"
-      className={className}
-      imgClassName={cn(imgClassName, "rp_lazy")}
-      resource={rs}
+      className={className || "relative"}
+      imgClassName={imgClassName}
+      resource={resource}
+      aspectRatio={aspectRatio}
       {...rest}
     />
-  );
-}
-
-function StaticImage(
-  props: ComponentProps<typeof NextImage> & {
-    imgClassName?: string;
-    className?: string;
-    darkmode?: boolean;
-  }
-) {
-  const { imgClassName, className, src, darkmode, ...rest } = props;
-  const [hover, setHover] = useState<boolean>(false);
-  const onEnter = useCallback(() => setHover(true), []);
-  const onLeave = useCallback(() => setHover(false), []);
-  const setCursorTheme = useCursor((store) => store.setCursorTheme);
-  const resetCursorTheme = useCursor((store) => store.resetCursorTheme);
-  useEffect(() => {
-    if (hover) {
-      setCursorTheme(darkmode ? "dark" : "light");
-    } else {
-      resetCursorTheme();
-    }
-  }, [darkmode, hover, resetCursorTheme, setCursorTheme]);
-  return (
-    <div
-      className={"block h-full w-full"}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-    >
-      <picture>
-        <NextImage
-          priority={false}
-          loading={"lazy"}
-          src={src}
-          className={cn("block", imgClassName)}
-          {...rest}
-        />
-      </picture>
-    </div>
   );
 }

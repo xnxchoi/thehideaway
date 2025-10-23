@@ -94,7 +94,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Textarea/index.tsx"
+                  Field: "@/payload/adminOnly/Textarea/index.tsx"
                 }
               };
               break;
@@ -102,7 +102,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Text/index.tsx"
+                  Field: "@/payload/adminOnly/Text/index.tsx"
                 }
               };
               break;
@@ -110,7 +110,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Select/index.tsx"
+                  Field: "@/payload/adminOnly/Select/index.tsx"
                 }
               };
               break;
@@ -118,7 +118,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx"
+                  Field: "@/payload/adminOnly/Checkbox/index.tsx"
                 }
               };
               break;
@@ -126,7 +126,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Number/index.tsx"
+                  Field: "@/payload/adminOnly/Number/index.tsx"
                 }
               };
               break;
@@ -134,7 +134,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Array/index.tsx"
+                  Field: "@/payload/adminOnly/Array/index.tsx"
                 }
               };
               break;
@@ -142,7 +142,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Email/index.tsx"
+                  Field: "@/payload/adminOnly/Email/index.tsx"
                 }
               };
               break;
@@ -150,7 +150,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Json/index.tsx"
+                  Field: "@/payload/adminOnly/JSON/index.tsx"
                 }
               };
               break;
@@ -159,7 +159,7 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "src/payload/fields/AdminOnly/Relationship/index.tsx"
+                  Field: "@/payload/adminOnly/Relationship/index.tsx"
                 }
               };
               break;

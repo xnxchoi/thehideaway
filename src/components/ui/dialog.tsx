@@ -85,14 +85,14 @@ function DialogContent({
         data-slot="dialog-content"
         data-themed={"background-color,color,height"}
         className={cn(
-          "fixed top-[50%] left-[50%] z-[245] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl bg-[oklch(var(--faded-bg)/.4)] p-6 text-[oklch(var(--faded-fg))] shadow-lg/25 outline-1 outline-[oklch(var(--muted-faded-fg)/.2)]! backdrop-blur-xs duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-[550px] dark:bg-[oklch(var(--faded-bg)/.8)] dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-[oklch(var(--muted-faded-fg)/.4)]!",
+          "fixed top-[50%] left-[50%] z-[245] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl bg-[oklch(var(--faded-bg)/.4)] p-6 text-[oklch(var(--faded-fg))] shadow-lg/25 outline-1 outline-muted-faded-foreground/20! backdrop-blur-xs duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-[550px] dark:bg-[oklch(var(--faded-bg)/.8)] dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-[oklch(var(--muted-faded-fg)/.4)]!",
           className
         )}
         data-lenis-prevent="true"
         {...props}
       >
         {children}
-        <DialogClose className="absolute top-6 right-10 rounded-sm text-[oklch(var(--fg)/1)] opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent"></DialogClose>
+        <DialogClose className="absolute top-6 right-10 rounded-sm text-foreground opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent"></DialogClose>
       </DialogPrimitive.Content>
     </DialogPortal>
   );

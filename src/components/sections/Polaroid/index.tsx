@@ -309,7 +309,9 @@ export const RP_POLAROID = () => {
               alt={"an image of a reviewer"}
               ref={img}
               src={imager}
+              pictureClassName={"absolute inset-0 object-cover"}
               className="review__card-bg_image"
+              fill={true}
             />
           </div>
           <div ref={frameContainer} className="review__card-bg_frame-container">

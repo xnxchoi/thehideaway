@@ -7,11 +7,12 @@ import type { CollectionSlug } from "payload";
 import { useCallback, useState, type ComponentProps } from "react";
 import { Toaster as Sonner, toast as sonnerToast, ToasterProps } from "sonner";
 import { useShallow } from "zustand/shallow";
-import { useHumanTime } from "../../payload/collections/Deltas/component/useLocaleDate";
+import { useHumanTime } from "../../payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "../../payload/collections/Notifications/hooks/types";
 import type { AuthorOverview } from "../../types/collections/posts";
 import { useDomCursor } from "../core/cursorWrapper";
-import { Button, Link } from "../UX/Link/Link";
+import { Link } from "../UX/Link/Link";
+import { Button } from "../UX/Button";
 import { ReferencedLink } from "../UX/Link/referencedLink";
 import { FrontImage } from "../UX/Media/FrontImage";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
@@ -121,7 +122,7 @@ const NotificationItem = (
     >
       <div className="relative flex gap-5">
         <div className="flex grow gap-5">
-          <div className="absolute inset-0 z-[5] rounded-[8px] bg-transparent-base/5 backdrop-blur-[0.5px]" />
+          <div className="bg-transparent-base/5 absolute inset-0 z-[5] rounded-[8px] backdrop-blur-[0.5px]" />
           <article
             className="relative z-20 flex flex-col gap-5"
             data-type="type"

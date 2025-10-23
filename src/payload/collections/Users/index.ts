@@ -22,7 +22,6 @@ import {
 } from "@payloadcms/plugin-seo/fields";
 import { CollectionConfig, Where } from "payload";
 import { uuidv7 } from "uuidv7";
-import { afterUserChange, afterUserDelete } from "./hooks/sse-integration";
 
 export const Users: CollectionConfig = {
   slug: "users",

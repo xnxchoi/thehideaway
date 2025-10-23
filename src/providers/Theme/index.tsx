@@ -97,7 +97,7 @@ const createThemeStore = (init: ThemeContextType = initialContext) => {
 export type ThemeAPI = ReturnType<typeof createThemeStore>;
 const ThemeContext = createContext<ThemeAPI>(null!);
 
-const CMDKeyManager = () => {
+export const CMDKeyManager = () => {
   const toggleTheme = useTheme((store) => store.toggleTheme);
   const toggleCMD = useSearchBar((r) => r.toggleOpen);
   const keyPressed = useCallback(
@@ -126,7 +126,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   }
   return (
     <ThemeContext.Provider value={themeRef.current}>
-      <CMDKeyManager />
       {children}
     </ThemeContext.Provider>
   );

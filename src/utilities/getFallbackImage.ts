@@ -40,35 +40,39 @@ const getCachedImageFiles = unstable_cache(
   }
 );
 
-export async function getFallbackImage(): Promise<{
-  path: string;
-  sizes: string;
-}> {
-  const imageFiles = await getCachedImageFiles();
+export const getFallbackImage = unstable_cache(
+  async (
+    param?: string
+  ): Promise<{
+    path: string;
+    sizes: string;
+  }> => {
+    const imageFiles = await getCachedImageFiles();
 
-  if (imageFiles.length === 0) {
-    // Return a default placeholder or an empty string if no images are found
+    if (imageFiles.length === 0) {
+      // Return a default placeholder or an empty string if no images are found
+      return {
+        path: "/assets/media/brandon-griggs-KfZD1svHvvc-unsplash.webp",
+        sizes: breakString
+      }; // Make sure you have a placeholder image
+    }
+
+    const randomIndex = randomNumber(0, imageFiles.length - 1);
+    const randomImage = imageFiles[randomIndex];
+
+    if (!randomImage) {
+      return {
+        path: "/assets/media/brandon-griggs-KfZD1svHvvc-unsplash.webp",
+        sizes: breakString
+      };
+    }
+
     return {
-      path: "/assets/media/brandon-griggs-KfZD1svHvvc-unsplash.webp",
-      sizes: breakString
-    }; // Make sure you have a placeholder image
-  }
-
-  const randomIndex = randomNumber(0, imageFiles.length - 1);
-  const randomImage = imageFiles[randomIndex];
-
-  if (!randomImage) {
-    return {
-      path: "/assets/media/brandon-griggs-KfZD1svHvvc-unsplash.webp",
+      path: path.join("/assets/media", randomImage),
       sizes: breakString
     };
   }
-
-  return {
-    path: path.join("/assets/media", randomImage),
-    sizes: breakString
-  };
-}
+);
 
 // Optional: Function to manually revalidate the cache
 export async function revalidateFallbackImages() {

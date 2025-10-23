@@ -1,6 +1,6 @@
 "use client";
 import { ComponentProps, useEffect, useRef, useState } from "react";
-import { Button } from "../Link/Link";
+import { Button } from "../Button";
 
 export type BookmarkProps = {
   articleId: string;

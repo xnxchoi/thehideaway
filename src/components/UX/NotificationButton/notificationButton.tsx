@@ -1,42 +1,33 @@
 "use client";
 import { useRPStore } from "@/providers/RP_Pro";
 import { Popover } from "@base-ui-components/react/popover";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button, Link, MotionBtn, MotionLink } from "@/components/UX/Link/Link";
-import { useHumanTime } from "@/payload/collections/Deltas/component/useLocaleDate";
+import { Link, MotionLink } from "@/components/UX/Link/Link";
+import { useHumanTime } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
-import type { AuthorOverview } from "@/types/collections/posts";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
 import { sortByDate } from "@/stores/Notification/NotificationStore";
+import type { AuthorOverview } from "@/types/collections/posts";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import NumberFlow, { continuous } from "@number-flow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
+import Lenis from "lenis";
+import { useLenis } from "lenis/react";
 import { AnimatePresence, stagger, type HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import { usePathname } from "next/navigation";
 import type { CollectionSlug } from "payload";
 import { useShallow } from "zustand/shallow";
 import { useDomCursor } from "../../core/cursorWrapper";
+import { Button, MotionBtn } from "../Button";
 import { ReferencedLink } from "../Link/referencedLink";
 import { FrontImage } from "../Media/FrontImage";
-import {
-  MotionBlurScrollArea,
-  ProgressiveScrollArea
-} from "../Blur/ScrollArea";
-import { useLenis } from "lenis/react";
-import Lenis from "lenis";
+import { ImageMedia } from "../Media/ImageMedia";
 interface ExpandButtonProps {
   defaultWidth?: number;
   onContract?: () => void;
@@ -434,7 +425,16 @@ const NotificationItem = (
   const onRead = () => {
     oR({ ids: [item.id] });
   };
-  const { title, id, dismissed, type, thumbnail, actionLink, content } = item;
+  const {
+    title,
+    id,
+    dismissed,
+    type,
+    fallbackImage,
+    thumbnail,
+    actionLink,
+    content
+  } = item;
   const [hovered, setHovered] = useState(false);
   const [mutating, setMutating] = useState(false);
   const { onMouseEnter, onMouseLeave } = useDomCursor({
@@ -451,7 +451,7 @@ const NotificationItem = (
     <m.div
       key={props.title}
       ref={ref}
-      className="relative h-full overflow-hidden rounded-[8px] bg-transparent text-base outline-1 outline-muted-faded-foreground/0 transition-colors duration-150 ease-out-power2 hover:outline-muted-faded-foreground/50 max-lg:w-[90vw] max-lg:min-w-[20rem] min-lg:min-h-[6rem] min-lg:w-[15vw]"
+      className="relative h-full overflow-hidden rounded-[8px] bg-transparent text-base outline-1 outline-muted-faded-foreground/0 transition-colors duration-150 ease-out-power2 hover:outline-muted-faded-foreground/30 max-lg:w-[90vw] max-lg:min-w-[20rem] min-lg:min-h-[6rem] min-lg:w-[15vw]"
       data-themed="background-color,border-color"
       initial={{
         translateX: "50%"
@@ -473,7 +473,7 @@ const NotificationItem = (
       {...(hovered ? { "data-hovered": true } : {})}
     >
       <div className="relative flex h-full w-full">
-        <div className="absolute inset-0 z-[5] rounded-[8px] bg-transparent-base/5 backdrop-blur-[0.5px]" />
+        <div className="bg-transparent-base/15 absolute inset-0 z-[5] rounded-[8px] backdrop-blur-[0.5px]" />
         <article
           className="relative z-20 flex h-full w-full items-center justify-center gap-5 p-4 text-base"
           data-type="type"
@@ -517,8 +517,16 @@ const NotificationItem = (
           </MotionBtn>
 
           <div className="grid w-full grid-cols-[4.8rem_1fr] items-center gap-5 min-lg:items-start">
-            <div className="aspect-square h-auto w-full [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full">
-              <FrontImage resource={thumbnail} />
+            <div className="relative aspect-square h-auto w-full [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full">
+              {(thumbnail && <FrontImage resource={thumbnail} />) ||
+                (fallbackImage && (
+                  <ImageMedia
+                    src={fallbackImage.path}
+                    size={fallbackImage.sizes}
+                    alt={"image"}
+                    fill={true}
+                  />
+                ))}
             </div>
             <h1
               className="mb-[6px] font-sans text-sm leading-[114%] font-semibold tracking-[-0.01em] min-lg:mb-[12px] min-lg:leading-[120%]"

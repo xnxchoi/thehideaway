@@ -26,8 +26,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/UX/Link/Link";
-import { useHumanDate } from "@/payload/collections/Deltas/component/useLocaleDate";
+import { Button } from "../Button";
+import { useHumanDate } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { DataTableRowAction } from "@/types/data-table";
 import { NAction } from "./Table/ActionBar";
 

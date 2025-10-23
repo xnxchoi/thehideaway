@@ -132,7 +132,7 @@ body {
   text-decoration: none;
   -webkit-appearance: none;
   appearance: none;
-  background-color: oklch(var(--button-background));
+  background-color: var(--button-background);
   -webkit-backdrop-filter: blur(2.4rem);
   backdrop-filter: blur(2.4rem);
   border: 0.1rem solid transparent;
@@ -156,7 +156,7 @@ body {
 }
 
 .rp_btn.bt_inv {
-  background-color: oklch(var(--button-background-inverted));
+  background-color: var(--button-background-inverted);
   color: oklch(var(--bg) / 1);
 }
 
@@ -167,11 +167,11 @@ body {
 }
 
 .rp_btn.bt_fill {
-  background-color: oklch(var(--button-background));
+  background-color: var(--button-background);
 }
 
 .rp_btn.bt_fill.bt_inv {
-  background-color: oklch(var(--button-background-inverted));
+  background-color: var(--button-background-inverted);
 }
 
 .rp_btn.bt_sm {
@@ -591,7 +591,7 @@ svg.bell-icon {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-color: oklch(var(--button-background));
+  background-color: var(--button-background);
   -webkit-backdrop-filter: blur(1.4rem);
   backdrop-filter: blur(1.4rem);
   border: 0.1rem solid transparent;
@@ -743,7 +743,7 @@ svg.bell-icon {
     border-radius 0.3s ease-in-out 0s;
   left: calc(100% - var(--open-width) * 0.75);
   top: 0;
-  background-color: oklch(var(--button-background));
+  background-color: var(--button-background);
   opacity: 1;
   visibility: visible;
 
@@ -2063,13 +2063,13 @@ body[data-browser="chrome"][data-device="mobile"] .menu__frame.frame-bottom {
   left: 50%;
   width: auto;
   max-width: initial;
-  font-size: var(--text-small);
+  font-size: var(--text-sm);
   background-color: oklch(var(--n-s-bbg-inverted) / 0.9);
   border-radius: var(--rounded-normal);
   color: oklch(var(--n-s-btn) / 1);
   line-height: 120%;
   transform: translate(-50%, -10px);
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease-in-out;
   z-index: 249;
 
   &::before {

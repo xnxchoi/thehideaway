@@ -17,6 +17,7 @@ declare module "payload" {
     user: {
       role: User["role"] | "guest";
     };
+    sourceId?: string;
     overrideAccess?: boolean;
     // For collections with slug field, determines whether hashID should be regenerated
     rehashRequired?: boolean;

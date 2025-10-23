@@ -1,7 +1,7 @@
 "use client";
-import { SplitCard } from "@/payload/blocks/heros/ArtHero";
+import { SplitCard } from "@/blocks/heros/ArtHero";
 import RichText from "@/payload/fields/RichText";
-import { MoreLikeThis } from "@/payload/blocks/RelatedPosts/Component";
+import { MoreLikeThis } from "@/blocks/RelatedPosts/Component";
 import { InView } from "react-intersection-observer";
 import { ComponentPropsWithRef } from "react";
 import { SingleArticle } from "@/types/collections/posts";

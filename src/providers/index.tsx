@@ -16,7 +16,7 @@ import { HeaderThemeProvider } from "./HeaderTheme";
 import { MiddleMan } from "./MiddleMan";
 import { QueryProvider } from "./QueryProvider";
 import { SessionProvider } from "./Session/providers";
-import { ThemeProvider } from "./Theme";
+import { CMDKeyManager, ThemeProvider } from "./Theme";
 import { PortalProvider } from "@/components/UX/Transition/Portaller";
 import { TransitionProvider } from "./TransitionProvider";
 
@@ -37,13 +37,14 @@ export const Providers: React.FC<{
                       <PortalProvider>
                         <TransitionProvider>
                           <MenuProvider>
-                            <MiddleMan>
-                              <SearchBarProvider>
+                            <SearchBarProvider>
+                              <MiddleMan>
+                                <CMDKeyManager />
                                 <HeaderThemeProvider>
                                   {children}
                                 </HeaderThemeProvider>
-                              </SearchBarProvider>
-                            </MiddleMan>
+                              </MiddleMan>
+                            </SearchBarProvider>
                           </MenuProvider>
                         </TransitionProvider>
                       </PortalProvider>

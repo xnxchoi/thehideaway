@@ -1,4 +1,8 @@
 "use client";
+import { Bookmark } from "@/payload-types";
+import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import { GotUser } from "@/payload/collections/Users/endpoints/getUser";
+import type { RP_Roles } from "@/stores/Notification/NotificationStore";
 import {
   createContext,
   type ReactNode,
@@ -8,14 +12,10 @@ import {
   useRef,
   useState
 } from "react";
-import { authClient } from "../client";
-import type { RP_SessionData, SessionType } from "./sessionType";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
-import { GotUser } from "@/payload/collections/Users/endpoints/getUser";
-import { Bookmark } from "@/payload-types";
-import type { RP_Roles } from "@/stores/Notification/NotificationStore";
-import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import { authClient } from "../client";
+import type { RP_SessionData, SessionType } from "./sessionType";
 
 type BookmarkedCollectionSlug = Bookmark["target"]["relationTo"];
 type RP_Bookmark = {

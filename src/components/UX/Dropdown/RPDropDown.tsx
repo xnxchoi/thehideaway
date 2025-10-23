@@ -16,7 +16,9 @@ import {
   useEffect,
   useState
 } from "react";
-import { Button, Link, RP_Btn } from "@/components/UX/Link/Link";
+import { Link } from "@/components/UX/Link/Link";
+import { Button } from "../Button";
+import { RP_Btn } from "../Button";
 import { useShallow } from "zustand/shallow";
 import { Separator } from "../../ui/separator";
 import { signOut } from "../../../lib/auth/client";

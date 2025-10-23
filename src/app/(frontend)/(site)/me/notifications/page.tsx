@@ -2,7 +2,7 @@ import { NotificationCenter } from "@/components/UX/Notifications/NotificationCe
 import { currentUser } from "@/lib/auth/context/servers";
 import { redirect } from "next/navigation";
 import PageClient from "./page.client";
-
+export const dynamic = "force-dynamic";
 export default async function NotificationsPage() {
   const user = await currentUser();
   if (!user) return redirect("/auth/sign-in");

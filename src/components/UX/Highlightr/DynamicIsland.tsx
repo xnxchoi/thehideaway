@@ -62,7 +62,7 @@ export const DynamicBreadcrumb = ({
             transition={{ type: "spring", bounce: 0.25 }}
             whileHover={{
               scale: 1.1,
-              borderColor: "oklch(var(--transparent-white)/0.001)"
+              borderColor: "oklch(var(--neutral-white)/0.001)"
             }}
           >
             <div className="absolute top-0 left-0 z-[120] h-full w-full bg-muted-off-background/35"></div>
@@ -95,7 +95,7 @@ export const DynamicBreadcrumb = ({
                     <defs>
                       <linearGradient id="col" gradientUnits="userSpaceOnUse">
                         <stop
-                          offset="0%"
+                          offset="10%"
                           stopColor="oklch(var(--faded-fg)/1)"
                         />
                         <stop
