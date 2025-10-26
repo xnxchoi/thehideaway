@@ -26,14 +26,14 @@ export const Article = (props: ArticleWrapperProps) => {
       data-themed="background-color,color"
     >
       <SplitCard post={post} />
-      <div className="mx-auto my-[28px] w-full max-w-[var(--maxContainerWidth)] px-0 py-[32px]">
-        <div className="rp-content [&>*]:col-[main] [&>aside]:col-4">
+      <div className="mx-auto my-[28px] w-full max-w-(--maxContainerWidth) px-0 py-[32px]">
+        <div className="rp-content *:col-[main] [&>aside]:col-4">
           {post.disabled ? (
             <Locked />
           ) : (
             <RichText data={post.content} enableGutter={false} />
           )}
-          <aside className="z-[2] lg:col-4 lg:row-[2/span_20] lg:mx-auto lg:my-0 lg:w-full lg:max-w-[350px]">
+          <aside className="z-2 lg:col-4 lg:row-[2/span_20] lg:mx-auto lg:my-0 lg:w-full lg:max-w-[350px]">
             <div className="side-card">
               <div className="story-side dzk">
                 <div className="side-head">More Like This</div>
@@ -56,7 +56,7 @@ export const Article = (props: ArticleWrapperProps) => {
         threshold={0.8}
         as="div"
       />
-      <div className="f-divider mt-[50px] h-[1px] w-full min-w-[1px]" />
+      <div className="f-divider mt-[50px] h-px w-full min-w-px" />
     </article>
   );
 };

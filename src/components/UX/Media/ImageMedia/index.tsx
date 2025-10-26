@@ -5,7 +5,7 @@ import { useEffect, type FC, type Ref } from "react";
 
 import { breakString } from "@/cssVariables";
 import { cn } from "@/lib/utils";
-import { useMotionValue } from "motion/react";
+import { useMotionValue, type MotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import type { AspectRatio, MediaProps } from "../types";

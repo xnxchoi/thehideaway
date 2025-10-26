@@ -40,7 +40,7 @@ export const FeaturedCard: React.FC<{
             />
             <div
               className={
-                "absolute right-0 bottom-0 left-0 h-[45%] overflow-hidden rounded-(--cardBorder) bg-linear-to-b from-background/0 from-20% via-background/25 via-70% to-background/45 to-100% dark:to-background/65"
+                "absolute right-0 bottom-0 left-0 h-[45%] overflow-hidden rounded-(--cardBorder) bg-linear-to-b from-faded-white/0 from-20% via-faded-white/25 via-70% to-faded-white/45 to-100% group-dark:from-faded-black/0 group-dark:via-faded-black/25 group-dark:to-faded-black/65"
               }
             />
             <div className="absolute right-0 bottom-0 left-0 z-5 h-full overflow-hidden rounded-(--cardBorder) bg-transparent backdrop-brightness-110 dark:backdrop-brightness-90" />

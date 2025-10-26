@@ -846,16 +846,16 @@ input {
             &:before {
               display: none;
             }
-            &:after {
-              // content: " ";
-              // position: absolute;
-              // top: 8px;
-              // right: 0;
-              // left: auto;
-              // width: 1px;
-              // height: calc(100% - 16px);
-              // border-left: 1px solid oklch(var(--muted-faded-fg) / 0.2);
-            }
+            // &:after {
+            // content: " ";
+            // position: absolute;
+            // top: 8px;
+            // right: 0;
+            // left: auto;
+            // width: 1px;
+            // height: calc(100% - 16px);
+            // border-left: 1px solid oklch(var(--muted-faded-fg) / 0.2);
+            // }
           }
           button.draggable-block-menu {
             background: transparent;

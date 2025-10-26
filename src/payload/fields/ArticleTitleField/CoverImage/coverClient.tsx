@@ -7,30 +7,20 @@ import {
   useListDrawer
 } from "@payloadcms/ui";
 
-import { cn } from "@/lib/utils";
-import * as m from "motion/react-m";
-import { stringify } from "qs-esm";
-import {
-  ClipboardEventHandler,
-  DragEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent
-} from "react";
-
-import { useDomCursor } from "@/components/core/cursorWrapper";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
 import { EASING } from "@/constants/animations";
+import { cn } from "@/lib/utils";
 import { errorToast, successToast } from "@/payload/components/sonner";
+import { useAltDocCtrls } from "@/payload/providers/Admins";
+import { useCursor } from "@/providers/RP_Pro";
 import type {
   ImageBaseSelect,
   ImageCollection,
   ImageCollectionSlug
 } from "@/types/payload-api-helpers";
-import { AnimatePresence } from "motion/react";
+import { clamp } from "@/utilities/mathUtilities";
+import { AnimatePresence, useMotionValue } from "motion/react";
+import * as m from "motion/react-m";
+import Image from "next/image";
 import {
   PopulateDocs,
   ReloadDoc
@@ -43,8 +33,20 @@ import type {
   UploadFieldClientProps,
   Where
 } from "payload";
-import { useAltDocCtrls } from "@/payload/providers/Admins";
+import { stringify } from "qs-esm";
+import {
+  ClipboardEventHandler,
+  DragEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type PointerEventHandler
+} from "react";
 import { useShallow } from "zustand/shallow";
+const NextImage = m.create(Image);
 type FetchedImageDocs = Partial<ImageCollection> & ImageBaseSelect;
 
 type PopulatedDocs = {
@@ -79,6 +81,12 @@ export function CoverImageClient(props: ArticleCoverProps) {
     path
   });
   const [wantInsert, setWantInsert] = useState(false);
+  const { value: positionY, setValue: setPositionY } = useField<number>({
+    path: "coverPosition"
+  });
+  const translateY = useMotionValue(positionY);
+  const transformPosition = useMotionValue(`center ${translateY.get()}%`);
+  const imageRef = useRef<HTMLDivElement>(null!);
 
   const altDocShown = useAltDocCtrls(useShallow((r) => r.peeked));
   const [populatedDocs, setPopulatedDocs] = useState<PopulatedDocs>();
@@ -88,6 +96,36 @@ export function CoverImageClient(props: ArticleCoverProps) {
   const [image, setImage] = useState<string | ImageBaseSelect | null>(
     initValue || null
   );
+  const [dragging, setDragging] = useState(false);
+  const [inserted, setInserted] = useState<boolean>(Boolean(initURLValue));
+  const [repositioning, setRepositioning] = useState(false);
+  const onRepositionClick: PointerEventHandler = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRepositioning(true);
+  }, []);
+
+  const finishRepositionClick = useCallback(
+    (e: PointerEvent) => {
+      const imageEL = imageRef.current;
+      e.stopPropagation();
+      e.preventDefault();
+      setDragging(false);
+      if (!imageEL) {
+        setRepositioning(false);
+        return;
+      }
+      if (e.target) {
+        const t = e.target as HTMLElement;
+        if (!(imageEL.contains(t) || t === imageEL)) {
+          setRepositioning(false);
+        }
+        setPositionY(translateY.get());
+      }
+    },
+    [setPositionY, translateY]
+  );
+
   const [visible, setVisible] = useState(false);
   const visiTO = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hover, setHover] = useState<boolean>(false);
@@ -103,8 +141,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
       visiTO.current = setTimeout(() => setVisible(false), 100);
     }
   }, [hover, altDocShown]);
-  const [dragging, setDragging] = useState(false);
-  const [inserted, setInserted] = useState<boolean>(Boolean(initURLValue));
+
   const [activeRelationTo, setActiveRelationTo] =
     useState<ImageCollectionSlug>(relationTo);
   const filterOptions: FilterOptionsResult = useMemo(() => {
@@ -126,7 +163,6 @@ export function CoverImageClient(props: ArticleCoverProps) {
 
   const onChange = useCallback(
     async (newValue: ImageBaseSelect | null, fallback?: string) => {
-      console.log("onChange: ", newValue);
       if (!newValue) {
         setImage(fallback || null);
         setInserted(false);
@@ -272,7 +308,6 @@ export function CoverImageClient(props: ArticleCoverProps) {
   const onLocalFileSelection = useCallback(
     (fileList?: FileList, fallback?: string) => {
       let fileListToUse = fileList;
-      console.log("fileList:", fileList);
       if (fileList && fileList.length > 0) {
         const file = fileList[0];
         if (!file) return;
@@ -315,11 +350,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
   const onListSelect = useCallback<NonNullable<ListDrawerProps["onSelect"]>>(
     async ({ collectionSlug, doc }) => {
       console.log("onListSelect: ", collectionSlug, doc);
-      // const loadedDocs: null | PaginatedDocs<
-      //   Pick<UserMedia, "id" | "thumbnailURL" | "url">
-      // > = await populateDocs([doc.id], collectionSlug);
-      // const selectedDoc = loadedDocs ? loadedDocs.docs?.[0] : null;
-      // console.log("selectedDoc inside onListSelect: ", selectedDoc);
+
       setPopulatedDocs((currentDocs) => {
         if (doc) {
           return [
@@ -377,7 +408,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
         });
       }
     },
-    [populateDocs, onChange]
+    [populateDocs]
   );
   // const onRemove = useCallback(
   //   (newValue?: PopulatedDocs) => {
@@ -429,6 +460,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
       void loadInitialDocs();
     }
   }, [populateDocs, activeRelationTo, initIdValue]);
+  const dragY = useMotionValue(0);
 
   const handleDragEnter: DragEventHandler<HTMLDivElement> = useCallback((e) => {
     e.preventDefault();
@@ -460,11 +492,73 @@ export function CoverImageClient(props: ArticleCoverProps) {
     },
     [onLocalFileSelection, image]
   );
-  const [trashHovered, setTrashHovered] = useState(false);
-  const { onMouseEnter, onMouseLeave } = useDomCursor({
-    onEnter: () => setTrashHovered(true),
-    onLeave: () => setTrashHovered(false)
-  });
+  const setCursor = useCursor((r) => r.setCursorState);
+  const lastPosition = useRef<number>(0);
+
+  const onDrag = useCallback(
+    (e: PointerEvent) => {
+      const yP = e.clientY;
+      const distance =
+        ((yP - lastPosition.current) / window.innerHeight / 2) * 100;
+      const yD = clamp(0, translateY.get() + distance, 100);
+      translateY.set(yD);
+      transformPosition.set(`center ${yD}%`);
+      lastPosition.current = yP;
+    },
+    [transformPosition, translateY]
+  );
+  const endDrag = useCallback(
+    (e: PointerEvent) => {
+      e.preventDefault();
+      document.documentElement.removeAttribute("data-dragging");
+      setDragging(false);
+      setCursor(null);
+    },
+    [setCursor]
+  );
+
+  const startDrag: PointerEventHandler = useCallback(
+    (event) => {
+      event.preventDefault();
+      setDragging(true);
+      const pY = event.clientY;
+      lastPosition.current = pY;
+      document.body.addEventListener("pointermove", onDrag);
+      document.body.addEventListener("pointerup", endDrag, { once: true });
+      document.documentElement.setAttribute("data-dragging", "true");
+    },
+    [endDrag, onDrag]
+  );
+  const resetPositions = useCallback(() => {
+    setPositionY(35);
+    setRepositioning(false);
+    translateY.set(35);
+    transformPosition.set(`center 35%`);
+    document.body.removeEventListener("pointerup", finishRepositionClick);
+  }, [finishRepositionClick, setPositionY, transformPosition, translateY]);
+  const [imageIsReady, setImageIsReady] = useState(
+    Boolean(image && typeof image === "object" && image.width && image.height)
+  );
+  useEffect(() => {
+    setImageIsReady(
+      Boolean(image && typeof image === "object" && image.width && image.height)
+    );
+    !image && resetPositions();
+  }, [image, resetPositions]);
+  const isDragging = useRef(dragging);
+  useEffect(() => {
+    isDragging.current = dragging;
+
+    if (!dragging) {
+      document.body.addEventListener("pointerup", finishRepositionClick, {
+        once: true
+      });
+      document.body.removeEventListener("pointermove", onDrag);
+
+      lastPosition.current = (window.innerHeight * translateY.get()) / 100;
+    }
+  }, [dragging, endDrag, finishRepositionClick, onDrag, translateY]);
+
   const handleDragOver: DragEventHandler<HTMLDivElement> = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -499,6 +593,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
       className={cn(
         "relative flex min-h-14 w-full shrink-0 grow-0 flex-col items-center bg-transparent"
       )}
+      ref={imageRef}
       style={{
         paddingTop: "1rem",
         transform: "translateY(0px)",
@@ -512,7 +607,6 @@ export function CoverImageClient(props: ArticleCoverProps) {
       <AnimatePresence mode="popLayout" initial={false}>
         {inserted ? (
           <m.div
-            onDrop={handleDrop}
             className={
               "relative mb-[1em] flex h-[30vh] max-h-[280px] items-center justify-center overflow-hidden bg-faded-background/10 transition-all duration-200 ease-out-power2"
             }
@@ -522,77 +616,110 @@ export function CoverImageClient(props: ArticleCoverProps) {
               height: "30vh"
             }}
           >
-            {image && (
-              <>
-                <m.div
-                  initial={{
-                    visibility: "hidden",
+            {imageIsReady && (
+              <m.div
+                initial={{
+                  visibility: "hidden",
 
-                    opacity: 0
-                  }}
-                  animate={{
-                    visibility: "visible",
+                  opacity: 0
+                }}
+                animate={{
+                  visibility: "visible",
 
-                    opacity: 1,
-                    transition: {
-                      duration: 0.2,
-                      ease: EASING.power3.in
-                    }
-                  }}
-                  exit={{
-                    visibility: "hidden",
+                  opacity: 1,
+                  transition: {
+                    duration: 0.2,
+                    ease: EASING.power3.in
+                  }
+                }}
+                exit={{
+                  visibility: "hidden",
 
-                    opacity: 0,
-                    transition: {
-                      duration: 0.2,
-                      ease: EASING.power3.out
-                    }
-                  }}
+                  opacity: 0,
+                  transition: {
+                    duration: 0.2,
+                    ease: EASING.power3.out
+                  }
+                }}
+                className={cn(
+                  "relative min-h-fit w-full overflow-hidden rounded-[6px]"
+                )}
+              >
+                <div
                   className={cn(
-                    "relative h-full w-full overflow-hidden rounded-[6px]"
+                    "absolute inset-0 z-10 transition-[backdrop-filter] delay-50 duration-200 ease-out-power4",
+                    !repositioning &&
+                      hover &&
+                      "backdrop-blur-sm backdrop-brightness-80"
                   )}
-                >
-                  <div
-                    className={cn(
-                      "absolute inset-0 z-10 transition-[backdrop-filter] delay-50 duration-200 ease-out-power4 hover:backdrop-blur-sm hover:backdrop-brightness-80",
-                      hover && "backdrop-blur-sm backdrop-brightness-80"
-                    )}
-                    style={{
-                      objectFit: "cover"
-                    }}
-                  />
-                  <FrontImage resource={image} />
-                </m.div>
+                  style={{
+                    objectFit: "cover"
+                  }}
+                />
+                <m.figure className={"m-0"}>
+                  <picture>
+                    <NextImage
+                      alt={""}
+                      className={
+                        "block h-[30vh] max-h-[200px] w-full object-cover"
+                      }
+                      dragListener={false}
+                      width={(image as ImageBaseSelect)!.width!}
+                      height={(image as ImageBaseSelect)!.height!}
+                      priority={false}
+                      quality={100}
+                      unoptimized={true}
+                      src={(image as ImageBaseSelect).url!}
+                      style={{
+                        objectPosition: transformPosition
+                      }}
+                    />
+                  </picture>
 
+                  {image &&
+                    typeof image === "object" &&
+                    "alt" in image &&
+                    typeof image.alt === "string" && (
+                      <figcaption
+                        className={cn(
+                          "right-[.5em] bottom-[.05em] flex h-[1em] w-full items-center justify-end bg-transparent p-[1.5em] underline",
+                          typeof image.darkmode === "boolean"
+                            ? image.darkmode
+                              ? "text-[oklch(var(--white)/1)]"
+                              : "text-[oklch(var(--black)/1)]"
+                            : "text-[oklch(var(--fg)/1)]"
+                        )}
+                      >
+                        {image.alt}
+                      </figcaption>
+                    )}
+                </m.figure>
+              </m.div>
+            )}
+            <AnimatePresence>
+              {repositioning ? (
                 <m.div
+                  onPointerDown={startDrag}
                   className={cn(
                     "absolute inset-0 flex items-center justify-center gap-[8px] bg-transparent transition-[z-index,opacity] duration-300"
                   )}
-                  variants={{
-                    animate: {
-                      zIndex: 0,
-                      opacity: 0
-                    },
-                    hover: {
-                      zIndex: 55,
-                      opacity: 1
-                    }
+                  initial={{
+                    zIndex: 0,
+                    opacity: 0
                   }}
-                  animate={hover ? "hover" : "animate"}
+                  exit={{
+                    zIndex: 0,
+                    opacity: 0
+                  }}
+                  animate={{
+                    zIndex: 100,
+                    opacity: 1
+                  }}
                 >
-                  <div
+                  <m.div
                     className={
-                      "flex w-fit items-center rounded-[6px] bg-faded-background/30 px-[2px] shadow-md"
+                      "flex w-fit items-center rounded-[6px] bg-faded-background/30 px-1 shadow-sm/30"
                     }
-                    // style={{
-                    //   display: "flex",
-                    //   alignItems: "center",
-                    //   background: "oklch(var(--faded-bg)/.3)",
-                    //   borderRadius: "6px",
-                    //   width: "fit-content",
-                    //   padding: "2px",
-                    //   boxShadow: "0 0 0 1px #30302e,0px 4px 12px -2px #00000029"
-                    // }}
                   >
                     <div
                       style={{
@@ -610,8 +737,60 @@ export function CoverImageClient(props: ArticleCoverProps) {
                         minWidth: "0px"
                       }}
                       className={cn(
-                        "flex h-10 min-w-0 shrink-0 rounded-[4px] bg-faded-foreground/10 px-[6px] py-[4px] leading-[1.2] text-background/80 transition-colors duration-200 ease-out-power2 select-none hover:bg-faded-foreground/40 hover:text-background"
+                        "flex h-10 min-w-0 shrink-0 bg-transparent px-[6px] py-[4px] leading-[1.2] text-background/80 transition-colors duration-200 ease-out-power2 select-none"
                       )}
+                      aria-label="Reposition Cover Image"
+                    >
+                      Reposition Cover Image
+                    </div>
+                  </m.div>
+                </m.div>
+              ) : (
+                <m.div
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center gap-[8px] bg-transparent transition-[z-index,opacity] duration-300"
+                  )}
+                  variants={{
+                    animate: {
+                      zIndex: 0,
+                      opacity: 0
+                    },
+                    hover: {
+                      zIndex: 55,
+                      opacity: 1
+                    }
+                  }}
+                  animate={hover ? "hover" : "animate"}
+                >
+                  <m.div
+                    className={
+                      "flex w-fit items-center rounded-[6px] bg-faded-background/30 shadow-md"
+                    }
+                    // style={{
+                    //   display: "flex",
+                    //   alignItems: "center",
+                    //   background: "oklch(var(--faded-bg)/.3)",
+                    //   borderRadius: "6px",
+                    //   width: "fit-content",
+                    //   padding: "2px",
+                    //   boxShadow: "0 0 0 1px #30302e,0px 4px 12px -2px #00000029"
+                    // }}
+                  >
+                    <div
+                      style={{
+                        userSelect: "none",
+
+                        alignItems: "center",
+                        whiteSpace: "nowrap",
+                        fontSize: "14px",
+                        flexShrink: 0,
+                        lineHeight: "1.2",
+                        minWidth: "0px"
+                      }}
+                      className={cn(
+                        "flex h-10 min-w-0 shrink-0 rounded-l-[4px] rounded-r-[2px] bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-background/80 transition-colors duration-200 ease-out-power2 select-none hover:bg-faded-foreground/40 hover:text-faded-background/60"
+                      )}
+                      data-themed={"color, background-color, border-color"}
                       role="button"
                       aria-label="Update the page cover image"
                     >
@@ -625,21 +804,13 @@ export function CoverImageClient(props: ArticleCoverProps) {
                         Change cover
                       </div>
                     </div>
+
                     <div
-                      className={
-                        "mx-[4px] my-0 h-7 w-px rounded-[2px] bg-[var(--edge-black)/.1]"
-                      }
-                    >
-                      |
-                    </div>
-                    <div
+                      onPointerDown={onRepositionClick}
                       role="button"
                       aria-label="Reposition the cover image"
                       style={{
                         userSelect: "none",
-                        transition: "background 20ms ease-in",
-
-                        display: "inline-flex",
                         alignItems: "center",
                         height: "24px",
                         paddingInline: "6px",
@@ -650,7 +821,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
                         lineHeight: "1.2",
                         minWidth: "0px"
                       }}
-                      className="inline-flex h-[24px] min-w-0 shrink-0 items-center rounded-[4px] bg-edge-black/10 px-[8px] text-base leading-[1.2] whitespace-nowrap transition-colors duration-200 ease-out-power3 hover:bg-edge-black/40"
+                      className="flex h-10 min-w-0 shrink-0 items-center rounded-[4px] bg-edge-black/10 px-[8px] text-base leading-[1.2] whitespace-nowrap transition-colors duration-200 ease-out-power3 hover:bg-edge-black/40"
                     >
                       <div
                         style={{
@@ -662,10 +833,10 @@ export function CoverImageClient(props: ArticleCoverProps) {
                         Reposition
                       </div>
                     </div>
-                  </div>
+                  </m.div>
                 </m.div>
-              </>
-            )}
+              )}
+            </AnimatePresence>
           </m.div>
         ) : (
           <m.div
@@ -743,7 +914,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
                         id={"user_settings_photo_file"}
                         name={"user_settings[photo][file]"}
                         className={cn(
-                          "!absolute inset-0 z-[10] h-full w-full cursor-none overflow-hidden opacity-0"
+                          "absolute! inset-0 z-10 h-full w-full cursor-none overflow-hidden opacity-0"
                         )}
                         onChange={imageFilePaste}
                         accept="image/*"
@@ -783,7 +954,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
                     </m.span>
                     <m.span>/</m.span>
                     <m.span
-                      className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-colors duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]`}
+                      className={`upload__listToggler ease rounded-xl border border-solid border-[currentColor] px-3.5 py-1 leading-normal transition-colors duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]`}
                       onClick={openListDrawer}
                       role="button"
                       style={{
@@ -815,7 +986,7 @@ export function CoverImageClient(props: ArticleCoverProps) {
                   >
                     <m.span
                       className={cn(
-                        "ease relative rounded-xl border-[1px] border-solid border-[currentColor] p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]"
+                        "ease relative rounded-xl border border-solid border-[currentColor] p-5 px-3.5 py-1 text-center leading-normal transition-[z-index,opacity,border-color,background-color,color] duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]"
                       )}
                       role="button"
                       style={{

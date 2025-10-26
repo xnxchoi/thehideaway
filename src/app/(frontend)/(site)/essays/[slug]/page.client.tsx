@@ -60,7 +60,7 @@ export default function PageClient({
   return (
     <div
       className={
-        "rp_story z-[120] w-screen bg-faded-white pb-[20px] leading-[1.28] dark:bg-faded-black"
+        "rp_story z-120 w-screen bg-faded-white pb-[20px] leading-[1.28] dark:bg-faded-black"
       }
       data-themed="background-color,color"
     >
@@ -81,7 +81,7 @@ export default function PageClient({
           position: "relative"
         }}
       >
-        <div className="absolute top-0 left-0 z-[50] h-px w-screen bg-gradient-to-r from-[oklch(var(--muted-faded-fg)/0.15)] from-10% via-[oklch(var(--muted-faded-fg)/0.75)] via-50% to-[oklch(var(--muted-faded-fg)/0.15)] to-90%" />
+        <div className="absolute top-0 left-0 z-50 h-px w-screen bg-linear-to-r from-[oklch(var(--muted-faded-fg)/0.15)] from-10% via-[oklch(var(--muted-faded-fg)/0.75)] via-50% to-[oklch(var(--muted-faded-fg)/0.15)] to-90%" />
       </div>
     </div>
   );

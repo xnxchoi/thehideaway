@@ -52,7 +52,7 @@ export default async function Post({ params: paramsPromise }: Args) {
       </PageClient>
       <div
         className={
-          "fixed inset-0 z-[0] h-svh w-svw bg-faded-black dark:bg-faded-white"
+          "fixed inset-0 z-0 h-svh w-svw bg-faded-black dark:bg-faded-white"
         }
       ></div>
       {<PrevNext prev={prev} next={next} />}

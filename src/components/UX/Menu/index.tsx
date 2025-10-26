@@ -18,16 +18,9 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";
-import {
-  AnimatePresence,
-  useMotionValue,
-  type MotionValue,
-  type Variants
-} from "motion/react";
+import { useMotionValue, type MotionValue, type Variants } from "motion/react";
 import * as m from "motion/react-m";
-import { useTransitionRouter } from "next-transition-router";
 import {
-  RefObject,
   SVGAttributes,
   useCallback,
   useEffect,
@@ -738,24 +731,23 @@ const CornerStone = (
       animate="animate"
       exit="exit"
     >
-       
-          <m.path
-            d={path}
-            data-themed={theme === "dark" ? "stroke,color" : "fill,color"}
-            clipRule="evenodd"
-            fillRule="evenodd"
-            strokeWidth={theme === "dark" ? 1.2 : 0}
-            stroke={theme === "dark" ? "oklch(var(--n-s-bbg)/.04)" : "none"}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={pathVariants}
-            transition={{
-              duration: 0.2,
-              ease: EASING.power2.out,
-              type: "tween"
-            }}
-          />
+      <m.path
+        d={path}
+        data-themed={theme === "dark" ? "stroke,color" : "fill,color"}
+        clipRule="evenodd"
+        fillRule="evenodd"
+        strokeWidth={theme === "dark" ? 1.2 : 0}
+        stroke={theme === "dark" ? "oklch(var(--n-s-bbg)/.04)" : "none"}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={pathVariants}
+        transition={{
+          duration: 0.2,
+          ease: EASING.power2.out,
+          type: "tween"
+        }}
+      />
     </m.svg>
   );
 };

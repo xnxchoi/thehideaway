@@ -568,6 +568,7 @@ export interface Bookmark {
 export interface Post {
   id: string;
   image?: (string | null) | UserMedia;
+  coverPosition?: number | null;
   title: string;
   richTitle?: {
     root: {
@@ -3007,6 +3008,7 @@ export interface HeroSquareBlockSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   id?: T;
   image?: T;
+  coverPosition?: T;
   title?: T;
   richTitle?: T;
   content?: T;

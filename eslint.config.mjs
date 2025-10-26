@@ -9,13 +9,16 @@ const __filename = fileURLToPath(import.meta.url);
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTS,
+  prettier,
   {
     rules: {
       "@typescript-eslint/ban-ts-comment": "warn",
       "@typescript-eslint/no-empty-object-type": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-expressions": "off",
+      "react-hooks/refs": "off",
       "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/set-state-in-effect": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
@@ -30,7 +33,6 @@ const eslintConfig = defineConfig([
       ]
     }
   },
-  prettier,
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",

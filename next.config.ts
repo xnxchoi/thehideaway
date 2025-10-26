@@ -1,9 +1,7 @@
 import { withPayload } from "@payloadcms/next/withPayload";
-import redirects from "./redirects.js";
 
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next/types";
-import path from "path";
 const withNextIntl = createNextIntlPlugin();
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -62,16 +60,31 @@ const nextConfig: NextConfig = {
     );
     return config;
   },
-  eslint: { ignoreDuringBuilds: true },
   sassOptions: { includePaths: ["src"] },
   reactStrictMode: true,
-  redirects,
+
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true
+  },
+  async redirects() {
+    return [
+      {
+        destination: "/ie-incompatible.html",
+        has: [
+          {
+            type: "header",
+            key: "user-agent",
+            value: "(.*Trident.*)" // all ie browsers
+          }
+        ],
+        permanent: false,
+        source: "/:path((?!ie-incompatible.html$).*)" // all pages except the incompatibility page
+      }
+    ];
   },
   async rewrites() {
     return [
