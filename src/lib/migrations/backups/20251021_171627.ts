@@ -1,7 +1,7 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres";
+import {MigrateDownArgs, MigrateUpArgs, sql} from "@payloadcms/db-postgres";
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
-  await db.execute(sql`
+export async function up({db, payload, req}: MigrateUpArgs): Promise<void> {
+	await db.execute(sql`
    CREATE TYPE "public"."enum_media_source_provider" AS ENUM('unsplash', 'hideaway');
   CREATE TYPE "public"."enum_user_media_source_provider" AS ENUM('unsplash', 'hideaway');
   ALTER TABLE "media" ADD COLUMN "source_provider" "enum_media_source_provider" DEFAULT 'hideaway' NOT NULL;
@@ -11,11 +11,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({
-  db,
-  payload,
-  req
+	db, payload, req
 }: MigrateDownArgs): Promise<void> {
-  await db.execute(sql`
+	await db.execute(sql`
    ALTER TABLE "media" DROP COLUMN "source_provider";
   ALTER TABLE "media" DROP COLUMN "source_source_id";
   ALTER TABLE "user_media" DROP COLUMN "source_provider";

@@ -9,7 +9,7 @@ import type {
 
 import { getTranslation } from "@payloadcms/translations";
 import { formatAdminURL } from "payload/shared";
-import React, {
+import {
   Fragment,
   useCallback,
   useEffect,
@@ -24,7 +24,6 @@ import {
   Locked,
   MoveDocToFolder,
   PreviewButton,
-  PublishButton,
   RenderCustomComponent,
   SaveButton,
   SaveDraftButton,
@@ -48,17 +47,14 @@ import { PermanentlyDeleteButton } from "@payloadcms/ui/elements/PermanentlyDele
 import { RestoreButton } from "@/payload/elements/RestoreButton";
 import { Status } from "@/payload/elements/Status";
 import { formatDate } from "@payloadcms/ui/shared";
-import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import type { DocumentDrawerContextType } from "node_modules/@payloadcms/ui/dist/elements/DocumentDrawer/Provider";
 import { useLivePreviewContext } from "node_modules/@payloadcms/ui/dist/providers/LivePreview/context";
 import { CopyLocaleData } from "../CopyLocaleData";
 import { cn } from "@/lib/utils";
 import { useLenis } from "lenis/react";
-import type Lenis from "lenis";
 import { useVaultSidebar } from "@/payload/providers/Admins";
 import { SidebarControls } from "@/payload/fields/SidebarControls/client";
 import { AnimatePresence } from "motion/react";
-import * as m from "motion/react-m";
 import "./index.scss";
 import {
   MenuArrow,
@@ -66,7 +62,9 @@ import {
   MenuPopup,
   MenuSeparator,
   MenuTrigger
-} from "./Popover";
+} from "../../components/Popover";
+import {RP_SaveButton} from "@/payload/fields/ArticleTitleField/SaveButton/SaveClient";
+import {PublishButton} from "@/payload/fields/ArticleTitleField/PublishButton/publishClient";
 
 const baseClass = "doc-controls";
 
@@ -381,8 +379,7 @@ export const DocumentControls: FC<{
                     </Fragment>
                   ) : (
                     <RenderCustomComponent
-                      CustomComponent={CustomSaveButton}
-                      Fallback={<SaveButton />}
+                      CustomComponent={CustomSaveButton} Fallback={<RP_SaveButton />}
                     />
                   )}
                 </Fragment>
@@ -422,23 +419,14 @@ export const DocumentControls: FC<{
                 />
                 <Menu.Portal>
                   <Menu.Positioner className="outline-none" sideOffset={10}>
-                    <MenuPopup
+                    <MenuPopup className={"p-0 py-3"}
                       onMouseEnter={enterSetup}
                       onMouseLeave={leaveSetup}
                     >
                       <MenuArrow />
-                      <div
-                        style={{
-                          position: "relative",
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column"
-                        }}
-                        ref={menuRef}
-                      >
-                        {showCopyToLocale && (
-                          <MenuItem>
+	                    <div className={"flex flex-col"} ref={menuRef}>
+                        {showCopyToLocale && (<MenuItem
+		                        className={"py-2 text-faded-foreground/90! outline-none! hover:text-faded-background!"}>
                             <CopyLocaleData />
                           </MenuItem>
                         )}
@@ -448,22 +436,22 @@ export const DocumentControls: FC<{
                           <Fragment>
                             {!disableCreate && (
                               <>
-                                <MenuItem>
+	                              <MenuItem className={"py-2 text-faded-foreground!"}>
                                   {editDepth > 1 ? (
                                     <Button
                                       id="action-create"
                                       className={cn(
-                                        "appearance-none border-none bg-transparent outline-none"
+	                                      "w-full! appearance-none border-none! bg-transparent! p-0! font-sans! text-faded-foreground/90! outline-none! hover:text-faded-background!"
                                       )}
                                       onClick={onDrawerCreateNew}
+                                      data-themed="color, border-color, background-color, outline-color,box-shadow"
                                     >
                                       {i18n.t("general:createNew")}
                                     </Button>
                                   ) : (
                                     <Link
-                                      className={
-                                        "decoration-none appearance-none border-none bg-transparent outline-none"
-                                      }
+                                      className={"decoration-none w-full appearance-none border-none! bg-transparent! px-2! font-sans! text-inherit!"
+                                      } data-themed="color, border-color, background-color, outline-color,box-shadow"
                                       prefetch={false}
                                       href={formatAdminURL({
                                         adminRoute,
@@ -483,7 +471,8 @@ export const DocumentControls: FC<{
                               collectionConfig.disableDuplicate !== true &&
                               isEditing && (
                                 <>
-                                  <MenuItem>
+	                                <MenuItem
+		                                className={"py-2 font-sans! text-faded-foreground/90! hover:text-faded-background!"}>
                                     <DuplicateDocument
                                       id={`${id}`}
                                       onDuplicate={onDuplicate}
@@ -496,23 +485,21 @@ export const DocumentControls: FC<{
                                       slug={collectionConfig?.slug}
                                     />
                                   </MenuItem>
-                                  <MenuSeparator />
                                 </>
                               )}
                           </Fragment>
                         )}
-                        {id && hasDeletePermission && (
-                          <MenuItem>
-                            <DeleteDocument
-                              buttonId="action-delete"
-                              collectionSlug={collectionConfig?.slug}
-                              id={id.toString()}
-                              onDelete={onDelete}
-                              redirectAfterDelete={redirectAfterDelete}
-                              singularLabel={collectionConfig?.labels?.singular}
-                              useAsTitle={collectionConfig?.admin?.useAsTitle}
-                            />
-                          </MenuItem>
+                        {id && hasDeletePermission && (<>
+		                        <MenuSeparator />
+		                        <MenuItem
+			                        className={"py-2 font-sans! text-faded-foreground/90! hover:text-faded-background!"}>
+			                        <DeleteDocument buttonId="action-delete" collectionSlug={collectionConfig?.slug}
+			                                        id={id.toString()} onDelete={onDelete}
+			                                        redirectAfterDelete={redirectAfterDelete}
+			                                        singularLabel={collectionConfig?.labels?.singular}
+			                                        useAsTitle={collectionConfig?.admin?.useAsTitle} />
+		                        </MenuItem>
+	                        </>
                         )}
 
                         {EditMenuItems && (

@@ -1,45 +1,5 @@
 @use "./__pagePortal.scss";
 
-html {
-  opacity: 0;
-  width: 100vw;
-  overflow-x: hidden;
-}
-html::-webkit-scrollbar,
-*::-webkit-scrollbar {
-  display: none;
-}
-
-html[data-theme="dark"],
-html[data-theme="light"] {
-  opacity: initial;
-}
-
-body[data-enable-interaction="false"] {
-  pointer-events: none !important;
-}
-
-body[data-enable-interaction="true"] {
-  pointer-events: auto !important;
-}
-
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: clip;
-}
-
-.lenis.lenis-smooth iframe {
-  pointer-events: none;
-}
-
 :root {
   --text-bold: oklch(var(--fg) / 1);
   --text-bold-invert: oklch(var(--bg) / 1);
@@ -70,25 +30,6 @@ html.lenis body {
     --button-height: 2rem;
     --button-height-md: 2.56rem;
   }
-}
-
-:focus {
-  outline: none;
-}
-
-html {
-  box-sizing: inherit;
-  padding: 0;
-  margin: 0 !important;
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-font-smoothing: antialiased;
-  //color: oklch(var(--foreground)/1);
-  font-family: var(--font-sans), sans-serif;
-  font-size: 62.5%;
-  background: oklch(var(--bg) / 0);
 }
 
 body {

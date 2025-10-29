@@ -363,8 +363,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2.4px;
-  font-size: 14px;
-  line-height: 11px;
+  font-size: 12px;
+  line-height: 17.1429px;
   padding-left: 18px;
   position: relative;
 }
@@ -376,7 +376,7 @@
   content: "";
   height: 13px;
   left: 0;
-  top: -1px;
+  top: 1px;
   position: absolute;
   width: 13px;
 }
@@ -714,8 +714,8 @@
   width: 11px;
   height: 11px;
   background: currentColor;
-  -webkit-mask-image: url(https://cdn2.bustle.com/2024/inverse/jack-1255b2bfbb.svg);
-  mask-image: url(https://cdn2.bustle.com/2024/inverse/jack-1255b2bfbb.svg);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 75.65 75.65'%3E%3Cscript xmlns=''/%3E%3Cg data-name='Layer 2'%3E%3Cpath d='M63 25.23a12.6 12.6 0 0 0 12.6-12.6A12.6 12.6 0 0 0 63.05 0a12.6 12.6 0 0 0-12.6 12.6 12.6 12.6 0 1 1-25.19 0A12.6 12.6 0 0 0 12.63 0 12.6 12.6 0 0 0 0 12.6a12.6 12.6 0 0 0 12.6 12.6 12.6 12.6 0 1 1 0 25.19A12.6 12.6 0 0 0 0 63a12.6 12.6 0 0 0 12.6 12.6A12.6 12.6 0 0 0 25.2 63a12.6 12.6 0 1 1 25.19 0A12.6 12.6 0 0 0 63 75.65a12.6 12.6 0 0 0 12.6-12.6A12.6 12.6 0 0 0 63 50.45a12.6 12.6 0 1 1 0-25.19Z' data-name='Layer 1'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 75.65 75.65'%3E%3Cscript xmlns=''/%3E%3Cg data-name='Layer 2'%3E%3Cpath d='M63 25.23a12.6 12.6 0 0 0 12.6-12.6A12.6 12.6 0 0 0 63.05 0a12.6 12.6 0 0 0-12.6 12.6 12.6 12.6 0 1 1-25.19 0A12.6 12.6 0 0 0 12.63 0 12.6 12.6 0 0 0 0 12.6a12.6 12.6 0 0 0 12.6 12.6 12.6 12.6 0 1 1 0 25.19A12.6 12.6 0 0 0 0 63a12.6 12.6 0 0 0 12.6 12.6A12.6 12.6 0 0 0 25.2 63a12.6 12.6 0 1 1 25.19 0A12.6 12.6 0 0 0 63 75.65a12.6 12.6 0 0 0 12.6-12.6A12.6 12.6 0 0 0 63 50.45a12.6 12.6 0 1 1 0-25.19Z' data-name='Layer 1'/%3E%3C/g%3E%3C/svg%3E");
   -webkit-mask-size: 100%;
   mask-size: 100%;
 }
@@ -997,8 +997,8 @@
   bottom: 0;
   content: "";
   height: 45px;
-  -webkit-mask-image: url(https://cdn2.bustle.com/2024/inverse/bottom_tab-5dadcc1cfc.svg);
-  mask-image: url(https://cdn2.bustle.com/2024/inverse/bottom_tab-5dadcc1cfc.svg);
+  -webkit-mask-image: url("data:image/svg+xml,%0A%3Csvg width='214' height='42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3Cpath d='M.409.169a20.003 20.003 0 0 1 14.428 6.149L43.186 35.85A20 20 0 0 0 57.614 42H194c11.046 0 20-8.954 20-20v-65.775V.169H.409z' fill='%23AED8EA' fill-rule='evenodd'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%0A%3Csvg width='214' height='42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3Cpath d='M.409.169a20.003 20.003 0 0 1 14.428 6.149L43.186 35.85A20 20 0 0 0 57.614 42H194c11.046 0 20-8.954 20-20v-65.775V.169H.409z' fill='%23AED8EA' fill-rule='evenodd'/%3E%3C/svg%3E");
   -webkit-mask-size: 100% 103%;
   mask-size: 100% 103%;
   -webkit-mask-position: left;
@@ -1105,8 +1105,8 @@ aside.rhF {
   display: inline-block;
   height: 20px;
   margin: 3.2px 8px 0 0;
-  -webkit-mask-image: url(https://cdn2.bustle.com/2024/inverse/arrows-d8d7ce31fe.svg);
-  mask-image: url(https://cdn2.bustle.com/2024/inverse/arrows-d8d7ce31fe.svg);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='36' height='20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M29.729 18.21a2.532 2.532 0 0 0 3.58-3.58l-1.193-1.194a4.22 4.22 0 0 1 0-5.967l1.193-1.194a2.532 2.532 0 1 0-3.58-3.58l-4.222 4.222a5 5 0 0 0 0 7.07l4.222 4.223zM18.718 18.21a2.532 2.532 0 0 0 3.58-3.58l-1.193-1.194a4.22 4.22 0 0 1 0-5.967L22.3 6.275a2.532 2.532 0 1 0-3.58-3.58l-4.223 4.222a5 5 0 0 0 0 7.07l4.222 4.223z' fill='%23979797'/%3E%3Cpath d='M8.131 18.21a2.532 2.532 0 0 0 3.58-3.58l-1.193-1.194a4.22 4.22 0 0 1 0-5.967l1.194-1.194a2.532 2.532 0 1 0-3.58-3.58L3.908 6.917a5 5 0 0 0 0 7.07l4.222 4.223z' fill='%23979797'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg width='36' height='20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M29.729 18.21a2.532 2.532 0 0 0 3.58-3.58l-1.193-1.194a4.22 4.22 0 0 1 0-5.967l1.193-1.194a2.532 2.532 0 1 0-3.58-3.58l-4.222 4.222a5 5 0 0 0 0 7.07l4.222 4.223zM18.718 18.21a2.532 2.532 0 0 0 3.58-3.58l-1.193-1.194a4.22 4.22 0 0 1 0-5.967L22.3 6.275a2.532 2.532 0 1 0-3.58-3.58l-4.223 4.222a5 5 0 0 0 0 7.07l4.222 4.223z' fill='%23979797'/%3E%3Cpath d='M8.131 18.21a2.532 2.532 0 0 0 3.58-3.58l-1.193-1.194a4.22 4.22 0 0 1 0-5.967l1.194-1.194a2.532 2.532 0 1 0-3.58-3.58L3.908 6.917a5 5 0 0 0 0 7.07l4.222 4.223z' fill='%23979797'/%3E%3C/svg%3E");
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-position: center;
@@ -1600,7 +1600,7 @@ aside.rhF {
             background-repeat: repeat;
             background-size: 200px 200px;
             pointer-events: none;
-            background-image: url("/assets/papier.png");
+            background-image: url(/assets/papier.png);
           }
         }
       }

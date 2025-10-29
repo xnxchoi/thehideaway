@@ -1,7 +1,18 @@
 @import "tailwindcss";
+
 @source not "../../src/payload";
 @source not "../../src/graphics";
+@source not "../../src/styles";
+@source not "../../node_modules";
+@source inline("{lg:,}col-span-{4..12..2}");
+@source inline("border");
+@source inline("card");
+@source inline("error");
+@source inline("success");
+@source inline("warning");
 
+@plugin "@tailwindcss/typography";
+@config "../../tailwind.config.js";
 @import "tw-animate-css";
 
 /*
@@ -19,6 +30,10 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
   }
+
+    :focus {
+        outline: none;
+    }
 }
 /*
 The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -142,6 +157,60 @@ color utility to any element that depends on these defaults.
     @apply font-mono text-lg leading-[1.75] tracking-[0.03px];
   }
 }
+
+html {
+    opacity: 0;
+    width: 100vw;
+    overflow-x: hidden;
+    box-sizing: inherit;
+    padding: 0;
+    margin: 0 !important;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    color: oklch(var(--fg) / 1);
+    font-family: var(--font-sans), sans-serif;
+    font-size: 62.5%;
+    background: oklch(var(--bg) / 0);
+}
+
+html::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    display: none;
+}
+
+html[data-theme="dark"],
+html[data-theme="light"] {
+    opacity: initial;
+}
+
+body[data-enable-interaction="false"] {
+    pointer-events: none !important;
+}
+
+body[data-enable-interaction="true"] {
+    pointer-events: auto !important;
+}
+
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: clip;
+}
+
+.lenis.lenis-smooth iframe {
+    pointer-events: none;
+}
+
 /**
 ** Base variables
 **/
@@ -238,8 +307,15 @@ color utility to any element that depends on these defaults.
   --popover: var(--button-background);
   --popover-foreground: oklch(var(--n-s-fg));
 
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+
   --accent: var(--blue-gray);
-  --accent-foreground: oklch(0.396 0.141 25.723);
+
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(var(--rouge-400));
   --destructive-foreground: oklch(0.396 0.141 25.723);
   --border: oklch(var(--n-s-fg) / 0.65);
 
@@ -366,6 +442,24 @@ Colors
   100% {
     transform: rotate(360deg) translate(-50%, -50%);
   }
+}
+
+@keyframes accordion-down {
+    from {
+        height: 0;
+    }
+    to {
+        height: var(--radix-accordion-content-height);
+    }
+}
+
+@keyframes accordion-up {
+    from {
+        height: var(--radix-accordion-content-height);
+    }
+    to {
+        height: 0;
+    }
 }
 /***
 ---easings---
@@ -546,6 +640,8 @@ Colors
   --animate-marquee-horizontal-rtl: marquee-horizontal-rtl 40s linear infinite;
   --animate-marquee-horizontal-ltr: marquee-horizontal-ltr 40s linear infinite;
   --animate-lp: rotate 21s linear infinite;
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
 }
 .marquee-horizontal-rtl {
   animation: marquee-horizontal-rtl 25s linear infinite;
@@ -617,17 +713,17 @@ Colors
   --card-foreground: oklch(0.985 0 0);
   --bg-popover: var(--button-background);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.274 0.006 286.033);
+
+    --primary: oklch(var(--white));
+    --primary-foreground: oklch(var(--black));
+    --secondary: oklch(var(--faded-black));
+    --secondary-foreground: oklch(var(--faded-white));
+    --muted: oklch(var(--faded-d-gray));
+    --muted-foreground: oklch(var(--faded-l-gray));
+    --accent: oklch(var(--muted-faded-fg));
+    --accent-foreground: var(--color-rouge-500);
+    --destructive: oklch(var(--rouge-600))
+    --border: oklch(0.274 0.006 286.033);
   --input: oklch(0.274 0.006 286.033);
   --ring: oklch(0.442 0.017 285.786);
   --chart-1: oklch(0.488 0.243 264.376);
@@ -689,17 +785,20 @@ Colors
 
   --bg-popover: var(--button-background);
 
-  --popover-foreground: oklch(0.21 0.006 285.885);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.985 0 0);
-  --secondary-foreground: oklch(0.274 0.006 286.033);
-  --muted: oklch(0.705 0.015 286.067);
-  --muted-foreground: oklch(0.274 0.006 286.033);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --primary: oklch(var(--white));
+    --primary-foreground: oklch(var(--black));
+    --secondary: oklch(var(--faded-black));
+    --secondary-foreground: oklch(var(--faded-white));
+    --muted: oklch(var(--faded-l-gray));
+    --muted-foreground: oklch(var(--faded-d-gray));
   --accent: oklch(var(--muted-faded-bg));
   --accent-foreground: var(--color-rouge-500);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
+    --destructive: oklch(var(--rouge-500));
 }
 
 /*body[data-scroll-locked] {*/
@@ -772,7 +871,7 @@ body.menu__open * {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-
+    --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-suit);
   --font-serif: var(--font-narcissianNectare);
   --font-dots: var(--font-dots);
@@ -797,8 +896,15 @@ body.menu__open * {
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
+    align-self: center;
 
-  @media (width >= --theme(--breakpoint-sm)) {
+    padding: 1rem;
+
+    @media (width >= 840px) {
+        padding: 2rem;
+    }
+
+    @media (width >= theme(--breakpoint-sm)) {
     max-width: none;
   }
 
@@ -892,7 +998,6 @@ input:-webkit-autofill:active {
     oklch(var(--rouge-400) / 0.7) 99%
   );
 }
-
 /*@media (min-width: 768px) {*/
 /*    button, a, input, textarea, select, option, optgroup, fieldset, legend, div, p, h1, h2, h3, h4, h5, h6, span, img, svg, kbd, mark, hr, hr * {*/
 /*        cursor: none !important;*/

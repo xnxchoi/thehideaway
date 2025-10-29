@@ -83,7 +83,7 @@ export const CopyLocaleData: FC = () => {
   return (
     <Button
       id={`${baseClass}__button`}
-      className={cn("appearance-none border-none bg-transparent outline-none")}
+      className={cn("appearance-none border-none bg-transparent text-inherit! outline-none")}
       onClick={() => {
         if (modified) {
           toast.info(t("general:unsavedChanges"));
@@ -213,8 +213,7 @@ export const CopyLocaleDataDrawer = () => {
     >
       <Drawer.Portal>
         <Drawer.Overlay
-          role="button"
-          className={"inset-0 z-[99998] bg-faded-background/30"}
+          role="button" className={"inset-0 z-99998 bg-faded-background/30"}
           style={{
             inset: 0,
             zIndex: 99998,

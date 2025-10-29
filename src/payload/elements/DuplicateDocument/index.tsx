@@ -146,8 +146,7 @@ export const DuplicateDocument: React.FC<Props> = ({
 
           return duplicate();
         }}
-        className={cn(
-          "appearance-none border-none bg-transparent outline-none"
+        className={cn("appearance-none border-none bg-transparent text-inherit! outline-none"
         )}
       >
         {t("general:duplicate")}

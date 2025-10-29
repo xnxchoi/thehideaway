@@ -10,9 +10,7 @@
 @source not "../../src/stores";
 @source not "../../src/hooks";
 @import "tw-animate-css";
-html {
-  font-size: 62.5%;
-}
+
 .table {
   display: block;
 }
@@ -21,8 +19,17 @@ html {
 */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *,.dark, .dark *));
 
-@custom-variant data-active (&[data-active ~ ='true']);
+@custom-variant data-active (&[data-active~='true']);
 
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
 /*
 The default border color has changed to `currentColor` in Tailwind CSS v4,
 so we've added these compatibility styles to make sure everything still
@@ -69,19 +76,9 @@ color utility to any element that depends on these defaults.
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
-  --breakpoint-2xl: 1440px;
+    --breakpoint-2xl: 1536px;
+    --breakpoint-3xl: 1920px;
 }
-
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
-}
-
 @layer base {
   body {
     transition-property: background-color, color, height, overflow;
@@ -238,14 +235,14 @@ color utility to any element that depends on these defaults.
   --piercing-blue: 0.452 0.313214 264.052;
   --neutral-white: 78.94% 0.008 176.48;
   --neutral-black: 0.5 0 56.57;
-  --transparent-white: var(--neutral-white) / 25%;
-  --transparent-black: var(--neutral-black) / 25%;
-  --button-background: var(--transparent-white);
-  --button-background-inverted: var(--transparent-black);
+    --transparent-white: oklch(var(--neutral-white) / 0.25);
+    --transparent-black: oklch(var(--neutral-black) / 0.25);
+    --button-background: oklch(var(--neutral-white) / 0.25);
+    --button-background-inverted: oklch(var(--neutral-black) / 0.25);
   --button-foreground: var(--n-s-fg);
-  --card: var(--faded-black);
-  --card-foreground: var(--faded-white);
-  --popover: oklch(var(--button-background));
+    --card: oklch(var(--faded-black));
+    --card-foreground: oklch(var(--faded-white));
+    --popover: var(--button-background);
   --popover-foreground: oklch(var(--n-s-fg));
 
   --accent: var(--blue-gray);
@@ -388,6 +385,18 @@ Colors
   --ease-in-out-power2: cubic-bezier(0.55, 0.085, 0.68, 0.53);
   --ease-in-out-power3: cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
+@theme {
+    --color-edge-black: oklch(0.1822 0 20.06);
+    --color-rosso-corsa: oklch(0.5463 0.2239 29.2339);
+    --color-pastel-sky-blue: oklch(0.7456 0.1389 223.0922);
+    --color-piercing-blue: oklch(0.452 0.313214 264.052);
+    --color-soft-peach: oklch(0.7616 0.1683 57.66);
+    --color-creamy-white: oklch(0.9454 0.0499 79.86);
+    --color-muted-olive: oklch(0.5971 0.0893 131.62);
+    --color-warm-yellow: oklch(0.8455 0.161 82.9);
+    --color-piercing-orange: oklch(0.7858 0.165791 74.9677);
+    --color-piercing-green: oklch(0.9124 0.228 124.65);
+}
 @theme inline {
   --color-cold-white: oklch(var(--cold-white));
   --color-cold-black: oklch(var(--cold-black));
@@ -425,16 +434,8 @@ Colors
   --color-bleu-950: oklch(var(--bleu-950));
   --color-neutral-white: oklch(var(--neutral-white));
   --color-neutral-black: oklch(var(--neutral-black));
-  --color-edge-black: oklch(var(--edge-black));
-  --color-rosso-corsa: oklch(var(--rosso-corsa));
-  --color-pastel-sky-blue: oklch(var(--pastel-sky));
-  --color-piercing-blue: oklch(var(--piercing-blue));
-  --color-soft-peach: oklch(var(--soft-peach));
-  --color-creamy-white: oklch(var(--creamy-white));
-  --color-muted-olive: oklch(var(--muted-olive));
-  --color-warm-yellow: oklch(var(--warm-yellow));
-  --color-piercing-orange: oklch(var(--piercing-orange));
-  --color-piercing-green: oklch(var(--piercing-green));
+    --color-transparent-white: oklch(var(--neutral-white) / 0.25);
+    --color-transparent-black: oklch(var(--neutral-black) / 0.25);
 }
 
 @theme inline {
@@ -689,7 +690,14 @@ Colors
 ---break---
 */
 :root {
-  --font-sans: var(--font-suit);
+    --font-sans: "SUIT Variable", "SUIT Fallback";
+    --font-serif: var(--font-narcissianNectare);
+    --font-dots: var(--font-dots);
+    --font-siegfried: var(--font-siegfried);
+}
+
+@theme {
+    --font-sans: "SUIT Variable", "SUIT Fallback";
   --font-serif: var(--font-narcissianNectare);
   --font-dots: var(--font-dots);
   --font-siegfried: var(--font-siegfried);
@@ -745,7 +753,7 @@ Colors
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-suit);
+    --font-sans: "SUIT Variable", "SUIT Fallback";
   --font-serif: var(--font-narcissianNectare);
   --font-dots: var(--font-dots);
   --font-siegfried: var(--font-siegfried);

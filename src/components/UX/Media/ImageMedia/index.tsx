@@ -63,7 +63,7 @@ export const ImageMedia: FC<
     >
       <MediaMiddle
         {...rest}
-        alt={alt}
+        alt={alt} fill={fill}
         loading={loading}
         darkmode={darkmode}
         priority={priority}

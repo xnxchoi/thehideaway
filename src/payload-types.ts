@@ -427,8 +427,7 @@ export interface UserMedia {
   darkmode?: boolean | null;
   author: string | User;
   source: {
-    provider: 'unsplash' | 'hideaway';
-    sourceId: string;
+	  identifier: string; link?: string | null; provider: 'unsplash' | 'local';
   };
   bookmarks?: {
     docs?: (string | Bookmark)[];
@@ -775,8 +774,7 @@ export interface Media {
   darkmode?: boolean | null;
   author: string | User;
   source: {
-    provider: 'unsplash' | 'hideaway';
-    sourceId: string;
+	  identifier: string; link?: string | null; provider: 'unsplash' | 'local';
   };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
@@ -1207,6 +1205,9 @@ export interface Asset {
   alt: string;
   caption?: string | null;
   darkmode?: boolean | null;
+	source: {
+		identifier: string; link?: string | null; provider: 'unsplash' | 'local';
+	};
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
@@ -2583,6 +2584,9 @@ export interface AssetsSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   darkmode?: T;
+	source?: | T | {
+		identifier?: T; link?: T; provider?: T;
+	};
   locked?: T;
   allowList?: T;
   authority?: T;
@@ -2698,8 +2702,8 @@ export interface MediaSelect<T extends boolean = true> {
   source?:
     | T
     | {
+	  identifier?: T; link?: T;
         provider?: T;
-        sourceId?: T;
       };
   locked?: T;
   allowList?: T;
@@ -3051,8 +3055,8 @@ export interface UserMediaSelect<T extends boolean = true> {
   source?:
     | T
     | {
+	  identifier?: T; link?: T;
         provider?: T;
-        sourceId?: T;
       };
   bookmarks?: T;
   locked?: T;

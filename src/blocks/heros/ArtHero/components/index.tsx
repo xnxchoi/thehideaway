@@ -199,10 +199,9 @@ export const CoverAuthor = (
       >
         {author && (
           <>
-            By &nbsp;
+	          By
             <Link
-              href={`/@${author.slug}`}
-              className={cn("bg-transparent wrap-break-word", authorClassName)}
+              href={`/@${author.slug}`} className={cn("bg-transparent text-sm wrap-break-word", authorClassName)}
             >
               {author.name}
             </Link>

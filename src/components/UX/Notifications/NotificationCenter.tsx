@@ -125,6 +125,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const [filteredNotifications, setFilteredNotifications] = useState<
     SyncedNotification[]
   >([]);
+	const [unreadCount, setUnreadCount] = useState(0);
 
   const [groupedNotifications, setGroupedNotifications] = useState<
     Record<string, SyncedNotification[]>
@@ -166,8 +167,6 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
     setGroupedNotifications(groups);
     setUnreadCount(filtered.filter((n) => !n.read && !n.dismissed).length);
   }, [notifications, searchQuery, filterType, sortType, filterNotifications]);
-
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.size === filteredNotifications.length) {

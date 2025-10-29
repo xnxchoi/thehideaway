@@ -67,6 +67,7 @@ import {
 import { Auth } from "./Auth";
 import { ImageSearchProvider } from "@/payload/providers/Admins";
 import { Upload } from "@/payload/elements/Upload";
+import {CourierProvider} from "@/payload/elements/DocumentFields/RP_CourierProvider";
 
 const baseClass = "estate collection-edit";
 
@@ -613,254 +614,127 @@ export function DefaultEditView({
             onChange={[onChange]}
             onSuccess={onSave}
           >
-            <ImageSearchProvider>
-              <LocaleDataCopyProvider>
-                {isInDrawer && (
-                  <DocumentDrawerHeader
-                    drawerSlug={drawerSlug}
-                    showDocumentID={!isFolderCollection}
-                  />
-                )}
-                {documentLockState.current &&
-                  isLockingEnabled &&
-                  collectionSlug &&
-                  setCurrentEditor &&
-                  shouldShowDocumentLockedModal && (
-                    <DocumentLocked
-                      handleGoBack={() =>
-                        handleGoBack({ adminRoute, collectionSlug, router })
-                      }
-                      isActive={shouldShowDocumentLockedModal}
-                      onReadOnly={() => {
-                        setIsReadOnlyForIncomingUser(true);
-                        setShowTakeOverModal(false);
-                      }}
-                      onTakeOver={() =>
-                        id
-                          ? handleTakeOver({
-                              id,
-                              clearRouteCache,
-                              collectionSlug,
-                              documentLockStateRef:
-                                documentLockState as RefObject<{
-                                  hasShownLockedModal: boolean;
-                                  isLocked: boolean;
-                                  user: ClientUser | number | string;
-                                }>,
-                              globalSlug,
-                              isLockingEnabled,
-                              isWithinDoc: false,
-                              setCurrentEditor: setCurrentEditor as Dispatch<
-                                SetStateAction<ClientUser | number | string>
-                              >,
-                              updateDocumentEditor: updateDocumentEditor as (
-                                docID: number | string,
-                                slug: string,
-                                user: ClientUser | number | string
-                              ) => Promise<void>,
-                              user
-                            })
-                          : void 0
-                      }
-                      updatedAt={lastUpdateTime}
-                      user={currentEditor}
-                    />
-                  )}
-                {isLockingEnabled && showTakeOverModal && (
-                  <DocumentTakeOver
-                    handleBackToDashboard={() =>
-                      handleBackToDashboard({ adminRoute, router })
-                    }
-                    isActive={showTakeOverModal}
-                    onReadOnly={() => {
-                      setIsReadOnlyForIncomingUser(true);
-                      setShowTakeOverModal(false);
-                    }}
-                  />
-                )}
-                {!isReadOnlyForIncomingUser && preventLeaveWithoutSaving && (
-                  <LeaveWithoutSaving
-                    onConfirm={handleLeaveConfirm}
-                    onPrevent={handlePrevent}
-                  />
-                )}
-                {!isInDrawer && (
-                  <SetDocumentStepNav
-                    collectionSlug={
-                      (collectionConfig as CollectionConfig | null)?.slug as
-                        | CollectionSlug
-                        | undefined
-                    }
-                    globalSlug={globalConfig?.slug as GlobalSlug | undefined}
-                    id={id}
-                    isTrashed={isTrashed}
-                    pluralLabel={collectionConfig?.labels?.plural}
-                    useAsTitle={collectionConfig?.admin?.useAsTitle}
-                  />
-                )}
-                <SetDocumentTitle
-                  collectionConfig={collectionConfig || undefined}
-                  config={config}
-                  fallback={depth <= 1 ? `${id}` : ""}
-                  globalConfig={globalConfig || undefined}
-                />
-                {documentLockState.current && setCurrentEditor && (
-                  <DocumentControls
-                    apiURL={apiURL || ""}
-                    BeforeDocumentControls={BeforeDocumentControls}
-                    customComponents={{
-                      PreviewButton,
-                      PublishButton,
-                      SaveButton,
-                      SaveDraftButton
-                    }}
-                    data={data}
-                    disableActions={
-                      disableActions || isFolderCollection || isTrashed
-                    }
-                    disableCreate={disableCreate}
-                    EditMenuItems={EditMenuItems}
-                    hasPublishPermission={hasPublishPermission}
-                    hasSavePermission={hasSavePermission}
-                    id={id}
-                    isEditing={isEditing}
-                    isInDrawer={isInDrawer}
-                    isTrashed={isTrashed}
-                    onDelete={onDelete}
-                    onDrawerCreateNew={clearDoc}
-                    onDuplicate={onDuplicate}
-                    onRestore={onRestore}
-                    onSave={onSave}
-                    onTakeOver={() =>
-                      id
-                        ? handleTakeOver({
-                            id,
-                            clearRouteCache,
-                            collectionSlug,
-                            documentLockStateRef:
-                              documentLockState as RefObject<{
-                                hasShownLockedModal: boolean;
-                                isLocked: boolean;
-                                user: ClientUser | number | string;
-                              }>,
-                            globalSlug,
-                            isLockingEnabled,
-                            isWithinDoc: true,
-                            setCurrentEditor: setCurrentEditor as Dispatch<
-                              SetStateAction<ClientUser | number | string>
-                            >,
-                            setIsReadOnlyForIncomingUser,
-                            updateDocumentEditor: updateDocumentEditor as (
-                              docID: number | string,
-                              slug: string,
-                              user: ClientUser | number | string
-                            ) => Promise<void>,
-                            user
-                          })
-                        : void 0
-                    }
-                    permissions={docPermissions}
-                    readOnlyForIncomingUser={isReadOnlyForIncomingUser}
-                    redirectAfterDelete={redirectAfterDelete}
-                    redirectAfterDuplicate={redirectAfterDuplicate}
-                    redirectAfterRestore={redirectAfterRestore}
-                    slug={
-                      (collectionConfig?.slug ||
-                        globalConfig?.slug) as CollectionSlug
-                    }
-                    user={currentEditor}
-                  />
-                )}
-                <div
-                  className={[
-                    `${baseClass}__main-wrapper`,
-                    previewWindowType === "popup" && `${baseClass}--detached`
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  <div
-                    className={[
-                      `${baseClass}__main`,
-                      previewWindowType === "popup" &&
-                        `${baseClass}__main--popup-open`
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                  >
-                    <DocumentFields
-                      AfterFields={AfterFields}
-                      BeforeFields={
-                        BeforeFields || (
-                          <Fragment>
-                            {auth && collectionConfig && (
-                              <Auth
-                                className={`${baseClass}__auth`}
-                                collectionSlug={collectionConfig.slug}
-                                disableLocalStrategy={
-                                  collectionConfig.auth?.disableLocalStrategy
-                                }
-                                email={data?.email}
-                                loginWithUsername={auth?.loginWithUsername}
-                                operation={operation}
-                                readOnly={!hasSavePermission}
-                                requirePassword={!id}
-                                setValidateBeforeSubmit={
-                                  setValidateBeforeSubmit
-                                }
-                                useAPIKey={auth.useAPIKey}
-                                username={data?.username}
-                                verify={auth.verify}
-                              />
-                            )}
-                            {upload && (
-                              <Fragment>
-                                <UploadControlsProvider>
-                                  {CustomUpload || (
-                                    <Upload
-                                      collectionSlug={collectionConfig!.slug}
-                                      initialState={initialState}
-                                      uploadConfig={upload}
-                                      UploadControls={UploadControls}
-                                    />
-                                  )}
-                                </UploadControlsProvider>
-                              </Fragment>
-                            )}
-                          </Fragment>
-                        )
-                      }
-                      Description={Description}
-                      docPermissions={docPermissions}
-                      fields={docConfig!.fields}
-                      forceSidebarWrap={isLivePreviewing}
-                      isTrashed={isTrashed}
-                      readOnly={
-                        isReadOnlyForIncomingUser ||
-                        !hasSavePermission ||
-                        isTrashed
-                      }
-                      schemaPathSegments={schemaPathSegments as string[]}
-                    />
-                    {AfterDocument}
-                  </div>
-                  {isLivePreviewEnabled && !isInDrawer && livePreviewURL && (
-                    <>
-                      {
-                        <LivePreviewWindow
-                          collectionSlug={collectionSlug}
-                          globalSlug={globalSlug}
-                        />
-                      }
-                    </>
-                  )}
-                </div>
-                {apiURL &&
-                  documentLockState.current &&
-                  setCurrentEditor &&
-                  showCopyToLocale && <CopyLocaleDataDrawer />}
-              </LocaleDataCopyProvider>
-            </ImageSearchProvider>
+	          <CourierProvider>
+		          <ImageSearchProvider>
+			          <LocaleDataCopyProvider>
+				          {isInDrawer && (
+					          <DocumentDrawerHeader drawerSlug={drawerSlug} showDocumentID={!isFolderCollection} />)}
+				          {documentLockState.current && isLockingEnabled && collectionSlug && setCurrentEditor && shouldShowDocumentLockedModal && (
+					          <DocumentLocked handleGoBack={() => handleGoBack({adminRoute, collectionSlug, router})}
+					                          isActive={shouldShowDocumentLockedModal} onReadOnly={() => {
+						          setIsReadOnlyForIncomingUser(true);
+						          setShowTakeOverModal(false);
+					          }} onTakeOver={() => id ? handleTakeOver({
+						          id,
+						          clearRouteCache,
+						          collectionSlug,
+						          documentLockStateRef: documentLockState as RefObject<{
+							          hasShownLockedModal: boolean;
+							          isLocked: boolean;
+							          user: ClientUser | number | string;
+						          }>,
+						          globalSlug,
+						          isLockingEnabled,
+						          isWithinDoc: false,
+						          setCurrentEditor: setCurrentEditor as Dispatch<SetStateAction<ClientUser | number | string>>,
+						          updateDocumentEditor: updateDocumentEditor as (docID: number | string, slug: string, user: ClientUser | number | string) => Promise<void>,
+						          user
+					          }) : void 0} updatedAt={lastUpdateTime} user={currentEditor} />)}
+				          {isLockingEnabled && showTakeOverModal && (<DocumentTakeOver
+						          handleBackToDashboard={() => handleBackToDashboard({adminRoute, router})}
+						          isActive={showTakeOverModal} onReadOnly={() => {
+						          setIsReadOnlyForIncomingUser(true);
+						          setShowTakeOverModal(false);
+					          }} />)}
+				          {!isReadOnlyForIncomingUser && preventLeaveWithoutSaving && (
+					          <LeaveWithoutSaving onConfirm={handleLeaveConfirm} onPrevent={handlePrevent} />)}
+				          {!isInDrawer && (<SetDocumentStepNav
+						          collectionSlug={(collectionConfig as CollectionConfig | null)?.slug as | CollectionSlug | undefined}
+						          globalSlug={globalConfig?.slug as GlobalSlug | undefined} id={id}
+						          isTrashed={isTrashed} pluralLabel={collectionConfig?.labels?.plural}
+						          useAsTitle={collectionConfig?.admin?.useAsTitle} />)}
+				          <SetDocumentTitle collectionConfig={collectionConfig || undefined} config={config}
+				                            fallback={depth <= 1 ? `${id}` : ""}
+				                            globalConfig={globalConfig || undefined} />
+				          {documentLockState.current && setCurrentEditor && (
+					          <DocumentControls apiURL={apiURL || ""} BeforeDocumentControls={BeforeDocumentControls}
+					                            customComponents={{
+						                            PreviewButton, PublishButton, SaveButton, SaveDraftButton
+					                            }} data={data}
+					                            disableActions={disableActions || isFolderCollection || isTrashed}
+					                            disableCreate={disableCreate} EditMenuItems={EditMenuItems}
+					                            hasPublishPermission={hasPublishPermission}
+					                            hasSavePermission={hasSavePermission} id={id} isEditing={isEditing}
+					                            isInDrawer={isInDrawer} isTrashed={isTrashed} onDelete={onDelete}
+					                            onDrawerCreateNew={clearDoc} onDuplicate={onDuplicate}
+					                            onRestore={onRestore} onSave={onSave}
+					                            onTakeOver={() => id ? handleTakeOver({
+						                            id,
+						                            clearRouteCache,
+						                            collectionSlug,
+						                            documentLockStateRef: documentLockState as RefObject<{
+							                            hasShownLockedModal: boolean;
+							                            isLocked: boolean;
+							                            user: ClientUser | number | string;
+						                            }>,
+						                            globalSlug,
+						                            isLockingEnabled,
+						                            isWithinDoc: true,
+						                            setCurrentEditor: setCurrentEditor as Dispatch<SetStateAction<ClientUser | number | string>>,
+						                            setIsReadOnlyForIncomingUser,
+						                            updateDocumentEditor: updateDocumentEditor as (docID: number | string, slug: string, user: ClientUser | number | string) => Promise<void>,
+						                            user
+					                            }) : void 0} permissions={docPermissions}
+					                            readOnlyForIncomingUser={isReadOnlyForIncomingUser}
+					                            redirectAfterDelete={redirectAfterDelete}
+					                            redirectAfterDuplicate={redirectAfterDuplicate}
+					                            redirectAfterRestore={redirectAfterRestore}
+					                            slug={(collectionConfig?.slug || globalConfig?.slug) as CollectionSlug}
+					                            user={currentEditor} />)}
+				          <div className={[`${baseClass}__main-wrapper`,
+					          previewWindowType === "popup" && `${baseClass}--detached`].filter(Boolean).join(" ")}>
+					          <div className={[`${baseClass}__main`,
+						          previewWindowType === "popup" && `${baseClass}__main--popup-open`].filter(Boolean).
+						          join(" ")}>
+						          <DocumentFields AfterFields={AfterFields} BeforeFields={BeforeFields || (<Fragment>
+								          {auth && collectionConfig && (<Auth className={`${baseClass}__auth`}
+								                                              collectionSlug={collectionConfig.slug}
+								                                              disableLocalStrategy={collectionConfig.auth?.disableLocalStrategy}
+								                                              email={data?.email}
+								                                              loginWithUsername={auth?.loginWithUsername}
+								                                              operation={operation}
+								                                              readOnly={!hasSavePermission}
+								                                              requirePassword={!id}
+								                                              setValidateBeforeSubmit={setValidateBeforeSubmit}
+								                                              useAPIKey={auth.useAPIKey}
+								                                              username={data?.username}
+								                                              verify={auth.verify} />)}
+								          {upload && (<Fragment>
+										          <UploadControlsProvider>
+											          <UploadControlsProvider>
+												          {CustomUpload || (
+													          <Upload collectionSlug={collectionConfig!.slug}
+													                  initialState={initialState} uploadConfig={upload}
+													                  UploadControls={UploadControls} />)}
+											          </UploadControlsProvider>
+										          </UploadControlsProvider>
+									          </Fragment>)}
+							          </Fragment>)} Description={Description} docPermissions={docPermissions}
+						                          fields={docConfig!.fields} forceSidebarWrap={isLivePreviewing}
+						                          isTrashed={isTrashed}
+						                          readOnly={isReadOnlyForIncomingUser || !hasSavePermission || isTrashed}
+						                          schemaPathSegments={schemaPathSegments as string[]} />
+						          {AfterDocument}
+					          </div>
+					          {isLivePreviewEnabled && !isInDrawer && livePreviewURL && (<>
+							          {<LivePreviewWindow collectionSlug={collectionSlug} globalSlug={globalSlug} />}
+						          </>)}
+				          </div>
+				          {apiURL && documentLockState.current && setCurrentEditor && showCopyToLocale &&
+					          <CopyLocaleDataDrawer />}
+			          </LocaleDataCopyProvider>
+		          </ImageSearchProvider>
+	          </CourierProvider>
           </Form>
         </OperationProvider>
       </main>

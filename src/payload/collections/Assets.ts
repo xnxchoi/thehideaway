@@ -1,10 +1,10 @@
-import { extractImageInfo } from "@/utilities/extractImageInfo";
+import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
-import { CollectionConfig } from "payload";
-import { fileURLToPath } from "url";
-import { DateTime } from "luxon";
-import { hideIfNotAdmin } from "./helpers";
-import type { ImageCollectionOverview } from "@/components/UX/Media/types";
+import {CollectionConfig} from "payload";
+import {fileURLToPath} from "url";
+import {DateTime} from "luxon";
+import {hideIfNotAdmin} from "./helpers";
+import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -72,6 +72,20 @@ export const Assets: CollectionConfig = {
       type: "checkbox",
       defaultValue: false,
       index: true
+    }, {
+		  name: "source", type: "group", admin: {
+			  hidden: true
+		  }, fields: [{
+			  name: "identifier", type: "text", required: true, defaultValue: () => uuidv7()
+		  }, {
+			  name: "link", type: "text"
+		  }, {
+			  name: "provider", type: "select", options: [{
+				  label: "Unsplash", value: "unsplash"
+			  }, {
+				  label: "Local", value: "local"
+			  }], required: true, defaultValue: "local"
+		  }]
     }
   ],
 

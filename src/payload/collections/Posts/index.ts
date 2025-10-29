@@ -1,61 +1,38 @@
-import { Banner } from "@/blocks/Banner/config";
-import { Code } from "@/blocks/Code/config";
-import { MediaBlock } from "@/blocks/MediaBlock/config";
+import {Banner} from "@/blocks/Banner/config";
+import {Code} from "@/blocks/Code/config";
+import {MediaBlock} from "@/blocks/MediaBlock/config";
+import {generatePreviewPath, generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
 import {
-  generatePreviewPath,
-  generatePreviewPathWithAuthor
-} from "@/utilities/generatePreviewPath";
-import {
-  BlocksFeature,
-  BoldFeature,
-  type DefaultNodeTypes,
-  FixedToolbarFeature,
-  HeadingFeature,
-  HorizontalRuleFeature,
-  InlineToolbarFeature,
-  ItalicFeature,
-  lexicalEditor,
-  LinkFeature,
-  type LinkFields,
-  ParagraphFeature,
-  StrikethroughFeature,
-  TextStateFeature,
-  UnderlineFeature
+	BlocksFeature,
+	type DefaultNodeTypes,
+	HeadingFeature,
+	HorizontalRuleFeature,
+	InlineToolbarFeature,
+	lexicalEditor,
+	LinkFeature,
+	type LinkFields
 } from "@payloadcms/richtext-lexical";
 import {
-  AccessArgs,
-  CollectionConfig,
-  headersWithCors,
-  PayloadRequest,
-  type TextFieldSingleValidation,
-  Where
+	AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, type TextFieldSingleValidation, Where
 } from "payload";
-import { sanitizeAuthor } from "../../fields/AuthorFields/hooks";
-import { revalidateDelete, revalidatePost } from "./hooks/revalidatePost";
+import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
+import {revalidateDelete, revalidatePost} from "./hooks/revalidatePost";
 
-import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import { Post } from "@/payload-types";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { slugField } from "@/payload/fields/slug";
-import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
-import { CatOverview } from "@/types/collections/delta";
+import {populatePublishedAt} from "@/hooks/populatePublishedAt";
+import {Post} from "@/payload-types";
+import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {slugField} from "@/payload/fields/slug";
+import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
 import {
-  MetaDescriptionField,
-  MetaImageField,
-  MetaTitleField,
-  OverviewField,
-  PreviewField
+	MetaDescriptionField, MetaImageField, MetaTitleField, OverviewField, PreviewField
 } from "@payloadcms/plugin-seo/fields";
-import { uuidv7 } from "uuidv7";
-import {
-  postBookmarkSaveHandler,
-  unBookmarkPostHandler
-} from "./api/bookmarkPostHandler";
-import { getPostHandler } from "./api/getPostHandler";
-import { postBookmarksHandler } from "./api/postBookmarksHandler";
-import { PROPS_COLLAPSIBLE } from "../constants";
-import { ContentHandOffFeature } from "@/payload/Lexical/Features/HandOff/feature";
-import { RichTitle } from "./richTitle";
+import {uuidv7} from "uuidv7";
+import {postBookmarkSaveHandler, unBookmarkPostHandler} from "./api/bookmarkPostHandler";
+import {getPostHandler} from "./api/getPostHandler";
+import {postBookmarksHandler} from "./api/postBookmarksHandler";
+import {PROPS_COLLAPSIBLE} from "../constants";
+import {ContentHandOffFeature} from "@/payload/Lexical/Features/HandOff/feature";
+import {RichTitle} from "./richTitle";
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced
@@ -171,7 +148,8 @@ export const Posts: CollectionConfig<"posts"> = {
         collection: "posts",
         req
       }),
-    useAsTitle: "title",
+
+	  useAsTitle: "title",
     components: {
       views: {
         edit: {

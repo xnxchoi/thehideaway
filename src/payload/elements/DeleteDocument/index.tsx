@@ -165,8 +165,7 @@ export const DeleteDocument: React.FC<Props> = (props) => {
     return (
       <Fragment>
         <Button
-          className={cn(
-            "appearance-none border-none bg-transparent outline-none"
+          className={cn("appearance-none border-none bg-transparent text-inherit! outline-none"
           )}
           id={buttonId}
           onClick={() => {

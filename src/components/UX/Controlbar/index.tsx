@@ -19,13 +19,13 @@ export const Controlbar = () => {
   const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const setCur = useCallback(() => {
     setCursorTheme("dark");
-  }, []);
+  }, [setCursorTheme]);
   const ctrlRef = useRef<HTMLDivElement>(null!);
   const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
   const snapPoints = useRPStore(useShallow((r) => r.snapPoints));
   const bott = useMenu((r) => r.bottom);
   const op = useMotionValue(1);
-  const locationBottom = useMotionValue(bott + "px");
+	const locationBottom = useMotionValue(`0px`);
   const opacity = useSpring(op, {
     ...springGSAP.power3.out,
     visualDuration: 0.2,
@@ -55,7 +55,7 @@ export const Controlbar = () => {
     <>
       <m.div
         ref={ctrlRef}
-        className="fixed right-0 left-0 z-[251] h-[30px] auto-cols-[1fr] grid-cols-[.5fr_2fr_.5fr] place-content-center place-items-center-safe gap-6 px-5"
+        className="fixed right-0 left-0 z-251 h-[30px] auto-cols-[1fr] grid-cols-[.5fr_2fr_.5fr] place-content-center place-items-center-safe gap-6 px-5"
         onMouseEnter={setCur}
         onMouseLeave={resetCursorTheme}
         style={{

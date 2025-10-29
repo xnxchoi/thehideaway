@@ -10,11 +10,13 @@ import { gsap } from "gsap";
 import { MoonStar, Sun } from "lucide-react";
 import { useCallback, useEffect, useRef, type ComponentProps } from "react";
 import { useShallow } from "zustand/shallow";
+import {usePathname} from "next/navigation";
 
 export const AdminDarkmode = (props: ComponentProps<"button">) => {
   const theme = useTheme(useShallow((r) => r.theme));
   const togggleTheme = useTheme((r) => r.toggleTheme);
   const { ref: btRef } = props;
+	const path = usePathname();
   const lightmodeIcon = useRef<HTMLSpanElement>(null!),
     darkmodeIcon = useRef<HTMLSpanElement>(null!);
   const toRef = useRef<ReturnType<typeof setTimeout>>(null!);
@@ -60,7 +62,7 @@ export const AdminDarkmode = (props: ComponentProps<"button">) => {
       (toRef.current = setTimeout(() => {
         animateAllComponents(!0);
       }, 1100 * 0.2)));
-  }, [animateAllComponents, theme]);
+  }, [animateAllComponents, path]);
   return (
     <Button
       className={cn(

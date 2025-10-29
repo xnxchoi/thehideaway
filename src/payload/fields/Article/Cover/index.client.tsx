@@ -23,10 +23,6 @@ import { capitalize } from "lodash-es";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import {
-  PopulateDocs,
-  ReloadDoc
-} from "node_modules/@payloadcms/ui/dist/fields/Upload/types";
 import type {
   CollectionSlug,
   DataFromCollectionSlug,
@@ -38,7 +34,9 @@ import type {
 import { stringify } from "qs-esm";
 
 import { errorToast, successToast } from "@/payload/components/sonner";
-import type { ImageCollectionSlug } from "@/types/payload-api-helpers";
+import type {
+	ImageBaseSelect, ImageCollectionSlug
+} from "@/types/payload-api-helpers";
 
 type PopulatedDocs = { relationTo: string; value: JsonObject }[];
 
@@ -147,13 +145,8 @@ function ClientCover(props: ImageFieldProps) {
   });
 
   const [removeImage, setRemoveImage] = useState<boolean>(false);
-  const populateDocs = useCallback<PopulateDocs>(
-    async (
-      ids,
-      relatedCollectionSlug
-    ): Promise<PaginatedDocs<
-      Pick<Media, "id" | "thumbnailURL" | "url">
-    > | null> => {
+	const populateDocs = useCallback(
+    async (ids: string[], relatedCollectionSlug: string): Promise<PaginatedDocs<ImageBaseSelect> | null> => {
       if (!ids.length) {
         return null;
       }
@@ -225,32 +218,25 @@ function ClientCover(props: ImageFieldProps) {
     },
     [onChange, activeRelationTo]
   );
-  const doUpload = useCallback(async (file: File) => {
-    const formD = new FormData();
-    formD.append("file", file);
-    formD.append(
-      "_payload",
-      JSON.stringify({
-        alt: "",
-        caption: "An optional description for the file",
-        _status: "published"
-      })
-    );
-    try {
-      const response = await fetch(`${serverURL}/api/${relationTo}`, {
-        method: "POST",
-        body: formD,
-        credentials: "include"
-      });
-      if (response.ok) {
-        const json = await response.json();
-        onUploadSuccess([json.doc]);
-      }
-    } catch (e) {
-      errorToast("Welp, something went wrong. Try again?");
-      console.log(e);
-    }
-  }, []);
+	const doUpload = useCallback(async (file: File) => {
+		const formD = new FormData();
+		formD.append("file", file);
+		formD.append("_payload", JSON.stringify({
+			alt: "", caption: "An optional description for the file", _status: "published"
+		}));
+		try {
+			const response = await fetch(`${serverURL}/api/${relationTo}`, {
+				method: "POST", body: formD, credentials: "include"
+			});
+			if (response.ok) {
+				const json = await response.json();
+				onUploadSuccess([json.doc]);
+			}
+		} catch (e) {
+			errorToast("Welp, something went wrong. Try again?");
+			console.log(e);
+		}
+	}, [onUploadSuccess, relationTo, serverURL]);
   const onLocalFileSelection = useCallback(
     (fileList?: FileList) => {
       let fileListToUse = fileList;
@@ -319,8 +305,7 @@ function ClientCover(props: ImageFieldProps) {
     },
     [closeListDrawer, onChange, activeRelationTo]
   );
-  const reloadDoc = useCallback<ReloadDoc>(
-    async (docID, collectionSlug) => {
+	const reloadDoc = useCallback(async (docID: string, collectionSlug: ImageCollectionSlug) => {
       const docs = await populateDocs([docID], "media").then((r) => {
         if (r) {
           return r.docs;
@@ -376,7 +361,7 @@ function ClientCover(props: ImageFieldProps) {
     setUrlValue(null);
     setIDValue(null);
     onChange(null);
-  }, []);
+  }, [onChange, setIDValue, setUrlValue]);
   useEffect(() => {
     async function loadInitialDocs() {
       if (initIDValue) {

@@ -30,6 +30,7 @@ const RP_Cursor = dynamic(
     ssr: false
   }
 );
+const AdminCursor = dynamic(() => import("@/payload/components/Cursor/index").then((r) => r.default), {ssr: false});
 const MobileContext = createContext<{ isMobile: boolean; isTouch: boolean }>({
   isMobile: false,
   isTouch: false
@@ -218,7 +219,7 @@ const AdminMobileProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <MobileContext.Provider value={{ isTouch, isMobile }}>
-      {!isTouch && <RP_Cursor />}
+	    {!isTouch && <AdminCursor />}
       {children}
     </MobileContext.Provider>
   );

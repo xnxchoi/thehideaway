@@ -19,19 +19,20 @@ export const HomeArticleLayout = (props: {
     <div className="mx-2.5 my-0 max-w-[600px] sm:mx-auto lg:max-w-[98vw]">
       <div
         className={cn(
-          `mb-[48px] justify-center gap-x-[20px] rounded-[2rem] bg-linear-to-b to-transparent p-[2rem] md:block lg:mr-[2rem] lg:ml-[2rem] xl:mb-[100px] xl:flex xl:gap-x-[90px]`,
+	        `mb-[48px] justify-center gap-x-[20px] rounded-4xl bg-linear-to-b to-transparent p-5 md:block md:p-8 lg:mr-8 lg:ml-8 xl:mb-[100px] xl:flex xl:gap-x-[90px]`,
           theme === "dark"
             ? "from-[oklch(var(--off-black)/.95)]"
             : "from-[oklch(var(--faded-bg)/.95)] bg-blend-darken"
         )}
       >
-        <div className="mb-6 border-b-[1px] border-solid border-[oklch(var(--off-fg)/.5)] md:min-w-1/2 md:flex-[1] md:border-b-0 md:pb-0 lg:min-w-[680px]">
+	      <div
+		      className="mb-6 border-b border-solid border-[oklch(var(--off-fg)/.5)] md:min-w-1/2 md:flex-1 md:border-b-0 md:pb-0 lg:min-w-[680px]">
           <div className="grid grid-cols-[1fr_1fr] gap-y-[20px] lg:grid-cols-[repeat(4,1fr)] lg:gap-x-[20px]">
             {posts[0] && <HomeSquare article={posts[0]} />}
             {posts[1] && (
               <Link
                 href={"/essays/" + `${posts[1].slug}`}
-                className="grid gap-y-[20px] border-t-[1px] border-r-[1px] border-b-[1px] border-solid border-[color:oklch(var(--fg)/.5)] bg-transparent p-[20px] pl-0 break-words decoration-[none] lg:col-[1/3] lg:row-[2] lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+                className="grid gap-y-[20px] border-t border-r border-solid border-[oklch(var(--fg)/.5)] bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] md:border-b lg:col-[1/3] lg:row-2 lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
                 <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3]">
                   {posts[1].image && (

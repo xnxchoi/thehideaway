@@ -291,8 +291,8 @@ export default function RP_Cursor() {
   // );
 
   const baseTheme = useCursor(useShallow((l) => l.baseCursorTheme));
-  const setBaseCursorTheme = useCursor(useShallow((l) => l.setBaseCursorTheme));
-  const resetCursorTheme = useCursor(useShallow((l) => l.resetCursorTheme));
+	const setBaseCursorTheme = useCursor((l) => l.setBaseCursorTheme);
+	const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
 
   useEffect(() => {
     theme && (setBaseCursorTheme(theme), !navIsOpen && resetCursorTheme());
@@ -337,17 +337,18 @@ export default function RP_Cursor() {
                 key={"wrap"}
                 className={cn(
                   "pointer-events-none flex shrink-0 cursor-none flex-col items-center justify-center overflow-hidden outline-none",
-                  "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] font-dots backdrop-blur-[4px] perspective-[1200px]"
+	                "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] font-dots backdrop-blur-xs perspective-distant"
                 )}
                 style={{ width: containerWidth, height: containerHeight }}
                 variants={textCursorVariants}
+                data-themed="color, border-color, background-color, outline-color,box-shadow"
                 initial="hidden"
                 animate={"animate"}
                 exit="hidden"
               >
                 <m.span
                   data-themed="color, background-color"
-                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-[1] font-bold tracking-[0.05rem] whitespace-nowrap text-[oklch(var(--n-s-fg)/1)] mix-blend-difference"
+                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-none font-bold tracking-[0.05rem] whitespace-nowrap text-[oklch(var(--n-s-fg)/1)] mix-blend-difference"
                   key={cursorState}
                   style={{
                     fontFeatureSettings: "normal",

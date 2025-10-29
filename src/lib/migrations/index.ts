@@ -1,63 +1,19 @@
-import * as migration_20251006_025158 from './20251006_025158';
-import * as migration_20251006_140354 from './20251006_140354';
-import * as migration_20251006_182906 from './20251006_182906';
-import * as migration_20251010_172301 from './20251010_172301';
-import * as migration_20251013_104155 from './20251013_104155';
-import * as migration_20251013_115431 from './20251013_115431';
-import * as migration_20251013_162428 from './20251013_162428';
-import * as migration_20251019_124110 from './20251019_124110';
-import * as migration_20251021_171627 from './20251021_171627';
-import * as migration_20251024_122759 from './20251024_122759';
+import * as migration_20251027_125323 from './20251027_125323';
+import * as migration_20251027_151954 from './20251027_151954';
+import * as migration_20251028_124539 from './20251028_124539';
+import * as migration_20251028_140108 from './20251028_140108';
 
 export const migrations = [
   {
-    up: migration_20251006_025158.up,
-    down: migration_20251006_025158.down,
-    name: '20251006_025158',
+	  up: migration_20251027_125323.up, down: migration_20251027_125323.down, name: '20251027_125323',
   },
   {
-    up: migration_20251006_140354.up,
-    down: migration_20251006_140354.down,
-    name: '20251006_140354',
+	  up: migration_20251027_151954.up, down: migration_20251027_151954.down, name: '20251027_151954',
   },
   {
-    up: migration_20251006_182906.up,
-    down: migration_20251006_182906.down,
-    name: '20251006_182906',
+	  up: migration_20251028_124539.up, down: migration_20251028_124539.down, name: '20251028_124539',
   },
   {
-    up: migration_20251010_172301.up,
-    down: migration_20251010_172301.down,
-    name: '20251010_172301',
-  },
-  {
-    up: migration_20251013_104155.up,
-    down: migration_20251013_104155.down,
-    name: '20251013_104155',
-  },
-  {
-    up: migration_20251013_115431.up,
-    down: migration_20251013_115431.down,
-    name: '20251013_115431',
-  },
-  {
-    up: migration_20251013_162428.up,
-    down: migration_20251013_162428.down,
-    name: '20251013_162428',
-  },
-  {
-    up: migration_20251019_124110.up,
-    down: migration_20251019_124110.down,
-    name: '20251019_124110',
-  },
-  {
-    up: migration_20251021_171627.up,
-    down: migration_20251021_171627.down,
-    name: '20251021_171627',
-  },
-  {
-    up: migration_20251024_122759.up,
-    down: migration_20251024_122759.down,
-    name: '20251024_122759'
+	  up: migration_20251028_140108.up, down: migration_20251028_140108.down, name: '20251028_140108'
   },
 ];

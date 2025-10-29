@@ -1,18 +1,14 @@
-import { CollectionConfig } from "payload";
+import {CollectionConfig} from "payload";
 
-import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import type { User } from "@/payload-types";
-import { hideIfNotAdmin } from "@/payload/collections/helpers";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { sanitizeAuthor } from "@/payload/fields/AuthorFields/hooks";
-import {
-  authenticated,
-  standardUpdateAccess
-} from "@/payload/plugins/locker/access/accessCheckers";
-import { extractImageInfo } from "@/utilities/extractImageInfo";
+import {populatePublishedAt} from "@/hooks/populatePublishedAt";
+import type {User} from "@/payload-types";
+import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
+import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
+import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
-import { fileURLToPath } from "url";
-import { uuidv7 } from "uuidv7";
+import {fileURLToPath} from "url";
+import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -34,31 +30,22 @@ const MediaFields: CollectionConfig["fields"] = [
   },
   ...AuthorField(false),
   {
-    type: "group",
-    name: "source",
-    access: {
-      create: () => true,
-      update: () => false,
-      read: () => true
-    },
+    name: "source", type: "group",
     admin: {
       hidden: true
     },
     fields: [
       {
-        type: "select",
-        name: "provider",
-        options: [
-          { value: "unsplash", label: "Unsplash" },
-          { value: "hideaway", label: "Hideaway" }
-        ],
-        defaultValue: "hideaway",
-        required: true
-      },
-      {
-        type: "text",
-        name: "sourceId",
-        required: true
+	      name: "identifier", type: "text", required: true, defaultValue: () => uuidv7()
+      }, {
+		    name: "link", type: "text"
+	    }, {
+        name: "provider", type: "select",
+        options: [{
+	        label: "Unsplash", value: "unsplash"
+        }, {
+	        label: "Local", value: "local"
+        }], required: true, defaultValue: "local"
       }
     ]
   }
@@ -68,7 +55,25 @@ export const Media: CollectionConfig = {
   slug: "media",
   lockDocuments: false,
   admin: {
-    hidden: hideIfNotAdmin
+	  // hidden: hideIfNotAdmin
+	  baseFilter: ({req}) => {
+		  const user = req.user;
+		  if (!user) {
+			  return {
+				  author: {
+					  exists: false
+				  }
+			  };
+		  }
+		  if (["editor", "admin"].some((r) => r === user.role)) {
+			  return null;
+		  }
+		  return {
+			  author: {
+				  equals: user.id
+			  }
+		  };
+	  }
   },
   defaultPopulate: {
     url: true,

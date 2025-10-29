@@ -6,25 +6,25 @@
  * and re-run `payload generate:db-schema` to regenerate this file.
  */
 
-import type {} from "@payloadcms/db-postgres";
 import {
-  pgTable,
-  index,
-  uniqueIndex,
-  foreignKey,
-  varchar,
-  boolean,
-  timestamp,
-  uuid,
-  serial,
-  numeric,
-  integer,
-  text,
-  jsonb,
-  type AnyPgColumn,
-  pgEnum
+	type AnyPgColumn,
+	boolean,
+	foreignKey,
+	index,
+	integer,
+	jsonb,
+	numeric,
+	pgEnum,
+	pgTable,
+	serial,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid,
+	varchar
 } from "@payloadcms/db-postgres/drizzle/pg-core";
-import { sql, relations } from "@payloadcms/db-postgres/drizzle";
+import {relations, sql} from "@payloadcms/db-postgres/drizzle";
+
 export const enum__locales = pgEnum("enum__locales", ["en", "ko"]);
 export const enum_users_role = pgEnum("enum_users_role", [
   "admin",
@@ -56,6 +56,8 @@ export const enum_admin_invitations_role = pgEnum(
   "enum_admin_invitations_role",
   ["admin", "author", "editor", "user", "patron"]
 );
+export const enum_assets_source_provider = pgEnum("enum_assets_source_provider", ["unsplash", "local"]);
+export const enum_media_source_provider = pgEnum("enum_media_source_provider", ["unsplash", "local"]);
 export const enum_notifications_type = pgEnum("enum_notifications_type", [
   "comment",
   "follow",
@@ -227,6 +229,7 @@ export const enum__posts_v_published_locale = pgEnum(
   "enum__posts_v_published_locale",
   ["en", "ko"]
 );
+export const enum_user_media_source_provider = pgEnum("enum_user_media_source_provider", ["unsplash", "local"]);
 export const enum_delta_status = pgEnum("enum_delta_status", [
   "draft",
   "published"
@@ -1008,6 +1011,9 @@ export const assets = pgTable(
     alt: varchar("alt").notNull(),
     caption: varchar("caption"),
     darkmode: boolean("darkmode").default(false),
+	  source_identifier: varchar("source_identifier").notNull(),
+	  source_link: varchar("source_link"),
+	  source_provider: enum_assets_source_provider("source_provider").notNull().default("local"),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
     blurDataUrl: varchar("blur_data_url"),
@@ -1201,6 +1207,9 @@ export const media = pgTable(
       .references(() => users.id, {
         onDelete: "set null"
       }),
+	  source_identifier: varchar("source_identifier").notNull(),
+	  source_link: varchar("source_link"),
+	  source_provider: enum_media_source_provider("source_provider").notNull().default("local"),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
     blurDataUrl: varchar("blur_data_url"),
@@ -2465,7 +2474,7 @@ export const posts = pgTable(
     id: varchar("id").primaryKey(),
     image: uuid("image_id").references(() => user_media.id, {
       onDelete: "set null"
-    }),
+    }), coverPosition: numeric("cover_position").default("35"),
     title: varchar("title"),
     richTitle: jsonb("rich_title"),
     content: jsonb("content"),
@@ -2595,7 +2604,7 @@ export const _posts_v = pgTable(
     }),
     version_image: uuid("version_image_id").references(() => user_media.id, {
       onDelete: "set null"
-    }),
+    }), version_coverPosition: numeric("version_cover_position").default("35"),
     version_title: varchar("version_title"),
     version_richTitle: jsonb("version_rich_title"),
     version_content: jsonb("version_content"),
@@ -2765,6 +2774,9 @@ export const user_media = pgTable(
       .references(() => users.id, {
         onDelete: "set null"
       }),
+	  source_identifier: varchar("source_identifier").notNull(),
+	  source_link: varchar("source_link"),
+	  source_provider: enum_user_media_source_provider("source_provider").notNull().default("local"),
     locked: boolean("locked").default(false),
     authority: numeric("authority").default("0"),
     blurDataUrl: varchar("blur_data_url"),
@@ -8005,6 +8017,8 @@ type DatabaseSchema = {
   enum__users_v_version_status: typeof enum__users_v_version_status;
   enum__users_v_published_locale: typeof enum__users_v_published_locale;
   enum_admin_invitations_role: typeof enum_admin_invitations_role;
+	enum_assets_source_provider: typeof enum_assets_source_provider;
+	enum_media_source_provider: typeof enum_media_source_provider;
   enum_notifications_type: typeof enum_notifications_type;
   enum_notifications_status: typeof enum_notifications_status;
   enum_notifications_action_link_type: typeof enum_notifications_action_link_type;
@@ -8045,6 +8059,7 @@ type DatabaseSchema = {
   enum_posts_status: typeof enum_posts_status;
   enum__posts_v_version_status: typeof enum__posts_v_version_status;
   enum__posts_v_published_locale: typeof enum__posts_v_published_locale;
+	enum_user_media_source_provider: typeof enum_user_media_source_provider;
   enum_delta_status: typeof enum_delta_status;
   enum__delta_v_version_status: typeof enum__delta_v_version_status;
   enum__delta_v_published_locale: typeof enum__delta_v_published_locale;

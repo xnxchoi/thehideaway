@@ -275,12 +275,11 @@ export const SideDrawer = () => {
             onClick={() => {
               setSideDrawerOpen(false);
             }}
-            onMouseLeave={onMouseLeave}
-            className="fixed inset-0 z-[39] bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
+            onMouseLeave={onMouseLeave} className="fixed inset-0 z-39 bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
           />
         )}
         <Mrawer
-          className="fixed bottom-0 z-[239] flex w-[calc(24vw+40px)] items-end gap-0 text-[oklch(var(--n-s-fg)/1)] outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
+	        className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-[oklch(var(--n-s-fg)/1)] outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
           style={{
             borderTopRightRadius: borderTopRadius,
             borderTopLeftRadius: borderTopRadius,
@@ -288,19 +287,18 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {isMobile && <Drawer.Handle />}
+	        {isMobile && <Drawer.Handle className={"absolute!"} />}
           {open && (
             <div
               onClick={() => {
                 setSideDrawerOpen(false);
               }}
               onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
-              className="absolute inset-0 z-[238] bg-transparent"
+              onMouseLeave={onMouseLeave} className="absolute inset-0 z-238 bg-transparent"
             />
           )}
           <m.div
-            className="z-[239] grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-[oklch(var(--n-s-bg)/1)] max-md:h-[65vh] max-md:w-full"
+	          className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-[oklch(var(--n-s-bg)/1)] max-md:h-[65vh] max-md:w-full"
             onMouseEnter={() => {
               setCursor(null);
               setCursorTheme("dark");
@@ -323,7 +321,7 @@ export const SideDrawer = () => {
                 <Link href="/essays">Latest</Link>
               </div>
             </div>
-            <div className={"col-[1/-1] row-[11/14]"}>
+	          <div className={"col-span-full row-[11/14]"}>
               {hasRadio && <RP_FM />}
             </div>
           </m.div>

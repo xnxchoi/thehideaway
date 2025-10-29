@@ -91,7 +91,7 @@ export function AppHeader({ CustomAvatar, CustomIcon }: Props) {
                   display: "block",
                   fill: "oklch(var(--faded-fg)/1)",
                   flexShrink: 0
-                }}
+                }} data-themed="fill"
               >
                 <path d="M2.275 5c0-.345.28-.625.625-.625h14.2a.625.625 0 1 1 0 1.25H2.9A.625.625 0 0 1 2.275 5m0 5c0-.345.28-.625.625-.625h14.2a.625.625 0 1 1 0 1.25H2.9A.625.625 0 0 1 2.275 10m.625 4.375a.625.625 0 1 0 0 1.25h14.2a.625.625 0 1 0 0-1.25z"></path>{" "}
               </svg>
@@ -122,6 +122,7 @@ export function AppHeader({ CustomAvatar, CustomIcon }: Props) {
               <LocalizerLabel
                 ariaLabel="invisible"
                 className={`${baseClass}__localizer-spacing`}
+                data-themed="color, border-color, background-color, outline-color,box-shadow"
               />
             )}
             <Link
@@ -129,7 +130,7 @@ export function AppHeader({ CustomAvatar, CustomIcon }: Props) {
               className={`${baseClass}__account`}
               href={formatAdminURL({ adminRoute, path: accountRoute })}
               prefetch={false}
-              tabIndex={0}
+              tabIndex={0} data-themed="color, border-color, background-color, outline-color,box-shadow"
             >
               <RenderCustomComponent
                 CustomComponent={CustomAvatar}

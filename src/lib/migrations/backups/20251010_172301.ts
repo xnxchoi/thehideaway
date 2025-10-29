@@ -1,7 +1,7 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import {MigrateDownArgs, MigrateUpArgs, sql} from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
-  await db.execute(sql`
+export async function up({db, payload, req}: MigrateUpArgs): Promise<void> {
+	await db.execute(sql`
    ALTER TABLE "sessions" RENAME COLUMN "active_organization_id" TO "active_organization_id_id";
   ALTER TABLE "sessions" DROP CONSTRAINT "sessions_active_organization_id_organizations_id_fk";
   
@@ -10,8 +10,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "sessions_active_organization_id_idx" ON "sessions" USING btree ("active_organization_id_id");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
-  await db.execute(sql`
+export async function down({db, payload, req}: MigrateDownArgs): Promise<void> {
+	await db.execute(sql`
    ALTER TABLE "sessions" RENAME COLUMN "active_organization_id_id" TO "active_organization_id";
   ALTER TABLE "sessions" DROP CONSTRAINT "sessions_active_organization_id_id_organizations_id_fk";
   

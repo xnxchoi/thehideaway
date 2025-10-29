@@ -1,7 +1,7 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import {MigrateDownArgs, MigrateUpArgs, sql} from "@payloadcms/db-postgres";
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
-  await db.execute(sql`
+export async function up({db, payload, req}: MigrateUpArgs): Promise<void> {
+	await db.execute(sql`
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 DROP FUNCTION IF EXISTS nanoid(int, text, float);
 CREATE OR REPLACE FUNCTION nanoid(
@@ -77,6 +77,81 @@ END LOOP;
 END LOOP;
 END \$\$;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+ 
+CREATE OR REPLACE FUNCTION nanoid(
+        size int DEFAULT 21,
+        
+        alphabet text DEFAULT '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        
+        additionalBytesFactor float DEFAULT 1.6 
+    ) RETURNS text 
+    LANGUAGE plpgsql VOLATILE PARALLEL SAFE 
+    
+    AS \$\$
+DECLARE alphabetArray text [];
+alphabetLength int := 64;
+mask int := 63;
+step int := 34;
+BEGIN IF size IS NULL
+OR size < 1 THEN RAISE EXCEPTION 'The size must be defined and greater than 0!';
+END IF;
+IF alphabet IS NULL
+OR length(alphabet) = 0
+OR length(alphabet) > 255 THEN RAISE EXCEPTION 'The alphabet can''t be undefined, zero or bigger than 255 symbols!';
+END IF;
+IF additionalBytesFactor IS NULL
+OR additionalBytesFactor < 1 THEN RAISE EXCEPTION 'The additional bytes factor can''t be less than 1!';
+END IF;
+alphabetArray := regexp_split_to_array(alphabet, '');
+alphabetLength := array_length(alphabetArray, 1);
+mask := (
+    2 << cast(floor(log(alphabetLength - 1) / log(2)) as int)
+) - 1;
+step := cast(
+    ceil(
+        additionalBytesFactor * mask * size / alphabetLength
+    ) AS int
+);
+IF step > 1024 THEN step := 1024;
+
+END IF;
+RETURN nanoid_optimized(size, alphabet, mask, step);
+END \$\$;
+
+
+
+ 
+CREATE OR REPLACE FUNCTION nanoid_optimized(
+        size int,
+        
+        alphabet text,
+        
+        mask int,
+        
+        step int 
+    ) RETURNS text 
+    LANGUAGE plpgsql VOLATILE PARALLEL SAFE 
+    
+    AS \$\$
+DECLARE idBuilder text := '';
+counter int := 0;
+bytes bytea;
+alphabetIndex int;
+alphabetArray text [];
+alphabetLength int := 64;
+BEGIN alphabetArray := regexp_split_to_array(alphabet, '');
+alphabetLength := array_length(alphabetArray, 1);
+LOOP bytes := gen_random_bytes(step);
+FOR counter IN 0..step - 1 LOOP alphabetIndex := (get_byte(bytes, counter) & mask) + 1;
+IF alphabetIndex <= alphabetLength THEN idBuilder := idBuilder || alphabetArray [alphabetIndex];
+IF length(idBuilder) = size THEN RETURN idBuilder;
+END IF;
+END IF;
+END LOOP;
+END LOOP;
+END \$\$;
+
    CREATE TYPE "public"."_locales" AS ENUM('en', 'ko');
   CREATE TYPE "public"."enum_users_role" AS ENUM('admin', 'author', 'editor', 'user', 'patron');
   CREATE TYPE "public"."enum_users_status" AS ENUM('draft', 'published');
@@ -84,6 +159,8 @@ END \$\$;
   CREATE TYPE "public"."enum__users_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__users_v_published_locale" AS ENUM('en', 'ko');
   CREATE TYPE "public"."enum_admin_invitations_role" AS ENUM('admin', 'author', 'editor', 'user', 'patron');
+  CREATE TYPE "public"."enum_assets_source_provider" AS ENUM('unsplash', 'local');
+  CREATE TYPE "public"."enum_media_source_provider" AS ENUM('unsplash', 'local');
   CREATE TYPE "public"."enum_notifications_type" AS ENUM('comment', 'follow', 'mention', 'system', 'access', 'bookmark', 'profile', 'post', 'delta', 'notification');
   CREATE TYPE "public"."enum_notifications_status" AS ENUM('unread', 'read', 'dismissed');
   CREATE TYPE "public"."enum_notifications_action_link_type" AS ENUM('reference', 'custom');
@@ -124,6 +201,7 @@ END \$\$;
   CREATE TYPE "public"."enum_posts_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__posts_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__posts_v_published_locale" AS ENUM('en', 'ko');
+  CREATE TYPE "public"."enum_user_media_source_provider" AS ENUM('unsplash', 'hideaway');
   CREATE TYPE "public"."enum_delta_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__delta_v_version_status" AS ENUM('draft', 'published');
   CREATE TYPE "public"."enum__delta_v_published_locale" AS ENUM('en', 'ko');
@@ -256,7 +334,7 @@ END \$\$;
   	"user_agent" varchar,
   	"user_id" uuid NOT NULL,
   	"impersonated_by_id" uuid,
-  	"active_organization_id" uuid
+  	"active_organization_id_id" uuid
   );
   
   CREATE TABLE "accounts" (
@@ -352,6 +430,9 @@ END \$\$;
   	"alt" varchar NOT NULL,
   	"caption" varchar,
   	"darkmode" boolean DEFAULT false,
+  	"source_identifier" varchar NOT NULL,
+  	"source_link" varchar,
+  	"source_provider" "enum_assets_source_provider" DEFAULT 'local' NOT NULL,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
   	"blur_data_url" varchar,
@@ -441,7 +522,9 @@ END \$\$;
   	"caption" varchar,
   	"darkmode" boolean DEFAULT false,
   	"author_id" uuid NOT NULL,
-  	"published_at" timestamp(3) with time zone,
+  	"source_identifier" varchar NOT NULL,
+  	"source_link" varchar,
+  	"source_provider" "enum_media_source_provider" DEFAULT 'local' NOT NULL,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
   	"blur_data_url" varchar,
@@ -880,20 +963,22 @@ END \$\$;
   
   CREATE TABLE "posts" (
   	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
-  	"title" varchar,
-  	"content" jsonb,
-  	"category_id" uuid,
   	"image_id" uuid,
+  	"cover_position" numeric DEFAULT 35,
+  	"title" varchar,
+  	"rich_title" jsonb,
+  	"content" jsonb,
   	"subtitle" varchar,
-  	"published_at" timestamp(3) with time zone,
-  	"author_id" uuid,
+  	"category_id" uuid,
   	"slug_key" varchar,
+  	"comments_enabled" boolean DEFAULT true,
   	"hash_id" varchar(11) DEFAULT nanoid(11) NOT NULL,
   	"slug_lock" boolean,
   	"slug" varchar,
+  	"published_at" timestamp(3) with time zone,
+  	"author_id" uuid,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
-  	"comments_enabled" boolean,
   	"likes" numeric,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -903,6 +988,7 @@ END \$\$;
   CREATE TABLE "posts_locales" (
   	"meta_title" varchar,
   	"meta_image_id" uuid,
+  	"meta_description" varchar,
   	"id" serial PRIMARY KEY NOT NULL,
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" uuid NOT NULL
@@ -913,28 +999,30 @@ END \$\$;
   	"order" integer,
   	"parent_id" uuid NOT NULL,
   	"path" varchar NOT NULL,
-  	"posts_id" uuid,
   	"tags_id" uuid,
+  	"posts_id" uuid,
   	"users_id" uuid
   );
   
   CREATE TABLE "_posts_v" (
   	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
   	"parent_id" uuid,
-  	"version_title" varchar,
-  	"version_content" jsonb,
-  	"version_category_id" uuid,
   	"version_image_id" uuid,
+  	"version_cover_position" numeric DEFAULT 35,
+  	"version_title" varchar,
+  	"version_rich_title" jsonb,
+  	"version_content" jsonb,
   	"version_subtitle" varchar,
-  	"version_published_at" timestamp(3) with time zone,
-  	"version_author_id" uuid,
+  	"version_category_id" uuid,
   	"version_slug_key" varchar,
+  	"version_comments_enabled" boolean DEFAULT true,
   	"version_hash_id" varchar(11) NOT NULL,
   	"version_slug_lock" boolean,
   	"version_slug" varchar,
+  	"version_published_at" timestamp(3) with time zone,
+  	"version_author_id" uuid,
   	"version_locked" boolean DEFAULT false,
   	"version_authority" numeric DEFAULT 0,
-  	"version_comments_enabled" boolean,
   	"version_likes" numeric,
   	"version_updated_at" timestamp(3) with time zone,
   	"version_created_at" timestamp(3) with time zone,
@@ -949,6 +1037,7 @@ END \$\$;
   CREATE TABLE "_posts_v_locales" (
   	"version_meta_title" varchar,
   	"version_meta_image_id" uuid,
+  	"version_meta_description" varchar,
   	"id" serial PRIMARY KEY NOT NULL,
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" uuid NOT NULL
@@ -959,8 +1048,8 @@ END \$\$;
   	"order" integer,
   	"parent_id" uuid NOT NULL,
   	"path" varchar NOT NULL,
-  	"posts_id" uuid,
   	"tags_id" uuid,
+  	"posts_id" uuid,
   	"users_id" uuid
   );
   
@@ -970,7 +1059,8 @@ END \$\$;
   	"caption" varchar,
   	"darkmode" boolean DEFAULT false,
   	"author_id" uuid NOT NULL,
-  	"published_at" timestamp(3) with time zone,
+  	"source_provider" "enum_user_media_source_provider" DEFAULT 'hideaway' NOT NULL,
+  	"source_source_id" uuid NOT NULL,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
   	"blur_data_url" varchar,
@@ -1042,18 +1132,20 @@ END \$\$;
   CREATE TABLE "delta" (
   	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
   	"title" varchar,
+  	"rich_title" jsonb,
   	"source" varchar,
   	"content" jsonb,
+  	"subtitle" varchar,
   	"category_id" uuid,
-  	"published_at" timestamp(3) with time zone,
-  	"author_id" uuid,
   	"slug_key" varchar,
+  	"comments_enabled" boolean DEFAULT true,
   	"hash_id" varchar(11) DEFAULT nanoid(11) NOT NULL,
   	"slug_lock" boolean,
   	"slug" varchar,
+  	"published_at" timestamp(3) with time zone,
+  	"author_id" uuid,
   	"locked" boolean DEFAULT false,
   	"authority" numeric DEFAULT 0,
-  	"comments_enabled" boolean,
   	"likes" numeric,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -1084,18 +1176,20 @@ END \$\$;
   	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
   	"parent_id" uuid,
   	"version_title" varchar,
+  	"version_rich_title" jsonb,
   	"version_source" varchar,
   	"version_content" jsonb,
+  	"version_subtitle" varchar,
   	"version_category_id" uuid,
-  	"version_published_at" timestamp(3) with time zone,
-  	"version_author_id" uuid,
   	"version_slug_key" varchar,
+  	"version_comments_enabled" boolean DEFAULT true,
   	"version_hash_id" varchar(11) NOT NULL,
   	"version_slug_lock" boolean,
   	"version_slug" varchar,
+  	"version_published_at" timestamp(3) with time zone,
+  	"version_author_id" uuid,
   	"version_locked" boolean DEFAULT false,
   	"version_authority" numeric DEFAULT 0,
-  	"version_comments_enabled" boolean,
   	"version_likes" numeric,
   	"version_updated_at" timestamp(3) with time zone,
   	"version_created_at" timestamp(3) with time zone,
@@ -1899,7 +1993,7 @@ END \$\$;
   ALTER TABLE "_users_v_locales" ADD CONSTRAINT "_users_v_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_users_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "sessions" ADD CONSTRAINT "sessions_impersonated_by_id_users_id_fk" FOREIGN KEY ("impersonated_by_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "sessions" ADD CONSTRAINT "sessions_active_organization_id_organizations_id_fk" FOREIGN KEY ("active_organization_id") REFERENCES "public"."organizations"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "sessions" ADD CONSTRAINT "sessions_active_organization_id_id_organizations_id_fk" FOREIGN KEY ("active_organization_id_id") REFERENCES "public"."organizations"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "two_factors" ADD CONSTRAINT "two_factors_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "passkeys" ADD CONSTRAINT "passkeys_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
@@ -1982,24 +2076,24 @@ END \$\$;
   ALTER TABLE "_pages_v_rels" ADD CONSTRAINT "_pages_v_rels_organizations_fk" FOREIGN KEY ("organizations_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_pages_v_rels" ADD CONSTRAINT "_pages_v_rels_categories_fk" FOREIGN KEY ("categories_id") REFERENCES "public"."categories"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_pages_v_rels" ADD CONSTRAINT "_pages_v_rels_tags_fk" FOREIGN KEY ("tags_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "posts" ADD CONSTRAINT "posts_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "posts" ADD CONSTRAINT "posts_image_id_user_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."user_media"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "posts" ADD CONSTRAINT "posts_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "posts" ADD CONSTRAINT "posts_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "posts_locales" ADD CONSTRAINT "posts_locales_meta_image_id_media_id_fk" FOREIGN KEY ("meta_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "posts_locales" ADD CONSTRAINT "posts_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "posts_rels" ADD CONSTRAINT "posts_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "posts_rels" ADD CONSTRAINT "posts_rels_posts_fk" FOREIGN KEY ("posts_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "posts_rels" ADD CONSTRAINT "posts_rels_tags_fk" FOREIGN KEY ("tags_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "posts_rels" ADD CONSTRAINT "posts_rels_posts_fk" FOREIGN KEY ("posts_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "posts_rels" ADD CONSTRAINT "posts_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_posts_v" ADD CONSTRAINT "_posts_v_parent_id_posts_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."posts"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "_posts_v" ADD CONSTRAINT "_posts_v_version_category_id_categories_id_fk" FOREIGN KEY ("version_category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_posts_v" ADD CONSTRAINT "_posts_v_version_image_id_user_media_id_fk" FOREIGN KEY ("version_image_id") REFERENCES "public"."user_media"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "_posts_v" ADD CONSTRAINT "_posts_v_version_category_id_categories_id_fk" FOREIGN KEY ("version_category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_posts_v" ADD CONSTRAINT "_posts_v_version_author_id_users_id_fk" FOREIGN KEY ("version_author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_posts_v_locales" ADD CONSTRAINT "_posts_v_locales_version_meta_image_id_media_id_fk" FOREIGN KEY ("version_meta_image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "_posts_v_locales" ADD CONSTRAINT "_posts_v_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_posts_v"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_posts_v_rels" ADD CONSTRAINT "_posts_v_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."_posts_v"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "_posts_v_rels" ADD CONSTRAINT "_posts_v_rels_posts_fk" FOREIGN KEY ("posts_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_posts_v_rels" ADD CONSTRAINT "_posts_v_rels_tags_fk" FOREIGN KEY ("tags_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "_posts_v_rels" ADD CONSTRAINT "_posts_v_rels_posts_fk" FOREIGN KEY ("posts_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_posts_v_rels" ADD CONSTRAINT "_posts_v_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "user_media" ADD CONSTRAINT "user_media_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "user_media" ADD CONSTRAINT "user_media_folder_id_payload_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."payload_folders"("id") ON DELETE set null ON UPDATE no action;
@@ -2240,7 +2334,7 @@ END \$\$;
   CREATE INDEX "sessions_updated_at_idx" ON "sessions" USING btree ("updated_at");
   CREATE INDEX "sessions_user_idx" ON "sessions" USING btree ("user_id");
   CREATE INDEX "sessions_impersonated_by_idx" ON "sessions" USING btree ("impersonated_by_id");
-  CREATE INDEX "sessions_active_organization_idx" ON "sessions" USING btree ("active_organization_id");
+  CREATE INDEX "sessions_active_organization_id_idx" ON "sessions" USING btree ("active_organization_id_id");
   CREATE INDEX "accounts_account_id_idx" ON "accounts" USING btree ("account_id");
   CREATE INDEX "accounts_user_idx" ON "accounts" USING btree ("user_id");
   CREATE INDEX "accounts_access_token_expires_at_idx" ON "accounts" USING btree ("access_token_expires_at");
@@ -2452,13 +2546,13 @@ END \$\$;
   CREATE INDEX "_pages_v_rels_organizations_id_idx" ON "_pages_v_rels" USING btree ("organizations_id");
   CREATE INDEX "_pages_v_rels_categories_id_idx" ON "_pages_v_rels" USING btree ("categories_id");
   CREATE INDEX "_pages_v_rels_tags_id_idx" ON "_pages_v_rels" USING btree ("tags_id");
-  CREATE INDEX "posts_category_idx" ON "posts" USING btree ("category_id");
   CREATE INDEX "posts_image_idx" ON "posts" USING btree ("image_id");
-  CREATE INDEX "posts_author_idx" ON "posts" USING btree ("author_id");
+  CREATE INDEX "posts_category_idx" ON "posts" USING btree ("category_id");
   CREATE INDEX "posts_slug_key_idx" ON "posts" USING btree ("slug_key");
-  CREATE INDEX "posts_hash_id_idx" ON "posts" USING btree ("hash_id");
-  CREATE INDEX "posts_authority_idx" ON "posts" USING btree ("authority");
   CREATE INDEX "posts_comments_enabled_idx" ON "posts" USING btree ("comments_enabled");
+  CREATE INDEX "posts_hash_id_idx" ON "posts" USING btree ("hash_id");
+  CREATE INDEX "posts_author_idx" ON "posts" USING btree ("author_id");
+  CREATE INDEX "posts_authority_idx" ON "posts" USING btree ("authority");
   CREATE INDEX "posts_updated_at_idx" ON "posts" USING btree ("updated_at");
   CREATE INDEX "posts_created_at_idx" ON "posts" USING btree ("created_at");
   CREATE INDEX "posts__status_idx" ON "posts" USING btree ("_status");
@@ -2467,17 +2561,17 @@ END \$\$;
   CREATE INDEX "posts_rels_order_idx" ON "posts_rels" USING btree ("order");
   CREATE INDEX "posts_rels_parent_idx" ON "posts_rels" USING btree ("parent_id");
   CREATE INDEX "posts_rels_path_idx" ON "posts_rels" USING btree ("path");
-  CREATE INDEX "posts_rels_posts_id_idx" ON "posts_rels" USING btree ("posts_id");
   CREATE INDEX "posts_rels_tags_id_idx" ON "posts_rels" USING btree ("tags_id");
+  CREATE INDEX "posts_rels_posts_id_idx" ON "posts_rels" USING btree ("posts_id");
   CREATE INDEX "posts_rels_users_id_idx" ON "posts_rels" USING btree ("users_id");
   CREATE INDEX "_posts_v_parent_idx" ON "_posts_v" USING btree ("parent_id");
-  CREATE INDEX "_posts_v_version_version_category_idx" ON "_posts_v" USING btree ("version_category_id");
   CREATE INDEX "_posts_v_version_version_image_idx" ON "_posts_v" USING btree ("version_image_id");
-  CREATE INDEX "_posts_v_version_version_author_idx" ON "_posts_v" USING btree ("version_author_id");
+  CREATE INDEX "_posts_v_version_version_category_idx" ON "_posts_v" USING btree ("version_category_id");
   CREATE INDEX "_posts_v_version_version_slug_key_idx" ON "_posts_v" USING btree ("version_slug_key");
-  CREATE INDEX "_posts_v_version_version_hash_id_idx" ON "_posts_v" USING btree ("version_hash_id");
-  CREATE INDEX "_posts_v_version_version_authority_idx" ON "_posts_v" USING btree ("version_authority");
   CREATE INDEX "_posts_v_version_version_comments_enabled_idx" ON "_posts_v" USING btree ("version_comments_enabled");
+  CREATE INDEX "_posts_v_version_version_hash_id_idx" ON "_posts_v" USING btree ("version_hash_id");
+  CREATE INDEX "_posts_v_version_version_author_idx" ON "_posts_v" USING btree ("version_author_id");
+  CREATE INDEX "_posts_v_version_version_authority_idx" ON "_posts_v" USING btree ("version_authority");
   CREATE INDEX "_posts_v_version_version_updated_at_idx" ON "_posts_v" USING btree ("version_updated_at");
   CREATE INDEX "_posts_v_version_version_created_at_idx" ON "_posts_v" USING btree ("version_created_at");
   CREATE INDEX "_posts_v_version_version__status_idx" ON "_posts_v" USING btree ("version__status");
@@ -2491,8 +2585,8 @@ END \$\$;
   CREATE INDEX "_posts_v_rels_order_idx" ON "_posts_v_rels" USING btree ("order");
   CREATE INDEX "_posts_v_rels_parent_idx" ON "_posts_v_rels" USING btree ("parent_id");
   CREATE INDEX "_posts_v_rels_path_idx" ON "_posts_v_rels" USING btree ("path");
-  CREATE INDEX "_posts_v_rels_posts_id_idx" ON "_posts_v_rels" USING btree ("posts_id");
   CREATE INDEX "_posts_v_rels_tags_id_idx" ON "_posts_v_rels" USING btree ("tags_id");
+  CREATE INDEX "_posts_v_rels_posts_id_idx" ON "_posts_v_rels" USING btree ("posts_id");
   CREATE INDEX "_posts_v_rels_users_id_idx" ON "_posts_v_rels" USING btree ("users_id");
   CREATE INDEX "user_media_darkmode_idx" ON "user_media" USING btree ("darkmode");
   CREATE INDEX "user_media_author_idx" ON "user_media" USING btree ("author_id");
@@ -2514,11 +2608,11 @@ END \$\$;
   CREATE INDEX "user_media_rels_users_id_idx" ON "user_media_rels" USING btree ("users_id");
   CREATE INDEX "delta_source_idx" ON "delta" USING btree ("source");
   CREATE INDEX "delta_category_idx" ON "delta" USING btree ("category_id");
-  CREATE INDEX "delta_author_idx" ON "delta" USING btree ("author_id");
   CREATE INDEX "delta_slug_key_idx" ON "delta" USING btree ("slug_key");
-  CREATE INDEX "delta_hash_id_idx" ON "delta" USING btree ("hash_id");
-  CREATE INDEX "delta_authority_idx" ON "delta" USING btree ("authority");
   CREATE INDEX "delta_comments_enabled_idx" ON "delta" USING btree ("comments_enabled");
+  CREATE INDEX "delta_hash_id_idx" ON "delta" USING btree ("hash_id");
+  CREATE INDEX "delta_author_idx" ON "delta" USING btree ("author_id");
+  CREATE INDEX "delta_authority_idx" ON "delta" USING btree ("authority");
   CREATE INDEX "delta_updated_at_idx" ON "delta" USING btree ("updated_at");
   CREATE INDEX "delta_created_at_idx" ON "delta" USING btree ("created_at");
   CREATE INDEX "delta__status_idx" ON "delta" USING btree ("_status");
@@ -2534,11 +2628,11 @@ END \$\$;
   CREATE INDEX "_delta_v_parent_idx" ON "_delta_v" USING btree ("parent_id");
   CREATE INDEX "_delta_v_version_version_source_idx" ON "_delta_v" USING btree ("version_source");
   CREATE INDEX "_delta_v_version_version_category_idx" ON "_delta_v" USING btree ("version_category_id");
-  CREATE INDEX "_delta_v_version_version_author_idx" ON "_delta_v" USING btree ("version_author_id");
   CREATE INDEX "_delta_v_version_version_slug_key_idx" ON "_delta_v" USING btree ("version_slug_key");
-  CREATE INDEX "_delta_v_version_version_hash_id_idx" ON "_delta_v" USING btree ("version_hash_id");
-  CREATE INDEX "_delta_v_version_version_authority_idx" ON "_delta_v" USING btree ("version_authority");
   CREATE INDEX "_delta_v_version_version_comments_enabled_idx" ON "_delta_v" USING btree ("version_comments_enabled");
+  CREATE INDEX "_delta_v_version_version_hash_id_idx" ON "_delta_v" USING btree ("version_hash_id");
+  CREATE INDEX "_delta_v_version_version_author_idx" ON "_delta_v" USING btree ("version_author_id");
+  CREATE INDEX "_delta_v_version_version_authority_idx" ON "_delta_v" USING btree ("version_authority");
   CREATE INDEX "_delta_v_version_version_updated_at_idx" ON "_delta_v" USING btree ("version_updated_at");
   CREATE INDEX "_delta_v_version_version_created_at_idx" ON "_delta_v" USING btree ("version_created_at");
   CREATE INDEX "_delta_v_version_version__status_idx" ON "_delta_v" USING btree ("version__status");
@@ -2917,11 +3011,13 @@ END \$\$;
   CREATE INDEX "footer_rels_tracks_id_idx" ON "footer_rels" USING btree ("tracks_id");
   CREATE INDEX "footer_rels_playlists_id_idx" ON "footer_rels" USING btree ("playlists_id");
   CREATE INDEX "footer_rels_organizations_id_idx" ON "footer_rels" USING btree ("organizations_id");
-  CREATE INDEX "footer_rels_categories_id_idx" ON "footer_rels" USING btree ("categories_id");`)
+  CREATE INDEX "footer_rels_categories_id_idx" ON "footer_rels" USING btree ("categories_id");`);
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
-  await db.execute(sql`
+export async function down({
+	db, payload, req
+}: MigrateDownArgs): Promise<void> {
+	await db.execute(sql`
    DROP TABLE "users" CASCADE;
   DROP TABLE "users_locales" CASCADE;
   DROP TABLE "_users_v" CASCADE;
@@ -3046,6 +3142,8 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TYPE "public"."enum__users_v_version_status";
   DROP TYPE "public"."enum__users_v_published_locale";
   DROP TYPE "public"."enum_admin_invitations_role";
+  DROP TYPE "public"."enum_assets_source_provider";
+  DROP TYPE "public"."enum_media_source_provider";
   DROP TYPE "public"."enum_notifications_type";
   DROP TYPE "public"."enum_notifications_status";
   DROP TYPE "public"."enum_notifications_action_link_type";
@@ -3086,6 +3184,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TYPE "public"."enum_posts_status";
   DROP TYPE "public"."enum__posts_v_version_status";
   DROP TYPE "public"."enum__posts_v_published_locale";
+  DROP TYPE "public"."enum_user_media_source_provider";
   DROP TYPE "public"."enum_delta_status";
   DROP TYPE "public"."enum__delta_v_version_status";
   DROP TYPE "public"."enum__delta_v_published_locale";
@@ -3129,5 +3228,5 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TYPE "public"."enum_footer_nav_items_link_type";
   DROP TYPE "public"."enum_footer_column1_links_link_type";
   DROP TYPE "public"."enum_footer_column2_links_link_type";
-  DROP TYPE "public"."enum_footer_column3_links_link_type";`)
+  DROP TYPE "public"."enum_footer_column3_links_link_type";`);
 }

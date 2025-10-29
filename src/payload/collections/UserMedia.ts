@@ -1,19 +1,12 @@
-import { CollectionConfig, Where } from "payload";
-
-import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import { User } from "@/payload-types";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { sanitizeAuthor } from "@/payload/fields/AuthorFields/hooks";
-import {
-  authenticated,
-  standardUpdateAccess
-} from "@/payload/plugins/locker/access/accessCheckers";
-import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
-import { extractImageInfo } from "@/utilities/extractImageInfo";
+import {CollectionConfig} from "payload";
+import {User} from "@/payload-types";
+import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
+import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
+import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
-import { fileURLToPath } from "url";
-import { webpConversionHook } from "./UserMedia/hooks/webpConversionHook";
-import { uuidv7 } from "uuidv7";
+import {fileURLToPath} from "url";
+import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -66,31 +59,22 @@ export const UserMedia: CollectionConfig = {
     },
     ...AuthorField(),
     {
-      type: "group",
-      name: "source",
-      access: {
-        create: () => true,
-        update: () => false,
-        read: () => true
-      },
+      name: "source", type: "group",
       admin: {
         hidden: true
       },
       fields: [
         {
-          type: "select",
-          name: "provider",
-          options: [
-            { value: "unsplash", label: "Unsplash" },
-            { value: "hideaway", label: "Hideaway" }
-          ],
-          defaultValue: "hideaway",
-          required: true
-        },
-        {
-          type: "text",
-          name: "sourceId",
-          required: true
+	        name: "identifier", type: "text", required: true, defaultValue: () => uuidv7()
+        }, {
+		      name: "link", type: "text"
+	      }, {
+          name: "provider", type: "select",
+          options: [{
+	          label: "Unsplash", value: "unsplash"
+          }, {
+	          label: "Local", value: "local"
+          }], required: true, defaultValue: "local"
         }
       ]
     },
@@ -218,16 +202,8 @@ export const UserMedia: CollectionConfig = {
     beforeValidate: [
       async ({ req, context, operation, data, originalDoc }) => {
         let dt = data;
-        if (operation === "create") {
-          if (context.sourceId && context.sourceId.length > 0) {
-            dt = {
-              ...dt,
-              source: {
-                sourceId: context.sourceId,
-                provider: "unsplash"
-              }
-            };
-          }
+	      if (operation === "create" && dt) {
+		      return dt;
         } else {
           dt = {
             ...dt,
@@ -236,7 +212,6 @@ export const UserMedia: CollectionConfig = {
             }
           };
         }
-        context.sourceId = undefined;
         return dt;
       }
     ],
