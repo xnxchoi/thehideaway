@@ -31,7 +31,6 @@ import { easing } from "maath";
 import { cubic } from "maath/easing";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useFormContext } from "react-hook-form";
 import {
   Box3,
   CatmullRomCurve3,
@@ -43,9 +42,7 @@ import {
   NoColorSpace,
   Quaternion,
   RepeatWrapping,
-  RGBAFormat,
   SRGBColorSpace,
-  UVMapping,
   Vector2,
   Vector3,
   type Group,
@@ -55,7 +52,6 @@ import {
   type PointLight
 } from "three";
 import { useConfiguredTexture } from "../useConfigureTexture";
-import { useRegisterFiber } from "../FiberBridger";
 const ASSETS_BASE_PATH = "/assets/rp_plaque";
 const TEXTURE_BASE_PATH = `${ASSETS_BASE_PATH}/textures`;
 const OBJ_BASE_PATH = `${ASSETS_BASE_PATH}/model`;
