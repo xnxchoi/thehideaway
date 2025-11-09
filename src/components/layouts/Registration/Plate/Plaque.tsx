@@ -24,6 +24,7 @@ import {
   RigidBody,
   useRopeJoint,
   useSphericalJoint,
+  type RigidBodyAutoCollider,
   type RigidBodyTypeString
 } from "@react-three/rapier";
 import { upperCase } from "lodash-es";
@@ -51,7 +52,6 @@ import {
   type MeshStandardMaterial,
   type PointLight
 } from "three";
-import { useConfiguredTexture } from "../useConfigureTexture";
 const ASSETS_BASE_PATH = "/assets/rp_plaque";
 const TEXTURE_BASE_PATH = `${ASSETS_BASE_PATH}/textures`;
 const OBJ_BASE_PATH = `${ASSETS_BASE_PATH}/model`;
@@ -137,7 +137,7 @@ export function Plaque({
   const segmentProps: {
     type: RigidBodyTypeString;
     canSleep: boolean;
-    colliders?: any;
+    colliders?: RigidBodyAutoCollider;
     angularDamping: number;
     linearDamping: number;
   } = {
@@ -372,11 +372,7 @@ function Model({
     name2 && setLastName(name2);
   }, [name1, name2]);
   // card diffuse
-  const card_images = useConfiguredTexture({
-    name: "cards",
-    path: TEXTURE_BASE_PATH,
-    map: materials.card_m.map
-  });
+
   const textBottomMat = useRef<MeshStandardMaterial>(null!),
     textTopMat = useRef<MeshStandardMaterial>(null!);
   const centerRef = useRef<Group>(null!);
