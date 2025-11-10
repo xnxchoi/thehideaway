@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,27 +16,13 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@payload-types": [
-        "src/payload-types.ts"
-      ],
-      "@payload-config": [
-        "src/payload.config.ts"
-      ],
-      "@types/*": [
-        "types/*"
-      ],
-      "@betterauth-ui": [
-        "src/lib/auth/betterauth-ui/src"
-      ],
-      "@betterauth-ui/*": [
-        "src/lib/auth/betterauth-ui/src/*"
-      ],
-      "@/payload/adminOnly/*": [
-        "src/payload/fields/AdminOnly/*"
-      ]
+      "@/*": ["src/*"],
+      "@payload-types": ["src/payload-types.ts"],
+      "@payload-config": ["src/payload.config.ts"],
+      "@types/*": ["types/*"],
+      "@betterauth-ui": ["src/lib/auth/betterauth-ui/src"],
+      "@betterauth-ui/*": ["src/lib/auth/betterauth-ui/src/*"],
+      "@/payload/adminOnly/*": ["src/payload/fields/AdminOnly/*"]
     },
     "plugins": [
       {
@@ -53,10 +35,7 @@
     "**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "src/payload/fields/ArticleTitleField/clien.b",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

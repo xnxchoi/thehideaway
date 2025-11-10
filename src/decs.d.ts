@@ -5,7 +5,6 @@ import type {
 } from "payload";
 import type { User } from "@/payload-types";
 import type { DefaultNodeTypes } from "@payloadcms/richtext-lexical";
-import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 
 declare module "payload" {
   export interface ClientUser extends OriginalClientUser {

@@ -10,6 +10,8 @@ import {
   ProfileSlideProps,
   StickySectionProps
 } from "@/components/layouts/Profile/types";
+import type { SerializedEditorState } from "lexical";
+import type { DefaultTypedEditorState } from "@payloadcms/richtext-lexical";
 
 const textureDummyData: ProfileSlideProps["textures"] = [
   { url: "/media/IMG_6521-1920x1439.webp", mimeType: "image/webp" },
@@ -35,14 +37,14 @@ export const ProfileSlide = ({
   return (
     <div id={"profil"} className={"relative h-full w-full uppercase"}>
       <InkedTitle id={"blot-title"} name={name} />
-      <div className={"relative z-[1]"} id={"container"}>
+      <div className={"relative z-1"} id={"container"}>
         <div
           className={cn(
             "l-0 sticky top-0 flex h-screen w-[55%] items-center justify-center",
             { "-mb-[100vh]": true }
           )}
         >
-          <div className={"relative aspect-[3/4] w-[20vw]"}>
+          <div className={"relative aspect-3/4 w-[20vw]"}>
             <div
               className={"h-full w-full rounded-xl"}
               id={"frame"}
@@ -196,7 +198,13 @@ const StickySection = (props: StickySectionProps) => {
         <div className={"w-[90%] pl-[3.125vw]"}>
           <div>
             <div className={"leading-[1.4]"} style={{ textTransform: "none" }}>
-              {props.content && <RichText data={{ root: props.content }} />}
+              {props.content && (
+                <RichText
+                  data={{
+                    root: props.content as DefaultTypedEditorState["root"]
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>

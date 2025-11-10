@@ -101,6 +101,7 @@ export interface Config {
     'deferred-emails': DeferredEmail;
     exports: Export;
     redirects: Redirect;
+    'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
@@ -177,6 +178,7 @@ export interface Config {
     'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -296,7 +298,7 @@ export interface User {
   /**
    * The role of the user
    */
-  role: 'admin' | 'author' | 'editor' | 'user' | 'patron';
+  role: string;
   onboarded: boolean;
   /**
    * Whether the user is banned from the platform
@@ -427,7 +429,9 @@ export interface UserMedia {
   darkmode?: boolean | null;
   author: string | User;
   source: {
-	  identifier: string; link?: string | null; provider: 'unsplash' | 'local';
+    identifier: string;
+    link?: string | null;
+    provider: 'unsplash' | 'local';
   };
   bookmarks?: {
     docs?: (string | Bookmark)[];
@@ -774,7 +778,9 @@ export interface Media {
   darkmode?: boolean | null;
   author: string | User;
   source: {
-	  identifier: string; link?: string | null; provider: 'unsplash' | 'local';
+    identifier: string;
+    link?: string | null;
+    provider: 'unsplash' | 'local';
   };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
@@ -1205,9 +1211,11 @@ export interface Asset {
   alt: string;
   caption?: string | null;
   darkmode?: boolean | null;
-	source: {
-		identifier: string; link?: string | null; provider: 'unsplash' | 'local';
-	};
+  source: {
+    identifier: string;
+    link?: string | null;
+    provider: 'unsplash' | 'local';
+  };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
@@ -1404,7 +1412,7 @@ export interface Organization {
   /**
    * The slug of the organization.
    */
-  slug?: string | null;
+  slug: string;
   /**
    * The logo of the organization.
    */
@@ -1722,11 +1730,11 @@ export interface Session {
   /**
    * The admin who is impersonating this session
    */
-  impersonatedBy?: (string | null) | User;
+  impersonatedBy?: string | null;
   /**
    * The currently active organization for the session
    */
-  activeOrganizationId?: (string | null) | Organization;
+  activeOrganizationId?: string | null;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -2124,6 +2132,23 @@ export interface Redirect {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
@@ -2271,14 +2296,6 @@ export interface PayloadLockedDocument {
         value: string | Category;
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
-      } | null)
-    | ({
-        relationTo: 'tags';
-        value: string | Tag;
-      } | null)
-    | ({
         relationTo: 'notifications';
         value: string | Notification;
       } | null)
@@ -2291,44 +2308,12 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
-        relationTo: 'userMedia';
-        value: string | UserMedia;
-      } | null)
-    | ({
-        relationTo: 'delta';
-        value: string | Delta;
-      } | null)
-    | ({
-        relationTo: 'profile';
-        value: string | Profile;
-      } | null)
-    | ({
-        relationTo: 'albums';
-        value: string | Album;
-      } | null)
-    | ({
-        relationTo: 'tracks';
-        value: string | Track;
-      } | null)
-    | ({
-        relationTo: 'playlists';
-        value: string | Playlist;
-      } | null)
-    | ({
-        relationTo: 'follows';
-        value: string | Follow;
-      } | null)
-    | ({
         relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
     | ({
         relationTo: 'userViews';
         value: string | UserView;
-      } | null)
-    | ({
-        relationTo: 'citations';
-        value: string | Citation;
       } | null)
     | ({
         relationTo: 'responses';
@@ -2353,10 +2338,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'redirects';
         value: string | Redirect;
-      } | null)
-    | ({
-        relationTo: 'payload-jobs';
-        value: string | PayloadJob;
       } | null)
     | ({
         relationTo: 'payload-folders';
@@ -2584,9 +2565,13 @@ export interface AssetsSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   darkmode?: T;
-	source?: | T | {
-		identifier?: T; link?: T; provider?: T;
-	};
+  source?:
+    | T
+    | {
+        identifier?: T;
+        link?: T;
+        provider?: T;
+      };
   locked?: T;
   allowList?: T;
   authority?: T;
@@ -2702,7 +2687,8 @@ export interface MediaSelect<T extends boolean = true> {
   source?:
     | T
     | {
-	  identifier?: T; link?: T;
+        identifier?: T;
+        link?: T;
         provider?: T;
       };
   locked?: T;
@@ -3055,7 +3041,8 @@ export interface UserMediaSelect<T extends boolean = true> {
   source?:
     | T
     | {
-	  identifier?: T; link?: T;
+        identifier?: T;
+        link?: T;
         provider?: T;
       };
   bookmarks?: T;
@@ -3475,6 +3462,14 @@ export interface RedirectsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

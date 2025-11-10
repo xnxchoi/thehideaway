@@ -38,10 +38,6 @@ const nextConfig: NextConfig = {
   webpack: (config, { isServer, webpack }) => {
     config.resolve.alias = {
       ...config.resolve.alias
-      // "@payloadcms/ui/elements/DocumentControls": path.resolve(
-      //   __dirname,
-      //   "src/payload/elements/DocumentControls"
-      // )
     };
     config.resolve.extensionAlias = {
       ".cjs": [".cts", ".cjs"],

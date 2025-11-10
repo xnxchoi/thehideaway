@@ -116,7 +116,9 @@ export function Plaque({
   name2?: string;
 }) {
   const { width, height } = useThree((state) => state.size);
-  const plaq = useGLTF(`${OBJ_BASE_PATH}/pp-transformed.glb`) as PlaqueChildren;
+  const plaq = useGLTF(
+    `${OBJ_BASE_PATH}/plate-transformed.glb`
+  ) as PlaqueChildren;
   const band = useRef<
       ThreeElements["mesh"] & {
         geometry: MeshLineGeometry;
@@ -751,4 +753,4 @@ useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_r.png`);
 useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_b.png`);
 useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_d.png`);
 useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_h.png`);
-useGLTF.preload(`${OBJ_BASE_PATH}/pp-transformed.glb`);
+useGLTF.preload(`${OBJ_BASE_PATH}/plate-transformed.glb`);

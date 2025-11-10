@@ -1,4 +1,3 @@
-import "@/styles/executor.scss";
 import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { type ReactNode, useCallback, useEffect, useRef } from "react";
 import { Button } from "../Button";
@@ -25,7 +24,7 @@ export const Controlbar = () => {
   const snapPoints = useRPStore(useShallow((r) => r.snapPoints));
   const bott = useMenu((r) => r.bottom);
   const op = useMotionValue(1);
-	const locationBottom = useMotionValue(`0px`);
+  const locationBottom = useMotionValue(`0px`);
   const opacity = useSpring(op, {
     ...springGSAP.power3.out,
     visualDuration: 0.2,

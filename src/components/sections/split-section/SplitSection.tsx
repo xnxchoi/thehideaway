@@ -1,15 +1,9 @@
 "use client";
-import { Link } from "@/components/UX/Link/Link";
-import { Logo } from "@/components/UX/Logo";
-import { z } from "zod/v4";
 import {
   Lanyard,
   MemberCardsType
 } from "@/components/layouts/Registration/lanyard";
-import * as m from "motion/react-m";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Form,
   FormControl,
@@ -18,12 +12,19 @@ import {
   FormLabel
 } from "@/components/ui/form";
 import { Input, InputFile } from "@/components/ui/input";
+import { Link } from "@/components/UX/Link/Link";
+import { Logo } from "@/components/UX/Logo";
 import "@/styles/__inputs.scss";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import * as m from "motion/react-m";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod/v4";
 
-import { useTranslations } from "next-intl";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
+import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = [
@@ -116,7 +117,7 @@ export const SplitSection = () => {
     link: linkSchema
   });
   const form = useForm<z.infer<typeof signupFormSchema>>({
-    resolver: standardSchemaResolver(signupFormSchema),
+    resolver: zodResolver(signupFormSchema),
     defaultValues: {
       username: username ?? "",
       firstName: firstName ?? "",

@@ -4,7 +4,7 @@ input.w-input {
   display: block;
   border-style: none none solid;
   border-width: 1px;
-  border-color: black black oklch(var(--muted-faded-bg)/.5);
+  border-color: black black oklch(var(--muted-faded-bg) / 0.5);
   text-transform: uppercase;
   background-color: transparent;
   font-family: var(--font-sans);
@@ -17,7 +17,7 @@ input.w-input {
 }
 
 input.w-input::placeholder {
-  color: oklch(var(--fg)/0.001);
+  color: oklch(var(--fg) / 0.001);
 }
 
 .input-label {
@@ -30,8 +30,10 @@ input.w-input::placeholder {
   font-size: 1.3rem;
   font-weight: 500;
   line-height: 1.1;
-  color: oklch(var(--muted-faded-bg)/.75);
-  transition: color .6s cubic-bezier(.16, 1, .32, 1), transform .6s cubic-bezier(.16, 1, .32, 1);
+  color: oklch(var(--muted-faded-bg) / 0.75);
+  transition:
+    color 0.6s cubic-bezier(0.16, 1, 0.32, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.32, 1);
   position: absolute;
   inset: 0% auto auto 0%;
 }
@@ -44,7 +46,9 @@ input.w-input::placeholder {
   pointer-events: none;
   opacity: 0;
   transform: translateY(1.56rem);
-  transition: opacity .8s cubic-bezier(.16, 1, .32, 1), transform .8s cubic-bezier(.16, 1, .32, 1);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.32, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.32, 1);
   will-change: opacity, transform;
 }
 
@@ -52,7 +56,6 @@ input.w-input::placeholder {
   opacity: 1;
   transform: translateY(0rem);
   pointer-events: all;
-
 }
 
 [data-form="baseline"] {
@@ -64,20 +67,20 @@ input.w-input::placeholder {
   inset: auto auto 0% 0%;
   transform: scaleX(0);
   will-change: transform;
-  transition: .8s transform cubic-bezier(.16, 1, .32, 1);
-  background-color: oklch(var(--fg)/1)
+  transition: 0.8s transform cubic-bezier(0.16, 1, 0.32, 1);
+  background-color: oklch(var(--fg) / 1);
 }
 
 .w-input:not(:placeholder-shown) ~ label,
 .w-input:-webkit-autofill ~ label,
 .w-input:focus ~ label {
-  color: oklch(var(--fg)/1);
+  color: oklch(var(--fg) / 1);
   transform: translate3d(0, -130%, 0) scale3d(0.8, 0.8, 1);
 }
 
 .w-input:not(:placeholder-shown) {
   padding-bottom: 1rem;
-  padding-top: .36rem;
+  padding-top: 0.36rem;
 }
 
 .w-input:not(:placeholder-shown) ~ [data-form="baseline"],

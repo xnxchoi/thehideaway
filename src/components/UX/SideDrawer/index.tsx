@@ -6,7 +6,7 @@ import { useIsMobile } from "@/providers/MiddleMan";
 import { useRadioStore } from "@/providers/RadioProvider";
 import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { useMotionValue, useSpring } from "motion/react";
+import { AnimatePresence, useMotionValue, useSpring } from "motion/react";
 import * as m from "motion/react-m";
 import {
   useCallback,
@@ -275,11 +275,12 @@ export const SideDrawer = () => {
             onClick={() => {
               setSideDrawerOpen(false);
             }}
-            onMouseLeave={onMouseLeave} className="fixed inset-0 z-39 bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
+            onMouseLeave={onMouseLeave}
+            className="fixed inset-0 z-39 bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
           />
         )}
         <Mrawer
-	        className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-[oklch(var(--n-s-fg)/1)] outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
+          className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-[oklch(var(--n-s-fg)/1)] outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
           style={{
             borderTopRightRadius: borderTopRadius,
             borderTopLeftRadius: borderTopRadius,
@@ -287,18 +288,19 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-	        {isMobile && <Drawer.Handle className={"absolute!"} />}
+          {isMobile && <Drawer.Handle className={"absolute!"} />}
           {open && (
             <div
               onClick={() => {
                 setSideDrawerOpen(false);
               }}
               onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave} className="absolute inset-0 z-238 bg-transparent"
+              onMouseLeave={onMouseLeave}
+              className="absolute inset-0 z-238 bg-transparent"
             />
           )}
           <m.div
-	          className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-[oklch(var(--n-s-bg)/1)] max-md:h-[65vh] max-md:w-full"
+            className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-[oklch(var(--n-s-bg)/1)] max-md:h-[65vh] max-md:w-full"
             onMouseEnter={() => {
               setCursor(null);
               setCursorTheme("dark");
@@ -313,15 +315,19 @@ export const SideDrawer = () => {
                 title={"Shortcuts"}
               ></Drawer.Title>
             </div>
-            <div className="col-[2/8] row-[3/10] px-4">
-              <div className="flex flex-col gap-5 font-sans text-[23px]">
-                <Link href="/home">Home</Link>
-                <Link href="/users">Directory</Link>
-                <Link href="/archives">Archives</Link>
-                <Link href="/essays">Latest</Link>
-              </div>
-            </div>
-	          <div className={"col-span-full row-[11/14]"}>
+            <AnimatePresence>
+              {open && (
+                <m.div className="col-[2/8] row-[3/10] px-4">
+                  <div className="flex flex-col gap-5 font-sans text-[23px]">
+                    <Link href="/home">Home</Link>
+                    <Link href="/users">Directory</Link>
+                    <Link href="/archives">Archives</Link>
+                    <Link href="/essays">Latest</Link>
+                  </div>
+                </m.div>
+              )}
+            </AnimatePresence>
+            <div className={"col-span-full row-[11/14]"}>
               {hasRadio && <RP_FM />}
             </div>
           </m.div>
