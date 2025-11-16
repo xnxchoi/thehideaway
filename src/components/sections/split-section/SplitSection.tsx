@@ -155,102 +155,113 @@ export const SplitSection = () => {
           >
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="grid grid-cols-8 gap-4 space-y-8"
+              className={"relative flex flex-col"}
             >
-              <div className={"form-field active relative col-span-full"}>
-                <AspectRatio ratio={4 / 5}></AspectRatio>
+              <div className="grid grid-cols-8 grid-rows-14 gap-y-4">
+                <div
+                  className={
+                    "form-field col-start-1 col-end-4 row-start-1 row-end-2"
+                  }
+                ></div>
+
+                <FormField
+                  control={form.control}
+                  name={"portrait"}
+                  render={({ field }) => (
+                    <FormItem
+                      className={
+                        "form-field active relative col-span-full row-3"
+                      }
+                    >
+                      <InputFile {...fileRef} />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"email"}
+                  render={({ field }) => (
+                    <FormItem
+                      className={
+                        "form-field active relative col-span-full row-4"
+                      }
+                    >
+                      <FormControl>
+                        <Input
+                          autoComplete={"email"}
+                          {...field}
+                          placeholder={""}
+                          className={"w-input"}
+                        />
+                      </FormControl>
+                      <div data-form={"baseline"} />
+                      <FormLabel className={"input-label"}>Email</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"username"}
+                  render={({ field }) => (
+                    <FormItem
+                      className={"form-field active relative col-span-full"}
+                    >
+                      <FormControl>
+                        <Input
+                          autoComplete={"username"}
+                          {...field}
+                          placeholder={""}
+                          className={"w-input"}
+                        />
+                      </FormControl>
+                      <div data-form={"baseline"} />
+                      <FormLabel className={"input-label"}>Name</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"firstName"}
+                  render={({ field }) => (
+                    <FormItem
+                      className={"form-field active relative col-span-full"}
+                    >
+                      <FormControl>
+                        <Input
+                          autoComplete={"given-name"}
+                          {...field}
+                          placeholder={""}
+                          className={"w-input"}
+                        />
+                      </FormControl>
+                      <div data-form={"baseline"} />
+                      <FormLabel className={"input-label"}>
+                        First Name
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={"lastName"}
+                  render={({ field }) => (
+                    <FormItem
+                      className={"form-field active relative col-span-full"}
+                    >
+                      <FormControl>
+                        <Input
+                          autoComplete={"family-name"}
+                          {...field}
+                          placeholder={""}
+                          className={"w-input"}
+                        />
+                      </FormControl>
+                      <div data-form={"baseline"} />
+                      <FormLabel className={"input-label"}>Last Name</FormLabel>
+                    </FormItem>
+                  )}
+                />
               </div>
-              <FormField
-                control={form.control}
-                name={"portrait"}
-                render={({ field }) => (
-                  <FormItem
-                    className={"form-field active relative col-span-full"}
-                  >
-                    <InputFile {...fileRef} />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={"email"}
-                render={({ field }) => (
-                  <FormItem
-                    className={"form-field active relative col-span-full"}
-                  >
-                    <FormControl>
-                      <Input
-                        autoComplete={"email"}
-                        {...field}
-                        placeholder={""}
-                        className={"w-input"}
-                      />
-                    </FormControl>
-                    <div data-form={"baseline"} />
-                    <FormLabel className={"input-label"}>Email</FormLabel>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={"username"}
-                render={({ field }) => (
-                  <FormItem
-                    className={"form-field active relative col-span-full"}
-                  >
-                    <FormControl>
-                      <Input
-                        autoComplete={"username"}
-                        {...field}
-                        placeholder={""}
-                        className={"w-input"}
-                      />
-                    </FormControl>
-                    <div data-form={"baseline"} />
-                    <FormLabel className={"input-label"}>Name</FormLabel>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={"firstName"}
-                render={({ field }) => (
-                  <FormItem
-                    className={"form-field active relative col-span-full"}
-                  >
-                    <FormControl>
-                      <Input
-                        autoComplete={"given-name"}
-                        {...field}
-                        placeholder={""}
-                        className={"w-input"}
-                      />
-                    </FormControl>
-                    <div data-form={"baseline"} />
-                    <FormLabel className={"input-label"}>First Name</FormLabel>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={"lastName"}
-                render={({ field }) => (
-                  <FormItem
-                    className={"form-field active relative col-span-full"}
-                  >
-                    <FormControl>
-                      <Input
-                        autoComplete={"family-name"}
-                        {...field}
-                        placeholder={""}
-                        className={"w-input"}
-                      />
-                    </FormControl>
-                    <div data-form={"baseline"} />
-                    <FormLabel className={"input-label"}>Last Name</FormLabel>
-                  </FormItem>
-                )}
-              />
             </form>
             <Link
               className={

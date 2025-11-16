@@ -1,7 +1,11 @@
-import {createServerFeature} from "@payloadcms/richtext-lexical";
+import { createNode, createServerFeature } from "@payloadcms/richtext-lexical";
+import { MentionNode } from "./nodes/MentionNode";
 
-export const MentionFeature=createServerFeature({
-	dependencies: undefined, dependenciesPriority: undefined, dependenciesSoft: undefined, key: "", feature:{
-
-	}
-})
+export const MentionFeature = createServerFeature({
+  key: "mentionFeature",
+  feature: {
+    ClientFeature:
+      "@/payload/lexical/Features/Mentions/feature.client.ts#MentionClientFeature",
+    nodes: [createNode({ node: MentionNode })]
+  }
+});

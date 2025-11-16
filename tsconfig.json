@@ -22,7 +22,7 @@
       "@types/*": ["types/*"],
       "@betterauth-ui": ["src/lib/auth/betterauth-ui/src"],
       "@betterauth-ui/*": ["src/lib/auth/betterauth-ui/src/*"],
-      "@/payload/adminOnly/*": ["src/payload/fields/AdminOnly/*"]
+      "@/AccessControlled/*": ["src/payload/fields/AccessControlled/*"]
     },
     "plugins": [
       {

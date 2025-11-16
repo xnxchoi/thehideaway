@@ -3,7 +3,7 @@ import {
   MentionNode,
   $createMentionNode,
   $isMentionNode
-} from "./Mentions/MentionNode";
+} from "./Mentions/nodes/MentionNode";
 import { MentionPlugin } from "./Mentions/MentionPlugin";
 
 export const PayloadMentionPlugin = {

@@ -202,7 +202,7 @@ export const SlugComponent = ({
                   >
                     <div
                       className={
-                        "m-0 block border-none bg-transparent p-0 font-mono text-background"
+                        "m-0 block border-none bg-transparent p-0 font-mono"
                       }
                     >
                       A

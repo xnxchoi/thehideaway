@@ -133,7 +133,7 @@ export const Notifications: CollectionConfig = {
       admin: {
         components: {
           Field: {
-            path: "@/payload/adminOnly/Relationship",
+            path: "@/AccessControlled/Relationship",
             serverProps: {
               allowAuthor: false,
               allowedRoles: ["admin"]

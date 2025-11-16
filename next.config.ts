@@ -33,7 +33,9 @@ const nextConfig: NextConfig = {
       }
     }
   },
-
+  experimental: {
+    typedEnv: true
+  },
   serverExternalPackages: ["pdfmake"],
   webpack: (config, { isServer, webpack }) => {
     config.resolve.alias = {
@@ -49,11 +51,11 @@ const nextConfig: NextConfig = {
       type: "asset/source"
     });
 
-    config.plugins.push(
-      new webpack.IgnorePlugin({
-        resourceRegExp: /^pg-native$|^cloudflare:sockets$/
-      })
-    );
+    // config.plugins.push(
+    //   new webpack.IgnorePlugin({
+    //     resourceRegExp: /^pg-native$|^cloudflare:sockets$/
+    //   })
+    // );
     return config;
   },
   sassOptions: { includePaths: ["src"] },

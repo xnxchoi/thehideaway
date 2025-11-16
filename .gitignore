@@ -20,4 +20,4 @@ node_modules/
 .next/
 .pnpm-store/
 .turbo/
- 
+public/

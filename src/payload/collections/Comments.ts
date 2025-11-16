@@ -366,7 +366,7 @@ const commentsField: CheckboxField = {
     position: "sidebar",
     components: {
       Field: {
-        path: "@/payload/fields/AdminOnly/Checkbox/index.tsx",
+        path: "@/AccessControlled/Checkbox/index.tsx",
         serverProps: {
           allowedRoles: ["admin", "editor"],
           allowAuthor: true

@@ -4,275 +4,226 @@
 // based on Backspace at doc start without indent/outdent actions, and ArrowUp at topmost line.
 
 import type { PluginComponent } from "@payloadcms/richtext-lexical";
-import { useEditorConfigContext } from "@payloadcms/richtext-lexical/client";
 import {
+  $addUpdateTag,
+  $createParagraphNode,
+  $createPoint,
+  $createTextNode,
   $getRoot,
   $getSelection,
   $isRangeSelection,
-  $isRootOrShadowRoot,
-  COMMAND_PRIORITY_EDITOR,
+  COMMAND_PRIORITY_HIGH,
   KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_UP_COMMAND,
-  KEY_BACKSPACE_COMMAND
+  KEY_BACKSPACE_COMMAND,
+  SKIP_DOM_SELECTION_TAG
 } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useHandoff } from "./handoffBridge";
+import { useWindowResize } from "@/utilities/use_window_resize";
+import { $isCaretAtStart, $selectEnd } from "../../lexical-utils";
 
 export const ContentHandOffPlugin: PluginComponent = () => {
   const [editor] = useLexicalComposerContext();
-  const editorConfigContext = useEditorConfigContext();
   const setEditor = useHandoff((r) => r.setEditor);
   const titleEditor = useHandoff((r) => r.titleEditor);
+  const lineHeight = useRef(24);
 
+  const editorRectRef = useRef<DOMRect>(null!);
+  const lastResize = useWindowResize({
+    detectHeightChange: true,
+    detectVisibilityChange: false,
+    debounce: 100
+  });
   useEffect(() => {
-    // Register this editor instance with the store
+    const editorEl = editor.getRootElement();
+    if (editorEl) {
+      editorRectRef.current = editorEl.getBoundingClientRect();
+    }
+  }, [editor, lastResize]);
+  useEffect(() => {
+    if (!editor) {
+      setEditor("content", null!);
+      return;
+    }
     setEditor("content", editor);
+
+    const editorEl = editor.getRootElement();
+    if (!editorEl) {
+      return;
+    }
+    const isFocusInEditor = () => {
+      const editorEl = editor.getRootElement();
+
+      if (!editorEl) {
+        return false;
+      }
+      const activeElement = document.activeElement;
+      if (activeElement) {
+        return editorEl.contains(activeElement) || activeElement === editorEl;
+      } else {
+        return true;
+      }
+    };
+    // Register this editor instance with the store
 
     const unregisterBackspace = editor.registerCommand(
       KEY_BACKSPACE_COMMAND,
-      (e) => {
-        const selection = $getSelection();
-
-        // Guard 1: Must be a collapsed range selection
-        if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
-          return false;
-        }
-        const anchorNode = selection.anchor.getNode();
-        const topLevel = anchorNode.getTopLevelElementOrThrow();
-        // Helper 1: Are we inside an indent/outdent actor?
-        // Consider list, quote, code, markdown-like structures. Also any element with indentDepth > 0.
-        const isList = topLevel.getType() === "list-item";
-        const isQuote = topLevel.getType() === "quote";
-        const isCode = topLevel.getType() === "code";
-        // Basic indentation depth check if your theme maintains indent depth via format/attrs
-        // Lexical core doesn't include indent depth on arbitrary nodes; adapt if you track it.
-        const hasIndentDepth =
-          typeof topLevel.__indent === "number" ? topLevel.__indent > 0 : false;
-
-        const inIndentActor = isList || isQuote || isCode || hasIndentDepth;
-        if (inIndentActor) {
-          return false;
-        }
-        const root = $getRoot();
-        if (!$isRootOrShadowRoot(root)) return false;
-        const firstTopLevelChild = root.getFirstChild();
-        if (!firstTopLevelChild) {
-          // Empty doc: treat as start
-          e.preventDefault();
-
-          // Safely focus title editor if available
+      (event) => {
+        // Case e: Arrow Left
+        if (isFocusInEditor() && $isCaretAtStart()) {
+          // Already at start - prevent event propagation
+          event?.preventDefault();
           if (titleEditor) {
-            titleEditor.focus();
+            const root = $getRoot();
+            $addUpdateTag(SKIP_DOM_SELECTION_TAG);
+            if (!root.isEmpty()) {
+              // Safely focus title editor if available
+              const fd = root.getFirstDescendant();
+              if (fd && fd.getTextContentSize() > 0) {
+                const text = fd.getTextContent();
+                fd.remove();
+                editor.blur();
+                titleEditor.focus(() => {
+                  titleEditor.update(() => {
+                    const root = $getRoot();
+                    const textC = root.getTextContent();
+                    root.clear();
+                    const par = $createParagraphNode().append(
+                      $createTextNode(textC),
+                      $createTextNode(text)
+                    );
+                    const rs = root.append(par).getLastDescendant();
+                    const ch = root.getChildren();
+                    console.log(ch);
+                    console.log(rs);
+                  });
+                });
+                return true;
+              }
+            }
             editor.blur();
+            titleEditor.focus(() => {
+              titleEditor.update(() => {
+                const root = $getRoot();
+                const lastDesc = root.getLastDescendant();
+                if (lastDesc) {
+                  lastDesc.selectEnd();
+                  return;
+                }
+                const lastChild = root.getLastChild();
+                if (lastChild) {
+                  lastChild.selectEnd();
+                }
+                return;
+              });
+            });
           }
 
           return true;
         }
 
-        const isAtFirstTopLevel = topLevel === firstTopLevelChild;
-        const isAtOffsetZero = selection.anchor.offset === 0;
-
-        // For Backspace, also require there's nothing before anchor in the current paragraph.
-        // Check previous sibling chain within the paragraph.
-        const parentElement = anchorNode.getParent();
-        if (!parentElement) return false;
-
-        const hasPrevSibling = parentElement.getPreviousSibling() !== null;
-        const anchorHasPrevSibling = anchorNode.getPreviousSibling() !== null;
-
-        const atAbsoluteStart =
-          isAtFirstTopLevel &&
-          isAtOffsetZero &&
-          !hasPrevSibling &&
-          !anchorHasPrevSibling;
-        const shouldHandOff = titleEditor && atAbsoluteStart;
-        if (shouldHandOff) {
-          e.preventDefault();
-
-          // Safely focus title editor and blur content editor
-          titleEditor.focus();
-          editor.blur();
-          return true;
-        }
         return false;
       },
-      COMMAND_PRIORITY_EDITOR
+      COMMAND_PRIORITY_HIGH
     );
     const unregisterArrowLeft = editor.registerCommand(
       KEY_ARROW_LEFT_COMMAND,
       (e) => {
-        const selection = $getSelection();
-
-        // Guard 1: Must be a collapsed range selection
-        if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
-          return false;
-        }
-        const anchorNode = selection.anchor.getNode();
-        const topLevel = anchorNode.getTopLevelElementOrThrow();
-        const root = $getRoot();
-        if (!$isRootOrShadowRoot(root)) return false;
-        const firstTopLevelChild = root.getFirstChild();
-        if (!firstTopLevelChild) {
-          // Empty doc: treat as start
-          e.preventDefault();
-
-          // Safely focus title editor if available
-          if (titleEditor) {
-            titleEditor.focus();
-            editor.blur();
-          }
-
-          return true;
-        }
-
-        const isAtFirstTopLevel = topLevel === firstTopLevelChild;
-        const isAtOffsetZero = selection.anchor.offset === 0;
-
-        // For ArrowLeft, also require there's nothing before anchor in the current paragraph.
-        // Check previous sibling chain within the paragraph.
-        const parentElement = anchorNode.getParent();
-        if (!parentElement) return false;
-
-        const hasPrevSibling = parentElement.getPreviousSibling() !== null;
-        const anchorHasPrevSibling = anchorNode.getPreviousSibling() !== null;
-
-        const atAbsoluteStart =
-          isAtFirstTopLevel &&
-          isAtOffsetZero &&
-          !hasPrevSibling &&
-          !anchorHasPrevSibling;
-        const shouldHandOff = titleEditor && atAbsoluteStart;
+        const trulyFocused = isFocusInEditor();
+        if (!trulyFocused) return false;
+        if (!titleEditor) return false;
+        const shouldHandOff = $isCaretAtStart();
         if (shouldHandOff) {
           e.preventDefault();
 
+          editor.blur();
           // Safely focus title editor and blur content editor
           titleEditor.focus();
-          editor.blur();
+          titleEditor.getEditorState().read(() => {
+            titleEditor.update(() => {
+              const root = $getRoot();
+              const lastDesc = root.getLastDescendant();
+              if (lastDesc) {
+                lastDesc.selectEnd();
+              } else {
+                root.selectEnd();
+              }
+            });
+          });
           return true;
         }
         return false;
       },
-      COMMAND_PRIORITY_EDITOR
+      COMMAND_PRIORITY_HIGH
     );
     const unregisterArrowUp = editor.registerCommand(
       KEY_ARROW_UP_COMMAND,
       (e) => {
-        const selection = $getSelection();
-
-        // Guard: Must be a collapsed range selection
-        if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
-          return false;
-        }
-
         // Check if we're in an interactive element that should handle its own navigation
-        const activeElement = document.activeElement;
-        if (activeElement && activeElement !== editor.getRootElement()) {
-          // We're focused on some other element (input, select, etc.) - don't interfere
+        const trulyFocused = isFocusInEditor();
+        if (!trulyFocused) return false;
+        if (!titleEditor) {
           return false;
         }
-
-        const anchorNode = selection.anchor.getNode();
-        const topLevel = anchorNode.getTopLevelElementOrThrow();
-        const root = $getRoot();
-
-        if (!$isRootOrShadowRoot(root)) return false;
-
-        const firstTopLevelChild = root.getFirstChild();
-        if (!firstTopLevelChild) {
-          // Empty doc: hand off to title
-          if (titleEditor) {
-            e.preventDefault();
-            titleEditor.focus();
-            editor.blur();
-          }
-          return true;
-        }
-
-        // Check if we're in the first top-level element (topmost line)
-        const isAtFirstTopLevel = topLevel === firstTopLevelChild;
-
-        if (!isAtFirstTopLevel) {
-          return false; // Not in topmost line
-        }
-
-        // Additional checks for nodes that might need arrow key navigation
-        const nodeType = topLevel.getType();
-
-        // Skip handoff for certain interactive node types that depend on arrow keys
-        const interactiveNodeTypes = [
-          "select", // Custom select nodes
-          "autocomplete", // Autocomplete nodes
-          "mention", // Mention picker nodes
-          "table-cell", // Table navigation
-          "code-highlight" // Code editor navigation
-        ];
-
-        if (interactiveNodeTypes.includes(nodeType)) {
-          return false;
-        }
-
-        // For nodes with complex internal navigation (like tables), check if we're truly at the visual top
-        if (nodeType === "table") {
-          // Let table handle its own navigation unless we're in the first row
-          const tableNode = topLevel;
-          // This is a simplified check - you might need more sophisticated table position detection
-          return false;
-        }
-
-        // Check if the cursor is visually at the topmost line by using DOM position
         try {
-          const domSelection = window.getSelection();
-          if (domSelection && domSelection.rangeCount > 0) {
-            const range = domSelection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            const editorElement = editor.getRootElement();
+          let isInTopLine = false;
 
-            if (editorElement) {
-              const editorRect = editorElement.getBoundingClientRect();
-              const lineHeight = 24; // Approximate line height - adjust as needed
+          if ($isCaretAtStart()) {
+            isInTopLine = true;
+          } else {
+            const domSelection = window.getSelection();
+            if (domSelection && domSelection.rangeCount > 0) {
+              const range = domSelection.getRangeAt(0);
+              const rect = range.getBoundingClientRect();
+              if (editorEl) {
+                const editorRect = editorEl.getBoundingClientRect();
 
-              // If cursor is within the first line height of the editor, consider it "topmost"
-              const isInTopLine = rect.top - editorRect.top < lineHeight;
+                const vertPos = rect.top - editorRect.top;
+                const lineHeight = 24; // Approximate line height - adjust as needed
 
-              if (isInTopLine && titleEditor) {
-                e.preventDefault();
-                titleEditor.focus();
-                editor.blur();
-                return true;
+                // If cursor is within the first line height of the editor, consider it "topmost"
+                isInTopLine = vertPos <= lineHeight;
               }
             }
           }
+          if (isInTopLine) {
+            e.preventDefault();
+            editor.blur();
+
+            titleEditor.focus(() => {
+              titleEditor.update(() => {
+                $selectEnd();
+              });
+              /**
+               * () => {
+                const root = $getRoot();
+                const lastDesc = root.getLastDescendant();
+                if (lastDesc) {
+                  lastDesc.selectEnd();
+                } else {
+                  root.selectEnd();
+                }
+              }
+               */
+            });
+
+            return true;
+          }
+
+          return false;
         } catch (error) {
           // Fallback to simpler logic if DOM measurement fails
           console.warn(
             "Failed to measure cursor position, using fallback logic:",
             error
           );
-
-          // Simple fallback: if at start of first element, hand off
-          const isAtStart = selection.anchor.offset === 0;
-          const parentElement = anchorNode.getParent();
-          const hasPrevSibling = parentElement?.getPreviousSibling() !== null;
-          const anchorHasPrevSibling = anchorNode.getPreviousSibling() !== null;
-
-          const shouldHandOff =
-            isAtStart &&
-            !hasPrevSibling &&
-            !anchorHasPrevSibling &&
-            titleEditor;
-
-          if (shouldHandOff) {
-            e.preventDefault();
-            titleEditor.focus();
-            editor.blur();
-            return true;
-          }
         }
 
         return false;
       },
-      COMMAND_PRIORITY_EDITOR
+      COMMAND_PRIORITY_HIGH
     );
     return () => {
       unregisterArrowUp();

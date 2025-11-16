@@ -182,9 +182,9 @@ export function Plaque({
   useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]) // prettier-ignore
   useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]) // prettier-ignore
   useSphericalJoint(j3, card, [[0, 0, 0], [0, 1.45, 0]]) // prettier-ignore
-  const spun = useRef(true);
+  const spun = useRef(false);
   useEffect(() => {
-    setTimeout(() => (spun.current = false), 5500);
+    setTimeout(() => (spun.current = true), 3500);
   }, []);
 
   const timePast = useRef(0);
@@ -594,7 +594,7 @@ function Model({
   return (
     <group {...props} dispose={null}>
       <mesh geometry={nodes.details.geometry}>
-        <meshBasicMaterial opacity={0} transparent={true} />{" "}
+        <meshStandardMaterial alphaMap={titaniumHeightMap} />
       </mesh>
       <mesh geometry={nodes.name.geometry}>
         <meshBasicMaterial opacity={0} transparent={true} />
@@ -671,6 +671,9 @@ function Model({
             map={titaniumMap}
             anisotropy={1}
             sheen={0.2}
+            sheenColor={new Color(0.61, 0.57, 0.54)}
+            sheenColorMap={titaniumAnisoMap}
+            sheenRoughness={0.1}
             transmission={0}
             color={new Color(0.61, 0.57, 0.54)}
             // map={materials.card_m.map}

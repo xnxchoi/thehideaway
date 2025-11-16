@@ -21,10 +21,10 @@ import { canCreateOrg } from "./hooks/canCreateOrg";
 // Initialize email service
 const emailService = new BetterAuthEmailService();
 
-const options = {
+const options: BetterAuthOptionsType = {
   appName: "hideaway-validator",
   baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
-  trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL],
+  trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL!],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

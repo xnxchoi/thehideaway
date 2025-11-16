@@ -41,10 +41,10 @@ export default buildConfig({
       views: {
         dashboard: {
           Component: "@/payload/views/Dashboard/index.tsx#DefaultDashboard"
-        },
-        account: {
-          Component: "@/payload/views/Edit/index.client.tsx#DefaultEditView"
         }
+        // account: {
+        //   Component: "@/payload/views/Edit/index.client.tsx#DefaultEditView"
+        // }
       }
     },
     user: "users",
@@ -134,7 +134,7 @@ export default buildConfig({
   },
   plugins,
   bin: [],
-  secret: process.env.PAYLOAD_SECRET,
+  secret: process.env.PAYLOAD_SECRET!,
   sharp,
   jobs: {
     jobsCollectionOverrides: ({ defaultJobsCollection }) => {

@@ -1,3 +1,4 @@
+import type { User } from "@/payload-types";
 import { getUserBookmarks } from "@/payload/collections/Bookmarks/getUserBookmarks";
 import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { GotUser } from "@/payload/collections/Users/endpoints/getUser";
@@ -12,6 +13,8 @@ import {
 } from "@/payload/collections/Users/hooks/revalidateUser";
 import { hideIfNotAdmin } from "@/payload/collections/helpers";
 import { userHandleField } from "@/payload/fields/handle";
+import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
+import type { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { generatePreviewPath } from "@/utilities/generatePreviewPath";
 import { getServerSideURL } from "@/utilities/getURL";
 import {
@@ -315,14 +318,37 @@ export const Users: CollectionConfig = {
       ({ data, req, operation, originalDoc, context }) => {
         const state = data?.banned ? "draft" : "published";
         data._status = state;
+        const finalData = {
+          ...(operation === "update" ? (originalDoc as User) : {}),
+          ...data
+        };
         if (operation === "create") {
           context.overrideAccess = true;
           context.createProfile = true;
         }
         if (operation === "update") {
+          const ogUser = originalDoc as User;
           context.overrideAccess = true;
+          const emailVerified = finalData?.emailVerified;
+          const onBoarded = finalData?.onboarded;
+          const notBanned = !finalData?.banned;
+          let anythingChanged = false;
+          anythingChanged =
+            emailVerified !== ogUser?.emailVerified ||
+            onBoarded !== ogUser?.onboarded ||
+            notBanned !== !ogUser?.banned;
+          if (anythingChanged) {
+            const roleAsIs: RP_Roles = data.role || "user";
+            const authorityAsIs = roleToAuthority(roleAsIs);
+            if (Boolean(emailVerified && onBoarded && notBanned)) {
+              const isBetterAsAuthor =
+                roleToAuthority("author") > authorityAsIs;
+
+              finalData.role = isBetterAsAuthor ? "author" : roleAsIs;
+            }
+          }
         }
-        return data;
+        return finalData;
       }
     ],
     afterChange: [revalidateUser, afterChangeUsers],
@@ -433,7 +459,7 @@ export const Users: CollectionConfig = {
           },
           portrait: portrait ?? null,
           id: `${rest.id}`,
-          role: rest.role!,
+          role: rest.role as RP_Roles,
           onboarded: rest.onboarded ?? false,
           slug: rest.slug ?? rest.name,
           username: rest.username ?? rest.slug ?? rest.name,

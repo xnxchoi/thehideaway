@@ -41,7 +41,8 @@ class HandoffErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI without HandoffBridge
+      // Fallback UI without HandoffBridge to prevent infinite loops
+      console.warn("HandoffBridge error detected, rendering without bridge");
       return this.props.children;
     }
 

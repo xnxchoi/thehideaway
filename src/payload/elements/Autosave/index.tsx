@@ -25,9 +25,9 @@ import {
   useLocale,
   useTranslation,
   LeaveWithoutSaving,
-  formatTimeToNow
+  formatTimeToNow,
+  useQueue
 } from "@payloadcms/ui";
-import { useQueues } from "@payloadcms/ui/hooks/useQueues";
 import { reduceFieldsToValuesWithValidation } from "@payloadcms/ui/utilities/reduceFieldsToValuesWithValidation";
 import type { OnSaveContext } from "@/payload/views/Edit/index.client";
 
@@ -106,7 +106,7 @@ export const Autosave: FC<Props> = ({ id, collection, global: globalDoc }) => {
   // can always retrieve the most to date locale
   localeRef.current = locale;
 
-  const { queueTask } = useQueues();
+  const { queueTask } = useQueue();
 
   const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 

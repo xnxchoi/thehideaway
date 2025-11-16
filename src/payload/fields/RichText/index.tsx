@@ -13,11 +13,9 @@ import {
 import { CodeBlock, Props as CodeBlockProps } from "@/blocks/Code/Component";
 
 import type {
-  BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
   Media1 as MediaBlockProps
 } from "@/payload-types";
-import { BannerBlock } from "@/blocks/Banner/Component";
 import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 import { cn } from "@/lib/utils";
 import { CollectionSlug } from "payload";
@@ -33,14 +31,11 @@ import {
   IS_SUPERSCRIPT,
   IS_UNDERLINE
 } from "./nodeFormat";
-import { nanoid } from "nanoid";
 import type { SerializedParagraphNode } from "lexical";
 
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<
-      CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps
-    >;
+  | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>;
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!;
@@ -249,9 +244,6 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
     );
   },
   blocks: {
-    banner: ({ node }) => (
-      <BannerBlock className="col-start-2 mb-4" {...node.fields} />
-    ),
     mediaBlock: ({ node }) => (
       <MediaBlock
         className="relative flex flex-col overflow-hidden rounded-[12px]"
@@ -286,7 +278,7 @@ export default function RichText(props: Props) {
         {
           container: enableGutter,
           "max-w-none": !enableGutter,
-          "prose md:prose-md dark:prose-invert mx-auto": enableProse
+          "md:prose-md mx-auto prose dark:prose-invert": enableProse
         },
         className
       )}

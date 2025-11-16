@@ -94,7 +94,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Textarea/index.tsx"
+                  Field: "@/AccessControlled/Textarea/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -102,7 +103,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Text/index.tsx"
+                  Field: "@/AccessControlled/Text/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -110,7 +112,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Select/index.tsx"
+                  Field: "@/AccessControlled/Select/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -118,7 +121,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Checkbox/index.tsx"
+                  Field: "@/AccessControlled/Checkbox/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -126,7 +130,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Number/index.tsx"
+                  Field: "@/AccessControlled/Number/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -134,7 +139,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Array/index.tsx"
+                  Field: "@/AccessControlled/Array/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -142,7 +148,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Email/index.tsx"
+                  Field: "@/AccessControlled/Email/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -150,7 +157,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/JSON/index.tsx"
+                  Field: "@/AccessControlled/JSON/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -159,7 +167,8 @@ export const userFieldOrganizerPlugin =
               fieldAdmin = {
                 ...fieldAdmin,
                 components: {
-                  Field: "@/payload/adminOnly/Relationship/index.tsx"
+                  Field: "@/AccessControlled/Relationship/index.tsx",
+                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 }
               };
               break;
@@ -201,7 +210,7 @@ export const userFieldOrganizerPlugin =
         (f) => "name" in f && f.name === "role"
       ) as SelectField;
 
-      const newRole = {
+      const newRole: SelectField = {
         ...role,
         hasMany: false,
         required: true,
@@ -227,7 +236,7 @@ export const userFieldOrganizerPlugin =
         admin: {
           ...onboarded.admin,
           components: {
-            Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx"
+            Field: "@/AccessControlled/Checkbox/index.tsx"
           }
         },
         required: true,
@@ -253,7 +262,7 @@ export const userFieldOrganizerPlugin =
         admin: {
           ...banned.admin,
           components: {
-            Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx"
+            Field: "@/AccessControlled/Checkbox/index.tsx"
           }
         },
         access: {
@@ -296,16 +305,10 @@ export const userFieldOrganizerPlugin =
         ...emailVerified,
         required: true,
         defaultValue: false,
-        access: {
-          update: ({ req }) => {
-            if (req.context.overrideAccess === true) return true;
-            if (req.user?.role === "admin") return true;
-            return false;
-          }
-        },
+
         admin: {
           components: {
-            Field: "@/payload/fields/AdminOnly/Checkbox/index.tsx"
+            Field: "@/AccessControlled/Checkbox/index.tsx"
           }
         }
       };

@@ -63,8 +63,8 @@ import {
   MenuSeparator,
   MenuTrigger
 } from "../../components/Popover";
-import {RP_SaveButton} from "@/payload/fields/ArticleTitleField/SaveButton/SaveClient";
-import {PublishButton} from "@/payload/fields/ArticleTitleField/PublishButton/publishClient";
+import { RP_SaveButton } from "@/payload/elements/SaveButton/SaveClient";
+import { PublishButton } from "@/payload/elements/PublishButton/publishClient";
 
 const baseClass = "doc-controls";
 
@@ -379,7 +379,8 @@ export const DocumentControls: FC<{
                     </Fragment>
                   ) : (
                     <RenderCustomComponent
-                      CustomComponent={CustomSaveButton} Fallback={<RP_SaveButton />}
+                      CustomComponent={CustomSaveButton}
+                      Fallback={<RP_SaveButton />}
                     />
                   )}
                 </Fragment>
@@ -419,14 +420,19 @@ export const DocumentControls: FC<{
                 />
                 <Menu.Portal>
                   <Menu.Positioner className="outline-none" sideOffset={10}>
-                    <MenuPopup className={"p-0 py-3"}
+                    <MenuPopup
+                      className={"p-0 py-3"}
                       onMouseEnter={enterSetup}
                       onMouseLeave={leaveSetup}
                     >
                       <MenuArrow />
-	                    <div className={"flex flex-col"} ref={menuRef}>
-                        {showCopyToLocale && (<MenuItem
-		                        className={"py-2 text-faded-foreground/90! outline-none! hover:text-faded-background!"}>
+                      <div className={"flex flex-col"} ref={menuRef}>
+                        {showCopyToLocale && (
+                          <MenuItem
+                            className={
+                              "py-2 text-faded-foreground/90! outline-none! hover:text-faded-background!"
+                            }
+                          >
                             <CopyLocaleData />
                           </MenuItem>
                         )}
@@ -436,12 +442,14 @@ export const DocumentControls: FC<{
                           <Fragment>
                             {!disableCreate && (
                               <>
-	                              <MenuItem className={"py-2 text-faded-foreground!"}>
+                                <MenuItem
+                                  className={"py-2 text-faded-foreground!"}
+                                >
                                   {editDepth > 1 ? (
                                     <Button
                                       id="action-create"
                                       className={cn(
-	                                      "w-full! appearance-none border-none! bg-transparent! p-0! font-sans! text-faded-foreground/90! outline-none! hover:text-faded-background!"
+                                        "w-full! appearance-none border-none! bg-transparent! p-0! font-sans! text-faded-foreground/90! outline-none! hover:text-faded-background!"
                                       )}
                                       onClick={onDrawerCreateNew}
                                       data-themed="color, border-color, background-color, outline-color,box-shadow"
@@ -450,8 +458,10 @@ export const DocumentControls: FC<{
                                     </Button>
                                   ) : (
                                     <Link
-                                      className={"decoration-none w-full appearance-none border-none! bg-transparent! px-2! font-sans! text-inherit!"
-                                      } data-themed="color, border-color, background-color, outline-color,box-shadow"
+                                      className={
+                                        "decoration-none w-full appearance-none border-none! bg-transparent! px-2! font-sans! text-inherit!"
+                                      }
+                                      data-themed="color, border-color, background-color, outline-color,box-shadow"
                                       prefetch={false}
                                       href={formatAdminURL({
                                         adminRoute,
@@ -471,8 +481,11 @@ export const DocumentControls: FC<{
                               collectionConfig.disableDuplicate !== true &&
                               isEditing && (
                                 <>
-	                                <MenuItem
-		                                className={"py-2 font-sans! text-faded-foreground/90! hover:text-faded-background!"}>
+                                  <MenuItem
+                                    className={
+                                      "py-2 font-sans! text-faded-foreground/90! hover:text-faded-background!"
+                                    }
+                                  >
                                     <DuplicateDocument
                                       id={`${id}`}
                                       onDuplicate={onDuplicate}
@@ -489,17 +502,27 @@ export const DocumentControls: FC<{
                               )}
                           </Fragment>
                         )}
-                        {id && hasDeletePermission && (<>
-		                        <MenuSeparator />
-		                        <MenuItem
-			                        className={"py-2 font-sans! text-faded-foreground/90! hover:text-faded-background!"}>
-			                        <DeleteDocument buttonId="action-delete" collectionSlug={collectionConfig?.slug}
-			                                        id={id.toString()} onDelete={onDelete}
-			                                        redirectAfterDelete={redirectAfterDelete}
-			                                        singularLabel={collectionConfig?.labels?.singular}
-			                                        useAsTitle={collectionConfig?.admin?.useAsTitle} />
-		                        </MenuItem>
-	                        </>
+                        {id && hasDeletePermission && (
+                          <>
+                            <MenuSeparator />
+                            <MenuItem
+                              className={
+                                "py-2 font-sans! text-faded-foreground/90! hover:text-faded-background!"
+                              }
+                            >
+                              <DeleteDocument
+                                buttonId="action-delete"
+                                collectionSlug={collectionConfig?.slug}
+                                id={id.toString()}
+                                onDelete={onDelete}
+                                redirectAfterDelete={redirectAfterDelete}
+                                singularLabel={
+                                  collectionConfig?.labels?.singular
+                                }
+                                useAsTitle={collectionConfig?.admin?.useAsTitle}
+                              />
+                            </MenuItem>
+                          </>
                         )}
 
                         {EditMenuItems && (

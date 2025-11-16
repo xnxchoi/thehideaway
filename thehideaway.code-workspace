@@ -31,7 +31,7 @@
 
     "tailwindCSS.classFunctions": ["cn", "twMerge", "clsx"],
     "tailwindCSS.experimental.configFile": {
-                                                                                                                                                                                         "src/styles/globals.css": [
+      "src/styles/globals.css": [
         "src/app/(frontend)/**",
         "src/components/**",
         "src/app/api/**",
@@ -41,13 +41,15 @@
         "src/hooks/**",
         "src/providers/**",
         "src/blocks/**"
-      ], "src/styles/payloadStyles.css": [
+      ],
+      "src/styles/payloadStyles.css": [
         "src/app/(payload)/**",
         "src/payload/**",
         "src/graphics/**"
       ]
-}, "files.associations":{
-"*.css":"tailwindcss"
+    },
+    "files.associations": {
+      "*.css": "tailwindcss"
     },
     "editor.wordWrap": "on",
     "editor.suggest.showStatusBar": true,
@@ -56,7 +58,8 @@
       "comments": "on",
       "strings": "on"
     },
-"editor.suggest.localityBonus":true, "tailwindCSS.files.exclude": [
+    "editor.suggest.localityBonus": true,
+    "tailwindCSS.files.exclude": [
       "**/.git/**",
       "**/node_modules/**",
       "**/.hg/**",

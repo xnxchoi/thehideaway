@@ -1,38 +1,39 @@
-import {Banner} from "@/blocks/Banner/config";
-import {Code} from "@/blocks/Code/config";
-import {MediaBlock} from "@/blocks/MediaBlock/config";
-import {generatePreviewPath, generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
 import {
-	BlocksFeature,
-	type DefaultNodeTypes,
-	HeadingFeature,
-	HorizontalRuleFeature,
-	InlineToolbarFeature,
-	lexicalEditor,
-	LinkFeature,
-	type LinkFields
-} from "@payloadcms/richtext-lexical";
+  generatePreviewPath,
+  generatePreviewPathWithAuthor
+} from "@/utilities/generatePreviewPath";
 import {
-	AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, type TextFieldSingleValidation, Where
+  AccessArgs,
+  CollectionConfig,
+  headersWithCors,
+  PayloadRequest,
+  Where
 } from "payload";
-import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
-import {revalidateDelete, revalidatePost} from "./hooks/revalidatePost";
+import { sanitizeAuthor } from "../../fields/AuthorFields/hooks";
+import { revalidateDelete, revalidatePost } from "./hooks/revalidatePost";
 
-import {populatePublishedAt} from "@/hooks/populatePublishedAt";
-import {Post} from "@/payload-types";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
-import {slugField} from "@/payload/fields/slug";
-import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
+import { populatePublishedAt } from "@/hooks/populatePublishedAt";
+import { Post } from "@/payload-types";
+import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
+import { slugField } from "@/payload/fields/slug";
+import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
 import {
-	MetaDescriptionField, MetaImageField, MetaTitleField, OverviewField, PreviewField
+  MetaDescriptionField,
+  MetaImageField,
+  MetaTitleField,
+  OverviewField,
+  PreviewField
 } from "@payloadcms/plugin-seo/fields";
-import {uuidv7} from "uuidv7";
-import {postBookmarkSaveHandler, unBookmarkPostHandler} from "./api/bookmarkPostHandler";
-import {getPostHandler} from "./api/getPostHandler";
-import {postBookmarksHandler} from "./api/postBookmarksHandler";
-import {PROPS_COLLAPSIBLE} from "../constants";
-import {ContentHandOffFeature} from "@/payload/Lexical/Features/HandOff/feature";
-import {RichTitle} from "./richTitle";
+import { uuidv7 } from "uuidv7";
+import { PROPS_COLLAPSIBLE } from "../constants";
+import {
+  postBookmarkSaveHandler,
+  unBookmarkPostHandler
+} from "./api/bookmarkPostHandler";
+import { getPostHandler } from "./api/getPostHandler";
+import { postBookmarksHandler } from "./api/postBookmarksHandler";
+import { RichContent } from "./richContent";
+import { RichTitle } from "./richTitle";
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced
@@ -149,7 +150,7 @@ export const Posts: CollectionConfig<"posts"> = {
         req
       }),
 
-	  useAsTitle: "title",
+    useAsTitle: "title",
     components: {
       views: {
         edit: {
@@ -184,7 +185,7 @@ export const Posts: CollectionConfig<"posts"> = {
       admin: {
         components: {
           Field: {
-            path: "@/payload/fields/ArticleTitleField/CoverImage/index.tsx",
+            path: "@/payload/fields/Article/Cover/index.tsx",
             serverProps: {
               relationTo: "userMedia"
             }
@@ -228,87 +229,7 @@ export const Posts: CollectionConfig<"posts"> = {
       }
     },
     RichTitle(),
-    {
-      name: "content",
-      type: "richText",
-      editor: lexicalEditor({
-        admin: {
-          hideGutter: true,
-          hideInsertParagraphAtEnd: true
-        },
-        features: ({ rootFeatures }) => {
-          return [
-            ...rootFeatures,
-
-            HeadingFeature({
-              enabledHeadingSizes: ["h1", "h2", "h3", "h4"]
-            }),
-
-            BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
-
-            InlineToolbarFeature(),
-            HorizontalRuleFeature(),
-            LinkFeature({
-              enabledCollections: ["pages", "posts", "delta"],
-              fields: ({ defaultFields }) => {
-                const defaultFieldsWithoutUrl = defaultFields.filter(
-                  (field) => {
-                    if ("name" in field && field.name === "url") return false;
-                    return true;
-                  }
-                );
-
-                return [
-                  ...defaultFieldsWithoutUrl,
-                  {
-                    name: "url",
-                    type: "text",
-                    admin: {
-                      condition: (_data, siblingData) =>
-                        siblingData?.linkType !== "internal"
-                    },
-                    label: ({ t }) => t("fields:enterURL"),
-                    required: true,
-                    validate: ((value, options) => {
-                      if (
-                        (options?.siblingData as LinkFields)?.linkType ===
-                        "internal"
-                      ) {
-                        return true; // no validation needed, as no url should exist for internal links
-                      }
-                      return value ? true : "URL is required";
-                    }) as TextFieldSingleValidation
-                  }
-                ];
-              }
-            }),
-            ContentHandOffFeature()
-          ];
-        }
-      }),
-      custom: {
-        hashes: []
-      },
-      hooks: {
-        beforeChange: [
-          ({ data, value, path, req, context }) => {
-            const r = value;
-            if (!r) return;
-
-            const targetTypes: DefaultNodeTypes["type"][] = [
-              "text",
-              "quote",
-              "heading",
-              "paragraph",
-              "link",
-              "autolink"
-            ];
-          }
-        ]
-      },
-      label: false,
-      required: true
-    },
+    RichContent(),
     {
       label: PROPS_COLLAPSIBLE,
       type: "collapsible",

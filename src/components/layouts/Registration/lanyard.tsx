@@ -78,8 +78,8 @@ function Registerer(
           </Physics>
         )) || <></>}
         <Environment
-          files={["env_hdr1-gainmap.webp", "env_hdr1.json", "env_hdr1.webp"]}
-          path={"/assets/rp_plaque/"}
+          files={["env_hdr1.webp", "env_hdr1-gainmap.webp", "env_hdr1.json"]}
+          path={"/assets/"}
         ></Environment>
       </View>
     </div>

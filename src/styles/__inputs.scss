@@ -27,7 +27,7 @@ input.w-input::placeholder {
   font-family: var(--font-sans);
 
   margin-bottom: 0;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 500;
   line-height: 1.1;
   color: oklch(var(--muted-faded-bg) / 0.75);
@@ -68,18 +68,18 @@ input.w-input::placeholder {
   transform: scaleX(0);
   will-change: transform;
   transition: 0.8s transform cubic-bezier(0.16, 1, 0.32, 1);
-  background-color: oklch(var(--fg) / 1);
+  background-color: var(--foreground);
 }
 
 .w-input:not(:placeholder-shown) ~ label,
 .w-input:-webkit-autofill ~ label,
 .w-input:focus ~ label {
-  color: oklch(var(--fg) / 1);
-  transform: translate3d(0, -130%, 0) scale3d(0.8, 0.8, 1);
+  color: var(--foreground);
+  transform: translate3d(0, -50%, 0) scale3d(0.8, 0.8, 1);
 }
 
 .w-input:not(:placeholder-shown) {
-  padding-bottom: 1rem;
+  padding-bottom: 0.35rem;
   padding-top: 0.36rem;
 }
 
