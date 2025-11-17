@@ -13,7 +13,7 @@ import { importMap } from "./vault/importMap";
 import { cn } from "@/lib/utils";
 import { Blase, NarcissianNectare, Suit, Dots } from "fonts";
 import { GeistMono } from "geist/font/mono";
-import {InitTheme} from "@/providers/Theme/InitTheme";
+import { InitTheme } from "@/providers/Theme/InitTheme";
 
 type Args = {
   children: React.ReactNode;
@@ -34,8 +34,8 @@ const Layout = ({ children }: Args) => (
     importMap={importMap}
     serverFunction={serverFunction}
   >
-	  {" "}
-	  <InitTheme />
+    {" "}
+    <InitTheme />
     <div
       className={cn(
         Blase.variable,

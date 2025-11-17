@@ -1,12 +1,14 @@
 "use client";
-import {Menu, Tabs} from "@base-ui-components/react";
+import { Menu, Tabs } from "@base-ui-components/react";
 import {
-	type ListDrawerProps,
-  useAuth, useDocumentForm, useDocumentInfo,
+  type ListDrawerProps,
+  useAuth,
+  useDocumentForm,
+  useDocumentInfo,
   useField,
   useListDrawer
 } from "@payloadcms/ui";
-import {useLenis} from "lenis/react";
+import { useLenis } from "lenis/react";
 import { AnimatePresence, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
@@ -20,30 +22,33 @@ import type {
 } from "payload";
 import { stringify } from "qs-esm";
 import type {
-	ChangeEvent,
+  ChangeEvent,
   ClipboardEventHandler,
-  DragEventHandler, PointerEventHandler
+  DragEventHandler,
+  PointerEventHandler
 } from "react";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {uuidv7} from "uuidv7";
+import { uuidv7 } from "uuidv7";
 import { useShallow } from "zustand/shallow";
 
-import {EASING} from "@/constants/animations";
-import {cn} from "@/lib/utils";
-import type {UnsplashFetchResult} from "@/payload/collections/Media/hooks/getFallbackFromUnsplash";
-import {MenuPopup} from "@/payload/components/Popover";
-import {errorToast} from "@/payload/components/sonner";
-import {useCourier} from "@/payload/elements/DocumentFields/RP_CourierProvider";
-import {useAltDocCtrls} from "@/payload/providers/Admins";
-import {useCursor} from "@/providers/RP_Pro";
-import type {UserOverview} from "@/types/collections/posts";
+import { EASING } from "@/constants/animations";
+import { cn } from "@/lib/utils";
+import type { UnsplashFetchResult } from "@/payload/collections/Media/hooks/getFallbackFromUnsplash";
+import { MenuPopup } from "@/payload/components/Popover";
+import { errorToast } from "@/payload/components/sonner";
+import { useCourier } from "@/payload/elements/DocumentFields/RP_CourierProvider";
+import { useAltDocCtrls } from "@/payload/providers/Admins";
+import { useCursor } from "@/providers/RP_Pro";
+import type { UserOverview } from "@/types/collections/posts";
 import type {
-	ImageBaseSelect, ImageCollection, ImageCollectionSlug
+  ImageBaseSelect,
+  ImageCollection,
+  ImageCollectionSlug
 } from "@/types/payload-api-helpers";
-import {clamp} from "@/utilities/mathUtilities";
+import { clamp } from "@/utilities/mathUtilities";
 
-import {useGalleryFetch} from "./useGalleryFetch";
+import { useGalleryFetch } from "./useGalleryFetch";
 const NextImage = m.create(Image);
 type FetchedImageDocs = Partial<ImageCollection> & ImageBaseSelect;
 
@@ -56,12 +61,14 @@ export type ArticleCoverProps = UploadFieldClientProps & {
   readonly allowCreate?: boolean;
   readonly filterOptions?: FilterOptionsResult;
   readonly path: string;
-  readonly readOnly?: boolean; readonly user: UserOverview;
+  readonly readOnly?: boolean;
+  readonly user: UserOverview;
   readonly relationTo: ImageCollectionSlug;
   readonly required?: boolean;
   readonly serverURL?: string;
 } & {
-  readonly value?: null | ImageBaseSelect; readonly fallback?: null | UnsplashFetchResult;
+  readonly value?: null | ImageBaseSelect;
+  readonly fallback?: null | UnsplashFetchResult;
 };
 type TabNames = "gallery" | "unsplash" | "upload";
 
@@ -73,16 +80,19 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     path,
     validate,
     readOnly,
-    required, fallback,
-    value: initValue, serverURL, user
+    required,
+    fallback,
+    value: initValue,
+    serverURL,
+    user
   } = props;
 
-	const attemptCount = useRef(0);
+  const attemptCount = useRef(0);
   const { value, setValue } = useField<string>({
     path
   });
-	const userName = useMemo(() => user.name, [user]);
-	const unsplashFallback = useRef<UnsplashFetchResult>(fallback || null);
+  const userName = useMemo(() => user.name, [user]);
+  const unsplashFallback = useRef<UnsplashFetchResult>(fallback || null);
   const [wantInsert, setWantInsert] = useState(false);
   const { value: positionY, setValue: setPositionY } = useField<number>({
     path: "coverPosition"
@@ -90,35 +100,42 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
   const translateY = useMotionValue(positionY);
   const transformPosition = useMotionValue(`center ${translateY.get()}%`);
   const imageRef = useRef<HTMLDivElement>(null!);
-	const [insertedFile, setInsertedFile] = useState<File | null>(null);
-	const docIsSaving = useCourier((r) => r.savingState);
-	const {submit} = useDocumentForm();
-	const restRef = useRef<Pick<ImageCollection, "alt" | "caption" | "source"> | null>(null);
-	const [openedTab, setOpenedTab] = useState<TabNames | null>(null);
-	const onOpenTabChange = (tab: null | TabNames) => {
-		setOpenedTab(tab);
-	};
+  const [insertedFile, setInsertedFile] = useState<File | null>(null);
+  const docIsSaving = useCourier((r) => r.savingState);
+  const { submit } = useDocumentForm();
+  const restRef = useRef<Pick<
+    ImageCollection,
+    "alt" | "caption" | "source"
+  > | null>(null);
+  const [openedTab, setOpenedTab] = useState<TabNames | null>(null);
+  const onOpenTabChange = (tab: null | TabNames) => {
+    setOpenedTab(tab);
+  };
   const altDocShown = useAltDocCtrls(useShallow((r) => r.peeked));
   const [populatedDocs, setPopulatedDocs] = useState<PopulatedDocs>();
   const { permissions } = useAuth();
   const initURLValue = initValue?.url || initValue?.blurDataUrl || null;
   const initIdValue = initValue?.id || null;
-	const [image, setImage] = useState<| string | (Omit<ImageBaseSelect, "id"> & {
-		id?: string
-	} & Pick<ImageCollection, "alt" | "caption">) | null>(initValue || null);
+  const [image, setImage] = useState<
+    | string
+    | (Omit<ImageBaseSelect, "id"> & {
+        id?: string;
+      } & Pick<ImageCollection, "alt" | "caption">)
+    | null
+  >(initValue || null);
   const [dragging, setDragging] = useState(false);
   const [inserted, setInserted] = useState<boolean>(Boolean(initURLValue));
   const [repositioning, setRepositioning] = useState(false);
-	const lastConfirmedYPosition = useMotionValue(positionY);
-	useEffect(() => {
-		lastConfirmedYPosition.set(positionY);
-	}, [lastConfirmedYPosition, positionY]);
+  const lastConfirmedYPosition = useMotionValue(positionY);
+  useEffect(() => {
+    lastConfirmedYPosition.set(positionY);
+  }, [lastConfirmedYPosition, positionY]);
   const onRepositionClick: PointerEventHandler = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setRepositioning(true);
   }, []);
-	const {setUploadStatus} = useDocumentInfo();
+  const { setUploadStatus } = useDocumentInfo();
   const finishRepositionClick = useCallback(
     (e: PointerEvent) => {
       const imageEL = imageRef.current;
@@ -140,7 +157,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     [setPositionY, translateY]
   );
 
-	const saveButton = useCourier((r) => r.buttonRef);
+  const saveButton = useCourier((r) => r.buttonRef);
   const [visible, setVisible] = useState(false);
   const visiTO = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hover, setHover] = useState<boolean>(false);
@@ -175,40 +192,46 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     };
   }, [value, activeRelationTo, filterOptionsFromProps]);
   const loadedValueDocsRef = useRef<boolean>(false);
-	const setStatus = useCourier((r) => r.setStatus);
-	const lenis = useLenis();
+  const setStatus = useCourier((r) => r.setStatus);
+  const lenis = useLenis();
 
-	const [menuOpen, setMenuOpen] = useState(false);
-	const leaveSetup = useCallback(() => {
-		lenis?.start();
-	}, [lenis]);
-	const enterSetup = useCallback(() => {
-		lenis?.stop();
-	}, [lenis]);
-  const onChange = useCallback(async (newValue: ImageBaseSelect | null, fallback?: string, shouldSave?: boolean) => {
-	  attemptCount.current = newValue ? 0 : attemptCount.current + 1;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const leaveSetup = useCallback(() => {
+    lenis?.start();
+  }, [lenis]);
+  const enterSetup = useCallback(() => {
+    lenis?.stop();
+  }, [lenis]);
+  const onChange = useCallback(
+    async (
+      newValue: ImageBaseSelect | null,
+      fallback?: string,
+      shouldSave?: boolean
+    ) => {
+      attemptCount.current = newValue ? 0 : attemptCount.current + 1;
       if (!newValue) {
         setInserted(false);
 
-	      setImage(null);
+        setImage(null);
         setValue(null);
-	      if (shouldSave) {
-		      if (attemptCount.current > 3) {
-			      setInsertedFile(null);
+        if (shouldSave) {
+          if (attemptCount.current > 3) {
+            setInsertedFile(null);
 
-			      attemptCount.current = 0;
-			      restRef.current = null;
-			      setStatus("idle");
-			      errorToast("Something's wrong with the image... Removed the file");
-		      }
-	      }
+            attemptCount.current = 0;
+            restRef.current = null;
+            setStatus("idle");
+            errorToast("Something's wrong with the image... Removed the file");
+          }
+        }
       } else {
         setInserted(true);
         setValue(newValue.id);
         setImage(newValue);
-	      setInsertedFile(null);
+        setInsertedFile(null);
       }
-    }, [setValue, setStatus]
+    },
+    [setValue, setStatus]
   );
 
   const canCreate = useMemo(() => {
@@ -239,8 +262,10 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     valueIdRef.current = value || null;
   }, [value]);
   const [removeImage, setRemoveImage] = useState<boolean>(false);
-	const populateDocs = useCallback(
-    async (ids: string[], relatedCollectionSlug: string
+  const populateDocs = useCallback(
+    async (
+      ids: string[],
+      relatedCollectionSlug: string
     ): Promise<PaginatedDocs<ImageBaseSelect> | null> => {
       if (!ids.length) {
         return null;
@@ -316,14 +341,15 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
       formD.append(
         "_payload",
         JSON.stringify({
-	        ...restRef.current, source: {
-		        identifier: restRef.current?.source.identifier || uuidv7(),
-		        provider: restRef.current?.source.provider || "local",
-		        link: restRef.current?.source.link || ""
-	        }
+          ...restRef.current,
+          source: {
+            identifier: restRef.current?.source.identifier || uuidv7(),
+            provider: restRef.current?.source.provider || "local",
+            link: restRef.current?.source.link || ""
+          }
         })
       );
-	    setStatus("uploading");
+      setStatus("uploading");
       try {
         const response = await fetch(`${serverURL}/api/${relationTo}`, {
           method: "POST",
@@ -332,19 +358,20 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
         });
         if (response.ok) {
           const json = await response.json();
-	        /*
+          /*
 			onUploadSuccess([json.doc], fallback);*/
-	        setStatus("idle");
-	        return json.doc as ImageBaseSelect;
+          setStatus("idle");
+          return json.doc as ImageBaseSelect;
         }
-	      throw new Error("Failed to upload image");
+        throw new Error("Failed to upload image");
       } catch (e) {
         errorToast("Welp, something went wrong. Try again?");
         console.log(e);
-	      setStatus("failed");
-	      return null;
+        setStatus("failed");
+        return null;
       }
-    }, [relationTo, serverURL, setStatus]
+    },
+    [relationTo, serverURL, setStatus]
   );
   const onLocalFileSelection = useCallback(
     (fileList?: FileList, fallback?: string) => {
@@ -361,30 +388,35 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
           dataTransfer.items.add(file);
           fileListToUse = dataTransfer.files;
 
-	        setInsertedFile(file);
+          setInsertedFile(file);
           setImage(URL.createObjectURL(file));
-	        restRef.current = {
-		        caption: `Image by @${userName}`, alt: "An image for a content", source: {
-			        identifier: uuidv7(), provider: "local", link: ""
-		        }
-	        };
-	        setMenuOpen(false);
-	        setInserted(true);
+          restRef.current = {
+            caption: `Image by @${userName}`,
+            alt: "An image for a content",
+            source: {
+              identifier: uuidv7(),
+              provider: "local",
+              link: ""
+            }
+          };
+          setMenuOpen(false);
+          setInserted(true);
         } else {
           errorToast("File is not an image");
         }
       }
-    }, [userName]
+    },
+    [userName]
   );
 
-	useEffect(() => {
-		if (insertedFile) {
-			doUpload(insertedFile, "").then((r) => {
-				onChange(r, "", true);
-			});
-		}
-	}, [doUpload, insertedFile, onChange]);
-	/*
+  useEffect(() => {
+    if (insertedFile) {
+      doUpload(insertedFile, "").then((r) => {
+        onChange(r, "", true);
+      });
+    }
+  }, [doUpload, insertedFile, onChange]);
+  /*
    *   const onDocCreate = useCallback(
    *     (data: { doc?: ImageBaseSelect }) => {
    *       if (data.doc && data.doc !== undefined) {
@@ -402,42 +434,48 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
    *     },
    *     [activeRelationTo, onChange, urlValue]
    *   );*/
-	const insertCallback = useCallback(async () => {
-		try {
-			const us = unsplashFallback.current;
-			if (!us) {
-				errorToast("Failed to fetch image from Unsplash");
-				return;
-			}
-			const imageResponse = await fetch(us.form.url);
-			if (!imageResponse.ok) {
-				errorToast("Failed to fetch image from Unsplash");
-				return;
-			}
-			const blob = await imageResponse.blob();
-			const file = new File([blob], `unsplash-${us.form.source.identifier}.jpg`, {
-				type: blob.type || "image/jpeg"
-			});
-			if (file.size > Number(process.env.NEXT_PUBLIC_IMAGE_MAX_FILE_SIZE)) {
-				errorToast("Image is too large, please try again");
-				return;
-			}
-			setInsertedFile(file);
-			setImage({
-				height: us.fallback.height,
-				width: us.fallback.width,
-				url: us.fallback.sourceUrl,
-				blurDataUrl: us.fallback.blurDataUrl
-			});
-			restRef.current = {
-				caption: us.form.caption, alt: us.form.alt, source: us.form.source
-			};
-			setInserted(true);
-		} catch (error) {
-			console.error("Error uploading random Unsplash image:", error);
-			errorToast("Failed to upload random image. Please try again.");
-		}
-	}, []);
+  const insertCallback = useCallback(async () => {
+    try {
+      const us = unsplashFallback.current;
+      if (!us) {
+        errorToast("Failed to fetch image from Unsplash");
+        return;
+      }
+      const imageResponse = await fetch(us.form.url);
+      if (!imageResponse.ok) {
+        errorToast("Failed to fetch image from Unsplash");
+        return;
+      }
+      const blob = await imageResponse.blob();
+      const file = new File(
+        [blob],
+        `unsplash-${us.form.source.identifier}.jpg`,
+        {
+          type: blob.type || "image/jpeg"
+        }
+      );
+      if (file.size > Number(process.env.NEXT_PUBLIC_IMAGE_MAX_FILE_SIZE)) {
+        errorToast("Image is too large, please try again");
+        return;
+      }
+      setInsertedFile(file);
+      setImage({
+        height: us.fallback.height,
+        width: us.fallback.width,
+        url: us.fallback.sourceUrl,
+        blurDataUrl: us.fallback.blurDataUrl
+      });
+      restRef.current = {
+        caption: us.form.caption,
+        alt: us.form.alt,
+        source: us.form.source
+      };
+      setInserted(true);
+    } catch (error) {
+      console.error("Error uploading random Unsplash image:", error);
+      errorToast("Failed to upload random image. Please try again.");
+    }
+  }, []);
   const onListSelect = useCallback<NonNullable<ListDrawerProps["onSelect"]>>(
     async ({ collectionSlug, doc }) => {
       console.log("onListSelect: ", collectionSlug, doc);
@@ -459,8 +497,9 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     },
     [closeListDrawer, onChange, activeRelationTo]
   );
-	const reloadDoc = useCallback(async (docID: string, collectionSlug: ImageCollectionSlug) => {
-			const docs = await populateDocs([docID], "media").then((r) => {
+  const reloadDoc = useCallback(
+    async (docID: string, collectionSlug: ImageCollectionSlug) => {
+      const docs = await populateDocs([docID], "media").then((r) => {
         if (r) {
           return r.docs;
         } else {
@@ -500,36 +539,42 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     },
     [populateDocs]
   );
-	/*
-	 * const onRemove = useCallback(
-	 *   (newValue?: PopulatedDocs) => {
-	 *     const newValueIDs = newValue
-	 *       ? newValue.map(({ value }) => value.id)
-	 *       : null;
-	 *     onChange(newValueIDs ? newValueIDs[0] : null, "");
-	 *     setPopulatedDocs(newValue ? newValue : []);
-	 *   },
-	 *   [onChange]
-	 * );*/
-	const imageRemove = useCallback(async (id?: string | null) => {
-		if (!id) {
-			onChange(null);
-			return;
-		}
-		await fetch(`${serverURL}/api/${relationTo}/${id}`, {
-			method: "DELETE", credentials: "include"
-		}).then((r) => {
-			if (r.ok) {
-				onChange(null);
-			}
-		}).catch((r) => {
-			console.log(r);
-			errorToast("Failed to remove image");
-		});
-	}, [onChange, relationTo, serverURL]);
+  /*
+   * const onRemove = useCallback(
+   *   (newValue?: PopulatedDocs) => {
+   *     const newValueIDs = newValue
+   *       ? newValue.map(({ value }) => value.id)
+   *       : null;
+   *     onChange(newValueIDs ? newValueIDs[0] : null, "");
+   *     setPopulatedDocs(newValue ? newValue : []);
+   *   },
+   *   [onChange]
+   * );*/
+  const imageRemove = useCallback(
+    async (id?: string | null) => {
+      if (!id) {
+        onChange(null);
+        return;
+      }
+      await fetch(`${serverURL}/api/${relationTo}/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      })
+        .then((r) => {
+          if (r.ok) {
+            onChange(null);
+          }
+        })
+        .catch((r) => {
+          console.log(r);
+          errorToast("Failed to remove image");
+        });
+    },
+    [onChange, relationTo, serverURL]
+  );
   const onClickRemove = useCallback(() => {
-	  onChange(null);
-	  setMenuOpen(false);
+    onChange(null);
+    setMenuOpen(false);
   }, [onChange]);
   useEffect(() => {
     async function loadInitialDocs() {
@@ -554,7 +599,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
       void loadInitialDocs();
     }
   }, [populateDocs, activeRelationTo, initIdValue]);
-	/* setWantInsert((r) => !r);*/
+  /* setWantInsert((r) => !r);*/
   const handleDragEnter: DragEventHandler<HTMLDivElement> = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -622,52 +667,68 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
     },
     [endDrag, onDrag]
   );
-	const resetPositions = useCallback((position = 35) => {
-		setPositionY(position);
-		setRepositioning(false);
-		translateY.set(position);
-		transformPosition.set(`center ${position}%`);
-		document.body.removeEventListener("pointerup", finishRepositionClick);
-	}, [finishRepositionClick, setPositionY, transformPosition, translateY]);
+  const resetPositions = useCallback(
+    (position = 35) => {
+      setPositionY(position);
+      setRepositioning(false);
+      translateY.set(position);
+      transformPosition.set(`center ${position}%`);
+      document.body.removeEventListener("pointerup", finishRepositionClick);
+    },
+    [finishRepositionClick, setPositionY, transformPosition, translateY]
+  );
 
   const [imageIsReady, setImageIsReady] = useState(
     Boolean(image && typeof image === "object" && image.width && image.height)
   );
-	const [galleryFetchEnabled, setGalleryFetchEnabled] = useState(false);
-	useEffect(() => {
-		setGalleryFetchEnabled(menuOpen && !repositioning && openedTab === "gallery");
-		return () => {
-			setGalleryFetchEnabled(false);
-		};
-	}, [menuOpen, openedTab, repositioning]);
-	const {
-		fetchNextPage, isEnabled, isError, isFetching, isFetchingNextPage, data
-	} = useGalleryFetch(galleryFetchEnabled);
-	const finishReposition: PointerEventHandler = useCallback((e) => {
-		const imageEL = imageRef.current;
-		e.stopPropagation();
-		e.preventDefault();
-		setDragging(false);
-		if (!imageEL) {
-			setRepositioning(false);
-			return;
-		}
+  const [galleryFetchEnabled, setGalleryFetchEnabled] = useState(false);
+  useEffect(() => {
+    setGalleryFetchEnabled(
+      menuOpen && !repositioning && openedTab === "gallery"
+    );
+    return () => {
+      setGalleryFetchEnabled(false);
+    };
+  }, [menuOpen, openedTab, repositioning]);
+  const {
+    fetchNextPage,
+    isEnabled,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    data
+  } = useGalleryFetch(galleryFetchEnabled);
+  const finishReposition: PointerEventHandler = useCallback(
+    (e) => {
+      const imageEL = imageRef.current;
+      e.stopPropagation();
+      e.preventDefault();
+      setDragging(false);
+      if (!imageEL) {
+        setRepositioning(false);
+        return;
+      }
 
-		setRepositioning(false);
-		setPositionY(translateY.get());
-	}, [setPositionY, translateY]);
-	const revertReposition: PointerEventHandler = useCallback((e) => {
-		const imageEL = imageRef.current;
-		e.stopPropagation();
-		e.preventDefault();
-		setDragging(false);
-		if (!imageEL) {
-			setRepositioning(false);
-			return;
-		}
-		setRepositioning(false);
-		resetPositions(lastConfirmedYPosition.get());
-	}, [lastConfirmedYPosition, resetPositions]);
+      setRepositioning(false);
+      setPositionY(translateY.get());
+    },
+    [setPositionY, translateY]
+  );
+  const revertReposition: PointerEventHandler = useCallback(
+    (e) => {
+      const imageEL = imageRef.current;
+      e.stopPropagation();
+      e.preventDefault();
+      setDragging(false);
+      if (!imageEL) {
+        setRepositioning(false);
+        return;
+      }
+      setRepositioning(false);
+      resetPositions(lastConfirmedYPosition.get());
+    },
+    [lastConfirmedYPosition, resetPositions]
+  );
   useEffect(() => {
     setImageIsReady(
       Boolean(image && typeof image === "object" && image.width && image.height)
@@ -720,8 +781,9 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
   );
   return (
     <m.div
-      className={cn("relative flex min-h-14 w-full shrink-0 grow-0 flex-col items-center bg-transparent",
-	      hover ? "z-140" : "z-10"
+      className={cn(
+        "relative flex min-h-14 w-full shrink-0 grow-0 flex-col items-center bg-transparent",
+        hover ? "z-140" : "z-10"
       )}
       ref={imageRef}
       style={{
@@ -737,7 +799,8 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
       <AnimatePresence mode="popLayout" initial={false}>
         {inserted ? (
           <m.div
-            className={"relative mb-[1em] flex h-[30vh] max-h-[280px] w-full items-center justify-center overflow-hidden bg-faded-background/10 transition-all duration-200 ease-out-power2"
+            className={
+              "relative mb-[1em] flex h-[30vh] max-h-[280px] w-full items-center justify-center overflow-hidden bg-faded-background/10 transition-all duration-200 ease-out-power2"
             }
           >
             {imageIsReady && (
@@ -765,7 +828,8 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
                     ease: EASING.power3.out
                   }
                 }}
-                className={cn("relative min-h-full w-full overflow-hidden rounded-[6px]"
+                className={cn(
+                  "relative min-h-full w-full overflow-hidden rounded-[6px]"
                 )}
               >
                 <div
@@ -783,7 +847,8 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
                   <picture>
                     <NextImage
                       alt={""}
-                      className={"absolute inset-0 block max-h-[200px] min-h-[30vh] w-full object-cover"
+                      className={
+                        "absolute inset-0 block max-h-[200px] min-h-[30vh] w-full object-cover"
                       }
                       dragListener={false}
                       width={(image as ImageBaseSelect)!.width!}
@@ -818,185 +883,346 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
                 </m.figure>
               </m.div>
             )}
-	          <AnimatePresence mode="sync" initial={false}>
-              {repositioning ? (<>
-		              <m.div key={"repositioningButton"} onPointerDown={startDrag} className={cn(
-			              "absolute inset-0 flex items-center justify-center gap-[8px] bg-transparent")} initial={{
-			              opacity: 0, zIndex: -1
-		              }} exit={{
-			              opacity: [0, 0], zIndex: [null, -1], transition: {
-				              type: "tween", ease: EASING.power2.out, duration: 0.3
-			              }
-		              }} animate={{
-			              opacity: [0, 1], zIndex: [100, 100], transition: {
-				              type: "tween", ease: EASING.power2.out, duration: 0.3
-			              }
-		              }} transition={{
-			              type: "tween", duration: 0.3, ease: EASING.power2.out
-		              }}>
-			              <m.div
-				              className={"flex w-fit items-center rounded-[6px] bg-button-background px-1 shadow-sm/30"}
-				              data-themed="background-color, box-shadow">
-				              <div className={cn(
-					              "flex h-10 min-w-0 shrink-0 items-center bg-transparent px-[6px] py-[4px] text-sm leading-[1.2] whitespace-nowrap text-muted-faded-background/80 transition-colors duration-200 ease-out-power2 select-none")}
-				                   aria-label="Reposition cover">
-					              Reposition cover image
-				              </div>
-			              </m.div>
-		              </m.div>
-		              <m.div key={"confirmOrCancel"} className={cn(
-			              "absolute top-3 right-4 flex items-center justify-center gap-[8px] bg-transparent")}
-		                     variants={{
-			                     animate: {
-				                     zIndex: [null, 0], opacity: [0, 0], transition: {
-					                     type: "tween", ease: EASING.power2.out, duration: 0.3
-				                     }
-			                     }, hover: {
-				                     zIndex: [155, 155], opacity: [0, 1], transition: {
-					                     type: "tween", ease: EASING.power2.out, duration: 0.3
-				                     }
-			                     }
-		                     }} initial={{
+            <AnimatePresence mode="sync" initial={false}>
+              {repositioning ? (
+                <>
+                  <m.div
+                    key={"repositioningButton"}
+                    onPointerDown={startDrag}
+                    className={cn(
+                      "absolute inset-0 flex items-center justify-center gap-[8px] bg-transparent"
+                    )}
+                    initial={{
+                      opacity: 0,
+                      zIndex: -1
+                    }}
+                    exit={{
+                      opacity: [0, 0],
+                      zIndex: [null, -1],
+                      transition: {
+                        type: "tween",
+                        ease: EASING.power2.out,
+                        duration: 0.3
+                      }
+                    }}
+                    animate={{
+                      opacity: [0, 1],
+                      zIndex: [100, 100],
+                      transition: {
+                        type: "tween",
+                        ease: EASING.power2.out,
+                        duration: 0.3
+                      }
+                    }}
+                    transition={{
+                      type: "tween",
+                      duration: 0.3,
+                      ease: EASING.power2.out
+                    }}
+                  >
+                    <m.div
+                      className={
+                        "flex w-fit items-center rounded-[6px] bg-button-background px-1 shadow-sm/30"
+                      }
+                      data-themed="background-color, box-shadow"
+                    >
+                      <div
+                        className={cn(
+                          "flex h-10 min-w-0 shrink-0 items-center bg-transparent px-[6px] py-[4px] text-sm leading-[1.2] whitespace-nowrap text-muted-faded-background/80 transition-colors duration-200 ease-out-power2 select-none"
+                        )}
+                        aria-label="Reposition cover"
+                      >
+                        Reposition cover image
+                      </div>
+                    </m.div>
+                  </m.div>
+                  <m.div
+                    key={"confirmOrCancel"}
+                    className={cn(
+                      "absolute top-3 right-4 flex items-center justify-center gap-[8px] bg-transparent"
+                    )}
+                    variants={{
+                      animate: {
+                        zIndex: [null, 0],
+                        opacity: [0, 0],
+                        transition: {
+                          type: "tween",
+                          ease: EASING.power2.out,
+                          duration: 0.3
+                        }
+                      },
+                      hover: {
+                        zIndex: [155, 155],
+                        opacity: [0, 1],
+                        transition: {
+                          type: "tween",
+                          ease: EASING.power2.out,
+                          duration: 0.3
+                        }
+                      }
+                    }}
+                    initial={{
                       zIndex: 0,
                       opacity: 0
-		              }} exit="animate" animate={"hover"}>
-			              <m.div className={"flex w-fit items-center rounded-[6px] bg-faded-background/30 shadow-md"}>
-				              <div className={cn(
-					              "flex h-10 min-w-0 shrink-0 items-center overflow-hidden rounded-l-sm rounded-r-[2px] bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none hover:bg-faded-foreground/70 hover:text-background/60")}
-				                   onPointerDown={revertReposition}
-				                   data-themed={"color, background-color, border-color"} role="button"
-				                   aria-label="Cancel update">
-					              Cancel
-				              </div>
-				              <div onPointerDown={finishReposition} role="button" aria-label="Confirm reposition"
-				                   data-themed={"color, background-color, border-color"} style={{
-					              flexShrink: 0, lineHeight: "1.2", minWidth: "0px"
-				              }}
-				                   className="flex h-10 min-w-0 shrink-0 overflow-hidden rounded-l-[2px] rounded-r-sm bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none hover:bg-faded-foreground/70 hover:text-background/60">
-					              <div className={"text-sm leading-normal"}>
-						              Save position
-					              </div>
-				              </div>
-			              </m.div>
-		              </m.div>
-	              </>) : (<m.div key={"changeCoverButton"} className={cn(
-		              "absolute top-3 right-4 flex items-center justify-center gap-[8px] bg-transparent")} variants={{
-		              animate: {
-			              zIndex: [null, 0], opacity: [0, 0], transition: {
-				              type: "tween", ease: EASING.power2.out, duration: 0.3
-			              }
-		              }, hover: {
-			              zIndex: [55, 55], opacity: [0, 1], transition: {
-				              type: "tween", ease: EASING.power2.out, duration: 0.3
-			              }
-		              }
-	              }} transition={{type: "tween", duration: 0.3}} exit="animate" animate={hover ? "hover" : "animate"}>
-		              <m.div className={"flex w-fit items-center rounded-[6px] bg-faded-background/30 shadow-md"}>
-			              <div className={cn(
-				              "flex h-10 min-w-0 shrink-0 overflow-hidden rounded-l-sm rounded-r-[2px] bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none",
-				              menuOpen ? "pointer-events-none" : "hover:bg-faded-foreground/70 hover:text-background/60"
+                    }}
+                    exit="animate"
+                    animate={"hover"}
+                  >
+                    <m.div
+                      className={
+                        "flex w-fit items-center rounded-[6px] bg-faded-background/30 shadow-md"
+                      }
+                    >
+                      <div
+                        className={cn(
+                          "flex h-10 min-w-0 shrink-0 items-center overflow-hidden rounded-l-sm rounded-r-[2px] bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none hover:bg-faded-foreground/70 hover:text-background/60"
+                        )}
+                        onPointerDown={revertReposition}
+                        data-themed={"color, background-color, border-color"}
+                        role="button"
+                        aria-label="Cancel update"
+                      >
+                        Cancel
+                      </div>
+                      <div
+                        onPointerDown={finishReposition}
+                        role="button"
+                        aria-label="Confirm reposition"
+                        data-themed={"color, background-color, border-color"}
+                        style={{
+                          flexShrink: 0,
+                          lineHeight: "1.2",
+                          minWidth: "0px"
+                        }}
+                        className="flex h-10 min-w-0 shrink-0 overflow-hidden rounded-l-[2px] rounded-r-sm bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none hover:bg-faded-foreground/70 hover:text-background/60"
+                      >
+                        <div className={"text-sm leading-normal"}>
+                          Save position
+                        </div>
+                      </div>
+                    </m.div>
+                  </m.div>
+                </>
+              ) : (
+                <m.div
+                  key={"changeCoverButton"}
+                  className={cn(
+                    "absolute top-3 right-4 flex items-center justify-center gap-[8px] bg-transparent"
+                  )}
+                  variants={{
+                    animate: {
+                      zIndex: [null, 0],
+                      opacity: [0, 0],
+                      transition: {
+                        type: "tween",
+                        ease: EASING.power2.out,
+                        duration: 0.3
+                      }
+                    },
+                    hover: {
+                      zIndex: [55, 55],
+                      opacity: [0, 1],
+                      transition: {
+                        type: "tween",
+                        ease: EASING.power2.out,
+                        duration: 0.3
+                      }
+                    }
+                  }}
+                  transition={{ type: "tween", duration: 0.3 }}
+                  exit="animate"
+                  animate={hover ? "hover" : "animate"}
+                >
+                  <m.div
+                    className={
+                      "flex w-fit items-center rounded-[6px] bg-faded-background/30 shadow-md"
+                    }
+                  >
+                    <div
+                      className={cn(
+                        "flex h-10 min-w-0 shrink-0 overflow-hidden rounded-l-sm rounded-r-[2px] bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none",
+                        menuOpen
+                          ? "pointer-events-none"
+                          : "hover:bg-faded-foreground/70 hover:text-background/60"
                       )}
                       data-themed={"color, background-color, border-color"}
                       role="button"
                       aria-label="Update the page cover image"
                     >
-				              <Menu.Root open={menuOpen} onOpenChange={setMenuOpen}>
-					              <Menu.Trigger data-themed={"border-color, color, background-color"}
-					                            disabled={repositioning}
-					                            className={"border-r-solid-[.5px]! flex appearance-none items-center justify-center border-none bg-transparent p-0 text-sm! leading-[1.3] font-normal text-inherit! shadow-none transition-colors duration-200 ease-out-power3 outline-none select-none"}>
-						              Change cover
-					              </Menu.Trigger>
-					              <Menu.Portal>
-						              <Menu.Positioner className="outline-none" sideOffset={14} align={"end"}
-						                               alignOffset={-78}>
-							              <MenuPopup className="relative max-w-[calc(100vw-24%)] p-0"
-							                         onMouseEnter={enterSetup} onMouseLeave={leaveSetup}>
-								              <Tabs.Root value={openedTab} onValueChange={onOpenTabChange}
-								                         data-themed={"border-color, color, background-color"}
-								                         className={"relative w-[540px] max-w-[calc(100vw-24%)] rounded-lg bg-muted-faded-background/10 px-1 pt-0 pb-4 outline outline-muted-faded-foreground/20 backdrop-blur-sm dark:outline-muted-faded-foreground/40!"}
-								                         defaultValue={"gallery"}>
-									              <div
-										              className={"flex w-full items-center justify-between px-4 shadow-[inset_0_-1px] shadow-muted-faded-foreground/20"}
-										              data-themed={"border-color, color, background-color,box-shadow"}>
-										              <Tabs.List
-											              className={"rounded-0 rounded-0 relative flex shrink-0 grow items-center gap-1 px-1 py-2 text-sm!"}>
-											              <Tabs.Tab
-												              className={"appearance-none border-none bg-transparent px-[8px] py-[4px] break-keep whitespace-nowrap text-muted-faded-foreground/50 transition-colors duration-250 ease-out-power3 outline-none before:inset-x-0 before:inset-y-1 before:rounded-sm before:-outline-offset-1 hover:text-muted-faded-foreground focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-1 data-selected:text-foreground"}
-												              data-themed={"color, background-color, border-color, outline-color"}
-												              value="gallery">
-												              Gallery
-											              </Tabs.Tab>
-											              <Tabs.Tab
-												              className={"appearance-none border-none bg-transparent px-[8px] py-[4px] break-keep whitespace-nowrap text-muted-faded-foreground/40 transition-colors duration-250 ease-out-power3 outline-none before:inset-x-0 before:inset-y-1 before:rounded-sm before:-outline-offset-1 hover:text-muted-faded-foreground focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-1 data-selected:text-foreground"}
-												              data-themed={"color, background-color, border-color, outline-color"}
-												              value="upload">
-												              Upload
-											              </Tabs.Tab>
-											              <Tabs.Tab
-												              className={"appearance-none border-none bg-transparent px-[8px] py-[4px] break-keep whitespace-nowrap text-muted-faded-foreground/40 transition-colors duration-250 ease-out-power3 outline-none before:inset-x-0 before:inset-y-1 before:rounded-sm before:-outline-offset-1 hover:text-muted-faded-foreground focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-1 data-selected:text-foreground"}
-												              data-themed={"color, background-color, border-color, outline-color"}
-												              value="unsplash">
-												              Unsplash
-											              </Tabs.Tab>
-											              <Tabs.Indicator
-												              className="absolute -bottom-px left-0 z-[-1] h-px w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 overflow-hidden rounded-[0.25px] bg-radial/oklch from-foreground from-87% via-foreground/85 via-95% to-foreground/10 to-100% transition-all duration-200 ease-in-out"
-												              data-themed={"color, background-color, border-color, outline-color"} />
-										              </Tabs.List>
-										              <button onClick={onClickRemove}
-										                      className="relative h-fit w-22 appearance-none rounded-md border! border-muted-faded-foreground/0 bg-transparent px-2 py-0 break-keep whitespace-nowrap text-muted-faded-foreground/60 transition-colors duration-300 ease-out-power2! before:inset-x-0 hover:border-muted-faded-foreground/80 hover:text-muted-faded-foreground">
-											              Remove
-										              </button>
-									              </div>
-									              <Tabs.Panel
-										              className={"relative flex h-32 items-center justify-center -outline-offset-1 data-hidden:hidden"}
-										              value="gallery">
-										              <div className={""}>
-											              {isFetching ? (<div>Loading...</div>) : ((isError &&
-													              <div>WTF?</div>) || <></>)}
-										              </div>
-									              </Tabs.Panel>
-									              <Tabs.Panel
-										              className={"relative flex h-32 items-center justify-center -outline-offset-1 data-hidden:hidden"}
-										              value="upload">
-										              <m.span className={cn(
-											              "relative flex h-14 w-3/4 items-center justify-center rounded-[35px] border border-solid border-muted-faded-foreground/80 p-5 px-3.5 py-1 text-center! leading-normal text-faded-foreground/90 transition-[z-index,opacity,border-color,background-color,color] duration-200 ease-out-power2 hover:border-muted-faded-foreground/30 hover:bg-faded-foreground hover:text-faded-background")}
-										                      data-themed={"opacity,border-color,background-color,color"}
-										                      role="button">
-											              <input id={"user_settings_photo_file"}
-											                     name={"user_settings[photo][file]"} className={cn(
-												              "absolute! inset-0 z-10 h-full w-full cursor-none! overflow-hidden opacity-0")}
-											                     onChange={imageFilePaste} accept="image/*"
-											                     type={"file"} />
-											              <label
-												              className={"flex w-fit cursor-none! items-center font-sans!"}
-												              htmlFor="user_settings_photo_file">
-												              Upload File
-												              <svg
-													              className="relative inline-block w-auto cursor-none! border-none! bg-transparent! transition-colors duration-200 ease-out-power2! outline-none!"
-													              viewBox="0 0 20 20" fill="none" height="18">
-													              <path xmlns="http://www.w3.org/2000/svg"
-													                    d="M16.3,8.2C15.9,5.3,13.2,3,10,3C7.4,3,5.2,4.5,4.2,6.6C1.8,7.2,0,9.2,0,11.7c0,3,2.5,5.3,5.5,5.3 c0.6,0,1-0.4,1-1c0-0.6-0.4-1-1-1c-2,0-3.5-1.5-3.5-3.3c0-1.6,1.3-3,3-3.2c0.4,0,0.7-0.3,0.8-0.6C6.4,6.2,8,5,10,5 c2.5,0,4.4,1.9,4.4,4.1c0,0.6,0.4,1,1,1c1.5,0,2.6,1.1,2.6,2.4c0,1.3-1.1,2.4-2.6,2.4c-0.6,0-1,0.4-1,1c0,0.6,0.4,1,1,1 c2.5,0,4.6-1.9,4.6-4.4C20,10.4,18.4,8.7,16.3,8.2z"
-													                    fill={"currentColor"} />
-												              </svg>
-											              </label>
-										              </m.span>
-									              </Tabs.Panel>
-									              <Tabs.Panel
-										              className={"relative flex h-32 shrink-0 grow-0 items-center justify-center -outline-offset-1 data-hidden:hidden"}
-										              value="unsplash"></Tabs.Panel>
-								              </Tabs.Root>
-							              </MenuPopup>
-						              </Menu.Positioner>
-					              </Menu.Portal>
-				              </Menu.Root>
-			              </div>
+                      <Menu.Root open={menuOpen} onOpenChange={setMenuOpen}>
+                        <Menu.Trigger
+                          data-themed={"border-color, color, background-color"}
+                          disabled={repositioning}
+                          className={
+                            "border-r-solid-[.5px]! flex appearance-none items-center justify-center border-none bg-transparent p-0 text-sm! leading-[1.3] font-normal text-inherit! shadow-none transition-colors duration-200 ease-out-power3 outline-none select-none"
+                          }
+                        >
+                          Change cover
+                        </Menu.Trigger>
+                        <Menu.Portal>
+                          <Menu.Positioner
+                            className="outline-none"
+                            sideOffset={14}
+                            align={"end"}
+                            alignOffset={-78}
+                          >
+                            <MenuPopup
+                              className="relative max-w-[calc(100vw-24%)] p-0"
+                              onMouseEnter={enterSetup}
+                              onMouseLeave={leaveSetup}
+                            >
+                              <Tabs.Root
+                                value={openedTab}
+                                onValueChange={onOpenTabChange}
+                                data-themed={
+                                  "border-color, color, background-color"
+                                }
+                                className={
+                                  "relative w-[540px] max-w-[calc(100vw-24%)] rounded-lg bg-muted-faded-background/10 px-1 pt-0 pb-4 outline outline-muted-faded-foreground/20 backdrop-blur-sm dark:outline-muted-faded-foreground/40!"
+                                }
+                                defaultValue={"gallery"}
+                              >
+                                <div
+                                  className={
+                                    "flex w-full items-center justify-between px-4 shadow-[inset_0_-1px] shadow-muted-faded-foreground/20"
+                                  }
+                                  data-themed={
+                                    "border-color, color, background-color,box-shadow"
+                                  }
+                                >
+                                  <Tabs.List
+                                    className={
+                                      "rounded-0 rounded-0 relative flex shrink-0 grow items-center gap-1 px-1 py-2 text-sm!"
+                                    }
+                                  >
+                                    <Tabs.Tab
+                                      className={
+                                        "appearance-none border-none bg-transparent px-[8px] py-[4px] break-keep whitespace-nowrap text-muted-faded-foreground/50 transition-colors duration-250 ease-out-power3 outline-none before:inset-x-0 before:inset-y-1 before:rounded-sm before:-outline-offset-1 hover:text-muted-faded-foreground focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-1 data-selected:text-foreground"
+                                      }
+                                      data-themed={
+                                        "color, background-color, border-color, outline-color"
+                                      }
+                                      value="gallery"
+                                    >
+                                      Gallery
+                                    </Tabs.Tab>
+                                    <Tabs.Tab
+                                      className={
+                                        "appearance-none border-none bg-transparent px-[8px] py-[4px] break-keep whitespace-nowrap text-muted-faded-foreground/40 transition-colors duration-250 ease-out-power3 outline-none before:inset-x-0 before:inset-y-1 before:rounded-sm before:-outline-offset-1 hover:text-muted-faded-foreground focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-1 data-selected:text-foreground"
+                                      }
+                                      data-themed={
+                                        "color, background-color, border-color, outline-color"
+                                      }
+                                      value="upload"
+                                    >
+                                      Upload
+                                    </Tabs.Tab>
+                                    <Tabs.Tab
+                                      className={
+                                        "appearance-none border-none bg-transparent px-[8px] py-[4px] break-keep whitespace-nowrap text-muted-faded-foreground/40 transition-colors duration-250 ease-out-power3 outline-none before:inset-x-0 before:inset-y-1 before:rounded-sm before:-outline-offset-1 hover:text-muted-faded-foreground focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-1 data-selected:text-foreground"
+                                      }
+                                      data-themed={
+                                        "color, background-color, border-color, outline-color"
+                                      }
+                                      value="unsplash"
+                                    >
+                                      Unsplash
+                                    </Tabs.Tab>
+                                    <Tabs.Indicator
+                                      className="absolute -bottom-px left-0 z-[-1] h-px w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 overflow-hidden rounded-[0.25px] bg-radial/oklch from-foreground from-87% via-foreground/85 via-95% to-foreground/10 to-100% transition-all duration-200 ease-in-out"
+                                      data-themed={
+                                        "color, background-color, border-color, outline-color"
+                                      }
+                                    />
+                                  </Tabs.List>
+                                  <button
+                                    onClick={onClickRemove}
+                                    className="relative h-fit w-22 appearance-none rounded-md border! border-muted-faded-foreground/0 bg-transparent px-2 py-0 break-keep whitespace-nowrap text-muted-faded-foreground/60 transition-colors duration-300 ease-out-power2! before:inset-x-0 hover:border-muted-faded-foreground/80 hover:text-muted-faded-foreground"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <Tabs.Panel
+                                  className={
+                                    "relative flex h-32 items-center justify-center -outline-offset-1 data-hidden:hidden"
+                                  }
+                                  value="gallery"
+                                >
+                                  <div className={""}>
+                                    {isFetching ? (
+                                      <div>Loading...</div>
+                                    ) : (
+                                      (isError && <div>WTF?</div>) || <></>
+                                    )}
+                                  </div>
+                                </Tabs.Panel>
+                                <Tabs.Panel
+                                  className={
+                                    "relative flex h-32 items-center justify-center -outline-offset-1 data-hidden:hidden"
+                                  }
+                                  value="upload"
+                                >
+                                  <m.span
+                                    className={cn(
+                                      "relative flex h-14 w-3/4 items-center justify-center rounded-[35px] border border-solid border-muted-faded-foreground/80 p-5 px-3.5 py-1 text-center! leading-normal text-faded-foreground/90 transition-[z-index,opacity,border-color,background-color,color] duration-200 ease-out-power2 hover:border-muted-faded-foreground/30 hover:bg-faded-foreground hover:text-faded-background"
+                                    )}
+                                    data-themed={
+                                      "opacity,border-color,background-color,color"
+                                    }
+                                    role="button"
+                                  >
+                                    <input
+                                      id={"user_settings_photo_file"}
+                                      name={"user_settings[photo][file]"}
+                                      className={cn(
+                                        "absolute! inset-0 z-10 h-full w-full cursor-none! overflow-hidden opacity-0"
+                                      )}
+                                      onChange={imageFilePaste}
+                                      accept="image/*"
+                                      type={"file"}
+                                    />
+                                    <label
+                                      className={
+                                        "flex w-fit cursor-none! items-center font-sans!"
+                                      }
+                                      htmlFor="user_settings_photo_file"
+                                    >
+                                      Upload File
+                                      <svg
+                                        className="relative inline-block w-auto cursor-none! border-none! bg-transparent! transition-colors duration-200 ease-out-power2! outline-none!"
+                                        viewBox="0 0 20 20"
+                                        fill="none"
+                                        height="18"
+                                      >
+                                        <path
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          d="M16.3,8.2C15.9,5.3,13.2,3,10,3C7.4,3,5.2,4.5,4.2,6.6C1.8,7.2,0,9.2,0,11.7c0,3,2.5,5.3,5.5,5.3 c0.6,0,1-0.4,1-1c0-0.6-0.4-1-1-1c-2,0-3.5-1.5-3.5-3.3c0-1.6,1.3-3,3-3.2c0.4,0,0.7-0.3,0.8-0.6C6.4,6.2,8,5,10,5 c2.5,0,4.4,1.9,4.4,4.1c0,0.6,0.4,1,1,1c1.5,0,2.6,1.1,2.6,2.4c0,1.3-1.1,2.4-2.6,2.4c-0.6,0-1,0.4-1,1c0,0.6,0.4,1,1,1 c2.5,0,4.6-1.9,4.6-4.4C20,10.4,18.4,8.7,16.3,8.2z"
+                                          fill={"currentColor"}
+                                        />
+                                      </svg>
+                                    </label>
+                                  </m.span>
+                                </Tabs.Panel>
+                                <Tabs.Panel
+                                  className={
+                                    "relative flex h-32 shrink-0 grow-0 items-center justify-center -outline-offset-1 data-hidden:hidden"
+                                  }
+                                  value="unsplash"
+                                ></Tabs.Panel>
+                              </Tabs.Root>
+                            </MenuPopup>
+                          </Menu.Positioner>
+                        </Menu.Portal>
+                      </Menu.Root>
+                    </div>
                     <div
                       onPointerDown={onRepositionClick}
                       role="button"
-                      aria-label="Reposition the cover image" data-themed={"color, background-color, border-color"}
-                      className="flex h-10 min-w-0 shrink-0 overflow-hidden rounded-l-[2px] rounded-r-sm bg-faded-foreground/10 px-[8px] py-[4px] leading-[1.2] text-foreground/80 transition-colors duration-200 ease-out-power3 select-none hover:bg-faded-foreground/70 hover:text-background/60"
+                      aria-label="Reposition the cover image"
+                      data-themed={"color, background-color, border-color"}
+                      className="flex h-10 min-w-0 shrink-0 items-center overflow-hidden rounded-l-[2px] rounded-r-sm bg-faded-foreground/10 px-[8px] py-[4px] text-sm! leading-normal text-foreground/80 transition-colors duration-200 ease-out-power3 select-none hover:bg-faded-foreground/70 hover:text-background/60"
                     >
-	                    <div>Reposition</div>
+                      Reposition
                     </div>
                   </m.div>
                 </m.div>
@@ -1012,7 +1238,8 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             onPaste={handlePaste}
-            className={"field-type cover-image image-cover-insert__wrap relative mb-[1em] flex h-[4vh] max-h-[280px] items-center justify-center overflow-hidden transition-all duration-200 ease-out-power3"
+            className={
+              "field-type cover-image image-cover-insert__wrap relative mb-[1em] flex h-[4vh] max-h-[280px] items-center justify-center overflow-hidden transition-all duration-200 ease-out-power3"
             }
             style={{
               marginBottom: 0,
@@ -1040,7 +1267,8 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
               initial={"idle"}
               animate={visible ? "animate" : "idle"}
               transition={{
-                type: "tween", ease: EASING.power3.out
+                type: "tween",
+                ease: EASING.power3.out
               }}
             >
               <AnimatePresence mode="popLayout">
@@ -1066,7 +1294,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
                   >
                     <m.span>/</m.span>
                     <m.span
-	                    className={`upload__listToggler ease rounded-xl border border-solid border-[currentColor] px-3.5 py-1 text-sm! leading-normal transition-colors duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]`}
+                      className={`upload__listToggler ease rounded-xl border border-solid border-[currentColor] px-3.5 py-1 text-sm! leading-normal transition-colors duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]`}
                       onClick={openListDrawer}
                       role="button"
                     >
@@ -1095,9 +1323,10 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
                   >
                     <m.span
                       className={cn(
-	                      "ease relative rounded-xl border border-solid border-[currentColor] p-5 px-3.5 py-1 text-center text-sm! leading-normal transition-[z-index,opacity,border-color,background-color,color] duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]"
+                        "ease relative rounded-xl border border-solid border-[currentColor] p-5 px-3.5 py-1 text-center text-sm! leading-normal! transition-[z-index,opacity,border-color,background-color,color] duration-200 ease-out-power2 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)]"
                       )}
-                      role="button" onClick={insertCallback}
+                      role="button"
+                      onClick={insertCallback}
                     >
                       Add Cover
                     </m.span>

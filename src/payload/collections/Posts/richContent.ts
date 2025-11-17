@@ -10,7 +10,6 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
   LinkFeature,
-  type DefaultNodeTypes,
   type LinkFields
 } from "@payloadcms/richtext-lexical";
 import type { RichTextField, TextFieldSingleValidation } from "payload";
@@ -68,8 +67,7 @@ export const RichContent = (): RichTextField => {
               ];
             }
           }),
-          ContentHandOffFeature(),
-          MentionFeature()
+          ContentHandOffFeature()
         ];
       }
     }),

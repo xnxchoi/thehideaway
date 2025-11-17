@@ -1,9 +1,10 @@
 "use client";
 import {
   CursorProvider,
-  DeviceProvider, HAStoreProvider, useRPStore
+  DeviceProvider,
+  HAStoreProvider,
+  useRPStore
 } from "@/providers/RP_Pro";
-import "@/styles/payloadStyles.css";
 
 import { AdminThemeProvider } from "@/providers/Theme";
 import { ReactLenis, useLenis } from "lenis/react";
@@ -26,7 +27,7 @@ import { useAdminCursor } from "@/hooks/useAdminCursor";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/payload/components/sonner";
 import { AdminMiddleMan } from "@/providers/MiddleMan";
-import {QueryProvider} from "@/providers/QueryProvider";
+import { QueryProvider } from "@/providers/QueryProvider";
 import { useTheme } from "@/providers/Theme";
 import { useConfig, useNav, useTheme as useThemePayload } from "@payloadcms/ui";
 import { LazyMotion } from "motion/react";
@@ -82,7 +83,7 @@ type NavBarStore = {
 const NavbarContext = createContext<NavBarStore>(null!);
 const NavbarProvider = ({ children }: { children: ReactNode }) => {
   const { navOpen: navFixed, navRef, setNavOpen: setNavFixed } = useNav();
-	const setNavOpen = useRPStore((r) => r.setNavIsOpen);
+  const setNavOpen = useRPStore((r) => r.setNavIsOpen);
   const navEl = useRef<HTMLDivElement>(null!);
   const lastNavState = useRef(navFixed);
   const lastVisible = useRef(false);
@@ -119,9 +120,9 @@ const NavbarProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setVisible(navFixed ? float : hovered || float || userBarOpen);
   }, [float, hovered, navFixed, userBarOpen]);
-	useEffect(() => {
-		setNavOpen(visible);
-	}, [visible, setNavOpen]);
+  useEffect(() => {
+    setNavOpen(visible);
+  }, [visible, setNavOpen]);
   const setActive = useCallback((state: boolean) => {
     if (state) {
       setVisible(true);

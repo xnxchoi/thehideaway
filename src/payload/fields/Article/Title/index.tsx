@@ -10,12 +10,12 @@ import {
 import { ShimmerEffect, useConfig } from "@payloadcms/ui";
 import { lazy, Suspense, useEffect, useMemo, useState, type FC } from "react";
 
+import { loadClientFeatures } from "@/payload/Lexical/defaults/loadClientFeatures";
 import {
   defaultEditorLexicalConfig,
   sanitizeClientEditorConfig
 } from "@payloadcms/richtext-lexical/client";
 import type { LexicalRichTextFieldProps } from "node_modules/@payloadcms/richtext-lexical/dist/types";
-import { loadClientFeatures } from "@/payload/Lexical/defaults/loadClientFeatures";
 const RichTextEditor = lazy(() =>
   import("./inline").then((module) => ({ default: module.RichText }))
 );
