@@ -1,6 +1,6 @@
 "use client";
 import {useRPStore} from "@/providers/RP_Pro";
-import {Popover} from "@base-ui-components/react/popover";
+import {Popover} from "@base-ui/react/popover";
 import {ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 import {Skeleton} from "@/components/ui/skeleton";
@@ -18,7 +18,7 @@ import {Cross1Icon} from "@radix-ui/react-icons";
 import {useQuery} from "@tanstack/react-query";
 import Lenis from "lenis";
 import {useLenis} from "lenis/react";
-import {AnimatePresence, stagger, type HTMLMotionProps, MotionProps} from "motion/react";
+import {AnimatePresence, type HTMLMotionProps, stagger} from "motion/react";
 import * as m from "motion/react-m";
 import {usePathname} from "next/navigation";
 import type {CollectionSlug} from "payload";
@@ -107,7 +107,7 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 	}, [nItems]);
 
 	return (<Popover.Root open={open} onOpenChange={setOpen}>
-		<MotionPopoverTrigger ref={ref} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} initial={{
+		<MotionPopoverTrigger onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} initial={{
 			opacity: 0, scaleX: 0.01
 		}} variants={variants} animate={animation} exit={{
 			opacity: 0, scaleX: 0.01
@@ -133,8 +133,8 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 				</m.div>)}
 			</AnimatePresence>
 			<svg ref={icon}
-			     className="aspect-square w-[1.2rem] bg-transparent fill-[oklch(var(--n-s-btn)/0.8)] stroke-[1px] min-md:w-[1.4rem]"
-			     viewBox="0 0 45 45" data-themed={"stroke,fill"} fill="oklch(var(--n-s-btn)/1)">
+			     className="aspect-square w-[1.2rem] bg-transparent fill-nav-button/80 stroke-[1px] min-md:w-[1.4rem]"
+			     viewBox="0 0 45 45" data-themed={"stroke,fill"} fill="var(--n-s-btn)/1)">
 				<path
 					d="m40.7,34.79c-1.21-1.07-2.26-2.31-3.14-3.66-.96-1.87-1.53-3.92-1.69-6.01v-6.18c.02-6.81-5.04-12.57-11.8-13.44v-1.61c0-.92-.75-1.67-1.67-1.67s-1.67.75-1.67,1.67v1.64c-6.69.93-11.68,6.65-11.66,13.41v6.18c-.16,2.1-.73,4.14-1.69,6.01-.86,1.35-1.9,2.58-3.09,3.66-.27.24-.42.58-.42.94v1.7c0,.69.56,1.25,1.25,1.25h34.75c.69,0,1.25-.56,1.25-1.25v-1.7c0-.36-.16-.7-.43-.94Zm-34.22,1.39c1.16-1.12,2.19-2.38,3.05-3.75,1.21-2.26,1.91-4.75,2.06-7.31v-6.18c-.2-6.03,4.52-11.08,10.55-11.29,6.03-.2,11.08,4.52,11.29,10.55,0,.25,0,.49,0,.74v6.18c.15,2.56.86,5.05,2.06,7.31.86,1.37,1.89,2.63,3.05,3.75H6.48Z"></path>
 				<path d="m22.56,42.85c1.63-.04,2.99-1.24,3.22-2.85h-6.58c.24,1.66,1.68,2.87,3.35,2.85Z"></path>
@@ -143,7 +143,7 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 		<Popover.Portal>
 			<Popover.Positioner sideOffset={20} positionMethod={"fixed"}>
 				<Popover.Popup
-					className="relative max-h-[25rem] min-h-[15rem] min-w-[25rem] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-faded-background/30 px-4.5 py-6 text-faded-foreground/90 shadow-lg/25 shadow-lg shadow-muted-faded-background/30 outline-1 outline-[oklch(var(--muted-faded-fg)/.2)] backdrop-blur-xs transition-[transform,scale,opacity,background-color,color,box-shadow] duration-200 data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:bg-faded-background/60 dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-[oklch(var(--muted-faded-fg)/.4)]">
+					className="relative max-h-[25rem] min-h-[15rem] min-w-[25rem] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-faded-background/30 px-4.5 py-6 text-faded-foreground/90 shadow-lg/25 shadow-lg shadow-muted-faded-background/30 outline-1 outline-muted-faded-foreground/20 backdrop-blur-xs transition-[transform,scale,opacity,background-color,color,box-shadow] duration-200 data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:bg-faded-background/60 dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-muted-faded-foreground/40">
 					<div className={"absolute inset-0 opacity-30 mix-blend-multiply"} style={{
 						backgroundImage: "url(/assets/noise.png)", backgroundSize: "20%", backgroundPosition: "center"
 					}} />
@@ -344,7 +344,7 @@ const NotificationItem = (props: HTMLMotionProps<"div"> & {
 					<div
 						className="relative aspect-square h-auto w-full [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full">
 						{(thumbnail && <FrontImage resource={thumbnail} />) || (fallbackImage && (
-							<ImageMedia src={fallbackImage.path} size={fallbackImage.sizes} alt={"image"}
+							<ImageMedia src={fallbackImage.path}
 							            fill={true} />))}
 					</div>
 					<h1 className="mb-[6px] font-sans text-sm leading-[114%] font-semibold tracking-[-0.01em] min-lg:mb-[12px] min-lg:leading-[120%]"
@@ -428,14 +428,14 @@ function UserNotification({
 					{/* <div className="flex gap-2">
             <Button
               className={
-                "bg-faded-foreground text-[oklch(var(--n-s-btn-inverted))]"
+					 "bg-faded-foreground text-nav-button-inverted"
               }
             >
               Accept
             </Button>
             <Button
               className={
-                "border-[1px] border-solid border-[oklch(var(--n-s-bb))] text-[oklch(var(--n-s-btn))]"
+					 "border-[1px] border-solid border-nav-button-border text-nav-button"
               }
             >
               Decline

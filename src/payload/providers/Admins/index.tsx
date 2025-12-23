@@ -1,13 +1,10 @@
 "use client";
-import {
-  CursorProvider,
-  DeviceProvider,
-  HAStoreProvider,
-  useRPStore
-} from "@/providers/RP_Pro";
+import PC from "@/payload/providers/Admins/cssClasses";
+import {DeviceProvider} from "@/providers/RP_Pro";
 
 import { AdminThemeProvider } from "@/providers/Theme";
 import { ReactLenis, useLenis } from "lenis/react";
+import payload from "payload";
 import {
   createContext,
   useCallback,
@@ -26,12 +23,19 @@ import {
 import { useAdminCursor } from "@/hooks/useAdminCursor";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/payload/components/sonner";
-import { AdminMiddleMan } from "@/providers/MiddleMan";
+import {
+	createVaultStore,
+	createWriterStore,
+	VaultStore,
+	WriterStore
+} from "@/payload/stores";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { useTheme } from "@/providers/Theme";
-import { useConfig, useNav, useTheme as useThemePayload } from "@payloadcms/ui";
+import {useConfig, useNav} from "@payloadcms/ui";
 import { LazyMotion } from "motion/react";
 import { usePathname } from "next/navigation";
+import {StoreApi, useStore} from "zustand";
+import {AdminMiddleMan} from "./MiddleMen";
 
 type EventCursor = {
   listener: (e: MouseEvent) => void;
@@ -83,7 +87,7 @@ type NavBarStore = {
 const NavbarContext = createContext<NavBarStore>(null!);
 const NavbarProvider = ({ children }: { children: ReactNode }) => {
   const { navOpen: navFixed, navRef, setNavOpen: setNavFixed } = useNav();
-  const setNavOpen = useRPStore((r) => r.setNavIsOpen);
+	const setNavOpen = useVault((r) => r.setNavIsOpen);
   const navEl = useRef<HTMLDivElement>(null!);
   const lastNavState = useRef(navFixed);
   const lastVisible = useRef(false);
@@ -136,10 +140,10 @@ const NavbarProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!navRef.current) return;
     if (isSet.current) return;
-
-    const navCont = document.querySelector(
-      ".template-default__nav-toggler-wrapper"
-    ) as HTMLDivElement | null;
+	  const navContCandidates = document.querySelectorAll(
+		  PC.templates.map(r => `.${PC.wrapped}-${r}`).map(r => r + "__" + "nav-toggler-wrapper").join(",")
+	  )
+	  const navCont = navContCandidates.item(0) as HTMLDivElement | null;
 
     const navTog =
       (navCont &&
@@ -466,48 +470,78 @@ const AMDKeyManager = ({ children }: { children: ReactNode }) => {
   );
 };
 const Middle = ({ children }: { children: ReactNode }) => {
-  const { theme: payloadTheme } = useThemePayload();
-
-  const setTheme = useTheme((r) => r.setTheme);
-  useEffect(() => {
-    setTheme(payloadTheme);
-  }, [payloadTheme, setTheme]);
-
   useAdminCursor();
 
   return (
     <UserBarProvider>
       <NavbarProvider>
         <PidebarProvider>
-          <AMDKeyManager>{children}</AMDKeyManager>
+	        <AMDKeyManager><ImageSearchProvider>{children}              </ImageSearchProvider>
+	        </AMDKeyManager>
         </PidebarProvider>
       </NavbarProvider>
     </UserBarProvider>
   );
+};
+const VaultContext = createContext<StoreApi<VaultStore> | null>(null);
+const VaultProvider = ({children}: { children: ReactNode }) => {
+	const vaultStoreRef = useRef<StoreApi<VaultStore>>(null!);
+	if (!vaultStoreRef.current) {
+		vaultStoreRef.current = createVaultStore();
+	}
+	return (
+		<VaultContext.Provider value={vaultStoreRef.current}>
+			{children}
+		</VaultContext.Provider>
+	);
+};
+export const useVault = <T, >(selector: (store: VaultStore) => T) => {
+	const v = useContext(VaultContext);
+	if (!v) {
+		throw new Error("useVuault must be used inside VaultProvider");
+	}
+	return useStore(v, selector);
+};
+const WriterContext = createContext<StoreApi<WriterStore> | null>(null);
+export const WriterProvider = ({children}: { children: ReactNode }) => {
+	const writerStoreRef = useRef<StoreApi<WriterStore>>(null!);
+	if (!writerStoreRef.current) {
+		writerStoreRef.current = createWriterStore();
+	}
+	return (
+		<WriterContext.Provider value={writerStoreRef.current}>
+			{children}
+		</WriterContext.Provider>
+	);
+};
+export const useWriter = <T, >(selector: (store: WriterStore) => T) => {
+	const w = useContext(WriterContext);
+	if (!w) {
+		throw new Error("useWriter must be used inside WriterProvider");
+	}
+	return useStore(w, selector);
 };
 const features = () => import("@/providers/Motion").then((r) => r.default);
 const AdminsProviders: FC<{
   children: ReactNode;
 }> = ({ children }) => {
   return (
-    <QueryProvider>
-      <DeviceProvider>
-        <ReactLenis root={true}>
-          <HAStoreProvider>
+	  <VaultProvider>
+		  <QueryProvider>
+			  <DeviceProvider>
+				  <ReactLenis root={true}>
             <AdminThemeProvider>
               <LazyMotion features={features} strict={true}>
-                <CursorProvider>
-                  <AdminMiddleMan>
-                    <Middle>{children}</Middle>
-                    <Toaster />
-                  </AdminMiddleMan>
-                </CursorProvider>
+	              <AdminMiddleMan>
+		              <Middle>{children}</Middle>
+		              <Toaster/>
+	              </AdminMiddleMan>
               </LazyMotion>
             </AdminThemeProvider>
-          </HAStoreProvider>
-        </ReactLenis>
-      </DeviceProvider>
-    </QueryProvider>
+				  </ReactLenis>
+			  </DeviceProvider>
+		  </QueryProvider>
+	  </VaultProvider>
   );
 };
 export default AdminsProviders;

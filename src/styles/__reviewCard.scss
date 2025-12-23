@@ -40,7 +40,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
 
   width: 100%;
   height: 100%;
-  background-color: oklch(var(--n-s-fg) / 0.8);
+  background-color: oklch(from var(--n-s-fg) l c h/0.8);
   border-radius: 8px;
 }
 
@@ -62,7 +62,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  border: var(--gutter) solid oklch(var(--fg) / 1);
+  border: var(--gutter) solid oklch(from var(--fg) l c h/1);
 }
 
 .review__card-bg_safari__lRNlz .review__card-bg_frame-container {
@@ -71,7 +71,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
 
 .review__card-bg_frame-content {
   width: 100%;
-  //background-color: oklch(var(--fg)/1);
+  //background-color: oklch(from var(--fg) l c h/1);
 }
 
 .review__card-bg_frame-content-inner {
@@ -87,7 +87,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
 }
 
 .review__card-bg_quote {
-  color: oklch(var(--bg) / 0.9);
+  color: oklch(from var(--bg) l c h/0.9);
   font-family: var(--fontFamilyWide);
   font-size: 2.4rem;
   font-style: normal;
@@ -147,7 +147,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
   font-size: 1.4rem;
   line-height: 140%;
   letter-spacing: -0.01em;
-  color: oklch(var(--faded-bg) / 0.75);
+  color: oklch(from var(--faded-bg) l c h/0.75);
   font-weight: 500;
 }
 
@@ -159,7 +159,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
 
 .review__card-bg_authorDash {
   display: none;
-  color: oklch(var(--faded-bg) / 0.75);
+  color: oklch(from var(--faded-bg) l c h/0.75);
 }
 
 @media (min-width: 967px) {
@@ -177,7 +177,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
   font-size: 1.4rem;
   line-height: 140%;
   letter-spacing: -0.01em;
-  color: oklch(var(--faded-bg) / 0.75);
+  color: oklch(from var(--faded-bg) l c h/0.75);
   display: block;
 }
 
@@ -190,7 +190,7 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
 
 .review__card-bg_logo {
   width: 1.8rem;
-  color: oklch(var(--faded-bg) / 0.75);
+  color: oklch(from var(--faded-bg) l c h/0.75);
 }
 
 @media (min-width: 967px) {

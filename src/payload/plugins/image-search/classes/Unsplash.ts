@@ -1,4 +1,4 @@
-import { Provider } from "./Provider";
+import {Provider} from "./Provider";
 
 const REFERRAL_PARAMS =
   "utm_source=payload-bites-image-search&utm_medium=referral";

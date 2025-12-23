@@ -1,12 +1,7 @@
 "use client";
 
-import type {
-	ImageBaseSelect, ImageCollection, ImageCollectionSlug
-} from "@/types/payload-api-helpers";
-import {useDocumentInfo} from "@payloadcms/ui";
-import {
-	createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type Ref
-} from "react";
+import type {ImageCollectionSlug} from "@/types/payload-api-helpers";
+import {createContext, type ReactNode, useContext, useEffect, useState} from "react";
 
 export type CourierForm = {
 	form: FormData; relationTo: ImageCollectionSlug; value?: string;

@@ -10,7 +10,8 @@ export const Marquee = ({
 }) => {
   const [state, setState] = useState<"playing" | "paused">("playing");
   return (
-    <div className="relative z-200 flex h-[40px] w-full items-center justify-start overflow-hidden bg-transparent-base/100 text-[oklch(var(--n-s-btn)/1)]">
+	  <div
+		  className="relative z-200 flex h-[40px] w-full items-center justify-start overflow-hidden bg-transparent-base/100 text-nav-button">
       <div
         className={cn(
           "absolute whitespace-nowrap will-change-transform",

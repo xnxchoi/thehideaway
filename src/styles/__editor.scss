@@ -6,7 +6,7 @@
   display: none;
   pointer-events: none;
   padding: 0;
-  background-color: oklch(var(--bg)/.53);
+  background-color: oklch(from var(--bg) l c h/.53);
   z-index: 248;
   width: 0;
   position: fixed;

@@ -1,9 +1,12 @@
-import type { Block } from "payload";
-import { uuidv7 } from "uuidv7";
+import type {Block} from "payload";
+import {uuidv7} from "uuidv7";
 
 export const MediaBlock: Block = {
   slug: "mediaBlock",
   interfaceName: "Media",
+	admin: {
+		disableBlockName: true
+	},
   fields: [
     {
       name: "id",
@@ -20,7 +23,7 @@ export const MediaBlock: Block = {
     {
       name: "media",
       type: "upload",
-      relationTo: "media",
+	    relationTo: ["media", "exMedia", "userMedia"],
       required: true
     }
   ]

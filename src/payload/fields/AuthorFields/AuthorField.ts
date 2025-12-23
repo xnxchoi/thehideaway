@@ -1,9 +1,4 @@
-import {
-  DefaultValue,
-  Field,
-  RelationshipField,
-  type FieldAccess
-} from "payload";
+import {DefaultValue, Field, type FieldAccess, RelationshipField} from "payload";
 
 export const AuthorField = (hasMany = false): Field[] => {
   const baseConfig: RelationshipField = {

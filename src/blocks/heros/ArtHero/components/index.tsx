@@ -1,9 +1,15 @@
-import { Link } from "@/components/UX/Link/Link";
-import { FrontImage, FrontImageProps } from "@/components/UX/Media/FrontImage";
-import { cn } from "@/lib/utils";
-import { MediaReq, SingleArticle } from "@/types/collections/posts";
-import { formatDateTime } from "@/utilities/formatDateTime";
-import { ComponentPropsWithoutRef } from "react";
+import {Link} from "@/components/UX/Link/Link";
+import {FrontImage, FrontImageProps} from "@/components/UX/Media/FrontImage";
+import {cn} from "@/lib/utils";
+import {SingleArticle} from "@/types/collections/posts";
+import type {ImageCollectionSlug} from "@/types/payload-api-helpers"
+import {formatDateTime} from "@/utilities/formatDateTime";
+import {ComponentPropsWithoutRef} from "react";
+import {
+	FetchedImageDoc,
+	RalueAsDataWithRelation,
+	RalueWithRelation
+} from "@/types/collections/imageCollections";
 
 export const CoverWrap = (
   props: {
@@ -143,7 +149,7 @@ export const CoverSubtitle = (
 };
 export const CoverImage = (
   props: {
-    image?: MediaReq | null;
+	  image?: RalueAsDataWithRelation | RalueWithRelation | null;
   } & FrontImageProps
 ) => {
   const { image, className } = props;
@@ -194,7 +200,7 @@ export const CoverAuthor = (
   return (
     <address className={cn("rp-author-info z-10")}>
       <div
-        className={cn("rp__a-m text-[oklch(var(--off-fg)/1)]", className)}
+	      className={cn("rp__a-m text-off-foreground", className)}
         {...rest}
       >
         {author && (

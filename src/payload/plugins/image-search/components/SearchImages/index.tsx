@@ -1,6 +1,7 @@
 "use client";
 
 import "./index.scss";
+import {MagnifyingGlassIcon} from "@radix-ui/react-icons";
 import * as m from "motion/react-m";
 import {
   Drawer,
@@ -315,7 +316,7 @@ export const SearchImages = (props: SearchImagesProps) => {
                             openModal(previewImageDrawerSlug);
                           }}
                         >
-                          <ZoomIcon />
+	                        <MagnifyingGlassIcon/>
                         </m.button>
                       </div>
                       <div className={`${baseClass}__bottomOverlay`}>

@@ -297,7 +297,7 @@ export default function RP_Cursor() {
           className={cn(
             "cursor__text-container cursor-none transition-[background-color] duration-100",
             {
-              "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] backdrop-blur-[4px] perspective-[1200px]":
+	            "rounded-[8px] bg-nav-button/10 backdrop-blur-[4px] perspective-[1200px]":
                 isTextCursor,
               "rounded-full bg-transparent": !isTextCursor
             }
@@ -309,7 +309,7 @@ export default function RP_Cursor() {
               <m.span
                 data-themed="color, background-color"
                 className={cn(
-                  "cursor__text-caption cursor-none text-[1.2rem] font-bold text-[oklch(var(--n-s-fg)/1)]",
+	                "cursor__text-caption cursor-none text-[1.2rem] font-bold text-nav-foreground",
                   Dots.className
                 )}
                 key={cursorState}
@@ -385,7 +385,7 @@ export default function RP_Cursor() {
             ) : (
               <m.span
                 data-themed="color, background-color"
-                className="cursor__text-caption cursor-none font-dots text-[1.2rem] font-bold text-[oklch(var(--n-s-fg)/1)] mix-blend-exclusion"
+                className="cursor__text-caption cursor-none font-dots text-[1.2rem] font-bold text-nav-foreground mix-blend-exclusion"
                 key={cursorState}
                 data-theme={cursorTheme}
                 initial={{ opacity: 0 }}
@@ -419,7 +419,7 @@ export default function RP_Cursor() {
           >
             <m.circle
               ref={oCircle}
-              className="inline stroke-[oklch(var(--n-s-btn)/1)] data-focus:stroke-rouge-400!"
+              className="inline stroke-nav-button data-focus:stroke-rouge-400!"
               cx={50}
               cy={50}
               r={0}
@@ -430,7 +430,7 @@ export default function RP_Cursor() {
             />
             <m.circle
               ref={iCircle}
-              className="inline fill-[oklch(var(--n-s-btn)/1)]"
+              className="inline fill-nav-button"
               {...(cursorState === "FOCUS" && { "data-focus": "" })}
               cx={50}
               cy={50}

@@ -1,11 +1,9 @@
 "use server";
 
-import { revalidateTag, unstable_cache } from "next/cache";
+import {revalidateTag, unstable_cache} from "next/cache";
 import fs from "node:fs/promises";
 import path from "path";
-import { randomNumber } from "./randomNumber";
-import { getImageSize } from "next/dist/server/image-optimizer";
-import { breakString } from "@/cssVariables";
+import {randomNumber} from "./randomNumber";
 
 const imageDir = path.join(process.cwd(), "public", "assets", "media");
 
@@ -45,15 +43,13 @@ export const getFallbackImage = unstable_cache(
     param?: string
   ): Promise<{
     path: string;
-    sizes: string;
   }> => {
     const imageFiles = await getCachedImageFiles();
 
     if (imageFiles.length === 0) {
       // Return a default placeholder or an empty string if no images are found
       return {
-        path: "/assets/media/brandon-griggs-KfZD1svHvvc-unsplash.webp",
-        sizes: breakString
+	      path: "/assets/media/unsplash-omRMbFSqN6A.webp",
       }; // Make sure you have a placeholder image
     }
 
@@ -63,18 +59,16 @@ export const getFallbackImage = unstable_cache(
     if (!randomImage) {
       return {
         path: "/assets/media/brandon-griggs-KfZD1svHvvc-unsplash.webp",
-        sizes: breakString
       };
     }
 
     return {
       path: path.join("/assets/media", randomImage),
-      sizes: breakString
     };
   }
 );
 
 // Optional: Function to manually revalidate the cache
 export async function revalidateFallbackImages() {
-  revalidateTag("fallback-images");
+	revalidateTag("fallback-images", {expire: 50});
 }

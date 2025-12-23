@@ -24,7 +24,6 @@
 -- While it comes with a default configuration, the function is designed to be flexible,
 -- allowing for customization to meet specific needs.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-DROP FUNCTION IF EXISTS nanoid(int, text, float);
 CREATE OR REPLACE FUNCTION nanoid(
         size int DEFAULT 21,
         -- The number of symbols in the NanoId String. Must be greater than 0.

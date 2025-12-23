@@ -52,8 +52,8 @@ export const MobileMenu = () => {
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
           >
-            <div className="h-[1px] w-[30px] bg-[oklch(var(--n-s-fg)/1)]"></div>
-            <div className="h-[1px] w-[30px] bg-[oklch(var(--n-s-fg)/1)]"></div>
+	          <div className="h-[1px] w-[30px] bg-nav-foreground"></div>
+	          <div className="h-[1px] w-[30px] bg-nav-foreground"></div>
           </div>
         </m.div>
       )}

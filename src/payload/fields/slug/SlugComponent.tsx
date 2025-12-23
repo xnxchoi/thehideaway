@@ -181,7 +181,7 @@ export const SlugComponent = ({
                         type="text"
                         onChange={handleGhostChange}
                         size={ghostSize}
-                        className="ghost -z-[1] border-transparent text-[oklch(var(--muted-faded-fg)/.5)] transition-all duration-300 ease-power4 group-hover:text-foreground"
+                        className="ghost -z-[1] border-transparent text-muted-faded-foreground/50 transition-all duration-300 ease-power4 group-hover:text-foreground"
                         style={{
                           boxShadow: "none",
                           fontFamily: "var(--font-mono)",

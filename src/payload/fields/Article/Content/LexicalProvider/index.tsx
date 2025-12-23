@@ -9,8 +9,8 @@ import { LexicalComposer } from "@payloadcms/richtext-lexical/lexical/react/Lexi
 import { useEditDepth } from "@payloadcms/ui";
 import type { FC, ReactNode } from "react";
 import { useMemo, useRef } from "react";
-import { LexicalEditor } from "./LexicalEditor";
-
+import {LexicalEditor as LexicalEditorComponent} from "./LexicalEditor";
+import "./LexicalEditor.scss";
 const NestProviders = ({
   children,
   providers
@@ -111,7 +111,7 @@ export const LexicalProvider: FC<LexicalProviderProps> = (props) => {
         }
       >
         <NestProviders providers={editorConfig.features.providers}>
-          <LexicalEditor
+	        <LexicalEditorComponent
             editorConfig={editorConfig}
             editorContainerRef={editorContainerRef}
             isSmallWidthViewport={isSmallWidthViewport}

@@ -82,7 +82,7 @@ function FocusHero({
   return (
     <div
       className={cn(
-        "relative col-[1] grid items-center gap-y-[2rem] rounded-[1rem] bg-[oklch(var(--highlight,--faded-fg)/.8)] p-[2rem] text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
+	      "relative col-[1] grid items-center gap-y-[2rem] rounded-[1rem] bg-[oklch(from_var(--highlight,--faded-fg)_l_c_h/.8)] p-[2rem] text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
         type === "focus1"
           ? "lg:col-[1/5] lg:row-[1/3]"
           : "lg:col-[3/-1] lg:row-[1/3]"
@@ -97,10 +97,10 @@ function FocusHero({
           "col-[1] min-h-px w-full min-w-px self-start rounded-[1rem] pt-[100%] lg:row-[1/5]"
         }
       >
-        {"image" in item && (
+	      {"image" in item && !!item.image && (
           <FrontImage
             imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-            resource={item.image}
+            resource={item.image!}
           />
         )}
       </div>
@@ -179,8 +179,8 @@ function SideHero({
             imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
             resource={item.image}
             aspectRatio={{
-              def: 100 / 177,
-              lg: 0
+	            base: 0,
+	            lg: 100 / 177,
             }}
           />
         )}

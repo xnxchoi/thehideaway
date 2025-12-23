@@ -10,7 +10,7 @@ export default function Page() {
       <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center gap-10 p-9 md:p-16">
         <div
           className={
-            "absolute inset-[35px] z-[120] flex rounded-[35px] bg-[oklch(var(--opaque-bg)/.54)] backdrop-blur-[54px]"
+	          "absolute inset-[35px] z-[120] flex rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]"
           }
         ></div>
         <div className="z-[120] flex w-full max-w-[384px] flex-col gap-9">

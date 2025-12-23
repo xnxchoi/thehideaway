@@ -1,14 +1,15 @@
 import type {
-  ClientUser as OriginalClientUser,
-  RequestContext as OriginalRequestContext,
-  FieldHookArgs as OriginalFieldHookArgs
+	ClientUser as OriginalClientUser,
+	RequestContext as OriginalRequestContext
 } from "payload";
-import type { User } from "@/payload-types";
-import type { DefaultNodeTypes } from "@payloadcms/richtext-lexical";
+import type {User} from "@/payload-types";
+import type {DefaultNodeTypes} from "@payloadcms/richtext-lexical";
 
 declare module "payload" {
   export interface ClientUser extends OriginalClientUser {
     role: User["role"];
+	  id: User["id"]
+	  name: User["name"]
   }
 
   // Create a new interface that merges your additional fields with the original one

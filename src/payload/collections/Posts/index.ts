@@ -1,22 +1,13 @@
-import {
-  generatePreviewPath,
-  generatePreviewPathWithAuthor
-} from "@/utilities/generatePreviewPath";
-import {
-  AccessArgs,
-  CollectionConfig,
-  headersWithCors,
-  PayloadRequest,
-  Where
-} from "payload";
-import { sanitizeAuthor } from "../../fields/AuthorFields/hooks";
-import { revalidateDelete, revalidatePost } from "./hooks/revalidatePost";
+import {generatePreviewPath, generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
+import {AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, Where} from "payload";
+import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
+import {revalidateDelete, revalidatePost} from "./hooks/revalidatePost";
 
-import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import { Post } from "@/payload-types";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { slugField } from "@/payload/fields/slug";
-import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
+import {populatePublishedAt} from "@/hooks/populatePublishedAt";
+import {Post} from "@/payload-types";
+import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {slugField} from "@/payload/fields/slug";
+import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -24,16 +15,13 @@ import {
   OverviewField,
   PreviewField
 } from "@payloadcms/plugin-seo/fields";
-import { uuidv7 } from "uuidv7";
-import { PROPS_COLLAPSIBLE } from "../constants";
-import {
-  postBookmarkSaveHandler,
-  unBookmarkPostHandler
-} from "./api/bookmarkPostHandler";
-import { getPostHandler } from "./api/getPostHandler";
-import { postBookmarksHandler } from "./api/postBookmarksHandler";
-import { RichContent } from "./richContent";
-import { RichTitle } from "./richTitle";
+import {uuidv7} from "uuidv7";
+import {PROPS_COLLAPSIBLE} from "../constants";
+import {postBookmarkSaveHandler, unBookmarkPostHandler} from "./api/bookmarkPostHandler";
+import {getPostHandler} from "./api/getPostHandler";
+import {postBookmarksHandler} from "./api/postBookmarksHandler";
+import {RichContent} from "./richContent";
+import {RichTitle} from "./richTitle";
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced
@@ -181,33 +169,18 @@ export const Posts: CollectionConfig<"posts"> = {
       label: "Cover Image",
       type: "upload",
       maxDepth: 1,
-      relationTo: "userMedia",
+	    relationTo: ["userMedia", "assets", "exMedia"],
       admin: {
         components: {
           Field: {
             path: "@/payload/fields/Article/Cover/index.tsx",
             serverProps: {
-              relationTo: "userMedia"
+	            relationTo: ["userMedia", "assets", "exMedia"]
             }
           }
         }
       },
-      filterOptions: ({ req }) => {
-        return {
-          //     and: [
-          //       {
-          //         mimeType: {
-          //           like: "image/"
-          //         }
-          //       },
-          //       {
-          author: {
-            equals: req.user?.id
-          }
-          //       }
-          //     ]
-        } as Where;
-      }
+	    hasMany: false,
     },
     {
       name: "coverPosition",
@@ -230,6 +203,19 @@ export const Posts: CollectionConfig<"posts"> = {
     },
     RichTitle(),
     RichContent(),
+	  /**
+	   *  {
+      name: "richContent",
+      type: "ui",
+      admin: {
+        components: {
+          Field: {
+            path: "@/payload/fields/AccessControlled/RichText/index.tsx#AccessControlledRichTextField"
+          }
+        }
+      }
+    }
+	   */
     {
       label: PROPS_COLLAPSIBLE,
       type: "collapsible",

@@ -1,9 +1,16 @@
 import { JSONField } from "@payloadcms/ui";
-import type { JSONFieldServerComponent, JSONFieldServerProps } from "payload";
+import type {
+	ClientUser,
+	CollectionSlug,
+	JSONField as JSONFieldConfig,
+	JSONFieldServerComponent,
+	JSONFieldServerProps
+} from "payload";
 import type { ConditionalFieldProp } from "../Checkbox";
+import type {RP_Roles} from "@/stores/Notification/NotificationStore";
 
-const AdminOnlyJSONField: JSONFieldServerComponent = (
-  props: JSONFieldServerProps & ConditionalFieldProp
+const AccessControlledJSONField: JSONFieldServerComponent = (
+	props: JSONFieldServerProps & ConditionalFieldProp<"json">
 ) => {
   const {
     user,
@@ -12,19 +19,54 @@ const AdminOnlyJSONField: JSONFieldServerComponent = (
     schemaPath,
     permissions,
     clientField,
+	  collectionSlug,
     path,
     data,
+	  field,
     allowedRoles = ["admin"],
-    allowAuthor = false
+	  allowAuthor = false,
+	  conditionTester: cT
   } = props;
-  const isAdmin = allowedRoles.some((r) => user?.role === r);
-  const isAuthor =
-    Boolean(
-      "author" in data &&
-        data.author &&
-        (data.author as string | undefined) === user.id
-    ) && allowAuthor;
-  const clear = isAdmin || isAuthor;
+	const conditionTester = cT
+		? cT
+		: ({
+			   user
+		   }: {
+			user: ClientUser | null;
+			field?: JSONFieldConfig;
+			collection?: CollectionSlug;
+		}) => {
+			if (!user) return false;
+			const isAdmin = allowedRoles.some((r) => user.role === (r as string));
+			if (isAdmin) return true;
+			let isCl = false;
+			if (allowAuthor) {
+				if ("author" in data) {
+					if (Array.isArray(data.author)) {
+						const auth = data.author as (
+							| string
+							| { relationTo: "admins" | "users"; value: string }
+							)[];
+						if (
+							auth.some((u) => {
+								return (typeof u === "string" ? u : u.value) === user.id;
+							})
+						) {
+							isCl = true;
+						}
+					} else {
+						isCl = isCl || data.author === user.id;
+					}
+				}
+			}
+			return isCl;
+		};
+	const clear = conditionTester({
+		user,
+		field,
+		collection: collectionSlug as CollectionSlug
+	});
+
   if (clear) {
     return (
       <JSONField
@@ -37,4 +79,4 @@ const AdminOnlyJSONField: JSONFieldServerComponent = (
   }
   return <></>;
 };
-export default AdminOnlyJSONField;
+export default AccessControlledJSONField;

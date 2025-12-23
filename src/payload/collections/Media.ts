@@ -13,42 +13,9 @@ import {uuidv7} from "uuidv7";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 const MediaFields: CollectionConfig["fields"] = [
-  {
-    name: "alt",
-    type: "text",
-    defaultValue: "an image"
-  },
-  {
-    name: "caption",
-    type: "text"
-  },
-  {
-    name: "darkmode",
-    type: "checkbox",
-    defaultValue: false,
-    index: true
-  },
-  ...AuthorField(false),
-  {
-    name: "source", type: "group",
-    admin: {
-      hidden: true
-    },
-    fields: [
-      {
-	      name: "identifier", type: "text", required: true, defaultValue: () => uuidv7()
-      }, {
-		    name: "link", type: "text"
-	    }, {
-        name: "provider", type: "select",
-        options: [{
-	        label: "Unsplash", value: "unsplash"
-        }, {
-	        label: "Local", value: "local"
-        }], required: true, defaultValue: "local"
-      }
-    ]
-  }
+
+	...AuthorField(false),
+
 ];
 
 export const Media: CollectionConfig = {
@@ -96,65 +63,9 @@ export const Media: CollectionConfig = {
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, "../../../public/media"),
-    adminThumbnail: "thumbnail",
-    focalPoint: true,
-    filenameCompoundIndex: ["filename", "alt"],
-    formatOptions: { format: "webp" },
-    mimeTypes: ["image/*", "video/*", "audio/*", "application/pdf"],
-    imageSizes: [
-      {
-        name: "thumbnail",
-        width: 300,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "square",
-        width: 500,
-        height: 500,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "small",
-        width: 600,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "medium",
-        width: 900,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "large",
-        width: 1400,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "xlarge",
-        width: 1920,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "og",
-        width: 1200,
-        height: 630,
-        crop: "center",
-        formatOptions: {
-          format: "webp"
-        }
-      }
-    ]
+
+	  mimeTypes: ["video/*", "audio/*", "application/pdf"],
+     
   },
   hooks: {
     beforeOperation: [

@@ -68,7 +68,7 @@ export default function PageClient({
       <div
         className="relative"
         style={{
-          backgroundImage: `linear-gradient(to bottom, oklch(var(--faded-bg)/1) 22%, oklch(var(--faded-bg)/0.75) 40%, oklch(var(--faded-bg)/0.5) 50%, oklch(var(--faded-bg)/0.15) 65%, oklch(var(--faded-bg)/0.05) 72%, oklch(var(--faded-bg)/0.001) 96%)`,
+	        backgroundImage: `linear-gradient(to bottom, oklch(from var(--faded-bg) l c h/1) 22%, oklch(from var(--faded-bg) l c h/0.75) 40%, oklch(from var(--faded-bg) l c h/0.5) 50%, oklch(from var(--faded-bg) l c h/0.15) 65%, oklch(from var(--faded-bg) l c h/0.05) 72%, oklch(from var(--faded-bg) l c h/0.001) 96%)`,
           zIndex: 100,
           height: "14vh",
           width: "100vw",
@@ -81,7 +81,8 @@ export default function PageClient({
           position: "relative"
         }}
       >
-        <div className="absolute top-0 left-0 z-50 h-px w-screen bg-linear-to-r from-[oklch(var(--muted-faded-fg)/0.15)] from-10% via-[oklch(var(--muted-faded-fg)/0.75)] via-50% to-[oklch(var(--muted-faded-fg)/0.15)] to-90%" />
+	      <div
+		      className="absolute top-0 left-0 z-50 h-px w-screen bg-linear-to-r from-muted-faded-foreground/15 from-10% via-muted-faded-foreground/75 via-50% to-muted-faded-foreground/15 to-90%"/>
       </div>
     </div>
   );

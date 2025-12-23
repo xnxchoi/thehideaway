@@ -176,7 +176,8 @@ export function UserCard() {
           </Alert>
         )}
         {sessions && sessions.length > 0 && (
-          <div className="flex w-max flex-col gap-1 border-l-2 border-[oklch(var(--muted-faded-fg)/.3)] px-2 pl-4 font-sans">
+	        <div
+		        className="flex w-max flex-col gap-1 border-l-2 border-muted-faded-foreground/30 px-2 pl-4 font-sans">
             <p className="text-base font-medium">Active Sessions</p>
             <div className="grid grid-cols-[repeat(4,1fr)] grid-rows-[repeat(1,1fr)] gap-[8px] py-2">
               {sessions
@@ -184,9 +185,9 @@ export function UserCard() {
                 .map((sessionData) => {
                   return (
                     <div
-                      className="outline-groove group flex items-center justify-between gap-4 rounded-[12px] bg-transparent px-4 py-1.5 text-[oklch(var(--fg)/1)] shadow-xs/20 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-[oklch(var(--muted-faded-bg)/1)] hover:text-[oklch(var(--muted-faded-fg)/1)] md:shadow-sm/20 dark:shadow-sm/25 md:dark:shadow-md/25"
+	                    className="outline-groove group flex items-center justify-between gap-4 rounded-[12px] bg-transparent px-4 py-1.5 text-foreground shadow-xs/20 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-background hover:text-muted-faded-foreground md:shadow-sm/20 dark:shadow-sm/25 md:dark:shadow-md/25"
                       style={{
-                        outlineColor: "oklch(var(--muted-faded-fg)/.3)"
+	                      outlineColor: "oklch(from var(--muted-faded-fg) l c h /.3)"
                       }}
                       key={sessionData.id}
                     >
@@ -252,13 +253,15 @@ export function UserCard() {
             </div>
           </div>
         )}
-        <div className="flex items-center justify-between gap-10 border-y border-[oklch(var(--muted-faded-fg)/.3)] px-0 pt-4">
+	      <div
+		      className="flex items-center justify-between gap-10 border-y border-muted-faded-foreground/30 px-0 pt-4">
           <div className="flex h-full w-full flex-col gap-4">
             <div className="flex h-6 w-full items-center font-sans text-lg">
               Passkeys
             </div>
             <div className="flex h-12 w-full items-center justify-between">
-              <div className="flex h-full w-full items-center border-r border-[oklch(var(--muted-faded-fg)/.3)] pr-4">
+	            <div
+		            className="flex h-full w-full items-center border-r border-muted-faded-foreground/30 pr-4">
                 <ListPasskeys />
               </div>
               <div className="flex h-full w-full items-center pl-4">
@@ -341,7 +344,7 @@ export function UserCard() {
                       "items-center justify-center gap-2 rounded-md font-sans text-base",
                       (currentUser?.twoFactorEnabled &&
                         "border-bleu-700 px-6 py-3 text-bleu-700") ||
-                        "flex border-[1px] border-transparent px-3 py-1 text-[oklch(var(--faded-fg)/1)]"
+	                    "flex border-[1px] border-transparent px-3 py-1 text-faded-foreground"
                     )}
                   >
                     {currentUser?.twoFactorEnabled ? (
@@ -839,7 +842,7 @@ function EditUserDialog() {
                   First Name
                 </Label>
                 <Input
-                  className="font-sans placeholder:font-sans placeholder:text-[oklch(var(--muted-faded-fg)/.7)] placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-[oklch(var(--faded-fg))]"
+	                className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
                   id="firstName"
                   type="firstName"
                   placeholder={currentUser?.firstName ?? ""}
@@ -854,7 +857,7 @@ function EditUserDialog() {
                   Last Name
                 </Label>
                 <Input
-                  className="font-sans placeholder:font-sans placeholder:text-[oklch(var(--muted-faded-fg)/.7)] placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-[oklch(var(--faded-fg))]"
+	                className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
                   id="lastName"
                   type="lastName"
                   placeholder={currentUser?.lastName ?? ""}
@@ -874,7 +877,7 @@ function EditUserDialog() {
                   <div className="relative my-10 flex w-full flex-col items-center">
                     <div
                       className={
-                        "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-[oklch(var(--faded-fg)/.6)] bg-transparent transition-all duration-300"
+	                      "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-faded-foreground/60 bg-transparent transition-all duration-300"
                       }
                       onDragEnter={handleDragEnter}
                       onDragOver={handleDragOver}
@@ -891,7 +894,7 @@ function EditUserDialog() {
                         onChange={onClickRemove}
                       />
                       <div
-                        className="ease relative rounded-xl border-[1px] border-solid border-[oklch(var(--faded-fg)/1)] p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-[oklch(var(--faded-fg)/1)] hover:bg-[oklch(var(--muted-faded-fg)/1)] hover:text-[oklch(var(--faded-bg)/1)] data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
+	                      className="ease relative rounded-xl border-[1px] border-solid border-faded-foreground p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-faded-foreground hover:bg-muted-faded-foreground hover:text-faded-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
                         data-visible={hover}
                         onMouseEnter={onMouseEnter}
                         onMouseLeave={onMouseLeave}
@@ -963,14 +966,14 @@ function EditUserDialog() {
                       {imagePreview && (
                         <div
                           className={cn(
-                            "absolute inset-0 flex items-center justify-center gap-[8px] bg-[oklch(var(--off-black)/.3)] backdrop-blur-lg transition-all duration-300 data-[visible=false]:z-[0] data-[visible=false]:opacity-0 data-[visible=true]:z-[55] data-[visible=true]:opacity-100"
+	                          "absolute inset-0 flex items-center justify-center gap-[8px] bg-off-black/30 backdrop-blur-lg transition-all duration-300 data-[visible=false]:z-[0] data-[visible=false]:opacity-0 data-[visible=true]:z-[55] data-[visible=true]:opacity-100"
                           )}
                           data-visible={hover}
                         >
                           <span
                             onMouseEnter={onMouseEnter}
                             onMouseLeave={onMouseLeave}
-                            className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] transition-colors duration-300 hover:bg-[oklch(var(--off-bg)/.5)] hover:text-[oklch(var(--rouge-700)/1)]"
+                            className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] transition-colors duration-300 hover:bg-off-background/50 hover:text-rouge-700"
                             onClick={onClickRemove}
                           >
                             <svg
@@ -1117,7 +1120,7 @@ function AddPasskey() {
             id="passkey-name"
             value={passkeyName}
             onChange={(e) => setPasskeyName(e.target.value)}
-            className="!focus-visible:border-[oklch(var(--faded-fg)/.9)] !border-[oklch(var(--faded-fg)/.5)] py-2 text-base placeholder:text-base placeholder:leading-[1.5] placeholder:text-[oklch(var(--faded-fg))]"
+            className="!focus-visible:border-faded-foreground/90 !border-faded-foreground/&.5)] py-2 text-base placeholder:text-base placeholder:leading-[1.5] placeholder:text-faded-foreground"
           />
         </div>
         <DialogFooter>
@@ -1238,7 +1241,7 @@ function ListPasskeys() {
                 Add new passkey
               </Label>
               <Input
-                className="!focus-visible:border-[oklch(var(--faded-fg)/.9)] border-[oklch(var(--faded-fg)/.6)] py-2 pb-3 text-lg placeholder:leading-[1.5] placeholder:text-[oklch(var(--muted-fg))]"
+	              className="!focus-visible:border-faded-foreground/90 border-faded-foreground/60 py-2 pb-3 text-lg placeholder:leading-[1.5] placeholder:text-muted-foreground"
                 id="passkey-name"
                 value={passkeyName}
                 onChange={(e) => setPasskeyName(e.target.value)}
@@ -1248,13 +1251,14 @@ function ListPasskeys() {
             <Button
               type="submit"
               onClick={handleAddPasskey}
-              className="group mt-5 flex h-13 w-full items-center justify-center gap-2 rounded-md border border-[oklch(var(--muted-faded-fg)/.6)] bg-[oklch(var(--muted-faded-bg)/.7)] text-[oklch(var(--faded-fg)/.7)] transition-colors duration-300 ease-power4 hover:border-[oklch(var(--muted-faded-fg)/.9)] hover:bg-[oklch(var(--muted-faded-fg)/.5)]"
+              className="group mt-5 flex h-13 w-full items-center justify-center gap-2 rounded-md border border-muted-faded-foreground/60 bg-muted-faded-background/70 text-faded-foreground/70 transition-colors duration-300 ease-power4 hover:border-muted-faded-foreground/90 hover:bg-muted-faded-foreground/50"
             >
               {isLoading ? (
                 <Loader2 size={15} className="animate-spin" />
               ) : (
                 <>
-                  <Fingerprint className="mr-2 h-4 w-4 transition-colors duration-300 ease-power4 group-hover:text-[oklch(var(--fg))]" />
+	                <Fingerprint
+		                className="mr-2 h-4 w-4 transition-colors duration-300 ease-power4 group-hover:text-foreground"/>
                   Create Passkey{" "}
                 </>
               )}

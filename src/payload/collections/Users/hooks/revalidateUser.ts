@@ -1,7 +1,7 @@
 "use server";
 import type {
 	CollectionAfterChangeHook,
-	CollectionAfterDeleteHook,
+	CollectionAfterDeleteHook
 } from "payload";
 
 import {revalidatePath, revalidateTag} from "next/cache";
@@ -21,7 +21,7 @@ export const revalidateUser: CollectionAfterChangeHook<User> = cache(
 						payload.logger.info(`Revalidating user at path: ${path}`);
 
 						revalidatePath(path);
-						revalidateTag("users-sitemap");
+						revalidateTag("users-sitemap", {expire: 50});
 					}
 
 					// If the page was previously published, we need to revalidate the old path
@@ -31,19 +31,19 @@ export const revalidateUser: CollectionAfterChangeHook<User> = cache(
 						payload.logger.info(`Revalidating old member at path: ${oldPath}`);
 
 						revalidatePath(oldPath);
-						revalidateTag("users-sitemap");
+						revalidateTag("users-sitemap", {expire: 50});
 					}
 				}
 			}
 		}
 		return doc;
-	},
+	}
 );
 
 export const revalidateDelete: CollectionAfterDeleteHook<User> = async ({
-	doc,
-	req,
-	context,
+	                                                                        doc,
+	                                                                        req,
+	                                                                        context
 }) => {
 	try {
 		const overrideAccess = true;
@@ -54,9 +54,9 @@ export const revalidateDelete: CollectionAfterDeleteHook<User> = async ({
 			where: {user: {equals: doc.id}},
 			context: {
 				...context,
-				overrideAccess,
+				overrideAccess
 			},
-			req,
+			req
 		});
 		await payload.delete({
 			collection: "profile",
@@ -64,26 +64,26 @@ export const revalidateDelete: CollectionAfterDeleteHook<User> = async ({
 			where: {author: {equals: doc.id}},
 			context: {
 				...context,
-				overrideAccess,
+				overrideAccess
 			},
-			req,
+			req
 		});
 		await payload.delete({
 			collection: "follows",
 			overrideAccess: true,
 			where: {
-				or: [{target: {equals: doc.id}}, {user: {equals: doc.id}}],
+				or: [{target: {equals: doc.id}}, {user: {equals: doc.id}}]
 			},
 			context: {
 				...context,
-				overrideAccess,
+				overrideAccess
 			},
-			req,
+			req
 		});
 		if (!req.context?.disableRevalidate) {
 			const path = `/users/${doc?.slug}`;
 			revalidatePath(path);
-			revalidateTag("users-sitemap");
+			revalidateTag("users-sitemap", {expire: 50});
 		}
 	} catch (e) {
 		req.payload.logger.error(e);

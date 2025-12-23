@@ -98,7 +98,7 @@ function CommandInput({
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-          "flex h-[44px] w-full rounded-md bg-transparent py-5 text-sm outline-hidden placeholder:text-[oklch(var(--bg)/1)] disabled:cursor-not-allowed disabled:opacity-50",
+	        "flex h-[44px] w-full rounded-md bg-transparent py-5 text-sm outline-hidden placeholder:text-background disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         data-themed={"color, background-color,height,placeholder-color"}
@@ -130,7 +130,7 @@ function CommandEmpty({
   return (
     <CommandPrimitive.Empty
       data-slot="command-empty"
-      className="absolute inset-0 flex items-center justify-center py-6 text-center text-xl text-[oklch(var(--faded-fg)/1)]"
+      className="absolute inset-0 flex items-center justify-center py-6 text-center text-xl text-faded-foreground"
       {...props}
     />
   );
@@ -144,7 +144,7 @@ function CommandGroup({
     <CommandPrimitive.Group
       data-slot="command-group"
       className={cn(
-        "overflow-hidden rounded-[4px] py-[6px] [&_[cmdk-group-heading]]:text-xl [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[oklch(var(--faded-fg)/1)]",
+	      "overflow-hidden rounded-[4px] py-[6px] [&_[cmdk-group-heading]]:text-xl [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-faded-foreground",
         className
       )}
       {...props}

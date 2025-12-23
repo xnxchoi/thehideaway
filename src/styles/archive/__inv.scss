@@ -87,8 +87,8 @@
 .j1V:checked ~ .s65 .chx:nth-child(1):after,
 .wOp:checked ~ .s65 .chx:nth-child(4),
 .wOp:checked ~ .s65 .chx:nth-child(4):after {
-  background: oklch(var(--bg)/.53);
-  color: oklch(var(--fg)/.86);
+  background: oklch(from var(--bg) l c h/.53);
+  color: oklch(from var(--fg) l c h/.86);
 }
 
 .ATc:checked ~ .s65 .Mo7,
@@ -105,7 +105,7 @@
 
 .ViewersWatchingContainer-title {
   line-height: 1.8;
-  color: oklch(var(--fg)/1);
+  color: oklch(from var(--fg) l c h/1);
   font-size: var(--text-h6);
   font-weight: 400
 }
@@ -134,7 +134,7 @@
 .YIX {
   font-family: var(--fontFamilyWide);
   text-transform: uppercase;
-  color: oklch(var(--fg)/1);
+  color: oklch(from var(--fg) l c h/1);
   font-weight: 600;
   transform-origin: 50% 50%;
   font-size: 45px;
@@ -166,7 +166,7 @@
   border: 1px solid rgb(74 74 74/.45);
   border-radius: 20px;
   display: flex;
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
   background: rgb(149 149 149/.15);
 
   font-size: var(--text-h6);
@@ -255,7 +255,7 @@
 
 
 .tQz {
-  background: linear-gradient(0deg, oklch(var(--fg/1)), oklch(var(--fg)/.86));
+  background: linear-gradient(0deg, oklch(from var(--fg) l c h/1), oklch(from var(--fg) l c h/.86));
   border-radius: calc(var(--collectionRadius) * 2);
   padding: var(--halfGutter);
   margin: 0 var(--halfGutter);
@@ -316,7 +316,7 @@ img {
 ._LM {
   align-items: center;
   background: var(--green-3);
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
   border-radius: var(--collectionRadius);
   display: flex;
   flex-direction: column;
@@ -344,7 +344,7 @@ img {
 }
 
 .sJ3 {
-  color: oklch(var(--fg)/1);
+  color: oklch(from var(--fg) l c h/1);
   border-top: 1px solid;
   display: block;
   padding: var(--halfGutter) 0
@@ -457,7 +457,7 @@ img {
 }
 
 .wml {
-  background: linear-gradient(0deg, rgba(11 11 11/50%), oklch(var(--fg)/.86));
+  background: linear-gradient(0deg, rgba(11 11 11/50%), oklch(from var(--fg) l c h/.86));
   border-radius: calc(var(--collectionRadius) * 2);
   padding: var(--halfGutter);
   margin: 0 var(--halfGutter);
@@ -572,9 +572,9 @@ img {
 }
 
 .Dkm {
-  color: oklch(var(--fg)/1);
-  background-color: oklch(var(--fg)/.86);
-  border-color: oklch(var(--fg)/.86)
+  color: oklch(from var(--fg) l c h/1);
+  background-color: oklch(from var(--fg) l c h/.86);
+  border-color: oklch(from var(--fg) l c h/.86)
 }
 
 .j06 {
@@ -702,7 +702,7 @@ img {
 
 .Ex8,
 .mBf {
-  color: oklch(var(--fg)/1)
+  color: oklch(from var(--fg) l c h/1)
 }
 
 .mBf {
@@ -801,7 +801,7 @@ button.iuR {
   grid-column: 1;
   display: grid;
   background: var(--green-3);
-  color: oklch(var(--fg)/1);
+  color: oklch(from var(--fg) l c h/1);
   padding: 1.25rem !important;
   border-radius: 10px
 }
@@ -815,19 +815,19 @@ button.iuR {
   grid-template-rows: 1fr repeat(4, auto);
   grid-template-columns: repeat(2, 1fr);
   background: var(--green-3);
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
   padding: 1.25rem;
   border-radius: 10px
 }
 
 .Frg,
 .wPh span {
-  color: oklch(var(--fg)/1)
+  color: oklch(from var(--fg) l c h/1)
 }
 
 .Frg {
-  background-color: oklch(var(--fg)/.86);
-  border-color: oklch(var(--fg)/.86)
+  background-color: oklch(from var(--fg) l c h/.86);
+  border-color: oklch(from var(--fg) l c h/.86)
 }
 
 .MKU {
@@ -998,7 +998,7 @@ button.iuR {
 
 
 .oCA {
-  color: oklch(var(--fg)/1);
+  color: oklch(from var(--fg) l c h/1);
   font-size: 2.6rem;
   text-indent: .5ch;
   font-weight: 700;
@@ -1029,7 +1029,7 @@ button.iuR {
 }
 
 .Qyd path {
-  stroke: oklch(var(--fg)/.86);
+  stroke: oklch(from var(--fg) l c h/.86);
   mix-blend-mode: exclusion;
   stroke-width: 2;
   stroke-miterlimit: 10
@@ -1062,7 +1062,7 @@ button.iuR {
 
 .fz0 {
   align-items: flex-start;
-  color: oklch(var(--fg)/.86) !important;
+  color: oklch(from var(--fg) l c h/.86) !important;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--halfGutter);
@@ -1120,11 +1120,11 @@ button.iuR {
   font-variant-caps: small-caps;
   text-wrap: balance;
   letter-spacing: -.02em;
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
 }
 
 .J_e {
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
   border-color: rgb(74 74 74/.45);
 }
 
@@ -1134,7 +1134,7 @@ button.iuR {
   letter-spacing: -.01em;
   font-weight: 600;
   margin: 0;
-  color: oklch(var(--fg)/1);
+  color: oklch(from var(--fg) l c h/1);
   mix-blend-mode: exclusion;
   padding-right: 20px;
   font-size: var(--text-h3);
@@ -1177,7 +1177,7 @@ button.iuR {
   width: 100%;
   border-radius: var(--cardBorder);
   padding: 1rem .75rem;
-  background: linear-gradient(0deg, oklch(var(--fg)/.86), oklch(var(--fg)/.86));
+  background: linear-gradient(0deg, oklch(from var(--fg) l c h/.86), oklch(from var(--fg) l c h/.86));
   overflow: hidden;
   grid-template-rows: auto 1fr
 }
@@ -1372,7 +1372,7 @@ button.iuR {
     content: "";
     height: var(--text-h5);
     width: var(--text-h5);
-    color: oklch(var(--foreground)/.86);
+    color: oklch(from var(--foreground) l c h/.86);
     z-index: 1;
     transition: transform ease .2s;
   }
@@ -1392,7 +1392,7 @@ button.iuR {
 }
 
 .yLP:after {
-  background: oklch(var(--bg)/1);
+  background: oklch(from var(--bg) l c h/1);
   bottom: -36px;
   content: "";
   height: 36px;
@@ -1453,7 +1453,7 @@ h4.AOE {
   column-gap: var(--halfGutter);
   margin-bottom: var(--pageGutter);
   padding-bottom: var(--pageGutter);
-  color: oklch(var(--foreground)/1)
+  color: oklch(from var(--foreground) l c h/1)
 }
 
 .Afg .flow-river-wrap:first-of-type {
@@ -1466,7 +1466,7 @@ h4.AOE {
 
 /*    bottom-up   */
 .card-199950893 {
-  background-color: oklch(var(--bg)/.08)
+  background-color: oklch(from var(--bg) l c h/.08)
 }
 
 
@@ -1504,7 +1504,7 @@ h4.AOE {
 .Fh8 .WEv,
 ._LM .NNe,
 ._LM .aCn span {
-  color: oklch(var(--foreground)/.86)
+  color: oklch(from var(--foreground) l c h/.86)
 }
 
 ._LM .EIU {
@@ -1606,7 +1606,7 @@ h4.AOE {
 }
 
 .Fh8.eMO * {
-  border-color: oklch(var(--foreground)/1);
+  border-color: oklch(from var(--foreground) l c h/1);
 }
 
 .Fh8 .O-E {
@@ -1614,8 +1614,8 @@ h4.AOE {
 }
 
 .Fh8 .aCn {
-  border-color: oklch(var(--foreground)/.86);
-  color: oklch(var(--foreground)/.86)
+  border-color: oklch(from var(--foreground) l c h/.86);
+  color: oklch(from var(--foreground) l c h/.86)
 }
 
 .Fh8 .tW7 {
@@ -1661,7 +1661,7 @@ h4.AOE {
 
 .Gyx {
   border: 1px solid;
-  color: oklch(var(--foreground)/1);
+  color: oklch(from var(--foreground) l c h/1);
   display: inline-block;
   font-family: var(--fontFamilyWide);
   font-weight: 600;
@@ -1687,7 +1687,7 @@ h4.AOE {
   row-gap: var(--halfGutter);
   padding: var(--halfGutter);
   padding-left: 0;
-  color: oklch(var(--foreground)/1);
+  color: oklch(from var(--foreground) l c h/1);
   border-color: rgb(149 149 149/40%)
 }
 
@@ -1705,7 +1705,7 @@ h4.AOE {
 .og9 {
   flex-direction: column;
   grid-column: 1/-1;
-  color: oklch(var(--foreground)/1)
+  color: oklch(from var(--foreground) l c h/1)
 }
 
 .N25 {
@@ -1941,7 +1941,7 @@ h4.AOE {
   }
 
   .iH0:after {
-    background: oklch(var(--foreground)/1);
+    background: oklch(from var(--foreground) l c h/1);
     bottom: 0;
     content: "";
     grid-column: 6/-1;

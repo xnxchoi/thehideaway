@@ -1,9 +1,15 @@
 import { TextField } from "@payloadcms/ui";
-import type { TextFieldServerComponent, TextFieldServerProps } from "payload";
+import type {
+	ClientUser,
+	CollectionSlug,
+	TextField as TextFieldConfig,
+	TextFieldServerComponent,
+	TextFieldServerProps
+} from "payload";
 import type { ConditionalFieldProp } from "../Checkbox";
 
-const AdminOnlyTextField: TextFieldServerComponent = (
-  props: TextFieldServerProps & ConditionalFieldProp
+const AccessControlledTextField: TextFieldServerComponent = (
+	props: TextFieldServerProps & ConditionalFieldProp<"text">
 ) => {
   const {
     user,
@@ -12,19 +18,54 @@ const AdminOnlyTextField: TextFieldServerComponent = (
     schemaPath,
     permissions,
     clientField,
+	  collectionSlug,
     path,
     data,
+	  field,
     allowedRoles = ["admin"],
-    allowAuthor = false
+	  allowAuthor = false,
+	  conditionTester: cT
   } = props;
-  const isAdmin = allowedRoles.some((r) => user?.role === r);
-  const isAuthor =
-    Boolean(
-      "author" in data &&
-        data.author &&
-        (data.author as string | undefined) === user.id
-    ) && allowAuthor;
-  const clear = isAdmin || isAuthor;
+	const conditionTester = cT
+		? cT
+		: ({
+			   user
+		   }: {
+			user: ClientUser | null;
+			field?: TextFieldConfig;
+			collection?: CollectionSlug;
+		}) => {
+			if (!user) return false;
+			const isAdmin = allowedRoles.some((r) => user.role === (r as string));
+			if (isAdmin) return true;
+			let isCl = false;
+			if (allowAuthor) {
+				if ("author" in data) {
+					if (Array.isArray(data.author)) {
+						const auth = data.author as (
+							| string
+							| { relationTo: "admins" | "users"; value: string }
+							)[];
+						if (
+							auth.some((u) => {
+								return (typeof u === "string" ? u : u.value) === user.id;
+							})
+						) {
+							isCl = true;
+						}
+					} else {
+						isCl = isCl || data.author === user.id;
+					}
+				}
+			}
+			return isCl;
+		};
+	const clear = conditionTester({
+		user,
+		field,
+		collection: collectionSlug as CollectionSlug
+	});
+
   if (clear) {
     return (
       <TextField
@@ -37,4 +78,4 @@ const AdminOnlyTextField: TextFieldServerComponent = (
   }
   return <></>;
 };
-export default AdminOnlyTextField;
+export default AccessControlledTextField;

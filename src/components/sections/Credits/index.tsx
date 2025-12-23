@@ -518,7 +518,7 @@ const CreditsInner = (props: CreditComponentProps) => {
     <m.div ref={movied}>
       <div
         className={
-          "equipe h-screen overflow-hidden bg-[oklch(var(--off-black)/1)] text-[oklch(var(--off-white)/1)] max-md:mb-[70px] max-md:h-auto max-md:overflow-visible max-md:px-0 max-md:pt-[110px]"
+	        "equipe h-screen overflow-hidden bg-off-black text-off-white max-md:mb-[70px] max-md:h-auto max-md:overflow-visible max-md:px-0 max-md:pt-[110px]"
         }
       >
         <div className="fondFlou fixed" ref={fondFlou}>
@@ -563,7 +563,6 @@ const CreditsInner = (props: CreditComponentProps) => {
                       imgClassName={`imgFond absolute`}
                       resource={perso.image}
                       isUser={true}
-                      alt=""
                     />
                   </m.div>
                 )
@@ -633,7 +632,6 @@ const CreditsInner = (props: CreditComponentProps) => {
                   imgClassName={`w-full h-full object-cover absolute`}
                   resource={activeProfile.image}
                   isUser={true}
-                  alt=""
                 />
               </m.div>
               <m.div
@@ -709,7 +707,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                     }}
                   />
                   <m.div
-                    className="fixed top-1/2 left-1/2 z-[100] mr-10 flex h-[300px] w-[400px] -translate-x-1/2 -translate-y-1/2 flex-col items-start justify-center gap-1.5 overflow-hidden rounded-[15px] bg-[oklch(var(--muted-bg)/0.4)] p-10 backdrop-blur-sm"
+	                  className="fixed top-1/2 left-1/2 z-[100] mr-10 flex h-[300px] w-[400px] -translate-x-1/2 -translate-y-1/2 flex-col items-start justify-center gap-1.5 overflow-hidden rounded-[15px] bg-muted-background/40 p-10 backdrop-blur-sm"
                     initial={{
                       opacity: 0
                     }}
@@ -823,7 +821,6 @@ const CreditsInner = (props: CreditComponentProps) => {
                               imgClassName="w-full h-full object-cover absolute"
                               resource={person.image}
                               isUser={true}
-                              alt=""
                               loading="lazy"
                             />
                           )}
@@ -871,7 +868,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                           <li
                             key={`team-${teamIndex}-${personIndex}`}
                             className={cn(
-                              'relative px-0 py-[clamp(5px,.34vw,7px)] before:absolute before:top-1/2 before:right-[calc(100%+7.5px)] before:h-[.48vw] before:w-[.48vw] before:transform-[translate(50%,-50%)] before:rounded-full before:bg-[oklch(var(--off-white)/1)] before:opacity-0 before:transition-opacity before:duration-200 before:ease-in-out before:content-none hover:before:opacity-100 md:before:content-[""]',
+	                            "relative px-0 py-[clamp(5px,.34vw,7px)] before:absolute before:top-1/2 before:right-[calc(100%+7.5px)] before:h-[.48vw] before:w-[.48vw] before:transform-[translate(50%,-50%)] before:rounded-full before:bg-off-white before:opacity-0 before:transition-opacity before:duration-200 before:ease-in-out before:content-none hover:before:opacity-100 md:before:content-[\"\"]",
                               { birthDay: person.patronage }
                             )}
                             style={{
@@ -915,7 +912,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                     <li
                       key={`team-2-${teamIndex}-${personIndex}`}
                       className={cn(
-                        'relative z-[100] px-0 py-[clamp(5px,.34vw,7px)] before:absolute before:top-1/2 before:right-[calc(100%+5px)] before:h-[.4vw] before:w-[.4vw] before:translate-[50%,-50%] before:rounded-full before:bg-[oklch(var(--off-white)/1)] before:opacity-0 before:transition-opacity before:duration-200 before:ease-in-out before:content-none hover:before:opacity-100 md:before:content-[""]',
+             'relative z-[100] px-0 py-[clamp(5px,.34vw,7px)] before:absolute before:top-1/2 before:right-[calc(100%+5px)] before:h-[.4vw] before:w-[.4vw] before:translate-[50%,-50%] before:rounded-full before:bg-off-white before:opacity-0 before:transition-opacity before:duration-200 before:ease-in-out before:content-none hover:before:opacity-100 md:before:content-[""]',
                         { birthDay: person.patronage },
                       )}
                       style={{

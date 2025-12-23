@@ -1,4 +1,5 @@
 import { User } from "@/payload-types";
+import type {RP_Roles} from "@/stores/Notification/NotificationStore"
 import type {
   CheckboxField,
   CollectionConfig,
@@ -10,6 +11,7 @@ import type {
   TabsField,
   TextField
 } from "payload";
+import {roleToAuthority} from "../locker/fields/authority/utils"
 
 export type UserFieldOrganizerConfig = {
   enabled?: boolean;
@@ -374,6 +376,36 @@ export const userFieldOrganizerPlugin =
           }
         }
       };
+	    userCollection.hooks = {
+		    ...userCollection.hooks,
+		    beforeValidate: [
+			    ...(userCollection.hooks?.beforeValidate || []),
+			    ({data, originalDoc, operation,}) => {
+				    if (!data) {
+					    return data;
+				    }
+				    const role = data.role as undefined | User["role"] | Array<User["role"]>;
+				    if (role) {
+					    if (Array.isArray(role)) {
+						    const n = role.reduce((prev, next) => {
+							    if (roleToAuthority(next) > roleToAuthority(prev)) {
+								    return next;
+							    }
+							    return prev;
+						    }, "user" as RP_Roles)
+						    data.role = n;
+					    }
+				    } else {
+					    if (operation === "update") {
+						    data.role = originalDoc.role;
+					    } else {
+						    data.role = "user";
+					    }
+				    }
+				    return data;
+			    }
+		    ]
+	    }
       userCollection.fields = [tabField];
     }
     config.collections = [...collections];

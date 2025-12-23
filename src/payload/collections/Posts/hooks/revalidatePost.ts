@@ -39,7 +39,7 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
 
         revalidatePath(path);
 
-        revalidateTag("posts-sitemap");
+	      revalidateTag("posts-sitemap", {expire: 50});
       }
     }
 
@@ -50,7 +50,7 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
       payload.logger.info(`Revalidating old post at path: ${oldPath}`);
 
       revalidatePath(oldPath);
-      revalidateTag("posts-sitemap");
+	    revalidateTag("posts-sitemap", {expire: 50});
     }
   }
   return doc;
@@ -64,7 +64,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Post> = async ({
     const path = `/essays/${doc?.slug}`;
 
     revalidatePath(path);
-    revalidateTag("posts-sitemap");
+	  revalidateTag("posts-sitemap", {expire: 50});
   }
 
   return doc;

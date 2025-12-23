@@ -7,7 +7,7 @@
 
   --button-pad: 24px;
   --button-bg: rgba(0, 0, 0, 0);
-  --button-color: oklch(var(--fg) / 1);
+  --button-color: oklch(from var(--fg) l c h/1);
   --button-color-border: var(--bg-primary);
   --rounded-small: 0.4rem;
   --rounded-normal: 0.8rem;
@@ -20,7 +20,7 @@
   --check-left: calc(
     calc(var(--loader-size) / 6) + calc(var(--loader-size) / 12)
   );
-  --check-color: oklch(var(--fg) / 1);
+  --check-color: oklch(from var(--fg) l c h/1);
   --height-input: 48px;
   --pad-input: 16px;
 }
@@ -156,10 +156,10 @@
 }
 
 .ha-ico {
-  --hFill: oklch(var(--logo) / 1);
-  --cFill: oklch(var(--rouge-400) / 1);
+  --hFill: oklch(from var(--logo) l c h/1);
+  --cFill: oklch(from var(--rouge-400) l c h/1);
   transition: all ease 0.3s;
-  color: oklch(var(--n-s-fg) / 0.9);
+  color: oklch(from var(--n-s-fg) l c h/0.9);
 
   circle {
     transition: fill ease 0.3s;

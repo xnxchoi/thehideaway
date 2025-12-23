@@ -27,7 +27,7 @@
         width: 100%;
         border-radius: 0;
         padding: 0 1rem;
-        border-bottom: 1px solid oklch(var(--faded-fg) / 0.9);
+        border-bottom: 1px solid oklch(from var(--faded-fg) l c h/0.9);
       }
     }
 

@@ -1,284 +1,292 @@
+/* eslint-disable react-hooks/preserve-manual-memoization */
 "use client";
-import type {
-  LexicalCommand,
-  LexicalEditor,
-  ParagraphNode,
-  RangeSelection
-} from "@payloadcms/richtext-lexical/lexical";
-
+import type {SlashMenuGroup} from "@payloadcms/richtext-lexical";
+import {useEditorConfigContext} from "@payloadcms/richtext-lexical/client";
 import {
-  $getSelection,
-  $isRangeSelection,
-  $isTextNode,
-  COMMAND_PRIORITY_LOW,
-  createCommand,
-  getDOMSelection
-} from "@payloadcms/richtext-lexical/lexical";
-import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import { mergeRegister } from "@payloadcms/richtext-lexical/lexical/utils";
-import { useCallback, useEffect, useState, type ReactElement } from "react";
+	useLexicalComposerContext
+} from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
+import {useTranslation} from "@payloadcms/ui";
+import Lenis from "lenis";
+import {useLenis} from "lenis/react";
+import type {ComponentPropsWithRef} from "react";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ReactElement
+} from "react";
+import {createPortal} from "react-dom";
+import {LexicalTypeaheadMenuPlugin} from "./LexicalTypeAheadMenuPlugin";
+import type {
+	SlashMenuGroupInternal,
+	SlashMenuItemInternal
+} from "./LexicalTypeAheadMenuPlugin/types";
+import {useMenuTriggerMatch} from "./useMenuTriggerMatch";
 
-import type { MenuTextMatch, TriggerFn } from "../useMenuTriggerMatch";
-import type { MenuRenderFn, MenuResolution } from "./LexicalMenu";
-import type { SlashMenuGroupInternal } from "./types";
+const baseClass = "slash-menu-popup";
 
-import { LexicalMenu, useMenuAnchorRef } from "./LexicalMenu";
+function SlashMenuItem({
+	                       isSelected,
+	                       item,
+	                       onClick,
+	                       onMouseEnter,
+	                       ...rest
+                       }: ComponentPropsWithRef<"button"> & {
+	index: number;
+	isSelected: boolean;
+	item: SlashMenuItemInternal;
+	onClick: () => void;
+	onMouseEnter: () => void;
+}) {
+	const {
+		fieldProps: {featureClientSchemaMap, schemaPath}
+	} = useEditorConfigContext();
 
-export const PUNCTUATION =
-  "\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%'\"~=<>_:;";
+	const {i18n} = useTranslation<{}, string>();
 
-function getTextUpToAnchor(selection: RangeSelection): null | string {
-  const anchor = selection.anchor;
-  if (anchor.type !== "text") {
-    return null;
+	let className = `${baseClass}__item ${baseClass}__item-${item.key}`;
+	if (isSelected) {
+		className += ` ${baseClass}__item--selected`;
   }
-  const anchorNode = anchor.getNode();
-  if (!anchorNode.isSimpleText()) {
-    return null;
+
+	let title = item.key;
+	if (item.label) {
+		title =
+			typeof item.label === "function"
+				? item.label({featureClientSchemaMap, i18n, schemaPath})
+				: item.label;
   }
-  const anchorOffset = anchor.offset;
-  return anchorNode.getTextContent().slice(0, anchorOffset);
+	// Crop title to max. 25 characters
+	if (title.length > 25) {
+		title = title.substring(0, 25) + "...";
+	}
+
+	return (
+		<button
+			aria-selected={isSelected}
+			className={className}
+			id={baseClass + "__item-" + item.key}
+			key={item.key}
+			onClick={onClick}
+			onMouseEnter={onMouseEnter}
+			role="option"
+			tabIndex={-1}
+			type="button"
+			{...rest}
+		>
+			{item?.Icon && <item.Icon/>}
+
+			<span className={`${baseClass}__item-text`}>{title}</span>
+		</button>
+	);
 }
 
-function tryToPositionRange(
-  leadOffset: number,
-  range: Range,
-  editorWindow: Window
-): boolean {
-  const domSelection = getDOMSelection(editorWindow);
-  if (domSelection === null || !domSelection.isCollapsed) {
-    return false;
-  }
+export function SlashMenuPlugin({
+	                                anchorElem = document.body
+                                }: {
+	anchorElem?: HTMLElement;
+}): ReactElement {
+	const [editor] = useLexicalComposerContext();
+	const [queryString, setQueryString] = useState<null | string>(null);
+	const {editorConfig} = useEditorConfigContext();
+	const {i18n} = useTranslation<{}, string>();
+	const {
+		fieldProps: {featureClientSchemaMap, schemaPath}
+	} = useEditorConfigContext();
 
-  const anchorNode = domSelection.anchorNode;
-  const startOffset = leadOffset;
-  const endOffset = domSelection.anchorOffset;
+	const checkForTriggerMatch = useMenuTriggerMatch("/", {
+		minLength: 0
+	});
+	const getDynamicItems = useCallback(() => {
+		let groupWithItems: Array<SlashMenuGroup> = [];
 
-  if (anchorNode == null || endOffset == null) {
-    return false;
-  }
+		for (const dynamicItem of editorConfig.features.slashMenu.dynamicGroups) {
+			if (queryString) {
+				const dynamicGroupWithItems = dynamicItem({
+					editor,
+					queryString
+				});
+				groupWithItems = groupWithItems.concat(dynamicGroupWithItems);
+			}
+		}
+		return groupWithItems;
+	}, [editor, queryString, editorConfig?.features]);
+	const lenis = useLenis();
+	const lenisRef = useRef<Lenis | null>(null);
+	const contentRef = useRef<HTMLDivElement>(null!);
+	const wrapperRef = useRef<HTMLDivElement>(null!);
+	const onEnter = useCallback(() => {
+		lenis?.stop();
+	}, [lenis]);
+	const onLeave = useCallback(() => {
+		lenis?.start();
+	}, [lenis]);
+	useEffect(() => {
+		let lnis = lenisRef.current;
+		if (lenis) {
+			const content = contentRef.current;
+			const wrapper = wrapperRef.current;
+			if (!content || !wrapper) return;
 
-  try {
-    range.setStart(anchorNode, startOffset);
-    // if endOffset is 0, positioning the range for when you click the plus button to open the slash menu will fial
-    range.setEnd(anchorNode, endOffset > 1 ? endOffset : 1);
-  } catch (error) {
-    return false;
-  }
+			lnis = new Lenis({
+				wrapper,
+				content,
+				autoRaf: true
+			});
+			lenisRef.current = lnis;
+		}
+		return () => {
+			lnis && lnis.destroy();
+			lnis = null;
+			lenisRef.current = null;
+		};
+	}, [lenis]);
+	const groups: SlashMenuGroup[] = useMemo(() => {
+		let groupsWithItems: SlashMenuGroup[] = [];
+		for (const groupWithItem of editorConfig?.features.slashMenu.groups ?? []) {
+			groupsWithItems.push(groupWithItem);
+		}
 
-  return true;
-}
+		if (queryString) {
+			// Filter current groups first
+			// @ts-expect-error - TODO: fix this
+			groupsWithItems = groupsWithItems.map((group) => {
+				const filteredItems = group.items.filter((item) => {
+					let itemTitle = item.key;
+					if (item.label) {
+						itemTitle =
+							typeof item.label === "function"
+								? item.label({featureClientSchemaMap, i18n, schemaPath})
+								: item.label;
+					}
 
-function getQueryTextForSearch(editor: LexicalEditor): string | undefined {
-  let text;
-  editor.getEditorState().read(() => {
-    const selection = $getSelection();
-    if (!$isRangeSelection(selection)) {
-      return;
-    }
-    text = getTextUpToAnchor(selection);
-  });
-  return text;
-}
+					if (new RegExp(queryString, "gi").exec(itemTitle)) {
+						return true;
+					}
+					if (item.keywords != null) {
+						return item.keywords.some((keyword) =>
+							new RegExp(queryString, "gi").exec(keyword)
+						);
+					}
+					return false;
+				});
+				if (filteredItems.length) {
+					return {
+						...group,
+						items: filteredItems
+					};
+				}
+				return null;
+			});
 
-function isSelectionOnEntityBoundary(
-  editor: LexicalEditor,
-  offset: number
-): boolean {
-  if (offset !== 0) {
-    return false;
-  }
-  return editor.getEditorState().read(() => {
-    const selection = $getSelection();
-    if ($isRangeSelection(selection)) {
-      const anchor = selection.anchor;
-      const anchorNode = anchor.getNode();
-      const prevSibling = anchorNode.getPreviousSibling();
-      return $isTextNode(prevSibling) && prevSibling.isTextEntity();
-    }
-    return false;
-  });
-}
+			groupsWithItems = groupsWithItems.filter((group) => group != null);
 
-function startTransition(callback: () => void) {
-  if (startTransition) {
-    startTransition(callback);
-  } else {
-    callback();
-  }
-}
+			// Now add dynamic groups
+			const dynamicItemGroups = getDynamicItems();
 
-export { useDynamicPositioning } from "./LexicalMenu";
+			// merge dynamic items into groups
+			for (const dynamicGroup of dynamicItemGroups) {
+				// 1. find the group with the same name or create new one
+				let group = groupsWithItems.find(
+					(group) => group.key === dynamicGroup.key
+				);
+				if (!group) {
+					group = {
+						...dynamicGroup,
+						items: []
+					};
+				} else {
+					groupsWithItems = groupsWithItems.filter(
+						(group) => group.key !== dynamicGroup.key
+					);
+				}
 
-export type TypeaheadMenuPluginProps = {
-  anchorClassName?: string;
-  anchorElem: HTMLElement;
-  groups: Array<SlashMenuGroupInternal>;
-  menuRenderFn: MenuRenderFn;
-  onClose?: () => void;
-  onOpen?: (resolution: MenuResolution) => void;
-  onQueryChange: (matchingString: null | string) => void;
-  triggerFn: TriggerFn;
-};
-
-export const ENABLE_SLASH_MENU_COMMAND: LexicalCommand<{
-  node: ParagraphNode;
-}> = createCommand("ENABLE_SLASH_MENU_COMMAND");
-
-export function LexicalTypeaheadMenuPlugin({
-  anchorClassName,
-  anchorElem,
-  groups,
-  menuRenderFn,
-  onClose,
-  onOpen,
-  onQueryChange,
-  triggerFn
-}: TypeaheadMenuPluginProps): ReactElement | null {
-  const [editor] = useLexicalComposerContext();
-  const [resolution, setResolution] = useState<MenuResolution | null>(null);
-  const anchorElementRef = useMenuAnchorRef(
-    anchorElem,
-    resolution,
-    setResolution,
-    anchorClassName
-  );
-
-  const closeTypeahead = useCallback(() => {
-    setResolution(null);
-    if (onClose != null && resolution !== null) {
-      onClose();
-    }
-  }, [onClose, resolution]);
-
-  const openTypeahead = useCallback(
-    (res: MenuResolution) => {
-      setResolution(res);
-      if (onOpen != null && resolution === null) {
-        onOpen(res);
-      }
-    },
-    [onOpen, resolution]
-  );
-
-  // This is mainly used for the AddBlockHandlePlugin, so that the slash menu can be opened from there
-  useEffect(() => {
-    return mergeRegister(
-      editor.registerCommand(
-        ENABLE_SLASH_MENU_COMMAND,
-        ({ node }) => {
-          editor.getEditorState().read(() => {
-            const match: MenuTextMatch = {
-              leadOffset: 0,
-              matchingString: "",
-              replaceableString: ""
-            };
-            if (!isSelectionOnEntityBoundary(editor, match.leadOffset)) {
-              if (node !== null) {
-                const editorWindow = editor._window ?? window;
-                const range = editorWindow.document.createRange();
-
-                const isRangePositioned = tryToPositionRange(
-                  match.leadOffset,
-                  range,
-                  editorWindow
-                );
-                if (isRangePositioned !== null) {
-                  startTransition(() =>
-                    openTypeahead({
-                      getRect: () => {
-                        return range.getBoundingClientRect();
-                      },
-                      match
-                    })
-                  );
-                }
-
-                return;
-              }
-            }
-          });
-
-          return true;
-        },
-        COMMAND_PRIORITY_LOW
-      )
-    );
-  }, [editor, openTypeahead]);
-
-  useEffect(() => {
-    const updateListener = () => {
-      editor.getEditorState().read(() => {
-        const editorWindow = editor._window ?? window;
-        const range = editorWindow.document.createRange();
-        const selection = $getSelection();
-        const text = getQueryTextForSearch(editor);
-
-        if (
-          !$isRangeSelection(selection) ||
-          !selection.isCollapsed() ||
-          text === undefined ||
-          range === null
-        ) {
-          closeTypeahead();
-          return;
-        }
-
-        const match = triggerFn({ editor, query: text });
-        onQueryChange(match ? match.matchingString : null);
-
-        if (
-          match !== null &&
-          !isSelectionOnEntityBoundary(editor, match.leadOffset)
-        ) {
-          const isRangePositioned = tryToPositionRange(
-            match.leadOffset,
-            range,
-            editorWindow
-          );
-          if (isRangePositioned !== null) {
-            startTransition(() =>
-              openTypeahead({
-                getRect: () => {
-                  return range.getBoundingClientRect();
-                },
-                match
-              })
-            );
-            return;
-          }
-        }
-        closeTypeahead();
-      });
-    };
-
-    const removeUpdateListener = editor.registerUpdateListener(updateListener);
-
-    return () => {
-      removeUpdateListener();
-    };
-  }, [
-    editor,
-    triggerFn,
-    onQueryChange,
-    resolution,
-    closeTypeahead,
-    openTypeahead
-  ]);
-
-  return anchorElementRef.current === null ||
-    resolution === null ||
-    editor === null ? null : (
-    <LexicalMenu
-      anchorElementRef={anchorElementRef}
-      close={closeTypeahead}
-      editor={editor}
-      groups={groups}
-      menuRenderFn={menuRenderFn}
-      resolution={resolution}
-      shouldSplitNodeWithQuery
+				// 2. Add items to group items array and add to sanitized.slashMenu.groupsWithItems
+				if (group?.items?.length) {
+					group.items = group.items.concat(group.items);
+				}
+				groupsWithItems.push(group);
+			}
+		}
+		return groupsWithItems;
+	}, [
+		queryString,
+		editorConfig?.features.slashMenu.groups,
+		getDynamicItems,
+		featureClientSchemaMap,
+		i18n,
+		schemaPath
+	]);
+	return (
+		<LexicalTypeaheadMenuPlugin
+			anchorElem={anchorElem}
+			groups={groups as SlashMenuGroupInternal[]}
+			menuRenderFn={(
+				anchorElementRef,
+				{selectedItemKey, selectItemAndCleanUp, setSelectedItemKey}
+			) =>
+				anchorElementRef.current && groups.length
+					? createPortal(
+						<div
+							ref={wrapperRef}
+							className={baseClass}
+							onMouseEnter={onEnter}
+							onMouseLeave={onLeave}
+						>
+							<div ref={contentRef} className={"relative h-full w-full"}>
+								{groups.map((group) => {
+									let groupTitle = group.key;
+									if (group.label && featureClientSchemaMap) {
+										groupTitle =
+											typeof group.label === "function"
+												? group.label({
+													featureClientSchemaMap,
+													i18n,
+													schemaPath
+												})
+												: group.label;
+									}
+									return (
+										<div
+											className={`${baseClass}__group ${baseClass}__group-${group.key}`}
+											key={group.key}
+										>
+											<div className={`${baseClass}__group-title`}>
+												{groupTitle}
+											</div>
+											{group.items.map((item, oi: number) => (
+												<SlashMenuItem
+													index={oi}
+													isSelected={selectedItemKey === item.key}
+													item={item as SlashMenuItemInternal}
+													key={item.key}
+													onClick={() => {
+														setSelectedItemKey(item.key);
+														selectItemAndCleanUp(item);
+													}}
+													onMouseEnter={() => {
+														setSelectedItemKey(item.key);
+													}}
+													ref={(el) => {
+														(item as SlashMenuItemInternal).ref = {
+															current: el
+														};
+													}}
+												/>
+											))}
+										</div>
+									);
+								})}
+							</div>
+						</div>,
+						anchorElementRef.current
+					)
+					: null
+			}
+			onQueryChange={setQueryString}
+			triggerFn={checkForTriggerMatch}
     />
   );
 }
-
-export type { MenuRenderFn, MenuResolution, MenuTextMatch, TriggerFn };

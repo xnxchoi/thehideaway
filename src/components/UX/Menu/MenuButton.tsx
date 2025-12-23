@@ -85,7 +85,7 @@ export const MenuButton = (props: ButtonTotalProps) => {
         "leading-[140%] font-normal tracking-[-0.01em]",
         "menu__toggle",
         "relative",
-        "w-[64px] overflow-hidden transition-all duration-300 ease-out-power3 hover:border-[oklch(var(--n-s-bb)/1)]! hover:bg-transparent! data-[state=true]:w-[77px] data-[state=true]:border-[oklch(var(--n-s-bb)/1)]! data-[state=true]:bg-transparent!"
+	      "w-[64px] overflow-hidden transition-all duration-300 ease-out-power3 hover:border-nav-button-border! hover:bg-transparent! data-[state=true]:w-[77px] data-[state=true]:border-nav-button-border! data-[state=true]:bg-transparent!"
       )}
       data-state={isNavOpen}
       aria-label={`${isNavOpen ? "Close" : "Open"} The Menu`}

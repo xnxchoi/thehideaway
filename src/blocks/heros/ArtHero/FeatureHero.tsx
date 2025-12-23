@@ -17,7 +17,7 @@ export const FeaturedCard: React.FC<{
   post: Required<Pick<SingleArticle, INN>> & Partial<Omit<SingleArticle, INN>>;
 }> = ({ post }) => {
   const { category, image, author, publishedAt, title, subtitle } = post;
-  const darkmode = image?.darkmode || false;
+	const darkmode = image?.value?.darkmode || false;
   return (
     <CoverWrap>
       <CoverCard

@@ -1,13 +1,32 @@
 "use client";
+import {ClipboardPlugin} from "@/payload/Lexical/defaults/ClipboardPlugin";
+import {DecoratorPlugin} from "@/payload/Lexical/defaults/DecoratorPlugin";
+import {EditorPlugin} from "@/payload/Lexical/defaults/EditorPlugin";
+import {AddBlockHandlePlugin} from "@/payload/Lexical/defaults/handles/AddBlockHandlePlugin";
+import {DraggableBlockPlugin} from "@/payload/Lexical/defaults/handles/DraggableBlockPlugin";
+import {NormalizeSelectionPlugin} from "@/payload/Lexical/defaults/NormalizePlugin";
+import {SelectAllPlugin} from "@/payload/Lexical/defaults/SelectAllPlugin";
+import {SlashMenuPlugin} from "@/payload/Lexical/defaults/SlashMenu";
+import {TextPlugin} from "@/payload/Lexical/defaults/TextPlugin";
+import type {LexicalProviderProps} from "@/payload/Lexical/defaults/types";
+import {LexicalContentEditable} from "@/payload/Lexical/defaults/ui/ContentEditable";
+import {useHandoff} from "@/payload/Lexical/Features/HandOff/handoffBridge";
+import {$isCaretAtStart, $selectEnd} from "@/payload/Lexical/lexical-utils";
+import {useWriter} from "@/payload/providers/Admins";
+import {useEditorConfigContext} from "@payloadcms/richtext-lexical/client";
 import {
+	$addUpdateTag,
+	$createParagraphNode,
+	$createTextNode,
   $getRoot,
   BLUR_COMMAND,
   COMMAND_PRIORITY_HIGH,
   COMMAND_PRIORITY_LOW,
   FOCUS_COMMAND,
   KEY_ARROW_LEFT_COMMAND,
-  KEY_ARROW_RIGHT_COMMAND,
-  KEY_ARROW_UP_COMMAND
+	KEY_ARROW_UP_COMMAND,
+	KEY_BACKSPACE_COMMAND,
+	SKIP_DOM_SELECTION_TAG
 } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from "@payloadcms/richtext-lexical/lexical/react/LexicalErrorBoundary";
@@ -15,44 +34,18 @@ import { HistoryPlugin } from "@payloadcms/richtext-lexical/lexical/react/Lexica
 import { OnChangePlugin } from "@payloadcms/richtext-lexical/lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@payloadcms/richtext-lexical/lexical/react/LexicalRichTextPlugin";
 import { useLexicalEditable } from "@payloadcms/richtext-lexical/lexical/react/useLexicalEditable";
+import type {FC, RefObject} from "react";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-
-import { ClipboardPlugin } from "@/payload/Lexical/defaults/ClipboardPlugin";
-import { DecoratorPlugin } from "@/payload/Lexical/defaults/DecoratorPlugin";
-import { EditorPlugin } from "@/payload/Lexical/defaults/EditorPlugin";
-import { NormalizeSelectionPlugin } from "@/payload/Lexical/defaults/NormalizePlugin";
-import { SelectAllPlugin } from "@/payload/Lexical/defaults/SelectAllPlugin";
-import { TextPlugin } from "@/payload/Lexical/defaults/TextPlugin";
-import type { LexicalProviderProps } from "@/payload/Lexical/defaults/types";
-import { useHandoff } from "@/payload/Lexical/Features/HandOff/handoffBridge";
-import { useEditorConfigContext } from "@payloadcms/richtext-lexical/client";
-import { ContentEditable } from "@payloadcms/richtext-lexical/lexical/react/LexicalContentEditable";
-import { useTranslation } from "@payloadcms/ui";
-import type { FC, RefObject } from "react";
+import "./LexicalEditor.scss"
 export const LexicalEditor: FC<
   {
-    singleLine?: boolean;
     editorContainerRef: RefObject<HTMLDivElement | null>;
     isSmallWidthViewport: boolean;
   } & Pick<LexicalProviderProps, "editorConfig" | "onChange">
 > = (props) => {
-  const {
-    editorConfig,
+	const {editorConfig, editorContainerRef, isSmallWidthViewport, onChange} =
+		props;
 
-    editorContainerRef,
-    isSmallWidthViewport,
-    onChange
-  } = props;
-  const editorConfigContext = useEditorConfigContext();
-  const [editor] = useLexicalComposerContext();
-  const setEditor = useHandoff((r) => r.setEditor);
-
-  const editorRef = useRef(editor);
-  const contentRef = useHandoff((r) => r.contentEditor);
-  const isEditable = useLexicalEditable();
-
-  const titleRef = useHandoff((r) => r.titleEditor);
-  const { t } = useTranslation<{}, string>();
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
@@ -60,121 +53,230 @@ export const LexicalEditor: FC<
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
+	const editorConfigContext = useEditorConfigContext();
+	const [editor] = useLexicalComposerContext();
+	const isEditable = useLexicalEditable();
 
-  const handleFocus = useCallback(() => {
-    editorConfigContext.focusEditor(editorConfigContext);
-  }, [editorConfigContext]);
+	const setEditor = useHandoff((r) => r.setEditor);
+
+	const titleEditor = useHandoff((r) => r.titleEditor);
+	const contentRef = useHandoff((r) => r.contentEditor);
+
+	const slashMenuOpen = useWriter((r) => r.slashMenuOpen);
+	const menuStateRef = useRef(slashMenuOpen);
   useEffect(() => {
-    if (!editorRef.current || contentRef === editorRef.current) return;
-    if (contentRef !== editorRef.current) {
-      setEditor("content", editorRef.current);
-    }
-  }, [setEditor, contentRef]);
+	  menuStateRef.current = slashMenuOpen;
+  }, [slashMenuOpen]);
+
   useEffect(() => {
-    if (!editor) return;
-    if (!editorConfigContext?.uuid) {
-      console.error(
-        "Lexical Editor must be used within an EditorConfigProvider"
-      );
-      return;
+	  if (!editor || contentRef === editor) return;
+	  setEditor({target: "content", editor});
+  }, [setEditor, editor, contentRef]);
+	const isFocusInEditor = useCallback(() => {
+		const editorEl = editor.getRootElement();
+		const slashMenustate = !menuStateRef.current;
+		if (!editorEl) {
+			return false;
     }
-    if (editorConfigContext?.parentEditor?.uuid) {
-      editorConfigContext.parentEditor?.registerChild(
-        editorConfigContext.uuid,
-        editorConfigContext
+		const activeElement = document.activeElement;
+		if (activeElement) {
+			return (
+				!slashMenustate &&
+				(editorEl.contains(activeElement) || activeElement === editorEl)
       );
+		} else {
+			return !slashMenustate;
     }
-
-    const handleFocus = () => {
-      editorConfigContext.focusEditor(editorConfigContext);
-    };
-
+	}, [editor]);
+	useEffect(() => {
     const handleBlur = () => {
       editorConfigContext.blurEditor(editorConfigContext);
     };
 
-    const unregisterUp = editor.registerCommand(
-      KEY_ARROW_UP_COMMAND,
+		// Register this editor instance with the store
+
+		const unregisterBackspace = editor.registerCommand(
+			KEY_BACKSPACE_COMMAND,
       (event) => {
-        // if (isCaretAtStart()) {
-        //   return true;
-        // }
+	      // Case e: Arrow Left
+	      if (isFocusInEditor() && $isCaretAtStart()) {
+		      // Already at start - prevent event propagation
+		      event?.preventDefault();
+		      if (titleEditor) {
+			      const root = $getRoot();
+			      $addUpdateTag(SKIP_DOM_SELECTION_TAG);
+			      if (!root.isEmpty()) {
+				      // Safely focus title editor if available
+				      const fd = root.getFirstDescendant();
+				      if (fd && fd.getTextContentSize() > 0) {
+					      const text = fd.getTextContent();
+					      fd.remove();
+					      handleBlur();
+					      titleEditor.focus(() => {
+						      titleEditor.update(() => {
+							      const root = $getRoot();
+							      const textC = root.getTextContent();
+							      root.clear();
+							      const par = $createParagraphNode().append(
+								      $createTextNode(textC),
+								      $createTextNode(text)
+							      );
+							      const rs = root.append(par).getLastDescendant();
+							      const ch = root.getChildren();
+							      console.log(ch);
+							      console.log(rs);
+						      });
+					      });
+					      return true;
+				      }
+			      }
+			      handleBlur();
+			      titleEditor.focus(() => {
+				      titleEditor.update(() => {
+					      const root = $getRoot();
+					      const lastDesc = root.getLastDescendant();
+					      if (lastDesc) {
+						      lastDesc.selectEnd();
+						      return;
+					      }
+					      const lastChild = root.getLastChild();
+					      if (lastChild) {
+						      lastChild.selectEnd();
+					      }
+					      return;
+				      });
+			      });
+		      }
 
-        if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) {
-          return false;
-        }
-        event?.preventDefault();
+		      return true;
+	      }
 
-        const root = $getRoot();
-        const firstDesc = root.getFirstDescendant();
-        if (!firstDesc) {
-          const firstChild = root.getFirstChild();
-          if (firstChild) {
-            firstChild.selectStart();
-          }
-          return true;
-        }
-        firstDesc.selectStart();
-        return true;
+	      return false;
       },
       COMMAND_PRIORITY_HIGH
     );
-
     const unregisterArrowLeft = editor.registerCommand(
       KEY_ARROW_LEFT_COMMAND,
-      (event) => {
-        // Case e: Arrow Left
-        // if (isCaretAtStart()) {
-        //   // Already at start - prevent event propagation
-        //   event?.preventDefault();
-        //   return true;
-        // }\
-        const root = $getRoot();
+	    (e) => {
+		    const trulyFocused = isFocusInEditor();
+		    if (!trulyFocused) return false;
+		    if (!titleEditor) return false;
+		    const shouldHandOff = $isCaretAtStart();
+		    if (shouldHandOff) {
+			    e.preventDefault();
 
-        if (event.ctrlKey || event.metaKey || root.isEmpty()) {
-          event?.preventDefault();
-          const firstDesc = root.getFirstDescendant();
-          if (!firstDesc) {
-            const firstChild = root.getFirstChild();
-            if (firstChild) {
-              firstChild.selectStart();
-            }
-            return true;
-          }
-          firstDesc.selectStart();
+			    handleBlur();
+			    // Safely focus title editor and blur content editor
+			    titleEditor.focus();
+			    titleEditor.getEditorState().read(() => {
+				    titleEditor.update(() => {
+					    const root = $getRoot();
+					    const lastDesc = root.getLastDescendant();
+					    if (lastDesc) {
+						    lastDesc.selectEnd();
+					    } else {
+						    root.selectEnd();
+					    }
+				    });
+			    });
           return true;
         }
         return false;
       },
       COMMAND_PRIORITY_HIGH
     );
-    const unregisterArrowRight = editor.registerCommand(
-      KEY_ARROW_RIGHT_COMMAND,
-      (event) => {
-        // Case f: Arrow Right
-        // if (isCaretAtEnd()) {
-        //   return true;
-        // }
-        const root = $getRoot();
+		const unregisterArrowUp = editor.registerCommand(
+			KEY_ARROW_UP_COMMAND,
+			(e) => {
+				// Check if we're in an interactive element that should handle its own navigation
+				if (!titleEditor) {
+					return false;
+				}
+				const trulyFocused = isFocusInEditor();
+				if (!trulyFocused) return false;
+				try {
+					let isInTopLine = false;
 
-        if (event.ctrlKey || event.metaKey) {
-          event?.preventDefault();
-          const lastDesc = root.getLastDescendant();
-          if (lastDesc) {
-            lastDesc.selectEnd();
-          } else {
-            const lastChild = root.getLastChild();
-            if (lastChild) {
-              lastChild.selectEnd();
-            }
-          }
+					if ($isCaretAtStart()) {
+						isInTopLine = true;
+					} else {
+						const domSelection = window.getSelection();
+						if (domSelection && domSelection.rangeCount > 0) {
+							const range = domSelection.getRangeAt(0);
+							const rect = range.getBoundingClientRect();
+							const editorEl = editor.getRootElement();
+							if (editorEl) {
+								const editorRect = editorEl.getBoundingClientRect();
 
-          return true;
-        }
+								const vertPos = rect.top - editorRect.top;
+								const lineHeight = 24; // Approximate line height - adjust as needed
+
+								// If cursor is within the first line height of the editor, consider it "topmost"
+								isInTopLine = vertPos <= lineHeight;
+							}
+						}
+					}
+					if (isInTopLine) {
+						e.preventDefault();
+						handleBlur();
+
+						titleEditor.focus(() => {
+							titleEditor.update(() => {
+								$selectEnd();
+							});
+							/**
+							 * () => {
+                const root = $getRoot();
+                const lastDesc = root.getLastDescendant();
+                if (lastDesc) {
+                  lastDesc.selectEnd();
+                } else {
+                  root.selectEnd();
+                }
+              }
+							 */
+						});
+
+						return true;
+					}
+
+					return false;
+				} catch (error) {
+					// Fallback to simpler logic if DOM measurement fails
+					console.warn(
+						"Failed to measure cursor position, using fallback logic:",
+						error
+					);
+				}
+
         return false;
       },
       COMMAND_PRIORITY_HIGH
     );
+
+		return () => {
+			unregisterArrowUp();
+			unregisterBackspace();
+			unregisterArrowLeft();
+		};
+	}, [editor, editorConfigContext, isFocusInEditor, setEditor, titleEditor]); // titleEditor is not needed in deps since it's accessed fresh from store
+
+	useEffect(() => {
+		if (editorConfigContext?.parentEditor?.uuid) {
+			editorConfigContext.parentEditor?.registerChild(
+				editorConfigContext.uuid,
+				editorConfigContext
+			);
+		}
+		const handleFocus = () => {
+			editorConfigContext.focusEditor(editorConfigContext);
+		};
+		const handleBlur = () => {
+			editorConfigContext.blurEditor(editorConfigContext);
+		};
+
+		// Register this editor instance with the store
+
     const unregisterFocus = editor.registerCommand<MouseEvent>(
       FOCUS_COMMAND,
       (e) => {
@@ -195,16 +297,13 @@ export const LexicalEditor: FC<
     );
 
     return () => {
-      unregisterArrowLeft();
-      unregisterUp();
-      unregisterArrowRight();
       unregisterFocus();
       unregisterBlur();
       editorConfigContext.parentEditor?.unregisterChild?.(
         editorConfigContext.uuid
       );
     };
-  }, [editor, editorConfigContext, setEditor, contentRef]);
+	}, [editor, editorConfigContext, setEditor, titleEditor]); // titleEditor is not needed in deps since it's accessed fresh from store
 
   return (
     <Fragment>
@@ -234,23 +333,14 @@ export const LexicalEditor: FC<
         <RichTextPlugin
           contentEditable={
             <div className="editor-scroller">
-              <div className="editor" ref={onRef}>
-                <ContentEditable
-                  aria-placeholder={t("lexical:general:placeholder")}
-                  className={"ContentEditable__root"}
-                  placeholder={
-                    <span className={"editor-placeholder"}>
-                      Write your story...
-                    </span>
-                  }
-                />
+	            <div className="editor" id="estate-lexicon" ref={onRef}>
+		            <LexicalContentEditable editorConfig={editorConfig}/>
               </div>
             </div>
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
         <NormalizeSelectionPlugin />
-
         <DecoratorPlugin />
         <ClipboardPlugin />
         <TextPlugin features={editorConfig.features} />
@@ -273,7 +363,17 @@ export const LexicalEditor: FC<
         )}
         {floatingAnchorElem && (
           <Fragment>
-            {editorConfig?.features.plugins?.map((plugin) => {
+	          {!isSmallWidthViewport && isEditable && (
+		          <Fragment>
+			          {editorConfig.admin?.hideDraggableBlockElement ? null : (
+				          <DraggableBlockPlugin anchorElem={floatingAnchorElem}/>
+			          )}
+			          {editorConfig.admin?.hideAddBlockButton ? null : (
+				          <AddBlockHandlePlugin anchorElem={floatingAnchorElem}/>
+			          )}
+		          </Fragment>
+	          )}
+	          {editorConfig.features.plugins?.map((plugin) => {
               if (
                 plugin.position === "floatingAnchorElem" &&
                 !(plugin.desktopOnly === true && isSmallWidthViewport)
@@ -288,6 +388,11 @@ export const LexicalEditor: FC<
                 );
               }
             })}
+	          {isEditable && (
+		          <Fragment>
+			          <SlashMenuPlugin anchorElem={floatingAnchorElem}/>
+		          </Fragment>
+	          )}
           </Fragment>
         )}
         {isEditable && (

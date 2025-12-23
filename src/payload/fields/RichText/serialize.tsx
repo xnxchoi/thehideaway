@@ -9,10 +9,9 @@ import { BannerBlock } from "@/blocks/Banner/Component";
 import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 
 import { CodeBlock } from "@/blocks/Code/Component";
-import { MediaBlock } from "@/blocks/MediaBlock/Component";
+import {MediaBlock, PostedImage} from "@/blocks/MediaBlock/Component";
 import { ReferencedLink } from "@/components/UX/Link/referencedLink";
 import type {
-  BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
   CodeBlock as CodeBlockProps,
   Media1 as MediaBlockProps
@@ -30,9 +29,7 @@ import {
 
 export type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<
-      CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps
-    >;
+	| SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>;
 
 type Props = {
   nodes: NodeTypes[];
@@ -113,6 +110,9 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
         // https://github.com/facebook/lexical/blob/d10c4e6e55261b2fdd7d1845aed46151d0f06a8c/packages/lexical-list/src/LexicalListItemNode.ts#L133
         // which does not return checked: false (only true - i.e. there is no prop for false)
         const serializedChildrenFn = (node: NodeTypes): JSX.Element | null => {
+	        if (!("children" in node)) {
+		        return null;
+	        }
           if (node.children == null) {
             return null;
           }
@@ -150,28 +150,16 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
                 />
               );
             case "mediaBlock":
-              return (
-                <MediaBlock
-                  imgClassName="m-0"
-                  data-themed="background-color, color"
-                  className="relative flex flex-col overflow-hidden rounded-[12px]"
-                  key={index}
-                  {...block}
-                  aspectRatio={698 / 400}
-                  captionClassName="mx-auto max-w-[48rem]"
-                  enableGutter={false}
-                  disableInnerContainer
-                />
-              );
-            case "banner":
-              return (
-                <BannerBlock
-                  className="col-start-2 mb-4"
-                  data-themed="background-color, color"
-                  key={index}
-                  {...block}
-                />
-              );
+	            return <PostedImage {...block} />;
+	          // case "banner":
+	          //   return (
+	          //     <BannerBlock
+	          //       className="col-start-2 mb-4"
+	          //       data-themed="background-color, color"
+	          //       key={index}
+	          //       {...block}
+	          //     />
+	          //   );
             case "code":
               return (
                 <CodeBlock

@@ -1,5 +1,5 @@
-import type { OptionalKeys } from "@/utilities/typeUtilities";
-import { getPayload, type Where } from "payload";
+import type {OptionalKeys} from "@/utilities/typeUtilities";
+import {getPayload, type Where} from "payload";
 import config from "@payload-config";
 import {
   NotificationDoc,
@@ -8,14 +8,19 @@ import {
   SyncedAsset,
   SyncedNotification
 } from "@/payload/collections/Notifications/hooks/types";
+import {imageSelect} from "@/types/payload-api-selects";
+import {RalueAsDataWithRelation} from "@/types/collections/imageCollections";
+import {NotificationsSelect} from "@payload-types";
+import {getFallbackImage} from "@/utilities/getFallbackImage";
 
 type RP_NotificationKeys = keyof ResponseNotification;
-const NotificationFields: Record<RP_NotificationKeys, true> = {
+export const notifySelect = (): Pick<NotificationsSelect<true>, Exclude<RP_NotificationKeys, "id" | "fallbackImage">> & {
+	id: true
+} => ({
   thumbnail: true,
   content: true,
-  readAt: true,
-  id: true,
-  type: true,
+	readAt: true, id: true,
+	type: true,
   importance: true,
   status: true,
   read: true,
@@ -27,7 +32,7 @@ const NotificationFields: Record<RP_NotificationKeys, true> = {
   trigger: true,
   actionLink: true,
   recipient: true
-};
+});
 type UnreliableNotificationFieldKeys = OptionalKeys<ResponseNotification>;
 
 function makeNotification(
@@ -90,28 +95,13 @@ export const getNotifications = async ({
       page
     };
   }
+	const notSelect = notifySelect()
   const not = (await payload
     .find({
       collection: "notifications",
       overrideAccess: true,
 
-      select: {
-        type: true,
-        thumbnail: true,
-        content: true,
-        title: true,
-        createdAt: true,
-        sticky: true,
-        trigger: true,
-        updatedAt: true,
-        readAt: true,
-        read: true,
-        recipient: true,
-        status: true,
-        importance: true,
-        dismissed: true,
-        actionLink: true
-      },
+	    select: notSelect,
       where: query,
 
       sort: ["-sticky", "-createdAt"],
@@ -130,7 +120,8 @@ export const getNotifications = async ({
       });
       return [];
     })) as Array<NotificationDoc>;
-
+	const select = imageSelect()
+	const fallbackImage = await getFallbackImage()
   const res = await Promise.allSettled(
     not.map((v, i) =>
       v.thumbnail
@@ -138,31 +129,25 @@ export const getNotifications = async ({
             .findByID({
               collection: "assets",
               id: v.thumbnail,
-              select: {
-                alt: true,
-                mimeType: true,
-                url: true,
-                thumbnailURL: true,
-                darkmode: true
-              }
+	            select
             })
             .then((r) => {
-              let mimeType = r.mimeType || null;
-              if (!mimeType) {
-                const ur = r.url || r.thumbnailURL;
-                if (ur) {
-                  const extension = ur.split(".").at(-1);
-                  mimeType = (extension && "image/" + extension) || null;
-                }
-              }
-              const last = {
-                id: r.id,
-                mimeType,
-                thumbnailURL: r.thumbnailURL || null,
-                url: r.url || null,
-                darkmode: r.darkmode ?? false,
-                alt: r.alt ?? ""
-              };
+	            const {src, url, alt} = r;
+	            if (!src || !url) throw new Error("No src found in thumbnail")
+	            const last: RalueAsDataWithRelation = {
+		            relationTo: "assets",
+		            value: {
+			            src,
+			            alt,
+			            darkmode: r.darkmode,
+			            id: r.id,
+			            source: {
+				            identifier: id,
+				            provider: "local"
+			            },
+			            url,
+		            }
+	            }
               return last;
             })
             .then((r) => ({
@@ -183,10 +168,13 @@ export const getNotifications = async ({
   const final: NotificationResponse = [];
   res.forEach((v, i) => {
     if (v.status === "fulfilled") {
-      final.push(v.value);
+	    final.push({
+		    ...v.value,
+		    fallbackImage,
+	    });
     } else {
       const p = not.at(i)!;
-      final.push({ ...p, thumbnail: null });
+	    final.push({...p, thumbnail: null, fallbackImage});
     }
   });
   return final;

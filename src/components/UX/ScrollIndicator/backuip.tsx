@@ -449,12 +449,12 @@ export const ScrollIndicator = () => {
         exit={leftNotchVariants['hidden']}
         className="fixed flex h-auto md:h-[calc(100vh-100px)] top-0 md:top-auto left-[-20px] bg-transparent bottom-0 md:bottom-[20px] z-[248]" style={{
           filter: 'url(#goo-effect)'
-        }} >  <span className="fixed w-[4rem] z-[248] bottom-0 md:bottom-[1.35rem] -top-[10px] md:top-[2rem] h-auto md:h-full bg-[oklch(var(--n-s-bg)/1)] -left-px md:left-[-2px]" />
+        }} >  <span className="fixed w-[4rem] z-[248] bottom-0 md:bottom-[1.35rem] -top-[10px] md:top-[2rem] h-auto md:h-full bg-nav-background -left-px md:left-[-2px]" />
 
-          <m.div className="flex flex-col fixed gap-2.5 items-center justify-center bg-[oklch(var(--n-s-bg)/1)] px-[10px] py-[25px] bottom-[54px] left-[13.5px] rounded-r-[12px] min-w-fit min-h-fit h-[140px] w-[48px] z-[248] lg:scale-115"
+          <m.div className="flex flex-col fixed gap-2.5 items-center justify-center bg-nav-background px-[10px] py-[25px] bottom-[54px] left-[13.5px] rounded-r-[12px] min-w-fit min-h-fit h-[140px] w-[48px] z-[248] lg:scale-115"
 
           >
-            <span onClick={toggleOpen} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} style={{ writingMode: 'sideways-rl' }} className="text-[oklch(var(--n-s-fg)/1)] text-[10px] font-bold">WORKS</span>
+            <span onClick={toggleOpen} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave} style={{ writingMode: 'sideways-rl' }} className="text-nav-foreground text-[10px] font-bold">WORKS</span>
             <AnimatePresence initial={false} mode="sync">
               {hasRadio && <SoundBar />}
             </AnimatePresence>

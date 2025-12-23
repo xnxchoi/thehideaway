@@ -27,7 +27,7 @@ export const RP_Listing = (props: PriceCardProps) => {
       ratio={type === "founder" ? 45 / 12 : 1}
       data-card-state="default"
       className={cn(
-        "price-card relative flex h-full flex-col items-center justify-center overflow-hidden rounded-xl border-1 border-[oklch(var(--faded-fg)/1)] bg-[oklch(var(--muted-faded-bg)/.5)] px-[3.75em] py-[4em]",
+	      "price-card relative flex h-full flex-col items-center justify-center overflow-hidden rounded-xl border-1 border-faded-foreground bg-muted-faded-background/50 px-[3.75em] py-[4em]",
         className
       )}
     >
@@ -84,7 +84,7 @@ const StandardCard = () => {
             aria-label="Become a guest member"
             href="/plans/guest"
             disabled={!enabled}
-            className="absolute right-[2.5em] bottom-[2.5em] left-[2.5em] rounded-lg border-2 border-solid border-[oklch(var(--muted-faded-bg)/1)] px-[1.5em] py-[1em] text-center text-lg transition-colors duration-200 ease-in-out hover:bg-[oklch(var(--muted-faded-bg)/1)] hover:text-accent"
+            className="absolute right-[2.5em] bottom-[2.5em] left-[2.5em] rounded-lg border-2 border-solid border-muted-faded-background px-[1.5em] py-[1em] text-center text-lg transition-colors duration-200 ease-in-out hover:bg-muted-faded-background hover:text-accent"
           >
             {caption}
           </Link>

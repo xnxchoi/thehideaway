@@ -13,8 +13,8 @@ export const Bookmark = (props) => {
   useEffect(() => {
     if (bookmarkRef.current) {
       bookmarkRef.current.style.setProperty(
-        "background-color",
-        "oklch(var(--faded-black)/1)"
+	      "background-color",
+	      "var(--faded-black)"
       );
     }
   }, []);

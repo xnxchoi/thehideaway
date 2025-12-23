@@ -131,7 +131,7 @@ export const SideVaul = (props: { children: ReactNode }) => {
             onClick={() => {
               setOpen(false);
             }}
-            className="fixed inset-0 z-[39] bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
+            className="fixed inset-0 z-[39] bg-nav-background/50 backdrop-blur-sm"
           />
         ) : (
           <div
@@ -140,7 +140,7 @@ export const SideVaul = (props: { children: ReactNode }) => {
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
-            className="fixed inset-0 z-[39] bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
+            className="fixed inset-0 z-[39] bg-nav-background/50 backdrop-blur-sm"
           />
         ))}
       <MotionDrawerContent
@@ -276,11 +276,11 @@ export const SideDrawer = () => {
               setSideDrawerOpen(false);
             }}
             onMouseLeave={onMouseLeave}
-            className="fixed inset-0 z-39 bg-[oklch(var(--n-s-bg)/0.5)] backdrop-blur-sm"
+            className="fixed inset-0 z-39 bg-nav-background/50 backdrop-blur-sm"
           />
         )}
         <Mrawer
-          className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-[oklch(var(--n-s-fg)/1)] outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
+	        className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-nav-foreground outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
           style={{
             borderTopRightRadius: borderTopRadius,
             borderTopLeftRadius: borderTopRadius,
@@ -300,7 +300,7 @@ export const SideDrawer = () => {
             />
           )}
           <m.div
-            className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-[oklch(var(--n-s-bg)/1)] max-md:h-[65vh] max-md:w-full"
+	          className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-nav-background max-md:h-[65vh] max-md:w-full"
             onMouseEnter={() => {
               setCursor(null);
               setCursorTheme("dark");

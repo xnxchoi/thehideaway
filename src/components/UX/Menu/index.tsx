@@ -737,7 +737,7 @@ const CornerStone = (
         clipRule="evenodd"
         fillRule="evenodd"
         strokeWidth={theme === "dark" ? 1.2 : 0}
-        stroke={theme === "dark" ? "oklch(var(--n-s-bbg)/.04)" : "none"}
+        stroke={theme === "dark" ? "oklch(from var(--n-s-bbg) l c h/.04)" : "none"}
         initial="initial"
         animate="animate"
         exit="exit"

@@ -2,6 +2,14 @@ import {PayloadRequest} from "payload";
 import {DateTime} from "luxon";
 import sharp from "sharp";
 
+export const getLuminance = async (buffer: Buffer): Promise<number> => {
+	const stats = await sharp(buffer).stats();
+	const [r, g, b] = stats.channels.map(c => c.mean);
+
+	// Standard formula for perceived brightness
+	// (0.2126*R + 0.7152*G + 0.0722*B) / 255
+	return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+};
 export const extractImageInfo = async (args: {
 	req: PayloadRequest;
 }): Promise<{ darkmode: boolean } | { darkmode: null }> => {

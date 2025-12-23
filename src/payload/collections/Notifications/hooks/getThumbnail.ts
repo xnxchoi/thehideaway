@@ -1,9 +1,10 @@
 "use server";
 
-import { cache } from "react";
-import { getPayload } from "payload";
+import {cache} from "react";
+import {getPayload} from "payload";
 import config from "@payload-config";
-import { randomNumber } from "@/utilities/randomNumber";
+import {randomNumber} from "@/utilities/randomNumber";
+
 export const getThumbnail = cache(async ({ id }: { id?: string }) => {
   const payload = await getPayload({ config });
   const thumbnail = await payload
@@ -11,7 +12,7 @@ export const getThumbnail = cache(async ({ id }: { id?: string }) => {
       collection: "assets",
       where: {
         mimeType: {
-          like: "image"
+	        like: "image/%"
         }
       },
       limit: 5,

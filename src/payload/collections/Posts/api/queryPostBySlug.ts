@@ -1,9 +1,9 @@
 "use server";
-import { draftMode } from "next/headers";
-import { getPayload, Where } from "payload";
+import {draftMode} from "next/headers";
+import {getPayload, Where} from "payload";
 import configPromise from "@payload-config";
-import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
-import { cache } from "react";
+import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
+import {cache} from "react";
 import {
   ArticleOverview,
   AuthorOverview,
@@ -11,23 +11,20 @@ import {
   MediaReq,
   SingleArticle
 } from "../../../../types/collections/posts";
-import { authClient } from "@/lib/auth/client";
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
-import { getPostBookMarks } from "./getPostBookmarks";
-import { Admin, Post, User } from "@/payload-types";
+import {authClient} from "@/lib/auth/client";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {getPostBookMarks} from "./getPostBookmarks";
+import {Post} from "@/payload-types";
+import {queryAuthorOverview, queryOverview} from "./queryPostOverview";
+import {CatOverview, TagOverview} from "@/types/collections/delta";
 import {
-  queryAuthorOverview,
-  queryOverview,
-  queryPostOverview
-} from "./queryPostOverview";
-import { CatOverview, TagOverview } from "@/types/collections/delta";
-import {
-  singlePostSelect,
+	postOverviewSelect,
   SinglePostKeys,
-  SinglePostSelector,
-  postOverviewSelect
+	singlePostSelect,
+	SinglePostSelector
 } from "@/payload/collections/Posts/api/queryBase";
-import { currentUser } from "@/lib/auth/context/servers";
+import {imageSelect} from "@/types/payload-api-selects"
+import {FetchedImageDoc} from "@/types/collections/imageCollections";
 
 export const queryAuthorsPost = cache(
   async ({
@@ -105,31 +102,33 @@ export const queryAuthorsPost = cache(
       return null;
     }
     let image: MediaReq | null = post.image
-      ? typeof post.image === "string"
+	    ? typeof post.image.value === "string"
         ? null
-        : post.image
+		    : post.image as MediaReq
       : null;
-    if (!image && typeof post.image === "string") {
-      const img = await payload.findByID({
-        collection: "media",
-        id: post.image as string,
+	  if (!image && typeof post.image?.value === "string") {
+		  const select = imageSelect()
+		  const img = await payload.findByID({
+			  collection: post.image.relationTo,
+			  id: post.image.value as string,
         overrideAccess: true,
-        select: {
-          url: true,
-          darkmode: true,
-          alt: true,
-          caption: true,
-          createdAt: true,
-          updatedAt: true,
-          filename: true,
-          mimeType: true,
-          size: true,
-          width: true,
-          height: true
-        }
+			  select
+		  }).then(r => {
+			  if (r && typeof r.url === "string") {
+				  return {
+					  ...r,
+					  url: r.url as string,
+					  src: r.url as string,
+				  }
+			  }
+			  return null;
+
       });
       if (img) {
-        image = img;
+	      image = {
+		      relationTo: post.image.relationTo,
+		      value: img
+	      };
       }
     }
     const finalPost: SingleArticle = {
@@ -306,34 +305,32 @@ export const queryPostBySlug = cache(
     if (!post.author || !post?.slug || !post.publishedAt) {
       return null;
     }
-    let image: MediaReq | null = post.image
-      ? typeof post.image === "string"
+	  let image: {
+		  relationTo: "userMedia" | "assets";
+		  value: FetchedImageDoc
+	  } | null = post.image
+		  ? typeof post.image.value === "string"
         ? null
-        : post.image
+			  : {
+				  relationTo: post.image.relationTo,
+				  value: post.image.value as FetchedImageDoc
+			  }
       : null;
-    if (!image && typeof post.image === "string") {
+	  if (!image && post.image && typeof post.image.value === "string") {
       console.log("image searching", post.image);
+		  const select = imageSelect();
       const img = await payload.findByID({
-        collection: "userMedia",
-        id: post.image as string,
+	      collection: post.image.relationTo,
+	      id: post.image.value as string,
         overrideAccess: true,
-        select: {
-          url: true,
-          darkmode: true,
-          alt: true,
-          caption: true,
-          createdAt: true,
-          updatedAt: true,
-          filename: true,
-          mimeType: true,
-          size: true,
-          width: true,
-          height: true
-        }
+	      select
       });
       if (img) {
         console.log("image found", img);
-        image = img;
+	      image = {
+		      relationTo: post.image.relationTo, value: img as FetchedImageDoc
+
+	      };
       }
     }
     const author: AuthorOverview | null = await payload
@@ -683,31 +680,34 @@ export const queryRelatedPosts = cache(
     if (prevv) {
       const p = await queryAuthorOverview(prevv.author);
       let image: MediaReq | null = prevv.image
-        ? typeof prevv.image === "string"
+	      ? typeof prevv.image.value === "string"
           ? null
-          : prevv.image
+		      : prevv.image as MediaReq
         : null;
       if (!image && typeof prevv.image === "string") {
-        const img = await payload.findByID({
+	      const select = imageSelect()
+	      const img = await payload.findByID({
           collection: "userMedia",
           id: prevv.image as string,
           overrideAccess: true,
-          select: {
-            url: true,
-            darkmode: true,
-            alt: true,
-            caption: true,
-            createdAt: true,
-            updatedAt: true,
-            filename: true,
-            mimeType: true,
-            size: true,
-            width: true,
-            height: true
-          }
-        });
+		      select
+	      }).then(r => {
+		      if (r && typeof r.url === "string") {
+			      return {
+				      ...r,
+				      url: r.url as string,
+				      src: r.url as string,
+			      }
+		      }
+		      return null;
+
+	      });
         if (img) {
-          image = img;
+	        image = {
+		        relationTo: "userMedia",
+		        value: img,
+
+	        }
         }
       }
       if (p) {
@@ -823,31 +823,33 @@ export const queryRelatedPosts = cache(
     if (nexx) {
       const p = await queryAuthorOverview(nexx.author);
       let image: MediaReq | null = nexx.image
-        ? typeof nexx.image === "string"
+	      ? typeof nexx.image.value === "string"
           ? null
-          : nexx.image
+		      : nexx.image as MediaReq
         : null;
-      if (!image && typeof nexx.image === "string") {
-        const img = await payload.findByID({
-          collection: "media",
-          id: nexx.image as string,
+	    if (!image && typeof nexx.image?.value === "string") {
+		    const select = imageSelect()
+		    const img = await payload.findByID({
+			    collection: nexx.image.relationTo,
+			    id: nexx.image.value as string,
           overrideAccess: true,
-          select: {
-            url: true,
-            darkmode: true,
-            alt: true,
-            caption: true,
-            createdAt: true,
-            updatedAt: true,
-            filename: true,
-            mimeType: true,
-            size: true,
-            width: true,
-            height: true
-          }
-        });
+			    select
+		    }).then(r => {
+			    if (r && typeof r.url === "string") {
+				    return {
+					    ...r,
+					    url: r.url as string,
+					    src: r.url as string,
+				    }
+			    }
+			    return null;
+
+		    });
         if (img) {
-          image = img;
+	        image = {
+		        relationTo: nexx.image.relationTo,
+		        value: img
+	        }
         }
       }
       if (p) {

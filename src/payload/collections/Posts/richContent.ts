@@ -1,8 +1,6 @@
-import { Banner } from "@/blocks/Banner/config";
-import { Code } from "@/blocks/Code/config";
-import { MediaBlock } from "@/blocks/MediaBlock/config";
-import { ContentHandOffFeature } from "@/payload/Lexical/Features/HandOff/feature";
-import { MentionFeature } from "@/payload/Lexical/Features/Mentions";
+import {Code} from "@/blocks/Code/config";
+import {MediaBlock} from "@/blocks/MediaBlock/config";
+import {ContentHandOffFeature} from "@/payload/Lexical/Features/HandOff/feature";
 import {
   BlocksFeature,
   HeadingFeature,
@@ -10,10 +8,20 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
   LinkFeature,
-  type LinkFields
+	type LinkFields,
+	RelationshipFeature
 } from "@payloadcms/richtext-lexical";
-import type { RichTextField, TextFieldSingleValidation } from "payload";
+import type {RichTextField, TextFieldSingleValidation} from "payload";
 
+const customizedFeatureKeys = [
+	"heading",
+	"relationship",
+	"blocks",
+	"horizontalRule",
+	"inlineToolbar",
+	"link",
+	"handOff"
+];
 export const RichContent = (): RichTextField => {
   return {
     name: "content",
@@ -25,14 +33,21 @@ export const RichContent = (): RichTextField => {
       },
       features: ({ rootFeatures }) => {
         return [
-          ...rootFeatures,
-
-          HeadingFeature({
-            enabledHeadingSizes: ["h1", "h2", "h3", "h4"]
+	        ...rootFeatures.filter(
+		        (feature) => !customizedFeatureKeys.includes(feature.key)
+	        ),
+	        HeadingFeature(),
+	        RelationshipFeature({
+		        enabledCollections: [
+			        "posts",
+			        "delta",
+			        "users",
+			        "albums",
+			        "tracks",
+			        "pages"
+		        ]
           }),
-
-          BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
-
+	        BlocksFeature({blocks: [Code, MediaBlock]}),
           InlineToolbarFeature(),
           HorizontalRuleFeature(),
           LinkFeature({
@@ -71,12 +86,15 @@ export const RichContent = (): RichTextField => {
         ];
       }
     }),
-    custom: {
-      hashes: []
-    },
-    hooks: {},
-    // Temporarily disabled custom Field component for debugging
 
+    hooks: {},
+	  admin: {
+		  components: {
+			  Field: {
+				  path: "@/payload/fields/Article/Content/index.tsx#RichTextField"
+			  }
+		  }
+	  },
     label: false,
     required: true
   };

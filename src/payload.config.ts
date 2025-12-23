@@ -1,24 +1,23 @@
 // storage-adapter-import-placeholder
-import { postgresAdapter } from "@payloadcms/db-postgres";
+import {postgresAdapter} from "@payloadcms/db-postgres";
 import path from "path";
-import { buildConfig, PayloadRequest } from "payload";
+import {buildConfig, PayloadRequest} from "payload";
 import sharp from "sharp";
-import { fileURLToPath } from "url";
+import {fileURLToPath} from "url";
 
-import { afterSchemaInit } from "@/afterSchemaInit";
-import { createBrevoEmailAdapter as brevoEmailAdapter } from "@/lib/email";
-import { defaultLexical } from "@/payload/Lexical/defaultLexical";
-import { collections } from "@/payload/collections";
-import { Admins } from "@/payload/collections/Admins";
-import { DeferredEmails } from "@/payload/collections/DeferredEmails";
-import { EmailQuota } from "@/payload/collections/EmailQuota";
-import { Footer } from "@/payload/collections/Footer/config";
-import { Header } from "@/payload/collections/Header";
-import { plugins } from "@/payload/plugins";
-import { createProfile } from "@/payload/collections/Profile/operations/createProfile";
-import { createN } from "@/payload/collections/Users/hooks/afterChange";
-import { uuidv7 } from "uuidv7";
-import { getServerSideURL } from "./utilities/getURL";
+import {afterSchemaInit} from "@/afterSchemaInit";
+import {defaultLexical} from "@/payload/Lexical/defaultLexical";
+import {collections} from "@/payload/collections";
+import {Admins} from "@/payload/collections/Admins";
+import {DeferredEmails} from "@/payload/collections/DeferredEmails";
+import {EmailQuota} from "@/payload/collections/EmailQuota";
+import {Footer} from "@/payload/collections/Footer/config";
+import {Header} from "@/payload/collections/Header";
+import {plugins} from "@/payload/plugins";
+import {createProfile} from "@/payload/collections/Profile/operations/createProfile";
+import {createN} from "@/payload/collections/Users/hooks/afterChange";
+import {uuidv7} from "uuidv7";
+import {getServerSideURL} from "./utilities/getURL";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);

@@ -12,7 +12,7 @@
     left: auto;
     right: auto;
     z-index: 10003;
-    background: oklch(var(--faded-bg) / 0.3);
+    background: oklch(from var(--faded-bg) l c h/0.3);
     backdrop-filter: blur(8px);
     display: flex;
     padding-block: 6px;

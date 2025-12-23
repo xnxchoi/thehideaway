@@ -133,7 +133,8 @@ const SubPopup = () => {
       }
     >
       <SubPopupSide side="left" />
-      <div className="pointer-events-auto relative z-[2] -mb-2 flex max-w-[33.33%] flex-row items-center justify-start gap-[5px] overflow-auto rounded-[5px] bg-[oklch(var(--n-s-bg)/1)] px-[6px] pt-2 pb-2">
+	    <div
+		    className="pointer-events-auto relative z-[2] -mb-2 flex max-w-[33.33%] flex-row items-center justify-start gap-[5px] overflow-auto rounded-[5px] bg-nav-background px-[6px] pt-2 pb-2">
         <div className={"flex h-full items-center justify-between"}>
           <SubList
             items={[
@@ -178,7 +179,7 @@ const SubListItem = (props: { title: string; content: string }) => {
                   "flex items-center justify-center border-[1px] border-transparent text-[.875rem]"
                 }
               >
-                <div className="text-center font-sans font-medium text-[oklch(var(--n-s-fg)/1)] uppercase">
+	              <div className="text-center font-sans font-medium text-nav-foreground uppercase">
                   {props.title}
                 </div>
               </Button>
@@ -216,7 +217,7 @@ const SubPopupSide = (props: { side: "left" | "right" }) => {
             />
             <div
               className={cn(
-                "h-[10px] w-[5px] flex-none bg-[oklch(var(--n-s-bg)/1)]",
+	              "h-[10px] w-[5px] flex-none bg-nav-background",
                 "mr-[-4px]"
               )}
             ></div>{" "}
@@ -225,7 +226,7 @@ const SubPopupSide = (props: { side: "left" | "right" }) => {
           <>
             <div
               className={cn(
-                "h-[10px] w-[5px] flex-none bg-[oklch(var(--n-s-bg)/1)]",
+	              "h-[10px] w-[5px] flex-none bg-nav-background",
                 "ml-[-4px]"
               )}
             ></div>
@@ -257,13 +258,13 @@ const BTPopup = (props: { content: ReactNode | string; popup: string }) => {
                 "flex items-center justify-center border-[1px] border-transparent px-[6px] py-1 text-[1rem]"
               }
             >
-              <div className="text-center text-[oklch(var(--n-s-fg)/1)] uppercase">
+	            <div className="text-center text-nav-foreground uppercase">
                 {props.content}
               </div>
             </Button>
           )}
         />
-        <TooltipContent className="bg-[oklch(var(--n-s-bg)/1)]">
+	      <TooltipContent className="bg-nav-background">
           <p>{props.popup}</p>
         </TooltipContent>
       </Tooltip>

@@ -270,14 +270,14 @@ function UserNotification({
           {/* <div className="flex gap-2">
             <Button
               className={
-                "bg-faded-foreground text-[oklch(var(--n-s-btn-inverted))]"
+           "bg-faded-foreground text-nav-button-inverted"
               }
             >
               Accept
             </Button>
             <Button
               className={
-                "border-[1px] border-solid border-[oklch(var(--n-s-bb))] text-[oklch(var(--n-s-btn))]"
+           "border-[1px] border-solid border-nav-button-border text-nav-button"
               }
             >
               Decline

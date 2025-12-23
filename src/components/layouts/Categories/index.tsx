@@ -111,7 +111,7 @@ const RP_Image = (
                 ease: "easeOut"
               }
             }}
-            className="absolute top-[50%] left-[50%] block h-[3.2rem] w-[3.2rem] origin-[0_0] transform-[translate(-50%,-50%)] animate-spinner bg-[oklch(var(--fg)/1)] clip-sun"
+            className="absolute top-[50%] left-[50%] block h-[3.2rem] w-[3.2rem] origin-[0_0] transform-[translate(-50%,-50%)] animate-spinner bg-foreground clip-sun"
           ></m.div>
         )}
       </AnimatePresence>
@@ -224,7 +224,7 @@ const HeroFeature = ({ post }: { post: ArticleOverview }) => {
       <RP_Image
         image={post.image}
         className={
-          'z-0 col-[1/-1] row-[1/8] min-h-px self-start overflow-hidden rounded-[1rem] pt-[177%] after:absolute after:inset-0 after:bg-gradient-to-b after:from-[oklch(var(--muted-bg)/0.1)] after:to-[oklch(var(--muted-bg)/1)] after:to-[80.6%] after:mix-blend-multiply after:content-[""] lg:h-full lg:pt-0'
+	        "z-0 col-[1/-1] row-[1/8] min-h-px self-start overflow-hidden rounded-[1rem] pt-[177%] after:absolute after:inset-0 after:bg-gradient-to-b after:from-muted-background/10 after:to-muted-background after:to-[80.6%] after:mix-blend-multiply after:content-[\"\"] lg:h-full lg:pt-0"
         }
       />
       <div

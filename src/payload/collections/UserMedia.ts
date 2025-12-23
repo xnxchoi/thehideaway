@@ -6,14 +6,12 @@ import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/acce
 import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
 import {fileURLToPath} from "url";
-import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 export const userMediaBasepath = path.resolve(dirname, "../../../public/users");
 export const UserMedia: CollectionConfig = {
   slug: "userMedia",
-  lockDocuments: false,
 
   defaultPopulate: {
     url: true,
@@ -43,43 +41,10 @@ export const UserMedia: CollectionConfig = {
     update: standardUpdateAccess
   },
   fields: [
-    {
-      name: "alt",
-      type: "text" //required: true,
-    },
-    {
-      name: "caption",
-      type: "text"
-    },
-    {
-      name: "darkmode",
-      type: "checkbox",
-      defaultValue: false,
-      index: true
-    },
-    ...AuthorField(),
-    {
-      name: "source", type: "group",
-      admin: {
-        hidden: true
-      },
-      fields: [
-        {
-	        name: "identifier", type: "text", required: true, defaultValue: () => uuidv7()
-        }, {
-		      name: "link", type: "text"
-	      }, {
-          name: "provider", type: "select",
-          options: [{
-	          label: "Unsplash", value: "unsplash"
-          }, {
-	          label: "Local", value: "local"
-          }], required: true, defaultValue: "local"
-        }
-      ]
-    },
 
-    {
+    ...AuthorField(),
+
+	  {
       name: "bookmarks",
       collection: "bookmarks",
       type: "join",
@@ -89,66 +54,7 @@ export const UserMedia: CollectionConfig = {
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, "../../../public/users"),
-    adminThumbnail: "thumbnail",
-    focalPoint: true,
-    filenameCompoundIndex: ["filename", "alt"],
-    formatOptions: { format: "webp", options: { quality: 85 } },
-    mimeTypes: ["image/jpeg", "image/png", "image/webp"],
 
-    imageSizes: [
-      {
-        name: "thumbnail",
-        width: 300,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "square",
-        width: 500,
-        height: 500,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "small",
-        width: 600,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "medium",
-        width: 900,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "large",
-        width: 1400,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "xlarge",
-        width: 1920,
-        formatOptions: {
-          format: "webp"
-        }
-      },
-      {
-        name: "og",
-        width: 1200,
-        height: 630,
-        crop: "center",
-        formatOptions: {
-          format: "webp"
-        }
-      }
-    ]
   },
   hooks: {
     beforeOperation: [

@@ -96,6 +96,8 @@ export interface Config {
     userViews: UserView;
     citations: Citation;
     responses: Response;
+	  compilations: Compilation;
+	  exMedia: ExMedia;
     admins: Admin;
     'email-quota': EmailQuota;
     'deferred-emails': DeferredEmail;
@@ -116,6 +118,9 @@ export interface Config {
       following: 'follows';
       notifications: 'notifications';
     };
+	  assets: {
+		  compiled: "compilations";
+	  };
     categories: {
       categorized: 'delta' | 'posts';
     };
@@ -173,6 +178,8 @@ export interface Config {
     userViews: UserViewsSelect<false> | UserViewsSelect<true>;
     citations: CitationsSelect<false> | CitationsSelect<true>;
     responses: ResponsesSelect<false> | ResponsesSelect<true>;
+	  compilations: CompilationsSelect<false> | CompilationsSelect<true>;
+	  exMedia: ExMediaSelect<false> | ExMediaSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
     'email-quota': EmailQuotaSelect<false> | EmailQuotaSelect<true>;
     'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
@@ -188,6 +195,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
+	fallbackLocale: ("false" | "none" | "null") | false | null | ("en" | "ko") | ("en" | "ko")[];
   globals: {
     header: Header;
     footer: Footer;
@@ -296,9 +304,9 @@ export interface User {
    */
   email: string;
   /**
-   * The role of the user
+   * The role/ roles of the user
    */
-  role: string;
+  role: "admin" | "author" | "editor" | "user" | "patron";
   onboarded: boolean;
   /**
    * Whether the user is banned from the platform
@@ -424,15 +432,7 @@ export interface Profile {
  */
 export interface UserMedia {
   id: string;
-  alt?: string | null;
-  caption?: string | null;
-  darkmode?: boolean | null;
   author: string | User;
-  source: {
-    identifier: string;
-    link?: string | null;
-    provider: 'unsplash' | 'local';
-  };
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
@@ -444,6 +444,19 @@ export interface UserMedia {
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+	alt: string;
+	darkmode: boolean;
+	src?: string | null;
+	caption?: string | null;
+	attribution?: {
+		name?: string | null;
+		link?: string | null;
+	};
+	source: {
+		identifier?: string | null;
+		link?: string | null;
+		provider: "local" | "unsplash" | "pexels";
+	};
   blurDataUrl?: string | null;
   likes?: number | null;
   folder?: (string | null) | FolderInterface;
@@ -459,7 +472,7 @@ export interface UserMedia {
   focalX?: number | null;
   focalY?: number | null;
   sizes?: {
-    thumbnail?: {
+	  thumb?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -467,7 +480,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-    square?: {
+	  card?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -475,7 +488,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-    small?: {
+	  content?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -483,7 +496,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-    medium?: {
+	  content_wide?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -491,15 +504,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    xlarge?: {
+	  hero?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -570,7 +575,19 @@ export interface Bookmark {
  */
 export interface Post {
   id: string;
-  image?: (string | null) | UserMedia;
+	image?:
+		| ({
+		relationTo: "userMedia";
+		value: string | UserMedia;
+	} | null)
+		| ({
+		relationTo: "assets";
+		value: string | Asset;
+	} | null)
+		| ({
+		relationTo: "exMedia";
+		value: string | ExMedia;
+	} | null);
   coverPosition?: number | null;
   title: string;
   richTitle?: {
@@ -638,6 +655,202 @@ export interface Post {
   createdAt: string;
   _status?: ('draft' | 'published') | null;
 }
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assets".
+ */
+export interface Asset {
+	id: string;
+	alt: string;
+	caption?: string | null;
+	compiled?: {
+		docs?: (string | Compilation)[];
+		hasNextPage?: boolean;
+		totalDocs?: number;
+	};
+	locked?: boolean | null;
+	allowList?: (string | User)[] | null;
+	/**
+	 * Limit access to users of this role or higher
+	 */
+	authority?: number | null;
+	darkmode: boolean;
+	src?: string | null;
+	attribution?: {
+		name?: string | null;
+		link?: string | null;
+	};
+	source: {
+		identifier?: string | null;
+		link?: string | null;
+		provider: "local" | "unsplash" | "pexels";
+	};
+	blurDataUrl?: string | null;
+	updatedAt: string;
+	createdAt: string;
+	url?: string | null;
+	thumbnailURL?: string | null;
+	filename?: string | null;
+	mimeType?: string | null;
+	filesize?: number | null;
+	width?: number | null;
+	height?: number | null;
+	focalX?: number | null;
+	focalY?: number | null;
+	sizes?: {
+		thumb?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		card?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		content?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		content_wide?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		hero?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		og?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+	};
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "compilations".
+ */
+export interface Compilation {
+	id: string;
+	title: string;
+	items: (
+		| {
+		relationTo: "assets";
+		value: string | Asset;
+	}
+		| {
+		relationTo: "exMedia";
+		value: string | ExMedia;
+	}
+		)[];
+	imagePicker: boolean;
+	updatedAt: string;
+	createdAt: string;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exMedia".
+ */
+export interface ExMedia {
+	id: string;
+	alt: string;
+	darkmode: boolean;
+	src: string;
+	author: string | User;
+	source: {
+		provider: "external" | "pexels" | "unsplash" | "local";
+		link: string;
+		identifier: string;
+	};
+	blurDataUrl?: string | null;
+	caption?: string | null;
+	updatedAt: string;
+	createdAt: string;
+	url?: string | null;
+	thumbnailURL?: string | null;
+	filename?: string | null;
+	mimeType?: string | null;
+	filesize?: number | null;
+	width?: number | null;
+	height?: number | null;
+	focalX?: number | null;
+	focalY?: number | null;
+	sizes?: {
+		thumb?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		card?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		content?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		content_wide?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		hero?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+		og?: {
+			url?: string | null;
+			width?: number | null;
+			height?: number | null;
+			mimeType?: string | null;
+			filesize?: number | null;
+			filename?: string | null;
+		};
+	};
+}
+
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
@@ -773,21 +986,26 @@ export interface Tag {
  */
 export interface Media {
   id: string;
-  alt?: string | null;
-  caption?: string | null;
-  darkmode?: boolean | null;
   author: string | User;
-  source: {
-    identifier: string;
-    link?: string | null;
-    provider: 'unsplash' | 'local';
-  };
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+	alt: string;
+	darkmode: boolean;
+	src?: string | null;
+	caption?: string | null;
+	attribution?: {
+		name?: string | null;
+		link?: string | null;
+	};
+	source: {
+		identifier?: string | null;
+		link?: string | null;
+		provider: "local" | "unsplash" | "pexels";
+	};
   blurDataUrl?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -801,7 +1019,7 @@ export interface Media {
   focalX?: number | null;
   focalY?: number | null;
   sizes?: {
-    thumbnail?: {
+	  thumb?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -809,7 +1027,7 @@ export interface Media {
       filesize?: number | null;
       filename?: string | null;
     };
-    square?: {
+	  card?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -817,7 +1035,7 @@ export interface Media {
       filesize?: number | null;
       filename?: string | null;
     };
-    small?: {
+	  content?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -825,7 +1043,7 @@ export interface Media {
       filesize?: number | null;
       filename?: string | null;
     };
-    medium?: {
+	  content_wide?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -833,15 +1051,7 @@ export interface Media {
       filesize?: number | null;
       filename?: string | null;
     };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    xlarge?: {
+	  hero?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -1204,97 +1414,6 @@ export interface Citation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "assets".
- */
-export interface Asset {
-  id: string;
-  alt: string;
-  caption?: string | null;
-  darkmode?: boolean | null;
-  source: {
-    identifier: string;
-    link?: string | null;
-    provider: 'unsplash' | 'local';
-  };
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  blurDataUrl?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    square?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    small?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    medium?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    xlarge?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    og?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
@@ -1584,7 +1703,19 @@ export interface ContentBlock {
  */
 export interface Media1 {
   id: string | null;
-  media: string | Media;
+	media:
+		| {
+		relationTo: "media";
+		value: string | Media;
+	}
+		| {
+		relationTo: "exMedia";
+		value: string | ExMedia;
+	}
+		| {
+		relationTo: "userMedia";
+		value: string | UserMedia;
+	};
   blockName?: string | null;
   blockType: 'mediaBlock';
 }
@@ -1730,11 +1861,11 @@ export interface Session {
   /**
    * The admin who is impersonating this session
    */
-  impersonatedBy?: string | null;
+  impersonatedBy?: (string | null) | User;
   /**
    * The currently active organization for the session
    */
-  activeOrganizationId?: string | null;
+  activeOrganization?: (string | null) | Organization;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -1856,7 +1987,7 @@ export interface Passkey {
   /**
    * The unique identifier of the registered credential
    */
-  credentialID: string;
+  credentialId: string;
   /**
    * The counter of the passkey
    */
@@ -1928,12 +2059,12 @@ export interface Invitation {
    * The date and time when the invitation will expire.
    */
   expiresAt: string;
+	createdAt: string;
   /**
    * The user who invited the user.
    */
   inviter: string | User;
   updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2004,7 +2135,7 @@ export interface UserView {
  */
 export interface Admin {
   id: string;
-  name?: string | null;
+	name: string;
   email: string;
   role: 'admin' | 'user' | 'patron' | 'editor' | 'author';
   /**
@@ -2308,6 +2439,10 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
+	  relationTo: "userMedia";
+	  value: string | UserMedia;
+  } | null)
+	  | ({
         relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
@@ -2320,6 +2455,14 @@ export interface PayloadLockedDocument {
         value: string | Response;
       } | null)
     | ({
+	  relationTo: "compilations";
+	  value: string | Compilation;
+  } | null)
+	  | ({
+	  relationTo: "exMedia";
+	  value: string | ExMedia;
+  } | null)
+	  | ({
         relationTo: 'admins';
         value: string | Admin;
       } | null)
@@ -2450,7 +2593,7 @@ export interface SessionsSelect<T extends boolean = true> {
   userAgent?: T;
   user?: T;
   impersonatedBy?: T;
-  activeOrganizationId?: T;
+	activeOrganization?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2500,7 +2643,7 @@ export interface PasskeysSelect<T extends boolean = true> {
   name?: T;
   publicKey?: T;
   user?: T;
-  credentialID?: T;
+	credentialId?: T;
   counter?: T;
   deviceType?: T;
   backedUp?: T;
@@ -2542,9 +2685,9 @@ export interface InvitationsSelect<T extends boolean = true> {
   role?: T;
   status?: T;
   expiresAt?: T;
+	createdAt?: T;
   inviter?: T;
   updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2564,7 +2707,18 @@ export interface AdminInvitationsSelect<T extends boolean = true> {
 export interface AssetsSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+	compiled?: T;
+	locked?: T;
+	allowList?: T;
+	authority?: T;
   darkmode?: T;
+	src?: T;
+	attribution?:
+		| T
+		| {
+		name?: T;
+		link?: T;
+	};
   source?:
     | T
     | {
@@ -2572,9 +2726,6 @@ export interface AssetsSelect<T extends boolean = true> {
         link?: T;
         provider?: T;
       };
-  locked?: T;
-  allowList?: T;
-  authority?: T;
   blurDataUrl?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2590,7 +2741,7 @@ export interface AssetsSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-        thumbnail?:
+	  thumb?:
           | T
           | {
               url?: T;
@@ -2600,7 +2751,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        square?:
+	  card?:
           | T
           | {
               url?: T;
@@ -2610,7 +2761,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        small?:
+	  content?:
           | T
           | {
               url?: T;
@@ -2620,7 +2771,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        medium?:
+	  content_wide?:
           | T
           | {
               url?: T;
@@ -2630,17 +2781,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        xlarge?:
+	  hero?:
           | T
           | {
               url?: T;
@@ -2680,10 +2821,20 @@ export interface CategoriesSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+	author?: T;
+	locked?: T;
+	allowList?: T;
+	authority?: T;
   alt?: T;
-  caption?: T;
   darkmode?: T;
-  author?: T;
+	src?: T;
+	caption?: T;
+	attribution?:
+		| T
+		| {
+		name?: T;
+		link?: T;
+	};
   source?:
     | T
     | {
@@ -2691,9 +2842,6 @@ export interface MediaSelect<T extends boolean = true> {
         link?: T;
         provider?: T;
       };
-  locked?: T;
-  allowList?: T;
-  authority?: T;
   blurDataUrl?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2709,7 +2857,7 @@ export interface MediaSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-        thumbnail?:
+	  thumb?:
           | T
           | {
               url?: T;
@@ -2719,7 +2867,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        square?:
+	  card?:
           | T
           | {
               url?: T;
@@ -2729,7 +2877,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        small?:
+	  content?:
           | T
           | {
               url?: T;
@@ -2739,7 +2887,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        medium?:
+	  content_wide?:
           | T
           | {
               url?: T;
@@ -2749,17 +2897,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        xlarge?:
+	  hero?:
           | T
           | {
               url?: T;
@@ -3034,10 +3172,21 @@ export interface PostsSelect<T extends boolean = true> {
  * via the `definition` "userMedia_select".
  */
 export interface UserMediaSelect<T extends boolean = true> {
+	author?: T;
+	bookmarks?: T;
+	locked?: T;
+	allowList?: T;
+	authority?: T;
   alt?: T;
+	darkmode?: T;
+	src?: T;
   caption?: T;
-  darkmode?: T;
-  author?: T;
+	attribution?:
+		| T
+		| {
+		name?: T;
+		link?: T;
+	};
   source?:
     | T
     | {
@@ -3045,10 +3194,6 @@ export interface UserMediaSelect<T extends boolean = true> {
         link?: T;
         provider?: T;
       };
-  bookmarks?: T;
-  locked?: T;
-  allowList?: T;
-  authority?: T;
   blurDataUrl?: T;
   likes?: T;
   folder?: T;
@@ -3066,7 +3211,7 @@ export interface UserMediaSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-        thumbnail?:
+	  thumb?:
           | T
           | {
               url?: T;
@@ -3076,7 +3221,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        square?:
+	  card?:
           | T
           | {
               url?: T;
@@ -3086,7 +3231,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        small?:
+	  content?:
           | T
           | {
               url?: T;
@@ -3096,7 +3241,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        medium?:
+	  content_wide?:
           | T
           | {
               url?: T;
@@ -3106,17 +3251,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        xlarge?:
+	  hero?:
           | T
           | {
               url?: T;
@@ -3376,9 +3511,117 @@ export interface ResponsesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "compilations_select".
+ */
+export interface CompilationsSelect<T extends boolean = true> {
+	title?: T;
+	items?: T;
+	imagePicker?: T;
+	updatedAt?: T;
+	createdAt?: T;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exMedia_select".
+ */
+export interface ExMediaSelect<T extends boolean = true> {
+	alt?: T;
+	darkmode?: T;
+	src?: T;
+	author?: T;
+	source?:
+		| T
+		| {
+		provider?: T;
+		link?: T;
+		identifier?: T;
+	};
+	blurDataUrl?: T;
+	caption?: T;
+	updatedAt?: T;
+	createdAt?: T;
+	url?: T;
+	thumbnailURL?: T;
+	filename?: T;
+	mimeType?: T;
+	filesize?: T;
+	width?: T;
+	height?: T;
+	focalX?: T;
+	focalY?: T;
+	sizes?:
+		| T
+		| {
+		thumb?:
+			| T
+			| {
+			url?: T;
+			width?: T;
+			height?: T;
+			mimeType?: T;
+			filesize?: T;
+			filename?: T;
+		};
+		card?:
+			| T
+			| {
+			url?: T;
+			width?: T;
+			height?: T;
+			mimeType?: T;
+			filesize?: T;
+			filename?: T;
+		};
+		content?:
+			| T
+			| {
+			url?: T;
+			width?: T;
+			height?: T;
+			mimeType?: T;
+			filesize?: T;
+			filename?: T;
+		};
+		content_wide?:
+			| T
+			| {
+			url?: T;
+			width?: T;
+			height?: T;
+			mimeType?: T;
+			filesize?: T;
+			filename?: T;
+		};
+		hero?:
+			| T
+			| {
+			url?: T;
+			width?: T;
+			height?: T;
+			mimeType?: T;
+			filesize?: T;
+			filename?: T;
+		};
+		og?:
+			| T
+			| {
+			url?: T;
+			width?: T;
+			height?: T;
+			mimeType?: T;
+			filesize?: T;
+			filename?: T;
+		};
+	};
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
+	id?: T;
   name?: T;
   email?: T;
   role?: T;
@@ -4023,31 +4266,6 @@ export interface TaskSchedulePublish {
  */
 export interface WorkflowOnboardUsers {
   input?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "BannerBlock".
- */
-export interface BannerBlock {
-  id: string | null;
-  style: 'info' | 'warning' | 'error' | 'success';
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  blockName?: string | null;
-  blockType: 'banner';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -32,8 +32,8 @@ export const errorToast = (message: string) =>
   toast.error(message, {
     duration: 3000,
     style: {
-      backgroundColor: "oklch(var(--rouge-400)/1)",
-      color: "oklch(var(--rouge-50)/1)"
+	    backgroundColor: "var(--rouge-400)",
+	    color: "var(--rouge-50)"
     }
   });
 export const successToast = (message: string) =>

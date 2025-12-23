@@ -88,7 +88,7 @@ export const ControllerButton = forwardRef<
                 <div>{title}</div>
               )}
             </Link>{" "}
-            <RPTooltip label={label} />
+	          <RPTooltip content={label}/>
           </>
         ) : (
           <Button
@@ -103,7 +103,7 @@ export const ControllerButton = forwardRef<
             ) : (
               <div>{title}</div>
             )}
-            <RPTooltip label={label} />
+	          <RPTooltip content={label}/>
           </Button>
         )}{" "}
       </li>

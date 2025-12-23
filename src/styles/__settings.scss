@@ -5,7 +5,7 @@
 a#destroy-sessions {
   margin-bottom: 2rem;
   height: 80px;
-  border: solid 1px oklch(var(--fg)/.63);
+  border: solid 1px oklch(from var(--fg) l c h/.63);
   color: var(--red-d-1);
 }
 

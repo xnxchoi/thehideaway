@@ -658,7 +658,7 @@ export const SignInCard = (
 
   return (
     <div className={cn("flex flex-col gap-9")}>
-      <Card className="bg-[oklch(var(--faded-bg)/.5)]">
+	    <Card className="bg-faded-background/50">
         <CardContent className={cn("grid gap-9")}>
           <div className="grid gap-4">
             <div
@@ -689,7 +689,7 @@ export const SignInCard = (
             <UIBtn
               variant="outline"
               onClick={onClick}
-              className="*:ease text-md ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-[oklch(var(--faded-fg)/.65)] bg-[oklch(var(--off-bg)/.3)] px-4 py-3 font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-[oklch(var(--faded-bg)/.65)] hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
+              className="*:ease text-md ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-faded-foreground/&.65)] bg-off-background/30 px-4 py-3 font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-faded-background/65 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
               disabled={isSubmitting}
             >
               <span className="">{t("providers")}</span>
@@ -945,7 +945,7 @@ export const MemoButton = ({
                 <path d="M2 2h8v8H2z" fill="currentColor" />
                 <path
                   d="M4 4h4v1H4zM4 6h4v1H4zM4 8h3v1H4z"
-                  fill="oklch(var(--faded-bg)/1)"
+                  fill="var(--faded-bg)"
                 />
               </svg>
             </MenuButtonCaption>

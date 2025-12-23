@@ -225,7 +225,7 @@
 }
 
 .more-thumb {
-  background: oklch(var(--bg) / 0.86);
+  background: oklch(from var(--bg) l c h/0.86);
   min-height: 1px;
   min-width: 1px;
 }
@@ -289,9 +289,9 @@
   width: 100%;
   background: linear-gradient(
     90deg,
-    oklch(var(--muted-faded-fg) / 0.15) 10%,
-    oklch(var(--muted-faded-fg) / 0.8) 50%,
-    oklch(var(--muted-faded-fg) / 0.15) 90%
+                  oklch(from var(--muted-faded-fg) l c h/0.15) 10%,
+                  oklch(from var(--muted-faded-fg) l c h/0.8) 50%,
+                  oklch(from var(--muted-faded-fg) l c h/0.15) 90%
   );
   height: 1px;
   margin-bottom: 1rem;
@@ -531,7 +531,7 @@
 
 .rp_caption {
   display: block;
-  color: oklch(var(--faded-fg) / 0.8);
+  color: oklch(from var(--faded-fg) l c h/0.8);
   font-family: var(--font-sans);
   font-size: 7.2px;
   line-height: 1;
@@ -546,8 +546,8 @@
 
 ._t-c {
   background: transparent;
-  border-color: oklch(var(--rouge-500) / 1);
-  color: oklch(var(--faded-fg) / 1);
+  border-color: oklch(from var(--rouge-500) l c h/1);
+  color: oklch(from var(--faded-fg) l c h/1);
 }
 
 .rAY {
@@ -602,7 +602,7 @@
 .cap_grid {
   grid-row: 2;
   grid-column: 1;
-  color: oklch(var(--fg) / 1);
+  color: oklch(from var(--fg) l c h/1);
   align-self: end;
   margin: 8px;
 }
@@ -667,7 +667,7 @@
   &:after {
     content: "";
     display: block;
-    background: oklch(var(--muted-faded-bg) / 1);
+    background: oklch(from var(--muted-faded-bg) l c h/1);
     -webkit-clip-path: var(--clipPathSun);
     clip-path: var(--clipPathSun);
     height: 32px;
@@ -728,7 +728,7 @@
 }
 
 .Afu {
-  color: oklch(var(--faded-fg) / 0.8);
+  color: oklch(from var(--faded-fg) l c h/0.8);
   font-size: 10px;
   text-transform: uppercase;
 }
@@ -930,8 +930,8 @@
 
 .more-link {
   align-items: flex-start;
-  background: oklch(var(--muted-off-bg) / 1);
-  color: oklch(var(--off-fg) / 1);
+  background: oklch(from var(--muted-off-bg) l c h/1);
+  color: oklch(from var(--off-fg) l c h/1);
   border-radius: 5px;
   display: grid;
   grid-template-columns: 130px 1fr;
@@ -945,7 +945,7 @@
 }
 
 .more-tags {
-  color: oklch(var(--fg) / 1);
+  color: oklch(from var(--fg) l c h/1);
   font-size: 10.4px;
   font-weight: 800;
   margin-bottom: 4px;
@@ -965,7 +965,7 @@
 
 .side-label {
   background: var(--button-bg);
-  color: oklch(var(--faded-fg) / 1);
+  color: oklch(from var(--faded-fg) l c h/1);
   display: block;
   font-family: var(--fontFamilyWide);
   font-size: 18px;
@@ -985,7 +985,7 @@
 
 .side-content-body {
   background: var(--button-bg);
-  color: oklch(var(--faded-fg) / 1);
+  color: oklch(from var(--faded-fg) l c h/1);
   border-radius: 0 20px;
   font-size: 16px;
   line-height: 1.1;
@@ -1033,11 +1033,11 @@
 }
 
 .VU5::placeholder {
-  color: oklch(var(--faded-fg) / 0.8);
+  color: oklch(from var(--faded-fg) l c h/0.8);
 }
 
 .g-0 {
-  color: oklch(var(--faded-fg) / 1);
+  color: oklch(from var(--faded-fg) l c h/1);
   font-family: var(--font-sans);
   font-size: 12px;
   line-height: 1.2;
@@ -1052,7 +1052,7 @@
 
 button.subscrip {
   bottom: 17px;
-  color: oklch(var(--faded-fg) / 1);
+  color: oklch(from var(--faded-fg) l c h/1);
   position: absolute;
   right: 32px;
   z-index: 9;
@@ -1123,7 +1123,7 @@ aside.rhF {
 .rp-content h5 a,
 .rp-content p a,
 .rp-content li a {
-  color: oklch(var(--fg) / 1);
+  color: oklch(from var(--fg) l c h/1);
   font-weight: 800;
   text-decoration: underline;
 }
@@ -1226,7 +1226,7 @@ aside.rhF {
 
 .rel-header {
   display: block;
-  color: oklch(var(--fg) / 1);
+  color: oklch(from var(--fg) l c h/1);
   font-family: var(--fontFamilyWide);
   font-size: 20px;
   margin-bottom: 16px;
@@ -1258,7 +1258,7 @@ aside.rhF {
     [main-end] var(--gutter) [full-end];
 
   margin: 0 auto;
-  color: oklch(var(--off-fg) / 1);
+  color: oklch(from var(--off-fg) l c h/1);
   font-size: 16px;
   grid-auto-rows: min-content;
   line-height: 1.7;
@@ -1276,15 +1276,15 @@ aside.rhF {
     background: linear-gradient(
       to bottom,
       transparent 11%,
-      oklch(var(--rouge-50) / 0.2) 37%,
-      oklch(var(--rouge-200) / 0.65) 65%,
-      oklch(var(--rouge-300) / 0.8) 96%
+                    oklch(from var(--rouge-50) l c h/0.2) 37%,
+                    oklch(from var(--rouge-200) l c h/0.65) 65%,
+                    oklch(from var(--rouge-300) l c h/0.8) 96%
     );
   }
 
   p {
     & + p:last-of-type:after {
-      background: oklch(var(--fg) / 1);
+      background: oklch(from var(--fg) l c h/1);
       -webkit-clip-path: var(--clipPathSun);
       clip-path: var(--clipPathSun);
       content: "";
@@ -1300,9 +1300,9 @@ aside.rhF {
   background: linear-gradient(
     to bottom,
     transparent 11%,
-    oklch(var(--rouge-900) / 0.2) 37%,
-    oklch(var(--rouge-800) / 0.65) 65%,
-    oklch(var(--rouge-700) / 0.8) 96%
+                  oklch(from var(--rouge-900) l c h/0.2) 37%,
+                  oklch(from var(--rouge-800) l c h/0.65) 65%,
+                  oklch(from var(--rouge-700) l c h/0.8) 96%
   );
 }
 
@@ -1570,7 +1570,7 @@ aside.rhF {
 
         .rp_tag {
           color: var(--highlight, --color-soft-peach);
-          background-color: oklch(var(--transparent-base) / 0.2);
+          background-color: oklch(from var(--transparent-base) l c h/0.2);
         }
       }
 

@@ -118,8 +118,8 @@ export const MotionPillButton = ({
             ? "h-[3.2rem] max-md:h-[2.56rem]"
             : "h-[3.6rem] text-3xl max-md:h-[2.88rem]",
         inverted
-          ? "bg-button-background-inverted text-[oklch(var(--n-s-btn-inverted)/0.9)] hover:border-[oklch(var(--n-s-bb-inverted)/0.8)] data-[hover=true]:border-[oklch(var(--n-s-bb-inverted)/0.8)]"
-          : "bg-button-background text-[oklch(var(--n-s-btn)/0.9)] hover:border-[oklch(var(--n-s-bb)/0.8)] data-[hover=true]:border-[oklch(var(--n-s-bb)/0.8)]",
+	        ? "bg-button-background-inverted text-nav-button-inverted/90 hover:border-nav-button-border-inverted/80 data-[hover=true]:border-nav-button-border-inverted/80"
+	        : "bg-button-background text-nav-button/90 hover:border-nav-button-border/80 data-[hover=true]:border-nav-button-border/80",
         className
       )}
       data-hover={hover}

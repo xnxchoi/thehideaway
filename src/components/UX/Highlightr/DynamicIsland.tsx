@@ -62,7 +62,7 @@ export const DynamicBreadcrumb = ({
             transition={{ type: "spring", bounce: 0.25 }}
             whileHover={{
               scale: 1.1,
-              borderColor: "oklch(var(--neutral-white)/0.001)"
+	            borderColor: "oklch(from var(--neutral-white) l c h/0.001)"
             }}
           >
             <div className="absolute top-0 left-0 z-[120] h-full w-full bg-muted-off-background/35"></div>
@@ -83,7 +83,8 @@ export const DynamicBreadcrumb = ({
               initial={"hidden"}
               exit={"hidden"}
             ></m.div>
-            <div className="relative z-[120] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-2 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.1)] px-[12px] py-[6px] select-none">
+	          <div
+		          className="relative z-[120] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-2 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.10)] px-[12px] py-[6px] select-none">
               <div className="filter-blur-0 transform-origin-[50%_50%_0px] flex w-full transform-none items-center gap-4 opacity-100">
                 <div className="h-8 w-8 origin-[50%_50%_0px] rounded-[50%]">
                   <svg
@@ -96,11 +97,11 @@ export const DynamicBreadcrumb = ({
                       <linearGradient id="col" gradientUnits="userSpaceOnUse">
                         <stop
                           offset="10%"
-                          stopColor="oklch(var(--faded-fg)/1)"
+                          stopColor="var(--faded-fg)"
                         />
                         <stop
                           offset="85%"
-                          stopColor="oklch(var(--faded-d-gray)/1)"
+                          stopColor="var(--faded-d-gray)"
                         />
                       </linearGradient>
                     </defs>

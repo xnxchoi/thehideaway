@@ -74,7 +74,7 @@ export const LexicalFrontendEditor = ({
         <OnChangePlugin onChange={handleEditorChange} />
       </LexicalComposer>
       <Button
-        className="fixed bottom-[55px] left-[50%] z-[245] h-[45px] w-[175px] translate-x-[-50%] rounded-xl backdrop-blur-lg transition-all duration-200 ease-in-out hover:bg-[oklch(var(--fg)/.2)] hover:text-[bg]"
+	      className="fixed bottom-[55px] left-[50%] z-[245] h-[45px] w-[175px] translate-x-[-50%] rounded-xl backdrop-blur-lg transition-all duration-200 ease-in-out hover:bg-foreground/20 hover:text-[bg]"
         onClick={copyToClipboard}
       >
         Copy to Clipboard

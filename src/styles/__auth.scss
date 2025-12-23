@@ -68,8 +68,8 @@ a.button--outline--gray--rounded {
 .m-login .button[class*=full] .bricks-button {
   align-items: center;
   border-width: 0;
-  color: oklch(var(--fg)/.86);
-  background: oklch(var(--bg)/.68);
+  color: oklch(from var(--fg) l c h/.86);
+  background: oklch(from var(--bg) l c h/.68);
   display: flex;
   justify-content: center;
   width: 100%;
@@ -144,7 +144,7 @@ a.button--outline--gray--rounded {
 }
 
 .m-login__footer {
-  color: oklch(var(--fg)/1)
+  color: oklch(from var(--fg) l c h/1)
 }
 
 

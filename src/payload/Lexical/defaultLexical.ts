@@ -6,20 +6,20 @@ import {
 	ItalicFeature,
 	lexicalEditor,
 	LinkFeature,
-
+	type LinkFields,
 	OrderedListFeature,
-	ParagraphFeature, SubscriptFeature,
+	ParagraphFeature,
+	SubscriptFeature,
 	SuperscriptFeature,
 	UnderlineFeature,
-	UnorderedListFeature,
-	type LinkFields
-} from "@payloadcms/richtext-lexical"
-import type {TextFieldSingleValidation} from "payload"
+	UnorderedListFeature
+} from "@payloadcms/richtext-lexical";
+import type {TextFieldSingleValidation} from "payload";
 
 export const defaultLexical = lexicalEditor({
-	features: () => {
+	features: ({defaultFeatures}) => {
 		return [
-			// TitleFeature(),
+			...defaultFeatures,
 			SubscriptFeature(),
 			SuperscriptFeature(),
 			UnorderedListFeature(),
@@ -32,13 +32,13 @@ export const defaultLexical = lexicalEditor({
 			BoldFeature(),
 			ItalicFeature(),
 			LinkFeature({
-				enabledCollections: ["pages", "posts", "delta", "albums", "playlists",],
+				enabledCollections: ["pages", "posts", "delta", "albums", "playlists"],
 
 				fields: ({defaultFields}) => {
 					const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
-						if ("name" in field && field.name === "url") return false
-						return true
-					})
+						if ("name" in field && field.name === "url") return false;
+						return true;
+					});
 
 					return [
 						...defaultFieldsWithoutUrl,
@@ -46,20 +46,23 @@ export const defaultLexical = lexicalEditor({
 							name: "url",
 							type: "text",
 							admin: {
-								condition: (_data, siblingData) => siblingData?.linkType !== 'internal',
+								condition: (_data, siblingData) =>
+									siblingData?.linkType !== "internal"
 							},
 							label: ({t}) => t("fields:enterURL"),
 							required: true,
 							validate: ((value, options) => {
-								if ((options?.siblingData as LinkFields)?.linkType === 'internal') {
-									return true // no validation needed, as no url should exist for internal links
+								if (
+									(options?.siblingData as LinkFields)?.linkType === "internal"
+								) {
+									return true; // no validation needed, as no url should exist for internal links
 								}
-								return value ? true : 'URL is required'
-							}) as TextFieldSingleValidation,
-						},
-					]
-				},
-			}),
-		]
-	},
-})
+								return value ? true : "URL is required";
+							}) as TextFieldSingleValidation
+						}
+					];
+				}
+			})
+		];
+	}
+});

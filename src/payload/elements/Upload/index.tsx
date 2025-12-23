@@ -3,7 +3,7 @@ import type {
   FormState,
   SanitizedCollectionConfig,
   UploadEdits
-} from "payload";
+} from "payload"
 
 import {
   Button,
@@ -26,9 +26,9 @@ import {
   useTranslation,
   useUploadControls,
   useUploadEdits
-} from "@payloadcms/ui";
-import { UploadControlsProvider } from "@payloadcms/ui/providers/UploadControls";
-import { isImage } from "payload/shared";
+} from "@payloadcms/ui"
+import {UploadControlsProvider} from "@payloadcms/ui/providers/UploadControls"
+import {isImage} from "payload/shared"
 import {
   Fragment,
   useCallback,
@@ -38,8 +38,7 @@ import {
   type ChangeEvent,
   type FC,
   type ReactNode
-} from "react";
-import { useImageSearcher } from "@/payload/providers/Admins";
+} from "react"
 const baseClass = "file-field";
 export const editDrawerSlug = "edit-upload";
 export const sizePreviewSlug = "preview-sizes";
@@ -172,7 +171,6 @@ export const Upload_v4: FC<UploadProps_v4> = (props) => {
     uploadControlFileName,
     uploadControlFileUrl
   } = useUploadControls();
-  const externalItem = useImageSearcher((r) => r.selected);
   const {
     config: {
       routes: { api },

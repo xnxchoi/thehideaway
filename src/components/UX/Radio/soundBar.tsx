@@ -95,8 +95,8 @@ export const SoundBar = ({}: SoundBarProps) => {
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
           playing
-            ? "bg-[oklch(var(--n-s-fg)/1)]"
-            : "bg-[oklch(var(--n-s-fg)/.5)]",
+	          ? "bg-nav-foreground"
+	          : "bg-nav-foreground/50",
           "delay-[0s]"
         )}
       ></div>
@@ -105,8 +105,8 @@ export const SoundBar = ({}: SoundBarProps) => {
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
           playing
-            ? "bg-[oklch(var(--n-s-fg)/1)]"
-            : "bg-[oklch(var(--n-s-fg)/.5)]",
+	          ? "bg-nav-foreground"
+	          : "bg-nav-button-foreground/50",
           "delay-[-0.4s]"
         )}
       ></div>
@@ -115,8 +115,8 @@ export const SoundBar = ({}: SoundBarProps) => {
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
           playing
-            ? "bg-[oklch(var(--n-s-fg)/1)]"
-            : "bg-[oklch(var(--n-s-fg)/.5)]",
+	          ? "bg-nav-foreground"
+	          : "bg-nav-foreground/50",
           "delay-[-0.2s]"
         )}
       ></div>
@@ -125,8 +125,8 @@ export const SoundBar = ({}: SoundBarProps) => {
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
           playing
-            ? "bg-[oklch(var(--n-s-fg)/1)]"
-            : "bg-[oklch(var(--n-s-fg)/.5)]",
+	          ? "bg-nav-foreground"
+	          : "bg-nav-foreground/50",
           "delay-[-0.4s]"
         )}
       ></div>

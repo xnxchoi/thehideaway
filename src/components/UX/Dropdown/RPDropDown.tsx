@@ -1,24 +1,17 @@
 "use client";
 
-import {
-	DropOutButton, LinkedDropdownItem
-} from "@/components/ui/dropdown-menu";
 import {UserAvatar} from "@/lib/auth/betterauth-ui/src";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 import {cn} from "@/lib/utils";
 import {useRPStore} from "@/providers/RP_Pro";
-import {Popover} from "@base-ui-components/react";
+import {Popover} from "@base-ui/react";
 import * as m from "motion/react-m";
-import {
-	ButtonHTMLAttributes, HTMLAttributes, useEffect, useState
-} from "react";
+import {ButtonHTMLAttributes, HTMLAttributes, useEffect, useState} from "react";
 import {Link} from "@/components/UX/Link/Link";
-import {Button} from "../Button";
-import {RP_Btn} from "../Button";
+import {Button, RP_Btn} from "../Button";
 import {useShallow} from "zustand/shallow";
 import {Separator} from "../../ui/separator";
 import {signOut} from "../../../lib/auth/client";
-import {SignOutButton} from "../SignOutButton";
 
 interface SlitProps extends HTMLAttributes<HTMLDivElement> {
 	style: HTMLAttributes<HTMLDivElement>["style"] & {

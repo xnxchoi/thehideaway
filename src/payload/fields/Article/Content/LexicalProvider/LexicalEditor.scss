@@ -1,0 +1,259 @@
+$blocks: (hr, hrSelected, link, block, paragraph, placeholder, quote, relationship,);
+$textBlocks: (h1, h2, h3, h4, h5, h6,);
+$listNodes: (checklist,);
+$textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline, UnderlineStrikethrough);
+#restored-vault {
+  .rich-text-lexical {
+    //max-width: var(--maxContainerWidth);
+    max-width: min(var(--maxContainerWidth), var(--main-width));
+
+    &__wrap {
+      .fixed-toolbar {
+      }
+
+      .editor {
+        &-container {
+          display: grid;
+          --content-width: minmax(auto, 708px);
+          --margin-width: minmax(96px, 1fr);
+          grid-template-columns:
+            [full-start] var(--margin-left-width, var(--margin-width))
+            [content-start] var(--content-width) [content-end] var(
+              --margin-right-width,
+                            var(--margin-width)
+            )
+            [full-end];
+          width: 100%;
+        }
+
+        &-scroller {
+          grid-area: content;
+        }
+
+        .ContentEditable__root {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          max-width: 100%;
+          align-items: flex-start;
+          padding-top: 8px;
+          padding-bottom: 0;
+          --maxBodyWidth: minmax(calc(100vw - 2 * var(--margin-width)), var(--content-width));
+
+          & > * {
+            font-family: "SUIT Variable", "SUIT Fallback";
+            line-height: 1.5;
+            font-size: 1.6rem;
+            display: block;
+            max-width: var(--maxBodyWidth);
+            width: 100%;
+          }
+
+          &::placeholder {
+            display: inline-flex;
+            margin-block: 8px;
+            font-size: 1.6rem;
+            font-weight: 500;
+          }
+
+          @each $block in $blocks {
+            & > .LexicalEditorTheme__#{$block} {
+              font-weight: 500;
+
+              padding-top: 8px;
+              padding-bottom: 8px;
+              padding-inline: 8px;
+            }
+          }
+
+
+          @each $tblock in $textBlocks {
+            & > .LexicalEditorTheme__#{$tblock} {
+              font-weight: 500;
+            }
+          }
+
+          & > .LexicalEditorTheme__ {
+            &h6 {
+              font-size: 1.4rem;
+              line-height: 1.75;
+            }
+
+            &h5 {
+              font-size: 1.4rem;
+              line-height: calc(1.75 / 1.125);
+            }
+
+            &h4 {
+              font-size: 1.8rem;
+              line-height: 1.5;
+            }
+
+            &h3 {
+              font-size: 2rem;
+              line-height: 1.5;
+            }
+
+            &h2 {
+              font-size: 2.4rem;
+              line-height: 1.5;
+
+            }
+
+            &h1 {
+              padding: 2px;
+              font-weight: 600;
+              margin: 0;
+              white-space: break-spaces;
+              word-break: break-word;
+              font-size: 3rem;
+              line-height: 1.3;
+            }
+          }
+
+          @each $text in $textType {
+            & > .LexicalEditorTheme__text#{$text} {
+            }
+          }
+
+          & > p > * {
+            padding-block: 6px;
+          }
+
+          &:before {
+            display: none;
+          }
+
+          // &:after {
+          // content: " ";
+          // position: absolute;
+          // top: 8px;
+          // right: 0;
+          // left: auto;
+          // width: 1px;
+          // height: calc(100% - 16px);
+          // border-left: 1px solid oklch(from var(--muted-faded-fg) l c h/0.2);
+          // }
+        }
+
+        button.draggable-block-menu {
+          background: transparent;
+          right: auto;
+          left: var(--margin-width);
+          position: absolute;
+          transition: transform linear 0s,
+          opacity var(--ease-out-power3) 0.2s;
+          transition-delay: 0s, 0.1s;
+
+          &:hover {
+            background-color: oklch(from var(--muted-faded-bg) l c h/0.2);
+          }
+        }
+
+        .field {
+          &-type {
+            --content-width: inherit;
+            min-width: var(--content-width);
+            max-width: var(--content-width);
+          }
+        }
+      }
+    }
+
+    &.inline-rich-text {
+      margin: 0;
+      margin-bottom: 1rem;
+
+      height: 55px;
+
+      .insert-paragraph-at-end {
+        display: none;
+      }
+
+      .draggable-block-menu {
+        display: none;
+      }
+
+      .add-block-menu {
+        display: none;
+      }
+
+      .editor {
+        width: 100%;
+        position: relative;
+        padding: 0;
+        margin: 0;
+        height: 100%;
+
+        [data-lexical-editor="true"] > *:not(:first-child) {
+          display: none;
+        }
+
+        &-container {
+          position: relative;
+          padding: 0;
+          --content-width: minmax(auto, 708px);
+          --margin-width: minmax(96px, 1fr);
+
+          width: 100%;
+
+          letter-spacing: 0.02em;
+        }
+
+        &-scroller {
+          width: 100%;
+        }
+
+        .ContentEditable__root {
+          width: 100%;
+          padding: 0;
+
+          & > * {
+            font-size: 42px;
+            margin: 0;
+            letter-spacing: -0.01em;
+            font-weight: 700;
+            font-family: var(--font-sans);
+          }
+
+          & > p {
+            padding: 0;
+          }
+
+          span {
+            padding: 0;
+          }
+        }
+      }
+
+      .editor-placeholder {
+        position: absolute;
+        letter-spacing: -0.02em;
+        font-size: 42px;
+        line-height: 1.75;
+        color: var(--theme-elevation-500);
+        /* Prevent text selection */
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+
+        /* Make it behave more like a background element (no interaction) */
+        pointer-events: none;
+
+        top: 0px;
+        font-size: 42px;
+        line-height: 1.5;
+        /* Prevent text selection */
+        user-select: none;
+        -webkit-user-select: none;
+        font-weight: 900;
+        -moz-user-select: none;
+        -ms-user-select: none;
+
+        /* Make it behave more like a background element (no interaction) */
+        pointer-events: none;
+      }
+    }
+  }
+}

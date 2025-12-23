@@ -84,7 +84,7 @@ export const FXFrame = () => {
           <m.div
             data-footer-fx
             data-themed={"background-color"}
-            className="pointer-events-none absolute fixed top-auto z-10 h-[80px] w-full bg-[oklch(var(--black)/0)] mask-[linear-gradient(transparent,oklch(var(--black)/1))] opacity-75 backdrop-filter-[brightness(100%)_blur(5px)_contrast(500%)_saturate(1500%)]"
+            className="pointer-events-none absolute fixed top-auto z-10 h-[80px] w-full bg-black/0 mask-[linear-gradient(transparent,var(--black))] opacity-75 backdrop-filter-[brightness(100%)_blur(5px)_contrast(500%)_saturate(1500%)]"
             style={{
               bottom: b
             }}
@@ -92,7 +92,7 @@ export const FXFrame = () => {
           <m.div
             data-footer-fx
             data-themed={"background-color"}
-            className="pointer-events-none fixed top-auto z-10 h-[60px] w-full mask-[linear-gradient(transparent,oklch(var(--black)/1))] opacity-75 backdrop-filter-[hue-rotate(0deg)_brightness(110%)_blur(5px)_contrast(500%)_saturate(1500%)]"
+            className="pointer-events-none fixed top-auto z-10 h-[60px] w-full mask-[linear-gradient(transparent,var(--black))] opacity-75 backdrop-filter-[hue-rotate(0deg)_brightness(110%)_blur(5px)_contrast(500%)_saturate(1500%)]"
             style={{
               bottom: b
             }}

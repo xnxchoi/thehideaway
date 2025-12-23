@@ -1,70 +1,59 @@
 "use client";
 import type {
-  ClientUser,
-  Data,
-  SanitizedCollectionConfig,
-  SanitizedCollectionPermission,
-  SanitizedGlobalPermission
+	ClientUser,
+	Data,
+	SanitizedCollectionConfig,
+	SanitizedCollectionPermission,
+	SanitizedGlobalPermission
 } from "payload";
 
-import { getTranslation } from "@payloadcms/translations";
-import { formatAdminURL } from "payload/shared";
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type FC,
-  type ReactNode
-} from "react";
+import {getTranslation} from "@payloadcms/translations";
+import {formatAdminURL} from "payload/shared";
+import {type FC, Fragment, type ReactNode, useEffect, useRef, useState} from "react";
 
 import {
-  Gutter,
-  Locked,
-  MoveDocToFolder,
-  PreviewButton,
-  RenderCustomComponent,
-  SaveButton,
-  SaveDraftButton,
-  useConfig,
-  useEditDepth,
-  useFormInitializing,
-  useFormProcessing,
-  useTranslation
+	Gutter,
+	Locked,
+	MoveDocToFolder,
+	PreviewButton,
+	RenderCustomComponent,
+	SaveDraftButton,
+	useConfig,
+	useEditDepth,
+	useFormInitializing,
+	useFormProcessing,
+	useTranslation
 } from "@payloadcms/ui";
 
-import { Link } from "@/components/UX/Link/Link";
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
+import Link from "next/link";
 
-import { useDomCursor } from "@/components/core/cursorWrapper";
-import { Menu } from "@base-ui-components/react";
-import { Autosave } from "@/payload/elements/Autosave";
-import { DeleteDocument } from "@/payload/elements/DeleteDocument";
-import { DuplicateDocument } from "@/payload/elements/DuplicateDocument";
-import { LivePreviewToggler } from "@payloadcms/ui/elements/LivePreview/Toggler";
-import { PermanentlyDeleteButton } from "@payloadcms/ui/elements/PermanentlyDeleteButton";
-import { RestoreButton } from "@/payload/elements/RestoreButton";
-import { Status } from "@/payload/elements/Status";
-import { formatDate } from "@payloadcms/ui/shared";
-import type { DocumentDrawerContextType } from "node_modules/@payloadcms/ui/dist/elements/DocumentDrawer/Provider";
-import { useLivePreviewContext } from "node_modules/@payloadcms/ui/dist/providers/LivePreview/context";
-import { CopyLocaleData } from "../CopyLocaleData";
-import { cn } from "@/lib/utils";
-import { useLenis } from "lenis/react";
-import { useVaultSidebar } from "@/payload/providers/Admins";
-import { SidebarControls } from "@/payload/fields/SidebarControls/client";
-import { AnimatePresence } from "motion/react";
-import "./index.scss";
+import {useDomCursor} from "@/components/core/cursorWrapper";
+import {cn} from "@/lib/utils";
+import {Autosave} from "@/payload/elements/Autosave";
+import {DeleteDocument} from "@/payload/elements/DeleteDocument";
+import {DuplicateDocument} from "@/payload/elements/DuplicateDocument";
+import {PublishButton} from "@/payload/elements/PublishButton/publishClient";
+import {RestoreButton} from "@/payload/elements/RestoreButton";
+import {RP_SaveButton} from "@/payload/elements/SaveButton/SaveClient";
+import {Status} from "@/payload/elements/Status";
+import {SidebarControls} from "@/payload/fields/SidebarControls/client";
+import {useVaultSidebar} from "@/payload/providers/Admins";
+import {Menu} from "@base-ui/react";
+import {LivePreviewToggler} from "@payloadcms/ui/elements/LivePreview/Toggler";
+import {PermanentlyDeleteButton} from "@payloadcms/ui/elements/PermanentlyDeleteButton";
+import {formatDate} from "@payloadcms/ui/shared";
+import {useLenis} from "lenis/react";
+import {AnimatePresence} from "motion/react";
+import type {
+	DocumentDrawerContextType
+} from "node_modules/@payloadcms/ui/dist/elements/DocumentDrawer/Provider";
 import {
-  MenuArrow,
-  MenuItem,
-  MenuPopup,
-  MenuSeparator,
-  MenuTrigger
-} from "../../components/Popover";
-import { RP_SaveButton } from "@/payload/elements/SaveButton/SaveClient";
-import { PublishButton } from "@/payload/elements/PublishButton/publishClient";
+	useLivePreviewContext
+} from "node_modules/@payloadcms/ui/dist/providers/LivePreview/context";
+import {MenuArrow, MenuItem, MenuPopup, MenuSeparator, MenuTrigger} from "../../components/Popover";
+import {CopyLocaleData} from "../CopyLocaleData";
+import "./index.scss";
 
 const baseClass = "doc-controls";
 
@@ -141,7 +130,6 @@ export const DocumentControls: FC<{
   const { i18n, t } = useTranslation();
   const editDepth = useEditDepth();
   const hasSidebar = useVaultSidebar((r) => r.enabled);
-  const sidebarOpen = useVaultSidebar((r) => r.open);
   const { config, getEntityConfig } = useConfig();
   const lenis = useLenis();
   const collectionConfig = getEntityConfig({ collectionSlug: slug });
@@ -196,12 +184,7 @@ export const DocumentControls: FC<{
   }, [readOnlyForIncomingUser, showDotMenu]);
 
   const menuRef = useRef<HTMLDivElement>(null!);
-  const leaveSetup = useCallback(() => {
-    lenis?.start();
-  }, [lenis]);
-  const enterSetup = useCallback(() => {
-    lenis?.stop();
-  }, [lenis]);
+
   useEffect(() => {
     !showMenu && lenis?.start();
   }, [lenis, showMenu]);
@@ -244,6 +227,7 @@ export const DocumentControls: FC<{
           style={{
             zIndex: 10003
           }}
+          id="estate-document-controls"
         >
           <div className={`${baseClass}__content`}>
             {showLockedMetaIcon || showFolderMetaIcon ? (
@@ -420,11 +404,7 @@ export const DocumentControls: FC<{
                 />
                 <Menu.Portal>
                   <Menu.Positioner className="outline-none" sideOffset={10}>
-                    <MenuPopup
-                      className={"p-0 py-3"}
-                      onMouseEnter={enterSetup}
-                      onMouseLeave={leaveSetup}
-                    >
+	                  <MenuPopup className={"p-0 py-3"}>
                       <MenuArrow />
                       <div className={"flex flex-col"} ref={menuRef}>
                         {showCopyToLocale && (

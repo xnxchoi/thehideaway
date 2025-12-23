@@ -102,8 +102,8 @@ export const PostList = () => {
 //               <div class="meta-footer-left flex items-center">
 //                 <a data-mouse="nav-dot" data-mouse-lock="tl" href="https://hideawayseoul.com/topics/fiction/"
 //                    style="padding-right: 8px;" data-state="FOCUS">
-//                   <span class="Gyx" style="color: oklch(var(--fg)/.86);
-//                                    border-color:oklch(var(--fg)/.86);
+//                   <span class="Gyx" style="color: oklch(from var(--fg) l c h/.86);
+//                                    border-color:oklch(from var(--fg) l c h/.86);
 //                                    overflow: hidden;
 //                                    white-space: nowrap;
 //                                    text-overflow: ellipsis;">
@@ -196,8 +196,8 @@ export const PostList = () => {
 //               <div class="meta-footer-left flex items-center">
 //                 <a data-mouse="nav-dot" data-mouse-lock="tl" href="https://hideawayseoul.com/topics/fiction/"
 //                    style="padding-right: 8px;" data-state="FOCUS">
-//                   <span class="Gyx" style="color: oklch(var(--fg)/.86);
-//                                    border-color:oklch(var(--fg)/.86);
+//                   <span class="Gyx" style="color: oklch(from var(--fg) l c h/.86);
+//                                    border-color:oklch(from var(--fg) l c h/.86);
 //                                    overflow: hidden;
 //                                    white-space: nowrap;
 //                                    text-overflow: ellipsis;">
@@ -283,8 +283,8 @@ export const PostList = () => {
 //               <div class="meta-footer-left flex items-center">
 //                 <a data-mouse="nav-dot" data-mouse-lock="tl" href="https://hideawayseoul.com/topics/fiction/"
 //                    style="padding-right: 8px;" data-state="FOCUS">
-//                   <span class="Gyx" style="color: oklch(var(--fg)/.86);
-//                                    border-color:oklch(var(--fg)/.86);
+//                   <span class="Gyx" style="color: oklch(from var(--fg) l c h/.86);
+//                                    border-color:oklch(from var(--fg) l c h/.86);
 //                                    overflow: hidden;
 //                                    white-space: nowrap;
 //                                    text-overflow: ellipsis;">
@@ -375,8 +375,8 @@ export const PostList = () => {
 //               <div class="meta-footer-left flex items-center">
 //                 <a data-mouse="nav-dot" data-mouse-lock="tl" href="https://hideawayseoul.com/topics/fiction/"
 //                    style="padding-right: 8px;" data-state="FOCUS">
-//                   <span class="Gyx" style="color: oklch(var(--fg)/.86);
-//                                    border-color:oklch(var(--fg)/.86);
+//                   <span class="Gyx" style="color: oklch(from var(--fg) l c h/.86);
+//                                    border-color:oklch(from var(--fg) l c h/.86);
 //                                    overflow: hidden;
 //                                    white-space: nowrap;
 //                                    text-overflow: ellipsis;">
@@ -457,8 +457,8 @@ export const PostList = () => {
 //               <div class="meta-footer-left flex items-center">
 //                 <a data-mouse="nav-dot" data-mouse-lock="tl" href="https://hideawayseoul.com/topics/fiction/"
 //                    style="padding-right: 8px;" data-state="FOCUS">
-//                   <span class="Gyx" style="color: oklch(var(--fg)/.86);
-//                                    border-color:oklch(var(--fg)/.86);
+//                   <span class="Gyx" style="color: oklch(from var(--fg) l c h/.86);
+//                                    border-color:oklch(from var(--fg) l c h/.86);
 //                                    overflow: hidden;
 //                                    white-space: nowrap;
 //                                    text-overflow: ellipsis;">

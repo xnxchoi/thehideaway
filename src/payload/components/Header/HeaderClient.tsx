@@ -250,7 +250,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const mainY = useRef(isMobile ? 16 - 4 : 12);
   useEffect(() => {
     btBackground.current = navIsOpen
-      ? "oklch(var(--transparent-base)/0)"
+	    ? "oklch(from var(--transparent-base) l c h/0)"
       : "var(--button-background)";
     fxInnerTop.current = navIsOpen ? -top : 0;
     innerLeft.current = navIsOpen ? -left : 0;
@@ -316,7 +316,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
             overflow: "hidden",
             boxShadow:
               themeRef.current === "dark"
-                ? "0 0 0.5px 1.2px oklch(var(--muted-faded-bg)/.7)"
+	              ? "0 0 0.5px 1.2px oklch(from var(--muted-faded-bg) l c h/.7)"
                 : "none",
             duration: 1
           },
@@ -690,7 +690,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         }
       />
       {
-        // "absolute top-0 left-0 w-full h-full z-[1] bg-[oklch(0.7894_0_0/0.7)] dark:bg-[oklch(0.7894_0_0/0.4)] opacity-[0.00001]"
+	      // "absolute top-0 left-0 w-full h-full z-[1] bg-[oklch(0.7894_0_0/0.70)] dark:bg-[oklch(0.7894_0_0/0.40)] opacity-[0.00001]"
       }
       <div
         ref={blurRef}

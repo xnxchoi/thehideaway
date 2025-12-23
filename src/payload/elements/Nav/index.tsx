@@ -151,7 +151,7 @@ export const DefaultNav: React.FC<NavProps> = async (props) => {
               width: 22,
               height: 22,
               display: "block",
-              fill: "oklch(var(--faded-fg)/1)",
+	            fill: "var(--faded-fg)",
               flexShrink: 0
             }}
           >

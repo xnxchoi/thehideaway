@@ -2,10 +2,10 @@
   background: var(--colorC);
   padding-top: 0;
   padding: 24px var(--gutter);
-  border-color: oklch(var(--fg)/.86);
+  border-color: oklch(from var(--fg) l c h/.86);
   /*grid-template-rows: repeat(4, auto) 1fr;*/
   position: relative;
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
   /*grid-column: 1/-1;*/
   /**/
   display: flex;
@@ -73,7 +73,7 @@ img {
 .article-card_tag span {
   line-height: 1;
   font-weight: 500;
-  color: oklch(var(--fg)/.86);
+  color: oklch(from var(--fg) l c h/.86);
 }
 
 .article-card_title {
@@ -243,7 +243,7 @@ img {
   position: absolute;
   right: 0;
   left: auto;
-  background: linear-gradient(270deg, oklch(var(--bg)/.86) 25%, oklch(var(--bg)/.68) 25%, oklch(var(--bg)/.53) 25%, oklch(var(--bg)/.37) 50%, oklch(var(--bg)/.08) 75%, var(--noir-t-6) 100%);
+  background: linear-gradient(270deg, oklch(from var(--bg) l c h/.86) 25%, oklch(from var(--bg) l c h/.68) 25%, oklch(from var(--bg) l c h/.53) 25%, oklch(from var(--bg) l c h/.37) 50%, oklch(from var(--bg) l c h/.08) 75%, var(--noir-t-6) 100%);
 }
 
 @media(min-width: 967px) {

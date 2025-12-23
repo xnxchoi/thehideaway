@@ -26,15 +26,15 @@ export const errorToast = (message: string) =>
 	toast.error(message, {
 		duration: 3000,
 		style: {
-			backgroundColor: "oklch(var(--rouge-400)/1)",
-			color: "oklch(var(--rouge-50)/1)",
+			backgroundColor: "var(--rouge-400)",
+			color: "var(--rouge-50)",
 		},
 	});
 export const successToast = (message: string) =>
 	toast.success(message, {
 		duration: 3000,
 		style: {
-			backgroundColor: "oklch(var(--bleu-400)/1)",
-			color: "oklch(var(--bleu-50)/1)",
+			backgroundColor: "var(--bleu-400)",
+			color: "var(--bleu-50)",
 		},
 	});

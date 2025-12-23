@@ -152,7 +152,7 @@ export function AuthCard({
 
   return (
     <div className={cn("flex flex-col gap-9")}>
-      <Card className="bg-[oklch(var(--faded-bg)/.5)]">
+	    <Card className="bg-faded-background/50">
         <CardHeader className={cn("gap-0 text-center", classNames?.header)}>
           {cardHeader ? (
             cardHeader
@@ -252,7 +252,7 @@ export function AuthCard({
                   >
                     <div
                       className={
-                        "relative -left-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-transparent to-[oklch(var(--fg)/.7)]"
+	                      "relative -left-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-transparent to-foreground/70"
                       }
                     ></div>
                     <div className={"px-[1px] text-center text-[12px]"}>
@@ -260,7 +260,7 @@ export function AuthCard({
                     </div>
                     <div
                       className={
-                        "relative -right-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-[oklch(var(--fg)/.7)] to-transparent"
+	                      "relative -right-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-foreground/70 to-transparent"
                       }
                     ></div>
                   </div>
@@ -403,7 +403,8 @@ export function AuthCard({
             Terms of Service
           </Link>
           <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-left scale-x-0 bg-foreground/80 transition-transform duration-300 group-hover:scale-x-100"></span>
-          <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-[oklch(var(--muted-faded-bg)/.8)] transition-transform duration-300 group-hover:scale-x-0"></span>
+          <span
+	          className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-muted-faded-background/80 transition-transform duration-300 group-hover:scale-x-0"></span>
         </span>
         and{" "}
         <span className="group relative mx-1 inline-flex items-center justify-center p-0">
@@ -414,7 +415,8 @@ export function AuthCard({
             Privacy Policy
           </Link>
           <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-left scale-x-0 bg-foreground/80 transition-transform duration-300 group-hover:scale-x-100"></span>
-          <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-[oklch(var(--muted-faded-bg)/.8)] transition-transform duration-300 group-hover:scale-x-0"></span>
+          <span
+	          className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-muted-faded-background/80 transition-transform duration-300 group-hover:scale-x-0"></span>
         </span>
         .
       </div>

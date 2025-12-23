@@ -1,9 +1,10 @@
 "use client";
-import { useInView, type Variants } from "motion/react";
+import {useInView, type Variants} from "motion/react";
 import * as m from "motion/react-m";
-import { useMemo, useRef } from "react";
+import {useMemo, useRef} from "react";
 import "./__signature.scss";
-import { paths } from "./paths";
+import {paths} from "./paths";
+
 type Transitionn = typeof paths.transitions;
 type SignatureKeys = keyof Transitionn;
 export const Signature = () => {
@@ -56,7 +57,7 @@ export const Signature = () => {
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 14248.91 2723.74"
         style={{
-          color: "oklch(var(--faded-fg)/.9)"
+	        color: "oklch(from var(--faded-fg) l c h/.9)"
         }}
       >
         <defs>
@@ -234,8 +235,9 @@ export const SignedFooter = () => {
         <div className="block w-[45%] font-sans text-sm leading-[175%] font-light">
           <p>Enjoying your stay so far?</p>
           <br />
-          <p>I founded The Hideaway as a point of respite from</p>
-
+	        <p>Have some things you'd want to share about the article - or about anything else?</p>
+	        <br/>
+	        <p>Hit me up at </p>
           <p>Lost with care,</p>
           <div className={"flex"}>
             <p>Sean</p>

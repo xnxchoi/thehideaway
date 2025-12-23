@@ -1,46 +1,49 @@
-'use server'
-import type {CollectionAfterChangeHook, CollectionAfterDeleteHook} from 'payload'
+"use server";
+import type {
+	CollectionAfterChangeHook,
+	CollectionAfterDeleteHook
+} from "payload";
 
-import {revalidatePath, revalidateTag} from 'next/cache'
-import {Page} from '@/payload-types'
+import {revalidatePath, revalidateTag} from "next/cache";
+import {Page} from "@/payload-types";
 
 export const revalidatePage: CollectionAfterChangeHook<Page> = async ({
-	doc,
-	previousDoc,
-	req: {payload, context},
+	                                                                      doc,
+	                                                                      previousDoc,
+	                                                                      req: {payload, context}
 }) => {
 	if (!context.disableRevalidate) {
-		if (doc._status === 'published') {
-			const path = `/${doc.slug}`
+		if (doc._status === "published") {
+			const path = `/${doc.slug}`;
 
-			payload.logger.info(`Revalidating page at path: ${path}`)
+			payload.logger.info(`Revalidating page at path: ${path}`);
 
-			revalidatePath(path)
-			revalidateTag('pages-sitemap')
+			revalidatePath(path);
+			revalidateTag("pages-sitemap", {expire: 50});
 		}
 
 		// If the page was previously published, we need to revalidate the old path
-		if (previousDoc?._status === 'published' && doc._status !== 'published') {
-			const oldPath = `/${previousDoc.slug}`
+		if (previousDoc?._status === "published" && doc._status !== "published") {
+			const oldPath = `/${previousDoc.slug}`;
 
-			payload.logger.info(`Revalidating old page at path: ${oldPath}`)
+			payload.logger.info(`Revalidating old page at path: ${oldPath}`);
 
-			revalidatePath(oldPath)
-			revalidateTag('pages-sitemap')
+			revalidatePath(oldPath);
+			revalidateTag("pages-sitemap", {expire: 50});
 		}
 	}
-	return doc
-}
+	return doc;
+};
 
 export const revalidateDelete: CollectionAfterDeleteHook<Page> = async ({
-	doc,
-	req: {context},
+	                                                                        doc,
+	                                                                        req: {context}
 }) => {
 	if (!context.disableRevalidate) {
-		const path = `/${doc?.slug}`
-		revalidatePath(path)
-		revalidateTag('pages-sitemap')
+		const path = `/${doc?.slug}`;
+		revalidatePath(path);
+		revalidateTag("pages-sitemap", {expire: 50});
 	}
 
-	return doc
-}
+	return doc;
+};

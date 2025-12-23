@@ -39,7 +39,7 @@ async function appendExtensionSql() {
     // 4. Check if the script has already been added.
     if (
       originalContent.includes(
-        "DROP FUNCTION IF EXISTS nanoid(int, text, float)"
+	      "CREATE OR REPLACE FUNCTION nanoid"
       )
     ) {
       console.log("✅ Extension SQL already exists. Nothing to do. Exiting.");

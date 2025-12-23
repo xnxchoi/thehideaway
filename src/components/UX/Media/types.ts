@@ -1,55 +1,60 @@
-import type { ComponentPropsWithoutRef, ReactNode, Ref } from "react";
+import type {ComponentPropsWithoutRef, ReactNode, Ref} from "react";
+import type {FetchedImageDoc, RalueWithRelation} from "@/types/collections/imageCollections";
+import type {StaticImport} from "next/dist/shared/lib/get-img-props";
+import {cssVariables} from "@/cssVariables";
+import {ImageCollectionSlug} from "@/types/payload-api-helpers";
 
-import type { User } from "@/payload-types";
-import type { ImageBaseSelect } from "@/types/payload-api-helpers";
-import type { StaticImport } from "next/dist/shared/lib/get-img-props";
-export type ImageCollectionOverview = ImageBaseSelect;
+export type ImageCollectionOverview = {
+	relationTo: ImageCollectionSlug;
+	value: FetchedImageDoc;
+} | RalueWithRelation;
 
-export type FrontImageResource = ImageCollectionOverview & {
-  author?: string | User;
-};
-export type ViewportSizes = "lg" | "md" | "sm" | "xl" | "2xl" | "3xl" | "xs";
+export type FrontImageResource = ImageCollectionOverview
+type CSSVARS = typeof cssVariables;
+export type ViewportBreakpoints = CSSVARS["breakpoints"];
+export type ViewportSizes = keyof ViewportBreakpoints;
 
-export type AspectRatio =
-  | ({
-      def: number;
-    } & {
-      [x in ViewportSizes]?: number;
-    })
-  | number;
-export interface MediaElementProps
-  extends Omit<ComponentPropsWithoutRef<"div">, "resource" | "className"> {
-  alt?: string;
-  className?: string;
-  pictureClassName?: string;
-  captionClassName?: string;
-  htmlElement?: keyof HTMLElementTagNameMap;
-  aspectRatio?: AspectRatio;
-  imgClassName?: string;
-  onClick?: () => void;
-  onLoad?: () => void;
-  caption?: string | ReactNode;
-  resource?: FrontImageResource | string | null;
-  fill?: boolean; // for NextImage only
-  size?: string; // for NextImage only
-  loading?: "lazy" | "eager"; // for NextImage only
-  priority?: boolean; // for NextImage only
-  ref?: Ref<HTMLImageElement> | Ref<HTMLVideoElement>;
-  src?: StaticImport | string;
-  videoClassName?: string;
+export type AspectRatio = number | {
+	[key in ViewportSizes]?: number;
+} & {
+	base: number;
 }
+
+export interface MediaElementProps
+	extends Omit<ComponentPropsWithoutRef<"div">, "resource" | "className"> {
+	className?: string;
+	pictureClassName?: string;
+	captionClassName?: string;
+	htmlElement?: keyof HTMLElementTagNameMap;
+	aspectRatio?: AspectRatio;
+	imgClassName?: string;
+	onClick?: () => void;
+	onLoad?: () => void;
+	caption?: string | ReactNode;
+	resource?: FrontImageResource | string | null;
+	fill?: boolean; // for NextImage only
+	size?: string; // for NextImage only
+	loading?: "lazy" | "eager"; // for NextImage only
+	priority?: boolean; // for NextImage only
+	ref?: Ref<HTMLImageElement> | Ref<HTMLVideoElement>;
+	src?: StaticImport | string;
+	videoClassName?: string;
+
+
+}
+
 export type MediaProps = Omit<MediaElementProps, "videoClassName" | "ref"> & {
-  ref?: Ref<HTMLImageElement>;
+	ref?: Ref<HTMLImageElement>;
 };
 
 type QueriedMediaProps = {
-  resource: FrontImageResource | string;
+	resource: FrontImageResource | string;
 };
 type StaticMediaProps = {
-  fill?: boolean; // for NextImage only
-  size?: string; // for NextImage only
-  loading?: "lazy" | "eager"; // for NextImage only
-  priority?: boolean; // for NextImage only
+	fill?: boolean; // for NextImage only
+	size?: string; // for NextImage only
+	loading?: "lazy" | "eager"; // for NextImage only
+	priority?: boolean; // for NextImage only
 
-  src: StaticImport | string;
+	src: StaticImport | string;
 };

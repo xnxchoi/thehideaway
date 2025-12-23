@@ -2,8 +2,8 @@
 
 @layer payload-default {
   .template-default {
-    background-color: oklch(var(--bg) / 1);
-    color: oklch(var(--fg) / 1);
+    background-color: oklch(from var(--bg) l c h/1);
+    color: oklch(from var(--fg) l c h/1);
 
     [dir="rtl"] &__nav-toggler-wrapper {
       left: unset;
@@ -37,7 +37,7 @@
       width: 100%;
       flex-grow: 1;
       position: relative;
-      background-color: oklch(var(--bg) / 1);
+      background-color: oklch(from var(--bg) l c h/1);
       &:before {
         content: "";
         display: block;

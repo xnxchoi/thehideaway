@@ -218,7 +218,7 @@ export const CopyLocaleDataDrawer = () => {
             inset: 0,
             zIndex: 99998,
             backdropFilter: "blur(1px)",
-            backgroundColor: "oklch(var(--faded-black)/.3)",
+	          backgroundColor: "oklch(from var(--faded-black) l c h/.3)",
             position: "fixed"
           }}
         />
@@ -255,7 +255,7 @@ export const CopyLocaleDataDrawer = () => {
               flexDirection: "column",
               overflowY: "auto",
               borderRadius: "12px",
-              backgroundColor: "oklch(var(--faded-bg)/.8)",
+	            backgroundColor: "oklch(from var(--faded-bg) l c h/.8)",
               backdropFilter: "blur(8px)",
               fontFamily: "var(--font-sans)"
             }}

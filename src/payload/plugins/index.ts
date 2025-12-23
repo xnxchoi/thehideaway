@@ -35,7 +35,7 @@ import { Media } from "../collections/Media";
 import { UserMedia } from "../collections/UserMedia";
 import { LikesPlugin } from "./Likes";
 import { userFieldOrganizerPlugin } from "./userField";
-import { imageSearchPlugin } from "./image-search";
+import {imageSearchPlugin} from "./image-search"
 
 const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
   if (doc) {

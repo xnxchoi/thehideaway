@@ -14,7 +14,7 @@ import { EntityType } from "@payloadcms/ui/shared";
 import { usePathname } from "next/navigation";
 import { formatAdminURL } from "payload/shared";
 import React, { Fragment } from "react";
-import { Link } from "@/components/UX/Link/Link";
+import Link from "next/link";
 const baseClass = "nav";
 
 /**

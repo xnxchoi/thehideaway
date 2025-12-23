@@ -306,7 +306,6 @@ export const RP_POLAROID = () => {
             className="review__card-bg_image-container transform-origin-center"
           >
             <FrontImage
-              alt={"an image of a reviewer"}
               ref={img}
               src={imager}
               pictureClassName={"absolute inset-0 object-cover"}

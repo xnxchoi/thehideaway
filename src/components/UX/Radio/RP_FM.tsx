@@ -225,7 +225,7 @@ const LP = () => {
             <div
               className="outline-groove absolute flex aspect-square w-full items-center justify-center overflow-hidden rounded-full outline-1"
               // style={{
-              //   outlineColor: "oklch(var(--bleu-400)/.25)"
+	            //   outlineColor: "var(--bleu-400)/.25)"
               // }}
             >
               <Image
@@ -361,7 +361,7 @@ const LP = () => {
 //     return{" "}
 //     <div
 //       className={
-//         "opacity-40 bg-[oklch(var(--faded-black)/.1)] rounded-full aspect-square w-[250px] absolute flex items-center justify-center z-[33]"
+//         "opacity-40 bg-faded-black/10 rounded-full aspect-square w-[250px] absolute flex items-center justify-center z-[33]"
 //       }
 //       style={{
 //         backgroundImage: `url(assets/textures/lp/lp_gradient_effects_bo${isMobile ? "" : "@2x"}.png)`,
@@ -380,13 +380,12 @@ const LP = () => {
 //     >
 //       <div
 //         className="absolute flex rounded-full items-center justify-center w-[99%] outline-1 outline-groove aspect-square"
-//         style={{ outlineColor: "oklch(var(--bleu-400)/.5)" }}
+//         style={{ outlineColor: "var(---bleu-400)/.5)" }}
 //         ref={lpRef}
 //       >
 //         <div
 //           className="flex bg-radial/oklab opacity-40 from-bleu-900 from-0% via-piercing-orange/50 via-25% to-bleu-700 to-40% mix-blend-color-burn absolute inset-0 w-full h-full aspect-square rounded-full z-[13]"
-//           style={{
-//             outlineColor: "oklch(var(--bleu-400)/.5)",
+//         style={{ outlineColor: "var(---bleu-400)/.5)",
 //             maskImage: `url(/assets/textures/lp/lp_inner_grooves${isMobile ? "" : "@2x"}.png)`,
 //             maskSize: "300px",
 //             scale: 0.75,
@@ -397,8 +396,7 @@ const LP = () => {
 //         ></div>
 //         <div
 //           className="flex items-center justify-between text-[1.8rem] bg-bleu-500/20 opacity-95 absolute inset-0 aspect-square rounded-full z-[2]"
-//           style={{
-//             outlineColor: "oklch(var(--bleu-400)/.5)",
+//  //         style={{ outlineColor: "var(---bleu-400)/.5)" ,
 //             maskImage: "url(#lp)",
 //             maskSize: "100%",
 //             maskPosition: "center center",
@@ -545,8 +543,8 @@ const padWithLeadingZeros = (num: number, length: number): string => {
     --scanlines-light: #666;
     --scanlines-dark: black;
     --bars: 3%;
-    --bar-color: oklch(var(--faded-fg)/1);
-    --bar-bg: oklch(var(--faded-black)/1);
+    --bar-color: oklch(from var(--faded-fg) l c h/1);
+    --bar-bg: var(--faded-black);
     
               -pointer-x: 50%;
     --pointer-y: 50%;
@@ -562,11 +560,11 @@ const padWithLeadingZeros = (num: number, length: number): string => {
     --translate-x: 0px;
     --translate-y: 0px;
           --scanlines-space: 1px;
-    --scanlines-light: oklch(var(--faded-white)/1);  
-    --scanlines-dark: oklch(var(--faded-black)/1);
+    --scanlines-light: var(--faded-white);
+    --scanlines-dark: var(--faded-black);
     --bars: 3%;
-    --bar-color: oklch(var(--faded-white)/1);
-      --bar-bg: oklch(var(--faded-black)/1);
+    --bar-color: var(--faded-white);
+      --bar-bg: var(--faded-black);
               }
             `}
           </style>
@@ -605,7 +603,7 @@ const padWithLeadingZeros = (num: number, length: number): string => {
             <div className="absolute inset-0 rounded-full z-[2] w-full flex items-center justify-center aspect-square" data-lp-effects={true} style={{
               maskImage: "url(/assets/lp_effects.png)",
 
-              backgroundImage: "radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y), oklch(var(--faded-white)/0.8) 0%, oklch(var(--faded-white)/0.78) 25%, oklch(var(--faded-black)/0.9) 90%)",
+              backgroundImage: "radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y), oklch(from var(--faded-white) l c h/0.8) 0%, oklch(from var(--faded-white) l c h/0.78) 25%, oklch(from var(--faded-black) l c h/0.9) 90%)",
               backgroundPosition: "center center",
               backgroundSize: "cover",
               mixBlendMode: "luminosity",

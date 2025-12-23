@@ -1,4 +1,8 @@
-import { createAuthClient } from "better-auth/react";
+import {errorToast} from "@/components/ui/sonner";
+import {betterAuthOptions} from "@/lib/auth/options";
+import {accessControl} from "@/lib/auth/permissions";
+import {admin, author, editor, patron, user} from "@/lib/auth/roles";
+import {passkeyClient} from "@better-auth/passkey/client"
 import {
   adminClient,
   emailOTPClient,
@@ -6,12 +10,9 @@ import {
   magicLinkClient,
   multiSessionClient,
   organizationClient,
-  passkeyClient,
   twoFactorClient
 } from "better-auth/client/plugins";
-import { accessControl } from "@/lib/auth/permissions";
-import { admin, author, editor, patron, user } from "@/lib/auth/roles";
-import { errorToast } from "@/components/ui/sonner";
+import {createAuthClient} from "better-auth/react";
 
 export const authClient = createAuthClient({
   baseURL: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}`,
@@ -107,7 +108,8 @@ export const authClient = createAuthClient({
         errorToast("Too many requests. Please try again later.");
       }
     }
-  }
+  },
+	$InferAuth: betterAuthOptions
 });
 
 export const {

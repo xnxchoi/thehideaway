@@ -106,14 +106,9 @@ export type LockedAccessCollection = Extract<
   | "delta"
   | "media"
   | "userMedia"
-  | "tracks"
-  | "albums"
-  | "playlists"
-  | "profile"
+	| "profile"
   | "assets"
-  | "albums"
-  | "playlists"
-  | "tracks"
+	| "tracks"
 >;
 export type CollectionAccessMap<T extends LockedAccessCollection> = {
   [key in T]: CollectionConfig<T>["access"];

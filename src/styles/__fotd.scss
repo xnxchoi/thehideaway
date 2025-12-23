@@ -62,8 +62,8 @@
 }
 
 .c-hero.home {
-  background-color: oklch(var(--bg)/.86);
-  color: oklch(var(--fg)/1);
+  background-color: oklch(from var(--bg) l c h/.86);
+  color: oklch(from var(--fg) l c h/1);
   flex-direction: row;
   justify-content: space-between;
   align-items: stretch;
@@ -99,8 +99,8 @@
 .c-cta {
   grid-column-gap: 3px;
   border: 1px dotted var(--pin-lines);
-  background-color: oklch(var(--bg)/.86);
-  color: oklch(var(--fg)/1);
+  background-color: oklch(from var(--bg) l c h/.86);
+  color: oklch(from var(--fg) l c h/1);
 
   border-radius: 2.5px;
   flex: none;
@@ -154,7 +154,7 @@
 .c-c.home-intro {
   z-index: 1;
   grid-row-gap: 2vw;
-  background-color: oklch(var(--bg)/.86);
+  background-color: oklch(from var(--bg) l c h/.86);
   border-radius: 2px;
   flex-direction: column;
   justify-content: space-between;

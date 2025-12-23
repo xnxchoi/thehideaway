@@ -17,6 +17,7 @@ import { uuidv7 } from "uuidv7";
 import { Delta, Post, Response, type Citation } from "../../payload-types";
 import { PROPS_COLLAPSIBLE } from "./constants";
 import type { CheckboxField } from "payload";
+import {ACField} from "../fields/AccessControlled/plugin"
 
 // Access control functions
 const isAdminOrAuthor: Access = ({ req: { user } }) => {
@@ -364,15 +365,9 @@ const commentsField: CheckboxField = {
   index: true,
   admin: {
     position: "sidebar",
-    components: {
-      Field: {
-        path: "@/AccessControlled/Checkbox/index.tsx",
-        serverProps: {
-          allowedRoles: ["admin", "editor"],
-          allowAuthor: true
-        }
-      }
-    }
+	  components: ACField("checkbox", {
+		  allowAuthor: true,
+	  })
   }
 };
 export const commentsPlugin =

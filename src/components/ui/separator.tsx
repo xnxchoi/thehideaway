@@ -27,13 +27,13 @@ function GradientSeparator({ caption, orientation = "horizontal", ...props }: Re
 		"relative", (caption ? ("gap-[1px] bg-transparent flex items-center justify-center") : "from-transparent from-[35%] via-foreground/70 via-[65%] to-transparent"), ...((orientation === 'horizontal' ? ([(caption && "h-[3px] w-full" || "h-px w-full"), "bg-linear-to-r"]) : ([(caption && "w-[3px] h-full" || "w-px h-full"), "bg-linear-to-b"])) )
 	)}>
 		{caption && (<><div className=
-			{cn("relative flex-[1_1_35%] from-transparent to-[oklch(var(--fg)/.7)]", orientation === 'horizontal' ? "-left-1 h-[1px] bg-linear-to-r" : "-top-1 w-[1px] bg-linear-to-b")}
+			                    {cn("relative flex-[1_1_35%] from-transparent to-foreground/70", orientation === "horizontal" ? "-left-1 h-[1px] bg-linear-to-r" : "-top-1 w-[1px] bg-linear-to-b")}
 		></div>
 			<div className={cn("text-center text-[12px]", orientation === 'horizontal' ? 'px-[1px]' : 'py-[1px]')}>
 				{caption}
 			</div>
 			<div className=
-				{cn("relative flex-[1_1_35%] from-[oklch(var(--fg)/.7)] to-transparent", orientation === 'horizontal' ? "-right-1 h-[1px] bg-linear-to-r" : "-bottom-1 w-[1px] bg-linear-to-b")}
+				     {cn("relative flex-[1_1_35%] from-foreground/70 to-transparent", orientation === "horizontal" ? "-right-1 h-[1px] bg-linear-to-r" : "-bottom-1 w-[1px] bg-linear-to-b")}
 			></div>
 		</>
 		)}

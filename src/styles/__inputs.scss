@@ -4,7 +4,7 @@ input.w-input {
   display: block;
   border-style: none none solid;
   border-width: 1px;
-  border-color: black black oklch(var(--muted-faded-bg) / 0.5);
+  border-color: black black oklch(from var(--muted-faded-bg) l c h/0.5);
   text-transform: uppercase;
   background-color: transparent;
   font-family: var(--font-sans);
@@ -17,7 +17,7 @@ input.w-input {
 }
 
 input.w-input::placeholder {
-  color: oklch(var(--fg) / 0.001);
+  color: oklch(from var(--fg) l c h/0.001);
 }
 
 .input-label {
@@ -30,7 +30,7 @@ input.w-input::placeholder {
   font-size: 1.2rem;
   font-weight: 500;
   line-height: 1.1;
-  color: oklch(var(--muted-faded-bg) / 0.75);
+  color: oklch(from var(--muted-faded-bg) l c h/0.75);
   transition:
     color 0.6s cubic-bezier(0.16, 1, 0.32, 1),
     transform 0.6s cubic-bezier(0.16, 1, 0.32, 1);

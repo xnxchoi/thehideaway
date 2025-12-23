@@ -1,7 +1,44 @@
-import { type Endpoint } from "payload";
+import {type Endpoint} from "payload";
 
-import { ProviderManager } from "../classes/ProviderManager";
+import {ProviderManager} from "../classes/ProviderManager";
+import {NextResponse} from "next/server";
 
+export const externalProvider: Endpoint = {
+	path: "/courier",
+	method: "get",
+	handler: async (req) => {
+		const searchParams = req.searchParams;
+		const url = searchParams.get("url");
+
+		if (!url) {
+			return new NextResponse("Missing image URL", {status: 400});
+		}
+
+		try {
+			const response = await fetch(url, {
+				method: "GET",
+				headers: {
+					Accept: "image/*",
+					"User-Agent": "Mozilla/5.0 (compatible; MyApp/1.0; +https://hideawayseoul.com)"
+				}
+			});
+			if (!response.ok) throw new Error("Image fetch failed");
+
+			const contentType = response.headers.get("content-type") || "application/octet-stream";
+			const buffer = await response.arrayBuffer();
+			return new NextResponse(buffer,
+				{
+					headers: {
+						"Content-Type": contentType,
+						"Cache-Control": "public, max-age=86400"
+					}
+				})
+		} catch (error) {
+			console.error(error);
+			return new NextResponse("Error fetching image", {status: 500});
+		}
+	}
+}
 export const providers: Endpoint[] = [
   {
     path: "/providers",

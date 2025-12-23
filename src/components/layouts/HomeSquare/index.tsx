@@ -46,7 +46,7 @@ export const HomeSquare = (
       onMouseEnter={() => onEnter(inverse)}
       onMouseLeave={() => onLeave()}
       href={"/essays/" + `${article.slug}`}
-      className="col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] bg-[oklch(var(--faded-fg)/.95)] p-[20px] text-center text-[oklch(var(--faded-bg)/1)] lg:col-span-full dark:bg-off-white/95"
+      className="col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] bg-faded-foreground/&.95)] p-[20px] text-center text-faded-background lg:col-span-full dark:bg-off-white/95"
     >
       <div
         className={cn(
@@ -64,7 +64,7 @@ export const HomeSquare = (
         )}
       </div>
       <RP_BadgeTag
-        className="border-[oklch(var(--bg)/1)] text-[oklch(var(--bg)/1)]"
+	      className="border-background text-background"
         content={category}
       />
       <div className="flex w-full flex-col items-center justify-center pb-8">

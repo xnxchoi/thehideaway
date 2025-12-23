@@ -4,8 +4,6 @@
   }
 
   path {
-
-
     stroke-linecap: round;
     stroke-linejoin: round;
     outline-offset: 0.45px;
@@ -14,7 +12,7 @@
 
 #yours-truly {
   mask > path {
-    fill: transparentize(#fff, 0.1);
+    fill: color-mix(var(--color-foreground), transparent, 10%);
   }
 }
 

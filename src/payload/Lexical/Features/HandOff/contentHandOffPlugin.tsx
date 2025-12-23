@@ -4,14 +4,12 @@
 // based on Backspace at doc start without indent/outdent actions, and ArrowUp at topmost line.
 
 import type { PluginComponent } from "@payloadcms/richtext-lexical";
+import {useEditorConfigContext} from "@payloadcms/richtext-lexical/client";
 import {
   $addUpdateTag,
   $createParagraphNode,
-  $createPoint,
   $createTextNode,
   $getRoot,
-  $getSelection,
-  $isRangeSelection,
   COMMAND_PRIORITY_HIGH,
   KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_UP_COMMAND,
@@ -19,53 +17,50 @@ import {
   SKIP_DOM_SELECTION_TAG
 } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useHandoff } from "./handoffBridge";
-import { useWindowResize } from "@/utilities/use_window_resize";
+import {useCallback, useEffect, useRef} from "react";
 import { $isCaretAtStart, $selectEnd } from "../../lexical-utils";
+import {useHandoff} from "./handoffBridge";
+import {useWriter} from "@/payload/providers/Admins";
 
 export const ContentHandOffPlugin: PluginComponent = () => {
+	const editorConfigContext = useEditorConfigContext();
   const [editor] = useLexicalComposerContext();
+	const slashMenuOpen = useWriter((r) => r.slashMenuOpen);
+	const menuStateRef = useRef(slashMenuOpen);
+	useEffect(() => {
+		menuStateRef.current = slashMenuOpen;
+	}, [slashMenuOpen]);
+
   const setEditor = useHandoff((r) => r.setEditor);
+
   const titleEditor = useHandoff((r) => r.titleEditor);
-  const lineHeight = useRef(24);
+	const contentRef = useHandoff((r) => r.contentEditor);
 
-  const editorRectRef = useRef<DOMRect>(null!);
-  const lastResize = useWindowResize({
-    detectHeightChange: true,
-    detectVisibilityChange: false,
-    debounce: 100
-  });
   useEffect(() => {
+	  if (!editor || contentRef === editor) return;
+	  setEditor({target: "content", editor});
+  }, [setEditor, editor, contentRef]);
+	const isFocusInEditor = useCallback(() => {
     const editorEl = editor.getRootElement();
-    if (editorEl) {
-      editorRectRef.current = editorEl.getBoundingClientRect();
-    }
-  }, [editor, lastResize]);
-  useEffect(() => {
-    if (!editor) {
-      setEditor("content", null!);
-      return;
-    }
-    setEditor("content", editor);
-
-    const editorEl = editor.getRootElement();
-    if (!editorEl) {
-      return;
-    }
-    const isFocusInEditor = () => {
-      const editorEl = editor.getRootElement();
-
-      if (!editorEl) {
-        return false;
-      }
-      const activeElement = document.activeElement;
-      if (activeElement) {
-        return editorEl.contains(activeElement) || activeElement === editorEl;
-      } else {
-        return true;
-      }
+		const slashMenustate = !menuStateRef.current;
+		if (!editorEl) {
+			return false;
+		}
+		const activeElement = document.activeElement;
+		if (activeElement) {
+			return (
+				!slashMenustate &&
+				(editorEl.contains(activeElement) || activeElement === editorEl)
+			);
+		} else {
+			return !slashMenustate;
+		}
+	}, [editor]);
+	useEffect(() => {
+		const handleBlur = () => {
+			editorConfigContext.blurEditor(editorConfigContext);
     };
+
     // Register this editor instance with the store
 
     const unregisterBackspace = editor.registerCommand(
@@ -84,7 +79,7 @@ export const ContentHandOffPlugin: PluginComponent = () => {
               if (fd && fd.getTextContentSize() > 0) {
                 const text = fd.getTextContent();
                 fd.remove();
-                editor.blur();
+	              handleBlur();
                 titleEditor.focus(() => {
                   titleEditor.update(() => {
                     const root = $getRoot();
@@ -103,7 +98,7 @@ export const ContentHandOffPlugin: PluginComponent = () => {
                 return true;
               }
             }
-            editor.blur();
+	          handleBlur();
             titleEditor.focus(() => {
               titleEditor.update(() => {
                 const root = $getRoot();
@@ -138,7 +133,7 @@ export const ContentHandOffPlugin: PluginComponent = () => {
         if (shouldHandOff) {
           e.preventDefault();
 
-          editor.blur();
+	        handleBlur();
           // Safely focus title editor and blur content editor
           titleEditor.focus();
           titleEditor.getEditorState().read(() => {
@@ -162,11 +157,11 @@ export const ContentHandOffPlugin: PluginComponent = () => {
       KEY_ARROW_UP_COMMAND,
       (e) => {
         // Check if we're in an interactive element that should handle its own navigation
-        const trulyFocused = isFocusInEditor();
-        if (!trulyFocused) return false;
         if (!titleEditor) {
           return false;
         }
+	      const trulyFocused = isFocusInEditor();
+	      if (!trulyFocused) return false;
         try {
           let isInTopLine = false;
 
@@ -177,6 +172,7 @@ export const ContentHandOffPlugin: PluginComponent = () => {
             if (domSelection && domSelection.rangeCount > 0) {
               const range = domSelection.getRangeAt(0);
               const rect = range.getBoundingClientRect();
+	            const editorEl = editor.getRootElement();
               if (editorEl) {
                 const editorRect = editorEl.getBoundingClientRect();
 
@@ -190,7 +186,7 @@ export const ContentHandOffPlugin: PluginComponent = () => {
           }
           if (isInTopLine) {
             e.preventDefault();
-            editor.blur();
+	          handleBlur();
 
             titleEditor.focus(() => {
               titleEditor.update(() => {
@@ -225,14 +221,13 @@ export const ContentHandOffPlugin: PluginComponent = () => {
       },
       COMMAND_PRIORITY_HIGH
     );
-    return () => {
+
+		return () => {
       unregisterArrowUp();
       unregisterBackspace();
       unregisterArrowLeft();
-      // Clean up this editor from the store
-      setEditor("content", null);
     };
-  }, [editor, setEditor, titleEditor]); // titleEditor is not needed in deps since it's accessed fresh from store
+	}, [editor, editorConfigContext, isFocusInEditor, setEditor, titleEditor]); // titleEditor is not needed in deps since it's accessed fresh from store
 
   return null;
 };

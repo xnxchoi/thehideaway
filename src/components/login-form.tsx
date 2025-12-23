@@ -15,7 +15,7 @@ import { authClient } from "@/lib/auth/client";
 export function LoginForm({ className, ...props }: ComponentProps<"div">) {
   return (
     <div className={cn("flex flex-col gap-9", className)} {...props}>
-      <Card className="bg-[oklch(var(--faded-bg)/.5)]">
+	    <Card className="bg-faded-background/50">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl">Welcome back.</CardTitle>
           <CardDescription>Check in with your social account</CardDescription>
@@ -34,7 +34,7 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
               >
                 <Button
                   variant="outline"
-                  className="*:ease ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-[oklch(var(--faded-fg)/.65)] bg-[oklch(var(--off-bg)/.3)] px-4 py-3 text-lg font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-[oklch(var(--off-bg)/.5)] hover:*:text-rouge-500 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
+                  className="*:ease ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-faded-foreground/&.65)] bg-off-background/30 px-4 py-3 text-lg font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-off-background/50 hover:*:text-rouge-500 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
                 >
                   {authProviderIcons["Google"] || null}
                   <span>
@@ -52,13 +52,13 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
             >
               <div
                 className={
-                  "relative -left-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-transparent to-[oklch(var(--fg)/.7)]"
+	                "relative -left-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-transparent to-foreground/70"
                 }
               ></div>
               <div className={"px-[1px] text-center text-[12px]"}> Or</div>
               <div
                 className={
-                  "relative -right-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-[oklch(var(--fg)/.7)] to-transparent"
+	                "relative -right-1 h-[1px] flex-[1_1_35%] bg-linear-to-r from-foreground/70 to-transparent"
                 }
               ></div>
             </div>

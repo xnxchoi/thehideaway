@@ -230,7 +230,8 @@ export function SignInForm({
                   {localization.FORGOT_PASSWORD_LINK}
                 </Link>
                 <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-left scale-x-0 bg-foreground/80 transition-transform duration-300 group-hover:scale-x-100"></span>
-                <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-[oklch(var(--muted-faded-bg)/.8)] transition-transform duration-300 group-hover:scale-x-0"></span>
+                <span
+	                className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-muted-faded-background/80 transition-transform duration-300 group-hover:scale-x-0"></span>
               </span>
             )}
           </div>
@@ -266,7 +267,7 @@ export function SignInForm({
           //   classNames?.button,
           //   classNames?.primaryButton,
           // )}
-          className="*:ease font-suit ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-[oklch(var(--faded-fg)/.65)] bg-[oklch(var(--off-bg)/.3)] px-4 py-3 text-lg leading-1 font-light tracking-wide whitespace-nowrap text-faded-foreground uppercase shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-[oklch(var(--off-bg)/.5)] hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
+          className="*:ease font-suit ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-faded-foreground/65 bg-off-foreground/30 px-4 py-3 text-lg leading-1 font-light tracking-wide whitespace-nowrap text-faded-foreground uppercase shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-off-background/50 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
         >
           <div
             className={

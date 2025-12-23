@@ -137,7 +137,7 @@ button.motion__scroller-sound-btn {
   z-index: 4;
   width: 8rem;
   height: 4.7rem !important;
-  color: oklch(var(--fg)/1)
+  color: oklch(from var(--fg) l c h/1)
 }
 
 button.motion__scroller-sound-btn svg {

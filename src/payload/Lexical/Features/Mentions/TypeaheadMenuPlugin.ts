@@ -1,3 +1,5 @@
-import { LexicalTypeaheadMenuPlugin } from "@lexical/react/LexicalTypeaheadMenuPlugin";
+import {
+	LexicalTypeaheadMenuPlugin
+} from "@payloadcms/richtext-lexical/lexical/react/LexicalTypeaheadMenuPlugin";
 
 export default LexicalTypeaheadMenuPlugin;

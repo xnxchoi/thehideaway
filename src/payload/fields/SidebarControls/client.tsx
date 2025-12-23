@@ -48,7 +48,7 @@ export const SidebarControls = () => {
         tabIndex={0}
         onClick={onClickCB}
         className={
-          "flex h-16 min-w-24 appearance-none items-center justify-center overflow-hidden rounded-[25px] border-off-foreground/10 bg-transparent px-6 text-sm leading-[2] hover:bg-[oklch(var(--neutral-white)/0.1)] [&_svg]:size-8"
+	        "flex h-16 min-w-24 appearance-none items-center justify-center overflow-hidden rounded-[25px] border-off-foreground/10 bg-transparent px-6 text-sm leading-[2] hover:bg-neutral-white/10 [&_svg]:size-8"
         }
       >
         <AnimatePresence initial={false}>

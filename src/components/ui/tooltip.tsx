@@ -1,9 +1,7 @@
 "use client";
 
-import { Tooltip as TooltipPrimitive } from "@base-ui-components/react/tooltip";
-
-import { cn } from "@/lib/utils";
-import type { ComponentProps } from "react";
+import {Tooltip as TooltipPrimitive} from "@base-ui/react/tooltip";
+import type {ComponentProps} from "react";
 
 function TooltipProvider({
   delay = 0,
@@ -52,7 +50,7 @@ function TooltipContent({
             <ArrowSvg />
           </TooltipPrimitive.Arrow>
         </TooltipPrimitive.Popup>
-      </TooltipPrimitive.Positioner>{" "}
+      </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>
   );
 }

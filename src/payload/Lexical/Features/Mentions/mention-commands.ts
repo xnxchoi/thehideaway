@@ -98,11 +98,7 @@ export function $insertMentionAtSelection(
   return $insertMentionOrTrigger(value, data, autoSpace);
 }
 
-function $insertMentionOrTrigger(
-  value?: string,
-  data?: MentionItem,
-  autoSpace?: boolean
-) {
+function $insertMentionOrTrigger(data?: MentionItem, autoSpace?: boolean) {
   const selectionInfo = $getSelectionInfo();
   if (!selectionInfo) {
     return false;
@@ -121,7 +117,7 @@ function $insertMentionOrTrigger(
 
   // Insert a mention node or a text node with the trigger to open the mention menu.
   const mentionNode =
-    value && data ? $createMentionNode({ value, data }) : $createTextNode("@");
+	  id && data ? $createMentionNode({id, data}) : $createTextNode("@");
 
   const nodes: LexicalNode[] = [];
   // Insert a mention with a leading space

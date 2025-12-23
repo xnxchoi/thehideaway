@@ -68,7 +68,8 @@ const InterNalEscape = ({
           <DialogTitle className="text-left text-background">
             Excuse Us...
           </DialogTitle>
-          <DialogDescription className="py-5 pr-3 text-left text-xl leading-[1.5] font-medium text-pretty text-[oklch(var(--bg)/.8)]">
+	        <DialogDescription
+		        className="py-5 pr-3 text-left text-xl leading-[1.5] font-medium text-pretty text-background/80">
             Welcome to The Hideaway
             {(name && `, ${name}`) || " dear guest"}!
             <br />
@@ -99,10 +100,10 @@ const InterNalEscape = ({
               defaultValue={targetURL}
               readOnly
               style={{
-                color: "oklch(var(--bg)/.8)",
-                border: "1px solid oklch(var(--border-subtle))",
+	              color: "oklch(from var(--bg) l c h/.8)",
+	              border: "1px solid var(--border-subtle)",
                 borderRadius: " 4px",
-                backgroundColor: "oklch(var(--off-white)/.3)"
+	              backgroundColor: "oklch(from var(--off-white) l c h/.3)"
               }}
             />
           </div>
@@ -116,7 +117,7 @@ const InterNalEscape = ({
               } catch (e) {}
             }}
             size="sm"
-            className="flex h-[24px] w-[24px] rounded-[6px] border-[1px] border-[oklch(var(--border-subtle))] bg-[oklch(var(--bg)/.5)] p-[4px] text-[oklch(var(--fg)/.5)]"
+            className="flex h-[24px] w-[24px] rounded-[6px] border-[1px] border-b-border-subtle bg-background/50 p-[4px] text-foreground/50"
           >
             <span className="sr-only">Copy</span>
             <Copy />

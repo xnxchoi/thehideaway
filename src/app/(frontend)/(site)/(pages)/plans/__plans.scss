@@ -19,9 +19,9 @@
 
 
   &.founders-card {
-    background-color: oklch(var(--faded-black)/1);
-    border: 1px solid oklch(var(--faded-black)/.14);
-    color: oklch(var(--faded-white)/1);
+    background-color: oklch(from var(--faded-black) l c h/1);
+    border: 1px solid oklch(from var(--faded-black) l c h/.14);
+    color: oklch(from var(--faded-white) l c h/1);
   }
 }
 
@@ -98,7 +98,7 @@
   z-index: 3;
   grid-column-gap: .5em;
   grid-row-gap: .5em;
-  color: oklch(var(--fg)/.8);
+  color: oklch(from var(--fg) l c h/.8);
 
   justify-content: flex-start;
   align-items: center;
@@ -113,8 +113,8 @@
   z-index: 1;
   grid-column-gap: .5em;
   grid-row-gap: .5em;
-  color: oklch(var(--fg)/.8);
-  background-color: oklch(var(--bg)/.8);
+  color: oklch(from var(--fg) l c h/.8);
+  background-color: oklch(from var(--bg) l c h/.8);
   border-radius: .25em;
   justify-content: flex-start;
   align-items: center;
@@ -126,7 +126,7 @@
 .price-overlay__close {
   z-index: 0;
 
-  background-color: oklch(var(--bg)/.8);
+  background-color: oklch(from var(--bg) l c h/.8);
   border-radius: .25em;
   justify-content: center;
   align-items: center;
@@ -141,16 +141,16 @@
 }
 
 .tag-dark {
-  background-color: oklch(var(--faded-bg)/.8);
-  border: 1px solid oklch(var(--faded-bg)/.8);
+  background-color: oklch(from var(--faded-bg) l c h/.8);
+  border: 1px solid oklch(from var(--faded-bg) l c h/.8);
   border-radius: .5em;
   padding: .625em 1em
 }
 
 .tag-dark.sold-out {
-  background-color: oklch(var(--faded-bg)/.8);
+  background-color: oklch(from var(--faded-bg) l c h/.8);
   border-style: dashed;
-  border-color: oklch(var(--faded-bg)/.6);
+  border-color: oklch(from var(--faded-bg) l c h/.6);
 }
 
 .price-card__overlay {
@@ -166,7 +166,7 @@
 }
 
 .divider {
-  background-image: linear-gradient(90deg, oklch(var(--fg)/0), oklch(var(--fg)/.9) 25% 75%, oklch(var(--fg)/0));
+  background-image: linear-gradient(90deg, oklch(from var(--fg) l c h/0), oklch(from var(--fg) l c h/.9) 25% 75%, oklch(from var(--fg) l c h/0));
   width: 100%;
   height: 1px
 }
@@ -202,9 +202,9 @@
 }
 
 .eyebrow.circle {
-  color: oklch(var(--bg)/.9);
+  color: oklch(from var(--bg) l c h/.9);
 
-  background-color: oklch(var(--fg)/.9);
+  background-color: oklch(from var(--fg) l c h/.9);
   border-radius: 100em;
   justify-content: center;
   align-items: center;
@@ -226,9 +226,9 @@
 
 .filter-bar {
   padding: 0.5em;
-  border: 1px solid oklch(var(--faded-fg)/0.2);
+  border: 1px solid oklch(from var(--faded-fg) l c h/0.2);
   border-radius: 0.5em;
-  background-color: oklch(var(--faded-fg)/0.2);
+  background-color: oklch(from var(--faded-fg) l c h/0.2);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   display: flex;
@@ -242,7 +242,7 @@
 
 .filter-button {
   background-color: transparent;
-  border: 1px solid oklch(var(--faded-fg)/0);
+  border: 1px solid oklch(from var(--faded-fg) l c h/0);
   border-radius: .25em;
   padding: 1.125em 1.5em;
   transition: border-color .25s;
@@ -255,14 +255,14 @@
 
 .filter-button.active {
   visibility: visible;
-  border-color: oklch(var(--faded-fg)/.24);
+  border-color: oklch(from var(--faded-fg) l c h/.24);
 }
 
 .tab-button__bg {
   z-index: 0;
-  background-color: oklch(var(--faded-fg)/.14);
+  background-color: oklch(from var(--faded-fg) l c h/.14);
   pointer-events: none;
-  border: 1px solid oklch(var(--faded-fg)/.14);
+  border: 1px solid oklch(from var(--faded-fg) l c h/.14);
   border-radius: .25em;
   position: absolute;
   inset: -1px;

@@ -337,7 +337,7 @@ export default function RP_Cursor() {
                 key={"wrap"}
                 className={cn(
                   "pointer-events-none flex shrink-0 cursor-none flex-col items-center justify-center overflow-hidden outline-none",
-	                "rounded-[8px] bg-[oklch(var(--n-s-btn)/0.1)] font-dots backdrop-blur-xs perspective-distant"
+	                "rounded-[8px] bg-nav-button/10 font-dots backdrop-blur-xs perspective-distant"
                 )}
                 style={{ width: containerWidth, height: containerHeight }}
                 variants={textCursorVariants}
@@ -348,7 +348,7 @@ export default function RP_Cursor() {
               >
                 <m.span
                   data-themed="color, background-color"
-                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-none font-bold tracking-[0.05rem] whitespace-nowrap text-[oklch(var(--n-s-fg)/1)] mix-blend-difference"
+                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-none font-bold tracking-[0.05rem] whitespace-nowrap text-nav-foreground mix-blend-difference"
                   key={cursorState}
                   style={{
                     fontFeatureSettings: "normal",
@@ -390,7 +390,7 @@ export default function RP_Cursor() {
               >
                 <m.circle
                   ref={oCircle}
-                  className="inline bg-transparent fill-transparent stroke-[oklch(var(--n-s-btn)/1)] transition-[stroke] duration-150 ease-out-power3 data-[FOCUS]:stroke-rouge-400"
+                  className="inline bg-transparent fill-transparent stroke-nav-button transition-[stroke] duration-150 ease-out-power3 data-[FOCUS]:stroke-rouge-400"
                   cx={50}
                   cy={50}
                   r={outerRadius}
@@ -417,7 +417,7 @@ export default function RP_Cursor() {
                 />
                 <m.circle
                   ref={iCircle}
-                  className="inline fill-[oklch(var(--n-s-btn)/1)] stroke-0"
+                  className="inline fill-nav-button stroke-0"
                   cx={50}
                   cy={50}
                   variants={innerVariants}

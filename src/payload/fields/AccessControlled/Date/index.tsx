@@ -1,9 +1,11 @@
 import { DateTimeField } from "@payloadcms/ui";
 import type { DateFieldServerComponent, DateFieldServerProps } from "payload";
 import type { ConditionalFieldProp } from "../Checkbox";
+import type {DateField as DateFieldConfig} from "payload";
+import type {ClientUser, CollectionSlug} from "payload";
 
-const AdminOnlyDateField: DateFieldServerComponent = (
-  props: DateFieldServerProps & ConditionalFieldProp
+const AccessControlledDateField: DateFieldServerComponent = (
+	props: DateFieldServerProps & ConditionalFieldProp<"date">
 ) => {
   const {
     user,
@@ -12,19 +14,54 @@ const AdminOnlyDateField: DateFieldServerComponent = (
     schemaPath,
     permissions,
     clientField,
+	  collectionSlug,
     path,
+	  data,
+	  field,
     allowedRoles = ["admin"],
     allowAuthor = false,
-    data
+	  conditionTester: cT
   } = props;
-  const isAdmin = allowedRoles.some((r) => user?.role === r);
-  const isAuthor =
-    Boolean(
-      "author" in data &&
-        data.author &&
-        (data.author as string | undefined) === user.id
-    ) && allowAuthor;
-  const clear = isAdmin || isAuthor;
+	const conditionTester = cT
+		? cT
+		: ({
+			   user
+		   }: {
+			user: ClientUser | null;
+			field?: DateFieldConfig;
+			collection?: CollectionSlug;
+		}) => {
+			if (!user) return false;
+			const isAdmin = allowedRoles.some((r) => user.role === (r as string));
+			if (isAdmin) return true;
+			let isCl = false;
+			if (allowAuthor) {
+				if ("author" in data) {
+					if (Array.isArray(data.author)) {
+						const auth = data.author as (
+							| string
+							| { relationTo: "admins" | "users"; value: string }
+							)[];
+						if (
+							auth.some((u) => {
+								return (typeof u === "string" ? u : u.value) === user.id;
+							})
+						) {
+							isCl = true;
+						}
+					} else {
+						isCl = isCl || data.author === user.id;
+					}
+				}
+			}
+			return isCl;
+		};
+	const clear = conditionTester({
+		user,
+		field,
+		collection: collectionSlug as CollectionSlug
+	});
+
   if (clear) {
     return (
       <DateTimeField
@@ -37,4 +74,4 @@ const AdminOnlyDateField: DateFieldServerComponent = (
   }
   return <></>;
 };
-export default AdminOnlyDateField;
+export default AccessControlledDateField;

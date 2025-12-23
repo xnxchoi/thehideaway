@@ -153,10 +153,11 @@ export const isAuthor = ({
  */
 export const isAuthorOrEditor = ({
   data,
-  req: { user }
+	                                 req: {user, context}
 }:
   | FieldAccessArgs<AuthorCollections>
   | AccessArgs<AuthorCollections>): boolean => {
+	if (context.overrideAccess) return true;
   if (!user) return false;
   if (!user.role) return false;
   if (user.role === "admin") return true;

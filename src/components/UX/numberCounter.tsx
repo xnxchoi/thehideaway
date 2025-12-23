@@ -73,7 +73,7 @@ export function NumberCounter(props: NumberCounterProps) {
 			gap: `${width / 2}px`,
 			flexDirection: 'row',
 			alignItems: 'left',
-		}} className={cn(classNameString, 'text-[oklch(var(--n-s-fg)/.9)]')}>
+		}} className={cn(classNameString, "text-nav-foreground/90")}>
 			{prefix}
 			{formatCount(count)}
 			{suffix}

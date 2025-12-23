@@ -1,9 +1,9 @@
 "use client";
 
-import { Link } from "@/components/UX/Link/Link";
 import { useVaultSidebar } from "@/payload/providers/Admins";
 import { House } from "lucide-react";
 import { AdminDarkmode } from "../Darkmode";
+import Link from "next/link";
 
 export default function GoToHome() {
   const sidebarEnabled = useVaultSidebar((r) => r.enabled);

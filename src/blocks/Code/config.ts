@@ -1,21 +1,29 @@
-import type {Block} from "payload"
+import type {Block} from "payload";
 import {uuidv7} from "uuidv7";
 
 export const Code: Block = {
 	slug: "code",
 	interfaceName: "CodeBlock",
-	fields: [{
-		name:"id",
-		type:"text",
-		defaultValue:()=>uuidv7(),
-		access:{
-			update:()=>false,
-		},
-		required:true,
-		admin:{
-			hidden:true,
+	admin: {
+		components: {
+			Block: {
+				path: "@/blocks/Code/Component.client.tsx"
+			}
 		}
 	},
+	fields: [
+		{
+			name: "id",
+			type: "text",
+			defaultValue: () => uuidv7(),
+			access: {
+				update: () => false
+			},
+			required: true,
+			admin: {
+				hidden: true
+			}
+		},
 		{
 			name: "language",
 			type: "select",
@@ -23,23 +31,23 @@ export const Code: Block = {
 			options: [
 				{
 					label: "Typescript",
-					value: "typescript",
+					value: "typescript"
 				},
 				{
 					label: "Javascript",
-					value: "javascript",
+					value: "javascript"
 				},
 				{
 					label: "CSS",
-					value: "css",
-				},
-			],
+					value: "css"
+				}
+			]
 		},
 		{
 			name: "code",
 			type: "code",
 			label: false,
-			required: true,
-		},
-	],
-}
+			required: true
+		}
+	]
+};

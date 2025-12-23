@@ -1,4 +1,4 @@
-import { MediaBlock } from "@/blocks/MediaBlock/Component";
+import {MediaBlock, PostedImage} from "@/blocks/MediaBlock/Component";
 import {
   DefaultNodeTypes,
   type DefaultTypedEditorState,
@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { CollectionSlug } from "payload";
 import React, { ComponentPropsWithoutRef } from "react";
 import { createId } from "@paralleldrive/cuid2";
-import { Link } from "@/components/UX/Link/Link";
+import Link from "next/link";
 import {
   IS_BOLD,
   IS_CODE,
@@ -32,7 +32,7 @@ import {
   IS_UNDERLINE
 } from "./nodeFormat";
 import type { SerializedParagraphNode } from "lexical";
-
+import * as m from "motion/react-m";
 type NodeTypes =
   | DefaultNodeTypes
   | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>;
@@ -245,15 +245,16 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
   },
   blocks: {
     mediaBlock: ({ node }) => (
-      <MediaBlock
-        className="relative flex flex-col overflow-hidden rounded-[12px]"
-        imgClassName="m-0"
-        {...node.fields}
-        aspectRatio={698 / 400}
-        captionClassName="mx-auto max-w-[48rem]"
-        enableGutter={false}
-        disableInnerContainer={true}
-      />
+	    // <MediaBlock
+	    //   className="relative flex flex-col overflow-hidden rounded-[12px]"
+	    //   imgClassName="m-0"
+	    //   {...node.fields}
+	    //   aspectRatio={698 / 400}
+	    //   captionClassName="mx-auto max-w-[48rem]"
+	    //   enableGutter={false}
+	    //   disableInnerContainer={true}
+	    // />
+	    <PostedImage {...node.fields} />
     ),
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
     cta: ({ node }) => <CallToActionBlock {...node.fields} />
@@ -270,19 +271,21 @@ type Props = {
 export default function RichText(props: Props) {
   const { className, enableProse = true, enableGutter = true, ...rest } = props;
   return (
-    <ConvertRichText
-      disableContainer={true}
-      converters={jsxConverters}
-      className={cn(
-        "payload-richtext",
-        {
-          container: enableGutter,
-          "max-w-none": !enableGutter,
-          "md:prose-md mx-auto prose dark:prose-invert": enableProse
-        },
-        className
-      )}
-      {...rest}
-    />
+	  <m.div layout>
+		  <ConvertRichText
+			  disableContainer={true}
+			  converters={jsxConverters}
+			  className={cn(
+				  "payload-richtext",
+				  {
+					  container: enableGutter,
+					  "max-w-none": !enableGutter,
+					  "md:prose-md mx-auto prose dark:prose-invert": enableProse
+				  },
+				  className
+			  )}
+			  {...rest}
+		  />
+	  </m.div>
   );
 }

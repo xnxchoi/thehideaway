@@ -9,7 +9,7 @@ function Card({className, ...props}: React.ComponentProps<"div">) {
 			className,
 		)}
 		     {...props} style={{
-			outlineColor: "oklch(var(--muted-faded-fg)/.3)",
+			outlineColor: "oklch(from var(--muted-faded-fg) l c h/.3)",
 			...props.style,
 		}} />
 	);

@@ -450,7 +450,7 @@ export default function ImageField(props: ImageFieldProps) {
       <div className={"w-full"}>{capitalize(idPath)}</div>
       <div
         className={
-          "relative my-[2em] flex h-[150px] w-[200px] items-center justify-center overflow-hidden bg-[oklch(var(--muted-faded-bg)/1)] transition-all duration-300 data-[inserted=false]:bg-[oklch(var(--muted-faded-bg)/0.5)] data-[inserted=false]:text-[oklch(var(--fg)/1)] data-[inserted=false]:shadow-[0_0_1px_1px_oklch(var(--muted-faded-bg)/1)]"
+	        "relative my-[2em] flex h-[150px] w-[200px] items-center justify-center overflow-hidden bg-muted-faded-background transition-all duration-300 data-[inserted=false]:bg-muted-faded-background/50 data-[inserted=false]:text-foreground data-[inserted=false]:shadow-[0_0_1px_1px_var(--muted-faded-bg)]"
         }
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -468,7 +468,7 @@ export default function ImageField(props: ImageFieldProps) {
           onChange={() => setRemoveImage((t) => !t)}
         />
         <div
-          className="ease relative rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)] data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
+	        className="ease relative rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-off-background hover:bg-off-foreground hover:text-off-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
         >
@@ -508,7 +508,7 @@ export default function ImageField(props: ImageFieldProps) {
         </div>
         <span className={"mx-5"}>OR</span>
         <span
-          className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-[oklch(var(--off-bg)/1)] hover:bg-[oklch(var(--off-fg)/1)] hover:text-[oklch(var(--off-bg)/1)] data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:opacity-100`}
+	        className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-off-background hover:bg-off-foreground hover:text-off-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:opacity-100`}
           data-visible={!image}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
@@ -555,13 +555,13 @@ export default function ImageField(props: ImageFieldProps) {
         {image && (
           <div
             className={cn(
-              "absolute inset-0 flex items-center justify-center gap-[8px] bg-[oklch(var(--off-black)/.3)] backdrop-blur-lg transition-all duration-300 data-[visible=false]:z-[0] data-[visible=false]:opacity-0 data-[visible=true]:z-[55] data-[visible=true]:opacity-100"
+	            "absolute inset-0 flex items-center justify-center gap-[8px] bg-off-black/30 backdrop-blur-lg transition-all duration-300 data-[visible=false]:z-[0] data-[visible=false]:opacity-0 data-[visible=true]:z-[55] data-[visible=true]:opacity-100"
             )}
             data-visible={hover}
           >
             {populatedDocs && populatedDocs.length > 0 && (
               <span
-                className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] transition-colors duration-300 hover:bg-[oklch(var(--off-bg)/.5)] hover:text-[oklch(var(--rouge-700)/1)]"
+	              className="relative z-[5] inline-flex h-[42px] min-w-[42px] cursor-none items-center justify-center rounded-xl px-[20px] py-0 text-center leading-[42px] transition-colors duration-300 hover:bg-off-background/50 hover:text-rouge-700"
                 onClick={onClickRemove}
                 role="button"
               >

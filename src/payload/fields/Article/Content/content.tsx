@@ -20,6 +20,8 @@ import type {
 } from "@payloadcms/richtext-lexical/lexical";
 import {
   BulkUploadProvider,
+	FieldError,
+	RenderCustomComponent,
   useEditDepth,
   useEffectEvent,
   useField
@@ -99,6 +101,7 @@ const ContentRichtext = (
     initialValue
   );
   const prevValueRef = useRef<SerializedEditorState | undefined>(value);
+
   useEffect(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport =
@@ -115,6 +118,19 @@ const ContentRichtext = (
       window.removeEventListener("resize", updateViewPortWidth);
     };
   }, [isSmallWidthViewport]);
+
+	const classes = [
+		baseClass,
+		"field-type",
+		className,
+		showError && "error",
+		disabled && `${baseClass}--read-only`,
+		editorConfig?.admin?.hideGutter !== true && !isSmallWidthViewport
+			? `${baseClass}--show-gutter`
+			: null
+	]
+		.filter(Boolean)
+		.join(" ");
 
   const pathWithEditDepth = `${path}.${editDepth}`;
 
@@ -172,24 +188,18 @@ const ContentRichtext = (
   }, [initialValue]);
 
   return (
-    <div
-      className={cn(
-        baseClass,
-        "field-type",
+	  <div className={classes} key={pathWithEditDepth} style={styles}>
+		  <RenderCustomComponent
+			  CustomComponent={Error}
+			  Fallback={<FieldError path={path} showError={showError}/>}
+		  />
 
-        showError && "error",
-        disabled && `${baseClass}--read-only`,
-        "content-rich-text"
-      )}
-      key={pathWithEditDepth}
-      style={styles}
-    >
       <div className={`${baseClass}__wrap`}>
         <ErrorBoundary fallbackRender={fallbackRender} onReset={() => {}}>
+	        {BeforeInput}
           {/* Lexical may be in a drawer. We need to define another BulkUploadProvider to ensure that the bulk upload drawer
           is rendered in the correct depth (not displayed *behind* the current drawer)*/}
           <BulkUploadProvider drawerSlugPrefix={path}>
-            {" "}
             <LexicalProvider
               composerKey={pathWithEditDepth}
               editorConfig={editorConfig}
@@ -201,6 +211,7 @@ const ContentRichtext = (
               value={value}
             />
           </BulkUploadProvider>
+	        {AfterInput}
         </ErrorBoundary>
       </div>
     </div>

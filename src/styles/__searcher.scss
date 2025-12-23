@@ -84,7 +84,7 @@
         color: #ddddddaf;
 
         letter-spacing: -0.5px;
-        background: oklch(var(--n-s-bg) / 1);
+        background: oklch(from var(--n-s-bg) l c h/1);
         backdrop-filter: blur(10px);
         outline: none;
         border: none;
@@ -103,7 +103,7 @@
           background-color: transparent;
           outline: none;
           border: none;
-          color: oklch(var(--bg) / 1);
+          color: oklch(from var(--bg) l c h/1);
           line-height: inherit;
           padding: initial;
           box-shadow: initial;
@@ -112,7 +112,7 @@
 
       .separate-element {
         position: absolute;
-        background-color: oklch(var(--n-s-bg) / 1);
+        background-color: oklch(from var(--n-s-bg) l c h/1);
         width: 46px;
         height: 46px;
         right: -5px;

@@ -1,30 +1,24 @@
 "use client";
 
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-  DropdownMenuItem
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Link } from "@/components/UX/Link/Link";
-import type { User } from "@/payload-types";
-import { useRPNav, useUserBarNav } from "@/payload/providers/Admins";
-import { useIsMobile } from "@/providers/MiddleMan";
-import { Avatar } from "@base-ui-components/react";
-import { Button, useAuth, useConfig, useTranslation } from "@payloadcms/ui";
-import { useLenis } from "lenis/react";
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  LogOut,
-  Sparkles
-} from "lucide-react";
-import { formatAdminURL } from "payload/shared";
-import { useCallback, useEffect } from "react";
+import Link from "next/link";
+import type {User} from "@/payload-types";
+import {useUserBarNav} from "@/payload/providers/Admins";
+import {useIsMobile} from "@/providers/MiddleMan";
+import {Avatar} from "@base-ui/react";
+import {useAuth, useConfig, useTranslation} from "@payloadcms/ui";
+import {useLenis} from "lenis/react";
+import {ChevronsUpDown} from "lucide-react";
+import {formatAdminURL} from "payload/shared";
+import {useCallback} from "react";
 
 export const LogoutButton = () => {
   const open = useUserBarNav((r) => r.open);
@@ -65,12 +59,12 @@ export const LogoutButton = () => {
             zIndex: 12,
             background: "transparent",
             border: "none",
-            color: "oklch(var(--faded-fg) / 1)",
+	          color: "var(--faded-fg)",
             width: "auto",
             padding: "6px 4px",
             outline: "none",
             backdropFilter: "blur(2px)",
-            boxShadow: "0 0 1px 1px oklch(var(--muted-faded-bg) / .35)",
+	          boxShadow: "0 0 1px 1px oklch(from var(--muted-faded-bg)  l c h/ .35)",
             display: "flex",
             alignItems: "center",
             gap: "6px"
@@ -118,8 +112,8 @@ export const LogoutButton = () => {
         align="end"
         sideOffset={4}
         style={{
-          outline: "1px groove oklch(var(--muted-faded-fg)/.2)",
-          backgroundColor: "oklch(var(--off-bg)/0.2)",
+	        outline: "1px groove oklch(from var(--muted-faded-fg) l c h/.2)",
+	        backgroundColor: "oklch(from var(--off-bg) l c h/0.2)",
           backdropFilter: "blur(2px)",
           fontFamily: "var(--font-sans)"
         }}
@@ -157,7 +151,7 @@ export const LogoutButton = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator
           style={{
-            backgroundColor: "oklch(var(--muted-faded-fg)/.2)"
+	          backgroundColor: "oklch(from var(--muted-faded-fg) l c h/.2)"
           }}
         />
         {user.role === "user" && (

@@ -21,25 +21,25 @@ export const HomeArticleLayout = (props: {
         className={cn(
 	        `mb-[48px] justify-center gap-x-[20px] rounded-4xl bg-linear-to-b to-transparent p-5 md:block md:p-8 lg:mr-8 lg:ml-8 xl:mb-[100px] xl:flex xl:gap-x-[90px]`,
           theme === "dark"
-            ? "from-[oklch(var(--off-black)/.95)]"
-            : "from-[oklch(var(--faded-bg)/.95)] bg-blend-darken"
+	          ? "from-off-black/95"
+	          : "from-faded-background/95 bg-blend-darken"
         )}
       >
 	      <div
-		      className="mb-6 border-b border-solid border-[oklch(var(--off-fg)/.5)] md:min-w-1/2 md:flex-1 md:border-b-0 md:pb-0 lg:min-w-[680px]">
+		      className="mb-6 border-b border-solid border-off-foreground/50 md:min-w-1/2 md:flex-1 md:border-b-0 md:pb-0 lg:min-w-[680px]">
           <div className="grid grid-cols-[1fr_1fr] gap-y-[20px] lg:grid-cols-[repeat(4,1fr)] lg:gap-x-[20px]">
             {posts[0] && <HomeSquare article={posts[0]} />}
             {posts[1] && (
               <Link
                 href={"/essays/" + `${posts[1].slug}`}
-                className="grid gap-y-[20px] border-t border-r border-solid border-[oklch(var(--fg)/.5)] bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] md:border-b lg:col-[1/3] lg:row-2 lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+                className="grid gap-y-[20px] border-t border-r border-solid border-foreground/50 bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] md:border-b lg:col-[1/3] lg:row-2 lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
                 <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3]">
                   {posts[1].image && (
                     <FrontImage
                       aspectRatio={1}
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-                      resource={posts[1].image as any}
+                      resource={posts[1].image}
                     />
                   )}
                 </div>
@@ -61,14 +61,14 @@ export const HomeArticleLayout = (props: {
             {posts[2] && (
               <Link
                 href={"/essays/" + `${posts[2].slug}`}
-                className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-[color:oklch(var(--fg)/.5)] bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+                className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
                 <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3] lg:aspect-square">
                   {posts[2].image && (
                     <FrontImage
                       aspectRatio={1}
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-                      resource={posts[2].image as any}
+                      resource={posts[2].image}
                     />
                   )}
                 </div>
@@ -179,16 +179,17 @@ const Article = (
   } = props;
   return (
     <>
-      <div className="absolute z-[10] mt-[32px] -ml-[4px] flex h-[14px] w-[14px] items-center justify-center rounded-[50%] bg-[oklch(var(--off-fg)/.4)] text-[9px] lg:mt-[20px] lg:ml-[-40px] lg:h-[20px] lg:w-[20px] lg:text-[1.1rem]">
+	    <div
+		    className="absolute z-[10] mt-[32px] -ml-[4px] flex h-[14px] w-[14px] items-center justify-center rounded-[50%] bg-off-foreground/40 text-[9px] lg:mt-[20px] lg:ml-[-40px] lg:h-[20px] lg:w-[20px] lg:text-[1.1rem]">
         {index + 1}
       </div>
-      <div className="relative flex flex-row-reverse justify-between border-b-[1px] border-[color:oklch(var(--fg)/.5)] pt-[16px] pr-0 pb-[15px] pl-0 lg:pt-[20px] lg:pb-[20px]">
-        <div className="relative ml-[16px] aspect-[4/3] h-[75px] self-start bg-[oklch(var(--off-bg)/.1)]">
+	    <div
+		    className="relative flex flex-row-reverse justify-between border-b-[1px] border-foreground/50 pt-[16px] pr-0 pb-[15px] pl-0 lg:pt-[20px] lg:pb-[20px]">
+		    <div
+			    className="relative ml-[16px] aspect-[4/3] h-[75px] self-start bg-off-background/10">
           {image && (
             <FrontImage
-              aspectRatio={4 / 3}
-              alt={title}
-              className="border-color-[oklch(var(--off-bg)/.9)] radius-[4px] absolute inset-0 border-[1px] border-solid"
+	            className="border-color-off-background/90 absolute inset-0 rounded-[4px] border-[1px] border-solid"
               resource={image}
             />
           )}
@@ -216,7 +217,8 @@ const Article = (
                       DateTime.fromISO(publishedAt).toRelative()}
                   </time>
                 </span>
-                <span className="mx-3 inline font-sans text-[1.1rem] tracking-[0.1em] text-[oklch(var(--faded-fg)/1)] uppercase before:content-['|']">
+	              <span
+		              className="mx-3 inline font-sans text-[1.1rem] tracking-[0.1em] text-faded-foreground uppercase before:content-['|']">
                   <Link
                     className="mr-2 inline-block whitespace-nowrap"
                     href={"/essays/" + slug + "#comments"}
@@ -241,7 +243,8 @@ const Article = (
                       className="group mx-[4px] my-0 inline-flex flex-[0_0_auto] leading-[20px] data-[count=0]:before:content-['+']"
                       data-count={0}
                     >
-                      <span className="text-[1.1rem] tracking-widest text-[oklch(var(--faded-fg)/1)] uppercase group-data-[count=0]:hidden">
+                      <span
+	                      className="text-[1.1rem] tracking-widest text-faded-foreground uppercase group-data-[count=0]:hidden">
                         0
                       </span>
                     </span>

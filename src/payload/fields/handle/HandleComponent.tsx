@@ -271,7 +271,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
 	return (
 		<div className="field-type handle-field-component">
 			<label htmlFor="slugInput"
-			       className="my-2 text-[oklch(var(--fg)/1)] data-[error=true]:text-rouge-700 transition-colors ease duration-200"
+			       className="my-2 text-foreground data-[error=true]:text-rouge-700 transition-colors ease duration-200"
 			       data-error={isError} data-themed={"color"}>
 				Username
 			</label>
@@ -292,12 +292,12 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
 								       size={
 									       suggestionRef.current?.length ?? textValue.length + 1 ?? 15
 								       }
-								       className="font-normal bg-transparent !outline-hidden placeholder:text-transparent focus-visible:outline-hidden data-[has-start-content=true]:ps-1.5 data-[has-end-content=true]:pe-1.5 data-[type=color]:rounded-none autofill:bg-transparent text-[14px] is-filled font-mono text-[oklch(var(--muted-fg)/0.4)] transition-all opacity-0 data-[show=true]:opacity-100 data-[show=true]:fade-in pl-[4px] pb-0"
+								       className="font-normal bg-transparent !outline-hidden placeholder:text-transparent focus-visible:outline-hidden data-[has-start-content=true]:ps-1.5 data-[has-end-content=true]:pe-1.5 data-[type=color]:rounded-none autofill:bg-transparent text-[14px] is-filled font-mono text-muted-foreground/40 transition-all opacity-0 data-[show=true]:opacity-100 data-[show=true]:fade-in pl-[4px] pb-0"
 								       aria-label=" " type="text" id="ghostInput" value={ghostText}
 								       data-show={shouldShowSuggestion} title="" />
 								{shouldShowSuggestion && (
 									<div
-										className="animate-in fade-in duration-150 ease-linear text-[10px] font-[oklch(var(--faded-fg)/0.4)] flex items-center justify-center gap-1">
+										className="animate-in fade-in duration-150 ease-linear text-[10px] font-faded-foreground/40 flex items-center justify-center gap-1">
 										<kbd className="text-muted-fg/40 text-xs font-mono">
 											Tab
 										</kbd>
@@ -322,7 +322,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
 								className="inline-flex w-full items-center h-full box-border pb-1.5">
 								<div className="pointer-events-none flex items-center">
                   <span className={cn(
-	                  "text-[14px] text-[oklch(var(--faded-fg)/1)] data-[focus=true]:text-[oklch(var(--faded-fg)/0.4)] duration-200 ease-in-out transition-colors data-[error=true]:text-rouge-700",
+	                  "text-[14px] text-faded-foreground data-[focus=true]:text-faded-foreground/40 duration-200 ease-in-out transition-colors data-[error=true]:text-rouge-700",
                   )} data-error={isError} data-focus={focused}>
                     @
                   </span>

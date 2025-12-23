@@ -1,5 +1,6 @@
 "use client";
 
+import {TooltipProvider} from "@/components/ui/tooltip";
 import {
   CursorProvider,
   DeviceProvider,
@@ -39,10 +40,11 @@ export const Providers: React.FC<{
                           <MenuProvider>
                             <SearchBarProvider>
                               <MiddleMan>
+	                              <TooltipProvider>
                                 <CMDKeyManager />
                                 <HeaderThemeProvider>
                                   {children}
-                                </HeaderThemeProvider>
+                                </HeaderThemeProvider></TooltipProvider>
                               </MiddleMan>
                             </SearchBarProvider>
                           </MenuProvider>

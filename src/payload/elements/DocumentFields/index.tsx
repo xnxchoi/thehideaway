@@ -6,7 +6,8 @@ import type { ClientField, SanitizedDocumentPermissions } from "payload";
 import { HandoffBridge } from "@/payload/Lexical/Features/HandOff/handoffBridge";
 import {
   AlternateDocProvider,
-  useVaultSidebar
+	useVaultSidebar,
+	WriterProvider
 } from "@/payload/providers/Admins";
 import { fieldIsSidebar } from "payload/shared";
 import {
@@ -74,26 +75,31 @@ export const DocumentFields: FC<Args> = ({
 }) => {
   const enableSidebar = useVaultSidebar((r) => r.setEnabled);
 
-  const { hasSidebarFields, mainFields, sidebarFields } = useMemo(() => {
-    return fields.reduce(
-      (acc, field) => {
-        if (fieldIsSidebar(field)) {
-          acc.sidebarFields.push(field);
-          acc.mainFields.push(null!);
-          acc.hasSidebarFields = true;
-        } else {
-          acc.mainFields.push(field);
-          acc.sidebarFields.push(null!);
-        }
-        return acc;
-      },
-      {
-        hasSidebarFields: false,
-        mainFields: [] as ClientField[],
-        sidebarFields: [] as ClientField[]
-      }
-    );
-  }, [fields]);
+	const {hasRichText, hasSidebarFields, mainFields, sidebarFields} =
+		useMemo(() => {
+			return fields.reduce(
+				(acc, field) => {
+					if (field.type === "richText") {
+						acc.hasRichText = true;
+					}
+					if (fieldIsSidebar(field)) {
+						acc.sidebarFields.push(field);
+						acc.mainFields.push(null!);
+						acc.hasSidebarFields = true;
+					} else {
+						acc.mainFields.push(field);
+						acc.sidebarFields.push(null!);
+					}
+					return acc;
+				},
+				{
+					hasRichText: false,
+					hasSidebarFields: false,
+					mainFields: [] as ClientField[],
+					sidebarFields: [] as ClientField[]
+				}
+			);
+		}, [fields]);
   useEffect(() => {
     enableSidebar(hasSidebarFields);
   }, [enableSidebar, hasSidebarFields]);
@@ -110,22 +116,37 @@ export const DocumentFields: FC<Args> = ({
     >
       <div className="document-fields__main">
         <Gutter className="document-fields__edit">
-          <HandoffErrorBoundary>
+	        <HandoffBridge>
             {isTrashed && <TrashBanner />}
             {BeforeFields}
             <AlternateDocProvider>
-              <RenderFields
-                className="document-fields__fields"
-                fields={mainFields}
-                forceRender
-                parentIndexPath=""
-                parentPath=""
-                parentSchemaPath={schemaPathSegments.join(".")}
-                permissions={docPermissions?.fields}
-                readOnly={readOnly}
-              />
+	            {hasRichText ? (
+		            <WriterProvider>
+			            <RenderFields
+				            className="document-fields__fields"
+				            fields={mainFields}
+				            forceRender
+				            parentIndexPath=""
+				            parentPath=""
+				            parentSchemaPath={schemaPathSegments.join(".")}
+				            permissions={docPermissions?.fields}
+				            readOnly={readOnly}
+			            />
+		            </WriterProvider>
+	            ) : (
+		            <RenderFields
+			            className="document-fields__fields"
+			            fields={mainFields}
+			            forceRender
+			            parentIndexPath=""
+			            parentPath=""
+			            parentSchemaPath={schemaPathSegments.join(".")}
+			            permissions={docPermissions?.fields}
+			            readOnly={readOnly}
+		            />
+	            )}
             </AlternateDocProvider>
-          </HandoffErrorBoundary>
+	        </HandoffBridge>
           {AfterFields}
         </Gutter>
       </div>

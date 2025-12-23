@@ -1,11 +1,7 @@
 import { PayloadSDK } from "@payloadcms/sdk";
 import type { Config, UserAuthOperations } from "@/payload-types";
 import type { ForgotPasswordOptions } from "node_modules/@payloadcms/sdk/dist/auth/forgotPassword";
-import type {
-  AuthCollectionSlug,
-  PayloadGeneratedTypes
-} from "node_modules/@payloadcms/sdk/dist/types";
-import type { CollectionSlug } from "payload";
+import type {PayloadGeneratedTypes} from "node_modules/@payloadcms/sdk/dist/types";
 type EstateGeneratedTypes = PayloadGeneratedTypes & {
   auth: {
     [key: string]:

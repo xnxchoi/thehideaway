@@ -38,9 +38,9 @@ export default function AccountSwitcher() {
           role="combobox"
           aria-expanded={open}
           aria-label="Select a user"
-          className="outline-groove group flex w-[250px] items-center justify-between rounded-[12px] px-4 font-sans text-foreground shadow-sm/25 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-[oklch(var(--muted-faded-fg)/.1)] dark:shadow-md/30"
+          className="outline-groove group flex w-[250px] items-center justify-between rounded-[12px] px-4 font-sans text-foreground shadow-sm/25 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-foreground/10 dark:shadow-md/30"
           style={{
-            outlineColor: "oklch(var(--muted-faded-fg)/.3)"
+	          outlineColor: "oklch(from var(--muted-faded-fg) l c h/.3)"
           }}
         >
           <div className="flex items-center gap-2 px-1 py-1.5">
@@ -89,7 +89,7 @@ export default function AccountSwitcher() {
                 </div>
               </CommandItem>
             </CommandGroup>
-            <CommandSeparator className={"bg-[oklch(var(--n-s-fg)/.3)]!"} />
+	          <CommandSeparator className={"bg-nav-foreground/30!"}/>
             <CommandGroup
               className={"[&_[cmdk-group-heading]]:text-foreground!"}
               heading="Switch Account"
@@ -122,7 +122,7 @@ export default function AccountSwitcher() {
                   ))}
             </CommandGroup>
           </CommandList>
-          <CommandSeparator className={"bg-[oklch(var(--n-s-fg)/.3)]!"} />
+	        <CommandSeparator className={"bg-nav-button-foreground/30!"}/>
           <CommandList>
             <CommandGroup>
               <CommandItem

@@ -62,7 +62,7 @@ function $convertMentionElement(
   };
 }
 
-const mentionStyle = "background-color: oklch(var(--bleu-500)/.2)";
+const mentionStyle = "background-color: oklch(from var(--bleu-500) l c h/.2)";
 
 export class MentionNode extends DecoratorNode<JSX.Element> {
   __id: string;

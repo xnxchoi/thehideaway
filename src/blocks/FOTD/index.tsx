@@ -15,16 +15,17 @@ export const HomeArticleLayout = (props: { posts: ArticleOverview[] }) => {
       className="mb-[48px] justify-center gap-x-[20px] rounded-[2rem] p-[2rem] md:block lg:mr-[2rem] lg:ml-[2rem] xl:mb-[100px] xl:flex xl:gap-x-[90px]"
       style={{
         background:
-          "linear-gradient(180deg, oklch(var(--faded-bg)/1), oklch(var(--bg)/0))"
+	        "linear-gradient(180deg, var(--faded-bg), oklch(from var(--bg) l c h/0))"
       }}
     >
-      <div className="mb-6 border-b-[1px] border-solid border-[oklch(var(--fg)/.5)] md:min-w-1/2 md:flex-[1] md:border-b-0 md:pb-0 lg:min-w-[680px]">
+	    <div
+		    className="mb-6 border-b-[1px] border-solid border-foreground/50)] md:min-w-1/2 md:flex-[1] md:border-b-0 md:pb-0 lg:min-w-[680px]">
         <div className="grid grid-cols-[1fr_1fr] gap-y-[20px] lg:grid-cols-[repeat(4,1fr)] lg:gap-x-[20px]">
           {posts[0] && <HomeSquare article={posts[0]} />}
           {posts[1] && (
             <Link
               href={"/essays/" + (posts[1].slug ?? "")}
-              className="grid gap-y-[20px] border-t-[1px] border-r-[1px] border-b-[1px] border-solid border-[color:oklch(var(--fg)/.5)] bg-transparent p-[20px] pl-0 break-words decoration-[none] lg:col-[1/3] lg:row-[2] lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+              className="grid gap-y-[20px] border-t-[1px] border-r-[1px] border-b-[1px] border-solid border-foreground/50 bg-transparent p-[20px] pl-0 break-words decoration-[none] lg:col-[1/3] lg:row-[2] lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
             >
               <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:row-[1/3]">
                 {posts[1].image && (
@@ -50,7 +51,7 @@ export const HomeArticleLayout = (props: { posts: ArticleOverview[] }) => {
           {posts[2] && (
             <Link
               href={"/essays/" + decodeURIComponent(posts[2].slug ?? "")}
-              className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-[color:oklch(var(--fg)/.5)] bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+              className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
             >
               <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:row-[1/3] lg:aspect-square">
                 {posts[2].image && (
@@ -103,7 +104,7 @@ const ArticleList = (
             return (
               <Article
                 index={index}
-                image={doc.image?.thumbnailURL || ""}
+                image={doc.image?.value.thumbnailURL || ""}
                 author={auth}
                 title={title!}
                 date={publishedAt || ""}
@@ -135,18 +136,21 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
   const { title, image, link, date, author, index } = props;
   return (
     <>
-      <div className="absolute z-[10] mt-[30px] ml-[4px] flex h-[15px] w-[15px] items-center justify-center rounded-[50%] bg-[oklch(var(--off-fg)/.4)] text-[1.1rem] lg:mt-[20px] lg:ml-[-40px] lg:h-[20px] lg:w-[20px]">
+	    <div
+		    className="absolute z-[10] mt-[30px] ml-[4px] flex h-[15px] w-[15px] items-center justify-center rounded-[50%] bg-off-foreground/40 text-[1.1rem] lg:mt-[20px] lg:ml-[-40px] lg:h-[20px] lg:w-[20px]">
         {index + 1}
       </div>
-      <div className="relative flex flex-row-reverse justify-between border-b-[1px] border-[color:oklch(var(--fg)/.5)] pt-[16px] pr-0 pb-[10px] pl-0 lg:pt-[20px] lg:pb-[20px]">
-        <div className="relative ml-[16px] aspect-square h-[75px] self-start bg-[oklch(var(--off-bg)/.1)]">
+	    <div
+		    className="relative flex flex-row-reverse justify-between border-b-[1px] border-foreground/50 pt-[16px] pr-0 pb-[10px] pl-0 lg:pt-[20px] lg:pb-[20px]">
+		    <div
+			    className="relative ml-[16px] aspect-square h-[75px] self-start bg-off-background/10">
           <div>
             {image && (
               <Image
                 alt={title}
                 width={200}
                 height={200}
-                className="border-color-[oklch(var(--off-bg)/.9)] radius-[4px] border-[1px] border-solid"
+                className="border-color-off-background/90 rounded-[4px] border-[1px] border-solid"
                 style={{
                   position: "absolute",
                   height: "100%",
@@ -182,7 +186,8 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
                     {date.length > 0 && DateTime.fromISO(date).toRelative()}
                   </time>
                 </span>
-                <span className="mx-3 inline text-[1.1rem] tracking-[0.1em] text-[oklch(var(--faded-fg)/1)] uppercase before:content-['|']">
+	              <span
+		              className="mx-3 inline text-[1.1rem] tracking-[0.1em] text-faded-foreground uppercase before:content-['|']">
                   <Link
                     className="mr-2 inline-block whitespace-nowrap"
                     href={link + "/#comments"}
@@ -204,7 +209,8 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
                       />
                     </svg>
                     <span className="mx-[4px] my-0 inline-flex flex-[0_0_auto] leading-[20px]">
-                      <span className="text-[1.1rem] tracking-widest text-[oklch(var(--faded-fg)/1)] uppercase">
+                      <span
+	                      className="text-[1.1rem] tracking-widest text-faded-foreground uppercase">
                         0
                       </span>
                     </span>

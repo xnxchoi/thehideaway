@@ -151,8 +151,8 @@
 }
 
 .cv-draft {
-  border-color: oklch(var(--fg)/.63);
-  color: oklch(var(--fg)/.86)
+  border-color: oklch(from var(--fg) l c h/.63);
+  color: oklch(from var(--fg) l c h/.86)
 }
 
 .cv-publish {
@@ -222,7 +222,7 @@
 
 .cveditform#formSlot {
   align-items: flex-start;
-  background-color: oklch(var(--bg)/.53);
+  background-color: oklch(from var(--bg) l c h/.53);
   bottom: 0;
   font-size: 14px;
   left: 0;
@@ -277,11 +277,11 @@
 @media (min-width: 768px) {
 
   .cv-category:hover {
-    color: oklch(var(--fg)/.86);
+    color: oklch(from var(--fg) l c h/.86);
   }
 
   .cv-category-content:hover {
-    color: oklch(var(--fg)/1);
+    color: oklch(from var(--fg) l c h/1);
   }
 
   .cv-category-content:hover > div {

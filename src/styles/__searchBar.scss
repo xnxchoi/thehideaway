@@ -21,8 +21,8 @@ input[cmdk-input] {
 }
 
 kbd {
-  background: oklch(var(--faded-fg) / 0.8);
-  color: oklch(var(--bg) / 1);
+  background: oklch(from var(--faded-fg) l c h/0.8);
+  color: oklch(from var(--bg) l c h/1);
   height: 20px;
   width: 20px;
   border-radius: 4px;
@@ -38,8 +38,8 @@ kbd {
 
   &:first-of-type {
     kbd {
-      background: oklch(var(--faded-fg) / 0.8);
-      color: oklch(var(--bg) / 1);
+      background: oklch(from var(--faded-fg) l c h/0.8);
+      color: oklch(from var(--bg) l c h/1);
       height: 20px;
       width: 20px;
       border-radius: 4px;
@@ -62,8 +62,8 @@ kbd {
   .dark {
     background: linear-gradient(90deg,
         rgba(56, 189, 248, 0),
-        oklch(var(--off-white) / 0.5) 20%,
-        oklch(var(--faded-black) / 0.5) 67.19%,
+            oklch(from var(--off-white) l c h/0.5) 20%,
+            oklch(from var(--faded-black) l c h/0.5) 67.19%,
         rgba(236, 72, 153, 0));
     height: 1px;
     position: absolute;
@@ -76,7 +76,7 @@ kbd {
 }
 
 [cmdk-rp-courier] {
-  border-bottom: 1px solid oklch(var(--border-subtle) / 0.4);
+  border-bottom: 1px solid oklch(from var(--border-subtle) l c h/0.4);
   --loader-color: var(--border);
 
   &::after {
@@ -105,12 +105,12 @@ kbd {
 }
 
 [cmdk-raycast-loader] {
-  --loader-color: oklch(var(--border-subtle) / 1);
+  --loader-color: oklch(from var(--border-subtle) l c h/1);
   border: 0;
   width: 100%;
   left: 0;
   height: 1px;
-  background: oklch(var(--border-subtle) / 0.8);
+  background: oklch(from var(--border-subtle) l c h/0.8);
   position: relative;
   overflow: visible;
   display: block;
@@ -141,7 +141,7 @@ kbd {
 
 [cmdk-raycast-meta] {
   margin-left: auto;
-  color: oklch(var(--bg) / 1);
+  color: oklch(from var(--bg) l c h/1);
   font-size: 13px;
 }
 
@@ -195,13 +195,13 @@ kbd {
   transition-timing-function: ease-in-out;
 
   kbd {
-    color: oklch(var(--off-bg) / 1);
-    background: oklch(var(--off-fg) / 0.7);
+    color: oklch(from var(--off-bg) l c h/1);
+    background: oklch(from var(--off-fg) l c h/0.7);
   }
 
   &[data-selected='true'] {
-    background: oklch(var(--n-s-bg) / 0.4);
-    color: oklch(var(--n-s-fg) / 1);
+    background: oklch(from var(--n-s-bg) l c h/0.4);
+    color: oklch(from var(--n-s-fg) l c h/1);
   }
 }
 
@@ -223,15 +223,15 @@ kbd {
 
   hr {
     height: 100%;
-    background: oklch(var(--border-subtle) / 1);
+    background: oklch(from var(--border-subtle) l c h/1);
     border: 0;
     width: 1px;
   }
 
   &[aria-expanded='true'],
   &:hover {
-    background: oklch(var(--faded-bg) / 0.4);
-    color: oklch(var(--off-fg) / 1);
+    background: oklch(from var(--faded-bg) l c h/0.4);
+    color: oklch(from var(--off-fg) l c h/1);
   }
 }
 
@@ -250,7 +250,7 @@ kbd {
   padding: 8px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid oklch(var(--muted-faded-fg) / 0.6);
+  border-bottom: 1px solid oklch(from var(--muted-faded-fg) l c h/0.6);
 }
 
 [cmdk-group-items] {
@@ -259,14 +259,14 @@ kbd {
 
 [cmdk-raycast-footer] {
   height: 40px;
-  border-top: 1px outset oklch(var(--border) / 0.8);
+  border-top: 1px outset oklch(from var(--border) l c h/0.8);
   border-radius: 0 0 7px 7px;
 
   hr {
     height: 12px;
     width: 1px;
     border: 0;
-    background: oklch(var(--border-subtle) / 0.8);
+    background: oklch(from var(--border-subtle) l c h/0.8);
     margin: 0 4px 0px 12px;
   }
 }
@@ -325,7 +325,7 @@ kbd {
 
 @keyframes border {
   to {
-    box-shadow: 0 0 0 1px oklch(var(--muted-faded-fg) / 0.8);
+    box-shadow: 0 0 0 1px oklch(from var(--muted-faded-fg) l c h/0.8);
   }
 }
 
@@ -344,14 +344,14 @@ kbd {
     width: 320px;
     min-height: fit-content;
     padding-bottom: 0;
-    border: 1px solid oklch(var(--border-subtle) / 0.8);
-    background: oklch(var(--off-bg) / 0.5);
+    border: 1px solid oklch(from var(--border-subtle) l c h/0.8);
+    background: oklch(from var(--off-bg) l c h/0.5);
     border-radius: 8px;
   }
 
   [cmdk-group-heading] {
-    color: oklch(var(--faded-fg) / 1);
-    border-bottom-color: oklch(var(--muted-faded-fg) / 0.6);
+    color: oklch(from var(--faded-fg) l c h/1);
+    border-bottom-color: oklch(from var(--muted-faded-fg) l c h/0.6);
   }
 
   [cmdk-list] {
@@ -368,8 +368,8 @@ kbd {
     gap: 2px;
 
     kbd {
-      background: oklch(var(--faded-fg) / 0.8);
-      color: oklch(var(--n-s-bg) / 1);
+      background: oklch(from var(--faded-fg) l c h/0.8);
+      color: oklch(from var(--n-s-bg) l c h/1);
       height: 20px;
       width: 20px;
       border-radius: 4px;
@@ -395,24 +395,24 @@ kbd {
     align-items: center;
     gap: 8px;
     padding: 8px;
-    color: oklch(var(--off-fg) / 0.8);
+    color: oklch(from var(--off-fg) l c h/0.8);
     user-select: none;
     will-change: background, color;
     transition: all 150ms ease;
     transition-property: none;
 
     & [cmdk-raycast-submenu-shortcuts] kbd {
-      background: oklch(var(--faded-bg) / 0.3);
-      color: oklch(var(--off-fg) / 1);
+      background: oklch(from var(--faded-bg) l c h/0.3);
+      color: oklch(from var(--off-fg) l c h/1);
     }
 
     &[aria-selected='true'] {
-      background: oklch(var(--off-bg) / 0.3);
-      color: oklch(var(--n-s-fg) / 1);
+      background: oklch(from var(--off-bg) l c h/0.3);
+      color: oklch(from var(--n-s-fg) l c h/1);
 
       [cmdk-raycast-submenu-shortcuts] kbd {
-        background: oklch(var(--faded-fg) / 0.3);
-        color: oklch(var(--off-bg) / 1);
+        background: oklch(from var(--faded-fg) l c h/0.3);
+        color: oklch(from var(--off-bg) l c h/1);
       }
     }
 
@@ -429,14 +429,14 @@ kbd {
 
 
   svg {
-    color: oklch(var(--n-s-fg) / 1);
+    color: oklch(from var(--n-s-fg) l c h/1);
   }
 
   input[cmdk-input] {
-    color: oklch(var(--n-s-fg) / 1);
+    color: oklch(from var(--n-s-fg) l c h/1);
 
     &::placeholder {
-      color: oklch(var(--n-s-fg) / 0.8);
+      color: oklch(from var(--n-s-fg) l c h/0.8);
     }
   }
 

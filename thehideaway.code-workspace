@@ -8,7 +8,6 @@
     "workbench.colorTheme": "Abyss",
     "javascript.preferGoToSourceDefinition": true,
     "typescript.preferGoToSourceDefinition": true,
-    "typescript.tsdk": "node_modules/typescript/lib",
     "explorer.autoReveal": "focusNoScroll",
     "git.ignoreLimitWarning": true,
     "sqltools.connections": [
@@ -23,8 +22,6 @@
     ],
     "workbench.settings.editor": "ui",
     "workbench.settings.openDefaultKeybindings": true,
-    "editor.wordBasedSuggestions": "matchingDocuments",
-    "typescript.suggest.completeFunctionCalls": true,
     "files.autoSave": "onFocusChange",
     "tailwindCSS.rootFontSize": 10,
     "tailwindCSS.validate": true,
@@ -52,13 +49,10 @@
       "*.css": "tailwindcss"
     },
     "editor.wordWrap": "on",
-    "editor.suggest.showStatusBar": true,
     "javascript.suggest.completeFunctionCalls": true,
     "editor.quickSuggestions": {
-      "comments": "on",
       "strings": "on"
     },
-    "editor.suggest.localityBonus": true,
     "tailwindCSS.files.exclude": [
       "**/.git/**",
       "**/node_modules/**",
@@ -66,8 +60,7 @@
       "**/.svn/**",
       "**/node_modules/*.d.ts",
       "**/node_modules/**/*.{e|m}js",
-      "**/*.d.ts",
-      "**/src/**/*.ts"
-    ]
+      "*.d.ts"
+    ], "tailwindcss-intellisense.trace.server":"off", "editor.suggest.shareSuggestSelections":false, "editor.inlineSuggest.enabled":false, "editor.suggest.showIcons":false, "editor.suggest.showInlineDetails":false, "editor.suggest.showFiles":true, "editor.suggest.showEnums":true, "editor.suggest.showEnumMembers":true, "editor.suggest.showDeprecated":false, "editor.suggest.showCustomcolors":false, "editor.suggest.showConstructors":false, "editor.suggest.showColors":false, "editor.suggest.showIssues":false, "editor.suggest.showClasses":false, "editor.suggest.snippetsPreventQuickSuggestions":false, "typescript.workspaceSymbols.scope":"allOpenProjects", "editor.suggest.showUsers":true, "editor.suggest.showSnippets":false, "typescript.referencesCodeLens.enabled":true, "javascript.referencesCodeLens.enabled":true, "javascript.updateImportsOnFileMove.enabled":"always", "typescript.enablePromptUseWorkspaceTsdk":true, "typescript.implementationsCodeLens.enabled":true, "typescript.preferences.preferTypeOnlyAutoImports":true, "typescript.preferences.quoteStyle":"double", "typescript.tsserver.enableTracing":true, "typescript.tsserver.watchOptions":"vscode"
   }
 }

@@ -22,12 +22,12 @@
     }
 
     a {
-      color: oklch(var(--foreground) / 0.63);
+      color: oklch(from var(--foreground) l c h/0.63);
       white-space: nowrap;
       transition: color ease 0.3s;
 
       &:hover {
-        color: oklch(var(--foreground) / 1);
+        color: oklch(from var(--foreground) l c h/1);
       }
     }
 
@@ -38,11 +38,11 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        border-bottom: 2px solid oklch(var(--foreground) / 1);
+        border-bottom: 2px solid oklch(from var(--foreground) l c h/1);
       }
 
       a {
-        color: oklch(var(--foreground) / 1);
+        color: oklch(from var(--foreground) l c h/1);
       }
     }
   }
@@ -147,13 +147,13 @@ strong {
   &.is-active {
     background: var(--dark-grey-t-5);
     font-weight: 600;
-    border-bottom: solid 1px oklch(var(--foreground) / 0.86);
+    border-bottom: solid 1px oklch(from var(--foreground) l c h/0.86);
     border-bottom-right-radius: 1px;
     border-bottom-left-radius: 1px;
     padding-right: 0;
 
     & > span {
-      color: oklch(var(--foreground) / 1);
+      color: oklch(from var(--foreground) l c h/1);
     }
 
     svg {

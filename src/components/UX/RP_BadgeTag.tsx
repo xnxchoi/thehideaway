@@ -11,7 +11,7 @@ export const RP_BadgeTag = (
     <div className={cn("text-[1.1rem]", wrapperClassName)}>
       <span
         className={cn(
-          "inline-block rounded-[20px] border-[1px] border-solid border-[oklch(var(--n-s-fg)/1)] pt-[5px] pr-[9px] pb-[5px] pl-[9px] text-center text-[10px] leading-[.95] font-medium tracking-[-.01em] text-[oklch(var(--n-s-fg)/1)] uppercase",
+	        "inline-block rounded-[20px] border-[1px] border-solid border-nav-foreground pt-[5px] pr-[9px] pb-[5px] pl-[9px] text-center text-[10px] leading-[.95] font-medium tracking-[-.01em] text-nav-foreground uppercase",
           className
         )}
         {...rest}

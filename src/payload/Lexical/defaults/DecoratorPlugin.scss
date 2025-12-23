@@ -3,11 +3,30 @@
 @layer payload-default {
   [data-lexical-decorator="true"] {
     width: fit-content;
+    position: relative;
     border-radius: $style-radius-m;
+
+    &:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: $style-radius-m;
+      background-color: oklch(from var(--blue-gray) l c h/0);
+      transition-timing-function: var(--ease-out-power2);
+      transition-property: background-color;
+      transition-duration: 100ms;
+      pointer-events: none;
+    }
   }
 
   .decorator-selected {
-    box-shadow: $focus-box-shadow;
     outline: none;
+    box-shadow: 0 0 0 1px oklch(from var(--blue-gray) l c h/0.45) !important;
+
+    &[data-lexical-decorator="true"] {
+      &:after {
+        background-color: oklch(from var(--blue-gray) l c h/0.2);
+      }
+    }
   }
 }

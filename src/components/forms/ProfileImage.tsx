@@ -162,7 +162,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
     <div className="relative my-10 flex w-full flex-col items-center">
       <div
         className={
-          "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-[oklch(var(--faded-bg)/.6)] bg-transparent transition-all duration-300"
+	        "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-faded-background/60 bg-transparent transition-all duration-300"
         }
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}

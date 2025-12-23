@@ -1,16 +1,14 @@
-import { link } from "@/payload/fields/link";
-import { fetchMyNotifications } from "@/payload/collections/Users/endpoints/fetchMyNotifications";
-import { Notification } from "@payload-types";
-import { DateTime } from "luxon";
-import { CollectionConfig, type CollectionBeforeValidateHook } from "payload";
-import { hideIfNotAdmin } from "../helpers";
-import { DismissNotification } from "./endpoints/dismiss/dismiss";
-import { ReadAllNotifications } from "./endpoints/read-all/readAll";
-import { ReadNotification } from "./endpoints/read/read";
-import type { ImageCollectionOverview } from "@/components/UX/Media/types";
-import { randomNumber } from "@/utilities/randomNumber";
-import { getThumbnail } from "./hooks/getThumbnail";
-import { getFallbackImage } from "@/utilities/getFallbackImage";
+import {link} from "@/payload/fields/link";
+import {fetchMyNotifications} from "@/payload/collections/Users/endpoints/fetchMyNotifications";
+import {Notification} from "@payload-types";
+import {DateTime} from "luxon";
+import {type CollectionBeforeValidateHook, CollectionConfig} from "payload";
+import {hideIfNotAdmin} from "../helpers";
+import {DismissNotification} from "./endpoints/dismiss/dismiss";
+import {ReadAllNotifications} from "./endpoints/read-all/readAll";
+import {ReadNotification} from "./endpoints/read/read";
+import {getThumbnail} from "./hooks/getThumbnail";
+import {getFallbackImage} from "@/utilities/getFallbackImage";
 
 const fillDataHook: CollectionBeforeValidateHook<Notification> = async ({
   data,
@@ -175,7 +173,7 @@ export const Notifications: CollectionConfig = {
           collection: "assets",
           where: {
             mimeType: {
-              like: "image"
+	            like: "image/%"
             }
           },
           limit: 1,

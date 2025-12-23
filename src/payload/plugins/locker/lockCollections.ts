@@ -542,7 +542,7 @@ const createRevalidateDoc = <T extends LockedCollections>(
 
           revalidatePath(path);
 
-          revalidateTag(`${collection}-sitemap`);
+	        revalidateTag(`${collection}-sitemap`, {expire: 50});
         }
       }
 
@@ -555,7 +555,7 @@ const createRevalidateDoc = <T extends LockedCollections>(
         );
 
         revalidatePath(oldPath);
-        revalidateTag(`${collection}-sitemap`);
+	      revalidateTag(`${collection}-sitemap`, {expire: 50});
       }
     }
     return doc;
@@ -608,7 +608,7 @@ const createRevalidateDoc = <T extends LockedCollections>(
 
             revalidatePath(path);
 
-            revalidateTag(`users-sitemap`);
+	          revalidateTag(`users-sitemap`, {expire: 50});
           }
         }
       }

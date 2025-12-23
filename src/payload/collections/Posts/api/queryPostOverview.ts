@@ -1,18 +1,19 @@
 "use server";
-import { getPayload, PaginatedDocs, Where } from "payload";
+import {getPayload, PaginatedDocs, Where} from "payload";
 
 import configPromise from "@payload-config";
-import { PostsSelect } from "@/payload-types";
+import {PostsSelect} from "@/payload-types";
 import {
   ArticleOverview,
   AuthorOverview,
   AuthorSingle,
-  ReqArticle,
-  type MediaReq
+	type MediaReq,
+	ReqArticle
 } from "../../../../types/collections/posts";
-import { cache } from "react";
-import { getPostBookMarks } from "./getPostBookmarks";
-import type { TagOverview } from "../../../../types/collections/delta";
+import {cache} from "react";
+import {getPostBookMarks} from "./getPostBookmarks";
+import type {TagOverview} from "../../../../types/collections/delta";
+import {imageSelect} from "@/types/payload-api-selects"
 
 /**
  * @param limit - The number of posts to return
@@ -305,32 +306,34 @@ export const queryPostsByIDs = cache(
         if (!author) {
           return [];
         }
-        let image: MediaReq | null = post.image
-          ? typeof post.image === "string"
+	      let image: MediaReq | null = post.image
+		      ? typeof post.image.value === "string"
             ? null
-            : post.image
+			      : post.image as MediaReq
           : null;
-        if (!image && typeof post.image === "string") {
+
+	      if (!image && post.image && typeof post.image.value === "string") {
+		      const select = imageSelect()
           const img = await payload.findByID({
             collection: "userMedia",
-            id: post.image as string,
+	          id: post.image.value as string,
             overrideAccess: true,
-            select: {
-              url: true,
-              darkmode: true,
-              alt: true,
-              caption: true,
-              createdAt: true,
-              updatedAt: true,
-              filename: true,
-              mimeType: true,
-              size: true,
-              width: true,
-              height: true
-            }
+	          select
+          }).then(r => {
+	          if (typeof r.url === "string") {
+		          return {
+			          ...r,
+			          src: r.url as string,
+			          url: r.url as string
+		          }
+	          }
+	          return null;
           });
           if (img) {
-            image = img;
+	          image = {
+		          relationTo: post.image.relationTo,
+		          value: img
+	          };
           }
         }
         const bookmarks = await getPostBookMarks({ id: `${post.id}` });

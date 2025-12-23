@@ -1,9 +1,8 @@
-import { Media } from "@/payload-types";
-import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
-import { isHangul } from "@/utilities/rp_utils";
-import { CollectionConfig, FilterOptionsProps, Where } from "payload";
-import { uuidv7 } from "uuidv7";
-import { hideIfNotAdmin } from "../helpers";
+import {Media} from "@/payload-types";
+import {isAdmin} from "@/payload/plugins/locker/access/accessCheckers";
+import {CollectionConfig, FilterOptionsProps, Where} from "payload";
+import {hideIfNotAdmin} from "../helpers";
+import {uuidv7} from "uuidv7";
 
 export const Admins: CollectionConfig = {
   slug: "admins",
@@ -30,10 +29,21 @@ export const Admins: CollectionConfig = {
   },
   fields: [
     {
+	    name: "id",
+	    type: "text",
+	    admin: {
+		    readOnly: true
+	    },
+	    defaultValue: uuidv7,
+	    required: true,
+    },
+	  {
       name: "name",
       type: "text",
-      defaultValue: () => uuidv7(),
-      index: true
+		  defaultValue: "Admin",
+		  index: true,
+		  required: true,
+		  virtual: true,
     },
     {
       name: "email",
@@ -47,7 +57,8 @@ export const Admins: CollectionConfig = {
       type: "select",
       options: ["admin", "user", "patron", "editor", "author"],
       defaultValue: "admin",
-      required: true
+	    required: true,
+	    virtual: true,
     },
     {
       name: "foto",
@@ -94,91 +105,15 @@ export const Admins: CollectionConfig = {
           label: "First Name",
           index: true,
           defaultValue: "R",
-          hooks: {
-            beforeChange: [
-              ({ siblingData, value, operation }) => {
-                if (!value || typeof value !== "string" || value.length === 0) {
-                  if (siblingData.name) {
-                    if (typeof siblingData.name === "string") {
-                      const name = siblingData.name.trim();
-                      if (name.length > 0) {
-                        if (isHangul(name.charAt(0))) {
-                          if (name.length > 4) {
-                            return name.slice(0, 2);
-                          }
-                          return name.slice(0, 1);
-                        }
-                        const firstName =
-                          (name.indexOf(" ") > 0
-                            ? name.split(" ")[0]
-                            : name.indexOf("-")
-                              ? name.split("-")[0]
-                              : name) ?? "R";
-                        return (
-                          firstName.slice(0, 1).toUpperCase() +
-                          firstName.slice(1).toLowerCase()
-                        );
-                      }
-                    }
-                  }
-                  return (
-                    siblingData.email.split("@")[0].slice(0, 1).toUpperCase() +
-                    siblingData.email.split("@")[0].slice(1).toLowerCase()
-                  );
-                }
-                return isHangul(value.charAt(0))
-                  ? value
-                  : value.slice(0, 1).toUpperCase() +
-                      value.slice(1).toLowerCase();
-              }
-            ]
-          }
+	        virtual: true,
+
         },
         {
           name: "lastName",
           type: "text",
           label: "Last Name",
           index: true,
-          defaultValue: "P",
-          hooks: {
-            beforeChange: [
-              ({ siblingData, value, operation }) => {
-                if (!value || typeof value !== "string" || value.length === 0) {
-                  if (siblingData.name) {
-                    if (typeof siblingData.name === "string") {
-                      const name = siblingData.name.trim();
-                      if (name.length > 0) {
-                        if (isHangul(name.charAt(0))) {
-                          if (name.length > 3) {
-                            return name.slice(2);
-                          }
-                          return name.slice(1);
-                        }
-                        const lastName =
-                          (name.indexOf(" ") > 0
-                            ? name.split(" ")[1]
-                            : name.indexOf("-")
-                              ? name.split("-")[1]
-                              : name) ?? "P";
-                        return (
-                          lastName.slice(0, 1).toUpperCase() +
-                          lastName.slice(1).toLowerCase()
-                        );
-                      }
-                    }
-                  }
-                  return (
-                    siblingData.email.split("@")[0].slice(0, 1).toUpperCase() +
-                    siblingData.email.split("@")[0].slice(1).toLowerCase()
-                  );
-                }
-                return isHangul(value.charAt(0))
-                  ? value
-                  : value.slice(0, 1).toUpperCase() +
-                      value.slice(1).toLowerCase();
-              }
-            ]
-          }
+	        defaultValue: "P", virtual: true,
         }
       ]
     },

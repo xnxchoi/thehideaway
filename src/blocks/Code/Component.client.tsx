@@ -29,7 +29,7 @@ export const Code: React.FC<Props> = ({code, language = ""}) => {
 	          <div key={i + "key-token"}
 	               {...getLineProps({className: "table-row", line})}
 	          >
-              <span className="table-cell select-none text-right text-[oklch(var(--faded-fg)/.25)]">
+              <span className="table-cell select-none text-right text-faded-foreground/25">
                 {i + 1}
               </span>
 		          <span className="table-cell pl-4">
