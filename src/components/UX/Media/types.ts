@@ -1,13 +1,14 @@
-import type {ComponentPropsWithoutRef, ReactNode, Ref} from "react";
-import type {FetchedImageDoc, RalueWithRelation} from "@/types/collections/imageCollections";
-import type {StaticImport} from "next/dist/shared/lib/get-img-props";
 import {cssVariables} from "@/cssVariables";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
+import type {FetchedImageDoc, ImageCollectionSlug} from "@/types/collections/image-collections";
+import type {StaticImport} from "next/dist/shared/lib/get-img-props";
+import type {ComponentPropsWithoutRef, ReactNode, Ref} from "react";
 
-export type ImageCollectionOverview = {
-	relationTo: ImageCollectionSlug;
-	value: FetchedImageDoc;
-} | RalueWithRelation;
+export type ImageCollectionOverview<T extends ImageCollectionSlug = ImageCollectionSlug> = {
+	[x in ImageCollectionSlug]: {
+		relationTo: x;
+		value: FetchedImageDoc | string;
+	}
+}[T];
 
 export type FrontImageResource = ImageCollectionOverview
 type CSSVARS = typeof cssVariables;
@@ -39,7 +40,6 @@ export interface MediaElementProps
 	ref?: Ref<HTMLImageElement> | Ref<HTMLVideoElement>;
 	src?: StaticImport | string;
 	videoClassName?: string;
-
 
 }
 

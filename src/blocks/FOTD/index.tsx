@@ -5,9 +5,9 @@ import { DateTime } from "luxon";
 import { HomeSquare } from "@/components/layouts/HomeSquare";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
-import { ArticleOverview } from "@/types/collections/posts";
+import {PostOverview} from "@/types/collections/posts";
 
-export const HomeArticleLayout = (props: { posts: ArticleOverview[] }) => {
+export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
   const { posts } = props;
 
   return (
@@ -81,7 +81,7 @@ export const HomeArticleLayout = (props: { posts: ArticleOverview[] }) => {
   );
 };
 const ArticleList = (
-  props: { posts: ArticleOverview[] } & ComponentProps<"div">
+	props: { posts: PostOverview[] } & ComponentProps<"div">
 ) => {
   const { posts, ...rest } = props;
 

@@ -1,15 +1,32 @@
-import type {Post, User} from "@/payload-types";
-import {TagOverview} from "@/types/collections/delta";
-import {RalueAsDataWithRelation} from "@/types/collections/imageCollections";
+import type {Post} from "@/payload-types";
+import {SinglePostKeys, SinglePostSelector} from "@/payload/collections/Posts/api/queryBase";
 
-export type ArticleOverview = Omit<ReqArticle, "author"> & {
+import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+import {AuthorOverview, AuthorSingle, RelUser} from "@/types/collections/users";
+import {RalueAsDataWithRelation} from "@/types/collections/image-collections";
+import {PayloadFound} from "@/types/payload-api-helpers";
+
+export type PostOverview = {
+	id: string;
+	title: string;
+	slug: string;
+	subtitle: string;
+	allowList: string[];
+	publishedAt: string;
+	updatedAt: string;
+	locked?: boolean;
+	authority?: number;
+	image?: RalueAsDataWithRelation | null;
 	author: AuthorOverview;
-
+	category: CategoryOverview;
+	tagged: TagOverview[];
 	bookmarks: string[];
 	bookmarksCount: number;
 };
 
 export type MediaReq = RalueAsDataWithRelation
+export type FetchedPost = PayloadFound<"posts", SinglePostSelector>
+
 /**
  *  Represents the actual API response-accurate type of fetching a {@link Post} as of 2025-05-28.
  *
@@ -20,36 +37,15 @@ export type MediaReq = RalueAsDataWithRelation
  */
 export type ReqArticle = Pick<
 	Post,
-	| "id"
-	| "title"
-	| "locked"
-	| "authority"
-	| "allowList"
-	| "subtitle"
-	| "updatedAt"
+	SinglePostKeys
 > & {
 	author: RelUser;
-	category: {
-		title: string;
-		id: string;
-		slug: string;
-	};
+	category: CategoryOverview;
 	tagged: Array<TagOverview>;
 	publishedAt: string;
 	image?: RalueAsDataWithRelation | null;
-	id: string;
-	slug: string;
 };
-export type AuthorOverview = Pick<
-	User,
-	"name" | "slug" | "displayUsername" | "id" | "image"
->;
-export type UserOverview = AuthorOverview;
-export type RelUser = AuthorOverview | string;
-export type RelAuthor = RelUser;
-export type AuthorSingle = AuthorOverview;
-export type FocusedUser = AuthorOverview;
-export type FocusedArticle = ArticleOverview &
+export type FocusedArticle = PostOverview &
 	Pick<
 		Post,
 		| "content"
@@ -62,8 +58,8 @@ export type FocusedArticle = ArticleOverview &
 export type SingleArticle = Omit<FocusedArticle, "author" | "relatedPosts"> & {
 	author: AuthorSingle;
 	disabled?: boolean;
-	relatedPosts: ArticleOverview[];
+	relatedPosts: PostOverview[];
 	queuedIDs: string[];
-	prev?: ArticleOverview;
-	next?: ArticleOverview;
+	prev?: PostOverview;
+	next?: PostOverview;
 };

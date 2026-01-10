@@ -1,27 +1,28 @@
 "use server";
 
-import { PayloadHandler } from "payload";
-import { getNotifications } from "@/payload/collections/Notifications/fetches/getNotifications";
-import { NotificationResponse } from "@/payload/collections/Notifications/hooks/types";
+import {getNotifications} from "@/payload/collections/Notifications/fetches/getNotifications";
+import {NotificationResponse} from "@/payload/collections/Notifications/hooks/types";
+import {PayloadHandler} from "payload";
 
 export const fetchMyNotifications: PayloadHandler = async (req) => {
   if (!req.user) {
     return Response.json({ error: "forbidden" }, { status: 403 });
   }
   const id = req.user.id;
-  const queries = req.query;
-  const args: Parameters<typeof getNotifications>[0] = {
-    id
+	const queries = req.query as {
+		[x: string]: string | string[] | undefined | null | number | number[];
+		timestamp?: `${number}`;
+		page?: `${number}`;
   };
   const { timestamp, page } = queries;
-  Object.entries({ timestamp, page }).forEach(([a, q]) => {
-    if (typeof q === "string" || typeof q === "number") {
-      args[a] = Number(q);
-    }
-  });
+
 
   const notifications: NotificationResponse = await getNotifications(
-    args
+	  {
+		  id,
+		  timestamp: timestamp ? Number(timestamp) : undefined,
+		  page: page ? Number(page) : undefined
+	  }
   ).catch((e) => {
     console.error(e);
     return [] as NotificationResponse;

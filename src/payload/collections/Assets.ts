@@ -1,6 +1,7 @@
 import path from "path";
 import {CollectionConfig} from "payload";
 import {fileURLToPath} from "url";
+import {uuidv7} from "uuidv7";
 import {hideIfNotAdmin} from "./helpers";
 
 const filename = fileURLToPath(import.meta.url);
@@ -54,7 +55,18 @@ export const Assets: CollectionConfig = {
     hidden: hideIfNotAdmin,
 	  useAsTitle: "filename",
   },
-  fields: [
+	fields: [{
+		name: "id",
+		type: "text",
+		defaultValue: uuidv7,
+		access: {
+			update: () => false
+		},
+		required: true,
+		admin: {
+			hidden: true
+		}
+	},
     {
       name: "alt",
       type: "text",

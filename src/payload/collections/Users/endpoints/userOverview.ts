@@ -1,6 +1,6 @@
 "use server";
-import { PayloadHandler } from "payload";
-import { queryAuthorOverview } from "@/payload/collections/Posts/api/queryPostOverview";
+import {getUserOverview} from "@/payload/collections/Posts/api/queryPostOverviews";
+import {PayloadHandler} from "payload";
 
 export const userOverviewHandler: PayloadHandler = async (req) => {
   const para = req.routeParams;
@@ -17,7 +17,7 @@ export const userOverviewHandler: PayloadHandler = async (req) => {
       { status: 400 }
     );
   }
-  const res = await queryAuthorOverview(userId);
+  const res = await getUserOverview(userId);
   if (res) {
     return Response.json({ data: res }, { status: 200 });
   }

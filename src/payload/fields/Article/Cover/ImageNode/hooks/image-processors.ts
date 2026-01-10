@@ -1,5 +1,4 @@
 // 1. Process Payload Doc
-import {FetchedUnsplashImage} from "@/payload/collections/Media/hooks/types";
 import {RPFetchError} from "@/payload/fields/Article/Cover/ImageNode/utils/errors";
 import {
 	RP_InternalImageNodeData
@@ -7,10 +6,17 @@ import {
 import {
 	FetchedImageDoc,
 	ProcessedImageDoc,
+	RalueWithRelation,
 	RenderImageFields
-} from "@/types/collections/imageCollections";
+} from "@/types/collections/image-collections";
+import {FetchedUnsplashImage} from "@/types/ImageCollections/unsplash";
 
-export const processImageForNode = (doc: FetchedImageDoc): RP_InternalImageNodeData => {
+export const processImageForNode = ({doc, relationTo, value}: {
+	doc: FetchedImageDoc;
+} & RalueWithRelation): {
+	image: RP_InternalImageNodeData & { src: string };
+	doc: ProcessedImageDoc
+} & RalueWithRelation => {
 	// 1. Unify src/url logic
 	const safeUrl = doc.url || doc.src;
 
@@ -19,25 +25,31 @@ export const processImageForNode = (doc: FetchedImageDoc): RP_InternalImageNodeD
 	if (!safeUrl) {
 		throw new RPFetchError(`Image ${doc.id} exists but has no URL.`);
 	}
-	const base: RP_InternalImageNodeData = {
-		src: safeUrl,
+	const image: RP_InternalImageNodeData & { src: string } = {
+		src: safeUrl!,
 		darkmode: doc.darkmode,
 		alt: doc.alt,
-		span: 100,
+		span: 600,
 		showCaption: false
 	}
 	const {height, width, caption} = doc;
 	if (!!height) {
-		base.height = height;
+		image.height = height;
 	}
 	if (!!width) {
-		base.width = width;
+		image.width = width;
 	}
 	if (!!caption) {
-		base.caption = caption;
-		base.showCaption = true;
+		image.caption = caption;
+		image.showCaption = true;
 	}
-	return base;
+	return {
+		image, doc: {
+			...doc,
+			src: safeUrl,
+			url: safeUrl,
+		}, relationTo, value
+	};
 }
 export const processFetchedImage = (doc: FetchedImageDoc): ProcessedImageDoc => {
 	// 1. Unify src/url logic

@@ -21,7 +21,8 @@ import {useIsMobile} from "@/providers/MiddleMan";
 import {useCursor, useRPStore, useSearchBar} from "@/providers/RP_Pro";
 import "@/styles/__searchBar.scss";
 import {useTheme} from "@/providers/Theme";
-import type {CatOverview} from "@/types/collections/delta";
+
+import {CategoryOverview} from "@/types/collections/meta-collections";
 import {useDebounce} from "@/utilities/useDebounce";
 import {Tooltip} from "@base-ui/react/tooltip";
 import {LockOpen2Icon as LockOpen2, ReaderIcon, RocketIcon} from "@radix-ui/react-icons";
@@ -44,7 +45,7 @@ import {
 import type {ImageCollectionOverview} from "../Media/types";
 
 type SearchItem = {
-	category: CatOverview[];
+	category: CategoryOverview[];
 	createdAt: string;
 	doc: { relationTo: string; value: string };
 	id: string;

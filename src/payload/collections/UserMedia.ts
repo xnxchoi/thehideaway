@@ -1,11 +1,12 @@
-import {CollectionConfig} from "payload";
 import {User} from "@/payload-types";
 import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
 import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
 import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
+import {CollectionConfig} from "payload";
 import {fileURLToPath} from "url";
+import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -41,7 +42,18 @@ export const UserMedia: CollectionConfig = {
     update: standardUpdateAccess
   },
   fields: [
-
+	  {
+		  name: "id",
+		  type: "text",
+		  defaultValue: uuidv7,
+		  access: {
+			  update: () => false
+		  },
+		  required: true,
+		  admin: {
+			  hidden: true
+		  }
+	  },
     ...AuthorField(),
 
 	  {

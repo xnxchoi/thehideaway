@@ -3,8 +3,8 @@ import React from "react";
 
 import { HomeArticleLayout } from "@/components/layouts/HomeArticleLayout";
 import type { HeroSquareBlock as HeroSquareBlockProps } from "@/payload-types";
-import { queryPostOverview } from "@/payload/collections/Posts/api/queryPostOverview";
-import { ArticleOverview } from "@/types/collections/posts";
+import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
+import {PostOverview} from "@/types/collections/posts";
 
 export const HeroSquareBlock: React.FC<
   {
@@ -20,7 +20,7 @@ export const HeroSquareBlock: React.FC<
     selectedDocs
   } = props;
   const limit = limitFromProps || 8;
-  const posts: ArticleOverview[] = [];
+	const posts: PostOverview[] = [];
 
   if (populateBy === "collection") {
     const flattenedCategories = categories?.map((category) => {
@@ -33,7 +33,7 @@ export const HeroSquareBlock: React.FC<
         in: flattenedCategories
       };
     }
-    const fetchedPosts = await queryPostOverview({
+	  const fetchedPosts = await queryPostOverviews({
       where,
       limit
     });

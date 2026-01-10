@@ -20,4 +20,8 @@ node_modules/
 .next/
 .pnpm-store/
 .turbo/
-public/
+public/!/src/payload/fields/Article/Cover/backup/ImageContextB.tsx
+!/public/users/
+public/media/
+!/public/media/
+!/public/assets/media/

@@ -4,7 +4,6 @@ export const NOTIFICATION = Object.freeze({
 })
 export const USER = Object.freeze({
 	AUTH: "currentAuthor",
-	CURRENT: "currentUser",
 })
 export const RADIO = Object.freeze({
 	PLAYLIST: "RP_FM",

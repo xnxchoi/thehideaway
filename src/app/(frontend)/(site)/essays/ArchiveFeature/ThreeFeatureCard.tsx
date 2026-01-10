@@ -1,10 +1,10 @@
 "use client";
 
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
-import type { OverviewItem } from "./ArchiveFeatureCard";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
-import { Link } from "@/components/UX/Link/Link";
-import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
+import type {ComponentProps, CSSProperties, ReactNode} from "react";
+import type {OverviewItem} from "./ArchiveFeatureCard";
+import {FrontImage} from "@/components/UX/Media/FrontImage";
+import {Link} from "@/components/UX/Link/Link";
+import {RP_BadgeTag} from "@/components/UX/RP_BadgeTag";
 
 export function ThreeFeatureCard({
   contents
@@ -32,13 +32,10 @@ function FirstCard({ item }: { item: OverviewItem }) {
       />
 
       <div className={"relative order-1 min-h-px w-full min-w-px rounded-2xl"}>
-        {"image" in item && (
+        {"image" in item && item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-            aspectRatio={{
-              def: 4 / 3,
-              lg: 25 / 14
-            }}
+
             resource={item.image}
           />
         )}
@@ -75,13 +72,10 @@ function SecondCard({ item }: { item: OverviewItem }) {
       />
 
       <div className={"relative order-5 min-h-px w-full min-w-px rounded-2xl"}>
-        {"image" in item && (
+        {item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-            aspectRatio={{
-              def: 4 / 3,
-              lg: 25 / 14
-            }}
+
             resource={item.image}
           />
         )}
@@ -115,7 +109,7 @@ function ThirdCard({ item }: { item: OverviewItem }) {
       />
 
       <div className={"relative order-1 min-h-px w-full min-w-px rounded-2xl"}>
-        {"image" in item && (
+        {item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
             resource={item.image}

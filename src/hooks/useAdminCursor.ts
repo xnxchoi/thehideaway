@@ -1,5 +1,6 @@
-import { useCursor } from "@/providers/RP_Pro";
-import { useEffect } from "react";
+import {useCoordinator} from "@/providers/CoordinatorCtx";
+import {useCursor} from "@/providers/RP_Pro";
+import {useEffect} from "react";
 
 const INTERACTIVE_ELEMENTS_SELECTOR = [
   "a",
@@ -16,7 +17,8 @@ const INTERACTIVE_ELEMENTS_SELECTOR = [
 
 export const useAdminCursor = () => {
   const setCursorState = useCursor((s) => s.setCursorState);
-
+	const initializeCursor = useCoordinator(r => r.setFn),
+		cleanUpCursor = useCoordinator(r => r.unsetFn)
   useEffect(() => {
     const handleMouseOver = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -44,13 +46,14 @@ export const useAdminCursor = () => {
     const handleMouseOut = () => {
       setCursorState(null);
     };
-
+	  initializeCursor();
     document.addEventListener("mouseover", handleMouseOver);
     document.addEventListener("mouseout", handleMouseOut);
 
     return () => {
+	    cleanUpCursor();
       document.removeEventListener("mouseover", handleMouseOver);
       document.removeEventListener("mouseout", handleMouseOut);
     };
-  }, [setCursorState]);
+  }, [cleanUpCursor, initializeCursor, setCursorState]);
 };

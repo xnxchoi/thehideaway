@@ -1,8 +1,8 @@
+import {RP_IMG_DMA} from "@/payload/fields/Article/Cover/rp-image/client/nodeTODomMap";
 import {
 	$convertRPImageElement
 } from "@/payload/fields/Article/Cover/rp-image/server/node/conversions";
-import {FetchedImageDoc, RenderImageFields} from "@/types/collections/imageCollections";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
+import {ImageCollectionSlug} from "@/types/ImageCollections";
 import {clamp} from "@/utilities/mathUtilities";
 import {StronglyTypedLeafNode} from "@payloadcms/richtext-lexical";
 import {
@@ -22,46 +22,53 @@ import ObjectID from "bson-objectid"
 import {$applyNodeReplacement} from "lexical"
 import type {JSX} from "react"
 import {OptionalKeys} from "ts-essentials";
-import {uuidv7} from "uuidv7";
 
-export type PopulatedImageDoc<T extends ImageCollectionSlug> = T extends ImageCollectionSlug ? RenderImageFields : never;
-export type RenderImageFieldsWithSource<T extends ImageCollectionSlug = ImageCollectionSlug> = {
+export type UploadedImageBlock<T extends ImageCollectionSlug = ImageCollectionSlug> = {
 	/**
 	 * Every lexical node that has sub-fields needs to have a unique ID. This is the ID of this upload node, not the ID of the linked upload document
 	 */
 	id: string
 	relationTo: T
+	pending?: false
+	placeholder?: false
 	/**
 	 * Value can be just the document ID, or the full, populated document
 	 */
-	value: string | FetchedImageDoc
-	pending?: { formID: string, src?: string }
-
+	value: string;
 } & RP_InternalImageNodeData
+export type PendingUploadImageBlock<T extends ImageCollectionSlug = ImageCollectionSlug> =
+	{
+		/**
+		 * Every lexical node that has sub-fields needs to have a unique ID. This is the ID of this upload node, not the ID of the linked upload document
+		 */
+		id: string
+		relationTo: T
+		placeholder?: false
+		pending: {
+			formID: string; src: string;
+		}
+	} & RP_InternalImageNodeData
 
 export type EmptyImageBlock<TX extends ImageCollectionSlug = ImageCollectionSlug> = {
 	id: string
 
 	relationTo: TX
-	pending: {
-		formID: string
-		src?: string
-	}
-
+	pending?: false
+	placeholder: true
 }
 export type RP_ImageData<T extends ImageCollectionSlug = ImageCollectionSlug> = {
-	[TX in ImageCollectionSlug]: (RenderImageFieldsWithSource<TX> | EmptyImageBlock<TX>)
+	[TX in ImageCollectionSlug]: (UploadedImageBlock<TX> | PendingUploadImageBlock<TX> | EmptyImageBlock<TX>)
 }[T]
 export type RP_InternalImageNodeData = {
 	src: string;
 	width?: number;
 	height?: number;
-	blurDataUrl?: string;
-	caption?: string;
+	blurDataUrl?: string | null;
+	caption?: string | null;
 	showCaption?: boolean;
 	alt: string;
-	span?: number;
-	sizes?: string;
+	span: number;
+	sizes?: string | null;
 	darkmode?: boolean
 }
 /**
@@ -82,7 +89,7 @@ export type SerializedRPImageNode =
 
 export class RPImageServerNode extends DecoratorBlockNode {
 	__collection: ImageCollectionSlug;
-	__value?: null | string | FetchedImageDoc;
+	__value: null | string = null;
 	__form: {
 		formID: string
 		src?: string
@@ -94,6 +101,9 @@ export class RPImageServerNode extends DecoratorBlockNode {
 	__alt: string = "Photo by ";
 	__sizes?: string | null = null;
 	__darkmode: boolean = false;
+	__placeholder: boolean = true;
+	__pending: boolean = false;
+
 	__caption?: string | null = null;
 	__span: number = 640;
 	__nodeID: string;
@@ -121,7 +131,7 @@ export class RPImageServerNode extends DecoratorBlockNode {
 		this.__width = null
 		this.__sizes = null;
 		this.__form = null;
-		if ("value" in data) {
+		if (!data.placeholder) {
 			const {
 				src,
 				showCaption,
@@ -131,13 +141,20 @@ export class RPImageServerNode extends DecoratorBlockNode {
 				caption,
 				height,
 				width,
-				darkmode, value
-			} = data
-			this.__value = value;
-			this.__src = src;
+				darkmode,
+			} = data;
+			if (!data.pending) {
+				const {
+					value
+				} = data
+				this.__value = value;
+
+			}
+
+			this.__src = src || null;
 			this.__darkmode = darkmode || false;
 			span && (this.__span = span);
-			this.__alt = alt;
+			this.__alt = alt || "";
 			this.__caption = caption || null;
 			this.__height = height || null;
 			this.__width = width || null;
@@ -178,74 +195,61 @@ export class RPImageServerNode extends DecoratorBlockNode {
 			serializedNode.version = 3
 		}
 
-		const {id, format, relationTo, version, type, pending, ...rest} = serializedNode;
-		const e = "value" in rest ? {
-			value: rest.value,
-			src: rest.src,
-			width: rest.width,
-			height: rest.height,
-			blurDataUrl: rest.blurDataUrl,
-			caption: rest.caption,
-			showCaption: rest.showCaption,
-			alt: rest.alt,
-			span: rest.span,
-			sizes: rest.sizes,
-			darkmode: rest.darkmode
-		} : {}
-		const node = $createRPImageServerNode({
-			data: {
-				pending,
-				id, relationTo, ...e
-			} as Internal_RPImageData<typeof relationTo>
-		})
-		node.setFormat(format)
-		return node;
-		// switch (relationTo) {
-		//     case 'assets': {
-		//
-		//         const importedData: Internal_RPImageData<"assets"> = {
-		//             id,
-		//             ...r,
-		//             data,
-		//             relationTo,
-		//         }
-		//         const node = $createRPImageServerNode({data: importedData})
-		//         node.setFormat(serializedNode.format)
-		//
-		//         return node
-		//     }
-		//     case 'userMedia': {
-		//         const rest = r as RP_ImageNodeDat;
-		//         const more = 'formID' in rest ? {formID: rest.formID} : 'pending' in rest ? {pending: rest?.pending} : {};
-		//         const importedData: Internal_RPImageData<"userMedia"> = {
-		//             id: serializedNode.id,
-		//
-		//             ...more,
-		//             relationTo: serializedNode.relationTo,
-		//             value: serializedNode.value,
-		//         }
-		//         const node = $createRPImageServerNode({data: importedData})
-		//         node.setFormat(serializedNode.format)
-		//         return node
-		//     }
-		//     case 'exMedia': {
-		//         const exNode = serializedNode as Omit<SerializedRPImageNode, 'fields'> & {
-		//             fields: RenderImageFieldsWithSource<'exMedia'>
-		//         }
-		//         const rest = r as RP_ImageNodeDat;
-		//         const more = 'formID' in rest ? {formID: rest.formID} : 'pending' in rest ? {pending: rest?.pending} : {};
-		//         const importedData: Internal_RPImageData<"exMedia"> = {
-		//             id: serializedNode.id,
-		//             fields: exNode.fields,
-		//             ...more,
-		//             relationTo: serializedNode.relationTo,
-		//             value: serializedNode.value,
-		//         }
-		//         const node = $createRPImageServerNode({data: importedData})
-		//         node.setFormat(serializedNode.format)
-		//         return node
-		//     }
-		// }
+		const {id, format, relationTo, version, type, ...rest} = serializedNode;
+		if (!!rest.placeholder) {
+			const node = $createRPImageServerNode({data: {id, relationTo, placeholder: true}})
+			node.setFormat(format)
+			return node
+		} else if (!!rest.pending) {
+			const {
+				alt,
+				height,
+				width,
+				src,
+				sizes,
+				span,
+				showCaption,
+				caption,
+				darkmode
+			} = rest;
+			const node = $createRPImageServerNode({
+				data: {
+					id,
+					relationTo,
+					pending: {formID: rest.pending.formID, src: rest.pending.src},
+					src,
+					width,
+					height,
+					blurDataUrl: null,
+					caption,
+					showCaption,
+					alt,
+					span,
+					sizes,
+					darkmode
+				}
+			})
+			node.setFormat(format)
+			return node
+		} else {
+			const e = {
+				value: rest.value,
+				src: rest.src,
+				width: rest.width,
+				height: rest.height,
+				blurDataUrl: rest.blurDataUrl,
+				caption: rest.caption,
+				showCaption: rest.showCaption,
+				alt: rest.alt,
+				span: rest.span,
+				sizes: rest.sizes,
+				darkmode: rest.darkmode
+			}
+			const node = $createRPImageServerNode({data: {id, relationTo, ...e}})
+			node.setFormat(format)
+			return node
+		}
+
 	}
 
 	static isInline(): false {
@@ -263,23 +267,26 @@ export class RPImageServerNode extends DecoratorBlockNode {
 	}
 
 	override exportDOM(): DOMExportOutput {
-		const elemen
-			= document.createElement(this.__src ? "img" : "div")
-		if (this.__src) {
-			const element = elemen as HTMLImageElement;
-			const relationTo = this.__collection;
-			const value = this.__value as string;
-			element.setAttribute("data-estate-image-id", String(value))
-			element.setAttribute("data-estate-image-relation-to", relationTo)
+
+		const nodeId = this.__nodeID;
+		const relationTo = this.__collection;
+
+		if (this.__placeholder || !this.__src || !this.__value) {
+			const element = document.createElement("div");
+			element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.nodeId, nodeId);
+			element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.relationTo, relationTo);
 			return {element}
-		} else {
-			const element = elemen as HTMLDivElement;
 		}
-		const pending = this.__form;
-		!!pending && elemen.setAttribute("data-estate-pending-image-form-id", String(pending.formID))
-		const src = pending?.src || false;
-		src && elemen.setAttribute("data-estate-pending-image-form-src", src)
-		return {element: elemen}
+		const element = document.createElement("img");
+		element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.nodeId, nodeId);
+		element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.relationTo, relationTo);
+		this.__form && element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.pending.formID, this.__form.formID);
+
+		element.setAttribute("src", this.__src);
+		element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.value, this.__value);
+		this.__form && this.__form.src && element.setAttribute(RP_IMG_DMA.PREFIX + RP_IMG_DMA.pending.src, this.__form.src)
+		return {element}
+
 	}
 
 	override exportJSON(): SerializedRPImageNode {
@@ -294,6 +301,7 @@ export class RPImageServerNode extends DecoratorBlockNode {
 	getData(): RP_ImageData {
 		const imfo = this.getLatest();
 		const {
+			__placeholder,
 			__value,
 			__form,
 			__width,
@@ -307,20 +315,15 @@ export class RPImageServerNode extends DecoratorBlockNode {
 			__span,
 			__height,
 		} = imfo;
-		const base: Pick<RP_ImageData, "id" | "relationTo" | "pending"> = {
-			id: __nodeID,
-
-			relationTo: this.__collection,
-		}
-		if (__form) {
-			base.pending = {
-				...__form
+		if (__placeholder) {
+			return {
+				id: __nodeID,
+				relationTo: this.__collection,
+				placeholder: true,
 			}
-		}
-		if (__value) {
-			//this is inserted
+		} else {
 			if (!__src) throw new Error("Image data is missing src")
-			const additionalData: Pick<RenderImageFieldsWithSource, OptionalKeys<RenderImageFieldsWithSource>> = {}
+			const additionalData: Pick<UploadedImageBlock, OptionalKeys<UploadedImageBlock>> = {}
 			if (__width) {
 				additionalData.width = __width
 			}
@@ -334,19 +337,14 @@ export class RPImageServerNode extends DecoratorBlockNode {
 				additionalData.sizes = __sizes
 			}
 			return {
-				...base,
-				...additionalData,
-				value: __value,
-				darkmode: __darkmode,
-				alt: __alt,
+				id: __nodeID, value: __value, darkmode: __darkmode, alt: __alt,
 				caption: __caption || undefined,
 				src: __src,
 				span: __span,
 				sizes: __sizes || undefined,
-			} as RP_ImageData
-		} else {
-			return {
-				...base,
+				relationTo: this.__collection,
+				placeholder: false,
+				...additionalData
 
 			} as RP_ImageData
 		}
@@ -359,29 +357,53 @@ export class RPImageServerNode extends DecoratorBlockNode {
 		writable.__form = pending ? {
 			...pending,
 		} : null
-		if ("value" in data) {
-			writable.__value = data.value;
-			writable.__src = data.src;
-			writable.__darkmode = data.darkmode || false;
-			writable.__span = data.span || 100;
-			writable.__alt = data.alt || "Photo by";
-			writable.__caption = data.caption || "";
-			writable.__height = data.height || 100;
-			writable.__width = data.width || 100;
-			writable.__sizes = data.sizes || "";
-			writable.__showCaption = typeof data.showCaption === "boolean" ? data.showCaption : Boolean(data.caption);
-		} else {
+
+		if (!!data.placeholder) {
 			writable.__value = null;
 			writable.__src = null;
 			writable.__darkmode = false;
 			writable.__span = 100;
-			writable.__alt = "Photo by";
+			writable.__alt = "";
 			writable.__caption = null;
 			writable.__height = 100;
 			writable.__width = 100;
 			writable.__sizes = null
 			writable.__showCaption = false;
+			writable.__placeholder = true;
+			writable.__pending = false;
 
+			return;
+		} else if (!!data.pending) {
+			writable.__pending = true;
+			writable.__form = {
+				formID: data.pending.formID,
+				src: data.pending.src
+			}
+			writable.__value = null;
+			writable.__src = data.src;
+			writable.__darkmode = typeof data.darkmode === "boolean" ? data.darkmode : false;
+			writable.__span = data.span;
+			writable.__alt = data.alt;
+			writable.__caption = data.caption;
+			writable.__height = data.height || 100;
+			writable.__width = data.width || 100;
+			writable.__sizes = data.sizes;
+			writable.__placeholder = false;
+			writable.__showCaption = false;
+		} else {
+
+			writable.__value = null;
+			writable.__src = null;
+			writable.__darkmode = false;
+			writable.__span = 100;
+			writable.__alt = "";
+			writable.__caption = null;
+			writable.__height = 100;
+			writable.__width = 100;
+			writable.__sizes = null
+			writable.__pending = false;
+			writable.__showCaption = false;
+			writable.__placeholder = true;
 		}
 	}
 
@@ -405,7 +427,9 @@ export class RPImageServerNode extends DecoratorBlockNode {
 
 export type RPImageDataAgnostic =
 	Omit<EmptyImageBlock, "id"> & { id?: string }
-	| Omit<RenderImageFieldsWithSource, "id"> & { id?: string }
+	| Omit<UploadedImageBlock, "id"> & { id?: string } | Omit<PendingUploadImageBlock, "id"> & {
+	id?: string
+}
 
 export function $createRPImageServerNode({
 	                                         data: dat,
@@ -416,13 +440,7 @@ export function $createRPImageServerNode({
 		dat.id = new ObjectID().toHexString()
 	}
 	const data = (dat as Internal_RPImageData);
-	if (!("value" in dat)) {
 
-		data.pending = {
-			...data.pending,
-			formID: data.pending?.formID || uuidv7(),
-		}
-	}
 	return $applyNodeReplacement(new RPImageServerNode({data: data as RP_ImageData}))
 }
 

@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
-import type { ArticleOverview } from "@/types/collections/posts";
+import type {PostOverview} from "@/types/collections/posts";
 import { useClickableCardRP } from "@/utilities/useClickableCard";
 import { Link } from "@/components/UX/Link/Link";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
 
-export type CardPostData = ArticleOverview;
+export type CardPostData = PostOverview;
 export const RPCard: React.FC<{
   alignItems?: "center";
   className?: string;

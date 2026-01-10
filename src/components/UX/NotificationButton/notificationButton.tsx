@@ -1,5 +1,6 @@
 "use client";
 import {useRPStore} from "@/providers/RP_Pro";
+import {AuthorOverview} from "@/types/collections/users";
 import {Popover} from "@base-ui/react/popover";
 import {ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from "react";
 
@@ -10,7 +11,6 @@ import type {SyncedNotification} from "@/payload/collections/Notifications/hooks
 import {useIsMobile} from "@/providers/MiddleMan";
 import {useNotifications} from "@/providers/Notifications";
 import {sortByDate} from "@/stores/Notification/NotificationStore";
-import type {AuthorOverview} from "@/types/collections/posts";
 import {useWindowResize} from "@/utilities/use_window_resize";
 import NumberFlow, {continuous} from "@number-flow/react";
 import {Avatar, AvatarFallback, AvatarImage} from "@radix-ui/react-avatar";
@@ -148,7 +148,7 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 						backgroundImage: "url(/assets/noise.png)", backgroundSize: "20%", backgroundPosition: "center"
 					}} />
 					<Popover.Title className="mb-1 text-base font-semibold tracking-[-0.01em]">
-						Notification Center
+						Notifications
 					</Popover.Title>
 					<NotificationScroll nItems={nItems} onDismiss={onDismiss} onRead={onRead} closer={closer} />
 					<AnimatePresence>

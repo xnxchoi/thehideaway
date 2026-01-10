@@ -1,874 +1,830 @@
 "use server";
-import {draftMode} from "next/headers";
-import {getPayload, Where} from "payload";
-import configPromise from "@payload-config";
-import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
-import {cache} from "react";
-import {
-  ArticleOverview,
-  AuthorOverview,
-  AuthorSingle,
-  MediaReq,
-  SingleArticle
-} from "../../../../types/collections/posts";
 import {authClient} from "@/lib/auth/client";
-import {RP_Roles} from "@/stores/Notification/NotificationStore";
-import {getPostBookMarks} from "./getPostBookmarks";
 import {Post} from "@/payload-types";
-import {queryAuthorOverview, queryOverview} from "./queryPostOverview";
-import {CatOverview, TagOverview} from "@/types/collections/delta";
+import {getImageMedia} from "@/payload/collections/Posts/api/getImageMedia";
 import {
 	postOverviewSelect,
-  SinglePostKeys,
-	singlePostSelect,
-	SinglePostSelector
+	SinglePostKeys,
+	singlePostSelect
 } from "@/payload/collections/Posts/api/queryBase";
+import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {overviewSelectMap} from "@/types/collections/index";
+import {
+	CategoryOverview,
+	categoryOverviewSelect,
+	TagOverview,
+	TagOverviewSelect,
+	tagOverviewSelect
+} from "@/types/collections/meta-collections";
+import {AuthorOverview, userOverviewSelect} from "@/types/collections/users";
 import {imageSelect} from "@/types/payload-api-selects"
-import {FetchedImageDoc} from "@/types/collections/imageCollections";
+import configPromise from "@payload-config";
+import {draftMode} from "next/headers";
+import {BasePayload, CollectionSlug, DataFromCollectionSlug, getPayload, Where} from "payload";
+import {cache} from "react";
+import {
+	FetchedPost,
+	MediaReq,
+	PostOverview,
+	SingleArticle
+} from "../../../../types/collections/posts";
+import {getPostBookMarks} from "./getPostBookmarks";
+import {getPostOverviews, getUserOverview} from "./queryPostOverviews";
 
 export const queryAuthorsPost = cache(
-  async ({
-    slug,
-    authorSlug
-  }: {
-    slug: string;
-    authorSlug: string;
-  }): Promise<{ post: SingleArticle } | null> => {
-    const { isEnabled: draft } = await draftMode();
+	async ({
+		       slug,
+		       authorSlug
+	       }: {
+		slug: string;
+		authorSlug: string;
+	}): Promise<{ post: SingleArticle } | null> => {
+		const {isEnabled: draft} = await draftMode();
 
-    const payload = await getPayload({ config: configPromise });
-    const user = await authClient.getSession();
-    const se = user?.data?.user ?? null;
-    const author = await payload
-      .find({
-        collection: "users",
-        limit: 1,
-        where: {
-          slug: {
-            equals: authorSlug
-          }
-        },
-        overrideAccess: true,
-        select: {
-          slug: true
-        }
-      })
-      .then((r) => {
-        return r.docs[0]?.id ?? null;
-      });
-    if (!author) {
-      return null;
-    }
-    const result = await payload
-      .find({
-        collection: "posts",
-        draft,
-        limit: 1,
-        overrideAccess: true,
-        pagination: false,
-        where: {
-          and: [
-            {
-              author: {
-                equals: author
-              }
-            },
-            {
-              slug: {
-                equals: slug
-              }
-            }
-          ]
-        },
-        select: singlePostSelect
-      })
-      .catch((e) => {
-        console.error({
-          message: `Error while retrieving post by slug ${slug}`,
-          error: e
-        });
-        return null;
-      });
-    if (!result || !result.docs || result.docs.length < 1) {
-      return null;
-    }
-    // 1) Get the post
-    const post = result.docs[0];
-    if (!post) {
-      return null;
-    }
-    // 2) Get the author info
-    if (!post.author || !post?.slug || !post.publishedAt) {
-      return null;
-    }
-    let image: MediaReq | null = post.image
-	    ? typeof post.image.value === "string"
-        ? null
-		    : post.image as MediaReq
-      : null;
-	  if (!image && typeof post.image?.value === "string") {
-		  const select = imageSelect()
-		  const img = await payload.findByID({
-			  collection: post.image.relationTo,
-			  id: post.image.value as string,
-        overrideAccess: true,
-			  select
-		  }).then(r => {
-			  if (r && typeof r.url === "string") {
-				  return {
-					  ...r,
-					  url: r.url as string,
-					  src: r.url as string,
-				  }
-			  }
-			  return null;
+		const payload = await getPayload({config: configPromise});
+		const user = await authClient.getSession();
+		const se = user?.data?.user ?? null;
+		const author = await payload
+			.find({
+				collection: "users",
+				limit: 1,
+				where: {
+					slug: {
+						equals: authorSlug
+					}
+				},
+				overrideAccess: true,
+				select: userOverviewSelect()
+			})
+			.then((r) => {
+				return r.docs[0]
+			});
+		if (!author) {
+			return null;
+		}
+		const result = await payload
+			.find({
+				collection: "posts",
+				draft,
+				limit: 1,
+				overrideAccess: true,
+				pagination: false,
+				where: {
+					and: [
+						{
+							author: {
+								equals: author.id
+							}
+						},
+						{
+							slug: {
+								equals: slug
+							}
+						}
+					]
+				},
+				select: singlePostSelect()
+			}).then((r) => {
+				return (r.docs[0])
+			})
+			.catch((e) => {
+				console.error({
+					message: `Error while retrieving post by slug ${slug}`,
+					error: e
+				});
+				return null;
+			});
+		if (!result) {
+			return null;
+		}
+		// 1) Get the post
+		const post = result;
+		if (!post) {
+			return null;
+		}
+		const {category: categoryd, id, slug: postSlug, publishedAt} = post;
+		// 2) Get the author info
+		if (!postSlug || !categoryd || !publishedAt) {
+			return null;
+		}
+		const image = await getImageMedia({post, payload})
+		const category = await payload.findByID({
+			collection: "categories",
+			id: typeof categoryd === "string" ? categoryd : categoryd.id,
+			select: overviewSelectMap.categories()
+		}).catch(e => {
+			console.error("Error while retrieving category", e)
+			return null
+		})
+		if (!category) {
+			return null;
+		}
+		const finalPost: SingleArticle = {
+			...post,
+			author, authority: post.authority || 0,
+			locked: post.locked || false,
+			allowList: (post?.allowList?.map(r => {
+				switch (typeof r) {
+					case "string":
+						return r;
+					case "object":
+						return r.id
+				}
+			}) || [] as string[]),
+			bookmarks: [] as string[],
+			publishedAt,
+			image,
+			tagged: post?.tagged ? (post.tagged as TagOverview[]) : [],
+			bookmarksCount: 0,
+			slug: post.slug,
+			category,
+			queuedIDs: null!,
+			relatedPosts: null!
+		};
+		const bookmarks = await getPostBookMarks({id: `${post.id}`});
+		if (bookmarks) {
+			finalPost.bookmarks = bookmarks.bookmarks;
+			finalPost.bookmarksCount = bookmarks.count;
+		}
 
-      });
-      if (img) {
-	      image = {
-		      relationTo: post.image.relationTo,
-		      value: img
-	      };
-      }
-    }
-    const finalPost: SingleArticle = {
-      ...post,
-      author: null!,
-      bookmarks: [] as string[],
-      publishedAt: post.publishedAt,
-      image: image,
-      tagged: post?.tagged ? (post.tagged as TagOverview[]) : [],
-      bookmarksCount: 0,
-      slug: post.slug,
-      category: post.category as { title: string; id: string; slug: string },
-      queuedIDs: null!,
-      relatedPosts: null!
-    };
-    const bookmarks = await getPostBookMarks({ id: `${post.id}` });
-    if (bookmarks) {
-      finalPost.bookmarks = bookmarks.bookmarks;
-      finalPost.bookmarksCount = bookmarks.count;
-    }
-    const authorInfo: AuthorSingle | null = await payload
-      .findByID({
-        collection: "users",
-        id: post.author as string,
-        overrideAccess: true,
-        select: {
-          name: true,
-          slug: true,
-          displayUsername: true
-        }
-      })
-      .then((r) => {
-        return {
-          ...r,
-          displayUsername: r.displayUsername ?? r.name
-        } as AuthorSingle;
-      })
-      .catch((e) => {
-        console.error({
-          message: `Error while retrieving author info`,
-          error: e
-        });
-        return null;
-      });
-    //This is a rather draconian approach, but I'd like (for now) to not deal with "author may be undefined"
-    if (!authorInfo) {
-      return null;
-    }
-    finalPost.author = authorInfo;
-    // 3) Get the related posts
-    if (post.locked) {
-      //We consider the default value to be 1, representing an authenticated user; otherwise locked is usesless as a property
-      const auth = post.authority ?? 1;
-      if (
-        se &&
-        se.id &&
-        se.role &&
-        (roleToAuthority(se.role as RP_Roles) >= auth ||
-          post.allowList?.some(
-            (r) => `${typeof r === "string" ? r : r.id}` === se.id
-          ))
-      ) {
-        finalPost.content = post.content;
-      } else {
-        finalPost.content = {
-          root: {
-            type: "paragraph",
-            children: [],
-            direction: "ltr",
-            format: "start",
-            indent: 0,
-            version: 0
-          }
-        };
-        finalPost.disabled = true;
-        finalPost.queuedIDs = [];
-        finalPost.relatedPosts = [];
-        return {
-          post: finalPost
-        };
-      }
-    }
-    const { queuedIDs, relatedPosts } = await queryRelatedPosts({
-      postID: post.id,
-      relatedPosts: post.relatedPosts,
-      limit: 15,
-      author,
-      isAuthorPage: true
-    });
-    finalPost.queuedIDs = queuedIDs;
-    finalPost.relatedPosts = relatedPosts;
-    const { relatedPosts: __d, author: __, ...rest } = post;
+		// 3) Get the related posts
+		if (post.locked) {
+			//We consider the default value to be 1, representing an authenticated user; otherwise locked is usesless as a property
+			const auth = post.authority ?? 1;
+			if (
+				se &&
+				se.id &&
+				se.role &&
+				(roleToAuthority(se.role as RP_Roles) >= auth ||
+					post.allowList?.some(
+						(r) => `${typeof r === "string" ? r : r.id}` === se.id
+					))
+			) {
+				finalPost.content = post.content;
+			} else {
+				finalPost.content = {
+					root: {
+						type: "paragraph",
+						children: [],
+						direction: "ltr",
+						format: "start",
+						indent: 0,
+						version: 0
+					}
+				};
+				finalPost.disabled = true;
+				finalPost.queuedIDs = [];
+				finalPost.relatedPosts = [];
+				return {
+					post: finalPost
+				};
+			}
+		}
+		const {queuedIDs, relatedPosts} = await queryRelatedPosts({
+			post: finalPost,
+		});
+		finalPost.queuedIDs = queuedIDs;
+		finalPost.relatedPosts = relatedPosts;
+		const {relatedPosts: __d, author: __, ...rest} = post;
 
-    return {
-      post: finalPost
-    };
-  }
+		return {
+			post: finalPost
+		};
+	}
 );
+/**
+ * Queries a post by its slug and fetches detailed information along with related posts and navigation data.
+ *
+ * @constant
+ * @name queryPostBySlug
+ * @type {Function}
+ * @param {Object} params - The parameters for the query.
+ * @param {string} params.slug - The slug of the post to be queried.
+ * @returns {Promise<{
+ *   post: SingleArticle,
+ *   prev: (null | PostOverview),
+ *   next: (null | PostOverview)
+ * } | null>} A promise that resolves to an object containing the retrieved post,
+ *           the previous post, and the next post, or null if no post is found.
+ *
+ * @description
+ * This function fetches a single blog post by its unique slug, processes it to include detailed information
+ * such as author, image, bookmarks, and related posts, while considering configurations for draft mode and payload access.
+ * It also determines the "prev" and "next" posts for easier navigation between posts.
+ */
 export const queryPostBySlug = cache(
-  async ({
-    slug: sl
-  }: {
-    slug: string;
-  }): Promise<{
-    post: SingleArticle;
-    prev: null | ArticleOverview;
-    next: null | ArticleOverview;
-  } | null> => {
-    const { isEnabled: draft } = await draftMode();
-    let slug = sl;
-    if (sl.includes("+")) {
-      const ss = sl.split("+")[0];
-      ss && (slug = ss);
-    }
-    const payload = await getPayload({ config: configPromise });
+	async ({
+		       slug: sl
+	       }: {
+		slug: string;
+	}): Promise<{
+		post: SingleArticle;
+		prev: null | PostOverview;
+		next: null | PostOverview;
+	} | null> => {
+		const {isEnabled: draft} = await draftMode();
+		let slug = sl;
+		if (sl.includes("+")) {
+			const ss = sl.split("+")[0];
+			ss && (slug = ss);
+		}
+		const payload = await getPayload({config: configPromise});
 
-    const select: SinglePostSelector = {
-      title: true,
-      subtitle: true,
-      content: true,
-      slug: true,
-      id: true,
+		const select = singlePostSelect()
+		const post: FetchedPost | null = (await payload
+			.find({
+				collection: "posts",
+				limit: 1,
+				pagination: false,
+				where: {
+					slug: {
+						equals: slug
+					}
+				},
+				draft,
+				overrideAccess: false,
+				select,
+				user: null
+			}).then((r) => (r.docs[0]) || null)
+			.catch((e) => {
+				console.error({
+					message: `Error while retrieving post by slug ${slug}`,
+					error: e
+				});
+				return null;
+			}))
 
-      relatedPosts: true,
-      category: true,
-      allowList: true,
-      authority: true,
-      author: true,
-      publishedAt: true,
-      locked: true,
-      updatedAt: true,
-      tagged: true,
-      createdAt: true,
-      image: true
-    };
+		if (!post) {
+			return null;
+		}
 
-    const result = (await payload
-      .find({
-        collection: "posts",
-        limit: 1,
-        pagination: false,
-        where: {
-          slug: {
-            equals: slug
-          }
-        },
-        draft,
-        overrideAccess: false,
-        select,
-        user: null
-      })
-      .catch((e) => {
-        console.error({
-          message: `Error while retrieving post by slug ${slug}`,
-          error: e
-        });
-        return null;
-      })) as {
-      docs: Array<
-        Pick<Post, Exclude<SinglePostKeys, "tags">> & {
-          tagged: Array<TagOverview> | undefined | null;
-        }
-      >;
-    };
-    if (!result) {
-      return null;
-    }
-    // 1) Get the post
-    const post = result.docs[0];
-    if (!post) {
-      return null;
-    }
-    // 2) Get the author info
-    if (!post.author || !post?.slug || !post.publishedAt) {
-      return null;
-    }
-	  let image: {
-		  relationTo: "userMedia" | "assets";
-		  value: FetchedImageDoc
-	  } | null = post.image
-		  ? typeof post.image.value === "string"
-        ? null
-			  : {
-				  relationTo: post.image.relationTo,
-				  value: post.image.value as FetchedImageDoc
-			  }
-      : null;
-	  if (!image && post.image && typeof post.image.value === "string") {
-      console.log("image searching", post.image);
-		  const select = imageSelect();
-      const img = await payload.findByID({
-	      collection: post.image.relationTo,
-	      id: post.image.value as string,
-        overrideAccess: true,
-	      select
-      });
-      if (img) {
-        console.log("image found", img);
-	      image = {
-		      relationTo: post.image.relationTo, value: img as FetchedImageDoc
+		const finalPost = await constructArticle({post, payload})
+		if (!finalPost) {
+			return null;
+		}
+		// 3) Get the related posts
 
-	      };
-      }
-    }
-    const author: AuthorOverview | null = await payload
-      .findByID({
-        collection: "users",
-        id: post.author as string,
-        overrideAccess: true,
-        select: {
-          name: true,
-          slug: true,
-          displayUsername: true
-        }
-      })
-      .then((r) => {
-        return {
-          ...r,
-          displayUsername: r.displayUsername ?? r.name
-        } satisfies AuthorOverview;
-      })
-      .catch((e) => {
-        console.error({
-          message: `Error while retrieving author info`,
-          error: e
-        });
-        return null;
-      });
-    //This is a rather draconian approach, but I'd like (for now) to not deal with "author may be undefined"
-    if (!author) {
-      return null;
-    }
-    const finalPost: SingleArticle = {
-      ...post,
-      author,
-      bookmarks: [] as string[],
-      publishedAt: post.publishedAt,
-      image: image,
-      tagged: post.tagged || [],
-      bookmarksCount: 0,
-      slug: post.slug,
-      category: post.category as { title: string; id: string; slug: string },
-      queuedIDs: [],
-      relatedPosts: [],
-      disabled: false,
-      content: post.content
-    };
-    const bookmarks = await getPostBookMarks({ id: `${post.id}` });
-    if (bookmarks) {
-      finalPost.bookmarks = bookmarks.bookmarks;
-      finalPost.bookmarksCount = bookmarks.count;
-    }
+		const {queuedIDs, relatedPosts, prev, next} = await queryRelatedPosts({
+			post: finalPost,
+			limit: 5
+		});
+		finalPost.queuedIDs = queuedIDs;
+		finalPost.relatedPosts = relatedPosts;
+		const {relatedPosts: __d, author: __, ...rest} = post;
 
-    // 3) Get the related posts
-
-    const { queuedIDs, relatedPosts, prev, next } = await queryRelatedPosts({
-      postID: post.id,
-      relatedPosts: post.relatedPosts,
-      limit: 5
-    });
-    finalPost.queuedIDs = queuedIDs;
-    finalPost.relatedPosts = relatedPosts;
-    const { relatedPosts: __d, author: __, ...rest } = post;
-
-    return {
-      post: finalPost,
-      prev,
-      next
-    };
-  }
+		return {
+			post: finalPost,
+			prev,
+			next
+		};
+	}
 );
+export const constructArticle = cache(async ({
+	                                             post, payload
+                                             }: {
+	post: Pick<Post, SinglePostKeys>;
+	payload: BasePayload
+}) => {
+	// 2) Get the author info
+	if (!post.author || !post?.slug || !post.publishedAt) {
+		return null;
+	}
+	const image = await getImageMedia({post, payload});
+	const author: AuthorOverview | null = await getUserOverview(typeof post.author === "string" ? post.author : post.author.id)
+		.catch((e) => {
+			console.error({
+				message: `Error while retrieving author info`,
+				error: e
+			});
+			return null;
+		});
+	//This is a rather draconian approach, but I'd like (for now) to not deal with "author may be undefined"
+	if (!author) {
+		return null;
+	}
+	const {tagIds} = mapTaggedToIds(post)
+	const {tagged} = await getTagOverviews({tagIds, payload})
+	const category = await getCategoryOverview({
+		id: typeof post.category === "string" ? post.category : post.category.id,
+		payload
+	})
+	const finalPost: SingleArticle = {
+		...post,
+		author,
+		bookmarks: [] as string[],
+		publishedAt: post.publishedAt,
+		image: image,
+		tagged,
+		bookmarksCount: 0,
+		slug: post.slug,
+		category,
+		queuedIDs: [],
+		allowList: post?.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
+		authority: post.authority || 0,
+		locked: post.locked || false,
+		relatedPosts: [],
+		disabled: false,
+		content: post.content
+	};
+	const bookmarks = await getPostBookMarks({id: `${post.id}`});
+	if (bookmarks) {
+		finalPost.bookmarks = bookmarks.bookmarks;
+		finalPost.bookmarksCount = bookmarks.count;
+	}
+	return finalPost;
+})
 export const queryPostByID = cache(
-  async ({ id }: { id: string }): Promise<{ post: SingleArticle } | null> => {
-    const payload = await getPayload({ config: configPromise });
-    const post = await payload.findByID({
-      collection: "posts",
-      id,
-      select: {
-        slug: true
-      }
-    });
-    if (!post || !post.slug) {
-      return null;
-    }
-    return await queryPostBySlug({ slug: post.slug });
-  }
+	async ({id}: { id: string }): Promise<{ post: SingleArticle } | null> => {
+		const payload = await getPayload({config: configPromise});
+		const poste = await payload.findByID({
+			collection: "posts",
+			id,
+			select: singlePostSelect()
+		});
+		const post = await constructArticle({post: poste, payload})
+		return post ? {post} : null;
+
+	}
 );
 
 export const queryRelatedPosts = cache(
-  async ({
-    postID,
-    relatedPosts,
-    limit = 2,
-    author,
-    isAuthorPage = false,
-    user
-  }: {
-    postID: string;
-    relatedPosts: Post["relatedPosts"];
-    limit?: number;
-    user?: string;
-  } & (
-    | {
-        author?: string;
-        isAuthorPage?: false;
-      }
-    | { isAuthorPage: true; author: string }
-  )): Promise<{
-    queuedIDs: string[];
-    relatedPosts: ArticleOverview[];
-    prev: ArticleOverview | null;
-    next: ArticleOverview | null;
-  }> => {
-    //Now we first query for the posts to show in the "More Like This" sidebar
-    const relatedPost: ArticleOverview[] = [];
-    const isAuthorMode = isAuthorPage && author;
-    const nextSlugs: string[] = [];
-    const relatedIDs: string[] = [];
-    const displayPostLimit = 5;
-    const payload = await getPayload({ config: configPromise });
-    const postDate = await payload.findByID({
-      id: postID,
-      collection: "posts",
-      select: {
-        updatedAt: true,
-        publishedAt: true
-      }
-    });
-    //1) We query for the IDs we got from related posts - sliced by (0,3)
-    if (
-      relatedPosts &&
-      Array.isArray(relatedPosts) &&
-      relatedPosts.length > 0
-    ) {
-      const ids = relatedPosts as string[];
+	async ({
+		       post: {
+			       id: postID,
+			       publishedAt, updatedAt,
+			       relatedPosts,
+		       },
+		       limit = 2,
+		       author,
+		       isAuthorPage = false,
+		       user
+	       }: {
+		post: SingleArticle
+		limit?: number;
+		user?: string;
+	} & (
+		| {
+		author?: string;
+		isAuthorPage?: false;
+	}
+		| { isAuthorPage: true; author: string }
+		)): Promise<{
+		queuedIDs: string[];
+		relatedPosts: PostOverview[];
+		prev: PostOverview | null;
+		next: PostOverview | null;
+	}> => {
+		//Now we first query for the posts to show in the "More Like This" sidebar
+		const relatedPost: PostOverview[] = [];
+		const isAuthorMode = isAuthorPage && author;
+		const nextSlugs: string[] = [];
+		const relatedIDs: string[] = [];
+		const displayPostLimit = 5;
+		const select = postOverviewSelect()
+		const payload = await getPayload({config: configPromise});
 
-      const directlyRelatedPosts = await queryOverview({
-        params: {
-          where: {
-            id: {
-              in: ids
-            }
-          },
-          limit: displayPostLimit
-        }
-      })
-        .then((r) => r.docs)
-        .catch((r) => {
-          console.error({
-            message: `Error while retrieving related posts`,
-            error: r
-          });
-          return null;
-        });
-      if (directlyRelatedPosts && directlyRelatedPosts.length > 0) {
-        relatedPost.push(...directlyRelatedPosts);
-        relatedIDs.push(...directlyRelatedPosts.map((r) => r.id));
-      }
-      if (relatedPost.length < displayPostLimit) {
-        const smAnd: Where[] = [
-          {
-            id: {
-              not_in: relatedIDs
-            }
-          }
-        ];
-        if (isAuthorMode) {
-          smAnd.push({
-            author: {
-              equals: author
-            }
-          });
-        }
-        const relPosts = await queryOverview({
-          params: {
-            where: {
-              and: smAnd
-            },
-            limit: displayPostLimit - relatedPost.length
-          }
-        })
-          .then((r) => r.docs)
-          .catch((r) => {
-            console.error({
-              message: `Error while retrieving related posts`,
-              error: r
-            });
-            return null;
-          });
-        if (relPosts && relPosts.length > 0) {
-          relatedPost.push(...relPosts);
-          if (isAuthorMode) {
-            relatedIDs.push(
-              ...relPosts.flatMap((r) => {
-                return r.author.id === author ? r.id : [];
-              })
-            );
-          } else {
-            relatedIDs.push(...relPosts.map((r) => r.id));
-          }
-        }
-      }
-    }
+		//1) We query for the IDs we got from related posts - sliced by (0,3)
+		if (
+			relatedPosts &&
+			Array.isArray(relatedPosts) &&
+			relatedPosts.length > 0
+		) {
+			const ids = relatedPosts.map((r) => r.id);
 
-    if (relatedIDs.length < limit) {
-      const and: Where[] = [
-        {
-          _status: {
-            equals: "published"
-          }
-        },
-        {
-          id: {
-            not_in: relatedIDs
-          }
-        }
-      ];
-      const queryLimit = (isAuthorMode ? 100 : limit) - relatedIDs.length;
-      if (isAuthorMode) {
-        and.push({
-          author: {
-            equals: author
-          }
-        });
-      }
-      const queuedPosts = await payload
-        .find({
-          collection: "posts",
-          where: {
-            and
-          },
-          limit: queryLimit,
-          select: {
-            slug: true
-          }
-        })
-        .then((r) => r.docs)
-        .catch((r) => {
-          console.error({
-            message: `Error while retrieving related posts`,
-            error: r
-          });
-          return null;
-        });
-      if (queuedPosts && queuedPosts.length > 0) {
-        relatedIDs.push(...queuedPosts.map((r) => r.id));
-      }
-    }
+			const directlyRelatedPosts = await getPostOverviews({
 
-    let prev: ArticleOverview | null = null;
-    let prevv = await payload
-      .find({
-        collection: "posts",
-        where: {
-          and: [
-            {
-              _status: {
-                equals: "published"
-              }
-            },
-            {
-              id: {
-                not_equals: postID
-              }
-            },
-            {
-              or: [
-                {
-                  publishedAt: {
-                    greater_than: postDate.publishedAt || postDate.updatedAt
-                  }
-                },
-                {
-                  updatedAt: {
-                    greater_than: postDate.updatedAt
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        limit: 1,
-        pagination: false,
-        select: postOverviewSelect
-      })
-      .then((r) => r.docs[0] || null)
-      .then((r) =>
-        r
-          ? {
-              ...r,
-              tagged: (r.tagged || []) as TagOverview[],
-              publishedAt: r.publishedAt as string,
-              author: r.author as string,
-              locked: r.locked || false,
-              category: r.category as CatOverview
-            }
-          : null
-      )
-      .catch((r) => {
-        payload.logger.error({
-          message: `Error while retrieving related posts`,
-          error: r
-        });
-        return null;
-      });
-    if (!prevv) {
-      prevv = await payload
-        .find({
-          collection: "posts",
-          where: {
-            and: [
-              {
-                _status: {
-                  equals: "published"
-                }
-              },
-              {
-                id: {
-                  not_equals: postID
-                }
-              }
-            ]
-          },
-          limit: 1,
-          pagination: false,
-          select: postOverviewSelect
-        })
-        .then((r) => r.docs[0] || null)
-        .then((r) =>
-          r
-            ? {
-                ...r,
-                tagged: (r.tagged || []) as TagOverview[],
-                publishedAt: r.publishedAt as string,
-                author: r.author as string,
-                locked: r.locked || false,
-                category: r.category as CatOverview
-              }
-            : null
-        )
-        .catch((r) => {
-          payload.logger.error({
-            message: `Error while retrieving related posts`,
-            error: r
-          });
-          return null;
-        });
-    }
-    if (prevv) {
-      const p = await queryAuthorOverview(prevv.author);
-      let image: MediaReq | null = prevv.image
-	      ? typeof prevv.image.value === "string"
-          ? null
-		      : prevv.image as MediaReq
-        : null;
-      if (!image && typeof prevv.image === "string") {
-	      const select = imageSelect()
-	      const img = await payload.findByID({
-          collection: "userMedia",
-          id: prevv.image as string,
-          overrideAccess: true,
-		      select
-	      }).then(r => {
-		      if (r && typeof r.url === "string") {
-			      return {
-				      ...r,
-				      url: r.url as string,
-				      src: r.url as string,
-			      }
-		      }
-		      return null;
+				where: {
+					id: {
+						in: ids
+					}
+				},
+				limit: displayPostLimit
+			})
+				.then((r) => r.docs)
+				.catch((r) => {
+					console.error({
+						message: `Error while retrieving related posts`,
+						error: r
+					});
+					return null;
+				});
+			if (directlyRelatedPosts && directlyRelatedPosts.length > 0) {
+				relatedPost.push(...directlyRelatedPosts);
+				relatedIDs.push(...directlyRelatedPosts.map((r) => r.id));
+			}
+			if (relatedPost.length < displayPostLimit) {
+				const smAnd: Where[] = [
+					{
+						id: {
+							not_in: relatedIDs
+						}
+					}
+				];
+				if (isAuthorMode) {
+					smAnd.push({
+						author: {
+							equals: author
+						}
+					});
+				}
+				const relPosts = await getPostOverviews({
+					where: {
+						and: smAnd
+					},
+					limit: displayPostLimit - relatedPost.length
+				})
+					.then((r) => r.docs)
+					.catch((r) => {
+						console.error({
+							message: `Error while retrieving related posts`,
+							error: r
+						});
+						return null;
+					});
+				if (relPosts && relPosts.length > 0) {
+					relatedPost.push(...relPosts);
+					if (isAuthorMode) {
+						relatedIDs.push(
+							...relPosts.flatMap((r) => {
+								return r.author.id === author ? r.id : [];
+							})
+						);
+					} else {
+						relatedIDs.push(...relPosts.map((r) => r.id));
+					}
+				}
+			}
+		}
 
-	      });
-        if (img) {
-	        image = {
-		        relationTo: "userMedia",
-		        value: img,
+		if (relatedIDs.length < limit) {
+			const and: Where[] = [
+				{
+					_status: {
+						equals: "published"
+					}
+				},
+				{
+					id: {
+						not_in: relatedIDs
+					}
+				}
+			];
+			const queryLimit = (isAuthorMode ? 100 : limit) - relatedIDs.length;
+			if (isAuthorMode) {
+				and.push({
+					author: {
+						equals: author
+					}
+				});
+			}
+			const queuedPosts = await payload
+				.find({
+					collection: "posts",
 
-	        }
-        }
-      }
-      if (p) {
-        prev = {
-          ...prevv,
-          author: p,
-          image,
-          bookmarks: [],
-          bookmarksCount: 0
-        };
-      }
-    }
-    let next: ArticleOverview | null = null;
+					select: {
+						slug: true
+					}
+				})
+			getPostOverviews({
+				where: {
+					and
+				},
+				limit: queryLimit,
+			})
+				.catch((r) => {
+					console.error({
+						message: `Error while retrieving related posts`,
+						error: r
+					});
+					return null;
+				});
+			if (queuedPosts && queuedPosts.docs.length > 0) {
+				relatedIDs.push(...queuedPosts.docs.map((r) => r.id));
+			}
+		}
 
-    let nexx = await payload
-      .find({
-        collection: "posts",
-        where: {
-          and: [
-            {
-              _status: {
-                equals: "published"
-              }
-            },
-            {
-              id: {
-                not_equals: postID
-              }
-            },
-            {
-              or: [
-                {
-                  publishedAt: {
-                    less_than: postDate.publishedAt
-                  }
-                },
-                {
-                  updatedAt: {
-                    less_than: postDate.updatedAt
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        limit: 1,
-        pagination: false,
-        select: postOverviewSelect
-      })
-      .then((r) => r.docs[0] || null)
-      .then((r) =>
-        r
-          ? {
-              ...r,
-              tagged: (r.tagged || []) as TagOverview[],
-              publishedAt: r.publishedAt as string,
-              author: r.author as string,
-              locked: r.locked || false,
-              category: r.category as CatOverview
-            }
-          : null
-      )
-      .catch((r) => {
-        payload.logger.error({
-          message: `Error while retrieving related posts`,
-          error: r
-        });
-        return null;
-      });
-    if (!nexx) {
-      nexx = await payload
-        .find({
-          collection: "posts",
-          where: {
-            and: [
-              {
-                _status: {
-                  equals: "published"
-                }
-              },
-              {
-                id: {
-                  not_in: [postID, ...((prev && [prev.id]) || [])]
-                }
-              }
-            ]
-          },
-          limit: 1,
-          pagination: false,
-          select: postOverviewSelect
-        })
-        .then((r) => r.docs[0] || null)
-        .then((r) =>
-          r
-            ? {
-                ...r,
-                tagged: (r.tagged || []) as TagOverview[],
-                publishedAt: r.publishedAt as string,
-                author: r.author as string,
-                locked: r.locked || false,
-                category: r.category as CatOverview
-              }
-            : null
-        )
-        .catch((r) => {
-          payload.logger.error({
-            message: `Error while retrieving related posts`,
-            error: r
-          });
-          return null;
-        });
-    }
-    if (nexx) {
-      const p = await queryAuthorOverview(nexx.author);
-      let image: MediaReq | null = nexx.image
-	      ? typeof nexx.image.value === "string"
-          ? null
-		      : nexx.image as MediaReq
-        : null;
-	    if (!image && typeof nexx.image?.value === "string") {
-		    const select = imageSelect()
-		    const img = await payload.findByID({
-			    collection: nexx.image.relationTo,
-			    id: nexx.image.value as string,
-          overrideAccess: true,
-			    select
-		    }).then(r => {
-			    if (r && typeof r.url === "string") {
-				    return {
-					    ...r,
-					    url: r.url as string,
-					    src: r.url as string,
-				    }
-			    }
-			    return null;
+		let prev: PostOverview | null = null;
+		let prevv = await payload
+			.find({
+				collection: "posts",
+				where: {
+					and: [
+						{
+							_status: {
+								equals: "published"
+							}
+						},
+						{
+							id: {
+								not_equals: postID
+							}
+						},
+						{
+							or: [
+								{
+									publishedAt: {
+										greater_than: publishedAt || updatedAt
+									}
+								},
+								{
+									updatedAt: {
+										greater_than: updatedAt
+									}
+								}
+							]
+						}
+					]
+				},
+				limit: 1,
+				pagination: false,
+				select
+			})
+			.then((r) => r.docs[0] || null)
+			.then((r) =>
+				r
+					? {
+						...r,
+						tagged: (r.tagged || []) as TagOverview[],
+						publishedAt: r.publishedAt as string,
+						authority: typeof r.authority === "number" ? r.authority : 0,
+						author: r.author as string,
+						allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
+						locked: r.locked || false,
+						category: r.category as CategoryOverview
+					}
+					: null
+			)
+			.catch((r) => {
+				payload.logger.error({
+					message: `Error while retrieving related posts`,
+					error: r
+				});
+				return null;
+			});
+		if (!prevv) {
+			prevv = await payload
+				.find({
+					collection: "posts",
+					where: {
+						and: [
+							{
+								_status: {
+									equals: "published"
+								}
+							},
+							{
+								id: {
+									not_equals: postID
+								}
+							}
+						]
+					},
+					limit: 1,
+					pagination: false,
+					select
+				})
+				.then((r) => r.docs[0] || null)
+				.then((r) =>
+					r
+						? {
+							...r,
+							tagged: (r.tagged || []) as TagOverview[],
+							publishedAt: r.publishedAt as string,
+							authority: typeof r.authority === "number" ? r.authority : 0,
+							author: r.author as string,
+							allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
+							locked: r.locked || false,
+							category: r.category as CategoryOverview
+						}
+						: null
+				)
+				.catch((r) => {
+					payload.logger.error({
+						message: `Error while retrieving related posts`,
+						error: r
+					});
+					return null;
+				});
+		}
+		if (prevv) {
+			const p = await getUserOverview(prevv.author);
+			if (p) {
+				const image = await getImageMedia({payload, post: prevv})
+				prev = {
+					...prevv,
+					author: p,
+					image,
+					bookmarks: [],
+					bookmarksCount: 0
+				};
+			}
+		}
+		let next: PostOverview | null = null;
 
-		    });
-        if (img) {
-	        image = {
-		        relationTo: nexx.image.relationTo,
-		        value: img
-	        }
-        }
-      }
-      if (p) {
-        next = {
-          ...nexx,
-          author: p,
-          image,
-          bookmarks: [],
-          bookmarksCount: 0
-        };
-      }
-    }
-    if (relatedPost.length > 0) {
-    }
-    return {
-      queuedIDs: relatedIDs,
-      relatedPosts: relatedPost,
-      next,
-      prev
-    };
-  }
+		let nexx = await payload
+			.find({
+				collection: "posts",
+				where: {
+					and: [
+						{
+							_status: {
+								equals: "published"
+							}
+						},
+						{
+							id: {
+								not_equals: postID
+							}
+						},
+						{
+							or: [
+								{
+									publishedAt: {
+										less_than: publishedAt
+									}
+								},
+								{
+									updatedAt: {
+										less_than: updatedAt
+									}
+								}
+							]
+						}
+					]
+				},
+				limit: 1,
+				pagination: false,
+				select: postOverviewSelect()
+			})
+			.then((r) => r.docs[0] || null)
+			.then((r) =>
+				r
+					? {
+						...r,
+						tagged: (r.tagged || []) as TagOverview[],
+						publishedAt: r.publishedAt as string,
+						authority: typeof r.authority === "number" ? r.authority : 0,
+						author: r.author as string,
+						allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
+						locked: r.locked || false,
+						category: r.category as CategoryOverview
+					}
+					: null
+			)
+			.catch((r) => {
+				payload.logger.error({
+					message: `Error while retrieving related posts`,
+					error: r
+				});
+				return null;
+			});
+		if (!nexx) {
+			nexx = await payload
+				.find({
+					collection: "posts",
+					where: {
+						and: [
+							{
+								_status: {
+									equals: "published"
+								}
+							},
+							{
+								id: {
+									not_in: [postID, ...((prev && [prev.id]) || [])]
+								}
+							}
+						]
+					},
+					limit: 1,
+					pagination: false,
+					select: postOverviewSelect()
+				})
+				.then((r) => r.docs[0] || null)
+				.then((r) =>
+					r
+						? {
+							...r,
+							tagged: (r.tagged || []) as TagOverview[],
+							publishedAt: r.publishedAt as string,
+							authority: typeof r.authority === "number" ? r.authority : 0,
+							author: r.author as string,
+							allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
+							locked: r.locked || false,
+							category: r.category as CategoryOverview
+						}
+						: null
+				)
+				.catch((r) => {
+					payload.logger.error({
+						message: `Error while retrieving related posts`,
+						error: r
+					});
+					return null;
+				});
+		}
+		if (nexx) {
+			const p = await getUserOverview(nexx.author);
+			let image: MediaReq | null = nexx.image
+				? typeof nexx.image.value === "string"
+					? null
+					: nexx.image as MediaReq
+				: null;
+			if (!image && typeof nexx.image?.value === "string") {
+				const select = imageSelect()
+				const img = await payload.findByID({
+					collection: nexx.image.relationTo,
+					id: nexx.image.value as string,
+					overrideAccess: true,
+					select
+				}).then(r => {
+					if (r && typeof r.url === "string") {
+						return {
+							...r,
+							url: r.url as string,
+							src: r.url as string,
+						}
+					}
+					return null;
+
+				});
+				if (img) {
+					image = {
+						relationTo: nexx.image.relationTo,
+						value: img
+					}
+				}
+			}
+			if (p) {
+				next = {
+					...nexx,
+					author: p,
+					image,
+					bookmarks: [],
+					bookmarksCount: 0
+				};
+			}
+		}
+		if (relatedPost.length > 0) {
+		}
+		return {
+			queuedIDs: relatedIDs,
+			relatedPosts: relatedPost,
+			next,
+			prev
+		};
+	}
 );
+const mapTaggedToIds = <T extends Extract<DataFromCollectionSlug<CollectionSlug>, Pick<Post, "tagged">>>(doc: { [x in Exclude<keyof T, "tagged">]?: T[x] | unknown; } &
+	Pick<T, "tagged">
+) => {
+	const tagIds = doc?.tagged?.map(r => typeof r === "string" ? r : r.id) || []
+	return {tagIds}
+}
+export const getTagOverview = cache(async ({id, payload, select = tagOverviewSelect()}: {
+	id: string;
+	payload: BasePayload
+	select?: TagOverviewSelect
+}) => await payload.findByID({
+	collection: "tags",
+	select,
+	id
+}).catch(e => {
+	console.error("Error while retrieving tag overview", e);
+	throw new Error("Error while retrieving tag overview");
+}))
+export const getCategoryOverview = cache(async ({
+	                                                id, payload
+                                                }: {
+	id: string;
+	payload: BasePayload
+}): Promise<CategoryOverview> => {
+	const categorySelector = categoryOverviewSelect();
+	return await payload.findByID({
+		collection: "categories",
+		id,
+		select: categorySelector,
+	})
+})
+export const getTagOverviews = cache(async ({
+	                                            tagIds,
+	                                            payload
+                                            }: {
+	                                            tagIds: string[]
+
+	                                            payload: BasePayload
+                                            }
+	) => {
+
+		const tagOverviewSelectr = tagOverviewSelect()
+		const tagged: TagOverview[] = await Promise.allSettled(tagIds.map(async r => getTagOverview({
+			id: r,
+			select: tagOverviewSelectr,
+			payload
+		}))).then(x => x.flatMap(r =>
+			r.status === "fulfilled" ? r.value : []
+		))
+		return {tagged};
+	}
+)

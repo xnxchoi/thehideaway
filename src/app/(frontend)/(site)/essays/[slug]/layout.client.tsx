@@ -69,6 +69,7 @@ export function LayoutClient({ children }: { children: ReactNode }) {
       return r;
     },
     enabled: loggedIn,
+    placeholderData: "BLUE",
     refetchOnWindowFocus: false,
     staleTime: Infinity,
     gcTime: 60 * 1000

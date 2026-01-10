@@ -1,13 +1,11 @@
-import type {
-  CollectionAfterChangeHook,
-  CollectionAfterDeleteHook
-} from "payload";
+"use server"
+import {Post} from "@/payload-types";
+import {arraysEqualContents} from "@/utilities/compareArrays";
 
-import { revalidatePath, revalidateTag } from "next/cache";
-import { Post } from "@/payload-types";
-import { arraysEqualContents } from "@/utilities/compareArrays";
+import {revalidatePath} from "next/cache";
+import type {CollectionAfterChangeHook, CollectionAfterDeleteHook} from "payload";
 
-export const revalidatePost: CollectionAfterChangeHook<Post> = ({
+export const revalidatePost: CollectionAfterChangeHook<Post> = async ({
   doc,
   previousDoc,
   req: { payload, context }
@@ -39,7 +37,7 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
 
         revalidatePath(path);
 
-	      revalidateTag("posts-sitemap", {expire: 50});
+	      // revalidateTag("posts-sitemap", {expire: 50});
       }
     }
 
@@ -50,7 +48,7 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
       payload.logger.info(`Revalidating old post at path: ${oldPath}`);
 
       revalidatePath(oldPath);
-	    revalidateTag("posts-sitemap", {expire: 50});
+	    // revalidateTag("posts-sitemap", {expire: 50});
     }
   }
   return doc;
@@ -64,7 +62,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Post> = async ({
     const path = `/essays/${doc?.slug}`;
 
     revalidatePath(path);
-	  revalidateTag("posts-sitemap", {expire: 50});
+	  // revalidateTag("posts-sitemap", {expire: 50});
   }
 
   return doc;

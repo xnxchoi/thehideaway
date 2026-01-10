@@ -1,15 +1,16 @@
 "use server";
-import {cache} from "react";
+import {blurhashToDataURI} from "@/payload/collections/Media/hooks/blurHashToDataUrl";
+import {formatUnsplashData} from "@/payload/collections/Media/hooks/unsplashData";
+import {RenderImageFields} from "@/types/collections/image-collections";
 import {
+	SavedMetadataUnsplash,
 	UnsplashCollectionDoc,
 	UnsplashFetchResult,
-	UnsplashImageDoc
-} from "@/payload/collections/Media/hooks/types";
-import {blurhashToDataURI} from "@/payload/collections/Media/hooks/blurHashToDataUrl";
+	UnsplashImageDoc,
+	UnsplashUserOverview
+} from "@/types/ImageCollections/unsplash";
 import {stringify} from "qs-esm";
-import {RenderImageFields} from "@/types/collections/imageCollections";
-import {ImageMetadata} from "@/payload/fields/Article/Cover/ImageNode/Forms/schema";
-import {formatUnsplashData} from "@/payload/collections/Media/hooks/unsplashData";
+import {cache} from "react";
 
 export const getUnsplashCollectionsList = cache(async () => {
 	try {
@@ -52,13 +53,12 @@ export const getUnsplashCollectionsList = cache(async () => {
 		return null;
 	}
 })
-type SavedMetadata = Omit<ImageMetadata, "id" | "author" | "blurDataUrl" | "darkmode" | "width" | "height" | "alt" | "caption">
 export const getUnsplashCollection = cache(async (id: number, params: {
 	page?: number;
 	perPage?: number;
 } = {page: 1, perPage: 5}): Promise<{
 	image: RenderImageFields;
-	form: SavedMetadata & { url: string }
+	form: SavedMetadataUnsplash
 }[]> => {
 	const {page, perPage} = params;
 	const queryString = stringify({
@@ -76,24 +76,110 @@ export const getUnsplashCollection = cache(async (id: number, params: {
 			}, cache: "force-cache"
 		});
 		if (response.ok) {
-			const data = await response.json() as UnsplashImageDoc[];
-			const rr = data.map(async r => {
-				const {blur_hash, width, height} = r;
-				let blurDataUrl: string = "";
-				if (!!blur_hash) {
-					blurDataUrl = await blurhashToDataURI({hash: blur_hash, width, height});
-				}
-				const vv = formatUnsplashData(r)
-				return {
-					...vv, image: {
-						...vv.image,
-						blurDataUrl
+			const data = await response.json() as {
+				id: string;
+				title: string;
+				description: null | string;
+				published_at: string;
+				last_collected_at: string;
+				updated_at: string;
+				featured: boolean;
+				total_photos: number;
+				private: boolean;
+				share_key: string;
+				links: {
+					self: string;
+					html: string;
+					photos: string;
+					related: string;
+				},
+				user: UnsplashUserOverview;
+				cover_photo: null | {
+					id: string;
+					created_at: string;
+					updated_at: string;
+					promoted_at: string | null;
+					width: number;
+					height: number;
+					color: string;
+					blur_hash: string;
+					description: null | string;
+					alt_description: string;
+					breadcrumbs: string;
+					user: UnsplashUserOverview;
+					urls: {
+						raw: string;
+						full: string;
+						regular: string;
+						small: string;
+						thumb: string;
+					};
+					links: {
+						self: string;
+						html: string;
+						download: string;
+						download_location: string
+					};
+					slug: string;
+					alternative_slugs: {
+						[key: string]: string
 					}
-
-				}
+				};
+				preview_photos: {
+					id: string;
+					slug: string;
+					asset_type: "photo" | string;
+					created_at: string;
+					updated_at: string;
+					blur_hash: string;
+					urls: {
+						raw: string;
+						full: string;
+						regular: string;
+						small: string;
+						thumb: string;
+					};
+				}[];
+				meta: {
+					title: string | null;
+					description: string | null;
+					index: boolean;
+				};
+			}
+			const photolinks = data.links.photos;
+			const response2 = await fetch(photolinks, {
+				method: "GET",
+				headers: {
+					Authorization: "Client-ID PmprbTtYGRK6RvmubJroUAF0SWqJjvgs0UuTaeFoHiA"
+				},
+				next: {
+					revalidate: 3600 * 24,
+				}, cache: "force-cache"
 			})
-			const d = await Promise.allSettled(rr);
-			return d.flatMap(r => r.status === "fulfilled" ? r.value : [])
+			if (response2.ok) {
+				const nd = await response2.json() as UnsplashImageDoc[];
+				console.log("unsplash!!!!!!:", nd);
+				const vv = nd.map(r => formatUnsplashData(r))
+				console.log("!!!!!!!!unsplash!!!!!!:", vv);
+				return vv;
+			}
+			// const rr = data.preview_photos.map(async r => {
+			// 	const {blur_hash,} = r;
+			// 	let blurDataUrl: string = "";
+			// 	if (!!blur_hash) {
+			// 		blurDataUrl = await blurhashToDataURI({hash: blur_hash, width, height});
+			// 	}
+			// 	const vv = formatUnsplashData(r)
+			// 	return {
+			// 		...vv, image: {
+			// 			...vv.image,
+			// 			blurDataUrl
+			// 		}
+			//
+			// 	}
+			// })
+			// const d = await Promise.allSettled(rr);
+			// return d.flatMap(r => r.status === "fulfilled" ? r.value : [])
 		}
 		throw new Error("Error fetching unsplash collection: " + response.status)
 	} catch (error) {

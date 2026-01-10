@@ -27,8 +27,7 @@ import type {
 import Image from "next/image";
 import {capitalize} from "lodash-es";
 import {useDomCursor} from "@/components/core/cursorWrapper";
-import type {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {FetchedImageDoc} from "@/types/collections/imageCollections";
+import {FetchedImageDoc, ImageCollectionSlug} from "@/types/collections/image-collections";
 
 type PopulatedDocs = {
   relationTo: string;

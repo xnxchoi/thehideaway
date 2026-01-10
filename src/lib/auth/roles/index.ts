@@ -175,6 +175,8 @@ const admin = accessControl.newRole({
 	follows: ["read", "update", "delete", "create"],
 	userViews: ["read", "update", "delete", "create"],
 	citations: ["read", "update", "delete", "create"],
+	compilations: ["read", "update", "delete", "create"],
+	"payload-kv": ["read", "update", "delete", "create"],
 	...adminAc.statements,
 });
 const create = true,

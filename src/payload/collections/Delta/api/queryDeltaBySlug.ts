@@ -1,24 +1,18 @@
 "use server";
-import { draftMode } from "next/headers";
-import { getPayload, Payload, Where } from "payload";
+import {authClient} from "@/lib/auth/client";
+import {type Delta} from "@/payload-types";
+import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+import {AuthorSingle} from "@/types/collections/users";
 import configPromise from "@payload-config";
-import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
-import { cache } from "react";
-import {
-  DeltaOverview,
-  SingleDelta,
-  TagOverview,
-  type CatOverview
-} from "../../../../types/collections/delta";
-import { authClient } from "@/lib/auth/client";
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
-import { getDeltaBookMarks } from "./getDeltaBookmarks";
-import { type Delta } from "@/payload-types";
-import { queryOverview } from "./queryDeltaOverview";
-import type {
-  ArticleOverview,
-  AuthorSingle
-} from "../../../../types/collections/posts";
+import {draftMode} from "next/headers";
+import {getPayload, Payload, Where} from "payload";
+import {cache} from "react";
+import {DeltaOverview, SingleDelta} from "../../../../types/collections/delta";
+import type {PostOverview} from "../../../../types/collections/posts";
+import {getDeltaBookMarks} from "./getDeltaBookmarks";
+import {queryOverview} from "./queryDeltaOverview";
 
 export const queryAuthorsDelta = cache(
   async ({
@@ -120,7 +114,7 @@ export const queryAuthorsDelta = cache(
       bookmarksCount: 0,
       slug: post.slug,
       tagged: post.tagged ? (post.tagged as Array<TagOverview>) : [],
-      category: post.category as CatOverview,
+	    category: post.category as CategoryOverview,
       queuedIDs: null!,
       relatedDeltas: null!
     };
@@ -287,7 +281,7 @@ export const queryDeltaBySlug = cache(
       publishedAt: post.publishedAt,
       bookmarksCount: 0,
       slug: post.slug,
-      category: post.category as CatOverview,
+	    category: post.category as CategoryOverview,
       queuedIDs: null!,
       relatedDeltas: null!,
       tagged: post.tagged ? (post.tagged as Array<TagOverview>) : []
@@ -417,12 +411,12 @@ export const queryRelatedDeltas = cache(
     | { isAuthorPage: true; author: string }
   )): Promise<{
     queuedIDs: string[];
-    relatedDeltas: (DeltaOverview | ArticleOverview)[];
+	  relatedDeltas: (DeltaOverview | PostOverview)[];
   }> => {
     //Now we first query for the posts to show in the "More Like This" sidebar
-    const relatedItems: (DeltaOverview | ArticleOverview)[] = [] as (
+	  const relatedItems: (DeltaOverview | PostOverview)[] = [] as (
       | DeltaOverview
-      | ArticleOverview
+		  | PostOverview
     )[];
     const relatedDeltasIDs: string[] = [];
     const isAuthorMode = isAuthorPage && author;

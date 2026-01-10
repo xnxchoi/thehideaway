@@ -1,9 +1,9 @@
-import { Category, Tag } from "@/payload-types";
-import { CatOverview } from "@/types/collections/delta";
-import { P_Tag } from "@/payload/collections/Tags";
-import type { BeforeSync, DocToSync } from "@payloadcms/plugin-search/types";
-import { CollectionSlug, DataFromCollectionSlug } from "payload";
-import { nanoid } from "nanoid";
+import {Category, Tag} from "@/payload-types";
+import {P_Tag} from "@/payload/collections/Tags";
+import {CategoryOverview} from "@/types/collections/meta-collections";
+import type {BeforeSync, DocToSync} from "@payloadcms/plugin-search/types";
+import {nanoid} from "nanoid";
+import {CollectionSlug, DataFromCollectionSlug} from "payload";
 
 export type IndexedCollections = Extract<
   CollectionSlug,
@@ -83,7 +83,7 @@ export const beforeSyncWithSearch: BeforeSync = async (
         }
       >;
       if (d && d.category) {
-        const categorie = d.category as CatOverview;
+        const categorie = d.category as CategoryOverview;
         if (categorie && categorie.id) {
           baseDraft.category = {
             categoryKey: categorie.id,

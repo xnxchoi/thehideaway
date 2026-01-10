@@ -1,18 +1,15 @@
 "use server";
-import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
-import { draftMode } from "next/headers";
-import { headersWithCors, type PayloadRequest } from "payload";
+import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 
-import { cache } from "react";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {TagOverview} from "@/types/collections/meta-collections";
+import {AuthorSingle} from "@/types/collections/users";
+import {draftMode} from "next/headers";
+import {headersWithCors, type PayloadRequest} from "payload";
 
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
-import type { AuthorSingle } from "../../../../types/collections/posts";
-import type {
-  DeltaOverview,
-  SingleDelta,
-  TagOverview
-} from "../../../../types/collections/delta";
-import { getDeltaBookMarks } from "./getDeltaBookmarks";
+import {cache} from "react";
+import type {DeltaOverview, SingleDelta} from "../../../../types/collections/delta";
+import {getDeltaBookMarks} from "./getDeltaBookmarks";
 
 export const getDeltaHandler = cache(
   async ({ req }: { req: PayloadRequest }) => {

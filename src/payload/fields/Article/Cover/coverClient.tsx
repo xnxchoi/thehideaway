@@ -1,7 +1,6 @@
 "use client";
 import {EASING} from "@/constants/animations";
 import {cn} from "@/lib/utils";
-import {UnsplashFetchResult} from "@/payload/collections/Media/hooks/types";
 import {MenuPopup} from "@/payload/components/Popover";
 import {errorToast} from "@/payload/components/sonner";
 import {useCourier} from "@/payload/elements/DocumentFields/RP_CourierProvider";
@@ -13,15 +12,19 @@ import {
 } from "@/payload/fields/Article/Cover/Components/ImageMenu";
 import {useAltDocCtrls} from "@/payload/providers/Admins";
 import {useCursor} from "@/providers/RP_Pro";
+
+import {UserOverview} from "@/types/collections/users";
 import {
 	FetchedImageDoc,
+	ImageCollection,
+	ImageCollectionSlug,
 	ProcessedImageDoc,
-	RenderImageFields
-} from "@/types/collections/imageCollections";
-import type {UserOverview} from "@/types/collections/posts";
-import type {ImageCollection, ImageCollectionSlug} from "@/types/payload-api-helpers";
+	RenderImageFields,
+	TabNames
+} from "@/types/collections/image-collections";
+import {UnsplashFetchResult} from "@/types/ImageCollections/unsplash";
 import {clamp} from "@/utilities/mathUtilities";
-import {Menu, Tabs} from "@base-ui/react";
+import {Menu} from "@base-ui/react";
 import {
 	type ListDrawerProps,
 	useAuth,
@@ -49,7 +52,6 @@ import type {
 	PointerEventHandler
 } from "react";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-
 import {uuidv7} from "uuidv7";
 import {useShallow} from "zustand/shallow";
 
@@ -75,7 +77,6 @@ export type ArticleCoverProps = UploadFieldClientProps & {
 	readonly value?: null | ProcessedImageDoc;
 	readonly fallback?: null | UnsplashFetchResult;
 };
-type TabNames = "gallery" | "unsplash" | "upload";
 
 export const CoverImageClient = (props: ArticleCoverProps) => {
 	const {
@@ -93,7 +94,10 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 	} = props;
 
 	const attemptCount = useRef(0);
-	const {value, setValue} = useField<string>({
+	const {value, setValue} = useField<{
+		relationTo: ImageCollectionSlug;
+		value: string;
+	}>({
 		path
 	});
 	const userName = useMemo(() => user.name, [user]);
@@ -110,7 +114,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 	const {submit} = useDocumentForm();
 	const restRef = useRef<Pick<
 		ImageCollection,
-		"alt" | "caption" | "source"
+		"alt" | "caption"
 	> | null>(null);
 	const [openedTab, setOpenedTab] = useState<TabNames | null>(null);
 	const onOpenTabChange = (tab: null | TabNames) => {
@@ -227,12 +231,15 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 				}
 			} else {
 				setInserted(true);
-				setValue(newValue.id);
+				setValue({
+					relationTo: activeRelationTo,
+					value: newValue.id
+				});
 				setImage(newValue);
 				setInsertedFile(null);
 			}
 		},
-		[setValue, setStatus]
+		[setValue, setStatus, activeRelationTo]
 	);
 
 	const canCreate = useMemo(() => {
@@ -258,9 +265,9 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 		collectionSlugs: relationTo,
 		filterOptions
 	});
-	const valueIdRef = useRef<null | string>(value || null);
+	const valueIdRef = useRef<null | string>(value?.value || null);
 	useEffect(() => {
-		valueIdRef.current = value || null;
+		valueIdRef.current = value?.value || null;
 	}, [value]);
 	const [removeImage, setRemoveImage] = useState<boolean>(false);
 	const populateDocs = useCallback(
@@ -343,11 +350,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 				"_payload",
 				JSON.stringify({
 					...restRef.current,
-					source: {
-						identifier: restRef.current?.source.identifier || uuidv7(),
-						provider: restRef.current?.source.provider || "local",
-						link: restRef.current?.source.link || ""
-					}
+
 				})
 			);
 			setStatus("uploading");
@@ -372,7 +375,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 				return null;
 			}
 		},
-		[relationTo, serverURL, setStatus]
+		[activeRelationTo, serverURL, setStatus]
 	);
 	const onLocalFileSelection = useCallback(
 		(fileList?: FileList, fallback?: string) => {
@@ -394,11 +397,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 					restRef.current = {
 						caption: `Image by @${userName}`,
 						alt: "An image for a content",
-						source: {
-							identifier: uuidv7(),
-							provider: "local",
-							link: ""
-						}
+
 					};
 					setMenuOpen(false);
 					setInserted(true);
@@ -450,7 +449,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 			const blob = await imageResponse.blob();
 			const file = new File(
 				[blob],
-				`unsplash-${us.form.source.identifier}.jpg`,
+				`unsplash-${uuidv7()}.jpg`,
 				{
 					type: blob.type || "image/jpeg"
 				}
@@ -472,7 +471,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 			restRef.current = {
 				caption: us.form.caption,
 				alt: us.form.alt,
-				source: us.form.source
+
 			};
 			setInserted(true);
 		} catch (error) {
@@ -495,8 +494,8 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 				}
 				return currentDocs;
 			});
-			const {id, url, thumbnailURL, src, alt, darkmode, source} = doc as ProcessedImageDoc;
-			onChange({id, src, thumbnailURL, alt, darkmode, url, source});
+			const {id, url, thumbnailURL, src, alt, darkmode,} = doc as ProcessedImageDoc;
+			onChange({id, src, thumbnailURL, alt, darkmode, url,});
 			closeListDrawer();
 		},
 		[closeListDrawer, onChange, activeRelationTo]

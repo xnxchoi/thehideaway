@@ -1,41 +1,23 @@
-import { blurDataUrlsPlugin } from "@oversightstudio/blur-data-urls";
-import { importExportPlugin } from "@payloadcms/plugin-import-export";
-import { redirectsPlugin } from "@payloadcms/plugin-redirects";
-import { seoPlugin } from "@payloadcms/plugin-seo";
-import type {
-  GenerateImage,
-  GenerateTitle,
-  GenerateURL
-} from "@payloadcms/plugin-seo/types";
-import type { CollectionSlug, DataFromCollectionSlug, Plugin } from "payload";
-import { getPayload } from "payload";
-import { betterAuthPlugin } from "payload-auth/better-auth";
+import {revalidateRedirects} from "@/hooks/revalidateRedirects";
+import {betterAuthPluginOptions} from "@/lib/auth/options";
+import type {Delta, Page, Post, Track, User} from "@/payload-types";
 
-import { revalidateRedirects } from "@/hooks/revalidateRedirects";
-import { betterAuthPluginOptions } from "@/lib/auth/options";
-import type {
-  Album,
-  Category,
-  Delta,
-  Page,
-  Playlist,
-  Post,
-  Profile,
-  Track,
-  User
-} from "@/payload-types";
-import { lockerPlugin } from "@/payload/plugins/locker/plugin";
-import { getServerSideURL } from "@/utilities/getURL";
-import config from "@payload-config";
-import { getAssetThumb } from "./getAssetThumb";
-
-import { commentsPlugin } from "@/payload/collections/Comments";
-import { Assets } from "../collections/Assets";
-import { Media } from "../collections/Media";
-import { UserMedia } from "../collections/UserMedia";
-import { LikesPlugin } from "./Likes";
-import { userFieldOrganizerPlugin } from "./userField";
+import {commentsPlugin} from "@/payload/collections/Comments";
+import {lockerPlugin} from "@/payload/plugins/locker/plugin";
+import {getServerSideURL} from "@/utilities/getURL";
+import {blurDataUrlsPlugin} from "@oversightstudio/blur-data-urls";
+import {importExportPlugin} from "@payloadcms/plugin-import-export";
+import {redirectsPlugin} from "@payloadcms/plugin-redirects";
+import {seoPlugin} from "@payloadcms/plugin-seo";
+import type {GenerateTitle, GenerateURL} from "@payloadcms/plugin-seo/types";
+import type {CollectionSlug, DataFromCollectionSlug, Plugin} from "payload";
+import {betterAuthPlugin} from "payload-auth/better-auth";
+import {Assets} from "../collections/Assets";
+import {Media} from "../collections/Media";
+import {UserMedia} from "../collections/UserMedia";
 import {imageSearchPlugin} from "./image-search"
+import {LikesPlugin} from "./Likes";
+import {userFieldOrganizerPlugin} from "./userField";
 
 const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
   if (doc) {
@@ -48,58 +30,58 @@ const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
   }
   return "The Hideaway";
 };
-const generateMetaImage: GenerateImage<
-  Post | Page | Delta | User | Profile | Album | Playlist | Category
-> = async ({ doc, collectionConfig }) => {
-  const url = getServerSideURL();
-  const payload = await getPayload({ config });
-  const slug = collectionConfig?.slug;
-
-  if (doc && slug) {
-    switch (slug) {
-      case "profile":
-        const user = await payload.findByID({
-          collection: "users",
-          id: (doc as Profile).author as string,
-          select: {
-            image: true,
-            portrait: true
-          }
-        });
-        if (user) {
-          if (user.portrait) {
-            return `${url}/api/userMedia/${user.portrait}`;
-          } else if (user.image) {
-            return user.image as string;
-          }
-        }
-      case "users":
-        if ("portrait" in doc && doc.portrait) {
-          return `${url}/api/userMedia/${doc.portrait}`;
-        } else if ("image" in doc && doc.image) {
-          return typeof doc.image === "string"
-            ? `${url}/api/userMedia/${doc.image}`
-            : "";
-        }
-        return await getAssetThumb();
-      case "delta":
-      case "posts":
-        if ("image" in doc && doc.image) {
-          if (typeof doc.image === "string") {
-            return `${url}/api/media/${doc.image}`;
-          } else if (
-            typeof doc.image === "object" &&
-            "url" in doc.image &&
-            doc.image.url
-          ) {
-            return doc.image.url;
-          }
-        }
-        break;
-    }
-  }
-  return await getAssetThumb();
-};
+// const generateMetaImage: GenerateImage<
+//   Post | Page | Delta | User | Profile | Album | Playlist | Category
+// > = async ({ doc, collectionConfig }) => {
+//   const url = getServerSideURL();
+//   const payload = await getPayload({ config });
+//   const slug = collectionConfig?.slug;
+//
+//   if (doc && slug) {
+//     switch (slug) {
+//       case "profile":
+//         const user = await payload.findByID({
+//           collection: "users",
+//           id: (doc as Profile).author as string,
+//           select: {
+//             image: true,
+//             portrait: true
+//           }
+//         });
+//         if (user) {
+//           if (user.portrait) {
+//             return `${url}/api/userMedia/${user.portrait}`;
+//           } else if (user.image) {
+//             return user.image as string;
+//           }
+//         }
+//       case "users":
+//         if ("portrait" in doc && doc.portrait) {
+//           return `${url}/api/userMedia/${doc.portrait}`;
+//         } else if ("image" in doc && doc.image) {
+//           return typeof doc.image === "string"
+//             ? `${url}/api/userMedia/${doc.image}`
+//             : "";
+//         }
+//         return await getAssetThumb();
+//       case "delta":
+//       case "posts":
+//         if ("image" in doc && doc.image) {
+//           if (typeof doc.image === "string") {
+//             return `${url}/api/media/${doc.image}`;
+//           } else if (
+//             typeof doc.image === "object" &&
+//             "url" in doc.image &&
+//             doc.image.url
+//           ) {
+//             return doc.image.url;
+//           }
+//         }
+//         break;
+//     }
+//   }
+//   return await getAssetThumb();
+// };
 
 export type SiteMapCollectionSlug = Extract<
   CollectionSlug,

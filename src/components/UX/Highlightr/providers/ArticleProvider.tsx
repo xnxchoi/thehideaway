@@ -1,6 +1,7 @@
 "use client";
-import type { CatOverview, TagOverview } from "@/types/collections/delta";
-import type { AuthorOverview } from "@/types/collections/posts";
+import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+
+import {AuthorOverview} from "@/types/collections/users";
 import type { DataFromCollectionSlug } from "payload";
 import { type ReactNode, createContext, useContext, useRef } from "react";
 import { type StoreApi, createStore, useStore } from "zustand";
@@ -13,7 +14,7 @@ export type HighlightsArticleOverview = Pick<
   "id" | "slug" | "title" | "locked"
 > & {
   tagged?: TagOverview[];
-  category: CatOverview;
+	category: CategoryOverview;
   author: AuthorOverview;
   allowList?: string[];
   authority?: number;

@@ -19,26 +19,25 @@ import {Users} from "@/payload/collections/Users";
 import {UserViews} from "@/payload/collections/UserViews";
 import {CollectionConfig} from "payload";
 import {Compilations} from "./Compilations"
-import {ExternalMedia} from "@/payload/collections/ExternalMedia";
 
 export const collections: CollectionConfig[] = [
-  Users,
-  Assets,
-  Categories,
-  Media,
-  Tags,
-  Notifications,
-  Pages,
-  Posts,
-  UserMedia,
-  Deltas,
-  Profile,
-  Albums,
-  Tracks,
-  Playlists,
-  Follows,
-  Bookmarks,
-  UserViews,
-  Citations,
-	Comments, Compilations, ExternalMedia
+	Users,
+	Assets,
+	Categories,
+	Media,
+	Tags,
+	Notifications,
+	Pages,
+	Posts,
+	UserMedia,
+	Deltas,
+	Profile,
+	Albums,
+	Tracks,
+	Playlists,
+	Follows,
+	Bookmarks,
+	UserViews,
+	Citations,
+	Comments, Compilations
 ];

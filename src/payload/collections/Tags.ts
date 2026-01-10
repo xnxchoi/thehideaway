@@ -1,12 +1,10 @@
-import { CollectionConfig } from "payload";
-import {
-  isAdminOrEditor,
-  standardCreateAccess
-} from "../plugins/locker/access/accessCheckers";
-import { slugField } from "../fields/slug";
-import { AuthorField } from "../fields/AuthorFields/AuthorField";
-import { sanitizeAuthor } from "../fields/AuthorFields/hooks";
-import { Tag } from "@/payload-types";
+import {Tag} from "@/payload-types";
+import {CollectionConfig} from "payload";
+import {uuidv7} from "uuidv7";
+import {AuthorField} from "../fields/AuthorFields/AuthorField";
+import {sanitizeAuthor} from "../fields/AuthorFields/hooks";
+import {slugField} from "../fields/slug";
+import {isAdminOrEditor, standardCreateAccess} from "../plugins/locker/access/accessCheckers";
 
 const tagPop = {
   title: true,
@@ -28,7 +26,18 @@ export const Tags: CollectionConfig<"tags"> = {
   },
   lockDocuments: false,
   defaultPopulate: tagPop,
-  fields: [
+  fields: [{
+    name: "id",
+    type: "text",
+    defaultValue: uuidv7,
+    access: {
+      update: () => false
+    },
+    required: true,
+    admin: {
+      hidden: true
+    }
+  },
     {
       name: "title",
       type: "text",
@@ -41,7 +50,19 @@ export const Tags: CollectionConfig<"tags"> = {
         update: isAdminOrEditor
       }
     },
+    {
+      name: "tagged",
+      type: "join",
+      on: "tagged",
+      hasMany: true,
+      collection: ["delta", "posts", "pages", "profile", "albums", "playlists", "tracks"],
 
+      where: {
+        _status: {
+          equals: "published"
+        }
+      }
+    },
     ...AuthorField(false),
     ...slugField("title")
   ],

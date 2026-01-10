@@ -75,6 +75,8 @@ export interface Config {
     twoFactors: TwoFactor;
     passkeys: Passkey;
     organizations: Organization;
+    teams: Team;
+    teamMembers: TeamMember;
     members: Member;
     invitations: Invitation;
     'admin-invitations': AdminInvitation;
@@ -96,8 +98,7 @@ export interface Config {
     userViews: UserView;
     citations: Citation;
     responses: Response;
-	  compilations: Compilation;
-	  exMedia: ExMedia;
+    compilations: Compilation;
     admins: Admin;
     'email-quota': EmailQuota;
     'deferred-emails': DeferredEmail;
@@ -117,12 +118,22 @@ export interface Config {
       followers: 'follows';
       following: 'follows';
       notifications: 'notifications';
+      account: "accounts";
+      session: "sessions";
     };
-	  assets: {
-		  compiled: "compilations";
-	  };
+    organizations: {
+      member: "members";
+      invitation: "invitations";
+      team: "teams";
+    };
+    assets: {
+      compiled: "compilations";
+    };
     categories: {
       categorized: 'delta' | 'posts';
+    };
+    tags: {
+      tagged: "delta" | "posts" | "pages" | "profile" | "albums" | "playlists" | "tracks";
     };
     posts: {
       bookmarks: 'bookmarks';
@@ -157,6 +168,8 @@ export interface Config {
     twoFactors: TwoFactorsSelect<false> | TwoFactorsSelect<true>;
     passkeys: PasskeysSelect<false> | PasskeysSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
+    teams: TeamsSelect<false> | TeamsSelect<true>;
+    teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
@@ -178,8 +191,7 @@ export interface Config {
     userViews: UserViewsSelect<false> | UserViewsSelect<true>;
     citations: CitationsSelect<false> | CitationsSelect<true>;
     responses: ResponsesSelect<false> | ResponsesSelect<true>;
-	  compilations: CompilationsSelect<false> | CompilationsSelect<true>;
-	  exMedia: ExMediaSelect<false> | ExMediaSelect<true>;
+    compilations: CompilationsSelect<false> | CompilationsSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
     'email-quota': EmailQuotaSelect<false> | EmailQuotaSelect<true>;
     'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
@@ -195,7 +207,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-	fallbackLocale: ("false" | "none" | "null") | false | null | ("en" | "ko") | ("en" | "ko")[];
+  fallbackLocale: ("false" | "none" | "null") | false | null | ("en" | "ko") | ("en" | "ko")[];
   globals: {
     header: Header;
     footer: Footer;
@@ -284,6 +296,7 @@ export interface User {
   slug: string;
   firstName: string;
   lastName: string;
+  verified: boolean;
   username: string;
   /**
    * A short description of yourself, your passion, work, interest, anything- just keep it interesting.
@@ -365,6 +378,16 @@ export interface User {
    * The date and time when the ban will expire
    */
   banExpires?: string | null;
+  account?: {
+    docs?: (string | Account)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  session?: {
+    docs?: (string | Session)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   meta?: {
     title?: string | null;
     /**
@@ -444,19 +467,10 @@ export interface UserMedia {
    * Limit access to users of this role or higher
    */
   authority?: number | null;
-	alt: string;
-	darkmode: boolean;
-	src?: string | null;
-	caption?: string | null;
-	attribution?: {
-		name?: string | null;
-		link?: string | null;
-	};
-	source: {
-		identifier?: string | null;
-		link?: string | null;
-		provider: "local" | "unsplash" | "pexels";
-	};
+  alt: string;
+  darkmode: boolean;
+  src?: string | null;
+  caption?: string | null;
   blurDataUrl?: string | null;
   likes?: number | null;
   folder?: (string | null) | FolderInterface;
@@ -472,7 +486,7 @@ export interface UserMedia {
   focalX?: number | null;
   focalY?: number | null;
   sizes?: {
-	  thumb?: {
+    thumb?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -480,7 +494,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-	  card?: {
+    card?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -488,7 +502,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-	  content?: {
+    content?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -496,7 +510,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-	  content_wide?: {
+    content_wide?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -504,7 +518,7 @@ export interface UserMedia {
       filesize?: number | null;
       filename?: string | null;
     };
-	  hero?: {
+    hero?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -541,30 +555,6 @@ export interface Bookmark {
     | {
         relationTo: 'profile';
         value: string | Profile;
-      }
-    | {
-        relationTo: 'users';
-        value: string | User;
-      }
-    | {
-        relationTo: 'albums';
-        value: string | Album;
-      }
-    | {
-        relationTo: 'playlists';
-        value: string | Playlist;
-      }
-    | {
-        relationTo: 'profile';
-        value: string | Profile;
-      }
-    | {
-        relationTo: 'tracks';
-        value: string | Track;
-      }
-    | {
-        relationTo: 'userMedia';
-        value: string | UserMedia;
       };
   updatedAt: string;
   createdAt: string;
@@ -575,19 +565,19 @@ export interface Bookmark {
  */
 export interface Post {
   id: string;
-	image?:
-		| ({
-		relationTo: "userMedia";
-		value: string | UserMedia;
-	} | null)
-		| ({
-		relationTo: "assets";
-		value: string | Asset;
-	} | null)
-		| ({
-		relationTo: "exMedia";
-		value: string | ExMedia;
-	} | null);
+  image?:
+      | ({
+    relationTo: "userMedia";
+    value: string | UserMedia;
+  } | null)
+      | ({
+    relationTo: "assets";
+    value: string | Asset;
+  } | null)
+      | ({
+    relationTo: "media";
+    value: string | Media;
+  } | null);
   coverPosition?: number | null;
   title: string;
   richTitle?: {
@@ -660,197 +650,186 @@ export interface Post {
  * via the `definition` "assets".
  */
 export interface Asset {
-	id: string;
-	alt: string;
-	caption?: string | null;
-	compiled?: {
-		docs?: (string | Compilation)[];
-		hasNextPage?: boolean;
-		totalDocs?: number;
-	};
-	locked?: boolean | null;
-	allowList?: (string | User)[] | null;
-	/**
-	 * Limit access to users of this role or higher
-	 */
-	authority?: number | null;
-	darkmode: boolean;
-	src?: string | null;
-	attribution?: {
-		name?: string | null;
-		link?: string | null;
-	};
-	source: {
-		identifier?: string | null;
-		link?: string | null;
-		provider: "local" | "unsplash" | "pexels";
-	};
-	blurDataUrl?: string | null;
-	updatedAt: string;
-	createdAt: string;
-	url?: string | null;
-	thumbnailURL?: string | null;
-	filename?: string | null;
-	mimeType?: string | null;
-	filesize?: number | null;
-	width?: number | null;
-	height?: number | null;
-	focalX?: number | null;
-	focalY?: number | null;
-	sizes?: {
-		thumb?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		card?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		content?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		content_wide?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		hero?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		og?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-	};
+  id: string;
+  alt: string;
+  caption?: string | null;
+  compiled?: {
+    docs?: (string | Compilation)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  darkmode: boolean;
+  src?: string | null;
+  blurDataUrl?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    content?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    content_wide?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "compilations".
  */
 export interface Compilation {
-	id: string;
-	title: string;
-	items: (
-		| {
-		relationTo: "assets";
-		value: string | Asset;
-	}
-		| {
-		relationTo: "exMedia";
-		value: string | ExMedia;
-	}
-		)[];
-	imagePicker: boolean;
-	updatedAt: string;
-	createdAt: string;
+  id: string;
+  title: string;
+  items: (
+      | {
+    relationTo: "assets";
+    value: string | Asset;
+  }
+      | {
+    relationTo: "media";
+    value: string | Media;
+  }
+      )[];
+  imagePicker: boolean;
+  updatedAt: string;
+  createdAt: string;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "exMedia".
+ * via the `definition` "media".
  */
-export interface ExMedia {
-	id: string;
-	alt: string;
-	darkmode: boolean;
-	src: string;
-	author: string | User;
-	source: {
-		provider: "external" | "pexels" | "unsplash" | "local";
-		link: string;
-		identifier: string;
-	};
-	blurDataUrl?: string | null;
-	caption?: string | null;
-	updatedAt: string;
-	createdAt: string;
-	url?: string | null;
-	thumbnailURL?: string | null;
-	filename?: string | null;
-	mimeType?: string | null;
-	filesize?: number | null;
-	width?: number | null;
-	height?: number | null;
-	focalX?: number | null;
-	focalY?: number | null;
-	sizes?: {
-		thumb?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		card?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		content?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		content_wide?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		hero?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-		og?: {
-			url?: string | null;
-			width?: number | null;
-			height?: number | null;
-			mimeType?: string | null;
-			filesize?: number | null;
-			filename?: string | null;
-		};
-	};
+export interface Media {
+  id: string;
+  author: string | User;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  alt: string;
+  darkmode: boolean;
+  src?: string | null;
+  caption?: string | null;
+  blurDataUrl?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    content?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    content_wide?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
@@ -875,6 +854,7 @@ export interface Category {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  popularity: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -972,6 +952,40 @@ export interface Delta {
 export interface Tag {
   id: string;
   title: string;
+  tagged?: {
+    docs?: (
+        | {
+      relationTo?: "delta";
+      value: string | Delta;
+    }
+        | {
+      relationTo?: "posts";
+      value: string | Post;
+    }
+        | {
+      relationTo?: "pages";
+      value: string | Page;
+    }
+        | {
+      relationTo?: "profile";
+      value: string | Profile;
+    }
+        | {
+      relationTo?: "albums";
+      value: string | Album;
+    }
+        | {
+      relationTo?: "playlists";
+      value: string | Playlist;
+    }
+        | {
+      relationTo?: "tracks";
+      value: string | Track;
+    }
+        )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   author: string | User;
   slugKey?: string | null;
   hashId: string;
@@ -982,92 +996,108 @@ export interface Tag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "pages".
  */
-export interface Media {
+export interface Page {
   id: string;
-  author: string | User;
+  title: string;
+  hero: {
+    id: string;
+    type: "none" | "highImpact" | "mediumImpact" | "lowImpact";
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ("ltr" | "rtl") | null;
+        format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+        | {
+      link: {
+        type: "reference" | "custom";
+        newTab: boolean;
+        reference?:
+            | ({
+          relationTo: "pages";
+          value: string | Page;
+        } | null)
+            | ({
+          relationTo: "posts";
+          value: string | Post;
+        } | null)
+            | ({
+          relationTo: "delta";
+          value: string | Delta;
+        } | null)
+            | ({
+          relationTo: "users";
+          value: string | User;
+        } | null)
+            | ({
+          relationTo: "albums";
+          value: string | Album;
+        } | null)
+            | ({
+          relationTo: "tracks";
+          value: string | Track;
+        } | null)
+            | ({
+          relationTo: "playlists";
+          value: string | Playlist;
+        } | null)
+            | ({
+          relationTo: "organizations";
+          value: string | Organization;
+        } | null)
+            | ({
+          relationTo: "categories";
+          value: string | Category;
+        } | null);
+        url?: string | null;
+        label: string;
+        /**
+         * Choose how the link should be rendered.
+         */
+        appearance?: ("default" | "outline") | null;
+      };
+      id?: string | null;
+    }[]
+        | null;
+    media?: (string | null) | Media;
+  };
+  layout?: (CallToActionBlock | ContentBlock | Image | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
+  pageLayout: {
+    id: string;
+    footerType?: ("standard" | "linksOnly" | "hidden") | null;
+  };
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (string | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  tagged?: (string | Tag)[] | null;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
   authority?: number | null;
-	alt: string;
-	darkmode: boolean;
-	src?: string | null;
-	caption?: string | null;
-	attribution?: {
-		name?: string | null;
-		link?: string | null;
-	};
-	source: {
-		identifier?: string | null;
-		link?: string | null;
-		provider: "local" | "unsplash" | "pexels";
-	};
-  blurDataUrl?: string | null;
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-	  thumb?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-	  card?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-	  content?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-	  content_wide?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-	  hero?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    og?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1089,40 +1119,6 @@ export interface Album {
   visibility: 'public' | 'private';
   publishedAt?: string | null;
   author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playlists".
- */
-export interface Playlist {
-  id: string;
-  cover?: (string | null) | UserMedia;
-  title: string;
-  description?: string | null;
-  tracks?: (string | Track)[] | null;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  tagged?: (string | Tag)[] | null;
-  author: (string | User)[];
-  visibility: 'public' | 'private';
-  publishedAt?: string | null;
   slugKey?: string | null;
   hashId: string;
   slugLock: boolean;
@@ -1185,333 +1181,34 @@ export interface Track {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-folders".
+ * via the `definition` "playlists".
  */
-export interface FolderInterface {
+export interface Playlist {
   id: string;
-  name: string;
-  folder?: (string | null) | FolderInterface;
-  documentsAndFolders?: {
-    docs?: (
-      | {
-          relationTo?: 'payload-folders';
-          value: string | FolderInterface;
-        }
-      | {
-          relationTo?: 'userMedia';
-          value: string | UserMedia;
-        }
-    )[];
+  cover?: (string | null) | UserMedia;
+  title: string;
+  description?: string | null;
+  tracks?: (string | Track)[] | null;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: 'userMedia'[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "follows".
- */
-export interface Follow {
-  id: string;
-  user: string | User;
-  target: string | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * User notifications for system events and social interactions
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notifications".
- */
-export interface Notification {
-  id: string;
-  recipient: string | User;
-  trigger?:
-    | ({
-        relationTo: 'posts';
-        value: string | Post;
-      } | null)
-    | ({
-        relationTo: 'delta';
-        value: string | Delta;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'profile';
-        value: string | Profile;
-      } | null)
-    | ({
-        relationTo: 'bookmarks';
-        value: string | Bookmark;
-      } | null)
-    | ({
-        relationTo: 'follows';
-        value: string | Follow;
-      } | null)
-    | ({
-        relationTo: 'responses';
-        value: string | Response;
-      } | null);
-  thumbnail?: (string | null) | Asset;
-  type:
-    | 'comment'
-    | 'follow'
-    | 'mention'
-    | 'system'
-    | 'access'
-    | 'bookmark'
-    | 'profile'
-    | 'post'
-    | 'delta'
-    | 'notification';
-  importance: number;
-  status: 'unread' | 'read' | 'dismissed';
-  read: boolean;
-  dismissed: boolean;
-  readAt?: string | null;
-  sticky: boolean;
-  title: string;
-  content: string;
-  actionLink: {
-    type: 'reference' | 'custom';
-    newTab: boolean;
-    reference?:
-      | ({
-          relationTo: 'pages';
-          value: string | Page;
-        } | null)
-      | ({
-          relationTo: 'posts';
-          value: string | Post;
-        } | null)
-      | ({
-          relationTo: 'delta';
-          value: string | Delta;
-        } | null)
-      | ({
-          relationTo: 'users';
-          value: string | User;
-        } | null)
-      | ({
-          relationTo: 'albums';
-          value: string | Album;
-        } | null)
-      | ({
-          relationTo: 'tracks';
-          value: string | Track;
-        } | null)
-      | ({
-          relationTo: 'playlists';
-          value: string | Playlist;
-        } | null)
-      | ({
-          relationTo: 'organizations';
-          value: string | Organization;
-        } | null)
-      | ({
-          relationTo: 'categories';
-          value: string | Category;
-        } | null);
-    url?: string | null;
-    label: string;
-    /**
-     * Choose how the link should be rendered.
-     */
-    appearance?: ('default' | 'outline') | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "responses".
- */
-export interface Response {
-  id: string;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  author: string | User;
-  target:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }
-    | {
-        relationTo: 'delta';
-        value: string | Delta;
-      };
-  isEdited: boolean;
-  depth: number;
-  hash: string;
-  parent?:
-    | ({
-        relationTo: 'responses';
-        value: string | Response;
-      } | null)
-    | ({
-        relationTo: 'citations';
-        value: string | Citation;
-      } | null);
-  mentions?: (string | User)[] | null;
-  /**
-   * Pin this response to the top
-   */
-  isSticky: boolean;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "citations".
- */
-export interface Citation {
-  id: string;
-  path: string;
-  reference: string;
-  selection: {
-    text: string;
-    before: string;
-    after: string;
-  };
-  private: boolean;
-  quote: string;
-  author: string | User;
-  target:
-    | {
-        relationTo: 'delta';
-        value: string | Delta;
-      }
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      };
-  cited: string | User;
-  memo?: string | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pages".
- */
-export interface Page {
-  id: string;
-  title: string;
-  hero: {
-    id: string;
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    links?:
-      | {
-          link: {
-            type: 'reference' | 'custom';
-            newTab: boolean;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: string | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: string | Post;
-                } | null)
-              | ({
-                  relationTo: 'delta';
-                  value: string | Delta;
-                } | null)
-              | ({
-                  relationTo: 'users';
-                  value: string | User;
-                } | null)
-              | ({
-                  relationTo: 'albums';
-                  value: string | Album;
-                } | null)
-              | ({
-                  relationTo: 'tracks';
-                  value: string | Track;
-                } | null)
-              | ({
-                  relationTo: 'playlists';
-                  value: string | Playlist;
-                } | null)
-              | ({
-                  relationTo: 'organizations';
-                  value: string | Organization;
-                } | null)
-              | ({
-                  relationTo: 'categories';
-                  value: string | Category;
-                } | null);
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-    media?: (string | null) | Media;
-  };
-  layout?: (CallToActionBlock | ContentBlock | Media1 | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
-  pageLayout?: {
-    footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
-  };
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (string | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
   tagged?: (string | Tag)[] | null;
+  author: (string | User)[];
+  visibility: "public" | "private";
+  publishedAt?: string | null;
   slugKey?: string | null;
   hashId: string;
   slugLock: boolean;
   slug: string;
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
   authority?: number | null;
+  likes?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1541,6 +1238,105 @@ export interface Organization {
    * Additional metadata for the organization.
    */
   metadata?: string | null;
+  member?: {
+    docs?: (string | Member)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  invitation?: {
+    docs?: (string | Invitation)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  team?: {
+    docs?: (string | Team)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+}
+
+/**
+ * Members of an organization.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "members".
+ */
+export interface Member {
+  id: string;
+  /**
+   * The organization that the member belongs to.
+   */
+  organization: string | Organization;
+  /**
+   * The user that is a member of the organization.
+   */
+  user: string | User;
+  /**
+   * The role of the member in the organization.
+   */
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Invitations to join an organization
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invitations".
+ */
+export interface Invitation {
+  id: string;
+  /**
+   * The organization that the user is being invited to.
+   */
+  organization: string | Organization;
+  /**
+   * The email of the user being invited.
+   */
+  email: string;
+  /**
+   * The role of the user being invited.
+   */
+  role?: string | null;
+  /**
+   * The team that the user is being invited to.
+   */
+  team?: string | null;
+  /**
+   * The status of the invitation.
+   */
+  status: string;
+  /**
+   * The date and time when the invitation will expire.
+   */
+  expiresAt: string;
+  createdAt: string;
+  /**
+   * The user who invited the user.
+   */
+  inviter: string | User;
+  updatedAt: string;
+}
+
+/**
+ * Teams are groups of users that share access to certain resources.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: string;
+  /**
+   * The name of the team.
+   */
+  name: string;
+  /**
+   * The organization that the team belongs to.
+   */
+  organization: string | Organization;
+  createdAt: string;
   updatedAt: string;
 }
 /**
@@ -1624,6 +1420,7 @@ export interface CallToActionBlock {
  * via the `definition` "ContentBlock".
  */
 export interface ContentBlock {
+  id: string | null;
   columns?:
     | {
         id: string;
@@ -1693,31 +1490,31 @@ export interface ContentBlock {
         };
       }[]
     | null;
-  id?: string | null;
   blockName?: string | null;
   blockType: 'content';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Media".
+ * via the `definition` "Image".
  */
-export interface Media1 {
+export interface Image {
   id: string | null;
-	media:
-		| {
-		relationTo: "media";
-		value: string | Media;
-	}
-		| {
-		relationTo: "exMedia";
-		value: string | ExMedia;
-	}
-		| {
-		relationTo: "userMedia";
-		value: string | UserMedia;
-	};
+  media?:
+      | ({
+    relationTo: "media";
+    value: string | Media;
+  } | null)
+      | ({
+    relationTo: "userMedia";
+    value: string | UserMedia;
+  } | null)
+      | ({
+    relationTo: "assets";
+    value: string | Asset;
+  } | null);
+  span?: number | null;
   blockName?: string | null;
-  blockType: 'mediaBlock';
+  blockType: "image";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1829,43 +1626,237 @@ export interface HeroSquareBlock {
   blockType: 'heroSquare';
 }
 /**
- * Sessions are active sessions for users. They are used to authenticate users with a session token
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: string;
+  name: string;
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+        | {
+      relationTo?: "payload-folders";
+      value: string | FolderInterface;
+    }
+        | {
+      relationTo?: "userMedia";
+      value: string | UserMedia;
+    }
+        )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: "userMedia"[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "follows".
+ */
+export interface Follow {
+  id: string;
+  user: string | User;
+  target: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * User notifications for system events and social interactions
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sessions".
+ * via the `definition` "notifications".
  */
-export interface Session {
+export interface Notification {
   id: string;
-  /**
-   * The date and time when the session will expire
-   */
-  expiresAt: string;
-  /**
-   * The unique session token
-   */
-  token: string;
-  createdAt: string;
+  recipient: string | User;
+  trigger?:
+      | ({
+    relationTo: "posts";
+    value: string | Post;
+  } | null)
+      | ({
+    relationTo: "delta";
+    value: string | Delta;
+  } | null)
+      | ({
+    relationTo: "users";
+    value: string | User;
+  } | null)
+      | ({
+    relationTo: "profile";
+    value: string | Profile;
+  } | null)
+      | ({
+    relationTo: "bookmarks";
+    value: string | Bookmark;
+  } | null)
+      | ({
+    relationTo: "follows";
+    value: string | Follow;
+  } | null)
+      | ({
+    relationTo: "responses";
+    value: string | Response;
+  } | null);
+  thumbnail?: (string | null) | Asset;
+  type:
+      | "comment"
+      | "follow"
+      | "mention"
+      | "system"
+      | "access"
+      | "bookmark"
+      | "profile"
+      | "post"
+      | "delta"
+      | "notification";
+  importance: number;
+  status: "unread" | "read" | "dismissed";
+  read: boolean;
+  dismissed: boolean;
+  readAt?: string | null;
+  sticky: boolean;
+  title: string;
+  content: string;
+  actionLink: {
+    type: "reference" | "custom";
+    newTab: boolean;
+    reference?:
+        | ({
+      relationTo: "pages";
+      value: string | Page;
+    } | null)
+        | ({
+      relationTo: "posts";
+      value: string | Post;
+    } | null)
+        | ({
+      relationTo: "delta";
+      value: string | Delta;
+    } | null)
+        | ({
+      relationTo: "users";
+      value: string | User;
+    } | null)
+        | ({
+      relationTo: "albums";
+      value: string | Album;
+    } | null)
+        | ({
+      relationTo: "tracks";
+      value: string | Track;
+    } | null)
+        | ({
+      relationTo: "playlists";
+      value: string | Playlist;
+    } | null)
+        | ({
+      relationTo: "organizations";
+      value: string | Organization;
+    } | null)
+        | ({
+      relationTo: "categories";
+      value: string | Category;
+    } | null);
+    url?: string | null;
+    label: string;
+    /**
+     * Choose how the link should be rendered.
+     */
+    appearance?: ("default" | "outline") | null;
+  };
   updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "responses".
+ */
+export interface Response {
+  id: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  author: string | User;
+  target:
+      | {
+    relationTo: "posts";
+    value: string | Post;
+  }
+      | {
+    relationTo: "delta";
+    value: string | Delta;
+  };
+  isEdited: boolean;
+  depth: number;
+  hash: string;
+  parent?:
+      | ({
+    relationTo: "responses";
+    value: string | Response;
+  } | null)
+      | ({
+    relationTo: "citations";
+    value: string | Citation;
+  } | null);
+  mentions?: (string | User)[] | null;
   /**
-   * The IP address of the device
+   * Pin this response to the top
    */
-  ipAddress?: string | null;
-  /**
-   * The user agent information of the device
-   */
-  userAgent?: string | null;
-  /**
-   * The user that the session belongs to
-   */
-  user: string | User;
-  /**
-   * The admin who is impersonating this session
-   */
-  impersonatedBy?: (string | null) | User;
-  /**
-   * The currently active organization for the session
-   */
-  activeOrganization?: (string | null) | Organization;
+  isSticky: boolean;
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ("draft" | "published") | null;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "citations".
+ */
+export interface Citation {
+  id: string;
+  path: string;
+  reference: string;
+  selection: {
+    text: string;
+    before: string;
+    after: string;
+  };
+  private: boolean;
+  quote: string;
+  author: string | User;
+  target:
+      | {
+    relationTo: "delta";
+    value: string | Delta;
+  }
+      | {
+    relationTo: "posts";
+    value: string | Post;
+  };
+  cited: string | User;
+  memo?: string | null;
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -1918,6 +1909,50 @@ export interface Account {
   createdAt: string;
   updatedAt: string;
 }
+/**
+ * Sessions are active sessions for users. They are used to authenticate users with a session token
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sessions".
+ */
+export interface Session {
+  id: string;
+  /**
+   * The date and time when the session will expire
+   */
+  expiresAt: string;
+  /**
+   * The unique session token
+   */
+  token: string;
+  createdAt: string;
+  updatedAt: string;
+  /**
+   * The IP address of the device
+   */
+  ipAddress?: string | null;
+  /**
+   * The user agent information of the device
+   */
+  userAgent?: string | null;
+  /**
+   * The user that the session belongs to
+   */
+  user: string | User;
+  /**
+   * The admin who is impersonating this session
+   */
+  impersonatedBy?: (string | null) | User;
+  /**
+   * The currently active organization for the session
+   */
+  activeOrganization?: (string | null) | Organization;
+  /**
+   * The currently active team for the session
+   */
+  activeTeam?: (string | null) | Team;
+}
+
 /**
  * Verifications are used to verify authentication requests
  *
@@ -2009,61 +2044,22 @@ export interface Passkey {
   updatedAt: string;
 }
 /**
- * Members of an organization.
+ * Team members of an organization team.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "members".
+ * via the `definition` "teamMembers".
  */
-export interface Member {
+export interface TeamMember {
   id: string;
   /**
-   * The organization that the member belongs to.
+   * The team that the membership belongs to.
    */
-  organization: string | Organization;
+  team: string | Team;
   /**
-   * The user that is a member of the organization.
+   * The user that is a member of the team.
    */
   user: string | User;
-  /**
-   * The role of the member in the organization.
-   */
-  role: string;
   createdAt: string;
-  updatedAt: string;
-}
-/**
- * Invitations to join an organization
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "invitations".
- */
-export interface Invitation {
-  id: string;
-  /**
-   * The organization that the user is being invited to.
-   */
-  organization: string | Organization;
-  /**
-   * The email of the user being invited.
-   */
-  email: string;
-  /**
-   * The role of the user being invited.
-   */
-  role?: string | null;
-  /**
-   * The status of the invitation.
-   */
-  status: string;
-  /**
-   * The date and time when the invitation will expire.
-   */
-  expiresAt: string;
-	createdAt: string;
-  /**
-   * The user who invited the user.
-   */
-  inviter: string | User;
   updatedAt: string;
 }
 /**
@@ -2135,7 +2131,7 @@ export interface UserView {
  */
 export interface Admin {
   id: string;
-	name: string;
+  name: string;
   email: string;
   role: 'admin' | 'user' | 'patron' | 'editor' | 'author';
   /**
@@ -2407,6 +2403,14 @@ export interface PayloadLockedDocument {
         value: string | Organization;
       } | null)
     | ({
+    relationTo: "teams";
+    value: string | Team;
+  } | null)
+      | ({
+    relationTo: "teamMembers";
+    value: string | TeamMember;
+  } | null)
+      | ({
         relationTo: 'members';
         value: string | Member;
       } | null)
@@ -2426,6 +2430,10 @@ export interface PayloadLockedDocument {
         relationTo: 'categories';
         value: string | Category;
       } | null)
+      | ({
+    relationTo: "media";
+    value: string | Media;
+  } | null)
     | ({
         relationTo: 'notifications';
         value: string | Notification;
@@ -2439,10 +2447,10 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
-	  relationTo: "userMedia";
-	  value: string | UserMedia;
+    relationTo: "userMedia";
+    value: string | UserMedia;
   } | null)
-	  | ({
+      | ({
         relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
@@ -2455,14 +2463,10 @@ export interface PayloadLockedDocument {
         value: string | Response;
       } | null)
     | ({
-	  relationTo: "compilations";
-	  value: string | Compilation;
+    relationTo: "compilations";
+    value: string | Compilation;
   } | null)
-	  | ({
-	  relationTo: "exMedia";
-	  value: string | ExMedia;
-  } | null)
-	  | ({
+      | ({
         relationTo: 'admins';
         value: string | Admin;
       } | null)
@@ -2546,6 +2550,7 @@ export interface UsersSelect<T extends boolean = true> {
   slug?: T;
   firstName?: T;
   lastName?: T;
+  verified?: T;
   username?: T;
   bio?: T;
   location?: T;
@@ -2571,6 +2576,8 @@ export interface UsersSelect<T extends boolean = true> {
   normalizedEmail?: T;
   banReason?: T;
   banExpires?: T;
+  account?: T;
+  session?: T;
   meta?:
     | T
     | {
@@ -2593,7 +2600,8 @@ export interface SessionsSelect<T extends boolean = true> {
   userAgent?: T;
   user?: T;
   impersonatedBy?: T;
-	activeOrganization?: T;
+  activeOrganization?: T;
+  activeTeam?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2643,7 +2651,7 @@ export interface PasskeysSelect<T extends boolean = true> {
   name?: T;
   publicKey?: T;
   user?: T;
-	credentialId?: T;
+  credentialId?: T;
   counter?: T;
   deviceType?: T;
   backedUp?: T;
@@ -2662,6 +2670,31 @@ export interface OrganizationsSelect<T extends boolean = true> {
   logo?: T;
   createdAt?: T;
   metadata?: T;
+  member?: T;
+  invitation?: T;
+  team?: T;
+  updatedAt?: T;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams_select".
+ */
+export interface TeamsSelect<T extends boolean = true> {
+  name?: T;
+  organization?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teamMembers_select".
+ */
+export interface TeamMembersSelect<T extends boolean = true> {
+  team?: T;
+  user?: T;
+  createdAt?: T;
   updatedAt?: T;
 }
 /**
@@ -2683,9 +2716,10 @@ export interface InvitationsSelect<T extends boolean = true> {
   organization?: T;
   email?: T;
   role?: T;
+  team?: T;
   status?: T;
   expiresAt?: T;
-	createdAt?: T;
+  createdAt?: T;
   inviter?: T;
   updatedAt?: T;
 }
@@ -2705,27 +2739,15 @@ export interface AdminInvitationsSelect<T extends boolean = true> {
  * via the `definition` "assets_select".
  */
 export interface AssetsSelect<T extends boolean = true> {
+  id?: T;
   alt?: T;
   caption?: T;
-	compiled?: T;
-	locked?: T;
-	allowList?: T;
-	authority?: T;
+  compiled?: T;
+  locked?: T;
+  allowList?: T;
+  authority?: T;
   darkmode?: T;
-	src?: T;
-	attribution?:
-		| T
-		| {
-		name?: T;
-		link?: T;
-	};
-  source?:
-    | T
-    | {
-        identifier?: T;
-        link?: T;
-        provider?: T;
-      };
+  src?: T;
   blurDataUrl?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2741,7 +2763,7 @@ export interface AssetsSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-	  thumb?:
+    thumb?:
           | T
           | {
               url?: T;
@@ -2751,7 +2773,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  card?:
+    card?:
           | T
           | {
               url?: T;
@@ -2761,7 +2783,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  content?:
+    content?:
           | T
           | {
               url?: T;
@@ -2771,7 +2793,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  content_wide?:
+    content_wide?:
           | T
           | {
               url?: T;
@@ -2781,7 +2803,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  hero?:
+    hero?:
           | T
           | {
               url?: T;
@@ -2808,11 +2830,13 @@ export interface AssetsSelect<T extends boolean = true> {
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
+  id?: T;
   title?: T;
   relatedCategories?: T;
   description?: T;
   slug?: T;
   categorized?: T;
+  popularity?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2821,27 +2845,15 @@ export interface CategoriesSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
-	author?: T;
-	locked?: T;
-	allowList?: T;
-	authority?: T;
+  id?: T;
+  author?: T;
+  locked?: T;
+  allowList?: T;
+  authority?: T;
   alt?: T;
   darkmode?: T;
-	src?: T;
-	caption?: T;
-	attribution?:
-		| T
-		| {
-		name?: T;
-		link?: T;
-	};
-  source?:
-    | T
-    | {
-        identifier?: T;
-        link?: T;
-        provider?: T;
-      };
+  src?: T;
+  caption?: T;
   blurDataUrl?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2857,7 +2869,7 @@ export interface MediaSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-	  thumb?:
+    thumb?:
           | T
           | {
               url?: T;
@@ -2867,7 +2879,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  card?:
+    card?:
           | T
           | {
               url?: T;
@@ -2877,7 +2889,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  content?:
+    content?:
           | T
           | {
               url?: T;
@@ -2887,7 +2899,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  content_wide?:
+    content_wide?:
           | T
           | {
               url?: T;
@@ -2897,7 +2909,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  hero?:
+    hero?:
           | T
           | {
               url?: T;
@@ -2924,7 +2936,9 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "tags_select".
  */
 export interface TagsSelect<T extends boolean = true> {
+  id?: T;
   title?: T;
+  tagged?: T;
   author?: T;
   slugKey?: T;
   hashId?: T;
@@ -2938,6 +2952,7 @@ export interface TagsSelect<T extends boolean = true> {
  * via the `definition` "notifications_select".
  */
 export interface NotificationsSelect<T extends boolean = true> {
+  id?: T;
   recipient?: T;
   trigger?: T;
   thumbnail?: T;
@@ -2968,6 +2983,7 @@ export interface NotificationsSelect<T extends boolean = true> {
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
+  id?: T;
   title?: T;
   hero?:
     | T
@@ -2997,7 +3013,7 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
-        mediaBlock?: T | MediaSelect1<T>;
+    image?: T | ImageSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         fotd?: T | FOTDBlockSelect<T>;
         heroSquare?: T | HeroSquareBlockSelect<T>;
@@ -3005,6 +3021,7 @@ export interface PagesSelect<T extends boolean = true> {
   pageLayout?:
     | T
     | {
+    id?: T;
         footerType?: T;
       };
   meta?:
@@ -3056,6 +3073,7 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
  * via the `definition` "ContentBlock_select".
  */
 export interface ContentBlockSelect<T extends boolean = true> {
+  id?: T;
   columns?:
     | T
     | {
@@ -3074,16 +3092,16 @@ export interface ContentBlockSelect<T extends boolean = true> {
               appearance?: T;
             };
       };
-  id?: T;
   blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Media_select".
+ * via the `definition` "Image_select".
  */
-export interface MediaSelect1<T extends boolean = true> {
+export interface ImageSelect<T extends boolean = true> {
   id?: T;
   media?: T;
+  span?: T;
   blockName?: T;
 }
 /**
@@ -3172,28 +3190,16 @@ export interface PostsSelect<T extends boolean = true> {
  * via the `definition` "userMedia_select".
  */
 export interface UserMediaSelect<T extends boolean = true> {
-	author?: T;
-	bookmarks?: T;
-	locked?: T;
-	allowList?: T;
-	authority?: T;
+  id?: T;
+  author?: T;
+  bookmarks?: T;
+  locked?: T;
+  allowList?: T;
+  authority?: T;
   alt?: T;
-	darkmode?: T;
-	src?: T;
+  darkmode?: T;
+  src?: T;
   caption?: T;
-	attribution?:
-		| T
-		| {
-		name?: T;
-		link?: T;
-	};
-  source?:
-    | T
-    | {
-        identifier?: T;
-        link?: T;
-        provider?: T;
-      };
   blurDataUrl?: T;
   likes?: T;
   folder?: T;
@@ -3211,7 +3217,7 @@ export interface UserMediaSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-	  thumb?:
+    thumb?:
           | T
           | {
               url?: T;
@@ -3221,7 +3227,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  card?:
+    card?:
           | T
           | {
               url?: T;
@@ -3231,7 +3237,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  content?:
+    content?:
           | T
           | {
               url?: T;
@@ -3241,7 +3247,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  content_wide?:
+    content_wide?:
           | T
           | {
               url?: T;
@@ -3251,7 +3257,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-	  hero?:
+    hero?:
           | T
           | {
               url?: T;
@@ -3514,114 +3520,19 @@ export interface ResponsesSelect<T extends boolean = true> {
  * via the `definition` "compilations_select".
  */
 export interface CompilationsSelect<T extends boolean = true> {
-	title?: T;
-	items?: T;
-	imagePicker?: T;
-	updatedAt?: T;
-	createdAt?: T;
+  id?: T;
+  title?: T;
+  items?: T;
+  imagePicker?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
-
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "exMedia_select".
- */
-export interface ExMediaSelect<T extends boolean = true> {
-	alt?: T;
-	darkmode?: T;
-	src?: T;
-	author?: T;
-	source?:
-		| T
-		| {
-		provider?: T;
-		link?: T;
-		identifier?: T;
-	};
-	blurDataUrl?: T;
-	caption?: T;
-	updatedAt?: T;
-	createdAt?: T;
-	url?: T;
-	thumbnailURL?: T;
-	filename?: T;
-	mimeType?: T;
-	filesize?: T;
-	width?: T;
-	height?: T;
-	focalX?: T;
-	focalY?: T;
-	sizes?:
-		| T
-		| {
-		thumb?:
-			| T
-			| {
-			url?: T;
-			width?: T;
-			height?: T;
-			mimeType?: T;
-			filesize?: T;
-			filename?: T;
-		};
-		card?:
-			| T
-			| {
-			url?: T;
-			width?: T;
-			height?: T;
-			mimeType?: T;
-			filesize?: T;
-			filename?: T;
-		};
-		content?:
-			| T
-			| {
-			url?: T;
-			width?: T;
-			height?: T;
-			mimeType?: T;
-			filesize?: T;
-			filename?: T;
-		};
-		content_wide?:
-			| T
-			| {
-			url?: T;
-			width?: T;
-			height?: T;
-			mimeType?: T;
-			filesize?: T;
-			filename?: T;
-		};
-		hero?:
-			| T
-			| {
-			url?: T;
-			width?: T;
-			height?: T;
-			mimeType?: T;
-			filesize?: T;
-			filename?: T;
-		};
-		og?:
-			| T
-			| {
-			url?: T;
-			width?: T;
-			height?: T;
-			mimeType?: T;
-			filesize?: T;
-			filename?: T;
-		};
-	};
-}
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
-	id?: T;
+  id?: T;
   name?: T;
   email?: T;
   role?: T;
@@ -3641,6 +3552,7 @@ export interface AdminsSelect<T extends boolean = true> {
  * via the `definition` "email-quota_select".
  */
 export interface EmailQuotaSelect<T extends boolean = true> {
+  id?: T;
   date?: T;
   used?: T;
   updatedAt?: T;
@@ -3651,6 +3563,7 @@ export interface EmailQuotaSelect<T extends boolean = true> {
  * via the `definition` "deferred-emails_select".
  */
 export interface DeferredEmailsSelect<T extends boolean = true> {
+  id?: T;
   emailData?: T;
   category?: T;
   scheduledFor?: T;

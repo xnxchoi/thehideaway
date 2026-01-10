@@ -1,18 +1,18 @@
 "use client";
 
-import { paginatedPosts } from "@/payload/collections/Posts/api/queryPostOverview";
+import {paginatedPosts} from "@/payload/collections/Posts/api/queryPostOverviews";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
 import { PaginatedDocs } from "payload";
 import { useEffect, useRef, useState } from "react";
 import { InView } from "react-intersection-observer";
 import { TaggedItem } from "../../../../../../components/layouts/Tagged/Item";
-import type { ArticleOverview } from "../../../../../../types/collections/posts";
+import type {PostOverview} from "../../../../../../types/collections/posts";
 
-const PageClient = (props: { posts: PaginatedDocs<ArticleOverview> }) => {
-  const [posts, setPosts] = useState<PaginatedDocs<ArticleOverview>>(
+const PageClient = (props: { posts: PaginatedDocs<PostOverview> }) => {
+  const [posts, setPosts] = useState<PaginatedDocs<PostOverview>>(
     props.posts
   );
-  const [docs, setDocs] = useState<ArticleOverview[]>(posts.docs);
+  const [docs, setDocs] = useState<PostOverview[]>(posts.docs);
   const [currentPage, setCurrentPage] = useState(props.posts.page!);
   const currentPageRef = useRef(currentPage);
   const initialPage = useRef(props.posts.page!);
@@ -51,7 +51,7 @@ const PageClient = (props: { posts: PaginatedDocs<ArticleOverview> }) => {
       {docs.map((post) => (
         <TaggedItem key={post.id} {...post} />
       ))}
-      {limit > currentPage && (
+      {limit > currentPage && hasNextPage && (
         <InView
           className="next-loader absolute bottom-0 h-[15vh] w-full"
           onChange={onChange}

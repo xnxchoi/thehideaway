@@ -1,27 +1,26 @@
 "use client";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {Menu} from "@base-ui/react"
-import * as m from "motion/react-m"
-import type {ChangeEvent, ComponentProps, MouseEventHandler, ReactNode} from "react"
-import {useCallback, useEffect, useState} from "react"
-
 import {EASING} from "@/constants/animations"
 import {cn} from "@/lib/utils"
+import {FetchedUnsplashImage, UnsplashFetchResult} from "@/types/ImageCollections/unsplash";
 import {MenuPopup, MenuPositioner} from "@/payload/components/Popover"
 import {errorToast} from "@/payload/components/sonner"
 import {Tab, TabIndicator, TabPanel, TabsList, TabsRoot} from "@/payload/elements/Tabs"
-import type {HTMLMotionProps} from "motion/react"
-import NextImage, {StaticImageData} from "next/image"
-import {useGalleryFetch} from "../useGalleryFetch"
-import {useDarkRoom} from "../ImageNode/DarkRoom"
 import {
+	ImageCollectionSlug,
 	ProcessedImage,
 	RalueWithRelation,
 	RenderImageFields,
 	TabNames
-} from "@/types/collections/imageCollections";
+} from "@/types/collections/image-collections";
+import {Menu} from "@base-ui/react"
 import {useAuth} from "@payloadcms/ui";
-import {FetchedUnsplashImage, UnsplashFetchResult} from "@/payload/collections/Media/hooks/types";
+import type {HTMLMotionProps} from "motion/react"
+import * as m from "motion/react-m"
+import NextImage from "next/image"
+import type {ChangeEvent, ComponentProps, MouseEventHandler, ReactNode} from "react"
+import {useCallback} from "react"
+import {uuidv7} from "uuidv7";
+import {useGalleryFetch} from "../useGalleryFetch"
 
 type OnFetchProps = { file: File; unsplashMeta: FetchedUnsplashImage };
 type FallbackImageInsertProps = {
@@ -47,7 +46,7 @@ export const InsertFallbackImage = ({
 				const blob = await imageResponse.blob();
 				const file = new File(
 					[blob],
-					`unsplash-${unsplash.form.source.identifier}.jpg`,
+					`unsplash-${uuidv7()}.jpg`,
 					{
 						type: blob.type || "image/jpeg"
 					}
@@ -191,7 +190,7 @@ const ImageModal = ({
 	setImage: (image: null | string | ProcessedImage) => void
 }) => {
 	const onOpenTabChange = useCallback((tab: null | TabNames) => {
-		setActiveCollection(tab === "unsplash" || tab === "url" ? "exMedia" : tab === "upload" || tab === "personal" ? "userMedia" : "assets");
+		setActiveCollection(tab === "unsplash" || tab === "url" ? "media" : tab === "upload" || tab === "personal" ? "userMedia" : "assets");
 		setOpenedTab(tab || "gallery");
 		onOpenChange?.(tab)
 	}, [onOpenChange, setActiveCollection, setOpenedTab]);
@@ -313,7 +312,6 @@ const ImageInsert = ({
 				className={cn("w-full relative m-0 h-[64px] rounded-[4px] overflow-hidden transition-[opacity,background-color] duration-200 ease-out-power2 hover:opacity-85 hover:bg-muted-faded-background", figureClassName)}>
 				<NextImage
 					unoptimized={true}
-					preload={false}
 					src={src}
 					alt={alt || ""}
 					fill={true}

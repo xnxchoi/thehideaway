@@ -3,18 +3,18 @@ import type {
   ReturnedCitationData,
   UpdateCitationData
 } from "@/components/UX/Highlightr/types";
-import { Citation } from "@/payload-types";
-import { citationHandler } from "@/payload/collections/Citations/endpoints";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { hashContent } from "@/payload/fields/slug/HashId/hasher";
+import {Citation} from "@/payload-types";
+import {citationHandler} from "@/payload/collections/Citations/endpoints";
+import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {hashContent} from "@/payload/fields/slug/HashId/hasher";
 import {
-  CollectionConfig,
-  Where,
   type CollectionAfterReadHook,
-  type CollectionBeforeValidateHook
+  type CollectionBeforeValidateHook,
+  CollectionConfig,
+  Where
 } from "payload";
-import { filterByCurrentUser } from "../helpers";
-import { queryAuthorOverview } from "../Posts/api/queryPostOverview";
+import {filterByCurrentUser} from "../helpers";
+import {getUserOverview} from "../Posts/api/queryPostOverviews";
 
 const beforeValidateCitation: CollectionBeforeValidateHook<Citation> = async (
   args
@@ -109,7 +109,7 @@ const afterReadCitation: CollectionAfterReadHook<Citation> = async (args) => {
   //Author field is always a 0-depth value
   const { author: ad, ...rest } = doc;
   const authorId = typeof ad === "string" ? ad : ad.id;
-  const author = await queryAuthorOverview(authorId as string);
+  const author = await getUserOverview(authorId as string);
   return {
     ...rest,
     author
@@ -338,7 +338,7 @@ export const Citations: CollectionConfig = {
       relationTo: "users",
       hasMany: false,
       required: true,
-      maxDepth: 0,
+      maxDepth: 1,
       access: {
         update: ({ req }) => {
           if (req.context.overrideAccess === true) {

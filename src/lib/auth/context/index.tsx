@@ -1,13 +1,17 @@
 "use client";
 
-import {createContext, useContext, ReactNode} from "react";
-import type {Session, Account, DeviceSession} from "@/lib/auth/types";
+import type {
+	BetterPaidAccount,
+	BetterPaidBaseSession,
+	BetterPaidDeviceSession
+} from "@/lib/auth/types";
 import type {TypedUser} from "payload";
+import {createContext, ReactNode, useContext} from "react";
 
 type UserContextType = {
-	sessionPromise: Promise<Session | null>;
-	userAccountsPromise: Promise<Account[] | null>;
-	deviceSessionsPromise: Promise<DeviceSession[] | null>;
+	sessionPromise: Promise<BetterPaidBaseSession | null>;
+	userAccountsPromise: Promise<BetterPaidAccount[] | null>;
+	deviceSessionsPromise: Promise<BetterPaidDeviceSession[] | null>;
 	currentUserPromise: Promise<TypedUser | null>;
 };
 
@@ -22,16 +26,16 @@ export function useBetterAuth(): UserContextType {
 }
 
 export function BetterAuthProvider({
-	children,
-	sessionPromise,
-	userAccountsPromise,
-	deviceSessionsPromise,
-	currentUserPromise,
-}: {
+	                                   children,
+	                                   sessionPromise,
+	                                   userAccountsPromise,
+	                                   deviceSessionsPromise,
+	                                   currentUserPromise,
+                                   }: {
 	children: ReactNode;
-	sessionPromise: Promise<Session | null>;
-	userAccountsPromise: Promise<Account[] | null>;
-	deviceSessionsPromise: Promise<DeviceSession[] | null>;
+	sessionPromise: Promise<BetterPaidBaseSession | null>;
+	userAccountsPromise: Promise<BetterPaidAccount[] | null>;
+	deviceSessionsPromise: Promise<BetterPaidDeviceSession[] | null>;
 	currentUserPromise: Promise<TypedUser | null>;
 }) {
 	return (

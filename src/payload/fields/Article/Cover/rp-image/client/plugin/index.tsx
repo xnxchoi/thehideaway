@@ -1,12 +1,7 @@
-import {useDarkRoom} from "@/payload/fields/Article/Cover/ImageNode/DarkRoom";
-import {ImageForm} from "@/payload/fields/Article/Cover/ImageNode/Forms/schema";
+"use client"
+import {ImageProcessForm, useDarkRoom} from "@/payload/fields/Article/Cover/ImageNode/DarkRoom";
 import {
-	UploadResult,
-	useRPUploadMutation
-} from "@/payload/fields/Article/Cover/ImageNode/hooks/useRPImageQuery";
-import {
-	INSERT_RP_IMAGE_COMMAND,
-	RPImagePayload
+	INSERT_RP_IMAGE_COMMAND
 } from "@/payload/fields/Article/Cover/rp-image/client/drawer/commands";
 import {
 	$createRPImageNode,
@@ -14,11 +9,13 @@ import {
 	RP_ImageNode
 } from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
 import {
-	Internal_RPImageData
+	Internal_RPImageData,
+	RP_ImageData
 } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
-import {RenderImageFields} from "@/types/collections/imageCollections";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {isHTMLElement} from "@payloadcms/richtext-lexical/client";
+import {ImageCollectionSlug} from "@/types/ImageCollections";
+import {imageSelect} from "@/types/payload-api-selects";
+import {getClientSideURL} from "@/utilities/getURL";
+import {PluginComponent} from "@payloadcms/richtext-lexical";
 import {
 	$createRangeSelection,
 	$getPreviousSelection,
@@ -28,10 +25,9 @@ import {
 	$setSelection,
 	COMMAND_PRIORITY_EDITOR,
 	COMMAND_PRIORITY_LOW,
-	createCommand,
 	DROP_COMMAND,
 	getDOMSelectionFromTarget,
-	LexicalCommand,
+	isHTMLElement,
 	PASTE_COMMAND
 } from "@payloadcms/richtext-lexical/lexical";
 import {
@@ -42,7 +38,10 @@ import {
 	$insertNodeToNearestRoot,
 	mergeRegister
 } from "@payloadcms/richtext-lexical/lexical/utils";
-import {useCallback, useEffect, useEffectEvent, useMemo} from "react";
+import {useAuth, useEffectEvent} from "@payloadcms/ui";
+import {$getNodeByKey} from "lexical";
+import {stringify} from "qs-esm";
+import {useEffect, useMemo} from "react";
 import {uuidv7} from "uuidv7";
 
 declare global {
@@ -79,91 +78,150 @@ function getDragSelection(event: DragEvent): null | Range | undefined {
 	return range
 }
 
-export const INSERT_UPLOAD_COMMAND: LexicalCommand<RPImagePayload> =
-	createCommand("INSERT_UPLOAD_COMMAND")
-export const RPDarkRoomPlugin = () => {
-	const enabledCollectionSlugs = useMemo(() => ["exMedia", "userMedia"] as Exclude<ImageCollectionSlug, "assets">[], [])
+export const DarkRoomPlugin: PluginComponent = () => {
+	const enabledCollectionSlugs = useMemo(() => ["media", "userMedia"] as Exclude<ImageCollectionSlug, "assets">[], [])
+
 	const setActiveCollection = useDarkRoom(r => r.setActiveCollection)
+	const setOnCancel = useDarkRoom(r => r.setOnCancel)
+	const setOnSuccess = useDarkRoom(r => r.setOnSuccess)
+	const setImageForm = useDarkRoom(r => r.setImageForm)
+
 	const [editor] = useLexicalComposerContext();
-	const {mutateAsync, setOnSuccess} = useRPUploadMutation();
-	const onOpen = useCallback(() => {
-
-	}, [])
-	const onUpload = useCallback((data: UploadResult, formID: string) => {
-		const {
-			alt,
-			src,
-			sizes,
-			caption,
-			blurDataUrl,
-			source, darkmode, height, width,
-		} = data.processed satisfies RenderImageFields;
-		editor.update(() => {
-			for (const dfsNode of $dfsIterator()) {
-				const node = dfsNode.node
-				if ($isRPImageNode(node)) {
-					const nodeData: Internal_RPImageData = node.getData()
-
-					if (nodeData?.pending) {
-						const f = nodeData.pending.formID
-						if (f === formID && data) {
-							node.replace(
-								$createRPImageNode({
-									data: {
-										id: uuidv7(),
-										height: height || undefined,
-										width: width || undefined,
-										blurDataUrl: blurDataUrl || undefined,
-										alt,
-										caption: caption || undefined,
-										src,
-										darkmode,
-										relationTo: data.relationTo,
-										value: data.value.id,
-									}
-								}),
-							)
+	const {user} = useAuth()
+	const queryString = useMemo(() => stringify({select: imageSelect()}, {addQueryPrefix: true}), [])
+	const openUploadTab = useEffectEvent((forms: ImageProcessForm[]) => {
+		if (forms.length < 1) return;
+		setImageForm(forms)
+		setOnCancel(() => {
+			editor.update(() => {
+				for (const dfsNode of $dfsIterator()) {
+					const node = dfsNode.node
+					if ($isRPImageNode(node)) {
+						const nodeData = node.getData()
+						if (nodeData?.pending) {
+							const f = nodeData.pending.formID
+							for (const form of forms) {
+								if (f === form.formID) {
+									node.remove()
+								}
+							}
 						}
 					}
 				}
-			}
+			})
 		})
-	}, [editor])
 
-	const doUpload = useEffectEvent(async (items: Array<ImageForm & {
-		alt: string;
-		caption?: string;
-		formID: string; author: string;
-	}>) => {
-		const r = items.map(async item => mutateAsync({
-			formID: item.formID, payload: {
-				file: item.file,
-				collection: item.collection,
-				alt: item.alt,
-				caption: item.caption,
-				author: item.author,
-				darkmode: false,
-				source: {
-					identifier: "",
-					provider: item.collection === "exMedia" ? "external" : "local"
-				}
-			}
-		}))
-		const v = await Promise.allSettled(r)
-		v.flatMap(r => r.status === "fulfilled" ? r.value : []).forEach(r => onUpload(r, r.formID))
 	})
+	const serverURL = getClientSideURL();
 	useEffect(() => {
 		if (!editor.hasNodes([RP_ImageNode])) {
 			throw new Error("RP_ImageNode not registered")
 		}
-		return mergeRegister(editor.registerCommand(INSERT_RP_IMAGE_COMMAND, (payload) => {
-				editor.update(() => {
+		if (!user) return;
+		return mergeRegister(
+			editor.registerNodeTransform(RP_ImageNode, (node) => {
+				const nodeData = node.getData();
+				if (!(nodeData?.pending)) {
+					return;
+				}
+
+				async function upload() {
+					let transformedImage: ImageProcessForm | null = null
+					if (!(nodeData?.pending)) {
+						return;
+					}
+					const src = nodeData.pending.src
+					const formID = nodeData?.pending?.formID as string
+					const meta = {
+						alt: "",
+						author: user?.id + "",
+						source: {
+
+							provider: "local" as const
+						},
+						darkmode: false,
+					}
+					if (src?.startsWith("data:")) {
+						// It's a base64-encoded image
+						const mimeMatch = src.match(/data:(image\/[a-zA-Z]+);base64,/)
+						const mimeType = mimeMatch ? mimeMatch[1] : "image/png" // Default to PNG if MIME type not found
+						const base64Data = src.replace(/^data:image\/[a-zA-Z]+;base64,/, "")
+						const byteCharacters = atob(base64Data)
+						const byteNumbers = new Array(byteCharacters.length)
+						for (let i = 0; i < byteCharacters.length; i++) {
+							byteNumbers[i] = byteCharacters.charCodeAt(i)
+						}
+						const byteArray = new Uint8Array(byteNumbers)
+						const file = new File([byteArray], "pasted-image." + mimeType?.split("/", 2)[1], {
+							type: mimeType,
+						})
+						transformedImage = {
+							meta, file, formID
+						}
+					} else if (src?.startsWith("http") || src?.startsWith("https")) {
+						// It's an image URL
+						const res = await fetch(src)
+						const blob = await res.blob()
+						const inferredFileName =
+							src.split("/").pop() || "pasted-image" + blob.type.split("/", 2)[1]
+						const file = new File([blob], inferredFileName, {
+							type: blob.type,
+						})
+
+						transformedImage = {meta, file, formID}
+					}
+
+					if (!transformedImage) {
+						return
+					}
+
+					openUploadTab([transformedImage])
+				}
+
+				void upload()
+			}),
+			editor.registerCommand(INSERT_RP_IMAGE_COMMAND, (payload) => {
+				editor.update(async () => {
 					const selection = $getSelection() || $getPreviousSelection()
 					if ($isRangeSelection(selection)) {
 
-						const {relationTo, id} = payload;
-
-						const node = $createRPImageNode({data: payload})
+						// const {relationTo, pending,} = payload;
+						// let meta: RP_InternalImageNodeData | undefined;
+						// if ("value" in payload) {
+						// 	const {value} = payload;
+						// 	const res = await fetch(`${serverURL}/api/${relationTo}/${value}${queryString}`, {
+						// 		method: "GET",
+						// 		headers: {
+						// 			"Content-Type": "application/json"
+						// 		}, cache: "force-cache",
+						// 		credentials: "include"
+						// 	})
+						// 	if (res.ok) {
+						// 		const ress = await res.json() as RenderImageFields
+						// 		const {
+						// 			width,
+						// 			height,
+						// 			src,
+						// 			alt,
+						// 			caption,
+						// 			darkmode,
+						// 			blurDataUrl,
+						//
+						// 		} = ress;
+						// 		meta = {
+						// 			width: width || undefined,
+						// 			height: height || undefined,
+						// 			src: typeof src === "string" ? src : src.src,
+						// 			alt,
+						// 			caption,
+						// 			darkmode,
+						// 			blurDataUrl: blurDataUrl || undefined,
+						// 		}
+						// 	} else {
+						// 		console.error(res.statusText)
+						// 	}
+						// }
+						const node = $createRPImageNode({data: ({...payload,})})
 						// we need to get the focus node before inserting the block node, as $insertNodeToNearestRoot can change the focus node
 						const {focus} = selection
 						const focusNode = focus.getNode()
@@ -194,15 +252,21 @@ export const RPDarkRoomPlugin = () => {
 						return false
 					}
 
-					const files: { formID: string; file: File; alt: string }[] = []
+					const files: ImageProcessForm[] = []
 					if (clipboardData?.files?.length) {
-						Array.from(clipboardData.files).flatMap(r => r.type.startsWith("image/") ? r : []).forEach((file) => {
-							files.push({
-								alt: "",
-								file,
-								formID: uuidv7()
+						for (const r of Array.from(clipboardData.files).flatMap(r => r.type.startsWith("image/") ? r : [])) {
+
+							r && files.push({
+								file: r,
+								formID: uuidv7(),
+								meta: {
+									alt: "",
+									darkmode: false,
+
+									author: user.id + "",
+								}
 							})
-						})
+						}
 					}
 
 					if (files.length) {
@@ -218,6 +282,8 @@ export const RPDarkRoomPlugin = () => {
 												formID: file.formID,
 												src: URL.createObjectURL(file.file),
 											},
+											placeholder: false,
+
 										} as Internal_RPImageData,
 									})
 									// we need to get the focus node before inserting the upload node, as $insertNodeToNearestRoot can change the focus node
@@ -232,10 +298,10 @@ export const RPDarkRoomPlugin = () => {
 									}
 								}
 							}
+
 						})
-
 						// Open the bulk drawer - the node transform will not open it for us, as it does not handle blob/file uploads
-
+						openUploadTab(files)
 						return true
 					}
 
@@ -257,13 +323,17 @@ export const RPDarkRoomPlugin = () => {
 						return false
 					}
 
-					const files: { file: File; alt: string; formID: string }[] = []
+					const files: ImageProcessForm[] = []
 					if (dt?.files?.length) {
 						Array.from(dt.files).flatMap(r => r.type.startsWith("image/") ? r : []).forEach((file) => {
 							files.push({
-								alt: "",
 								file,
-								formID: uuidv7(),
+								formID: uuidv7(), meta: {
+									alt: "",
+									darkmode: false,
+
+									author: user.id + "",
+								}
 							})
 						})
 					}
@@ -307,7 +377,7 @@ export const RPDarkRoomPlugin = () => {
 						})
 
 						// Open the bulk drawer - the node transform will not open it for us, as it does not handle blob/file uploads
-
+						openUploadTab(files)
 						return true
 					}
 
@@ -315,5 +385,6 @@ export const RPDarkRoomPlugin = () => {
 				},
 				COMMAND_PRIORITY_LOW,
 			),)
-	}, [])
+	}, [editor, user])
+	return <></>
 }

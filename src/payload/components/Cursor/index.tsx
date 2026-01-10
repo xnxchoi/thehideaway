@@ -1,5 +1,6 @@
 "use client";
 
+import {useCoordinator} from "@/providers/CoordinatorCtx";
 import {useEffect, useMemo, useRef, useState} from "react";
 
 import {cn} from "@/lib/utils";
@@ -25,8 +26,8 @@ type DEFAULT = null;
 export type CursorStates = FOCUS | DRAG | DEFAULT;
 // Initialize cursor
 export default function Admin_Cursor() {
-	const cursorX = useMotionValue(window.innerWidth / 2);
-	const cursorY = useMotionValue(window.innerHeight / 2);
+	const cursorX = useCoordinator(r => r.x)
+	const cursorY = useCoordinator(r => r.y)
 	const {isMobile} = useIsMobile();
 	const textWidth = useRef(12);
 	const c = useMemo(
@@ -38,18 +39,16 @@ export default function Admin_Cursor() {
 		[]
 	);
 
-	useEffect(() => {
-		const updatePosition = (e: MouseEvent) => {
-			cursorX.set(e.clientX);
-			cursorY.set(e.clientY);
-		};
-
-		document.addEventListener("mousemove", updatePosition);
-
-		return () => {
-			document.removeEventListener("mousemove", updatePosition);
-		};
-	}, [cursorX, cursorY]);
+	// useEffect(() => {
+	// 	const updatePosition = (e: MouseEvent) => {
+	// 		cursorX.set(e.clientX);
+	// 		cursorY.set(e.clientY);
+	// 	};
+	// 	document.addEventListener("mousemove", updatePosition);
+	// 	return () => {
+	// 		document.removeEventListener("mousemove", updatePosition);
+	// 	};
+	// }, [cursorX, cursorY]);
 	const springConfig = useMemo(() => ({duration: 0}), []);
 	const isTouchDevice = useDeviceInfo(useShallow((r) => r.isTouchDevice));
 	const [isTextCursor, setIsTextCursor] = useState(!1);
@@ -70,12 +69,13 @@ export default function Admin_Cursor() {
 		useShallow((l) => l.pageIsTransitioning)
 	);
 	const cursorTheme = useCursor(useShallow((l) => l.cursorTheme));
+	const baseTheme = useCursor(useShallow((l) => l.baseCursorTheme));
 
 	const colors = useMemo(
 		() => ({
 			rouge: "62.41% 0.246 28.34",
-			light: "0.9735 0.0013 218.99",
-			dark: "10.17% 0.0013 218.99"
+			dark: "0.9735 0.0013 218.99",
+			light: "10.17% 0.0013 218.99"
 		}),
 		[]
 	);
@@ -135,7 +135,7 @@ export default function Admin_Cursor() {
 		}),
 		[]
 	);
-	const strokeColor = useMotionValue(`oklch(${currentBase}/1)`);
+	const strokeColor = useMotionValue(`oklch(${colors[cursorTheme]}/1)`);
 
 	const outerVariants = useMemo(
 		() => ({
@@ -291,7 +291,6 @@ export default function Admin_Cursor() {
 	//   { dependencies: [cursorState], scope: cursr }
 	// );
 
-	const baseTheme = useCursor(useShallow((l) => l.baseCursorTheme));
 	const setBaseCursorTheme = useCursor((l) => l.setBaseCursorTheme);
 	const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
 
@@ -418,9 +417,12 @@ export default function Admin_Cursor() {
 								/>
 								<m.circle
 									ref={iCircle}
-									className="inline fill-nav-button stroke-0"
+									className="inline stroke-0"
 									cx={50}
 									cy={50}
+									style={{
+										fill: strokeColor
+									}}
 									variants={innerVariants}
 									initial={"hidden"}
 									animate={circleVariant}

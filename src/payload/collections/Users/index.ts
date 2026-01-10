@@ -1,30 +1,31 @@
-import type { User } from "@/payload-types";
-import { getUserBookmarks } from "@/payload/collections/Bookmarks/getUserBookmarks";
-import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
-import { GotUser } from "@/payload/collections/Users/endpoints/getUser";
-import { getUserFollowers } from "@/payload/collections/Users/endpoints/getUserFollowers";
-import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserFollows";
-import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
-import { validateHandler } from "@/payload/collections/Users/endpoints/validateHandle";
-import { afterChangeUsers } from "@/payload/collections/Users/hooks/afterChange";
+import type {User} from "@/payload-types";
+import {getUserBookmarks} from "@/payload/collections/Bookmarks/getUserBookmarks";
+import {hideIfNotAdmin} from "@/payload/collections/helpers";
+import {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
+import {getUserFollowers} from "@/payload/collections/Users/endpoints/getUserFollowers";
+import {getUserFollowing} from "@/payload/collections/Users/endpoints/getUserFollows";
+import {GotUser} from "@/payload/collections/Users/endpoints/userFieldSelect";
+import {userOverviewHandler} from "@/payload/collections/Users/endpoints/userOverview";
+import {validateHandler} from "@/payload/collections/Users/endpoints/validateHandle";
+import {afterChangeUsers} from "@/payload/collections/Users/hooks/afterChange";
 import {
   revalidateDelete as afterDeleteUser,
   revalidateUser
 } from "@/payload/collections/Users/hooks/revalidateUser";
-import { hideIfNotAdmin } from "@/payload/collections/helpers";
-import { userHandleField } from "@/payload/fields/handle";
-import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
-import type { RP_Roles } from "@/stores/Notification/NotificationStore";
-import { generatePreviewPath } from "@/utilities/generatePreviewPath";
-import { getServerSideURL } from "@/utilities/getURL";
+import {userHandleField} from "@/payload/fields/handle";
+import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
+import type {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {enforceUserFields} from "@/types/collections/users";
+import {generatePreviewPath} from "@/utilities/generatePreviewPath";
+import {getServerSideURL} from "@/utilities/getURL";
 import {
   MetaDescriptionField,
   MetaImageField,
   MetaTitleField,
   OverviewField
 } from "@payloadcms/plugin-seo/fields";
-import { CollectionConfig, Where } from "payload";
-import { uuidv7 } from "uuidv7";
+import {CollectionConfig, Where} from "payload";
+import {uuidv7} from "uuidv7";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -39,10 +40,10 @@ export const Users: CollectionConfig = {
     role: true,
     protected: true,
     verified: true
-  },
+  }, forceSelect: enforceUserFields(),
   auth: {
     disableLocalStrategy: true,
-    useSessions: false
+
   },
   admin: {
     defaultColumns: ["username", "name"],

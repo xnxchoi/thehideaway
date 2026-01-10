@@ -1,6 +1,7 @@
+import {ACField} from "@/AccessControlled/plugin"
 import {isAuthorOrEditor} from "@/payload/plugins/locker/access/accessCheckers"
 import type {CollectionConfig} from "payload"
-import {ACField} from "@/AccessControlled/plugin"
+import {uuidv7} from "uuidv7";
 import {hideIfNotAdmin} from "./helpers"
 
 export const Compilations: CollectionConfig = {
@@ -20,7 +21,18 @@ export const Compilations: CollectionConfig = {
 		title: true,
 		items: true,
 	},
-	fields: [
+	fields: [{
+		name: "id",
+		type: "text",
+		defaultValue: uuidv7,
+		access: {
+			update: () => false
+		},
+		required: true,
+		admin: {
+			hidden: true
+		}
+	},
 		{
 			name: "title",
 			type: "text",
@@ -33,7 +45,7 @@ export const Compilations: CollectionConfig = {
 		{
 			name: "items",
 			type: "relationship",
-			relationTo: ["assets", "exMedia"],
+			relationTo: ["assets", "media"],
 			required: true,
 			maxDepth: 2,
 			hasMany: true,

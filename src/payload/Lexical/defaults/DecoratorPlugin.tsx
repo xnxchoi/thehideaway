@@ -59,8 +59,8 @@ export function DecoratorPlugin() {
         CLICK_COMMAND,
         (event) => {
           document
-            .querySelector(".decorator-selected")
-            ?.classList.remove("decorator-selected");
+	          .querySelector(".estate-selected")
+	          ?.classList.remove("estate-selected");
           const decorator = $getDecoratorByMouseEvent(event);
           if (!decorator) {
             return true;
@@ -96,10 +96,10 @@ export function DecoratorPlugin() {
         () => {
           const decorator = $getSelectedDecorator();
           document
-            .querySelector(".decorator-selected")
-            ?.classList.remove("decorator-selected");
+	          .querySelector(".estate-selected")
+	          ?.classList.remove("estate-selected");
           if (decorator) {
-            decorator.element?.classList.add("decorator-selected");
+	          decorator.element?.classList.add("estate-selected");
             return true;
           }
           return false;
@@ -291,13 +291,13 @@ function $selectDecorator({
   node: DecoratorNode<unknown>;
 }) {
   document
-    .querySelector(".decorator-selected")
-    ?.classList.remove("decorator-selected");
+	  .querySelector(".estate-selected")
+	  ?.classList.remove("estate-selected");
   const selection = $createNodeSelection();
   selection.add(node.getKey());
   $setSelection(selection);
   element.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  element.classList.add("decorator-selected");
+	element.classList.add("estate-selected");
 }
 
 /**

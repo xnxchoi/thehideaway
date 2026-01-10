@@ -1,5 +1,3 @@
-import {CollectionConfig} from "payload";
-
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import type {User} from "@/payload-types";
 import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
@@ -7,20 +5,34 @@ import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
 import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
 import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
+import {CollectionConfig} from "payload";
 import {fileURLToPath} from "url";
 import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 const MediaFields: CollectionConfig["fields"] = [
-
+	{
+		name: "id",
+		type: "text",
+		defaultValue: uuidv7,
+		access: {
+			read: () => true,
+			create: () => false,
+			update: () => false
+		},
+		required: true,
+		admin: {
+			hidden: true
+		}
+	},
 	...AuthorField(false),
 
 ];
 
 export const Media: CollectionConfig = {
   slug: "media",
-  lockDocuments: false,
+
   admin: {
 	  // hidden: hideIfNotAdmin
 	  baseFilter: ({req}) => {
@@ -64,7 +76,7 @@ export const Media: CollectionConfig = {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, "../../../public/media"),
 
-	  mimeTypes: ["video/*", "audio/*", "application/pdf"],
+	  mimeTypes: ["video/*", "audio/*", "image/*", "application/pdf"],
      
   },
   hooks: {
@@ -112,31 +124,7 @@ export const Media: CollectionConfig = {
         }
       }
     ],
-    beforeValidate: [
-      async ({ req, context, operation, data, originalDoc }) => {
-        let dt = data;
-        if (operation === "create") {
-          if (context.sourceId && context.sourceId.length > 0) {
-            dt = {
-              ...dt,
-              source: {
-                sourceId: context.sourceId,
-                provider: "unsplash"
-              }
-            };
-          }
-        } else {
-          dt = {
-            ...dt,
-            source: {
-              ...originalDoc.source
-            }
-          };
-        }
-        context.sourceId = undefined;
-        return dt;
-      }
-    ],
+    beforeValidate: [],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]
     // afterOperation: [webpConversionHook]
   }

@@ -1,7 +1,8 @@
-import { withPayload } from "@payloadcms/next/withPayload";
+import {withPayload} from "@payloadcms/next/withPayload";
 
 import createNextIntlPlugin from "next-intl/plugin";
-import type { NextConfig } from "next/types";
+import type {NextConfig} from "next/types";
+
 const withNextIntl = createNextIntlPlugin();
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -34,7 +35,10 @@ const nextConfig: NextConfig = {
     }
   },
   experimental: {
-    typedEnv: true
+	  typedEnv: true,
+	  serverActions: {
+		  bodySizeLimit: "2.5mb"
+	  }
   },
   serverExternalPackages: ["pdfmake"],
   webpack: (config, { isServer, webpack }) => {
@@ -51,14 +55,14 @@ const nextConfig: NextConfig = {
       type: "asset/source"
     });
 
-    // config.plugins.push(
-    //   new webpack.IgnorePlugin({
-    //     resourceRegExp: /^pg-native$|^cloudflare:sockets$/
-    //   })
-    // );
+	  config.plugins.push(
+		  new webpack.IgnorePlugin({
+			  resourceRegExp: /^pg-native$|^cloudflare:sockets$/
+		  })
+	  );
     return config;
   },
-  sassOptions: { includePaths: ["src"] },
+	sassOptions: {includePaths: ["src", "src/app/(payload)"]},
   reactStrictMode: true,
 
   typescript: {

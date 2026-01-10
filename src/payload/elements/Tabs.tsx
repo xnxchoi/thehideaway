@@ -1,7 +1,8 @@
 "use client"
 import {cn} from "@/lib/utils"
 import {Tabs} from "@base-ui/react"
-import type {ComponentProps, ReactNode} from "react"
+import Lenis from "lenis";
+import {ComponentProps, MouseEventHandler, ReactNode, useCallback, useEffect, useRef} from "react"
 
 const TabsRoot = ({
 	                  children,
@@ -50,10 +51,12 @@ const TabIndicator = ({className, ref, ...rest}: ComponentProps<typeof Tabs.Indi
 }
 
 const TabPanel = ({
-	                  className, children, value, ...props
+	                  ref, className, children, value, ...props
                   }: ComponentProps<typeof Tabs.Panel>) => {
+
 	return (
 		<Tabs.Panel
+			ref={ref}
 			{...props}
 			className={cn(
 				"relative flex h-32 min-h-0 grow items-center justify-center overflow-x-hidden overflow-y-auto mask-[linear-gradient(black_0%,black_calc(100%-34px),transparent_100%)] -outline-offset-1 data-hidden:hidden",

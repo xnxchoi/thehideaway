@@ -1,9 +1,8 @@
+import {Citation} from "@/payload-types";
+import {AuthorOverview} from "@/types/collections/users";
+import type {Operation} from "payload";
 import type * as rangey from "rangy";
-import { Citation } from "@/payload-types";
-import { HighlightColors } from "@/components/UX/Highlightr/stores";
-import { AuthorOverview } from "@/types/collections/posts";
-import type { Operation } from "payload";
-import type { RequiredFields, RequiredKeys } from "@/utilities/typeUtilities";
+
 export type RangeUpdateParams = {
   memo?: string | null;
   private?: boolean;

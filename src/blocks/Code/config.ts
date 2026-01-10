@@ -7,7 +7,7 @@ export const Code: Block = {
 	admin: {
 		components: {
 			Block: {
-				path: "@/blocks/Code/Component.client.tsx"
+				path: "@/blocks/Code/Component.client.tsx#Code"
 			}
 		}
 	},

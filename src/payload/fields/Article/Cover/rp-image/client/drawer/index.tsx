@@ -1,22 +1,13 @@
-import {useDarkRoom} from "@/payload/fields/Article/Cover/ImageNode/DarkRoom";
 import {
-	INSERT_RP_IMAGE_COMMAND,
-	INSERT_RP_IMAGE_WITH_TAB_COMMAND
+	INSERT_RP_IMAGE_COMMAND
 } from "@/payload/fields/Article/Cover/rp-image/client/drawer/commands";
 import {$createRPImageNode} from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
 import {
 	RP_InternalImageNodeData
 } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
-import {ProcessedImageDoc} from "@/types/collections/imageCollections";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {useLexicalListDrawer} from "@payloadcms/richtext-lexical/client";
+import {ImageCollectionSlug} from "@/types/ImageCollections";
 import {LexicalEditor} from "@payloadcms/richtext-lexical/lexical";
-import {
-	useLexicalComposerContext
-} from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import {$getNodeByKey, COMMAND_PRIORITY_EDITOR} from "lexical";
-import {useCallback, useEffect} from "react";
-import {uuidv7} from "uuidv7";
+import {$getNodeByKey} from "lexical";
 
 export const insertRPImage = <T extends ImageCollectionSlug>({
 	                                                             editor,
@@ -27,36 +18,44 @@ export const insertRPImage = <T extends ImageCollectionSlug>({
 	editor: LexicalEditor
 	relationTo: T
 	replaceNodeKey: null | string
-	value?: string;
-	meta?: RP_InternalImageNodeData;
-}) => {
-	if (!replaceNodeKey) {
-		if (value && relationTo && !!meta) {
-			editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
-				...meta, span: 100, width: meta.width || 100, height: meta.height || 100,
-				alt: meta.alt || "", caption: meta.caption || "", darkmode: meta.darkmode || false,
 
-				src: meta.src as string,
-				relationTo,
-				value,
-			})
-		} else {
-			editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
-				relationTo,
-				pending: {
-					formID: uuidv7()
-				}
-			})
+} & ({
+	value: string;
+	meta?: RP_InternalImageNodeData;
+} | { value?: undefined; meta?: undefined; })) => {
+	if (!replaceNodeKey) {
+		if (value) {
+			if (!!meta) {
+				editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
+					...meta,
+					span: 100,
+					width: meta.width || 100,
+					height: meta.height || 100,
+					alt: meta.alt || "",
+					caption: meta.caption || "",
+					darkmode: meta.darkmode || false,
+
+					src: meta.src as string,
+					relationTo,
+					placeholder: false,
+					value,
+				})
+			} else {
+				editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
+					relationTo,
+					value,
+					placeholder: false,
+				})
+			}
 		}
 	} else {
-		if (value && relationTo && meta) {
+		if (value) {
 			editor.update(() => {
 				const node = $getNodeByKey(replaceNodeKey)
 				if (node) {
 					node.replace($createRPImageNode({
 						data: {
-							...meta,
-							src: meta.src as string
+							...(meta && meta || {})
 							, relationTo,
 							value,
 						},
@@ -70,9 +69,10 @@ export const insertRPImage = <T extends ImageCollectionSlug>({
 						node.replace($createRPImageNode({
 							data: {
 								relationTo: relationTo,
-								pending: {
-									formID: uuidv7()
-								}
+								width: 0,
+								height: 0, darkmode: false,
+								alt: "", span: 100,
+								placeholder: true,
 							}
 						}))
 					}
@@ -81,58 +81,65 @@ export const insertRPImage = <T extends ImageCollectionSlug>({
 		}
 	}
 }
-
-export const ImageTab = () => {
-	const [editor] = useLexicalComposerContext()
-
-	const replaceNodeKey = useDarkRoom(r => r.replaceNodeKey);
-	const setReplaceNodeKey = useDarkRoom(r => r.setReplaceNodeKey);
-	const setMenuOpen = useDarkRoom(r => r.setOpen)
-	const activeCollection = useDarkRoom(r => r.activeCollection);
-	const formID = useDarkRoom(r => r.formID);
-	const closeMenu = useCallback(() => {
-		setMenuOpen(false)
-	}, [setMenuOpen])
-	const cancelUpload = useCallback(() => {
-
-	}, [])
-	const openMenu = useCallback(({
-		                              formID
-	                              }: { formID: string; }) => {
-
-	}, [])
-	const {closeListDrawer, ListDrawer, openListDrawer} = useLexicalListDrawer({
-		collectionSlugs: [],
-		uploads: true,
-	})
-
-	useEffect(() => {
-		return editor.registerCommand<{
-			replace: { nodeKey: string } | false
-		}>(
-			INSERT_RP_IMAGE_WITH_TAB_COMMAND,
-			(payload) => {
-				setReplaceNodeKey(payload?.replace ? payload?.replace.nodeKey : null)
-				openListDrawer()
-				return true
-			},
-			COMMAND_PRIORITY_EDITOR,
-		)
-	}, [editor, openListDrawer])
-//<NonNullable<ListDrawerProps['onSelect']>>
-	const onSelect = useCallback(async ({collection, doc}: {
-			collection: ImageCollectionSlug;
-			doc: ProcessedImageDoc;
-		}) => {
-			insertRPImage({
-				editor,
-				relationTo: collection,
-				replaceNodeKey,
-				value: doc.id,
-			})
-		},
-		[editor, replaceNodeKey],
-	)
-
-	return <></>
-}
+//
+// export const ImageTab = () => {
+// 	const [editor] = useLexicalComposerContext()
+//
+// 	const setMenuOpen = useDarkRoom(r => r.setOpen)
+// 	const activeCollection = useDarkRoom(r => r.activeCollection);
+// 	const closeMenu = useCallback(() => {
+// 		setMenuOpen(false)
+// 	}, [setMenuOpen])
+// 	const cancelUpload = useCallback(() => {
+//
+// 	}, [])
+// 	const openMenu = useCallback(({
+// 		                              formID
+// 	                              }: { formID: string; }) => {
+//
+// 	}, [])
+// 	const {closeListDrawer, ListDrawer, openListDrawer} = useLexicalListDrawer({
+// 		collectionSlugs: [],
+// 		uploads: true,
+// 	})
+//
+// 	useEffect(() => {
+// 		return editor.registerCommand<{
+// 			replace: { nodeKey: string } | false
+// 		}>(
+// 			INSERT_RP_IMAGE_WITH_TAB_COMMAND,
+// 			(payload) => {
+// 				setReplaceNodeKey(payload?.replace ? payload?.replace.nodeKey : null)
+// 				openListDrawer()
+// 				return true
+// 			},
+// 			COMMAND_PRIORITY_EDITOR,
+// 		)
+// 	}, [editor, openListDrawer])
+// //<NonNullable<ListDrawerProps['onSelect']>>
+// 	const onSelect = useCallback(async ({collection, doc}: {
+// 			collection: ImageCollectionSlug;
+// 			doc: ProcessedImageDoc;
+// 		}) => {
+// 			insertRPImage({
+// 				editor,
+// 				relationTo: collection,
+//
+// 				value: doc.id,
+// 				meta: {
+// 					width: doc.width || undefined,
+// 					height: doc.height || undefined,
+// 					src: doc.src,
+// 					alt: doc.alt,
+// 					caption: doc.caption,
+// 					darkmode: doc.darkmode,
+// 					blurDataUrl: doc.blurDataUrl,
+// 					showCaption: false,
+// 				}
+// 			})
+// 		},
+// 		[editor,],
+// 	)
+//
+// 	return <></>
+// }

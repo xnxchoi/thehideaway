@@ -1,21 +1,34 @@
-import { getPayload, PaginatedDocs, Payload, Where } from "payload";
+import {DeltaSelect} from "@/payload-types";
+import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+import {AuthorOverview} from "@/types/collections/users";
 
 import configPromise from "@payload-config";
-import { DeltaSelect, PostsSelect } from "@/payload-types";
+import {getPayload, PaginatedDocs, Payload, Where} from "payload";
+import {cache} from "react";
 
-import type {
-  ReqDelta,
-  DeltaOverview,
-  TagOverview,
-  CatOverview
-} from "../../../../types/collections/delta";
-import { cache } from "react";
-import { getDeltaBookMarks } from "./getDeltaBookmarks";
-import type {
-  AuthorOverview,
-  AuthorSingle
-} from "../../../../types/collections/posts";
+import type {DeltaOverview, ReqDelta} from "../../../../types/collections/delta";
+import {getDeltaBookMarks} from "./getDeltaBookmarks";
 
+export type DeltaOverviewSelect = {
+	title: true
+	publishedAt: true
+	image: true
+	subtitle: true
+	slug: true
+	author: true
+	locked: true
+	category: true
+}
+export const deltaOverviewSelect = (): DeltaOverviewSelect => ({
+	title: true,
+	publishedAt: true,
+	image: true,
+	subtitle: true,
+	slug: true,
+	author: true,
+	locked: true,
+	category: true,
+})
 /**
  * @param limit - The number of posts to return
  * @param page - The page number to return
@@ -24,13 +37,13 @@ import type {
  * @param overrideAccess - Whether to override the access control, default true
  * @param select - The select clause to select the posts
  */
-export type QueryPostOverviewParams = {
-  limit?: number;
-  page?: number;
-  where?: Where;
-  sort?: string;
-  overrideAccess?: boolean;
-  select?: PostsSelect;
+export type QueryDeltaOverviewParams = {
+	limit?: number;
+	page?: number;
+	where?: Where;
+	sort?: string;
+	overrideAccess?: boolean;
+	select?: DeltaSelect;
 };
 /**
  * A wrapper function to streamline the querying process.
@@ -45,35 +58,27 @@ export type QueryPostOverviewParams = {
  * @param select - The select clause to select the posts
  * @todo merge the query into one by setting defaultPopulate config on the {@link Users} collection config
  */
-export const queryPostOverview = cache(
-  async ({
-    limit = 10,
-    page = 1,
-    where = {},
-    sort = "-publishedAt",
-    overrideAccess = true,
-    select = {}
-  }: QueryPostOverviewParams): Promise<DeltaOverview[]> => {
-    // 1) Get the payload instance
-    const payload = await getPayload({ config: configPromise });
-    const baseSelect: DeltaSelect = {
-      title: true,
-      publishedAt: true,
-      image: true,
-      subtitle: true,
-      slug: true,
-      author: true,
-      locked: true,
-      category: true,
+export const queryDeltaOverview = cache(
+	async ({
+		       limit = 10,
+		       page = 1,
+		       where = {},
+		       sort = "-publishedAt",
+		       overrideAccess = true,
+		       select = {}
+	       }: QueryDeltaOverviewParams): Promise<DeltaOverview[]> => {
+		// 1) Get the payload instance
+		const payload = await getPayload({config: configPromise});
+		const baseSelect: DeltaSelect = {
 
-      ...select
-    };
-    // 2) Query for the posts
-    return await queryOverview({
-      payload,
-      params: { limit, page, where, sort, overrideAccess, select: baseSelect }
-    }).then((posts) => posts.docs);
-  }
+			...select
+		};
+		// 2) Query for the posts
+		return await queryOverview({
+			payload,
+			params: {limit, page, where, sort, overrideAccess, select: baseSelect}
+		}).then((posts) => posts.docs);
+	}
 );
 
 /**
@@ -90,147 +95,146 @@ export const queryPostOverview = cache(
  * @param overrideAccess - Whether to override the access control, default true
  * @param select - The select clause to select the posts
  */
-export const paginatedPosts = async (
-  params: QueryPostOverviewParams
+export const paginatedDelta = async (
+	params: QueryDeltaOverviewParams
 ): Promise<PaginatedDocs<DeltaOverview>> => {
-  // 1) Get the payload instance
-  const payload = await getPayload({ config: configPromise });
-  return queryOverview({ payload, params });
+	// 1) Get the payload instance
+	const payload = await getPayload({config: configPromise});
+	return queryOverview({payload, params});
 };
 
-type OveerViewParams = { payload: Payload; params: QueryPostOverviewParams };
+type OveerViewParams = { payload: Payload; params: QueryDeltaOverviewParams };
 export const queryOverview = cache(
-  async ({
-    payload,
-    params: {
-      limit = 10,
-      page = 1,
-      where = {},
-      sort = "-publishedAt",
-      overrideAccess = true,
-      select = {}
-    }
-  }: OveerViewParams): Promise<PaginatedDocs<DeltaOverview>> => {
-    const baseWhere: Where & { and: Where[] } = {
-      and: [
-        {
-          _status: {
-            equals: "published"
-          }
-        }
-      ]
-    };
-    for (const [key, value] of Object.entries(where)) {
-      if (key === "and") {
-        baseWhere.and.push(...(value as Where[]));
-      } else if (key === "or") {
-        baseWhere.and.push({
-          or: (value as Where[]).map((w) => ({
-            ...w
-          }))
-        });
-      } else {
-        baseWhere.and.push({ [key]: value });
-      }
-    }
-    const baseSelect: DeltaSelect = {
-      title: true,
-      publishedAt: true,
-      image: true,
-      subtitle: true,
-      slug: true,
-      tagged: true,
-      updatedAt: true,
-      author: true,
-      locked: true,
-      category: true,
-      ...select
-    };
-    // 2) Query for the deltas
-    const foundDeltas: PaginatedDocs<ReqDelta> = (await payload
-      .find({
-        collection: "delta",
-        limit,
-        page,
-        where: baseWhere,
-        sort,
-        overrideAccess,
-        select: baseSelect
-      })
-      .catch((e) => {
-        console.error({
-          message: `Error while retrieving delta overview`,
-          error: e
-        });
-        return {
-          docs: [],
-          totalDocs: 0,
-          totalPages: 0,
-          page: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
-          nextPage: 0,
-          prevPage: 0,
-          pagingCounter: 0,
-          limit: 0
-        };
-      })) as PaginatedDocs<ReqDelta>;
-    // 3) For each delta, query for the author info
-    const deltas: DeltaOverview[] = (await Promise.all(
-      foundDeltas.docs.flatMap(async (delta) => {
-        const authorID = delta.author;
-        if (!authorID || typeof authorID !== "string") {
-          return [];
-        }
-        const author = await payload
-          .findByID({
-            collection: "users",
-            id: authorID,
-            select: {
-              name: true,
-              slug: true,
-              displayUsername: true
-            }
-          })
-          .then((r) => {
-            return {
-              ...r,
-              displayUsername: r.displayUsername ?? r.name
-            } as AuthorOverview;
-          })
-          .catch((e) => {
-            console.error({
-              message: `Error while retrieving author info`,
-              error: e
-            });
-            return null;
-          });
-        if (!author) {
-          return [];
-        }
-        const bookmarks = await getDeltaBookMarks({
-          payload,
-          id: `${delta.id}`
-        });
-        const finalDelta: DeltaOverview = {
-          ...delta,
-          author: author,
-          category: delta.category as CatOverview,
-          tagged: delta.tagged ? (delta.tagged as Array<TagOverview>) : [],
-          ...(bookmarks instanceof Error
-            ? { bookmarks: [] as string[], bookmarksCount: 0 }
-            : {
-                bookmarks: bookmarks.bookmarks,
-                bookmarksCount: bookmarks.count
-              })
-        };
-        return finalDelta;
-      })
-    )) as DeltaOverview[];
-    const { docs: _, ...rest } = foundDeltas;
-    return {
-      docs: deltas,
-      ...rest
-    };
-  }
+	async ({
+		       payload,
+		       params: {
+			       limit = 10,
+			       page = 1,
+			       where = {},
+			       sort = "-publishedAt",
+			       overrideAccess = true,
+			       select = {}
+		       }
+	       }: OveerViewParams): Promise<PaginatedDocs<DeltaOverview>> => {
+		const baseWhere: Where & { and: Where[] } = {
+			and: [
+				{
+					_status: {
+						equals: "published"
+					}
+				}
+			]
+		};
+		for (const [key, value] of Object.entries(where)) {
+			if (key === "and") {
+				baseWhere.and.push(...(value as Where[]));
+			} else if (key === "or") {
+				baseWhere.and.push({
+					or: (value as Where[]).map((w) => ({
+						...w
+					}))
+				});
+			} else {
+				baseWhere.and.push({[key]: value});
+			}
+		}
+		const baseSelect: DeltaSelect = {
+			title: true,
+			publishedAt: true,
+			subtitle: true,
+			slug: true,
+			tagged: true,
+			updatedAt: true,
+			author: true,
+			locked: true,
+			category: true,
+			...select
+		};
+		// 2) Query for the deltas
+		const foundDeltas: PaginatedDocs<ReqDelta> = (await payload
+			.find({
+				collection: "delta",
+				limit,
+				page,
+				where: baseWhere,
+				sort,
+				overrideAccess,
+				select: baseSelect
+			})
+			.catch((e) => {
+				console.error({
+					message: `Error while retrieving delta overview`,
+					error: e
+				});
+				return {
+					docs: [],
+					totalDocs: 0,
+					totalPages: 0,
+					page: 0,
+					hasNextPage: false,
+					hasPrevPage: false,
+					nextPage: 0,
+					prevPage: 0,
+					pagingCounter: 0,
+					limit: 0
+				};
+			})) as PaginatedDocs<ReqDelta>;
+		// 3) For each delta, query for the author info
+		const deltas: DeltaOverview[] = (await Promise.all(
+			foundDeltas.docs.flatMap(async (delta) => {
+				const authorID = delta.author;
+				if (!authorID || typeof authorID !== "string") {
+					return [];
+				}
+				const author = await payload
+					.findByID({
+						collection: "users",
+						id: authorID,
+						select: {
+							name: true,
+							slug: true,
+							displayUsername: true
+						}
+					})
+					.then((r) => {
+						return {
+							...r,
+							displayUsername: r.displayUsername ?? r.name
+						} as AuthorOverview;
+					})
+					.catch((e) => {
+						console.error({
+							message: `Error while retrieving author info`,
+							error: e
+						});
+						return null;
+					});
+				if (!author) {
+					return [];
+				}
+				const bookmarks = await getDeltaBookMarks({
+					payload,
+					id: `${delta.id}`
+				});
+				const finalDelta: DeltaOverview = {
+					...delta,
+					author: author,
+					category: delta.category as CategoryOverview,
+					tagged: delta.tagged ? (delta.tagged as Array<TagOverview>) : [],
+					...(bookmarks instanceof Error
+						? {bookmarks: [] as string[], bookmarksCount: 0}
+						: {
+							bookmarks: bookmarks.bookmarks,
+							bookmarksCount: bookmarks.count
+						})
+				};
+				return finalDelta;
+			})
+		)) as DeltaOverview[];
+		const {docs: _, ...rest} = foundDeltas;
+		return {
+			docs: deltas,
+			...rest
+		};
+	}
 );

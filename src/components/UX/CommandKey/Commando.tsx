@@ -1,4 +1,6 @@
 "use client";
+import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+import {AuthorOverview} from "@/types/collections/users";
 import React, { ReactNode } from "react";
 import {
   CommandEmpty,
@@ -17,13 +19,10 @@ import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useTransitionRouter } from "next-transition-router";
 import { useShallow } from "zustand/shallow";
 import type {
-  ArticleOverview,
-  AuthorOverview
+	PostOverview
 } from "../../../types/collections/posts";
 import type {
-  CatOverview,
-  DeltaOverview,
-  TagOverview
+	DeltaOverview
 } from "../../../types/collections/delta";
 import { useQuery } from "@tanstack/react-query";
 import type { CollectionSlug } from "payload";
@@ -76,9 +75,9 @@ export function Commando() {
             };
             content:
               | TagOverview
-              | CatOverview
+	            | CategoryOverview
               | AuthorOverview
-              | ArticleOverview
+	            | PostOverview
               | DeltaOverview;
           }[];
         };
@@ -209,9 +208,9 @@ export const LinkedItem = (props: {
   };
   content:
     | TagOverview
-    | CatOverview
+	  | CategoryOverview
     | AuthorOverview
-    | ArticleOverview
+	  | PostOverview
     | DeltaOverview;
 }) => {
   const { doc, content } = props;

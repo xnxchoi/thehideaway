@@ -1,14 +1,15 @@
-import {link} from "@/payload/fields/link";
 import {fetchMyNotifications} from "@/payload/collections/Users/endpoints/fetchMyNotifications";
+import {link} from "@/payload/fields/link";
+import {getFallbackImage} from "@/utilities/getFallbackImage";
 import {Notification} from "@payload-types";
 import {DateTime} from "luxon";
 import {type CollectionBeforeValidateHook, CollectionConfig} from "payload";
+import {uuidv7} from "uuidv7";
 import {hideIfNotAdmin} from "../helpers";
 import {DismissNotification} from "./endpoints/dismiss/dismiss";
 import {ReadAllNotifications} from "./endpoints/read-all/readAll";
 import {ReadNotification} from "./endpoints/read/read";
 import {getThumbnail} from "./hooks/getThumbnail";
-import {getFallbackImage} from "@/utilities/getFallbackImage";
 
 const fillDataHook: CollectionBeforeValidateHook<Notification> = async ({
   data,
@@ -21,7 +22,6 @@ const fillDataHook: CollectionBeforeValidateHook<Notification> = async ({
   if (!originalDoc) {
     req.payload.logger.error(
       "Original document not found for notification:",
-      data
     );
     return data;
   }
@@ -116,7 +116,18 @@ export const Notifications: CollectionConfig = {
       return !!(user?.role === "admin");
     }
   },
-  fields: [
+	fields: [{
+		name: "id",
+		type: "text",
+		defaultValue: uuidv7,
+		access: {
+			update: () => false
+		},
+		required: true,
+		admin: {
+			hidden: true
+		}
+	},
     // Target user (recipient)
     {
       name: "recipient",

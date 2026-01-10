@@ -1,18 +1,14 @@
 "use server";
-import pload, {
-  CollectionAfterChangeHook,
-  CollectionSlug,
-  PayloadRequest
-} from "payload";
-import { User } from "@/payload-types";
-import { DateTime } from "luxon";
+import {User} from "@/payload-types";
+import {createNotification} from "@/payload/collections/Notifications/hooks/createNotification";
+import {RequireKeysAndRestOptional} from "@/utilities/typeUtilities";
 import config from "@payload-config";
-import { RequireKeysAndRestOptional } from "@/utilities/typeUtilities";
-import { cache } from "react";
-import { createNotification } from "@/payload/collections/Notifications/hooks/createNotification";
+import {DateTime} from "luxon";
+import pload, {CollectionAfterChangeHook, CollectionSlug, PayloadRequest} from "payload";
+import {cache} from "react";
 
 export const afterChangeUsers: CollectionAfterChangeHook<User> = async ({
-  doc,
+                                                                          doc, data,
   req,
   operation
 }) => {

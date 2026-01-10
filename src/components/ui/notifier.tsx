@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "@/providers/Theme";
+import {AuthorOverview} from "@/types/collections/users";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { CollectionSlug } from "payload";
@@ -9,7 +10,6 @@ import { Toaster as Sonner, toast as sonnerToast, ToasterProps } from "sonner";
 import { useShallow } from "zustand/shallow";
 import { useHumanTime } from "../../payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "../../payload/collections/Notifications/hooks/types";
-import type { AuthorOverview } from "../../types/collections/posts";
 import { useDomCursor } from "../core/cursorWrapper";
 import { Link } from "../UX/Link/Link";
 import { Button } from "../UX/Button";

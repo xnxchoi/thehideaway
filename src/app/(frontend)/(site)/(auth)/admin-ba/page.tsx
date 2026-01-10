@@ -322,7 +322,7 @@ export default function AdminDashboard() {
 										<TableCell>{user.name}</TableCell>
 										<TableCell>{user.role || "user"}</TableCell>
 										<TableCell>
-											{user.banned ? (
+											{user?.banned ? (
 												<Badge variant="destructive">Yes</Badge>
 											) : (
 												<Badge variant="outline">No</Badge>
@@ -403,7 +403,7 @@ export default function AdminDashboard() {
 												        }} disabled={isLoading?.startsWith("ban")}>
 													{isLoading === `ban-${user.id}` ? (
 														<Loader2 className="h-4 w-4 animate-spin" />
-													) : user.banned ? (
+													) : user?.banned ? (
 														"Unban"
 													) : (
 														"Ban"

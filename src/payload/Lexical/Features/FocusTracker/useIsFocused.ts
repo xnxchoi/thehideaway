@@ -1,39 +1,46 @@
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { mergeRegister } from "@lexical/utils";
-import { CAN_USE_DOM } from "@payloadcms/richtext-lexical/client";
-import { BLUR_COMMAND, COMMAND_PRIORITY_NORMAL, FOCUS_COMMAND } from "lexical";
-import { useEffect, useLayoutEffect, useState } from "react";
+"use client"
+import {CAN_USE_DOM} from "@payloadcms/richtext-lexical/client";
+import {
+	BLUR_COMMAND,
+	COMMAND_PRIORITY_NORMAL,
+	FOCUS_COMMAND
+} from "@payloadcms/richtext-lexical/lexical";
+import {
+	useLexicalComposerContext
+} from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
+import {mergeRegister} from "@payloadcms/richtext-lexical/lexical/utils";
+import {useEffect, useLayoutEffect, useState} from "react";
 
 const useLayoutEffectImpl: typeof useLayoutEffect = CAN_USE_DOM
-  ? useLayoutEffect
-  : useEffect;
+	? useLayoutEffect
+	: useEffect;
 
 export const useIsFocused = () => {
-  const [editor] = useLexicalComposerContext();
-  const [hasFocus, setHasFocus] = useState(() =>
-    CAN_USE_DOM ? editor.getRootElement() === document.activeElement : false
-  );
+	const [editor] = useLexicalComposerContext();
+	const [hasFocus, setHasFocus] = useState(() =>
+		CAN_USE_DOM ? editor.getRootElement() === document.activeElement : false
+	);
 
-  useLayoutEffectImpl(() => {
-    return mergeRegister(
-      editor.registerCommand(
-        FOCUS_COMMAND,
-        () => {
-          setHasFocus(true);
-          return false;
-        },
-        COMMAND_PRIORITY_NORMAL
-      ),
-      editor.registerCommand(
-        BLUR_COMMAND,
-        () => {
-          setHasFocus(false);
-          return false;
-        },
-        COMMAND_PRIORITY_NORMAL
-      )
-    );
-  }, [editor]);
+	useLayoutEffectImpl(() => {
+		return mergeRegister(
+			editor.registerCommand(
+				FOCUS_COMMAND,
+				() => {
+					setHasFocus(true);
+					return false;
+				},
+				COMMAND_PRIORITY_NORMAL
+			),
+			editor.registerCommand(
+				BLUR_COMMAND,
+				() => {
+					setHasFocus(false);
+					return false;
+				},
+				COMMAND_PRIORITY_NORMAL
+			)
+		);
+	}, [editor]);
 
-  return hasFocus;
+	return hasFocus;
 };

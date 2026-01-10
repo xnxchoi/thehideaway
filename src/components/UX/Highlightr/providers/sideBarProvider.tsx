@@ -23,6 +23,7 @@ import { HighlightCreateError } from "@/components/UX/Highlightr/HighlightErrors
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
 import type { HighlightedRange } from "@/components/UX/Highlightr/types";
 import { Link } from "@/components/UX/Link/Link";
+import {AuthorOverview} from "@/types/collections/users";
 import { Button } from "../../Button";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
 import { AuthUIContext, socialProviders } from "@/lib/auth/betterauth-ui/src";
@@ -32,7 +33,6 @@ import { cn } from "@/lib/utils";
 import { useCursor } from "@/providers/RP_Pro";
 import { delay } from "@/utilities/rp_utils";
 import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
-import { AuthorOverview } from "@/types/collections/posts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Power2 } from "gsap";
 import { useLenis } from "lenis/react";

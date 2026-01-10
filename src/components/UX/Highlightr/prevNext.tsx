@@ -3,7 +3,7 @@ import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
 import { Link } from "@/components/UX/Link/Link";
 import { useCursor, useMenu } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import type { ArticleOverview } from "@/types/collections/posts";
+import type {PostOverview} from "@/types/collections/posts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FrontImage } from "../Media/FrontImage";
 import { useShallow } from "zustand/shallow";
@@ -14,8 +14,8 @@ export const PrevNext = ({
   prev: previousPost,
   next: nextPost
 }: {
-  prev: ArticleOverview | null;
-  next: ArticleOverview | null;
+	prev: PostOverview | null;
+	next: PostOverview | null;
 }) => {
   const [prev, setPreviousPost] = useState(
     previousPost || fallback({ direction: "prev" })

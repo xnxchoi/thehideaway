@@ -1,13 +1,13 @@
 import type {CollectionConfig, CollectionSlug, Config} from "payload"
 
-import {baseFields, fundFields, groupFields} from "./collections/collectionFields"
+import {baseFields, fundFields} from "./collections/collectionFields"
+import {imageHooks} from "./collections/collectionHooks"
+import {configureUpload} from "./collections/uploadConfig"
 import {defaultPluginOptions} from "./defaults"
 import {providers} from "./endpoints/providers"
 import {translations} from "./translations"
 import type {ImageSearchPluginOptions} from "./types"
 import {deepMerge} from "./utils/deepMerge"
-import {imageHooks} from "./collections/collectionHooks"
-import {configureUpload} from "./collections/uploadConfig"
 
 export const imageSearchPlugin =
 	(pluginOptions: ImageSearchPluginOptions = {}) =>
@@ -34,7 +34,7 @@ export const imageSearchPlugin =
 					...deepMerge(translations, config.i18n?.translations)
 				}
 			};
-			const targets: CollectionSlug[] = ["userMedia", "media", "assets", "exMedia"]
+			const targets: CollectionSlug[] = ["userMedia", "media", "assets"]
 			config.collections = (config.collections || []).map((collection) => {
 				const upload = collection.upload;
 				if (targets.indexOf(collection.slug as CollectionSlug) < 0) {
@@ -47,29 +47,29 @@ export const imageSearchPlugin =
 				const uploadObj =
 					upload === true ? {} : typeof upload === "object" ? upload : undefined;
 				const collectionFields = [...collection.fields];
-				if (collection.slug !== "exMedia") {
-					[...fundFields, ...baseFields, ...groupFields].forEach((fled) => {
-						const hasFled = collectionFields.find((field) => {
-							if (!("name" in field)) return false;
-							return field.name === fled.name;
-						});
-						if (!hasFled) {
-							collectionFields.push(fled);
+
+				[...fundFields, ...baseFields].forEach((fled) => {
+					const hasFled = collectionFields.find((field) => {
+						if (!("name" in field)) return false;
+						return field.name === fled.name;
+					});
+					if (!hasFled) {
+						collectionFields.push(fled);
+					} else {
+						if (hasFled.type !== fled.type) {
+							collectionFields.splice(
+								collectionFields.indexOf(hasFled),
+								1, fled
+							);
 						} else {
-							if (hasFled.type !== fled.type) {
-								collectionFields.splice(
-									collectionFields.indexOf(hasFled),
-									1, fled
-								);
-							} else {
-								collectionFields.splice(
-									collectionFields.indexOf(hasFled),
-									1, fled
-								);
-							}
+							collectionFields.splice(
+								collectionFields.indexOf(hasFled),
+								1, fled
+							);
 						}
-					})
-				}
+					}
+				})
+
 				const collectionAfterReadHooks = [...(collection.hooks?.afterRead || []), ...(imageHooks?.afterRead || [])]
 				const collectionBeforeChangeHooks = [...(collection.hooks?.beforeChange || []), ...(imageHooks?.beforeChange || [])]
 				const modifiedCollection: CollectionConfig = {

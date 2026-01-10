@@ -1,5 +1,5 @@
-import { DateTime } from "luxon";
-import { TagOverview } from "@/types/collections/delta";
+import {TagOverview} from "@/types/collections/meta-collections";
+import {DateTime} from "luxon";
 
 export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
   direction === "prev"

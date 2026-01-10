@@ -1,5 +1,5 @@
 "use server";
-import {revalidateTag} from "next/cache";
+import {updateTag} from "next/cache";
 import type {CollectionAfterChangeHook} from "payload";
 
 export const revalidateRedirects: CollectionAfterChangeHook = async ({
@@ -8,7 +8,7 @@ export const revalidateRedirects: CollectionAfterChangeHook = async ({
                                                                      }) => {
 	payload.logger.info(`Revalidating redirects`);
 
-	revalidateTag("redirects", {expire: 50});
+	updateTag("redirects");
 
 	return doc;
 };

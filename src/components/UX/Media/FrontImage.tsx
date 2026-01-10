@@ -3,21 +3,23 @@
 import {ImageMedia} from "@/components/UX/Media/ImageMedia";
 import type {FrontImageResource, MediaProps} from "@/components/UX/Media/types";
 import {cn} from "@/lib/utils";
+import {processFetchedImage} from "@/payload/fields/Article/Cover/ImageNode/hooks/image-processors";
 import {useCursor} from "@/providers/RP_Pro";
-import type {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {getClientSideURL} from "@/utilities/getURL";
-import {useQuery} from "@tanstack/react-query";
-import {type Ref, useCallback, useEffect, useMemo, useState, useTransition} from "react";
-import {Skeleton} from "../../ui/skeleton";
-
-import {getFallbackImage} from "@/utilities/getFallbackImage";
-import {nanoid} from "nanoid";
-import {stringify} from "qs-esm";
 import {
 	FetchedImageDoc,
-	ProcessedImageDoc,
+	ImageCollectionSlug,
+	RalueWithRelation,
 	RenderImageFields
-} from "@/types/collections/imageCollections";
+} from "@/types/collections/image-collections";
+import {imageSelect} from "@/types/payload-api-selects";
+
+import {getFallbackImage} from "@/utilities/getFallbackImage";
+import {getClientSideURL} from "@/utilities/getURL";
+import {useQuery} from "@tanstack/react-query";
+import {nanoid} from "nanoid";
+import {stringify} from "qs-esm";
+import {type Ref, useCallback, useEffect, useMemo, useState, useTransition} from "react";
+import {Skeleton} from "../../ui/skeleton";
 
 export type FrontImageProps = Omit<MediaProps, "ref"> & {
 	className?: string;
@@ -85,7 +87,7 @@ function FallbackImage(
 			className={className || "relative"}
 
 			imgClassName={imgClassName}
-			fill={true}
+			fill={false}
 			aspectRatio={aspectRatio}
 			{...rest}
 
@@ -95,7 +97,7 @@ function FallbackImage(
 
 function QueriedImage(
 	props: MediaProps & {
-		resource: string | FrontImageResource;
+		resource: string | FrontImageResource | RalueWithRelation;
 		collection?: ImageCollectionSlug;
 	}
 ) {
@@ -108,7 +110,7 @@ function QueriedImage(
 		...rest
 	} = props;
 	const [hover, setHover] = useState<boolean>(false);
-	const collection = useMemo(() => typeof rs === "object" ? rs.relationTo : initCollection || "assets", [initCollection, rs]);
+	const collection = useMemo(() => !!rs && typeof rs === "object" ? rs.relationTo : initCollection || "assets", [initCollection, rs]);
 	const onEnter = useCallback(() => setHover(true), []);
 	const onLeave = useCallback(() => setHover(false), []);
 	const setCursorTheme = useCursor((store) => store.setCursorTheme);
@@ -116,18 +118,7 @@ function QueriedImage(
 	const [image, setImage] = useState<RenderImageFields | null>(null);
 	const tId = useMemo(() => (typeof rs === "string" ? rs : (typeof rs.value === "string" ? rs.value : rs.value.id)), [rs]);
 	const select = useMemo(
-		() =>
-			({
-				darkmode: true,
-				src: true,
-				alt: true,
-				filename: true,
-				caption: true,
-				blurDataUrl: true,
-				url: true,
-				width: true, source: true,
-				height: true,
-			}) as Record<keyof RenderImageFields | "filename" | "url" | "source", true>,
+		() => imageSelect(),
 		[]
 	);
 	const {
@@ -137,7 +128,7 @@ function QueriedImage(
 		isError,
 		isEnabled
 	} = useQuery({
-		initialData: {
+		placeholderData: {
 			darkmode: false,
 			src: "",
 			width: 0,
@@ -150,27 +141,23 @@ function QueriedImage(
 				`${getClientSideURL()}/api/${collection}/${tId}${stringify({select}, {addQueryPrefix: true})}`
 			);
 			if (res.ok) {
-				const docc = await res.json() as {
-					id: string;
-
-				} & Pick<FetchedImageDoc, "blurDataUrl" | "darkmode" | "src" | "width" | "height" | "filename" | "alt" | "source" | "caption">
-				const src = docc.src;
-				if (typeof src === "string") {
-					return {
-						src,
-						width: docc.width,
-						height: docc.height,
-						caption: docc.caption,
-						darkmode: docc.darkmode,
-						alt: docc.alt,
-						blurDataUrl: docc.blurDataUrl
-					} satisfies RenderImageFields;
-				}
+				const docc = await res.json() as FetchedImageDoc;
+				const ress = processFetchedImage(docc);
+				const src = ress.src;
+				return {
+					src,
+					width: ress.width,
+					height: ress.height,
+					caption: ress.caption,
+					darkmode: ress.darkmode,
+					alt: ress.alt,
+					blurDataUrl: ress.blurDataUrl
+				} as RenderImageFields;
 			}
 			throw new Error("Failed to fetch image");
 
 		},
-		enabled: typeof rs === "string" || !rs,
+
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
 		gcTime: 1.5 * 60 * 1000
@@ -191,7 +178,7 @@ function QueriedImage(
 			}
 		}
 	}, [isLoading, isEnabled, resource, isError]);
-	return isLoading || isPending || !image ? (
+	return isLoading || isPending || !resource ? (
 		<div
 			className={"block h-full w-full"}
 			onMouseEnter={onEnter}
@@ -212,7 +199,7 @@ function QueriedImage(
 			loading="lazy"
 			className={className || "relative"}
 			imgClassName={imgClassName}
-			src={image.src}
+			src={typeof resource.src === "string" ? resource.src : resource?.src.src}
 			aspectRatio={aspectRatio}
 			{...rest}
 		/>

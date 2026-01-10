@@ -1,13 +1,13 @@
-import {generatePreviewPath, generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
-import {AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, Where} from "payload";
-import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
-import {revalidateDelete, revalidatePost} from "./hooks/revalidatePost";
-
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import {Post} from "@/payload-types";
+import {
+  updateCategoryAfterChange,
+  updateCategoryAfterDelete
+} from "@/payload/collections/Categories/hooks";
 import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
 import {slugField} from "@/payload/fields/slug";
 import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
+import {generatePreviewPath, generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -15,11 +15,14 @@ import {
   OverviewField,
   PreviewField
 } from "@payloadcms/plugin-seo/fields";
+import {AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, Where} from "payload";
 import {uuidv7} from "uuidv7";
+import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
 import {PROPS_COLLAPSIBLE} from "../constants";
 import {postBookmarkSaveHandler, unBookmarkPostHandler} from "./api/bookmarkPostHandler";
 import {getPostHandler} from "./api/getPostHandler";
 import {postBookmarksHandler} from "./api/postBookmarksHandler";
+import {revalidateDelete, revalidatePost} from "./hooks/revalidatePost";
 import {RichContent} from "./richContent";
 import {RichTitle} from "./richTitle";
 
@@ -168,14 +171,13 @@ export const Posts: CollectionConfig<"posts"> = {
       name: "image",
       label: "Cover Image",
       type: "upload",
-      maxDepth: 1,
-	    relationTo: ["userMedia", "assets", "exMedia"],
+      relationTo: ["userMedia", "assets", "media"],
       admin: {
         components: {
           Field: {
             path: "@/payload/fields/Article/Cover/index.tsx",
             serverProps: {
-	            relationTo: ["userMedia", "assets", "exMedia"]
+              relationTo: ["userMedia", "assets", "media"]
             }
           }
         }
@@ -429,9 +431,9 @@ export const Posts: CollectionConfig<"posts"> = {
       },
       populatePublishedAt
     ],
-    afterChange: [revalidatePost],
+    afterChange: [revalidatePost, updateCategoryAfterChange],
 
-    afterDelete: [revalidateDelete]
+    afterDelete: [revalidateDelete, updateCategoryAfterDelete]
   },
   endpoints: [
     {

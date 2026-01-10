@@ -8,7 +8,7 @@ function Spinner({className, ...props}: ComponentProps<"svg">) {
 		<Loader2Icon
 			role="status"
 			aria-label="Loading"
-			className={cn("size-4 animate-spin", className)}
+			className={cn("size-4 animate-spinner", className)}
 			{...props}
 		/>
 	)

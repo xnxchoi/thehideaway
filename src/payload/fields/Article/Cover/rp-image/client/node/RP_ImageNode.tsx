@@ -1,13 +1,10 @@
-import {
-	RP_ImageBlock,
-	RP_InsertImagePlaceholder
-} from "@/payload/fields/Article/Cover/rp-image/client/component";
+import {RP_ImageBlock,} from "@/payload/fields/Article/Cover/rp-image/client/component";
+import {RP_IMG_DMA} from "@/payload/fields/Article/Cover/rp-image/client/nodeTODomMap";
 import {
 	$convertRPImageElement
 } from "@/payload/fields/Article/Cover/rp-image/server/node/conversions";
 import {
 	Internal_RPImageData,
-	RenderImageFieldsWithSource,
 	RP_ImageData,
 	RPImageDataAgnostic,
 	RPImageServerNode,
@@ -22,7 +19,6 @@ import {
 } from "@payloadcms/richtext-lexical/lexical";
 import ObjectID from "bson-objectid";
 import {JSX} from "react";
-import {uuidv7} from "uuidv7";
 
 export class RP_ImageNode extends RPImageServerNode {
 	static override clone(node: RPImageServerNode): RPImageServerNode {
@@ -40,7 +36,7 @@ export class RP_ImageNode extends RPImageServerNode {
 				priority: 0,
 			}),
 			div: (node) => {
-				if (node.hasAttribute("data-estate-pending-image-form-id") && node.hasAttribute("data-estate-image-relation-to")) {
+				if ([RP_IMG_DMA.pending.formID, RP_IMG_DMA.nodeId, RP_IMG_DMA.relationTo].map(key => RP_IMG_DMA.PREFIX + key).every(r => node.hasAttribute(r))) {
 					return {
 						conversion: (domNode) => $convertRPImageElement(domNode as HTMLDivElement, $createRPImageNode),
 						priority: 3,
@@ -99,55 +95,13 @@ export class RP_ImageNode extends RPImageServerNode {
 
 			return node
 		}
-		// switch(serializedNode.relationTo){
-		//     case 'assets':{
-		//         importedData  = {
-		//             id: serializedNode.id,
-		//
-		//             fields: serializedNode.fields,
-		//             pending: (serializedNode as Internal_RPImageData).pending,
-		//             relationTo: serializedNode.relationTo,
-		//             value: serializedNode.value,
-		//         }
-		//     }
-		//     break;
-		//     case 'userMedia':{
-		//         importedData={
-		//             ...serializedNode
-		//         }
-		//     }
-		//     break;
-		//     case 'exMedia':{
-		//          importedData={
-		//             ...serializedNode
-		//
-		//          }
-		//     }
-		// }
-		//
-
 	}
 
 	override decorate(_editor?: LexicalEditor, _config?: EditorConfig): JSX.Element {
 		const data = this.getData();
-		if ("value" in data) {
-			const {
-				id,
-				value,
-				relationTo,
-				...meta
-			} = data as RenderImageFieldsWithSource<typeof data.relationTo>;
-			const valueId = typeof value === "string" ? value : value.id;
-			return (<RP_ImageBlock data={{
-					relationTo,
-					value: valueId,
-					id
-					, ...meta,
-				}} nodeKey={this.getKey()} format={this.__format}/>
-			)
-		}
-		return <RP_InsertImagePlaceholder data={data} formID={data.pending.formID}
-		                                  nodeKey={this.getKey()}/>
+
+		return (<RP_ImageBlock data={data} nodeKey={this.getKey()} format={this.__format}/>
+		)
 
 	}
 
@@ -164,14 +118,62 @@ export function $createRPImageNode({
 	if (!data?.id) {
 		data.id = new ObjectID().toHexString()
 	}
-	if (!("value" in data)) {
+	if (!!data.placeholder) {
+		return $applyNodeReplacement(new RP_ImageNode({
+			data: {
+				id: data.id,
+				pending: false,
+				relationTo: data.relationTo,
+				placeholder: true
+			}
+		}))
+	} else if (!!data.pending) {
+		const {
+			width,
+			showCaption,
+			darkmode,
+			height,
+			sizes,
+			src,
+			blurDataUrl,
+			caption,
+			alt,
+			id,
+			span,
+		} = data;
+		return $applyNodeReplacement(new RP_ImageNode({
+			data: {
+				id,
+				width,
+				span,
+				sizes
+				, src,
+				blurDataUrl,
+				alt,
+				caption,
+				height,
+				showCaption,
+				darkmode,
+				relationTo: data.relationTo,
+				pending: {
+					formID: data.pending.formID,
+					src: data.pending.src,
+				}, placeholder: false,
+			}
+		}))
+	} else {
+		const {id, relationTo, value, ...rest} = data;
+		return $applyNodeReplacement(new RP_ImageNode({
+			data: {
+				id,
+				relationTo,
+				value,
+				src: rest.src,
+				alt: rest.alt,
 
-		data.pending = {
-			...data.pending,
-			formID: data.pending?.formID || uuidv7(),
-		}
+			} as RP_ImageData
+		}))
 	}
-	return $applyNodeReplacement(new RP_ImageNode({data: data as RP_ImageData}))
 }
 
 export function $isRPImageNode(node: LexicalNode | null | undefined): node is RP_ImageNode {

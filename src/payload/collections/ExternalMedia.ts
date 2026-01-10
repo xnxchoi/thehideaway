@@ -1,10 +1,10 @@
-import {CollectionConfig} from "payload";
+import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {fundFields} from "@/payload/plugins/image-search/collections/collectionFields";
 import {authenticated, isAuthorOrEditor} from "@/payload/plugins/locker/access/accessCheckers";
 import {User} from "@payload-types";
 import path from "path";
+import {CollectionConfig} from "payload";
 import {fileURLToPath} from "url";
-import {fundFields} from "@/payload/plugins/image-search/collections/collectionFields";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
 import {uuidv7} from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
@@ -35,7 +35,7 @@ export const ExternalMedia: CollectionConfig = {
 			name: "src",
 			type: "text",
 			required: true,
-			virtual: "attribution.link",
+			virtual: "source.link",
 			access: {
 				read: () => true,
 				update: isAuthorOrEditor,

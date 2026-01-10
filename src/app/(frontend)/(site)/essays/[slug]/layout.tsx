@@ -11,6 +11,7 @@ export default async function Layout({
   children: ReactNode;
   params: Promise<{ slug: string }>;
 }) {
+
   return (
     <ReadProvider>
       <ArticleProvider>

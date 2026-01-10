@@ -1,6 +1,6 @@
-import { CollectionAfterChangeHook, CollectionAfterDeleteHook } from "payload";
-import { Session } from "@/payload-types";
-import { onSignOut, onSessionExpired } from "@/lib/auth/hooks/sse-integration";
+import {Session} from "@/payload-types";
+import {CollectionAfterChangeHook, CollectionAfterDeleteHook} from "payload";
+// import { onSignOut, onSessionExpired } from "@/lib/auth/hooks/sse-integration";
 
 // Hook for when a session is deleted (sign out)
 export const afterSessionDelete: CollectionAfterDeleteHook<Session> = async ({
@@ -12,7 +12,7 @@ export const afterSessionDelete: CollectionAfterDeleteHook<Session> = async ({
       console.log(
         `Session ${doc.id} deleted for user ${userId}, removing SSE connections`
       );
-      await onSignOut(userId, doc.id);
+	    // await onSignOut(userId, doc.id);
     }
   } catch (error) {
     console.error("Error in afterSessionDelete SSE hook:", error);
@@ -36,7 +36,7 @@ export const afterSessionChange: CollectionAfterChangeHook<Session> = async ({
         console.log(
           `Session ${doc.id} expired for user ${userId}, removing SSE connections`
         );
-        await onSessionExpired(userId, doc.id);
+	      // await onSessionExpired(userId, doc.id);
       }
     }
   } catch (error) {

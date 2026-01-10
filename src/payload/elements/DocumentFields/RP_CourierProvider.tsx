@@ -1,6 +1,6 @@
 "use client";
 
-import type {ImageCollectionSlug} from "@/types/payload-api-helpers";
+import {ImageCollectionSlug} from "@/types/collections/image-collections";
 import {createContext, type ReactNode, useContext, useEffect, useState} from "react";
 
 export type CourierForm = {

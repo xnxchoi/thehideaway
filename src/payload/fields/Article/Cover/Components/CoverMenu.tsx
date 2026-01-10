@@ -7,16 +7,10 @@ import {
 	getUnsplashCollection,
 	getUnsplashCollectionsList
 } from "@/payload/collections/Media/hooks/getFallbackFromUnsplash";
-import {
-	SavedMetadataUnsplash,
-	UnsplashCollectionDoc
-} from "@/payload/collections/Media/hooks/types";
 import {MenuPopup, MenuPositioner} from "@/payload/components/Popover";
 import {Link} from "@/payload/elements/Link";
 import {Tab, TabIndicator, TabPanel, TabsList, TabsRoot} from "@/payload/elements/Tabs";
-import {ImageForm, ImageMetadata} from "@/payload/fields/Article/Cover/ImageNode/Forms/schema";
 import {useRPImageNode} from "@/payload/fields/Article/Cover/rp-image/client/component";
-import {insertRPImage} from "@/payload/fields/Article/Cover/rp-image/client/drawer";
 import {$isRPImageNode} from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
 import {
 	Internal_RPImageData
@@ -24,13 +18,14 @@ import {
 import {useGalleryFetch} from "@/payload/fields/Article/Cover/useGalleryFetch";
 import {useCursor} from "@/providers/RP_Pro";
 import {
+	ImageCollectionSlug,
 	ProcessedImage,
-	ProcessedImageDoc,
 	RalueWithRelation,
 	RenderImageFields,
 	TabNames
-} from "@/types/collections/imageCollections";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
+} from "@/types/collections/image-collections";
+import {ImageForm, ImageMetadata} from "@/types/ImageCollections/schema";
+import {SavedMetadataUnsplash, UnsplashCollectionDoc} from "@/types/ImageCollections/unsplash";
 import {ContextMenu, Menu, Popover} from "@base-ui/react";
 import {$getNodeByKey, ElementFormatType} from "@payloadcms/richtext-lexical/lexical";
 import {
@@ -45,7 +40,7 @@ import {isEmpty} from "lodash-es";
 import {AlignCenter, AlignLeft, AlignRight, Ellipsis} from "lucide-react";
 import {HTMLMotionProps} from "motion/react";
 import * as m from "motion/react-m"
-import NextImage, {StaticImageData} from "next/image";
+import NextImage from "next/image";
 import {
 	ChangeEventHandler,
 	type ComponentProps,
@@ -256,20 +251,19 @@ export const FrameContextMenu = ({
 
 	return <ContextMenu.Positioner sideOffset={8} className="outline-none">
 		<ContextMenu.Popup
-			className={cn("py-1.5 origin-[var(--transform-origin)] rounded-md bg-[canvas] outline outline-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0", className)} {...props}>
+			className={cn("min-w-[180px] max-w-[265px] py-1.5 origin-[var(--transform-origin)] rounded-md bg-[canvas] outline outline-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0", className)} {...props}>
 			{children}
 		</ContextMenu.Popup>
 	</ContextMenu.Positioner>
 }
 export const FrameMenuItem = ({className, ...props}: ComponentProps<typeof ContextMenu.Item>) => {
-	const popupClass =
-		"text-gray-900 shadow-lg shadow-gray-200  outline-gray-200  dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300";
+
 	return <ContextMenu.Item
 		className={className}
 		render={({className, ...props}) =>
 			<div
-				className={cn("flex min-h-11 py-3.5 px-3.5 gap-3 w-full leading-[120%] text-sm outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:text-foreground data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-1 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-sm data-[highlighted]:before:bg-muted-faded-background", className)}
-				role="button" {...props}  />
+				className={cn("flex min-h-11 py-3.5 px-3.5 gap-3 w-full ease-out-power2 rounded-[6px] transition-colors duration-150 leading-[120%] text-sm outline-none select-none relative z-0 data-[highlighted]:text-foreground before:absolute before:inset-x-1 before:bg-transparent before:transition-colors before:duration-150 before:ease-out-power2 before:inset-y-0 before:z-[-1] before:rounded-sm data-[highlighted]:before:bg-muted-faded-background", className)}
+				{...props} role="button"/>
 		}
 		{...props}
 	/>
@@ -331,10 +325,7 @@ const FrameFiller = ({userId, userName, formID}: {
 
 		alt: `Uploaded by @${userName}`,
 		file: null!,
-		source: {
-			identifier: "",
-			provider: "local",
-		},
+
 		collection: "userMedia",
 		author: userId,
 		darkmode: false,
@@ -345,10 +336,7 @@ const FrameFiller = ({userId, userName, formID}: {
 		defaultValues,
 		onSubmit: async ({value: formValues}) => {
 			const a: ImageForm & ImageMetadata = {
-				source: {
-					identifier: userId,
-					provider: "local",
-				},
+
 				file: formValues.file,
 				collection: "userMedia",
 				author: userId,
@@ -423,7 +411,8 @@ const FrameFiller = ({userId, userName, formID}: {
 		</label>
 	</m.span>
 }
-const FrameManipulateMenu = () => {
+export const ReplaceImageHandle = Menu.createHandle()
+export const FrameImageReplacerMenu = () => {
 	const [editor] = useLexicalComposerContext();
 	const onClickRemove = useCallback(() => {
 		editor.update(() => {
@@ -440,7 +429,6 @@ const FrameManipulateMenu = () => {
 		})
 	}, [editor])
 	const open = useDarkRoom(r => r.open)
-	const enabled = useDarkRoom(r => r.enabled)
 	const openCHange = useDarkRoom(r => r.setOpen)
 	const onOpenChange = useCallback((open: boolean) => {
 		openCHange(open)
@@ -463,19 +451,8 @@ const FrameManipulateMenu = () => {
 			display: "flex",
 			alignItems: "flex-end"
 		}}
-	><Menu.Root open={open} onOpenChange={onOpenChange}>
-		<Menu.Trigger
-			data-themed={"border-color, color, background-color"}
-			disabled={!enabled}
-			className={cn(
-				"border-r-solid-[.5px]! flex appearance-none items-center justify-center border-none bg-transparent p-0 text-sm! l=font-normal text-inherit! shadow-none transition-colors duration-200 ease-out-power3 outline-none select-none",
-				"flex overflow-hidden leading-[1.2]")
-			}
-		>
-        <span className={"text-sm leading-normal"}>
+	><Menu.Root handle={ReplaceImageHandle} open={open} onOpenChange={onOpenChange}>
 
-        </span>
-		</Menu.Trigger>
 		<Menu.Portal>
 			<MenuPositioner
 				align={"end"}
@@ -494,28 +471,14 @@ const FrameTab = ({onClickRemove, onOpenChange,}: {
 
 }) => {
 	const [editor] = useLexicalComposerContext();
-	const replaceNodeKey = useDarkRoom(r => r.replaceNodeKey)
-	const openedTab = useDarkRoom(r => r.openedTab)
-	const setOpenedTab = useDarkRoom(r => r.setOpenedTab)
-	const setActiveCollection = useDarkRoom(r => r.setActiveCollection)
+	const openedTab = useDarkRoom(r => r.focusedTab)
+	const setOpenedTab = useDarkRoom(r => r.setFocusedTab)
+	const setMenuOpen = useDarkRoom(r => r.setOpen)
 	const onOpenTabChange = useCallback((tab: null | TabNames) => {
-		setActiveCollection(tab === "unsplash" || tab === "url" ? "exMedia" : tab === "upload" || tab === "personal" ? "userMedia" : "assets");
 		setOpenedTab(tab);
 		onOpenChange?.(tab)
-	}, [onOpenChange, setActiveCollection, setOpenedTab]);
-	const onSelect = useCallback(async ({collection, doc}: {
-			collection: ImageCollectionSlug;
-			doc: ProcessedImageDoc;
-		}) => {
-			insertRPImage({
-				editor,
-				relationTo: collection,
-				replaceNodeKey,
-				value: doc.id,
-			})
-		},
-		[editor, replaceNodeKey],
-	)
+	}, [onOpenChange, setOpenedTab]);
+
 	return <TabsRoot value={openedTab}
 	                 onValueChange={onOpenTabChange}>
 
@@ -573,7 +536,6 @@ const FrameTab = ({onClickRemove, onOpenChange,}: {
 const ImageGallery = ({uploadCallback}: {
 	uploadCallback: (params: ImageForm & ImageMetadata) => Promise<void>;
 }) => {
-	const enabled = useDarkRoom(r => r.enabled);
 
 	const {
 		fetchNextPage,
@@ -582,7 +544,7 @@ const ImageGallery = ({uploadCallback}: {
 		isFetching,
 		isFetchingNextPage,
 		data
-	} = useGalleryFetch(enabled);
+	} = useGalleryFetch(true);
 	return <> {isFetching ? (
 		<div>Loading...</div>
 	) : ((!isEnabled || isError) && <div>Error!</div>) || (
@@ -618,13 +580,12 @@ const ImageInsert = ({
 
 	figureClassName?: string;
 }) => {
-	const setImage = useDarkRoom(r => r.setImage)
 
 	const {alt, caption, darkmode, src} = data;
 	// eslint-disable-next-line react-hooks/preserve-manual-memoization
 	const onClickCallback: MouseEventHandler<HTMLDivElement> = useCallback((e) => {
 		onClick?.(e);
-	}, [onClick, setImage,])
+	}, [onClick,])
 	return <div
 		className={cn("w-[25%] p-1.5 relative", className)}
 		role="button"
@@ -636,7 +597,6 @@ const ImageInsert = ({
 				className={cn("w-full relative m-0 h-[64px] rounded-[4px] overflow-hidden transition-[opacity,background-color] duration-200 ease-out-power2 hover:opacity-85 hover:bg-muted-faded-background", figureClassName)}>
 				<NextImage
 					unoptimized={true}
-					preload={false}
 					src={src}
 					alt={alt || ""}
 					fill={true}
@@ -680,13 +640,12 @@ const UnsplashImage = ({
 	form: SavedMetadataUnsplash;
 	figureClassName?: string;
 }) => {
-	const setImage = useDarkRoom(r => r.setImage)
 	const [hovered, setHovered] = useState(false)
 	const {alt, caption, darkmode, src} = image;
 	// eslint-disable-next-line react-hooks/preserve-manual-memoization
 	const onClickCallback: MouseEventHandler<HTMLDivElement> = useCallback((e) => {
 		onClick?.(e);
-	}, [onClick, setImage,])
+	}, [onClick,])
 	const setCursorTheme = useCursor(r => r.setCursorTheme);
 	const resetCursorTheme = useCursor(r => r.resetCursorTheme);
 	useEffect(() => {
@@ -734,7 +693,6 @@ const UnsplashImage = ({
 			<picture>
 				<NextImage
 					unoptimized={true}
-					preload={false}
 					src={src}
 					alt={alt || ""}
 					fill={true}

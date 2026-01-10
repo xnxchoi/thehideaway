@@ -3,7 +3,7 @@ import React, { Fragment } from "react";
 import { ArchiveBlock } from "@/blocks/ArchiveBlock/Component";
 import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 import { ContentBlock } from "@/blocks/Content/Component";
-import {PostedImage} from "@/blocks/MediaBlock/Component";
+import {PostedImage} from "@/blocks/ImageBlock/Component";
 import type { Page } from "@/payload-types";
 import { FOTDBlock } from "@/blocks/FOTD/Component";
 import { HeroSquareBlock } from "@/blocks/HeroSquareBlock/Component";
@@ -13,7 +13,7 @@ const blockComponents = {
   archive: ArchiveBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
-	mediaBlock: PostedImage,
+	image: PostedImage,
   fotd: FOTDBlock,
   heroSquare: HeroSquareBlock
 };

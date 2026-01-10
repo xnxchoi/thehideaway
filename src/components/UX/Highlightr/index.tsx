@@ -1,1369 +1,1263 @@
 "use client";
-import { useDomCursor } from "@/components/core/cursorWrapper";
+import {FeaturedCard} from "@/blocks/heros/ArtHero/FeatureHero";
+import {useDomCursor} from "@/components/core/cursorWrapper";
 import LockedGate from "@/components/UX/Highlightr/Gated";
 import {
-  fetchUserHighlights,
-  useHighlighter
+	fetchUserHighlights,
+	useHighlighter
 } from "@/components/UX/Highlightr/providers/HighlighterProvider";
-import { HighlightPalette } from "@/components/UX/Highlightr/stores";
-import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
-import { cn } from "@/lib/utils";
-import type { Bookmark, User } from "@/payload-types";
-import { FeaturedCard } from "@/blocks/heros/ArtHero/FeatureHero";
+import {ResponseMap} from "@/components/UX/Highlightr/responseMap";
+import {HighlightPalette} from "@/components/UX/Highlightr/stores";
+import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
+import {cn} from "@/lib/utils";
+import type {Bookmark, User} from "@/payload-types";
 import RichText from "@/payload/fields/RichText";
-import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
-import { useCursor } from "@/providers/RP_Pro";
-import type { AuthorOverview, SingleArticle } from "@/types/collections/posts";
-import { useWindowResize } from "@/utilities/use_window_resize";
+import {useNavEvents} from "@/providers/Navigation/_client-nav-events";
+import {useCursor} from "@/providers/RP_Pro";
+import type {SingleArticle} from "@/types/collections/posts";
+import {AuthorOverview} from "@/types/collections/users";
+import {useWindowResize} from "@/utilities/use_window_resize";
 import {
-  autoUpdate,
-  flip,
-  inline,
-  offset,
-  shift,
-  useDismiss,
-  useFloating,
-  useInteractions,
-  useTransitionStatus
+	autoUpdate,
+	flip,
+	inline,
+	offset,
+	shift,
+	useDismiss,
+	useFloating,
+	useInteractions,
+	useTransitionStatus
 } from "@floating-ui/react";
-import { useGSAP } from "@gsap/react";
-import { BookmarkFilledIcon, BookmarkIcon } from "@radix-ui/react-icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { gsap } from "gsap";
+import {useGSAP} from "@gsap/react";
+import {BookmarkFilledIcon, BookmarkIcon} from "@radix-ui/react-icons";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {gsap} from "gsap";
 import type Lenis from "lenis";
-import { useLenis } from "lenis/react";
-import { AnimatePresence, useMotionValue } from "motion/react";
-import { useTransitionState } from "next-transition-router";
-import type { Where } from "payload";
-import { stringify } from "qs-esm";
-import { Button, MotionBtn } from "../Button";
-import { useRanger } from "./providers/RangerProvider";
+import {useLenis} from "lenis/react";
+import {AnimatePresence, useMotionValue, useMotionValueEvent} from "motion/react";
+import {useTransitionState} from "next-transition-router";
+import type {Where} from "payload";
+import {stringify} from "qs-esm";
 
 import {
-  type ComponentPropsWithoutRef,
-  type ComponentPropsWithRef,
-  type MouseEvent,
-  MouseEventHandler,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
+	type ComponentPropsWithoutRef,
+	type ComponentPropsWithRef,
+	type MouseEvent,
+	MouseEventHandler,
+	ReactNode,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState
 } from "react";
-import { useShallow } from "zustand/shallow";
-import { SignedFooter } from "../Signature";
-import { DynamicBreadcrumb } from "./DynamicIsland";
-import { FloatHighlightMenu } from "./HighlightMenu";
-import { usePrivateNote } from "./PrivateHighlights";
-import { useArticle } from "./providers/ArticleProvider";
-import { useFloater } from "./providers/FloatProvider";
-import { useHighlightSidebar } from "./providers/sideBarProvider";
-import type { HighlightColors } from "./stores";
+import {useShallow} from "zustand/shallow";
+import {Button, MotionBtn} from "../Button";
+import {SignedFooter} from "../Signature";
+import {DynamicBreadcrumb} from "./DynamicIsland";
+import {FloatHighlightMenu} from "./HighlightMenu";
+import {usePrivateNote} from "./PrivateHighlights";
+import {useArticle} from "./providers/ArticleProvider";
+import {useFloater} from "./providers/FloatProvider";
+import {useRanger} from "./providers/RangerProvider";
+import type {HighlightColors} from "./stores";
 import "./styles/_highlightr.scss";
-import type {
-  FetchedCitation,
-  HighlightedRange,
-  ProcessedRangy
-} from "./types";
-import {
-  ensureRange,
-  getAnchestorIdentifyableNode,
-  isMarkable
-} from "./utils/highlight-helpers";
+import type {FetchedCitation, HighlightedRange, ProcessedRangy} from "./types";
+import {ensureRange, getAnchestorIdentifyableNode, isMarkable} from "./utils/highlight-helpers";
 
 export type RangeRect = {
-  top: number;
-  left: number;
-  right: number;
-  width: number;
+	top: number;
+	left: number;
+	right: number;
+	width: number;
 };
-export const Narrateur = ({ post }: { post: SingleArticle }) => {
-  return <Article post={post} />;
+export const Narrateur = ({post}: { post: SingleArticle }) => {
+	return <Article post={post}/>;
 };
 
 const Article = ({
-  post: { id, slug, author, ...rest }
-}: {
-  post: SingleArticle;
+	                 post: {id, slug, author, ...rest}
+                 }: {
+	post: SingleArticle;
 }) => {
-  return <ReadInternal post={{ id, slug, author, ...rest }} />;
+	return <ReadInternal post={{id, slug, author, ...rest}}/>;
 };
 
 export type BaseGhostUserField = Extract<
-  keyof User,
-  "id" | "name" | "image" | "displayUsername" | "slug"
+	keyof User,
+	"id" | "name" | "image" | "displayUsername" | "slug"
 >;
 export const GhostUser = (
-  userOverrides?: Pick<User, BaseGhostUserField>,
-  additionalFields?: Pick<User, Exclude<keyof User, BaseGhostUserField>>
+	userOverrides?: Pick<User, BaseGhostUserField>,
+	additionalFields?: Pick<User, Exclude<keyof User, BaseGhostUserField>>
 ) =>
-  ({
-    ...(additionalFields || {}),
-    id: "0",
-    name: "Ghost",
-    image: "",
-    displayUsername: "Ghost",
-    slug: "/404",
-    ...(userOverrides || {})
-  }) as Partial<Omit<User, BaseGhostUserField>> &
-    Required<Pick<User, BaseGhostUserField>>;
+	({
+		...(additionalFields || {}),
+		id: "0",
+		name: "Ghost",
+		image: "",
+		displayUsername: "Ghost",
+		slug: "/404",
+		...(userOverrides || {})
+	}) as Partial<Omit<User, BaseGhostUserField>> &
+		Required<Pick<User, BaseGhostUserField>>;
 type AV<A extends Record<string, unknown>> = {
-  -readonly [key in keyof A]: A[key];
+	-readonly [key in keyof A]: A[key];
 };
 type VirtualDOMRect = AV<Omit<DOMRect, "toJSON">>;
 
-const ReadInternal = ({ post }: { post: SingleArticle }) => {
-  const { id: postId, content: postContent, disabled: d, locked, slug } = post;
-  const valueRef = useRef(postId);
-  useEffect(() => {
-    valueRef.current = postId;
-  }, [postId]);
-  const slugRef = useRef(slug);
-  useEffect(() => {
-    slugRef.current = slug;
-  }, [slug]);
-  const { direction } = useNavEvents();
-  const [naved, setNaved] = useState(true);
-  useEffect(() => {
-    setNaved(direction === null);
-  }, [direction]);
-  const user = useRPSession(useShallow((r) => r.id as string | null));
-  const userRef = useRef(user);
-  useEffect(() => {
-    userRef.current = user;
-  }, [user]);
-  const [enableHighlight, setEnableHighlight] = useState(
-    !!user && !d && !locked
-  );
-  const contentRef = useRef<HTMLDivElement>(null!);
-  const ranger = useRanger((r) => r.ranger);
-  const setTargetContainer = useRanger((r) => r.setTargetContainer);
-  const classApplier = useRanger((r) => r.classApplier);
-  const { isReady } = useTransitionState();
-  const visi = useFloater(useShallow((r) => r.open));
-  const setVisi = useFloater((r) => r.setOpen);
-  const { refs, floatingStyles, context } = useFloating({
-    placement: "top",
-    open: visi,
-    onOpenChange: setVisi,
-    middleware: [offset(10), inline(), shift(), flip()],
-    whileElementsMounted: autoUpdate
-  });
-  useEffect(() => {
-    if (!visi) {
-      refs.setReference(null);
-    }
-  }, [visi, refs]);
-  const { status, isMounted } = useTransitionStatus(context);
-  const prefs = usePrivateNote((r) => r.refs);
-  const dismiss = useDismiss(context);
-  const { getFloatingProps } = useInteractions([dismiss]);
+const ReadInternal = ({post}: { post: SingleArticle }) => {
+	const {id: postId, content: postContent, disabled: d, locked, slug} = post;
+	const valueRef = useRef(postId);
+	useEffect(() => {
+		valueRef.current = postId;
+	}, [postId]);
+	const slugRef = useRef(slug);
+	useEffect(() => {
+		slugRef.current = slug;
+	}, [slug]);
+	const {direction} = useNavEvents();
+	const [naved, setNaved] = useState(true);
+	useEffect(() => {
+		setNaved(direction === null);
+	}, [direction]);
+	const user = useRPSession(useShallow((r) => r.id as string | null));
+	const userRef = useRef(user);
+	useEffect(() => {
+		userRef.current = user;
+	}, [user]);
+	const [enableHighlight, setEnableHighlight] = useState(
+		!!user && !d && !locked
+	);
+	const contentRef = useRef<HTMLDivElement>(null!);
+	const ranger = useRanger((r) => r.ranger);
+	const setTargetContainer = useRanger((r) => r.setTargetContainer);
+	const classApplier = useRanger((r) => r.classApplier);
+	const {isReady} = useTransitionState();
+	const visi = useFloater(useShallow((r) => r.open));
+	const setVisi = useFloater((r) => r.setOpen);
+	const {refs, floatingStyles, context} = useFloating({
+		placement: "top",
+		open: visi,
+		onOpenChange: setVisi,
+		middleware: [offset(10), inline(), shift(), flip()],
+		whileElementsMounted: autoUpdate
+	});
+	useEffect(() => {
+		if (!visi) {
+			refs.setReference(null);
+		}
+	}, [visi, refs]);
+	const {status, isMounted} = useTransitionStatus(context);
+	const prefs = usePrivateNote((r) => r.refs);
+	const dismiss = useDismiss(context);
+	const {getFloatingProps} = useInteractions([dismiss]);
 
-  const [responseNodes, setResponseNodes] = useState<
-    Array<{ top: number; reference: string }>
-  >([]);
-  const [privateNodes, setPrivateNodes] = useState<
-    Array<{ top: number; reference: string }>
-  >([]);
+	const [responseNodes, setResponseNodes] = useState<
+		Array<{ top: number; reference: string }>
+	>([]);
+	const [privateNodes, setPrivateNodes] = useState<
+		Array<{ top: number; reference: string }>
+	>([]);
+	const shownDynamicIsland = useFloater(r => r.shown);
+	const progress = useMotionValue(0);
+	const [isAtEnd, setAtEnd] = useState(progress.get() >= 0.9);
+	const lastRun = useRef(0);
+	const lastVale = useRef(isAtEnd)
+	useMotionValueEvent(progress, "change", cur => {
+		const now = performance.now();
+		if (now - lastRun.current < 100) {
+			return;
+		}
+		const prev = progress.getPrevious();
+		if (cur > 0.9) {
+			if (prev) {
+				const val = cur - prev > 0
+				if (val !== lastVale.current) {
+					setAtEnd(val);
+					lastRun.current = now;
+					lastVale.current = val;
+				}
+			}
+		} else {
+			if (prev) {
+				const rr = prev <= 0.9;
+				if (rr !== lastVale.current) {
 
-  const setCurrentColor = useHighlighter((r) => r.setCurrentColor);
-  const qc = useQueryClient();
-  const colorUpdater = useMutation({
-    onSuccess: ([newColor, _]) => {
-      qc.setQueryData(["color"], (old: HighlightColors) => {
-        return newColor;
-      });
-      setCurrentColor(newColor);
-    },
-    mutationFn: async ({
-      color,
-      user
-    }: {
-      color: HighlightColors;
-      user: string;
-    }) =>
-      await fetch(`/api/payload-preferences/highlight-color`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          value: color
-        }),
-        credentials: "include"
-      }).then(async (r) => {
-        if (r.ok) {
-          const res = (await r.json()) as {
-            message: string;
-            doc: {
-              user: string;
-              userCollection: "users" | "admins";
-              key: string;
-              value: HighlightColors;
-            };
-          };
-          if (res.doc && "value" in res.doc && res.doc.value) {
-            return [res.doc.value, user] as [HighlightColors, string];
-          }
-        }
-        throw new Error("Update failed");
-      })
-  });
-  useEffect(() => {
-    setEnableHighlight(!!user && !d);
-  }, [user, d]);
-  const {
-    data: savedHighlights,
-    isLoading: hLoading,
-    isPending: hPending
-  } = useQuery({
-    placeholderData: [] as FetchedCitation[],
-    queryKey: ["savedHighlights", { value: postId, userId: user!, slug }],
-    queryFn: async ({
-      queryKey: [_, { value: postId, userId: _l, slug: _s }]
-    }: {
-      queryKey: [string, { value: string; userId: string; slug: string }];
-    }) =>
-      await fetchUserHighlights({
-        collection: "posts",
-        id: postId
-      }),
-    enabled: enableHighlight,
-    staleTime: Infinity,
-    gcTime: 60 * 100
-  });
+					setAtEnd(rr);
+					lastRun.current = now;
+					lastVale.current = rr;
+				}
 
-  const [highlightMap, setHighlightMap] = useState<
-    Array<{
-      y: number;
-      top: number;
-    }>
-  >([]);
-  const containerRef = useRef<HTMLDivElement>(null!);
-  const lastResize = useWindowResize({
-    debounce: 100,
-    detectHeightChange: true
-  });
+			}
+		}
+	})
 
-  const [containerBounds, setContainerBounds] = useState(0.25);
-  const scr = useLenis();
-  const addHighlighter = useHighlighter((r) => r.addHighlight);
+	const setCurrentColor = useHighlighter((r) => r.setCurrentColor);
+	const qc = useQueryClient();
+	const colorUpdater = useMutation({
+		onSuccess: ([newColor, _]) => {
+			qc.setQueryData(["color"], (old: HighlightColors) => {
+				return newColor;
+			});
+			setCurrentColor(newColor);
+		},
+		mutationFn: async ({
+			                   color,
+			                   user
+		                   }: {
+			color: HighlightColors;
+			user: string;
+		}) =>
+			await fetch(`/api/payload-preferences/highlight-color`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					value: color
+				}),
+				credentials: "include"
+			}).then(async (r) => {
+				if (r.ok) {
+					const res = (await r.json()) as {
+						message: string;
+						doc: {
+							user: string;
+							userCollection: "users" | "admins";
+							key: string;
+							value: HighlightColors;
+						};
+					};
+					if (res.doc && "value" in res.doc && res.doc.value) {
+						return [res.doc.value, user] as [HighlightColors, string];
+					}
+				}
+				throw new Error("Update failed");
+			})
+	});
+	useEffect(() => {
+		setEnableHighlight(!!user && !d);
+	}, [user, d]);
+	const {
+		data: savedHighlights,
+		isLoading: hLoading,
+		isPending: hPending
+	} = useQuery({
+		placeholderData: [] as FetchedCitation[],
+		queryKey: ["savedHighlights", {value: postId, userId: user!, slug}],
+		queryFn: async ({
+			                queryKey: [_, {value: postId, userId: _l, slug: _s}]
+		                }: {
+			queryKey: [string, { value: string; userId: string; slug: string }];
+		}) =>
+			await fetchUserHighlights({
+				collection: "posts",
+				id: postId
+			}),
+		enabled: enableHighlight,
+		staleTime: Infinity,
+		gcTime: 60 * 100
+	});
 
-  useEffect(() => {
-    const cont = contentRef.current;
-    if (cont) {
-      const ratio = window.innerHeight / cont.offsetHeight;
-      ratioRef.current = Math.max(0.25, ratio);
-      setContainerBounds(ratio);
-    }
-  }, [lastResize, scr]);
-  const progress = useMotionValue(0);
+	const [highlightMap, setHighlightMap] = useState<
+		Array<{
+			y: number;
+			top: number;
+		}>
+	>([]);
+	const containerRef = useRef<HTMLDivElement>(null!);
+	const lastResize = useWindowResize({
+		debounce: 100,
+		detectHeightChange: true
+	});
 
-  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
-  const lastColorRef = useRef(currentColor);
+	const [containerBounds, setContainerBounds] = useState(0.25);
+	const scr = useLenis();
+	const addHighlighter = useHighlighter((r) => r.addHighlight);
 
-  const currentColorRef = useRef<HighlightColors>(currentColor);
-  const highlights = useHighlighter(useShallow((r) => r.highlights));
-  const focusedHighlight = useHighlighter(
-    useShallow((r) => r.focusedHighlight)
-  );
-  const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
+	useEffect(() => {
+		const cont = contentRef.current;
+		if (cont) {
+			const ratio = window.innerHeight / cont.offsetHeight;
+			ratioRef.current = Math.max(0.25, ratio);
+			setContainerBounds(ratio);
+		}
+	}, [lastResize, scr]);
 
-  const scrollYRef = useRef(0);
-  const ratioRef = useRef(1);
-  const scrollCB = useCallback(
-    (lenis: Lenis) => {
-      if (!contentRef.current) return;
-      scrollYRef.current = lenis.scroll;
-      progress.set(lenis.progress);
-    },
-    [progress]
-  );
-  useEffect(() => {
-    scr && scr.on("scroll", scrollCB);
-    return () => {
-      scr && scr.off("scroll", scrollCB);
-    };
-  }, [scr, scrollCB]);
-  const setPrivOpen = usePrivateNote((r) => r.setOpen);
-  const setPrivView = usePrivateNote((r) => r.setView);
+	const currentColor = useHighlighter(useShallow((r) => r.currentColor));
+	const lastColorRef = useRef(currentColor);
 
-  const updateDOMRect = useCallback(
-    (a: VirtualDOMRect, t: Element): VirtualDOMRect => {
-      const b = t.getBoundingClientRect();
-      const right = Math.min(a.right, b.right);
-      const left = Math.min(a.left, b.left);
-      const height = Math.min(a.height, b.height);
-      const width = right - left;
-      const y = Math.min(a.y, b.y);
-      const bottom = Math.max(a.bottom, b.bottom);
-      const top = Math.min(a.top, b.top);
-      const x = Math.min(a.x, b.x);
-      return {
-        top,
-        left,
-        right,
-        width,
-        height,
-        y,
-        bottom,
-        x
-      };
-    },
-    []
-  );
-  useEffect(() => {
-    lastColorRef.current = currentColorRef.current;
-    currentColorRef.current = currentColor;
-  }, [currentColor]);
-  const getHighlightsRect = useCallback(
-    (e: HighlightedRange) => {
-      let a: VirtualDOMRect = {
-        top: 0,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 0,
-        bottom: 0,
-        x: 0,
-        y: 0
-      };
-      const r = e.els[0];
-      if (r) {
-        a = r.getBoundingClientRect();
-        e.els.forEach((e: Element) => {
-          a = updateDOMRect(a, e);
-        });
-      }
-      return a;
-    },
-    [updateDOMRect]
-  );
-  const getHighlightsRects = useCallback((e: HighlightedRange) => {
-    const a = e.els[0];
-    if (a) {
-      return a.getClientRects();
-    }
-    return e.range.nativeRange.getClientRects();
-  }, []);
+	const currentColorRef = useRef<HighlightColors>(currentColor);
+	const highlights = useHighlighter(useShallow((r) => r.highlights));
+	const focusedHighlight = useHighlighter(
+		useShallow((r) => r.focusedHighlight)
+	);
+	const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
 
-  const handleHighlightClick = useCallback(
-    (e: Event) => {
-      e.stopPropagation();
-      if (!e.currentTarget) return;
-      const target = e.currentTarget as Element;
-      const ref = target.getAttribute("data-reference");
-      setFocusedHighlight(ref);
-    },
-    [setFocusedHighlight]
-  );
-  useEffect(() => {
-    //We only handle cases where a highlight is focused, because null cases vary in expected float menu visibility
-    if (focusedHighlight) {
-      if (focusedHighlight.private) {
-        const ance = getAnchestorIdentifyableNode(
-          focusedHighlight.els[0] as Node
-        );
-        if (ance) {
-          prefs.setReference(ance);
-          setPrivView("view");
-          setPrivOpen(true);
-        }
-      }
-      refs.setReference({
-        getBoundingClientRect: () => getHighlightsRect(focusedHighlight),
-        getClientRects: () => getHighlightsRects(focusedHighlight)
-      });
+	const scrollYRef = useRef(0);
+	const ratioRef = useRef(1);
+	const scrollCB = useCallback(
+		(lenis: Lenis) => {
+			if (!contentRef.current) return;
+			scrollYRef.current = lenis.scroll;
+			progress.set(lenis.progress);
+		},
+		[progress]
+	);
+	useEffect(() => {
+		scr && scr.on("scroll", scrollCB);
+		return () => {
+			scr && scr.off("scroll", scrollCB);
+		};
+	}, [scr, scrollCB]);
+	const setPrivOpen = usePrivateNote((r) => r.setOpen);
+	const setPrivView = usePrivateNote((r) => r.setView);
 
-      setVisi(true);
-    }
-  }, [
-    focusedHighlight,
-    getHighlightsRect,
-    getHighlightsRects,
-    prefs,
-    refs,
-    setPrivOpen,
-    setPrivView,
-    setVisi
-  ]);
-  const setCursor = useCursor((r) => r.setCursorState);
-  const onEn = useCallback(() => {
-    setCursor("FOCUS");
-  }, [setCursor]);
-  const onExit = useCallback(() => {
-    setCursor(null);
-  }, [setCursor]);
+	const updateDOMRect = useCallback(
+		(a: VirtualDOMRect, t: Element): VirtualDOMRect => {
+			const b = t.getBoundingClientRect();
+			const right = Math.min(a.right, b.right);
+			const left = Math.min(a.left, b.left);
+			const height = Math.min(a.height, b.height);
+			const width = right - left;
+			const y = Math.min(a.y, b.y);
+			const bottom = Math.max(a.bottom, b.bottom);
+			const top = Math.min(a.top, b.top);
+			const x = Math.min(a.x, b.x);
+			return {
+				top,
+				left,
+				right,
+				width,
+				height,
+				y,
+				bottom,
+				x
+			};
+		},
+		[]
+	);
+	useEffect(() => {
+		lastColorRef.current = currentColorRef.current;
+		currentColorRef.current = currentColor;
+	}, [currentColor]);
+	const getHighlightsRect = useCallback(
+		(e: HighlightedRange) => {
+			let a: VirtualDOMRect = {
+				top: 0,
+				left: 0,
+				right: 0,
+				width: 0,
+				height: 0,
+				bottom: 0,
+				x: 0,
+				y: 0
+			};
+			const r = e.els[0];
+			if (r) {
+				a = r.getBoundingClientRect();
+				e.els.forEach((e: Element) => {
+					a = updateDOMRect(a, e);
+				});
+			}
+			return a;
+		},
+		[updateDOMRect]
+	);
+	const getHighlightsRects = useCallback((e: HighlightedRange) => {
+		const a = e.els[0];
+		if (a) {
+			return a.getClientRects();
+		}
+		return e.range.nativeRange.getClientRects();
+	}, []);
 
-  const changeCurrentHighlightColor = useCallback(
-    (colorWay: HighlightColors) => {
-      if (!userRef.current) return;
-      colorUpdater.mutate({ color: colorWay, user: userRef.current });
-    },
-    [colorUpdater]
-  );
-  const lastRangeAt = useRef<rangy.RangyRange | null>(null);
+	const handleHighlightClick = useCallback(
+		(e: Event) => {
+			e.stopPropagation();
+			if (!e.currentTarget) return;
+			const target = e.currentTarget as Element;
+			const ref = target.getAttribute("data-reference");
+			setFocusedHighlight(ref);
+		},
+		[setFocusedHighlight]
+	);
+	useEffect(() => {
+		//We only handle cases where a highlight is focused, because null cases vary in expected float menu visibility
+		if (focusedHighlight) {
+			if (focusedHighlight.private) {
+				const ance = getAnchestorIdentifyableNode(
+					focusedHighlight.els[0] as Node
+				);
+				if (ance) {
+					prefs.setReference(ance);
+					setPrivView("view");
+					setPrivOpen(true);
+				}
+			}
+			refs.setReference({
+				getBoundingClientRect: () => getHighlightsRect(focusedHighlight),
+				getClientRects: () => getHighlightsRects(focusedHighlight)
+			});
 
-  const containerMouseUp = useCallback(() => {
-    const base = contentRef.current;
-    if (!base) return;
-    const e = ranger.getSelection();
-    const t = ensureRange(e);
-    if (!t) {
-      setFocusedHighlight(null);
-      setVisi(false);
-      refs.setReference(null);
-      lastRangeAt.current = null;
-      return;
-    }
-    if (isMarkable(e) && t && "nativeRange" in t) {
-      if (!t.collapsed && base.contains(e.anchorNode)) {
-        setFocusedHighlight(null);
-        refs.setReference({
-          getBoundingClientRect: () => t.nativeRange.getBoundingClientRect(),
-          getClientRects: () => t.nativeRange.getClientRects()
-        });
-        const ance = getAnchestorIdentifyableNode(e.anchorNode!) as HTMLElement;
-        prefs.setReference(ance);
-        setPrivView("edit");
-        setVisi(true);
-      }
-      lastRangeAt.current = t;
-    } else {
-      setFocusedHighlight(null);
-      setVisi(false);
-      refs.setReference(null);
-      prefs.setReference(null);
-      lastRangeAt.current = null;
-    }
-  }, [prefs, ranger, refs, setFocusedHighlight, setPrivView, setVisi]);
-  const updateMiniMap = useCallback(
-    (highlighter: Map<string, HighlightedRange>) => {
-      const highlighters = highlighter.values();
-      const a: Array<{
-        y: number;
-        top: number;
-      }> = [];
-      const wh = window.innerHeight;
-      const cont = contentRef.current;
-      if (!cont) return;
-      const contDimension = cont.offsetHeight;
-      const contOffset = cont.offsetTop;
-      highlighters.forEach((e) => {
-        let n = 0;
-        let i = contOffset;
-        e.els.forEach((t, i) => {
-          const tt = (t as HTMLElement).offsetTop;
-          if (i > 0) {
-            n = Math.min(n, tt);
-          } else {
-            n = tt;
-          }
-        });
-        i = i + n;
-        a.push({
-          y: i,
-          top: (n / contDimension) * wh * 0.85
-        });
-      });
+			setVisi(true);
+		}
+	}, [
+		focusedHighlight,
+		getHighlightsRect,
+		getHighlightsRects,
+		prefs,
+		refs,
+		setPrivOpen,
+		setPrivView,
+		setVisi
+	]);
+	const setCursor = useCursor((r) => r.setCursorState);
+	const onEn = useCallback(() => {
+		setCursor("FOCUS");
+	}, [setCursor]);
+	const onExit = useCallback(() => {
+		setCursor(null);
+	}, [setCursor]);
 
-      setHighlightMap(a);
-    },
-    []
-  );
-  const updateResponseNodes = useCallback(
-    (highlighter: Map<string, HighlightedRange>) => {
-      const highlighters = highlighter.values();
-      const b: Array<{
-        top: number;
-        reference: string;
-        memo: string;
-        quote: string;
-        author: AuthorOverview;
-        updatedAt: string;
-        createdAt: string;
-      }> = [];
-      const c: Array<{
-        top: number;
-        reference: string;
-        memo: string;
-        quote: string;
-        author: AuthorOverview;
-        updatedAt: string;
-        createdAt: string;
-      }> = [];
-      highlighters.forEach((e) => {
-        let n = 0;
-        e.els.forEach((t, i) => {
-          const tt = (t as HTMLElement).offsetTop;
-          if (i > 0) {
-            n = Math.min(n, tt);
-          } else {
-            n = tt;
-          }
-        });
-        if (e.memo && e.memo.length > 0) {
-          if (e?.private) {
-            const el = e.els[0] as HTMLElement;
-            const pa = el.closest(
-              '[data-selectable="true"]'
-            ) as HTMLElement | null;
-            pa && (n = pa.offsetTop);
-          }
-          const pass = {
-            quote:
-              e.quote ||
-              `${e.selection.before}${e.selection.text}${e.selection.after}`,
-            top: n,
-            reference: e.reference,
-            memo: e.memo,
-            author: e.author,
-            updatedAt: e.updatedAt,
-            createdAt: e.createdAt
-          };
-          e.private ? c.push(pass) : b.push(pass);
-        }
-      });
-      if (b.length > 0) {
-        setResponseNodes(b);
-      } else {
-        setResponseNodes([]);
-      }
-      if (c.length > 0) {
-        setPrivateNodes(c);
-      } else {
-        setPrivateNodes([]);
-      }
-    },
-    []
-  );
-  const fc = useRef(focusedHighlight);
-  useEffect(() => {
-    fc.current = focusedHighlight;
-  }, [focusedHighlight]);
+	const changeCurrentHighlightColor = useCallback(
+		(colorWay: HighlightColors) => {
+			if (!userRef.current) return;
+			colorUpdater.mutate({color: colorWay, user: userRef.current});
+		},
+		[colorUpdater]
+	);
+	const lastRangeAt = useRef<rangy.RangyRange | null>(null);
 
-  const updaterC = useCallback(
-    (highlights: Map<string, HighlightedRange>, cont: HTMLDivElement) => {
-      cont.removeEventListener("mouseup", containerMouseUp, false);
-      cont.addEventListener("mouseup", containerMouseUp, false);
-      const highlightedNodes = cont.querySelectorAll(".highlighted");
-      highlightedNodes.forEach((e) => {
-        e.removeEventListener("click", handleHighlightClick);
-        e.removeEventListener("mouseenter", onEn);
-        e.removeEventListener("mouseleave", onExit);
-        e.addEventListener("mouseenter", onEn);
-        e.addEventListener("mouseleave", onExit);
-        e.addEventListener("click", handleHighlightClick);
-      });
-      updateMiniMap(highlights);
-      updateResponseNodes(highlights);
-    },
-    [
-      containerMouseUp,
-      handleHighlightClick,
-      onEn,
-      onExit,
-      updateMiniMap,
-      updateResponseNodes
-    ]
-  );
-  useEffect(() => {
-    const cont = contentRef.current;
-    if (!cont) return;
-    if (!isReady) return;
+	const containerMouseUp = useCallback(() => {
+		const base = contentRef.current;
+		if (!base) return;
+		const e = ranger.getSelection();
+		const t = ensureRange(e);
+		if (!t) {
+			setFocusedHighlight(null);
+			setVisi(false);
+			refs.setReference(null);
+			lastRangeAt.current = null;
+			return;
+		}
+		if (isMarkable(e) && t && "nativeRange" in t) {
+			if (!t.collapsed && base.contains(e.anchorNode)) {
+				setFocusedHighlight(null);
+				refs.setReference({
+					getBoundingClientRect: () => t.nativeRange.getBoundingClientRect(),
+					getClientRects: () => t.nativeRange.getClientRects()
+				});
+				const ance = getAnchestorIdentifyableNode(e.anchorNode!) as HTMLElement;
+				prefs.setReference(ance);
+				setPrivView("edit");
+				setVisi(true);
+			}
+			lastRangeAt.current = t;
+		} else {
+			setFocusedHighlight(null);
+			setVisi(false);
+			refs.setReference(null);
+			prefs.setReference(null);
+			lastRangeAt.current = null;
+		}
+	}, [prefs, ranger, refs, setFocusedHighlight, setPrivView, setVisi]);
+	const updateMiniMap = useCallback(
+		(highlighter: Map<string, HighlightedRange>) => {
+			const highlighters = highlighter.values();
+			const a: Array<{
+				y: number;
+				top: number;
+			}> = [];
+			const wh = window.innerHeight;
+			const cont = contentRef.current;
+			if (!cont) return;
+			const contDimension = cont.offsetHeight;
+			const contOffset = cont.offsetTop;
+			highlighters.forEach((e) => {
+				let n = 0;
+				let i = contOffset;
+				e.els.forEach((t, i) => {
+					const tt = (t as HTMLElement).offsetTop;
+					if (i > 0) {
+						n = Math.min(n, tt);
+					} else {
+						n = tt;
+					}
+				});
+				i = i + n;
+				a.push({
+					y: i,
+					top: (n / contDimension) * wh * 0.85
+				});
+			});
 
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        updaterC(highlights, cont);
-      })
-    );
-    return () => {
-      cont.removeEventListener("mouseup", containerMouseUp, false);
-      const highlightedNodes = cont.querySelectorAll(".highlighted");
-      highlightedNodes.forEach((e) => {
-        e.removeEventListener("click", handleHighlightClick);
-        e.removeEventListener("mouseenter", onEn);
-        e.removeEventListener("mouseleave", onExit);
-      });
-    };
-  }, [
-    highlights,
-    updaterC,
-    isReady,
+			setHighlightMap(a);
+		},
+		[]
+	);
+	const updateResponseNodes = useCallback(
+		(highlighter: Map<string, HighlightedRange>) => {
+			const highlighters = highlighter.values();
+			const b: Array<{
+				top: number;
+				reference: string;
+				memo: string;
+				quote: string;
+				author: AuthorOverview;
+				updatedAt: string;
+				createdAt: string;
+			}> = [];
+			const c: Array<{
+				top: number;
+				reference: string;
+				memo: string;
+				quote: string;
+				author: AuthorOverview;
+				updatedAt: string;
+				createdAt: string;
+			}> = [];
+			highlighters.forEach((e) => {
+				let n = 0;
+				e.els.forEach((t, i) => {
+					const tt = (t as HTMLElement).offsetTop;
+					if (i > 0) {
+						n = Math.min(n, tt);
+					} else {
+						n = tt;
+					}
+				});
+				if (e.memo && e.memo.length > 0) {
+					if (e?.private) {
+						const el = e.els[0] as HTMLElement;
+						const pa = el.closest(
+							"[data-selectable=\"true\"]"
+						) as HTMLElement | null;
+						pa && (n = pa.offsetTop);
+					}
+					const pass = {
+						quote:
+							e.quote ||
+							`${e.selection.before}${e.selection.text}${e.selection.after}`,
+						top: n,
+						reference: e.reference,
+						memo: e.memo,
+						author: e.author,
+						updatedAt: e.updatedAt,
+						createdAt: e.createdAt
+					};
+					e.private ? c.push(pass) : b.push(pass);
+				}
+			});
+			setResponseNodes(b);
+			if (c.length > 0) {
+				setPrivateNodes(c);
+			} else {
+				setPrivateNodes([]);
+			}
+		},
+		[]
+	);
+	const fc = useRef(focusedHighlight);
+	useEffect(() => {
+		fc.current = focusedHighlight;
+	}, [focusedHighlight]);
 
-    containerMouseUp,
-    handleHighlightClick,
-    onEn,
-    onExit
-  ]);
+	const updaterC = useCallback(
+		(highlights: Map<string, HighlightedRange>, cont: HTMLDivElement) => {
+			cont.removeEventListener("mouseup", containerMouseUp, false);
+			cont.addEventListener("mouseup", containerMouseUp, false);
+			const highlightedNodes = cont.querySelectorAll(".highlighted");
+			highlightedNodes.forEach((e) => {
+				e.removeEventListener("click", handleHighlightClick);
+				e.removeEventListener("mouseenter", onEn);
+				e.removeEventListener("mouseleave", onExit);
+				e.addEventListener("mouseenter", onEn);
+				e.addEventListener("mouseleave", onExit);
+				e.addEventListener("click", handleHighlightClick);
+			});
+			updateMiniMap(highlights);
+			updateResponseNodes(highlights);
+		},
+		[
+			containerMouseUp,
+			handleHighlightClick,
+			onEn,
+			onExit,
+			updateMiniMap,
+			updateResponseNodes
+		]
+	);
+	useEffect(() => {
+		const cont = contentRef.current;
+		if (!cont) return;
+		if (!isReady) return;
 
-  const updateColors = useRef<
-    (props: {
-      targets: HTMLElement[];
-      fromColor: HighlightColors;
-      toColor: HighlightColors;
-    }) => void
-  >(null!);
-  const addListeners = useCallback(
-    (targets: HTMLElement[]) => {
-      targets.forEach((e) => {
-        e.addEventListener("click", handleHighlightClick);
-      });
-    },
-    [handleHighlightClick]
-  );
-  const removeListeners = useCallback(
-    (targets: HTMLElement[]) => {
-      targets.forEach((e) => {
-        e.classList.remove("highlighted");
-        e.removeEventListener("click", handleHighlightClick);
-      });
-    },
-    [handleHighlightClick]
-  );
-  useGSAP(
-    () => {
-      updateColors.current = (props) => {
-        const { targets, fromColor, toColor } = props;
-        const from = HighlightPalette[fromColor];
-        const to = HighlightPalette[toColor];
-        gsap.to(targets, {
-          onStart: () => {
-            removeListeners(targets);
-          },
-          delay: 0.05,
-          backgroundImage: `linear-gradient(to left, oklch(${from}/.01) 0%, okclh(${from}/.1) 40%, oklch(${to}/.01) 50%, oklch(${to}/.85) 100%)`,
-          onComplete: () => {
-            targets.forEach((e) => {
-              e.classList.add("highlighted");
-            });
-            addListeners(targets);
-            gsap.to(targets, {
-              delay: 0.2,
-              clearProps: "backgroundImage"
-            });
-          },
-          duration: 0.2,
-          ease: "power2.inOut"
-        });
-      };
-    },
-    { dependencies: [handleHighlightClick, addListeners], scope: containerRef }
-  );
+		requestAnimationFrame(() =>
+			requestAnimationFrame(() => {
+				updaterC(highlights, cont);
+			})
+		);
+		return () => {
+			cont.removeEventListener("mouseup", containerMouseUp, false);
+			const highlightedNodes = cont.querySelectorAll(".highlighted");
+			highlightedNodes.forEach((e) => {
+				e.removeEventListener("click", handleHighlightClick);
+				e.removeEventListener("mouseenter", onEn);
+				e.removeEventListener("mouseleave", onExit);
+			});
+		};
+	}, [
+		highlights,
+		updaterC,
+		isReady,
 
-  useEffect(() => {
-    const targets = Array.from(highlights.values()).reduce(
-      (r, e) => [...r, ...(e.els as HTMLElement[])],
-      [] as HTMLElement[]
-    );
-    targets.length > 0 &&
-      updateColors.current &&
-      updateColors.current({
-        targets,
-        fromColor: lastColorRef.current,
-        toColor: currentColor
-      });
-  }, [highlights, currentColor]);
+		containerMouseUp,
+		handleHighlightClick,
+		onEn,
+		onExit
+	]);
 
-  const lastVisi = useRef(visi);
-  useEffect(() => {
-    if (lastVisi.current !== visi) {
-      lastVisi.current = visi;
-      if (!lastVisi.current) setCursor(null);
-    }
-  }, [visi, setCursor]);
+	const updateColors = useRef<
+		(props: {
+			targets: HTMLElement[];
+			fromColor: HighlightColors;
+			toColor: HighlightColors;
+		}) => void
+	>(null!);
+	const addListeners = useCallback(
+		(targets: HTMLElement[]) => {
+			targets.forEach((e) => {
+				e.addEventListener("click", handleHighlightClick);
+			});
+		},
+		[handleHighlightClick]
+	);
+	const removeListeners = useCallback(
+		(targets: HTMLElement[]) => {
+			targets.forEach((e) => {
+				e.classList.remove("highlighted");
+				e.removeEventListener("click", handleHighlightClick);
+			});
+		},
+		[handleHighlightClick]
+	);
+	useGSAP(
+		() => {
+			updateColors.current = (props) => {
+				const {targets, fromColor, toColor} = props;
+				const from = HighlightPalette[fromColor];
+				const to = HighlightPalette[toColor];
+				gsap.to(targets, {
+					onStart: () => {
+						removeListeners(targets);
+					},
+					delay: 0.05,
+					backgroundImage: `linear-gradient(to left, oklch(from ${from} l c h/.01) 0%, okclh(from ${from} l c h/.1) 40%, oklch(from ${to} l c h/.01) 50%, oklch(from ${to} l c h/.85) 100%)`,
+					onComplete: () => {
+						targets.forEach((e) => {
+							e.classList.add("highlighted");
+						});
+						addListeners(targets);
+						gsap.to(targets, {
+							delay: 0.2,
+							clearProps: "backgroundImage"
+						});
+					},
+					duration: 0.2,
+					ease: "power2.inOut"
+				});
+			};
+		},
+		{dependencies: [handleHighlightClick, addListeners], scope: containerRef}
+	);
 
-  const findTextNode = useCallback((e: Node, offsetValue: number) => {
-    let a = 0;
-    const traverseNodes = (e: Node): null | { node: Text; offset: number } => {
-      if (e.nodeType === Node.TEXT_NODE) {
-        const tt = e as Text;
-        if (a + tt.length >= offsetValue) {
-          return {
-            node: tt,
-            offset: offsetValue - a
-          };
-        }
-        a += tt.length;
-      } else {
-        for (const t of e.childNodes) {
-          const result = traverseNodes(t);
-          if (result) {
-            return result;
-          }
-        }
-      }
-      return null;
-    };
-    return traverseNodes(e);
-  }, []);
-  const applyHighlightCallback = useCallback(
-    (t: ProcessedRangy) => {
-      const base = contentRef.current;
-      if (!base) return;
-      const { text: a } = t.selection;
-      const n = base.textContent?.indexOf(a) || -1;
-      if (n === -1) {
-        return false;
-      }
-      const i = n + a.length;
-      const o = findTextNode(base, n);
-      const s = findTextNode(base, i);
-      if (!o || !s) {
-        return false;
-      }
-      const r = ranger.createRange();
-      r.setStart(o.node, o.offset);
-      r.setEnd(s.node, s.offset);
-      const l = Array.from(base.querySelectorAll(".highlighted"));
-      const vv = ranger.getSelection();
-      vv.setSingleRange(r);
+	useEffect(() => {
+		const targets = Array.from(highlights.values()).reduce(
+			(r, e) => [...r, ...(e.els as HTMLElement[])],
+			[] as HTMLElement[]
+		);
+		targets.length > 0 &&
+		updateColors.current &&
+		updateColors.current({
+			targets,
+			fromColor: lastColorRef.current,
+			toColor: currentColor
+		});
+	}, [highlights, currentColor]);
 
-      classApplier.applyToRange(r);
+	const lastVisi = useRef(visi);
+	useEffect(() => {
+		if (lastVisi.current !== visi) {
+			if (!visi) setCursor(null);
+		}
+		lastVisi.current = visi;
+	}, [visi, setCursor]);
 
-      // highlighterRef.current.highlightSelection(".highlighted");
-      const h = Array.from(base.querySelectorAll(".highlighted")).filter(
-        (e) => !l.includes(e)
-      ) as HTMLElement[];
-      h.forEach((el) => el.setAttribute("data-reference", t.reference));
-      const c = {
-        ...t,
-        id: t.id,
-        cited: t.cited as string,
-        private: t.private,
-        memo: t.memo,
-        reference: t.reference,
-        path: t.path,
-        quote: t.quote,
-        createdAt: t.createdAt,
-        author: t.author,
+	const findTextNode = useCallback((e: Node, offsetValue: number) => {
+		let a = 0;
+		const traverseNodes = (e: Node): null | { node: Text; offset: number } => {
+			if (e.nodeType === Node.TEXT_NODE) {
+				const tt = e as Text;
+				if (a + tt.length >= offsetValue) {
+					return {
+						node: tt,
+						offset: offsetValue - a
+					};
+				}
+				a += tt.length;
+			} else {
+				for (const t of e.childNodes) {
+					const result = traverseNodes(t);
+					if (result) {
+						return result;
+					}
+				}
+			}
+			return null;
+		};
+		return traverseNodes(e);
+	}, []);
+	const applyHighlightCallback = useCallback(
+		(t: ProcessedRangy) => {
+			const base = contentRef.current;
+			if (!base) return;
+			const {text: a} = t.selection;
+			const n = base.textContent?.indexOf(a) || -1;
+			if (n === -1) {
+				return false;
+			}
+			const i = n + a.length;
+			const o = findTextNode(base, n);
+			const s = findTextNode(base, i);
+			if (!o || !s) {
+				return false;
+			}
+			const r = ranger.createRange();
+			r.setStart(o.node, o.offset);
+			r.setEnd(s.node, s.offset);
+			const l = Array.from(base.querySelectorAll(".highlighted"));
+			const vv = ranger.getSelection();
+			vv.setSingleRange(r);
 
-        range: r,
-        els: h,
-        selection: {
-          text: a,
-          before: `"...`,
-          after: `..."`
-        },
-        updatedAt: t.updatedAt
-      } satisfies HighlightedRange;
-      const { startOffset, endOffset, startContainer, endContainer } = r;
-      if (
-        startContainer.nodeType === Node.TEXT_NODE &&
-        base.contains(startContainer) &&
-        (startContainer as Text).data
-      ) {
-        c.selection.before = (startContainer as Text).data.substring(
-          startOffset - 10,
-          startOffset
-        );
-      } else if (
-        startContainer.previousSibling &&
-        base.contains(startContainer.previousSibling) &&
-        (startContainer.previousSibling as Text).data
-      ) {
-        c.selection.before = (
-          startContainer.previousSibling as Text
-        ).data.substring(
-          (startContainer.previousSibling as Text).data.length - 10
-        );
-      } else {
-        return;
-      }
-      if (
-        endContainer.nodeType === Node.TEXT_NODE &&
-        (endContainer as Text).data
-      ) {
-        c.selection.after = (endContainer as Text).data.substring(
-          endOffset,
-          endOffset + 10
-        );
-      } else if (
-        endContainer.nextSibling &&
-        base.contains(endContainer.nextSibling) &&
-        endContainer.nextSibling.nodeType === Node.TEXT_NODE &&
-        (endContainer.nextSibling as Text).data
-      ) {
-        c.selection.after = (endContainer.nextSibling as Text).data.substring(
-          0,
-          10
-        );
-      } else {
-        return;
-      }
+			classApplier.applyToRange(r);
 
-      updateColors.current &&
-        updateColors.current({
-          targets: h,
-          fromColor: lastColorRef.current,
-          toColor: currentColorRef.current
-        });
-      vv.removeAllRanges();
-      return c;
-    },
-    [classApplier, findTextNode, ranger]
-  );
-  const hasRun = useRef(false);
-  useEffect(() => {
-    if (!hPending && !hLoading) {
-      if (savedHighlights) {
-        const ss = savedHighlights.flatMap((c) => {
-          const r = applyHighlightCallback(c);
-          return r ? r : [];
-        });
-        if (ss.length > 0) addHighlighter(ss);
-      }
-    }
-  }, [
-    savedHighlights,
-    applyHighlightCallback,
-    hPending,
-    hLoading,
-    addHighlighter
-  ]);
-  useLayoutEffect(() => {
-    if (!window) return;
-    if (hasRun.current) return;
-    if (!isReady) return;
-    const cont = contentRef.current;
-    if (!enableHighlight) {
-      return () => {
-        const e = cont.querySelectorAll("mark.highlighted");
-        e.forEach((e) => {
-          e.removeEventListener("click", handleHighlightClick);
-        });
-      };
-    }
-    const ratio = window.innerHeight / cont.offsetHeight;
-    setContainerBounds(ratio);
+			// highlighterRef.current.highlightSelection(".highlighted");
+			const h = Array.from(base.querySelectorAll(".highlighted")).filter(
+				(e) => !l.includes(e)
+			) as HTMLElement[];
+			h.forEach((el) => el.setAttribute("data-reference", t.reference));
+			const c = {
+				...t,
+				id: t.id,
+				cited: t.cited as string,
+				private: t.private,
+				memo: t.memo,
+				reference: t.reference,
+				path: t.path,
+				quote: t.quote,
+				createdAt: t.createdAt,
+				author: t.author,
 
-    hasRun.current = true;
+				range: r,
+				els: h,
+				selection: {
+					text: a,
+					before: `"...`,
+					after: `..."`
+				},
+				updatedAt: t.updatedAt
+			} satisfies HighlightedRange;
+			const {startOffset, endOffset, startContainer, endContainer} = r;
+			if (
+				startContainer.nodeType === Node.TEXT_NODE &&
+				base.contains(startContainer) &&
+				(startContainer as Text).data
+			) {
+				c.selection.before = (startContainer as Text).data.substring(
+					startOffset - 10,
+					startOffset
+				);
+			} else if (
+				startContainer.previousSibling &&
+				base.contains(startContainer.previousSibling) &&
+				(startContainer.previousSibling as Text).data
+			) {
+				c.selection.before = (
+					startContainer.previousSibling as Text
+				).data.substring(
+					(startContainer.previousSibling as Text).data.length - 10
+				);
+			} else {
+				return;
+			}
+			if (
+				endContainer.nodeType === Node.TEXT_NODE &&
+				(endContainer as Text).data
+			) {
+				c.selection.after = (endContainer as Text).data.substring(
+					endOffset,
+					endOffset + 10
+				);
+			} else if (
+				endContainer.nextSibling &&
+				base.contains(endContainer.nextSibling) &&
+				endContainer.nextSibling.nodeType === Node.TEXT_NODE &&
+				(endContainer.nextSibling as Text).data
+			) {
+				c.selection.after = (endContainer.nextSibling as Text).data.substring(
+					0,
+					10
+				);
+			} else {
+				return;
+			}
 
-    return () => {
-      setHighlightMap([]);
-      setPrivateNodes([]);
-      const e = cont.querySelectorAll("mark.highlighted");
-      e.forEach((e) => {
-        e.removeEventListener("click", handleHighlightClick);
-      });
-      hasRun.current = false;
-    };
-  }, [
-    isReady,
-    applyHighlightCallback,
-    handleHighlightClick,
-    enableHighlight,
-    addHighlighter
-  ]);
+			updateColors.current &&
+			updateColors.current({
+				targets: h,
+				fromColor: lastColorRef.current,
+				toColor: currentColorRef.current
+			});
+			vv.removeAllRanges();
+			return c;
+		},
+		[classApplier, findTextNode, ranger]
+	);
+	const hasRun = useRef(false);
+	useEffect(() => {
+		if (!hPending && !hLoading) {
+			if (savedHighlights) {
+				const ss = savedHighlights.flatMap((c) => {
+					const r = applyHighlightCallback(c);
+					return r ? r : [];
+				});
+				if (ss.length > 0) addHighlighter(ss);
+			}
+		}
+	}, [
+		savedHighlights,
+		applyHighlightCallback,
+		hPending,
+		hLoading,
+		addHighlighter
+	]);
+	useLayoutEffect(() => {
+		if (!window) return;
+		if (hasRun.current) return;
+		if (!isReady) return;
+		const cont = contentRef.current;
+		if (!enableHighlight) {
+			return () => {
+				const e = cont.querySelectorAll("mark.highlighted");
+				e.forEach((e) => {
+					e.removeEventListener("click", handleHighlightClick);
+				});
+			};
+		}
+		const ratio = window.innerHeight / cont.offsetHeight;
+		setContainerBounds(ratio);
 
-  return (
-    <>
-      <div
-        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-30 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground opacity-20"
-        style={{
-          borderImage: "initial"
-        }}
-      />{" "}
-      <div className="h-full w-full">
-        <div className="z-3 h-full w-full">
-          <div className={"w-full"}>
-            <article
-              className="rp-article relative w-full"
-              data-id={postId}
-              data-themed="background-color,color"
-            >
-              <FeaturedCard post={post} />
-              <div
-                className="mx-auto my-[28px] w-full max-w-(--maxContainerWidth) px-0 py-[32px]"
-                ref={containerRef}
-              >
-                <div
-                  className="rp-content *:col-[main] [&>aside]:col-3"
-                  ref={(el) => {
-                    el && ((contentRef.current = el), setTargetContainer(el));
-                  }}
-                >
-                  <Aside>
-                    <ResponseMap responseNodes={responseNodes} />
-                    {privateNodes.map((r) => (
-                      <PrivateIndicator
-                        key={r.reference}
-                        top={r.top}
-                        reference={r.reference}
-                      />
-                    ))}
-                  </Aside>
-                  {locked ? (
-                    <LockedGate id={postId} collection={"posts"} />
-                  ) : (
-                    <RichText data={postContent} enableGutter={false} />
-                  )}
-                </div>
-              </div>
-              <div className="f-divider mt-[50px] h-[1px] w-full min-w-[1px]" />
-              <SignedFooter />
-            </article>
-          </div>
+		hasRun.current = true;
 
-          <FloatHighlightMenu
-            ref={refs.setFloating}
-            handleChangeHighlightColor={changeCurrentHighlightColor}
-            floatingStyles={floatingStyles}
-            postDisabled={!enableHighlight}
-            style={{}}
-            status={status}
-            {...getFloatingProps()}
-            mounted={isMounted}
-          />
+		return () => {
+			setHighlightMap([]);
+			setPrivateNodes([]);
+			const e = cont.querySelectorAll("mark.highlighted");
+			e.forEach((e) => {
+				e.removeEventListener("click", handleHighlightClick);
+			});
+			hasRun.current = false;
+		};
+	}, [
+		isReady,
+		applyHighlightCallback,
+		handleHighlightClick,
+		enableHighlight,
+		addHighlighter
+	]);
 
-          <MiniMap highlightMap={highlightMap} scaleRatio={containerBounds} />
-        </div>
-      </div>
-      <div className="fixed right-0 bottom-[30px] left-0 z-[120] mx-auto mb-[24px] w-full">
-        <div className={"grid grid-cols-[auto_1fr_auto] items-stretch gap-y-5"}>
-          <div className="relative col-[2] justify-self-center">
-            <AnimatePresence mode={"sync"} initial={true} propagate={true}>
-              <DynamicBreadcrumb title={post.title} progress={progress}>
-                <BookmarkButton />
-              </DynamicBreadcrumb>
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-const ResponseMap = ({
-  responseNodes
-}: {
-  responseNodes: Array<{ top: number; reference: string }>;
-}) => {
-  const responseNodeEls = useRef<HTMLDivElement[]>([]);
-  const lastResize = useWindowResize({
-    debounce: 100,
-    detectHeightChange: true,
-    detectVisibilityChange: true
-  });
-  const { contextSafe } = useGSAP();
-  const updatePositions = useMemo(
-    () =>
-      contextSafe((v: HTMLDivElement[]) => {
-        gsap.killTweensOf(v);
-        gsap.to(v, {
-          autoAlpha: 0,
-          duration: 0.2,
-          ease: "power2.inOut",
-          onComplete: () => {
-            v.forEach((r) => {
-              const reference = r.getAttribute("data-reference");
-              if (!reference) return;
-              const el = document.querySelector(
-                'mark[data-reference="' + reference + '"]'
-              ) as HTMLElement | null;
-              if (!el) return;
-              gsap.set(el, {
-                top: r.offsetTop
-              });
-            });
-          }
-        });
-        gsap.to(v, {
-          autoAlpha: 1,
-          delay: 0.3,
-          duration: 0.2,
-          ease: "power2.inOut"
-        });
-      }),
-    [contextSafe]
-  );
-  useEffect(() => {
-    const r = responseNodeEls.current;
-    updatePositions(r);
-    return () => {
-      gsap.killTweensOf(r);
-    };
-  }, [lastResize, updatePositions]);
-  return (
-    <>
-      {responseNodes.map((r, i) => (
-        <ResponseIndicator
-          top={r.top}
-          reference={r.reference}
-          key={r.reference + "Response"}
-          ref={(el) => {
-            el && (responseNodeEls.current[i] = el);
-          }}
-        />
-      ))}
-    </>
-  );
+	return (
+		<>
+			<div
+				className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-30 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground opacity-20"
+				style={{
+					borderImage: "initial"
+				}}
+			/>
+			{" "}
+			<div className="h-full w-full">
+				<div className="h-full w-full">
+					<div className={"w-full"}>
+						<article
+							className="rp-article relative w-full"
+							data-id={postId}
+							data-themed="background-color,color"
+						>
+							<FeaturedCard post={post}/>
+							<div
+								className="mx-auto my-[28px] w-full max-w-(--maxContainerWidth) px-0 py-[32px]"
+								ref={containerRef}
+							>
+								<div
+									className="rp-content *:col-[main] [&>aside]:col-3"
+									ref={(el) => {
+										el && ((contentRef.current = el), setTargetContainer(el));
+									}}
+								>
+									<Aside>
+										<ResponseMap responseNodes={responseNodes}/>
+										{privateNodes.map((r) => (
+											<PrivateIndicator
+												key={r.reference}
+												top={r.top}
+												reference={r.reference}
+											/>
+										))}
+									</Aside>
+									{locked ? (
+										<LockedGate id={postId} collection={"posts"}/>
+									) : (
+										<RichText data={postContent} enableGutter={false}/>
+									)}
+								</div>
+							</div>
+							<div className="f-divider mt-[50px] h-[1px] w-full min-w-[1px]"/>
+							<SignedFooter/>
+						</article>
+					</div>
+
+					<FloatHighlightMenu
+						ref={refs.setFloating}
+						handleChangeHighlightColor={changeCurrentHighlightColor}
+						floatingStyles={floatingStyles}
+						postDisabled={!enableHighlight}
+						style={{}}
+						status={status}
+						{...getFloatingProps()}
+						mounted={isMounted}
+					/>
+
+					<MiniMap highlightMap={highlightMap} scaleRatio={containerBounds}/>
+				</div>
+			</div>
+			<div className="fixed right-0 bottom-[30px] left-0 z-[120] mx-auto mb-[24px] w-full">
+				<div className={"grid grid-cols-[auto_1fr_auto] items-stretch gap-y-5"}>
+					<div className="relative col-[2] justify-self-center">
+						<AnimatePresence mode={"sync"} initial={true} propagate={true}>
+							{shownDynamicIsland && isAtEnd &&
+                                <DynamicBreadcrumb title={post.title} progress={progress}>
+                                    <BookmarkButton/>
+                                </DynamicBreadcrumb>}
+						</AnimatePresence>
+					</div>
+				</div>
+			</div>
+		</>
+	);
 };
 const BookmarkButton = () => {
-  const qc = useQueryClient();
-  const post = useArticle(useShallow((r) => r.id as null | string));
-  const user = useRPSession(useShallow((r) => r.id as null | string));
-  const collection = useArticle(useShallow((r) => r.collection));
-  const cR = useRef(collection);
-  const pR = useRef(post);
-  const uR = useRef(user);
-  const [disabled, setDisabled] = useState(!user || !post);
-  useEffect(() => {
-    cR.current = collection;
-    pR.current = post;
-    setDisabled((r) => r || !collection || !post);
-  }, [collection, post]);
-  useEffect(() => {
-    uR.current = user;
-    setDisabled((r) => r || !user);
-  }, [user]);
-  const [initialized, setInitialized] = useState(false);
-  const fetcher = useCallback(async () => {
-    const postId = pR.current;
-    const userId = uR.current;
-    if (!userId) {
-      throw new Error("Not found");
-    }
-    if (!postId) {
-      throw new Error("Not found");
-    }
-    const where: Where = {
-      and: [
-        {
-          "target.value": {
-            equals: postId
-          }
-        },
-        {
-          user: {
-            equals: userId
-          }
-        }
-      ]
-    };
-    const r = await fetch(
-      `/api/bookmarks/count/${stringify(where, { addQueryPrefix: true })}`
-    );
-    if (r.ok) {
-      const res = (await r.json()) as {
-        totalDocs: number;
-      };
-      setInitialized(true);
-      return res.totalDocs > 0;
-    }
-    throw new Error("Not found");
-  }, []);
-  const {
-    data: hasBookmark,
-    isPending,
-    isError,
-    isFetching,
-    isSuccess
-  } = useQuery({
-    queryKey: [
-      "bookmarks",
-      {
-        collection: cR.current,
-        article: pR.current,
-        user: uR.current
-      }
-    ],
-    queryFn: fetcher,
-    enabled: !initialized
-  });
-  const [bookmarked, setBookmarked] = useState(Boolean(hasBookmark));
-  useEffect(() => {
-    if (!isPending) {
-      setBookmarked(hasBookmark || false);
-    }
-  }, [hasBookmark, isPending, isSuccess, isError]);
-  const removeBookmark = useRPSession((r) => r.deleteBookmark);
-  const addBookmark = useRPSession((r) => r.addBookmark);
-  const hasBookmarkRef = useRef(!!hasBookmark);
-  useEffect(() => {
-    hasBookmarkRef.current = !!hasBookmark;
-  }, [hasBookmark]);
-  const dB = useCallback(async () => {
-    const postId = pR.current;
-    const userId = uR.current;
-    if (!userId) {
-      return;
-    }
-    if (!postId) {
-      return;
-    }
-    const where: Where = {
-      and: [
-        {
-          "target.value": {
-            equals: postId
-          }
-        },
-        {
-          user: {
-            equals: userId
-          }
-        }
-      ]
-    };
-    const args = stringify({ where }, { addQueryPrefix: true });
-    const res = await fetch(`/api/bookmarks/${args}`, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(
-        async (r) => (await r.json()) as { docs: Bookmark[]; errors: object[] }
-      )
-      .then((r) => {
-        if (r.docs && r.docs.length > 0) {
-          return r.docs[0] as Bookmark;
-        }
-        return null;
-      })
-      .catch((e) => {
-        console.log(e);
-        return null;
-      });
-    if (res) {
-      removeBookmark({
-        collection: res.target.relationTo as Bookmark["target"]["relationTo"],
-        id: res.target.value as string
-      });
-      return true;
-    }
-    return false;
-  }, [removeBookmark]);
-  const cB = useCallback(async () => {
-    const postId = pR.current;
-    const userId = uR.current;
-    if (!userId) {
-      return;
-    }
-    if (!postId) {
-      return;
-    }
-    const body: Pick<Bookmark, "target" | "user"> = {
-      target: {
-        value: postId,
-        relationTo: cR.current
-      },
-      user: userId
-    };
-    const res = await fetch("/api/bookmarks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify(body)
-    })
-      .then(
-        async (r) => (await r.json()) as { doc: Bookmark; message: object[] }
-      )
-      .then((r) => {
-        if (r.doc) {
-          return r.doc as Bookmark;
-        }
-        throw new Error("Failed to create bookmark");
-      })
-      .catch((e) => {
-        console.log(e);
-        throw new Error("Failed to create bookmark");
-      });
-    if (res) {
-      addBookmark({
-        id: res.target.value as string,
-        collection: res.target.relationTo as Bookmark["target"]["relationTo"]
-      });
-      return true;
-    }
-    throw new Error("Failed to create bookmark");
-  }, [addBookmark]);
-  const createBookmark = useMutation({
-    mutationFn: cB,
-    onSuccess: (res) => {
-      if (res) {
-        qc.setQueryData(
-          [
-            "bookmarks",
-            {
-              collection: cR.current,
-              article: pR.current,
-              user: uR.current
-            }
-          ],
-          true
-        );
-      }
-    }
-  });
-  const deleteBoookmark = useMutation({
-    mutationFn: dB,
-    onSuccess: (res) => {
-      if (res) {
-        qc.setQueryData(
-          [
-            "bookmarks",
-            {
-              collection: cR.current,
-              article: pR.current,
-              user: uR.current
-            }
-          ],
-          false
-        );
-      }
-    }
-  });
-  const bookmarkSaveOrDelete: MouseEventHandler = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (hasBookmark) {
-        deleteBoookmark.mutate();
-      } else {
-        createBookmark.mutate();
-      }
-    },
-    [deleteBoookmark, createBookmark, hasBookmark]
-  );
-  return disabled ? (
-    <></>
-  ) : (
-    <div className={"flex h-8 min-w-8"}>
-      <MotionBtn
-        transition={{ type: "spring", bounce: 0.4 }}
-        whileTap={{ scale: 0.9 }}
-        whileHover={{
-          scale: 1.1
-        }}
-        onClick={bookmarkSaveOrDelete}
-        className={
-          "flex h-full items-center justify-center [&_path]:fill-muted-faded-background/55 [&_path]:stroke-none [&_path]:outline-none dark:[&_path]:fill-muted-faded-foreground/55 [&_svg]:size-8"
-        }
-        disabled={isFetching || isPending}
-      >
-        {bookmarked ? <BookmarkFilledIcon /> : <BookmarkIcon />}
-      </MotionBtn>
-    </div>
-  );
+	const qc = useQueryClient();
+	const post = useArticle(useShallow((r) => r.id as null | string));
+	const user = useRPSession(useShallow((r) => r.id as null | string));
+	const collection = useArticle(useShallow((r) => r.collection));
+	const cR = useRef(collection);
+	const pR = useRef(post);
+	const uR = useRef(user);
+	const [disabled, setDisabled] = useState(!user || !post);
+	useEffect(() => {
+		cR.current = collection;
+		pR.current = post;
+		setDisabled((r) => r || !collection || !post);
+	}, [collection, post]);
+	useEffect(() => {
+		uR.current = user;
+		setDisabled((r) => r || !user);
+	}, [user]);
+	const [initialized, setInitialized] = useState(false);
+	const fetcher = useCallback(async () => {
+		const postId = pR.current;
+		const userId = uR.current;
+		if (!userId) {
+			throw new Error("Not found");
+		}
+		if (!postId) {
+			throw new Error("Not found");
+		}
+		const where: Where = {
+			and: [
+				{
+					"target.value": {
+						equals: postId
+					}
+				},
+				{
+					user: {
+						equals: userId
+					}
+				}
+			]
+		};
+		const r = await fetch(
+			`/api/bookmarks/count/${stringify({where}, {addQueryPrefix: true})}`
+		);
+		if (r.ok) {
+			const res = (await r.json()) as {
+				totalDocs: number;
+			};
+			setInitialized(true);
+			return res.totalDocs > 0;
+		}
+		throw new Error("Not found");
+	}, []);
+	const {
+		data: hasBookmark,
+		isPending,
+		isError,
+		isFetching,
+		isSuccess
+	} = useQuery({
+		queryKey: [
+			"bookmarks",
+			{
+				collection: cR.current,
+				article: pR.current,
+				user: uR.current
+			}
+		],
+		queryFn: fetcher,
+		enabled: !initialized
+	});
+	const [bookmarked, setBookmarked] = useState(Boolean(hasBookmark));
+	useEffect(() => {
+		if (!isPending) {
+			setBookmarked(hasBookmark || false);
+		}
+	}, [hasBookmark, isPending, isSuccess, isError]);
+	const removeBookmark = useRPSession((r) => r.deleteBookmark);
+	const addBookmark = useRPSession((r) => r.addBookmark);
+	const hasBookmarkRef = useRef(!!hasBookmark);
+	useEffect(() => {
+		hasBookmarkRef.current = !!hasBookmark;
+	}, [hasBookmark]);
+	const dB = useCallback(async () => {
+		const postId = pR.current;
+		const userId = uR.current;
+		if (!userId) {
+			return;
+		}
+		if (!postId) {
+			return;
+		}
+		const where: Where = {
+			and: [
+				{
+					"target.value": {
+						equals: postId
+					}
+				},
+				{
+					user: {
+						equals: userId
+					}
+				}
+			]
+		};
+		const args = stringify({where}, {addQueryPrefix: true});
+		const res = await fetch(`/api/bookmarks/${args}`, {
+			method: "DELETE",
+			credentials: "include",
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
+			.then(
+				async (r) => (await r.json()) as { docs: Bookmark[]; errors: object[] }
+			)
+			.then((r) => {
+				if (r.docs && r.docs.length > 0) {
+					return r.docs[0] as Bookmark;
+				}
+				return null;
+			})
+			.catch((e) => {
+				console.log(e);
+				return null;
+			});
+		if (res) {
+			removeBookmark({
+				collection: res.target.relationTo as Bookmark["target"]["relationTo"],
+				id: res.target.value as string
+			});
+			return true;
+		}
+		return false;
+	}, [removeBookmark]);
+	const cB = useCallback(async () => {
+		const postId = pR.current;
+		const userId = uR.current;
+		if (!userId) {
+			return;
+		}
+		if (!postId) {
+			return;
+		}
+		const body: Pick<Bookmark, "target" | "user"> = {
+			target: {
+				value: postId,
+				relationTo: cR.current
+			},
+			user: userId
+		};
+		const res = await fetch("/api/bookmarks", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			credentials: "include",
+			body: JSON.stringify(body)
+		})
+			.then(
+				async (r) => (await r.json()) as { doc: Bookmark; message: object[] }
+			)
+			.then((r) => {
+				if (r.doc) {
+					return r.doc as Bookmark;
+				}
+				throw new Error("Failed to create bookmark");
+			})
+			.catch((e) => {
+				console.log(e);
+				throw new Error("Failed to create bookmark");
+			});
+		if (res) {
+			addBookmark({
+				id: res.target.value as string,
+				collection: res.target.relationTo as Bookmark["target"]["relationTo"]
+			});
+			return true;
+		}
+		throw new Error("Failed to create bookmark");
+	}, [addBookmark]);
+	const createBookmark = useMutation({
+		mutationFn: cB,
+		onSuccess: (res) => {
+			if (res) {
+				qc.setQueryData(
+					[
+						"bookmarks",
+						{
+							collection: cR.current,
+							article: pR.current,
+							user: uR.current
+						}
+					],
+					true
+				);
+			}
+		}
+	});
+	const deleteBoookmark = useMutation({
+		mutationFn: dB,
+		onSuccess: (res) => {
+			if (res) {
+				qc.setQueryData(
+					[
+						"bookmarks",
+						{
+							collection: cR.current,
+							article: pR.current,
+							user: uR.current
+						}
+					],
+					false
+				);
+			}
+		}
+	});
+	const bookmarkSaveOrDelete: MouseEventHandler = useCallback(
+		async (e) => {
+			e.preventDefault();
+			if (hasBookmark) {
+				deleteBoookmark.mutate();
+			} else {
+				createBookmark.mutate();
+			}
+		},
+		[deleteBoookmark, createBookmark, hasBookmark]
+	);
+	return disabled ? (
+		<></>
+	) : (
+		<div className={"flex h-8 min-w-8"}>
+			<MotionBtn
+				transition={{type: "spring", bounce: 0.4}}
+				whileTap={{scale: 0.9}}
+				whileHover={{
+					scale: 1.1
+				}}
+				onClick={bookmarkSaveOrDelete}
+				className={
+					"flex h-full items-center justify-center [&_path]:fill-muted-faded-background/55 [&_path]:stroke-none [&_path]:outline-none dark:[&_path]:fill-muted-faded-foreground/55 [&_svg]:size-8"
+				}
+				disabled={isFetching || isPending}
+			>
+				{bookmarked ? <BookmarkFilledIcon/> : <BookmarkIcon/>}
+			</MotionBtn>
+		</div>
+	);
 };
 
 export type HighlightMenuProps = {
-  postDisabled: boolean;
+	postDisabled: boolean;
 
-  handleChangeHighlightColor: (color: HighlightColors) => void;
-};
-
-const ResponseIndicator = (
-  props: ComponentPropsWithRef<"div"> & {
-    top: number;
-    reference: string;
-  }
-) => {
-  const { top: _, ref, reference: refer, ...rest } = props;
-  const highlights = useHighlighter(useShallow((r) => r.highlights));
-  const setOpen = useHighlightSidebar("setOpen");
-  const setContent = useHighlightSidebar("setContent");
-
-  const onClick = useCallback(
-    (e: MouseEvent) => {
-      e.preventDefault();
-      const tg = highlights.get(refer) || null;
-      if (tg && tg.memo && tg.memo.length) {
-        setContent({
-          author: tg.author,
-          createdAt: tg.createdAt,
-          memo: tg.memo,
-          quote: tg.quote!,
-          reference: tg.reference,
-          updatedAt: tg.updatedAt
-        });
-      } else {
-        setContent(null);
-      }
-      setOpen(true);
-    },
-    [highlights, setOpen, refer, setContent]
-  );
-
-  return (
-    <div
-      style={{ top: `${props.top}px` }}
-      className={
-        "absolute mt-1 flex max-w-full items-center gap-3 whitespace-nowrap"
-      }
-      ref={ref}
-      {...rest}
-    >
-      <div className={"relative"}>
-        <Button
-          onClick={onClick}
-          className="z-30 flex aspect-4/3 h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground dark:bg-faded-background"
-        >
-          <span
-            className={
-              "absolute -bottom-[3px] left-[0.5px] z-20 h-[4.5px] w-[4.5px] bg-background [clip-path:polygon(0_0,0_100%,100%_0)] dark:bg-faded-background"
-            }
-          />
-          <span
-            className={
-              "absolute bottom-[-6px] -left-[0.5px] z-15 h-[7px] w-[6px] bg-muted [clip-path:polygon(0_0,0_100%,100%_0)] dark:bg-muted-faded-foreground"
-            }
-          />
-          <span className="leading-[1.5] uppercase">1</span>
-        </Button>
-      </div>
-    </div>
-  );
+	handleChangeHighlightColor: (color: HighlightColors) => void;
 };
 
 const PrivateIndicator = (
-  props: ComponentPropsWithoutRef<"div"> & {
-    top: number;
-    reference: string;
-  }
+	props: ComponentPropsWithoutRef<"div"> & {
+		top: number;
+		reference: string;
+	}
 ) => {
-  const { top: _, reference: refer, ...rest } = props;
+	const {top: _, reference: refer, ...rest} = props;
 
-  const setOpen = usePrivateNote((r) => r.setOpen);
-  const setView = usePrivateNote((r) => r.setView);
-  const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
+	const setOpen = usePrivateNote((r) => r.setOpen);
+	const setView = usePrivateNote((r) => r.setView);
+	const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
 
-  const onClick = useCallback(
-    (e: MouseEvent) => {
-      e.preventDefault();
-      setFocusedHighlight(refer);
-      setView("view");
-      setOpen(true);
-    },
-    [setFocusedHighlight, refer, setView, setOpen]
-  );
+	const onClick = useCallback(
+		(e: MouseEvent) => {
+			e.preventDefault();
+			setFocusedHighlight(refer);
+			setView("view");
+			setOpen(true);
+		},
+		[setFocusedHighlight, refer, setView, setOpen]
+	);
 
-  return (
-    <div
-      style={{ transform: `translateY(${props.top}px)` }}
-      className={"flex items-center gap-2"}
-      {...rest}
-    >
-      <div className={"relative"}>
-        <Button
-          onClick={onClick}
-          className="z-[30] flex aspect-[4/3] h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border-[1px] border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground dark:bg-faded-background"
-        ></Button>
-      </div>
-    </div>
-  );
+	return (
+		<div
+			style={{transform: `translateY(${props.top}px)`}}
+			className={"flex items-center gap-2"}
+			{...rest}
+		>
+			<div className={"relative"}>
+				<Button
+					onClick={onClick}
+					className="z-[30] flex aspect-[4/3] h-[var(--text-base)] w-auto items-center justify-center rounded-[5px_5px_5px_0] border-[1px] border-muted bg-background px-[3px] py-[2px] text-center text-[calc(var(--text-base)*0.55)] whitespace-nowrap dark:border-muted-faded-foreground dark:bg-faded-background"
+				></Button>
+			</div>
+		</div>
+	);
 };
 
-const Aside = ({ children }: { children: ReactNode }) => {
-  return (
-    <>
-      <style>
-        {`
+const Aside = ({children}: { children: ReactNode }) => {
+	return (
+		<>
+			<style>
+				{`
 			aside > div{
 			 max-width: 100%;
 			 position:absolute;
@@ -1376,147 +1270,147 @@ const Aside = ({ children }: { children: ReactNode }) => {
 			 gap:8px;
 			}
 			`}
-      </style>
-      <aside className={"top-0"}>{children}</aside>
-    </>
-  );
+			</style>
+			<aside className={"top-0"}>{children}</aside>
+		</>
+	);
 };
 
 export const HighlightMenuButton = ({
-  children,
-  className,
-  ...props
-}: ComponentPropsWithRef<"button">) => {
-  return (
-    <Button
-      className={cn(
-        "z-[10] flex items-center border-0 border-r-[1px] border-dashed !border-faded-background/90 bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] !text-faded-background/90 antialiased transition-colors ease-in-out-2 last-of-type:border-r-0 hover:!text-piercing-orange hover:[&_path]:!fill-piercing-orange [&_svg]:inline-block nth-of-type-[2]:[&_svg]:-left-[0.25px] nth-last-of-type-[2]:[&_svg]:left-[0.5px]",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </Button>
-  );
+	                                    children,
+	                                    className,
+	                                    ...props
+                                    }: ComponentPropsWithRef<"button">) => {
+	return (
+		<Button
+			className={cn(
+				"z-[10] flex items-center border-0 border-r-[1px] border-dashed !border-faded-background/90 bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] !text-faded-background/90 antialiased transition-colors ease-in-out-2 last-of-type:border-r-0 hover:!text-piercing-orange hover:[&_path]:!fill-piercing-orange [&_svg]:inline-block nth-of-type-[2]:[&_svg]:-left-[0.25px] nth-last-of-type-[2]:[&_svg]:left-[0.5px]",
+				className
+			)}
+			{...props}
+		>
+			{children}
+		</Button>
+	);
 };
 export const MenuButtonCaption = ({
-  children,
-  pre = "[",
-  post = "]",
-  icon = true,
-  className,
-  ...props
-}: ComponentPropsWithRef<"div"> & {
-  pre?: string;
-  post?: string;
-  icon?: boolean;
+	                                  children,
+	                                  pre = "[",
+	                                  post = "]",
+	                                  icon = true,
+	                                  className,
+	                                  ...props
+                                  }: ComponentPropsWithRef<"div"> & {
+	pre?: string;
+	post?: string;
+	icon?: boolean;
 }) => {
-  return (
-    <div
-      className={cn(
-        "mb-[2px] ml-[6px] flex items-center text-base [&_svg]:relative [&_svg]:top-[0.5px]",
-        className,
-        icon
-          ? "lowercase"
-          : "border-r-px border-dashed border-faded-background/80"
-      )}
-      {...props}
-    >
-      {icon ? (
-        <>
-          {pre}
-          {children}
-          {post}
-        </>
-      ) : (
-        <>{children}</>
-      )}
-    </div>
-  );
+	return (
+		<div
+			className={cn(
+				"mb-[2px] ml-[6px] flex items-center text-base [&_svg]:relative [&_svg]:top-[0.5px]",
+				className,
+				icon
+					? "lowercase"
+					: "border-r-px border-dashed border-faded-background/80"
+			)}
+			{...props}
+		>
+			{icon ? (
+				<>
+					{pre}
+					{children}
+					{post}
+				</>
+			) : (
+				<>{children}</>
+			)}
+		</div>
+	);
 };
 const MiniMapItem = ({
-  onMouseEnter: onEnter,
-  onMouseLeave: onLeave,
-  style,
-  ...props
-}: ComponentPropsWithRef<"div">) => {
-  const { onMouseEnter, onMouseLeave } = useDomCursor({
-    onEnter,
-    onLeave
-  });
-  const color = useHighlighter(useShallow((r) => r.currentColor));
-  return (
-    <div
-      className="pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] border-foreground/20 transition-all duration-200 ease-out-power2 hover:-top-[3px] hover:h-[10px]"
-      {...props}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={{
-        backgroundColor: `color-mix(in oklch,oklch(${HighlightPalette[color]}/1) 85%,var(--color-faded-white))`,
-        ...style
-      }}
-    ></div>
-  );
+	                     onMouseEnter: onEnter,
+	                     onMouseLeave: onLeave,
+	                     style,
+	                     ...props
+                     }: ComponentPropsWithRef<"div">) => {
+	const {onMouseEnter, onMouseLeave} = useDomCursor({
+		onEnter,
+		onLeave
+	});
+	const color = useHighlighter(useShallow((r) => r.currentColor));
+	return (
+		<div
+			className="pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] border-foreground/20 transition-all duration-200 ease-out-power2 hover:-top-[3px] hover:h-[10px]"
+			{...props}
+			onMouseEnter={onMouseEnter}
+			onMouseLeave={onMouseLeave}
+			style={{
+				backgroundColor: `color-mix(in oklch,${HighlightPalette[color]} 85%, var(--color-faded-white))`,
+				...style
+			}}
+		></div>
+	);
 };
 const MiniMap = ({
-  highlightMap,
-  scaleRatio,
-  ...props
-}: ComponentPropsWithoutRef<"div"> & {
-  highlightMap: Array<{
-    y: number;
-    top: number;
-  }>;
-  scaleRatio: number;
+	                 highlightMap,
+	                 scaleRatio,
+	                 ...props
+                 }: ComponentPropsWithoutRef<"div"> & {
+	highlightMap: Array<{
+		y: number;
+		top: number;
+	}>;
+	scaleRatio: number;
 }) => {
-  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
-  const mapBackdropRef = useRef<HTMLDivElement>(null!);
-  const mapTrackRef = useRef<HTMLDivElement>(null!);
-  const highMaps = useRef<HTMLDivElement[]>([]);
-  const lastResize = useWindowResize({
-    detectVisibilityChange: false,
-    detectHeightChange: true
-  });
-  const lenis = useLenis();
-  const [scale, setScale] = useState(1);
-  useEffect(() => {
-    setScale(scaleRatio);
-  }, [lastResize, scaleRatio]);
+	const currentColor = useHighlighter(useShallow((r) => r.currentColor));
+	const mapBackdropRef = useRef<HTMLDivElement>(null!);
+	const mapTrackRef = useRef<HTMLDivElement>(null!);
+	const highMaps = useRef<HTMLDivElement[]>([]);
+	const lastResize = useWindowResize({
+		detectVisibilityChange: false,
+		detectHeightChange: true
+	});
+	const lenis = useLenis();
+	const [scale, setScale] = useState(1);
+	useEffect(() => {
+		setScale(scaleRatio);
+	}, [lastResize, scaleRatio]);
 
-  useGSAP(() => {
-    highMaps.current.forEach((e, t) => {
-      const y = highlightMap[t]?.top;
-      if (!y) return;
-      gsap.to(e, {
-        translateY: y * scale,
-        duration: 0.1,
-        ease: "power2.inOut"
-      });
-    });
-  }, [scale]);
-  return (
-    <div
-      className="pointer-events-none fixed top-[55px] right-[40px] bottom-[50px] z-[250] w-[24px] origin-[0_0] scale-x-50 overflow-hidden transition-transform duration-200"
-      ref={mapTrackRef}
-      {...props}
-    >
-      <div
-        ref={mapBackdropRef}
-        className="absolute h-full w-full origin-[100%_0]"
-      ></div>
-      {highlightMap.map((e, t) => (
-        <MiniMapItem
-          ref={(el) => {
-            el && (highMaps.current[t] = el);
-          }}
-          onClick={() => {
-            lenis?.scrollTo(e.y - 250);
-          }}
-          key={"highMap" + t}
-          color={currentColor}
-          style={{ transform: `translateY(${e.top}px)` }}
-        />
-      ))}
-    </div>
-  );
+	useGSAP(() => {
+		highMaps.current.forEach((e, t) => {
+			const y = highlightMap[t]?.top;
+			if (!y) return;
+			gsap.to(e, {
+				translateY: y * scale,
+				duration: 0.1,
+				ease: "power2.inOut"
+			});
+		});
+	}, [scale]);
+	return (
+		<div
+			className="pointer-events-none fixed top-[55px] right-[40px] bottom-[50px] z-[250] w-[24px] origin-[0_0] scale-x-50 overflow-hidden transition-transform duration-200"
+			ref={mapTrackRef}
+			{...props}
+		>
+			<div
+				ref={mapBackdropRef}
+				className="absolute h-full w-full origin-[100%_0]"
+			></div>
+			{highlightMap.map((e, t) => (
+				<MiniMapItem
+					ref={(el) => {
+						el && (highMaps.current[t] = el);
+					}}
+					onClick={() => {
+						lenis?.scrollTo(e.y - 250);
+					}}
+					key={"highMap" + t}
+					color={currentColor}
+					style={{transform: `translateY(${e.top}px)`}}
+				/>
+			))}
+		</div>
+	);
 };

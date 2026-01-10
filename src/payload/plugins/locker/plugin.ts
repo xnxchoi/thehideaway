@@ -1,6 +1,5 @@
-import type { CollectionConfig, CollectionSlug, Plugin, User } from "payload";
-import { lockCollections } from "@/payload/plugins/locker/lockCollections";
-import { LockedAccessCollection } from "@/payload/plugins/locker/access";
+import {lockCollections} from "@/payload/plugins/locker/lockCollections";
+import type {CollectionConfig, CollectionSlug, Plugin} from "payload";
 
 export interface LockerPluginConfig {
   /**
@@ -15,7 +14,7 @@ export interface LockerPluginConfig {
    *
    * @default []
    */
-  targetCollections?: LockedAccessCollection[];
+  targetCollections?: CollectionSlug[];
   userCollections?: CollectionSlug[];
   collectionOverrides?: {
     [x in CollectionSlug]?: Partial<CollectionConfig<x>>;

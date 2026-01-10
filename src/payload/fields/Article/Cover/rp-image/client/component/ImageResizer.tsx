@@ -3,7 +3,7 @@ import {useRPImageNode} from "@/payload/fields/Article/Cover/rp-image/client/com
 import {clamp} from "@/utilities/mathUtilities";
 import {LexicalEditor} from "lexical";
 import {MotionNodeDragHandlers} from "motion";
-import {HTMLMotionProps, MotionValue} from "motion/react";
+import {HTMLMotionProps, MotionValue, useMotionValue} from "motion/react";
 import * as m from "motion/react-m";
 import {RefObject, useCallback, useMemo, useState} from "react";
 
@@ -16,8 +16,10 @@ export const ImageResizer = ({
 	onResizeStart: NonNullable<MotionNodeDragHandlers>["onDragStart"];
 	onResizeEnd: NonNullable<MotionNodeDragHandlers>["onDragEnd"]
 }) => {
+	const draggingValue=useMotionValue<boolean>(false)
+	const directionValue=useMotionValue<'east'|'west'>('east')
 	const maxWidth = useMemo(() =>
-			imageRef.current?.naturalWidth || 1000
+			imageRef.current?.naturalWidth || 600
 		, [imageRef])
 	const handleDragEast: NonNullable<MotionNodeDragHandlers["onDrag"]> = useCallback((event, info) => {
 
@@ -31,30 +33,49 @@ export const ImageResizer = ({
 		motionWidth.set(clamp(100, newWidth, maxWidth));
 
 	}, [maxWidth, motionWidth]);
-	return <> <RightResizeButton onDragStart={onResizeStart}
+	const dragEastStart:NonNullable<MotionNodeDragHandlers['onDragStart']>=useCallback((event, info)=>{
+		const alreadyDragging=draggingValue.get()
+		const currentDirection=directionValue.get()
+		const alreadyDo=alreadyDragging&&currentDirection==='west'
+		if(alreadyDo){
+			return;
+		}
+		onResizeStart?.(event,info)
+	},[directionValue, draggingValue, onResizeStart])
+		const dragWestStart:NonNullable<MotionNodeDragHandlers['onDragStart']>=useCallback((event, info)=>{
+			const alreadyDragging=draggingValue.get()
+			const currentDirection=directionValue.get()
+			const alreadyDo=alreadyDragging&&currentDirection==='east'
+			if(alreadyDo){
+				return;
+			}
+			directionValue.set('west')
+			draggingValue.set(true)
+			onResizeStart?.(event,info)
+		},[directionValue, draggingValue, onResizeStart])
+	return <> <RightResizeButton onDragStart={dragEastStart}
 	                             onDrag={handleDragEast}
 	                             onDragEnd={onResizeEnd}/><LeftResizeButton onDrag={handleDragWest}
-	                                                                        onDragStart={onResizeStart}
+	                                                                        onDragStart={dragWestStart}
 	                                                                        onDragEnd={onResizeEnd}/></>
 }
 
 const RightResizeButton = ({
 	                           onDragEnd: onEnd,
-	                           onDragStart: onStart,
+	                           onDragStart: onStart,dragging,
 	                           ...props
-                           }: HTMLMotionProps<"div">) => {
-	const [draggingThis, setDraggingThis] = useState(false)
+                           }: HTMLMotionProps<"div">&{dragging?:boolean}) => {
 	const isResizing = useRPImageNode(r => r.isResizing)
 	const onDragStart: NonNullable<MotionNodeDragHandlers["onDragStart"]> = useCallback((event, info) => {
-		setDraggingThis(true)
+
 		onStart?.(event, info)
 	}, [onStart])
 	const onDragEnd: NonNullable<MotionNodeDragHandlers["onDragEnd"]> = useCallback((event, info) => {
-		setDraggingThis(false);
+
 		onEnd?.(event, info)
 	}, [onEnd])
 	return <m.div role="button" drag={"x"} dragDirectionLock={true} dragElastic={0}
-	              dragConstraints={{left: 0, right: 0}} draggable={!isResizing || draggingThis}
+	              dragConstraints={{left: 0, right: 0}} draggable={!isResizing || !!dragging}
 	              onDragStart={onDragStart} onDragEnd={onDragEnd}
 	              {...props}
 	              whileDrag={{cursor: "e-resize"}}

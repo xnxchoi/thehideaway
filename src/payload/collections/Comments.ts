@@ -1,23 +1,19 @@
-import {
-  BoldFeature,
-  ItalicFeature,
-  lexicalEditor
-} from "@payloadcms/richtext-lexical";
-import { nanoid } from "nanoid";
+import {BoldFeature, ItalicFeature, lexicalEditor} from "@payloadcms/richtext-lexical";
+import {nanoid} from "nanoid";
+import type {CheckboxField} from "payload";
 import {
   Access,
   AccessArgs,
+	type CollapsibleField,
   CollectionConfig,
   CollectionSlug,
   FieldAccess,
-  Plugin,
-  type CollapsibleField
+	Plugin
 } from "payload";
-import { uuidv7 } from "uuidv7";
-import { Delta, Post, Response, type Citation } from "../../payload-types";
-import { PROPS_COLLAPSIBLE } from "./constants";
-import type { CheckboxField } from "payload";
+import {uuidv7} from "uuidv7";
+import {Delta, Post, Response} from "../../payload-types";
 import {ACField} from "../fields/AccessControlled/plugin"
+import {PROPS_COLLAPSIBLE} from "./constants";
 
 // Access control functions
 const isAdminOrAuthor: Access = ({ req: { user } }) => {

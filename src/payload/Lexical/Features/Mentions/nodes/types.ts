@@ -1,5 +1,4 @@
-import type { UserOverview } from "@/types/collections/posts";
-import type { DefaultDocumentIDType } from "payload";
+import {UserOverview} from "@/types/collections/users";
 
 export type MentionItem = Pick<UserOverview, "id" | "name" | "slug" | "image">;
 export type MentionFields = {

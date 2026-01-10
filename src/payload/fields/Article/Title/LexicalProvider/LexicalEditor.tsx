@@ -40,9 +40,11 @@ import {OnChangePlugin} from "@payloadcms/richtext-lexical/lexical/react/Lexical
 import {RichTextPlugin} from "@payloadcms/richtext-lexical/lexical/react/LexicalRichTextPlugin";
 import {useLexicalEditable} from "@payloadcms/richtext-lexical/lexical/react/useLexicalEditable";
 import {useTranslation} from "@payloadcms/ui";
+import {createCommand, LexicalCommand} from "lexical";
 import type {FC, RefObject} from "react";
 import {Fragment, useCallback, useEffect, useRef, useState} from "react";
 
+const FOCUS_INLINE_LEXICAL: LexicalCommand<void> = createCommand()
 export const LexicalEditor: FC<
 	{
 		singleLine?: boolean;
@@ -67,8 +69,6 @@ export const LexicalEditor: FC<
 	const onLeave = useCallback(() => {
 		setShowAltDoc(false);
 	}, [setShowAltDoc]);
-	const editorRef = useRef(editor);
-	const titleRef = useHandoff((r) => r.titleEditor);
 	const isEditable = useLexicalEditable();
 	const contentRef = useHandoff((r) => r.contentEditor);
 	const {t} = useTranslation<{}, string>();
@@ -79,10 +79,15 @@ export const LexicalEditor: FC<
 			setFloatingAnchorElem(_floatingAnchorElem);
 		}
 	};
+	const hasRun = useRef(false)
 	useEffect(() => {
-		if (!editor || titleRef === editor) return;
+		if (!editor || hasRun.current) return;
 		setEditor({target: "title", editor});
-	}, [setEditor, titleRef, editor]);
+		hasRun.current = true;
+		return () => {
+			hasRun.current = false
+		}
+	}, [setEditor, editor]);
 
 	useEffect(() => {
 		if (!editorConfigContext?.uuid) {
@@ -145,10 +150,19 @@ export const LexicalEditor: FC<
 				) {
 					return true;
 				}
-				const {textContent, caretPosition, isEmpty} = getTitleState();
+				const root = $getRoot();
 
-				if (isEmpty) {
-					return true;
+				const textContent = root.getTextContent();
+
+				const selection = $getSelection();
+				let caretPosition = 0;
+				if ($isRangeSelection(selection)) {
+					caretPosition = selection.anchor.offset;
+				}
+				if (textContent.length < 1) {
+					editor.blur();
+					contentRef.focus();
+
 				}
 				const {before, after} = splitTextAtCaret(textContent, caretPosition);
 

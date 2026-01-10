@@ -5,7 +5,7 @@ import { Pagination } from "@/payload/components/Pagination";
 
 import { RPage } from "@/components/UX/Transition";
 import { CatTitle } from "@/components/layouts/Tagged/Item";
-import { paginatedPosts } from "@/payload/collections/Posts/api/queryPostOverview";
+import {paginatedPosts} from "@/payload/collections/Posts/api/queryPostOverviews";
 import configPromise from "@payload-config";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";

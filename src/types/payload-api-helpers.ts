@@ -1,29 +1,14 @@
 import type {Compilation} from "@/payload-types"
-import type {Flatten} from "@/utilities/typeUtilities"
-import type {CollectionSlug, DataFromCollectionSlug} from "payload"
-
-export type ImageCollectionSlug = Extract<
+import {ImageCollection, ImageCollectionSlug} from "@/types/collections/image-collections";
+import type {Flatten, RequiredFields} from "@/utilities/typeUtilities"
+import {
 	CollectionSlug,
-	"assets" | "userMedia" | "exMedia"
->;
+	DataFromCollectionSlug,
+	SelectType,
+	TransformCollectionWithSelect,
+	TypedCollectionSelect
+} from "payload"
 
-export type ImageCollection = DataFromCollectionSlug<ImageCollectionSlug>;
-
-type ImageCoreKeys = "url" | "src" | "alt" |
-	"darkmode";
-type ImageMetaKeys = "caption" | "source" |
-	"attribution"
-type ImageDimensionKeys = "height" | "width"
-type ImageSizesKey = | "sizes"
-export type MandatedImageKeys =
-	ImageCoreKeys;
-export type ImageDocKeys =
-	| "filename"
-	| "mimeType"
-	| ImageSizesKey | ImageDimensionKeys | ImageMetaKeys
-	| "locked" | "allowList" | "authority"
-	| "blurDataUrl"
-	| "thumbnailURL" | MandatedImageKeys | "id";
 export type FetchedCompilation<T extends (Flatten<Compilation["items"]>["relationTo"])> = {
 	id: string;
 	title: string;
@@ -40,6 +25,12 @@ export type DocWithId = {
 	id: string;
 	[x: string]: any;
 }
+type OPOP<T extends CollectionSlug> = Partial<DataFromCollectionSlug<T>>
+type VVV<T extends CollectionSlug> = RequiredFields<OPOP<T>>
+type FSVS<T extends DataFromCollectionSlug<CollectionSlug>> = RequiredFields<T>
+
+export type PayloadFound<T extends CollectionSlug, K extends TypedCollectionSelect[T], > = K extends SelectType ? TransformCollectionWithSelect<T, K> : DataFromCollectionSlug<T>
+
 export type PayloadFindFetch<T> = {
 	docs: T[];
 	hasNextPage: boolean;

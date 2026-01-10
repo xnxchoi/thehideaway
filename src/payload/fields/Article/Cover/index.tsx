@@ -1,17 +1,16 @@
-import type {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {getServerSideURL} from "@/utilities/getURL";
-import {FilterOptionsResult, type UploadFieldServerProps, Where} from "payload";
-import {CoverImageClient} from "./coverClient";
-import {randomNumber} from "@/utilities/randomNumber";
 import {getFallbackFromUnsplash} from "@/payload/collections/Media/hooks/getFallbackFromUnsplash";
 import {
-	ImageProvider,
+	ImageCollectionSlug,
 	ProcessedImageDoc,
 	RalueAsDataWithRelation,
 	RalueWithRelation
-} from "@/types/collections/imageCollections";
+} from "@/types/collections/image-collections";
+import {UnsplashFetchResult} from "@/types/ImageCollections/unsplash";
 import {imageSelect} from "@/types/payload-api-selects";
-import {UnsplashFetchResult} from "@/payload/collections/Media/hooks/types";
+import {getServerSideURL} from "@/utilities/getURL";
+import {randomNumber} from "@/utilities/randomNumber";
+import {FilterOptionsResult, type UploadFieldServerProps, Where} from "payload";
+import {CoverImageClient} from "./coverClient";
 
 type Prop = Omit<UploadFieldServerProps, "value"> & {
 	relationTo?: ImageCollectionSlug[];
@@ -41,20 +40,20 @@ export default async function CoverImageServerComponent(props: Prop) {
 
 			{
 				mimeType: {
-					contains: "image"
+					like: "image/%"
 				}
 			}
 		]
 	};
 	const filterOptions = relationTo.reduce((prev, next) => {
 		const whereQuery = whereBase;
-		if (next === "userMedia") {
-			whereQuery.and.push({
-				author: {
-					equals: user.id
-				}
-			});
-		}
+		// if (next === "userMedia") {
+		// 	whereQuery.and.push({
+		// 		author: {
+		// 			equals: user.id
+		// 		}
+		// 	});
+		// }
 		return {
 			...prev,
 			[next]: whereQuery
@@ -76,10 +75,7 @@ export default async function CoverImageServerComponent(props: Prop) {
 					...r,
 					src,
 					url,
-					source: {
-						identifier: r.id,
-						provider: "local" as ImageProvider
-					}
+
 				}
 			}
 			return null;
@@ -92,7 +88,7 @@ export default async function CoverImageServerComponent(props: Prop) {
 		}
 	} else {
 		const assetCount = await payload.count({
-			collection: "assets", where: whereBase
+			collection: "assets", overrideAccess: true
 		}).then((r) => r.totalDocs).catch((e) => {
 			payload.logger.error({
 				message: "Failed to get asset count", error: e
@@ -124,16 +120,13 @@ export default async function CoverImageServerComponent(props: Prop) {
 					});
 					if (res.docs.length > 0) {
 						const tempTarget = res.docs[0];
-						const {src, url, source} = tempTarget;
+						const {src, url,} = tempTarget;
 						if (!!src && !!url) {
 							target = {
 								...tempTarget,
 								src,
 								url,
-								source: {
-									identifier: tempTarget.id,
-									provider: "local"
-								}
+
 							};
 						}
 					}

@@ -1,7 +1,7 @@
-import {BaseImageSelect} from "@/types/collections/imageCollections";
+import {BaseImageSelect} from "@/types/collections/image-collections";
 
 export const imageSelect = (): BaseImageSelect => ({
-	url: true, source: true,
+	url: true,  
 	darkmode: true,
 	alt: true,
 	caption: true,

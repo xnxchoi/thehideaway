@@ -1,6 +1,6 @@
 "use client";
 import { Link } from "@/components/UX/Link/Link";
-import { ArticleOverview } from "@/types/collections/posts";
+import {PostOverview} from "@/types/collections/posts";
 import {
   ComponentPropsWithoutRef,
   useCallback,
@@ -16,7 +16,7 @@ import { Theme } from "@/providers/Theme/types";
 import { useCursor } from "@/providers/RP_Pro";
 
 export const HomeSquare = (
-  props: { article: ArticleOverview } & ComponentPropsWithoutRef<"div">
+	props: { article: PostOverview } & ComponentPropsWithoutRef<"div">
 ) => {
   const { article, ...rest } = props;
   const category =

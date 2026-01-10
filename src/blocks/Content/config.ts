@@ -1,12 +1,14 @@
+import {ImageBlock} from "@/blocks/ImageBlock/config";
+
+import {link} from "@/payload/fields/link"
 import {
+	BlocksFeature,
 	FixedToolbarFeature,
 	HeadingFeature,
 	InlineToolbarFeature,
 	lexicalEditor,
-} from '@payloadcms/richtext-lexical'
-import type {Block, Field} from 'payload'
-
-import {link} from '@/payload/fields/link'
+} from "@payloadcms/richtext-lexical"
+import type {Block, Field} from "payload"
 import {uuidv7} from "uuidv7";
 
 const columnFields: Field[] = [{
@@ -53,7 +55,9 @@ const columnFields: Field[] = [{
 					...rootFeatures,
 					HeadingFeature({enabledHeadingSizes: ['h2', 'h3', 'h4']}),
 					FixedToolbarFeature(),
-					InlineToolbarFeature(),
+					InlineToolbarFeature(), BlocksFeature({
+						blocks: [ImageBlock]
+					})
 				]
 			},
 		}),
@@ -66,7 +70,7 @@ const columnFields: Field[] = [{
 	link({
 		overrides: {
 			admin: {
-				condition: (_data, siblingData) => {
+				condition: (_data: any, siblingData: { enableLink: any; }) => {
 					return Boolean(siblingData?.enableLink)
 				},
 			},
@@ -77,7 +81,18 @@ const columnFields: Field[] = [{
 export const Content: Block = {
 	slug: 'content',
 	interfaceName: 'ContentBlock',
-	fields: [
+	fields: [{
+		name: "id",
+		type: "text",
+		defaultValue: () => uuidv7(),
+		access: {
+			update: () => false,
+		},
+		required: true,
+		admin: {
+			hidden: true,
+		}
+	},
 		{
 			name: 'columns',
 			type: 'array',

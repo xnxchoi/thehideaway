@@ -1,3 +1,4 @@
+import {RP_ImageNode} from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
 import type { LexicalProviderProps } from "@/payload/Lexical/defaults/types";
 import {
   EditorConfigProvider,
@@ -11,6 +12,7 @@ import type { FC, ReactNode } from "react";
 import { useMemo, useRef } from "react";
 import {LexicalEditor as LexicalEditorComponent} from "./LexicalEditor";
 import "./LexicalEditor.scss";
+import {DarkRoomProvider} from "../../Cover/ImageNode/DarkRoom";
 const NestProviders = ({
   children,
   providers
@@ -96,7 +98,13 @@ export const LexicalProvider: FC<LexicalProviderProps> = (props) => {
   // Without it, there were cases where lexical editors inside drawers turn readOnly initially - a few miliseconds later they turn editable, but the editor does not re-render and stays readOnly.
   return (
     <LexicalComposer
-      initialConfig={initialConfig}
+	    initialConfig={{
+		    ...initialConfig,
+		    nodes: [
+			    ...(initialConfig?.nodes || []),
+			    RP_ImageNode,
+		    ]
+	    }}
       key={composerKey + initialConfig.editable}
     >
       <EditorConfigProvider
@@ -116,7 +124,7 @@ export const LexicalProvider: FC<LexicalProviderProps> = (props) => {
             editorContainerRef={editorContainerRef}
             isSmallWidthViewport={isSmallWidthViewport}
             onChange={onChange}
-          />
+	        />
         </NestProviders>
       </EditorConfigProvider>
     </LexicalComposer>

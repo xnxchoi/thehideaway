@@ -3,7 +3,7 @@ import { Link } from "@/components/UX/Link/Link";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { ArticleOverview } from "@/types/collections/posts";
+import {PostOverview} from "@/types/collections/posts";
 import { useLocale } from "next-intl";
 import { DateTime } from "luxon";
 import { useState } from "react";
@@ -12,7 +12,7 @@ export const ArchiveWrapper = ({ children }: { children: React.ReactNode }) => {
   return <div className={"mx-auto max-w-[1440px] px-6.5"}>{children}</div>;
 };
 
-type ListArticleProps = ArticleOverview;
+type ListArticleProps = PostOverview;
 export const TaggedItem = (props: ListArticleProps) => {
   const {
     title,

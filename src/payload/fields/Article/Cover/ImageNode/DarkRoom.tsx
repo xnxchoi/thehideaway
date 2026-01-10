@@ -1,110 +1,157 @@
 import {
+	ImageSaveParams,
+	useRPUploadMutation
+} from "@/payload/fields/Article/Cover/ImageNode/hooks/useRPImageQuery";
+import {
+	ImageCollectionSlug,
 	ProcessedImageDoc,
-	RalueAsDataWithRelation,
-	RalueWithRelation,
-	RenderImageFields,
 	TabNames
-} from "@/types/collections/imageCollections";
-import {createContext, ReactNode, useCallback, useContext, useMemo, useRef, useState} from "react";
-import {useAuth} from "@payloadcms/ui";
-import {getClientSideURL} from "@/utilities/getURL";
-import {MutationStatus, QueryStatus} from "@tanstack/react-query";
-import {ImageCollectionSlug} from "@/types/payload-api-helpers";
-import {NodeKey} from "@payloadcms/richtext-lexical/lexical";
-import {FetchedUnsplashImage} from "@/payload/collections/Media/hooks/types";
-import {createStore} from "zustand/vanilla";
-import {useStore} from "zustand";
+} from "@/types/collections/image-collections";
+import {ImageMetadata} from "@/types/ImageCollections/schema";
+import {MutationStatus} from "@tanstack/react-query";
+import {
+	createContext,
+	ReactNode,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState
+} from "react";
 
-type InsertCallbackParams = {
-	value: string;
-	processed: ProcessedImageDoc;
-	relationTo: ImageCollectionSlug;
+export type ImageProcessForm = {
+	file: File;
+	formID: string;
+	meta: Omit<ImageMetadata, "id" | "src"> & Partial<{
+		src: string
+	}>;
 }
-type InsertCallback = (params: InsertCallbackParams) => void
-type RPQueryStatus = QueryStatus | "disabled";
 type ImageFieldState = {
 	open: boolean;
-	value: RalueWithRelation | null;
-	onInsert: InsertCallback;
-	image: ProcessedImageDoc | null;
 	activeCollection: ImageCollectionSlug;
-	replaceNodeKey: NodeKey | null
-	formID: string | null;
-	openedTab: TabNames | null;
-	enabled: boolean;
-	uploaderStatus: MutationStatus
-	enabledCollections: ImageCollectionSlug[]
+	imageForm: ImageProcessForm[] | null;
+	focusedTab: TabNames | null;
+	onCancel: ((formID: string, error?: Error | null) => void) | null;
+	onSuccess: ((props: {
+		relationTo: ImageCollectionSlug
+		value: ProcessedImageDoc
+		nodeKey: string
+	}) => void) | null;
+	status: MutationStatus
+	success: boolean
+	onSelect: (params: ImageSaveParams) => void
 }
 type ImageFieldActions = {
-	setEnabledCollections: (collections: ImageCollectionSlug[] | null) => void
-	setReplaceNodeKey: (key: NodeKey | null) => void
 	setOpen: (open: boolean, tab?: TabNames) => void
 	setActiveCollection: (collection: ImageCollectionSlug | null) => void
-	setEnabled: (enabled: boolean) => void
-	setFormId: (FormID: string | null) => void
-	setImage: (image: ProcessedImageDoc | null) => void
-	setOpenedTab: (tab: TabNames | null) => void
+	setOnSuccess: (onSuccess: ImageFieldState["onSuccess"]) => void
+	setOnCancel: (onCancel: ImageFieldState["onCancel"]) => void
+	setImageForm: (processForm: ImageProcessForm[] | null) => void;
+	setFocusedTab: (tab: TabNames | null) => void
 }
-type RPImageUploader = ImageFieldActions & ImageFieldState;
-const createRPUploadStore = () => createStore<RPImageUploader>()((set, get) => ({
-	activeCollection: "assets",
-	open: false,
-	openedTab: null, enabled: false,
-	formID: null,
-	value: null,
-	enabledCollections: ["assets", "exMedia", "userMedia"],
-	setEnabledCollections: (collections: ImageCollectionSlug[] | null) => set({enabledCollections: collections ?? ["assets"]}),
-	onInsert: ({relationTo, processed: image, value}) => set({
-		value: {
-			relationTo, value
-		}, image, activeCollection: relationTo
-	}),
-	replaceNodeKey: null,
-	setOpen: (open, tab) =>
-		set({open, openedTab: tab || null})
-	,
-	setActiveCollection: (collection) => {
-		if (collection) {
-			if (get().enabledCollections.indexOf(collection) > -1) {
-				set({activeCollection: collection})
-			} else {
-				set({activeCollection: "assets"})
-			}
-		} else {
-			set({activeCollection: "assets"})
-		}
-	},
-	setReplaceNodeKey: (key) => {
-		set({replaceNodeKey: key})
-	},
-	setFormId: (formID) => {
-		set({formID})
-	}, setEnabled: (enabled) => {
-		set({enabled})
-	}, setImage: (image) =>
-		set({image})
-	,
-	uploaderStatus: "idle",
-	image: null,
-	setOpenedTab: (openedTab) => set({openedTab})
-}))
-type RPDarkRoomAPI = ReturnType<typeof createRPUploadStore>
+// const createRPUploadStore = () => createStore<RPImageUploader>()((set, get) => ({
+// 	activeCollection: "assets",
+// 	open: false,
+// 	focusedTab: null,
+// 	imageForm: null,
+// 	setOpen: (open, tab) =>
+// 		set({open, focusedTab: tab || null}),
+// 	onSuccess: null,
+// 	onCancel: null,
+// 	success: false,
+// 	setSuccess: (success) => set({success}),
+// 	setOnSuccess: (onSuccess) => set({onSuccess}),
+// 	setOnCancel: (onCancel) => set({onCancel}),
+// 	setImageForm: (imageForm) => set({imageForm}),
+// 	setActiveCollection: (collection) => set({activeCollection: collection || "assets"}),
+// 	uploaderStatus: "idle",
+// 	setFocusedTab: (focusedTab) => set({focusedTab})
+// 	,
+// 	setUploaderStatus: (status) => set({uploaderStatus: status})
+// }))
+// type RPDarkRoomAPI = ReturnType<typeof createRPUploadStore>
 
-const DarkRoomContext = createContext<RPDarkRoomAPI | undefined>(undefined)
+// const DarkRoomContext = createContext<RPDarkRoomAPI | undefined>(undefined)
+type RPImageUploader = ImageFieldActions & ImageFieldState;
+const DarkRoomContext = createContext<RPImageUploader | undefined>(undefined)
 export const useDarkRoom = <T, >(selector: (store: RPImageUploader) => T) => {
 	const ctx = useContext(DarkRoomContext);
 	if (!ctx) throw new Error("useRPImager must be used within DarkRoomProvider.")
-	return useStore(ctx, selector)
+	return selector(ctx);
 }
 const DarkRoom = (props: { children: ReactNode }) => {
-	const storeRef = useRef<RPDarkRoomAPI>(null!)
-	if (!storeRef.current) storeRef.current = createRPUploadStore()
+	const {
+		mutate,
+		status,
+		setOnCancel,
+		isSuccess,
+		setOnSuccess,
+		reset,
+		onSuccess,
+		onCancel
+	} = useRPUploadMutation();
+	const [imageForm, setImageForm] = useState<ImageProcessForm[] | null>(null);
+	const [focusedTab, setFocusedTab] = useState<TabNames | null>(null);
+	const isSuccessRef = useRef(isSuccess);
+	useEffect(() => {
+		isSuccessRef.current = isSuccess
+	}, [isSuccess])
+	const [open, _setOpen] = useState<boolean>(false);
+	const openRef = useRef(open);
+	useEffect(
+		() => {
+			openRef.current = open
+		}, [open]
+	)
+	const setOpen = useCallback((open: boolean, tab?: TabNames) => {
+		if (openRef.current === open) return;
+		reset();
+
+		if (open) {
+			setFocusedTab(tab || null)
+			_setOpen(true)
+		} else {
+			_setOpen(false)
+			setFocusedTab(null)
+		}
+	}, [reset])
+	const [activeCollection, _setActiveCollection] = useState<ImageCollectionSlug>("userMedia");
+	const setActiveCollection = useCallback((collection: ImageCollectionSlug | null) => {
+		setActiveCollection(collection || "userMedia")
+	}, [])
+	const onSelect = useCallback(({
+		                              meta,
+		                              relationTo,
+		                              file,
+		                              nodeKey,
+	                              }: ImageSaveParams) => {
+		mutate(
+			{
+				meta,
+				relationTo,
+				file,
+				nodeKey
+			}
+		)
+	}, [mutate])
 	return (
-		<DarkRoomContext.Provider value={storeRef.current}>
+		<DarkRoomContext.Provider value={{
+			imageForm,
+			open,
+			setOpen,
+			setImageForm,
+			status,
+			focusedTab,
+			setFocusedTab,
+			success: isSuccess,
+			setOnSuccess, activeCollection, setActiveCollection,
+			setOnCancel, onCancel, onSuccess, onSelect
+		}}>
 			{props.children}
 		</DarkRoomContext.Provider>
 	)
 }
+
 const DarkRoomInternal = ({children}: { children: ReactNode }) => {
 
 	return <>{children}</>

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { BasePayload } from 'payload';
+import {BasePayload} from "payload";
 
 export enum EmailCategory {
   NOTIFICATIONS = 'notifications',

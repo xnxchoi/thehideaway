@@ -1,24 +1,18 @@
 "use client";
 
-import type {RichTextFieldClient, ClientField} from "payload";
+import type {FeatureClientSchemaMap} from "@/payload/Lexical/defaults/types";
+import {ContentHandOffClientFeature} from "@/payload/Lexical/Features/HandOff/feature.client";
 
 import {
 	type BaseClientFeatureProps,
-  type FeatureProviderClient,
-	type FeatureProviderProviderClient,
-  type SanitizedClientEditorConfig
+	type FeatureProviderProviderClient
 } from "@payloadcms/richtext-lexical";
-import { ShimmerEffect, useConfig } from "@payloadcms/ui";
-import { lazy, Suspense, useEffect, useMemo, useState, type FC } from "react";
-
-import {loadClientFeatures} from "@/payload/Lexical/defaults/loadClientFeatures";
 import {
 	AlignFeatureClient,
 	BlockquoteFeatureClient,
 	BlocksFeatureClient,
 	BoldFeatureClient,
 	ChecklistFeatureClient,
-  defaultEditorLexicalConfig,
 	HeadingFeatureClient,
 	HorizontalRuleFeatureClient,
 	IndentFeatureClient,
@@ -29,7 +23,6 @@ import {
 	OrderedListFeatureClient,
 	ParagraphFeatureClient,
 	RelationshipFeatureClient,
-	sanitizeClientEditorConfig,
 	StrikethroughFeatureClient,
 	SubscriptFeatureClient,
 	SuperscriptFeatureClient,
@@ -37,11 +30,10 @@ import {
 	UnorderedListFeatureClient,
 	UploadFeatureClient
 } from "@payloadcms/richtext-lexical/client";
-import type { LexicalRichTextFieldProps } from "node_modules/@payloadcms/richtext-lexical/dist/types";
-import type {FeatureClientSchemaMap} from "@/payload/Lexical/defaults/types";
-import {ContentHandOffClientFeature} from "@/payload/Lexical/Features/HandOff/feature.client";
-import {RichLexicalField} from "./RichLexical";
+import type {LexicalRichTextFieldProps} from "node_modules/@payloadcms/richtext-lexical/dist/types";
+import {useMemo} from "react";
 import type {RichTextFieldProps} from "./content";
+import {RichLexicalField} from "./RichLexical";
 
 export const RichTextField = (props: LexicalRichTextFieldProps) => {
 	const {field, path, schemaPath} = props;
@@ -504,7 +496,7 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 						]
 					}
 				],
-				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.mediaBlock.fields.id`]:
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image.fields.id`]:
 					[
 						{
 							name: "id",
@@ -515,22 +507,8 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 							label: "ID"
 						}
 					],
-				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.mediaBlock.fields.media`]:
-					[
-						{
-							name: "media",
-							type: "upload",
-							relationTo: "media",
-							required: true,
-							label: "Media",
-							admin: {
-								sortOptions: {
-									isSortable: true
-								}
-							}
-						}
-					],
-				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.mediaBlock.fields.blockName`]:
+
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image.fields.blockName`]:
 					[
 						{
 							name: "blockName",
@@ -542,98 +520,156 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 							required: false
 						}
 					],
-				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.mediaBlock.fields`]:
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image.fields._components`]: [
+					{
+						"name": "_components",
+						"type": "ui",
+						"admin": {}
+					}
+				],
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image.fields.media`]: [{
+					"name": "media",
+					"type": "upload",
+					"relationTo": [
+						"media",
+						"userMedia",
+						"assets"
+					],
+					"maxDepth": 2,
+					"hasMany": false,
+					"admin": {
+						"isSortable": true
+					},
+					"label": "Media"
+				}],
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image.fields.span`]: [
+					{
+						"type": "number",
+						"name": "span",
+						"min": 144,
+						"max": 1440,
+						"label": "Span"
+					}
+
+				],
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image.fields`]:
 					[
 						{
-							name: "id",
-							type: "text",
-							required: true,
-							admin: {
-								hidden: true
-							},
-							label: "Id"
+							"name": "_components",
+							"type": "ui",
+							"admin": {}
 						},
 						{
-							name: "media",
-							type: "upload",
-							relationTo: "media",
-							required: true,
-							label: "Media",
-							admin: {
-								sortOptions: {
-									isSortable: true
-								}
-							}
+							"name": "id",
+							"type": "text",
+							"required": true,
+							"admin": {
+								"hidden": true
+							},
+							"label": "Id"
 						},
 						{
-							name: "id",
-							type: "text",
-							admin: {
-								hidden: true
+							"name": "media",
+							"type": "upload",
+							"relationTo": [
+								"media",
+								"userMedia",
+								"assets"
+							],
+							"maxDepth": 2,
+							"hasMany": false,
+							"admin": {
+								"isSortable": true
 							},
-							label: "ID"
+							"label": "Media"
 						},
 						{
-							name: "blockName",
-							type: "text",
-							admin: {
-								disabled: true
+							"type": "number",
+							"name": "span",
+							"min": 144,
+							"max": 1440,
+
+							"label": "Span"
+						},
+						{
+							"name": "id",
+							"type": "text",
+							"admin": {
+								"hidden": true
 							},
-							label: "Block Name",
-							required: false
+							"label": "ID"
+						},
+						{
+							"name": "blockName",
+							"type": "text",
+
+							"label": "Block Name",
+							"required": false
 						}
 					],
-				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.mediaBlock`]:
+				[`${schemaPath}.lexical_internal_feature.blocks.lexical_blocks.image`]:
 					[
 						{
-							name: "lexical_blocks_mediaBlock",
-							type: "blocks",
+							"name": "lexical_blocks_image",
+							"type": "blocks",
 							blocks: [
 								{
-									slug: "mediaBlock",
-									fields: [
+									"slug": "image",
+									"fields": [
 										{
-											name: "id",
-											type: "text",
-											required: true,
-											admin: {
-												hidden: true
+											"name": "id",
+											"type": "text",
+											"required": true,
+											"admin": {
+												"hidden": true
 											},
-											label: "Id"
+											"label": "Id"
 										},
 										{
-											name: "media",
-											type: "upload",
-											relationTo: "media",
-											required: true,
-											label: "Media",
-											admin: {
-												sortOptions: {
-													isSortable: true
-												}
-											}
+											"name": "media",
+											"type": "upload",
+											"relationTo": [
+												"media",
+												"userMedia",
+												"assets"
+											],
+											"maxDepth": 2,
+											"hasMany": false,
+											"admin": {
+												"isSortable": true
+											},
+											"label": "Media"
 										},
 										{
-											name: "id",
-											type: "text",
-											admin: {
-												hidden: true
-											},
-											label: "ID"
+											"type": "number",
+											"name": "span",
+											"min": 144,
+											"max": 1440,
+
+											"label": "Span"
 										},
 										{
-											name: "blockName",
-											type: "text",
-											admin: {
-												disabled: true
+											"name": "id",
+											"type": "text",
+											"admin": {
+												"hidden": true
 											},
-											label: "Block Name",
-											required: false
+											"label": "ID"
+										},
+										{
+											"name": "blockName",
+											"type": "text",
+											"admin": {
+												"disabled": true
+											},
+											"label": "Block Name",
+											"required": false
 										}
 									],
-									labels: {
-										singular: "Media Block",
-										plural: "Media Blocks"
+
+									"labels": {
+										"singular": "Image Block",
+										"plural": "Image Blocks"
 									}
 								}
 							]
@@ -643,21 +679,21 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 			upload: {}
 		};
 	}, [schemaPath]);
-  return (
-	  <div>
-		  <RichLexicalField
-			  path={path}
-			  schemaPath={schemaPath}
-			  admin={{hideGutter: true}}
-			  permissions={true}
-			  clientFeatures={clientFeatures}
-			  featureClientSchemaMap={
-				  featureClientSchemaMap as RichTextFieldProps["featureClientSchemaMap"]
-			  }
-			  lexicalEditorConfig={props.lexicalEditorConfig}
-			  initialLexicalFormState={props.initialLexicalFormState}
-			  field={field}
-		  />
-	  </div>
-  );
+	return (
+		<div>
+			<RichLexicalField
+				path={path}
+				schemaPath={schemaPath}
+				admin={{hideGutter: true}}
+				permissions={true}
+				clientFeatures={clientFeatures}
+				featureClientSchemaMap={
+					featureClientSchemaMap as RichTextFieldProps["featureClientSchemaMap"]
+				}
+				lexicalEditorConfig={props.lexicalEditorConfig}
+				initialLexicalFormState={props.initialLexicalFormState}
+				field={field}
+			/>
+		</div>
+	);
 };

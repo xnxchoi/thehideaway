@@ -121,14 +121,7 @@ export const ScrollIndicator = () => {
   const lenisSync = useCallback(
     (e: Lenis) => {
       trackTO.current && clearTimeout(trackTO.current);
-      const {
-        scroll,
-        actualScroll,
-        animatedScroll,
-        limit,
-        progress,
-        velocity
-      } = e;
+
 
       setTrackk("active");
       const location = Math.min(
@@ -167,10 +160,11 @@ export const ScrollIndicator = () => {
     (event) => {
       setDragging(true);
       dragControls.start(event, { snapToCursor: true });
+	    setCursor("DRAG");
       document.documentElement.setAttribute("data-dragging", "true");
       document.body.addEventListener("pointerup", endDrag, { once: true });
     },
-    [dragControls, endDrag]
+	  [dragControls, endDrag, setCursor]
   );
 
   useGSAP(() => {
@@ -316,12 +310,13 @@ export const ScrollIndicator = () => {
             className={cn(
               "scroll-indicator relative z-[300] flex h-full w-[10px] justify-center overflow-hidden border-x-[1px] border-y-0 border-solid border-faded-background/0"
             )}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
             ref={scrollTrack}
           >
             <m.div
               ref={scrolle}
-              onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
+
               dragListener={false}
               style={{
                 y: scrollYr

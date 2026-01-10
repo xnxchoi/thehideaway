@@ -122,7 +122,8 @@ const T = (props: { post: SingleArticle; queuedIDs: string[] }) => {
               <div className="relative overflow-hidden rounded-[12px]">
                 <div className="absolute top-0 left-0 z-[1] h-full w-full bg-off-white/35 dark:bg-off-d-gray/55"></div>
                 <div className="absolute top-0 left-0 z-[2] h-full w-full backdrop-blur-[20px] backdrop-saturate-[1.15]"></div>
-                <div className="relative z-[3] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-0 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.1)] px-[12px] py-[6px] select-none">
+                <div
+                    className="relative z-[3] flex w-fit max-w-[400px] min-w-[150px] origin-[50%_50%_0px] transform-none flex-col flex-nowrap items-start justify-center gap-0 overflow-hidden rounded-[12px] border-[oklab(0.7716_-0.00387748_-0.0277302/0.10)] px-[12px] py-[6px] select-none">
                   <div className="filter-blur-0 transform-origin-[50%_50%_0px] flex w-full transform-none items-center gap-4 opacity-100">
                     <div className="h-8 w-8 origin-[50%_50%_0px] rounded-[50%]">
                       <svg
@@ -136,7 +137,7 @@ const T = (props: { post: SingleArticle; queuedIDs: string[] }) => {
                           cy="10"
                           r="8"
                           strokeWidth="1.25"
-                          stroke="oklch(var(--faded-d-gray)/1)"
+                          stroke="var(--faded-d-gray)"
                           fill="none"
                           strokeLinecap="round"
                         ></circle>
@@ -145,7 +146,7 @@ const T = (props: { post: SingleArticle; queuedIDs: string[] }) => {
                           cy="10"
                           r="8"
                           strokeWidth="1.25"
-                          stroke="oklch(var(--rouge-400)/1)"
+                          stroke="var(--rouge-400)"
                           fill="none"
                           strokeDasharray={`${progress}px 1px`}
                           strokeLinecap="round"
@@ -176,8 +177,8 @@ const T = (props: { post: SingleArticle; queuedIDs: string[] }) => {
         style={{
           backgroundColor:
             theme === "dark"
-              ? "oklch(var(--faded-black)/1)"
-              : "oklch(var(--faded-white)/1)"
+                ? "var(--faded-black)"
+                : "var(--faded-white)"
         }}
       >
         {loadedArticles.map((article, index) => {

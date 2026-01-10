@@ -3,13 +3,13 @@ import { Link } from "@/components/UX/Link/Link";
 import { FrontImage } from "@/components/UX/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { ArticleOverview } from "@/types/collections/posts";
+import {PostOverview} from "@/types/collections/posts";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { ComponentProps, useState } from "react";
 
 export type SectionHeroProps = {
-  posts: ArticleOverview[];
+	posts: PostOverview[];
 };
 export const SectionHero = ({ posts }: SectionHeroProps) => {
   const postList = posts.slice(0, 3);
@@ -54,7 +54,7 @@ const HeroTop = ({
   post,
   className,
   ...rest
-}: { post: ArticleOverview } & ComponentProps<"div">) => {
+                 }: { post: PostOverview } & ComponentProps<"div">) => {
   const { title, slug, subtitle, image, author, category } = post;
   return (
     <div
@@ -82,7 +82,7 @@ const HeroTopTag = ({ tag }: { tag: string }) => {
   );
 };
 const RP_Image = (
-  post: { image: ArticleOverview["image"] } & ComponentProps<"div">
+	post: { image: PostOverview["image"] } & ComponentProps<"div">
 ) => {
   const { image, className } = post;
   const [isLoading, setIsLoading] = useState(true);
@@ -123,7 +123,7 @@ const RP_Image = (
     </div>
   );
 };
-const HeroTopMedia = ({ image }: { image: ArticleOverview["image"] }) => {
+const HeroTopMedia = ({image}: { image: PostOverview["image"] }) => {
   return (
     <RP_Image
       image={image}
@@ -131,7 +131,7 @@ const HeroTopMedia = ({ image }: { image: ArticleOverview["image"] }) => {
     />
   );
 };
-const HeroTopTitle = ({ title }: { title: ArticleOverview["title"] }) => {
+const HeroTopTitle = ({title}: { title: PostOverview["title"] }) => {
   return (
     <p
       className={
@@ -145,7 +145,7 @@ const HeroTopTitle = ({ title }: { title: ArticleOverview["title"] }) => {
 const HeroTopSubtitle = ({
   subtitle
 }: {
-  subtitle: ArticleOverview["subtitle"];
+	subtitle: PostOverview["subtitle"];
 }) => {
   return (
     <p className={"order-4 m-0 block text-[1.2rem] leading-[1.2] lg:col-[2]"}>
@@ -153,7 +153,7 @@ const HeroTopSubtitle = ({
     </p>
   );
 };
-const HeroTopMeta = ({ author }: { author: ArticleOverview["author"] }) => {
+const HeroTopMeta = ({author}: { author: PostOverview["author"] }) => {
   return (
     <div
       className={
@@ -168,7 +168,7 @@ const HeroSub = ({
   className,
   post,
   ...rest
-}: { post: ArticleOverview } & ComponentProps<"div">) => {
+                 }: { post: PostOverview } & ComponentProps<"div">) => {
   const { title, slug, subtitle, image, author, category } = post;
   return (
     <div
@@ -187,7 +187,7 @@ const HeroSub = ({
     </div>
   );
 };
-const SubMedia = ({ image }: { image: ArticleOverview["image"] }) => {
+const SubMedia = ({image}: { image: PostOverview["image"] }) => {
   return (
     <RP_Image className={"col-[1] row-[1/4] rounded-[1rem]"} image={image} />
   );
@@ -210,7 +210,7 @@ const SubTitle = ({ title }: { title: string }) => {
     </p>
   );
 };
-const HeroFeature = ({ post }: { post: ArticleOverview }) => {
+const HeroFeature = ({post}: { post: PostOverview }) => {
   return (
     <div
       className={

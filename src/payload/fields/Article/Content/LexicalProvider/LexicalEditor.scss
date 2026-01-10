@@ -1,4 +1,4 @@
-$blocks: (hr, hrSelected, link, block, paragraph, placeholder, quote, relationship,);
+$blocks: (hr, hrSelected, link, paragraph, placeholder, quote, relationship, placeholder);
 $textBlocks: (h1, h2, h3, h4, h5, h6,);
 $listNodes: (checklist,);
 $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline, UnderlineStrikethrough);
@@ -43,18 +43,12 @@ $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline
           & > * {
             font-family: "SUIT Variable", "SUIT Fallback";
             line-height: 1.5;
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             display: block;
             max-width: var(--maxBodyWidth);
             width: 100%;
           }
 
-          &::placeholder {
-            display: inline-flex;
-            margin-block: 8px;
-            font-size: 1.6rem;
-            font-weight: 500;
-          }
 
           @each $block in $blocks {
             & > .LexicalEditorTheme__#{$block} {
@@ -73,6 +67,14 @@ $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline
             }
           }
 
+          & > .LexicalEditorTheme__block {
+            display: inline-flex;
+
+            .form {
+              display: contents;
+            }
+          }
+
           & > .LexicalEditorTheme__ {
             &h6 {
               font-size: 1.4rem;
@@ -80,7 +82,7 @@ $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline
             }
 
             &h5 {
-              font-size: 1.4rem;
+              font-size: 1.6rem;
               line-height: calc(1.75 / 1.125);
             }
 
@@ -134,6 +136,16 @@ $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline
           // height: calc(100% - 16px);
           // border-left: 1px solid oklch(from var(--muted-faded-fg) l c h/0.2);
           // }
+        }
+
+        p.LexicalEditorTheme__placeholder {
+          font-weight: 500;
+
+          padding-top: 8px;
+          padding-bottom: 8px;
+          padding-inline: 8px;
+          font-size: 1.8rem;
+          margin-bottom: .55em;
         }
 
         button.draggable-block-menu {

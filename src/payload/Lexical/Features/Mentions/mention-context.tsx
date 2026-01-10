@@ -1,7 +1,8 @@
 "use client";
 import { useDebounce } from "@/components/editor/editor-hooks/use-debounce";
 import { type MentionItem } from "@/components/editor/plugins/mentions/store";
-import type { UserOverview } from "@/types/collections/posts";
+
+import {UserOverview} from "@/types/collections/users";
 import { useAuth } from "@payloadcms/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash-es";

@@ -1,6 +1,6 @@
 "use server";
 
-import {revalidateTag, unstable_cache} from "next/cache";
+import {unstable_cache, updateTag} from "next/cache";
 import fs from "node:fs/promises";
 import path from "path";
 import {randomNumber} from "./randomNumber";
@@ -70,5 +70,5 @@ export const getFallbackImage = unstable_cache(
 
 // Optional: Function to manually revalidate the cache
 export async function revalidateFallbackImages() {
-	revalidateTag("fallback-images", {expire: 50});
+	updateTag("fallback-images");
 }

@@ -1,6 +1,5 @@
+import {ImageCollection} from "@/types/collections/image-collections";
 import type {CheckboxField, FieldHookArgs, GroupField, TextField} from "payload"
-import {uuidv7} from "zod"
-import type {ImageCollection} from "@/types/payload-api-helpers"
 
 const altField: TextField = {
 	name: "alt",
@@ -81,10 +80,6 @@ const sourceField: GroupField = {
 			return false
 		}
 	}, fields: [{
-		name: "identifier", type: "text", defaultValue: () => uuidv7(), access: {
-			update: () => false
-		}
-	}, {
 		name: "link", type: "text", admin: {
 			hidden: true
 		}
@@ -100,5 +95,5 @@ const fundFields = [altField, darkmodeField,]
 const baseFields = [
 	srcField, captionField
 ]
-const groupFields = [attributionField, sourceField]
+const groupFields = []
 export {fundFields, baseFields, groupFields,}

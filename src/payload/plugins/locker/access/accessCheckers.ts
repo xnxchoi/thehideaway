@@ -1,19 +1,18 @@
-import { Access, AccessArgs, Field, FieldAccess, Where } from "payload";
-
 import type {
-  Admin,
-  Album,
-  Delta,
-  Media,
-  Playlist,
-  Post,
-  Profile,
-  Tag,
-  Track,
-  User,
-  UserMedia
+	Admin,
+	Album,
+	Delta,
+	Media,
+	Playlist,
+	Post,
+	Profile,
+	Tag,
+	Track,
+	User,
+	UserMedia
 } from "@/payload-types";
-import { FieldAccessArgs } from "node_modules/payload/dist/fields/config/types";
+import {FieldAccessArgs} from "node_modules/payload/dist/fields/config/types";
+import {Access, AccessArgs, Field, FieldAccess, Where} from "payload";
 
 type isAuthenticated = (args: AccessArgs<User> | AccessArgs<Admin>) => boolean;
 type AuthorCollections =
@@ -39,7 +38,7 @@ export const checkRole = (
 };
 export const isAdmin = ({
   req: { user }
-}: AccessArgs<AuthorCollections>): boolean => {
+                        }: Omit<AccessArgs, "id"> & { id?: string }): boolean => {
   if (!user) return false;
   if (user?.role === "admin") return true;
   return false;

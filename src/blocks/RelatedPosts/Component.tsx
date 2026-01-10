@@ -2,11 +2,11 @@ import React from "react";
 
 import { RPCard } from "@/payload/components/Card";
 import { cn } from "@/lib/utils";
-import { ArticleOverview } from "@/types/collections/posts";
+import {PostOverview} from "@/types/collections/posts";
 
 export type RelatedPostsProps = {
   className?: string;
-  docs?: ArticleOverview[];
+	docs?: PostOverview[];
   introContent?: any;
 };
 

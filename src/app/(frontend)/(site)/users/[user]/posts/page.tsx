@@ -6,7 +6,7 @@ import {Pagination} from "@/payload/components/Pagination";
 import PageClient from "./page.client";
 import {RPage} from "@/components/UX/Transition";
 import {CatTitle, TaggedItem} from "@/components/layouts/Tagged/Item";
-import {queryPostOverview} from "@/payload/collections/Posts/api/queryPostOverview";
+import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
 import {getPayload} from "payload";
 import config from "@payload-config";
 import {PayloadRedirects} from "@/payload/components/PayloadRedirects";
@@ -38,7 +38,7 @@ export default async function Page({params: paramsPromise}: Args) {
 		return <PayloadRedirects url={"/404"} />;
 	}
 
-	const posts = await queryPostOverview({
+	const posts = await queryPostOverviews({
 		limit: 12,
 		page: 1,
 		overrideAccess: true,

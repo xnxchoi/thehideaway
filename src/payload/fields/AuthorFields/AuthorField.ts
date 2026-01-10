@@ -9,7 +9,7 @@ export const AuthorField = (hasMany = false): Field[] => {
       position: "sidebar"
     },
     index: true,
-    maxDepth: 0,
+	  maxDepth: 1,
     hasMany: hasMany,
     required: true
   };

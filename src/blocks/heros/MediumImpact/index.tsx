@@ -32,7 +32,10 @@ export const MediumImpactHero: React.FC<Page["hero"]> = ({
 				{media && typeof media === "object" && (
 					<div>
 						<Media className="mx-4 md:-mx-8 2xl:-mx-16" imgClassName="" priority={false}
-						       loading="lazy" resource={media} />
+						       loading="lazy" resource={{
+							relationTo: "media",
+							value: media.id
+						}}/>
 						{media?.caption && <div className="mt-3">{media.caption}</div>}
 					</div>
 				)}

@@ -1,7 +1,7 @@
-import { CollectionSlug } from "payload";
-import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements } from "better-auth/plugins/admin/access";
-import type { Config } from "@/payload-types";
+import type {Config} from "@/payload-types";
+import {createAccessControl} from "better-auth/plugins/access";
+import {defaultStatements} from "better-auth/plugins/admin/access";
+
 type MyCollections = Config["collections"];
 type MyCollectionSlug = keyof MyCollections;
 export type LockedContentOperations = "lock" | "readLocked";
@@ -143,6 +143,8 @@ const collectionPermissions: {
   ...authCollection,
   // series: ["read", "update", "create", "delete"],
   userViews: ["read", "update", "delete", "create"],
+	compilations: ["read"],
+	"payload-kv": [],
   citations: ["read", "update", "delete", "create"],
   bookmarks: ["read", "update", "delete", "create"],
   profile: ["read", "update", "delete", "create", "lock", "readLocked"],

@@ -1,10 +1,10 @@
 import { HomeArticleLayout } from "@/components/layouts/HomeArticleLayout";
 import { RPage } from "@/components/UX/Transition";
 import { Metadata } from "next";
-import { queryPostOverview } from "@/payload/collections/Posts/api/queryPostOverview";
+import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
 export const dynamic = "force-dynamic";
 export default async function HomePage() {
-  const posts = await queryPostOverview({
+	const posts = await queryPostOverviews({
     limit: 8,
     where: {
       _status: {

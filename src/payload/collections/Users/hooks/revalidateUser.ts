@@ -1,11 +1,8 @@
 "use server";
-import type {
-	CollectionAfterChangeHook,
-	CollectionAfterDeleteHook
-} from "payload";
-
-import {revalidatePath, revalidateTag} from "next/cache";
 import {User} from "@/payload-types";
+
+import {revalidatePath, revalidateTag, updateTag} from "next/cache";
+import type {CollectionAfterChangeHook, CollectionAfterDeleteHook} from "payload";
 import {cache} from "react";
 
 export const revalidateUser: CollectionAfterChangeHook<User> = cache(
@@ -21,7 +18,7 @@ export const revalidateUser: CollectionAfterChangeHook<User> = cache(
 						payload.logger.info(`Revalidating user at path: ${path}`);
 
 						revalidatePath(path);
-						revalidateTag("users-sitemap", {expire: 50});
+						updateTag("users-sitemap");
 					}
 
 					// If the page was previously published, we need to revalidate the old path
@@ -31,7 +28,7 @@ export const revalidateUser: CollectionAfterChangeHook<User> = cache(
 						payload.logger.info(`Revalidating old member at path: ${oldPath}`);
 
 						revalidatePath(oldPath);
-						revalidateTag("users-sitemap", {expire: 50});
+						revalidateTag("users-sitemap", "max");
 					}
 				}
 			}
@@ -83,7 +80,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<User> = async ({
 		if (!req.context?.disableRevalidate) {
 			const path = `/users/${doc?.slug}`;
 			revalidatePath(path);
-			revalidateTag("users-sitemap", {expire: 50});
+			revalidateTag("users-sitemap", "max");
 		}
 	} catch (e) {
 		req.payload.logger.error(e);

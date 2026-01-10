@@ -1,3 +1,13 @@
+import {Admin, Profile, User} from "@/payload-types";
+import {LockedCollections} from "@/payload/plugins";
+import {allowListField} from "@/payload/plugins/locker/fields/allowlist";
+import {authorityField} from "@/payload/plugins/locker/fields/authority";
+import {lockBoxField} from "@/payload/plugins/locker/fields/lockbox";
+import {LockerPluginConfig} from "@/payload/plugins/locker/plugin";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {arraysEqualContents} from "@/utilities/compareArrays";
+import {mergeFields} from "@/utilities/mergeFields";
+import {SerializedEditorState} from "lexical";
 import payload, {
   Access,
   AccessArgs,
@@ -9,18 +19,8 @@ import payload, {
   DataFromCollectionSlug,
   Where
 } from "payload";
-import { LockerPluginConfig } from "@/payload/plugins/locker/plugin";
-import { lockBoxField } from "@/payload/plugins/locker/fields/lockbox/ index";
-import { allowListField } from "@/payload/plugins/locker/fields/allowlist";
-import { authorityField } from "@/payload/plugins/locker/fields/authority";
-import { roleToAuthority } from "./fields/authority/utils";
-import { mergeFields } from "@/utilities/mergeFields";
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
-import { LockedCollections } from "@/payload/plugins";
-import { SerializedEditorState } from "lexical";
-import { Admin, Profile, User } from "@/payload-types";
-import { arraysEqualContents } from "@/utilities/compareArrays";
-import { revalidatePath, revalidateTag } from "next/cache";
+import {roleToAuthority} from "./fields/authority/utils";
+
 export function isDraftsEnabled<T extends CollectionSlug>({
   collection
 }: {
@@ -540,9 +540,9 @@ const createRevalidateDoc = <T extends LockedCollections>(
 
           payload.logger.info(`Revalidating ${collection} at path: ${path}`);
 
-          revalidatePath(path);
+	        // revalidatePath(path);
 
-	        revalidateTag(`${collection}-sitemap`, {expire: 50});
+	        // revalidateTag(`${collection}-sitemap`, {expire: 50});
         }
       }
 
@@ -554,8 +554,8 @@ const createRevalidateDoc = <T extends LockedCollections>(
           `Revalidating old ${collection} at path: ${oldPath}`
         );
 
-        revalidatePath(oldPath);
-	      revalidateTag(`${collection}-sitemap`, {expire: 50});
+	      // revalidatePath(oldPath);
+	      // revalidateTag(`${collection}-sitemap`, {expire: 50});
       }
     }
     return doc;
@@ -606,9 +606,9 @@ const createRevalidateDoc = <T extends LockedCollections>(
 
             payload.logger.info(`Revalidating ${collection} at path: ${path}`);
 
-            revalidatePath(path);
+	          // revalidatePath(path);
 
-	          revalidateTag(`users-sitemap`, {expire: 50});
+	          // revalidateTag(`users-sitemap`, {expire: 50});
           }
         }
       }

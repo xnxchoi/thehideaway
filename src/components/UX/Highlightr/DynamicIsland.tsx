@@ -17,24 +17,12 @@ export const DynamicBreadcrumb = ({
   title: string;
   progress: MotionValue<number>;
 }) => {
-  const [show, setShow] = useState(false);
+
   const { onMouseEnter, onMouseLeave } = useDomCursor({});
 
-  const lastState = useRef(false);
-  const callbackChange = useCallback((v: number) => {
-    const doShow = v > 0.1 && v < 0.9;
-    if (lastState.current !== doShow) {
-      setShow(doShow);
-      lastState.current = doShow;
-    }
-  }, []);
-  const strokeDashArray = useTransform(progress, (v) => `${v}px 1px`);
+	const strokeDashArray = useTransform(progress, (v) => `${v}px 1px`);
 
-  useMotionValueEvent(progress, "change", callbackChange);
-  return (
-    show && (
-      <>
-        <m.div
+	return <m.div
           initial={{
             y: "100%",
             opacity: 0
@@ -148,7 +136,4 @@ export const DynamicBreadcrumb = ({
             </div>
           </m.div>
         </m.div>
-      </>
-    )
-  );
 };

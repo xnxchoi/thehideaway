@@ -5,13 +5,13 @@ import {useInfiniteQuery, useQueries} from "@tanstack/react-query";
 import type {Sort, TypedCollectionSelect, Where} from "payload";
 import {stringify} from "qs-esm";
 import {useCallback, useMemo} from "react";
-import {ImageCollectionSlug, PayloadFindFetch} from "@/types/payload-api-helpers";
+import {PayloadFindFetch} from "@/types/payload-api-helpers";
 import {
-	FetchedImageDoc,
+	FetchedImageDoc, ImageCollectionSlug,
 	RalueAsDataWithRelation,
 	RalueWithRelation,
 	RenderImageFields
-} from "@/types/collections/imageCollections";
+} from "@/types/collections/image-collections";
 import {imageSelect} from "@/types/payload-api-selects";
 import {getClientSideURL} from "@/utilities/getURL";
 

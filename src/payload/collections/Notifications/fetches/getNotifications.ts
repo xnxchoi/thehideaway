@@ -1,17 +1,17 @@
-import type {OptionalKeys} from "@/utilities/typeUtilities";
-import {getPayload, type Where} from "payload";
-import config from "@payload-config";
 import {
-  NotificationDoc,
-  NotificationResponse,
-  ResponseNotification,
-  SyncedAsset,
-  SyncedNotification
+	NotificationDoc,
+	NotificationResponse,
+	ResponseNotification,
+	SyncedAsset,
+	SyncedNotification
 } from "@/payload/collections/Notifications/hooks/types";
+import {RalueAsDataWithRelation} from "@/types/collections/image-collections";
 import {imageSelect} from "@/types/payload-api-selects";
-import {RalueAsDataWithRelation} from "@/types/collections/imageCollections";
-import {NotificationsSelect} from "@payload-types";
 import {getFallbackImage} from "@/utilities/getFallbackImage";
+import type {OptionalKeys} from "@/utilities/typeUtilities";
+import config from "@payload-config";
+import {NotificationsSelect} from "@payload-types";
+import {getPayload, type Where} from "payload";
 
 type RP_NotificationKeys = keyof ResponseNotification;
 export const notifySelect = (): Pick<NotificationsSelect<true>, Exclude<RP_NotificationKeys, "id" | "fallbackImage">> & {
@@ -141,10 +141,7 @@ export const getNotifications = async ({
 			            alt,
 			            darkmode: r.darkmode,
 			            id: r.id,
-			            source: {
-				            identifier: id,
-				            provider: "local"
-			            },
+
 			            url,
 		            }
 	            }

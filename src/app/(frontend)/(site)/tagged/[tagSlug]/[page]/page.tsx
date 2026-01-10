@@ -6,7 +6,7 @@ import { PageRange } from "@/payload/components/PageRange";
 
 import PageClient from "./page.client";
 import { RPage } from "@/components/UX/Transition";
-import { queryPostOverview } from "@/payload/collections/Posts/api/queryPostOverview";
+import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import config from "@payload-config";
 
@@ -43,7 +43,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     notFound();
   }
 
-  const posts = await queryPostOverview({
+    const posts = await queryPostOverviews({
     limit: 12,
     page: Number(page),
 
@@ -64,7 +64,7 @@ export default async function Page({ params: paramsPromise }: Args) {
             }
           >
             <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
-              {posts.map((post) => (
+                {posts.docs.map((post) => (
                 <TaggedItem key={post.id} {...post} />
               ))}
             </div>
@@ -75,7 +75,7 @@ export default async function Page({ params: paramsPromise }: Args) {
             collection="posts"
             currentPage={Number(page)}
             limit={12}
-            totalDocs={posts.length}
+            totalDocs={posts.totalDocs}
           />
         </div>
       </PageClient>

@@ -1,4 +1,4 @@
-import { currentUser } from "@/lib/auth/context/servers";
+import {currentUser} from "@/lib/auth/context/get-context-props";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";

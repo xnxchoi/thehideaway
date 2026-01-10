@@ -1,6 +1,6 @@
-import type {ImageCollection, ImageCollectionSlug} from "@/types/payload-api-helpers"
-import type {CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig} from "payload"
+import {ImageCollection, ImageCollectionSlug} from "@/types/collections/image-collections";
 import {getLuminance} from "@/utilities/extractImageInfo";
+import type {CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig} from "payload"
 
 const processImage: CollectionBeforeChangeHook<ImageCollection> = async ({
 	                                                                         data,

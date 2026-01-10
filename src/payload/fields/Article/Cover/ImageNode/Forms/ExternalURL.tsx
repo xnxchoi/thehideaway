@@ -15,7 +15,7 @@ const ExternalImageSchema = z.object({
 	alt: z.string(),
 	darkmode: z.boolean(),
 	source: z.object({
-		identifier: z.string(),
+
 		link: z.url({
 			protocol: /^https?$/,
 			hostname: z.regexes.domain

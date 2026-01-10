@@ -1,5 +1,6 @@
-import { CollectionConfig } from 'payload';
-import { hideIfNotAdmin } from './helpers';
+import {CollectionConfig} from "payload";
+import {uuidv7} from "uuidv7";
+import {hideIfNotAdmin} from "./helpers";
 
 export const DeferredEmails: CollectionConfig = {
   slug: 'deferred-emails',
@@ -13,7 +14,18 @@ export const DeferredEmails: CollectionConfig = {
     update: () => true,
     delete: () => true,
   },
-  fields: [
+	fields: [{
+		name: "id",
+		type: "text",
+		defaultValue: uuidv7,
+		access: {
+			update: () => false
+		},
+		required: true,
+		admin: {
+			hidden: true
+		}
+	},
     {
       name: 'emailData',
       type: 'textarea',

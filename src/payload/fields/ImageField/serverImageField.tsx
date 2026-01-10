@@ -1,3 +1,4 @@
+import {ImageCollectionSlug} from "@/types/collections/image-collections";
 import {
   CollectionSlug,
   FilterOptionsResult,
@@ -6,7 +7,6 @@ import {
 } from "payload";
 import ImageField from "@/payload/fields/ImageField/index";
 import { getServerSideURL } from "@/utilities/getURL";
-import type { ImageCollectionSlug } from "@/types/payload-api-helpers";
 
 type Prop = UIFieldServerProps & {
   relationTo?: ImageCollectionSlug;
