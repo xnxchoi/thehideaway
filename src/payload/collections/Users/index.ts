@@ -7,10 +7,9 @@ import {getUserFollowing} from "@/payload/collections/Users/endpoints/getUserFol
 import {GotUser} from "@/payload/collections/Users/endpoints/userFieldSelect";
 import {userOverviewHandler} from "@/payload/collections/Users/endpoints/userOverview";
 import {validateHandler} from "@/payload/collections/Users/endpoints/validateHandle";
-import {afterChangeUsers} from "@/payload/collections/Users/hooks/afterChange";
 import {
-  revalidateDelete as afterDeleteUser,
-  revalidateUser
+	revalidateDelete as afterDeleteUser,
+	revalidateUser
 } from "@/payload/collections/Users/hooks/revalidateUser";
 import {userHandleField} from "@/payload/fields/handle";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
@@ -19,10 +18,10 @@ import {enforceUserFields} from "@/types/collections/users";
 import {generatePreviewPath} from "@/utilities/generatePreviewPath";
 import {getServerSideURL} from "@/utilities/getURL";
 import {
-  MetaDescriptionField,
-  MetaImageField,
-  MetaTitleField,
-  OverviewField
+	MetaDescriptionField,
+	MetaImageField,
+	MetaTitleField,
+	OverviewField
 } from "@payloadcms/plugin-seo/fields";
 import {CollectionConfig, Where} from "payload";
 import {uuidv7} from "uuidv7";
@@ -352,7 +351,7 @@ export const Users: CollectionConfig = {
         return finalData;
       }
     ],
-    afterChange: [revalidateUser, afterChangeUsers],
+	  afterChange: [revalidateUser,],
     afterDelete: [afterDeleteUser]
   },
   endpoints: [

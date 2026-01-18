@@ -6,8 +6,8 @@ export default async function Page() {
   return (
     <PostsPage
       params={
-        new Promise<{ pageNumber: string }>((resolve) =>
-          resolve({ pageNumber: "1" })
+	      new Promise<{ page: string }>((resolve) =>
+		      resolve({page: "1"})
         )
       }
     />

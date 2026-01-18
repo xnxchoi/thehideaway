@@ -17,10 +17,10 @@ export const useTransitionSetter = () => {
     navisopref.current = navIsOpen;
   }, [navIsOpen]);
   const setGenericPageTransition = useCallback(() => {
-      console.log(
-        "setting generic page transition,nav is open?",
-        navisopref.current
-      );
+		  // console.log(
+		  //   "setting generic page transition,nav is open?",
+		  //   navisopref.current
+		  // );
       navisopref.current ||
         ((setTransitionOutType(null), setIsTransitioningWipe(true)),
         setNavigationPageItemSelected(-1));

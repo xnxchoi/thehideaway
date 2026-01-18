@@ -284,13 +284,10 @@ const PidebarProvider = ({children}: { children: ReactNode }) => {
 		);
 	}, [config]);
 	useEffect(() => {
-		console.log(`path:${path}`);
 		if (regex.test(path)) {
-			console.log("passed");
 			enabledState.current = true;
 			setEnabled(true);
 		} else {
-			console.log("failed");
 			enabledState.current = false;
 			setEnabled(false);
 		}

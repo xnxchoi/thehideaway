@@ -1,7 +1,6 @@
 import {currentUser} from "@/lib/auth/context/get-context-props";
 import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
 
 export default async function MePage() {
   const user = await currentUser();

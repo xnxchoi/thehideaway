@@ -114,49 +114,61 @@ export const queryPostsByIDs = cache(
 
 	}
 );
-export const getPostOverviews = cache(async <T extends Omit<FindArgs, "collection" | "locale" | "select">>
-		({
-			 where,
+export const getPostOverviews = async <T extends Omit<FindArgs, "collection" | "locale" | "select">>
+({
+	 where,
 
-		 }: T) => {
-			const payload = await getPayload({config: configPromise});
+ }: T) => {
+	"use cache"
+	const payload = await getPayload({config: configPromise});
 
-			const foundPosts = await payload
-				.find({
-					collection: "posts",
-					where,
-					select: postOverviewSelect()
-					,
-					overrideAccess: true,
+	const {
+		hasNextPage,
+		hasPrevPage,
+		nextPage, docs, pagingCounter,
+		prevPage, totalDocs, totalPages, page, limit,
+	} = await payload
+		.find({
+			collection: "posts",
+			where,
+			select: postOverviewSelect()
+			,
+			overrideAccess: true,
 
-				}).then(r => r as PaginatedDocs<PayloadFound<"posts", PostOverviewSelector>>)
-				.catch((e) => {
-					console.error({
-						message: `Error while retrieving post overview`,
-						error: e
-					});
-					return {
-						docs: [],
-						totalDocs: 0,
-						totalPages: 0,
-						page: 0,
-						hasNextPage: false,
-						hasPrevPage: false,
-						nextPage: 0,
-						prevPage: 0,
-						pagingCounter: 0,
-						limit: 0
-					} as PaginatedDocs<PayloadFound<"posts", PostOverviewSelector>>
-				});
-			const newpr = foundPosts.docs.map(async (r) => await getPostOverview({payload, id: r.id}))
-			const fp = await Promise.allSettled(newpr);
+		}).then(r => r as PaginatedDocs<PayloadFound<"posts", PostOverviewSelector>>)
+		.catch((e) => {
+			console.error({
+				message: `Error while retrieving post overview`,
+				error: e
+			});
 			return {
-				...foundPosts,
-				docs: fp.flatMap(r => r.status === "fulfilled" ? r.value : [])
-			};
-		}
-	)
-;
+				docs: [],
+				totalDocs: 0,
+				totalPages: 0,
+				page: 0,
+				hasNextPage: false,
+				hasPrevPage: false,
+				nextPage: 0,
+				prevPage: 0,
+				pagingCounter: 0,
+				limit: 0
+			} as PaginatedDocs<PayloadFound<"posts", PostOverviewSelector>>
+		});
+	const newpr = docs.map(async (r) => await getPostOverview({payload, id: r.id}))
+	const fp = await Promise.allSettled(newpr);
+	return {
+		page,
+		hasNextPage,
+		hasPrevPage,
+		nextPage,
+		prevPage,
+		totalDocs,
+		totalPages,
+		limit,
+		pagingCounter,
+		docs: fp.flatMap(r => r.status === "fulfilled" ? r.value : [])
+	} satisfies PaginatedDocs<PostOverview>;
+}
 export const getPostOverview = cache(async <T extends Omit<FindOneArgs, "collection" | "locale" | "id" | "where">>({
 	                                                                                                                   payload,
 	                                                                                                                   id,

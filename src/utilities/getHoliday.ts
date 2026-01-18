@@ -76,7 +76,6 @@ const getHolidays = async (
 				process.env.HOLIDAY_API_KEY)}&solYear=${year}&solMonth=${sonth}&_type=json&numOfRows=100`,
 		);
 		if (res.ok) {
-			console.log("holiday api call success");
 			const data = (await res.json()) as {
 				resultCode: string;
 				resultMsg: string;

@@ -4,30 +4,35 @@ import {FrontImage} from "@/components/UX/Media/FrontImage";
 import {AspectRatio} from "@/components/UX/Media/types";
 import {RP_BadgeTag} from "@/components/UX/RP_BadgeTag";
 import {cn} from "@/lib/utils";
-import type {PostOverview} from "@/types/collections/posts";
+import {CollectionOverviewMap, OverviewSlugs} from "@/types/collections/index";
 import {AuthorOverview} from "@/types/collections/users";
 import type {ComponentProps, CSSProperties, ReactNode} from "react";
 
-export type OverviewItem = PostOverview & { collection: "posts" };
+export type OverviewItem<T extends OverviewSlugs = OverviewSlugs> = {
+	[x in OverviewSlugs]: {
+		relationTo: x;
+		value: CollectionOverviewMap[x]
+	}
+}[T]
 type LayoutDirection = "left" | "right";
 
 export function ArchiveFeatureCard(props: {
-	contents: OverviewItem[];
+	contents: OverviewItem<"delta" | "posts">[];
 	type?: LayoutDirection
 }) {
 	const {contents, type = "left"} = props;
 	let first, second, third, fourth;
 	if (contents.length > 0) {
-		first = contents[0] as OverviewItem;
+		first = contents[0];
 	}
 	if (contents.length > 1) {
-		second = contents[1] as OverviewItem;
+		second = contents[1];
 	}
 	if (contents.length > 2) {
-		third = contents[2] as OverviewItem;
+		third = contents[2];
 	}
 	if (contents.length > 3) {
-		fourth = contents[3] as OverviewItem;
+		fourth = contents[3];
 	}
 	return (
 		<OuterWrap>
@@ -88,15 +93,16 @@ function FocusHero({
 	                   item,
 	                   type = "left"
                    }: {
-	item: OverviewItem;
+	item: OverviewItem<"posts" | "delta">;
 	type?: LayoutDirection
 }) {
+	const {value, relationTo} = item;
 	const {
 		title,
 		author,
 		category,
 		slug,
-	} = item;
+	} = value;
 	return (
 		<div
 			className={cn(
@@ -108,17 +114,17 @@ function FocusHero({
 		>
 			<Link
 				className={"absolute inset-0 z-0 h-full w-full"}
-				href={`/${item.collection === "posts" ? "essays" : "delta"}/${slug}`}
+				href={`/${relationTo === "posts" ? "essays" : "delta"}/${slug}`}
 			/>
 			<div
 				className={
-					"col-[1] min-h-px w-full min-w-px self-start rounded-[1rem] pt-[100%] lg:row-[1/5]"
+					"col-[1] min-h-px w-full min-w-px self-start rounded-[1rem] pt-[100%] lg:row-[1/5] relative overflow-hidden"
 				}
 			>
-				{"image" in item && !!item.image && (
-					<FrontImage
-						imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-						resource={item.image!}
+				{"image" in value && !!value.image && typeof value.image === "object" && (
+					<FrontImage pictureClassName="absolute inset-0"
+					            imgClassName="rounded-[5px] absolute object-cover top-0 block w-auto h-auto max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
+					            resource={value.image}
 					/>
 				)}
 			</div>
@@ -152,7 +158,7 @@ function FocusHero({
 					"order-4 m-0 block leading-[1.2] lg:col-[2] lg:text-[1.6rem]"
 				}
 			>
-				{("subtitle" in item && item.subtitle) || ""}
+				{("subtitle" in value && value.subtitle) || ""}
 			</p>
 		</div>
 	);
@@ -166,7 +172,7 @@ function SunIcon() {
 	></div>;
 }
 
-function Subtitle({subtitle}: Pick<OverviewItem, "subtitle">) {
+function Subtitle({subtitle}: { subtitle: string | undefined | ReactNode }) {
 	return <p
 		className={
 			"order-4 col-[2] row-[5] m-0 block leading-[1.2] lg:text-[1.6rem]"
@@ -206,7 +212,7 @@ function HeroImage({
 	                   aspectRatio,
 	                   imgClassName,
 	                   ...rest
-                   }: Omit<ComponentProps<"div">, "children"> & Pick<OverviewItem, "image"> & {
+                   }: Omit<ComponentProps<"div">, "children"> & Pick<OverviewItem<"posts">["value"], "image"> & {
 	aspectRatio?: AspectRatio;
 	imgClassName?: string
 }) {
@@ -228,17 +234,18 @@ function SideHero({
 	                  item,
 	                  type = "left"
                   }: {
-	item: OverviewItem;
+	item: OverviewItem<"posts" | "delta">;
 	type?: LayoutDirection
 }) {
+	const {relationTo, value} = item;
 	const {
 		title,
-		collection,
+
 		author,
 
 		category,
 		slug,
-	} = item;
+	} = item.value;
 	return (
 		<div
 			className={cn(
@@ -248,9 +255,9 @@ function SideHero({
 					: "lg:col-[1/3] lg:row-[1/4]"
 			)}
 		>
-			<ItemLink slug={slug} collection={collection}/>
+			<ItemLink slug={slug} collection={relationTo}/>
 			<HeroImage className="col-[1/-1] row-[1/8] self-start rounded-[1rem] lg:h-full"
-			           image={item.image} aspectRatio={{
+			           image={"image" in value ? value.image : null} aspectRatio={{
 				base: 0,
 				lg: 100 / 177,
 			}}
@@ -261,13 +268,16 @@ function SideHero({
 			/>
 			<Title className="order-3 col-[2] row-[4] uppercase lg:text-[3.2rem]">{title}</Title>
 			<AuthorName name={author.name}/>
-			<Subtitle subtitle={item.subtitle}/>
+			<Subtitle subtitle={"subtitle" in value ? value.subtitle : undefined}/>
 		</div>
 	);
 }
 
 function ItemLink({slug, collection}:
-                  Pick<OverviewItem, "collection" | "slug">) {
+                  {
+	                  slug: string;
+	                  collection: "posts" | "delta"
+                  }) {
 	return <Link
 		className={"absolute inset-0 z-0 h-full w-full"}
 		href={`/${collection === "posts" ? "essays" : "delta"}/${slug}`}
@@ -278,22 +288,22 @@ function SplitBar({
 	                  items,
 	                  type = "left"
                   }: {
-	items: [OverviewItem, OverviewItem];
+	items: [OverviewItem<"posts" | "delta">, OverviewItem<"posts" | "delta">];
 	type?: LayoutDirection
 }) {
-	const [item1, item2] = items;
+	const [{value: item1, relationTo: collection1}, {
+		value: item2,
+		relationTo: collection2
+	}] = items;
 	const {
 		title: title1,
 
-		image: image1,
 		category: category1,
-		collection: collection1,
 		slug: slug1,
 	} = item1;
 	const {
 		title: title2,
-		image: image2,
-		collection: collection2,
+
 		category: category2,
 		slug: slug2,
 	} = item2;
@@ -310,7 +320,7 @@ function SplitBar({
 				<ItemLink slug={slug1} collection={collection1}/>
 				<HeroImage
 					className="col-[1] row-[1/4] min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:aspect-square"
-					image={image1}/>
+					image={"image" in item1 ? item1.image : null}/>
 
 				<RP_BadgeTag
 					wrapperClassName={
@@ -331,7 +341,9 @@ function SplitBar({
 				)}
 			>
 				<ItemLink slug={slug2} collection={collection2}/>
-				<HeroImage image={image2} aspectRatio={1}
+				<HeroImage image={"image" in item2 ? item2.image : null}
+
+				           aspectRatio={1}
 				           className="col-[1] row-[1/4] min-h-[1px] w-full min-w-[1px] self-start rounded-[5px]"
 				/>
 				<RP_BadgeTag

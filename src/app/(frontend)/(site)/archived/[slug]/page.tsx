@@ -1,14 +1,13 @@
+import {ArchiveFeatureCard} from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
 import {CatTitle, TaggedItem} from "@/components/layouts/Tagged/Item";
 import {RPage} from "@/components/UX/Transition";
 import {queryPostsByIDs} from "@/payload/collections/Posts/api/queryPostOverviews";
 import config from "@payload-config";
-import {notFound, redirect} from "next/navigation";
+import {notFound} from "next/navigation";
 import type {Metadata} from "next/types";
 import {getPayload} from "payload";
 
 import PageClient from "./page.client";
-
-export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
 	const payload = await getPayload({config});
@@ -35,60 +34,16 @@ type Args = {
 
 export default async function Page({params: paramsPromise}: Args) {
 	const {slug} = await paramsPromise;
-	const payload = await getPayload({config});
-
-	const cat = await payload
-		.find({
-			collection: "categories",
-			where: {
-				slug: {
-					equals: slug
-				}
-			},
-			limit: 1,
-			select: {
-				title: true,
-				slug: true,
-
-			}
-		})
-		.then((result) => result.docs[0] ?? null)
-		.catch((e) => (console.error(e), null));
+	const cat = await getCategory({slug});
 	if (!cat) {
 		notFound();
 	}
-	const postSel = payload.find({
-		collection: "posts",
-		where: {
-			and: [
-				{
-					category: {
-						equals: cat.id
-					}
-				}, {
-					_status: {
-						equals: "published"
-					}
-				}
-			]
-		}, depth: 0, limit: 12
-	}).then((result) => result.docs.map((doc) => doc.id)).then((ids) => queryPostsByIDs({ids}));
-	const deltaSel = payload.find({
-		collection: "delta", where: {
-			and: [
-				{
-					category: {
-						equals: cat.id
-					}
-				}, {
-					_status: {
-						equals: "published"
-					}
-				}
-			]
-		}, depth: 0, limit: 12
-	}).then((result) => result.docs.map((doc) => doc.id));
-	const posts = await postSel.then((results) => (results.docs))
+	const posts = await getCategoryPosts({id: cat.id})
+	const firstFive = posts.slice(0, 5).map((post) => ({
+		relationTo: "posts" as const,
+		value: post
+	}));
+	const rest = posts.slice(5);
 	return (
 		<RPage type="categories" slug={[cat.slug]}>
 			<PageClient>
@@ -99,8 +54,24 @@ export default async function Page({params: paramsPromise}: Args) {
 							"relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
 						}
 					>
+						<div>
+							<div className={"p-0"}>
+								<div className={"relative h-full w-full"}>
+									<div className={"w-full"}>
+										<div
+											className={
+												"relative z-[150] mx-auto flex w-[calc(100%-5rem)] max-w-[var(--maxContainerWidth)] translate-y-[1rem] rounded-t-[20px] rounded-b-[0]"
+											}
+										></div>
+										<div className={"relative block"}>
+											<ArchiveFeatureCard contents={firstFive} type={"left"}/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 						<div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
-							{posts.map((post) => (
+							{rest.map((post) => (
 								<TaggedItem
 									key={post.id}
 									{...post}
@@ -146,4 +117,65 @@ export async function generateMetadata({
 		title: `Archived: ${cat.title || ""}`,
 		description: `${cat.title || ""}`
 	};
+}
+
+async function getCategory({slug}: { slug: string }) {
+	"use cache"
+	const payload = await getPayload({config});
+
+	const cat = await payload
+		.find({
+			collection: "categories",
+			where: {
+				slug: {
+					equals: slug
+				}
+			},
+			limit: 1,
+			select: {
+				title: true,
+				slug: true,
+
+			}
+		})
+		.then((result) => result.docs[0] ?? null)
+		.catch((e) => (console.error(e), null));
+	return cat;
+}
+
+async function getCategoryPosts({id}: { id: string; }) {
+	"use cache"
+	const payload = await getPayload({config});
+	const postSel = payload.find({
+		collection: "posts",
+		where: {
+			and: [
+				{
+					category: {
+						equals: id
+					}
+				}, {
+					_status: {
+						equals: "published"
+					}
+				}
+			]
+		}, depth: 0, limit: 12
+	}).then((result) => result.docs.map((doc) => doc.id)).then((ids) => queryPostsByIDs({ids}));
+	const deltaSel = payload.find({
+		collection: "delta", where: {
+			and: [
+				{
+					category: {
+						equals: id
+					}
+				}, {
+					_status: {
+						equals: "published"
+					}
+				}
+			]
+		}, depth: 0, limit: 12
+	}).then((result) => result.docs.map((doc) => doc.id));
+	return await postSel.then((results) => (results.docs))
 }

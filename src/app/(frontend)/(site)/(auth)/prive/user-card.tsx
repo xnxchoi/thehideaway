@@ -14,7 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/ui/copy-button";
 import {
-  Dialog,
+	DialogRoot,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -53,8 +53,10 @@ import { AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { useTransitionRouter } from "next-transition-router";
 import {
+	type ChangeEventHandler,
   type ClipboardEventHandler,
   type DragEventHandler,
+	type MouseEventHandler,
   use,
   useCallback,
   useEffect,
@@ -275,7 +277,7 @@ export function UserCard() {
             </div>
             <div className="flex items-center gap-2">
               {currentUser && !!currentUser.twoFactorEnabled && (
-                <Dialog>
+	              <DialogRoot>
                   <DialogTrigger asChild>
                     <Button className="gap-2">
                       <QrCode size={16} />
@@ -335,9 +337,9 @@ export function UserCard() {
                       </div>
                     )}
                   </DialogContent>
-                </Dialog>
+	              </DialogRoot>
               )}
-              <Dialog open={twoFactorDialog} onOpenChange={setTwoFactorDialog}>
+	            <DialogRoot open={twoFactorDialog} onOpenChange={setTwoFactorDialog}>
                 <DialogTrigger asChild>
                   <Button
                     className={cn(
@@ -473,7 +475,7 @@ export function UserCard() {
                     </Button>
                   </DialogFooter>
                 </DialogContent>
-              </Dialog>
+	            </DialogRoot>
             </div>
           </div>
         </div>
@@ -481,7 +483,7 @@ export function UserCard() {
       <CardFooter className="items-center justify-between gap-2">
         {accounts &&
           accounts.some((account) => {
-            return account.provider === "credential";
+	          return account.scopes.includes("credential");
           }) && <ChangePassword />}
         <Button
           className="z-10 gap-2"
@@ -531,7 +533,7 @@ function ChangePassword() {
   const [open, setOpen] = useState<boolean>(false);
   const [signOutDevices, setSignOutDevices] = useState<boolean>(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+	  <DialogRoot open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="z-10 gap-2">
           <svg
@@ -631,7 +633,7 @@ function ChangePassword() {
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+	  </DialogRoot>
   );
 }
 
@@ -808,13 +810,19 @@ function EditUserDialog() {
     }
   }, [removeImage]);
 
-  const onClickRemove = useCallback((e) => {
-    setRemoveImage((t) => !t);
+	const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+		e.preventDefault();
+		e.stopPropagation();
+
   }, []);
+	const onClickRemove: MouseEventHandler = useCallback((e) => {
+		e.preventDefault();
+		setRemoveImage(r => !r);
+	}, [])
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+	  <DialogRoot open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Edit size={13} />
@@ -888,10 +896,10 @@ function EditUserDialog() {
                       onPaste={handlePaste}
                     >
                       <input
-                        type="checkbox"
+	                      type="checkbox" name="removeImage"
                         className="hidden outline-none"
                         checked={removeImage}
-                        onChange={onClickRemove}
+	                      onChange={onChange}
                       />
                       <div
 	                      className="ease relative rounded-xl border-[1px] border-solid border-faded-foreground p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-faded-foreground hover:bg-muted-faded-foreground hover:text-faded-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
@@ -1024,11 +1032,9 @@ function EditUserDialog() {
               if (image) {
                 const imageDoc = await doUpload(image);
                 if (imageDoc) {
-                  console.log("imageUploaded", imageDoc);
                   imageURL = imageDoc.url || imageDoc.thumbnailURL || null;
                   portraitURL = imageDoc.id || null;
                   if (portraitURL) {
-                    console.log("setting portrait", portraitURL);
                     setPortrait(portraitURL);
                   }
                 }
@@ -1072,7 +1078,7 @@ function EditUserDialog() {
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+	  </DialogRoot>
   );
 }
 
@@ -1099,7 +1105,7 @@ function AddPasskey() {
     setIsLoading(false);
   };
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+	  <DialogRoot open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2 text-xs md:text-sm">
           <Plus size={15} />
@@ -1141,7 +1147,7 @@ function AddPasskey() {
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+	  </DialogRoot>
   );
 }
 
@@ -1169,7 +1175,7 @@ function ListPasskeys() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletePasskey, setIsDeletePasskey] = useState<boolean>(false);
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+	  <DialogRoot open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2 text-xs md:text-sm">
           <Fingerprint className="mr-2 h-4 w-4" />
@@ -1274,6 +1280,6 @@ function ListPasskeys() {
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+	  </DialogRoot>
   );
 }

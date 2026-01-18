@@ -276,7 +276,7 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
         !svgRefs.current.length ||
         !navOpeningElement.current
       ) {
-        console.log("transition failed");
+	      // console.log("transition failed");
         return;
       }
       const g = navOpeningElement.current.getBoundingClientRect(),
@@ -316,7 +316,7 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
           duration: 0.3,
           ease: "power3.inOut",
           onStart: () => {
-            console.log("curtain here setting rp to visible");
+	          // console.log("curtain here setting rp to visible");
           }
         });
       });
@@ -364,7 +364,7 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
           duration: 0.3,
           ease: "power3.inOut",
           onStart: () => {
-            console.log("curtain here setting rp to visible");
+	          // console.log("curtain here setting rp to visible");
           }
         });
       }
@@ -378,7 +378,7 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
       duration: 0.3,
       ease: "power3.inOut",
       onStart: () => {
-        console.log("curtain here setting rp to visible");
+	      // console.log("curtain here setting rp to visible");
       }
     });
   }, []);
@@ -412,18 +412,15 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
     <TransitionRouter
       leave={(next: () => void, from?: string, to?: string) => {
         if (navIsOpen || transitionOutType !== null || hasRun.current) {
-          console.log("transitioning out, not wipe");
+	        // console.log("transitioning out, not wipe");
           completeExfil();
           next();
         } else {
-          console.log("transitioning out, wipe");
+	        // console.log("transitioning out, wipe");
           animateOut.current?.(next);
         }
       }}
       enter={(next: () => void, from?: string, to?: string) => {
-        console.log("entering");
-
-        console.log("curtain wipe");
         animateIn.current?.(next);
         setIsTransitioningWipe(false);
         setTransitionOutType(null);

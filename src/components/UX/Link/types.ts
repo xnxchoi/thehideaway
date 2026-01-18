@@ -1,11 +1,7 @@
-import type { HTMLMotionProps } from "motion/react";
-import type { LinkProps as NextLinkProps } from "next/link";
-import { DataFromCollectionSlug } from "payload";
-import {
-  ComponentPropsWithoutRef,
-  RefAttributes,
-  type ComponentProps
-} from "react";
+import type {HTMLMotionProps} from "motion/react";
+import type {LinkProps as NextLinkProps} from "next/link";
+import {DataFromCollectionSlug} from "payload";
+import {type ComponentProps, ComponentPropsWithoutRef} from "react";
 
 export type PayloadLinkProps = {
   type: "reference" | "custom";
@@ -70,5 +66,4 @@ export type RPButtonProps = Omit<
 export type RPLinkPropsWithRef = RPLinkProps & {
   disabled?: boolean;
 };
-export type MotionBtnProps = HTMLMotionProps<"button"> &
-  ComponentPropsWithoutRef<"button">;
+export type MotionBtnProps = HTMLMotionProps<"button">

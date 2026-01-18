@@ -1,6 +1,6 @@
 "use client";
 import { errorToast } from "@/components/ui/sonner";
-import { GhostUser } from "@/components/UX/Highlightr/index";
+import {GhostUser} from "@/components/UX/Highlightr";
 import { HighlightColors } from "@/components/UX/Highlightr/stores";
 import type {
   FetchedCitation,
@@ -108,7 +108,6 @@ export const fetchAuthorOverview = async ({
       throw new Error("Failed to fetch user");
     })
     .catch((e) => {
-      console.log(e);
       return GhostUser();
     });
   return author;

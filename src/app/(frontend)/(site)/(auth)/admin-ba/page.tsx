@@ -32,7 +32,7 @@ import {
 	Calendar as CalendarIcon,
 } from "lucide-react";
 import {
-	Dialog,
+	DialogRoot,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
@@ -41,7 +41,7 @@ import {
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Calendar} from "@/components/ui/calendar";
 import {
-	Popover,
+	PopoverRoot,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
 			<Card>
 				<CardHeader className="flex flex-row items-center justify-between">
 					<CardTitle className="text-2xl">Admin Dashboard</CardTitle>
-					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+					<DialogRoot open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 						<DialogTrigger asChild>
 							<Button>
 								<Plus className="mr-2 h-4 w-4" /> Create User
@@ -241,8 +241,8 @@ export default function AdminDashboard() {
 								</Button>
 							</form>
 						</DialogContent>
-					</Dialog>
-					<Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
+					</DialogRoot>
+					<DialogRoot open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
 						<DialogContent>
 							<DialogHeader>
 								<DialogTitle>Ban User</DialogTitle>
@@ -256,7 +256,7 @@ export default function AdminDashboard() {
 								</div>
 								<div className="flex flex-col space-y-1.5">
 									<Label htmlFor="expirationDate">Expiration Date</Label>
-									<Popover>
+									<PopoverRoot>
 										<PopoverTrigger asChild>
 											<Button id="expirationDate" variant={"outline"}
 											        className={cn(
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
 												          })
 											          } initialFocus />
 										</PopoverContent>
-									</Popover>
+									</PopoverRoot>
 								</div>
 								<Button type="submit" className="w-full"
 								        disabled={isLoading === `ban-${banForm.userId}`}>
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
 								</Button>
 							</form>
 						</DialogContent>
-					</Dialog>
+					</DialogRoot>
 				</CardHeader>
 				<CardContent>
 					{isUsersLoading ? (

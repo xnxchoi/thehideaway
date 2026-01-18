@@ -1,6 +1,6 @@
 import type {Metadata} from "next/types";
 
-import {PageRange} from "@/payload/components/PageRange";
+import {PageRange} from "@/components/UX/PageRange";
 import {Pagination} from "@/payload/components/Pagination";
 
 import PageClient from "./page.client";

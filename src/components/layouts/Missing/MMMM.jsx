@@ -299,7 +299,7 @@ export function MMM() {
     };
 
     const remover = () => {
-      console.log("removing");
+        // console.log("removing");
       document.removeEventListener("mousemove", onPointerMove);
       document.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("transitioningnow", remover);

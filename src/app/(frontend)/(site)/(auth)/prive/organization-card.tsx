@@ -5,7 +5,14 @@ import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import CopyButton from "@/components/ui/copy-button";
 import {
-	Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+	DialogRoot,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
 } from "@/components/ui/dialog";
 import {
 	DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -267,7 +274,7 @@ function CreateOrganizationDialog() {
 		}
 	};
 
-	return (<Dialog open={open} onOpenChange={setOpen}>
+	return (<DialogRoot open={open} onOpenChange={setOpen}>
 		<DialogTrigger asChild>
 			<Button size="sm" className="w-full gap-2" variant="default">
 				<PlusIcon />
@@ -323,7 +330,7 @@ function CreateOrganizationDialog() {
 				</Button>
 			</DialogFooter>
 		</DialogContent>
-	</Dialog>);
+	</DialogRoot>);
 }
 
 function InviteMemberDialog({
@@ -336,7 +343,7 @@ function InviteMemberDialog({
 	const [email, setEmail] = useState("");
 	const [role, setRole] = useState("member");
 	const [loading, setLoading] = useState(false);
-	return (<Dialog>
+	return (<DialogRoot>
 		<DialogTrigger asChild>
 			<Button size="sm" className="w-full gap-2" variant="secondary">
 				<MailPlus size={16} />
@@ -390,5 +397,5 @@ function InviteMemberDialog({
 				</DialogClose>
 			</DialogFooter>
 		</DialogContent>
-	</Dialog>);
+	</DialogRoot>);
 }

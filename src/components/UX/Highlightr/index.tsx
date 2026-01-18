@@ -275,6 +275,7 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	const [containerBounds, setContainerBounds] = useState(0.25);
 	const scr = useLenis();
 	const addHighlighter = useHighlighter((r) => r.addHighlight);
+	const clearHighlights = useHighlighter((r) => r.clear);
 
 	useEffect(() => {
 		const cont = contentRef.current;
@@ -290,6 +291,13 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 
 	const currentColorRef = useRef<HighlightColors>(currentColor);
 	const highlights = useHighlighter(useShallow((r) => r.highlights));
+	const existingRefs = useRef(highlights);
+	useEffect(() => {
+			if (highlights !== existingRefs.current) {
+				existingRefs.current = highlights;
+			}
+		}, [highlights,]
+	)
 	const focusedHighlight = useHighlighter(
 		useShallow((r) => r.focusedHighlight)
 	);
@@ -829,10 +837,54 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 	useEffect(() => {
 		if (!hPending && !hLoading) {
 			if (savedHighlights) {
-				const ss = savedHighlights.flatMap((c) => {
-					const r = applyHighlightCallback(c);
-					return r ? r : [];
+				const base = contentRef.current;
+				if (!base) return;
+
+				// Remove all existing highlights before re-applying
+				const existingHighlights = base.querySelectorAll("mark.highlighted");
+				existingHighlights.forEach((el) => {
+					const parent = el.parentNode;
+					if (parent) {
+						// Replace the mark element with its text content
+						const textNode = document.createTextNode(el.textContent || "");
+						parent.replaceChild(textNode, el);
+						// Normalize to merge adjacent text nodes
+						parent.normalize();
+					}
 				});
+
+				const ss = savedHighlights.flatMap((c) => {
+					// If highlight already exists in DOM, create HighlightedRange with existing elements
+					if (existingRefs.current.has(c.reference)) {
+						const els = Array.from(
+							base.querySelectorAll(`mark.highlighted[data-reference="${c.reference}"]`)
+						) as HTMLElement[];
+
+						if (els.length > 0) {
+							// Create a minimal range for existing highlights
+							const firstEl = els[0];
+							const lastEl = els[els.length - 1];
+							const r = ranger.createRange();
+
+							if (firstEl.firstChild && lastEl.lastChild) {
+								r.setStart(firstEl.firstChild, 0);
+								r.setEnd(lastEl.lastChild, lastEl.lastChild.textContent?.length || 0);
+
+								return [{
+									...c,
+									range: r,
+									els: els,
+									selection: c.selection
+								} satisfies HighlightedRange];
+							}
+						}
+					}
+
+					// Otherwise apply highlight normally
+					const r = applyHighlightCallback(c);
+					return r ? [r] : [];
+				});
+
 				if (ss.length > 0) addHighlighter(ss);
 			}
 		}
@@ -841,7 +893,8 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 		applyHighlightCallback,
 		hPending,
 		hLoading,
-		addHighlighter
+		addHighlighter,
+		postId
 	]);
 	useLayoutEffect(() => {
 		if (!window) return;

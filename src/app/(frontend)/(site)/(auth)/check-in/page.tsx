@@ -4,6 +4,7 @@ import { LoginForm } from "@/components/login-form";
 import { Logo } from "@/components/UX/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient";
 import { authClient } from "@/lib/auth/client";
+import {Suspense} from "react";
 
 export default async function CheckInPage() {
   const { data } = await authClient.getSession();
@@ -30,7 +31,8 @@ export default async function CheckInPage() {
           </Link>
           <LoginForm />
         </div>
-        <VGradientModule />
+	      <Suspense>
+		      <VGradientModule/></Suspense>
       </div>
     </RPage>
   );

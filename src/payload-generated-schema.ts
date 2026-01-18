@@ -6,25 +6,25 @@
  * and re-run `payload generate:db-schema` to regenerate this file.
  */
 
-import type {} from "@payloadcms/db-postgres";
+import {relations, sql} from "@payloadcms/db-postgres/drizzle";
 import {
-	pgTable,
-	index,
-	uniqueIndex,
-	foreignKey,
-	varchar,
-	boolean,
-	timestamp,
-	serial,
-	uuid,
-	numeric,
-	integer,
-	text,
-	jsonb,
 	type AnyPgColumn,
-	pgEnum
+	boolean,
+	foreignKey,
+	index,
+	integer,
+	jsonb,
+	numeric,
+	pgEnum,
+	pgTable,
+	serial,
+	text,
+	timestamp,
+	uniqueIndex,
+	uuid,
+	varchar
 } from "@payloadcms/db-postgres/drizzle/pg-core";
-import {sql, relations} from "@payloadcms/db-postgres/drizzle";
+
 export const enum__locales = pgEnum("enum__locales", ["en", "ko"]);
 export const enum_users_role = pgEnum("enum_users_role", [
   "admin",
@@ -413,6 +413,7 @@ export const users = pgTable(
     slug: varchar("slug"),
     firstName: varchar("first_name").default("First And"),
     lastName: varchar("last_name").default("The Last"),
+	  verified: boolean("verified").default(false),
     username: varchar("username"),
     bio: varchar("bio").default("A member of The Hideaway."),
     location: varchar("location").default("Seoul"),
@@ -454,6 +455,7 @@ export const users = pgTable(
     uniqueIndex("users_slug_idx").on(columns.slug),
     index("users_first_name_idx").on(columns.firstName),
     index("users_last_name_idx").on(columns.lastName),
+	  index("users_verified_idx").on(columns.verified),
     uniqueIndex("users_username_idx").on(columns.username),
     index("users_bio_idx").on(columns.bio),
     index("users_location_idx").on(columns.location),
@@ -507,6 +509,7 @@ export const _users_v = pgTable(
     version_slug: varchar("version_slug"),
     version_firstName: varchar("version_first_name").default("First And"),
     version_lastName: varchar("version_last_name").default("The Last"),
+	  version_verified: boolean("version_verified").default(false),
     version_username: varchar("version_username"),
     version_bio: varchar("version_bio").default("A member of The Hideaway."),
     version_location: varchar("version_location").default("Seoul"),
@@ -569,6 +572,7 @@ export const _users_v = pgTable(
     index("_users_v_version_version_last_name_idx").on(
       columns.version_lastName
     ),
+	  index("_users_v_version_version_verified_idx").on(columns.version_verified),
     index("_users_v_version_version_username_idx").on(columns.version_username),
     index("_users_v_version_version_bio_idx").on(columns.version_bio),
     index("_users_v_version_version_location_idx").on(columns.version_location),
@@ -1198,6 +1202,7 @@ export const categories = pgTable(
     title: varchar("title").notNull(),
     description: varchar("description"),
     slug: varchar("slug").notNull(),
+	  popularity: numeric("popularity", {mode: "number"}).notNull().default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1216,6 +1221,7 @@ export const categories = pgTable(
   (columns) => [
     index("categories_title_idx").on(columns.title),
     index("categories_description_idx").on(columns.description),
+	  index("categories_popularity_idx").on(columns.popularity),
     index("categories_updated_at_idx").on(columns.updatedAt),
     index("categories_created_at_idx").on(columns.createdAt)
   ]
@@ -4329,12 +4335,7 @@ export const bookmarks_rels = pgTable(
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
-    profileID: uuid("profile_id"),
-    usersID: varchar("users_id"),
-    albumsID: uuid("albums_id"),
-    playlistsID: uuid("playlists_id"),
-    tracksID: uuid("tracks_id"),
-	  userMediaID: varchar("user_media_id")
+	  profileID: uuid("profile_id")
   },
   (columns) => [
     index("bookmarks_rels_order_idx").on(columns.order),
@@ -4343,11 +4344,6 @@ export const bookmarks_rels = pgTable(
     index("bookmarks_rels_posts_id_idx").on(columns.postsID),
     index("bookmarks_rels_delta_id_idx").on(columns.deltaID),
     index("bookmarks_rels_profile_id_idx").on(columns.profileID),
-    index("bookmarks_rels_users_id_idx").on(columns.usersID),
-    index("bookmarks_rels_albums_id_idx").on(columns.albumsID),
-    index("bookmarks_rels_playlists_id_idx").on(columns.playlistsID),
-    index("bookmarks_rels_tracks_id_idx").on(columns.tracksID),
-    index("bookmarks_rels_user_media_id_idx").on(columns.userMediaID),
     foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [bookmarks.id],
@@ -4367,31 +4363,6 @@ export const bookmarks_rels = pgTable(
       columns: [columns["profileID"]],
       foreignColumns: [profile.id],
       name: "bookmarks_rels_profile_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["usersID"]],
-      foreignColumns: [users.id],
-      name: "bookmarks_rels_users_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["albumsID"]],
-      foreignColumns: [albums.id],
-      name: "bookmarks_rels_albums_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["playlistsID"]],
-      foreignColumns: [playlists.id],
-      name: "bookmarks_rels_playlists_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["tracksID"]],
-      foreignColumns: [tracks.id],
-      name: "bookmarks_rels_tracks_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["userMediaID"]],
-      foreignColumns: [user_media.id],
-      name: "bookmarks_rels_user_media_fk"
     }).onDelete("cascade")
   ]
 );
@@ -7463,31 +7434,6 @@ export const relations_bookmarks_rels = relations(
       fields: [bookmarks_rels.profileID],
       references: [profile.id],
       relationName: "profile"
-    }),
-    usersID: one(users, {
-      fields: [bookmarks_rels.usersID],
-      references: [users.id],
-      relationName: "users"
-    }),
-    albumsID: one(albums, {
-      fields: [bookmarks_rels.albumsID],
-      references: [albums.id],
-      relationName: "albums"
-    }),
-    playlistsID: one(playlists, {
-      fields: [bookmarks_rels.playlistsID],
-      references: [playlists.id],
-      relationName: "playlists"
-    }),
-    tracksID: one(tracks, {
-      fields: [bookmarks_rels.tracksID],
-      references: [tracks.id],
-      relationName: "tracks"
-    }),
-    userMediaID: one(user_media, {
-      fields: [bookmarks_rels.userMediaID],
-      references: [user_media.id],
-      relationName: "userMedia"
     })
   })
 );

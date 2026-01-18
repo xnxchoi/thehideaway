@@ -24,7 +24,7 @@ const AccessControlledNumberField = (
 		field,
 	} = fieldProps
 	const role = user.role;
-	const clearf = accessControlled[role]
+	const clearf = accessControlled?.[role]
 	const visibility = (typeof clearf === "function" ? clearf({...fieldProps}) : clearf)
 	const clear = visibility === true || visibility === "readonly";
 	const readOnly = visibility === "readonly" || !!readPm

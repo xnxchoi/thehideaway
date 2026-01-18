@@ -1,8 +1,7 @@
 "use client";
 import {useDomCursor} from "@/components/core/cursorWrapper";
 import {Button} from "@/components/UX/Button";
-import {FrontImage} from "@/components/UX/Media/FrontImage";
-import {ImageMedia, RootImage} from "@/components/UX/Media/ImageMedia";
+import {RootImage} from "@/components/UX/Media/ImageMedia";
 import type {MediaProps} from "@/components/UX/Media/types";
 import {springGSAP} from "@/constants/animations";
 import type {Image as MediaBlockProps} from "@/payload-types";
@@ -12,7 +11,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {useQuery} from "@tanstack/react-query";
 import Lenis from "lenis";
 import {useLenis} from "lenis/react";
-import {type HTMLMotionProps, MotionConfig, useMotionValue} from "motion/react";
+import {AnimatePresence, type HTMLMotionProps, MotionConfig, useMotionValue} from "motion/react";
 import * as m from "motion/react-m";
 import type {StaticImageData} from "next/image";
 import {stringify} from "qs-esm";
@@ -180,8 +179,9 @@ const MediaMedia = ({
 			}}
 		>
 			<Dialog.Root open={isDialogOpen}>
-				<m.figure
-					className={"relative m-0 flex h-0 w-full flex-col items-start"}
+				<m.div
+					className={"relative m-0 flex h-0 w-full flex-col items-start LexicalEditorTheme__block"}
+					lexical-decorator={"true"}
 					key={`image-${uniqueId}`}
 					style={{paddingTop}}
 				>
@@ -218,17 +218,17 @@ const MediaMedia = ({
 					</Dialog.Trigger>
 					{data.caption &&
                         <figcaption className={"pt-4 leading-normal"}>{data.caption}</figcaption>}
-				</m.figure>
-
-				{isDialogOpen && (
-					<Dialog.Portal key={`portal-${uniqueId}`}>
-						<PO
-							uniqueId={uniqueId}
-							media={data}
-							handleDialogTrigger={handleDialogTrigger}
-						/>
-					</Dialog.Portal>
-				)}
+				</m.div>
+				<AnimatePresence initial={false} mode="popLayout">
+					{isDialogOpen && (
+						<Dialog.Portal key={`portal-${uniqueId}`}>
+							<PO
+								uniqueId={uniqueId}
+								media={data}
+								handleDialogTrigger={handleDialogTrigger}
+							/>
+						</Dialog.Portal>
+					)}</AnimatePresence>
 			</Dialog.Root>
 		</MotionConfig>
 	);
@@ -266,6 +266,7 @@ const PO = ({
 			lenis && lenis.start();
 		};
 	}, [lenis]);
+	const iddd = useId()
 	return (
 		<Dialog.Overlay asChild key={`overlay-${uniqueId}`}>
 			<m.div
@@ -278,7 +279,8 @@ const PO = ({
 				ref={wrapRef}
 				transition={{
 					duration: 0.3,
-					ease: "easeInOut"
+					type: "spring",
+					...springGSAP.power2.out
 				}}
 				key={`overlay-${uniqueId}-${uui}`}
 			>
@@ -289,11 +291,14 @@ const PO = ({
 					exit={{opacity: 0}}
 					transition={{
 						type: "spring",
-						bounce: 0.4
+						bounce: 0.2
 					}}
+					key={iddd}
 					onClick={handleDialogTrigger}
 				/>
-
+				<Dialog.Title key={iddd + 2 + ""} asChild>
+					<div className={"sr-only"}>Image Dialog</div>
+				</Dialog.Title>
 				<Dialog.Content
 					key={`content-${uniqueId}`}
 					asChild
@@ -303,6 +308,7 @@ const PO = ({
 					className={"z-150 bg-transparent focus:outline-none"}
 					onEscapeKeyDown={handleDialogTrigger}
 				>
+
 					<m.div
 						data-themed="background-color, color"
 						className={
@@ -310,7 +316,8 @@ const PO = ({
 						}
 						transition={{
 							type: "spring",
-							bounce: 0.4
+							bounce: 0.4,
+							...springGSAP.power2.out,
 						}}
 					>
 						<m.div

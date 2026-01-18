@@ -4,7 +4,7 @@ import type {ImageCollectionOverview} from "@/components/UX/Media/types"
 import {EASING} from "@/constants/animations"
 import useImageDarkmode from "@/hooks/useImageDarkmode"
 import {cn} from "@/lib/utils"
-import {FetchedUnsplashImage, UnsplashFetchResult} from "@/payload/collections/Media/hooks/types";
+import {FetchedUnsplashImage, UnsplashFetchResult} from "@/types/ImageCollections/unsplash";
 import {errorToast} from "@/payload/components/sonner"
 import {useCourier} from "@/payload/elements/DocumentFields/RP_CourierProvider"
 import {useAltDocCtrls} from "@/payload/providers/Admins"
@@ -13,12 +13,12 @@ import {useTheme} from "@/providers/Theme"
 import {
 	ArticleCoverProps,
 	FetchedImage,
-	FetchedImageDoc,
+	FetchedImageDoc, ImageCollectionSlug,
 	ProcessedImage,
 	RalueAsDataWithRelation,
 	RalueWithRelation
-} from "@/types/collections/imageCollections";
-import type {DocWithId, ImageCollectionSlug, PayloadFindFetch} from "@/types/payload-api-helpers"
+} from "@/types/collections/image-collections";
+import type {DocWithId, PayloadFindFetch} from "@/types/payload-api-helpers"
 import {clamp} from "@/utilities/mathUtilities"
 import {
 	type ListDrawerProps,
@@ -46,6 +46,7 @@ import type {
 	PointerEventHandler
 } from "react"
 import {useCallback, useEffect, useMemo, useRef, useState} from "react"
+import {uuidv7} from "uuidv7";
 import {useShallow} from "zustand/shallow"
 import {CoverMenu} from "./Components/CoverMenu"
 import {RepositionButton} from "./RepositionButton"
@@ -401,7 +402,6 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 			//     JSON.stringify({
 			//         ...restRef.current,
 			//         source: {
-			//             identifier: restRef.current?.source.identifier || uuidv7(),
 			//             provider: restRef.current?.source.provider || "local",
 			//             link: restRef.current?.source.link || ""
 			//         }
@@ -454,7 +454,6 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 				//     caption: `Image by @${userName}`,
 				//     alt: "An image for a content",
 				//     source: {
-				//         identifier: uuidv7(),
 				//         provider: "local",
 				//         link: ""
 				//     }
@@ -528,7 +527,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
 			const blob = await imageResponse.blob();
 			const file = new File(
 				[blob],
-				`unsplash-${us.form.source.identifier}.jpg`,
+				`unsplash-${uuidv7()}.jpg`,
 				{
 					type: blob.type || "image/jpeg"
 				}

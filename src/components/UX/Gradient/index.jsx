@@ -1,4 +1,6 @@
-'use client'
 import {VGradient} from './Gradient'
+import {Suspense} from "react";
 
-export default VGradient 
+export default function Gradient() {
+    return <Suspense><VGradient/></Suspense>
+}

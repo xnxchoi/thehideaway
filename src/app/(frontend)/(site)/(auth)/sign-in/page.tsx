@@ -3,6 +3,7 @@ import { AuthView as AuthCard } from "@/lib/auth/betterauth-ui/src";
 import { Link } from "@/components/UX/Link/Link";
 import { Logo } from "@/components/UX/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient";
+import {Suspense} from "react";
 
 export default function Page() {
   return (
@@ -25,7 +26,8 @@ export default function Page() {
           </Link>
           <AuthCard view="SIGN_IN" redirectTo={"/me"} />
         </div>
-        <VGradientModule />
+	      <Suspense>
+		      <VGradientModule/></Suspense>
       </div>
     </RPage>
   );

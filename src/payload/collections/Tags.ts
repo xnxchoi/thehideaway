@@ -50,19 +50,7 @@ export const Tags: CollectionConfig<"tags"> = {
         update: isAdminOrEditor
       }
     },
-    {
-      name: "tagged",
-      type: "join",
-      on: "tagged",
-      hasMany: true,
-      collection: ["delta", "posts", "pages", "profile", "albums", "playlists", "tracks"],
 
-      where: {
-        _status: {
-          equals: "published"
-        }
-      }
-    },
     ...AuthorField(false),
     ...slugField("title")
   ],

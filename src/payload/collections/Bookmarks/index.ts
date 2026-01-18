@@ -9,24 +9,24 @@ export const bookmarkTypes: Bookmark["target"]["relationTo"][] = [
 	"delta",
 	"profile",
 
-	// "users",
-	// "albums",
-	// "playlists",
+	"users",
+	"albums",
+	"playlists",
 	//
-	// "tracks",
-	// "userMedia"
+	"tracks",
+	"userMedia"
 ];
 export const validTypes = [
 	"posts",
 	"delta",
 	"profile",
 
-	// "users",
-	// "albums",
-	// "playlists",
+	"users",
+	"albums",
+	"playlists",
 	//
-	// "tracks",
-	// "userMedia"
+	"tracks",
+	"userMedia"
 ] as const;
 export const bookmarkTypesRegex = createValidQueryStringRegex(bookmarkTypes);
 export const Bookmarks: CollectionConfig = {

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
+	PopoverRoot,
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
@@ -128,7 +128,7 @@ export function DataTableSliderFilter<TData>({
   );
 
   return (
-    <Popover>
+	  <PopoverRoot>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="border-dashed">
           {columnFilterValue ? (
@@ -234,6 +234,6 @@ export function DataTableSliderFilter<TData>({
           Clear
         </Button>
       </PopoverContent>
-    </Popover>
+	  </PopoverRoot>
   );
 }

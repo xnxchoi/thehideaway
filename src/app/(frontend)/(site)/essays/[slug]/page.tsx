@@ -7,10 +7,10 @@ import {generateMeta} from "@/utilities/generateMeta";
 import {getServerSideURL} from "@/utilities/getURL";
 import configPromise from "@payload-config";
 import type {Metadata} from "next";
+import {cacheLife} from "next/cache";
 import {getPayload} from "payload";
 import PageClient from "./page.client";
 // export const dynamic = "force-static";
-export const revalidate = 600;
 
 export async function generateStaticParams() {
 	const payload = await getPayload({config: configPromise});
@@ -38,6 +38,8 @@ type Args = {
 };
 
 export default async function Post({params: paramsPromise}: Args) {
+	"use cache"
+	cacheLife("hours")
 	const {slug = ""} = await paramsPromise;
 	if (slug.length < 1) return <PayloadRedirects url={"/home"}/>;
 	const p = await queryPostBySlug({slug});

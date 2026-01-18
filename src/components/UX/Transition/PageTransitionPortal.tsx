@@ -50,7 +50,7 @@ export const PageTransitionPortal = () => {
         !svgRefs.current.length ||
         !navOpeningElement
       ) {
-        console.log("transition failed");
+	      // console.log("transition failed");
         return;
       }
       const g = navOpeningElement.getBoundingClientRect(),
@@ -135,7 +135,7 @@ export const PageTransitionPortal = () => {
   const lenis = useLenis();
   const isReadyRef = useRef(isReady);
   useEffect(() => {
-    console.log("isReady", isReady);
+	  // console.log("isReady", isReady);
     isReadyRef.current = isReady;
   }, [isReady]);
   const fadeInPage = contextSafe(() => {
@@ -144,7 +144,7 @@ export const PageTransitionPortal = () => {
       duration: 0.3,
       ease: "power3.inOut",
       onStart: () => {
-        console.log("curtain here setting rp to visible");
+	      // console.log("curtain here setting rp to visible");
       }
     });
   });

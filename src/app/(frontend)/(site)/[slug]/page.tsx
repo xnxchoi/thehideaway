@@ -51,9 +51,9 @@ export default async function Page({ params: paramsPromise }: Args) {
     querySlug = "home";
   }
   const url = `/${querySlug}`;
-
+	const {isEnabled: draft} = await draftMode();
   const page = await queryPageBySlug({
-    slug: querySlug
+	  slug: querySlug, draft
   });
 
   if (!page) {
@@ -85,7 +85,9 @@ export async function generateMetadata({
   if (slug === "") {
     querySlug = "home";
   }
+
   const page = await queryPageBySlug({
+	  draft: false,
     slug: querySlug
   });
 
@@ -104,9 +106,8 @@ export async function generateMetadata({
   }
 }
 
-const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
-  const { isEnabled: draft } = await draftMode();
-
+async function queryPageBySlug({slug, draft}: { slug: string; draft: boolean; }) {
+	"use cache"
   const payload = await getPayload({ config });
 
   const result = await payload.find({
@@ -123,4 +124,4 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
   });
 
   return result.docs?.[0] || null;
-});
+}

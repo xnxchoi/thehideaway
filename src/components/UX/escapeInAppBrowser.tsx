@@ -3,7 +3,7 @@ import { useDeviceInfo } from "@/providers/RP_Pro";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "next-transition-router";
 import {
-  Dialog,
+	DialogRoot,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -62,7 +62,7 @@ const InterNalEscape = ({
   }, []);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+	  <DialogRoot open={open} onOpenChange={setOpen}>
       <DialogContent className="overflow-hidden p-10 shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-left text-background">
@@ -124,7 +124,7 @@ const InterNalEscape = ({
           </Button>
         </div>
       </DialogContent>
-    </Dialog>
+	  </DialogRoot>
   );
 };
 const EscapeIOSInApp = (turl: string, browserName: string) => {

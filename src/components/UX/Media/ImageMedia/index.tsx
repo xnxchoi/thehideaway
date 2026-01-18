@@ -97,13 +97,18 @@ export const RootImage = ({
 	) : null;
 };
 export const ImageMedia: FC<
-		Omit<MediaProps, "ref" | "src"> & { src: StaticImport | string; ref?: Ref<HTMLImageElement> }
+		Omit<MediaProps, "ref" | "src"> & {
+		figureClassName?: string;
+		src: StaticImport | string;
+		ref?: Ref<HTMLImageElement>
+	}
 	> = (props) => {
 		const {
 
 			fill: fillFromProps,
 			className,
 			caption,
+			figureClassName,
 			captionClassName, src,
 			priority,
 			resource,
@@ -167,7 +172,7 @@ export const ImageMedia: FC<
 		const baseclass = "relative min-h-px min-w-px";
 		return (
 			<figure
-				className={cn(className || "relative h-full w-full")}
+				className={cn("contents", figureClassName)}
 				style={{margin: 0}}
 			>
 				{src && (
@@ -247,7 +252,7 @@ const ARMedia = (props: ProcessedMediaProps & { aspectRatio: AspectRatio }) => {
 	const {paddingTop} = useAspectRatio(aspectRatio);
 	return (<m.div
 			className={
-				pictureClassName || cn(baseClass, "w-full")
+				cn(baseClass, pictureClassName, "w-full")
 			}
 			style={{paddingTop}}
 		>
@@ -299,7 +304,7 @@ const NoARMedia = (props: Omit<ProcessedMediaProps, "aspectRatio">) => {
 					imgClassName
 				)}
 				onLoad={onLoad}
-				fill={fill}
+				fill={true}
 				priority={priority}
 				unoptimized={true}
 				quality={100}

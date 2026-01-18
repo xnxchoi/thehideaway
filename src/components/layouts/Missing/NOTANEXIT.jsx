@@ -38,7 +38,6 @@ function canvasser(canvasHeight, canvasWidth) {
   ctx.globalAlpha = 1;
   const svgEl = document.getElementById("svgel");
   if (!svgEl) {
-    console.log("no svgel");
   }
   let d =
     (svgEl && svgEl.querySelector("path").getAttribute("d")) ||
@@ -179,7 +178,6 @@ const EXIT = () => {
       if (counter < 50) {
         counter++;
       } else {
-        console.log("mat here, uniform is:", mat.current.uniforms);
         counter = 0;
       }
       mat.current.uniforms.u_mouse.value = new THREE.Vector2(

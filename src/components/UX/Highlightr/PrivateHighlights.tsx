@@ -309,7 +309,7 @@ const PrivateNoteEditor = ({
             setSaving(false);
           });
       } catch (e) {
-        console.log(e);
+	      // console.log(e);
         errorToast(t("Highlights.error.save.default"));
       } finally {
         setSaving(false);

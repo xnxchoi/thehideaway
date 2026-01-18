@@ -68,7 +68,7 @@ function GradientWrapper(props) {
   const { inView, ref } = useInView();
   useEffect(() => {
     setVisible(inView);
-  }, [inView]);
+  }, [inView, setVisible]);
   return (
     <div className="absolute inset-0 z-[240] h-screen w-screen" ref={ref}>
       <Canvas
@@ -109,13 +109,12 @@ export const PerformanceRegress = () => {
 
 function VGradientWrapper(props) {
   const navIsOpen = useRPStore((l) => l.navIsOpen);
-  const navIsTransitioning = useRPStore((l) => l.navIsTransitioning);
-  const { inView, ref } = useInView();
 
-  return (
+
+    return (
     <View
       className="absolute inset-0 z-[200]"
-      ref={ref}
+
       visible={navIsOpen}
       data-active={navIsOpen}
     >

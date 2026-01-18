@@ -8,7 +8,7 @@ import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Popover,
+	PopoverRoot,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -173,7 +173,7 @@ export function DataTableDateFilter<TData>({
   }, [selectedDates, multiple, formatDateRange, title]);
 
   return (
-    <Popover>
+	  <PopoverRoot>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="border-dashed">
           {hasValue ? (
@@ -215,6 +215,6 @@ export function DataTableDateFilter<TData>({
           />
         )}
       </PopoverContent>
-    </Popover>
+	  </PopoverRoot>
   );
 }

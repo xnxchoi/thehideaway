@@ -13,7 +13,7 @@ export default async function Page() {
 	});
 
 	return (
-		<RPage type="tags" slug={["posts"]}>
+		<RPage type="posts" slug={["posts"]}>
 			<PageClient>
 				<div className="relative flex w-full flex-col items-center justify-center">
 					<CatTitle title="Articles & Essays"/>
@@ -36,140 +36,150 @@ export default async function Page() {
 												type={"left"}
 												contents={[
 													{
-														collection: "posts",
-														id: "1",
-														subtitle: "Subtitle",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														author: {
-															name: "Author",
-															slug: "author",
-															id: "1"
-														},
+														relationTo: "posts",
+														value: {
+															id: "1",
+															subtitle: "Subtitle",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															author: {
+																name: "Author",
+																slug: "author",
+																id: "1"
+															},
 
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														bookmarks: [],
-														bookmarksCount: 0
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														collection: "posts",
-														id: "2",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Lorem ipsum dolor sit",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "2",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Lorem ipsum dolor sit",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														collection: "posts",
-														id: "3",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Lorem ipsum dolor sit",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "3",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Lorem ipsum dolor sit",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														id: "4",
-														collection: "posts",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Lorem ipsum dolor sit",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "4",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Lorem ipsum dolor sit",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														id: "5",
-														collection: "posts",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Lorem ipsum dolor sit",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "5",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Lorem ipsum dolor sit",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													}
 												]}
 											/>
@@ -179,139 +189,149 @@ export default async function Page() {
 												type={"right"}
 												contents={[
 													{
-														id: "1",
-														collection: "posts",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Lorem ipsum dolor sit",
-														author: {
+														relationTo: "posts",
+														value: {
 															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Lorem ipsum dolor sit",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														id: "2",
-														collection: "posts",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Lorem ipsum dolor sit",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "2",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Lorem ipsum dolor sit",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														id: "3",
-														collection: "posts",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Subtitle",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "3",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Subtitle",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														id: "4",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														collection: "posts",
-														subtitle: "Adipisicing elit. Minima, quod.",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
-														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0
+														relationTo: "posts",
+														value: {
+															id: "4",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Adipisicing elit. Minima, quod.",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0
+														}
 													},
 													{
-														id: "5",
-														title:
-															"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-														subtitle: "Adipisicing elit. Minima, quod.",
-														author: {
-															id: "1",
-															name: "Author",
-															slug: "author"
+														value: {
+															id: "5",
+															title:
+																"Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+															subtitle: "Adipisicing elit. Minima, quod.",
+															author: {
+																id: "1",
+																name: "Author",
+																slug: "author"
+															},
+															category: {
+																id: "1",
+																title: "Category",
+																slug: "category",
+																popularity: 1,
+															},
+															allowList: [],
+															authority: 0,
+															locked: false,
+															publishedAt: "2025-09-30T00:00:00.000Z",
+															slug: "slug",
+															tagged: [],
+															updatedAt: "2025-09-30T00:00:00.000Z",
+															bookmarks: [],
+															bookmarksCount: 0,
 														},
-														category: {
-															id: "1",
-															title: "Category",
-															slug: "category",
-															popularity: 1,
-														},
-														allowList: [],
-														authority: 0,
-														locked: false,
-														publishedAt: "2025-09-30T00:00:00.000Z",
-														slug: "slug",
-														tagged: [],
-														updatedAt: "2025-09-30T00:00:00.000Z",
-														bookmarks: [],
-														bookmarksCount: 0,
-														collection: "posts"
+														relationTo: "posts"
 													}
 												]}
 											/>

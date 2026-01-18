@@ -1,8 +1,9 @@
+import {cacheLife} from "next/cache";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";
 
-import { PageRange } from "@/payload/components/PageRange";
+import {PageRange} from "@/components/UX/PageRange";
 
 import PageClient from "./page.client";
 import { RPage } from "@/components/UX/Transition";
@@ -10,35 +11,66 @@ import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverv
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import config from "@payload-config";
 
-export const revalidate = 600;
+export async function generateStaticParams(params: { tagSlug: string }) {
+    const {tagSlug} = params;
+    const payload = await getPayload({config});
+    const tag = await payload
+        .find({
+            collection: "tags",
+            where: {
+                slug: {
+                    equals: tagSlug
+                }
+            },
+            limit: 1,
+            select: {
+                slug: true
+            }
+        })
+        .then((result) => result.docs[0] ?? null)
+        .catch((e) => (console.error(e), null));
+    if (!tag) {
+        return [];
+    }
+    const tagged = await payload
+        .find({
+            collection: "tags",
+            where: {
+                slug: {
+                    equals: tagSlug
+                }
+            },
+            select: {
+                tagged: true
+            }
+        })
+        .then((result) => result.docs?.[0]?.tagged ?? null)
+        .catch((e) => (console.error(e), null));
+    if (!tagged || !tagged.totalDocs || !tagged.docs) {
+        return [];
+    }
+    const totalDocs = tagged.totalDocs;
+    const totalPages = Math.ceil(totalDocs / 12);
+    const pages: { page: string }[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+        pages.push({
+            page: String(i)
+        });
+    }
+
+    return pages;
+}
 
 type Args = {
-  params: Promise<{
-    tagSlug: string;
-    page: string;
-  }>;
+    params: Promise<{
+        tagSlug: string;
+        page: string;
+    }>;
 };
 
-export default async function Page({ params: paramsPromise }: Args) {
-  const { tagSlug, page } = await paramsPromise;
-  const payload = await getPayload({ config });
-  const tag = await payload
-    .find({
-      collection: "tags",
-      where: {
-        slug: {
-          equals: tagSlug
-        }
-      },
-      overrideAccess: true,
-      limit: 1,
-      select: {
-        title: true,
-        slug: true
-      }
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch((e) => (console.error(e), null));
+export default async function Page({params: paramsPromise}: Args) {
+    const {tagSlug, page} = await paramsPromise;
+    const tag = await getTag({slug: tagSlug});
   if (!tag) {
     notFound();
   }
@@ -73,7 +105,8 @@ export default async function Page({ params: paramsPromise }: Args) {
         <div className="container">
           <PageRange
             collection="posts"
-            currentPage={Number(page)}
+            page={Number(page)}
+            basePath={`tagged/${tagSlug}`}
             limit={12}
             totalDocs={posts.totalDocs}
           />
@@ -83,59 +116,34 @@ export default async function Page({ params: paramsPromise }: Args) {
   );
 }
 
-export async function generateMetadata({
-  params: paramsPromise
-}: Args): Promise<Metadata> {
-  const { tagSlug, page } = await paramsPromise;
-  return {
-    title: `Tagged: ${tagSlug || ""} - ${page || ""}`
-  };
+async function getTag({slug}: { slug: string }) {
+    "use cache"
+    cacheLife("days");
+    const payload = await getPayload({config});
+    return await payload
+        .find({
+            collection: "tags",
+            where: {
+                slug: {
+                    equals: slug
+                }
+            },
+            overrideAccess: true,
+            limit: 1,
+            select: {
+                title: true,
+                slug: true
+            }
+        })
+        .then((result) => result.docs[0] ?? null)
+        .catch((e) => (console.error(e), null));
 }
 
-export async function generateStaticParams(params: { tagSlug: string }) {
-  const { tagSlug } = params;
-  const payload = await getPayload({ config });
-  const tag = await payload
-    .find({
-      collection: "tags",
-      where: {
-        slug: {
-          equals: tagSlug
-        }
-      },
-      limit: 1,
-      select: {
-        slug: true
-      }
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!tag) {
-    return [];
-  }
-  const tagged = await payload
-    .find({
-      collection: "tags",
-      where: {
-        slug: {
-          equals: tagSlug
-        }
-      },
-      select: {
-        tagged: true
-      }
-    })
-    .then((result) => result.docs?.[0]?.tagged ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!tagged || !tagged.totalDocs || !tagged.docs) {
-    return [];
-  }
-  const totalDocs = tagged.totalDocs;
-  const totalPages = Math.ceil(totalDocs / 12);
-  const pages: { pageNumber: string }[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ pageNumber: String(i) });
-  }
-
-  return pages;
+export async function generateMetadata({
+                                           params: paramsPromise
+                                       }: Args): Promise<Metadata> {
+    const {tagSlug, page} = await paramsPromise;
+    return {
+        title: `Tagged: ${tagSlug || ""} - ${page || ""}`
+    };
 }

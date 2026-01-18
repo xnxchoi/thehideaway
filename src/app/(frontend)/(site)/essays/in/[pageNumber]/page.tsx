@@ -1,6 +1,6 @@
 import type { Metadata } from "next/types";
 
-import { PageRange } from "@/payload/components/PageRange";
+import {PageRange} from "@/components/UX/PageRange";
 import { Pagination } from "@/payload/components/Pagination";
 
 import { RPage } from "@/components/UX/Transition";
@@ -12,7 +12,7 @@ import { getPayload } from "payload";
 import PageClient from "./page.client";
 type Args = {
   params: Promise<{
-    pageNumber: string;
+	  page: string;
   }>;
 };
 
@@ -25,28 +25,33 @@ export async function generateStaticParams() {
 
   const totalPages = Math.ceil(totalDocs / 12);
 
-  const pages: { pageNumber: string }[] = [];
+	const pages: { page: string }[] = [];
 
   for (let i = 1; i <= totalPages; i++) {
-    pages.push({ pageNumber: String(i) });
+	  pages.push({page: String(i)});
   }
 
   return pages;
 }
+
+async function getPosts(page: number) {
+	"use cache"
+	return await paginatedPosts({
+		limit: 12,
+		page
+	});
+}
 export default async function Page({ params }: Args) {
-  const { pageNumber } = await params;
-  const payload = await getPayload({ config: configPromise });
-  const sanitizedPageNumber = Number(pageNumber);
+	const {page} = await params;
+	const sanitizedPageNumber = Number(page);
 
   if (!Number.isInteger(sanitizedPageNumber)) notFound();
 
-  const posts = await paginatedPosts({
-    limit: 12,
-    page: sanitizedPageNumber
-  });
+	const posts = await getPosts(sanitizedPageNumber);
+	const {docs, hasPrevPage, prevPage, pagingCounter, nextPage, totalPages, totalDocs} = posts;
 
   return (
-    <RPage key={`posts_${posts.page}`} type="posts" slug={["posts"]}>
+	  <RPage key={`posts_${page}`} type="posts" slug={["posts"]}>
       <div className="relative flex w-full flex-col items-center justify-center">
         <CatTitle title="Latest" />
         <div
@@ -62,10 +67,10 @@ export default async function Page({ params }: Args) {
       <div className="relative flex w-full flex-col items-center justify-center">
         <div className="mb-8">
           <PageRange
-            collection="posts"
-            currentPage={sanitizedPageNumber}
-            limit={12}
-            totalDocs={posts.totalDocs}
+	          basePath="/essays/in"
+	          page={sanitizedPageNumber}
+	          limit={12} nextPage={nextPage || undefined} prevPage={prevPage || undefined}
+	          totalDocs={totalDocs}
           />
         </div>
 

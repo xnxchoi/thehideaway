@@ -1,7 +1,7 @@
 "use client";
 import {useDomCursor} from "@/components/core/cursorWrapper";
 import {
-	Dialog,
+	DialogRoot,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
@@ -68,11 +68,7 @@ export const FloatHighlightMenu = ({
 	const createCallback = useCitations((r) => r.create);
 	const handleUpdate = useCitations((r) => r.update);
 	const deleteHighlight = useCitations((r) => r.delete);
-	const tg = useRanger((r) => r.targetContainer);
-	const containerRef = useRef(tg);
-	useEffect(() => {
-		containerRef.current = tg;
-	}, [tg]);
+	const targetContainer = useRanger((r) => r.targetContainer);
 	const palettee = useMemo(() => Palettes, []);
 	const privateMemoOpen = usePrivateNote((r) => r.open);
 	const [memoOpen, setMemoOpen] = useState(false);
@@ -81,24 +77,10 @@ export const FloatHighlightMenu = ({
 	const focusedHighlight = useHighlighter(
 		useShallow((r) => r.focusedHighlight)
 	);
-	const fc = useRef(focusedHighlight);
-	useEffect(() => {
-		fc.current = focusedHighlight;
-	}, [focusedHighlight]);
 	const targetId = useArticle(useShallow((r) => r.id));
-	const aID = useRef(targetId);
-	useEffect(() => {
-		aID.current = targetId;
-	}, [targetId]);
 	const targetSlug = useArticle(useShallow((r) => r.slug));
-	const aSlug = useRef(targetSlug);
-	useEffect(() => {
-		aSlug.current = targetSlug;
-	}, [targetSlug]);
 	const user = useRPSession(useShallow((r) => r.id as null | string));
-	const userIdRef = useRef(user);
 	useEffect(() => {
-		userIdRef.current = user;
 		setEditorEnabled(!!user);
 	}, [user]);
 
@@ -107,10 +89,6 @@ export const FloatHighlightMenu = ({
 	);
 	const lastVisible = useRef(false);
 	const [memo, setMemo] = useState("");
-	const memoRef = useRef(memo);
-	useEffect(() => {
-		memoRef.current = memo;
-	}, [memo]);
 	const [editorEnabled, setEditorEnabled] = useState(!!user);
 	const savedSelectionRef = useRef<rangy.savedSelection | null>(null);
 	const qc = useQueryClient();
@@ -120,26 +98,23 @@ export const FloatHighlightMenu = ({
 	const handleSaveHighlight: MouseEventHandler = useCallback(
 		async (e) => {
 			e.stopPropagation();
-			const focus = fc.current;
-			const container = containerRef.current;
-			if (!container) {
+			if (!targetContainer) {
 				return;
 			}
-			const userId = userIdRef.current;
 
 			try {
-				if (!userId) {
+				if (!user) {
 					throw new HighlightCreateError("user", "not_authenticated");
 				}
 				if (postDisabled) {
 					throw new HighlightCreateError("target", "disabled");
 				}
-				if (focus) {
+				if (focusedHighlight) {
 					await deleteHighlight({
-						focusedHighlight: focus
+						focusedHighlight
 					});
 				} else {
-					await createCallback({params: {private: false}, container});
+					await createCallback({params: {private: false}, container: targetContainer});
 				}
 			} catch (e) {
 				if (e instanceof Error) {
@@ -149,59 +124,50 @@ export const FloatHighlightMenu = ({
 				}
 			}
 		},
-		[createCallback, deleteHighlight, postDisabled]
+		[createCallback, deleteHighlight, postDisabled, targetContainer, user, focusedHighlight]
 	);
 	const onSave: MouseEventHandler<HTMLButtonElement> = useCallback(
 		async (e) => {
 			e.preventDefault();
 
 			try {
-				const container = containerRef.current;
-				const value = aID.current;
-				const slug = aSlug.current;
-				if (!container) {
+				if (!targetContainer) {
 					throw new HighlightCreateError("params", "container");
 				}
-				if (!value) {
+				if (!targetId) {
 					throw new HighlightCreateError("target", "invalid");
 				}
-				if (!slug) {
+				if (!targetSlug) {
 					throw new HighlightCreateError("target", "invalid");
 				}
-				const userId = userIdRef.current;
-				if (!userId) {
+				if (!user) {
 					setMemoView("signin");
 					toast(t("Highlights.error.save.signin"));
 					return setSaving(false);
 				}
-				const mamu = memoRef.current;
-				if (!mamu) {
-					throw new HighlightCreateError("memo", "empty");
-				}
-				if (mamu.length < 1) {
+				if (!memo || memo.length < 1) {
 					throw new HighlightCreateError("memo", "empty");
 				}
 				setSaving(true);
-				const ff = fc.current;
-				if (!ff && !savedSelectionRef.current) {
+				if (!focusedHighlight && !savedSelectionRef.current) {
 					throw new HighlightCreateError("selection", "invalid");
 				}
-				const r = await (ff
+				const r = await (focusedHighlight
 					? handleUpdate({
-						...ff,
-						memo: mamu
+						...focusedHighlight,
+						memo
 					})
 					: (ranger.restoreSelection(
 						savedSelectionRef.current as rangy.savedSelection
 					),
 						createCallback({
-							params: {private: false, memo: mamu},
-							container
+							params: {private: false, memo},
+							container: targetContainer
 						})));
 				setFocused(r.reference);
 				successToast(t("Highlights.saved"));
 				qc.invalidateQueries({
-					queryKey: ["savedHighlights", {value: value, userId, slug: slug}]
+					queryKey: ["savedHighlights", {value: targetId, userId: user, slug: targetSlug}]
 				});
 				savedSelectionRef.current &&
 				ranger.removeMarkers(savedSelectionRef.current);
@@ -219,7 +185,7 @@ export const FloatHighlightMenu = ({
 				setSaving(false);
 			}
 		},
-		[handleUpdate, ranger, createCallback, setFocused, t, qc]
+		[handleUpdate, ranger, createCallback, setFocused, t, qc, targetContainer, targetId, targetSlug, user, memo, focusedHighlight]
 	);
 	const setRender = useFloater((r) => r.setOpen);
 	const [saving, setSaving] = useState(false);
@@ -327,9 +293,8 @@ export const FloatHighlightMenu = ({
 	);
 	useEffect(() => {
 		if (memoOpen) {
-			const fcf = fc.current || false;
-			setMemoView(!editorEnabled ? "signin" : fcf ? "edit" : "new");
-			if (editorEnabled && !fcf) {
+			setMemoView(!editorEnabled ? "signin" : focusedHighlight ? "edit" : "new");
+			if (editorEnabled && !focusedHighlight) {
 				savedSelectionRef.current = ranger.saveSelection();
 			} else {
 				savedSelectionRef.current &&
@@ -342,7 +307,7 @@ export const FloatHighlightMenu = ({
 				(savedSelectionRef.current = null));
 		}
 		setDOpen(memoOpen);
-	}, [editorEnabled, memoOpen, ranger]);
+	}, [editorEnabled, memoOpen, ranger, focusedHighlight]);
 	return (
 		mounted && (
 			<FloatingPortal>
@@ -390,14 +355,14 @@ export const FloatHighlightMenu = ({
 								"z-[23] flex h-[44px] items-center px-3.5 text-off-background"
 							}
 						>
-							<Dialog open={dOpen} onOpenChange={setMemoOpen}>
-								<DialogTrigger asChild>
+							<DialogRoot open={dOpen} onOpenChange={setMemoOpen}>
+								<DialogTrigger render={
 									<HighlightMenuButton onClick={() => setMemoOpen(true)}>
 										<MenuButtonCaption icon={false}>
 											{viewMap[memoView].header}
 										</MenuButtonCaption>
 									</HighlightMenuButton>
-								</DialogTrigger>
+								}/>
 								<DialogContent onClick={(e) => e.stopPropagation()}>
 									<DialogHeader>
 										<DialogTitle>{viewMap[memoView].title}</DialogTitle>
@@ -440,7 +405,7 @@ export const FloatHighlightMenu = ({
 										</div>
 									)}
 								</DialogContent>
-							</Dialog>
+							</DialogRoot>
 							<HighlightMenuButton onClick={handleSaveHighlight}>
 								<MenuButtonCaption icon={false}>
 									{focusedHighlight ? "Delete" : "Highlight"}

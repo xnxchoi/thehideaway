@@ -1,7 +1,7 @@
-import { getPayload } from "payload";
 import config from "@/payload.config";
-import { NextRequest, NextResponse } from "next/server";
-import { sql } from "@payloadcms/db-postgres";
+import {sql} from "@payloadcms/db-postgres";
+import {NextRequest, NextResponse} from "next/server";
+import {getPayload} from "payload";
 
 interface UserSearchResult {
   id: string;
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
       total: allResults.length
     });
   } catch (error) {
-    console.error("User search error:", error);
+	  // console.error("User search error:", error);
 
     // Fallback to basic Payload search if PostgreSQL search fails
     const users = await payload.find({

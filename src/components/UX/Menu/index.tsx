@@ -133,7 +133,7 @@ export const RP_Menu = () => {
   const menuPageItemKeys = useRPStore(
     useShallow((l) => l.navigationPageItemKeys)
   );
-  const lastAdjustRealTime = useMemo(() => DateTime.now().year, []);
+	const lastAdjustRealTime = useMemo(() => 2026, []);
   const currentPageKey = useVoyageur(useShallow((l) => l.pageKey));
   const setNavItemHovered = useRPStore((l) => l.setNavigationPageItemHovered);
   const setNavItemSelected = useRPStore((l) => l.setNavigationPageItemSelected);

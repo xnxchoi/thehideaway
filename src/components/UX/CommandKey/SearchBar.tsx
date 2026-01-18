@@ -1,5 +1,4 @@
 "use client";
-import {Button} from "@/components/ui/button";
 import {
 	Command as Commands,
 	CommandDialog,
@@ -10,34 +9,36 @@ import {
 	CommandList
 } from "@/components/ui/command";
 import {DialogTitle} from "@/components/ui/dialog";
+import {PopoverRoot, PopoverTrigger} from "@/components/ui/popover";
 
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {MotionPillButton} from "@/components/UX/Button";
 import {LinkedCommandItem, LinkedItem} from "@/components/UX/CommandKey/Commando";
-
-import {SvgIco} from "@/components/UX/svgIco";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 import {cn} from "@/lib/utils";
-import {useIsMobile} from "@/providers/MiddleMan";
-import {useCursor, useRPStore, useSearchBar} from "@/providers/RP_Pro";
+import {useRPStore, useSearchBar} from "@/providers/RP_Pro";
 import "@/styles/__searchBar.scss";
 import {useTheme} from "@/providers/Theme";
 
 import {CategoryOverview} from "@/types/collections/meta-collections";
 import {useDebounce} from "@/utilities/useDebounce";
+import {Popover} from "@base-ui/react/popover";
 import {Tooltip} from "@base-ui/react/tooltip";
 import {LockOpen2Icon as LockOpen2, ReaderIcon, RocketIcon} from "@radix-ui/react-icons";
 import {Command, Command as CommandPrimitive} from "cmdk";
 import {CreditCard, Settings, User} from "lucide-react";
+import {HTMLMotionProps} from "motion/react";
+import * as m from "motion/react-m"
 import {nanoid} from "nanoid";
 import {useTransitionRouter} from "next-transition-router";
 import type {CollectionSlug} from "payload";
 import {
 	ComponentPropsWithoutRef,
-	ComponentPropsWithRef,
+	Fragment,
 	ReactNode,
 	RefObject,
 	useCallback,
 	useEffect,
+	useId,
 	useMemo,
 	useRef,
 	useState
@@ -58,8 +59,7 @@ type SearchItem = {
 	title: string;
 	updatedAt: string;
 };
-export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
-	const {ref: toggle, ...rest} = props;
+export const SearchBar = ({className, style, ...props}: HTMLMotionProps<"button">) => {
 	const navIsOpen = useRPStore((store) => store.navIsOpen);
 	const subMenuOpen = useSearchBar((l) => l.subMenuOpen);
 
@@ -74,11 +74,13 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
 	const listRef = useRef<HTMLUListElement>(null!);
 	const setNav = useRPStore((store) => store.setNavIsOpen);
 	const user = useRPSession((l) => l);
+	const uid = useId()
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [items, setItems] = useState<SearchItem[]>([]);
 	const [init, setInit] = useState(true);
 	const debouncedValue = useDebounce(value);
+
 	useEffect(() => {
 		async function load() {
 			if (open && debouncedValue.length > 0) {
@@ -146,36 +148,40 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
 		}
 		return () => document.removeEventListener("keydown", ddd);
 	}, [open, setOpen, setValue]);
+	const onValueChange = useCallback((value: string) => {
+		setValue(value);
+	}, [setValue])
 	return (
-		<>
+		<Fragment>
 
 			<Tooltip.Root>
 				<Tooltip.Trigger
 
-					className={"size-10 border-0 flex focus-visible:bg-none hover:bg-faded-d-gray/25 rounded-sm data-popup-open:bg-faded-d-gray/25 active:bg-faded-l-gray/25 transition-colors duration-50 ease-out-power2 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-gray items-center justify-center select-none focus-visible:not-[&:hover]:bg-transparent"}
-					render={({children, className}) => <Button
-						type="button"
-						ref={toggle}
-						className={cn("rp_btn bt_sm gap-x-1", {
-							hover: navIsOpen
-						}, className)}
-
+					render={<MotionPillButton
+						key={uid}
+						className={cn("rp_btn bt_sm gap-x-1 hover:border-current! data-[state=true]:border-current! hover:bg-transparent!", className)}
+						{...props as HTMLMotionProps<"button">}
 						onClick={handleClick}
 						data-themed={"color,background-color,fill"}
 						aria-controls="h-dropdown"
 						aria-label="Toggle Menu"
-					>{children}</Button>}><SvgIco
-					viewBox="0 0 24 24"
-					fill="currentColor"
-					data-themed={"fill"}
-					width="10"
-					height="10"
-					paths={[
-						"M17.908 14.755c3.918 0 6.092 1.654 6.092 4.745 0 2.755-1.745 4.5-4.5 4.5-3.092 0-4.745-2.173-4.745-6.092v-1.806h-5.51v1.806C9.245 21.826 7.592 24 4.5 24 1.745 24 0 22.255 0 19.5c0-3.092 2.173-4.745 6.092-4.745h1.806v-5.51H6.092C2.173 9.245 0 7.592 0 4.5 0 1.745 1.745 0 4.5 0c3.092 0 4.745 2.173 4.745 6.092v1.806h5.51V6.092C14.755 2.174 16.408 0 19.5 0 22.255 0 24 1.745 24 4.5c0 3.092-2.173 4.745-6.092 4.745h-1.806v5.51zM7.898 7.898V6.092c0-3.215-1.132-4.745-3.398-4.745-2.02 0-3.153 1.133-3.153 3.153 0 2.265 1.531 3.398 4.745 3.398zm0 8.204H6.092c-3.214 0-4.745 1.132-4.745 3.398 0 2.021 1.133 3.153 3.153 3.153 2.265 0 3.398-1.531 3.398-4.745zm1.347-1.347h5.51v-5.51h-5.51zm6.857-6.857h1.806c3.214 0 4.745-1.132 4.745-3.398 0-2.02-1.132-3.153-3.153-3.153-2.265 0-3.398 1.531-3.398 4.745zM22.653 19.5c0-2.265-1.531-3.398-4.745-3.398h-1.806v1.806c0 3.215 1.133 4.745 3.398 4.745 2.02 0 3.153-1.132 3.153-3.153",
-						{
-							"data-themed": "fill"
-						}
-					]}/></Tooltip.Trigger>
+						data-state={navIsOpen}
+						style={{
+							...style
+						}}
+					>
+						<m.svg
+							viewBox="0 0 24 24"
+							data-themed={"fill"}
+							width="10"
+							height="10">
+							<path
+								fill="currentColor"
+								d="M17.908 14.755c3.918 0 6.092 1.654 6.092 4.745 0 2.755-1.745 4.5-4.5 4.5-3.092 0-4.745-2.173-4.745-6.092v-1.806h-5.51v1.806C9.245 21.826 7.592 24 4.5 24 1.745 24 0 22.255 0 19.5c0-3.092 2.173-4.745 6.092-4.745h1.806v-5.51H6.092C2.173 9.245 0 7.592 0 4.5 0 1.745 1.745 0 4.5 0c3.092 0 4.745 2.173 4.745 6.092v1.806h5.51V6.092C14.755 2.174 16.408 0 19.5 0 22.255 0 24 1.745 24 4.5c0 3.092-2.173 4.745-6.092 4.745h-1.806v5.51zM7.898 7.898V6.092c0-3.215-1.132-4.745-3.398-4.745-2.02 0-3.153 1.133-3.153 3.153 0 2.265 1.531 3.398 4.745 3.398zm0 8.204H6.092c-3.214 0-4.745 1.132-4.745 3.398 0 2.021 1.133 3.153 3.153 3.153 2.265 0 3.398-1.531 3.398-4.745zm1.347-1.347h5.51v-5.51h-5.51zm6.857-6.857h1.806c3.214 0 4.745-1.132 4.745-3.398 0-2.02-1.132-3.153-3.153-3.153-2.265 0-3.398 1.531-3.398 4.745zM22.653 19.5c0-2.265-1.531-3.398-4.745-3.398h-1.806v1.806c0 3.215 1.133 4.745 3.398 4.745 2.02 0 3.153-1.132 3.153-3.153"/>
+						</m.svg>
+					</MotionPillButton>}>
+
+				</Tooltip.Trigger>
 				<Tooltip.Portal>
 					<Tooltip.Positioner side="bottom" align="center" sideOffset={10}>
 						<Tooltip.Popup
@@ -203,13 +209,8 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
 							"flex h-[32px] w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:opacity-50"
 						}
 						data-themed={"color, background-color"}
-						onValueChange={(value) => {
-							setValue(value);
-							if (value.length < 1) {
-								setItems([]);
-							}
-						}}
-						placeholder="Search for anything (we have)..."
+						onValueChange={onValueChange}
+						placeholder="Search for anything we have here..."
 					/>
 				</div>
 				<CommandList>
@@ -241,57 +242,53 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
 								<CommandEmpty>Nothing found :(</CommandEmpty>
 							)}
 						</CommandGroup>
-					)}
-					{value.length < 1 && (
-						<CommandGroup heading={"Suggestions"}>
+					) || <>    <CommandGroup heading={"Suggestions"}>
+                        <LinkedCommandItem
+                            value="posts"
+                            href="/essays"
+                            title="Latest Posts"
+                        >
+                            <ReaderIcon/>
+                        </LinkedCommandItem>
+                        <LinkedCommandItem
+                            value="theteam"
+                            href="/the-team"
+                            title="The Team"
+                        >
+                            <RocketIcon/>
+                        </LinkedCommandItem>
+                    </CommandGroup>{(user && (
+						<CommandGroup heading="Settings">
 							<LinkedCommandItem
-								value="posts"
-								href="/essays"
-								title="Latest Posts"
+								value="profile"
+								href={`/@${user.slug}`}
+								title="Profile"
 							>
-								<ReaderIcon/>
+								<User/>
 							</LinkedCommandItem>
 							<LinkedCommandItem
-								value="theteam"
-								href="/the-team"
-								title="The Team"
+								value="settings"
+								href={`/vault/account`}
+								title="Settings"
 							>
-								<RocketIcon/>
+								<Settings/>
 							</LinkedCommandItem>
 						</CommandGroup>
-					)}
-					{value.length < 1 &&
-						((user && (
-							<CommandGroup heading="Settings">
-								<LinkedCommandItem
-									value="profile"
-									href={`/@${user.slug}`}
-									title="Profile"
-								>
-									<User/>
-								</LinkedCommandItem>
-								<LinkedCommandItem
-									value="settings"
-									href={`/vault/account`}
-									title="Settings"
-								>
-									<Settings/>
-								</LinkedCommandItem>
-							</CommandGroup>
-						)) || (
-							<CommandGroup heading="Quick Links">
-								<LinkedCommandItem
-									value="sign-up"
-									href={`/register`}
-									title="Register"
-								>
-									<LockOpen2/>
-								</LinkedCommandItem>
-								<LinkedCommandItem value="plans" href={`/plans`} title="Plans">
-									<CreditCard/>
-								</LinkedCommandItem>
-							</CommandGroup>
-						))}
+					)) || (
+						<CommandGroup heading="Quick Links">
+							<LinkedCommandItem
+								value="sign-up"
+								href={`/register`}
+								title="Register"
+							>
+								<LockOpen2/>
+							</LinkedCommandItem>
+							<LinkedCommandItem value="plans" href={`/plans`} title="Plans">
+								<CreditCard/>
+							</LinkedCommandItem>
+						</CommandGroup>
+					)}</>}
+
 				</CommandList>
 				<div
 					cmdk-raycast-footer=""
@@ -315,7 +312,7 @@ export const SearchBar = (props: ComponentPropsWithRef<"button">) => {
 					</CommandItem>
 				</div>
 			</CommandDialog>
-		</>
+		</Fragment>
 	)
 		;
 };
@@ -332,14 +329,7 @@ function SubCommand({
 	const value = useSearchBar((l) => l.value);
 	const setValue = useSearchBar((l) => l.setValue);
 	const toggleTheme = useTheme((store) => store.toggleTheme);
-	const {isMobile} = useIsMobile();
-	const setCur = useCursor((l) => l.setCursorState);
-	const focusCur = () => {
-		!isMobile && setCur("FOCUS");
-	};
-	const nullCur = () => {
-		!isMobile && setCur(null);
-	};
+
 	useEffect(() => {
 		function listener(e: KeyboardEvent) {
 			if (e.key === "i" && (e.metaKey || e.ctrlKey)) {
@@ -391,64 +381,72 @@ function SubCommand({
 		};
 	}, [keys, kv, setValue]);
 	return (
-		<Popover open={subMenuOpen} onOpenChange={toggleSubMenuOpen} modal>
+		<PopoverRoot open={subMenuOpen} onOpenChange={toggleSubMenuOpen} modal={false}>
 			<PopoverTrigger
-				cmdk-raycast-subcommand-trigger=""
+				render={({children, ...props}) =>
+					<MotionPillButton {...(props as HTMLMotionProps<"button">)}
+					                  cmdk-raycast-subcommand-trigger={""}>{children}</MotionPillButton>}
 				onClick={() => setValue("actions")}
 				aria-expanded={subMenuOpen}
 				value={"actions"}
 				onSelect={toggleSubMenuOpen}
 				data-themed={"color, background-color"}
-				onMouseEnter={focusCur}
-				onMouseLeave={nullCur}
+
 			>
 				Actions
 				<kbd>⌘</kbd>
 				<kbd>I</kbd>
 			</PopoverTrigger>
-			<PopoverContent
-				side="top"
-				align="start"
-				className="commando-submenu z-[250] w-fit border-none bg-transparent p-0 shadow-none backdrop-blur-none outline-none"
-				sideOffset={15}
-				alignOffset={0}
-				onCloseAutoFocus={(e) => {
-					e.preventDefault();
-					inputRef?.current?.focus();
-				}}
-			>
-				<Commands>
-					<CommandList>
-						<CommandGroup
-							heading={"Commands"}
-							data-state={subMenuOpen ? "open" : "closed"}
-						>
-							{user && (
-								<>
-									<SubItem link="/me" shortcut="⌘ B">
-										My Profile
-									</SubItem>
-									<SubItem link={`/users/@${user.slug}/cv`} shortcut="⌘ U">
-										My CV
-									</SubItem>
-									<SubItem
-										link={`/users/@${user.slug}/settings`}
-										shortcut="⌘ A"
-									>
-										Settings
-									</SubItem>
-								</>
-							)}
-						</CommandGroup>
-					</CommandList>
-					<CommandInput
-						cmdk-input=""
-						placeholder="Search for actions..."
-						className="text-off-foreground placeholder:text-faded-foreground"
-					/>
-				</Commands>
-			</PopoverContent>
-		</Popover>
+			<Popover.Portal>
+				<Popover.Positioner
+
+					className={"z-250"}
+					side="top"
+					align="start"
+
+					// onCloseAutoFocus={(e) => {
+					// 	e.preventDefault();
+					// 	inputRef?.current?.focus();
+					// }}
+				><Popover.Popup
+					data-slot="popover-content"
+					className={cn(
+						"bg-popover text-(--n-s-fg) data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border p-4 shadow-md outline-hidden",
+						"commando-submenu z-[250] w-fit border-none bg-transparent p-0 shadow-none backdrop-blur-none outline-none"
+					)}
+				>
+					<Commands>
+						<CommandList>
+							<CommandGroup
+								heading={"Commands"}
+								data-state={subMenuOpen ? "open" : "closed"}
+							>
+								{user && (
+									<>
+										<SubItem link="/me" shortcut="⌘ B">
+											My Profile
+										</SubItem>
+										<SubItem link={`/users/@${user.slug}/cv`} shortcut="⌘ U">
+											My CV
+										</SubItem>
+										<SubItem
+											link={`/users/@${user.slug}/settings`}
+											shortcut="⌘ A"
+										>
+											Settings
+										</SubItem>
+									</>
+								)}
+							</CommandGroup>
+						</CommandList>
+						<CommandInput
+							cmdk-input=""
+							placeholder="Search for actions..."
+							className="text-off-foreground placeholder:text-faded-foreground"
+						/>
+					</Commands></Popover.Popup></Popover.Positioner>
+			</Popover.Portal>
+		</PopoverRoot>
 	);
 }
 

@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useRef, useEffect, useState } from "react";
+import {useRef, useEffect, useState, ComponentProps} from "react";
 import { Command as CommandPrimitive } from "cmdk";
 
 import { cn } from "@/lib/utils";
 import {
-  Dialog,
+  DialogRoot,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -39,7 +39,7 @@ function CommandDialog({
   open,
   onOpenChange,
   ...props
-}: React.ComponentProps<typeof Dialog> & {
+                       }: Omit<ComponentProps<typeof DialogRoot>, "children"> & ComponentProps<typeof DialogContent> & {
   title?: string;
   description?: string;
 }) {
@@ -58,7 +58,7 @@ function CommandDialog({
     }
   }, [subMenuOpen]);
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} {...props}>
+      <DialogRoot open={open} onOpenChange={onOpenChange} {...props}>
       <DialogHeader className="sr-only">
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
@@ -81,7 +81,7 @@ function CommandDialog({
           {children}
         </Command>
       </DialogContent>
-    </Dialog>
+      </DialogRoot>
   );
 }
 

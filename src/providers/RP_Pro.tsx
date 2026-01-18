@@ -185,11 +185,9 @@ const Thumbprint = ({children}: { children: ReactNode }) => {
 		const thumbmark = getThumbmark();
 		thumbmark
 			.then((res) => {
-				console.log("Fingerprinting complete:", res.thumbmark);
 				setFingerprint(res.thumbmark);
 			})
 			.catch((e) => {
-				console.error("Fingerprinting failed due to an error:", e);
 				/**flimsy fallback to account for errors; this is done out of necessity as
 				 **/
 				setFingerprint(createId());

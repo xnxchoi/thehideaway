@@ -61,8 +61,6 @@ const MobileProvider = ({ children }: { children: ReactNode }) => {
     if (!isMobile) {
       setSnapPoints([viewportWidth * 0.76 + left + "px", 1]);
     } else {
-      console.log("bottom,", bottom);
-      console.log("viewportHeight", viewportHeight);
       setSnapPoints([viewportHeight * 0.35 + bottom + "px", 1]);
     }
   }, [bottom, isMobile, viewportWidth, left, setSnapPoints, viewportHeight]);

@@ -3,8 +3,6 @@ import configPromise from "@payload-config";
 import {draftMode} from "next/headers";
 import {notFound} from "next/navigation";
 
-export const dynamic = "force-static";
-export const revalidate = 600;
 export const generateStaticParams = async () => {
 	const payload = await getPayload({config: configPromise});
 
@@ -35,12 +33,22 @@ type Args = {
 };
 export default async function DeltaPage({params}: Args) {
 	const {slug} = await params;
-	const payload = await getPayload({config: configPromise});
 	const enabledDrafts = await draftMode();
+	const deltas = await getDeltas({slug, draft: enabledDrafts.isEnabled});
 
+	if (!deltas.docs.length) {
+		notFound();
+	}
+	const deltaData = deltas.docs[0]!;
+	return <div>{deltaData.title}</div>;
+}
+
+async function getDeltas({draft, slug}: { slug: string; draft: boolean; }) {
+	"use cache"
+	const payload = await getPayload({config: configPromise});
 	const deltas = await payload.find({
 		collection: "delta",
-		draft: enabledDrafts.isEnabled,
+		draft,
 		where: {
 			slug: {
 				equals: slug,
@@ -55,11 +63,7 @@ export default async function DeltaPage({params}: Args) {
 			category: true,
 		},
 	});
-	if (!deltas.docs.length) {
-		notFound();
-	}
-	const deltaData = deltas.docs[0]!;
-	return <div>{deltaData.title}</div>;
+	return deltas;
 }
 
 export async function generateMetadata({params}: Args) {

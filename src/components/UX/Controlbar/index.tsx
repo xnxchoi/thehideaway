@@ -1,3 +1,5 @@
+import VGradient from "@/components/UX/Gradient";
+import {useIsMobile} from "@/providers/MiddleMan";
 import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { type ReactNode, useCallback, useEffect, useRef } from "react";
 import { Button } from "../Button";
@@ -14,6 +16,9 @@ import { springGSAP } from "@/constants/animations";
 import * as m from "motion/react-m";
 
 export const Controlbar = () => {
+
+	const {isMobile} = useIsMobile();
+	const open = useRPStore(useShallow((r) => r.sidebarOpen));
   const setCursorTheme = useCursor((r) => r.setCursorTheme);
   const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const setCur = useCallback(() => {
@@ -50,7 +55,7 @@ export const Controlbar = () => {
     //   op.set(1);
     // }
   }, [isSidebarOpen, locationBottom, op, snapPoints]);
-  return (
+	return isMobile && !open && (
     <>
       <m.div
         ref={ctrlRef}

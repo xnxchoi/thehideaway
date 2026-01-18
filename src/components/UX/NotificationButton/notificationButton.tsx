@@ -1,17 +1,16 @@
 "use client";
-import {useRPStore} from "@/providers/RP_Pro";
-import {AuthorOverview} from "@/types/collections/users";
-import {Popover} from "@base-ui/react/popover";
-import {ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from "react";
-
 import {Skeleton} from "@/components/ui/skeleton";
 import {Link, MotionLink} from "@/components/UX/Link/Link";
+import {cn} from "@/lib/utils";
 import {useHumanTime} from "@/payload/collections/Delta/component/useLocaleDate";
 import type {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
 import {useIsMobile} from "@/providers/MiddleMan";
 import {useNotifications} from "@/providers/Notifications";
+import {useRPStore} from "@/providers/RP_Pro";
 import {sortByDate} from "@/stores/Notification/NotificationStore";
+import {AuthorOverview} from "@/types/collections/users";
 import {useWindowResize} from "@/utilities/use_window_resize";
+import {Popover} from "@base-ui/react/popover";
 import NumberFlow, {continuous} from "@number-flow/react";
 import {Avatar, AvatarFallback, AvatarImage} from "@radix-ui/react-avatar";
 import {Cross1Icon} from "@radix-ui/react-icons";
@@ -22,22 +21,16 @@ import {AnimatePresence, type HTMLMotionProps, stagger} from "motion/react";
 import * as m from "motion/react-m";
 import {usePathname} from "next/navigation";
 import type {CollectionSlug} from "payload";
+import {ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/shallow";
 import {useDomCursor} from "../../core/cursorWrapper";
-import {Button, MotionBtn} from "../Button";
+import {Button, MotionBtn, MotionPillButton} from "../Button";
 import {ReferencedLink} from "../Link/referencedLink";
 import {FrontImage} from "../Media/FrontImage";
 import {ImageMedia} from "../Media/ImageMedia";
 
-interface ExpandButtonProps {
-	defaultWidth?: number;
-	onContract?: () => void;
-	onExpand?: () => void;
-}
-
 const MotionPopoverTrigger = m.create(Popover.Trigger);
-export const NotificationButton = (config: ExpandButtonProps) => {
-	const {onContract, onExpand, ...props} = config;
+export const NotificationButton = (props: HTMLMotionProps<"button">) => {
 	const {setDismissed, notifications, setRead, setAllRead} = useNotifications();
 	const pathname = usePathname();
 
@@ -47,9 +40,9 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 			mobile: 32, desktop: 24
 		};
 	}, []);
-	const ref = useRef<typeof MotionPopoverTrigger>(null!);
 
-	const [expanded, setExpanded] = useState(true), navIsOpen = useRPStore(useShallow((store) => store.navIsOpen)),
+	const [expanded, setExpanded] = useState(true),
+		navIsOpen = useRPStore(useShallow((store) => store.navIsOpen)),
 		windowReside = useWindowResize({
 			detectHeightChange: false, debounce: 100
 		});
@@ -107,15 +100,24 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 	}, [nItems]);
 
 	return (<Popover.Root open={open} onOpenChange={setOpen}>
-		<MotionPopoverTrigger onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} initial={{
-			opacity: 0, scaleX: 0.01
-		}} variants={variants} animate={animation} exit={{
-			opacity: 0, scaleX: 0.01
-		}} transition={{
-			duration: 0.2, ease: "easeOut"
-		}} nativeButton={true} data-expanded={expanded} className={"rp_btn bt_sm bell-button !gap-2 px-2"}
-		                      {...props}
-		>
+		<MotionPopoverTrigger
+			render={({children, className, ...props}) =>
+				<MotionPillButton onMouseEnter={onMouseEnter}
+				                  data-state={navIsOpen}
+				                  data-themed={"border-color,fill,stroke,outline-color,color,background-color"}
+				                  onMouseLeave={onMouseLeave}
+				                  initial={{
+					                  opacity: 0, scaleX: 0.01
+				                  }} variants={variants}
+
+				                  animate={animation} exit={{
+					opacity: 0, scaleX: 0.01
+				}} transition={{
+					duration: 0.2, ease: "easeOut"
+				}} data-expanded={expanded}
+				                  className={cn("rp_btn bt_sm bell-button !gap-2 px-2 hover:border-current! hover:bg-transparent! data-[state=true]:border-current!", className)}
+				                  {...props as HTMLMotionProps<"button">}
+				>{children}</MotionPillButton>} nativeButton={true} {...props}>
 			<AnimatePresence initial={true} mode="sync">
 				{expanded && (<m.div ref={txt} initial={{
 					opacity: 0
@@ -127,30 +129,38 @@ export const NotificationButton = (config: ExpandButtonProps) => {
 					duration: 0.2, ease: "easeInOut"
 				}}
 				                     className="pointer-events-none text-sm leading-[114%] tracking-[-0.01em] whitespace-nowrap min-md:block min-md:min-w-fit min-md:leading-[120%]">
-					<NumberFlow className={"text-sm"} respectMotionPreference={false} locales={"en-US"}
+					<NumberFlow className={"text-sm"} respectMotionPreference={false}
+					            locales={"en-US"}
 					            plugins={[continuous]} value={count}
-					            format={{notation: "compact", compactDisplay: "short"}} />
+					            format={{notation: "compact", compactDisplay: "short"}}/>
 				</m.div>)}
 			</AnimatePresence>
-			<svg ref={icon}
-			     className="aspect-square w-[1.2rem] bg-transparent fill-nav-button/80 stroke-[1px] min-md:w-[1.4rem]"
-			     viewBox="0 0 45 45" data-themed={"stroke,fill"} fill="var(--n-s-btn)/1)">
+			<m.svg ref={icon}
+			       className="aspect-square w-[1.2rem] bg-transparent stroke-[1.25px] min-md:w-[1.4rem]"
+			       viewBox="0 0 45 45" data-themed={"stroke,fill"} fill="none" fillRule={"evenodd"}
+			       stroke="currentColor">
 				<path
-					d="m40.7,34.79c-1.21-1.07-2.26-2.31-3.14-3.66-.96-1.87-1.53-3.92-1.69-6.01v-6.18c.02-6.81-5.04-12.57-11.8-13.44v-1.61c0-.92-.75-1.67-1.67-1.67s-1.67.75-1.67,1.67v1.64c-6.69.93-11.68,6.65-11.66,13.41v6.18c-.16,2.1-.73,4.14-1.69,6.01-.86,1.35-1.9,2.58-3.09,3.66-.27.24-.42.58-.42.94v1.7c0,.69.56,1.25,1.25,1.25h34.75c.69,0,1.25-.56,1.25-1.25v-1.7c0-.36-.16-.7-.43-.94Zm-34.22,1.39c1.16-1.12,2.19-2.38,3.05-3.75,1.21-2.26,1.91-4.75,2.06-7.31v-6.18c-.2-6.03,4.52-11.08,10.55-11.29,6.03-.2,11.08,4.52,11.29,10.55,0,.25,0,.49,0,.74v6.18c.15,2.56.86,5.05,2.06,7.31.86,1.37,1.89,2.63,3.05,3.75H6.48Z"></path>
-				<path d="m22.56,42.85c1.63-.04,2.99-1.24,3.22-2.85h-6.58c.24,1.66,1.68,2.87,3.35,2.85Z"></path>
-			</svg>
+					d="m40.7,34.79c-1.21-1.07-2.26-2.31-3.14-3.66-.96-1.87-1.53-3.92-1.69-6.01v-6.18c.02-6.81-5.04-12.57-11.8-13.44v-1.61c0-.92-.75-1.67-1.67-1.67s-1.67.75-1.67,1.67v1.64c-6.69.93-11.68,6.65-11.66,13.41v6.18c-.16,2.1-.73,4.14-1.69,6.01-.86,1.35-1.9,2.58-3.09,3.66-.27.24-.42.58-.42.94v1.7c0,.69.56,1.25,1.25,1.25h34.75c.69,0,1.25-.56,1.25-1.25v-1.7c0-.36-.16-.7-.43-.94Zm-34.22,1.39c1.16-1.12,2.19-2.38,3.05-3.75,1.21-2.26,1.91-4.75,2.06-7.31v-6.18c-.2-6.03,4.52-11.08,10.55-11.29,6.03-.2,11.08,4.52,11.29,10.55,0,.25,0,.49,0,.74v6.18c.15,2.56.86,5.05,2.06,7.31.86,1.37,1.89,2.63,3.05,3.75H6.48Z"
+					stroke="currentColor"/>
+				<path
+					d="m22.56,42.85c1.63-.04,2.99-1.24,3.22-2.85h-6.58c.24,1.66,1.68,2.87,3.35,2.85Z"
+					stroke="currentColor"/>
+			</m.svg>
 		</MotionPopoverTrigger>
 		<Popover.Portal>
 			<Popover.Positioner sideOffset={20} positionMethod={"fixed"}>
 				<Popover.Popup
 					className="relative max-h-[25rem] min-h-[15rem] min-w-[25rem] origin-[var(--transform-origin)] overflow-hidden rounded-lg bg-faded-background/30 px-4.5 py-6 text-faded-foreground/90 shadow-lg/25 shadow-lg shadow-muted-faded-background/30 outline-1 outline-muted-faded-foreground/20 backdrop-blur-xs transition-[transform,scale,opacity,background-color,color,box-shadow] duration-200 data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:bg-faded-background/60 dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-muted-faded-foreground/40">
 					<div className={"absolute inset-0 opacity-30 mix-blend-multiply"} style={{
-						backgroundImage: "url(/assets/noise.png)", backgroundSize: "20%", backgroundPosition: "center"
-					}} />
+						backgroundImage: "url(/assets/noise.png)",
+						backgroundSize: "20%",
+						backgroundPosition: "center"
+					}}/>
 					<Popover.Title className="mb-1 text-base font-semibold tracking-[-0.01em]">
 						Notifications
 					</Popover.Title>
-					<NotificationScroll nItems={nItems} onDismiss={onDismiss} onRead={onRead} closer={closer} />
+					<NotificationScroll nItems={nItems} onDismiss={onDismiss} onRead={onRead}
+					                    closer={closer}/>
 					<AnimatePresence>
 						{pathname !== "/me/notifications" && nItems.length > 0 && (<MotionLink
 							className={"absolute right-0 bottom-1 left-0 flex w-full items-center justify-center px-3 py-1 font-sans"}
@@ -214,7 +224,6 @@ const NotificationScroll = (props: {
 		const wrapper = wrapperRef.current;
 		const container = wrapper.parentElement;
 		if (!content || !wrapper || !container) return console.log("No content or wrapper");
-		console.log("wrapper and content found");
 		const lenny = new Lenis({
 			wrapper, content, autoRaf: true
 		});
@@ -247,32 +256,36 @@ const NotificationScroll = (props: {
 								switch (item.type) {
 									case "follow":
 										return (
-											<UserNotification key={item.id + index} id={item.trigger.value as string}
+											<UserNotification key={item.id + index}
+											                  id={item.trigger.value as string}
 											                  item={{
 												                  ...item, trigger: {
 													                  relationTo: "users",
 													                  value: item.trigger.value as string
 												                  }, type: "follow", id: item.id
-											                  }} onDismiss={onDismiss} onRead={onRead} />);
+											                  }} onDismiss={onDismiss}
+											                  onRead={onRead}/>);
 								}
 							}
 							default:
 								return (<NotificationItem key={item.id + index} item={{
 									...item, id: item.id
-								}} onDismiss={onDismiss} onRead={onRead} />);
+								}} onDismiss={onDismiss} onRead={onRead}/>);
 						}
 					} else {
 						return (<NotificationItem key={item.id + index} item={{
 							...item, id: item.id
-						}} onDismiss={onDismiss} onRead={onRead} />);
+						}} onDismiss={onDismiss} onRead={onRead}/>);
 					}
 				})}
-				{nItems.length < 1 && (<m.div key="empty" initial={{opacity: 0}} animate={{opacity: 1}}
-				                              className="flex h-[10rem] w-full items-center justify-center">
-					<Popover.Description className="text-sm leading-[114%] font-medium tracking-[-0.01em]">
-						You are all caught up!
-					</Popover.Description>
-				</m.div>)}
+				{nItems.length < 1 && (
+					<m.div key="empty" initial={{opacity: 0}} animate={{opacity: 1}}
+					       className="flex h-[10rem] w-full items-center justify-center">
+						<Popover.Description
+							className="text-sm leading-[114%] font-medium tracking-[-0.01em]">
+							You are all caught up!
+						</Popover.Description>
+					</m.div>)}
 				{/* {nItems.length > 5 && ( */}
 			</AnimatePresence>
 		</m.div>
@@ -281,7 +294,9 @@ const NotificationScroll = (props: {
 export const ScrollArea = (props: ComponentProps<"div">) => {
 }
 const NotificationItem = (props: HTMLMotionProps<"div"> & {
-	item: SyncedNotification; onDismiss: ({ids}: { ids: string[] }) => void; onRead: ({ids}: { ids: string[] }) => void;
+	item: SyncedNotification;
+	onDismiss: ({ids}: { ids: string[] }) => void;
+	onRead: ({ids}: { ids: string[] }) => void;
 }) => {
 	const {
 		ref, className, transition, item, onDismiss: oD, onRead: oR, ...rest
@@ -306,6 +321,7 @@ const NotificationItem = (props: HTMLMotionProps<"div"> & {
 			setHovered(false);
 		}
 	});
+
 	return (<m.div key={props.title} ref={ref}
 	               className="relative h-full overflow-hidden rounded-[8px] bg-transparent text-base outline-1 outline-muted-faded-foreground/0 transition-colors duration-150 ease-out-power2 hover:outline-muted-faded-foreground/30 max-lg:w-[90vw] max-lg:min-w-[20rem] min-lg:min-h-[6rem] min-lg:w-[15vw]"
 	               data-themed="background-color,border-color" initial={{
@@ -320,9 +336,11 @@ const NotificationItem = (props: HTMLMotionProps<"div"> & {
 	               {...(hovered ? {"data-hovered": true} : {})}
 	>
 		<div className="relative flex h-full w-full">
-			<div className="bg-transparent-base/15 absolute inset-0 z-[5] rounded-[8px] backdrop-blur-[0.5px]" />
-			<article className="relative z-20 flex h-full w-full items-center justify-center gap-5 p-4 text-base"
-			         data-type="type">
+			<div
+				className="bg-transparent-base/15 absolute inset-0 z-[5] rounded-[8px] backdrop-blur-[0.5px]"/>
+			<article
+				className="relative z-20 flex h-full w-full items-center justify-center gap-5 p-4 text-base"
+				data-type="type">
 				<MotionBtn
 					className="absolute top-2 right-2 z-[12] flex aspect-square h-[2rem] items-center justify-center rounded-full"
 					aria-label="Close notification" initial={{
@@ -336,21 +354,25 @@ const NotificationItem = (props: HTMLMotionProps<"div"> & {
 				}} onClick={onDismiss}>
 					<svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"
 					     className="h-[1rem] w-[1rem]">
-						<path data-themed="stroke" d="M2.625 2.625L9.375 9.375" stroke="currentColor" style={{}} />
-						<path data-themed="stroke" d="M2.625 9.375L9.375 2.625" stroke="currentColor" style={{}} />
+						<path data-themed="stroke" d="M2.625 2.625L9.375 9.375"
+						      stroke="currentColor" style={{}}/>
+						<path data-themed="stroke" d="M2.625 9.375L9.375 2.625"
+						      stroke="currentColor" style={{}}/>
 					</svg>
 				</MotionBtn>
-				<div className="grid w-full grid-cols-[4.8rem_1fr] items-center gap-5 min-lg:items-start">
+				<div
+					className="grid w-full grid-cols-[4.8rem_1fr] items-center gap-5 min-lg:items-start">
 					<div
 						className="relative aspect-square h-auto w-full [&_img]:block [&_img]:h-auto [&_img]:w-full [&_img]:max-w-full">
-						{(thumbnail && <FrontImage resource={thumbnail} />) || (fallbackImage && (
+						{(thumbnail && <FrontImage resource={thumbnail}/>) || (fallbackImage && (
 							<ImageMedia src={fallbackImage.path}
-							            fill={true} />))}
+							            fill={true}/>))}
 					</div>
 					<h1 className="mb-[6px] font-sans text-sm leading-[114%] font-semibold tracking-[-0.01em] min-lg:mb-[12px] min-lg:leading-[120%]"
 					    data-themed="color" style={{}}>
 						{(actionLink && (<ReferencedLink onClick={onRead} link={actionLink}
-						                                 className="z-[5] inline-block bg-transparent" target="_blank"
+						                                 className="z-[5] inline-block bg-transparent"
+						                                 target="_blank"
 						                                 rel="noreferrer">
 							{title}
 						</ReferencedLink>)) || <span>{title}</span>}
@@ -362,11 +384,14 @@ const NotificationItem = (props: HTMLMotionProps<"div"> & {
 };
 
 function UserNotification({
-	item, onDismiss: oD, onRead: oR, id
-}: {
+	                          item, onDismiss: oD, onRead: oR, id
+                          }: {
 	item: SyncedNotification & {
 		trigger: { relationTo: Extract<CollectionSlug, "users">; value: string };
-	}; id: string | number; onDismiss: ({ids}: { ids: string[] }) => void; onRead: ({ids}: { ids: string[] }) => void;
+	};
+	id: string | number;
+	onDismiss: ({ids}: { ids: string[] }) => void;
+	onRead: ({ids}: { ids: string[] }) => void;
 }) {
 	const {id: itemId, title, content, actionLink, createdAt} = item;
 	const onDismiss = useCallback(() => {
@@ -401,50 +426,52 @@ function UserNotification({
 		<div className="z-50 max-w-[400px] rounded-md border bg-background p-4 shadow-lg">
 			<div className="flex gap-3">
 				{(!isLoading && (<Avatar>
-					{(data?.image && (<AvatarImage src={data.image} width={32} height={32} alt="" />)) || (
+					{(data?.image && (
+						<AvatarImage src={data.image} width={32} height={32} alt=""/>)) || (
 						<AvatarFallback>
-							{(data?.displayUsername || data?.name)?.at(0)}
+							{(data?.name)?.at(0)}
 						</AvatarFallback>)}
-				</Avatar>)) || <Skeleton className="size-[32px] rounded-full" />}
+				</Avatar>)) || <Skeleton className="size-[32px] rounded-full"/>}
 				<div className="flex grow flex-col gap-3">
 					<div className="space-y-3">
 						{(isLoading && (<>
-							<Skeleton className="h-[12px] w-[250px]" />
-							<Skeleton className="h-[12px] w-[250px]" />
+							<Skeleton className="h-[12px] w-[250px]"/>
+							<Skeleton className="h-[12px] w-[250px]"/>
 						</>)) || (<>
 							<p className="text-sm text-muted-foreground">
 								<Link
 									className="relative z-[4] inline-block font-medium text-foreground hover:underline"
 									href={`/@${data?.slug}`}>
-									{data?.displayUsername || data?.name}
+									{data?.name}
 								</Link>
 								{(item.type === "mention" && "mentioned you") || (item.type === "follow" && "followed you") || (item.type === "comment" && "commented") || (item.type === "bookmark" && "bookmarked")}
 								<ReferencedLink link={actionLink} onClick={onRead}
-								                className={"absolute inset-0 z-[0] bg-faded-foreground/10 opacity-0 transition-opacity duration-200 ease-out-power2 hover:opacity-100"} />
+								                className={"absolute inset-0 z-[0] bg-faded-foreground/10 opacity-0 transition-opacity duration-200 ease-out-power2 hover:opacity-100"}/>
 								. </p>
 							<p className="text-xs text-muted-foreground">{humanTime}</p>
 						</>)}
 					</div>
 					{/* <div className="flex gap-2">
-            <Button
-              className={
+					 <Button
+					 className={
 					 "bg-faded-foreground text-nav-button-inverted"
-              }
-            >
-              Accept
-            </Button>
-            <Button
-              className={
+					 }
+					 >
+					 Accept
+					 </Button>
+					 <Button
+					 className={
 					 "border-[1px] border-solid border-nav-button-border text-nav-button"
-              }
-            >
-              Decline
-            </Button>
-          </div> */}
+					 }
+					 >
+					 Decline
+					 </Button>
+					 </div> */}
 				</div>
 				<Button className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
 				        aria-label="Close notification" onClick={onDismiss}>
-					<Cross1Icon className="opacity-60 transition-opacity group-hover:opacity-100" aria-hidden="true" />
+					<Cross1Icon className="opacity-60 transition-opacity group-hover:opacity-100"
+					            aria-hidden="true"/>
 				</Button>
 			</div>
 		</div>);

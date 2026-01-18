@@ -1,5 +1,11 @@
+"use server"
+import {Header} from "@/components/core/Header/Component";
+import {Main} from "@/components/core/Main";
 import {Toaster} from "@/components/ui/sonner";
+import {ContentMask} from "@/components/UX/ContentMask";
 import {EscapeInAppBrowser} from "@/components/UX/escapeInAppBrowser";
+import VGradient from "@/components/UX/Gradient";
+import {MenuMediaPreview} from "@/components/UX/MediaPreview/MenuMediaPreview";
 import {RP_Menu} from "@/components/UX/Menu";
 
 // Client Components (imported dynamically to create islands)
@@ -8,20 +14,15 @@ import {ScrollIndicator} from "@/components/UX/ScrollIndicator";
 import {BetterAuthProvider} from "@/lib/auth/context";
 import {getContextProps} from "@/lib/auth/context/get-context-props";
 import {cn} from "@/lib/utils";
-import {Header} from "@/payload/components/Header/Component";
 import {LivePreviewListener} from "@/payload/components/LivePreviewListener";
 import {InitTheme} from "@/providers/Theme/InitTheme";
 import "@/styles/hideaway.scss";
 import "@/styles/reading.scss";
-import {getServerSideURL} from "@/utilities/getURL";
-import {mergeOpenGraph} from "@/utilities/mergeOpenGraph";
 import {GeistMono} from "geist/font/mono";
 import {GeistSans} from "geist/font/sans";
 import "lenis/dist/lenis.css";
-import type {Metadata} from "next";
 import {NextIntlClientProvider} from "next-intl";
-import {getLocale} from "next-intl/server";
-import {ReactNode} from "react";
+import {ReactNode, Suspense} from "react";
 import {ReactTempus} from "tempus/react";
 import "../../styles/globals.css";
 import "./estate.scss";
@@ -34,11 +35,9 @@ export default async function RootLayout({
                                          }: {
 	children: ReactNode;
 }) {
-	const locale = await getLocale();
 
 	return (
 		<html
-			lang={locale}
 			suppressHydrationWarning
 			className={cn(
 				Siegfried.variable,
@@ -58,32 +57,39 @@ export default async function RootLayout({
 			<title>The Hideaway</title>
 		</head>
 		<body data-themed={"color, background-color"}>
-		<NextIntlClientProvider>
-			<BetterAuthProvider {...getContextProps()}>
-				<ClientProviders>
-					{/* Server-rendered components */}
-					<EscapeInAppBrowser/>
-					<Toaster/>
-					<LivePreviewListener/>
-					<Header/>
-					<RP_Menu/>
-					<ScrollIndicator/>
-
-					<ClientLayout>{children}</ClientLayout>
-				</ClientProviders>
-				<ReactTempus patch/>
-			</BetterAuthProvider>
-		</NextIntlClientProvider>
+		<Suspense>
+			<NextIntlClientProvider>
+				<BetterAuthProvider {...getContextProps()}>
+					<ClientProviders>
+						{/* Server-rendered components */}
+						<EscapeInAppBrowser/>
+						<Toaster/>
+						<LivePreviewListener/>
+						<Header/>
+						<RP_Menu/>
+						<ScrollIndicator/>
+						<Main>
+							<ClientLayout>
+								<MenuMediaPreview>
+									<VGradient/>
+								</MenuMediaPreview>
+								<ContentMask>
+									{children}</ContentMask></ClientLayout>
+						</Main>
+					</ClientProviders>
+					<ReactTempus patch/>
+				</BetterAuthProvider>
+			</NextIntlClientProvider></Suspense>
 		</body>
 		</html>
 	);
 }
 
-export const metadata: Metadata = {
-	metadataBase: new URL(getServerSideURL()),
-	openGraph: mergeOpenGraph(),
-	twitter: {
-		card: "summary_large_image",
-		creator: "@"
-	}
-};
+// export const metadata: Metadata = {
+// 	metadataBase: new URL(getServerSideURL()),
+// 	openGraph: mergeOpenGraph(),
+// 	twitter: {
+// 		card: "summary_large_image",
+// 		creator: "@"
+// 	}
+// };

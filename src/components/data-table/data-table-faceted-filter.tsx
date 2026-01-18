@@ -16,7 +16,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  Popover,
+  PopoverRoot,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -74,8 +74,8 @@ export function DataTableFacetedFilter<TData, TValue>({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverRoot open={open} onOpenChange={setOpen}>
+        <PopoverTrigger render={
         <Button variant="outline" size="sm" className="border-dashed">
           {selectedValues?.size > 0 ? (
             <div
@@ -127,8 +127,8 @@ export function DataTableFacetedFilter<TData, TValue>({
               </div>
             </>
           )}
-        </Button>
-      </PopoverTrigger>
+        </Button>}
+        />
       <PopoverContent className="w-[12.5rem] p-0" align="start">
         <Command>
           <CommandInput placeholder={title} />
@@ -180,6 +180,6 @@ export function DataTableFacetedFilter<TData, TValue>({
           </CommandList>
         </Command>
       </PopoverContent>
-    </Popover>
+      </PopoverRoot>
   );
 }

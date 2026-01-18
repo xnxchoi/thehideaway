@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button as UIBtn } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Dialog,
+	DialogRoot,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -282,7 +282,7 @@ const ResponseItem = ({
                       <Link href={`/@${author.slug}`}>
                         <div className={"flex items-baseline"}>
                           <p className={"break-all"}>
-                            {author.displayUsername || author.name}
+	                          {author.name}
                           </p>
                         </div>
                       </Link>
@@ -703,7 +703,7 @@ export const SignInCard = (
 const SignInTriggerButton = () => {
   const [isOpen, setOpen] = useState(false);
   return (
-    <Dialog open={isOpen} onOpenChange={setOpen}>
+	  <DialogRoot open={isOpen} onOpenChange={setOpen}>
       <DialogTrigger asChild></DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
@@ -713,7 +713,7 @@ const SignInTriggerButton = () => {
           <SignInCard onSignInClick={() => {}} />
         </div>
       </DialogContent>
-    </Dialog>
+	  </DialogRoot>
   );
 };
 export const MemoInput = (
@@ -930,7 +930,7 @@ export const MemoButton = ({
   }, [open, ranger]);
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={setOpen}>
+	    <DialogRoot open={isOpen} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <HighlightMenuButton className={className} onClick={closeOnClick}>
             {focusedHighlight && focusedHighlight.memo ? "Edit" : "Memo"}
@@ -990,7 +990,7 @@ export const MemoButton = ({
             </div>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+	    </DialogRoot>
     </>
   );
 };

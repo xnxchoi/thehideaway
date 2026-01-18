@@ -21,7 +21,12 @@ export function isIdentifyableNode(
   );
 }
 
-export function getAnchestorIdentifyableNode(node: Node) {
+export function getAnchestorIdentifyableNode(node: Node | null | undefined) {
+	// Guard against undefined/null nodes
+	if (!node) {
+		return false;
+	}
+  
   if (isIdentifyableNode(node)) {
     switch (node.tagName) {
       case "SPAN":

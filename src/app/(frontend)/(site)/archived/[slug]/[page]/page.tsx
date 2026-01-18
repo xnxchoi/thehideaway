@@ -1,145 +1,176 @@
-import { notFound } from "next/navigation";
-import type { Metadata } from "next/types";
-import { getPayload } from "payload";
-
-import { PageRange } from "@/payload/components/PageRange";
+import {ArchiveFeatureCard} from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
+import {CatTitle, TaggedItem} from "@/components/layouts/Tagged/Item";
+import {PageRange} from "@/components/UX/PageRange";
+import {RPage} from "@/components/UX/Transition";
+import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
+import config from "@payload-config";
+import {notFound} from "next/navigation";
+import type {Metadata} from "next/types";
+import {getPayload} from "payload";
 
 import PageClient from "./page.client";
-import { RPage } from "@/components/UX/Transition";
-import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
-import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
-import config from "@payload-config";
-
-export const dynamic = "force-static";
-export const revalidate = 600;
 
 type Args = {
-  params: Promise<{
-    slug: string;
-    page: string;
-  }>;
+	params: Promise<{
+		slug: string;
+		page: string;
+	}>;
 };
 
-export default async function Page({ params: paramsPromise }: Args) {
-  const { slug, page } = await paramsPromise;
-  const payload = await getPayload({ config });
-  const cat = await payload
-    .find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      overrideAccess: true,
-      limit: 1,
-      select: {
-        title: true,
-        slug: true
-      }
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!cat) {
-    notFound();
-  }
+export default async function Page({params: paramsPromise}: Args) {
+	const {slug, page: pageFromParams} = await paramsPromise;
+	const cat = await getCategoryPage({slug});
+	if (!cat) {
+		notFound();
+	}
 
-    const posts = await queryPostOverviews({
-    limit: 12,
-    page: Number(page),
-
-    where: {
-      categorized: {
-        equals: cat.id
-      }
-    }
-  });
-  return (
-    <RPage type="categories" slug={[cat.slug]}>
-      <PageClient>
-        <div className="relative flex w-full flex-col items-center justify-center">
-          <CatTitle title={cat.title} />
-          <div
-            className={
-              "relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
-            }
-          >
-            <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
-                {posts.docs.map((post) => (
-                <TaggedItem key={post.id} {...post} />
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="container">
-          <PageRange
-            collection="posts"
-            currentPage={Number(page)}
-            limit={12}
-            totalDocs={posts.totalDocs}
-          />
-        </div>
-      </PageClient>
-    </RPage>
-  );
+	const {
+		docs,
+		totalDocs,
+		totalPages,
+		limit,
+		page,
+		hasNextPage,
+		hasPrevPage,
+		nextPage,
+		prevPage
+	} = await getPostsWithCategory({id: cat.id, page: pageFromParams})
+	const firstFive = docs.slice(0, 5).map((post) => ({relationTo: "posts" as const, value: post}));
+	const rest = docs.slice(5);
+	return (
+		<RPage type="categories" slug={[cat.slug]}>
+			<PageClient>
+				<div className="relative flex w-full flex-col items-center justify-center">
+					<CatTitle title={cat.title}/>
+					<div
+						className={
+							"relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
+						}
+					>
+						<div>
+							<div className={"p-0"}>
+								<div className={"relative h-full w-full"}>
+									<div className={"w-full"}>
+										<div
+											className={
+												"relative z-[150] mx-auto flex w-[calc(100%-5rem)] max-w-[var(--maxContainerWidth)] translate-y-[1rem] rounded-t-[20px] rounded-b-[0]"
+											}
+										></div>
+										<div className={"relative block"}>
+											<ArchiveFeatureCard contents={firstFive} type={"left"}/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
+							{rest.map((post) => (
+								<TaggedItem key={post.id} {...post} />
+							))}
+						</div>
+					</div>
+				</div>
+				<div className="container">
+					<PageRange basePath={`/archived/${cat.slug}`} prevPage={prevPage || undefined}
+					           page={page} nextPage={nextPage || undefined} totalDocs={totalDocs}
+					           limit={limit}/>
+				</div>
+			</PageClient>
+		</RPage>
+	);
 }
 
 export async function generateMetadata({
-  params: paramsPromise
-}: Args): Promise<Metadata> {
-  const { slug, page } = await paramsPromise;
-  return {
-    title: `Archived: ${slug || ""} - ${page || ""}`
-  };
+	                                       params: paramsPromise
+                                       }: Args): Promise<Metadata> {
+	const {slug, page} = await paramsPromise;
+	return {
+		title: `Archived: ${slug || ""} - ${page || ""}`
+	};
 }
 
 export async function generateStaticParams(params: {
-  page: number;
-  slug: string;
+	slug: string;
 }) {
-  const { slug, page } = params;
-  const payload = await getPayload({ config });
-  const cat = await payload
-    .find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      limit: 1,
-      select: {
-        slug: true
-      }
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!cat) {
-    return [];
-  }
-  const categorized = await payload
-    .find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      select: {
-        categorized: true
-      }
-    })
-    .then((result) => result.docs?.[0]?.categorized ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!categorized || !categorized.totalDocs || !categorized.docs) {
-    return [];
-  }
-  const totalDocs = categorized.totalDocs;
-  const totalPages = Math.ceil(totalDocs / 12);
-  const pages: { page: string }[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ page: String(i) });
-  }
+	const {slug} = params;
+	const payload = await getPayload({config});
+	const cat = await payload
+		.find({
+			collection: "categories",
+			where: {
+				slug: {
+					equals: slug
+				}
+			},
+			limit: 1,
+			select: {
+				slug: true
+			}
+		})
+		.then((result) => result.docs[0] ?? null)
+		.catch((e) => (console.error(e), null));
+	if (!cat) {
+		return [];
+	}
+	const categorized = await payload
+		.find({
+			collection: "categories",
+			where: {
+				slug: {
+					equals: slug
+				}
+			},
+			select: {
+				categorized: true
+			}
+		})
+		.then((result) => result.docs?.[0]?.categorized ?? null)
+		.catch((e) => (console.error(e), null));
+	if (!categorized || !categorized.totalDocs || !categorized.docs) {
+		return [];
+	}
+	const totalDocs = categorized.totalDocs;
+	const totalPages = Math.ceil(totalDocs / 12);
+	const pages: { page: string }[] = [];
+	for (let i = 1; i <= totalPages; i++) {
+		pages.push({page: String(i)});
+	}
 
-  return pages;
+	return pages;
+}
+
+async function getPostsWithCategory({id, page}: { id: string; page: string; }) {
+	"use cache"
+	return await queryPostOverviews({
+		limit: 12,
+		page: Number(page),
+
+		where: {
+			categorized: {
+				equals: id
+			}
+		}
+	});
+}
+
+async function getCategoryPage({slug}: { slug: string }) {
+	"use cache"
+	const payload = await getPayload({config});
+	return await payload
+		.find({
+			collection: "categories",
+			where: {
+				slug: {
+					equals: slug
+				}
+			},
+			overrideAccess: true,
+			limit: 1,
+			select: {
+				title: true,
+				slug: true
+			}
+		})
+		.then((result) => result.docs[0] ?? null)
+		.catch((e) => (console.error(e), null));
 }

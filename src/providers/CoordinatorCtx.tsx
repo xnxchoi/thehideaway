@@ -32,8 +32,8 @@ export const CoordinatorCtx = ({children}: { children: ReactNode }) => {
 	}, [uup]);
 
 	return (
-		<CRDNTSCTX.Provider
-			value={{x: xValue, y: yValue, setFn, unsetFn}}>{children}</CRDNTSCTX.Provider>
+		<CRDNTSCTX
+			value={{x: xValue, y: yValue, setFn, unsetFn}}>{children}</CRDNTSCTX>
 	)
 
 }

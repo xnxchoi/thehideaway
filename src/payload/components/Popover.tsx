@@ -48,7 +48,7 @@ export const MenuButton = ({
 				"flex h-[40px] appearance-none items-center justify-center gap-1.5 rounded-md border-none bg-transparent px-3.5 text-base font-medium shadow-none outline-none select-none",
 				className
 			)}
-			data-themed="color, border-color, background-color, outline-color,box-shadow"
+			data-themed="color,border-color, background-color,outline-color,box-shadow"
 		>
 			{children}
 		</Menu.Trigger>

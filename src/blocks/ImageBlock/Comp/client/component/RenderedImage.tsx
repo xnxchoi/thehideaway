@@ -32,12 +32,9 @@ export const RenderedImage = ({
 	const onLoad: ReactEventHandler<HTMLImageElement> = useCallback((e) => {
 		const imag = e.currentTarget;
 		const wnw = imag.naturalWidth, wnh = imag.naturalHeight;
-		console.log("image loaded:", imag)
 		if (!wnw || !wnh) {
-			console.log("something went wrong with image dimensions: ", imag)
-			console.log("w", wnw)
-			console.log("h", wnh)
 			return;
+			s
 		}
 		nw.set(wnw);
 		nh.set(wnh);

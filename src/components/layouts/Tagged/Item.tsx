@@ -37,13 +37,13 @@ export const TaggedItem = (props: ListArticleProps) => {
         href={"/essays/" + url}
       />
       <div
+	      //pt-[75.2747%] md:pt-[75.1131%]
         className={cn(
-	        "relative col-[1] row-[1/6] min-h-px min-w-px overflow-hidden rounded-[10px] bg-muted-background pt-[75.2747%] after:absolute after:top-[50%] after:left-[50%] after:block after:h-[3.2rem] after:w-[3.2rem] after:origin-[0_0] after:transform-[translate(-50%,-50%)] after:animate-spinner after:bg-foreground after:opacity-0 after:content-[\"\"] after:clip-sun data-[loading=true]:after:opacity-20 md:pt-[75.1131%] lg:col-[3/6] lg:row-[1/7]"
+	        "relative aspect-[3/2] col-[1] row-[1/6] min-h-px min-w-px overflow-hidden rounded-[10px] bg-muted-background after:absolute after:top-[50%] after:left-[50%] after:block after:h-[3.2rem] after:w-[3.2rem] after:origin-[0_0] after:transform-[translate(-50%,-50%)] after:animate-spinner after:bg-foreground after:opacity-0 after:content-[\"\"] after:clip-sun data-[loading=true]:after:opacity-20 lg:col-[3/6] lg:row-[1/7]"
         )}
         data-loading={isLoading}
       >
         <FrontImage
-          imgClassName={"absolute top-0 left-0"}
           resource={image}
           onLoad={() => setIsLoading(false)}
         />

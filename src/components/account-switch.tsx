@@ -10,7 +10,7 @@ import {
   CommandSeparator
 } from "@/components/ui/command";
 import {
-  Popover,
+	PopoverRoot,
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
@@ -31,7 +31,7 @@ export default function AccountSwitcher() {
   const router = useTransitionRouter();
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+	  <PopoverRoot open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           data-expanded={open}
@@ -141,6 +141,6 @@ export default function AccountSwitcher() {
           </CommandList>
         </Command>
       </PopoverContent>
-    </Popover>
+	  </PopoverRoot>
   );
 }

@@ -13,7 +13,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Popover,
+	PopoverRoot,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -38,7 +38,7 @@ export function DataTableViewOptions<TData>({
   );
 
   return (
-    <Popover>
+	  <PopoverRoot>
       <PopoverTrigger asChild>
         <Button
           aria-label="Toggle columns"
@@ -80,6 +80,6 @@ export function DataTableViewOptions<TData>({
           </CommandList>
         </Command>
       </PopoverContent>
-    </Popover>
+	  </PopoverRoot>
   );
 }

@@ -177,7 +177,7 @@ export const SideDrawer = () => {
   >(isMobile ? "bottom" : "left");
 
   useEffect(() => {
-    console.log("vaul direction!", isMobile ? "bottom" : "left");
+    // console.log("vaul direction!", isMobile ? "bottom" : "left");
     setDirection(isMobile ? "bottom" : "left");
   }, [isMobile, lastResize]);
 

@@ -213,7 +213,7 @@ export const queryAuthorsPost = cache(
  * such as author, image, bookmarks, and related posts, while considering configurations for draft mode and payload access.
  * It also determines the "prev" and "next" posts for easier navigation between posts.
  */
-export const queryPostBySlug = cache(
+export const queryPostBySlug =
 	async ({
 		       slug: sl
 	       }: {
@@ -223,6 +223,7 @@ export const queryPostBySlug = cache(
 		prev: null | PostOverview;
 		next: null | PostOverview;
 	} | null> => {
+		"use cache"
 		const {isEnabled: draft} = await draftMode();
 		let slug = sl;
 		if (sl.includes("+")) {
@@ -279,7 +280,7 @@ export const queryPostBySlug = cache(
 			next
 		};
 	}
-);
+
 export const constructArticle = cache(async ({
 	                                             post, payload
                                              }: {

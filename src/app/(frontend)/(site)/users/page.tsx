@@ -1,5 +1,5 @@
 import configPromise from "@/payload.config";
-import { PageRange } from "@/payload/components/PageRange";
+import {PageRange} from "@/components/UX/PageRange";
 import { Pagination } from "@/payload/components/Pagination";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";

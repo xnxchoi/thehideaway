@@ -5,6 +5,7 @@ import {RP_BadgeTag} from "@/components/UX/RP_BadgeTag";
 import {cn} from "@/lib/utils";
 import {PostOverview} from "@/types/collections/posts";
 import {DateTime} from "luxon";
+import {cacheLife} from "next/cache";
 import {ComponentProps, ComponentPropsWithoutRef} from "react";
 
 export const HomeArticleLayout = (props: {
@@ -128,6 +129,8 @@ const ArticleList = (
 						<Article
 							articleID={id}
 							index={index}
+							allowList={[]}
+							
 							bookmarks={bookmarks}
 							bookmarksCount={bookmarksCount}
 							category={category}
@@ -155,13 +158,15 @@ const ArticleList = (
 	);
 };
 
-const Article = (
+const Article = async (
 	props: ComponentPropsWithoutRef<"div"> &
 		Omit<PostOverview, "id"> & {
 		articleID: string;
 		index: number;
 	}
 ) => {
+	"use cache"
+	cacheLife("max")
 	const {
 		title,
 		image,

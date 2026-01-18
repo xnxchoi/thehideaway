@@ -45,7 +45,7 @@ export const FrontImage = (props: FrontImageProps) => {
 			{...rest}
 		/>
 	) : !!src ? (
-		<ImageMedia className={"relative"} src={src} {...props}   />
+		<ImageMedia src={src} {...props}   />
 	) : (
 		<FallbackImage
 			hashId={hashId}

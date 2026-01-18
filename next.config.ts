@@ -72,6 +72,7 @@ const nextConfig: NextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true
   },
+	cacheComponents: true,
   async redirects() {
     return [
       {

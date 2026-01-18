@@ -7,7 +7,7 @@ import config from "@payload-config";
 import "@payloadcms/next/css";
 import type { ServerFunctionClient } from "payload";
 import { handleServerFunctions, RootLayout } from "@payloadcms/next/layouts";
-import React from "react";
+import React, {Suspense} from "react";
 
 import { importMap } from "./vault/importMap";
 import { cn } from "@/lib/utils";
@@ -29,12 +29,11 @@ const serverFunction: ServerFunctionClient = async function (args) {
 };
 
 const Layout = ({ children }: Args) => (
-  <RootLayout
+    <Suspense> <RootLayout
     config={config}
     importMap={importMap}
     serverFunction={serverFunction}
   >
-    {" "}
     <InitTheme />
     <div
       className={cn(
@@ -48,7 +47,7 @@ const Layout = ({ children }: Args) => (
     >
       {children}
     </div>
-  </RootLayout>
+    </RootLayout></Suspense>
 );
 
 export default Layout;
