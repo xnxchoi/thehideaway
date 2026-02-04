@@ -1,5 +1,5 @@
 import type {
-	PostOverviewSelector,
+	PostOverviewSelect,
 	SinglePostSelector
 } from "@/payload/collections/Posts/api/queryBase";
 import type {
@@ -12,7 +12,7 @@ import {Post} from "@payload-types";
 import type {BasePayload, Where} from "payload";
 import {cache} from "react";
 
-type SelectChoice = PostOverviewSelector | SinglePostSelector
+type SelectChoice = PostOverviewSelect | SinglePostSelector
 
 export async function getImageMedia<T extends SelectChoice>({post, payload}: {
 	post: Pick<Post, "image"> & {

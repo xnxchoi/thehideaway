@@ -1,21 +1,67 @@
-import {CollectionSlug, Config, Plugin} from "payload";
-import {createValidQueryStringRegex} from "../../../utilities/regexUtilities";
+import {CollectionMap} from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
+import {createValidQueryStringRegex} from "@/utilities/regexUtilities";
+import type {Config, NumberField, Plugin, SingleRelationshipField} from "payload";
 
-export const validTypes: CollectionSlug[] = [
+export type LikeableCollectionSlug = "posts" |
+	"delta" |
+	"albums" |
+	"playlists" |
+	"profile" |
+	"tracks" | "media" |
+	"responses" |
+	"userMedia" |
+	"citations"
+
+export type LikeableCollection<T extends LikeableCollectionSlug = LikeableCollectionSlug> = CollectionMap[T]
+
+const validTypes: LikeableCollectionSlug[] = [
 	"posts",
 	"delta",
 	"albums",
 	"playlists",
 	"profile",
-	"tracks",
+	"tracks", "media",
 	"responses",
 	"userMedia",
 	"citations"
 ];
 type LikeConfig = {
 	enabled: boolean;
-	collections: CollectionSlug[];
+	collections: LikeableCollectionSlug[];
 };
+const likesFields: [SingleRelationshipField, NumberField] = [
+	{
+		name: "likers",
+		type: "relationship",
+		relationTo: "users",
+		hasMany: true,
+	},
+	{
+		name: "likes",
+		admin: {
+			components: {
+				Field: {
+					path: "@/AccessControlled/Number"
+				}
+			}
+		},
+		type: "number",
+		min: 0,
+		hooks: {
+			beforeChange: [
+				async ({value, operation, previousValue}) => {
+					if (operation === "create") {
+						return 0;
+					}
+					if (operation === "update") {
+						const v = Math.max(value, previousValue);
+						return v;
+					}
+				}
+			]
+		}
+	}
+]
 export const likesTypesRegex = createValidQueryStringRegex(validTypes);
 export const LikesPlugin =
 	(pluginConfig: LikeConfig): Plugin =>
@@ -37,31 +83,7 @@ export const LikesPlugin =
 					return;
 				}
 				const fields = [...(collectionConfig?.fields || [])];
-				fields.push({
-					name: "likes",
-					admin: {
-						components: {
-							Field: {
-								path: "@/AccessControlled/Number"
-							}
-						}
-					},
-					type: "number",
-					min: 0,
-					hooks: {
-						beforeChange: [
-							async ({value, operation, previousValue}) => {
-								if (operation === "create") {
-									return 0;
-								}
-								if (operation === "update") {
-									const v = Math.max(value, previousValue);
-									return v;
-								}
-							}
-						]
-					}
-				});
+				fields.push();
 				collectionConfig.fields = fields;
 			});
 			config.collections = collectionConfigs;

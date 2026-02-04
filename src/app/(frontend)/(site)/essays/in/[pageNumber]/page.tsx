@@ -53,7 +53,7 @@ export default async function Page({ params }: Args) {
   return (
 	  <RPage key={`posts_${page}`} type="posts" slug={["posts"]}>
       <div className="relative flex w-full flex-col items-center justify-center">
-        <CatTitle title="Latest" />
+	      <CatTitle> {"Latest"}</CatTitle>
         <div
           className={
             "relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"

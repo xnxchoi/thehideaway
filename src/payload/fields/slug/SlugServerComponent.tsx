@@ -11,6 +11,7 @@ type IndexedCollections = Extract<
 type SlugServerComponentProps = TextFieldServerProps & {
   fieldToUse: string;
   checkboxFieldPath: string;
+	useHash?: boolean;
 };
 
 export default async function SlugServerComponent(
@@ -30,7 +31,8 @@ export default async function SlugServerComponent(
     checkboxFieldPath,
     fieldToUse,
     id,
-    collectionSlug
+	  collectionSlug,
+	  useHash = true
   } = props;
   const userIsAdmin = user.collection === "admins" || user.role === "admin";
   let userIsAuthor = operation === "create";
@@ -89,6 +91,7 @@ export default async function SlugServerComponent(
       checkboxFieldPath={checkboxFieldPath}
       field={clientField}
       path={path}
+      useHash={useHash}
       fieldToUse={fieldToUse}
       readOnly={read}
     />

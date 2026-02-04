@@ -1,17 +1,17 @@
 import type {
-  CreateCitationData,
-  ReturnedCitationData,
-  UpdateCitationData
+	CreateCitationData,
+	ReturnedCitationData,
+	UpdateCitationData
 } from "@/components/UX/Highlightr/types";
 import {Citation} from "@/payload-types";
 import {citationHandler} from "@/payload/collections/Citations/endpoints";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {hashContent} from "@/payload/fields/slug/HashId/hasher";
 import {
-  type CollectionAfterReadHook,
-  type CollectionBeforeValidateHook,
-  CollectionConfig,
-  Where
+	type CollectionAfterReadHook,
+	type CollectionBeforeValidateHook,
+	CollectionConfig,
+	Where
 } from "payload";
 import {filterByCurrentUser} from "../helpers";
 import {getUserOverview} from "../Posts/api/queryPostOverviews";
@@ -301,7 +301,7 @@ export const Citations: CollectionConfig = {
         readOnly: true
       }
     },
-    ...AuthorField(false),
+	  ...authorFields(false),
     {
       access: {
         read: () => true,

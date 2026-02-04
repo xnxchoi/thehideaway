@@ -29,13 +29,14 @@ import { formatSlug } from "./formatSlug";
 type SlugComponentProps = {
   fieldToUse: string;
   checkboxFieldPath: string;
+	useHash: boolean;
 } & TextFieldClientProps;
 
 export const SlugComponent = ({
   field,
   fieldToUse,
   checkboxFieldPath: checkboxFieldPathFromProps,
-  path,
+	                              path, useHash,
 
   readOnly: readOnlyFromProps
 }: SlugComponentProps) => {
@@ -65,10 +66,10 @@ export const SlugComponent = ({
   const [ghostSize, setGhostSize] = useState(0);
   useEffect(() => {
     const ghost =
-      (value && value.length > 0 && hash.length > 0 && `-${hash}`) || "";
+	    useHash && (value && value.length > 0 && hash.length > 0 && `-${hash}`) || "";
     setGhostValue(ghost);
     setGhostSize(ghost.length + 1);
-  }, [hash, value]);
+  }, [hash, useHash, value]);
 
   useEffect(() => {
     if (checkboxValue) {

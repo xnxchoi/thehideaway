@@ -1,8 +1,16 @@
-import {ArchiveFeatureCard} from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
+import {
+	ArchiveFeatureCard,
+	OverviewAgnosticItem
+} from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
 import {CatTitle, TaggedItem} from "@/components/layouts/Tagged/Item";
+import {Link} from "@/components/UX/Link/Link";
+import {TagButton} from "@/components/UX/TagButton";
 import {RPage} from "@/components/UX/Transition";
-import {queryPostsByIDs} from "@/payload/collections/Posts/api/queryPostOverviews";
+import {IndexedCollectionSlug} from "@/payload/plugins/plugin-search/types";
+import {searchOverviewSelect} from "@/types/collections/search";
+import {formatCollectionURL} from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
+import {cacheTag} from "next/cache";
 import {notFound} from "next/navigation";
 import type {Metadata} from "next/types";
 import {getPayload} from "payload";
@@ -26,39 +34,64 @@ export async function generateStaticParams() {
 
 type Args = {
 	params: Promise<{
-		slug: string;
+		tagSlug: string;
 	}>;
 };
-
 export default async function Page({params: paramsPromise}: Args) {
-	const {slug} = await paramsPromise;
-	const tag = await getTag({slug});
+	const {tagSlug} = await paramsPromise;
+	const tag = await getTag({slug: tagSlug});
 	if (!tag) {
-		notFound();
+		return notFound();
 	}
+	const posts = await getTagPosts({
+		id: tag.id,
 
-	const tagged = (tag.tagged?.docs || []).flatMap(t => {
-		const {relationTo, value} = t;
-		if (!relationTo) return [];
-		return {relationTo, value: typeof value === "string" ? value : value.id}
 	})
-	const postSel = tagged.flatMap(t => t.relationTo === "posts" ? t.value : [])
-	const deltaSel = tagged
-		.flatMap((t) => t.relationTo === "delta" ? t.value : [])
-	const posts = await queryPostsByIDs({ids: postSel}).then(
-		r => r.docs.map(r => ({
-			value: r,
-			relationTo: "posts" as const
-		}))
-	);
-	const firstFive = posts.slice(0, 5);
+	const topTags = await getTags({slug: tagSlug});
+	const firstFive = posts.slice(0, 5).map(({value}) => value);
 	const rest = posts.slice(5);
-
+	const tagg = {
+		title: "Tag",
+		slug: "tagSlug"
+	}
 	return (
 		<RPage type="tags" slug={[tag.slug]}>
 			<PageClient>
+				<div className="flex justify-center">
+					<div className="min-lg:my-0 min-lg:mx-9.5 w-full max-w-[calc(100vw-100px)]">
+						<div className="min-lg:mb-15 mt-9 min-lg:mt-[40px] relative block">
+							<div className="flex overflow-x-auto overflow-y-hidden items-start">
+								<div className="w-9.5 flex-[0_0_auto] min-lg:hidden">
+								</div>
+
+								<Link
+									className="flex leading-[20px] items-center rounded-[100px] whitespace-nowrap border-solid bg-faded-foreground/10 data-[current=true]:bg-transparent hover:bg-transparent border-transparent data-[current=true]:border-faded-foreground hover:border-faded-foreground ease-out-power2 p-2 min-lg:pr-6.5 min-lg:mr-9.5 border-[1px] transition-colors"
+									href={`/tagged`} rel={"noopener follow"} data-current={false}
+									data-active={false}>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none"
+									     viewBox="0 0 24 24" height="24" width="24">
+										<circle cx="12" cy="12" r="10"
+										        stroke="currentColor"></circle>
+										<path fill="currentColor" fillRule="evenodd"
+										      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.478 2 12s4.477 10 10 10m3.936-14.844.147-.99-.88.477-5.898 3.194-.22.12-.037.246-.984 6.636-.146.99.879-.477 5.899-3.194.22-.119.036-.247zM9.2 15.996l.719-4.846 3.59 2.514zm1.292-5.665 3.59 2.514.718-4.846z"
+										      clipRule="evenodd"></path>
+									</svg>
+									<span className="ml-3.5 text-sm">Explore topics</span>
+
+								</Link>
+								<TagButton tag={tag} key={tag.slug} selected={true}/>
+								{
+									topTags.map(tagger => <TagButton tag={tagger} key={tagger.slug}
+									                                 selected={tagSlug === tagger.slug}/>)
+								}
+
+							</div>
+						</div>
+					</div>
+				</div>
 				<div className="relative flex w-full flex-col items-center justify-center">
-					<CatTitle title={tag.title}/>
+					<CatTitle
+						className={"font-serif font-light mt-2 py-4 pb-1"}>{tag.title}</CatTitle>
 					<div
 						className={
 							"relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
@@ -99,6 +132,7 @@ export default async function Page({params: paramsPromise}: Args) {
 
 async function getTag({slug}: { slug: string }) {
 	"use cache"
+	cacheTag("tag-data")
 	const payload = await getPayload({config});
 
 	const tag = await payload
@@ -109,21 +143,105 @@ async function getTag({slug}: { slug: string }) {
 					equals: slug
 				}
 			},
-			limit: 1,
+			limit: 1, pagination: false,
 			select: {
 				title: true,
 				slug: true,
-				tagged: true
 			}
 		})
 		.then((result) => result.docs[0] ?? null)
 		.catch((e) => (console.error(e), null));
 	return tag;
 }
+
+async function getTags({slug}: { slug: string }) {
+	"use cache"
+	const payload = await getPayload({config});
+	const tags = await payload.find({
+		collection: "tags",
+		limit: 15,
+		select: {
+			slug: true,
+			title: true
+		},
+		where: {
+			slug: {
+				not_equals: slug
+			}
+		}, sort: "-tagCount",
+		overrideAccess: true
+	});
+	return tags.docs;
+
+}
+
+async function getTagPosts({id, page = 1, limit = 12, collections = ["posts", "delta", "pages"]}: {
+	id: string;
+	collections?: IndexedCollectionSlug[];
+	page?: number;
+	limit?: number
+}): Promise<{
+	relationTo: IndexedCollectionSlug;
+	value: OverviewAgnosticItem
+}[]> {
+	"use cache"
+	cacheTag("tags-posts")
+	const payload = await getPayload({config});
+	const tagged =
+		await payload.find({
+			collection: "search",
+			where: {
+				and: [
+					{
+						"tags.key": {
+							in: [id]
+						}
+					}, {
+						collection: {
+							in: collections as IndexedCollectionSlug[]
+						}
+					}
+				]
+			}, select: searchOverviewSelect(), limit, page
+		}).then(r => r.docs.map(async d => {
+				const categoryID = d.category[0]!.key;
+				const category = await payload.findByID({
+					collection: "categories",
+					id: categoryID,
+					select: {
+						title: true,
+					}
+				})
+				return ({
+					relationTo: d.doc.relationTo as IndexedCollectionSlug,
+
+					value: {
+						id: typeof d.doc.value === "string" ? d.doc.value : d.doc.value.id,
+						url: formatCollectionURL({
+							slug: d.slug,
+							relationTo: d.doc.relationTo as IndexedCollectionSlug
+						}),
+						title: d.title,
+						category: category && category.title || "",
+						tagged: d.tags && d.tags.map(r => ({
+							id: r.key,
+							title: r.title,
+							slug: r.slug
+						})) || [],
+						authority: d.locked ? d.authority || 2 : 1,
+						allowList: d.locked && d.allowList && d.allowList.map(r => r.key) || []
+					}satisfies OverviewAgnosticItem
+
+				})
+			})
+		).then(async r => await Promise.all(r));
+	return tagged;
+}
+
 export async function generateMetadata({
 	                                       params: paramsPromise
                                        }: Args): Promise<Metadata> {
-	const {slug} = await paramsPromise;
+	const {tagSlug: slug} = await paramsPromise;
 	const payload = await getPayload({config});
 	const tag = await payload
 		.find({

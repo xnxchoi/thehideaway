@@ -1,4 +1,4 @@
-import {CollectionBeforeChangeHook} from "payload";
+import type {CollectionBeforeChangeHook} from "payload";
 
 export const sanitizeAuthor = (hasMany = false) => {
 	const hook: CollectionBeforeChangeHook = hasMany

@@ -1,6 +1,6 @@
-import { nanoid } from "nanoid";
-import type { CheckboxField, TextField } from "payload";
-import { formatSlugHook } from "./formatSlug";
+import {nanoid} from "nanoid";
+import type {CheckboxField, FieldHook, TextField} from "payload";
+import {formatSlugHook} from "./formatSlug";
 
 type Overrides = {
   slugOverrides?: Partial<TextField>;
@@ -9,10 +9,11 @@ type Overrides = {
 
 type Slug = (
   fieldToUse?: string,
+  useHash?: boolean,
   overrides?: Overrides
 ) => [TextField, TextField, CheckboxField, TextField];
 
-export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
+export const slugField: Slug = (fieldToUse = "title", useHash = true, overrides = {}) => {
   const { slugOverrides, checkboxOverrides } = overrides;
 
   const checkBoxField: CheckboxField = {
@@ -171,6 +172,17 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
       // ]
     }
   };
+	const bc: FieldHook = useHash ? ({value, siblingData}): string => {
+		siblingData["slug"] = encodeURIComponent(
+			value + "-" + siblingData.hashId
+		);
+		return value;
+	} : ({value, siblingData}): string => {
+		siblingData["slug"] = encodeURIComponent(
+			value
+		);
+		return value;
+	}
   // Expect ts error here because of typescript mismatching Partial<TextField> with TextField
   const slugField: TextField = {
     name: "slugKey",
@@ -181,12 +193,7 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
       // Kept this in for hook or API based updates
       beforeValidate: [formatSlugHook(fieldToUse)],
       beforeChange: [
-        ({ value, siblingData }): string => {
-          siblingData["slug"] = encodeURIComponent(
-            value + "-" + siblingData.hashId
-          );
-          return value;
-        }
+	      bc
       ],
       afterRead: [({ value }) => value]
     },
@@ -205,7 +212,8 @@ export const slugField: Slug = (fieldToUse = "title", overrides = {}) => {
           path: "@/payload/fields/slug/SlugServerComponent.tsx",
           serverProps: {
             fieldToUse,
-            checkboxFieldPath: checkBoxField.name
+	          checkboxFieldPath: checkBoxField.name,
+	          useHash
           }
         }
       },

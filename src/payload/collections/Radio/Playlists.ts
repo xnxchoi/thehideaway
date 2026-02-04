@@ -1,14 +1,15 @@
-import { CollectionConfig, Where } from "payload";
+import {populatePublishedAt} from "@/hooks/populatePublishedAt";
+import {updateTagsAfterChange} from "@/payload/collections/Categories/hooks";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
+import {slugField} from "@/payload/fields/slug";
 import {
-  authenticated,
-  isAdmin,
-  standardUpdateAccess
+	authenticated,
+	isAdmin,
+	standardUpdateAccess
 } from "@/payload/plugins/locker/access/accessCheckers";
-import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import { sanitizeAuthor } from "../../fields/AuthorFields/hooks";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
-import { slugField } from "@/payload/fields/slug";
+import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
+import {CollectionConfig, Where} from "payload";
 
 export const Playlists: CollectionConfig = {
   slug: "playlists",
@@ -152,9 +153,11 @@ export const Playlists: CollectionConfig = {
     },
     {
       name: "tagged",
+	    label: "Tags",
       type: "relationship",
       relationTo: "tags",
       hasMany: true,
+
       admin: {
         allowCreate: true,
         allowEdit: false
@@ -166,7 +169,7 @@ export const Playlists: CollectionConfig = {
       maxRows: 5,
       index: true
     },
-    ...AuthorField(true),
+	  ...authorFields(true),
     {
       name: "visibility",
       type: "select",
@@ -179,7 +182,7 @@ export const Playlists: CollectionConfig = {
       name: "publishedAt",
       type: "date"
     },
-    ...slugField("title", {
+	  ...slugField("title", true, {
       checkboxOverrides: {
         admin: {
           readOnly: !isAdmin
@@ -188,6 +191,7 @@ export const Playlists: CollectionConfig = {
     })
   ],
   hooks: {
+	  afterChange: [updateTagsAfterChange],
     beforeChange: [sanitizeAuthor(true), populatePublishedAt]
   },
   versions: {

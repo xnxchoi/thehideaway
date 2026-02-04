@@ -1,7 +1,6 @@
-import payload from "payload";
-import {FieldHook} from "payload";
+import config from "@payload-config"
+import {FieldHook, getPayload} from "payload";
 import {sendDueEmail} from "./sendDueEmail"; // separate util file
-
 export const ensureFirstCycle: FieldHook = async ({
 	value,
 	siblingData,
@@ -43,7 +42,7 @@ export const checkSubscriptionsDue = async ({dryRun = false} = {}) => {
 		"Running Subscription Validity Check...",
 		dryRun ? "[DRY RUN]" : "",
 	);
-
+	const payload = await getPayload({config})
 	const subscriptions = await payload.find({
 		collection: "subscriptions",
 		limit: 10000,

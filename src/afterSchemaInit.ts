@@ -1,15 +1,12 @@
-import { sql } from "@payloadcms/db-postgres/drizzle";
-import { uuid, varchar } from "@payloadcms/db-postgres/drizzle/pg-core";
-import { PostgresSchemaHook } from "node_modules/@payloadcms/drizzle/dist/postgres/types";
+import {sql} from "@payloadcms/db-postgres/drizzle";
+import {uuid, varchar} from "@payloadcms/db-postgres/drizzle/pg-core";
+import {PostgresSchemaHook} from "node_modules/@payloadcms/drizzle/dist/postgres/types";
 
 const nanoIdFields =
   /((version_)?(((user)|(target)|(post)|(author)|(impersonated_by)|(inviter)|(cited)|(recipient)|(allow_list)|(owner))s?))(_?id)/i;
 const fieldsVarcharPreserve = /^(source|provider|account)_id$/i;
 const JOB_TABLES = new Set([
   "payload_jobs_log",
-  "search_tags",
-  "search_author",
-  "search_allow_list"
 ]);
 
 function isUUIDorVarcharColumn(col: unknown) {

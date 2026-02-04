@@ -2,9 +2,11 @@ import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import {Post} from "@/payload-types";
 import {
   updateCategoryAfterChange,
-  updateCategoryAfterDelete
+  updateCategoryAfterDelete,
+  updateTagsAfterChange
 } from "@/payload/collections/Categories/hooks";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
 import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
 import {generatePreviewPath, generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
@@ -17,7 +19,6 @@ import {
 } from "@payloadcms/plugin-seo/fields";
 import {AccessArgs, CollectionConfig, headersWithCors, PayloadRequest, Where} from "payload";
 import {uuidv7} from "uuidv7";
-import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
 import {PROPS_COLLAPSIBLE} from "../constants";
 import {postBookmarkSaveHandler, unBookmarkPostHandler} from "./api/bookmarkPostHandler";
 import {getPostHandler} from "./api/getPostHandler";
@@ -281,13 +282,14 @@ export const Posts: CollectionConfig<"posts"> = {
       type: "collapsible",
       admin: { position: "sidebar" },
       fields: [
-        ...AuthorField(false),
+        ...authorFields(false),
         {
           name: "tagged",
           label: "Tags",
           type: "relationship",
           relationTo: "tags",
           hasMany: true,
+
           admin: {
             allowCreate: true,
             allowEdit: false
@@ -431,7 +433,7 @@ export const Posts: CollectionConfig<"posts"> = {
       },
       populatePublishedAt
     ],
-    afterChange: [revalidatePost, updateCategoryAfterChange],
+    afterChange: [revalidatePost, updateCategoryAfterChange, updateTagsAfterChange],
 
     afterDelete: [revalidateDelete, updateCategoryAfterDelete]
   },

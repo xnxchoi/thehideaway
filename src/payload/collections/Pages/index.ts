@@ -7,6 +7,7 @@ import {HeroSquare} from "@/blocks/HeroSquareBlock/config";
 import {ImageBlock} from "@/blocks/ImageBlock/config";
 
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
+import {updateTagsAfterChange} from "@/payload/collections/Categories/hooks";
 import {slugField} from "@/payload/fields/slug";
 import {pagesAccess} from "@/payload/plugins/locker/access";
 import {generatePreviewPath} from "@/utilities/generatePreviewPath";
@@ -192,9 +193,11 @@ export const Pages: CollectionConfig<"pages"> = {
 		},
 		{
 			name: "tagged",
+			label: "Tags",
 			type: "relationship",
 			relationTo: "tags",
 			hasMany: true,
+
 			admin: {
 				allowCreate: true,
 				allowEdit: false
@@ -203,14 +206,13 @@ export const Pages: CollectionConfig<"pages"> = {
 				read: () => true
 			},
 			maxDepth: 1,
-
 			maxRows: 5,
 			index: true
 		},
-		...slugField("title", {slugOverrides: {required: true}})
+		...slugField("title", true, {slugOverrides: {required: true}})
 	],
 	hooks: {
-		afterChange: [revalidatePage],
+		afterChange: [revalidatePage, updateTagsAfterChange],
 		beforeChange: [populatePublishedAt],
 		afterDelete: [revalidateDelete]
 	},

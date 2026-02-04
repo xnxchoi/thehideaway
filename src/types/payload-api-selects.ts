@@ -1,6 +1,6 @@
-import {BaseImageSelect} from "@/types/collections/image-collections";
+import {ImageCollectionOverviewSelect} from "@/types/collections/image-collections";
 
-export const imageSelect = (): BaseImageSelect => ({
+export const imageSelect = (): ImageCollectionOverviewSelect => ({
 	url: true,  
 	darkmode: true,
 	alt: true,

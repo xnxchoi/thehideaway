@@ -4,7 +4,9 @@ import {FrontImage} from "@/components/UX/Media/FrontImage";
 import {AspectRatio} from "@/components/UX/Media/types";
 import {RP_BadgeTag} from "@/components/UX/RP_BadgeTag";
 import {cn} from "@/lib/utils";
+import {RalueAsDataWithRelation} from "@/types/collections/image-collections";
 import {CollectionOverviewMap, OverviewSlugs} from "@/types/collections/index";
+import {TagOverview} from "@/types/collections/meta-collections";
 import {AuthorOverview} from "@/types/collections/users";
 import type {ComponentProps, CSSProperties, ReactNode} from "react";
 
@@ -15,9 +17,26 @@ export type OverviewItem<T extends OverviewSlugs = OverviewSlugs> = {
 	}
 }[T]
 type LayoutDirection = "left" | "right";
+export type OverviewAgnosticItem = {
+	id: string;
+	authority?: number;
+	allowList?: string[];
+	title: string;
+	subtitle?: string | null;
+	url: string;
+	image?: RalueAsDataWithRelation | null;
+	locked?: boolean;
+	publishedAt?: string | null;
+	author?: string;
+	updatedAt?: string | null;
+	bookmarks?: string[];
+	bookmarksCount?: number;
+	category: string;
+	tagged: TagOverview[];
+}
 
 export function ArchiveFeatureCard(props: {
-	contents: OverviewItem<"delta" | "posts">[];
+	contents: OverviewAgnosticItem[];
 	type?: LayoutDirection
 }) {
 	const {contents, type = "left"} = props;
@@ -36,8 +55,11 @@ export function ArchiveFeatureCard(props: {
 	}
 	return (
 		<OuterWrap>
-			{first && <FocusHero type={type} item={first}/>}
-			{second && <SideHero type={type} item={second}/>}
+			{first && <FocusHero direction={type} {...first}
+            />}
+			{second && <SideHero direction={type}
+			                     {...second}
+            />}
 			{third && fourth && <SplitBar type={type} items={[third, fourth]}/>}
 		</OuterWrap>
 	);
@@ -90,50 +112,52 @@ function OuterWrap({children, highlight = "red"}: {
 }
 
 function FocusHero({
-	                   item,
-	                   type = "left"
-                   }: {
-	item: OverviewItem<"posts" | "delta">;
-	type?: LayoutDirection
+	                   title,
+	                   author,
+	                   category, image,
+	                   url, subtitle: subt,
+	                   direction = "left"
+                   }: OverviewAgnosticItem & {
+	direction?: LayoutDirection
 }) {
-	const {value, relationTo} = item;
-	const {
-		title,
-		author,
-		category,
-		slug,
-	} = value;
+	// const {value, relationTo} = item;
+	// const {
+	// 	title,
+	// 	author,
+	// 	category,
+	// 	slug,
+	// } = value;
 	return (
 		<div
 			className={cn(
 				"relative col-[1] grid items-center gap-y-[2rem] rounded-[1rem] bg-[oklch(from_var(--highlight,--faded-fg)_l_c_h/.8)] p-[2rem] text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
-				type === "left"
+				direction === "left"
 					? "lg:col-[1/5] lg:row-[1/3]"
 					: "lg:col-[3/-1] lg:row-[1/3]"
 			)}
 		>
 			<Link
 				className={"absolute inset-0 z-0 h-full w-full"}
-				href={`/${relationTo === "posts" ? "essays" : "delta"}/${slug}`}
+				href={url}
 			/>
 			<div
 				className={
 					"col-[1] min-h-px w-full min-w-px self-start rounded-[1rem] pt-[100%] lg:row-[1/5] relative overflow-hidden"
 				}
 			>
-				{"image" in value && !!value.image && typeof value.image === "object" && (
+				{image && (
 					<FrontImage pictureClassName="absolute inset-0"
 					            imgClassName="rounded-[5px] absolute object-cover top-0 block w-auto h-auto max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-					            resource={value.image}
+					            resource={image}
 					/>
 				)}
 			</div>
-			<RP_BadgeTag
-				wrapperClassName={
+			{category && <RP_BadgeTag
+                wrapperClassName={
 					"order-2 col-[2/-1] [&_>*]:!text-foreground [&_>*]:!border-foreground"
 				}
-				content={category.title}
-			/>
+                content={category}
+            />}
 			<p
 				className={
 					"order-3 col-[2/-1] m-0 text-3xl leading-[.9] font-bold tracking-[-.01em] uppercase lg:text-[4.2rem]"
@@ -146,19 +170,20 @@ function FocusHero({
 					"order-5 col-[2] inline-block font-sans text-[1.12rem] uppercase"
 				}
 			>
-				<div
-					className={
-						"mx-auto mt-0 mb-[2rem] block h-[1.28rem] w-[1.28rem] bg-current clip-sun"
-					}
-				></div>
-				{"By " + author.name}
+				{author && <>
+                    <div
+                        className={
+							"mx-auto mt-0 mb-[2rem] block h-[1.28rem] w-[1.28rem] bg-current clip-sun"
+						}
+                    />
+					{"By " + author}</>}
 			</div>
 			<p
 				className={
 					"order-4 m-0 block leading-[1.2] lg:col-[2] lg:text-[1.6rem]"
 				}
 			>
-				{("subtitle" in value && value.subtitle) || ""}
+				{subt}
 			</p>
 		</div>
 	);
@@ -231,56 +256,63 @@ function HeroImage({
 }
 
 function SideHero({
-	                  item,
-	                  type = "left"
-                  }: {
-	item: OverviewItem<"posts" | "delta">;
-	type?: LayoutDirection
+	                  title,
+	                  author,
+	                  category, image,
+	                  url, subtitle,
+	                  direction = "left"
+                  }: OverviewAgnosticItem & {
+
+	direction?: LayoutDirection
 }) {
-	const {relationTo, value} = item;
-	const {
-		title,
-
-		author,
-
-		category,
-		slug,
-	} = item.value;
+	// const {relationTo, value} = item;
+	// const {
+	// 	title,
+	//
+	// 	author,
+	//
+	// 	category,
+	// 	slug,
+	// } = item.value;
 	return (
 		<div
 			className={cn(
 				"relative grid grid-cols-[2rem_1fr_2rem] grid-rows-[1fr] gap-y-[2rem] rounded-[1rem] bg-faded-foreground text-faded-background",
-				type === "left"
+				direction === "left"
 					? "lg:col-[5/-1] lg:row-[1/4]"
 					: "lg:col-[1/3] lg:row-[1/4]"
 			)}
 		>
-			<ItemLink slug={slug} collection={relationTo}/>
+			<ItemLink url={url}/>
 			<HeroImage className="col-[1/-1] row-[1/8] self-start rounded-[1rem] lg:h-full"
-			           image={"image" in value ? value.image : null} aspectRatio={{
+			           image={image} aspectRatio={{
 				base: 0,
 				lg: 100 / 177,
 			}}
 			/>
-			<RP_BadgeTag
-				wrapperClassName={"order-2 col-[2] row-[3]"}
-				content={category.title}
-			/>
+			{category && <RP_BadgeTag
+                wrapperClassName={"order-2 col-[2] row-[3]"}
+                content={category}
+            />}
 			<Title className="order-3 col-[2] row-[4] uppercase lg:text-[3.2rem]">{title}</Title>
-			<AuthorName name={author.name}/>
-			<Subtitle subtitle={"subtitle" in value ? value.subtitle : undefined}/>
+			{author && <AuthorName name={author}/>}
+			<Subtitle subtitle={subtitle || undefined}/>
 		</div>
 	);
 }
 
-function ItemLink({slug, collection}:
-                  {
-	                  slug: string;
-	                  collection: "posts" | "delta"
-                  }) {
+/**
+ * {slug, collection}:
+ *                   {
+ * 	                  slug: string;
+ * 	                  collection: "posts" | "delta"
+ *                   }
+ */
+function ItemLink({url}: { url: string }) {
 	return <Link
 		className={"absolute inset-0 z-0 h-full w-full"}
-		href={`/${collection === "posts" ? "essays" : "delta"}/${slug}`}
+		// href={`/${collection === "posts" ? "essays" : "delta"}/${slug}`}
+		href={url}
 	/>;
 }
 
@@ -288,24 +320,21 @@ function SplitBar({
 	                  items,
 	                  type = "left"
                   }: {
-	items: [OverviewItem<"posts" | "delta">, OverviewItem<"posts" | "delta">];
+	items: [OverviewAgnosticItem, OverviewAgnosticItem];
 	type?: LayoutDirection
 }) {
-	const [{value: item1, relationTo: collection1}, {
-		value: item2,
-		relationTo: collection2
-	}] = items;
+	const [item1, item2] = items;
 	const {
 		title: title1,
 
 		category: category1,
-		slug: slug1,
+		url: slug1,
 	} = item1;
 	const {
 		title: title2,
 
 		category: category2,
-		slug: slug2,
+		url: slug2,
 	} = item2;
 	return (
 		<>
@@ -317,17 +346,17 @@ function SplitBar({
 						: "gap-y-[2rem] lg:col-[3/5]"
 				)}
 			>
-				<ItemLink slug={slug1} collection={collection1}/>
+				<ItemLink url={slug1}/>
 				<HeroImage
 					className="col-[1] row-[1/4] min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:aspect-square"
 					image={"image" in item1 ? item1.image : null}/>
 
-				<RP_BadgeTag
-					wrapperClassName={
+				{category1 && <RP_BadgeTag
+                    wrapperClassName={
 						"order-2 col-[2/-1] [&_>*]:!text-foreground [&_>*]:!border-foreground"
 					}
-					content={category1.title}
-				/>
+                    content={category1}
+                />}
 				<Title className="order-3 col-[2/-1] text-[16px] lg:text-[18px]">
 					{title1}
 				</Title>
@@ -340,18 +369,18 @@ function SplitBar({
 						: "gap-x-[2rem] gap-y-[2rem] lg:col-[5/-1]"
 				)}
 			>
-				<ItemLink slug={slug2} collection={collection2}/>
+				<ItemLink url={slug2}/>
 				<HeroImage image={"image" in item2 ? item2.image : null}
 
 				           aspectRatio={1}
 				           className="col-[1] row-[1/4] min-h-[1px] w-full min-w-[1px] self-start rounded-[5px]"
 				/>
-				<RP_BadgeTag
-					wrapperClassName={
+				{category2 && <RP_BadgeTag
+                    wrapperClassName={
 						"order-2 col-[2/-1] [&_>*]:!text-foreground [&_>*]:!border-foreground"
 					}
-					content={category2.title}
-				/>
+                    content={category2}
+                />}
 				<Title className="order-3 col-[2/-1] text-[16px] lg:text-[18px]">
 					{title2}
 				</Title>

@@ -81,7 +81,7 @@ const MobileProvider = ({ children }: { children: ReactNode }) => {
   // }, [viewportWidth, viewportHeight, setSnapPoints]);
 
   const resize = useWindowResize({
-    debounce: 100,
+	  debounce: 50,
     detectVisibilityChange: false
   });
   useEffect(() => {

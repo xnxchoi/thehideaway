@@ -1,16 +1,28 @@
 import {revalidateRedirects} from "@/hooks/revalidateRedirects";
 import {betterAuthPluginOptions} from "@/lib/auth/options";
-import type {Delta, Page, Post, Track, User} from "@/payload-types";
+import type {Track} from "@/payload-types";
 
 import {commentsPlugin} from "@/payload/collections/Comments";
+import {getAssetThumb} from "@/payload/plugins/getAssetThumb";
+import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 import {lockerPlugin} from "@/payload/plugins/locker/plugin";
+import {searchPlugin} from "@/payload/plugins/plugin-search";
+import {IndexedCollectionSlug} from "@/payload/plugins/plugin-search/types";
+import {beforeSyncWithSearch} from "@/payload/search/beforeSync";
+import {searchFields} from "@/payload/search/fieldOverrides";
 import {getServerSideURL} from "@/utilities/getURL";
 import {blurDataUrlsPlugin} from "@oversightstudio/blur-data-urls";
+import config from "@payload-config"
 import {importExportPlugin} from "@payloadcms/plugin-import-export";
 import {redirectsPlugin} from "@payloadcms/plugin-redirects";
 import {seoPlugin} from "@payloadcms/plugin-seo";
-import type {GenerateTitle, GenerateURL} from "@payloadcms/plugin-seo/types";
-import type {CollectionSlug, DataFromCollectionSlug, Plugin} from "payload";
+import type {
+	GenerateDescription,
+	GenerateImage,
+	GenerateTitle,
+	GenerateURL
+} from "@payloadcms/plugin-seo/types";
+import {CollectionSlug, DataFromCollectionSlug, getPayload, Plugin, Where} from "payload";
 import {betterAuthPlugin} from "payload-auth/better-auth";
 import {Assets} from "../collections/Assets";
 import {Media} from "../collections/Media";
@@ -18,248 +30,328 @@ import {UserMedia} from "../collections/UserMedia";
 import {imageSearchPlugin} from "./image-search"
 import {LikesPlugin} from "./Likes";
 import {userFieldOrganizerPlugin} from "./userField";
+//"tracks"|"albums"|"playlists"|
+export type EOCollectionSlug = Extract<CollectionSlug, "pages" | "posts" | "delta" | "profile" | "categories" | "tags">;
+export type EOCollection<T extends EOCollectionSlug = EOCollectionSlug> = DataFromCollectionSlug<T>;
+const generateTitle: GenerateTitle<EOCollection> = ({doc, collectionSlug: c}) => {
+	const getDeco = <T extends EOCollectionSlug>({doc, collectionSlug}: {
+		collectionSlug: T; doc: EOCollection<T>
+	}) => {
+		switch (collectionSlug) {
+			case "delta":
+				return {suffix: "| The Hideaway", prefix: "a Delta :"}
+			case "posts":
+				return {suffix: "| The Hideaway", prefix: ""}
+			case "categories":
+				return {prefix: "Archive: ", suffix: ""}
+			case "tags":
+				return {
+					prefix: "Tagged: ", suffix: ""
+				}
+			case "profile":
+				return {
+					prefix: "Profile: ", suffix: ""
+				}
+			default:
+				return {
+					prefix: "", suffix: "| The Hideaway"
+				}
+		}
+	}
+	const collectionSlug = c as EOCollectionSlug | undefined
+	if (!!doc && !!collectionSlug) {
+		const {prefix, suffix} = getDeco({doc, collectionSlug})
+		return `${prefix}${(doc as DataFromCollectionSlug<typeof collectionSlug>).title}${suffix}`
 
-const generateTitle: GenerateTitle<Post | Page | Delta | User> = ({ doc }) => {
-  if (doc) {
-    if ("name" in doc && doc?.name) {
-      return `${doc.name}`;
-    }
-    if ("title" in doc && doc?.title) {
-      return `${doc.title} | The Hideaway`;
-    }
-  }
-  return "The Hideaway";
+	}
+	return "The Hideaway";
 };
-// const generateMetaImage: GenerateImage<
-//   Post | Page | Delta | User | Profile | Album | Playlist | Category
-// > = async ({ doc, collectionConfig }) => {
-//   const url = getServerSideURL();
-//   const payload = await getPayload({ config });
-//   const slug = collectionConfig?.slug;
-//
-//   if (doc && slug) {
-//     switch (slug) {
-//       case "profile":
-//         const user = await payload.findByID({
-//           collection: "users",
-//           id: (doc as Profile).author as string,
-//           select: {
-//             image: true,
-//             portrait: true
-//           }
-//         });
-//         if (user) {
-//           if (user.portrait) {
-//             return `${url}/api/userMedia/${user.portrait}`;
-//           } else if (user.image) {
-//             return user.image as string;
-//           }
-//         }
-//       case "users":
-//         if ("portrait" in doc && doc.portrait) {
-//           return `${url}/api/userMedia/${doc.portrait}`;
-//         } else if ("image" in doc && doc.image) {
-//           return typeof doc.image === "string"
-//             ? `${url}/api/userMedia/${doc.image}`
-//             : "";
-//         }
-//         return await getAssetThumb();
-//       case "delta":
-//       case "posts":
-//         if ("image" in doc && doc.image) {
-//           if (typeof doc.image === "string") {
-//             return `${url}/api/media/${doc.image}`;
-//           } else if (
-//             typeof doc.image === "object" &&
-//             "url" in doc.image &&
-//             doc.image.url
-//           ) {
-//             return doc.image.url;
-//           }
-//         }
-//         break;
-//     }
-//   }
-//   return await getAssetThumb();
-// };
+const generateMetaImage: GenerateImage<EOCollection> = async ({
+	                                                              doc: d,
+	                                                              collectionSlug
+                                                              }): Promise<string> => {
+	const url = getServerSideURL();
+	const payload = await getPayload({config});
 
+	if (!!d && !!collectionSlug) {
+		const slug = collectionSlug as EOCollectionSlug;
+		switch (slug) {
+			case "profile": {
+				const doc = d as EOCollection<typeof slug>;
+				const user = await payload.findByID({
+					collection: "users",
+					id: typeof doc.author === "string" ? doc.author : doc.author.id,
+					select: {
+						image: true,
+						portrait: true
+					}
+				});
+				if (user) {
+					if (user.portrait) {
+						return `${url}/api/userMedia/${user.portrait}`;
+					} else if (user.image) {
+						return user.image as string;
+					}
+				}
+			}
+				return await getAssetThumb();
+			case "delta":
+			case "posts": {
+				const doc = d as EOCollection<typeof slug>;
+
+				if ("image" in doc && doc.image) {
+					if (typeof doc.image === "string") {
+						return `${url}/api/media/${doc.image}`;
+					} else if (
+						typeof doc.image === "object" &&
+						"url" in doc.image &&
+						typeof doc.image.url === "string"
+					) {
+						return doc.image.url;
+					}
+				}
+			}
+				break;
+			default:
+				return await getAssetThumb();
+		}
+	}
+	return await getAssetThumb();
+};
+const generateDescription: GenerateDescription<EOCollection> = async (): Promise<string> => {
+	return "Content from the Hideaway, a magazine-collective of consumers seeking metaphysical solace."
+}
 export type SiteMapCollectionSlug = Extract<
-  CollectionSlug,
-  | "posts"
-  | "pages"
-  | "delta"
-  | "users"
-  | "albums"
-  | "playlists"
-  | "categories"
-  | "tracks"
-  | "organizations"
-  | "tags"
+	CollectionSlug,
+	| "posts"
+	| "pages"
+	| "delta"
+	| "profile"
+	| "albums"
+	| "playlists"
+	| "categories"
+	| "tracks"
+	| "tags"
 >;
 export type SiteMapCollection = DataFromCollectionSlug<SiteMapCollectionSlug>;
 
 const generateURL: GenerateURL<SiteMapCollection> = ({
-  doc,
-  collectionConfig
-}) => {
-  const url = getServerSideURL();
-  if (!collectionConfig?.slug) {
-    throw new Error("Invalid collection config");
-  }
-  const collectionSlug = collectionConfig.slug as CollectionSlug;
-  const urlMap: { [x in SiteMapCollectionSlug]: string } = {
-    posts: "/essays/:slug",
-    pages: "/",
-    delta: "/delta/:slug",
-    users: "/users/:slug",
-    albums: "/rp.fm/album/:slug",
-    playlists: "/rp.fm/mix/:slug",
-    categories: "/categories/:slug",
-    tracks: "/rp.fm/album/:albumSlug?track=:trackSlug",
-    organizations: "/clubs/:slug",
-    tags: "/tagged/:slug"
-  };
-  const docCollection = collectionConfig.slug as SiteMapCollectionSlug;
-  switch (docCollection) {
-    case "posts":
-      return `${url}/essays/${doc.slug}`;
-    case "pages":
-      return `${url}/${doc.slug}`;
-    case "delta":
-      return `${url}/delta/${doc.slug}`;
-    case "users":
-      return `${url}/users/${doc.slug}`;
-    case "albums":
-      return `${url}/rp.fm/album/${doc.slug}`;
-    case "playlists":
-      return `${url}/rp.fm/mix/${doc.slug}`;
-    case "categories":
-      return `${url}/categories/${doc.slug}`;
-    case "tracks":
-      return `${url}/rp.fm/album/${(doc as Track)?.albumSlug}?track=${doc.slug}`;
-    case "organizations":
-      return `${url}/clubs/${doc.slug}`;
-    case "tags":
-      return `${url}/tagged/${doc.slug}`;
-    default:
-      return `${url}/${docCollection}/${doc.slug}`;
-  }
+	                                                     doc,
+	                                                     collectionConfig
+                                                     }) => {
+	const url = getServerSideURL();
+	if (!collectionConfig?.slug) {
+		throw new Error("Invalid collection config");
+	}
+	const collectionSlug = collectionConfig.slug as CollectionSlug;
+	// const urlMap: { [x in SiteMapCollectionSlug]: string } = {
+	// 	posts: "/essays/:slug",
+	// 	pages: "/",
+	// 	delta: "/delta/:slug",
+	// 	albums: "/rp.fm/album/:slug",
+	// 	playlists: "/rp.fm/mix/:slug",
+	// 	categories: "/categories/:slug",
+	// 	tracks: "/rp.fm/album/:albumSlug?track=:trackSlug",
+	// 	organizations: "/clubs/:slug",
+	// 	tags: "/tagged/:slug"
+	// };
+	const docCollection = collectionConfig.slug as SiteMapCollectionSlug;
+	switch (docCollection) {
+		case "posts":
+			return `${url}/essays/${doc.slug}`;
+		case "pages":
+			return `${url}/${doc.slug}`;
+		case "delta":
+			return `${url}/delta/${doc.slug}`;
+		case "profile":
+			return `${url}/users/${doc.slug}`;
+		case "albums":
+			return `${url}/rp.fm/albums/${doc.slug}`;
+		case "playlists":
+			return `${url}/rp.fm/playlists/${doc.slug}`;
+		case "categories":
+			return `${url}/archived/${doc.slug}`;
+		case "tracks":
+			return `${url}/rp.fm/albums/${(doc as Track)?.albumSlug}?track=${doc.slug}`;
+
+		case "tags":
+			return `${url}/tagged/${doc.slug}`;
+		default:
+			return `${url}/${docCollection}/${doc.slug}`;
+	}
 };
 export type LockedCollections = Extract<
-  CollectionSlug,
-  | "posts"
-  | "media"
-  | "delta"
-  | "albums"
-  | "playlists"
-  | "tracks"
-  | "userMedia"
-  | "assets"
-  | "profile"
+	CollectionSlug,
+	| "posts"
+	| "media"
+	| "delta"
+	| "albums"
+	| "playlists"
+	| "tracks"
+	| "userMedia"
+	| "assets"
+	| "profile"
 >;
 export const plugins: Plugin[] = [
-  importExportPlugin({}),
-  lockerPlugin({
-    enabled: true,
-    userCollections: ["admins", "users"],
-    targetCollections: [
-      "posts",
-      "media",
-      "delta",
-      "albums",
-      "playlists",
-      "tracks",
-      "userMedia",
-      "assets",
-      "profile"
-    ]
-  }),
-  redirectsPlugin({
-    collections: ["pages", "posts"],
-    overrides: {
-      access: {
-        create: ({ req: { user } }) => {
-          if (user?.role === "admin") return true;
-          return false;
-        },
-        read: () => true,
-        update: ({ req: { user } }) => {
-          if (user?.role === "admin") return true;
-          return false;
-        }
-      },
-      admin: {
-        hidden: ({ user }) => {
-          if (user?.role === "admin") return true;
-          return true;
-        }
-      },
-      // @ts-expect-error
-      fields: ({ defaultFields }) => {
-        return defaultFields.map((field) => {
-          if ("name" in field && field.name === "from") {
-            return {
-              ...field,
-              admin: {
-                description:
-                  "You will need to rebuild the website when changing this field."
-              }
-            };
-          }
-          return field;
-        });
-      },
-      hooks: {
-        afterChange: [revalidateRedirects]
-      }
-    }
-  }),
+	importExportPlugin({
+		collections: [{
+			slug: "posts",
+			export: true,
+			import: true
+		}]
+	}),
+	lockerPlugin({
+		enabled: true,
+		userCollections: ["admins", "users"],
+		targetCollections: [
+			"posts",
+			"media",
+			"delta",
+			"albums",
+			"playlists",
+			"tracks",
+			"userMedia",
+			"assets",
+			"profile"
+		]
+	}),
+	redirectsPlugin({
+		collections: ["pages", "posts"],
+		overrides: {
+			access: {
+				create: ({req: {user}}) => {
+					if (user?.role === "admin") return true;
+					return false;
+				},
+				read: () => true,
+				update: ({req: {user}}) => {
+					if (user?.role === "admin") return true;
+					return false;
+				}
+			},
+			admin: {
+				hidden: ({user}) => {
+					if (user?.role === "admin") return true;
+					return true;
+				}
+			},
+			// @ts-expect-error
+			fields: ({defaultFields}) => {
+				return defaultFields.map((field) => {
+					if ("name" in field && field.name === "from") {
+						return {
+							...field,
+							admin: {
+								description:
+									"You will need to rebuild the website when changing this field."
+							}
+						};
+					}
+					return field;
+				});
+			},
+			hooks: {
+				afterChange: [revalidateRedirects]
+			}
+		}
+	}),
 
-  seoPlugin({
-    generateTitle,
-    generateURL
-  }),
+	seoPlugin({
+		generateTitle,
+		generateURL, generateImage: generateMetaImage, generateDescription
+	}),
+	searchPlugin({
+		collections: ["posts", "delta", "profile", "pages"] satisfies IndexedCollectionSlug[ ],
+		beforeSync: beforeSyncWithSearch,
+		defaultPriorities: {
+			posts: 10,
+			pages: 20,
+			profile: 10,
+			delta: 20
+		},
+		searchOverrides: {
+			fields: ({defaultFields}) => [...defaultFields, ...searchFields],
+			admin: {
+				baseFilter: ({req,}) => {
+					const user = req.user;
+					if (!user) {
+						return {
+							or: [
+								{
+									locked: {
+										not_equals: true
+									}
+								}, {
+									authority: {
+										less_than_equal: 1
+									}
+								}
+							]
 
-  betterAuthPlugin(betterAuthPluginOptions),
-  imageSearchPlugin({
-    // providerAccess: ({ req }) => {
-    //   if (
-    //     req.user &&
-    //     ["admin", "author", "editor", "patron"].some(
-    //       (r) => r === req.user?.role,
-    //     )
-    //   )
-    //     return true;
-    //   return false;
-    // },
-  }),
-  blurDataUrlsPlugin({
-    enabled: true,
-    collections: [Media, UserMedia, Assets],
-    // Blur data URLs Settings (Optional)
-    blurOptions: {
-      blur: 18,
-      width: 32,
-      height: "auto"
-    }
-  }),
-  userFieldOrganizerPlugin({
-    enabled: true
-  }),
-  commentsPlugin({
-    enabled: true
-  }),
-  LikesPlugin({
-    enabled: true,
-    collections: [
-      "posts",
-      "delta",
-      "albums",
-      "playlists",
-      "tracks",
-      "userMedia",
-      "responses",
-      "citations"
-    ]
-  })
+						} as Where;
+					}
+					const userAuthority = roleToAuthority(user.role)
+					const userId = user.id;
+
+					return {
+						or: [{
+							authority: {
+								less_than_equal: userAuthority
+							}
+						}, {
+							locked: {
+								not_equals: true
+							}
+						}, {
+							"author.key": {
+								equals: userId
+							}
+						}]
+					} satisfies Where
+				}
+			},
+		}
+	}),
+	betterAuthPlugin(betterAuthPluginOptions),
+	imageSearchPlugin({
+		// providerAccess: ({ req }) => {
+		//   if (
+		//     req.user &&
+		//     ["admin", "author", "editor", "patron"].some(
+		//       (r) => r === req.user?.role,
+		//     )
+		//   )
+		//     return true;
+		//   return false;
+		// },
+	}),
+	blurDataUrlsPlugin({
+		enabled: true,
+		collections: [Media, UserMedia, Assets],
+		// Blur data URLs Settings (Optional)
+		blurOptions: {
+			blur: 18,
+			width: 32,
+			height: "auto"
+		}
+	}),
+	userFieldOrganizerPlugin({
+		enabled: true
+	}),
+	commentsPlugin({
+		enabled: true
+	}),
+	LikesPlugin({
+		enabled: true,
+		collections: [
+			"posts",
+			"delta",
+			"albums",
+			"playlists",
+			"tracks",
+			"userMedia",
+			"responses",
+			"citations"
+		]
+	})
 ];

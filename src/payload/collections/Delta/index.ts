@@ -2,12 +2,13 @@ import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import type {Delta as DeltaType} from "@/payload-types";
 import {
 	updateCategoryAfterChange,
-	updateCategoryAfterDelete
+	updateCategoryAfterDelete,
+	updateTagsAfterChange
 } from "@/payload/collections/Categories/hooks";
 import {validateDelta} from "@/payload/collections/Delta/hooks/validateDelta";
 import {RichContent} from "@/payload/collections/Posts/richContent";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
-import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 
 import {slugField} from "@/payload/fields/slug";
 import {deltasAccess} from "@/payload/plugins/locker/access";
@@ -179,13 +180,14 @@ export const Deltas: CollectionConfig = {
 			type: "collapsible",
 			admin: {position: "sidebar"},
 			fields: [
-				...AuthorField(false),
+				...authorFields(false),
 				{
 					name: "tagged",
 					label: "Tags",
 					type: "relationship",
 					relationTo: "tags",
 					hasMany: true,
+
 					admin: {
 						allowCreate: true,
 						allowEdit: false
@@ -280,10 +282,15 @@ export const Deltas: CollectionConfig = {
 						OverviewField({
 							titlePath: "meta.title",
 							descriptionPath: "meta.description",
-							imagePath: "meta.image"
+							imagePath: "meta.image",
 						}),
 						MetaTitleField({
-							hasGenerateFn: true
+							hasGenerateFn: true,
+							overrides: {
+								required: true,
+								defaultValue: () => "",
+
+							}
 						}),
 						MetaImageField({
 							relationTo: "media"
@@ -322,7 +329,7 @@ export const Deltas: CollectionConfig = {
 	],
 	hooks: {
 		beforeChange: [sanitizeAuthor(false), populatePublishedAt],
-		afterChange: [validateDelta, updateCategoryAfterChange],
+		afterChange: [validateDelta, updateCategoryAfterChange, updateTagsAfterChange],
 		afterDelete: [afterDelete, updateCategoryAfterDelete]
 	},
 	versions: {

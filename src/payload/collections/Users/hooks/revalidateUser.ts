@@ -9,9 +9,45 @@ export const revalidateUser: CollectionAfterChangeHook<User> = cache(
 	async ({doc, previousDoc, operation, req}) => {
 		const payload = req.payload;
 		const context = req.context;
-		if (operation === "update") {
-			if (!context.disableRevalidate) {
-				if (doc) {
+
+		if (doc) {
+
+			if (operation === "update") {
+				const prev = previousDoc.slug || "";
+				if (prev !== doc.slug) {
+					const profil = await payload.find({
+						collection: "profile",
+						where: {
+							author: {
+								equals: doc.id
+							}
+						},
+						pagination: false,
+						limit: 1,
+						select: {
+							slides: true,
+							_status: true,
+							allowList: true, title: true,
+							locked: true
+						}, req
+					}).then(r => r.docs[0] || false);
+					if (profil) {
+						await payload.update({
+							collection: "profile",
+							where: {
+								author: {
+									equals: doc.id
+								}
+							},
+							data: {
+								...profil,
+								author: doc.id,
+								title: doc.slug,
+							}
+						})
+					}
+				}
+				if (!context.disableRevalidate) {
 					if (!doc.banned) {
 						const path = `/users/${doc.slug}`;
 
@@ -41,7 +77,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<User> = async ({
 	                                                                        doc,
 	                                                                        req,
 	                                                                        context
-}) => {
+                                                                        }) => {
 	try {
 		const overrideAccess = true;
 		const payload = req.payload;

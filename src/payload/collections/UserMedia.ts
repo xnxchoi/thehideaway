@@ -1,6 +1,6 @@
 import {User} from "@/payload-types";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
-import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
 import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
@@ -54,7 +54,7 @@ export const UserMedia: CollectionConfig = {
 			  hidden: true
 		  }
 	  },
-    ...AuthorField(),
+	  ...authorFields(),
 
 	  {
       name: "bookmarks",

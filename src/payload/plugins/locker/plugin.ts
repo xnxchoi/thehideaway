@@ -44,7 +44,7 @@ export const lockerPlugin =
               name: "sidebarControl",
               admin: {
                 components: {
-                  Field: "@/payload/fields/SidebarControls/index.tsx"
+	                Field: "@/payload/elements/SidebarControls"
                 },
                 position: "sidebar"
               }

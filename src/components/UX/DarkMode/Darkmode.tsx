@@ -9,7 +9,6 @@ import {
 	HTMLMotionProps,
 	useMotionTemplate,
 	useMotionValue,
-	useMotionValueEvent,
 	useSpring,
 	useTransform
 } from "motion/react";
@@ -92,15 +91,15 @@ export const DarkmodeButton = ({
 	const darkY = useMotionTemplate`${_darkY}%`,
 		lightY = useMotionTemplate`${_lightY}%`
 	useEffect(() => {
-		themeValue.set(theme)
-	}, [theme, themeValue]);
-	useMotionValueEvent(themeValue, "change", (_latestValue) => {
 		(toRef.current && clearTimeout(toRef.current),
 			animateAllComponents(),
+			themeValue.set(theme)
+			,
 			(toRef.current = setTimeout(() => {
 				animateAllComponents(!0);
 			}, 1100 * 0.2)));
-	})
+	}, [animateAllComponents, theme, themeValue]);
+
 	const uid = useId()
 	const onClick: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
 		const enabled = !e.currentTarget.disabled

@@ -33,7 +33,7 @@ export type FrontEndCollections = Extract<
   | "playlists"
   | "categories"
   | "profile"
-  | "series"
+    | "tracks"
 >;
 
 /**
@@ -90,24 +90,25 @@ export interface PageTypeSlugMap {
   users: ["/users", "/@:userHandle"];
   me: ["/me"];
 }
-const pageTypeMap: Record<PageType, string[]> = {
-  auth: ["/auth"],
-  account: ["/account"],
-  home: ["/", "/home"],
-  search: ["/search"],
-  categories: ["/archived"],
-  tags: ["/tagged"],
-  profile: ["/users/:id", "/users/:id/profile", "/@:userHandle"],
-  albums: ["/rp.fm/albums"],
-  playlists: ["/rp.fm/playlists"],
-  posts: ["/essays"],
-  delta: ["/delta"],
-  //   series: ["/series"],
-  pages: ["/:slug"],
-  404: ["/404"],
-  users: ["/users", "/@:userHandle"],
-  me: ["/me"]
-};
+
+// const pageTypeMap: Record<PageType, string[]> = {
+//   auth: ["/auth"],
+//   account: ["/account"],
+//   home: ["/", "/home"],
+//   search: ["/search"],
+//   categories: ["/archived"],
+//   tags: ["/tagged"],
+//   profile: ["/users/:id", "/users/:id/profile", "/@:userHandle"],
+//   albums: ["/rp.fm/albums"],
+//   playlists: ["/rp.fm/playlists"],
+//   posts: ["/essays"],
+//   delta: ["/delta"],
+//   //   series: ["/series"],
+//   pages: ["/:slug"],
+//   404: ["/404"],
+//   users: ["/users", "/@:userHandle"],
+//   me: ["/me"]
+// };
 const pathPageTypeMap = {
   "/auth": "auth",
   "/account": "account",

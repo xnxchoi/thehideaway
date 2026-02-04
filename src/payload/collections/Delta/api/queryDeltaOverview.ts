@@ -17,6 +17,8 @@ export type DeltaOverviewSelect = {
 	slug: true
 	author: true
 	locked: true
+	authority: true
+	allowList: true
 	category: true
 }
 export const deltaOverviewSelect = (): DeltaOverviewSelect => ({
@@ -26,6 +28,8 @@ export const deltaOverviewSelect = (): DeltaOverviewSelect => ({
 	subtitle: true,
 	slug: true,
 	author: true,
+	allowList: true,
+	authority: true,
 	locked: true,
 	category: true,
 })

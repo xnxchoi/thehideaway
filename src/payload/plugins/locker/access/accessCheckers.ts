@@ -1,15 +1,15 @@
 import type {
-	Admin,
-	Album,
-	Delta,
-	Media,
-	Playlist,
-	Post,
-	Profile,
-	Tag,
-	Track,
-	User,
-	UserMedia
+  Admin,
+  Album,
+  Delta,
+  Media,
+  Playlist,
+  Post,
+  Profile,
+  Tag,
+  Track,
+  User,
+  UserMedia
 } from "@/payload-types";
 import {FieldAccessArgs} from "node_modules/payload/dist/fields/config/types";
 import {Access, AccessArgs, Field, FieldAccess, Where} from "payload";
@@ -77,7 +77,7 @@ export const isEditor = ({
  * @returns {boolean} Can be used for both {@link FieldAccess} and {@link Access} control.
  */
 export const isAdminOrEditor = ({
-  req: { user }
+                                  req: {user},
 }:
   | AccessArgs<AuthorCollections>
   | FieldAccessArgs<AuthorCollections>): boolean =>

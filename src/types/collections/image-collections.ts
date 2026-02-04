@@ -44,7 +44,7 @@ export type ImageSizes = {
 
 type PayloadSpecificKeys = "id" | "filename" | "mimeType"
 export type PayloadImageKeys = keyof FetchedImageDoc;
-export type BaseImageSelect = Record<PayloadImageKeys, true>
+export type ImageCollectionOverviewSelect = Record<PayloadImageKeys, true>
 export type ProcessedImage = FetchedImage & {
 	src: string; url: string;
 }

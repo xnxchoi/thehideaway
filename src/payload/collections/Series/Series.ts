@@ -1,11 +1,11 @@
 import {type Admin, Series, type User} from "@/payload-types";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
 import {RelAuthor} from "@/types/collections/users";
 import {AccessArgs, CollectionConfig, Where} from "payload";
 import {uuidv7} from "uuidv7";
 import {populatePublishedAt} from "../../../hooks/populatePublishedAt";
 import {getServerSideURL} from "../../../utilities/getURL";
-import {sanitizeAuthor} from "../../fields/AuthorFields/hooks";
 import {getSeriesBookMarks} from "./endpoints/getSeriesBookmarks";
 
 // Helper function to check if user has permission in series

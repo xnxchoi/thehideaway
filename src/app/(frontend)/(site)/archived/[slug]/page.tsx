@@ -1,7 +1,11 @@
-import {ArchiveFeatureCard} from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
+import {
+	ArchiveFeatureCard,
+	OverviewAgnosticItem
+} from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
 import {CatTitle, TaggedItem} from "@/components/layouts/Tagged/Item";
 import {RPage} from "@/components/UX/Transition";
 import {queryPostsByIDs} from "@/payload/collections/Posts/api/queryPostOverviews";
+import {formatCollectionURL} from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
 import {notFound} from "next/navigation";
 import type {Metadata} from "next/types";
@@ -39,16 +43,23 @@ export default async function Page({params: paramsPromise}: Args) {
 		notFound();
 	}
 	const posts = await getCategoryPosts({id: cat.id})
-	const firstFive = posts.slice(0, 5).map((post) => ({
-		relationTo: "posts" as const,
-		value: post
+	const firstFive = posts.slice(0, 5).map(({
+		                                         slug,
+		                                         author,
+		                                         category,
+		                                         ...posts
+	                                         }): OverviewAgnosticItem => ({
+		category: category.title,
+		author: author.name,
+		url: formatCollectionURL({relationTo: "posts", slug}),
+		...posts
 	}));
 	const rest = posts.slice(5);
 	return (
 		<RPage type="categories" slug={[cat.slug]}>
 			<PageClient>
 				<div className="relative flex w-full flex-col items-center justify-center">
-					<CatTitle title={cat.title}/>
+					<CatTitle> {cat.title}</CatTitle>
 					<div
 						className={
 							"relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
@@ -71,12 +82,10 @@ export default async function Page({params: paramsPromise}: Args) {
 							</div>
 						</div>
 						<div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
-							{rest.map((post) => (
-								<TaggedItem
-									key={post.id}
-									{...post}
-									subtitle={post.subtitle ?? ""}
-								/>
+							{rest.map(({slug, author, category, ...post}) => (
+								<TaggedItem key={post.id} {...post} author={author.name}
+								            category={category.title}
+								            url={formatCollectionURL({relationTo: "posts", slug})}/>
 							))}
 						</div>
 					</div>

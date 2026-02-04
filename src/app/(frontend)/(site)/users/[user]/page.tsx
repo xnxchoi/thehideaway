@@ -1,5 +1,6 @@
 import {ProfileSlide} from "@/components/layouts/Profile/ProfileSlide";
 import {SliderProps} from "@/components/layouts/Profile/types";
+import {profileOverviewSelector, profileSelector} from "@/payload/collections/Profile";
 import {createRichtext} from "@/payload/collections/Users/helpers/createRichtext";
 import {queryUserBySlug} from "@/payload/collections/Users/operations/queryMemberBySlug";
 import {generateMeta} from "@/utilities/generateMeta";
@@ -143,6 +144,7 @@ async function getUserPage({userSlug}: { userSlug: string }) {
 async function getSlidesProfile({id, user}: { id: string; user: string }) {
 	"use cache"
 	const payload = await getPayload({config});
+
 	const slides = await payload
 		.find({
 			collection: "profile",
@@ -154,10 +156,7 @@ async function getSlidesProfile({id, user}: { id: string; user: string }) {
 			pagination: false,
 			overrideAccess: true,
 			limit: 1,
-			select: {
-				hero: true,
-				slides: true
-			}
+			select: profileSelector()
 		})
 		.then((res) => res.docs[0] || null)
 		.catch((err) => {

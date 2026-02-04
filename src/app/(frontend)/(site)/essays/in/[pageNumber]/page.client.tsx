@@ -2,6 +2,7 @@
 
 import {paginatedPosts} from "@/payload/collections/Posts/api/queryPostOverviews";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
+import {formatCollectionURL} from "@/utilities/formatCollectionURL";
 import { PaginatedDocs } from "payload";
 import { useEffect, useRef, useState } from "react";
 import { InView } from "react-intersection-observer";
@@ -48,8 +49,10 @@ const PageClient = (props: { posts: PaginatedDocs<PostOverview> }) => {
   }, [setHeaderTheme]);
   return (
     <div className="min-h-[calc(100vh-64px)] py-24">
-      {docs.map((post) => (
-        <TaggedItem key={post.id} {...post} />
+	    {docs.map(({slug, author, category, ...post}) => (
+		    <TaggedItem key={post.id} {...post} author={author.name}
+		                category={category.title}
+		                url={formatCollectionURL({relationTo: "posts", slug})}/>
       ))}
       {limit > currentPage && hasNextPage && (
         <InView

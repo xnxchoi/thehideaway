@@ -12,6 +12,7 @@ import {
 import {PostOverview} from "@/types/collections/posts";
 import {UserOverview, userOverviewSelect} from "@/types/collections/users";
 import {imageSelect} from "@/types/payload-api-selects";
+import {PagesSelect} from "@payload-types";
 import type {SelectFromCollectionSlug} from "node_modules/payload/dist/collections/config/types";
 import {CollectionSlug} from "payload";
 
@@ -24,9 +25,10 @@ export const baseSelect: SelectFromCollectionSlug<FrontEndCollections> = {
 	author: true
 };
 
-export type OverviewSlugs = Extract<CollectionSlug, "users" | "posts" | ImageCollectionSlug | "delta" | "categories" | "tags">;
+//|"albums"|"tracks"|"playlists"
+export type OverviewSlugs = Extract<CollectionSlug, "users" | "posts" | "pages" | ImageCollectionSlug | "delta" | "categories" | "tags">;
 export type CollectionOverviewMap = {
-	[x in OverviewSlugs]: x extends "users" ? UserOverview : x extends "posts" ? PostOverview :
+	[x in OverviewSlugs]: x extends "users" ? UserOverview : x extends "posts" ? PostOverview : x extends "pages" ? PostOverview :
 		x extends "delta" ? DeltaOverview :
 			x extends "tags" ? TagOverview :
 				x extends "categories" ? CategoryOverview :
@@ -45,6 +47,12 @@ export const overviewSelectMap = {
 	assets: imageSelect,
 	media: imageSelect,
 	userMedia: imageSelect,
+	pages: (): PagesSelect => ({
+		title: true,
+		slug: true,
+		id: true,
+
+	}),
 	delta: deltaOverviewSelect
 } as const
 export type OverviewSelectorMap = {

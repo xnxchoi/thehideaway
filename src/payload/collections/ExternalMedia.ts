@@ -1,4 +1,4 @@
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {fundFields} from "@/payload/plugins/image-search/collections/collectionFields";
 import {authenticated, isAuthorOrEditor} from "@/payload/plugins/locker/access/accessCheckers";
 import {User} from "@payload-types";
@@ -40,7 +40,7 @@ export const ExternalMedia: CollectionConfig = {
 				read: () => true,
 				update: isAuthorOrEditor,
 			}
-		}, ...AuthorField(),
+		}, ...authorFields(),
 
 		{
 			name: "source",

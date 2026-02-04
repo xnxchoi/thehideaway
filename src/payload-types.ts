@@ -103,7 +103,9 @@ export interface Config {
     'email-quota': EmailQuota;
     'deferred-emails': DeferredEmail;
     exports: Export;
+    imports: Import;
     redirects: Redirect;
+    search: Search;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -131,6 +133,9 @@ export interface Config {
     };
     categories: {
       categorized: 'delta' | 'posts';
+    };
+    tags: {
+      taggedItems: "delta" | "posts" | "profile" | "pages" | "albums" | "playlists" | "tracks";
     };
     posts: {
       bookmarks: 'bookmarks';
@@ -193,7 +198,9 @@ export interface Config {
     'email-quota': EmailQuotaSelect<false> | EmailQuotaSelect<true>;
     'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
+    imports: ImportsSelect<false> | ImportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -226,6 +233,7 @@ export interface Config {
       welcomeUser: TaskWelcomeUser;
       welcomeUsers: TaskWelcomeUsers;
       createCollectionExport: TaskCreateCollectionExport;
+      createCollectionImport: TaskCreateCollectionImport;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -402,6 +410,8 @@ export interface User {
 export interface Profile {
   id: string;
   author: string | User;
+  slug: string;
+  title: string;
   hero: {
     title: string;
     subtitle: string;
@@ -469,7 +479,6 @@ export interface UserMedia {
   src?: string | null;
   caption?: string | null;
   blurDataUrl?: string | null;
-  likes?: number | null;
   folder?: (string | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -657,7 +666,6 @@ export interface Post {
    * Limit access to users of this role or higher
    */
   authority?: number | null;
-  likes?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -938,8 +946,8 @@ export interface Delta {
           }
       )[]
     | null;
-  meta?: {
-    title?: string | null;
+  meta: {
+    title: string;
     /**
      * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
@@ -957,7 +965,6 @@ export interface Delta {
    * Limit access to users of this role or higher
    */
   authority?: number | null;
-  likes?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -974,357 +981,44 @@ export interface Tag {
   hashId: string;
   slugLock: boolean;
   slug: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "albums".
- */
-export interface Album {
-  id: string;
-  title: string;
-  release_date?: string | null;
-  cover?: (string | null) | Media;
-  artist: string;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  tagged?: (string | Tag)[] | null;
-  description?: string | null;
-  visibility: "public" | "private";
-  publishedAt?: string | null;
-  author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playlists".
- */
-export interface Playlist {
-  id: string;
-  cover?: (string | null) | UserMedia;
-  title: string;
-  description?: string | null;
-  tracks?: (string | Track)[] | null;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  tagged?: (string | Tag)[] | null;
-  author: (string | User)[];
-  visibility: 'public' | 'private';
-  publishedAt?: string | null;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tracks".
- */
-export interface Track {
-  id: string;
-  title: string;
-  publishedAt?: string | null;
-  track_number: number;
-  album: string | Album;
-  albumSlug?: string | null;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  tagged?: (string | Tag)[] | null;
-  artist: string;
-  description?: string | null;
-  visibility: 'public' | 'private';
-  author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-folders".
- */
-export interface FolderInterface {
-  id: string;
-  name: string;
-  folder?: (string | null) | FolderInterface;
-  documentsAndFolders?: {
+  taggedItems?: {
     docs?: (
         | {
-      relationTo?: "payload-folders";
-      value: string | FolderInterface;
+      relationTo?: "delta";
+      value: string | Delta;
     }
         | {
-      relationTo?: "userMedia";
-      value: string | UserMedia;
+      relationTo?: "posts";
+      value: string | Post;
+    }
+        | {
+      relationTo?: "profile";
+      value: string | Profile;
+    }
+        | {
+      relationTo?: "pages";
+      value: string | Page;
+    }
+        | {
+      relationTo?: "albums";
+      value: string | Album;
+    }
+        | {
+      relationTo?: "playlists";
+      value: string | Playlist;
+    }
+        | {
+      relationTo?: "tracks";
+      value: string | Track;
     }
         )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: "userMedia"[] | null;
+  tagCount: number;
   updatedAt: string;
   createdAt: string;
 }
-
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "follows".
- */
-export interface Follow {
-  id: string;
-  user: string | User;
-  target: string | User;
-  updatedAt: string;
-  createdAt: string;
-}
-
-/**
- * User notifications for system events and social interactions
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notifications".
- */
-export interface Notification {
-  id: string;
-  recipient: string | User;
-  trigger?:
-      | ({
-    relationTo: "posts";
-    value: string | Post;
-  } | null)
-      | ({
-    relationTo: "delta";
-    value: string | Delta;
-  } | null)
-      | ({
-    relationTo: "users";
-    value: string | User;
-  } | null)
-      | ({
-    relationTo: "profile";
-    value: string | Profile;
-  } | null)
-      | ({
-    relationTo: "bookmarks";
-    value: string | Bookmark;
-  } | null)
-      | ({
-    relationTo: "follows";
-    value: string | Follow;
-  } | null)
-      | ({
-    relationTo: "responses";
-    value: string | Response;
-  } | null);
-  thumbnail?: (string | null) | Asset;
-  type:
-      | "comment"
-      | "follow"
-      | "mention"
-      | "system"
-      | "access"
-      | "bookmark"
-      | "profile"
-      | "post"
-      | "delta"
-      | "notification";
-  importance: number;
-  status: "unread" | "read" | "dismissed";
-  read: boolean;
-  dismissed: boolean;
-  readAt?: string | null;
-  sticky: boolean;
-  title: string;
-  content: string;
-  actionLink: {
-    type: "reference" | "custom";
-    newTab: boolean;
-    reference?:
-        | ({
-      relationTo: "pages";
-      value: string | Page;
-    } | null)
-        | ({
-      relationTo: "posts";
-      value: string | Post;
-    } | null)
-        | ({
-      relationTo: "delta";
-      value: string | Delta;
-    } | null)
-        | ({
-      relationTo: "users";
-      value: string | User;
-    } | null)
-        | ({
-      relationTo: "albums";
-      value: string | Album;
-    } | null)
-        | ({
-      relationTo: "tracks";
-      value: string | Track;
-    } | null)
-        | ({
-      relationTo: "playlists";
-      value: string | Playlist;
-    } | null)
-        | ({
-      relationTo: "organizations";
-      value: string | Organization;
-    } | null)
-        | ({
-      relationTo: "categories";
-      value: string | Category;
-    } | null);
-    url?: string | null;
-    label: string;
-    /**
-     * Choose how the link should be rendered.
-     */
-    appearance?: ("default" | "outline") | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "responses".
- */
-export interface Response {
-  id: string;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ("ltr" | "rtl") | null;
-      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  author: string | User;
-  target:
-      | {
-    relationTo: "posts";
-    value: string | Post;
-  }
-      | {
-    relationTo: "delta";
-    value: string | Delta;
-  };
-  isEdited: boolean;
-  depth: number;
-  hash: string;
-  parent?:
-      | ({
-    relationTo: "responses";
-    value: string | Response;
-  } | null)
-      | ({
-    relationTo: "citations";
-    value: string | Citation;
-  } | null);
-  mentions?: (string | User)[] | null;
-  /**
-   * Pin this response to the top
-   */
-  isSticky: boolean;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ("draft" | "published") | null;
-}
-
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "citations".
- */
-export interface Citation {
-  id: string;
-  path: string;
-  reference: string;
-  selection: {
-    text: string;
-    before: string;
-    after: string;
-  };
-  private: boolean;
-  quote: string;
-  author: string | User;
-  target:
-      | {
-    relationTo: "delta";
-    value: string | Delta;
-  }
-      | {
-    relationTo: "posts";
-    value: string | Post;
-  };
-  cited: string | User;
-  memo?: string | null;
-  likes?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
@@ -1425,6 +1119,117 @@ export interface Page {
   slug: string;
   locked?: boolean | null;
   allowList?: (string | User)[] | null;
+  authority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "albums".
+ */
+export interface Album {
+  id: string;
+  title: string;
+  release_date?: string | null;
+  cover?: (string | null) | Media;
+  artist: string;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  tagged?: (string | Tag)[] | null;
+  description?: string | null;
+  visibility: 'public' | 'private';
+  publishedAt?: string | null;
+  author: string | User;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tracks".
+ */
+export interface Track {
+  id: string;
+  title: string;
+  publishedAt?: string | null;
+  track_number: number;
+  album: string | Album;
+  albumSlug?: string | null;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  tagged?: (string | Tag)[] | null;
+  artist: string;
+  description?: string | null;
+  visibility: 'public' | 'private';
+  author: string | User;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playlists".
+ */
+export interface Playlist {
+  id: string;
+  cover?: (string | null) | UserMedia;
+  title: string;
+  description?: string | null;
+  tracks?: (string | Track)[] | null;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  tagged?: (string | Tag)[] | null;
+  author: (string | User)[];
+  visibility: "public" | "private";
+  publishedAt?: string | null;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1840,6 +1645,238 @@ export interface HeroSquareBlock {
   blockType: 'heroSquare';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: string;
+  name: string;
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+        | {
+      relationTo?: "payload-folders";
+      value: string | FolderInterface;
+    }
+        | {
+      relationTo?: "userMedia";
+      value: string | UserMedia;
+    }
+        )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: "userMedia"[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "follows".
+ */
+export interface Follow {
+  id: string;
+  user: string | User;
+  target: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * User notifications for system events and social interactions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  recipient: string | User;
+  trigger?:
+      | ({
+    relationTo: "posts";
+    value: string | Post;
+  } | null)
+      | ({
+    relationTo: "delta";
+    value: string | Delta;
+  } | null)
+      | ({
+    relationTo: "users";
+    value: string | User;
+  } | null)
+      | ({
+    relationTo: "profile";
+    value: string | Profile;
+  } | null)
+      | ({
+    relationTo: "bookmarks";
+    value: string | Bookmark;
+  } | null)
+      | ({
+    relationTo: "follows";
+    value: string | Follow;
+  } | null)
+      | ({
+    relationTo: "responses";
+    value: string | Response;
+  } | null);
+  thumbnail?: (string | null) | Asset;
+  type:
+      | "comment"
+      | "follow"
+      | "mention"
+      | "system"
+      | "access"
+      | "bookmark"
+      | "profile"
+      | "post"
+      | "delta"
+      | "notification";
+  importance: number;
+  status: "unread" | "read" | "dismissed";
+  read: boolean;
+  dismissed: boolean;
+  readAt?: string | null;
+  sticky: boolean;
+  title: string;
+  content: string;
+  actionLink: {
+    type: "reference" | "custom";
+    newTab: boolean;
+    reference?:
+        | ({
+      relationTo: "pages";
+      value: string | Page;
+    } | null)
+        | ({
+      relationTo: "posts";
+      value: string | Post;
+    } | null)
+        | ({
+      relationTo: "delta";
+      value: string | Delta;
+    } | null)
+        | ({
+      relationTo: "users";
+      value: string | User;
+    } | null)
+        | ({
+      relationTo: "albums";
+      value: string | Album;
+    } | null)
+        | ({
+      relationTo: "tracks";
+      value: string | Track;
+    } | null)
+        | ({
+      relationTo: "playlists";
+      value: string | Playlist;
+    } | null)
+        | ({
+      relationTo: "organizations";
+      value: string | Organization;
+    } | null)
+        | ({
+      relationTo: "categories";
+      value: string | Category;
+    } | null);
+    url?: string | null;
+    label: string;
+    /**
+     * Choose how the link should be rendered.
+     */
+    appearance?: ("default" | "outline") | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "responses".
+ */
+export interface Response {
+  id: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  author: string | User;
+  target:
+      | {
+    relationTo: "posts";
+    value: string | Post;
+  }
+      | {
+    relationTo: "delta";
+    value: string | Delta;
+  };
+  isEdited: boolean;
+  depth: number;
+  hash: string;
+  parent?:
+      | ({
+    relationTo: "responses";
+    value: string | Response;
+  } | null)
+      | ({
+    relationTo: "citations";
+    value: string | Citation;
+  } | null);
+  mentions?: (string | User)[] | null;
+  /**
+   * Pin this response to the top
+   */
+  isSticky: boolean;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ("draft" | "published") | null;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "citations".
+ */
+export interface Citation {
+  id: string;
+  path: string;
+  reference: string;
+  selection: {
+    text: string;
+    before: string;
+    after: string;
+  };
+  private: boolean;
+  quote: string;
+  author: string | User;
+  target:
+      | {
+    relationTo: "delta";
+    value: string | Delta;
+  }
+      | {
+    relationTo: "posts";
+    value: string | Post;
+  };
+  cited: string | User;
+  memo?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
  * Accounts are used to store user accounts for authentication providers
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2213,6 +2250,44 @@ export interface Export {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports".
+ */
+export interface Import {
+  id: string;
+  collectionSlug: "posts";
+  importMode?: ("create" | "update" | "upsert") | null;
+  matchField?: string | null;
+  status?: ("pending" | "completed" | "partial" | "failed") | null;
+  summary?: {
+    imported?: number | null;
+    updated?: number | null;
+    total?: number | null;
+    issues?: number | null;
+    issueDetails?:
+        | {
+      [k: string]: unknown;
+    }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -2233,6 +2308,73 @@ export interface Redirect {
           value: string | Post;
         } | null);
     url?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+
+/**
+ * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search".
+ */
+export interface Search {
+  title: string;
+  priority?: number | null;
+  collection?: string | null;
+  doc:
+      | {
+    relationTo: "posts";
+    value: string | Post;
+  }
+      | {
+    relationTo: "delta";
+    value: string | Delta;
+  }
+      | {
+    relationTo: "profile";
+    value: string | Profile;
+  }
+      | {
+    relationTo: "pages";
+    value: string | Page;
+  };
+  id: string;
+  slug: string;
+  author: {
+    id: string;
+    key: string;
+    name: string;
+    image?: string | null;
+    slug: string;
+  }[];
+  allowList?:
+      | {
+    id: string;
+    key: string;
+  }[]
+      | null;
+  locked: boolean;
+  authority?: number | null;
+  tags?:
+      | {
+    id: string;
+    key: string;
+    title: string;
+    slug: string;
+  }[]
+      | null;
+  category: {
+    id: string;
+    key: string;
+    title: string;
+    slug: string;
+  }[];
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (string | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -2305,7 +2447,13 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'welcomeUser' | 'welcomeUsers' | 'createCollectionExport' | 'schedulePublish';
+    taskSlug:
+        | "inline"
+        | "welcomeUser"
+        | "welcomeUsers"
+        | "createCollectionExport"
+        | "createCollectionImport"
+        | "schedulePublish";
         taskID: string;
         input?:
           | {
@@ -2339,7 +2487,16 @@ export interface PayloadJob {
       }[]
     | null;
   workflowSlug?: 'onboardUsers' | null;
-  taskSlug?: ('inline' | 'welcomeUser' | 'welcomeUsers' | 'createCollectionExport' | 'schedulePublish') | null;
+  taskSlug?:
+      | (
+      | "inline"
+      | "welcomeUser"
+      | "welcomeUsers"
+      | "createCollectionExport"
+      | "createCollectionImport"
+      | "schedulePublish"
+      )
+      | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -2431,6 +2588,10 @@ export interface PayloadLockedDocument {
     value: string | UserMedia;
   } | null)
       | ({
+    relationTo: "profile";
+    value: string | Profile;
+  } | null)
+      | ({
         relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
@@ -2459,13 +2620,13 @@ export interface PayloadLockedDocument {
         value: string | DeferredEmail;
       } | null)
     | ({
-        relationTo: 'exports';
-        value: string | Export;
-      } | null)
-    | ({
         relationTo: 'redirects';
         value: string | Redirect;
       } | null)
+      | ({
+    relationTo: "search";
+    value: string | Search;
+  } | null)
     | ({
         relationTo: 'payload-folders';
         value: string | FolderInterface;
@@ -2921,6 +3082,8 @@ export interface TagsSelect<T extends boolean = true> {
   hashId?: T;
   slugLock?: T;
   slug?: T;
+  taggedItems?: T;
+  tagCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3157,7 +3320,6 @@ export interface PostsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3178,7 +3340,6 @@ export interface UserMediaSelect<T extends boolean = true> {
   src?: T;
   caption?: T;
   blurDataUrl?: T;
-  likes?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3287,7 +3448,6 @@ export interface DeltaSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3298,6 +3458,8 @@ export interface DeltaSelect<T extends boolean = true> {
  */
 export interface ProfileSelect<T extends boolean = true> {
   author?: T;
+  slug?: T;
+  title?: T;
   hero?:
     | T
     | {
@@ -3345,7 +3507,6 @@ export interface AlbumsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3373,7 +3534,6 @@ export interface TracksSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3408,7 +3568,6 @@ export interface PlaylistsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3468,7 +3627,6 @@ export interface CitationsSelect<T extends boolean = true> {
   target?: T;
   cited?: T;
   memo?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3487,7 +3645,6 @@ export interface ResponsesSelect<T extends boolean = true> {
   parent?: T;
   mentions?: T;
   isSticky?: T;
-  likes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3582,6 +3739,37 @@ export interface ExportsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "imports_select".
+ */
+export interface ImportsSelect<T extends boolean = true> {
+  collectionSlug?: T;
+  importMode?: T;
+  matchField?: T;
+  status?: T;
+  summary?:
+      | T
+      | {
+    imported?: T;
+    updated?: T;
+    total?: T;
+    issues?: T;
+    issueDetails?: T;
+  };
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -3596,6 +3784,61 @@ export interface RedirectsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
 }
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search_select".
+ */
+export interface SearchSelect<T extends boolean = true> {
+  title?: T;
+  priority?: T;
+  collection?: T;
+  doc?: T;
+  id?: T;
+  slug?: T;
+  author?:
+      | T
+      | {
+    id?: T;
+    key?: T;
+    name?: T;
+    image?: T;
+    slug?: T;
+  };
+  allowList?:
+      | T
+      | {
+    id?: T;
+    key?: T;
+  };
+  locked?: T;
+  authority?: T;
+  tags?:
+      | T
+      | {
+    id?: T;
+    key?: T;
+    title?: T;
+    slug?: T;
+  };
+  category?:
+      | T
+      | {
+    id?: T;
+    key?: T;
+    title?: T;
+    slug?: T;
+  };
+  meta?:
+      | T
+      | {
+    title?: T;
+    description?: T;
+    image?: T;
+  };
+  updatedAt?: T;
+  createdAt?: T;
+}
+
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
@@ -4122,9 +4365,73 @@ export interface TaskCreateCollectionExport {
       | number
       | boolean
       | null;
-    user?: string | null;
+    userID?: string | null;
     userCollection?: string | null;
     exportsCollection?: string | null;
+  };
+  output?: unknown;
+}
+
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCreateCollectionImport".
+ */
+export interface TaskCreateCollectionImport {
+  input: {
+    collectionSlug:
+        | "users"
+        | "assets"
+        | "categories"
+        | "media"
+        | "tags"
+        | "notifications"
+        | "pages"
+        | "posts"
+        | "userMedia"
+        | "delta"
+        | "profile"
+        | "albums"
+        | "tracks"
+        | "playlists"
+        | "follows"
+        | "bookmarks"
+        | "userViews"
+        | "citations"
+        | "responses"
+        | "compilations"
+        | "admins"
+        | "email-quota"
+        | "deferred-emails"
+        | "exports"
+        | "imports";
+    importMode?: ("create" | "update" | "upsert") | null;
+    matchField?: string | null;
+    status?: ("pending" | "completed" | "partial" | "failed") | null;
+    summary?: {
+      imported?: number | null;
+      updated?: number | null;
+      total?: number | null;
+      issues?: number | null;
+      issueDetails?:
+          | {
+        [k: string]: unknown;
+      }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+    };
+    user?: string | null;
+    userCollection?: string | null;
+    importsCollection?: string | null;
+    file?: {
+      data?: string | null;
+      mimetype?: string | null;
+      name?: string | null;
+    };
+    format?: ("csv" | "json") | null;
+    debug?: boolean | null;
   };
   output?: unknown;
 }

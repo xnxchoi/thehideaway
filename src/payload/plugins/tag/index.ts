@@ -1,12 +1,9 @@
-import { mergeFields } from "@/utilities/mergeFields";
-import type { CollectionSlug, Config, JoinField, Plugin } from "payload";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { slugField } from "@/payload/fields/slug";
-import {
-  isAdminOrEditor,
-  standardCreateAccess
-} from "../locker/access/accessCheckers";
-import { sanitizeAuthor } from "@/payload/fields/AuthorFields/hooks";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
+import {slugField} from "@/payload/fields/slug";
+import {mergeFields} from "@/utilities/mergeFields";
+import type {CollectionSlug, Config, JoinField, Plugin} from "payload";
+import {isAdminOrEditor, standardCreateAccess} from "../locker/access/accessCheckers";
 
 export interface TagPluginConfig {
   enabled: boolean;
@@ -50,7 +47,7 @@ export const tagPlugin =
             }
           },
 
-          ...AuthorField(false),
+          ...authorFields(false),
           ...slugField("title")
         ],
         hooks: {
@@ -60,7 +57,7 @@ export const tagPlugin =
       config.collections.push(tagsCollection);
     }
     const joinField: JoinField = {
-      name: "tagged",
+      name: "taggedItems",
       type: "join",
       on: "tagged",
       hasMany: true,
@@ -81,10 +78,12 @@ export const tagPlugin =
           path: collectionConfig.slug,
           baseFields: [
             {
-              name: "tags",
+              name: "tagged",
+              label: "Tags",
               type: "relationship",
               relationTo: "tags",
               hasMany: true,
+
               admin: {
                 allowCreate: true,
                 allowEdit: false
@@ -95,7 +94,7 @@ export const tagPlugin =
               maxDepth: 1,
               maxRows: 5,
               index: true
-            }
+            },
           ],
           patchFields: collectionConfig.fields
         });

@@ -23,7 +23,6 @@ import {GeistSans} from "geist/font/sans";
 import "lenis/dist/lenis.css";
 import {NextIntlClientProvider} from "next-intl";
 import {ReactNode, Suspense} from "react";
-import {ReactTempus} from "tempus/react";
 import "../../styles/globals.css";
 import "./estate.scss";
 import {Blase, Dots, NarcissianNectare, Saint, Siegfried, Suit} from "../../../fonts";
@@ -77,7 +76,7 @@ export default async function RootLayout({
 									{children}</ContentMask></ClientLayout>
 						</Main>
 					</ClientProviders>
-					<ReactTempus patch/>
+
 				</BetterAuthProvider>
 			</NextIntlClientProvider></Suspense>
 		</body>

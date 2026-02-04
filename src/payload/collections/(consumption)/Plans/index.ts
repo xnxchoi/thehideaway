@@ -1,5 +1,4 @@
 // import { Plan } from "@/payload-types";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField"
 import {CollectionConfig} from "payload"
 
 const Plans: CollectionConfig = {

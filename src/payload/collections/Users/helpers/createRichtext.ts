@@ -1,8 +1,8 @@
 import {
-  SerializedParagraphNode,
-  SerializedRootNode,
-  SerializedTextNode,
-  type SerializedEditorState
+	type SerializedEditorState,
+	SerializedParagraphNode,
+	SerializedRootNode,
+	SerializedTextNode
 } from "lexical";
 
 export const createRichtext = (content: string | Array<string>) => {

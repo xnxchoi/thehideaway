@@ -1,7 +1,7 @@
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import type {User} from "@/payload-types";
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
-import {sanitizeAuthor} from "@/payload/fields/AuthorFields/hooks";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
 import {extractImageInfo} from "@/utilities/extractImageInfo";
 import path from "path";
@@ -26,7 +26,7 @@ const MediaFields: CollectionConfig["fields"] = [
 			hidden: true
 		}
 	},
-	...AuthorField(false),
+	...authorFields(false),
 
 ];
 

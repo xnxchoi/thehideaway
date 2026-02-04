@@ -1,4 +1,4 @@
-import {AuthorField} from "@/payload/fields/AuthorFields/AuthorField";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {lexicalEditor} from "@payloadcms/richtext-lexical";
 
 import {CollectionConfig} from "payload";
@@ -148,7 +148,7 @@ export const Products: CollectionConfig = {
 			maxRows: 5,
 			index: true,
 		},
-		...AuthorField(false),
+		...authorFields(false),
 	],
 
 	versions: {

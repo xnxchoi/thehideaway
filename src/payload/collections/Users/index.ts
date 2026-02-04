@@ -169,7 +169,7 @@ export const Users: CollectionConfig = {
       type: "ui",
       admin: {
         components: {
-          Field: "src/payload/fields/DynamicLabel/index.tsx"
+	        Field: "@/payload/fields/DynamicLabel"
         }
       }
     },

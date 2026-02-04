@@ -27,7 +27,6 @@ export const Justification = (props: {
   const { onMouseEnter: hME, onMouseLeave: hMO } = useDomCursor({});
   const locale = useLocale();
   const t = useTranslations("UI.Justification");
-  const translaterr = (t, n) => `translate(-50%, -50%) ${n}`;
   const [visibility, setVisibility] = useState(false);
 
   const {
@@ -96,9 +95,9 @@ export const Justification = (props: {
         </p>
       </div>
       <div id={"overlayer"}>
-        <AnimatePresence mode="wait">
+	      <AnimatePresence initial={true} mode="wait">
           {visibility && (
-            <Fragment>
+	          <>
               <m.div
                 key={"the_pitch_bg"}
                 ref={bgRE}
@@ -294,7 +293,7 @@ export const Justification = (props: {
                   </m.div>
                 </m.div>
               </m.div>
-            </Fragment>
+	          </>
           )}
         </AnimatePresence>
       </div>

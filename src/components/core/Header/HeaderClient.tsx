@@ -11,7 +11,8 @@ import {EASING, springGSAP} from "@/constants/animations";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 import {cn} from "@/lib/utils";
 import {useHeaderTheme} from "@/providers/HeaderTheme";
-import {useCursor, useDeviceInfo, useMenu, useRPStore} from "@/providers/RP_Pro";
+import {useIsMobile} from "@/providers/MiddleMan";
+import {useCursor, useMenu, useRPStore} from "@/providers/RP_Pro";
 import {useTheme} from "@/providers/Theme";
 import {useVoyageur} from "@/stores/Routing/RP_Voyageur";
 import {delay, rp_lerp} from "@/utilities/rp_utils";
@@ -79,7 +80,7 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 		[visible, visibleness]
 	)
 
-	const isMobile = useDeviceInfo(useShallow((r) => r.isMobile));
+	const {isMobile} = useIsMobile()
 	const mobileState = useMotionValue(isMobile);
 	useEffect(() => {
 		mobileState.set(isMobile)
@@ -119,7 +120,6 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 	// r = useRef<HTMLDivElement>(null!),
 	// c = useRef<HTMLDivElement>(null!)
 	// ;
-	const [isScrolling, setIsScrolling] = useState(false);
 	const [scrollDirection, setScrollDirection] =
 		useState<VerticalDirection>("up");
 	const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
@@ -130,10 +130,10 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 		},
 		[navIsOpen, navState]
 	)
-	const lenis = useLenis();
-	useLenis((lenis) => {
-		setIsScrolling(!!lenis.isScrolling);
-		setScrollDirection(lenis.direction > -1 ? "up" : "down");
+	const [isScrolling, setScrolling] = useState(false)
+	useLenis(({isScrolling, direction}) => {
+		setScrolling(!!isScrolling)
+		setScrollDirection(direction > -1 ? "up" : "down");
 	});
 	const commandRef = useRef<ComponentRef<"button">>(null!);
 	const user = useRPSession(useShallow((r) => r.id));
@@ -203,7 +203,11 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 		})
 
 	})
-	const sectionY = useMotionTemplate`-${sectionTranslate}%`;
+	const sectionY = useMotionTemplate`-${sectionTranslate}%`, sectionCY = useTransform(() => {
+		const scft = sectionTranslate.get(), mb = mobileState.get(), scb = scrubPosition.get()
+		const y = scft < 0 ? scft : mb ? -50 : ((-25) - scb * 25);
+		return `translate(-50%,${y}%)`
+	})
 	const sectionLX = useMotionTemplate`-${sectionTranslate}%`,
 		sectionRX = useMotionTemplate`${sectionTranslate}%`
 	const innerY = useMotionTemplate`${innerTranslate}%`;
@@ -272,19 +276,24 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 	})
 	const innerPX = useTransform(() => {
 		const progress = ssss.get();
-		return 36 + progress * (gutter.get() - 36)
+		const pxOrigin = mobileState.get() ? 24 : 36
+		return pxOrigin + progress * (gutter.get() - pxOrigin)
 	})
-	const innerPTop = useTransform(() => {
-		const progress = ssss.get();
-		return (1 - progress) * 24
-	})
+	const innerPTop = useTransform(() =>
+
+		(1 - ssss.get()) * (mobileState.get() ? 0 : 24)
+	)
 	const _btBlur = useTransform(() => {
 		const navOpen = navState.get(), progress = scrubPosition.get();
 		return navOpen ? 0 : (4 + progress * 10);
 	})
 	const btBlur = useMotionTemplate`blur(${_btBlur}px)`
 
-	const mainY = useTransform(() => scrubPosition.get() * 12);
+	const mainY = useTransform(() => {
+		const mb = mobileState.get();
+		const fc = mb ? 5 : 0;
+		return fc + scrubPosition.get() * (12 - fc);
+	})
 	const translate = useMotionTemplate`translate(-50%,${mainY}px)`
 	const windowWidthValue = useMotionValue(window.innerWidth)
 	useEffect(() => {
@@ -295,7 +304,8 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 	);
 	const mainWidth = useTransform(() => {
 		const progress = scrubPosition.get(), ww = windowWidthValue.get();
-		return ww + progress * (condensedWidth.get() - ww);
+		const kw = mobileState.get() ? ww - 32 : 645
+		return ww + progress * (kw - ww);
 	})
 	const mainZIndex = useTransform(scrubPosition, [0, 1], [249, 245])
 	const _bsSpread = useTransform(() => 0.5 * scrubPosition.get()),
@@ -336,7 +346,7 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 	useEffect(() => {
 		initiateAnimationTimeline.current && initiateAnimationTimeline.current();
 
-	}, [lastResize, lenis]);
+	}, [lastResize]);
 
 	const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null!);
 	const setHeaderState = useCallback(
@@ -393,9 +403,8 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 		headerTransitionDisabled.current = true;
 		transitioning.set(true);
 	}, [transitioning]);
-	useEffect(() => {
+	useLenis((lenis) => {
 		!initiatedScroll.current &&
-		lenis &&
 		((initiatedScroll.current = !0),
 			lenis.on("scroll", (l) => {
 				if (!headerTransitionDisabled.current && l.animatedScroll) {
@@ -404,7 +413,7 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 						animateOnScroll(tweenNumber.current));
 				}
 			}));
-	}, [animateOnScroll, lenis]);
+	});
 	useEffect(() => {
 		(timeoutRef.current && clearTimeout(timeoutRef.current),
 			(timeoutRef.current = setTimeout(() => {
@@ -549,7 +558,7 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 					paddingBottom: 0
 				}}
 				key={"section-header-container"}
-				className="relative flex items-center justify-between pt-[24px] px-[36px] pb-0 h-[4.8rem] max-md:h-[5.4rem] z-20"
+				className="relative flex items-center justify-between pt-[24px] px-[36px] pb-0 h-[4.8rem] min-lg:h-[5.4rem] z-20"
 			>
 				<m.div id="l-side" className="z-20"
 				       style={{
@@ -568,8 +577,8 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 				<m.div
 					// ref={c}
 					style={{
-						y: sectionY,
-						x: 0
+						transform: sectionCY,
+						left: "50%", top: "50%"
 					}}
 					id="c-side">
 
@@ -600,28 +609,29 @@ export const HeaderClient = ({children}: { children: ReactNode }) => {
 				}}>
 					<AnimatePresence mode="popLayout" propagate={true}>
 						<SignedIn key="signed-in">
-							<NotificationProvider user={user!}>
-								<NotificationButton style={{
+							{!isMobile && <NotificationProvider user={user!}>
+                                <NotificationButton style={{
 									color: themeColour,
 									backgroundColor: btBackground, backdropFilter: btBlur
 								}}/>
-							</NotificationProvider>
+                            </NotificationProvider>}
 							<UserDropdown style={{
 								color: themeColour,
 								backgroundColor: btBackground, backdropFilter: btBlur
 							}}/>
 						</SignedIn>
 						<SignedOut key="signed-out">
-							<CheckInButton style={{
+							{!isMobile && <CheckInButton style={{
 								color: themeColour,
 								backgroundColor: btBackground, backdropFilter: btBlur
-							}}/>
+							}}/>}
 						</SignedOut>
-						<SearchBar key={"search-component"} ref={commandRef} style={{
-							color: themeColour,
-							backgroundColor: btBackground, backdropFilter: btBlur
+						{!isMobile &&
+                            <SearchBar key={"search-component"} ref={commandRef} style={{
+								color: themeColour,
+								backgroundColor: btBackground, backdropFilter: btBlur
 
-						}}/>
+							}}/>}
 						<DarkmodeButton key={"darkmode-component"} style={{
 							color: themeColour,
 							backgroundColor: btBackground, backdropFilter: btBlur

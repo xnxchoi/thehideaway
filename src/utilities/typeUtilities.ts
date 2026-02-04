@@ -9,7 +9,11 @@ export type Concat<T extends string[]> = T extends [
 ]
   ? `${F}${Concat<R>}`
   : "";
-
+export type KeysOfValue<T, TCondition> = {
+	[K in keyof T]: T[K] extends TCondition
+		? K
+		: never;
+}[keyof T];
 export function join<T extends string[]>(...strings: T): Concat<T> {
   return strings.join("") as Concat<T>;
 }

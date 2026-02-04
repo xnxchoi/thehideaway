@@ -1,6 +1,8 @@
-import payload from "payload";
+import config from "@payload-config";
+import {getPayload} from "payload";
 
 export const sendDueEmail = async (subscription) => {
+	const payload = await getPayload({config})
 	const user = await payload.findByID({
 		collection: "users",
 		id: subscription.user,

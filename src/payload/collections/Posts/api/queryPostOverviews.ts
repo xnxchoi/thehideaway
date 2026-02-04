@@ -1,10 +1,9 @@
 "use server";
 import {getImageMedia} from "@/payload/collections/Posts/api/getImageMedia";
-import {postOverviewSelect, PostOverviewSelector} from "@/payload/collections/Posts/api/queryBase";
+import {postOverviewSelect} from "@/payload/collections/Posts/api/queryBase";
 import {OverviewSlugs} from "@/types/collections/index";
 import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
 import {AuthorOverview, userOverviewSelect} from "@/types/collections/users";
-import {PayloadFound} from "@/types/payload-api-helpers";
 
 import configPromise from "@payload-config";
 import {BasePayload, FindArgs, FindOneArgs, getPayload, PaginatedDocs, SelectType} from "payload";
@@ -131,11 +130,11 @@ export const getPostOverviews = async <T extends Omit<FindArgs, "collection" | "
 		.find({
 			collection: "posts",
 			where,
-			select: postOverviewSelect()
+			select: {slug: true}
 			,
 			overrideAccess: true,
 
-		}).then(r => r as PaginatedDocs<PayloadFound<"posts", PostOverviewSelector>>)
+		}).then(r => r as PaginatedDocs<{ id: string; slug: string; }>)
 		.catch((e) => {
 			console.error({
 				message: `Error while retrieving post overview`,
@@ -152,7 +151,7 @@ export const getPostOverviews = async <T extends Omit<FindArgs, "collection" | "
 				prevPage: 0,
 				pagingCounter: 0,
 				limit: 0
-			} as PaginatedDocs<PayloadFound<"posts", PostOverviewSelector>>
+			} as PaginatedDocs<{ id: string; slug: string }>
 		});
 	const newpr = docs.map(async (r) => await getPostOverview({payload, id: r.id}))
 	const fp = await Promise.allSettled(newpr);
@@ -166,7 +165,7 @@ export const getPostOverviews = async <T extends Omit<FindArgs, "collection" | "
 		totalPages,
 		limit,
 		pagingCounter,
-		docs: fp.flatMap(r => r.status === "fulfilled" ? r.value : [])
+		docs: fp.filter(r => r.status === "fulfilled").map(r => r.value)
 	} satisfies PaginatedDocs<PostOverview>;
 }
 export const getPostOverview = cache(async <T extends Omit<FindOneArgs, "collection" | "locale" | "id" | "where">>({
@@ -198,7 +197,7 @@ export const getPostOverview = cache(async <T extends Omit<FindOneArgs, "collect
 		category: r.category as CategoryOverview,
 		bookmarks: bookres?.bookmarks || [],
 		bookmarksCount: bookres?.count || 0,
-	} satisfies PostOverview
+	} as PostOverview
 })
 export const getUserOverview = cache(async (authorID: string) => {
 	const payload = await getPayload({config: configPromise});

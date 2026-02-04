@@ -8,7 +8,7 @@ import {RP_Roles} from "@/stores/Notification/NotificationStore";
 import {arraysEqualContents} from "@/utilities/compareArrays";
 import {mergeFields} from "@/utilities/mergeFields";
 import {SerializedEditorState} from "lexical";
-import payload, {
+import {
   Access,
   AccessArgs,
   AccessResult,
@@ -604,7 +604,7 @@ const createRevalidateDoc = <T extends LockedCollections>(
           if (changed) {
             const path = `/${collectionSlug}/${slug}`;
 
-            payload.logger.info(`Revalidating ${collection} at path: ${path}`);
+            req.payload.logger.info(`Revalidating ${collection} at path: ${path}`);
 
 	          // revalidatePath(path);
 

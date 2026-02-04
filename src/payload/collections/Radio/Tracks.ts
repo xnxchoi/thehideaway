@@ -1,17 +1,18 @@
-import { CollectionConfig, Where } from "payload";
-import path from "path";
-import { fileURLToPath } from "url";
+import {populatePublishedAt} from "@/hooks/populatePublishedAt";
+import {updateTagsAfterChange} from "@/payload/collections/Categories/hooks";
+import {StreamHandler} from "@/payload/collections/Radio/endpoints/stream";
+import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
+import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
+import {slugField} from "@/payload/fields/slug";
 import {
-  isAdmin,
-  standardCreateAccess,
-  standardUpdateAccess
+	isAdmin,
+	standardCreateAccess,
+	standardUpdateAccess
 } from "@/payload/plugins/locker/access/accessCheckers";
-import { StreamHandler } from "@/payload/collections/Radio/endpoints/stream";
-import { populatePublishedAt } from "@/hooks/populatePublishedAt";
-import { AuthorField } from "@/payload/fields/AuthorFields/AuthorField";
-import { sanitizeAuthor } from "@/payload/fields/AuthorFields/hooks";
-import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
-import { slugField } from "@/payload/fields/slug";
+import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
+import path from "path";
+import {CollectionConfig, Where} from "payload";
+import {fileURLToPath} from "url";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -115,9 +116,11 @@ export const Tracks: CollectionConfig = {
     },
     {
       name: "tagged",
+	    label: "Tags",
       type: "relationship",
       relationTo: "tags",
       hasMany: true,
+
       admin: {
         allowCreate: true,
         allowEdit: false
@@ -143,8 +146,8 @@ export const Tracks: CollectionConfig = {
       options: ["public", "private"],
       defaultValue: "public"
     },
-    ...AuthorField(),
-    ...slugField("title", {
+	  ...authorFields(),
+	  ...slugField("title", true, {
       checkboxOverrides: {
         admin: {
           readOnly: !isAdmin
@@ -168,7 +171,8 @@ export const Tracks: CollectionConfig = {
     maxPerDoc: 3
   },
   endpoints: [{ path: "stream/:id", method: "get", handler: StreamHandler }],
-  hooks: {
+	hooks: {
+		afterChange: [updateTagsAfterChange],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]
   }
 };

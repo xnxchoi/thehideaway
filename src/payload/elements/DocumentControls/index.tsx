@@ -37,7 +37,7 @@ import {PublishButton} from "@/payload/elements/PublishButton/publishClient";
 import {RestoreButton} from "@/payload/elements/RestoreButton";
 import {RP_SaveButton} from "@/payload/elements/SaveButton/SaveClient";
 import {Status} from "@/payload/elements/Status";
-import {SidebarControls} from "@/payload/fields/SidebarControls/client";
+import {SidebarControls} from "@/payload/elements/SidebarControls/client";
 import {useVaultSidebar} from "@/payload/providers/Admins";
 import {Menu} from "@base-ui/react";
 import {LivePreviewToggler} from "@payloadcms/ui/elements/LivePreview/Toggler";

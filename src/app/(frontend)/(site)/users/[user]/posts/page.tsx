@@ -50,26 +50,34 @@ export default async function Page({params: paramsPromise}: Args) {
 	});
 
 	return (
-		<RPage key={`posts_${posts.length}`} type="users" slug={[url, "posts"]}>
+		<RPage key={`posts_${posts.totalPages}`} type="users" slug={[url, "posts"]}>
 			<PageClient>
 				<div className="relative flex w-full flex-col items-center justify-center">
-					<CatTitle title={`Latest from ${targetUser.name}`} />
+					<CatTitle>{`Latest from ${targetUser.name}`} </CatTitle>
 					<div className={
 						"relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
 					}>
 						<div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
-							{posts.map((post) => (
-								<TaggedItem key={post.id} {...post} />
+							{posts.docs.map(({id, subtitle, title, author, category, tagged}) => (
+								<TaggedItem
+									key={id}
+									author={author.name}
+									title={title}
+									category={category.title}
+									subtitle={subtitle}
+									id={id}
+									tagged={tagged}
+									url={`/users/${author.slug}/posts/${id}`}
+								/>
 							))}
 						</div>
 					</div>
 				</div>
 				<div className="container">
 					<div className="container mb-8">
-						<PageRange collection="posts" currentPage={1} limit={12}
-						           totalDocs={posts.length} />
+
 					</div>
-					{posts.length > 12 && <Pagination page={1} totalPages={1} />}
+					{posts.totalDocs > 12 && <Pagination page={1} totalPages={1}/>}
 				</div>
 			</PageClient>
 		</RPage>

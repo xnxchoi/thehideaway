@@ -35,8 +35,8 @@ const postOverviewSelector = {
 	tagged: true
 } as const;
 export type PostOverviewKeys = keyof typeof postOverviewSelector;
-export type PostOverviewSelector = Record<PostOverviewKeys, true>;
-export const postOverviewSelect = (): PostOverviewSelector => ({
+export type PostOverviewSelect = Record<PostOverviewKeys, true>;
+export const postOverviewSelect = (): PostOverviewSelect => ({
 	title: true,
 	publishedAt: true,
 	image: true,
