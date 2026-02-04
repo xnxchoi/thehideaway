@@ -1,0 +1,1363 @@
+diff --git a/es/index.js b/es/index.js
+index 2b6a3ac17660c71241d7efa3eea101a7dfe79989..26adfa38f25f88812db3457ebde623a324d8950f 100644
+--- a/es/index.js
++++ b/es/index.js
+@@ -1,105 +1,105 @@
+-import toDate from './lib/toDate';
+-import toFloat from './lib/toFloat';
+-import toInt from './lib/toInt';
+-import toBoolean from './lib/toBoolean';
+-import equals from './lib/equals';
+-import contains from './lib/contains';
+-import matches from './lib/matches';
+-import isEmail from './lib/isEmail';
+-import isURL from './lib/isURL';
+-import isMACAddress from './lib/isMACAddress';
+-import isIP from './lib/isIP';
+-import isIPRange from './lib/isIPRange';
+-import isFQDN from './lib/isFQDN';
+-import isDate from './lib/isDate';
+-import isTime from './lib/isTime';
+-import isBoolean from './lib/isBoolean';
+-import isLocale from './lib/isLocale';
+-import isAbaRouting from './lib/isAbaRouting';
+-import isAlpha, { locales as isAlphaLocales } from './lib/isAlpha';
+-import isAlphanumeric, { locales as isAlphanumericLocales } from './lib/isAlphanumeric';
+-import isNumeric from './lib/isNumeric';
+-import isPassportNumber, { locales as passportNumberLocales } from './lib/isPassportNumber';
+-import isPort from './lib/isPort';
+-import isLowercase from './lib/isLowercase';
+-import isUppercase from './lib/isUppercase';
+-import isIMEI from './lib/isIMEI';
+-import isAscii from './lib/isAscii';
+-import isFullWidth from './lib/isFullWidth';
+-import isHalfWidth from './lib/isHalfWidth';
+-import isVariableWidth from './lib/isVariableWidth';
+-import isMultibyte from './lib/isMultibyte';
+-import isSemVer from './lib/isSemVer';
+-import isSurrogatePair from './lib/isSurrogatePair';
+-import isInt from './lib/isInt';
+-import isFloat, { locales as isFloatLocales } from './lib/isFloat';
+-import isDecimal from './lib/isDecimal';
+-import isHexadecimal from './lib/isHexadecimal';
+-import isOctal from './lib/isOctal';
+-import isDivisibleBy from './lib/isDivisibleBy';
+-import isHexColor from './lib/isHexColor';
+-import isRgbColor from './lib/isRgbColor';
+-import isHSL from './lib/isHSL';
+-import isISRC from './lib/isISRC';
+-import isIBAN, { locales as ibanLocales } from './lib/isIBAN';
+-import isBIC from './lib/isBIC';
+-import isMD5 from './lib/isMD5';
+-import isHash from './lib/isHash';
+-import isJWT from './lib/isJWT';
+-import isJSON from './lib/isJSON';
+-import isEmpty from './lib/isEmpty';
+-import isLength from './lib/isLength';
+-import isByteLength from './lib/isByteLength';
+-import isULID from './lib/isULID';
+-import isUUID from './lib/isUUID';
+-import isMongoId from './lib/isMongoId';
+-import isAfter from './lib/isAfter';
+-import isBefore from './lib/isBefore';
+-import isIn from './lib/isIn';
+-import isLuhnNumber from './lib/isLuhnNumber';
+-import isCreditCard from './lib/isCreditCard';
+-import isIdentityCard from './lib/isIdentityCard';
+-import isEAN from './lib/isEAN';
+-import isISIN from './lib/isISIN';
+-import isISBN from './lib/isISBN';
+-import isISSN from './lib/isISSN';
+-import isTaxID from './lib/isTaxID';
+-import isMobilePhone, { locales as isMobilePhoneLocales } from './lib/isMobilePhone';
+-import isEthereumAddress from './lib/isEthereumAddress';
+-import isCurrency from './lib/isCurrency';
+-import isBtcAddress from './lib/isBtcAddress';
+-import { isISO6346, isFreightContainerID } from './lib/isISO6346';
+-import isISO6391 from './lib/isISO6391';
+-import isISO8601 from './lib/isISO8601';
+-import isRFC3339 from './lib/isRFC3339';
+-import isISO15924 from './lib/isISO15924';
+-import isISO31661Alpha2 from './lib/isISO31661Alpha2';
+-import isISO31661Alpha3 from './lib/isISO31661Alpha3';
+-import isISO31661Numeric from './lib/isISO31661Numeric';
+-import isISO4217 from './lib/isISO4217';
+-import isBase32 from './lib/isBase32';
+-import isBase58 from './lib/isBase58';
+-import isBase64 from './lib/isBase64';
+-import isDataURI from './lib/isDataURI';
+-import isMagnetURI from './lib/isMagnetURI';
+-import isMailtoURI from './lib/isMailtoURI';
+-import isMimeType from './lib/isMimeType';
+-import isLatLong from './lib/isLatLong';
+-import isPostalCode, { locales as isPostalCodeLocales } from './lib/isPostalCode';
+-import ltrim from './lib/ltrim';
+-import rtrim from './lib/rtrim';
+-import trim from './lib/trim';
+-import escape from './lib/escape';
+-import unescape from './lib/unescape';
+-import stripLow from './lib/stripLow';
+-import whitelist from './lib/whitelist';
+-import blacklist from './lib/blacklist';
+-import isWhitelisted from './lib/isWhitelisted';
+-import normalizeEmail from './lib/normalizeEmail';
+-import isSlug from './lib/isSlug';
+-import isLicensePlate from './lib/isLicensePlate';
+-import isStrongPassword from './lib/isStrongPassword';
+-import isVAT from './lib/isVAT';
++import toDate from './lib/toDate.js';
++import toFloat from './lib/toFloat.js';
++import toInt from './lib/toInt.js';
++import toBoolean from './lib/toBoolean.js';
++import equals from './lib/equals.js';
++import contains from './lib/contains.js';
++import matches from './lib/matches.js';
++import isEmail from './lib/isEmail.js';
++import isURL from './lib/isURL.js';
++import isMACAddress from './lib/isMACAddress.js';
++import isIP from './lib/isIP.js';
++import isIPRange from './lib/isIPRange.js';
++import isFQDN from './lib/isFQDN.js';
++import isDate from './lib/isDate.js';
++import isTime from './lib/isTime.js';
++import isBoolean from './lib/isBoolean.js';
++import isLocale from './lib/isLocale.js';
++import isAbaRouting from './lib/isAbaRouting.js';
++import isAlpha, { locales as isAlphaLocales } from './lib/isAlpha.js';
++import isAlphanumeric, { locales as isAlphanumericLocales } from './lib/isAlphanumeric.js';
++import isNumeric from './lib/isNumeric.js';
++import isPassportNumber, { locales as passportNumberLocales } from './lib/isPassportNumber.js';
++import isPort from './lib/isPort.js';
++import isLowercase from './lib/isLowercase.js';
++import isUppercase from './lib/isUppercase.js';
++import isIMEI from './lib/isIMEI.js';
++import isAscii from './lib/isAscii.js';
++import isFullWidth from './lib/isFullWidth.js';
++import isHalfWidth from './lib/isHalfWidth.js';
++import isVariableWidth from './lib/isVariableWidth.js';
++import isMultibyte from './lib/isMultibyte.js';
++import isSemVer from './lib/isSemVer.js';
++import isSurrogatePair from './lib/isSurrogatePair.js';
++import isInt from './lib/isInt.js';
++import isFloat, { locales as isFloatLocales } from './lib/isFloat.js';
++import isDecimal from './lib/isDecimal.js';
++import isHexadecimal from './lib/isHexadecimal.js';
++import isOctal from './lib/isOctal.js';
++import isDivisibleBy from './lib/isDivisibleBy.js';
++import isHexColor from './lib/isHexColor.js';
++import isRgbColor from './lib/isRgbColor.js';
++import isHSL from './lib/isHSL.js';
++import isISRC from './lib/isISRC.js';
++import isIBAN, { locales as ibanLocales } from './lib/isIBAN.js';
++import isBIC from './lib/isBIC.js';
++import isMD5 from './lib/isMD5.js';
++import isHash from './lib/isHash.js';
++import isJWT from './lib/isJWT.js';
++import isJSON from './lib/isJSON.js';
++import isEmpty from './lib/isEmpty.js';
++import isLength from './lib/isLength.js';
++import isByteLength from './lib/isByteLength.js';
++import isULID from './lib/isULID.js';
++import isUUID from './lib/isUUID.js';
++import isMongoId from './lib/isMongoId.js';
++import isAfter from './lib/isAfter.js';
++import isBefore from './lib/isBefore.js';
++import isIn from './lib/isIn.js';
++import isLuhnNumber from './lib/isLuhnNumber.js';
++import isCreditCard from './lib/isCreditCard.js';
++import isIdentityCard from './lib/isIdentityCard.js';
++import isEAN from './lib/isEAN.js';
++import isISIN from './lib/isISIN.js';
++import isISBN from './lib/isISBN.js';
++import isISSN from './lib/isISSN.js';
++import isTaxID from './lib/isTaxID.js';
++import isMobilePhone, { locales as isMobilePhoneLocales } from './lib/isMobilePhone.js';
++import isEthereumAddress from './lib/isEthereumAddress.js';
++import isCurrency from './lib/isCurrency.js';
++import isBtcAddress from './lib/isBtcAddress.js';
++import { isISO6346, isFreightContainerID } from './lib/isISO6346.js';
++import isISO6391 from './lib/isISO6391.js';
++import isISO8601 from './lib/isISO8601.js';
++import isRFC3339 from './lib/isRFC3339.js';
++import isISO15924 from './lib/isISO15924.js';
++import isISO31661Alpha2 from './lib/isISO31661Alpha2.js';
++import isISO31661Alpha3 from './lib/isISO31661Alpha3.js';
++import isISO31661Numeric from './lib/isISO31661Numeric.js';
++import isISO4217 from './lib/isISO4217.js';
++import isBase32 from './lib/isBase32.js';
++import isBase58 from './lib/isBase58.js';
++import isBase64 from './lib/isBase64.js';
++import isDataURI from './lib/isDataURI.js';
++import isMagnetURI from './lib/isMagnetURI.js';
++import isMailtoURI from './lib/isMailtoURI.js';
++import isMimeType from './lib/isMimeType.js';
++import isLatLong from './lib/isLatLong.js';
++import isPostalCode, { locales as isPostalCodeLocales } from './lib/isPostalCode.js';
++import ltrim from './lib/ltrim.js';
++import rtrim from './lib/rtrim.js';
++import trim from './lib/trim.js';
++import escape from './lib/escape.js';
++import unescape from './lib/unescape.js';
++import stripLow from './lib/stripLow.js';
++import whitelist from './lib/whitelist.js';
++import blacklist from './lib/blacklist.js';
++import isWhitelisted from './lib/isWhitelisted.js';
++import normalizeEmail from './lib/normalizeEmail.js';
++import isSlug from './lib/isSlug.js';
++import isLicensePlate from './lib/isLicensePlate.js';
++import isStrongPassword from './lib/isStrongPassword.js';
++import isVAT from './lib/isVAT.js';
+ var version = '13.15.26';
+ var validator = {
+   version: version,
+diff --git a/es/lib/blacklist.js b/es/lib/blacklist.js
+index 77c0e5cfc679e48018ca28982769eb18139566e4..b0e06bb884fced13b79e16c43f2b5fbb544e1652 100644
+--- a/es/lib/blacklist.js
++++ b/es/lib/blacklist.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function blacklist(str, chars) {
+   assertString(str);
+   return str.replace(new RegExp("[".concat(chars, "]+"), 'g'), '');
+diff --git a/es/lib/contains.js b/es/lib/contains.js
+index 222d52e2f9cdf1c657d4b76c22ca634080152f49..f196b788819b45a97f7e21a6304eb6d5100bf8f2 100644
+--- a/es/lib/contains.js
++++ b/es/lib/contains.js
+@@ -1,6 +1,6 @@
+-import assertString from './util/assertString';
+-import toString from './util/toString';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import toString from './util/toString.js';
++import merge from './util/merge.js';
+ var defaultContainsOptions = {
+   ignoreCase: false,
+   minOccurrences: 1
+diff --git a/es/lib/equals.js b/es/lib/equals.js
+index 87a9ded0e709016643972188eae9ad2405ed6f78..28df8c80687cc7e265d919b00a68054458c926c9 100644
+--- a/es/lib/equals.js
++++ b/es/lib/equals.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function equals(str, comparison) {
+   assertString(str);
+   return str === comparison;
+diff --git a/es/lib/escape.js b/es/lib/escape.js
+index e9bb6de30cc46dd5f05c3cbfa5f1c095103f7a3d..657b39fd28f33665fb52a1dc73196613d139f7d4 100644
+--- a/es/lib/escape.js
++++ b/es/lib/escape.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function escape(str) {
+   assertString(str);
+   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\//g, '&#x2F;').replace(/\\/g, '&#x5C;').replace(/`/g, '&#96;');
+diff --git a/es/lib/isAbaRouting.js b/es/lib/isAbaRouting.js
+index a63a44cb1568601620a61ebbc867fde890f5c394..89514a27350f69b7d47c2cc549400ec7d1929617 100644
+--- a/es/lib/isAbaRouting.js
++++ b/es/lib/isAbaRouting.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // http://www.brainjar.com/js/validation/
+ // https://www.aba.com/news-research/research-analysis/routing-number-policy-procedures
+diff --git a/es/lib/isAfter.js b/es/lib/isAfter.js
+index 3eb86a82f13eed3fdf2b3c33053df1f070f77059..aaf0378e8ea10554553506a84c697d132350c3fc 100644
+--- a/es/lib/isAfter.js
++++ b/es/lib/isAfter.js
+@@ -1,5 +1,5 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import toDate from './toDate';
++import toDate from './toDate.js';
+ export default function isAfter(date, options) {
+   // For backwards compatibility:
+   // isAfter(str [, date]), i.e. `options` could be used as argument for the legacy `date`
+diff --git a/es/lib/isAlpha.js b/es/lib/isAlpha.js
+index 64d910403971f77ed2ae86d9110ee6139367b394..15aab0278e1bfff7aeabb5dbf37d22cae3ae2fb5 100644
+--- a/es/lib/isAlpha.js
++++ b/es/lib/isAlpha.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import { alpha } from './alpha';
++import assertString from './util/assertString.js';
++import { alpha } from './alpha.js';
+ export default function isAlpha(_str) {
+   var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'en-US';
+   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+diff --git a/es/lib/isAlphanumeric.js b/es/lib/isAlphanumeric.js
+index cf0aeda83c332664bb8a8cb9d11760df9f088cbc..2fdf866c21e0ffd9ed4dbb70f7d290fe75bb5077 100644
+--- a/es/lib/isAlphanumeric.js
++++ b/es/lib/isAlphanumeric.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import { alphanumeric } from './alpha';
++import assertString from './util/assertString.js';
++import { alphanumeric } from './alpha.js';
+ export default function isAlphanumeric(_str) {
+   var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'en-US';
+   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+diff --git a/es/lib/isAscii.js b/es/lib/isAscii.js
+index 61dfe4de466436012b99d5c41cdb9fa5d5b3d19e..3e35e84043d1eac8e205154c16cd559a48da47e0 100644
+--- a/es/lib/isAscii.js
++++ b/es/lib/isAscii.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* eslint-disable no-control-regex */
+ var ascii = /^[\x00-\x7F]+$/;
+diff --git a/es/lib/isBIC.js b/es/lib/isBIC.js
+index 8e7892b7c95cb75f9fd783b7eea89daf9cf6c514..00058f9ecc862d0f9cb9ed138e0cf5f5cebeab6c 100644
+--- a/es/lib/isBIC.js
++++ b/es/lib/isBIC.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import { CountryCodes } from './isISO31661Alpha2';
++import assertString from './util/assertString.js';
++import { CountryCodes } from './isISO31661Alpha2.js';
+ 
+ // https://en.wikipedia.org/wiki/ISO_9362
+ var isBICReg = /^[A-Za-z]{6}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?$/;
+diff --git a/es/lib/isBase32.js b/es/lib/isBase32.js
+index 9cc3e69d4ea5ec0511cb3b11803572f7b0f41030..6cb03005eacec575b1e6c38dbcc441356011f79c 100644
+--- a/es/lib/isBase32.js
++++ b/es/lib/isBase32.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import merge from './util/merge.js';
+ var base32 = /^[A-Z2-7]+=*$/;
+ var crockfordBase32 = /^[A-HJKMNP-TV-Z0-9]+$/;
+ var defaultBase32Options = {
+diff --git a/es/lib/isBase58.js b/es/lib/isBase58.js
+index 0fb2dec96aee73128343968cc94891df03df53b0..b590245dd9badc0e3085b254fd60ef0813de59cc 100644
+--- a/es/lib/isBase58.js
++++ b/es/lib/isBase58.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // Accepted chars - 123456789ABCDEFGH JKLMN PQRSTUVWXYZabcdefghijk mnopqrstuvwxyz
+ var base58Reg = /^[A-HJ-NP-Za-km-z1-9]*$/;
+diff --git a/es/lib/isBase64.js b/es/lib/isBase64.js
+index 865d6dc92d9b43b5b5ed48ca0f0e545e5c502944..2d2d7427411f0c51ba9a32e8db8bde0107582d64 100644
+--- a/es/lib/isBase64.js
++++ b/es/lib/isBase64.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import merge from './util/merge.js';
+ var base64WithPadding = /^[A-Za-z0-9+/]+={0,2}$/;
+ var base64WithoutPadding = /^[A-Za-z0-9+/]+$/;
+ var base64UrlWithPadding = /^[A-Za-z0-9_-]+={0,2}$/;
+diff --git a/es/lib/isBefore.js b/es/lib/isBefore.js
+index b86ed0a09a1d539312b3e91cdec854f5061c7867..7c1a8e3d630cb69381d64a78df5ed4737c856e3a 100644
+--- a/es/lib/isBefore.js
++++ b/es/lib/isBefore.js
+@@ -1,5 +1,5 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import toDate from './toDate';
++import toDate from './toDate.js';
+ export default function isBefore(date, options) {
+   // For backwards compatibility:
+   // isBefore(str [, date]), i.e. `options` could be used as argument for the legacy `date`
+diff --git a/es/lib/isBoolean.js b/es/lib/isBoolean.js
+index bf3f56ceffeaae3048d9ee377eb9b540be5f1f10..b5dd675b19fa077ea299e19dcc11050bcad1e90c 100644
+--- a/es/lib/isBoolean.js
++++ b/es/lib/isBoolean.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import includes from './util/includesArray';
++import assertString from './util/assertString.js';
++import includes from './util/includesArray.js';
+ var defaultOptions = {
+   loose: false
+ };
+diff --git a/es/lib/isBtcAddress.js b/es/lib/isBtcAddress.js
+index a27221cf53c27ad8316eea2561f6cc08e7df2f89..7e96f5f605df158979829c01c2f8ed8d8648196f 100644
+--- a/es/lib/isBtcAddress.js
++++ b/es/lib/isBtcAddress.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var bech32 = /^(bc1|tb1|bc1p|tb1p)[ac-hj-np-z02-9]{39,58}$/;
+ var base58 = /^(1|2|3|m)[A-HJ-NP-Za-km-z1-9]{25,39}$/;
+ export default function isBtcAddress(str) {
+diff --git a/es/lib/isByteLength.js b/es/lib/isByteLength.js
+index 320963c780e8136962f373e816a60f63ff867d9d..2c86ff0dc6afbb48d30e67b970f9f2a1ec3f8e63 100644
+--- a/es/lib/isByteLength.js
++++ b/es/lib/isByteLength.js
+@@ -1,5 +1,5 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* eslint-disable prefer-rest-params */
+ export default function isByteLength(str, options) {
+diff --git a/es/lib/isCreditCard.js b/es/lib/isCreditCard.js
+index 66900e4eac146d3af3ef5599e8b835d8df352675..d33cbc2b3effdc38dcab9fad693f132b69f94735 100644
+--- a/es/lib/isCreditCard.js
++++ b/es/lib/isCreditCard.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import isLuhnValid from './isLuhnNumber';
++import assertString from './util/assertString.js';
++import isLuhnValid from './isLuhnNumber.js';
+ var cards = {
+   amex: /^3[47][0-9]{13}$/,
+   dinersclub: /^3(?:0[0-5]|[68][0-9])[0-9]{11}$/,
+diff --git a/es/lib/isCurrency.js b/es/lib/isCurrency.js
+index 13565a8af24d7ee2c6598a57e6fc606758aa264e..821be7bd2efa9298dc6aa70d18d31d0b5e3d9640 100755
+--- a/es/lib/isCurrency.js
++++ b/es/lib/isCurrency.js
+@@ -1,5 +1,5 @@
+-import merge from './util/merge';
+-import assertString from './util/assertString';
++import merge from './util/merge.js';
++import assertString from './util/assertString.js';
+ function currencyRegex(options) {
+   var decimal_digits = "\\d{".concat(options.digits_after_decimal[0], "}");
+   options.digits_after_decimal.forEach(function (digit, index) {
+diff --git a/es/lib/isDataURI.js b/es/lib/isDataURI.js
+index ee96625aec60fc485685e42c58536286a5096b66..376ca6d223a43c4e7fb8f34c791a6a62d1dab249 100644
+--- a/es/lib/isDataURI.js
++++ b/es/lib/isDataURI.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var validMediaType = /^[a-z]+\/[a-z0-9\-\+\._]+$/i;
+ var validAttribute = /^[a-z\-]+=[a-z0-9\-]+$/i;
+ var validData = /^[a-z0-9!\$&'\(\)\*\+,;=\-\._~:@\/\?%\s]*$/i;
+diff --git a/es/lib/isDate.js b/es/lib/isDate.js
+index 5df67fc48176b66b8435687ee19566fc073b66d7..fc4cf45064b36f4362a9a59fb2867dfb25e83768 100644
+--- a/es/lib/isDate.js
++++ b/es/lib/isDate.js
+@@ -5,7 +5,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+ function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+-import merge from './util/merge';
++import merge from './util/merge.js';
+ var default_date_options = {
+   format: 'YYYY/MM/DD',
+   delimiters: ['/', '-'],
+diff --git a/es/lib/isDecimal.js b/es/lib/isDecimal.js
+index 8872ff70b11d02f12d7fa02d7ba5a5f66e452cda..ee1767ef5d0434274f48f91a7a5fa642dc8697a0 100644
+--- a/es/lib/isDecimal.js
++++ b/es/lib/isDecimal.js
+@@ -1,7 +1,7 @@
+-import merge from './util/merge';
+-import assertString from './util/assertString';
+-import includes from './util/includesArray';
+-import { decimal } from './alpha';
++import merge from './util/merge.js';
++import assertString from './util/assertString.js';
++import includes from './util/includesArray.js';
++import { decimal } from './alpha.js';
+ function decimalRegExp(options) {
+   var regExp = new RegExp("^[-+]?([0-9]+)?(\\".concat(decimal[options.locale], "[0-9]{").concat(options.decimal_digits, "})").concat(options.force_decimal ? '' : '?', "$"));
+   return regExp;
+diff --git a/es/lib/isDivisibleBy.js b/es/lib/isDivisibleBy.js
+index f71d5f4e2454335152e5338d46e253f63399af87..7ab875eb4b288bbd48be025bade4bbe015a7fd00 100644
+--- a/es/lib/isDivisibleBy.js
++++ b/es/lib/isDivisibleBy.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import toFloat from './toFloat';
++import assertString from './util/assertString.js';
++import toFloat from './toFloat.js';
+ export default function isDivisibleBy(str, num) {
+   assertString(str);
+   return toFloat(str) % parseInt(num, 10) === 0;
+diff --git a/es/lib/isEAN.js b/es/lib/isEAN.js
+index 73288ee7a0c8ba6d509335ee53fba731c098de0b..6ef22a691753c57c03868bdff601946ea0684f63 100644
+--- a/es/lib/isEAN.js
++++ b/es/lib/isEAN.js
+@@ -12,7 +12,7 @@
+  * Reference: https://www.gtin.info/
+  */
+ 
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /**
+  * Define EAN Lengths; 8 for EAN-8; 13 for EAN-13; 14 for EAN-14
+diff --git a/es/lib/isEmail.js b/es/lib/isEmail.js
+index 23fd49efb35a893b63ab68bd6bf9ae727ea9156a..a149ff3f84d977750d14d8a229d3b40f4fc2178e 100644
+--- a/es/lib/isEmail.js
++++ b/es/lib/isEmail.js
+@@ -1,9 +1,9 @@
+-import assertString from './util/assertString';
+-import checkHost from './util/checkHost';
+-import isByteLength from './isByteLength';
+-import isFQDN from './isFQDN';
+-import isIP from './isIP';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import checkHost from './util/checkHost.js';
++import isByteLength from './isByteLength.js';
++import isFQDN from './isFQDN.js';
++import isIP from './isIP.js';
++import merge from './util/merge.js';
+ var default_email_options = {
+   allow_display_name: false,
+   allow_underscores: false,
+diff --git a/es/lib/isEmpty.js b/es/lib/isEmpty.js
+index 79e29f74d387d8a45815758c3dee01c5ab83fa07..8ba08d95d56a7056ee69401ce001c64692661f46 100644
+--- a/es/lib/isEmpty.js
++++ b/es/lib/isEmpty.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import merge from './util/merge.js';
+ var default_is_empty_options = {
+   ignore_whitespace: false
+ };
+diff --git a/es/lib/isEthereumAddress.js b/es/lib/isEthereumAddress.js
+index 9c70f64c15517324e831a2b0d6fd144cc000d019..c56fb40ec89ef06ddee9711d9f0fd9fba3e499b7 100644
+--- a/es/lib/isEthereumAddress.js
++++ b/es/lib/isEthereumAddress.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var eth = /^(0x)[0-9a-f]{40}$/i;
+ export default function isEthereumAddress(str) {
+   assertString(str);
+diff --git a/es/lib/isFQDN.js b/es/lib/isFQDN.js
+index 61d9a03bb7fc9eaa15aa1ac343309dc6c3d7281f..935d9634a7ee84c3f44c0dcb8777d99fbbf5dcc4 100644
+--- a/es/lib/isFQDN.js
++++ b/es/lib/isFQDN.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import merge from './util/merge.js';
+ var default_fqdn_options = {
+   require_tld: true,
+   allow_underscores: false,
+diff --git a/es/lib/isFloat.js b/es/lib/isFloat.js
+index e6ae8d6eba46fa9786cf3ef535617fb94e3b75a0..a027fde97dff6249fc1274ea9ca1c4d7d5b3b7b6 100644
+--- a/es/lib/isFloat.js
++++ b/es/lib/isFloat.js
+@@ -1,6 +1,6 @@
+-import assertString from './util/assertString';
+-import isNullOrUndefined from './util/nullUndefinedCheck';
+-import { decimal } from './alpha';
++import assertString from './util/assertString.js';
++import isNullOrUndefined from './util/nullUndefinedCheck.js';
++import { decimal } from './alpha.js';
+ export default function isFloat(str, options) {
+   assertString(str);
+   options = options || {};
+diff --git a/es/lib/isFullWidth.js b/es/lib/isFullWidth.js
+index ae546295770a7822b8a55d333521d446b6aa4baf..1aa961cbc53070d3ffb543bf8b6c29689807e101 100644
+--- a/es/lib/isFullWidth.js
++++ b/es/lib/isFullWidth.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export var fullWidth = /[^\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]/;
+ export default function isFullWidth(str) {
+   assertString(str);
+diff --git a/es/lib/isHSL.js b/es/lib/isHSL.js
+index ca99a435e92b664b5f1cb61513febfb7aeac3a21..63df025ace35738d884bb866266cdc01c7374c2b 100644
+--- a/es/lib/isHSL.js
++++ b/es/lib/isHSL.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var hslComma = /^hsla?\(((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?))(deg|grad|rad|turn)?(,(\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%){2}(,((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%?))?\)$/i;
+ var hslSpace = /^hsla?\(((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?))(deg|grad|rad|turn)?(\s(\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%){2}\s?(\/\s((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%?)\s?)?\)$/i;
+ export default function isHSL(str) {
+diff --git a/es/lib/isHalfWidth.js b/es/lib/isHalfWidth.js
+index b0c879573f86114da7eac4f00f5800e2a2f17ad4..68991318bca20333c0951c0a3476b18bf7745ec6 100644
+--- a/es/lib/isHalfWidth.js
++++ b/es/lib/isHalfWidth.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export var halfWidth = /[\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]/;
+ export default function isHalfWidth(str) {
+   assertString(str);
+diff --git a/es/lib/isHash.js b/es/lib/isHash.js
+index 3495486ab33c827841b21a283f4e17562fa9176d..575869fee6ab4a02afcece69a72a0200030b1557 100644
+--- a/es/lib/isHash.js
++++ b/es/lib/isHash.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var lengths = {
+   md5: 32,
+   md4: 32,
+diff --git a/es/lib/isHexColor.js b/es/lib/isHexColor.js
+index 5f698469b2026804f8f4d61300f340a5f5707f0e..d940f768b6808316660f302a96b75d5a287d25a0 100644
+--- a/es/lib/isHexColor.js
++++ b/es/lib/isHexColor.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import merge from './util/merge.js';
+ var hexcolor = /^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
+ var hexcolor_with_prefix = /^#([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
+ var default_is_hexcolor_options = {
+diff --git a/es/lib/isHexadecimal.js b/es/lib/isHexadecimal.js
+index 6654de40b7939f6684d55d04d8b1c13a1c7c4451..e75b9b69b9153ebb06ae4e65e4942e8c42fd5cc9 100644
+--- a/es/lib/isHexadecimal.js
++++ b/es/lib/isHexadecimal.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var hexadecimal = /^(0x|0h)?[0-9A-F]+$/i;
+ export default function isHexadecimal(str) {
+   assertString(str);
+diff --git a/es/lib/isIBAN.js b/es/lib/isIBAN.js
+index 0e995813f5c0766810aee471892332c8cc556724..3bd7600799a2ae4441f4bd9a182550abf664bd1b 100644
+--- a/es/lib/isIBAN.js
++++ b/es/lib/isIBAN.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import includes from './util/includesArray';
++import assertString from './util/assertString.js';
++import includes from './util/includesArray.js';
+ 
+ /**
+  * List of country codes with
+diff --git a/es/lib/isIMEI.js b/es/lib/isIMEI.js
+index d731a3ac335ecbcf500b660e3b3dcab33c9bb5e9..c73f3ca4694cf330810a9ce0ac13214122fba21f 100644
+--- a/es/lib/isIMEI.js
++++ b/es/lib/isIMEI.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var imeiRegexWithoutHyphens = /^[0-9]{15}$/;
+ var imeiRegexWithHyphens = /^\d{2}-\d{6}-\d{6}-\d{1}$/;
+ export default function isIMEI(str, options) {
+diff --git a/es/lib/isIP.js b/es/lib/isIP.js
+index c2929e7004f7090a92806e4a0dd22cd92b75cebf..684ca96d2ac8a4b1c61b368f3b2b5c3aa392a3fa 100644
+--- a/es/lib/isIP.js
++++ b/es/lib/isIP.js
+@@ -1,5 +1,5 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ /**
+ 11.3.  Examples
+ 
+diff --git a/es/lib/isIPRange.js b/es/lib/isIPRange.js
+index c9c6a4f3e89aea3db9d0d2d6925d50c27d70a611..489a23b70bb4b17688b7dd03b6fbe34f7294b6d2 100644
+--- a/es/lib/isIPRange.js
++++ b/es/lib/isIPRange.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import isIP from './isIP';
++import assertString from './util/assertString.js';
++import isIP from './isIP.js';
+ var subnetMaybe = /^\d{1,3}$/;
+ var v4Subnet = 32;
+ var v6Subnet = 128;
+diff --git a/es/lib/isISBN.js b/es/lib/isISBN.js
+index 86d23f839cf27f5bb52453baa1b88e795c480eb5..fcf98ac9d32b286e4dcc2c0c591667208dca0265 100644
+--- a/es/lib/isISBN.js
++++ b/es/lib/isISBN.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var possibleIsbn10 = /^(?:[0-9]{9}X|[0-9]{10})$/;
+ var possibleIsbn13 = /^(?:[0-9]{13})$/;
+ var factor = [1, 3];
+diff --git a/es/lib/isISIN.js b/es/lib/isISIN.js
+index f09cb058b4a9315962418a7e8ca59367be13250b..1ec42612cc94851ff438fe47ddf005c47d2411be 100644
+--- a/es/lib/isISIN.js
++++ b/es/lib/isISIN.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var isin = /^[A-Z]{2}[0-9A-Z]{9}[0-9]$/;
+ 
+ // this link details how the check digit is calculated:
+diff --git a/es/lib/isISO15924.js b/es/lib/isISO15924.js
+index 1251cf2c32cc041c667822d80ed640ec0e4fa0f5..e0af85e788a86af82e1ad1a183bd32699d97e79d 100644
+--- a/es/lib/isISO15924.js
++++ b/es/lib/isISO15924.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // from https://www.unicode.org/iso15924/iso15924-codes.html
+ var validISO15924Codes = new Set(['Adlm', 'Afak', 'Aghb', 'Ahom', 'Arab', 'Aran', 'Armi', 'Armn', 'Avst', 'Bali', 'Bamu', 'Bass', 'Batk', 'Beng', 'Bhks', 'Blis', 'Bopo', 'Brah', 'Brai', 'Bugi', 'Buhd', 'Cakm', 'Cans', 'Cari', 'Cham', 'Cher', 'Chis', 'Chrs', 'Cirt', 'Copt', 'Cpmn', 'Cprt', 'Cyrl', 'Cyrs', 'Deva', 'Diak', 'Dogr', 'Dsrt', 'Dupl', 'Egyd', 'Egyh', 'Egyp', 'Elba', 'Elym', 'Ethi', 'Gara', 'Geok', 'Geor', 'Glag', 'Gong', 'Gonm', 'Goth', 'Gran', 'Grek', 'Gujr', 'Gukh', 'Guru', 'Hanb', 'Hang', 'Hani', 'Hano', 'Hans', 'Hant', 'Hatr', 'Hebr', 'Hira', 'Hluw', 'Hmng', 'Hmnp', 'Hrkt', 'Hung', 'Inds', 'Ital', 'Jamo', 'Java', 'Jpan', 'Jurc', 'Kali', 'Kana', 'Kawi', 'Khar', 'Khmr', 'Khoj', 'Kitl', 'Kits', 'Knda', 'Kore', 'Kpel', 'Krai', 'Kthi', 'Lana', 'Laoo', 'Latf', 'Latg', 'Latn', 'Leke', 'Lepc', 'Limb', 'Lina', 'Linb', 'Lisu', 'Loma', 'Lyci', 'Lydi', 'Mahj', 'Maka', 'Mand', 'Mani', 'Marc', 'Maya', 'Medf', 'Mend', 'Merc', 'Mero', 'Mlym', 'Modi', 'Mong', 'Moon', 'Mroo', 'Mtei', 'Mult', 'Mymr', 'Nagm', 'Nand', 'Narb', 'Nbat', 'Newa', 'Nkdb', 'Nkgb', 'Nkoo', 'Nshu', 'Ogam', 'Olck', 'Onao', 'Orkh', 'Orya', 'Osge', 'Osma', 'Ougr', 'Palm', 'Pauc', 'Pcun', 'Pelm', 'Perm', 'Phag', 'Phli', 'Phlp', 'Phlv', 'Phnx', 'Plrd', 'Piqd', 'Prti', 'Psin', 'Qaaa', 'Qaab', 'Qaac', 'Qaad', 'Qaae', 'Qaaf', 'Qaag', 'Qaah', 'Qaai', 'Qaaj', 'Qaak', 'Qaal', 'Qaam', 'Qaan', 'Qaao', 'Qaap', 'Qaaq', 'Qaar', 'Qaas', 'Qaat', 'Qaau', 'Qaav', 'Qaaw', 'Qaax', 'Qaay', 'Qaaz', 'Qaba', 'Qabb', 'Qabc', 'Qabd', 'Qabe', 'Qabf', 'Qabg', 'Qabh', 'Qabi', 'Qabj', 'Qabk', 'Qabl', 'Qabm', 'Qabn', 'Qabo', 'Qabp', 'Qabq', 'Qabr', 'Qabs', 'Qabt', 'Qabu', 'Qabv', 'Qabw', 'Qabx', 'Ranj', 'Rjng', 'Rohg', 'Roro', 'Runr', 'Samr', 'Sara', 'Sarb', 'Saur', 'Sgnw', 'Shaw', 'Shrd', 'Shui', 'Sidd', 'Sidt', 'Sind', 'Sinh', 'Sogd', 'Sogo', 'Sora', 'Soyo', 'Sund', 'Sunu', 'Sylo', 'Syrc', 'Syre', 'Syrj', 'Syrn', 'Tagb', 'Takr', 'Tale', 'Talu', 'Taml', 'Tang', 'Tavt', 'Tayo', 'Telu', 'Teng', 'Tfng', 'Tglg', 'Thaa', 'Thai', 'Tibt', 'Tirh', 'Tnsa', 'Todr', 'Tols', 'Toto', 'Tutg', 'Ugar', 'Vaii', 'Visp', 'Vith', 'Wara', 'Wcho', 'Wole', 'Xpeo', 'Xsux', 'Yezi', 'Yiii', 'Zanb', 'Zinh', 'Zmth', 'Zsye', 'Zsym', 'Zxxx', 'Zyyy', 'Zzzz']);
+diff --git a/es/lib/isISO31661Alpha2.js b/es/lib/isISO31661Alpha2.js
+index fc2c5b2f797586fb7045d5cf5fc0bb93e2511fe7..8a0eb1fa6a5ac636722f1e457cc96721fd1d17a5 100644
+--- a/es/lib/isISO31661Alpha2.js
++++ b/es/lib/isISO31661Alpha2.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+ var validISO31661Alpha2CountriesCodes = new Set(['AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS', 'BT', 'BV', 'BW', 'BY', 'BZ', 'CA', 'CC', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CW', 'CX', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC', 'EE', 'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FM', 'FO', 'FR', 'GA', 'GB', 'GD', 'GE', 'GF', 'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ', 'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HM', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IR', 'IS', 'IT', 'JE', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KP', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD', 'ME', 'MF', 'MG', 'MH', 'MK', 'ML', 'MM', 'MN', 'MO', 'MP', 'MQ', 'MR', 'MS', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA', 'NC', 'NE', 'NF', 'NG', 'NI', 'NL', 'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG', 'PH', 'PK', 'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PW', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU', 'RW', 'SA', 'SB', 'SC', 'SD', 'SE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'SS', 'ST', 'SV', 'SX', 'SY', 'SZ', 'TC', 'TD', 'TF', 'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO', 'TR', 'TT', 'TV', 'TW', 'TZ', 'UA', 'UG', 'UM', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VI', 'VN', 'VU', 'WF', 'WS', 'YE', 'YT', 'ZA', 'ZM', 'ZW']);
+diff --git a/es/lib/isISO31661Alpha3.js b/es/lib/isISO31661Alpha3.js
+index 37dc602ac83a49fabef25fbef5b67a910d24605e..b1bc3e4c342961f0898bb3ad009568a9f21181d8 100644
+--- a/es/lib/isISO31661Alpha3.js
++++ b/es/lib/isISO31661Alpha3.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
+ var validISO31661Alpha3CountriesCodes = new Set(['AFG', 'ALA', 'ALB', 'DZA', 'ASM', 'AND', 'AGO', 'AIA', 'ATA', 'ATG', 'ARG', 'ARM', 'ABW', 'AUS', 'AUT', 'AZE', 'BHS', 'BHR', 'BGD', 'BRB', 'BLR', 'BEL', 'BLZ', 'BEN', 'BMU', 'BTN', 'BOL', 'BES', 'BIH', 'BWA', 'BVT', 'BRA', 'IOT', 'BRN', 'BGR', 'BFA', 'BDI', 'KHM', 'CMR', 'CAN', 'CPV', 'CYM', 'CAF', 'TCD', 'CHL', 'CHN', 'CXR', 'CCK', 'COL', 'COM', 'COG', 'COD', 'COK', 'CRI', 'CIV', 'HRV', 'CUB', 'CUW', 'CYP', 'CZE', 'DNK', 'DJI', 'DMA', 'DOM', 'ECU', 'EGY', 'SLV', 'GNQ', 'ERI', 'EST', 'ETH', 'FLK', 'FRO', 'FJI', 'FIN', 'FRA', 'GUF', 'PYF', 'ATF', 'GAB', 'GMB', 'GEO', 'DEU', 'GHA', 'GIB', 'GRC', 'GRL', 'GRD', 'GLP', 'GUM', 'GTM', 'GGY', 'GIN', 'GNB', 'GUY', 'HTI', 'HMD', 'VAT', 'HND', 'HKG', 'HUN', 'ISL', 'IND', 'IDN', 'IRN', 'IRQ', 'IRL', 'IMN', 'ISR', 'ITA', 'JAM', 'JPN', 'JEY', 'JOR', 'KAZ', 'KEN', 'KIR', 'PRK', 'KOR', 'KWT', 'KGZ', 'LAO', 'LVA', 'LBN', 'LSO', 'LBR', 'LBY', 'LIE', 'LTU', 'LUX', 'MAC', 'MKD', 'MDG', 'MWI', 'MYS', 'MDV', 'MLI', 'MLT', 'MHL', 'MTQ', 'MRT', 'MUS', 'MYT', 'MEX', 'FSM', 'MDA', 'MCO', 'MNG', 'MNE', 'MSR', 'MAR', 'MOZ', 'MMR', 'NAM', 'NRU', 'NPL', 'NLD', 'NCL', 'NZL', 'NIC', 'NER', 'NGA', 'NIU', 'NFK', 'MNP', 'NOR', 'OMN', 'PAK', 'PLW', 'PSE', 'PAN', 'PNG', 'PRY', 'PER', 'PHL', 'PCN', 'POL', 'PRT', 'PRI', 'QAT', 'REU', 'ROU', 'RUS', 'RWA', 'BLM', 'SHN', 'KNA', 'LCA', 'MAF', 'SPM', 'VCT', 'WSM', 'SMR', 'STP', 'SAU', 'SEN', 'SRB', 'SYC', 'SLE', 'SGP', 'SXM', 'SVK', 'SVN', 'SLB', 'SOM', 'ZAF', 'SGS', 'SSD', 'ESP', 'LKA', 'SDN', 'SUR', 'SJM', 'SWZ', 'SWE', 'CHE', 'SYR', 'TWN', 'TJK', 'TZA', 'THA', 'TLS', 'TGO', 'TKL', 'TON', 'TTO', 'TUN', 'TUR', 'TKM', 'TCA', 'TUV', 'UGA', 'UKR', 'ARE', 'GBR', 'USA', 'UMI', 'URY', 'UZB', 'VUT', 'VEN', 'VNM', 'VGB', 'VIR', 'WLF', 'ESH', 'YEM', 'ZMB', 'ZWE']);
+diff --git a/es/lib/isISO31661Numeric.js b/es/lib/isISO31661Numeric.js
+index a3514d9674c17c4bb6b6bd99fd0608145be860ab..21a5927752989c670ab7b2910fab954378715c55 100644
+--- a/es/lib/isISO31661Numeric.js
++++ b/es/lib/isISO31661Numeric.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // from https://en.wikipedia.org/wiki/ISO_3166-1_numeric
+ var validISO31661NumericCountriesCodes = new Set(['004', '008', '010', '012', '016', '020', '024', '028', '031', '032', '036', '040', '044', '048', '050', '051', '052', '056', '060', '064', '068', '070', '072', '074', '076', '084', '086', '090', '092', '096', '100', '104', '108', '112', '116', '120', '124', '132', '136', '140', '144', '148', '152', '156', '158', '162', '166', '170', '174', '175', '178', '180', '184', '188', '191', '192', '196', '203', '204', '208', '212', '214', '218', '222', '226', '231', '232', '233', '234', '238', '239', '242', '246', '248', '250', '254', '258', '260', '262', '266', '268', '270', '275', '276', '288', '292', '296', '300', '304', '308', '312', '316', '320', '324', '328', '332', '334', '336', '340', '344', '348', '352', '356', '360', '364', '368', '372', '376', '380', '384', '388', '392', '398', '400', '404', '408', '410', '414', '417', '418', '422', '426', '428', '430', '434', '438', '440', '442', '446', '450', '454', '458', '462', '466', '470', '474', '478', '480', '484', '492', '496', '498', '499', '500', '504', '508', '512', '516', '520', '524', '528', '531', '533', '534', '535', '540', '548', '554', '558', '562', '566', '570', '574', '578', '580', '581', '583', '584', '585', '586', '591', '598', '600', '604', '608', '612', '616', '620', '624', '626', '630', '634', '638', '642', '643', '646', '652', '654', '659', '660', '662', '663', '666', '670', '674', '678', '682', '686', '688', '690', '694', '702', '703', '704', '705', '706', '710', '716', '724', '728', '729', '732', '740', '744', '748', '752', '756', '760', '762', '764', '768', '772', '776', '780', '784', '788', '792', '795', '796', '798', '800', '804', '807', '818', '826', '831', '832', '833', '834', '840', '850', '854', '858', '860', '862', '876', '882', '887', '894']);
+diff --git a/es/lib/isISO4217.js b/es/lib/isISO4217.js
+index 4b49d892e1aad81eb2b9bc986602d7db9e28ce23..0ff588e3344321ad9a1418a8792c2a3781e432d1 100644
+--- a/es/lib/isISO4217.js
++++ b/es/lib/isISO4217.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // from https://en.wikipedia.org/wiki/ISO_4217
+ var validISO4217CurrencyCodes = new Set(['AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOV', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLF', 'CLP', 'CNY', 'COP', 'COU', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MXV', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SLL', 'SOS', 'SRD', 'SSP', 'STN', 'SVC', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'USN', 'UYI', 'UYU', 'UYW', 'UZS', 'VED', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XOF', 'XPD', 'XPF', 'XPT', 'XSU', 'XTS', 'XUA', 'XXX', 'YER', 'ZAR', 'ZMW', 'ZWL']);
+diff --git a/es/lib/isISO6346.js b/es/lib/isISO6346.js
+index a06d3b57076a3181c69378b3122fb87c66bf7a7a..2c1bff618685794baefe5703710a71608c6dab3d 100644
+--- a/es/lib/isISO6346.js
++++ b/es/lib/isISO6346.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // https://en.wikipedia.org/wiki/ISO_6346
+ // according to ISO6346 standard, checksum digit is mandatory for freight container but recommended
+diff --git a/es/lib/isISO6391.js b/es/lib/isISO6391.js
+index 5f7d4ead712a283f5043a4e9253e3e96f9d2afc0..77360f8c2d40d39766c961a956f351efe3852ac5 100644
+--- a/es/lib/isISO6391.js
++++ b/es/lib/isISO6391.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var isISO6391Set = new Set(['aa', 'ab', 'ae', 'af', 'ak', 'am', 'an', 'ar', 'as', 'av', 'ay', 'az', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bm', 'bn', 'bo', 'br', 'bs', 'ca', 'ce', 'ch', 'co', 'cr', 'cs', 'cu', 'cv', 'cy', 'da', 'de', 'dv', 'dz', 'ee', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fj', 'fo', 'fr', 'fy', 'ga', 'gd', 'gl', 'gn', 'gu', 'gv', 'ha', 'he', 'hi', 'ho', 'hr', 'ht', 'hu', 'hy', 'hz', 'ia', 'id', 'ie', 'ig', 'ii', 'ik', 'io', 'is', 'it', 'iu', 'ja', 'jv', 'ka', 'kg', 'ki', 'kj', 'kk', 'kl', 'km', 'kn', 'ko', 'kr', 'ks', 'ku', 'kv', 'kw', 'ky', 'la', 'lb', 'lg', 'li', 'ln', 'lo', 'lt', 'lu', 'lv', 'mg', 'mh', 'mi', 'mk', 'ml', 'mn', 'mr', 'ms', 'mt', 'my', 'na', 'nb', 'nd', 'ne', 'ng', 'nl', 'nn', 'no', 'nr', 'nv', 'ny', 'oc', 'oj', 'om', 'or', 'os', 'pa', 'pi', 'pl', 'ps', 'pt', 'qu', 'rm', 'rn', 'ro', 'ru', 'rw', 'sa', 'sc', 'sd', 'se', 'sg', 'si', 'sk', 'sl', 'sm', 'sn', 'so', 'sq', 'sr', 'ss', 'st', 'su', 'sv', 'sw', 'ta', 'te', 'tg', 'th', 'ti', 'tk', 'tl', 'tn', 'to', 'tr', 'ts', 'tt', 'tw', 'ty', 'ug', 'uk', 'ur', 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'za', 'zh', 'zu']);
+ export default function isISO6391(str) {
+   assertString(str);
+diff --git a/es/lib/isISO8601.js b/es/lib/isISO8601.js
+index e2df6404c623c9872d98d697ba08f478009a437f..0a3246a4fe730638a4236b20765b43ed3bb5ed98 100644
+--- a/es/lib/isISO8601.js
++++ b/es/lib/isISO8601.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* eslint-disable max-len */
+ // from http://goo.gl/0ejHHW
+diff --git a/es/lib/isISRC.js b/es/lib/isISRC.js
+index 8ffbb7f6dbc30d1d9b4e06a835717c98a3b6c6f6..e1558a074eb2f77770d66d3c82a4d30ff1d7f6b5 100644
+--- a/es/lib/isISRC.js
++++ b/es/lib/isISRC.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // see http://isrc.ifpi.org/en/isrc-standard/code-syntax
+ var isrc = /^[A-Z]{2}[0-9A-Z]{3}\d{2}\d{5}$/;
+diff --git a/es/lib/isISSN.js b/es/lib/isISSN.js
+index e335d3c94c5caaeccd2dfdbaecacbc60637aa002..aba7536dd8651695a1b77b34362dc5203632e4d1 100644
+--- a/es/lib/isISSN.js
++++ b/es/lib/isISSN.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var issn = '^\\d{4}-?\\d{3}[\\dX]$';
+ export default function isISSN(str) {
+   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+diff --git a/es/lib/isIdentityCard.js b/es/lib/isIdentityCard.js
+index 8b306ac32fe28e87971a278c79f31768a936d21e..4f90d9a043ed724ebdb44bab00c82675b00fe931 100644
+--- a/es/lib/isIdentityCard.js
++++ b/es/lib/isIdentityCard.js
+@@ -1,6 +1,6 @@
+-import assertString from './util/assertString';
+-import includes from './util/includesArray';
+-import isInt from './isInt';
++import assertString from './util/assertString.js';
++import includes from './util/includesArray.js';
++import isInt from './isInt.js';
+ var validators = {
+   PL: function PL(str) {
+     assertString(str);
+diff --git a/es/lib/isIn.js b/es/lib/isIn.js
+index 3b786aadd88388fa646a949607f81ac6b78b6f84..97174c3f07646489124dcd50523421218b42a68f 100644
+--- a/es/lib/isIn.js
++++ b/es/lib/isIn.js
+@@ -1,6 +1,6 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import assertString from './util/assertString';
+-import toString from './util/toString';
++import assertString from './util/assertString.js';
++import toString from './util/toString.js';
+ export default function isIn(str, options) {
+   assertString(str);
+   var i;
+diff --git a/es/lib/isInt.js b/es/lib/isInt.js
+index 71075fa37e908459ec255232fd85bba9e47de1ab..dc52619df4df9f226ff9da05c6fa0d24988129ca 100644
+--- a/es/lib/isInt.js
++++ b/es/lib/isInt.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import isNullOrUndefined from './util/nullUndefinedCheck';
++import assertString from './util/assertString.js';
++import isNullOrUndefined from './util/nullUndefinedCheck.js';
+ var _int = /^(?:[-+]?(?:0|[1-9][0-9]*))$/;
+ var intLeadingZeroes = /^[-+]?[0-9]+$/;
+ export default function isInt(str, options) {
+diff --git a/es/lib/isJSON.js b/es/lib/isJSON.js
+index 022319c9fe86587e6c1f74627d6d9466f1177a7a..7dc0c838ece0015d7f41bcaa58afac8f8ea25a2f 100644
+--- a/es/lib/isJSON.js
++++ b/es/lib/isJSON.js
+@@ -1,7 +1,7 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import assertString from './util/assertString';
+-import includes from './util/includesArray';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import includes from './util/includesArray.js';
++import merge from './util/merge.js';
+ var default_json_options = {
+   allow_primitives: false
+ };
+diff --git a/es/lib/isJWT.js b/es/lib/isJWT.js
+index bdd024d73e1ecdf03fcc27c5cd34d97f40b621dd..13235d7d3672eae05f686b9cda851aed50436b6a 100644
+--- a/es/lib/isJWT.js
++++ b/es/lib/isJWT.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import isBase64 from './isBase64';
++import assertString from './util/assertString.js';
++import isBase64 from './isBase64.js';
+ export default function isJWT(str) {
+   assertString(str);
+   var dotSplit = str.split('.');
+diff --git a/es/lib/isLatLong.js b/es/lib/isLatLong.js
+index 07b76487710c0991c59ac04ba63197c9f2ffe164..50d3190ce1776893f056e0aec65957f0ace0639a 100644
+--- a/es/lib/isLatLong.js
++++ b/es/lib/isLatLong.js
+@@ -1,6 +1,6 @@
+-import assertString from './util/assertString';
+-import merge from './util/merge';
+-import includes from './util/includesString';
++import assertString from './util/assertString.js';
++import merge from './util/merge.js';
++import includes from './util/includesString.js';
+ var lat = /^\(?[+-]?(90(\.0+)?|[1-8]?\d(\.\d+)?)$/;
+ var _long = /^\s?[+-]?(180(\.0+)?|1[0-7]\d(\.\d+)?|\d{1,2}(\.\d+)?)\)?$/;
+ var latDMS = /^(([1-8]?\d)\D+([1-5]?\d|60)\D+([1-5]?\d|60)(\.\d+)?|90\D+0\D+0)\D+[NSns]?$/i;
+diff --git a/es/lib/isLength.js b/es/lib/isLength.js
+index 82b129a8688ba7de703b57b0db3886afc0da8caa..cabb929d2c3c632529c723a0f34c83a4444791a0 100644
+--- a/es/lib/isLength.js
++++ b/es/lib/isLength.js
+@@ -1,5 +1,5 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* eslint-disable prefer-rest-params */
+ export default function isLength(str, options) {
+diff --git a/es/lib/isLicensePlate.js b/es/lib/isLicensePlate.js
+index f65a253dc98f2d55aee4180548011a13b257c90d..3387a9c1ff0edd7a46d9607122a8f179446b8199 100644
+--- a/es/lib/isLicensePlate.js
++++ b/es/lib/isLicensePlate.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var validators = {
+   'cs-CZ': function csCZ(str) {
+     return /^(([ABCDEFHIJKLMNPRSTUVXYZ]|[0-9])-?){5,8}$/.test(str);
+diff --git a/es/lib/isLocale.js b/es/lib/isLocale.js
+index c47a038e533c957c6ff5181ad993789680c9b2d2..2caae41f380b4a1d38d57e507f3cc42970898c62 100644
+--- a/es/lib/isLocale.js
++++ b/es/lib/isLocale.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /*
+   = 3ALPHA              ; selected ISO 639 codes
+diff --git a/es/lib/isLowercase.js b/es/lib/isLowercase.js
+index 034785646730c8b8377994a289d37fc25a15a5d3..33ae8948b5e38ebfe8ef2059c28a2e3ca56eb9d9 100644
+--- a/es/lib/isLowercase.js
++++ b/es/lib/isLowercase.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function isLowercase(str) {
+   assertString(str);
+   return str === str.toLowerCase();
+diff --git a/es/lib/isLuhnNumber.js b/es/lib/isLuhnNumber.js
+index 27deb072b203d6a75f385e4334d33a420607efe9..6ceb4dc3b5765f7df2d7412a2f6fd08eef1fd815 100644
+--- a/es/lib/isLuhnNumber.js
++++ b/es/lib/isLuhnNumber.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function isLuhnNumber(str) {
+   assertString(str);
+   var sanitized = str.replace(/[- ]+/g, '');
+diff --git a/es/lib/isMACAddress.js b/es/lib/isMACAddress.js
+index bc4e5d80b7dbdf9dce356514bbdcfed981893bf1..a5e7b7b8b1820078cd12ab53f41a6188db6117fb 100644
+--- a/es/lib/isMACAddress.js
++++ b/es/lib/isMACAddress.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var macAddress48 = /^(?:[0-9a-fA-F]{2}([-:\s]))([0-9a-fA-F]{2}\1){4}([0-9a-fA-F]{2})$/;
+ var macAddress48NoSeparators = /^([0-9a-fA-F]){12}$/;
+ var macAddress48WithDots = /^([0-9a-fA-F]{4}\.){2}([0-9a-fA-F]{4})$/;
+diff --git a/es/lib/isMD5.js b/es/lib/isMD5.js
+index 701ed7b34b38d8d314e84da7df3286fbc2683c11..8e2dc947a590b50f403392fae8bfe3cbd2ef5d48 100644
+--- a/es/lib/isMD5.js
++++ b/es/lib/isMD5.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var md5 = /^[a-f0-9]{32}$/;
+ export default function isMD5(str) {
+   assertString(str);
+diff --git a/es/lib/isMagnetURI.js b/es/lib/isMagnetURI.js
+index 5775c9e85342dadcd34959d5389d775813c5fae2..19da726ffd4a5a65c3204df1884ae41e2e0bb3dc 100644
+--- a/es/lib/isMagnetURI.js
++++ b/es/lib/isMagnetURI.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var magnetURIComponent = /(?:^magnet:\?|[^?&]&)xt(?:\.1)?=urn:(?:(?:aich|bitprint|btih|ed2k|ed2khash|kzhash|md5|sha1|tree:tiger):[a-z0-9]{32}(?:[a-z0-9]{8})?|btmh:1220[a-z0-9]{64})(?:$|&)/i;
+ export default function isMagnetURI(url) {
+   assertString(url);
+diff --git a/es/lib/isMailtoURI.js b/es/lib/isMailtoURI.js
+index 663752aa853b5325772a04fc32dd8614b29f8685..1d484c5bfe623c1989647f8db6130ca008fd6772 100644
+--- a/es/lib/isMailtoURI.js
++++ b/es/lib/isMailtoURI.js
+@@ -5,9 +5,9 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+ function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+-import trim from './trim';
+-import isEmail from './isEmail';
+-import assertString from './util/assertString';
++import trim from './trim.js';
++import isEmail from './isEmail.js';
++import assertString from './util/assertString.js';
+ function parseMailtoQueryString(queryString) {
+   var allowedParams = new Set(['subject', 'body', 'cc', 'bcc']),
+     query = {
+diff --git a/es/lib/isMimeType.js b/es/lib/isMimeType.js
+index 0860089127871071539a467bd737d207cc6f6126..f82d0a4cfad523b4142db1ab8687c6843a7370b6 100644
+--- a/es/lib/isMimeType.js
++++ b/es/lib/isMimeType.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /*
+   Checks if the provided string matches to a correct Media type format (MIME type)
+diff --git a/es/lib/isMobilePhone.js b/es/lib/isMobilePhone.js
+index 3e9349a75eb179c1ee1614802fc3f63350ff20e4..277993680d0330d4d03667984d8a26400768dd3f 100644
+--- a/es/lib/isMobilePhone.js
++++ b/es/lib/isMobilePhone.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* eslint-disable max-len */
+ var phones = {
+diff --git a/es/lib/isMongoId.js b/es/lib/isMongoId.js
+index fc87b89e4590f2459d6662162c17d481f2ca7866..505f0296c3cc261194a9e50bff29933dfb0fdd22 100644
+--- a/es/lib/isMongoId.js
++++ b/es/lib/isMongoId.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import isHexadecimal from './isHexadecimal';
++import assertString from './util/assertString.js';
++import isHexadecimal from './isHexadecimal.js';
+ export default function isMongoId(str) {
+   assertString(str);
+   return isHexadecimal(str) && str.length === 24;
+diff --git a/es/lib/isMultibyte.js b/es/lib/isMultibyte.js
+index 0872e3ecee917c48c60603fd9dc13852b9496d97..2fc0408e03c2e350817ff1c73e7c529003c24457 100644
+--- a/es/lib/isMultibyte.js
++++ b/es/lib/isMultibyte.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* eslint-disable no-control-regex */
+ var multibyte = /[^\x00-\x7F]/;
+diff --git a/es/lib/isNumeric.js b/es/lib/isNumeric.js
+index df3a46a9f27a5ffcd90d7e5ea93fbed5ae71f155..f34d1902e31344ca7f6ff6c24140caadf3e91d43 100644
+--- a/es/lib/isNumeric.js
++++ b/es/lib/isNumeric.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import { decimal } from './alpha';
++import assertString from './util/assertString.js';
++import { decimal } from './alpha.js';
+ var numericNoSymbols = /^[0-9]+$/;
+ export default function isNumeric(str, options) {
+   assertString(str);
+diff --git a/es/lib/isOctal.js b/es/lib/isOctal.js
+index 3ec51dd9821b94e2036bbdb35b58fe74f1935f9c..bcae3653423a77b055ec2f9304d9ce88af939b14 100644
+--- a/es/lib/isOctal.js
++++ b/es/lib/isOctal.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var octal = /^(0o)?[0-7]+$/i;
+ export default function isOctal(str) {
+   assertString(str);
+diff --git a/es/lib/isPassportNumber.js b/es/lib/isPassportNumber.js
+index 1273b2d850727a838ce604c426652b67f757f5ad..fd466ea43cc9f8fd213869bcf0e89e230f90dc04 100644
+--- a/es/lib/isPassportNumber.js
++++ b/es/lib/isPassportNumber.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /**
+  * Reference:
+diff --git a/es/lib/isPort.js b/es/lib/isPort.js
+index c1cddaf7b92eeeed5fd2ce2c135a16790313ccaf..57a1387c5930021d14e1550eb4d2bb16470ecfbc 100644
+--- a/es/lib/isPort.js
++++ b/es/lib/isPort.js
+@@ -1,4 +1,4 @@
+-import isInt from './isInt';
++import isInt from './isInt.js';
+ export default function isPort(str) {
+   return isInt(str, {
+     allow_leading_zeroes: false,
+diff --git a/es/lib/isPostalCode.js b/es/lib/isPostalCode.js
+index 3619985073bf8bdb91e44d65ba5467ad1a2fa173..9a9e8006afdcae3c3b362f56f3f4a03010d1b27b 100644
+--- a/es/lib/isPostalCode.js
++++ b/es/lib/isPostalCode.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ // common patterns
+ var threeDigit = /^\d{3}$/;
+diff --git a/es/lib/isRFC3339.js b/es/lib/isRFC3339.js
+index c6dedbd327368143cedb2e3a57d372350b6313c0..8bada10d69d3f3e98f3271df2676f9879a922c9e 100644
+--- a/es/lib/isRFC3339.js
++++ b/es/lib/isRFC3339.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ 
+ /* Based on https://tools.ietf.org/html/rfc3339#section-5.6 */
+ 
+diff --git a/es/lib/isRgbColor.js b/es/lib/isRgbColor.js
+index 912f06c81221306113821540f218e975540f3664..22a306a9ff869a4148acbdd03ec48c71ca7aeae2 100644
+--- a/es/lib/isRgbColor.js
++++ b/es/lib/isRgbColor.js
+@@ -1,6 +1,6 @@
+ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+ /* eslint-disable prefer-rest-params */
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var rgbColor = /^rgb\((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]),){2}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\)$/;
+ var rgbaColor = /^rgba\((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]),){3}(0?\.\d\d?|1(\.0)?|0(\.0)?)\)$/;
+ var rgbColorPercent = /^rgb\((([0-9]%|[1-9][0-9]%|100%),){2}([0-9]%|[1-9][0-9]%|100%)\)$/;
+diff --git a/es/lib/isSemVer.js b/es/lib/isSemVer.js
+index 7581583e2168e29ac2065e778f80c3fb8a438ca4..6e0d2f81c31b278ce3e8bd39c9fad07222a96031 100644
+--- a/es/lib/isSemVer.js
++++ b/es/lib/isSemVer.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import multilineRegexp from './util/multilineRegex';
++import assertString from './util/assertString.js';
++import multilineRegexp from './util/multilineRegex.js';
+ 
+ /**
+  * Regular Expression to match
+diff --git a/es/lib/isSlug.js b/es/lib/isSlug.js
+index b9659ef3ea07c3b7e62396e0d7a1b80884c731b6..32478b34aab1f888095993e890c4d1b9bcfd841e 100644
+--- a/es/lib/isSlug.js
++++ b/es/lib/isSlug.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var charsetRegex = /^[^\s-_](?!.*?[-_]{2,})[a-z0-9-\\][^\s]*[^-_\s]$/;
+ export default function isSlug(str) {
+   assertString(str);
+diff --git a/es/lib/isStrongPassword.js b/es/lib/isStrongPassword.js
+index 2e248dfb3ceccc82ea22c7807264fa589f385fd9..3a9c5141425a63e826a3e30ad318f3f4327f1b55 100644
+--- a/es/lib/isStrongPassword.js
++++ b/es/lib/isStrongPassword.js
+@@ -1,5 +1,5 @@
+-import merge from './util/merge';
+-import assertString from './util/assertString';
++import merge from './util/merge.js';
++import assertString from './util/assertString.js';
+ var upperCaseRegex = /^[A-Z]$/;
+ var lowerCaseRegex = /^[a-z]$/;
+ var numberRegex = /^[0-9]$/;
+diff --git a/es/lib/isSurrogatePair.js b/es/lib/isSurrogatePair.js
+index 1e0efb2f8d02741c740864d12b729180cdb55273..4b8370211103b6c9c99d0cae3795561189f4284d 100644
+--- a/es/lib/isSurrogatePair.js
++++ b/es/lib/isSurrogatePair.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/;
+ export default function isSurrogatePair(str) {
+   assertString(str);
+diff --git a/es/lib/isTaxID.js b/es/lib/isTaxID.js
+index e793ad89d925c63b8faa830f66add318fa11d29c..fba92ddda0752291d18acfdc79362804cd0dabc7 100644
+--- a/es/lib/isTaxID.js
++++ b/es/lib/isTaxID.js
+@@ -4,9 +4,9 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r)
+ function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+ function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+-import assertString from './util/assertString';
+-import * as algorithms from './util/algorithms';
+-import isDate from './isDate';
++import assertString from './util/assertString.js';
++import * as algorithms from './util/algorithms.js';
++import isDate from './isDate.js';
+ 
+ /**
+  * TIN Validation
+diff --git a/es/lib/isTime.js b/es/lib/isTime.js
+index 52252d9188cc294e0e04a63cd1edf07159218dfd..0f385720d42ea7680bfc6a464e06c6dd4001bde7 100644
+--- a/es/lib/isTime.js
++++ b/es/lib/isTime.js
+@@ -1,4 +1,4 @@
+-import merge from './util/merge';
++import merge from './util/merge.js';
+ var default_time_options = {
+   hourFormat: 'hour24',
+   mode: 'default'
+diff --git a/es/lib/isULID.js b/es/lib/isULID.js
+index a661d10a8ee291c10ec93e8b725a31b7402c67e1..5e3404a1a7f8116581200ebced5fc1b5c3cce9a6 100644
+--- a/es/lib/isULID.js
++++ b/es/lib/isULID.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function isULID(str) {
+   assertString(str);
+   return /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/i.test(str);
+diff --git a/es/lib/isURL.js b/es/lib/isURL.js
+index c9f447cccaefc1359f48a27d27adbd6c68f0daa6..83b305baf1ad4f1bf4d3cbfa95b52e67a2b5e5ee 100644
+--- a/es/lib/isURL.js
++++ b/es/lib/isURL.js
+@@ -4,12 +4,12 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r)
+ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+ function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+-import assertString from './util/assertString';
+-import checkHost from './util/checkHost';
+-import includes from './util/includesString';
+-import isFQDN from './isFQDN';
+-import isIP from './isIP';
+-import merge from './util/merge';
++import assertString from './util/assertString.js';
++import checkHost from './util/checkHost.js';
++import includes from './util/includesString.js';
++import isFQDN from './isFQDN.js';
++import isIP from './isIP.js';
++import merge from './util/merge.js';
+ 
+ /*
+ options for isURL method
+diff --git a/es/lib/isUUID.js b/es/lib/isUUID.js
+index 3b56aae9e786554e0641b9a759b2a6cc21a3955d..443d0bc490eb0d976c6bc6ececeb5de0ce26cc73 100644
+--- a/es/lib/isUUID.js
++++ b/es/lib/isUUID.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ var uuid = {
+   1: /^[0-9A-F]{8}-[0-9A-F]{4}-1[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
+   2: /^[0-9A-F]{8}-[0-9A-F]{4}-2[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
+diff --git a/es/lib/isUppercase.js b/es/lib/isUppercase.js
+index fca87907e02cfb936c87f7bfc631fa55114d061a..312ec118e06e020328ae4bbe54d49f6a69d94e48 100644
+--- a/es/lib/isUppercase.js
++++ b/es/lib/isUppercase.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function isUppercase(str) {
+   assertString(str);
+   return str === str.toUpperCase();
+diff --git a/es/lib/isVAT.js b/es/lib/isVAT.js
+index 82d8c3dc0eb4b05ef073b219288c15b135ca2eea..c839ba790b3b1756a6283b4684dfe3947216740c 100644
+--- a/es/lib/isVAT.js
++++ b/es/lib/isVAT.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import * as algorithms from './util/algorithms';
++import assertString from './util/assertString.js';
++import * as algorithms from './util/algorithms.js';
+ var AU = function AU(str) {
+   var match = str.match(/^(AU)?(\d{11})$/);
+   if (!match) {
+diff --git a/es/lib/isVariableWidth.js b/es/lib/isVariableWidth.js
+index 890119ea3071644c87e3955ace6ff2db75af274e..434d1e03d26367fd250063ebc80850361c355dee 100644
+--- a/es/lib/isVariableWidth.js
++++ b/es/lib/isVariableWidth.js
+@@ -1,6 +1,6 @@
+-import assertString from './util/assertString';
+-import { fullWidth } from './isFullWidth';
+-import { halfWidth } from './isHalfWidth';
++import assertString from './util/assertString.js';
++import { fullWidth } from './isFullWidth.js';
++import { halfWidth } from './isHalfWidth.js';
+ export default function isVariableWidth(str) {
+   assertString(str);
+   return fullWidth.test(str) && halfWidth.test(str);
+diff --git a/es/lib/isWhitelisted.js b/es/lib/isWhitelisted.js
+index 559580515972b05ee45ed7dbf44a06020381809e..a363262a8b1f67c6a1f5d60180794322dd912a97 100644
+--- a/es/lib/isWhitelisted.js
++++ b/es/lib/isWhitelisted.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function isWhitelisted(str, chars) {
+   assertString(str);
+   for (var i = str.length - 1; i >= 0; i--) {
+diff --git a/es/lib/ltrim.js b/es/lib/ltrim.js
+index 6a650624f713261dd5ce3f9668b861a90f5185fd..a2036e4a58d125ad27e544c3b0f9cf69b4d8d54d 100644
+--- a/es/lib/ltrim.js
++++ b/es/lib/ltrim.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function ltrim(str, chars) {
+   assertString(str);
+   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+diff --git a/es/lib/matches.js b/es/lib/matches.js
+index 2a33f002bdba1a770376051753601680d7b3fd10..ae158cad451579a81d20a76bac8de22f6b5a9b76 100644
+--- a/es/lib/matches.js
++++ b/es/lib/matches.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function matches(str, pattern, modifiers) {
+   assertString(str);
+   if (Object.prototype.toString.call(pattern) !== '[object RegExp]') {
+diff --git a/es/lib/normalizeEmail.js b/es/lib/normalizeEmail.js
+index d6edccbce485c678654fe7dd6bd4b5e33a52c053..11306f6b4f7db09f53b3172129e596588cee5ce7 100644
+--- a/es/lib/normalizeEmail.js
++++ b/es/lib/normalizeEmail.js
+@@ -1,4 +1,4 @@
+-import merge from './util/merge';
++import merge from './util/merge.js';
+ var default_normalize_email_options = {
+   // The following options apply to all email addresses
+   // Lowercases the local part of the email address.
+diff --git a/es/lib/rtrim.js b/es/lib/rtrim.js
+index 0ad784b274d9358a6a84bbba2b02380dad98c0e0..f33eaf97f24c4d4beec82b85d6cc8487c53bb2de 100644
+--- a/es/lib/rtrim.js
++++ b/es/lib/rtrim.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function rtrim(str, chars) {
+   assertString(str);
+   if (chars) {
+diff --git a/es/lib/stripLow.js b/es/lib/stripLow.js
+index c7984255172a27b73652daf0eb33423ff43b5a3e..2c2266f8d3b17add99576994454c9ef3848804bc 100644
+--- a/es/lib/stripLow.js
++++ b/es/lib/stripLow.js
+@@ -1,5 +1,5 @@
+-import assertString from './util/assertString';
+-import blacklist from './blacklist';
++import assertString from './util/assertString.js';
++import blacklist from './blacklist.js';
+ export default function stripLow(str, keep_new_lines) {
+   assertString(str);
+   var chars = keep_new_lines ? '\\x00-\\x09\\x0B\\x0C\\x0E-\\x1F\\x7F' : '\\x00-\\x1F\\x7F';
+diff --git a/es/lib/toBoolean.js b/es/lib/toBoolean.js
+index f5db984c2fc3db25e33f19799b3fda5e8f3edf0e..74bab9c35a08e7c9f3972f3c2ff13b22f6799f5b 100644
+--- a/es/lib/toBoolean.js
++++ b/es/lib/toBoolean.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function toBoolean(str, strict) {
+   assertString(str);
+   if (strict) {
+diff --git a/es/lib/toDate.js b/es/lib/toDate.js
+index 62422a31724c7313234665f4a61d6fa80deb94dc..070be8e9fdce8bd1cc36e86fc2f23f0d42f42c85 100644
+--- a/es/lib/toDate.js
++++ b/es/lib/toDate.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function toDate(date) {
+   assertString(date);
+   date = Date.parse(date);
+diff --git a/es/lib/toFloat.js b/es/lib/toFloat.js
+index f21163dfe413f784266fa469d05ee76cd23e5ba4..db9a77af403662af97dbe0626ef892529d7b6977 100644
+--- a/es/lib/toFloat.js
++++ b/es/lib/toFloat.js
+@@ -1,4 +1,4 @@
+-import isFloat from './isFloat';
++import isFloat from './isFloat.js';
+ export default function toFloat(str) {
+   if (!isFloat(str)) return NaN;
+   return parseFloat(str);
+diff --git a/es/lib/toInt.js b/es/lib/toInt.js
+index 22d566e74a9d0621cdfccd41396e41b6f722bc5b..317265421178660c39cacb1a849feb42a36ce0e8 100644
+--- a/es/lib/toInt.js
++++ b/es/lib/toInt.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function toInt(str, radix) {
+   assertString(str);
+   return parseInt(str, radix || 10);
+diff --git a/es/lib/trim.js b/es/lib/trim.js
+index b9b8fa0dd8f1a1df56a3fdce2afc142920aef33e..5f47d6303dbdaad1713861df971b8ddaa3cf5440 100644
+--- a/es/lib/trim.js
++++ b/es/lib/trim.js
+@@ -1,5 +1,5 @@
+-import rtrim from './rtrim';
+-import ltrim from './ltrim';
++import rtrim from './rtrim.js';
++import ltrim from './ltrim.js';
+ export default function trim(str, chars) {
+   return rtrim(ltrim(str, chars), chars);
+ }
+\ No newline at end of file
+diff --git a/es/lib/unescape.js b/es/lib/unescape.js
+index 4516acb419ce984587c5757802268ba248d76ad3..b8af4a9d1dd679403708c9a245ff667f1fd4cd7d 100644
+--- a/es/lib/unescape.js
++++ b/es/lib/unescape.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function unescape(str) {
+   assertString(str);
+   return str.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x2F;/g, '/').replace(/&#x5C;/g, '\\').replace(/&#96;/g, '`').replace(/&amp;/g, '&');
+diff --git a/es/lib/whitelist.js b/es/lib/whitelist.js
+index 244881b4190fa1c4591bee9f7d2f4a138d27d1c6..04f0b151c8890f076fc012e759e8224f5ce1f708 100644
+--- a/es/lib/whitelist.js
++++ b/es/lib/whitelist.js
+@@ -1,4 +1,4 @@
+-import assertString from './util/assertString';
++import assertString from './util/assertString.js';
+ export default function whitelist(str, chars) {
+   assertString(str);
+   return str.replace(new RegExp("[^".concat(chars, "]+"), 'g'), '');
