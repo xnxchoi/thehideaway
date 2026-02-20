@@ -29,7 +29,9 @@ const radioInit: RadioStoreState = {
   elapsedTime: 0,
   remainingTime: 12220,
   hasRadio: false,
-  playMode: "default"
+  playMode: "default",
+  playbackRate: 1.0,
+  seeking: false,
 };
 
 type RadioStoreState = {
@@ -44,6 +46,8 @@ type RadioStoreState = {
   remainingTime: number;
   hasRadio: boolean;
   playMode: PlayMode;
+  playbackRate: number;
+  seeking: boolean;
 };
 
 type TrackIndicesResult = {
@@ -166,6 +170,8 @@ type RadioStoreActions = {
   setPaused: () => void;
   toggle: () => void;
   setHasRadio: (hasRadio: boolean) => void;
+  setPlaybackRate: (rate: number) => void;
+  setSeeking: (seeking: boolean) => void;
 };
 
 export type RadioStore = RadioStoreState & RadioStoreActions;
@@ -287,7 +293,12 @@ export const createRadioStore = (initState: RadioStoreState = radioInit) => {
           remainingTime: 0
         }),
 
-      toggle: () => set((state) => ({ playing: !state.playing }))
+      toggle: () => set((state) => ({ playing: !state.playing })),
+
+      setPlaybackRate: (rate) =>
+        set({ playbackRate: clamp(0.25, rate, 4.0) }),
+
+      setSeeking: (seeking) => set({ seeking }),
     }))
   );
 };

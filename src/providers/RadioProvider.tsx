@@ -176,7 +176,9 @@ const RadioInternal = ({children}: { children: ReactNode }) => {
 					hasRadio: tracks.length > 2,
 					playMode: "default",
 					hasNext: tracks.length > 1,
-					nextIndex: Math.min(1, tracks.length - 1)
+					nextIndex: Math.min(1, tracks.length - 1),
+					playbackRate: 1.0,
+					seeking: false,
 				});
 			})
 			.then(() => {
@@ -206,6 +208,8 @@ type RadioOuterState = {
 	toggle: () => void;
 	playing: boolean;
 	setCurrentTrack: (index: number) => void;
+	setPlaybackRate: (rate: number) => void;
+	seek: (position: number) => void;
 };
 
 const RadioOuterContext = createContext<RadioOuterState | null>(null);
@@ -245,6 +249,35 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 	const tracks = useMemo(() => tra, [tra]);
 	const setTrackStatus = useRadioStore((t) => t.setTrackStatus);
 	const trackStatus = useRadioStore(useShallow((t) => t.trackStatus));
+	const storeSetPlaybackRate = useRadioStore((t) => t.setPlaybackRate);
+	const playbackRate = useRadioStore(useShallow((t) => t.playbackRate));
+
+	const setPlaybackRate = useCallback(
+		(rate: number) => {
+			storeSetPlaybackRate(rate);
+			if (current.current?.h) {
+				current.current.h.rate(rate);
+			}
+		},
+		[storeSetPlaybackRate]
+	);
+
+	const seek = useCallback(
+		(position: number) => {
+			if (current.current?.h) {
+				current.current.h.seek(position);
+			}
+		},
+		[]
+	);
+
+	// Sync playback rate to Howler when it changes externally
+	useEffect(() => {
+		if (current.current?.h) {
+			current.current.h.rate(playbackRate);
+		}
+	}, [playbackRate]);
+
 	const setPlay = useCallback(
 		() => setTrackStatus("playing"),
 		[setTrackStatus]
@@ -528,7 +561,9 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 				playing,
 				setCurrentTrack,
 				toggle,
-				currentTrackPlayer: current.current
+				currentTrackPlayer: current.current,
+				setPlaybackRate,
+				seek,
 			}}
 		>
 			{children}
