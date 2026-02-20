@@ -1,4 +1,7 @@
 "use client";
+import {TaggedCollection, TaggedCollectionSlug} from "@/payload/collections/Tags";
+import {EOCollectionSlug} from "@/payload/plugins";
+import {IndexedCollections} from "@/payload/search/beforeSync";
 import { usePathname } from "next/navigation";
 
 import { getMenuPagePreviewKey } from "@/utilities/Helpers";
@@ -22,20 +25,7 @@ import { createStore } from "zustand/vanilla";
  *
  */
 
-export type FrontEndCollections = Extract<
-  CollectionSlug,
-  | "pages"
-  | "posts"
-  | "delta"
-  | "users"
-  | "tags"
-  | "albums"
-  | "playlists"
-  | "categories"
-  | "profile"
-    | "tracks"
->;
-
+export type FrontEndCollections = TaggedCollectionSlug|IndexedCollections|EOCollectionSlug
 /**
  *  Type containing all possible **valid** page type information.
  *  null value has been omitted; subject to future modifications.
@@ -85,7 +75,7 @@ export interface PageTypeSlugMap {
   albums: ["/rp.fm/albums"];
   playlists: ["/rp.fm/playlists"];
   posts: ["/essays"];
-  delta: ["/delta"];
+  surf: ["/surf"];
   series: ["/series"];
   users: ["/users", "/@:userHandle"];
   me: ["/me"];
@@ -123,7 +113,7 @@ const pathPageTypeMap = {
   "/rp.fm/albums": "albums",
   "/rp.fm/playlists": "playlists",
   "/essays": "posts",
-  "/delta": "delta",
+  "/surf": "surf",
   "/series": "series",
   "/users": "users",
 
@@ -287,7 +277,7 @@ export const createVoyageur = (initState: RP_Voyage = initialState) => {
 export type VoyageAPI = ReturnType<typeof createVoyageur>;
 const voyagePaths = {
   posts: {},
-  delta: {},
+
   account: {},
   auth: {},
   archived: {},
@@ -301,7 +291,7 @@ const voyagePaths = {
 } as const;
 
 export const archiveRegex = new RegExp(
-  `^\/(posts|delta|albums|playlists|categories|tags)?\/archives(\/d+)?$`
+  `^\/(posts|surf|albums|playlists|categories|tags)?\/archives(\/d+)?$`
 );
 export const isArchive = (pn: string) =>
   archiveRegex.test(pn) ? "archive" : "single";
@@ -318,7 +308,7 @@ export const VoyageurProvider = (l: { children: ReactNode }) => {
         case "account":
           return "page";
         case "posts":
-        case "delta":
+        case "surf":
         case "albums":
         case "playlists":
         case "categories":

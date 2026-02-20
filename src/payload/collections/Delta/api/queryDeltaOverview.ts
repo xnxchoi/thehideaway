@@ -1,12 +1,12 @@
 import {DeltaSelect} from "@/payload-types";
 import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+
+import type {ReqSurf, SurfOverview} from "@/types/collections/surf";
 import {AuthorOverview} from "@/types/collections/users";
 
 import configPromise from "@payload-config";
 import {getPayload, PaginatedDocs, Payload, Where} from "payload";
 import {cache} from "react";
-
-import type {DeltaOverview, ReqDelta} from "../../../../types/collections/delta";
 import {getDeltaBookMarks} from "./getDeltaBookmarks";
 
 export type DeltaOverviewSelect = {
@@ -70,7 +70,7 @@ export const queryDeltaOverview = cache(
 		       sort = "-publishedAt",
 		       overrideAccess = true,
 		       select = {}
-	       }: QueryDeltaOverviewParams): Promise<DeltaOverview[]> => {
+	       }: QueryDeltaOverviewParams): Promise<SurfOverview[]> => {
 		// 1) Get the payload instance
 		const payload = await getPayload({config: configPromise});
 		const baseSelect: DeltaSelect = {
@@ -101,7 +101,7 @@ export const queryDeltaOverview = cache(
  */
 export const paginatedDelta = async (
 	params: QueryDeltaOverviewParams
-): Promise<PaginatedDocs<DeltaOverview>> => {
+): Promise<PaginatedDocs<SurfOverview>> => {
 	// 1) Get the payload instance
 	const payload = await getPayload({config: configPromise});
 	return queryOverview({payload, params});
@@ -119,7 +119,7 @@ export const queryOverview = cache(
 			       overrideAccess = true,
 			       select = {}
 		       }
-	       }: OveerViewParams): Promise<PaginatedDocs<DeltaOverview>> => {
+	       }: OveerViewParams): Promise<PaginatedDocs<SurfOverview>> => {
 		const baseWhere: Where & { and: Where[] } = {
 			and: [
 				{
@@ -155,7 +155,7 @@ export const queryOverview = cache(
 			...select
 		};
 		// 2) Query for the deltas
-		const foundDeltas: PaginatedDocs<ReqDelta> = (await payload
+		const foundDeltas: PaginatedDocs<ReqSurf> = (await payload
 			.find({
 				collection: "delta",
 				limit,
@@ -182,9 +182,9 @@ export const queryOverview = cache(
 					pagingCounter: 0,
 					limit: 0
 				};
-			})) as PaginatedDocs<ReqDelta>;
+			})) as PaginatedDocs<ReqSurf>;
 		// 3) For each delta, query for the author info
-		const deltas: DeltaOverview[] = (await Promise.all(
+		const deltas: SurfOverview[] = (await Promise.all(
 			foundDeltas.docs.flatMap(async (delta) => {
 				const authorID = delta.author;
 				if (!authorID || typeof authorID !== "string") {
@@ -220,7 +220,7 @@ export const queryOverview = cache(
 					payload,
 					id: `${delta.id}`
 				});
-				const finalDelta: DeltaOverview = {
+				const finalDelta: SurfOverview = {
 					...delta,
 					author: author,
 					category: delta.category as CategoryOverview,
@@ -234,7 +234,7 @@ export const queryOverview = cache(
 				};
 				return finalDelta;
 			})
-		)) as DeltaOverview[];
+		)) as SurfOverview[];
 		const {docs: _, ...rest} = foundDeltas;
 		return {
 			docs: deltas,

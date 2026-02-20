@@ -12,7 +12,7 @@ export default function LockedGate({
   collection = "posts"
 }: {
   id: string;
-  collection?: "posts" | "delta";
+  collection?: "posts" | "surf";
 }) {
   const user = useRPSession(useShallow((r) => r.id as null | string));
   const {
@@ -35,7 +35,7 @@ export default function LockedGate({
   return <Locked />;
 }
 
-async function fetchGated<T extends "posts" | "delta">(
+async function fetchGated<T extends "posts" | "surf">(
   collection: T,
   id: string
 ): Promise<Shaped<T>> {

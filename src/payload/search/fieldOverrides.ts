@@ -197,7 +197,7 @@ export const searchFields: Field[] = [
 				name: "image",
 				label: "Image",
 				type: "upload",
-				relationTo: "media",
+				relationTo: ["media", "assets", "userMedia"],
 				admin: {
 					allowCreate: false
 				},

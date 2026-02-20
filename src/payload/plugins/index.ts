@@ -3,14 +3,16 @@ import {betterAuthPluginOptions} from "@/lib/auth/options";
 import type {Track} from "@/payload-types";
 
 import {commentsPlugin} from "@/payload/collections/Comments";
+import {TaggedCollectionSlug} from "@/payload/collections/Tags";
 import {getAssetThumb} from "@/payload/plugins/getAssetThumb";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 import {lockerPlugin} from "@/payload/plugins/locker/plugin";
 import {searchPlugin} from "@/payload/plugins/plugin-search";
-import {IndexedCollectionSlug} from "@/payload/plugins/plugin-search/types";
+import {CollectionMap} from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import {beforeSyncWithSearch} from "@/payload/search/beforeSync";
 import {searchFields} from "@/payload/search/fieldOverrides";
 import {getServerSideURL} from "@/utilities/getURL";
+import {KeysOfValue} from "@/utilities/typeUtilities";
 import {blurDataUrlsPlugin} from "@oversightstudio/blur-data-urls";
 import config from "@payload-config"
 import {importExportPlugin} from "@payloadcms/plugin-import-export";
@@ -31,15 +33,15 @@ import {imageSearchPlugin} from "./image-search"
 import {LikesPlugin} from "./Likes";
 import {userFieldOrganizerPlugin} from "./userField";
 //"tracks"|"albums"|"playlists"|
-export type EOCollectionSlug = Extract<CollectionSlug, "pages" | "posts" | "delta" | "profile" | "categories" | "tags">;
+export type EOCollectionSlug = Extract<CollectionSlug, TaggedCollectionSlug | "categories" | "tags">;
 export type EOCollection<T extends EOCollectionSlug = EOCollectionSlug> = DataFromCollectionSlug<T>;
 const generateTitle: GenerateTitle<EOCollection> = ({doc, collectionSlug: c}) => {
 	const getDeco = <T extends EOCollectionSlug>({doc, collectionSlug}: {
 		collectionSlug: T; doc: EOCollection<T>
 	}) => {
 		switch (collectionSlug) {
-			case "delta":
-				return {suffix: "| The Hideaway", prefix: "a Delta :"}
+			case "surf":
+				return {suffix: "| The Hideaway", prefix: "a Surf :"}
 			case "posts":
 				return {suffix: "| The Hideaway", prefix: ""}
 			case "categories":
@@ -95,7 +97,7 @@ const generateMetaImage: GenerateImage<EOCollection> = async ({
 				}
 			}
 				return await getAssetThumb();
-			case "delta":
+			case "surf":
 			case "posts": {
 				const doc = d as EOCollection<typeof slug>;
 
@@ -125,7 +127,7 @@ export type SiteMapCollectionSlug = Extract<
 	CollectionSlug,
 	| "posts"
 	| "pages"
-	| "delta"
+	| "surf"
 	| "profile"
 	| "albums"
 	| "playlists"
@@ -143,26 +145,15 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
 	if (!collectionConfig?.slug) {
 		throw new Error("Invalid collection config");
 	}
-	const collectionSlug = collectionConfig.slug as CollectionSlug;
-	// const urlMap: { [x in SiteMapCollectionSlug]: string } = {
-	// 	posts: "/essays/:slug",
-	// 	pages: "/",
-	// 	delta: "/delta/:slug",
-	// 	albums: "/rp.fm/album/:slug",
-	// 	playlists: "/rp.fm/mix/:slug",
-	// 	categories: "/categories/:slug",
-	// 	tracks: "/rp.fm/album/:albumSlug?track=:trackSlug",
-	// 	organizations: "/clubs/:slug",
-	// 	tags: "/tagged/:slug"
-	// };
+ 
 	const docCollection = collectionConfig.slug as SiteMapCollectionSlug;
 	switch (docCollection) {
 		case "posts":
 			return `${url}/essays/${doc.slug}`;
 		case "pages":
 			return `${url}/${doc.slug}`;
-		case "delta":
-			return `${url}/delta/${doc.slug}`;
+		case "surf":
+			return `${url}/surf/${doc.slug}`;
 		case "profile":
 			return `${url}/users/${doc.slug}`;
 		case "albums":
@@ -180,18 +171,7 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
 			return `${url}/${docCollection}/${doc.slug}`;
 	}
 };
-export type LockedCollections = Extract<
-	CollectionSlug,
-	| "posts"
-	| "media"
-	| "delta"
-	| "albums"
-	| "playlists"
-	| "tracks"
-	| "userMedia"
-	| "assets"
-	| "profile"
->;
+export type LockedCollections =Exclude<KeysOfValue< CollectionMap, {locked?:boolean|null}>,'search'>
 export const plugins: Plugin[] = [
 	importExportPlugin({
 		collections: [{
@@ -206,7 +186,7 @@ export const plugins: Plugin[] = [
 		targetCollections: [
 			"posts",
 			"media",
-			"delta",
+			"surf",
 			"albums",
 			"playlists",
 			"tracks",
@@ -258,16 +238,19 @@ export const plugins: Plugin[] = [
 
 	seoPlugin({
 		generateTitle,
-		generateURL, generateImage: generateMetaImage, generateDescription
+		generateURL, generateImage: generateMetaImage, generateDescription, 
 	}),
 	searchPlugin({
-		collections: ["posts", "delta", "profile", "pages"] satisfies IndexedCollectionSlug[ ],
+		collections: ["posts", "surf", "profile", "pages", "tracks", "playlists", "albums"],
 		beforeSync: beforeSyncWithSearch,
 		defaultPriorities: {
+			playlists: 10,
+			tracks: 10,surf:20,
+			albums: 20,
 			posts: 10,
 			pages: 20,
 			profile: 10,
-			delta: 20
+
 		},
 		searchOverrides: {
 			fields: ({defaultFields}) => [...defaultFields, ...searchFields],
@@ -345,7 +328,7 @@ export const plugins: Plugin[] = [
 		enabled: true,
 		collections: [
 			"posts",
-			"delta",
+			"surf",
 			"albums",
 			"playlists",
 			"tracks",

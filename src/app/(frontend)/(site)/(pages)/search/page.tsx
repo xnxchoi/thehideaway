@@ -77,9 +77,9 @@ export default async function Page({
       }
     });
 
-    // Search delta collection
-    const delta = await payload.find({
-      collection: "delta",
+    // Search surf collection
+    const surf = await payload.find({
+      collection: "surf",
       depth: 1,
       limit: 6,
       select: {
@@ -104,7 +104,7 @@ export default async function Page({
     });
 
     // Combine results and sort by publishedAt
-    allResults = [...posts.docs, ...delta.docs]
+    allResults = [...posts.docs, ...surf.docs]
       .map((doc) => doc as unknown as CardPostData)
       .sort((a, b) => {
         const dateA = new Date(a.publishedAt || a.updatedAt).getTime();

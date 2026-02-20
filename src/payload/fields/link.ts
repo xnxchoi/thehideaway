@@ -1,6 +1,5 @@
-import type {Field} from "payload"
-
 import deepMerge from "@/utilities/deepMerge"
+import type {Field} from "payload"
 
 export type LinkAppearances = "default" | "outline"
 
@@ -79,7 +78,7 @@ export const link: LinkType = ({appearances, disableLabel = false, overrides = {
 			},
 			label: "Document to link to",
 			maxDepth: 1,
-			relationTo: ["pages", "posts", "delta", "users", "albums", "tracks", "playlists",
+			relationTo: ["pages", "posts", "surf", "users", "albums", "tracks", "playlists",
 				'organizations', 'categories'],
 			required: true,
 		},

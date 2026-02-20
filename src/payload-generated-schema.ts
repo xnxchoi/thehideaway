@@ -8,21 +8,21 @@
 
 import {relations, sql} from "@payloadcms/db-postgres/drizzle";
 import {
-	type AnyPgColumn,
-	boolean,
-	foreignKey,
-	index,
-	integer,
-	jsonb,
-	numeric,
-	pgEnum,
-	pgTable,
-	serial,
-	text,
-	timestamp,
-	uniqueIndex,
-	uuid,
-	varchar
+    type AnyPgColumn,
+    boolean,
+    foreignKey,
+    index,
+    integer,
+    jsonb,
+    numeric,
+    pgEnum,
+    pgTable,
+    serial,
+    text,
+    timestamp,
+    uniqueIndex,
+    uuid,
+    varchar
 } from "@payloadcms/db-postgres/drizzle/pg-core";
 
 export const enum__locales = pgEnum("enum__locales", ["en", "ko"]);
@@ -65,7 +65,7 @@ export const enum_notifications_type = pgEnum("enum_notifications_type", [
   "bookmark",
   "profile",
   "post",
-  "delta",
+  "surf",
   "notification"
 ]);
 export const enum_notifications_status = pgEnum("enum_notifications_status", [
@@ -346,19 +346,19 @@ export const enum_exports_locale = pgEnum("enum_exports_locale", [
 ]);
 export const enum_exports_drafts = pgEnum("enum_exports_drafts", ["yes", "no"]);
 export const enum_imports_collection_slug = pgEnum(
-	"enum_imports_collection_slug",
-	["posts"]
+  "enum_imports_collection_slug",
+  ["posts"]
 );
 export const enum_imports_import_mode = pgEnum("enum_imports_import_mode", [
-	"create",
-	"update",
-	"upsert"
+  "create",
+  "update",
+  "upsert"
 ]);
 export const enum_imports_status = pgEnum("enum_imports_status", [
-	"pending",
-	"completed",
-	"partial",
-	"failed"
+  "pending",
+  "completed",
+  "partial",
+  "failed"
 ]);
 export const enum_redirects_to_type = pgEnum("enum_redirects_to_type", [
   "reference",
@@ -371,7 +371,7 @@ export const enum_payload_jobs_log_task_slug = pgEnum(
     "welcomeUser",
     "welcomeUsers",
     "createCollectionExport",
-	  "createCollectionImport",
+    "createCollectionImport",
     "schedulePublish"
   ]
 );
@@ -390,7 +390,7 @@ export const enum_payload_jobs_task_slug = pgEnum(
     "welcomeUser",
     "welcomeUsers",
     "createCollectionExport",
-	  "createCollectionImport",
+    "createCollectionImport",
     "schedulePublish"
   ]
 );
@@ -430,7 +430,7 @@ export const users = pgTable(
     slug: varchar("slug"),
     firstName: varchar("first_name").default("First And"),
     lastName: varchar("last_name").default("The Last"),
-	  verified: boolean("verified").default(false),
+    verified: boolean("verified").default(false),
     username: varchar("username"),
     bio: varchar("bio").default("A member of The Hideaway."),
     location: varchar("location").default("Seoul"),
@@ -472,7 +472,7 @@ export const users = pgTable(
     uniqueIndex("users_slug_idx").on(columns.slug),
     index("users_first_name_idx").on(columns.firstName),
     index("users_last_name_idx").on(columns.lastName),
-	  index("users_verified_idx").on(columns.verified),
+    index("users_verified_idx").on(columns.verified),
     uniqueIndex("users_username_idx").on(columns.username),
     index("users_bio_idx").on(columns.bio),
     index("users_location_idx").on(columns.location),
@@ -494,7 +494,7 @@ export const users_locales = pgTable(
   "users_locales",
   {
     meta_title: varchar("meta_title"),
-	  meta_image: varchar("meta_image_id").references(() => user_media.id, {
+    meta_image: varchar("meta_image_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
     meta_description: varchar("meta_description"),
@@ -526,7 +526,7 @@ export const _users_v = pgTable(
     version_slug: varchar("version_slug"),
     version_firstName: varchar("version_first_name").default("First And"),
     version_lastName: varchar("version_last_name").default("The Last"),
-	  version_verified: boolean("version_verified").default(false),
+    version_verified: boolean("version_verified").default(false),
     version_username: varchar("version_username"),
     version_bio: varchar("version_bio").default("A member of The Hideaway."),
     version_location: varchar("version_location").default("Seoul"),
@@ -589,7 +589,7 @@ export const _users_v = pgTable(
     index("_users_v_version_version_last_name_idx").on(
       columns.version_lastName
     ),
-	  index("_users_v_version_version_verified_idx").on(columns.version_verified),
+    index("_users_v_version_version_verified_idx").on(columns.version_verified),
     index("_users_v_version_version_username_idx").on(columns.version_username),
     index("_users_v_version_version_bio_idx").on(columns.version_bio),
     index("_users_v_version_version_location_idx").on(columns.version_location),
@@ -628,7 +628,7 @@ export const _users_v_locales = pgTable(
   "_users_v_locales",
   {
     version_meta_title: varchar("version_meta_title"),
-	  version_meta_image: varchar("version_meta_image_id").references(
+    version_meta_image: varchar("version_meta_image_id").references(
       () => user_media.id,
       {
         onDelete: "set null"
@@ -690,15 +690,15 @@ export const sessions = pgTable(
     impersonatedBy: uuid("impersonated_by_id").references(() => users.id, {
       onDelete: "set null"
     }),
-	  activeOrganization: uuid("active_organization_id").references(
+    activeOrganization: uuid("active_organization_id").references(
       () => organizations.id,
       {
         onDelete: "set null"
       }
-	  ),
-	  activeTeam: uuid("active_team_id").references(() => teams.id, {
-		  onDelete: "set null"
-	  })
+    ),
+    activeTeam: uuid("active_team_id").references(() => teams.id, {
+      onDelete: "set null"
+    })
   },
   (columns) => [
     uniqueIndex("sessions_token_idx").on(columns.token),
@@ -706,8 +706,8 @@ export const sessions = pgTable(
     index("sessions_updated_at_idx").on(columns.updatedAt),
     index("sessions_user_idx").on(columns.user),
     index("sessions_impersonated_by_idx").on(columns.impersonatedBy),
-	  index("sessions_active_organization_idx").on(columns.activeOrganization),
-	  index("sessions_active_team_idx").on(columns.activeTeam)
+    index("sessions_active_organization_idx").on(columns.activeOrganization),
+    index("sessions_active_team_idx").on(columns.activeTeam)
   ]
 );
 
@@ -845,8 +845,8 @@ export const passkeys = pgTable(
       .references(() => users.id, {
         onDelete: "set null"
       }),
-	  credentialId: varchar("credential_id").notNull(),
-	  counter: numeric("counter", {mode: "number"}).notNull(),
+    credentialId: varchar("credential_id").notNull(),
+    counter: numeric("counter", { mode: "number" }).notNull(),
     deviceType: varchar("device_type").notNull(),
     backedUp: boolean("backed_up").notNull().default(false),
     transports: varchar("transports").notNull(),
@@ -878,7 +878,7 @@ export const organizations = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name").notNull(),
-	  slug: varchar("slug").notNull(),
+    slug: varchar("slug").notNull(),
     logo: varchar("logo"),
     createdAt: timestamp("created_at", {
       mode: "string",
@@ -903,71 +903,71 @@ export const organizations = pgTable(
 );
 
 export const teams = pgTable(
-	"teams",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		name: varchar("name").notNull(),
-		organization: uuid("organization_id")
-			.notNull()
-			.references(() => organizations.id, {
-				onDelete: "set null"
-			}),
-		createdAt: timestamp("created_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull(),
-		updatedAt: timestamp("updated_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull()
-	},
-	(columns) => [
-		index("teams_organization_idx").on(columns.organization),
-		index("teams_created_at_idx").on(columns.createdAt),
-		index("teams_updated_at_idx").on(columns.updatedAt)
-	]
+  "teams",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    organization: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, {
+        onDelete: "set null"
+      }),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("teams_organization_idx").on(columns.organization),
+    index("teams_created_at_idx").on(columns.createdAt),
+    index("teams_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const team_members = pgTable(
-	"team_members",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		team: uuid("team_id")
-			.notNull()
-			.references(() => teams.id, {
-				onDelete: "set null"
-			}),
-		user: uuid("user_id")
-			.notNull()
-			.references(() => users.id, {
-				onDelete: "set null"
-			}),
-		createdAt: timestamp("created_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull(),
-		updatedAt: timestamp("updated_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull()
-	},
-	(columns) => [
-		index("team_members_team_idx").on(columns.team),
-		index("team_members_user_idx").on(columns.user),
-		index("team_members_updated_at_idx").on(columns.updatedAt)
-	]
+  "team_members",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    team: uuid("team_id")
+      .notNull()
+      .references(() => teams.id, {
+        onDelete: "set null"
+      }),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("team_members_team_idx").on(columns.team),
+    index("team_members_user_idx").on(columns.user),
+    index("team_members_updated_at_idx").on(columns.updatedAt)
+  ]
 );
 
 export const members = pgTable(
@@ -1018,20 +1018,20 @@ export const invitations = pgTable(
       }),
     email: varchar("email").notNull(),
     role: varchar("role"),
-	  team: varchar("team"),
+    team: varchar("team"),
     status: varchar("status").notNull().default("pending"),
     expiresAt: timestamp("expires_at", {
       mode: "string",
       withTimezone: true,
       precision: 3
     }).notNull(),
-	  createdAt: timestamp("created_at", {
-		  mode: "string",
-		  withTimezone: true,
-		  precision: 3
-	  })
-		  .defaultNow()
-		  .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
     inviter: uuid("inviter_id")
       .notNull()
       .references(() => users.id, {
@@ -1048,9 +1048,9 @@ export const invitations = pgTable(
   (columns) => [
     index("invitations_organization_idx").on(columns.organization),
     index("invitations_email_idx").on(columns.email),
-	  index("invitations_team_idx").on(columns.team),
+    index("invitations_team_idx").on(columns.team),
     index("invitations_inviter_idx").on(columns.inviter),
-	  index("invitations_updated_at_idx").on(columns.updatedAt)
+    index("invitations_updated_at_idx").on(columns.updatedAt)
   ]
 );
 
@@ -1085,12 +1085,12 @@ export const admin_invitations = pgTable(
 export const assets = pgTable(
   "assets",
   {
-	  id: varchar("id").primaryKey(),
-	  alt: varchar("alt").notNull().default("an image"),
+    id: varchar("id").primaryKey(),
+    alt: varchar("alt").notNull().default("an image"),
     caption: varchar("caption"),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
-	  darkmode: boolean("darkmode").notNull().default(false),
+    authority: numeric("authority", { mode: "number" }).default(0),
+    darkmode: boolean("darkmode").notNull().default(false),
     blurDataUrl: varchar("blur_data_url"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -1110,80 +1110,80 @@ export const assets = pgTable(
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
     mimeType: varchar("mime_type"),
-	  filesize: numeric("filesize", {mode: "number"}),
-	  width: numeric("width", {mode: "number"}),
-	  height: numeric("height", {mode: "number"}),
-	  focalX: numeric("focal_x", {mode: "number"}),
-	  focalY: numeric("focal_y", {mode: "number"}),
-	  sizes_thumb_url: varchar("sizes_thumb_url"),
-	  sizes_thumb_width: numeric("sizes_thumb_width", {mode: "number"}),
-	  sizes_thumb_height: numeric("sizes_thumb_height", {mode: "number"}),
-	  sizes_thumb_mimeType: varchar("sizes_thumb_mime_type"),
-	  sizes_thumb_filesize: numeric("sizes_thumb_filesize", {mode: "number"}),
-	  sizes_thumb_filename: varchar("sizes_thumb_filename"),
-	  sizes_card_url: varchar("sizes_card_url"),
-	  sizes_card_width: numeric("sizes_card_width", {mode: "number"}),
-	  sizes_card_height: numeric("sizes_card_height", {mode: "number"}),
-	  sizes_card_mimeType: varchar("sizes_card_mime_type"),
-	  sizes_card_filesize: numeric("sizes_card_filesize", {mode: "number"}),
-	  sizes_card_filename: varchar("sizes_card_filename"),
-	  sizes_content_url: varchar("sizes_content_url"),
-	  sizes_content_width: numeric("sizes_content_width", {mode: "number"}),
-	  sizes_content_height: numeric("sizes_content_height", {mode: "number"}),
-	  sizes_content_mimeType: varchar("sizes_content_mime_type"),
-	  sizes_content_filesize: numeric("sizes_content_filesize", {
-		  mode: "number"
-	  }),
-	  sizes_content_filename: varchar("sizes_content_filename"),
-	  sizes_content_wide_url: varchar("sizes_content_wide_url"),
-	  sizes_content_wide_width: numeric("sizes_content_wide_width", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_height: numeric("sizes_content_wide_height", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_mimeType: varchar("sizes_content_wide_mime_type"),
-	  sizes_content_wide_filesize: numeric("sizes_content_wide_filesize", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_filename: varchar("sizes_content_wide_filename"),
-	  sizes_hero_url: varchar("sizes_hero_url"),
-	  sizes_hero_width: numeric("sizes_hero_width", {mode: "number"}),
-	  sizes_hero_height: numeric("sizes_hero_height", {mode: "number"}),
-	  sizes_hero_mimeType: varchar("sizes_hero_mime_type"),
-	  sizes_hero_filesize: numeric("sizes_hero_filesize", {mode: "number"}),
-	  sizes_hero_filename: varchar("sizes_hero_filename"),
+    filesize: numeric("filesize", { mode: "number" }),
+    width: numeric("width", { mode: "number" }),
+    height: numeric("height", { mode: "number" }),
+    focalX: numeric("focal_x", { mode: "number" }),
+    focalY: numeric("focal_y", { mode: "number" }),
+    sizes_thumb_url: varchar("sizes_thumb_url"),
+    sizes_thumb_width: numeric("sizes_thumb_width", { mode: "number" }),
+    sizes_thumb_height: numeric("sizes_thumb_height", { mode: "number" }),
+    sizes_thumb_mimeType: varchar("sizes_thumb_mime_type"),
+    sizes_thumb_filesize: numeric("sizes_thumb_filesize", { mode: "number" }),
+    sizes_thumb_filename: varchar("sizes_thumb_filename"),
+    sizes_card_url: varchar("sizes_card_url"),
+    sizes_card_width: numeric("sizes_card_width", { mode: "number" }),
+    sizes_card_height: numeric("sizes_card_height", { mode: "number" }),
+    sizes_card_mimeType: varchar("sizes_card_mime_type"),
+    sizes_card_filesize: numeric("sizes_card_filesize", { mode: "number" }),
+    sizes_card_filename: varchar("sizes_card_filename"),
+    sizes_content_url: varchar("sizes_content_url"),
+    sizes_content_width: numeric("sizes_content_width", { mode: "number" }),
+    sizes_content_height: numeric("sizes_content_height", { mode: "number" }),
+    sizes_content_mimeType: varchar("sizes_content_mime_type"),
+    sizes_content_filesize: numeric("sizes_content_filesize", {
+      mode: "number"
+    }),
+    sizes_content_filename: varchar("sizes_content_filename"),
+    sizes_content_wide_url: varchar("sizes_content_wide_url"),
+    sizes_content_wide_width: numeric("sizes_content_wide_width", {
+      mode: "number"
+    }),
+    sizes_content_wide_height: numeric("sizes_content_wide_height", {
+      mode: "number"
+    }),
+    sizes_content_wide_mimeType: varchar("sizes_content_wide_mime_type"),
+    sizes_content_wide_filesize: numeric("sizes_content_wide_filesize", {
+      mode: "number"
+    }),
+    sizes_content_wide_filename: varchar("sizes_content_wide_filename"),
+    sizes_hero_url: varchar("sizes_hero_url"),
+    sizes_hero_width: numeric("sizes_hero_width", { mode: "number" }),
+    sizes_hero_height: numeric("sizes_hero_height", { mode: "number" }),
+    sizes_hero_mimeType: varchar("sizes_hero_mime_type"),
+    sizes_hero_filesize: numeric("sizes_hero_filesize", { mode: "number" }),
+    sizes_hero_filename: varchar("sizes_hero_filename"),
     sizes_og_url: varchar("sizes_og_url"),
-	  sizes_og_width: numeric("sizes_og_width", {mode: "number"}),
-	  sizes_og_height: numeric("sizes_og_height", {mode: "number"}),
+    sizes_og_width: numeric("sizes_og_width", { mode: "number" }),
+    sizes_og_height: numeric("sizes_og_height", { mode: "number" }),
     sizes_og_mimeType: varchar("sizes_og_mime_type"),
-	  sizes_og_filesize: numeric("sizes_og_filesize", {mode: "number"}),
+    sizes_og_filesize: numeric("sizes_og_filesize", { mode: "number" }),
     sizes_og_filename: varchar("sizes_og_filename")
   },
   (columns) => [
-	  uniqueIndex("assets_filename_compound_idx").on(
-		  columns.filename,
-		  columns.createdAt
-	  ),
+    uniqueIndex("assets_filename_compound_idx").on(
+      columns.filename,
+      columns.createdAt
+    ),
     index("assets_authority_idx").on(columns.authority),
-	  index("assets_darkmode_idx").on(columns.darkmode),
+    index("assets_darkmode_idx").on(columns.darkmode),
     index("assets_updated_at_idx").on(columns.updatedAt),
     index("assets_created_at_idx").on(columns.createdAt),
-	  index("assets_filename_idx").on(columns.filename),
-	  index("assets_sizes_thumb_sizes_thumb_filename_idx").on(
-		  columns.sizes_thumb_filename
+    index("assets_filename_idx").on(columns.filename),
+    index("assets_sizes_thumb_sizes_thumb_filename_idx").on(
+      columns.sizes_thumb_filename
     ),
-	  index("assets_sizes_card_sizes_card_filename_idx").on(
-		  columns.sizes_card_filename
+    index("assets_sizes_card_sizes_card_filename_idx").on(
+      columns.sizes_card_filename
     ),
-	  index("assets_sizes_content_sizes_content_filename_idx").on(
-		  columns.sizes_content_filename
+    index("assets_sizes_content_sizes_content_filename_idx").on(
+      columns.sizes_content_filename
     ),
-	  index("assets_sizes_content_wide_sizes_content_wide_filename_idx").on(
-		  columns.sizes_content_wide_filename
+    index("assets_sizes_content_wide_sizes_content_wide_filename_idx").on(
+      columns.sizes_content_wide_filename
     ),
-	  index("assets_sizes_hero_sizes_hero_filename_idx").on(
-		  columns.sizes_hero_filename
+    index("assets_sizes_hero_sizes_hero_filename_idx").on(
+      columns.sizes_hero_filename
     ),
     index("assets_sizes_og_sizes_og_filename_idx").on(columns.sizes_og_filename)
   ]
@@ -1194,7 +1194,7 @@ export const assets_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-	  parent: varchar("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     usersID: varchar("users_id")
   },
@@ -1219,11 +1219,11 @@ export const assets_rels = pgTable(
 export const categories = pgTable(
   "categories",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     title: varchar("title").notNull(),
     description: varchar("description"),
     slug: varchar("slug").notNull(),
-	  popularity: numeric("popularity", {mode: "number"}).notNull().default(0),
+    popularity: numeric("popularity", { mode: "number" }).notNull().default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1242,7 +1242,7 @@ export const categories = pgTable(
   (columns) => [
     index("categories_title_idx").on(columns.title),
     index("categories_description_idx").on(columns.description),
-	  index("categories_popularity_idx").on(columns.popularity),
+    index("categories_popularity_idx").on(columns.popularity),
     index("categories_updated_at_idx").on(columns.updatedAt),
     index("categories_created_at_idx").on(columns.createdAt)
   ]
@@ -1253,9 +1253,9 @@ export const categories_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-	  parent: varchar("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  categoriesID: varchar("categories_id")
+    categoriesID: varchar("categories_id")
   },
   (columns) => [
     index("categories_rels_order_idx").on(columns.order),
@@ -1278,17 +1278,17 @@ export const categories_rels = pgTable(
 export const media = pgTable(
   "media",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     author: uuid("author_id")
       .notNull()
       .references(() => users.id, {
         onDelete: "set null"
       }),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
-	  alt: varchar("alt").notNull().default("an image"),
-	  darkmode: boolean("darkmode").notNull().default(false),
-	  caption: varchar("caption"),
+    authority: numeric("authority", { mode: "number" }).default(0),
+    alt: varchar("alt").notNull().default("an image"),
+    darkmode: boolean("darkmode").notNull().default(false),
+    caption: varchar("caption"),
     blurDataUrl: varchar("blur_data_url"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -1308,81 +1308,81 @@ export const media = pgTable(
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
     mimeType: varchar("mime_type"),
-	  filesize: numeric("filesize", {mode: "number"}),
-	  width: numeric("width", {mode: "number"}),
-	  height: numeric("height", {mode: "number"}),
-	  focalX: numeric("focal_x", {mode: "number"}),
-	  focalY: numeric("focal_y", {mode: "number"}),
-	  sizes_thumb_url: varchar("sizes_thumb_url"),
-	  sizes_thumb_width: numeric("sizes_thumb_width", {mode: "number"}),
-	  sizes_thumb_height: numeric("sizes_thumb_height", {mode: "number"}),
-	  sizes_thumb_mimeType: varchar("sizes_thumb_mime_type"),
-	  sizes_thumb_filesize: numeric("sizes_thumb_filesize", {mode: "number"}),
-	  sizes_thumb_filename: varchar("sizes_thumb_filename"),
-	  sizes_card_url: varchar("sizes_card_url"),
-	  sizes_card_width: numeric("sizes_card_width", {mode: "number"}),
-	  sizes_card_height: numeric("sizes_card_height", {mode: "number"}),
-	  sizes_card_mimeType: varchar("sizes_card_mime_type"),
-	  sizes_card_filesize: numeric("sizes_card_filesize", {mode: "number"}),
-	  sizes_card_filename: varchar("sizes_card_filename"),
-	  sizes_content_url: varchar("sizes_content_url"),
-	  sizes_content_width: numeric("sizes_content_width", {mode: "number"}),
-	  sizes_content_height: numeric("sizes_content_height", {mode: "number"}),
-	  sizes_content_mimeType: varchar("sizes_content_mime_type"),
-	  sizes_content_filesize: numeric("sizes_content_filesize", {
-		  mode: "number"
-	  }),
-	  sizes_content_filename: varchar("sizes_content_filename"),
-	  sizes_content_wide_url: varchar("sizes_content_wide_url"),
-	  sizes_content_wide_width: numeric("sizes_content_wide_width", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_height: numeric("sizes_content_wide_height", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_mimeType: varchar("sizes_content_wide_mime_type"),
-	  sizes_content_wide_filesize: numeric("sizes_content_wide_filesize", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_filename: varchar("sizes_content_wide_filename"),
-	  sizes_hero_url: varchar("sizes_hero_url"),
-	  sizes_hero_width: numeric("sizes_hero_width", {mode: "number"}),
-	  sizes_hero_height: numeric("sizes_hero_height", {mode: "number"}),
-	  sizes_hero_mimeType: varchar("sizes_hero_mime_type"),
-	  sizes_hero_filesize: numeric("sizes_hero_filesize", {mode: "number"}),
-	  sizes_hero_filename: varchar("sizes_hero_filename"),
+    filesize: numeric("filesize", { mode: "number" }),
+    width: numeric("width", { mode: "number" }),
+    height: numeric("height", { mode: "number" }),
+    focalX: numeric("focal_x", { mode: "number" }),
+    focalY: numeric("focal_y", { mode: "number" }),
+    sizes_thumb_url: varchar("sizes_thumb_url"),
+    sizes_thumb_width: numeric("sizes_thumb_width", { mode: "number" }),
+    sizes_thumb_height: numeric("sizes_thumb_height", { mode: "number" }),
+    sizes_thumb_mimeType: varchar("sizes_thumb_mime_type"),
+    sizes_thumb_filesize: numeric("sizes_thumb_filesize", { mode: "number" }),
+    sizes_thumb_filename: varchar("sizes_thumb_filename"),
+    sizes_card_url: varchar("sizes_card_url"),
+    sizes_card_width: numeric("sizes_card_width", { mode: "number" }),
+    sizes_card_height: numeric("sizes_card_height", { mode: "number" }),
+    sizes_card_mimeType: varchar("sizes_card_mime_type"),
+    sizes_card_filesize: numeric("sizes_card_filesize", { mode: "number" }),
+    sizes_card_filename: varchar("sizes_card_filename"),
+    sizes_content_url: varchar("sizes_content_url"),
+    sizes_content_width: numeric("sizes_content_width", { mode: "number" }),
+    sizes_content_height: numeric("sizes_content_height", { mode: "number" }),
+    sizes_content_mimeType: varchar("sizes_content_mime_type"),
+    sizes_content_filesize: numeric("sizes_content_filesize", {
+      mode: "number"
+    }),
+    sizes_content_filename: varchar("sizes_content_filename"),
+    sizes_content_wide_url: varchar("sizes_content_wide_url"),
+    sizes_content_wide_width: numeric("sizes_content_wide_width", {
+      mode: "number"
+    }),
+    sizes_content_wide_height: numeric("sizes_content_wide_height", {
+      mode: "number"
+    }),
+    sizes_content_wide_mimeType: varchar("sizes_content_wide_mime_type"),
+    sizes_content_wide_filesize: numeric("sizes_content_wide_filesize", {
+      mode: "number"
+    }),
+    sizes_content_wide_filename: varchar("sizes_content_wide_filename"),
+    sizes_hero_url: varchar("sizes_hero_url"),
+    sizes_hero_width: numeric("sizes_hero_width", { mode: "number" }),
+    sizes_hero_height: numeric("sizes_hero_height", { mode: "number" }),
+    sizes_hero_mimeType: varchar("sizes_hero_mime_type"),
+    sizes_hero_filesize: numeric("sizes_hero_filesize", { mode: "number" }),
+    sizes_hero_filename: varchar("sizes_hero_filename"),
     sizes_og_url: varchar("sizes_og_url"),
-	  sizes_og_width: numeric("sizes_og_width", {mode: "number"}),
-	  sizes_og_height: numeric("sizes_og_height", {mode: "number"}),
+    sizes_og_width: numeric("sizes_og_width", { mode: "number" }),
+    sizes_og_height: numeric("sizes_og_height", { mode: "number" }),
     sizes_og_mimeType: varchar("sizes_og_mime_type"),
-	  sizes_og_filesize: numeric("sizes_og_filesize", {mode: "number"}),
+    sizes_og_filesize: numeric("sizes_og_filesize", { mode: "number" }),
     sizes_og_filename: varchar("sizes_og_filename")
   },
   (columns) => [
-	  uniqueIndex("media_filename_compound_idx").on(
-		  columns.filename,
-		  columns.createdAt
-	  ),
+    uniqueIndex("media_filename_compound_idx").on(
+      columns.filename,
+      columns.createdAt
+    ),
     index("media_author_idx").on(columns.author),
     index("media_authority_idx").on(columns.authority),
-	  index("media_darkmode_idx").on(columns.darkmode),
+    index("media_darkmode_idx").on(columns.darkmode),
     index("media_updated_at_idx").on(columns.updatedAt),
     index("media_created_at_idx").on(columns.createdAt),
     index("media_filename_idx").on(columns.filename),
-	  index("media_sizes_thumb_sizes_thumb_filename_idx").on(
-		  columns.sizes_thumb_filename
+    index("media_sizes_thumb_sizes_thumb_filename_idx").on(
+      columns.sizes_thumb_filename
     ),
-	  index("media_sizes_card_sizes_card_filename_idx").on(
-		  columns.sizes_card_filename
+    index("media_sizes_card_sizes_card_filename_idx").on(
+      columns.sizes_card_filename
     ),
-	  index("media_sizes_content_sizes_content_filename_idx").on(
-		  columns.sizes_content_filename
+    index("media_sizes_content_sizes_content_filename_idx").on(
+      columns.sizes_content_filename
     ),
-	  index("media_sizes_content_wide_sizes_content_wide_filename_idx").on(
-		  columns.sizes_content_wide_filename
+    index("media_sizes_content_wide_sizes_content_wide_filename_idx").on(
+      columns.sizes_content_wide_filename
     ),
-	  index("media_sizes_hero_sizes_hero_filename_idx").on(
-		  columns.sizes_hero_filename
+    index("media_sizes_hero_sizes_hero_filename_idx").on(
+      columns.sizes_hero_filename
     ),
     index("media_sizes_og_sizes_og_filename_idx").on(columns.sizes_og_filename)
   ]
@@ -1393,7 +1393,7 @@ export const media_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-	  parent: varchar("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     usersID: varchar("users_id")
   },
@@ -1418,7 +1418,7 @@ export const media_rels = pgTable(
 export const tags = pgTable(
   "tags",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     title: varchar("title").notNull(),
     author: uuid("author_id")
       .notNull()
@@ -1429,7 +1429,7 @@ export const tags = pgTable(
     hashId: varchar("hash_id").notNull(),
     slugLock: boolean("slug_lock").notNull(),
     slug: varchar("slug").notNull(),
-	  tagCount: numeric("tag_count", {mode: "number"}).notNull().default(0),
+    tagCount: numeric("tag_count", { mode: "number" }).notNull().default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1450,7 +1450,7 @@ export const tags = pgTable(
     index("tags_author_idx").on(columns.author),
     index("tags_slug_key_idx").on(columns.slugKey),
     index("tags_hash_id_idx").on(columns.hashId),
-	  index("tags_tag_count_idx").on(columns.tagCount),
+    index("tags_tag_count_idx").on(columns.tagCount),
     index("tags_updated_at_idx").on(columns.updatedAt),
     index("tags_created_at_idx").on(columns.createdAt)
   ]
@@ -1459,17 +1459,17 @@ export const tags = pgTable(
 export const notifications = pgTable(
   "notifications",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     recipient: uuid("recipient_id")
       .notNull()
       .references(() => users.id, {
         onDelete: "set null"
       }),
-	  thumbnail: varchar("thumbnail_id").references(() => assets.id, {
+    thumbnail: varchar("thumbnail_id").references(() => assets.id, {
       onDelete: "set null"
     }),
     type: enum_notifications_type("type").notNull().default("system"),
-	  importance: numeric("importance", {mode: "number"}).notNull().default(0),
+    importance: numeric("importance", { mode: "number" }).notNull().default(0),
     status: enum_notifications_status("status").notNull().default("unread"),
     read: boolean("read").notNull().default(false),
     dismissed: boolean("dismissed").notNull().default(false),
@@ -1523,7 +1523,7 @@ export const notifications_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-	  parent: varchar("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
@@ -1532,12 +1532,12 @@ export const notifications_rels = pgTable(
     bookmarksID: varchar("bookmarks_id"),
     followsID: uuid("follows_id"),
     responsesID: varchar("responses_id"),
-	  pagesID: varchar("pages_id"),
+    pagesID: varchar("pages_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
     organizationsID: uuid("organizations_id"),
-	  categoriesID: varchar("categories_id")
+    categoriesID: varchar("categories_id")
   },
   (columns) => [
     index("notifications_rels_order_idx").on(columns.order),
@@ -1635,7 +1635,7 @@ export const pages_hero_links = pgTable(
   "pages_hero_links",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     id: varchar("id").primaryKey(),
     link_type:
       enum_pages_hero_links_link_type("link_type").default("reference"),
@@ -1689,7 +1689,7 @@ export const pages_blocks_cta = pgTable(
   "pages_blocks_cta",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: varchar("id").primaryKey(),
     richText: jsonb("rich_text"),
@@ -1743,7 +1743,7 @@ export const pages_blocks_content = pgTable(
   "pages_blocks_content",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: varchar("id").primaryKey(),
     blockName: varchar("block_name")
@@ -1761,23 +1761,23 @@ export const pages_blocks_content = pgTable(
 );
 
 export const pages_blocks_image = pgTable(
-	"pages_blocks_image",
+  "pages_blocks_image",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: varchar("id").primaryKey(),
-	  span: numeric("span", {mode: "number"}).default(600),
+    span: numeric("span", { mode: "number" }).default(600),
     blockName: varchar("block_name")
   },
   (columns) => [
-	  index("pages_blocks_image_order_idx").on(columns._order),
-	  index("pages_blocks_image_parent_id_idx").on(columns._parentID),
-	  index("pages_blocks_image_path_idx").on(columns._path),
+    index("pages_blocks_image_order_idx").on(columns._order),
+    index("pages_blocks_image_parent_id_idx").on(columns._parentID),
+    index("pages_blocks_image_path_idx").on(columns._path),
     foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [pages.id],
-	    name: "pages_blocks_image_parent_id_fk"
+      name: "pages_blocks_image_parent_id_fk"
     }).onDelete("cascade")
   ]
 );
@@ -1786,7 +1786,7 @@ export const pages_blocks_archive = pgTable(
   "pages_blocks_archive",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: varchar("id").primaryKey(),
     introContent: jsonb("intro_content"),
@@ -1796,7 +1796,7 @@ export const pages_blocks_archive = pgTable(
       ),
     relationTo:
       enum_pages_blocks_archive_relation_to("relation_to").default("posts"),
-	  limit: numeric("limit", {mode: "number"}).default(8),
+    limit: numeric("limit", { mode: "number" }).default(8),
     blockName: varchar("block_name")
   },
   (columns) => [
@@ -1834,14 +1834,14 @@ export const pages_blocks_fotd = pgTable(
   "pages_blocks_fotd",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: varchar("id").primaryKey(),
     headline: varchar("headline").default("ONE-STOP ARCHIVE FOR YOUR LIFE."),
     subheading: jsonb("subheading"),
     populateBy:
       enum_pages_blocks_fotd_populate_by("populate_by").default("collection"),
-	  limit: numeric("limit", {mode: "number"}).default(3),
+    limit: numeric("limit", { mode: "number" }).default(3),
     blockName: varchar("block_name")
   },
   (columns) => [
@@ -1860,7 +1860,7 @@ export const pages_blocks_hero_square = pgTable(
   "pages_blocks_hero_square",
   {
     _order: integer("_order").notNull(),
-	  _parentID: varchar("_parent_id").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: varchar("id").primaryKey(),
     introContent: jsonb("intro_content"),
@@ -1868,7 +1868,7 @@ export const pages_blocks_hero_square = pgTable(
       enum_pages_blocks_hero_square_populate_by("populate_by").default(
         "collection"
       ),
-	  limit: numeric("limit", {mode: "number"}).default(10),
+    limit: numeric("limit", { mode: "number" }).default(10),
     relationTo:
       enum_pages_blocks_hero_square_relation_to("relation_to").default("posts"),
     blockName: varchar("block_name")
@@ -1888,11 +1888,11 @@ export const pages_blocks_hero_square = pgTable(
 export const pages = pgTable(
   "pages",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     title: varchar("title"),
     hero_type: enum_pages_hero_type("hero_type").default("lowImpact"),
     hero_richText: jsonb("hero_rich_text"),
-	  hero_media: varchar("hero_media_id").references(() => media.id, {
+    hero_media: varchar("hero_media_id").references(() => media.id, {
       onDelete: "set null"
     }),
     pageLayout_footerType: enum_pages_page_layout_footer_type(
@@ -1908,7 +1908,7 @@ export const pages = pgTable(
     slugLock: boolean("slug_lock"),
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1944,13 +1944,13 @@ export const pages_locales = pgTable(
   "pages_locales",
   {
     meta_title: varchar("meta_title"),
-	  meta_image: varchar("meta_image_id").references(() => media.id, {
+    meta_image: varchar("meta_image_id").references(() => media.id, {
       onDelete: "set null"
     }),
     meta_description: varchar("meta_description"),
     id: serial("id").primaryKey(),
     _locale: enum__locales("_locale").notNull(),
-	  _parentID: varchar("_parent_id").notNull()
+    _parentID: varchar("_parent_id").notNull()
   },
   (columns) => [
     index("pages_meta_meta_image_idx").on(columns.meta_image, columns._locale),
@@ -1971,9 +1971,9 @@ export const pages_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-	  parent: varchar("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  pagesID: varchar("pages_id"),
+    pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
     usersID: varchar("users_id"),
@@ -1981,11 +1981,11 @@ export const pages_rels = pgTable(
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
     organizationsID: uuid("organizations_id"),
-	  categoriesID: varchar("categories_id"),
-	  mediaID: varchar("media_id"),
-	  userMediaID: varchar("user_media_id"),
-	  assetsID: varchar("assets_id"),
-	  tagsID: varchar("tags_id")
+    categoriesID: varchar("categories_id"),
+    mediaID: varchar("media_id"),
+    userMediaID: varchar("user_media_id"),
+    assetsID: varchar("assets_id"),
+    tagsID: varchar("tags_id")
   },
   (columns) => [
     index("pages_rels_order_idx").on(columns.order),
@@ -2000,9 +2000,9 @@ export const pages_rels = pgTable(
     index("pages_rels_playlists_id_idx").on(columns.playlistsID),
     index("pages_rels_organizations_id_idx").on(columns.organizationsID),
     index("pages_rels_categories_id_idx").on(columns.categoriesID),
-	  index("pages_rels_media_id_idx").on(columns.mediaID),
-	  index("pages_rels_user_media_id_idx").on(columns.userMediaID),
-	  index("pages_rels_assets_id_idx").on(columns.assetsID),
+    index("pages_rels_media_id_idx").on(columns.mediaID),
+    index("pages_rels_user_media_id_idx").on(columns.userMediaID),
+    index("pages_rels_assets_id_idx").on(columns.assetsID),
     index("pages_rels_tags_id_idx").on(columns.tagsID),
     foreignKey({
       columns: [columns["parent"]],
@@ -2055,21 +2055,21 @@ export const pages_rels = pgTable(
       name: "pages_rels_categories_fk"
     }).onDelete("cascade"),
     foreignKey({
-	    columns: [columns["mediaID"]],
-	    foreignColumns: [media.id],
-	    name: "pages_rels_media_fk"
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "pages_rels_media_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["userMediaID"]],
-		  foreignColumns: [user_media.id],
-		  name: "pages_rels_user_media_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["assetsID"]],
-		  foreignColumns: [assets.id],
-		  name: "pages_rels_assets_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "pages_rels_user_media_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["assetsID"]],
+      foreignColumns: [assets.id],
+      name: "pages_rels_assets_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "pages_rels_tags_fk"
@@ -2218,24 +2218,24 @@ export const _pages_v_blocks_content = pgTable(
 );
 
 export const _pages_v_blocks_image = pgTable(
-	"_pages_v_blocks_image",
+  "_pages_v_blocks_image",
   {
     _order: integer("_order").notNull(),
     _parentID: uuid("_parent_id").notNull(),
     _path: text("_path").notNull(),
     id: uuid("id").defaultRandom().primaryKey(),
     _uuid: varchar("_uuid"),
-	  span: numeric("span", {mode: "number"}).default(600),
+    span: numeric("span", { mode: "number" }).default(600),
     blockName: varchar("block_name")
   },
   (columns) => [
-	  index("_pages_v_blocks_image_order_idx").on(columns._order),
-	  index("_pages_v_blocks_image_parent_id_idx").on(columns._parentID),
-	  index("_pages_v_blocks_image_path_idx").on(columns._path),
+    index("_pages_v_blocks_image_order_idx").on(columns._order),
+    index("_pages_v_blocks_image_parent_id_idx").on(columns._parentID),
+    index("_pages_v_blocks_image_path_idx").on(columns._path),
     foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [_pages_v.id],
-	    name: "_pages_v_blocks_image_parent_id_fk"
+      name: "_pages_v_blocks_image_parent_id_fk"
     }).onDelete("cascade")
   ]
 );
@@ -2255,7 +2255,7 @@ export const _pages_v_blocks_archive = pgTable(
       ),
     relationTo:
       enum__pages_v_blocks_archive_relation_to("relation_to").default("posts"),
-	  limit: numeric("limit", {mode: "number"}).default(8),
+    limit: numeric("limit", { mode: "number" }).default(8),
     blockName: varchar("block_name")
   },
   (columns) => [
@@ -2303,7 +2303,7 @@ export const _pages_v_blocks_fotd = pgTable(
       enum__pages_v_blocks_fotd_populate_by("populate_by").default(
         "collection"
       ),
-	  limit: numeric("limit", {mode: "number"}).default(3),
+    limit: numeric("limit", { mode: "number" }).default(3),
     blockName: varchar("block_name")
   },
   (columns) => [
@@ -2331,7 +2331,7 @@ export const _pages_v_blocks_hero_square = pgTable(
       enum__pages_v_blocks_hero_square_populate_by("populate_by").default(
         "collection"
       ),
-	  limit: numeric("limit", {mode: "number"}).default(10),
+    limit: numeric("limit", { mode: "number" }).default(10),
     relationTo:
       enum__pages_v_blocks_hero_square_relation_to("relation_to").default(
         "posts"
@@ -2354,14 +2354,14 @@ export const _pages_v = pgTable(
   "_pages_v",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-	  parent: varchar("parent_id").references(() => pages.id, {
+    parent: varchar("parent_id").references(() => pages.id, {
       onDelete: "set null"
     }),
     version_title: varchar("version_title"),
     version_hero_type:
       enum__pages_v_version_hero_type("version_hero_type").default("lowImpact"),
     version_hero_richText: jsonb("version_hero_rich_text"),
-	  version_hero_media: varchar("version_hero_media_id").references(
+    version_hero_media: varchar("version_hero_media_id").references(
       () => media.id,
       {
         onDelete: "set null"
@@ -2381,9 +2381,9 @@ export const _pages_v = pgTable(
     version_slugLock: boolean("version_slug_lock"),
     version_slug: varchar("version_slug"),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -2449,7 +2449,7 @@ export const _pages_v_locales = pgTable(
   "_pages_v_locales",
   {
     version_meta_title: varchar("version_meta_title"),
-	  version_meta_image: varchar("version_meta_image_id").references(
+    version_meta_image: varchar("version_meta_image_id").references(
       () => media.id,
       {
         onDelete: "set null"
@@ -2484,7 +2484,7 @@ export const _pages_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  pagesID: varchar("pages_id"),
+    pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
     usersID: varchar("users_id"),
@@ -2492,11 +2492,11 @@ export const _pages_v_rels = pgTable(
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
     organizationsID: uuid("organizations_id"),
-	  categoriesID: varchar("categories_id"),
-	  mediaID: varchar("media_id"),
-	  userMediaID: varchar("user_media_id"),
-	  assetsID: varchar("assets_id"),
-	  tagsID: varchar("tags_id")
+    categoriesID: varchar("categories_id"),
+    mediaID: varchar("media_id"),
+    userMediaID: varchar("user_media_id"),
+    assetsID: varchar("assets_id"),
+    tagsID: varchar("tags_id")
   },
   (columns) => [
     index("_pages_v_rels_order_idx").on(columns.order),
@@ -2511,9 +2511,9 @@ export const _pages_v_rels = pgTable(
     index("_pages_v_rels_playlists_id_idx").on(columns.playlistsID),
     index("_pages_v_rels_organizations_id_idx").on(columns.organizationsID),
     index("_pages_v_rels_categories_id_idx").on(columns.categoriesID),
-	  index("_pages_v_rels_media_id_idx").on(columns.mediaID),
-	  index("_pages_v_rels_user_media_id_idx").on(columns.userMediaID),
-	  index("_pages_v_rels_assets_id_idx").on(columns.assetsID),
+    index("_pages_v_rels_media_id_idx").on(columns.mediaID),
+    index("_pages_v_rels_user_media_id_idx").on(columns.userMediaID),
+    index("_pages_v_rels_assets_id_idx").on(columns.assetsID),
     index("_pages_v_rels_tags_id_idx").on(columns.tagsID),
     foreignKey({
       columns: [columns["parent"]],
@@ -2566,21 +2566,21 @@ export const _pages_v_rels = pgTable(
       name: "_pages_v_rels_categories_fk"
     }).onDelete("cascade"),
     foreignKey({
-	    columns: [columns["mediaID"]],
-	    foreignColumns: [media.id],
-	    name: "_pages_v_rels_media_fk"
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "_pages_v_rels_media_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["userMediaID"]],
-		  foreignColumns: [user_media.id],
-		  name: "_pages_v_rels_user_media_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["assetsID"]],
-		  foreignColumns: [assets.id],
-		  name: "_pages_v_rels_assets_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "_pages_v_rels_user_media_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["assetsID"]],
+      foreignColumns: [assets.id],
+      name: "_pages_v_rels_assets_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["tagsID"]],
       foreignColumns: [tags.id],
       name: "_pages_v_rels_tags_fk"
@@ -2592,12 +2592,12 @@ export const posts = pgTable(
   "posts",
   {
     id: varchar("id").primaryKey(),
-	  coverPosition: numeric("cover_position", {mode: "number"}).default(35),
+    coverPosition: numeric("cover_position", { mode: "number" }).default(35),
     title: varchar("title"),
     richTitle: jsonb("rich_title"),
     content: jsonb("content"),
     subtitle: varchar("subtitle"),
-	  category: varchar("category_id").references(() => categories.id, {
+    category: varchar("category_id").references(() => categories.id, {
       onDelete: "set null"
     }),
     slugKey: varchar("slug_key"),
@@ -2614,7 +2614,7 @@ export const posts = pgTable(
       onDelete: "set null"
     }),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -2648,7 +2648,7 @@ export const posts_locales = pgTable(
   "posts_locales",
   {
     meta_title: varchar("meta_title"),
-	  meta_image: varchar("meta_image_id").references(() => media.id, {
+    meta_image: varchar("meta_image_id").references(() => media.id, {
       onDelete: "set null"
     }),
     meta_description: varchar("meta_description"),
@@ -2677,10 +2677,10 @@ export const posts_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  userMediaID: varchar("user_media_id"),
-	  assetsID: varchar("assets_id"),
-	  mediaID: varchar("media_id"),
-	  tagsID: varchar("tags_id"),
+    userMediaID: varchar("user_media_id"),
+    assetsID: varchar("assets_id"),
+    mediaID: varchar("media_id"),
+    tagsID: varchar("tags_id"),
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
@@ -2688,9 +2688,9 @@ export const posts_rels = pgTable(
     index("posts_rels_order_idx").on(columns.order),
     index("posts_rels_parent_idx").on(columns.parent),
     index("posts_rels_path_idx").on(columns.path),
-	  index("posts_rels_user_media_id_idx").on(columns.userMediaID),
-	  index("posts_rels_assets_id_idx").on(columns.assetsID),
-	  index("posts_rels_media_id_idx").on(columns.mediaID),
+    index("posts_rels_user_media_id_idx").on(columns.userMediaID),
+    index("posts_rels_assets_id_idx").on(columns.assetsID),
+    index("posts_rels_media_id_idx").on(columns.mediaID),
     index("posts_rels_tags_id_idx").on(columns.tagsID),
     index("posts_rels_posts_id_idx").on(columns.postsID),
     index("posts_rels_users_id_idx").on(columns.usersID),
@@ -2699,20 +2699,20 @@ export const posts_rels = pgTable(
       foreignColumns: [posts.id],
       name: "posts_rels_parent_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["userMediaID"]],
-		  foreignColumns: [user_media.id],
-		  name: "posts_rels_user_media_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["assetsID"]],
-		  foreignColumns: [assets.id],
-		  name: "posts_rels_assets_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["mediaID"]],
-		  foreignColumns: [media.id],
-		  name: "posts_rels_media_fk"
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "posts_rels_user_media_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["assetsID"]],
+      foreignColumns: [assets.id],
+      name: "posts_rels_assets_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "posts_rels_media_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["tagsID"]],
@@ -2739,14 +2739,14 @@ export const _posts_v = pgTable(
     parent: varchar("parent_id").references(() => posts.id, {
       onDelete: "set null"
     }),
-	  version_coverPosition: numeric("version_cover_position", {
-		  mode: "number"
-	  }).default(35),
+    version_coverPosition: numeric("version_cover_position", {
+      mode: "number"
+    }).default(35),
     version_title: varchar("version_title"),
     version_richTitle: jsonb("version_rich_title"),
     version_content: jsonb("version_content"),
     version_subtitle: varchar("version_subtitle"),
-	  version_category: varchar("version_category_id").references(
+    version_category: varchar("version_category_id").references(
       () => categories.id,
       {
         onDelete: "set null"
@@ -2766,9 +2766,9 @@ export const _posts_v = pgTable(
       onDelete: "set null"
     }),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -2830,7 +2830,7 @@ export const _posts_v_locales = pgTable(
   "_posts_v_locales",
   {
     version_meta_title: varchar("version_meta_title"),
-	  version_meta_image: varchar("version_meta_image_id").references(
+    version_meta_image: varchar("version_meta_image_id").references(
       () => media.id,
       {
         onDelete: "set null"
@@ -2865,10 +2865,10 @@ export const _posts_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  userMediaID: varchar("user_media_id"),
-	  assetsID: varchar("assets_id"),
-	  mediaID: varchar("media_id"),
-	  tagsID: varchar("tags_id"),
+    userMediaID: varchar("user_media_id"),
+    assetsID: varchar("assets_id"),
+    mediaID: varchar("media_id"),
+    tagsID: varchar("tags_id"),
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
@@ -2876,9 +2876,9 @@ export const _posts_v_rels = pgTable(
     index("_posts_v_rels_order_idx").on(columns.order),
     index("_posts_v_rels_parent_idx").on(columns.parent),
     index("_posts_v_rels_path_idx").on(columns.path),
-	  index("_posts_v_rels_user_media_id_idx").on(columns.userMediaID),
-	  index("_posts_v_rels_assets_id_idx").on(columns.assetsID),
-	  index("_posts_v_rels_media_id_idx").on(columns.mediaID),
+    index("_posts_v_rels_user_media_id_idx").on(columns.userMediaID),
+    index("_posts_v_rels_assets_id_idx").on(columns.assetsID),
+    index("_posts_v_rels_media_id_idx").on(columns.mediaID),
     index("_posts_v_rels_tags_id_idx").on(columns.tagsID),
     index("_posts_v_rels_posts_id_idx").on(columns.postsID),
     index("_posts_v_rels_users_id_idx").on(columns.usersID),
@@ -2887,20 +2887,20 @@ export const _posts_v_rels = pgTable(
       foreignColumns: [_posts_v.id],
       name: "_posts_v_rels_parent_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["userMediaID"]],
-		  foreignColumns: [user_media.id],
-		  name: "_posts_v_rels_user_media_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["assetsID"]],
-		  foreignColumns: [assets.id],
-		  name: "_posts_v_rels_assets_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["mediaID"]],
-		  foreignColumns: [media.id],
-		  name: "_posts_v_rels_media_fk"
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "_posts_v_rels_user_media_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["assetsID"]],
+      foreignColumns: [assets.id],
+      name: "_posts_v_rels_assets_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "_posts_v_rels_media_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["tagsID"]],
@@ -2923,17 +2923,17 @@ export const _posts_v_rels = pgTable(
 export const user_media = pgTable(
   "user_media",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     author: uuid("author_id")
       .notNull()
       .references(() => users.id, {
         onDelete: "set null"
       }),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
-	  alt: varchar("alt").notNull().default("an image"),
-	  darkmode: boolean("darkmode").notNull().default(false),
-	  caption: varchar("caption"),
+    authority: numeric("authority", { mode: "number" }).default(0),
+    alt: varchar("alt").notNull().default("an image"),
+    darkmode: boolean("darkmode").notNull().default(false),
+    caption: varchar("caption"),
     blurDataUrl: varchar("blur_data_url"),
     folder: uuid("folder_id").references(() => payload_folders.id, {
       onDelete: "set null"
@@ -2956,82 +2956,82 @@ export const user_media = pgTable(
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
     mimeType: varchar("mime_type"),
-	  filesize: numeric("filesize", {mode: "number"}),
-	  width: numeric("width", {mode: "number"}),
-	  height: numeric("height", {mode: "number"}),
-	  focalX: numeric("focal_x", {mode: "number"}),
-	  focalY: numeric("focal_y", {mode: "number"}),
-	  sizes_thumb_url: varchar("sizes_thumb_url"),
-	  sizes_thumb_width: numeric("sizes_thumb_width", {mode: "number"}),
-	  sizes_thumb_height: numeric("sizes_thumb_height", {mode: "number"}),
-	  sizes_thumb_mimeType: varchar("sizes_thumb_mime_type"),
-	  sizes_thumb_filesize: numeric("sizes_thumb_filesize", {mode: "number"}),
-	  sizes_thumb_filename: varchar("sizes_thumb_filename"),
-	  sizes_card_url: varchar("sizes_card_url"),
-	  sizes_card_width: numeric("sizes_card_width", {mode: "number"}),
-	  sizes_card_height: numeric("sizes_card_height", {mode: "number"}),
-	  sizes_card_mimeType: varchar("sizes_card_mime_type"),
-	  sizes_card_filesize: numeric("sizes_card_filesize", {mode: "number"}),
-	  sizes_card_filename: varchar("sizes_card_filename"),
-	  sizes_content_url: varchar("sizes_content_url"),
-	  sizes_content_width: numeric("sizes_content_width", {mode: "number"}),
-	  sizes_content_height: numeric("sizes_content_height", {mode: "number"}),
-	  sizes_content_mimeType: varchar("sizes_content_mime_type"),
-	  sizes_content_filesize: numeric("sizes_content_filesize", {
-		  mode: "number"
-	  }),
-	  sizes_content_filename: varchar("sizes_content_filename"),
-	  sizes_content_wide_url: varchar("sizes_content_wide_url"),
-	  sizes_content_wide_width: numeric("sizes_content_wide_width", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_height: numeric("sizes_content_wide_height", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_mimeType: varchar("sizes_content_wide_mime_type"),
-	  sizes_content_wide_filesize: numeric("sizes_content_wide_filesize", {
-		  mode: "number"
-	  }),
-	  sizes_content_wide_filename: varchar("sizes_content_wide_filename"),
-	  sizes_hero_url: varchar("sizes_hero_url"),
-	  sizes_hero_width: numeric("sizes_hero_width", {mode: "number"}),
-	  sizes_hero_height: numeric("sizes_hero_height", {mode: "number"}),
-	  sizes_hero_mimeType: varchar("sizes_hero_mime_type"),
-	  sizes_hero_filesize: numeric("sizes_hero_filesize", {mode: "number"}),
-	  sizes_hero_filename: varchar("sizes_hero_filename"),
+    filesize: numeric("filesize", { mode: "number" }),
+    width: numeric("width", { mode: "number" }),
+    height: numeric("height", { mode: "number" }),
+    focalX: numeric("focal_x", { mode: "number" }),
+    focalY: numeric("focal_y", { mode: "number" }),
+    sizes_thumb_url: varchar("sizes_thumb_url"),
+    sizes_thumb_width: numeric("sizes_thumb_width", { mode: "number" }),
+    sizes_thumb_height: numeric("sizes_thumb_height", { mode: "number" }),
+    sizes_thumb_mimeType: varchar("sizes_thumb_mime_type"),
+    sizes_thumb_filesize: numeric("sizes_thumb_filesize", { mode: "number" }),
+    sizes_thumb_filename: varchar("sizes_thumb_filename"),
+    sizes_card_url: varchar("sizes_card_url"),
+    sizes_card_width: numeric("sizes_card_width", { mode: "number" }),
+    sizes_card_height: numeric("sizes_card_height", { mode: "number" }),
+    sizes_card_mimeType: varchar("sizes_card_mime_type"),
+    sizes_card_filesize: numeric("sizes_card_filesize", { mode: "number" }),
+    sizes_card_filename: varchar("sizes_card_filename"),
+    sizes_content_url: varchar("sizes_content_url"),
+    sizes_content_width: numeric("sizes_content_width", { mode: "number" }),
+    sizes_content_height: numeric("sizes_content_height", { mode: "number" }),
+    sizes_content_mimeType: varchar("sizes_content_mime_type"),
+    sizes_content_filesize: numeric("sizes_content_filesize", {
+      mode: "number"
+    }),
+    sizes_content_filename: varchar("sizes_content_filename"),
+    sizes_content_wide_url: varchar("sizes_content_wide_url"),
+    sizes_content_wide_width: numeric("sizes_content_wide_width", {
+      mode: "number"
+    }),
+    sizes_content_wide_height: numeric("sizes_content_wide_height", {
+      mode: "number"
+    }),
+    sizes_content_wide_mimeType: varchar("sizes_content_wide_mime_type"),
+    sizes_content_wide_filesize: numeric("sizes_content_wide_filesize", {
+      mode: "number"
+    }),
+    sizes_content_wide_filename: varchar("sizes_content_wide_filename"),
+    sizes_hero_url: varchar("sizes_hero_url"),
+    sizes_hero_width: numeric("sizes_hero_width", { mode: "number" }),
+    sizes_hero_height: numeric("sizes_hero_height", { mode: "number" }),
+    sizes_hero_mimeType: varchar("sizes_hero_mime_type"),
+    sizes_hero_filesize: numeric("sizes_hero_filesize", { mode: "number" }),
+    sizes_hero_filename: varchar("sizes_hero_filename"),
     sizes_og_url: varchar("sizes_og_url"),
-	  sizes_og_width: numeric("sizes_og_width", {mode: "number"}),
-	  sizes_og_height: numeric("sizes_og_height", {mode: "number"}),
+    sizes_og_width: numeric("sizes_og_width", { mode: "number" }),
+    sizes_og_height: numeric("sizes_og_height", { mode: "number" }),
     sizes_og_mimeType: varchar("sizes_og_mime_type"),
-	  sizes_og_filesize: numeric("sizes_og_filesize", {mode: "number"}),
+    sizes_og_filesize: numeric("sizes_og_filesize", { mode: "number" }),
     sizes_og_filename: varchar("sizes_og_filename")
   },
   (columns) => [
-	  uniqueIndex("user_media_filename_compound_idx").on(
-		  columns.filename,
-		  columns.createdAt
-	  ),
+    uniqueIndex("user_media_filename_compound_idx").on(
+      columns.filename,
+      columns.createdAt
+    ),
     index("user_media_author_idx").on(columns.author),
     index("user_media_authority_idx").on(columns.authority),
-	  index("user_media_darkmode_idx").on(columns.darkmode),
+    index("user_media_darkmode_idx").on(columns.darkmode),
     index("user_media_folder_idx").on(columns.folder),
     index("user_media_updated_at_idx").on(columns.updatedAt),
     index("user_media_created_at_idx").on(columns.createdAt),
     index("user_media_filename_idx").on(columns.filename),
-	  index("user_media_sizes_thumb_sizes_thumb_filename_idx").on(
-		  columns.sizes_thumb_filename
+    index("user_media_sizes_thumb_sizes_thumb_filename_idx").on(
+      columns.sizes_thumb_filename
     ),
-	  index("user_media_sizes_card_sizes_card_filename_idx").on(
-		  columns.sizes_card_filename
+    index("user_media_sizes_card_sizes_card_filename_idx").on(
+      columns.sizes_card_filename
     ),
-	  index("user_media_sizes_content_sizes_content_filename_idx").on(
-		  columns.sizes_content_filename
+    index("user_media_sizes_content_sizes_content_filename_idx").on(
+      columns.sizes_content_filename
     ),
-	  index("user_media_sizes_content_wide_sizes_content_wide_filenam_idx").on(
-		  columns.sizes_content_wide_filename
+    index("user_media_sizes_content_wide_sizes_content_wide_filenam_idx").on(
+      columns.sizes_content_wide_filename
     ),
-	  index("user_media_sizes_hero_sizes_hero_filename_idx").on(
-		  columns.sizes_hero_filename
+    index("user_media_sizes_hero_sizes_hero_filename_idx").on(
+      columns.sizes_hero_filename
     ),
     index("user_media_sizes_og_sizes_og_filename_idx").on(
       columns.sizes_og_filename
@@ -3044,7 +3044,7 @@ export const user_media_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-	  parent: varchar("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     usersID: varchar("users_id")
   },
@@ -3075,7 +3075,7 @@ export const delta = pgTable(
     source: varchar("source"),
     content: jsonb("content"),
     subtitle: varchar("subtitle"),
-	  category: varchar("category_id").references(() => categories.id, {
+    category: varchar("category_id").references(() => categories.id, {
       onDelete: "set null"
     }),
     slugKey: varchar("slug_key"),
@@ -3092,7 +3092,7 @@ export const delta = pgTable(
       onDelete: "set null"
     }),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3127,7 +3127,7 @@ export const delta_locales = pgTable(
   "delta_locales",
   {
     meta_title: varchar("meta_title"),
-	  meta_image: varchar("meta_image_id").references(() => media.id, {
+    meta_image: varchar("meta_image_id").references(() => media.id, {
       onDelete: "set null"
     }),
     meta_description: varchar("meta_description"),
@@ -3156,7 +3156,7 @@ export const delta_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     deltaID: uuid("delta_id"),
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
@@ -3209,7 +3209,7 @@ export const _delta_v = pgTable(
     version_source: varchar("version_source"),
     version_content: jsonb("version_content"),
     version_subtitle: varchar("version_subtitle"),
-	  version_category: varchar("version_category_id").references(
+    version_category: varchar("version_category_id").references(
       () => categories.id,
       {
         onDelete: "set null"
@@ -3229,9 +3229,9 @@ export const _delta_v = pgTable(
       onDelete: "set null"
     }),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3294,7 +3294,7 @@ export const _delta_v_locales = pgTable(
   "_delta_v_locales",
   {
     version_meta_title: varchar("version_meta_title"),
-	  version_meta_image: varchar("version_meta_image_id").references(
+    version_meta_image: varchar("version_meta_image_id").references(
       () => media.id,
       {
         onDelete: "set null"
@@ -3329,7 +3329,7 @@ export const _delta_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     deltaID: uuid("delta_id"),
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
@@ -3377,7 +3377,7 @@ export const profile_slides = pgTable(
     _parentID: uuid("_parent_id").notNull(),
     id: varchar("id").primaryKey(),
     title: varchar("title"),
-	  visuals: varchar("visuals_id").references(() => user_media.id, {
+    visuals: varchar("visuals_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
     content: jsonb("content")
@@ -3401,14 +3401,14 @@ export const profile = pgTable(
     author: uuid("author_id").references(() => users.id, {
       onDelete: "set null"
     }),
-	  slug: varchar("slug").default(""),
-	  title: varchar("title").default(""),
+    slug: varchar("slug").default(""),
+    title: varchar("title").default(""),
     hero_title: varchar("hero_title").default(""),
     hero_subtitle: varchar("hero_subtitle").default(""),
     hero_gradient1: varchar("hero_gradient1").default("#FC8D8DFF"),
     hero_gradient2: varchar("hero_gradient2").default("#F3FAFCFF"),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3427,8 +3427,8 @@ export const profile = pgTable(
   },
   (columns) => [
     index("profile_author_idx").on(columns.author),
-	  index("profile_slug_idx").on(columns.slug),
-	  index("profile_title_idx").on(columns.title),
+    index("profile_slug_idx").on(columns.slug),
+    index("profile_title_idx").on(columns.title),
     index("profile_hero_hero_title_idx").on(columns.hero_title),
     index("profile_hero_hero_subtitle_idx").on(columns.hero_subtitle),
     index("profile_authority_idx").on(columns.authority),
@@ -3445,7 +3445,7 @@ export const profile_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -3480,7 +3480,7 @@ export const _profile_v_version_slides = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     _uuid: varchar("_uuid"),
     title: varchar("title"),
-	  visuals: varchar("visuals_id").references(() => user_media.id, {
+    visuals: varchar("visuals_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
     content: jsonb("content")
@@ -3507,8 +3507,8 @@ export const _profile_v = pgTable(
     version_author: uuid("version_author_id").references(() => users.id, {
       onDelete: "set null"
     }),
-	  version_slug: varchar("version_slug").default(""),
-	  version_title: varchar("version_title").default(""),
+    version_slug: varchar("version_slug").default(""),
+    version_title: varchar("version_title").default(""),
     version_hero_title: varchar("version_hero_title").default(""),
     version_hero_subtitle: varchar("version_hero_subtitle").default(""),
     version_hero_gradient1: varchar("version_hero_gradient1").default(
@@ -3518,9 +3518,9 @@ export const _profile_v = pgTable(
       "#F3FAFCFF"
     ),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3555,8 +3555,8 @@ export const _profile_v = pgTable(
   (columns) => [
     index("_profile_v_parent_idx").on(columns.parent),
     index("_profile_v_version_version_author_idx").on(columns.version_author),
-	  index("_profile_v_version_version_slug_idx").on(columns.version_slug),
-	  index("_profile_v_version_version_title_idx").on(columns.version_title),
+    index("_profile_v_version_version_slug_idx").on(columns.version_slug),
+    index("_profile_v_version_version_title_idx").on(columns.version_title),
     index("_profile_v_version_hero_version_hero_title_idx").on(
       columns.version_hero_title
     ),
@@ -3589,7 +3589,7 @@ export const _profile_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -3626,7 +3626,7 @@ export const albums = pgTable(
       withTimezone: true,
       precision: 3
     }),
-	  cover: varchar("cover_id").references(() => media.id, {
+    cover: varchar("cover_id").references(() => media.id, {
       onDelete: "set null"
     }),
     artist: varchar("artist"),
@@ -3645,7 +3645,7 @@ export const albums = pgTable(
     slugLock: boolean("slug_lock"),
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3681,7 +3681,7 @@ export const albums_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -3721,7 +3721,7 @@ export const _albums_v = pgTable(
       withTimezone: true,
       precision: 3
     }),
-	  version_cover: varchar("version_cover_id").references(() => media.id, {
+    version_cover: varchar("version_cover_id").references(() => media.id, {
       onDelete: "set null"
     }),
     version_artist: varchar("version_artist"),
@@ -3741,9 +3741,9 @@ export const _albums_v = pgTable(
     version_slugLock: boolean("version_slug_lock"),
     version_slug: varchar("version_slug"),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3807,7 +3807,7 @@ export const _albums_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -3844,7 +3844,7 @@ export const tracks = pgTable(
       withTimezone: true,
       precision: 3
     }),
-	  track_number: numeric("track_number", {mode: "number"}),
+    track_number: numeric("track_number", { mode: "number" }),
     album: uuid("album_id").references(() => albums.id, {
       onDelete: "set null"
     }),
@@ -3860,7 +3860,7 @@ export const tracks = pgTable(
     slugLock: boolean("slug_lock"),
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3880,14 +3880,14 @@ export const tracks = pgTable(
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
     mimeType: varchar("mime_type"),
-	  filesize: numeric("filesize", {mode: "number"}),
-	  width: numeric("width", {mode: "number"}),
-	  height: numeric("height", {mode: "number"}),
-	  focalX: numeric("focal_x", {mode: "number"}),
-	  focalY: numeric("focal_y", {mode: "number"})
+    filesize: numeric("filesize", { mode: "number" }),
+    width: numeric("width", { mode: "number" }),
+    height: numeric("height", { mode: "number" }),
+    focalX: numeric("focal_x", { mode: "number" }),
+    focalY: numeric("focal_y", { mode: "number" })
   },
   (columns) => [
-	  uniqueIndex("tracks_filename_compound_idx").on(columns.filename),
+    uniqueIndex("tracks_filename_compound_idx").on(columns.filename),
     index("tracks_album_idx").on(columns.album),
     index("tracks_author_idx").on(columns.author),
     index("tracks_slug_key_idx").on(columns.slugKey),
@@ -3907,7 +3907,7 @@ export const tracks_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -3947,7 +3947,7 @@ export const _tracks_v = pgTable(
       withTimezone: true,
       precision: 3
     }),
-	  version_track_number: numeric("version_track_number", {mode: "number"}),
+    version_track_number: numeric("version_track_number", { mode: "number" }),
     version_album: uuid("version_album_id").references(() => albums.id, {
       onDelete: "set null"
     }),
@@ -3964,9 +3964,9 @@ export const _tracks_v = pgTable(
     version_slugLock: boolean("version_slug_lock"),
     version_slug: varchar("version_slug"),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3983,11 +3983,11 @@ export const _tracks_v = pgTable(
     version_thumbnailURL: varchar("version_thumbnail_u_r_l"),
     version_filename: varchar("version_filename"),
     version_mimeType: varchar("version_mime_type"),
-	  version_filesize: numeric("version_filesize", {mode: "number"}),
-	  version_width: numeric("version_width", {mode: "number"}),
-	  version_height: numeric("version_height", {mode: "number"}),
-	  version_focalX: numeric("version_focal_x", {mode: "number"}),
-	  version_focalY: numeric("version_focal_y", {mode: "number"}),
+    version_filesize: numeric("version_filesize", { mode: "number" }),
+    version_width: numeric("version_width", { mode: "number" }),
+    version_height: numeric("version_height", { mode: "number" }),
+    version_focalX: numeric("version_focal_x", { mode: "number" }),
+    version_focalY: numeric("version_focal_y", { mode: "number" }),
     createdAt: timestamp("created_at", {
       mode: "string",
       withTimezone: true,
@@ -4042,7 +4042,7 @@ export const _tracks_v_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -4073,7 +4073,7 @@ export const playlists = pgTable(
   "playlists",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-	  cover: varchar("cover_id").references(() => user_media.id, {
+    cover: varchar("cover_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
     title: varchar("title"),
@@ -4089,7 +4089,7 @@ export const playlists = pgTable(
     slugLock: boolean("slug_lock"),
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
-	  authority: numeric("authority", {mode: "number"}).default(0),
+    authority: numeric("authority", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -4125,7 +4125,7 @@ export const playlists_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tracksID: uuid("tracks_id"),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -4165,7 +4165,7 @@ export const _playlists_v = pgTable(
     parent: uuid("parent_id").references(() => playlists.id, {
       onDelete: "set null"
     }),
-	  version_cover: varchar("version_cover_id").references(() => user_media.id, {
+    version_cover: varchar("version_cover_id").references(() => user_media.id, {
       onDelete: "set null"
     }),
     version_title: varchar("version_title"),
@@ -4184,9 +4184,9 @@ export const _playlists_v = pgTable(
     version_slugLock: boolean("version_slug_lock"),
     version_slug: varchar("version_slug"),
     version_locked: boolean("version_locked").default(false),
-	  version_authority: numeric("version_authority", {mode: "number"}).default(
-		  0
-	  ),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -4254,7 +4254,7 @@ export const _playlists_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tracksID: uuid("tracks_id"),
-	  tagsID: varchar("tags_id"),
+    tagsID: varchar("tags_id"),
     usersID: varchar("users_id")
   },
   (columns) => [
@@ -4364,12 +4364,12 @@ export const bookmarks_rels = pgTable(
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
-	  profileID: uuid("profile_id"),
-	  usersID: varchar("users_id"),
-	  albumsID: uuid("albums_id"),
-	  playlistsID: uuid("playlists_id"),
-	  tracksID: uuid("tracks_id"),
-	  userMediaID: varchar("user_media_id")
+    profileID: uuid("profile_id"),
+    usersID: varchar("users_id"),
+    albumsID: uuid("albums_id"),
+    playlistsID: uuid("playlists_id"),
+    tracksID: uuid("tracks_id"),
+    userMediaID: varchar("user_media_id")
   },
   (columns) => [
     index("bookmarks_rels_order_idx").on(columns.order),
@@ -4378,11 +4378,11 @@ export const bookmarks_rels = pgTable(
     index("bookmarks_rels_posts_id_idx").on(columns.postsID),
     index("bookmarks_rels_delta_id_idx").on(columns.deltaID),
     index("bookmarks_rels_profile_id_idx").on(columns.profileID),
-	  index("bookmarks_rels_users_id_idx").on(columns.usersID),
-	  index("bookmarks_rels_albums_id_idx").on(columns.albumsID),
-	  index("bookmarks_rels_playlists_id_idx").on(columns.playlistsID),
-	  index("bookmarks_rels_tracks_id_idx").on(columns.tracksID),
-	  index("bookmarks_rels_user_media_id_idx").on(columns.userMediaID),
+    index("bookmarks_rels_users_id_idx").on(columns.usersID),
+    index("bookmarks_rels_albums_id_idx").on(columns.albumsID),
+    index("bookmarks_rels_playlists_id_idx").on(columns.playlistsID),
+    index("bookmarks_rels_tracks_id_idx").on(columns.tracksID),
+    index("bookmarks_rels_user_media_id_idx").on(columns.userMediaID),
     foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [bookmarks.id],
@@ -4403,30 +4403,30 @@ export const bookmarks_rels = pgTable(
       foreignColumns: [profile.id],
       name: "bookmarks_rels_profile_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["usersID"]],
-		  foreignColumns: [users.id],
-		  name: "bookmarks_rels_users_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["albumsID"]],
-		  foreignColumns: [albums.id],
-		  name: "bookmarks_rels_albums_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["playlistsID"]],
-		  foreignColumns: [playlists.id],
-		  name: "bookmarks_rels_playlists_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["tracksID"]],
-		  foreignColumns: [tracks.id],
-		  name: "bookmarks_rels_tracks_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["userMediaID"]],
-		  foreignColumns: [user_media.id],
-		  name: "bookmarks_rels_user_media_fk"
+    foreignKey({
+      columns: [columns["usersID"]],
+      foreignColumns: [users.id],
+      name: "bookmarks_rels_users_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["albumsID"]],
+      foreignColumns: [albums.id],
+      name: "bookmarks_rels_albums_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["playlistsID"]],
+      foreignColumns: [playlists.id],
+      name: "bookmarks_rels_playlists_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["tracksID"]],
+      foreignColumns: [tracks.id],
+      name: "bookmarks_rels_tracks_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "bookmarks_rels_user_media_fk"
     }).onDelete("cascade")
   ]
 );
@@ -4442,7 +4442,7 @@ export const user_views = pgTable(
       }),
     version: varchar("version").notNull().default("0"),
     viewed: boolean("viewed").notNull().default(false),
-	  progress: numeric("progress", {mode: "number"}).notNull().default(0),
+    progress: numeric("progress", { mode: "number" }).notNull().default(0),
     lastViewed: timestamp("last_viewed", {
       mode: "string",
       withTimezone: true,
@@ -4624,7 +4624,7 @@ export const responses = pgTable(
       onDelete: "set null"
     }),
     isEdited: boolean("is_edited").default(false),
-	  depth: numeric("depth", {mode: "number"}).default(0),
+    depth: numeric("depth", { mode: "number" }).default(0),
     hash: varchar("hash"),
     isSticky: boolean("is_sticky"),
     updatedAt: timestamp("updated_at", {
@@ -4721,7 +4721,7 @@ export const _responses_v = pgTable(
       onDelete: "set null"
     }),
     version_isEdited: boolean("version_is_edited").default(false),
-	  version_depth: numeric("version_depth", {mode: "number"}).default(0),
+    version_depth: numeric("version_depth", { mode: "number" }).default(0),
     version_hash: varchar("version_hash"),
     version_isSticky: boolean("version_is_sticky"),
     version_updatedAt: timestamp("version_updated_at", {
@@ -4835,73 +4835,73 @@ export const _responses_v_rels = pgTable(
 );
 
 export const compilations = pgTable(
-	"compilations",
-	{
-		id: varchar("id").primaryKey(),
-		title: varchar("title").notNull(),
-		imagePicker: boolean("image_picker").notNull().default(true),
-		updatedAt: timestamp("updated_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull(),
-		createdAt: timestamp("created_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull()
-	},
-	(columns) => [
-		index("compilations_title_idx").on(columns.title),
-		index("compilations_updated_at_idx").on(columns.updatedAt),
-		index("compilations_created_at_idx").on(columns.createdAt)
-	]
+  "compilations",
+  {
+    id: varchar("id").primaryKey(),
+    title: varchar("title").notNull(),
+    imagePicker: boolean("image_picker").notNull().default(true),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("compilations_title_idx").on(columns.title),
+    index("compilations_updated_at_idx").on(columns.updatedAt),
+    index("compilations_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const compilations_rels = pgTable(
-	"compilations_rels",
-	{
-		id: serial("id").primaryKey(),
-		order: integer("order"),
-		parent: varchar("parent_id").notNull(),
-		path: varchar("path").notNull(),
-		assetsID: varchar("assets_id"),
-		mediaID: varchar("media_id")
-	},
-	(columns) => [
-		index("compilations_rels_order_idx").on(columns.order),
-		index("compilations_rels_parent_idx").on(columns.parent),
-		index("compilations_rels_path_idx").on(columns.path),
-		index("compilations_rels_assets_id_idx").on(columns.assetsID),
-		index("compilations_rels_media_id_idx").on(columns.mediaID),
-		foreignKey({
-			columns: [columns["parent"]],
-			foreignColumns: [compilations.id],
-			name: "compilations_rels_parent_fk"
-		}).onDelete("cascade"),
-		foreignKey({
-			columns: [columns["assetsID"]],
-			foreignColumns: [assets.id],
-			name: "compilations_rels_assets_fk"
-		}).onDelete("cascade"),
-		foreignKey({
-			columns: [columns["mediaID"]],
-			foreignColumns: [media.id],
-			name: "compilations_rels_media_fk"
-		}).onDelete("cascade")
-	]
+  "compilations_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: varchar("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    assetsID: varchar("assets_id"),
+    mediaID: varchar("media_id")
+  },
+  (columns) => [
+    index("compilations_rels_order_idx").on(columns.order),
+    index("compilations_rels_parent_idx").on(columns.parent),
+    index("compilations_rels_path_idx").on(columns.path),
+    index("compilations_rels_assets_id_idx").on(columns.assetsID),
+    index("compilations_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [compilations.id],
+      name: "compilations_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["assetsID"]],
+      foreignColumns: [assets.id],
+      name: "compilations_rels_assets_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "compilations_rels_media_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const admins = pgTable(
   "admins",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     email: varchar("email").notNull(),
-	  foto: varchar("foto_id").references(() => media.id, {
+    foto: varchar("foto_id").references(() => media.id, {
       onDelete: "set null"
     }),
     link: varchar("link"),
@@ -4937,11 +4937,11 @@ export const _admins_v = pgTable(
   "_admins_v",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-	  parent: varchar("parent_id").references(() => admins.id, {
+    parent: varchar("parent_id").references(() => admins.id, {
       onDelete: "set null"
     }),
     version_email: varchar("version_email").notNull(),
-	  version_foto: varchar("version_foto_id").references(() => media.id, {
+    version_foto: varchar("version_foto_id").references(() => media.id, {
       onDelete: "set null"
     }),
     version_link: varchar("version_link"),
@@ -4993,9 +4993,9 @@ export const _admins_v = pgTable(
 export const email_quota = pgTable(
   "email_quota",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     date: varchar("date").notNull(),
-	  used: numeric("used", {mode: "number"}).notNull().default(0),
+    used: numeric("used", { mode: "number" }).notNull().default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -5021,7 +5021,7 @@ export const email_quota = pgTable(
 export const deferred_emails = pgTable(
   "deferred_emails",
   {
-	  id: varchar("id").primaryKey(),
+    id: varchar("id").primaryKey(),
     emailData: varchar("email_data").notNull(),
     category: enum_deferred_emails_category("category").notNull(),
     scheduledFor: timestamp("scheduled_for", {
@@ -5029,7 +5029,7 @@ export const deferred_emails = pgTable(
       withTimezone: true,
       precision: 3
     }).notNull(),
-	  attempts: numeric("attempts", {mode: "number"}).notNull().default(0),
+    attempts: numeric("attempts", { mode: "number" }).notNull().default(0),
     status: enum_deferred_emails_status("status").notNull().default("pending"),
     sentAt: timestamp("sent_at", {
       mode: "string",
@@ -5064,8 +5064,8 @@ export const exports = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name"),
     format: enum_exports_format("format").default("csv"),
-	  limit: numeric("limit", {mode: "number"}),
-	  page: numeric("page", {mode: "number"}).default(1),
+    limit: numeric("limit", { mode: "number" }),
+    page: numeric("page", { mode: "number" }).default(1),
     sort: varchar("sort"),
     sortOrder: enum_exports_sort_order("sort_order"),
     locale: enum_exports_locale("locale").default("all"),
@@ -5090,11 +5090,11 @@ export const exports = pgTable(
     thumbnailURL: varchar("thumbnail_u_r_l"),
     filename: varchar("filename"),
     mimeType: varchar("mime_type"),
-	  filesize: numeric("filesize", {mode: "number"}),
-	  width: numeric("width", {mode: "number"}),
-	  height: numeric("height", {mode: "number"}),
-	  focalX: numeric("focal_x", {mode: "number"}),
-	  focalY: numeric("focal_y", {mode: "number"})
+    filesize: numeric("filesize", { mode: "number" }),
+    width: numeric("width", { mode: "number" }),
+    height: numeric("height", { mode: "number" }),
+    focalX: numeric("focal_x", { mode: "number" }),
+    focalY: numeric("focal_y", { mode: "number" })
   },
   (columns) => [
     index("exports_updated_at_idx").on(columns.updatedAt),
@@ -5113,7 +5113,7 @@ export const exports_texts = pgTable(
     text: varchar("text")
   },
   (columns) => [
-	  index("exports_texts_order_parent").on(columns.order, columns.parent),
+    index("exports_texts_order_parent").on(columns.order, columns.parent),
     foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [exports.id],
@@ -5123,47 +5123,47 @@ export const exports_texts = pgTable(
 );
 
 export const imports = pgTable(
-	"imports",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		collectionSlug: enum_imports_collection_slug("collection_slug").notNull(),
-		importMode: enum_imports_import_mode("import_mode"),
-		matchField: varchar("match_field").default("id"),
-		status: enum_imports_status("status").default("pending"),
-		summary_imported: numeric("summary_imported", {mode: "number"}),
-		summary_updated: numeric("summary_updated", {mode: "number"}),
-		summary_total: numeric("summary_total", {mode: "number"}),
-		summary_issues: numeric("summary_issues", {mode: "number"}),
-		summary_issueDetails: jsonb("summary_issue_details"),
-		updatedAt: timestamp("updated_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull(),
-		createdAt: timestamp("created_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull(),
-		url: varchar("url"),
-		thumbnailURL: varchar("thumbnail_u_r_l"),
-		filename: varchar("filename"),
-		mimeType: varchar("mime_type"),
-		filesize: numeric("filesize", {mode: "number"}),
-		width: numeric("width", {mode: "number"}),
-		height: numeric("height", {mode: "number"}),
-		focalX: numeric("focal_x", {mode: "number"}),
-		focalY: numeric("focal_y", {mode: "number"})
-	},
-	(columns) => [
-		index("imports_updated_at_idx").on(columns.updatedAt),
-		index("imports_created_at_idx").on(columns.createdAt),
-		uniqueIndex("imports_filename_idx").on(columns.filename)
-	]
+  "imports",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    collectionSlug: enum_imports_collection_slug("collection_slug").notNull(),
+    importMode: enum_imports_import_mode("import_mode"),
+    matchField: varchar("match_field").default("id"),
+    status: enum_imports_status("status").default("pending"),
+    summary_imported: numeric("summary_imported", { mode: "number" }),
+    summary_updated: numeric("summary_updated", { mode: "number" }),
+    summary_total: numeric("summary_total", { mode: "number" }),
+    summary_issues: numeric("summary_issues", { mode: "number" }),
+    summary_issueDetails: jsonb("summary_issue_details"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    url: varchar("url"),
+    thumbnailURL: varchar("thumbnail_u_r_l"),
+    filename: varchar("filename"),
+    mimeType: varchar("mime_type"),
+    filesize: numeric("filesize", { mode: "number" }),
+    width: numeric("width", { mode: "number" }),
+    height: numeric("height", { mode: "number" }),
+    focalX: numeric("focal_x", { mode: "number" }),
+    focalY: numeric("focal_y", { mode: "number" })
+  },
+  (columns) => [
+    index("imports_updated_at_idx").on(columns.updatedAt),
+    index("imports_created_at_idx").on(columns.createdAt),
+    uniqueIndex("imports_filename_idx").on(columns.filename)
+  ]
 );
 
 export const redirects = pgTable(
@@ -5202,7 +5202,7 @@ export const redirects_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  pagesID: varchar("pages_id"),
+    pagesID: varchar("pages_id"),
     postsID: varchar("posts_id")
   },
   (columns) => [
@@ -5230,206 +5230,244 @@ export const redirects_rels = pgTable(
 );
 
 export const search_author = pgTable(
-	"search_author",
-	{
-		_order: integer("_order").notNull(),
-		_parentID: varchar("_parent_id").notNull(),
-		id: varchar("id").primaryKey(),
-		key: varchar("key").notNull(),
-		name: varchar("name").notNull(),
-		image: varchar("image"),
-		slug: varchar("slug").notNull()
-	},
-	(columns) => [
-		index("search_author_order_idx").on(columns._order),
-		index("search_author_parent_id_idx").on(columns._parentID),
-		foreignKey({
-			columns: [columns["_parentID"]],
-			foreignColumns: [search.id],
-			name: "search_author_parent_id_fk"
-		}).onDelete("cascade")
-	]
+  "search_author",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    key: varchar("key").notNull(),
+    name: varchar("name").notNull(),
+    image: varchar("image"),
+    slug: varchar("slug").notNull()
+  },
+  (columns) => [
+    index("search_author_order_idx").on(columns._order),
+    index("search_author_parent_id_idx").on(columns._parentID),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [search.id],
+      name: "search_author_parent_id_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const search_allow_list = pgTable(
-	"search_allow_list",
-	{
-		_order: integer("_order").notNull(),
-		_parentID: varchar("_parent_id").notNull(),
-		id: varchar("id").primaryKey(),
-		key: varchar("key").notNull()
-	},
-	(columns) => [
-		index("search_allow_list_order_idx").on(columns._order),
-		index("search_allow_list_parent_id_idx").on(columns._parentID),
-		foreignKey({
-			columns: [columns["_parentID"]],
-			foreignColumns: [search.id],
-			name: "search_allow_list_parent_id_fk"
-		}).onDelete("cascade")
-	]
+  "search_allow_list",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    key: varchar("key").notNull()
+  },
+  (columns) => [
+    index("search_allow_list_order_idx").on(columns._order),
+    index("search_allow_list_parent_id_idx").on(columns._parentID),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [search.id],
+      name: "search_allow_list_parent_id_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const search_tags = pgTable(
-	"search_tags",
-	{
-		_order: integer("_order").notNull(),
-		_parentID: varchar("_parent_id").notNull(),
-		id: varchar("id").primaryKey(),
-		key: varchar("key").notNull(),
-		title: varchar("title").notNull(),
-		slug: varchar("slug").notNull()
-	},
-	(columns) => [
-		index("search_tags_order_idx").on(columns._order),
-		index("search_tags_parent_id_idx").on(columns._parentID),
-		index("search_tags_key_idx").on(columns.key),
-		foreignKey({
-			columns: [columns["_parentID"]],
-			foreignColumns: [search.id],
-			name: "search_tags_parent_id_fk"
-		}).onDelete("cascade")
-	]
+  "search_tags",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    key: varchar("key").notNull(),
+    title: varchar("title").notNull(),
+    slug: varchar("slug").notNull()
+  },
+  (columns) => [
+    index("search_tags_order_idx").on(columns._order),
+    index("search_tags_parent_id_idx").on(columns._parentID),
+    index("search_tags_key_idx").on(columns.key),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [search.id],
+      name: "search_tags_parent_id_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const search_category = pgTable(
-	"search_category",
-	{
-		_order: integer("_order").notNull(),
-		_parentID: varchar("_parent_id").notNull(),
-		id: varchar("id").primaryKey(),
-		key: varchar("key").notNull(),
-		title: varchar("title").notNull(),
-		slug: varchar("slug").notNull()
-	},
-	(columns) => [
-		index("search_category_order_idx").on(columns._order),
-		index("search_category_parent_id_idx").on(columns._parentID),
-		index("search_category_key_idx").on(columns.key),
-		foreignKey({
-			columns: [columns["_parentID"]],
-			foreignColumns: [search.id],
-			name: "search_category_parent_id_fk"
-		}).onDelete("cascade")
-	]
+  "search_category",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: varchar("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    key: varchar("key").notNull(),
+    title: varchar("title").notNull(),
+    slug: varchar("slug").notNull()
+  },
+  (columns) => [
+    index("search_category_order_idx").on(columns._order),
+    index("search_category_parent_id_idx").on(columns._parentID),
+    index("search_category_key_idx").on(columns.key),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [search.id],
+      name: "search_category_parent_id_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const search = pgTable(
-	"search",
-	{
-		id: varchar("id").primaryKey(),
-		priority: numeric("priority", {mode: "number"}),
-		collection: varchar("collection").default("posts"),
-		slug: varchar("slug").notNull(),
-		locked: boolean("locked").notNull().default(false),
-		authority: numeric("authority", {mode: "number"}).default(0),
-		meta_title: varchar("meta_title"),
-		meta_description: varchar("meta_description"),
-		meta_image: varchar("meta_image_id").references(() => media.id, {
-			onDelete: "set null"
-		}),
-		updatedAt: timestamp("updated_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull(),
-		createdAt: timestamp("created_at", {
-			mode: "string",
-			withTimezone: true,
-			precision: 3
-		})
-			.defaultNow()
-			.notNull()
-	},
-	(columns) => [
-		index("search_slug_idx").on(columns.slug),
-		index("search_locked_idx").on(columns.locked),
-		index("search_authority_idx").on(columns.authority),
-		index("search_meta_meta_image_idx").on(columns.meta_image),
-		index("search_updated_at_idx").on(columns.updatedAt),
-		index("search_created_at_idx").on(columns.createdAt)
-	]
+  "search",
+  {
+    id: varchar("id").primaryKey(),
+    priority: numeric("priority", { mode: "number" }),
+    collection: varchar("collection").default("posts"),
+    slug: varchar("slug").notNull(),
+    locked: boolean("locked").notNull().default(false),
+    authority: numeric("authority", { mode: "number" }).default(0),
+    meta_title: varchar("meta_title"),
+    meta_description: varchar("meta_description"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("search_slug_idx").on(columns.slug),
+    index("search_locked_idx").on(columns.locked),
+    index("search_authority_idx").on(columns.authority),
+    index("search_updated_at_idx").on(columns.updatedAt),
+    index("search_created_at_idx").on(columns.createdAt)
+  ]
 );
 
 export const search_locales = pgTable(
-	"search_locales",
-	{
-		title: varchar("title").notNull().default(""),
-		id: serial("id").primaryKey(),
-		_locale: enum__locales("_locale").notNull(),
-		_parentID: varchar("_parent_id").notNull()
-	},
-	(columns) => [
-		uniqueIndex("search_locales_locale_parent_id_unique").on(
-			columns._locale,
-			columns._parentID
-		),
-		foreignKey({
-			columns: [columns["_parentID"]],
-			foreignColumns: [search.id],
-			name: "search_locales_parent_id_fk"
-		}).onDelete("cascade")
-	]
+  "search_locales",
+  {
+    title: varchar("title").notNull().default(""),
+    id: serial("id").primaryKey(),
+    _locale: enum__locales("_locale").notNull(),
+    _parentID: varchar("_parent_id").notNull()
+  },
+  (columns) => [
+    uniqueIndex("search_locales_locale_parent_id_unique").on(
+      columns._locale,
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [search.id],
+      name: "search_locales_parent_id_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const search_rels = pgTable(
-	"search_rels",
-	{
-		id: serial("id").primaryKey(),
-		order: integer("order"),
-		parent: varchar("parent_id").notNull(),
-		path: varchar("path").notNull(),
-		postsID: varchar("posts_id"),
-		deltaID: uuid("delta_id"),
-		profileID: uuid("profile_id"),
-		pagesID: varchar("pages_id")
-	},
-	(columns) => [
-		index("search_rels_order_idx").on(columns.order),
-		index("search_rels_parent_idx").on(columns.parent),
-		index("search_rels_path_idx").on(columns.path),
-		index("search_rels_posts_id_idx").on(columns.postsID),
-		index("search_rels_delta_id_idx").on(columns.deltaID),
-		index("search_rels_profile_id_idx").on(columns.profileID),
-		index("search_rels_pages_id_idx").on(columns.pagesID),
-		foreignKey({
-			columns: [columns["parent"]],
-			foreignColumns: [search.id],
-			name: "search_rels_parent_fk"
-		}).onDelete("cascade"),
-		foreignKey({
-			columns: [columns["postsID"]],
-			foreignColumns: [posts.id],
-			name: "search_rels_posts_fk"
-		}).onDelete("cascade"),
-		foreignKey({
-			columns: [columns["deltaID"]],
-			foreignColumns: [delta.id],
-			name: "search_rels_delta_fk"
-		}).onDelete("cascade"),
-		foreignKey({
-			columns: [columns["profileID"]],
-			foreignColumns: [profile.id],
-			name: "search_rels_profile_fk"
-		}).onDelete("cascade"),
-		foreignKey({
-			columns: [columns["pagesID"]],
-			foreignColumns: [pages.id],
-			name: "search_rels_pages_fk"
-		}).onDelete("cascade")
-	]
+  "search_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: varchar("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    postsID: varchar("posts_id"),
+    deltaID: uuid("delta_id"),
+    profileID: uuid("profile_id"),
+    pagesID: varchar("pages_id"),
+    tracksID: uuid("tracks_id"),
+    playlistsID: uuid("playlists_id"),
+    albumsID: uuid("albums_id"),
+    mediaID: varchar("media_id"),
+    assetsID: varchar("assets_id"),
+    userMediaID: varchar("user_media_id")
+  },
+  (columns) => [
+    index("search_rels_order_idx").on(columns.order),
+    index("search_rels_parent_idx").on(columns.parent),
+    index("search_rels_path_idx").on(columns.path),
+    index("search_rels_posts_id_idx").on(columns.postsID),
+    index("search_rels_delta_id_idx").on(columns.deltaID),
+    index("search_rels_profile_id_idx").on(columns.profileID),
+    index("search_rels_pages_id_idx").on(columns.pagesID),
+    index("search_rels_tracks_id_idx").on(columns.tracksID),
+    index("search_rels_playlists_id_idx").on(columns.playlistsID),
+    index("search_rels_albums_id_idx").on(columns.albumsID),
+    index("search_rels_media_id_idx").on(columns.mediaID),
+    index("search_rels_assets_id_idx").on(columns.assetsID),
+    index("search_rels_user_media_id_idx").on(columns.userMediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [search.id],
+      name: "search_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["postsID"]],
+      foreignColumns: [posts.id],
+      name: "search_rels_posts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["deltaID"]],
+      foreignColumns: [delta.id],
+      name: "search_rels_delta_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["profileID"]],
+      foreignColumns: [profile.id],
+      name: "search_rels_profile_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["pagesID"]],
+      foreignColumns: [pages.id],
+      name: "search_rels_pages_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["tracksID"]],
+      foreignColumns: [tracks.id],
+      name: "search_rels_tracks_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["playlistsID"]],
+      foreignColumns: [playlists.id],
+      name: "search_rels_playlists_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["albumsID"]],
+      foreignColumns: [albums.id],
+      name: "search_rels_albums_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "search_rels_media_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["assetsID"]],
+      foreignColumns: [assets.id],
+      name: "search_rels_assets_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "search_rels_user_media_fk"
+    }).onDelete("cascade")
+  ]
 );
 
 export const payload_kv = pgTable(
-	"payload_kv",
-	{
-		id: uuid("id").defaultRandom().primaryKey(),
-		key: varchar("key").notNull(),
-		data: jsonb("data").notNull()
-	},
-	(columns) => [uniqueIndex("payload_kv_key_idx").on(columns.key)]
+  "payload_kv",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    key: varchar("key").notNull(),
+    data: jsonb("data").notNull()
+  },
+  (columns) => [uniqueIndex("payload_kv_key_idx").on(columns.key)]
 );
 
 export const payload_jobs_log = pgTable(
@@ -5476,7 +5514,7 @@ export const payload_jobs = pgTable(
       withTimezone: true,
       precision: 3
     }),
-	  totalTried: numeric("total_tried", {mode: "number"}).default(0),
+    totalTried: numeric("total_tried", { mode: "number" }).default(0),
     hasError: boolean("has_error").default(false),
     error: jsonb("error"),
     workflowSlug: enum_payload_jobs_workflow_slug("workflow_slug"),
@@ -5611,28 +5649,28 @@ export const payload_locked_documents_rels = pgTable(
     twoFactorsID: uuid("two_factors_id"),
     passkeysID: uuid("passkeys_id"),
     organizationsID: uuid("organizations_id"),
-	  teamsID: uuid("teams_id"),
-	  teamMembersID: uuid("team_members_id"),
+    teamsID: uuid("teams_id"),
+    teamMembersID: uuid("team_members_id"),
     membersID: uuid("members_id"),
     invitationsID: uuid("invitations_id"),
     "admin-invitationsID": uuid("admin_invitations_id"),
-	  assetsID: varchar("assets_id"),
-	  categoriesID: varchar("categories_id"),
-	  mediaID: varchar("media_id"),
-	  notificationsID: varchar("notifications_id"),
-	  pagesID: varchar("pages_id"),
+    assetsID: varchar("assets_id"),
+    categoriesID: varchar("categories_id"),
+    mediaID: varchar("media_id"),
+    notificationsID: varchar("notifications_id"),
+    pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-	  userMediaID: varchar("user_media_id"),
-	  profileID: uuid("profile_id"),
+    userMediaID: varchar("user_media_id"),
+    profileID: uuid("profile_id"),
     bookmarksID: varchar("bookmarks_id"),
     userViewsID: uuid("user_views_id"),
     responsesID: varchar("responses_id"),
-	  compilationsID: varchar("compilations_id"),
-	  adminsID: varchar("admins_id"),
-	  "email-quotaID": varchar("email_quota_id"),
-	  "deferred-emailsID": varchar("deferred_emails_id"),
+    compilationsID: varchar("compilations_id"),
+    adminsID: varchar("admins_id"),
+    "email-quotaID": varchar("email_quota_id"),
+    "deferred-emailsID": varchar("deferred_emails_id"),
     redirectsID: uuid("redirects_id"),
-	  searchID: varchar("search_id"),
+    searchID: varchar("search_id"),
     "payload-foldersID": uuid("payload_folders_id")
   },
   (columns) => [
@@ -5658,10 +5696,10 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_organizations_id_idx").on(
       columns.organizationsID
     ),
-	  index("payload_locked_documents_rels_teams_id_idx").on(columns.teamsID),
-	  index("payload_locked_documents_rels_team_members_id_idx").on(
-		  columns.teamMembersID
-	  ),
+    index("payload_locked_documents_rels_teams_id_idx").on(columns.teamsID),
+    index("payload_locked_documents_rels_team_members_id_idx").on(
+      columns.teamMembersID
+    ),
     index("payload_locked_documents_rels_members_id_idx").on(columns.membersID),
     index("payload_locked_documents_rels_invitations_id_idx").on(
       columns.invitationsID
@@ -5682,7 +5720,7 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_user_media_id_idx").on(
       columns.userMediaID
     ),
-	  index("payload_locked_documents_rels_profile_id_idx").on(columns.profileID),
+    index("payload_locked_documents_rels_profile_id_idx").on(columns.profileID),
     index("payload_locked_documents_rels_bookmarks_id_idx").on(
       columns.bookmarksID
     ),
@@ -5692,9 +5730,9 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_responses_id_idx").on(
       columns.responsesID
     ),
-	  index("payload_locked_documents_rels_compilations_id_idx").on(
-		  columns.compilationsID
-	  ),
+    index("payload_locked_documents_rels_compilations_id_idx").on(
+      columns.compilationsID
+    ),
     index("payload_locked_documents_rels_admins_id_idx").on(columns.adminsID),
     index("payload_locked_documents_rels_email_quota_id_idx").on(
       columns["email-quotaID"]
@@ -5705,7 +5743,7 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_redirects_id_idx").on(
       columns.redirectsID
     ),
-	  index("payload_locked_documents_rels_search_id_idx").on(columns.searchID),
+    index("payload_locked_documents_rels_search_id_idx").on(columns.searchID),
     index("payload_locked_documents_rels_payload_folders_id_idx").on(
       columns["payload-foldersID"]
     ),
@@ -5749,15 +5787,15 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [organizations.id],
       name: "payload_locked_documents_rels_organizations_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["teamsID"]],
-		  foreignColumns: [teams.id],
-		  name: "payload_locked_documents_rels_teams_fk"
-	  }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["teamMembersID"]],
-		  foreignColumns: [team_members.id],
-		  name: "payload_locked_documents_rels_team_members_fk"
+    foreignKey({
+      columns: [columns["teamsID"]],
+      foreignColumns: [teams.id],
+      name: "payload_locked_documents_rels_teams_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["teamMembersID"]],
+      foreignColumns: [team_members.id],
+      name: "payload_locked_documents_rels_team_members_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["membersID"]],
@@ -5809,10 +5847,10 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [user_media.id],
       name: "payload_locked_documents_rels_user_media_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["profileID"]],
-		  foreignColumns: [profile.id],
-		  name: "payload_locked_documents_rels_profile_fk"
+    foreignKey({
+      columns: [columns["profileID"]],
+      foreignColumns: [profile.id],
+      name: "payload_locked_documents_rels_profile_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["bookmarksID"]],
@@ -5830,11 +5868,11 @@ export const payload_locked_documents_rels = pgTable(
       name: "payload_locked_documents_rels_responses_fk"
     }).onDelete("cascade"),
     foreignKey({
-	    columns: [columns["compilationsID"]],
-	    foreignColumns: [compilations.id],
-	    name: "payload_locked_documents_rels_compilations_fk"
+      columns: [columns["compilationsID"]],
+      foreignColumns: [compilations.id],
+      name: "payload_locked_documents_rels_compilations_fk"
     }).onDelete("cascade"),
-	  foreignKey({
+    foreignKey({
       columns: [columns["adminsID"]],
       foreignColumns: [admins.id],
       name: "payload_locked_documents_rels_admins_fk"
@@ -5854,10 +5892,10 @@ export const payload_locked_documents_rels = pgTable(
       foreignColumns: [redirects.id],
       name: "payload_locked_documents_rels_redirects_fk"
     }).onDelete("cascade"),
-	  foreignKey({
-		  columns: [columns["searchID"]],
-		  foreignColumns: [search.id],
-		  name: "payload_locked_documents_rels_search_fk"
+    foreignKey({
+      columns: [columns["searchID"]],
+      foreignColumns: [search.id],
+      name: "payload_locked_documents_rels_search_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["payload-foldersID"]],
@@ -5903,7 +5941,7 @@ export const payload_preferences_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     usersID: varchar("users_id"),
-	  adminsID: varchar("admins_id")
+    adminsID: varchar("admins_id")
   },
   (columns) => [
     index("payload_preferences_rels_order_idx").on(columns.order),
@@ -5934,7 +5972,7 @@ export const payload_migrations = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name"),
-	  batch: numeric("batch", {mode: "number"}),
+    batch: numeric("batch", { mode: "number" }),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -5972,13 +6010,13 @@ export const header_nav_items = pgTable(
       enum_header_nav_items_link_appearance("link_appearance").default(
         "default"
       ),
-	  previewMedia_desktop: varchar("preview_media_desktop_id").references(
+    previewMedia_desktop: varchar("preview_media_desktop_id").references(
       () => media.id,
       {
         onDelete: "set null"
       }
     ),
-	  previewMedia_mobile: varchar("preview_media_mobile_id").references(
+    previewMedia_mobile: varchar("preview_media_mobile_id").references(
       () => media.id,
       {
         onDelete: "set null"
@@ -6030,7 +6068,7 @@ export const header_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  pagesID: varchar("pages_id"),
+    pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
     usersID: varchar("users_id"),
@@ -6038,7 +6076,7 @@ export const header_rels = pgTable(
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
     organizationsID: uuid("organizations_id"),
-	  categoriesID: varchar("categories_id")
+    categoriesID: varchar("categories_id")
   },
   (columns) => [
     index("header_rels_order_idx").on(columns.order),
@@ -6207,29 +6245,29 @@ export const footer = pgTable(
   {
     id: varchar("id").primaryKey(),
     title: varchar("title").default("The Smoker's Lounge"),
-	  defaults_desktop: varchar("defaults_desktop_id").references(
-		  () => media.id,
-		  {
-			  onDelete: "set null"
-		  }
-	  ),
-	  defaults_mobile: varchar("defaults_mobile_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-	  videoLoop_desktop: varchar("video_loop_desktop_id").references(
+    defaults_desktop: varchar("defaults_desktop_id").references(
       () => media.id,
       {
         onDelete: "set null"
       }
     ),
-	  videoLoop_mobile: varchar("video_loop_mobile_id").references(
-		  () => media.id,
-		  {
-			  onDelete: "set null"
-		  }
-	  ),
-	  mobileOverlay: numeric("mobile_overlay", {mode: "number"}).default(70),
-	  desktopOverlay: numeric("desktop_overlay", {mode: "number"}).default(70),
+    defaults_mobile: varchar("defaults_mobile_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    videoLoop_desktop: varchar("video_loop_desktop_id").references(
+      () => media.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    videoLoop_mobile: varchar("video_loop_mobile_id").references(
+      () => media.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    mobileOverlay: numeric("mobile_overlay", { mode: "number" }).default(70),
+    desktopOverlay: numeric("desktop_overlay", { mode: "number" }).default(70),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -6260,7 +6298,7 @@ export const footer_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-	  pagesID: varchar("pages_id"),
+    pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     deltaID: uuid("delta_id"),
     usersID: varchar("users_id"),
@@ -6268,7 +6306,7 @@ export const footer_rels = pgTable(
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
     organizationsID: uuid("organizations_id"),
-	  categoriesID: varchar("categories_id")
+    categoriesID: varchar("categories_id")
   },
   (columns) => [
     index("footer_rels_order_idx").on(columns.order),
@@ -6389,15 +6427,15 @@ export const relations_sessions = relations(sessions, ({ one }) => ({
     references: [users.id],
     relationName: "impersonatedBy"
   }),
-	activeOrganization: one(organizations, {
-		fields: [sessions.activeOrganization],
+  activeOrganization: one(organizations, {
+    fields: [sessions.activeOrganization],
     references: [organizations.id],
-		relationName: "activeOrganization"
-	}),
-	activeTeam: one(teams, {
-		fields: [sessions.activeTeam],
-		references: [teams.id],
-		relationName: "activeTeam"
+    relationName: "activeOrganization"
+  }),
+  activeTeam: one(teams, {
+    fields: [sessions.activeTeam],
+    references: [teams.id],
+    relationName: "activeTeam"
   })
 }));
 export const relations_accounts = relations(accounts, ({ one }) => ({
@@ -6423,24 +6461,24 @@ export const relations_passkeys = relations(passkeys, ({ one }) => ({
   })
 }));
 export const relations_organizations = relations(organizations, () => ({}));
-export const relations_teams = relations(teams, ({one}) => ({
-	organization: one(organizations, {
-		fields: [teams.organization],
-		references: [organizations.id],
-		relationName: "organization"
-	})
+export const relations_teams = relations(teams, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [teams.organization],
+    references: [organizations.id],
+    relationName: "organization"
+  })
 }));
-export const relations_team_members = relations(team_members, ({one}) => ({
-	team: one(teams, {
-		fields: [team_members.team],
-		references: [teams.id],
-		relationName: "team"
-	}),
-	user: one(users, {
-		fields: [team_members.user],
-		references: [users.id],
-		relationName: "user"
-	})
+export const relations_team_members = relations(team_members, ({ one }) => ({
+  team: one(teams, {
+    fields: [team_members.team],
+    references: [teams.id],
+    relationName: "team"
+  }),
+  user: one(users, {
+    fields: [team_members.user],
+    references: [users.id],
+    relationName: "user"
+  })
 }));
 export const relations_members = relations(members, ({ one }) => ({
   organization: one(organizations, {
@@ -6686,12 +6724,12 @@ export const relations_pages_blocks_content = relations(
   })
 );
 export const relations_pages_blocks_image = relations(
-	pages_blocks_image,
+  pages_blocks_image,
   ({ one }) => ({
     _parentID: one(pages, {
-	    fields: [pages_blocks_image._parentID],
+      fields: [pages_blocks_image._parentID],
       references: [pages.id],
-	    relationName: "_blocks_image"
+      relationName: "_blocks_image"
     })
   })
 );
@@ -6801,21 +6839,21 @@ export const relations_pages_rels = relations(pages_rels, ({ one }) => ({
     references: [categories.id],
     relationName: "categories"
   }),
-	mediaID: one(media, {
-		fields: [pages_rels.mediaID],
-		references: [media.id],
-		relationName: "media"
-	}),
-	userMediaID: one(user_media, {
-		fields: [pages_rels.userMediaID],
-		references: [user_media.id],
-		relationName: "userMedia"
-	}),
-	assetsID: one(assets, {
-		fields: [pages_rels.assetsID],
-		references: [assets.id],
-		relationName: "assets"
-	}),
+  mediaID: one(media, {
+    fields: [pages_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  }),
+  userMediaID: one(user_media, {
+    fields: [pages_rels.userMediaID],
+    references: [user_media.id],
+    relationName: "userMedia"
+  }),
+  assetsID: one(assets, {
+    fields: [pages_rels.assetsID],
+    references: [assets.id],
+    relationName: "assets"
+  }),
   tagsID: one(tags, {
     fields: [pages_rels.tagsID],
     references: [tags.id],
@@ -6837,8 +6875,8 @@ export const relations_pages = relations(pages, ({ one, many }) => ({
   _blocks_content: many(pages_blocks_content, {
     relationName: "_blocks_content"
   }),
-	_blocks_image: many(pages_blocks_image, {
-		relationName: "_blocks_image"
+  _blocks_image: many(pages_blocks_image, {
+    relationName: "_blocks_image"
   }),
   _blocks_archive: many(pages_blocks_archive, {
     relationName: "_blocks_archive"
@@ -6913,12 +6951,12 @@ export const relations__pages_v_blocks_content = relations(
   })
 );
 export const relations__pages_v_blocks_image = relations(
-	_pages_v_blocks_image,
+  _pages_v_blocks_image,
   ({ one }) => ({
     _parentID: one(_pages_v, {
-	    fields: [_pages_v_blocks_image._parentID],
+      fields: [_pages_v_blocks_image._parentID],
       references: [_pages_v.id],
-	    relationName: "_blocks_image"
+      relationName: "_blocks_image"
     })
   })
 );
@@ -7031,21 +7069,21 @@ export const relations__pages_v_rels = relations(_pages_v_rels, ({ one }) => ({
     references: [categories.id],
     relationName: "categories"
   }),
-	mediaID: one(media, {
-		fields: [_pages_v_rels.mediaID],
-		references: [media.id],
-		relationName: "media"
-	}),
-	userMediaID: one(user_media, {
-		fields: [_pages_v_rels.userMediaID],
-		references: [user_media.id],
-		relationName: "userMedia"
-	}),
-	assetsID: one(assets, {
-		fields: [_pages_v_rels.assetsID],
-		references: [assets.id],
-		relationName: "assets"
-	}),
+  mediaID: one(media, {
+    fields: [_pages_v_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  }),
+  userMediaID: one(user_media, {
+    fields: [_pages_v_rels.userMediaID],
+    references: [user_media.id],
+    relationName: "userMedia"
+  }),
+  assetsID: one(assets, {
+    fields: [_pages_v_rels.assetsID],
+    references: [assets.id],
+    relationName: "assets"
+  }),
   tagsID: one(tags, {
     fields: [_pages_v_rels.tagsID],
     references: [tags.id],
@@ -7072,8 +7110,8 @@ export const relations__pages_v = relations(_pages_v, ({ one, many }) => ({
   _blocks_content: many(_pages_v_blocks_content, {
     relationName: "_blocks_content"
   }),
-	_blocks_image: many(_pages_v_blocks_image, {
-		relationName: "_blocks_image"
+  _blocks_image: many(_pages_v_blocks_image, {
+    relationName: "_blocks_image"
   }),
   _blocks_archive: many(_pages_v_blocks_archive, {
     relationName: "_blocks_archive"
@@ -7109,21 +7147,21 @@ export const relations_posts_rels = relations(posts_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "_rels"
   }),
-	userMediaID: one(user_media, {
-		fields: [posts_rels.userMediaID],
-		references: [user_media.id],
-		relationName: "userMedia"
-	}),
-	assetsID: one(assets, {
-		fields: [posts_rels.assetsID],
-		references: [assets.id],
-		relationName: "assets"
-	}),
-	mediaID: one(media, {
-		fields: [posts_rels.mediaID],
-		references: [media.id],
-		relationName: "media"
-	}),
+  userMediaID: one(user_media, {
+    fields: [posts_rels.userMediaID],
+    references: [user_media.id],
+    relationName: "userMedia"
+  }),
+  assetsID: one(assets, {
+    fields: [posts_rels.assetsID],
+    references: [assets.id],
+    relationName: "assets"
+  }),
+  mediaID: one(media, {
+    fields: [posts_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  }),
   tagsID: one(tags, {
     fields: [posts_rels.tagsID],
     references: [tags.id],
@@ -7179,21 +7217,21 @@ export const relations__posts_v_rels = relations(_posts_v_rels, ({ one }) => ({
     references: [_posts_v.id],
     relationName: "_rels"
   }),
-	userMediaID: one(user_media, {
-		fields: [_posts_v_rels.userMediaID],
-		references: [user_media.id],
-		relationName: "userMedia"
-	}),
-	assetsID: one(assets, {
-		fields: [_posts_v_rels.assetsID],
-		references: [assets.id],
-		relationName: "assets"
-	}),
-	mediaID: one(media, {
-		fields: [_posts_v_rels.mediaID],
-		references: [media.id],
-		relationName: "media"
-	}),
+  userMediaID: one(user_media, {
+    fields: [_posts_v_rels.userMediaID],
+    references: [user_media.id],
+    relationName: "userMedia"
+  }),
+  assetsID: one(assets, {
+    fields: [_posts_v_rels.assetsID],
+    references: [assets.id],
+    relationName: "assets"
+  }),
+  mediaID: one(media, {
+    fields: [_posts_v_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  }),
   tagsID: one(tags, {
     fields: [_posts_v_rels.tagsID],
     references: [tags.id],
@@ -7740,30 +7778,30 @@ export const relations_bookmarks_rels = relations(
       references: [profile.id],
       relationName: "profile"
     }),
-	  usersID: one(users, {
-		  fields: [bookmarks_rels.usersID],
-		  references: [users.id],
-		  relationName: "users"
-	  }),
-	  albumsID: one(albums, {
-		  fields: [bookmarks_rels.albumsID],
-		  references: [albums.id],
-		  relationName: "albums"
-	  }),
-	  playlistsID: one(playlists, {
-		  fields: [bookmarks_rels.playlistsID],
-		  references: [playlists.id],
-		  relationName: "playlists"
-	  }),
-	  tracksID: one(tracks, {
-		  fields: [bookmarks_rels.tracksID],
-		  references: [tracks.id],
-		  relationName: "tracks"
-	  }),
-	  userMediaID: one(user_media, {
-		  fields: [bookmarks_rels.userMediaID],
-		  references: [user_media.id],
-		  relationName: "userMedia"
+    usersID: one(users, {
+      fields: [bookmarks_rels.usersID],
+      references: [users.id],
+      relationName: "users"
+    }),
+    albumsID: one(albums, {
+      fields: [bookmarks_rels.albumsID],
+      references: [albums.id],
+      relationName: "albums"
+    }),
+    playlistsID: one(playlists, {
+      fields: [bookmarks_rels.playlistsID],
+      references: [playlists.id],
+      relationName: "playlists"
+    }),
+    tracksID: one(tracks, {
+      fields: [bookmarks_rels.tracksID],
+      references: [tracks.id],
+      relationName: "tracks"
+    }),
+    userMediaID: one(user_media, {
+      fields: [bookmarks_rels.userMediaID],
+      references: [user_media.id],
+      relationName: "userMedia"
     })
   })
 );
@@ -7961,29 +7999,29 @@ export const relations__responses_v = relations(
   })
 );
 export const relations_compilations_rels = relations(
-	compilations_rels,
-	({one}) => ({
-		parent: one(compilations, {
-			fields: [compilations_rels.parent],
-			references: [compilations.id],
-			relationName: "_rels"
-		}),
-		assetsID: one(assets, {
-			fields: [compilations_rels.assetsID],
-			references: [assets.id],
-			relationName: "assets"
-		}),
-		mediaID: one(media, {
-			fields: [compilations_rels.mediaID],
-			references: [media.id],
-			relationName: "media"
-		})
-	})
+  compilations_rels,
+  ({ one }) => ({
+    parent: one(compilations, {
+      fields: [compilations_rels.parent],
+      references: [compilations.id],
+      relationName: "_rels"
+    }),
+    assetsID: one(assets, {
+      fields: [compilations_rels.assetsID],
+      references: [assets.id],
+      relationName: "assets"
+    }),
+    mediaID: one(media, {
+      fields: [compilations_rels.mediaID],
+      references: [media.id],
+      relationName: "media"
+    })
+  })
 );
-export const relations_compilations = relations(compilations, ({many}) => ({
-	_rels: many(compilations_rels, {
-		relationName: "_rels"
-	})
+export const relations_compilations = relations(compilations, ({ many }) => ({
+  _rels: many(compilations_rels, {
+    relationName: "_rels"
+  })
 }));
 export const relations_admins = relations(admins, ({ one }) => ({
   foto: one(media, {
@@ -8044,101 +8082,126 @@ export const relations_redirects = relations(redirects, ({ many }) => ({
     relationName: "_rels"
   })
 }));
-export const relations_search_author = relations(search_author, ({one}) => ({
-	_parentID: one(search, {
-		fields: [search_author._parentID],
-		references: [search.id],
-		relationName: "author"
-	})
+export const relations_search_author = relations(search_author, ({ one }) => ({
+  _parentID: one(search, {
+    fields: [search_author._parentID],
+    references: [search.id],
+    relationName: "author"
+  })
 }));
 export const relations_search_allow_list = relations(
-	search_allow_list,
-	({one}) => ({
-		_parentID: one(search, {
-			fields: [search_allow_list._parentID],
-			references: [search.id],
-			relationName: "allowList"
-		})
-	})
+  search_allow_list,
+  ({ one }) => ({
+    _parentID: one(search, {
+      fields: [search_allow_list._parentID],
+      references: [search.id],
+      relationName: "allowList"
+    })
+  })
 );
-export const relations_search_tags = relations(search_tags, ({one}) => ({
-	_parentID: one(search, {
-		fields: [search_tags._parentID],
-		references: [search.id],
-		relationName: "tags"
-	})
+export const relations_search_tags = relations(search_tags, ({ one }) => ({
+  _parentID: one(search, {
+    fields: [search_tags._parentID],
+    references: [search.id],
+    relationName: "tags"
+  })
 }));
 export const relations_search_category = relations(
-	search_category,
-	({one}) => ({
-		_parentID: one(search, {
-			fields: [search_category._parentID],
-			references: [search.id],
-			relationName: "category"
-		})
-	})
+  search_category,
+  ({ one }) => ({
+    _parentID: one(search, {
+      fields: [search_category._parentID],
+      references: [search.id],
+      relationName: "category"
+    })
+  })
 );
 export const relations_search_locales = relations(
-	search_locales,
-	({one}) => ({
-		_parentID: one(search, {
-			fields: [search_locales._parentID],
-			references: [search.id],
-			relationName: "_locales"
-		})
-	})
+  search_locales,
+  ({ one }) => ({
+    _parentID: one(search, {
+      fields: [search_locales._parentID],
+      references: [search.id],
+      relationName: "_locales"
+    })
+  })
 );
-export const relations_search_rels = relations(search_rels, ({one}) => ({
-	parent: one(search, {
-		fields: [search_rels.parent],
-		references: [search.id],
-		relationName: "_rels"
-	}),
-	postsID: one(posts, {
-		fields: [search_rels.postsID],
-		references: [posts.id],
-		relationName: "posts"
-	}),
-	deltaID: one(delta, {
-		fields: [search_rels.deltaID],
-		references: [delta.id],
-		relationName: "delta"
-	}),
-	profileID: one(profile, {
-		fields: [search_rels.profileID],
-		references: [profile.id],
-		relationName: "profile"
-	}),
-	pagesID: one(pages, {
-		fields: [search_rels.pagesID],
-		references: [pages.id],
-		relationName: "pages"
-	})
+export const relations_search_rels = relations(search_rels, ({ one }) => ({
+  parent: one(search, {
+    fields: [search_rels.parent],
+    references: [search.id],
+    relationName: "_rels"
+  }),
+  postsID: one(posts, {
+    fields: [search_rels.postsID],
+    references: [posts.id],
+    relationName: "posts"
+  }),
+  deltaID: one(delta, {
+    fields: [search_rels.deltaID],
+    references: [delta.id],
+    relationName: "delta"
+  }),
+  profileID: one(profile, {
+    fields: [search_rels.profileID],
+    references: [profile.id],
+    relationName: "profile"
+  }),
+  pagesID: one(pages, {
+    fields: [search_rels.pagesID],
+    references: [pages.id],
+    relationName: "pages"
+  }),
+  tracksID: one(tracks, {
+    fields: [search_rels.tracksID],
+    references: [tracks.id],
+    relationName: "tracks"
+  }),
+  playlistsID: one(playlists, {
+    fields: [search_rels.playlistsID],
+    references: [playlists.id],
+    relationName: "playlists"
+  }),
+  albumsID: one(albums, {
+    fields: [search_rels.albumsID],
+    references: [albums.id],
+    relationName: "albums"
+  }),
+  mediaID: one(media, {
+    fields: [search_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  }),
+  assetsID: one(assets, {
+    fields: [search_rels.assetsID],
+    references: [assets.id],
+    relationName: "assets"
+  }),
+  userMediaID: one(user_media, {
+    fields: [search_rels.userMediaID],
+    references: [user_media.id],
+    relationName: "userMedia"
+  })
 }));
-export const relations_search = relations(search, ({one, many}) => ({
-	author: many(search_author, {
-		relationName: "author"
-	}),
-	allowList: many(search_allow_list, {
-		relationName: "allowList"
-	}),
-	tags: many(search_tags, {
-		relationName: "tags"
-	}),
-	category: many(search_category, {
-		relationName: "category"
-	}),
-	meta_image: one(media, {
-		fields: [search.meta_image],
-		references: [media.id],
-		relationName: "meta_image"
-	}),
-	_locales: many(search_locales, {
-		relationName: "_locales"
-	}),
-	_rels: many(search_rels, {
-		relationName: "_rels"
-	})
+export const relations_search = relations(search, ({ many }) => ({
+  author: many(search_author, {
+    relationName: "author"
+  }),
+  allowList: many(search_allow_list, {
+    relationName: "allowList"
+  }),
+  tags: many(search_tags, {
+    relationName: "tags"
+  }),
+  category: many(search_category, {
+    relationName: "category"
+  }),
+  _locales: many(search_locales, {
+    relationName: "_locales"
+  }),
+  _rels: many(search_rels, {
+    relationName: "_rels"
+  })
 }));
 export const relations_payload_kv = relations(payload_kv, () => ({}));
 export const relations_payload_jobs_log = relations(
@@ -8222,16 +8285,16 @@ export const relations_payload_locked_documents_rels = relations(
       references: [organizations.id],
       relationName: "organizations"
     }),
-	  teamsID: one(teams, {
-		  fields: [payload_locked_documents_rels.teamsID],
-		  references: [teams.id],
-		  relationName: "teams"
-	  }),
-	  teamMembersID: one(team_members, {
-		  fields: [payload_locked_documents_rels.teamMembersID],
-		  references: [team_members.id],
-		  relationName: "teamMembers"
-	  }),
+    teamsID: one(teams, {
+      fields: [payload_locked_documents_rels.teamsID],
+      references: [teams.id],
+      relationName: "teams"
+    }),
+    teamMembersID: one(team_members, {
+      fields: [payload_locked_documents_rels.teamMembersID],
+      references: [team_members.id],
+      relationName: "teamMembers"
+    }),
     membersID: one(members, {
       fields: [payload_locked_documents_rels.membersID],
       references: [members.id],
@@ -8282,11 +8345,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [user_media.id],
       relationName: "userMedia"
     }),
-	  profileID: one(profile, {
-		  fields: [payload_locked_documents_rels.profileID],
-		  references: [profile.id],
-		  relationName: "profile"
-	  }),
+    profileID: one(profile, {
+      fields: [payload_locked_documents_rels.profileID],
+      references: [profile.id],
+      relationName: "profile"
+    }),
     bookmarksID: one(bookmarks, {
       fields: [payload_locked_documents_rels.bookmarksID],
       references: [bookmarks.id],
@@ -8302,11 +8365,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [responses.id],
       relationName: "responses"
     }),
-	  compilationsID: one(compilations, {
-		  fields: [payload_locked_documents_rels.compilationsID],
-		  references: [compilations.id],
-		  relationName: "compilations"
-	  }),
+    compilationsID: one(compilations, {
+      fields: [payload_locked_documents_rels.compilationsID],
+      references: [compilations.id],
+      relationName: "compilations"
+    }),
     adminsID: one(admins, {
       fields: [payload_locked_documents_rels.adminsID],
       references: [admins.id],
@@ -8327,11 +8390,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [redirects.id],
       relationName: "redirects"
     }),
-	  searchID: one(search, {
-		  fields: [payload_locked_documents_rels.searchID],
-		  references: [search.id],
-		  relationName: "search"
-	  }),
+    searchID: one(search, {
+      fields: [payload_locked_documents_rels.searchID],
+      references: [search.id],
+      relationName: "search"
+    }),
     "payload-foldersID": one(payload_folders, {
       fields: [payload_locked_documents_rels["payload-foldersID"]],
       references: [payload_folders.id],
@@ -8672,9 +8735,9 @@ type DatabaseSchema = {
   enum_exports_sort_order: typeof enum_exports_sort_order;
   enum_exports_locale: typeof enum_exports_locale;
   enum_exports_drafts: typeof enum_exports_drafts;
-	enum_imports_collection_slug: typeof enum_imports_collection_slug;
-	enum_imports_import_mode: typeof enum_imports_import_mode;
-	enum_imports_status: typeof enum_imports_status;
+  enum_imports_collection_slug: typeof enum_imports_collection_slug;
+  enum_imports_import_mode: typeof enum_imports_import_mode;
+  enum_imports_status: typeof enum_imports_status;
   enum_redirects_to_type: typeof enum_redirects_to_type;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
@@ -8697,8 +8760,8 @@ type DatabaseSchema = {
   two_factors: typeof two_factors;
   passkeys: typeof passkeys;
   organizations: typeof organizations;
-	teams: typeof teams;
-	team_members: typeof team_members;
+  teams: typeof teams;
+  team_members: typeof team_members;
   members: typeof members;
   invitations: typeof invitations;
   admin_invitations: typeof admin_invitations;
@@ -8716,7 +8779,7 @@ type DatabaseSchema = {
   pages_blocks_cta: typeof pages_blocks_cta;
   pages_blocks_content_columns: typeof pages_blocks_content_columns;
   pages_blocks_content: typeof pages_blocks_content;
-	pages_blocks_image: typeof pages_blocks_image;
+  pages_blocks_image: typeof pages_blocks_image;
   pages_blocks_archive: typeof pages_blocks_archive;
   pages_blocks_fotd_relation_to: typeof pages_blocks_fotd_relation_to;
   pages_blocks_fotd: typeof pages_blocks_fotd;
@@ -8729,7 +8792,7 @@ type DatabaseSchema = {
   _pages_v_blocks_cta: typeof _pages_v_blocks_cta;
   _pages_v_blocks_content_columns: typeof _pages_v_blocks_content_columns;
   _pages_v_blocks_content: typeof _pages_v_blocks_content;
-	_pages_v_blocks_image: typeof _pages_v_blocks_image;
+  _pages_v_blocks_image: typeof _pages_v_blocks_image;
   _pages_v_blocks_archive: typeof _pages_v_blocks_archive;
   _pages_v_blocks_fotd_relation_to: typeof _pages_v_blocks_fotd_relation_to;
   _pages_v_blocks_fotd: typeof _pages_v_blocks_fotd;
@@ -8780,25 +8843,25 @@ type DatabaseSchema = {
   responses_rels: typeof responses_rels;
   _responses_v: typeof _responses_v;
   _responses_v_rels: typeof _responses_v_rels;
-	compilations: typeof compilations;
-	compilations_rels: typeof compilations_rels;
+  compilations: typeof compilations;
+  compilations_rels: typeof compilations_rels;
   admins: typeof admins;
   _admins_v: typeof _admins_v;
   email_quota: typeof email_quota;
   deferred_emails: typeof deferred_emails;
   exports: typeof exports;
   exports_texts: typeof exports_texts;
-	imports: typeof imports;
+  imports: typeof imports;
   redirects: typeof redirects;
   redirects_rels: typeof redirects_rels;
-	search_author: typeof search_author;
-	search_allow_list: typeof search_allow_list;
-	search_tags: typeof search_tags;
-	search_category: typeof search_category;
-	search: typeof search;
-	search_locales: typeof search_locales;
-	search_rels: typeof search_rels;
-	payload_kv: typeof payload_kv;
+  search_author: typeof search_author;
+  search_allow_list: typeof search_allow_list;
+  search_tags: typeof search_tags;
+  search_category: typeof search_category;
+  search: typeof search;
+  search_locales: typeof search_locales;
+  search_rels: typeof search_rels;
+  payload_kv: typeof payload_kv;
   payload_jobs_log: typeof payload_jobs_log;
   payload_jobs: typeof payload_jobs;
   payload_folders_folder_type: typeof payload_folders_folder_type;
@@ -8827,8 +8890,8 @@ type DatabaseSchema = {
   relations_two_factors: typeof relations_two_factors;
   relations_passkeys: typeof relations_passkeys;
   relations_organizations: typeof relations_organizations;
-	relations_teams: typeof relations_teams;
-	relations_team_members: typeof relations_team_members;
+  relations_teams: typeof relations_teams;
+  relations_team_members: typeof relations_team_members;
   relations_members: typeof relations_members;
   relations_invitations: typeof relations_invitations;
   relations_admin_invitations: typeof relations_admin_invitations;
@@ -8846,7 +8909,7 @@ type DatabaseSchema = {
   relations_pages_blocks_cta: typeof relations_pages_blocks_cta;
   relations_pages_blocks_content_columns: typeof relations_pages_blocks_content_columns;
   relations_pages_blocks_content: typeof relations_pages_blocks_content;
-	relations_pages_blocks_image: typeof relations_pages_blocks_image;
+  relations_pages_blocks_image: typeof relations_pages_blocks_image;
   relations_pages_blocks_archive: typeof relations_pages_blocks_archive;
   relations_pages_blocks_fotd_relation_to: typeof relations_pages_blocks_fotd_relation_to;
   relations_pages_blocks_fotd: typeof relations_pages_blocks_fotd;
@@ -8859,7 +8922,7 @@ type DatabaseSchema = {
   relations__pages_v_blocks_cta: typeof relations__pages_v_blocks_cta;
   relations__pages_v_blocks_content_columns: typeof relations__pages_v_blocks_content_columns;
   relations__pages_v_blocks_content: typeof relations__pages_v_blocks_content;
-	relations__pages_v_blocks_image: typeof relations__pages_v_blocks_image;
+  relations__pages_v_blocks_image: typeof relations__pages_v_blocks_image;
   relations__pages_v_blocks_archive: typeof relations__pages_v_blocks_archive;
   relations__pages_v_blocks_fotd_relation_to: typeof relations__pages_v_blocks_fotd_relation_to;
   relations__pages_v_blocks_fotd: typeof relations__pages_v_blocks_fotd;
@@ -8910,25 +8973,25 @@ type DatabaseSchema = {
   relations_responses: typeof relations_responses;
   relations__responses_v_rels: typeof relations__responses_v_rels;
   relations__responses_v: typeof relations__responses_v;
-	relations_compilations_rels: typeof relations_compilations_rels;
-	relations_compilations: typeof relations_compilations;
+  relations_compilations_rels: typeof relations_compilations_rels;
+  relations_compilations: typeof relations_compilations;
   relations_admins: typeof relations_admins;
   relations__admins_v: typeof relations__admins_v;
   relations_email_quota: typeof relations_email_quota;
   relations_deferred_emails: typeof relations_deferred_emails;
   relations_exports_texts: typeof relations_exports_texts;
   relations_exports: typeof relations_exports;
-	relations_imports: typeof relations_imports;
+  relations_imports: typeof relations_imports;
   relations_redirects_rels: typeof relations_redirects_rels;
   relations_redirects: typeof relations_redirects;
-	relations_search_author: typeof relations_search_author;
-	relations_search_allow_list: typeof relations_search_allow_list;
-	relations_search_tags: typeof relations_search_tags;
-	relations_search_category: typeof relations_search_category;
-	relations_search_locales: typeof relations_search_locales;
-	relations_search_rels: typeof relations_search_rels;
-	relations_search: typeof relations_search;
-	relations_payload_kv: typeof relations_payload_kv;
+  relations_search_author: typeof relations_search_author;
+  relations_search_allow_list: typeof relations_search_allow_list;
+  relations_search_tags: typeof relations_search_tags;
+  relations_search_category: typeof relations_search_category;
+  relations_search_locales: typeof relations_search_locales;
+  relations_search_rels: typeof relations_search_rels;
+  relations_search: typeof relations_search;
+  relations_payload_kv: typeof relations_payload_kv;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;
   relations_payload_jobs: typeof relations_payload_jobs;
   relations_payload_folders_folder_type: typeof relations_payload_folders_folder_type;

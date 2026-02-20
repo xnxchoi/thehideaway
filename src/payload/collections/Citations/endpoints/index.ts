@@ -13,7 +13,7 @@ export const citationHandler: PayloadHandler = async (req) => {
 		!collection ||
 		typeof id !== "string" ||
 		typeof collection !== "string" ||
-		(collection !== "posts" && collection !== "delta")
+		(collection !== "posts" && collection !== "surf")
 	) {
 		return Response.json(
 			{

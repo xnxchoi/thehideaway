@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import type {CollectionConfig} from "payload";
 
 export const SeriesSubmissionConfig: CollectionConfig = {
   slug: "series-submissions",
@@ -22,7 +22,7 @@ export const SeriesSubmissionConfig: CollectionConfig = {
     {
       name: "entry",
       type: "relationship",
-      relationTo: ["posts", "delta", "playlists", "userMedia"],
+      relationTo: ["posts", "surf", "playlists", "userMedia"],
       hasMany: false,
       maxDepth: 1,
       required: true,

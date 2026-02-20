@@ -191,7 +191,7 @@ export default buildConfig({
 					data: {
 						title,
 						slug,
-						hashId: nanoid(),
+						hashId: nanoid(11),
 						slugLock: true, tagCount: 0,
 						author: uid
 					}

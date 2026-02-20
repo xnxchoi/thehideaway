@@ -92,7 +92,7 @@ export const Categories: CollectionConfig = {
 		{
 			type: "join",
 			name: "categorized",
-			collection: ["delta", "posts"],
+			collection: ["surf", "posts"],
 			on: "category",
 			maxDepth: 1
 		}, {

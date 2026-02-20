@@ -229,7 +229,7 @@ export const SearchBar = ({className, style, ...props}: HTMLMotionProps<"button"
 												| "categories"
 												| "users"
 												| "articles"
-												| "delta"
+												| "surf"
 												| "posts"
 												| "pages"
 											>,

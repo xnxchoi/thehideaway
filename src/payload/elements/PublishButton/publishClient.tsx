@@ -30,7 +30,7 @@ import {
 import {ScheduleDrawer} from "@payloadcms/ui/elements/PublishButton/ScheduleDrawer";
 import {traverseForLocalizedFields} from "@payloadcms/ui/utilities/traverseForLocalizedFields";
 
-export function PublishButton({label: labelProp}: PublishButtonClientProps) {
+export function PublishButton({label: labelProp}: {label?:string}&PublishButtonClientProps) {
 	const {
 		id,
 		collectionSlug,

@@ -1,7 +1,7 @@
 // collections/UserViews.ts
-import { CollectionConfig } from "payload";
-import { userViewHandler } from "./api/handler";
-import { hideIfNotAdmin } from "../helpers";
+import {CollectionConfig} from "payload";
+import {hideIfNotAdmin} from "../helpers";
+import {userViewHandler} from "./api/handler";
 
 export const UserViews: CollectionConfig = {
   slug: "userViews",
@@ -40,7 +40,7 @@ export const UserViews: CollectionConfig = {
       type: "relationship",
       relationTo: [
         "posts",
-        "delta",
+        "surf",
         "playlists",
         "profile",
         "albums",

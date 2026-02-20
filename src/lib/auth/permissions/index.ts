@@ -102,7 +102,7 @@ export const userTypesCollections = Object.keys(userTypes) as UserType[];
 export type UserContentCollection = keyof Pick<
   MyCollections,
   | "posts"
-  | "delta"
+  | "surf"
   | "responses"
   | "profile"
   | "playlists"
@@ -117,7 +117,7 @@ const userCreatedContent: {
   bookmarks: ["read", "update", "delete", "create"],
   posts: ["read", "update", "delete", "create", "lock", "readLocked"],
   citations: ["read", "update", "delete", "create", "lock", "readLocked"],
-  delta: ["read", "update", "delete", "create", "lock", "readLocked"],
+  surf: ["read", "update", "delete", "create", "lock", "readLocked"],
   profile: ["read", "update", "delete", "create", "lock", "readLocked"],
   playlists: ["read", "update", "delete", "create", "lock", "readLocked"],
   responses: ["read", "update", "delete", "create", "lock", "readLocked"],

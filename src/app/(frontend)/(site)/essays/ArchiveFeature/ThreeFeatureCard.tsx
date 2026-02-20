@@ -28,7 +28,7 @@ function FirstCard({ item }: { item: OverviewItem }) {
     >
       <Link
         className={"absolute inset-0 z-0 h-full w-full"}
-        href={`/${item.collection === "posts" ? "essays" : "delta"}/${item.slug}`}
+        href={`/${item.relationTo === "posts" ? "essays" : "surf"}/${item.value.slug}`}
       />
 
       <div className={"relative order-1 min-h-px w-full min-w-px rounded-2xl"}>
@@ -68,7 +68,7 @@ function SecondCard({ item }: { item: OverviewItem }) {
     >
       <Link
         className={"absolute inset-0 z-0 h-full w-full"}
-        href={`/${item.collection === "posts" ? "essays" : "delta"}/${item.slug}`}
+        href={`/${item.collection === "posts" ? "essays" : "surf"}/${item.slug}`}
       />
 
       <div className={"relative order-5 min-h-px w-full min-w-px rounded-2xl"}>

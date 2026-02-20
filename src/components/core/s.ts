@@ -1,13 +1,13 @@
 // 1) Allowlist the collections that are eligible for gated access.
-import {LockedCollections} from "@/payload/plugins";
-import {CollectionSlug, DataFromCollectionSlug} from "payload";
-import {FieldUseSelect} from "@/payload/plugins/locker/types";
 import {Album, Playlist, Profile, Track} from "@/payload-types";
+import {LockedCollections} from "@/payload/plugins";
+import {FieldUseSelect} from "@/payload/plugins/locker/types";
+import {CollectionSlug, DataFromCollectionSlug} from "payload";
 
 export const ALLOWED: ReadonlySet<CollectionSlug> = new Set(
-	["posts", "media", "delta", "albums", "playlists", "tracks", "userMedia", "assets", "profile",])
+	["posts", "media", "surf", "albums", "playlists", "tracks", "userMedia", "assets", "profile",])
 export type LockedMediaSlugs = "assets" | "media" | "userMedia"
-export type ArticleSlugs = "posts" | "delta"
+export type ArticleSlugs = "posts" | "surf"
 const uploadLockedFieldSelector = {
 	url: true, mimeType: true, thumbnailURL: true, darkmode: true, blurDataUrl: true,
 } as const;

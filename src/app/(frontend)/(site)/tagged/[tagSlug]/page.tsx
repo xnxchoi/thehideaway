@@ -6,7 +6,9 @@ import {CatTitle, TaggedItem} from "@/components/layouts/Tagged/Item";
 import {Link} from "@/components/UX/Link/Link";
 import {TagButton} from "@/components/UX/TagButton";
 import {RPage} from "@/components/UX/Transition";
+import {getImageOverviewByID} from "@/payload/collections/Posts/api/getImageMedia";
 import {IndexedCollectionSlug} from "@/payload/plugins/plugin-search/types";
+import {RalueAsDataWithRelation} from "@/types/collections/image-collections";
 import {searchOverviewSelect} from "@/types/collections/search";
 import {formatCollectionURL} from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
@@ -44,7 +46,7 @@ export default async function Page({params: paramsPromise}: Args) {
 		return notFound();
 	}
 	const posts = await getTagPosts({
-		id: tag.id,
+		id: tag.id, slug: tag.slug
 
 	})
 	const topTags = await getTags({slug: tagSlug});
@@ -97,17 +99,22 @@ export default async function Page({params: paramsPromise}: Args) {
 							"relative z-[1] flex w-full flex-col items-center justify-center py-[16px]"
 						}
 					>
-						<div>
+						<div className="w-full max-w-(--maxContainerWidth)">
 							<div className={"p-0"}>
 								<div className={"relative h-full w-full"}>
 									<div className={"w-full"}>
 										<div
 											className={
-												"relative z-[150] mx-auto flex w-[calc(100%-5rem)] max-w-[var(--maxContainerWidth)] translate-y-[1rem] rounded-t-[20px] rounded-b-[0]"
+												"relative z-[150] mx-auto flex w-[calc(100%-5rem)] max-w-(--maxContainerWidth) translate-y-[1rem] rounded-t-[20px] rounded-b-[0]"
 											}
 										></div>
 										<div className={"relative block"}>
-											<ArchiveFeatureCard contents={firstFive} type={"left"}/>
+											<ArchiveFeatureCard
+												type={"left"}
+												contents={[
+													...firstFive
+												]}
+											/>
 										</div>
 									</div>
 								</div>
@@ -124,6 +131,7 @@ export default async function Page({params: paramsPromise}: Args) {
 						</div>
 					</div>
 				</div>
+
 			</PageClient>
 		</RPage>
 	)
@@ -175,17 +183,23 @@ async function getTags({slug}: { slug: string }) {
 
 }
 
-async function getTagPosts({id, page = 1, limit = 12, collections = ["posts", "delta", "pages"]}: {
+async function getTagPosts({
+	                           id,
+	                           slug,
+	                           page = 1,
+	                           limit = 12,
+	                           collections = ["posts", "surf", "pages"]
+                           }: {
 	id: string;
 	collections?: IndexedCollectionSlug[];
 	page?: number;
-	limit?: number
+	limit?: number; slug: string
 }): Promise<{
 	relationTo: IndexedCollectionSlug;
 	value: OverviewAgnosticItem
 }[]> {
 	"use cache"
-	cacheTag("tags-posts")
+	cacheTag("tags-posts", "tag-" + slug)
 	const payload = await getPayload({config});
 	const tagged =
 		await payload.find({
@@ -212,6 +226,17 @@ async function getTagPosts({id, page = 1, limit = 12, collections = ["posts", "d
 						title: true,
 					}
 				})
+				let image: RalueAsDataWithRelation | undefined = undefined;
+				if (d.meta?.image) {
+					const imageRel = d.meta.image.relationTo;
+					const imageID = typeof d.meta.image.value === "string" ? d.meta.image.value : d.meta.image.value.id;
+					const res = await getImageOverviewByID({
+						id: imageID,
+						collection: imageRel,
+						payload
+					});
+					image = res || undefined;
+				}
 				return ({
 					relationTo: d.doc.relationTo as IndexedCollectionSlug,
 
@@ -222,7 +247,9 @@ async function getTagPosts({id, page = 1, limit = 12, collections = ["posts", "d
 							relationTo: d.doc.relationTo as IndexedCollectionSlug
 						}),
 						title: d.title,
-						category: category && category.title || "",
+						image, author: d.author[0] && d.author[0].name || "Unknown",
+						subtitle: d.meta?.description || "",
+						category: category && category.title || "Uncategorized",
 						tagged: d.tags && d.tags.map(r => ({
 							id: r.key,
 							title: r.title,

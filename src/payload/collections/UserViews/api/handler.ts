@@ -1,11 +1,11 @@
-'use server'
-import {trackUserView, type TrackedTargetType} from './trackUserView'
-import {Payload, PayloadHandler, addDataAndFileToRequest} from 'payload'
-import {clamp} from '@/utilities/mathUtilities'
+"use server"
+import {clamp} from "@/utilities/mathUtilities"
+import {addDataAndFileToRequest, PayloadHandler} from "payload"
+import {type TrackedTargetType, trackUserView} from "./trackUserView"
 
 export const userViewHandler: PayloadHandler = async (req) => {
 	await addDataAndFileToRequest(req)
-	const validCollections: TrackedTargetType[] = ['posts', 'delta', 'playlists', 'profile',
+	const validCollections: TrackedTargetType[] = ['posts', 'surf', 'playlists', 'profile',
 		'albums', 'tracks']
 
 	const curUser = req.user

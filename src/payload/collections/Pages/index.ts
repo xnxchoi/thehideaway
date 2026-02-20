@@ -7,7 +7,6 @@ import {HeroSquare} from "@/blocks/HeroSquareBlock/config";
 import {ImageBlock} from "@/blocks/ImageBlock/config";
 
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
-import {updateTagsAfterChange} from "@/payload/collections/Categories/hooks";
 import {slugField} from "@/payload/fields/slug";
 import {pagesAccess} from "@/payload/plugins/locker/access";
 import {generatePreviewPath} from "@/utilities/generatePreviewPath";
@@ -212,7 +211,7 @@ export const Pages: CollectionConfig<"pages"> = {
 		...slugField("title", true, {slugOverrides: {required: true}})
 	],
 	hooks: {
-		afterChange: [revalidatePage, updateTagsAfterChange],
+		afterChange: [revalidatePage,  ],
 		beforeChange: [populatePublishedAt],
 		afterDelete: [revalidateDelete]
 	},

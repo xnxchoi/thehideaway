@@ -7,9 +7,9 @@ import {
   standardReadAccess,
   standardUpdateAccess
 } from "@/payload/plugins/locker/access/accessCheckers";
-import { CollectionConfig, CollectionSlug, Where } from "payload";
-import { roleToAuthority } from "../fields/authority/utils";
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
+import {RP_Roles} from "@/stores/Notification/NotificationStore";
+import {CollectionConfig, CollectionSlug, Where} from "payload";
+import {roleToAuthority} from "../fields/authority/utils";
 
 export const pagesAccess: CollectionConfig["access"] = {
   create: isAdmin,
@@ -24,6 +24,12 @@ export const postsAccess: CollectionConfig["access"] = {
   update: standardUpdateAccess
 };
 export const deltasAccess: CollectionConfig["access"] = {
+  create: standardCreateAccess,
+  delete: standardUpdateAccess,
+  read: standardReadAccess,
+  update: standardUpdateAccess
+};
+export const surfAccess: CollectionConfig["access"] = {
   create: standardCreateAccess,
   delete: standardUpdateAccess,
   read: standardReadAccess,
@@ -103,7 +109,7 @@ export type LockedAccessCollection = Extract<
   CollectionSlug,
   | "pages"
   | "posts"
-  | "delta"
+  | "surf"
   | "media"
   | "userMedia"
 	| "profile"

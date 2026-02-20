@@ -1,8 +1,7 @@
 import {ImageCollectionOverview} from "@/components/UX/Media/types";
-import {DeltaOverviewSelect} from "@/payload/collections/Delta/api/queryDeltaOverview";
 import {PostOverviewSelect} from "@/payload/collections/Posts/api/queryBase";
 import {ProfileOverview, ProfileOverviewSelect} from "@/payload/collections/Profile";
-import {DeltaOverview} from "@/types/collections/delta";
+import {SurfOverviewSelect} from "@/payload/collections/Surf/api/querySurfOverview";
 import {ImageCollectionOverviewSelect} from "@/types/collections/image-collections";
 import {
 	CategoryOverview,
@@ -11,11 +10,12 @@ import {
 	TagOverviewSelect
 } from "@/types/collections/meta-collections";
 import {PostOverview} from "@/types/collections/posts";
+import {SurfOverview} from "@/types/collections/surf";
 import {UserOverview, UserOverviewSelect} from "@/types/collections/users";
 
 export type OverviewMap = {
 	"posts": PostOverview;
-	"delta": DeltaOverview;
+	"surf": SurfOverview;
 	"users": UserOverview;
 	"categories": CategoryOverview;
 	"tags": TagOverview;
@@ -26,7 +26,7 @@ export type OverviewMap = {
 }
 export type OverviewSelectMap = {
 	"posts": PostOverviewSelect;
-	"delta": DeltaOverviewSelect;
+	"surf": SurfOverviewSelect;
 	"users": UserOverviewSelect;
 	"categories": CategoryOverviewSelect;
 	"tags": TagOverviewSelect;

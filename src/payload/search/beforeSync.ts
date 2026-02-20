@@ -1,5 +1,5 @@
 import {getPayload} from "@/lib/payload";
-import {Category, Profile, Search, Tag} from "@/payload-types";
+import {Category, Post, Profile, Search} from "@/payload-types";
 import {BeforeSync, DocToSync} from "@/payload/plugins/plugin-search/types";
 import {CategoryOverview} from "@/types/collections/meta-collections";
 import {DataFromCollectionSlug} from "payload";
@@ -33,7 +33,7 @@ export const beforeSyncWithSearch: BeforeSync = async (
 			description: undefined,
 			title: undefined
 		},
-		authority: 0, tags: null,
+		authority: 0, tags: [],
 		author: [], title: "", collection,
 		doc: {
 			relationTo: collection,
@@ -52,28 +52,48 @@ export const beforeSyncWithSearch: BeforeSync = async (
 			const payload = await getPayload()
 			const author: Search["author"] = []
 			if ("author" in document && document.author) {
-				const au = await payload.findByID({
+				const aaaa = (Array.isArray(document.author) ? document.author : [document.author]).map(r => typeof r === "string" ? r : r.id)
+
+				const aus = await payload.find({
 					collection: "users",
-					id: typeof document.author === "string" ? document.author : document.author.id,
+					pagination: false,
+					where: {
+						and: [
+							{
+								id: {
+									in: aaaa
+								}
+							}, {
+								banned: {
+									equals: false
+								}
+							}
+						]
+					},
 					select: {
 						name: true,
 						slug: true,
 						image: true
 					}
-				})
-				if (au) {
-					author.push({
-						key: au.id,
-						name: au.name,
-						slug: au.slug,
-						id: uuidv7()
-					})
-				}
+				}).then(r => r.docs);
+				author.push(...aus.map(au => ({
+					key: au.id,
+					name: au.name,
+					slug: au.slug,
+					id: uuidv7()
+				})))
 			}
 			return {
 				...baseDraft,
 				meta: {
-					...(("meta" in document && document.meta) || {})
+					...("meta" in document && document.meta && ({
+						...document.meta,
+						image: document.meta.image && ({
+							relationTo: "media",
+							value: typeof document.meta.image === "string" ? document.meta.image : document.meta.image.id,
+						})||undefined
+					}) || {})
+					,
 				},
 				title: document.title,
 				slug: document.slug,
@@ -112,9 +132,7 @@ export const beforeSyncWithSearch: BeforeSync = async (
 		if ("tagged" in targetDoc) {
 			const d = targetDoc as Extract<
 				DataFromCollectionSlug<IndexedCollections>,
-				{
-					tagged?: (string | Tag)[] | null;
-				}
+				Pick<Post, "tagged">
 			>;
 			const tags: Array<{
 				id: string;
@@ -175,7 +193,25 @@ export const beforeSyncWithSearch: BeforeSync = async (
 					}
 				}
 			}
-
+			case "posts":
+				return await constructDraft(collection, targetDoc).then((doe) => {
+					const doc=targetDoc as Post;
+					return ({
+					...
+						doe,
+							meta
+					:
+						{
+						...
+							doe.meta,
+							image:doc.image&&({
+								relationTo:doc.image.relationTo,
+								value:typeof doc.image.value === "string" ? doc.image.value : doc.image.value.id
+							})||doe.meta?.image||undefined,
+							description:doc.subtitle,
+						}
+					})
+				})
 			default: {
 				return await constructDraft(collection, targetDoc);
 			}

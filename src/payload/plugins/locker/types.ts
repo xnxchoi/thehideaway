@@ -6,7 +6,7 @@ const s = {
 const filteredFieldsKeyMap = {
 	posts:{
 		content: true, title: true,
-	}, delta:{
+	}, surf:{
 		content: true, title: true,
 	}, profile: {
 		hero:true,

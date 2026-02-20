@@ -1,8 +1,8 @@
 import {
-	type SerializedEditorState,
-	SerializedParagraphNode,
-	SerializedRootNode,
-	SerializedTextNode
+  type SerializedEditorState,
+  SerializedParagraphNode,
+  SerializedRootNode,
+  SerializedTextNode
 } from "lexical";
 
 export const createRichtext = (content: string | Array<string>) => {
@@ -30,7 +30,7 @@ export const createRichtext = (content: string | Array<string>) => {
             type: "text",
             style: "",
             detail: 0,
-            format: 2,
+            format: 0,
             version: 1
           }
         ] as SerializedTextNode[],

@@ -1,16 +1,14 @@
 "use server"
-import {PayloadRequest} from "payload"
 import {Bookmark} from "@/payload-types"
-import type {CollectionSlug, DataFromCollectionSlug, Where} from "payload"
+import type {CollectionSlug, DataFromCollectionSlug, Payload, Where} from "payload"
+import {PayloadRequest} from "payload"
 import {cache} from "react"
-import type {Payload} from 'payload'
-
 
 export type BookmarkParams = {
 	payload: Payload
 	user: string
 	target: {
-		relationTo: Extract<CollectionSlug, 'posts' | 'delta' | 'playlists' | 'profile' | 'albums' | 'tracks' | 'userMedia'>
+		relationTo: Extract<CollectionSlug, 'posts' | 'surf' | 'playlists' | 'profile' | 'albums' | 'tracks' | 'userMedia'>
 		value: string
 	}
 }

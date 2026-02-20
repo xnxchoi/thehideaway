@@ -21,7 +21,11 @@ node_modules/
 .pnpm-store/
 .turbo/
 public/!/src/payload/fields/Article/Cover/backup/ImageContextB.tsx
-!/public/users/
-public/media/
+/public/users/
+/public/media/
 !/public/media/
 !/public/assets/media/
+!/src/app/(frontend)/(site)/essays/DemoOfArchive.tsx
+src/lib/migrations/
+**/backup/
+*.psd

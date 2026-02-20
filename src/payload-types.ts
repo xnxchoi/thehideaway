@@ -88,7 +88,6 @@ export interface Config {
     pages: Page;
     posts: Post;
     userMedia: UserMedia;
-    delta: Delta;
     profile: Profile;
     albums: Album;
     tracks: Track;
@@ -96,6 +95,7 @@ export interface Config {
     follows: Follow;
     bookmarks: Bookmark;
     userViews: UserView;
+    surf: Surf;
     citations: Citation;
     responses: Response;
     compilations: Compilation;
@@ -120,30 +120,27 @@ export interface Config {
       followers: 'follows';
       following: 'follows';
       notifications: 'notifications';
-      account: "accounts";
-      session: "sessions";
+      account: 'accounts';
+      session: 'sessions';
     };
     organizations: {
-      member: "members";
-      invitation: "invitations";
-      team: "teams";
+      member: 'members';
+      invitation: 'invitations';
+      team: 'teams';
     };
     assets: {
-      compiled: "compilations";
+      compiled: 'compilations';
     };
     categories: {
-      categorized: 'delta' | 'posts';
+      categorized: 'surf' | 'posts';
     };
     tags: {
-      taggedItems: "delta" | "posts" | "profile" | "pages" | "albums" | "playlists" | "tracks";
+      taggedItems: 'posts' | 'surf' | 'playlists' | 'albums' | 'profile' | 'pages' | 'tracks';
     };
     posts: {
       bookmarks: 'bookmarks';
     };
     userMedia: {
-      bookmarks: 'bookmarks';
-    };
-    delta: {
       bookmarks: 'bookmarks';
     };
     profile: {
@@ -156,6 +153,9 @@ export interface Config {
       bookmarks: 'bookmarks';
     };
     playlists: {
+      bookmarks: 'bookmarks';
+    };
+    surf: {
       bookmarks: 'bookmarks';
     };
     'payload-folders': {
@@ -183,7 +183,6 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     userMedia: UserMediaSelect<false> | UserMediaSelect<true>;
-    delta: DeltaSelect<false> | DeltaSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     tracks: TracksSelect<false> | TracksSelect<true>;
@@ -191,6 +190,7 @@ export interface Config {
     follows: FollowsSelect<false> | FollowsSelect<true>;
     bookmarks: BookmarksSelect<false> | BookmarksSelect<true>;
     userViews: UserViewsSelect<false> | UserViewsSelect<true>;
+    surf: SurfSelect<false> | SurfSelect<true>;
     citations: CitationsSelect<false> | CitationsSelect<true>;
     responses: ResponsesSelect<false> | ResponsesSelect<true>;
     compilations: CompilationsSelect<false> | CompilationsSelect<true>;
@@ -211,7 +211,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: ("false" | "none" | "null") | false | null | ("en" | "ko") | ("en" | "ko")[];
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ko') | ('en' | 'ko')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -221,13 +221,7 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
   };
   locale: 'en' | 'ko';
-  user:
-    | (User & {
-        collection: 'users';
-      })
-    | (Admin & {
-        collection: 'admins';
-      });
+  user: User | Admin;
   jobs: {
     tasks: {
       welcomeUser: TaskWelcomeUser;
@@ -324,7 +318,7 @@ export interface User {
   /**
    * The role/ roles of the user
    */
-  role: "admin" | "author" | "editor" | "user" | "patron";
+  role: 'admin' | 'author' | 'editor' | 'user' | 'patron';
   onboarded: boolean;
   /**
    * Whether the user is banned from the platform
@@ -402,6 +396,7 @@ export interface User {
     description?: string | null;
   };
   _status?: ('draft' | 'published') | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -555,32 +550,32 @@ export interface Bookmark {
         value: string | Post;
       }
     | {
-        relationTo: 'delta';
-        value: string | Delta;
+        relationTo: 'surf';
+        value: string | Surf;
       }
     | {
         relationTo: 'profile';
         value: string | Profile;
-  }
-      | {
-    relationTo: "users";
-    value: string | User;
-  }
-      | {
-    relationTo: "albums";
-    value: string | Album;
-  }
-      | {
-    relationTo: "playlists";
-    value: string | Playlist;
-  }
-      | {
-    relationTo: "tracks";
-    value: string | Track;
-  }
-      | {
-    relationTo: "userMedia";
-    value: string | UserMedia;
+      }
+    | {
+        relationTo: 'users';
+        value: string | User;
+      }
+    | {
+        relationTo: 'albums';
+        value: string | Album;
+      }
+    | {
+        relationTo: 'playlists';
+        value: string | Playlist;
+      }
+    | {
+        relationTo: 'tracks';
+        value: string | Track;
+      }
+    | {
+        relationTo: 'userMedia';
+        value: string | UserMedia;
       };
   updatedAt: string;
   createdAt: string;
@@ -592,18 +587,18 @@ export interface Bookmark {
 export interface Post {
   id: string;
   image?:
-      | ({
-    relationTo: "userMedia";
-    value: string | UserMedia;
-  } | null)
-      | ({
-    relationTo: "assets";
-    value: string | Asset;
-  } | null)
-      | ({
-    relationTo: "media";
-    value: string | Media;
-  } | null);
+    | ({
+        relationTo: 'userMedia';
+        value: string | UserMedia;
+      } | null)
+    | ({
+        relationTo: 'assets';
+        value: string | Asset;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: string | Media;
+      } | null);
   coverPosition?: number | null;
   title: string;
   richTitle?: {
@@ -762,15 +757,15 @@ export interface Compilation {
   id: string;
   title: string;
   items: (
-      | {
-    relationTo: "assets";
-    value: string | Asset;
-  }
-      | {
-    relationTo: "media";
-    value: string | Media;
-  }
-      )[];
+    | {
+        relationTo: 'assets';
+        value: string | Asset;
+      }
+    | {
+        relationTo: 'media';
+        value: string | Media;
+      }
+  )[];
   imagePicker: boolean;
   updatedAt: string;
   createdAt: string;
@@ -868,8 +863,8 @@ export interface Category {
   categorized?: {
     docs?: (
       | {
-          relationTo?: 'delta';
-          value: string | Delta;
+          relationTo?: 'surf';
+          value: string | Surf;
         }
       | {
           relationTo?: 'posts';
@@ -885,9 +880,9 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "delta".
+ * via the `definition` "surf".
  */
-export interface Delta {
+export interface Surf {
   id: string;
   title: string;
   richTitle?: {
@@ -905,10 +900,7 @@ export interface Delta {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Provide the source of the delta spot.
-   */
-  source: string;
+  source: 'x' | 'twitter' | 'substack' | 'instagram' | 'youtube' | 'external' | 'medium';
   content: {
     root: {
       type: string;
@@ -924,21 +916,20 @@ export interface Delta {
     };
     [k: string]: unknown;
   };
-  subtitle?: string | null;
   category: string | Category;
   slugKey?: string | null;
-  commentsEnabled: boolean;
   hashId: string;
+  commentsEnabled: boolean;
   slugLock: boolean;
   slug: string;
   publishedAt?: string | null;
   author: string | User;
   tagged?: (string | Tag)[] | null;
-  relatedDeltas?:
+  relatedSurfs?:
     | (
         | {
-            relationTo: 'delta';
-            value: string | Delta;
+            relationTo: 'surf';
+            value: string | Surf;
           }
         | {
             relationTo: 'posts';
@@ -981,169 +972,63 @@ export interface Tag {
   hashId: string;
   slugLock: boolean;
   slug: string;
+  tagCount: number;
   taggedItems?: {
     docs?: (
-        | {
-      relationTo?: "delta";
-      value: string | Delta;
-    }
-        | {
-      relationTo?: "posts";
-      value: string | Post;
-    }
-        | {
-      relationTo?: "profile";
-      value: string | Profile;
-    }
-        | {
-      relationTo?: "pages";
-      value: string | Page;
-    }
-        | {
-      relationTo?: "albums";
-      value: string | Album;
-    }
-        | {
-      relationTo?: "playlists";
-      value: string | Playlist;
-    }
-        | {
-      relationTo?: "tracks";
-      value: string | Track;
-    }
-        )[];
+      | {
+          relationTo?: 'posts';
+          value: string | Post;
+        }
+      | {
+          relationTo?: 'surf';
+          value: string | Surf;
+        }
+      | {
+          relationTo?: 'playlists';
+          value: string | Playlist;
+        }
+      | {
+          relationTo?: 'albums';
+          value: string | Album;
+        }
+      | {
+          relationTo?: 'profile';
+          value: string | Profile;
+        }
+      | {
+          relationTo?: 'pages';
+          value: string | Page;
+        }
+      | {
+          relationTo?: 'tracks';
+          value: string | Track;
+        }
+    )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  tagCount: number;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pages".
+ * via the `definition` "playlists".
  */
-export interface Page {
+export interface Playlist {
   id: string;
+  cover?: (string | null) | UserMedia;
   title: string;
-  hero: {
-    id: string;
-    type: "none" | "highImpact" | "mediumImpact" | "lowImpact";
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ("ltr" | "rtl") | null;
-        format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    links?:
-        | {
-      link: {
-        type: "reference" | "custom";
-        newTab: boolean;
-        reference?:
-            | ({
-          relationTo: "pages";
-          value: string | Page;
-        } | null)
-            | ({
-          relationTo: "posts";
-          value: string | Post;
-        } | null)
-            | ({
-          relationTo: "delta";
-          value: string | Delta;
-        } | null)
-            | ({
-          relationTo: "users";
-          value: string | User;
-        } | null)
-            | ({
-          relationTo: "albums";
-          value: string | Album;
-        } | null)
-            | ({
-          relationTo: "tracks";
-          value: string | Track;
-        } | null)
-            | ({
-          relationTo: "playlists";
-          value: string | Playlist;
-        } | null)
-            | ({
-          relationTo: "organizations";
-          value: string | Organization;
-        } | null)
-            | ({
-          relationTo: "categories";
-          value: string | Category;
-        } | null);
-        url?: string | null;
-        label: string;
-        /**
-         * Choose how the link should be rendered.
-         */
-        appearance?: ("default" | "outline") | null;
-      };
-      id?: string | null;
-    }[]
-        | null;
-    media?: (string | null) | Media;
-  };
-  layout?: (CallToActionBlock | ContentBlock | Image | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
-  pageLayout: {
-    id: string;
-    footerType?: ("standard" | "linksOnly" | "hidden") | null;
-  };
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (string | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
-  tagged?: (string | Tag)[] | null;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  allowList?: (string | User)[] | null;
-  authority?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "albums".
- */
-export interface Album {
-  id: string;
-  title: string;
-  release_date?: string | null;
-  cover?: (string | null) | Media;
-  artist: string;
+  description?: string | null;
+  tracks?: (string | Track)[] | null;
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   tagged?: (string | Tag)[] | null;
-  description?: string | null;
+  author: (string | User)[];
   visibility: 'public' | 'private';
   publishedAt?: string | null;
-  author: string | User;
   slugKey?: string | null;
   hashId: string;
   slugLock: boolean;
@@ -1204,23 +1089,24 @@ export interface Track {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playlists".
+ * via the `definition` "albums".
  */
-export interface Playlist {
+export interface Album {
   id: string;
-  cover?: (string | null) | UserMedia;
   title: string;
-  description?: string | null;
-  tracks?: (string | Track)[] | null;
+  release_date?: string | null;
+  cover?: (string | null) | Media;
+  artist: string;
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   tagged?: (string | Tag)[] | null;
-  author: (string | User)[];
-  visibility: "public" | "private";
+  description?: string | null;
+  visibility: 'public' | 'private';
   publishedAt?: string | null;
+  author: string | User;
   slugKey?: string | null;
   hashId: string;
   slugLock: boolean;
@@ -1230,6 +1116,111 @@ export interface Playlist {
   /**
    * Limit access to users of this role or higher
    */
+  authority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: string;
+  title: string;
+  hero: {
+    id: string;
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+      | {
+          link: {
+            type: 'reference' | 'custom';
+            newTab: boolean;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: string | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: string | Post;
+                } | null)
+              | ({
+                  relationTo: 'surf';
+                  value: string | Surf;
+                } | null)
+              | ({
+                  relationTo: 'users';
+                  value: string | User;
+                } | null)
+              | ({
+                  relationTo: 'albums';
+                  value: string | Album;
+                } | null)
+              | ({
+                  relationTo: 'tracks';
+                  value: string | Track;
+                } | null)
+              | ({
+                  relationTo: 'playlists';
+                  value: string | Playlist;
+                } | null)
+              | ({
+                  relationTo: 'organizations';
+                  value: string | Organization;
+                } | null)
+              | ({
+                  relationTo: 'categories';
+                  value: string | Category;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (string | null) | Media;
+  };
+  layout?: (CallToActionBlock | ContentBlock | Image | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
+  pageLayout: {
+    id: string;
+    footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
+  };
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (string | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  tagged?: (string | Tag)[] | null;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  allowList?: (string | User)[] | null;
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -1394,8 +1385,8 @@ export interface CallToActionBlock {
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'delta';
-                value: string | Delta;
+                relationTo: 'surf';
+                value: string | Surf;
               } | null)
             | ({
                 relationTo: 'users';
@@ -1473,8 +1464,8 @@ export interface ContentBlock {
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'delta';
-                value: string | Delta;
+                relationTo: 'surf';
+                value: string | Surf;
               } | null)
             | ({
                 relationTo: 'users';
@@ -1519,21 +1510,21 @@ export interface ContentBlock {
 export interface Image {
   id: string | null;
   media?:
-      | ({
-    relationTo: "media";
-    value: string | Media;
-  } | null)
-      | ({
-    relationTo: "userMedia";
-    value: string | UserMedia;
-  } | null)
-      | ({
-    relationTo: "assets";
-    value: string | Asset;
-  } | null);
+    | ({
+        relationTo: 'media';
+        value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'userMedia';
+        value: string | UserMedia;
+      } | null)
+    | ({
+        relationTo: 'assets';
+        value: string | Asset;
+      } | null);
   span?: number | null;
   blockName?: string | null;
-  blockType: "image";
+  blockType: 'image';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1592,7 +1583,7 @@ export interface FOTDBlock {
     [k: string]: unknown;
   };
   populateBy?: ('collection' | 'selection') | null;
-  relationTo?: ('posts' | 'delta')[] | null;
+  relationTo?: ('posts' | 'surf')[] | null;
   categories?: (string | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
@@ -1654,23 +1645,22 @@ export interface FolderInterface {
   folder?: (string | null) | FolderInterface;
   documentsAndFolders?: {
     docs?: (
-        | {
-      relationTo?: "payload-folders";
-      value: string | FolderInterface;
-    }
-        | {
-      relationTo?: "userMedia";
-      value: string | UserMedia;
-    }
-        )[];
+      | {
+          relationTo?: 'payload-folders';
+          value: string | FolderInterface;
+        }
+      | {
+          relationTo?: 'userMedia';
+          value: string | UserMedia;
+        }
+    )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: "userMedia"[] | null;
+  folderType?: 'userMedia'[] | null;
   updatedAt: string;
   createdAt: string;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "follows".
@@ -1682,7 +1672,6 @@ export interface Follow {
   updatedAt: string;
   createdAt: string;
 }
-
 /**
  * User notifications for system events and social interactions
  *
@@ -1693,48 +1682,48 @@ export interface Notification {
   id: string;
   recipient: string | User;
   trigger?:
-      | ({
-    relationTo: "posts";
-    value: string | Post;
-  } | null)
-      | ({
-    relationTo: "delta";
-    value: string | Delta;
-  } | null)
-      | ({
-    relationTo: "users";
-    value: string | User;
-  } | null)
-      | ({
-    relationTo: "profile";
-    value: string | Profile;
-  } | null)
-      | ({
-    relationTo: "bookmarks";
-    value: string | Bookmark;
-  } | null)
-      | ({
-    relationTo: "follows";
-    value: string | Follow;
-  } | null)
-      | ({
-    relationTo: "responses";
-    value: string | Response;
-  } | null);
+    | ({
+        relationTo: 'posts';
+        value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'surf';
+        value: string | Surf;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: 'profile';
+        value: string | Profile;
+      } | null)
+    | ({
+        relationTo: 'bookmarks';
+        value: string | Bookmark;
+      } | null)
+    | ({
+        relationTo: 'follows';
+        value: string | Follow;
+      } | null)
+    | ({
+        relationTo: 'responses';
+        value: string | Response;
+      } | null);
   thumbnail?: (string | null) | Asset;
   type:
-      | "comment"
-      | "follow"
-      | "mention"
-      | "system"
-      | "access"
-      | "bookmark"
-      | "profile"
-      | "post"
-      | "delta"
-      | "notification";
+    | 'comment'
+    | 'follow'
+    | 'mention'
+    | 'system'
+    | 'access'
+    | 'bookmark'
+    | 'profile'
+    | 'post'
+    | 'surf'
+    | 'notification';
   importance: number;
-  status: "unread" | "read" | "dismissed";
+  status: 'unread' | 'read' | 'dismissed';
   read: boolean;
   dismissed: boolean;
   readAt?: string | null;
@@ -1742,56 +1731,55 @@ export interface Notification {
   title: string;
   content: string;
   actionLink: {
-    type: "reference" | "custom";
+    type: 'reference' | 'custom';
     newTab: boolean;
     reference?:
-        | ({
-      relationTo: "pages";
-      value: string | Page;
-    } | null)
-        | ({
-      relationTo: "posts";
-      value: string | Post;
-    } | null)
-        | ({
-      relationTo: "delta";
-      value: string | Delta;
-    } | null)
-        | ({
-      relationTo: "users";
-      value: string | User;
-    } | null)
-        | ({
-      relationTo: "albums";
-      value: string | Album;
-    } | null)
-        | ({
-      relationTo: "tracks";
-      value: string | Track;
-    } | null)
-        | ({
-      relationTo: "playlists";
-      value: string | Playlist;
-    } | null)
-        | ({
-      relationTo: "organizations";
-      value: string | Organization;
-    } | null)
-        | ({
-      relationTo: "categories";
-      value: string | Category;
-    } | null);
+      | ({
+          relationTo: 'pages';
+          value: string | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: string | Post;
+        } | null)
+      | ({
+          relationTo: 'surf';
+          value: string | Surf;
+        } | null)
+      | ({
+          relationTo: 'users';
+          value: string | User;
+        } | null)
+      | ({
+          relationTo: 'albums';
+          value: string | Album;
+        } | null)
+      | ({
+          relationTo: 'tracks';
+          value: string | Track;
+        } | null)
+      | ({
+          relationTo: 'playlists';
+          value: string | Playlist;
+        } | null)
+      | ({
+          relationTo: 'organizations';
+          value: string | Organization;
+        } | null)
+      | ({
+          relationTo: 'categories';
+          value: string | Category;
+        } | null);
     url?: string | null;
     label: string;
     /**
      * Choose how the link should be rendered.
      */
-    appearance?: ("default" | "outline") | null;
+    appearance?: ('default' | 'outline') | null;
   };
   updatedAt: string;
   createdAt: string;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "responses".
@@ -1806,8 +1794,8 @@ export interface Response {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ("ltr" | "rtl") | null;
-      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
       indent: number;
       version: number;
     };
@@ -1815,26 +1803,26 @@ export interface Response {
   };
   author: string | User;
   target:
-      | {
-    relationTo: "posts";
-    value: string | Post;
-  }
-      | {
-    relationTo: "delta";
-    value: string | Delta;
-  };
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }
+    | {
+        relationTo: 'surf';
+        value: string | Surf;
+      };
   isEdited: boolean;
   depth: number;
   hash: string;
   parent?:
-      | ({
-    relationTo: "responses";
-    value: string | Response;
-  } | null)
-      | ({
-    relationTo: "citations";
-    value: string | Citation;
-  } | null);
+    | ({
+        relationTo: 'responses';
+        value: string | Response;
+      } | null)
+    | ({
+        relationTo: 'citations';
+        value: string | Citation;
+      } | null);
   mentions?: (string | User)[] | null;
   /**
    * Pin this response to the top
@@ -1842,9 +1830,8 @@ export interface Response {
   isSticky: boolean;
   updatedAt: string;
   createdAt: string;
-  _status?: ("draft" | "published") | null;
+  _status?: ('draft' | 'published') | null;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "citations".
@@ -1862,20 +1849,19 @@ export interface Citation {
   quote: string;
   author: string | User;
   target:
-      | {
-    relationTo: "delta";
-    value: string | Delta;
-  }
-      | {
-    relationTo: "posts";
-    value: string | Post;
-  };
+    | {
+        relationTo: 'surf';
+        value: string | Surf;
+      }
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      };
   cited: string | User;
   memo?: string | null;
   updatedAt: string;
   createdAt: string;
 }
-
 /**
  * Accounts are used to store user accounts for authentication providers
  *
@@ -2104,8 +2090,8 @@ export interface UserView {
         value: string | Post;
       }
     | {
-        relationTo: 'delta';
-        value: string | Delta;
+        relationTo: 'surf';
+        value: string | Surf;
       }
     | {
         relationTo: 'playlists';
@@ -2170,6 +2156,7 @@ export interface Admin {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
+  collection: 'admins';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2217,7 +2204,7 @@ export interface DeferredEmail {
 export interface Export {
   id: string;
   name?: string | null;
-  format?: ('csv' | 'json') | null;
+  format: 'csv' | 'json';
   limit?: number | null;
   page?: number | null;
   sort?: string | null;
@@ -2254,24 +2241,24 @@ export interface Export {
  */
 export interface Import {
   id: string;
-  collectionSlug: "posts";
-  importMode?: ("create" | "update" | "upsert") | null;
+  collectionSlug: string;
+  importMode?: ('create' | 'update' | 'upsert') | null;
   matchField?: string | null;
-  status?: ("pending" | "completed" | "partial" | "failed") | null;
+  status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
   summary?: {
     imported?: number | null;
     updated?: number | null;
     total?: number | null;
     issues?: number | null;
     issueDetails?:
-        | {
-      [k: string]: unknown;
-    }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null;
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -2285,7 +2272,6 @@ export interface Import {
   focalX?: number | null;
   focalY?: number | null;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
@@ -2312,7 +2298,6 @@ export interface Redirect {
   updatedAt: string;
   createdAt: string;
 }
-
 /**
  * This is a collection of automatically created search results. These results are used by the global site search and will be updated automatically as documents in the CMS are created or updated.
  *
@@ -2324,22 +2309,34 @@ export interface Search {
   priority?: number | null;
   collection?: string | null;
   doc:
-      | {
-    relationTo: "posts";
-    value: string | Post;
-  }
-      | {
-    relationTo: "delta";
-    value: string | Delta;
-  }
-      | {
-    relationTo: "profile";
-    value: string | Profile;
-  }
-      | {
-    relationTo: "pages";
-    value: string | Page;
-  };
+    | {
+        relationTo: 'posts';
+        value: string | Post;
+      }
+    | {
+        relationTo: 'surf';
+        value: string | Surf;
+      }
+    | {
+        relationTo: 'profile';
+        value: string | Profile;
+      }
+    | {
+        relationTo: 'pages';
+        value: string | Page;
+      }
+    | {
+        relationTo: 'tracks';
+        value: string | Track;
+      }
+    | {
+        relationTo: 'playlists';
+        value: string | Playlist;
+      }
+    | {
+        relationTo: 'albums';
+        value: string | Album;
+      };
   id: string;
   slug: string;
   author: {
@@ -2350,21 +2347,21 @@ export interface Search {
     slug: string;
   }[];
   allowList?:
-      | {
-    id: string;
-    key: string;
-  }[]
-      | null;
+    | {
+        id: string;
+        key: string;
+      }[]
+    | null;
   locked: boolean;
   authority?: number | null;
   tags?:
-      | {
-    id: string;
-    key: string;
-    title: string;
-    slug: string;
-  }[]
-      | null;
+    | {
+        id: string;
+        key: string;
+        title: string;
+        slug: string;
+      }[]
+    | null;
   category: {
     id: string;
     key: string;
@@ -2374,7 +2371,19 @@ export interface Search {
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?:
+      | ({
+          relationTo: 'media';
+          value: string | Media;
+        } | null)
+      | ({
+          relationTo: 'assets';
+          value: string | Asset;
+        } | null)
+      | ({
+          relationTo: 'userMedia';
+          value: string | UserMedia;
+        } | null);
   };
   updatedAt: string;
   createdAt: string;
@@ -2447,13 +2456,13 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-    taskSlug:
-        | "inline"
-        | "welcomeUser"
-        | "welcomeUsers"
-        | "createCollectionExport"
-        | "createCollectionImport"
-        | "schedulePublish";
+        taskSlug:
+          | 'inline'
+          | 'welcomeUser'
+          | 'welcomeUsers'
+          | 'createCollectionExport'
+          | 'createCollectionImport'
+          | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -2488,15 +2497,15 @@ export interface PayloadJob {
     | null;
   workflowSlug?: 'onboardUsers' | null;
   taskSlug?:
-      | (
-      | "inline"
-      | "welcomeUser"
-      | "welcomeUsers"
-      | "createCollectionExport"
-      | "createCollectionImport"
-      | "schedulePublish"
+    | (
+        | 'inline'
+        | 'welcomeUser'
+        | 'welcomeUsers'
+        | 'createCollectionExport'
+        | 'createCollectionImport'
+        | 'schedulePublish'
       )
-      | null;
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -2540,14 +2549,14 @@ export interface PayloadLockedDocument {
         value: string | Organization;
       } | null)
     | ({
-    relationTo: "teams";
-    value: string | Team;
-  } | null)
-      | ({
-    relationTo: "teamMembers";
-    value: string | TeamMember;
-  } | null)
-      | ({
+        relationTo: 'teams';
+        value: string | Team;
+      } | null)
+    | ({
+        relationTo: 'teamMembers';
+        value: string | TeamMember;
+      } | null)
+    | ({
         relationTo: 'members';
         value: string | Member;
       } | null)
@@ -2567,10 +2576,10 @@ export interface PayloadLockedDocument {
         relationTo: 'categories';
         value: string | Category;
       } | null)
-      | ({
-    relationTo: "media";
-    value: string | Media;
-  } | null)
+    | ({
+        relationTo: 'media';
+        value: string | Media;
+      } | null)
     | ({
         relationTo: 'notifications';
         value: string | Notification;
@@ -2584,14 +2593,14 @@ export interface PayloadLockedDocument {
         value: string | Post;
       } | null)
     | ({
-    relationTo: "userMedia";
-    value: string | UserMedia;
-  } | null)
-      | ({
-    relationTo: "profile";
-    value: string | Profile;
-  } | null)
-      | ({
+        relationTo: 'userMedia';
+        value: string | UserMedia;
+      } | null)
+    | ({
+        relationTo: 'profile';
+        value: string | Profile;
+      } | null)
+    | ({
         relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
@@ -2604,10 +2613,10 @@ export interface PayloadLockedDocument {
         value: string | Response;
       } | null)
     | ({
-    relationTo: "compilations";
-    value: string | Compilation;
-  } | null)
-      | ({
+        relationTo: 'compilations';
+        value: string | Compilation;
+      } | null)
+    | ({
         relationTo: 'admins';
         value: string | Admin;
       } | null)
@@ -2623,10 +2632,10 @@ export interface PayloadLockedDocument {
         relationTo: 'redirects';
         value: string | Redirect;
       } | null)
-      | ({
-    relationTo: "search";
-    value: string | Search;
-  } | null)
+    | ({
+        relationTo: 'search';
+        value: string | Search;
+      } | null)
     | ({
         relationTo: 'payload-folders';
         value: string | FolderInterface;
@@ -2902,7 +2911,7 @@ export interface AssetsSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-    thumb?:
+        thumb?:
           | T
           | {
               url?: T;
@@ -2912,7 +2921,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    card?:
+        card?:
           | T
           | {
               url?: T;
@@ -2922,7 +2931,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    content?:
+        content?:
           | T
           | {
               url?: T;
@@ -2932,7 +2941,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    content_wide?:
+        content_wide?:
           | T
           | {
               url?: T;
@@ -2942,7 +2951,7 @@ export interface AssetsSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    hero?:
+        hero?:
           | T
           | {
               url?: T;
@@ -3008,7 +3017,7 @@ export interface MediaSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-    thumb?:
+        thumb?:
           | T
           | {
               url?: T;
@@ -3018,7 +3027,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    card?:
+        card?:
           | T
           | {
               url?: T;
@@ -3028,7 +3037,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    content?:
+        content?:
           | T
           | {
               url?: T;
@@ -3038,7 +3047,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    content_wide?:
+        content_wide?:
           | T
           | {
               url?: T;
@@ -3048,7 +3057,7 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    hero?:
+        hero?:
           | T
           | {
               url?: T;
@@ -3082,8 +3091,8 @@ export interface TagsSelect<T extends boolean = true> {
   hashId?: T;
   slugLock?: T;
   slug?: T;
-  taggedItems?: T;
   tagCount?: T;
+  taggedItems?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3153,7 +3162,7 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
-    image?: T | ImageSelect<T>;
+        image?: T | ImageSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         fotd?: T | FOTDBlockSelect<T>;
         heroSquare?: T | HeroSquareBlockSelect<T>;
@@ -3161,7 +3170,7 @@ export interface PagesSelect<T extends boolean = true> {
   pageLayout?:
     | T
     | {
-    id?: T;
+        id?: T;
         footerType?: T;
       };
   meta?:
@@ -3355,7 +3364,7 @@ export interface UserMediaSelect<T extends boolean = true> {
   sizes?:
     | T
     | {
-    thumb?:
+        thumb?:
           | T
           | {
               url?: T;
@@ -3365,7 +3374,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    card?:
+        card?:
           | T
           | {
               url?: T;
@@ -3375,7 +3384,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    content?:
+        content?:
           | T
           | {
               url?: T;
@@ -3385,7 +3394,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    content_wide?:
+        content_wide?:
           | T
           | {
               url?: T;
@@ -3395,7 +3404,7 @@ export interface UserMediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
-    hero?:
+        hero?:
           | T
           | {
               url?: T;
@@ -3416,41 +3425,6 @@ export interface UserMediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "delta_select".
- */
-export interface DeltaSelect<T extends boolean = true> {
-  title?: T;
-  richTitle?: T;
-  source?: T;
-  content?: T;
-  subtitle?: T;
-  category?: T;
-  slugKey?: T;
-  commentsEnabled?: T;
-  hashId?: T;
-  slugLock?: T;
-  slug?: T;
-  publishedAt?: T;
-  author?: T;
-  tagged?: T;
-  relatedDeltas?: T;
-  meta?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        description?: T;
-      };
-  bookmarks?: T;
-  locked?: T;
-  allowList?: T;
-  authority?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3609,6 +3583,40 @@ export interface UserViewsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "surf_select".
+ */
+export interface SurfSelect<T extends boolean = true> {
+  title?: T;
+  richTitle?: T;
+  source?: T;
+  content?: T;
+  category?: T;
+  slugKey?: T;
+  hashId?: T;
+  commentsEnabled?: T;
+  slugLock?: T;
+  slug?: T;
+  publishedAt?: T;
+  author?: T;
+  tagged?: T;
+  relatedSurfs?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  bookmarks?: T;
+  locked?: T;
+  allowList?: T;
+  authority?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "citations_select".
  */
 export interface CitationsSelect<T extends boolean = true> {
@@ -3747,14 +3755,14 @@ export interface ImportsSelect<T extends boolean = true> {
   matchField?: T;
   status?: T;
   summary?:
-      | T
-      | {
-    imported?: T;
-    updated?: T;
-    total?: T;
-    issues?: T;
-    issueDetails?: T;
-  };
+    | T
+    | {
+        imported?: T;
+        updated?: T;
+        total?: T;
+        issues?: T;
+        issueDetails?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -3767,7 +3775,6 @@ export interface ImportsSelect<T extends boolean = true> {
   focalX?: T;
   focalY?: T;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
@@ -3796,49 +3803,48 @@ export interface SearchSelect<T extends boolean = true> {
   id?: T;
   slug?: T;
   author?:
-      | T
-      | {
-    id?: T;
-    key?: T;
-    name?: T;
-    image?: T;
-    slug?: T;
-  };
+    | T
+    | {
+        id?: T;
+        key?: T;
+        name?: T;
+        image?: T;
+        slug?: T;
+      };
   allowList?:
-      | T
-      | {
-    id?: T;
-    key?: T;
-  };
+    | T
+    | {
+        id?: T;
+        key?: T;
+      };
   locked?: T;
   authority?: T;
   tags?:
-      | T
-      | {
-    id?: T;
-    key?: T;
-    title?: T;
-    slug?: T;
-  };
+    | T
+    | {
+        id?: T;
+        key?: T;
+        title?: T;
+        slug?: T;
+      };
   category?:
-      | T
-      | {
-    id?: T;
-    key?: T;
-    title?: T;
-    slug?: T;
-  };
+    | T
+    | {
+        id?: T;
+        key?: T;
+        title?: T;
+        slug?: T;
+      };
   meta?:
-      | T
-      | {
-    title?: T;
-    description?: T;
-    image?: T;
-  };
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
@@ -3945,8 +3951,8 @@ export interface Header {
             value: string | Post;
           } | null)
         | ({
-            relationTo: 'delta';
-            value: string | Delta;
+            relationTo: 'surf';
+            value: string | Surf;
           } | null)
         | ({
             relationTo: 'users';
@@ -4010,8 +4016,8 @@ export interface Footer {
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'delta';
-                value: string | Delta;
+                relationTo: 'surf';
+                value: string | Surf;
               } | null)
             | ({
                 relationTo: 'users';
@@ -4058,8 +4064,8 @@ export interface Footer {
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'delta';
-                value: string | Delta;
+                relationTo: 'surf';
+                value: string | Surf;
               } | null)
             | ({
                 relationTo: 'users';
@@ -4106,8 +4112,8 @@ export interface Footer {
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'delta';
-                value: string | Delta;
+                relationTo: 'surf';
+                value: string | Surf;
               } | null)
             | ({
                 relationTo: 'users';
@@ -4154,8 +4160,8 @@ export interface Footer {
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'delta';
-                value: string | Delta;
+                relationTo: 'surf';
+                value: string | Surf;
               } | null)
             | ({
                 relationTo: 'users';
@@ -4346,7 +4352,7 @@ export interface TaskWelcomeUsers {
 export interface TaskCreateCollectionExport {
   input: {
     name?: string | null;
-    format?: ('csv' | 'json') | null;
+    format: 'csv' | 'json';
     limit?: number | null;
     page?: number | null;
     sort?: string | null;
@@ -4365,73 +4371,29 @@ export interface TaskCreateCollectionExport {
       | number
       | boolean
       | null;
+    id?: string | null;
+    batchSize?: number | null;
     userID?: string | null;
     userCollection?: string | null;
-    exportsCollection?: string | null;
+    exportCollection?: string | null;
+    maxLimit?: number | null;
   };
   output?: unknown;
 }
-
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskCreateCollectionImport".
  */
 export interface TaskCreateCollectionImport {
   input: {
-    collectionSlug:
-        | "users"
-        | "assets"
-        | "categories"
-        | "media"
-        | "tags"
-        | "notifications"
-        | "pages"
-        | "posts"
-        | "userMedia"
-        | "delta"
-        | "profile"
-        | "albums"
-        | "tracks"
-        | "playlists"
-        | "follows"
-        | "bookmarks"
-        | "userViews"
-        | "citations"
-        | "responses"
-        | "compilations"
-        | "admins"
-        | "email-quota"
-        | "deferred-emails"
-        | "exports"
-        | "imports";
-    importMode?: ("create" | "update" | "upsert") | null;
-    matchField?: string | null;
-    status?: ("pending" | "completed" | "partial" | "failed") | null;
-    summary?: {
-      imported?: number | null;
-      updated?: number | null;
-      total?: number | null;
-      issues?: number | null;
-      issueDetails?:
-          | {
-        [k: string]: unknown;
-      }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-    };
-    user?: string | null;
+    importId: string;
+    importCollection: string;
+    userID?: string | null;
     userCollection?: string | null;
-    importsCollection?: string | null;
-    file?: {
-      data?: string | null;
-      mimetype?: string | null;
-      name?: string | null;
-    };
-    format?: ("csv" | "json") | null;
+    batchSize?: number | null;
     debug?: boolean | null;
+    defaultVersionStatus?: ('draft' | 'published') | null;
+    maxLimit?: number | null;
   };
   output?: unknown;
 }
@@ -4449,8 +4411,8 @@ export interface TaskSchedulePublish {
           value: string | Post;
         } | null)
       | ({
-          relationTo: 'delta';
-          value: string | Delta;
+          relationTo: 'surf';
+          value: string | Surf;
         } | null);
     global?: string | null;
     user?: (string | null) | User;

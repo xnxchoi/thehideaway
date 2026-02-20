@@ -1,7 +1,7 @@
 import {getCategoryOverview} from "@/payload/collections/Posts/api/queryPostBySlug";
 import {Config, Search} from "@payload-types";
 import {Locale} from "next-intl";
-import {CollectionSlug} from "payload";
+import {CollectionSlug, DataFromCollectionSlug} from "payload";
 import {uuidv7} from "uuidv7";
 import type {DocToSync, SyncDocArgs} from "../types"
 
@@ -22,7 +22,7 @@ export const syncDocAsSearchIndex = async ({
 		const catId = typeof doc.category === "string" ? doc.category : doc.category.id;
 		const c = await getCategoryOverview({
 			id: catId,
-			payload
+
 		}).then(r => ({
 			id: uuidv7(),
 			key: r.id,
@@ -94,7 +94,7 @@ export const syncDocAsSearchIndex = async ({
 
 	let defaultPriority = 0
 	if (defaultPriorities) {
-		const priority = defaultPriorities[collection] as ((doc: CollectionMap[typeof collection]) => number | Promise<number>) | number
+		const priority = defaultPriorities[collection] as ((doc: DataFromCollectionSlug<typeof collection>) => number | Promise<number>) | number
 
 		if (typeof priority === "function") {
 			try {
@@ -120,6 +120,7 @@ export const syncDocAsSearchIndex = async ({
 				draft: false,
 				data: {
 					...saver,
+				 
 					priority: defaultPriority,
 				},
 				depth: 0,

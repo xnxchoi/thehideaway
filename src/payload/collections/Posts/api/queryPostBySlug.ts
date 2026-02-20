@@ -21,7 +21,7 @@ import {AuthorOverview, userOverviewSelect} from "@/types/collections/users";
 import {imageSelect} from "@/types/payload-api-selects"
 import configPromise from "@payload-config";
 import {draftMode} from "next/headers";
-import {BasePayload, CollectionSlug, DataFromCollectionSlug, getPayload, Where} from "payload";
+import {CollectionSlug, DataFromCollectionSlug, getPayload, Where} from "payload";
 import {cache} from "react";
 import {
 	FetchedPost,
@@ -182,7 +182,7 @@ export const queryAuthorsPost = cache(
 			}
 		}
 		const {queuedIDs, relatedPosts} = await queryRelatedPosts({
-			post: finalPost,
+			post: finalPost,author:finalPost.author.id
 		});
 		finalPost.queuedIDs = queuedIDs;
 		finalPost.relatedPosts = relatedPosts;
@@ -233,7 +233,7 @@ export const queryPostBySlug =
 		const payload = await getPayload({config: configPromise});
 
 		const select = singlePostSelect()
-		const post: FetchedPost | null = (await payload
+		const post: FetchedPost | null = await payload
 			.find({
 				collection: "posts",
 				limit: 1,
@@ -254,13 +254,13 @@ export const queryPostBySlug =
 					error: e
 				});
 				return null;
-			}))
+			})
 
 		if (!post) {
 			return null;
 		}
 
-		const finalPost = await constructArticle({post, payload})
+		const finalPost = await constructArticle({post})
 		if (!finalPost) {
 			return null;
 		}
@@ -268,7 +268,7 @@ export const queryPostBySlug =
 
 		const {queuedIDs, relatedPosts, prev, next} = await queryRelatedPosts({
 			post: finalPost,
-			limit: 5
+			limit: 5,author:finalPost.author.id
 		});
 		finalPost.queuedIDs = queuedIDs;
 		finalPost.relatedPosts = relatedPosts;
@@ -281,18 +281,21 @@ export const queryPostBySlug =
 		};
 	}
 
-export const constructArticle = cache(async ({
-	                                             post, payload
+export const  constructArticle = cache(async ({
+	                                             post,
                                              }: {
 	post: Pick<Post, SinglePostKeys>;
-	payload: BasePayload
+
 }) => {
+	const payload = await getPayload({config: configPromise});
 	// 2) Get the author info
 	if (!post.author || !post?.slug || !post.publishedAt) {
 		return null;
 	}
 	const image = await getImageMedia({post, payload});
-	const author: AuthorOverview | null = await getUserOverview(typeof post.author === "string" ? post.author : post.author.id)
+	const authorID = typeof post.author === "string" ? post.author : post.author.id;
+	console.log("authorID:" + authorID)
+	const author: AuthorOverview | null = await getUserOverview(authorID)
 		.catch((e) => {
 			console.error({
 				message: `Error while retrieving author info`,
@@ -305,10 +308,9 @@ export const constructArticle = cache(async ({
 		return null;
 	}
 	const {tagIds} = mapTaggedToIds(post)
-	const {tagged} = await getTagOverviews({tagIds, payload})
+	const {tagged} = await getTagOverviews({tagIds})
 	const category = await getCategoryOverview({
 		id: typeof post.category === "string" ? post.category : post.category.id,
-		payload
 	})
 	const finalPost: SingleArticle = {
 		...post,
@@ -343,13 +345,13 @@ export const queryPostByID = cache(
 			id,
 			select: singlePostSelect()
 		});
-		const post = await constructArticle({post: poste, payload})
+		const post = await constructArticle({post: poste})
 		return post ? {post} : null;
 
 	}
 );
 
-export const queryRelatedPosts = cache(
+ export const queryRelatedPosts = cache(
 	async ({
 		       post: {
 			       id: postID,
@@ -378,7 +380,7 @@ export const queryRelatedPosts = cache(
 	}> => {
 		//Now we first query for the posts to show in the "More Like This" sidebar
 		const relatedPost: PostOverview[] = [];
-		const isAuthorMode = isAuthorPage && author;
+	const isAuthorMode = isAuthorPage && !!author;
 		const nextSlugs: string[] = [];
 		const relatedIDs: string[] = [];
 		const displayPostLimit = 5;
@@ -549,7 +551,7 @@ export const queryRelatedPosts = cache(
 						tagged: (r.tagged || []) as TagOverview[],
 						publishedAt: r.publishedAt as string,
 						authority: typeof r.authority === "number" ? r.authority : 0,
-						author: r.author as string,
+						author: typeof r.author === "string" ? r.author : r.author.id,
 						allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
 						locked: r.locked || false,
 						category: r.category as CategoryOverview
@@ -593,7 +595,7 @@ export const queryRelatedPosts = cache(
 							tagged: (r.tagged || []) as TagOverview[],
 							publishedAt: r.publishedAt as string,
 							authority: typeof r.authority === "number" ? r.authority : 0,
-							author: r.author as string,
+							author: typeof r.author === "string" ? r.author : r.author.id,
 							allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
 							locked: r.locked || false,
 							category: r.category as CategoryOverview
@@ -666,7 +668,7 @@ export const queryRelatedPosts = cache(
 						tagged: (r.tagged || []) as TagOverview[],
 						publishedAt: r.publishedAt as string,
 						authority: typeof r.authority === "number" ? r.authority : 0,
-						author: r.author as string,
+						author: typeof r.author === "string" ? r.author : r.author.id,
 						allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
 						locked: r.locked || false,
 						category: r.category as CategoryOverview
@@ -710,7 +712,7 @@ export const queryRelatedPosts = cache(
 							tagged: (r.tagged || []) as TagOverview[],
 							publishedAt: r.publishedAt as string,
 							authority: typeof r.authority === "number" ? r.authority : 0,
-							author: r.author as string,
+							author: typeof r.author === "string" ? r.author : r.author.id,
 							allowList: r.allowList?.map(r => typeof r === "string" ? r : r.id) || [],
 							locked: r.locked || false,
 							category: r.category as CategoryOverview
@@ -725,7 +727,7 @@ export const queryRelatedPosts = cache(
 					return null;
 				});
 		}
-		if (nexx) {
+		if (!!nexx) {
 			const p = await getUserOverview(nexx.author);
 			let image: MediaReq | null = nexx.image
 				? typeof nexx.image.value === "string"
@@ -783,49 +785,50 @@ const mapTaggedToIds = <T extends Extract<DataFromCollectionSlug<CollectionSlug>
 	const tagIds = doc?.tagged?.map(r => typeof r === "string" ? r : r.id) || []
 	return {tagIds}
 }
-export const getTagOverview = cache(async ({id, payload, select = tagOverviewSelect()}: {
+export const getTagOverview = cache(async ({id,  select:selectOverride}: {
 	id: string;
-	payload: BasePayload
+
 	select?: TagOverviewSelect
-}) => await payload.findByID({
-	collection: "tags",
-	select,
-	id
-}).catch(e => {
-	console.error("Error while retrieving tag overview", e);
-	throw new Error("Error while retrieving tag overview");
-}))
+}) => {
+	const payload = await getPayload({config: configPromise});
+	const select = selectOverride || tagOverviewSelect()
+return 	await payload.findByID({
+		collection: "tags",
+		select,
+		id
+	}).catch(e => {
+		console.error("Error while retrieving tag overview", e);
+		throw new Error("Error while retrieving tag overview");
+	})
+})
 export const getCategoryOverview = cache(async ({
-	                                                id, payload
-                                                }: {
+	                                          id
+                                          }: {
 	id: string;
-	payload: BasePayload
+
 }): Promise<CategoryOverview> => {
 	const categorySelector = categoryOverviewSelect();
+	const payload = await getPayload({config: configPromise});
 	return await payload.findByID({
 		collection: "categories",
 		id,
 		select: categorySelector,
-	})
-})
-export const getTagOverviews = cache(async ({
-	                                            tagIds,
-	                                            payload
-                                            }: {
-	                                            tagIds: string[]
+	})});
 
-	                                            payload: BasePayload
-                                            }
+	export const getTagOverviews =cache( async ({
+		                                      tagIds,
+	                                      }: {
+		                                      tagIds: string[]
+
+	                                      }
 	) => {
-
 		const tagOverviewSelectr = tagOverviewSelect()
 		const tagged: TagOverview[] = await Promise.allSettled(tagIds.map(async r => getTagOverview({
 			id: r,
 			select: tagOverviewSelectr,
-			payload
+
 		}))).then(x => x.flatMap(r =>
 			r.status === "fulfilled" ? r.value : []
 		))
 		return {tagged};
-	}
-)
+	})

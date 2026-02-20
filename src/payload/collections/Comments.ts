@@ -4,14 +4,14 @@ import type {CheckboxField} from "payload";
 import {
   Access,
   AccessArgs,
-	type CollapsibleField,
+  type CollapsibleField,
   CollectionConfig,
   CollectionSlug,
   FieldAccess,
-	Plugin
+  Plugin
 } from "payload";
 import {uuidv7} from "uuidv7";
-import {Delta, Post, Response} from "../../payload-types";
+import {Post, Response, Surf} from "../../payload-types";
 import {ACField} from "../fields/AccessControlled/plugin"
 import {PROPS_COLLAPSIBLE} from "./constants";
 
@@ -40,9 +40,9 @@ const areCommentsEnabled: Access = async ({
   const documen = data?.target;
   if (!documen) return false;
   const collectionValue = documen?.relationTo;
-  const document = documen.value as undefined | Post | Delta;
+  const document = documen.value as undefined | Post | Surf;
   if (!document) return false;
-  const documentId = (documen?.value as undefined | Post | Delta)?.id;
+  const documentId = (documen?.value as undefined | Post | Surf)?.id;
   // If we have collection and documentId, check if comments are enabled
   try {
     // If commentsEnabled is explicitly false, block access
@@ -90,7 +90,7 @@ const canMakeSticky: FieldAccess = ({ req: { user }, data }) => {
   // This requires additional logic in an actual hook
   return false;
 };
-type CommentEnabledCollection = Extract<CollectionSlug, "posts" | "delta">;
+type CommentEnabledCollection = Extract<CollectionSlug, "posts" | "surf">;
 
 interface CommentsPluginOptions {
   enabled?: boolean;
@@ -123,7 +123,7 @@ interface CommentsPluginOptions {
 }
 
 const commentsSlug = "responses";
-const enabledCollections: CollectionSlug[] = ["posts", "delta"];
+const enabledCollections: CollectionSlug[] = ["posts", "surf"];
 export const Comments: CollectionConfig<"responses"> = {
   slug: commentsSlug,
   admin: {
@@ -422,7 +422,7 @@ export const commentsPlugin =
             //           false;
             //         const isAuthor = Boolean(
             //           userId &&
-            //             (data as Delta | Post).author &&
+            //             (data as Surf | Post).author &&
             //             userId === (data!.author as string)
             //         );
             //         const isAdminOrEditor = ["admin", "editor"].some(

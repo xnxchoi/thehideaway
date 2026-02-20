@@ -17,12 +17,12 @@ import PageClient from "./page.client";
 type Args = {
 	params: Promise<{
 		slug: string;
-		page: string;
+		pageNumber: `${number}`;
 	}>;
 };
 
 export default async function Page({params: paramsPromise}: Args) {
-	const {slug, page: pageFromParams} = await paramsPromise;
+	const {slug, pageNumber: pageFromParams} = await paramsPromise;
 	const cat = await getCategoryPage({slug});
 	if (!cat) {
 		notFound();
@@ -99,9 +99,9 @@ export default async function Page({params: paramsPromise}: Args) {
 export async function generateMetadata({
 	                                       params: paramsPromise
                                        }: Args): Promise<Metadata> {
-	const {slug, page} = await paramsPromise;
+	const {slug, pageNumber} = await paramsPromise;
 	return {
-		title: `Archived: ${slug || ""} - ${page || ""}`
+		title: `Archived: ${slug || ""} - ${pageNumber || ""}`
 	};
 }
 
@@ -155,7 +155,7 @@ export async function generateStaticParams(params: {
 	return pages;
 }
 
-async function getPostsWithCategory({id, page}: { id: string; page: string; }) {
+async function getPostsWithCategory({id, page}: { id: string; page: `${number}`; }) {
 	"use cache"
 	return await queryPostOverviews({
 		limit: 12,

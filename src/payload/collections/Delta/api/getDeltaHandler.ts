@@ -3,12 +3,12 @@ import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
 import {TagOverview} from "@/types/collections/meta-collections";
+import type {SingleSurf, SurfOverview} from "@/types/collections/surf";
 import {AuthorSingle} from "@/types/collections/users";
 import {draftMode} from "next/headers";
 import {headersWithCors, type PayloadRequest} from "payload";
 
 import {cache} from "react";
-import type {DeltaOverview, SingleDelta} from "../../../../types/collections/delta";
 import {getDeltaBookMarks} from "./getDeltaBookmarks";
 
 export const getDeltaHandler = cache(
@@ -120,7 +120,7 @@ export const getDeltaHandler = cache(
     if (result.tags) {
       tags.push(...(result.tags as TagOverview[]));
     }
-    const finalDelta: SingleDelta = {
+    const finalDelta: SingleSurf = {
       ...delta,
       bookmarks: [] as string[],
       bookmarksCount: 0,
@@ -130,7 +130,7 @@ export const getDeltaHandler = cache(
       category: delta.category as { title: string; id: string },
       author: author,
       queuedIDs: [] as string[],
-      relatedDeltas: [] as DeltaOverview[]
+      relatedDeltas: [] as SurfOverview[]
     };
     const bookmarks = await getDeltaBookMarks({ payload, id: `${delta.id}` });
     if (bookmarks instanceof Error) {

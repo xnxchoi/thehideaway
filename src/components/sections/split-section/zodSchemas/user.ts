@@ -17,7 +17,7 @@ export const memberSchema = z.object({
 	favorites: z.array(
 		z.union([
 			z.object({relationTo: z.literal("posts"), value: z.string()}),
-			z.object({relationTo: z.literal("delta"), value: z.string()}),
+			z.object({relationTo: z.literal("surf"), value: z.string()}),
 		]),
 	).optional(),
 	createdAt: z.string(),

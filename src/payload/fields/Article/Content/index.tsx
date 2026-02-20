@@ -55,7 +55,7 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 				clientFeatureProps: {
 					defaultLinkType: "custom",
 					defaultLinkURL: "https://",
-					enabledCollections: ["pages", "posts", "delta"],
+					enabledCollections: ["pages", "posts", "surf"],
 					featureKey: "link",
 					order: 1
 				},
@@ -86,7 +86,7 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 				clientFeatureProps: {
 					enabledCollections: [
 						"posts",
-						"delta",
+						"surf",
 						"users",
 						"albums",
 						"tracks",
@@ -250,7 +250,7 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 
 						type: "relationship",
 						label: "Choose a document to link to",
-						relationTo: ["pages", "posts", "delta"],
+						relationTo: ["pages", "posts", "surf"],
 						required: true
 					}
 				],
@@ -300,7 +300,7 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
 						admin: {},
 						type: "relationship",
 						label: "Choose a document to link to",
-						relationTo: ["pages", "posts", "delta"],
+						relationTo: ["pages", "posts", "surf"],
 						required: true
 					},
 					{

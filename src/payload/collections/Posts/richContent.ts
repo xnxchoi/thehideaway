@@ -50,7 +50,7 @@ export const RichContent = (): RichTextField => {
 					RelationshipFeature({
 						enabledCollections: [
 							"posts",
-							"delta",
+							"surf",
 							"users",
 							"albums",
 							"tracks",
@@ -61,7 +61,7 @@ export const RichContent = (): RichTextField => {
 					InlineToolbarFeature(),
 					HorizontalRuleFeature(),
 					LinkFeature({
-						enabledCollections: ["pages", "posts", "delta"],
+						enabledCollections: ["pages", "posts", "surf"],
 						fields: ({defaultFields}) => {
 							const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
 								if ("name" in field && field.name === "url") return false;
@@ -145,7 +145,7 @@ export const RP_Bind = ({
 					RelationshipFeature({
 						enabledCollections: [
 							"posts",
-							"delta",
+							"surf",
 							"users",
 							"albums",
 							"tracks",
@@ -156,7 +156,7 @@ export const RP_Bind = ({
 					InlineToolbarFeature(),
 					HorizontalRuleFeature(),
 					LinkFeature({
-						enabledCollections: ["pages", "posts", "delta"],
+						enabledCollections: ["pages", "posts", "surf"],
 						fields: ({defaultFields}) => {
 							const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
 								if ("name" in field && field.name === "url") return false;

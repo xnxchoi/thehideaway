@@ -2,8 +2,7 @@ import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import type {Delta as DeltaType} from "@/payload-types";
 import {
 	updateCategoryAfterChange,
-	updateCategoryAfterDelete,
-	updateTagsAfterChange
+	updateCategoryAfterDelete
 } from "@/payload/collections/Categories/hooks";
 import {validateDelta} from "@/payload/collections/Delta/hooks/validateDelta";
 import {RichContent} from "@/payload/collections/Posts/richContent";
@@ -110,7 +109,23 @@ export const Deltas: CollectionConfig = {
 
 		{
 			name: "source",
-			type: "text",
+			type: "select",
+			options: [{
+				value: "x",
+				label: "X"
+			}, {
+				value: "twitter",
+				label: "Twitter"
+			}, {
+				value: "substack",
+				label: "Substack",
+			}, {
+				value: "Instagram",
+				label: "instagram"
+			}, {
+				value: "youtube",
+				label: "YouTube"
+			}],
 			required: true,
 			label: "Source",
 			admin: {
@@ -126,11 +141,6 @@ export const Deltas: CollectionConfig = {
 				position: "sidebar"
 			},
 			fields: [
-				{
-					name: "subtitle",
-					type: "text",
-					label: "Excerpt"
-				},
 				{
 					name: "category",
 					type: "relationship",
@@ -176,7 +186,7 @@ export const Deltas: CollectionConfig = {
 			]
 		},
 		{
-			label: "Properties",
+			label: "Meta",
 			type: "collapsible",
 			admin: {position: "sidebar"},
 			fields: [
@@ -329,7 +339,7 @@ export const Deltas: CollectionConfig = {
 	],
 	hooks: {
 		beforeChange: [sanitizeAuthor(false), populatePublishedAt],
-		afterChange: [validateDelta, updateCategoryAfterChange, updateTagsAfterChange],
+		afterChange: [validateDelta, updateCategoryAfterChange,],
 		afterDelete: [afterDelete, updateCategoryAfterDelete]
 	},
 	versions: {

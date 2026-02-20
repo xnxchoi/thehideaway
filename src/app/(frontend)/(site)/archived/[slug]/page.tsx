@@ -171,8 +171,8 @@ async function getCategoryPosts({id}: { id: string; }) {
 			]
 		}, depth: 0, limit: 12
 	}).then((result) => result.docs.map((doc) => doc.id)).then((ids) => queryPostsByIDs({ids}));
-	const deltaSel = payload.find({
-		collection: "delta", where: {
+	const surfSel = payload.find({
+		collection: "surf", where: {
 			and: [
 				{
 					category: {

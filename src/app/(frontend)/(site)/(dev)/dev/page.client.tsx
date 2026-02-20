@@ -1,17 +1,13 @@
 "use client";
 
-import type { SingleArticle } from "@/types/collections/posts";
-import { RPage } from "@/components/UX/Transition";
-import dynamic from "next/dynamic";
-import { CitationRange } from "@/components/UX/Highlightr/types";
-import { Signature } from "@/components/UX/Signature";
+import {Surf} from "@/components/content/surf/surf";
 
 export default function PageClient({}: {}) {
-  return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center">
-      <Signature></Signature>
-    </div>
-  );
+	return (
+		<div className="flex h-screen w-screen flex-col items-center justify-center">
+			<Surf/>
+		</div>
+	);
 }
 /**<AnimatePresence mode={"sync"}>
 

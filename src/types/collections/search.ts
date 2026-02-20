@@ -18,7 +18,7 @@ const searchOverviewSelector = {
 	updatedAt: true,
 	locked: true,
 	category: true,
-	id: true, title: true,
+	id: true, title: true,meta: true,
 	tags: true
 } as const
 export type SearchOverviewSelector = Record<keyof typeof searchOverviewSelector, true>
@@ -31,6 +31,6 @@ export const searchOverviewSelect = (): SearchOverviewSelector => ({
 	updatedAt: true,
 	locked: true,
 	category: true,
-	id: true,
+	id: true,meta: true,
 	tags: true
 })

@@ -1,47 +1,31 @@
-import type {
-  Admin,
-  Album,
-  Delta,
-  Media,
-  Playlist,
-  Post,
-  Profile,
-  Tag,
-  Track,
-  User,
-  UserMedia
-} from "@/payload-types";
+import type {Admin, User} from "@/payload-types";
+import {CollectionMap} from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import {FieldAccessArgs} from "node_modules/payload/dist/fields/config/types";
 import {Access, AccessArgs, Field, FieldAccess, Where} from "payload";
 
 type isAuthenticated = (args: AccessArgs<User> | AccessArgs<Admin>) => boolean;
-type AuthorCollections =
-  | Post
-  | Delta
-  | Media
-  | Track
-  | UserMedia
-  | Playlist
-  | Album
-  | Profile
-  | Tag;
+type AuthorCollections = Extract<CollectionMap[keyof CollectionMap], {
+	author: string | User
+}> | Extract<CollectionMap[keyof CollectionMap], {
+	author: string[] | User[]
+}>
 type RP_Roles = NonNullable<User["role"]>;
 
 export const checkRole = (
-  role: RP_Roles,
-  user: AccessArgs["req"]["user"]
+	role: RP_Roles,
+	user: AccessArgs["req"]["user"]
 ): boolean => {
-  if (!user) return false;
-  if (user?.role === "admin") return true;
+	if (!user) return false;
+	if (user?.role === "admin") return true;
 
-  return !!(user?.role === role);
+	return !!(user?.role === role);
 };
 export const isAdmin = ({
-  req: { user }
+	                        req: {user}
                         }: Omit<AccessArgs, "id"> & { id?: string }): boolean => {
-  if (!user) return false;
-  if (user?.role === "admin") return true;
-  return false;
+	if (!user) return false;
+	if (user?.role === "admin") return true;
+	return false;
 };
 /**
  *  @function
@@ -51,11 +35,11 @@ export const isAdmin = ({
  * @returns {boolean} Can be used for both {@link FieldAccess} and {@link Access} control.
  */
 export const isWriter = ({
-  req: { user }
-}:
-  | AccessArgs<AuthorCollections>
-  | FieldAccessArgs<AuthorCollections>): boolean =>
-  ["admin", "editor", "author"].some((role) => role === user?.role);
+	                         req: {user}
+                         }:
+	                         | AccessArgs<AuthorCollections>
+	                         | FieldAccessArgs<AuthorCollections>): boolean =>
+	["admin", "editor", "author"].some((role) => role === user?.role);
 /**
  *  @function
  *
@@ -64,11 +48,11 @@ export const isWriter = ({
  * @returns {boolean} Can be used for both {@link FieldAccess} and {@link Access} control.
  */
 export const isEditor = ({
-  req: { user }
-}:
-  | AccessArgs<AuthorCollections>
-  | FieldAccessArgs<AuthorCollections>): boolean =>
-  ["admin", "editor"].some((role) => role === user?.role);
+	                         req: {user}
+                         }:
+	                         | AccessArgs<AuthorCollections>
+	                         | FieldAccessArgs<AuthorCollections>): boolean =>
+	["admin", "editor"].some((role) => role === user?.role);
 /**
  *  @function
  *
@@ -77,11 +61,11 @@ export const isEditor = ({
  * @returns {boolean} Can be used for both {@link FieldAccess} and {@link Access} control.
  */
 export const isAdminOrEditor = ({
-                                  req: {user},
-}:
-  | AccessArgs<AuthorCollections>
-  | FieldAccessArgs<AuthorCollections>): boolean =>
-  ["admin", "editor"].some((role) => role === user?.role);
+	                                req: {user},
+                                }:
+	                                | AccessArgs<AuthorCollections>
+	                                | FieldAccessArgs<AuthorCollections>): boolean =>
+	["admin", "editor"].some((role) => role === user?.role);
 /**
  *  Collection accessor for read
  *  For collections with author properties
@@ -89,30 +73,30 @@ export const isAdminOrEditor = ({
  * @returns {Access} Collection access.
  */
 export const standardReadAccess: Access<AuthorCollections> = ({
-  req: { user }
-}: AccessArgs<AuthorCollections>) => {
-  if (!user)
-    return {
-      _status: {
-        equals: "published"
-      }
-    };
-  if (user?.role === "admin" || user?.role === "editor") return true;
+	                                                              req: {user}
+                                                              }: AccessArgs<AuthorCollections>) => {
+	if (!user)
+		return {
+			_status: {
+				equals: "published"
+			}
+		};
+	if (user?.role === "admin" || user?.role === "editor") return true;
 
-  return {
-    or: [
-      {
-        _status: {
-          equals: "published"
-        }
-      },
-      {
-        author: {
-          equals: user?.id
-        }
-      }
-    ]
-  } as Where;
+	return {
+		or: [
+			{
+				_status: {
+					equals: "published"
+				}
+			},
+			{
+				author: {
+					equals: user?.id
+				}
+			}
+		]
+	} as Where;
 };
 /**
  *
@@ -123,25 +107,25 @@ export const standardReadAccess: Access<AuthorCollections> = ({
  * @returns {boolean}
  */
 export const isAuthor = ({
-  data,
-  req: { user }
-}:
-  | FieldAccessArgs<AuthorCollections>
-  | AccessArgs<AuthorCollections>): boolean => {
-  if (!user) return false;
+	                         data,
+	                         req: {user}
+                         }:
+	                         | FieldAccessArgs<AuthorCollections>
+	                         | AccessArgs<AuthorCollections>): boolean => {
+	if (!user) return false;
 
-  if (user?.role === "admin") return true;
-  if (data?.author) {
-    if (Array.isArray(data.author)) {
-      return (
-        data.author.length > 0 &&
-        (typeof data.author[0] === "string"
-          ? data.author.some((au) => au === user.id)
-          : data.author.some((au) => (au as User).id === user.id))
-      );
-    } else if (data.author === user.id) return true;
-  }
-  return false;
+	if (user?.role === "admin") return true;
+	if (data?.author) {
+		if (Array.isArray(data.author)) {
+			return (
+				data.author.length > 0 &&
+				(typeof data.author[0] === "string"
+					? data.author.some((au) => au === user.id)
+					: data.author.some((au) => (au as User).id === user.id))
+			);
+		} else if (data.author === user.id) return true;
+	}
+	return false;
 };
 
 /**
@@ -151,27 +135,27 @@ export const isAuthor = ({
  * @returns {boolean}
  */
 export const isAuthorOrEditor = ({
-  data,
+	                                 data,
 	                                 req: {user, context}
-}:
-  | FieldAccessArgs<AuthorCollections>
-  | AccessArgs<AuthorCollections>): boolean => {
+                                 }:
+	                                 | FieldAccessArgs<AuthorCollections>
+	                                 | AccessArgs<AuthorCollections>): boolean => {
 	if (context.overrideAccess) return true;
-  if (!user) return false;
-  if (!user.role) return false;
-  if (user.role === "admin") return true;
-  if (user.role === "editor") return true;
-  if (data?.author) {
-    if (Array.isArray(data.author)) {
-      return (
-        data.author.length > 0 &&
-        (typeof data.author[0] === "string"
-          ? data.author.some((au) => au === user.id)
-          : data.author.some((au) => (au as User).id === user.id))
-      );
-    } else if (data.author === user.id) return true;
-  }
-  return false;
+	if (!user) return false;
+	if (!user.role) return false;
+	if (user.role === "admin") return true;
+	if (user.role === "editor") return true;
+	if (data?.author) {
+		if (Array.isArray(data.author)) {
+			return (
+				data.author.length > 0 &&
+				(typeof data.author[0] === "string"
+					? data.author.some((au) => au === user.id)
+					: data.author.some((au) => (au as User).id === user.id))
+			);
+		} else if (data.author === user.id) return true;
+	}
+	return false;
 };
 /**
  *  Accessor for modifications
@@ -185,17 +169,17 @@ export const isAuthorOrEditor = ({
  *  Collection access. For {@link Field} use {@link isAuthorOrEditor}
  */
 export const standardUpdateAccess: Access<AuthorCollections> = ({
-  req
-}: AccessArgs<AuthorCollections>) => {
-  const user = req.user;
-  if (!user || !user.role) return false;
-  if (user?.role === "admin") return true;
-  if (user?.role === "editor") return true;
-  return {
-    author: {
-      equals: user.id
-    }
-  };
+	                                                                req
+                                                                }: AccessArgs<AuthorCollections>) => {
+	const user = req.user;
+	if (!user || !user.role) return false;
+	if (user?.role === "admin") return true;
+	if (user?.role === "editor") return true;
+	return {
+		author: {
+			equals: user.id
+		}
+	};
 };
 /**
  * Accessor for creation
@@ -208,16 +192,16 @@ export const standardUpdateAccess: Access<AuthorCollections> = ({
 
  */
 export const standardCreateAccess = ({
-  req: { user }
-}:
-  | AccessArgs<AuthorCollections>
-  | FieldAccessArgs<AuthorCollections>): boolean => {
-  if (!user || !user.role) return false;
-  if (user?.role === "admin") return true;
-  if (user?.role === "editor") return true;
-  if (user?.role === "author") return true;
+	                                     req: {user}
+                                     }:
+	                                     | AccessArgs<AuthorCollections>
+	                                     | FieldAccessArgs<AuthorCollections>): boolean => {
+	if (!user || !user.role) return false;
+	if (user?.role === "admin") return true;
+	if (user?.role === "editor") return true;
+	if (user?.role === "author") return true;
 
-  return false;
+	return false;
 };
 
 export const anyone = () => true;
@@ -230,11 +214,11 @@ export const anyone = () => true;
 
  */
 export const authenticated = ({
-  req: { user }
-}:
-  | AccessArgs<AuthorCollections>
-  | FieldAccessArgs<AuthorCollections>): boolean => {
-  return Boolean(user);
+	                              req: {user}
+                              }:
+	                              | AccessArgs<AuthorCollections>
+	                              | FieldAccessArgs<AuthorCollections>): boolean => {
+	return Boolean(user);
 };
 /**
  *  Accessor for personally sensitive data- {@link User} and {@link Admin}
@@ -246,13 +230,13 @@ export const authenticated = ({
  * @returns {Access} for use in {@link User} and {@link Admin} only!
  */
 export const onlySelfOrAdmin: Access<User | Admin> = ({
-  req: { user }
-}: AccessArgs<User | Admin>) => {
-  if (!user) return false;
-  if (user?.role === "admin") return true;
-  return {
-    id: {
-      equals: user?.id
-    }
-  };
+	                                                      req: {user}
+                                                      }: AccessArgs<User | Admin>) => {
+	if (!user) return false;
+	if (user?.role === "admin") return true;
+	return {
+		id: {
+			equals: user?.id
+		}
+	};
 };

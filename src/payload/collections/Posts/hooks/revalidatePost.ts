@@ -1,4 +1,3 @@
-"use server"
 import {Post} from "@/payload-types";
 import {arraysEqualContents} from "@/utilities/compareArrays";
 
@@ -7,10 +6,10 @@ import type {CollectionAfterChangeHook, CollectionAfterDeleteHook} from "payload
 
 export const revalidatePost: CollectionAfterChangeHook<Post> = async ({
   doc,
-  previousDoc,
+  previousDoc,operation,
   req: { payload, context }
 }) => {
-  if (!context.disableRevalidate) {
+  if (!context.disableRevalidate&&operation==='update') {
     if (doc._status === "published") {
       let changed = doc._status !== previousDoc._status;
       changed = changed || doc.slug !== previousDoc.slug;

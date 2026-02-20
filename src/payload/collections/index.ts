@@ -3,7 +3,6 @@ import {Bookmarks} from "@/payload/collections/Bookmarks";
 import {Categories} from "@/payload/collections/Categories";
 import {Citations} from "@/payload/collections/Citations";
 import {Comments} from "@/payload/collections/Comments";
-import {Deltas} from "@/payload/collections/Delta";
 import {Follows} from "@/payload/collections/Follows";
 import {Media} from "@/payload/collections/Media";
 import {Notifications} from "@/payload/collections/Notifications/Notification";
@@ -13,6 +12,7 @@ import {Profile} from "@/payload/collections/Profile";
 import {Albums} from "@/payload/collections/Radio/Albums";
 import {Playlists} from "@/payload/collections/Radio/Playlists";
 import {Tracks} from "@/payload/collections/Radio/Tracks";
+import {Surfs} from "@/payload/collections/Surf";
 import {Tags} from "@/payload/collections/Tags";
 import {UserMedia} from "@/payload/collections/UserMedia";
 import {Users} from "@/payload/collections/Users";
@@ -30,14 +30,14 @@ export const collections: CollectionConfig[] = [
 	Pages,
 	Posts,
 	UserMedia,
-	Deltas,
+ 
 	Profile,
 	Albums,
 	Tracks,
 	Playlists,
 	Follows,
 	Bookmarks,
-	UserViews,
+	UserViews,Surfs,
 	Citations,
 	Comments, Compilations
 ];

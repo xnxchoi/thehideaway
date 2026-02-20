@@ -39,9 +39,9 @@ export const fallback = ({ direction }: { direction: "prev" | "next" }) =>
         bookmarks: [],
         bookmarksCount: 0,
         tags: [] as TagOverview[],
-        title: "Deltas",
+        title: "Surfs",
         subtitle: "Explore tangential thoughts and discourse",
-        slug: "/delta",
+        slug: "/surf",
         author: {
           name: "The Hideaway",
           id: "1-1",

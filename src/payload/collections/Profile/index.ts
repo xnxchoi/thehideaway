@@ -1,4 +1,3 @@
-import {updateTagsAfterChange} from "@/payload/collections/Categories/hooks";
 import {revalidateDeleteProfile} from "@/payload/collections/Profile/hooks/afterDelete";
 import {createBackgroundColorField, createColorField} from "@/payload/fields/ColorPicker";
 import {defaultLexical} from "@/payload/Lexical/defaultLexical";
@@ -278,7 +277,7 @@ export const Profile: CollectionConfig = {
 		},
 	],
 	hooks: {
-		afterChange: [revalidateProfile, updateTagsAfterChange],
+		afterChange: [revalidateProfile,  ],
 		afterDelete: [revalidateDeleteProfile]
 	},
 	endpoints: [

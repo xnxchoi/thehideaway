@@ -1,9 +1,9 @@
-import type {Block} from 'payload'
 import {
 	FixedToolbarFeature,
 	InlineToolbarFeature,
 	lexicalEditor
-} from '@payloadcms/richtext-lexical'
+} from "@payloadcms/richtext-lexical"
+import type {Block} from "payload"
 import {uuidv7} from "uuidv7";
 
 export const FOTD: Block = {
@@ -72,8 +72,8 @@ export const FOTD: Block = {
 					value: "posts",
 				},
 				{
-					label: "Deltas",
-					value: "delta",
+					label: "Surf",
+					value: "surf",
 				},
 			],
 			hasMany: true,

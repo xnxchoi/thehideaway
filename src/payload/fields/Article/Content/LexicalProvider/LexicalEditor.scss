@@ -147,7 +147,9 @@ $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline
           font-size: 1.8rem;
           margin-bottom: .55em;
         }
-
+        button.add-block-menu{
+          top:8px;
+        }
         button.draggable-block-menu {
           background: transparent;
           right: auto;
@@ -156,7 +158,7 @@ $textType: (Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline
           transition: transform linear 0s,
           opacity var(--ease-out-power3) 0.2s;
           transition-delay: 0s, 0.1s;
-
+          top:8px;
           &:hover {
             background-color: oklch(from var(--muted-faded-bg) l c h/0.2);
           }

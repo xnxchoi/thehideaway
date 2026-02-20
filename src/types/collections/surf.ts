@@ -1,9 +1,9 @@
-import type {Delta} from "@/payload-types";
+import type {Surf} from "@/payload-types";
 import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
 import {AuthorOverview, AuthorSingle} from "@/types/collections/users";
 import type {PostOverview} from "./posts";
 
-export type DeltaOverview = Omit<ReqDelta, "author"> & {
+export type SurfOverview = Omit<ReqSurf, "author"> & {
   author: AuthorOverview;
   tagged: TagOverview[];
 
@@ -11,16 +11,16 @@ export type DeltaOverview = Omit<ReqDelta, "author"> & {
   bookmarksCount: number;
 };
 /**
- *  Represents the actual API response-accurate type of fetching a {@link Delta} as of 2025-06-28.
+ *  Represents the actual API response-accurate type of fetching a {@link Surf} as of 2025-06-28.
  *
  * Fields that assuredly resolve have been accounted for via explicit typing.
  *
- * **Warning** this is only meant to be used for {@link queryDeltaOverview queryDeltaOverview}
+ * **Warning** this is only meant to be used for {@link querySurfOverview querySurfOverview}
  * @todo merge the query into one by setting defaultPopulate config on the {@link Users} collection config
  */
-export type ReqDelta = Pick<
-  Delta,
-  "source" | "id" | "title" | "locked" | "content" | "slug" | "updatedAt"
+export type ReqSurf = Pick<
+  Surf,
+  "source" | "id" | "title" |   "content" | "slug" | "updatedAt"|"commentsEnabled"
 > & {
   author: string;
   category: CategoryOverview;
@@ -30,11 +30,11 @@ export type ReqDelta = Pick<
   slug: string;
 };
 
-export type FocusedDelta = DeltaOverview &
-  Pick<Delta, "relatedDeltas" | "updatedAt" | "createdAt">;
-export type SingleDelta = Omit<FocusedDelta, "author" | "relatedDeltas"> & {
+export type FocusedSurf = SurfOverview &
+  Pick<Surf, "relatedSurfs" | "updatedAt" | "createdAt">;
+export type SingleSurf = Omit<FocusedSurf, "author" | "relatedSurfs"> & {
   author: AuthorSingle;
   disabled?: boolean;
-  relatedDeltas: (DeltaOverview | PostOverview)[];
+  relatedSurfs: (SurfOverview | PostOverview)[];
   queuedIDs: string[];
 };

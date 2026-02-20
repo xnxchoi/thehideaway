@@ -130,7 +130,7 @@ function FocusHero({
 	return (
 		<div
 			className={cn(
-				"relative col-[1] grid items-center gap-y-[2rem] rounded-[1rem] bg-[oklch(from_var(--highlight,--faded-fg)_l_c_h/.8)] p-[2rem] text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
+				"relative col-[1] grid items-center gap-y-[2rem] rounded-[1rem] bg-[oklch(from_var(--highlight)_l_c_h/.8)] p-[2rem] text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
 				direction === "left"
 					? "lg:col-[1/5] lg:row-[1/3]"
 					: "lg:col-[3/-1] lg:row-[1/3]"
@@ -189,31 +189,34 @@ function FocusHero({
 	);
 }
 
-function SunIcon() {
+function SunIcon({className,...props}:Omit<ComponentProps<"div">,'children'> ) {
 	return <div
 		className={
-			"mx-auto mt-0 mb-[2rem] block h-[1.28rem] w-[1.28rem] bg-current clip-sun"
+			cn("mx-auto mt-0 mb-[2rem] block h-[1.28rem] w-[1.28rem] bg-current clip-sun",className)
 		}
+		{...props}
 	></div>;
 }
 
-function Subtitle({subtitle}: { subtitle: string | undefined | ReactNode }) {
+function Subtitle({subtitle,className,...props}: Omit<ComponentProps<'p'>,'children'>&{ subtitle: string | undefined | ReactNode }) {
 	return <p
 		className={
-			"order-4 col-[2] row-[5] m-0 block leading-[1.2] lg:text-[1.6rem]"
+			cn("order-4 col-[2] row-[5] m-0 block leading-[1.2] lg:text-[1.6rem]",className)
 		}
+		{...props}
 	>
 		{subtitle}
 	</p>;
 }
 
-function AuthorName({name}: Pick<AuthorOverview, "name">) {
+function AuthorName({name,className,...props}: Omit<ComponentProps<"div">,'children'|'name'>&Pick<AuthorOverview, "name">) {
 	return <div
 		className={
-			"order-2 col-[2] row-[6] inline-block font-sans text-[1.12rem] uppercase"
+			cn("order-2 col-[2] row-[6] inline-block font-sans text-[1.12rem] uppercase z-10",className)
 		}
+		{...props}
 	>
-		<SunIcon/>
+		<SunIcon className="block"/>
 		{"By " + name}
 	</div>;
 }
@@ -277,26 +280,27 @@ function SideHero({
 	return (
 		<div
 			className={cn(
-				"relative grid grid-cols-[2rem_1fr_2rem] grid-rows-[1fr] gap-y-[2rem] rounded-[1rem] bg-faded-foreground text-faded-background",
+				"relative grid grid-cols-[2rem_1fr_2rem] grid-rows-[1fr] gap-y-[2rem] rounded-[1rem] overflow-hidden bg-faded-foreground/20 text-faded-background",
 				direction === "left"
 					? "lg:col-[5/-1] lg:row-[1/4]"
 					: "lg:col-[1/3] lg:row-[1/4]"
 			)}
 		>
 			<ItemLink url={url}/>
-			<HeroImage className="col-[1/-1] row-[1/8] self-start rounded-[1rem] lg:h-full"
+			<HeroImage className="col-[1/-1] z-[1] row-[1/8] self-start rounded-[1rem] lg:h-full"
 			           image={image} aspectRatio={{
 				base: 0,
 				lg: 100 / 177,
 			}}
 			/>
+			<div className={"absolute inset-0 z-[5] bg-linear-180 from-transparent via-faded-background/5 via-65% to-faded-background/90 h-full w-full"}/>
 			{category && <RP_BadgeTag
-                wrapperClassName={"order-2 col-[2] row-[3]"}
+                wrapperClassName={"order-2 col-[2] row-[3] z-10"}
                 content={category}
             />}
-			<Title className="order-3 col-[2] row-[4] uppercase lg:text-[3.2rem]">{title}</Title>
-			{author && <AuthorName name={author}/>}
-			<Subtitle subtitle={subtitle || undefined}/>
+			<Title className="order-3 col-[2] row-[4] uppercase z-10 lg:text-[3.2rem] text-faded-foreground!">{title}</Title>
+			{author && <AuthorName name={author} className="text-faded-foreground!"/>}
+			<Subtitle className="text-faded-foreground!" subtitle={subtitle || undefined}/>
 		</div>
 	);
 }

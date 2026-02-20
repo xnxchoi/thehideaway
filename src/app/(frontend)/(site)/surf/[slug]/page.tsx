@@ -6,8 +6,8 @@ import {notFound} from "next/navigation";
 export const generateStaticParams = async () => {
 	const payload = await getPayload({config: configPromise});
 
-	const delta = await payload.find({
-		collection: "delta",
+	const surfs = await payload.find({
+		collection: "surf",
 
 		limit: 1000,
 		pagination: false,
@@ -20,34 +20,34 @@ export const generateStaticParams = async () => {
 			slug: true,
 		},
 	});
-	const deltaSlug = delta.docs.map((delta) => ({
-		slug: delta.slug,
+	const surfSlug = surfs.docs.map((s) => ({
+		slug: s.slug,
 	}));
 
-	return [...deltaSlug];
+	return [...surfSlug];
 };
 type Args = {
 	params: Promise<{
 		slug: string;
 	}>;
 };
-export default async function DeltaPage({params}: Args) {
+export default async function SurfPage({params}: Args) {
 	const {slug} = await params;
 	const enabledDrafts = await draftMode();
-	const deltas = await getDeltas({slug, draft: enabledDrafts.isEnabled});
+	const surfs = await getSurf({slug, draft: enabledDrafts.isEnabled});
 
-	if (!deltas.docs.length) {
+	if (!surfs.docs.length) {
 		notFound();
 	}
-	const deltaData = deltas.docs[0]!;
-	return <div>{deltaData.title}</div>;
+	const surfsData = surfs.docs[0]!;
+	return <div>{surfsData.title}</div>;
 }
 
-async function getDeltas({draft, slug}: { slug: string; draft: boolean; }) {
+async function getSurf({draft, slug}: { slug: string; draft: boolean; }) {
 	"use cache"
 	const payload = await getPayload({config: configPromise});
-	const deltas = await payload.find({
-		collection: "delta",
+	const surfs = await payload.find({
+		collection: "surf",
 		draft,
 		where: {
 			slug: {
@@ -63,15 +63,15 @@ async function getDeltas({draft, slug}: { slug: string; draft: boolean; }) {
 			category: true,
 		},
 	});
-	return deltas;
+	return surfs;
 }
 
 export async function generateMetadata({params}: Args) {
 	const {slug} = await params;
 	const payload = await getPayload({config: configPromise});
 	const enabledDrafts = await draftMode();
-	const deltas = await payload.find({
-		collection: "delta",
+	const surfs = await payload.find({
+		collection: "surf",
 		draft: enabledDrafts.isEnabled,
 		where: {
 			slug: {
@@ -84,15 +84,15 @@ export async function generateMetadata({params}: Args) {
 		limit: 1,
 		overrideAccess: true,
 	});
-	if (!deltas.docs.length) {
+	if (!surfs.docs.length) {
 		return {
 			title: "404",
 			description: "Not Found",
 		};
 	}
-	const deltaData = deltas.docs[0]!;
+	const surfData = surfs.docs[0]!;
 	return {
-		title: `${deltaData.title} | Delta `,
-		description: deltaData.title,
+		title: `${surfData.title} | Surf `,
+		description: surfData.title,
 	};
 }

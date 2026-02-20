@@ -6,7 +6,7 @@ import {filterByCurrentUser} from "../helpers";
 
 export const bookmarkTypes: Bookmark["target"]["relationTo"][] = [
 	"posts",
-	"delta",
+	"surf",
 	"profile",
 
 	"users",
@@ -18,7 +18,7 @@ export const bookmarkTypes: Bookmark["target"]["relationTo"][] = [
 ];
 export const validTypes = [
 	"posts",
-	"delta",
+	"surf",
 	"profile",
 
 	"users",

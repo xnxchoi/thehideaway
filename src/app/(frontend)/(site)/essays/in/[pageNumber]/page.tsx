@@ -12,7 +12,7 @@ import { getPayload } from "payload";
 import PageClient from "./page.client";
 type Args = {
   params: Promise<{
-	  page: string;
+	  pageNumber: `${number}`;
   }>;
 };
 
@@ -25,10 +25,10 @@ export async function generateStaticParams() {
 
   const totalPages = Math.ceil(totalDocs / 12);
 
-	const pages: { page: string }[] = [];
+	const pages: { pageNumber: string }[] = [];
 
   for (let i = 1; i <= totalPages; i++) {
-	  pages.push({page: String(i)});
+	  pages.push({pageNumber: String(i)});
   }
 
   return pages;
@@ -42,8 +42,8 @@ async function getPosts(page: number) {
 	});
 }
 export default async function Page({ params }: Args) {
-	const {page} = await params;
-	const sanitizedPageNumber = Number(page);
+	const {pageNumber} = await params;
+	const sanitizedPageNumber = Number(pageNumber);
 
   if (!Number.isInteger(sanitizedPageNumber)) notFound();
 
@@ -51,7 +51,7 @@ export default async function Page({ params }: Args) {
 	const {docs, hasPrevPage, prevPage, pagingCounter, nextPage, totalPages, totalDocs} = posts;
 
   return (
-	  <RPage key={`posts_${page}`} type="posts" slug={["posts"]}>
+	  <RPage key={`posts_${pageNumber}`} type="posts" slug={["posts"]}>
       <div className="relative flex w-full flex-col items-center justify-center">
 	      <CatTitle> {"Latest"}</CatTitle>
         <div

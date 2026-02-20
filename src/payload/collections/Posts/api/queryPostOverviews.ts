@@ -3,7 +3,7 @@ import {getImageMedia} from "@/payload/collections/Posts/api/getImageMedia";
 import {postOverviewSelect} from "@/payload/collections/Posts/api/queryBase";
 import {OverviewSlugs} from "@/types/collections/index";
 import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
-import {AuthorOverview, userOverviewSelect} from "@/types/collections/users";
+import {userOverviewSelect} from "@/types/collections/users";
 
 import configPromise from "@payload-config";
 import {BasePayload, FindArgs, FindOneArgs, getPayload, PaginatedDocs, SelectType} from "payload";
@@ -48,7 +48,7 @@ export const queryPostOverviews = cache(async ({
 	const select = postOverviewSelect()
 	// 2) Query for the posts
 	return await getPostOverviews({
-		limit, page, where, sort, select
+		limit, page, where, sort, select,
 	}).then(r => r)
 });
 
@@ -211,7 +211,7 @@ export const getUserOverview = cache(async (authorID: string) => {
 		.then((r) => {
 			return {
 				...r,
-			} as AuthorOverview;
+			}
 		})
 		.catch((e) => {
 			console.error({

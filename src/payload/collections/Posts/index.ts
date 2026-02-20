@@ -1,10 +1,6 @@
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import {Post} from "@/payload-types";
-import {
-  updateCategoryAfterChange,
-  updateCategoryAfterDelete,
-  updateTagsAfterChange
-} from "@/payload/collections/Categories/hooks";
+import {updateCategoryAfterDelete} from "@/payload/collections/Categories/hooks";
 import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
@@ -433,7 +429,7 @@ export const Posts: CollectionConfig<"posts"> = {
       },
       populatePublishedAt
     ],
-    afterChange: [revalidatePost, updateCategoryAfterChange, updateTagsAfterChange],
+    afterChange: [revalidatePost,],
 
     afterDelete: [revalidateDelete, updateCategoryAfterDelete]
   },

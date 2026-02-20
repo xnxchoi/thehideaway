@@ -4,12 +4,12 @@ import {type Delta} from "@/payload-types";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
 import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+import {SingleSurf, SurfOverview} from "@/types/collections/surf";
 import {AuthorSingle} from "@/types/collections/users";
 import configPromise from "@payload-config";
 import {draftMode} from "next/headers";
 import {getPayload, Payload, Where} from "payload";
 import {cache} from "react";
-import {DeltaOverview, SingleDelta} from "../../../../types/collections/delta";
 import type {PostOverview} from "../../../../types/collections/posts";
 import {getDeltaBookMarks} from "./getDeltaBookmarks";
 import {queryOverview} from "./queryDeltaOverview";
@@ -21,7 +21,7 @@ export const queryAuthorsDelta = cache(
   }: {
     slug: string;
     authorSlug: string;
-  }): Promise<{ post: SingleDelta } | null> => {
+  }): Promise<{ post: SingleSurf } | null> => {
     const { isEnabled: draft } = await draftMode();
 
     const payload = await getPayload({ config: configPromise });
@@ -105,7 +105,7 @@ export const queryAuthorsDelta = cache(
       return null;
     }
 
-    const finalPost: SingleDelta = {
+    const finalPost: SingleSurf = {
       ...post,
       author: null!,
       bookmarks: [] as string[],
@@ -210,7 +210,7 @@ export const queryAuthorsDelta = cache(
   }
 );
 export const queryDeltaBySlug = cache(
-  async ({ slug }: { slug: string }): Promise<{ post: SingleDelta } | null> => {
+  async ({ slug }: { slug: string }): Promise<{ post: SingleSurf } | null> => {
     const { isEnabled: draft } = await draftMode();
 
     const payload = await getPayload({ config: configPromise });
@@ -273,7 +273,7 @@ export const queryDeltaBySlug = cache(
       return null;
     }
 
-    const finalPost: SingleDelta = {
+    const finalPost: SingleSurf = {
       ...post,
       author: null!,
       bookmarks: [] as string[],
@@ -374,7 +374,7 @@ export const queryDeltaBySlug = cache(
   }
 );
 export const queryPostByID = cache(
-  async ({ id }: { id: string }): Promise<{ post: SingleDelta } | null> => {
+  async ({ id }: { id: string }): Promise<{ post: SingleSurf } | null> => {
     const payload = await getPayload({ config: configPromise });
     const post = await payload.findByID({
       collection: "delta",
@@ -411,11 +411,11 @@ export const queryRelatedDeltas = cache(
     | { isAuthorPage: true; author: string }
   )): Promise<{
     queuedIDs: string[];
-	  relatedDeltas: (DeltaOverview | PostOverview)[];
+	  relatedDeltas: (SurfOverview | PostOverview)[];
   }> => {
     //Now we first query for the posts to show in the "More Like This" sidebar
-	  const relatedItems: (DeltaOverview | PostOverview)[] = [] as (
-      | DeltaOverview
+	  const relatedItems: (SurfOverview | PostOverview)[] = [] as (
+      | SurfOverview
 		  | PostOverview
     )[];
     const relatedDeltasIDs: string[] = [];

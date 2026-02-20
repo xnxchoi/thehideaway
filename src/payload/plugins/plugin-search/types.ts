@@ -1,3 +1,4 @@
+import {TaggedCollectionSlug} from "@/payload/collections/Tags";
 import {Config, Search} from "@payload-types";
 import {
 	CollectionAfterChangeHook,
@@ -11,7 +12,7 @@ import {
 	StaticLabel,
 } from "payload"
 
-export type IndexedCollectionSlug = Search["doc"]["relationTo"]
+export type IndexedCollectionSlug = TaggedCollectionSlug
 export type IndexedCollection = DataFromCollectionSlug<IndexedCollectionSlug>
 export type DocToSync = Omit<Search, "doc" | "id" | "createdAt" | "updatedAt"> & ({ id: string } | {
 	id?: string;

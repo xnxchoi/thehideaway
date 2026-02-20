@@ -7,6 +7,7 @@ import {
 	CollectionAfterDeleteHook,
 	CollectionConfig,
 	CollectionSlug,
+	Operation,
 	PayloadRequest
 } from "payload";
 
@@ -19,13 +20,13 @@ const updateCount = async (req: PayloadRequest, categoryId: string | number) => 
 		where: {category: {equals: categoryId}},
 	});
 
-	// 2. Count references in 'deltas'
-	const deltasCount = await payload.count({
-		collection: "delta",
+	// 2. Count references in 'surf'
+	const surfsCount = await payload.count({
+		collection: "surf",
 		where: {category: {equals: categoryId}},
 	});
 
-	const total = postsCount.totalDocs + deltasCount.totalDocs;
+	const total = postsCount.totalDocs + surfsCount.totalDocs;
 
 	// 3. Update the category
 	await payload.update({
@@ -59,19 +60,33 @@ export const updateCategoryAfterChange: CollectionAfterChangeHook = async ({
 	return doc;
 };
 export type CollectionHookArgs<T extends keyof NonNullable<CollectionConfig["hooks"]>, F extends CollectionSlug = CollectionSlug> = Parameters<NonNullable<Flatten<NonNullable<CollectionConfig<F>["hooks"]>[T]>>>[0];
-export const tagsDidChange = <T extends TaggedCollectionSlug>({
-	                                                              operation,
-	                                                              doc,
-	                                                              previousDoc,
-                                                              }: {
-	collection: T
-} & Pick<CollectionHookArgs<"afterChange", T>, "operation" | "doc" | "previousDoc"> & Partial<Omit<CollectionHookArgs<"afterChange", T>, "operation" | "doc" | "previousDoc" | "collection">>) => {
-	if (operation === "create") return true;
-	const currentIsArray = Array.isArray(doc.tagged),
-		previousIsArray = Array.isArray(previousDoc.tagged);
+export const tagsDidChange = <T extends TaggedCollectionSlug, E extends Extract<Operation, "create" | "update">>({
+	                                                                                                                 operation,
+	                                                                                                                 doc,
+	                                                                                                                 previousDoc,
+                                                                                                                 }: {
+	collection: T;
+	operation: E;
+} & Pick<CollectionHookArgs<"afterChange", T>, "doc" | "previousDoc"> & Partial<Omit<CollectionHookArgs<"afterChange", T>, "operation" | "doc" | "previousDoc" | "collection">>):
+	{
+		verdict: boolean;
+		currentIsArray: boolean;
+	} & ({
+	operation: "create";
+} | {
+	operation: "update";
+	previousIsArray: boolean;
+}) => {
+	const currentIsArray = Array.isArray(doc.tagged);
+	if (operation === "create") return {
+		verdict: currentIsArray ? (doc.tagged as TaggedCollection["tagged"])!.length > 0 : false,
+		operation,
+		currentIsArray
+	};
+	const previousIsArray = Array.isArray(previousDoc.tagged);
 	const areBothArraysOrNeither = currentIsArray === previousIsArray
 	const verdict = (!areBothArraysOrNeither) ? true : currentIsArray && !arraysEqualContents((previousDoc.tagged as NonNullable<typeof previousDoc.tagged>), (doc.tagged as NonNullable<typeof doc.tagged>)) || false;
-	return {currentIsArray, previousIsArray, verdict,}
+	return {currentIsArray, previousIsArray, verdict, operation}
 }
 export const updateTagsAfterChange: CollectionAfterChangeHook<TaggedCollection> = async ({
 	                                                                                         doc,
@@ -80,61 +95,60 @@ export const updateTagsAfterChange: CollectionAfterChangeHook<TaggedCollection> 
 	                                                                                         req,
 	                                                                                         collection
                                                                                          }) => {
-	// If creation, or if the category field changed
-	if (operation === "create" || operation === "update" && tagsDidChange({
+
+	const {verdict, currentIsArray, ...rest} = tagsDidChange({
 		collection: collection.slug as TaggedCollectionSlug,
 		doc,
 		operation,
 		previousDoc
-	})) {
-		let tagsToLookUp: string[] = []
-		const tagsToUpdate: Array<{
+	})
+	const payload = req.payload;
+	if (verdict) {
+
+		const taggedCollections = ["surf", "posts", "profile", "pages", "albums", "playlists", "tracks"] as const;
+		const tagIDsToQuery = new Set<string>();
+		if (doc.tagged && doc.tagged.length > 0) {
+			doc.tagged.forEach(tag => typeof tag === "string" ? tagIDsToQuery.add(tag) : tagIDsToQuery.add(tag.id))
+		}
+		if (previousDoc && previousDoc.tagged && previousDoc.tagged.length > 0) {
+			previousDoc.tagged.forEach(tag => typeof tag === "string" ? tagIDsToQuery.add(tag) : tagIDsToQuery.add(tag.id))
+		}
+		const tagsToLookUp = [...tagIDsToQuery];
+		const counts:{
 			tagID: string;
 			tagCount: number;
-		}> = []
-		// Update the NEW category
-		if (doc.tagged && doc.tagged.length > 0) {
-			tagsToLookUp.push(...doc.tagged.map(tag => typeof tag === "string" ? tag : tag.id))
+		}[]=[];
+		for (const tagID of tagsToLookUp){
+			let countsForTag=0;
+			for (const col of taggedCollections){
+				const r=await payload.count({
+					collection: col, overrideAccess: true,
+					where: {tagged: {equals: tagID}},
+					req,
+				}).then(r=>r.totalDocs).catch((e)=>{
+					req.payload.logger.error("Error while querying count for tag with ID : " + tagID,e)
+					return 0
+				})
+				countsForTag+=r
+			}
+				counts.push({tagID, tagCount:countsForTag})
 		}
-		if (operation === "update" && previousDoc.tagged && previousDoc.tagged.length > 0) {
-			tagsToLookUp.push(...previousDoc.tagged.map(tag => typeof tag === "string" ? tag : tag.id))
-		}
-		tagsToLookUp = [...new Set(tagsToLookUp)];
-		for (const tagID of tagsToLookUp) {
-			const tagCount = await req.payload.findByID({
-				collection: "tags",
-				id: tagID,
-				overrideAccess: true,
-				select: {
-					taggedItems: true
-				},
-				joins: {
-					taggedItems: {
-						count: true
-					}
-				},
-
-				req
-			}).then(r => r.taggedItems?.totalDocs || 0).catch(e => {
-				req.payload.logger.error("Error while querying count for tag with ID : " + tagID + " : " + e.message);
-				return null;
-			})
-			if (typeof tagCount === "number") {
-				tagsToUpdate.push({tagID, tagCount})
+		if(counts.length>0){
+			for (const {tagID,tagCount} of counts){
+				 payload.update({
+					collection:'tags',
+					id:tagID,
+					data:{
+						tagCount,
+					},
+					draft:false,
+					overrideAccess:true,req
+				})
 			}
 		}
-		for (const {tagID, tagCount} of tagsToUpdate) {
-			console.log("Updating tag count for tag with ID : " + tagID + " to " + tagCount)
-			await req.payload.update({
-				collection: "tags",
-				id: tagID,
-				data: {
-					tagCount
-				}, overrideAccess: true, req
-			})
-		}
 
-	}
+}
+
 	return doc;
 };
 

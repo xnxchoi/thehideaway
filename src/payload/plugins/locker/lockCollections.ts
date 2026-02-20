@@ -440,7 +440,7 @@ const authorityChecker = (
 
 const disallowRead = (collection: LockedCollections) => {
   switch (collection) {
-    case "delta":
+    case 'surf':
     case "posts":
       return {
         content: surrogateMap.richText satisfies SerializedEditorState,

@@ -1,22 +1,22 @@
 import {CollectionMap} from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import {createValidQueryStringRegex} from "@/utilities/regexUtilities";
-import type {Config, NumberField, Plugin, SingleRelationshipField} from "payload";
+import type {CollectionSlug, Config, NumberField, Plugin, SingleRelationshipField} from "payload";
 
-export type LikeableCollectionSlug = "posts" |
-	"delta" |
+export type LikeableCollectionSlug = Extract<CollectionSlug, "posts" |
+	"surf" |
 	"albums" |
 	"playlists" |
 	"profile" |
 	"tracks" | "media" |
 	"responses" |
 	"userMedia" |
-	"citations"
+	"citations">
 
 export type LikeableCollection<T extends LikeableCollectionSlug = LikeableCollectionSlug> = CollectionMap[T]
 
 const validTypes: LikeableCollectionSlug[] = [
 	"posts",
-	"delta",
+	"surf",
 	"albums",
 	"playlists",
 	"profile",

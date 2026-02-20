@@ -1,7 +1,6 @@
-import {deltaOverviewSelect} from "@/payload/collections/Delta/api/queryDeltaOverview";
 import {postOverviewSelect} from "@/payload/collections/Posts/api/queryBase";
+import {surfOverviewSelect} from "@/payload/collections/Surf/api/querySurfOverview";
 import type {FrontEndCollections} from "@/stores/Routing/RP_Voyageur";
-import {DeltaOverview} from "@/types/collections/delta";
 import {ImageCollectionSlug, ProcessedImageDoc} from "@/types/collections/image-collections";
 import {
 	CategoryOverview,
@@ -10,6 +9,7 @@ import {
 	tagOverviewSelect
 } from "@/types/collections/meta-collections";
 import {PostOverview} from "@/types/collections/posts";
+import {SurfOverview} from "@/types/collections/surf";
 import {UserOverview, userOverviewSelect} from "@/types/collections/users";
 import {imageSelect} from "@/types/payload-api-selects";
 import {PagesSelect} from "@payload-types";
@@ -26,10 +26,10 @@ export const baseSelect: SelectFromCollectionSlug<FrontEndCollections> = {
 };
 
 //|"albums"|"tracks"|"playlists"
-export type OverviewSlugs = Extract<CollectionSlug, "users" | "posts" | "pages" | ImageCollectionSlug | "delta" | "categories" | "tags">;
+export type OverviewSlugs = Extract<CollectionSlug, "users" | "posts" | "pages" | ImageCollectionSlug | "surf" | "categories" | "tags">;
 export type CollectionOverviewMap = {
 	[x in OverviewSlugs]: x extends "users" ? UserOverview : x extends "posts" ? PostOverview : x extends "pages" ? PostOverview :
-		x extends "delta" ? DeltaOverview :
+		x extends "surf" ? SurfOverview :
 			x extends "tags" ? TagOverview :
 				x extends "categories" ? CategoryOverview :
 					x extends ImageCollectionSlug ? {
@@ -53,7 +53,7 @@ export const overviewSelectMap = {
 		id: true,
 
 	}),
-	delta: deltaOverviewSelect
+	surf: surfOverviewSelect
 } as const
 export type OverviewSelectorMap = {
 	-readonly [x in OverviewSlugs]: ReturnType<(typeof overviewSelectMap)[x]>

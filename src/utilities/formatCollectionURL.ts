@@ -13,8 +13,8 @@ export const formatCollectionURL = ({
 			return `${url}/essays/${slug}`;
 		case "pages":
 			return `${url}/${slug}`;
-		case "delta":
-			return `${url}/delta/${slug}`;
+		case "surf":
+			return `${url}/surf/${slug}`;
 		case "profile":
 			return `${url}/users/${slug}`;
 		case "albums":

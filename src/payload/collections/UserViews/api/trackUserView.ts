@@ -1,9 +1,10 @@
-'use server'
-import {CollectionSlug, Payload} from 'payload'
-import {clamp} from '@/utilities/mathUtilities'
-import {cache} from 'react'
+"use server"
+import {clamp} from "@/utilities/mathUtilities"
+import {UserView} from "@payload-types";
+import {Payload} from "payload"
+import {cache} from "react"
 
-export type TrackedTargetType = Extract<CollectionSlug, 'posts' | 'delta' | 'playlists' | 'profile' | 'albums' | 'tracks'>
+export type TrackedTargetType = UserView['target']['relationTo']
 
 interface TrackViewParams {
 	payload: Payload
@@ -210,7 +211,7 @@ export const trackUserView = cache(async ({
 			}
 		}
 	} catch (error) {
-		payload.logger.error('Error tracking user view:', error)
+		payload.logger.error('Error tracking user view:',  )
 		if (error instanceof Error) {
 			return error
 		}

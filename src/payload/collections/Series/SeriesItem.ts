@@ -1,5 +1,5 @@
-import type { Series } from "@/payload-types";
-import type { CollectionConfig, FilterOptionsProps, Where } from "payload";
+import type {Series} from "@/payload-types";
+import type {CollectionConfig, FilterOptionsProps, Where} from "payload";
 
 export const SeriesItem: CollectionConfig = {
   slug: "series-item",
@@ -7,7 +7,7 @@ export const SeriesItem: CollectionConfig = {
     {
       name: "item",
       type: "relationship",
-      relationTo: ["posts", "delta"],
+      relationTo: ["posts", "surf"],
       hasMany: false,
       index: true,
       required: true,

@@ -3,3 +3,4 @@ node_modules/
 /src/lib/auth/auth-payload/
 !/src/payload/collections/Users/c/dd.js
 
+/src/app/(frontend)/(site)/essays/DemoOfArchive.tsx

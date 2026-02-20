@@ -1,4 +1,4 @@
-import { sql } from "@payloadcms/db-postgres";
+import {sql} from "@payloadcms/db-postgres";
 
 interface SearchFieldConfig {
   field: string;

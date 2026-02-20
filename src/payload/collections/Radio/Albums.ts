@@ -1,5 +1,4 @@
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
-import {updateTagsAfterChange} from "@/payload/collections/Categories/hooks";
 import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
@@ -144,7 +143,7 @@ export const Albums: CollectionConfig = {
     maxPerDoc: 5
   },
   hooks: {
-	  afterChange: [updateTagsAfterChange],
+	  afterChange: [ ],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]
   }
 };

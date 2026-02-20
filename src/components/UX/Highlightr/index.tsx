@@ -8,6 +8,7 @@ import {
 } from "@/components/UX/Highlightr/providers/HighlighterProvider";
 import {ResponseMap} from "@/components/UX/Highlightr/responseMap";
 import {HighlightPalette} from "@/components/UX/Highlightr/stores";
+import {Link} from "@/components/UX/Link/Link";
 import {useRPSession} from "@/lib/auth/session/RP_SessionProvider";
 import {cn} from "@/lib/utils";
 import type {Bookmark, User} from "@/payload-types";
@@ -52,7 +53,7 @@ import {
 	useState
 } from "react";
 import {useShallow} from "zustand/shallow";
-import {Button, MotionBtn} from "../Button";
+import {Button, MotionBtn, PillButton} from "../Button";
 import {SignedFooter} from "../Signature";
 import {DynamicBreadcrumb} from "./DynamicIsland";
 import {FloatHighlightMenu} from "./HighlightMenu";
@@ -972,11 +973,26 @@ const ReadInternal = ({post}: { post: SingleArticle }) => {
 									{locked ? (
 										<LockedGate id={postId} collection={"posts"}/>
 									) : (
-										<RichText data={postContent} enableGutter={false}/>
+									 <RichText data={postContent} enableGutter={false}/>
+
+
 									)}
 								</div>
 							</div>
-							<div className="f-divider mt-[50px] h-[1px] w-full min-w-[1px]"/>
+							<div className={'max-w-(--maxContainerWidth) max-lg:px-[20px] px-[40px] py-0 w-full mx-auto my-0'}>
+								<h4 className="pb-5 pt-10">Relevant Topics</h4>
+								<ul className="list-none gap-4 m-0 p-0 flex flex-wrap">{post.tagged.map(({slug,title})=>{
+
+									return <li key={slug}><Link className={
+										cn(
+											`flex appearance-none items-center justify-center overflow-hidden border border-solid border-off-foreground px-[1.4rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] transition-[border-color,background-color,padding] duration-200 outline-none [text-decoration:none] md:px-[1.2rem]`,
+											"text-[16px] rounded-[18px] font-medium py-1 px-4"
+
+										)
+									} href={`/tagged/${slug}`}>{title}</Link></li>
+								})}</ul>
+							</div>
+							<div className="f-divider mt-[90px] mb-9 h-[1px] w-full min-w-[1px]"/>
 							<SignedFooter/>
 						</article>
 					</div>

@@ -1,4 +1,4 @@
-import { PayloadRequest, CollectionSlug } from "payload";
+import {CollectionSlug, PayloadRequest} from "payload";
 
 const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
   pages: ""
@@ -6,7 +6,7 @@ const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
 const authorCollectionSuffixMap: Partial<Record<CollectionSlug, string>> = {
   profile: "/profile",
   posts: "/essays",
-  delta: "/delta"
+  surf: "/surf"
 };
 
 type PreviewPathProps = {

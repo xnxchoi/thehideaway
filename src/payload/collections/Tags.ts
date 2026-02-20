@@ -9,7 +9,7 @@ import {uuidv7} from "uuidv7";
 import {slugField} from "../fields/slug";
 import {isAdminOrEditor, standardCreateAccess} from "../plugins/locker/access/accessCheckers";
 
-export type TaggedCollection = Extract<DataFromCollectionSlug<CollectionSlug>, {
+export type TaggedCollection = Extract<DataFromCollectionSlug<Exclude<CollectionSlug,'delta'>>, {
 	tagged?: ((Tag | string)[] | null)
 }>;
 export type TaggedCollectionSlug = KeysOfValue<CollectionMap, TaggedCollection>
@@ -60,11 +60,6 @@ export const Tags: CollectionConfig<"tags"> = {
 		...authorFields(false),
 		...slugField("title", false)
 		, {
-			name: "taggedItems",
-			type: "join",
-			on: "tagged",
-			collection: ["delta", "posts", "profile", "pages", "albums", "playlists", "tracks"]
-		}, {
 			name: "tagCount",
 			type: "number",
 			defaultValue: 0,
@@ -74,6 +69,12 @@ export const Tags: CollectionConfig<"tags"> = {
 			},
 			required: true,
 			index: true
+		}, {
+			name: "taggedItems",
+			type: "join",
+			on: "tagged",
+			defaultLimit: 20,
+			collection: ["posts", "surf", "playlists", "albums", "profile", "pages", "tracks"],
 		}
 	],
 	hooks: {
@@ -92,7 +93,7 @@ export const Tags: CollectionConfig<"tags"> = {
 						revalidatePath("/tagged/" + previousDoc.slug, "page")
 
 					}
-					revalidateTag("tag-" + (doc as Tag).id, "max")
+					revalidateTag("tag-" + (doc as Tag).slug, "max")
 
 				}
 					break

@@ -32,7 +32,7 @@ export const defaultLexical = lexicalEditor({
 			BoldFeature(),
 			ItalicFeature(),
 			LinkFeature({
-				enabledCollections: ["pages", "posts", "delta", "albums", "playlists"],
+				enabledCollections: ["pages", "posts", "surf", "albums", "playlists"],
 
 				fields: ({defaultFields}) => {
 					const defaultFieldsWithoutUrl = defaultFields.filter((field) => {

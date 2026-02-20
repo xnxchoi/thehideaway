@@ -22,8 +22,8 @@ import type {
 	PostOverview
 } from "../../../types/collections/posts";
 import type {
-	DeltaOverview
-} from "../../../types/collections/delta";
+	SurfOverview
+} from "@/types/collections/surf";
 import { useQuery } from "@tanstack/react-query";
 import type { CollectionSlug } from "payload";
 
@@ -67,7 +67,7 @@ export function Commando() {
                 | "categories"
                 | "users"
                 | "articles"
-                | "delta"
+                | "surf"
                 | "posts"
                 | "pages"
               >;
@@ -78,7 +78,7 @@ export function Commando() {
 	            | CategoryOverview
               | AuthorOverview
 	            | PostOverview
-              | DeltaOverview;
+              | SurfOverview;
           }[];
         };
         if (a.docs && a.docs.length > 0) {
@@ -202,7 +202,7 @@ export const LinkedItem = (props: {
   doc: {
     relationTo: Extract<
       CollectionSlug,
-      "tags" | "categories" | "users" | "articles" | "delta" | "posts" | "pages"
+      "tags" | "categories" | "users" | "articles" | "surf" | "posts" | "pages"
     >;
     value: string;
   };
@@ -211,7 +211,7 @@ export const LinkedItem = (props: {
 	  | CategoryOverview
     | AuthorOverview
 	  | PostOverview
-    | DeltaOverview;
+    | SurfOverview;
 }) => {
   const { doc, content } = props;
 

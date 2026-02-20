@@ -5,6 +5,7 @@ import {RPage} from "@/components/UX/Transition";
 import {deltaOverviewSelect} from "@/payload/collections/Delta/api/queryDeltaOverview";
 import {postOverviewSelect} from "@/payload/collections/Posts/api/queryBase";
 import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
+import {surfOverviewSelect} from "@/payload/collections/Surf/api/querySurfOverview";
 import {TaggedCollectionSlug} from "@/payload/collections/Tags";
 import {formatCollectionURL} from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
@@ -40,7 +41,7 @@ export async function generateStaticParams(params: { tagSlug: string }) {
 		return [];
 	}
 
-	const tagPromise = (["profile", "pages", "delta", "posts"] as TaggedCollectionSlug[]).map(async (collectionSlug) => {
+	const tagPromise = (["profile", "pages", "surf", "posts"] as TaggedCollectionSlug[]).map(async (collectionSlug) => {
 		return payload.count({
 			collection: collectionSlug,
 			where: {
@@ -160,8 +161,8 @@ async function getTagPosts({id}: { id: string; }) {
 		switch (collectionSlug) {
 			case "posts":
 				return postOverviewSelect()
-			case "delta":
-				return deltaOverviewSelect()
+			case "surf":
+				return surfOverviewSelect()
 
 			default:
 				return select

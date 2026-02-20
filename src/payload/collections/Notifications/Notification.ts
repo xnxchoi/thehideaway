@@ -160,7 +160,7 @@ export const Notifications: CollectionConfig = {
       type: "relationship",
       relationTo: [
         "posts",
-        "delta",
+        "surf",
         "users",
         "profile",
         "bookmarks",
@@ -219,7 +219,7 @@ export const Notifications: CollectionConfig = {
         { label: "Bookmark", value: "bookmark" },
         { label: "Profile", value: "profile" },
         { label: "Post", value: "post" },
-        { label: "Delta", value: "delta" },
+        { label: "Surf", value: "surf" },
         { label: "Notification", value: "notification" }
       ],
       admin: {}

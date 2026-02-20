@@ -87,7 +87,7 @@ type PageTargets = [
   "users",
   "pages",
   "posts",
-  "delta",
+  "surf",
   "search",
   "account",
   "archive"

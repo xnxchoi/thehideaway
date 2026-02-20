@@ -1,9 +1,9 @@
 "use client";
-import { authClient } from "@/lib/auth/client";
-import type { User, UserMedia } from "@/payload-types";
-import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
-import { DateTime } from "luxon";
-import { createStore } from "zustand/vanilla";
+import {authClient} from "@/lib/auth/client";
+import type {User, UserMedia} from "@/payload-types";
+import {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
+import {DateTime} from "luxon";
+import {createStore} from "zustand/vanilla";
 
 export type RP_Roles = "user" | "admin" | "author" | "editor" | "patron";
 
@@ -95,11 +95,11 @@ export interface RP_Session {
  * @todo: slice this into separate objects per collection to modularize queries/data
  *
  * **/
-export type FavouriteItem = { value: string; relationTo: "posts" | "delta" };
+export type FavouriteItem = { value: string; relationTo: "posts" | "surf" };
 export type FavouriteActions = {
   setfavorites: (l: FavouriteItem[]) => void;
   addFavourite: (l: FavouriteItem | FavouriteItem[]) => void;
-  removeFavorite: (l: Partial<{ [x in "delta" | "posts"]: string[] }>) => void;
+  removeFavorite: (l: Partial<{ [x in "surf" | "posts"]: string[] }>) => void;
 };
 /**
  * Store for the favorites array.
@@ -110,7 +110,7 @@ export type FavouriteActions = {
 export type favoritestore = {
   favorites: {
     posts: string[];
-    delta: string[];
+    surf: string[];
   };
 };
 

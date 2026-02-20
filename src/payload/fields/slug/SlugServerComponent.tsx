@@ -4,7 +4,7 @@ import type { CollectionSlug, TextFieldServerProps } from "payload";
 // Define collections that have author fields locally
 type IndexedCollections = Extract<
   CollectionSlug,
-  "posts" | "delta" | "albums" | "playlists" | "tracks" | "tags"
+  "posts" | "surf" | "albums" | "playlists" | "tracks" | "tags"
 >;
 
 // Define the server component props that extend TextFieldServerProps with additional props

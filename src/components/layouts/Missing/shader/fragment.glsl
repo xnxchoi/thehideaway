@@ -50,13 +50,13 @@ vec2 coord(in vec2 p) {
 #include <clipping_planes_pars_fragment>
 float random(vec3 scale, float seed) {
     return fract(sin(dot(gl_FragCoord.xyz + seed, scale)) * 43758.5453 + seed); }
-vec4 boxBlur(sampler2D tex, vec2 uv, vec2 delta) {
+vec4 boxBlur(sampler2D tex, vec2 uv, vec2 surf) {
     vec4 color = vec4(0);
     float total = 0., offset = random(vec3(12.9898, 38.233, 151.7182), 0.);
     for (float t = -20.;t <= 20.; t++) {
         float percent = (t + offset - .8) / 20.;
         float weight = 1. - abs(percent);
-        vec4 bsample = texture2D(tex, uv + delta * percent);
+        vec4 bsample = texture2D(tex, uv + surf * percent);
         bsample.xyz *= bsample.w;
         color += bsample * weight;total += weight; }color /= total;color.xyz /= color.w + 1e-5;
     return u_alpha * color;
