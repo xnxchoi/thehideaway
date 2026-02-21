@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 "use client";
 
+import {getRadio} from "@/providers/getRadio";
 import {
 	DEFAULT_FADE_DURATION_MS,
 	DEFAULT_THRESHOLD_SECONDS,
 	DEFAULT_TRANSITION_DURATION_MS
 } from "@/providers/radioConstant";
+import {readRadioTrack} from "@/providers/readRadioTrack";
 import {createRadioStore, RadioStore, type RP_Track} from "@/stores/Radio/Radio";
-import {experimental_streamedQuery, useQuery} from "@tanstack/react-query";
 import {Howl, HowlOptions} from "howler";
-import {parseWebStream} from "music-metadata";
 import {nanoid} from "nanoid";
 import {
 	createContext,
@@ -72,6 +72,7 @@ export const useRadioAPI = () => {
 	}
 	return store.subscribe;
 };
+
 const RadioInternal = ({children}: { children: ReactNode }) => {
 	const ref = useRef<RadioInternalAPI>(null);
 
@@ -79,7 +80,7 @@ const RadioInternal = ({children}: { children: ReactNode }) => {
 		title: string;
 		extension?: "ogg" | "mp3"
 	}) => {
-		const track = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/${title}.${extension}`, {
+		const track = await fetch(`public/track_media/${title}.${extension}`, {
 			headers: {
 				"Content-Type": `audio/${extension}`
 			}
@@ -90,109 +91,81 @@ const RadioInternal = ({children}: { children: ReactNode }) => {
 			{
 				id: uuidv7(),
 				title: "Shibuya Nights",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_1.ogg`,
+				url: `/track_media/Track_1.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 2",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_2.ogg`,
+				url: `/track_media/Track_2.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 3",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_3.ogg`,
+				url: `/track_media/Track_3.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 4",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_4.ogg`,
+				url: `/track_media/Track_4.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 5",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_5.ogg`,
+				url: `/track_media/Track_5.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 6",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_6.ogg`,
+				url: `/track_media/Track_6.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 7",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_7.ogg`,
+				url: `/track_media/Track_7.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 8",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_8.ogg`,
+				url: `/track_media/Track_8.ogg`,
 				artist: "YM.FM"
 			},
 			{
 				id: uuidv7(),
 				title: "Part 9",
-				url: `${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/Track_9.ogg`,
+				url: `/track_media/Track_9.ogg`,
 				artist: "YM.FM"
 			}
 		],
 		[]
 	);
 	const fetchTracks = useCallback(async () => {
-		const racks = tracks;
-		const radioTracks: RP_Track[] = [];
-		if (Array.isArray(racks)) {
-			for (const r of racks) {
-				if (r && typeof r === "object") {
-					const {id, url} = r;
-					if (!url) continue;
-					const strt = await fetch(url, {
-						headers: {
-							"Content-Type": "audio/ogg"
-						}
-					});
-					const webStream = strt.body;
-					// Parse the metadata from the web stream
-					if (!webStream) continue;
-					const metadata = await parseWebStream(webStream, "audio/ogg");
-
-					const {title, artist, album} = metadata.common || {};
-					if (!id || !title || !url || !artist) continue;
-					radioTracks.push({
-						id,
-						title,
-						album: album || "hideaway sessions",
-						url,
-						artist
-					});
-				}
-			}
-		}
-		return radioTracks;
+		return await getRadio(tracks)
 	}, [tracks]);
 	const [hasRadio, setHasRadio] = useState(false);
 	useEffect(() => {
 		!ref.current &&
-		fetchTracks()
-			.then((tracks) => {
+		getRadio(tracks)
+			.then((trackes) => {
+				console.log("tracks:", trackes)
 				ref.current = createRadioStore({
-					tracks,
+					tracks: trackes,
 					currentIndex: 0,
 					crossFading: false,
 					playing: false,
 					trackStatus: "paused",
 					elapsedTime: 0,
-					remainingTime: 12220,
-					hasRadio: tracks.length > 2,
+					remainingTime: trackes[0].duration,
+					hasRadio: trackes.length > 2,
 					playMode: "default",
-					hasNext: tracks.length > 1,
-					nextIndex: Math.min(1, tracks.length - 1),
+					hasNext: trackes.length > 1,
+					nextIndex: Math.min(1, trackes.length - 1),
 					playbackRate: 1.0,
 					seeking: false,
 				});
@@ -200,7 +173,7 @@ const RadioInternal = ({children}: { children: ReactNode }) => {
 			.then(() => {
 				setHasRadio(true);
 			});
-	}, [fetchTracks]);
+	}, [fetchTracks, tracks]);
 
 	return (
 		<InternalRadioContext.Provider value={ref.current}>
@@ -607,11 +580,9 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 		} else {
 			// Capture the current time before pausing so the counter holds its value
 			if (current.current?.h) {
-				const dur = current.current.h.duration();
+
 				const elapsed = current.current.h.seek();
-				if (dur > 0 && typeof elapsed === "number") {
-					setTrackTime(elapsed, dur);
-				}
+				setTrackTime(elapsed,);
 			}
 
 			if (current.current.h.playing()) {

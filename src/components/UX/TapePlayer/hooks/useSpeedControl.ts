@@ -1,19 +1,19 @@
 "use client";
 
-import { useIsMobile } from "@/providers/MiddleMan";
-import { useRadio, useRadioStore } from "@/providers/RadioProvider";
-import { useMotionValue, useSpring } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useShallow } from "zustand/shallow";
+import {useIsMobile} from "@/providers/MiddleMan";
+import {useRadio, useRadioStore} from "@/providers/RadioProvider";
+import {useMotionValue, useSpring, useTransform} from "motion/react";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useShallow} from "zustand/shallow";
 import {
   DEFAULT_PLAYBACK_RATE,
   SCRUB_MODE_THRESHOLD,
-  SPEED_STEPS,
   SPEED_STEP_ANGLE,
+  SPEED_STEPS,
   WHEEL_STEP_THRESHOLD,
 } from "../constants";
-import { useHaptics } from "./useHaptics";
-import type { SpeedDialMode } from "../types";
+import type {SpeedDialMode} from "../types";
+import {useHaptics} from "./useHaptics";
 
 /**
  * Hook driving the TP-7-style speed dial interaction.
@@ -25,14 +25,20 @@ import type { SpeedDialMode } from "../types";
 export function useSpeedControl() {
   const { setPlaybackRate, seek } = useRadio();
   const playbackRate = useRadioStore(useShallow((t) => t.playbackRate));
-  const elapsedTime = useRadioStore(useShallow((t) => t.elapsedTime));
-  const remainingTime = useRadioStore(useShallow((t) => t.remainingTime));
+  const e = useRadioStore(useShallow((t) => t.elapsedTime));
+  const elaos = useMotionValue(e);
+  useEffect(() => elaos.set(e), [e, elaos])
   const setSeeking = useRadioStore((t) => t.setSeeking);
   const { isTouch } = useIsMobile();
   const haptics = useHaptics();
-
+  const currentIndex = useRadioStore(useShallow((t) => t.currentIndex));
+  const tracks = useRadioStore(useShallow((t) => t.tracks));
+  const currentTrack = useMotionValue(tracks[currentIndex]);
+  useEffect(() => {
+    currentTrack.set(tracks[currentIndex]);
+  }, [currentIndex, currentTrack, tracks])
   const [mode, setMode] = useState<SpeedDialMode>("rate");
-  const duration = elapsedTime + remainingTime;
+  const durationC = useTransform(() => currentTrack.get().duration || 0);
 
   // Find current step index from playbackRate
   const currentStepIndex = SPEED_STEPS.findIndex((s) => s >= playbackRate);
@@ -89,7 +95,7 @@ export function useSpeedControl() {
     (_: PointerEvent, info: { delta: { x: number; y: number } }) => {
       // Use horizontal delta as rotation input
       const delta = info.delta.x * 0.8;
-
+      const duration = durationC.get(), elapsedTime = elaos.get();
       if (modeRef.current === "scrub") {
         // Scrub: map rotation to seek position
         if (duration <= 0) return;
@@ -121,7 +127,7 @@ export function useSpeedControl() {
         rawAngle.set(clampedIdx * SPEED_STEP_ANGLE);
       }
     },
-    [duration, elapsedTime, seek, setPlaybackRate, rawAngle, haptics]
+      [durationC, elaos, seek, rawAngle, setPlaybackRate, haptics]
   );
 
   const onPanEnd = useCallback(() => {

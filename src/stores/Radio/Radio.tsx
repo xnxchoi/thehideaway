@@ -9,6 +9,7 @@ export interface RP_Track {
   album: string;
   artist: string;
   id: string;
+    duration: number;
 }
 
 export type PlayMode = "default" | "reverse" | "shuffle";
@@ -164,7 +165,7 @@ type RadioStoreActions = {
   setTrackStatus: (
     status: "playing" | "paused" | "ended" | "loading" | "error"
   ) => void;
-  setTrackTime: (elapsedTime: number, duration: number) => void;
+    setTrackTime: (elapsedTime: number, duration?: number) => void;
   cleanTrack: () => void;
   setPlaying: () => void;
   setPaused: () => void;
@@ -220,8 +221,12 @@ export const createRadioStore = (initState: RadioStoreState = radioInit) => {
 
       setTrackStatus: (status) => set({ trackStatus: status }),
 
-      setTrackTime: (elapsedTime: number, duration) =>
-        set({ elapsedTime, remainingTime: duration - elapsedTime }),
+        setTrackTime: (elapsedTime: number, duration?: number) =>
+            set(state => ({
+                ...state,
+                elapsedTime,
+
+            })),
 
       setCurrentTrack: (requestedIndex) =>
         set((state) => {

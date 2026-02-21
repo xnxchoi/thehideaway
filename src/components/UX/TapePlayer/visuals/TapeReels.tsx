@@ -1,14 +1,25 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useMotionValue, useMotionValueEvent, useSpring } from "motion/react";
-import { useRef, useState } from "react";
-import { useTapeAnimation } from "../hooks/useTapeAnimation";
-import { REEL_SPOKE_COUNT } from "../constants";
+import {springGSAP} from "@/constants/animations";
+import {cn} from "@/lib/utils";
+import {useRadioStore} from "@/providers/RadioProvider";
+import {
+	MotionValue,
+	SVGMotionProps,
+	useMotionTemplate,
+	useMotionValue,
+	useSpring,
+	useTransform
+} from "motion/react";
+import * as m from "motion/react-m";
+import {useEffect, useId, useRef} from "react";
+import {useShallow} from "zustand/shallow";
+import {REEL_SPOKE_COUNT} from "../constants";
+import {useTapeAnimation} from "../hooks/useTapeAnimation";
 
 type TapeReelsProps = {
-  diameter?: number;
-  className?: string;
+	diameter?: number;
+	className?: string;
 };
 
 /**
@@ -20,180 +31,300 @@ type TapeReelsProps = {
  *
  * SVG viewBox is 320x140 — gives room for two reels + tape path.
  */
-export const TapeReels = ({ diameter = 120, className }: TapeReelsProps) => {
-  const scopeRef = useRef<SVGSVGElement>(null);
-  const supplyRef = useRef<SVGGElement>(null);
-  const takeupRef = useRef<SVGGElement>(null);
+export const TapeReels = ({diameter = 120, className}: TapeReelsProps) => {
+	const scopeRef = useRef<SVGSVGElement>(null);
+	const supplyRef = useRef<SVGGElement>(null);
+	const takeupRef = useRef<SVGGElement>(null);
+	const maxWidth = useMotionValue(diameter * 2.67)
+	const {} = useTapeAnimation(supplyRef, takeupRef, scopeRef);
+	const e = useRadioStore(useShallow((t) => t.elapsedTime));
+	const elaos = useMotionValue(e)
+	useEffect(
+		() => elaos.set(e), [e, elaos]
+	)
+	const currentIndex = useRadioStore(useShallow((t) => t.currentIndex))
+	const tracks = useRadioStore(useShallow((t) => t.tracks))
+	const currentTrack = useMotionValue(
+		tracks[currentIndex]
+	)
+	useEffect(
+		() => currentTrack.set(tracks[currentIndex]), [currentIndex, currentTrack, tracks]
+	)
+	const durationValue = useTransform(
+		() => currentTrack.get().duration
+	)
+	const progressMV = useTransform(
+		() => {
+			const elapsedTime = elaos.get()
+			const duration = durationValue.get()
+			console.log("duration", duration, "elapsedTime", elapsedTime, "progressMV")
+			return duration > 0 ? elapsedTime / duration : 0;
+		})
+	const smoothProgressMV = useSpring(progressMV, springGSAP.power4.inOut);
 
-  const { progress: rawProgress } = useTapeAnimation(supplyRef, takeupRef, scopeRef);
+	// Reel radii: supply shrinks, takeup grows
+	const minR = 18;
+	const maxR = 48;
+	const supplyR = useTransform(() => {
+		const progress = smoothProgressMV.get()
+		// return maxR - progress * (maxR - minR);
+		return 38
+	})
+	const takeupR =
+		useTransform(() => {
+			const progress = smoothProgressMV.get()
 
-  // Spring the progress so reel radii change smoothly (especially on track switch)
-  const progressMV = useMotionValue(rawProgress);
-  progressMV.set(rawProgress);
-  const smoothProgressMV = useSpring(progressMV, { stiffness: 60, damping: 18 });
-  const [progress, setProgress] = useState(rawProgress);
-  useMotionValueEvent(smoothProgressMV, "change", (v) => setProgress(v));
+			// return minR + progress * (maxR - minR);
+			return 38
+		})
+	const hubR = 8;
+	const smolHubr = useTransform(() => {
+		return supplyR.get() * 0.45
+	}), smolHubrR = useTransform(() => takeupR.get() * 0.45)
+	const cx1 = useMotionValue(80)
+	const guidex1 = useTransform(() => cx1.get() + supplyR.get() + 8)
+	const cx2 = useMotionValue(240)
+	const guidex2 = useTransform(() =>
+		cx2.get() - takeupR.get() - 8); // takeup center x
+	const cy = useMotionValue(70); // both centers y
 
-  // Reel radii: supply shrinks, takeup grows
-  const minR = 18;
-  const maxR = 48;
-  const supplyR = maxR - progress * (maxR - minR);
-  const takeupR = minR + progress * (maxR - minR);
+	// Tape path between the two reels (tangent line approximation)
 
-  const hubR = 8;
-  const cx1 = 80; // supply center x
-  const cx2 = 240; // takeup center x
-  const cy = 70; // both centers y
+	const textMax = useTransform(() => cy.get() + maxR + 14)
+	const tapeR1 = useTransform(() => {
+		const progress = smoothProgressMV.get()
+		const max = supplyR.get(), min = smolHubr.get()
+		return (max - progress * (max - min))
+	}), tapeR2 = useTransform(() => {
+		const progress = smoothProgressMV.get()
+		const max = takeupR.get(), min = smolHubrR.get()
+		return (min + progress * (max - min))
+	})
+	const tapeId = useId(), tapeId2 = useId()
+	const tapeWidth1 = useTransform(() =>
+		2 * (tapeR1.get() - smolHubr.get())
+	), tapeWidth2 = useTransform(() => 2 * (tapeR2.get() - smolHubrR.get()))
+	const mp11 = useTransform(() => cx1.get() + hubR),
+		mp12 = useTransform(() => cy.get() - hubR * 0.7),
+		lp11 = useTransform(() => cx2.get() - hubR),
+		lp12 = useTransform(() => cy.get() - hubR * 0.7)
+		, mp21 = useTransform(() => cx1.get() + hubR),
+		mp22 = useTransform(() => cy.get() + hubR * 0.7),
+		lp21 = useTransform(() => cx2.get() - hubR),
+		lp22 = useTransform(() => cy.get() + hubR * 0.7)
+	const tapeY1 =
+		useMotionTemplate`M ${mp11} ${mp12} L ${lp11} ${lp12}`
+	const tapeY2 = useMotionTemplate`M ${mp21} ${mp22} L ${lp21} ${lp22}`
+	return (
+		<m.svg
+			ref={scopeRef}
+			viewBox="0 0 320 140"
+			className={cn("w-full select-none", className)}
+			style={{maxWidth}}
+			aria-hidden="true"
+		>
+			<defs>
+				<m.circle
+					cx={cx1}
+					id={tapeId}
+					cy={cy}
+					r={tapeR1}
+				/>
+				<m.circle
+					cx={cx2}
+					cy={cy}
+					r={tapeR2}
+					id={tapeId2}/>
+				<m.clipPath id={"clip1"}>
+					<m.use xlinkHref={`#${tapeId}`}/>
+				</m.clipPath>
+				<m.clipPath id={"clip2"}>
+					<m.use xlinkHref={`#${tapeId2}`}/>
+				</m.clipPath>
+			</defs>
+			{/* Tape path connecting reels */}
+			<m.path
 
-  // Generate spoke lines for a reel
-  const spokes = (cx: number, r: number) => {
-    const lines = [];
-    for (let i = 0; i < REEL_SPOKE_COUNT; i++) {
-      const angle = (i * 360) / REEL_SPOKE_COUNT;
-      const rad = (angle * Math.PI) / 180;
-      lines.push(
-        <line
-          key={i}
-          x1={cx + hubR * Math.cos(rad)}
-          y1={cy + hubR * Math.sin(rad)}
-          x2={cx + (r - 2) * Math.cos(rad)}
-          y2={cy + (r - 2) * Math.sin(rad)}
-          stroke="var(--faded-fg)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-      );
-    }
-    return lines;
-  };
+				d={tapeY1}
+				stroke="var(--faded-fg)"
+				strokeWidth="1"
+				fill="none"
+				opacity="0.3"
+			/>
+			<m.path
+				d={tapeY2}
+				stroke="var(--faded-fg)"
+				strokeWidth="1"
+				fill="none"
+				opacity="0.3"
+			/>
 
-  // Tape path between the two reels (tangent line approximation)
-  const tapeY1 = cy - hubR * 0.7;
-  const tapeY2 = cy + hubR * 0.7;
+			{/* Guide heads */}
+			<m.circle cx={guidex1} cy={cy} r="2" fill="var(--rouge-500)" opacity="0.7"/>
+			<m.circle cx={guidex2} cy={cy} r="2" fill="var(--rouge-500)" opacity="0.7"/>
 
-  return (
-    <svg
-      ref={scopeRef}
-      viewBox="0 0 320 140"
-      className={cn("w-full select-none", className)}
-      style={{ maxWidth: diameter * 2.67 }}
-      aria-hidden="true"
-    >
-      {/* Tape path connecting reels */}
-      <path
-        d={`M ${cx1 + hubR} ${tapeY1} L ${cx2 - hubR} ${tapeY1}`}
-        stroke="var(--faded-fg)"
-        strokeWidth="1"
-        fill="none"
-        opacity="0.3"
-      />
-      <path
-        d={`M ${cx1 + hubR} ${tapeY2} L ${cx2 - hubR} ${tapeY2}`}
-        stroke="var(--faded-fg)"
-        strokeWidth="1"
-        fill="none"
-        opacity="0.3"
-      />
+			{/* Supply reel (left) */}
+			<g ref={supplyRef} style={{transformOrigin: `0 0`}}>
+				{/* Outer ring */}
+				<m.circle
+					cx={cx1}
+					cy={cy}
+					r={supplyR}
+					fill="none"
+					stroke="var(--faded-fg)"
+					strokeWidth="1.5"
+					opacity="0.6"
+				/>
+				{/* Inner ring */}
+				<m.circle
+					cx={cx1}
+					cy={cy}
+					r={smolHubr}
+					fill="var(--faded-fg)"
+					stroke="var(--faded-fg)"
+					strokeWidth="0.75"
+					opacity="0.85"
+				/>
+				{/* Tape reel*/}
+				<m.circle
+					cx={cx1} cy={cy} r={tapeR1}
+					fill={"none"}
+					clipPath={`url(#clip1)`}
+					style={{
+						strokeWidth: tapeWidth1,
+						stroke: "var(--muted-faded-fg)",
+						opacity: 0.5
+					}}/>
+				{/* Hub */}
+				<m.circle
+					cx={cx1}
+					cy={cy}
+					r={hubR}
+					fill="var(--off-bg)"
+					stroke="var(--faded-fg)"
+					strokeWidth="1.5"
+				/>
+				{/* Center dot */}
+				<m.circle cx={cx1} cy={cy} r="2.5" fill="var(--faded-fg)"/>
+				{/* Spokes */}
+				{new Array(REEL_SPOKE_COUNT).fill(1).map(
+					(_, index,) => {
+						return <Spoke cx={cx1} cy={cy} hubR={smolHubr} key={"spoke_" + index}
+						              r={supplyR} index={index} total={REEL_SPOKE_COUNT}/>
+					}
+				)}
+			</g>
 
-      {/* Guide heads */}
-      <circle cx={cx1 + supplyR + 8} cy={cy} r="2" fill="var(--rouge-500)" opacity="0.7" />
-      <circle cx={cx2 - takeupR - 8} cy={cy} r="2" fill="var(--rouge-500)" opacity="0.7" />
+			{/* Takeup reel (right) */}
+			<g ref={takeupRef}>
+				<m.circle
+					cx={cx2}
+					cy={cy}
+					r={takeupR}
+					fill="none"
+					stroke="var(--faded-fg)"
+					strokeWidth="1.5"
+					opacity="0.6"
+				/>
+				<m.circle
+					cx={cx2}
+					cy={cy}
+					r={smolHubrR}
+					fill="var(--faded-fg)"
+					stroke="var(--faded-fg)"
+					strokeWidth="0.75"
+					opacity="0.85"
+				/>
+				{/* Tape reel*/}
+				<m.circle
+					cx={cx2}
+					cy={cy}
+					r={tapeR2}
+					fill={"none"}
+					clipPath={`url(#clip2)`}
+					style={{
+						strokeWidth: tapeWidth2,
+						stroke: "var(--muted-faded-fg)", clipRule: "evenodd",
+						opacity: 0.5
+					}}/>
+				<m.circle
+					cx={cx2}
+					cy={cy}
+					r={hubR}
+					fill="var(--off-bg)"
+					stroke="var(--faded-fg)"
+					strokeWidth="1.5"
+				/>
+				<m.circle cx={cx2} cy={cy} r="2.5" fill="var(--faded-fg)"/>
+				{new Array(REEL_SPOKE_COUNT).fill(1).map(
+					(_, index,) => {
+						return <Spoke cx={cx2} cy={cy} hubR={smolHubrR} key={"spoke_" + index}
+						              r={takeupR} index={index} total={REEL_SPOKE_COUNT}/>
+					}
+				)}
+			</g>
 
-      {/* Supply reel (left) */}
-      <g ref={supplyRef}>
-        {/* Outer ring */}
-        <circle
-          cx={cx1}
-          cy={cy}
-          r={supplyR}
-          fill="none"
-          stroke="var(--faded-fg)"
-          strokeWidth="1.5"
-          opacity="0.6"
-        />
-        {/* Inner ring */}
-        <circle
-          cx={cx1}
-          cy={cy}
-          r={supplyR * 0.65}
-          fill="none"
-          stroke="var(--faded-fg)"
-          strokeWidth="0.75"
-          opacity="0.25"
-        />
-        {/* Hub */}
-        <circle
-          cx={cx1}
-          cy={cy}
-          r={hubR}
-          fill="var(--off-bg)"
-          stroke="var(--faded-fg)"
-          strokeWidth="1.5"
-        />
-        {/* Center dot */}
-        <circle cx={cx1} cy={cy} r="2.5" fill="var(--faded-fg)" />
-        {/* Spokes */}
-        {spokes(cx1, supplyR)}
-      </g>
-
-      {/* Takeup reel (right) */}
-      <g ref={takeupRef}>
-        <circle
-          cx={cx2}
-          cy={cy}
-          r={takeupR}
-          fill="none"
-          stroke="var(--faded-fg)"
-          strokeWidth="1.5"
-          opacity="0.6"
-        />
-        <circle
-          cx={cx2}
-          cy={cy}
-          r={takeupR * 0.65}
-          fill="none"
-          stroke="var(--faded-fg)"
-          strokeWidth="0.75"
-          opacity="0.25"
-        />
-        <circle
-          cx={cx2}
-          cy={cy}
-          r={hubR}
-          fill="var(--off-bg)"
-          stroke="var(--faded-fg)"
-          strokeWidth="1.5"
-        />
-        <circle cx={cx2} cy={cy} r="2.5" fill="var(--faded-fg)" />
-        {spokes(cx2, takeupR)}
-      </g>
-
-      {/* Labels */}
-      <text
-        x={cx1}
-        y={cy + maxR + 14}
-        textAnchor="middle"
-        fill="var(--faded-fg)"
-        fontSize="8"
-        fontFamily="var(--font-mono)"
-        letterSpacing="0.08em"
-        opacity="0.5"
-      >
-        SUPPLY
-      </text>
-      <text
-        x={cx2}
-        y={cy + maxR + 14}
-        textAnchor="middle"
-        fill="var(--faded-fg)"
-        fontSize="8"
-        fontFamily="var(--font-mono)"
-        letterSpacing="0.08em"
-        opacity="0.5"
-      >
-        TAKE-UP
-      </text>
-    </svg>
-  );
+			{/* Labels */}
+			<m.text
+				x={cx1}
+				y={textMax}
+				textAnchor="middle"
+				fill="var(--faded-fg)"
+				fontSize="8"
+				fontFamily="var(--font-mono)"
+				letterSpacing="0.08em"
+				opacity="0.5"
+			>
+				SUPPLY
+			</m.text>
+			<m.text
+				x={cx2}
+				y={textMax}
+				textAnchor="middle"
+				fill="var(--faded-fg)"
+				fontSize="8"
+				fontFamily="var(--font-mono)"
+				letterSpacing="0.08em"
+				opacity="0.5"
+			>
+				TAKE-UP
+			</m.text>
+		</m.svg>
+	);
 };
+const Spoke = ({
+	               cx,
+	               cy,
+	               r,
+	               index,
+	               hubR,
+	               total = REEL_SPOKE_COUNT,
+	               ...props
+               }: SVGMotionProps<SVGLineElement> & {
+	hubR: MotionValue<number>;
+	cy: MotionValue<number>;
+	cx: MotionValue<number>;
+	r: MotionValue<number>;
+	index: number;
+	total?: number;
+}) => {
+	// Generate spoke lines for a reel
+
+	const angle = (index * 360) / total;
+	const rad = (angle * Math.PI) / 180;
+	const x1 = useTransform(() => cx.get() + hubR.get() * Math.cos(rad)),
+		y1 = useTransform(() => cy.get() + hubR.get() * Math.sin(rad)),
+		x2 = useTransform(() => cx.get() + (r.get() - 2) * Math.cos(rad)),
+		y2 = useTransform(() => cy.get() + (r.get() - 2) * Math.sin(rad))
+	return <m.line
+		x1={x1}
+		y1={y1}
+		x2={x2}
+		y2={y2}
+		stroke="var(--faded-fg)"
+		strokeWidth="1.5"
+		strokeLinecap="round"
+		opacity="0.5"
+		{...props}
+	/>
+}

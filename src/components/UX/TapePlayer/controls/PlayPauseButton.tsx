@@ -1,5 +1,6 @@
 "use client";
 
+import {MotionBtn} from "@/components/UX/Button";
 import { cn } from "@/lib/utils";
 import { useRadio, useRadioStore } from "@/providers/RadioProvider";
 import { useGSAP } from "@gsap/react";
@@ -82,7 +83,7 @@ export const PlayPauseButton = ({
   const isLoading = trackStatus === "loading";
 
   return (
-    <m.button
+      <MotionBtn
       ref={wrapperRef}
       onClick={handleClick}
       disabled={isLoading}
@@ -113,6 +114,6 @@ export const PlayPauseButton = ({
           clipRule="evenodd"
         />
       </svg>
-    </m.button>
+      </MotionBtn>
   );
 };

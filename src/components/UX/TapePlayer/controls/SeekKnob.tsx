@@ -1,7 +1,20 @@
 "use client";
 
+import {useDomCursor} from "@/components/core/cursorWrapper";
+import {springGSAP} from "@/constants/animations";
 import { cn } from "@/lib/utils";
+import {useRadioStore} from "@/providers/RadioProvider";
+import {useLenis} from "lenis/react";
+import {
+  useMotionTemplate,
+  useMotionValue,
+  useMotionValueEvent,
+  useSpring,
+  useTransform
+} from "motion/react";
 import * as m from "motion/react-m";
+import {MouseEventHandler, useCallback, useEffect, useRef, useState} from "react";
+import {useShallow} from "zustand/shallow";
 import { useSeekKnob } from "../hooks/useSeekKnob";
 
 type SeekKnobProps = {
@@ -28,31 +41,81 @@ function formatTime(seconds: number): string {
 export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
   const {
     angle,
-    duration,
-    elapsedTime,
+
     onPanStart,
     onPan,
     onPanEnd,
     onWheel,
   } = useSeekKnob();
+  const e = useRadioStore(useShallow(r => r.elapsedTime))
+  const currentIndex = useRadioStore(useShallow(r => r.currentIndex))
+  const tracks = useRadioStore(useShallow(r => r.tracks))
+  const currentTrack = useMotionValue(tracks[currentIndex])
+  useEffect(() => {
+        currentTrack.set(tracks[currentIndex])
+      },
+      [
+        currentIndex,
+        tracks,
+        currentTrack
+      ]
+  )
+  const re = useRef<HTMLDivElement>(null!)
+  const dur = useTransform(() => currentTrack.get().duration);
+  useMotionValueEvent(dur, "change", (args) => {
 
-  const r = size / 2;
-  const progress = duration > 0 ? elapsedTime / duration : 0;
+    re.current.setAttribute("aria-valuemax", formatTime(args))
+  })
+  const elaps = useMotionValue(e);
+  useMotionValueEvent(elaps, "change", (elapsedTime) => {
+    re.current.setAttribute("aria-valuetext", formatTime(elapsedTime))
+    re.current.setAttribute("aria-valuenow", formatTime(Math.floor(elapsedTime)))
+  })
+  useEffect(
+      () => {
+        elaps.set(e)
+      },
+      [e, elaps]
+  )
+  const ra = useMotionValue(size / 2);
+  const rah = useTransform(() => ra.get() * 0.3)
+  const pro = useTransform(() => {
+    const duration = dur.get(), elapsedTime = elaps.get();
+    return duration > 0 ? elapsedTime / duration : 0;
+  })
   const notchCount = 20;
+  const lenis = useLenis();
+  const [isActive, setIsActive] = useState(false)
+  const onEnter: MouseEventHandler<HTMLDivElement> = useCallback((e) => {
+    setIsActive(true)
+  }, [])
+  const onLeave: MouseEventHandler<HTMLDivElement> = useCallback(e => {
+    setIsActive(false)
+    lenis && lenis.start()
+  }, [lenis])
+  const {onMouseEnter, onMouseLeave} = useDomCursor({
+    onEnter, onLeave
+  })
 
   // SVG arc for progress indicator
-  const arcR = r - 6;
-  const circumference = 2 * Math.PI * arcR;
-  const arcOffset = circumference * (1 - progress);
-
+  const arcR = useTransform(() => ra.get() - 6);
+  const c = useTransform(() => 2 * Math.PI * arcR.get());
+  const circumference = useSpring(c, springGSAP.power4.inOut);
+  const arcOffse =
+      useTransform(
+          () => circumference.get() * (1 - pro.get()))
+  const arcOffset = useSpring(arcOffse, springGSAP.power4.inOut)
+  const tra = useMotionTemplate`rotate(-90deg)`
   return (
     <m.div
       className={cn("relative flex flex-col items-center gap-1", className)}
-      onWheel={onWheel}
+      data-active={isActive} onWheel={onWheel}
+      onMouseLeave={onMouseLeave}
+      onMouseEnter={onMouseEnter}
     >
       {/* Position label */}
       <span className="font-mono text-[0.6rem] tabular-nums tracking-tight text-faded-fg">
-        {formatTime(elapsedTime)}
+        {formatTime(e)}
       </span>
 
       {/* The knob */}
@@ -60,8 +123,8 @@ export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
         className={cn(
           "relative cursor-grab touch-none select-none rounded-full",
           "border border-faded-fg/20",
-          "active:cursor-grabbing"
-        )}
+        )} ref={re}
+
         style={{ width: size, height: size }}
         onPanStart={onPanStart}
         onPan={onPan}
@@ -69,20 +132,18 @@ export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
         role="slider"
         aria-label="Seek position"
         aria-valuemin={0}
-        aria-valuemax={Math.floor(duration)}
-        aria-valuenow={Math.floor(elapsedTime)}
-        aria-valuetext={formatTime(elapsedTime)}
+
         tabIndex={0}
       >
-        <svg
+        <m.svg
           viewBox={`0 0 ${size} ${size}`}
           className="h-full w-full"
           aria-hidden="true"
         >
           {/* Progress arc (background) */}
-          <circle
-            cx={r}
-            cy={r}
+          <m.circle
+              cx={ra}
+              cy={ra}
             r={arcR}
             fill="none"
             stroke="var(--faded-fg)"
@@ -91,9 +152,9 @@ export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
           />
 
           {/* Progress arc (filled) */}
-          <circle
-            cx={r}
-            cy={r}
+          <m.circle
+              cx={ra}
+              cy={ra}
             r={arcR}
             fill="none"
             stroke="var(--bleu-400)"
@@ -102,12 +163,15 @@ export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
             strokeDashoffset={arcOffset}
             strokeLinecap="round"
             opacity="0.8"
-            transform={`rotate(-90 ${r} ${r})`}
+              style={{
+                transform: tra
+              }}
           />
 
           {/* Outer ribbed texture */}
           {Array.from({ length: notchCount }).map((_, i) => {
             const a = (i * 360) / notchCount;
+            const r = ra.get()
             const rad = (a * Math.PI) / 180;
             const outer = r - 1;
             const inner = r - 3.5;
@@ -124,18 +188,18 @@ export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
               />
             );
           })}
-        </svg>
+        </m.svg>
 
         {/* Position indicator — rotates with spring angle */}
         <m.div
           className="absolute inset-0 flex items-start justify-center"
           style={{ rotate: angle }}
         >
-          <div
+          <m.div
             className="rounded-full bg-bleu-400"
             style={{
               width: 2.5,
-              height: r * 0.3,
+              height: rah,
               marginTop: 5,
             }}
           />
