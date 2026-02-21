@@ -19,9 +19,7 @@ export default async function RootLayout({
 	return (
 		<>
 			<Layout>{children}</Layout>
-			<Suspense><RadioProvider>
-				<SideDrawer/>
-			</RadioProvider></Suspense>
+
 		</>
 	);
 }

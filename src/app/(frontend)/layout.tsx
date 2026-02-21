@@ -10,11 +10,13 @@ import {RP_Menu} from "@/components/UX/Menu";
 
 // Client Components (imported dynamically to create islands)
 import {ScrollIndicator} from "@/components/UX/ScrollIndicator";
+import {SideDrawer} from "@/components/UX/SideDrawer";
 
 import {BetterAuthProvider} from "@/lib/auth/context";
 import {getContextProps} from "@/lib/auth/context/get-context-props";
 import {cn} from "@/lib/utils";
 import {LivePreviewListener} from "@/payload/components/LivePreviewListener";
+import {RadioProvider} from "@/providers/RadioProvider";
 import {InitTheme} from "@/providers/Theme/InitTheme";
 import "@/styles/hideaway.scss";
 import "@/styles/reading.scss";
@@ -68,12 +70,14 @@ export default async function RootLayout({
 						<RP_Menu/>
 						<ScrollIndicator/>
 						<Main>
-							<ClientLayout>
+							<ClientLayout><Suspense><RadioProvider>
 								<MenuMediaPreview>
 									<VGradient/>
 								</MenuMediaPreview>
 								<ContentMask>
-									{children}</ContentMask></ClientLayout>
+									{children}
+									<SideDrawer/>
+								</ContentMask> </RadioProvider></Suspense></ClientLayout>
 						</Main>
 					</ClientProviders>
 

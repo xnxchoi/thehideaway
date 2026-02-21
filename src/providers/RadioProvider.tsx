@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 "use client";
 
+import {
+	DEFAULT_FADE_DURATION_MS,
+	DEFAULT_THRESHOLD_SECONDS,
+	DEFAULT_TRANSITION_DURATION_MS
+} from "@/providers/radioConstant";
 import {createRadioStore, RadioStore, type RP_Track} from "@/stores/Radio/Radio";
-import {Howl} from "howler";
+import {experimental_streamedQuery, useQuery} from "@tanstack/react-query";
+import {Howl, HowlOptions} from "howler";
 import {parseWebStream} from "music-metadata";
 import {nanoid} from "nanoid";
 import {
@@ -69,6 +75,16 @@ export const useRadioAPI = () => {
 const RadioInternal = ({children}: { children: ReactNode }) => {
 	const ref = useRef<RadioInternalAPI>(null);
 
+	const getTracks = useCallback(async ({title, extension = "ogg"}: {
+		title: string;
+		extension?: "ogg" | "mp3"
+	}) => {
+		const track = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/track_media/${title}.${extension}`, {
+			headers: {
+				"Content-Type": `audio/${extension}`
+			}
+		})
+	}, [])
 	const tracks = useMemo(
 		() => [
 			{
@@ -145,7 +161,7 @@ const RadioInternal = ({children}: { children: ReactNode }) => {
 					// Parse the metadata from the web stream
 					if (!webStream) continue;
 					const metadata = await parseWebStream(webStream, "audio/ogg");
-					console.log(metadata);
+
 					const {title, artist, album} = metadata.common || {};
 					if (!id || !title || !url || !artist) continue;
 					radioTracks.push({
@@ -192,10 +208,7 @@ const RadioInternal = ({children}: { children: ReactNode }) => {
 		</InternalRadioContext.Provider>
 	);
 };
-const DEFAULT_THRESHOLD_SECONDS = 3; //3 seconds
-const DEFAULT_THRESHOLD_MS = DEFAULT_THRESHOLD_SECONDS * 1000;
-const DEFAULT_FADE_DURATION_MS = 300; //300ms
-const DEFAULT_TRANSITION_DURATION_MS = DEFAULT_THRESHOLD_MS / 2;
+
 export type TrackRP = {
 	h: Howl;
 	trackIndex: number;

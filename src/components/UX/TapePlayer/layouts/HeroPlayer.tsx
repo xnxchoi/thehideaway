@@ -5,7 +5,7 @@ import { useRadioStore } from "@/providers/RadioProvider";
 import * as m from "motion/react-m";
 import { useRef } from "react";
 import { useShallow } from "zustand/shallow";
-import { PlayPauseButton } from "../controls/PlayPauseButton";
+import {PlayPauseButton} from "@/components/UX/TapePlayer";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { TapeReels } from "../visuals/TapeReels";
 import { TrackInfo } from "../visuals/TrackInfo";

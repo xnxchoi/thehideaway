@@ -19,7 +19,7 @@ function formatTapeTime(seconds: number): string {
   const s = Math.floor(abs % 60);
   const f = Math.floor((abs % 1) * 30); // 30 "frames" per second
   const sign = seconds < 0 ? "-" : "";
-  return `${sign}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}:${String(f).padStart(2, "0")}`;
+  return `${sign}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 /** A single digit cell with flip animation on change */

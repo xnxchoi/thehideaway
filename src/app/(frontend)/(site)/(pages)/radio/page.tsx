@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function RadioPage() {
   return (
     <RPage slug={["radio"]} type={"pages"}>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex my-10 min-h-screen flex-col">
         {/* Hero section with scroll-linked tape reels */}
         <TapePlayer variant="hero" />
 
