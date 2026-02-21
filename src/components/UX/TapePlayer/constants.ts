@@ -18,6 +18,12 @@ export const DEFAULT_PLAYBACK_RATE = 1.0;
 // Dial long-press threshold for switching to scrub mode (ms)
 export const SCRUB_MODE_THRESHOLD = 300;
 
+// Scroll wheel dampening: ~2.5 scroll ticks per speed step change
+export const WHEEL_STEP_THRESHOLD = 150;
+
+// Seek knob: degrees of rotation per second of seek
+export const SEEK_KNOB_SENSITIVITY = 0.5;
+
 // Reel animation
 export const REEL_BASE_DURATION = 8; // seconds per full rotation at 1x speed
 export const REEL_SPOKE_COUNT = 3;

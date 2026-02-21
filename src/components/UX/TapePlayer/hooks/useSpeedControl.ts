@@ -10,6 +10,7 @@ import {
   SCRUB_MODE_THRESHOLD,
   SPEED_STEPS,
   SPEED_STEP_ANGLE,
+  WHEEL_STEP_THRESHOLD,
 } from "../constants";
 import { useHaptics } from "./useHaptics";
 import type { SpeedDialMode } from "../types";
@@ -43,6 +44,9 @@ export function useSpeedControl() {
 
   // Cumulative delta for scrub mode
   const scrubAccum = useRef(0);
+
+  // Scroll wheel accumulator for dampening
+  const wheelAccum = useRef(0);
 
   // Long-press timer for mobile scrub mode
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,21 +135,28 @@ export function useSpeedControl() {
     }
   }, [isTouch, setSeeking]);
 
-  // Scroll wheel for desktop
+  // Scroll wheel for desktop — dampened with accumulation
   const onWheel = useCallback(
     (e: React.WheelEvent) => {
       if (modeRef.current === "scrub") return;
       e.preventDefault();
-      const direction = e.deltaY > 0 ? -1 : 1;
-      const newIdx = Math.max(
-        0,
-        Math.min(SPEED_STEPS.length - 1, stepIndex.current + direction)
-      );
-      if (newIdx !== stepIndex.current) {
-        stepIndex.current = newIdx;
-        setPlaybackRate(SPEED_STEPS[newIdx]);
-        rawAngle.set(newIdx * SPEED_STEP_ANGLE);
-        haptics.tick();
+
+      wheelAccum.current += e.deltaY;
+
+      if (Math.abs(wheelAccum.current) >= WHEEL_STEP_THRESHOLD) {
+        const direction = wheelAccum.current > 0 ? -1 : 1;
+        wheelAccum.current = 0;
+
+        const newIdx = Math.max(
+          0,
+          Math.min(SPEED_STEPS.length - 1, stepIndex.current + direction)
+        );
+        if (newIdx !== stepIndex.current) {
+          stepIndex.current = newIdx;
+          setPlaybackRate(SPEED_STEPS[newIdx]);
+          rawAngle.set(newIdx * SPEED_STEP_ANGLE);
+          haptics.tick();
+        }
       }
     },
     [setPlaybackRate, rawAngle, haptics]

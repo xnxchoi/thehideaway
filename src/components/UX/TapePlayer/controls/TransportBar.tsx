@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { ForwardButton } from "./ForwardButton";
 import { PlayPauseButton } from "./PlayPauseButton";
 import { RewindButton } from "./RewindButton";
 import { SpeedDial } from "./SpeedDial";
@@ -33,6 +34,7 @@ export const TransportBar = ({
     >
       <RewindButton size={buttonSize} />
       <PlayPauseButton size={buttonSize + (compact ? 4 : 8)} />
+      <ForwardButton size={buttonSize} />
       {showDial && <SpeedDial size={dialSize} />}
     </div>
   );

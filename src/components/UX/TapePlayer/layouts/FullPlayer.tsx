@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
+import { SeekKnob } from "../controls/SeekKnob";
 import { TransportBar } from "../controls/TransportBar";
 import { ProgressRail } from "../visuals/ProgressRail";
 import { TapeCounter } from "../visuals/TapeCounter";
@@ -48,8 +49,9 @@ export const FullPlayer = ({ className }: FullPlayerProps) => {
       {/* Track info */}
       <TrackInfo size="full" />
 
-      {/* Progress / seek bar */}
+      {/* Progress display (passive) + Seek knob */}
       <ProgressRail className="w-full" />
+      <SeekKnob size={56} />
 
       {/* Transport controls with speed dial */}
       <TransportBar

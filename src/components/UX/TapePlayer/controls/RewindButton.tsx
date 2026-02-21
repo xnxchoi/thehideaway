@@ -19,7 +19,7 @@ type RewindButtonProps = {
  * - Rotation -30deg spring on press for tactile feel
  */
 export const RewindButton = ({ size = 44, className }: RewindButtonProps) => {
-  const { seek, setCurrentTrack } = useRadio();
+  const { seek, skipToTrack } = useRadio();
   const elapsedTime = useRadioStore(useShallow((t) => t.elapsedTime));
   const currentIndex = useRadioStore(useShallow((t) => t.currentIndex));
   const haptics = useHaptics();
@@ -30,10 +30,10 @@ export const RewindButton = ({ size = 44, className }: RewindButtonProps) => {
       seek(0);
     } else {
       // Go to previous track
-      setCurrentTrack(currentIndex - 1);
+      skipToTrack(currentIndex - 1);
     }
     haptics.impact();
-  }, [elapsedTime, seek, setCurrentTrack, currentIndex, haptics]);
+  }, [elapsedTime, seek, skipToTrack, currentIndex, haptics]);
 
   return (
     <m.button

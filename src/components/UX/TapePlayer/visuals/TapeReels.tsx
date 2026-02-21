@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useMotionValue, useMotionValueEvent, useSpring } from "motion/react";
+import { useRef, useState } from "react";
 import { useTapeAnimation } from "../hooks/useTapeAnimation";
 import { REEL_SPOKE_COUNT } from "../constants";
 
@@ -24,7 +25,14 @@ export const TapeReels = ({ diameter = 120, className }: TapeReelsProps) => {
   const supplyRef = useRef<SVGGElement>(null);
   const takeupRef = useRef<SVGGElement>(null);
 
-  const { progress } = useTapeAnimation(supplyRef, takeupRef, scopeRef);
+  const { progress: rawProgress } = useTapeAnimation(supplyRef, takeupRef, scopeRef);
+
+  // Spring the progress so reel radii change smoothly (especially on track switch)
+  const progressMV = useMotionValue(rawProgress);
+  progressMV.set(rawProgress);
+  const smoothProgressMV = useSpring(progressMV, { stiffness: 60, damping: 18 });
+  const [progress, setProgress] = useState(rawProgress);
+  useMotionValueEvent(smoothProgressMV, "change", (v) => setProgress(v));
 
   // Reel radii: supply shrinks, takeup grows
   const minR = 18;

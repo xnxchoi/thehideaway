@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { SeekKnob } from "../controls/SeekKnob";
 import { TransportBar } from "../controls/TransportBar";
 import { ProgressRail } from "../visuals/ProgressRail";
 import { TapeCounter } from "../visuals/TapeCounter";
@@ -33,11 +34,12 @@ export const SidebarPlayer = ({ className }: SidebarPlayerProps) => {
     >
       <TrackInfo size="compact" className="w-full" />
       <ProgressRail thin className="w-full" />
-      <div className="flex w-full items-center justify-between">
+      <div className="flex w-full items-center gap-2">
         <TapeCounter
           height={sizes.counterHeight}
           className="flex-1 text-[0.65rem]"
         />
+        <SeekKnob size={36} />
       </div>
       <TransportBar compact showDial={false} />
     </div>

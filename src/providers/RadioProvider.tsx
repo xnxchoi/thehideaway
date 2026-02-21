@@ -221,6 +221,7 @@ type RadioOuterState = {
 	toggle: () => void;
 	playing: boolean;
 	setCurrentTrack: (index: number) => void;
+	skipToTrack: (index: number) => void;
 	setPlaybackRate: (rate: number) => void;
 	seek: (position: number) => void;
 };
@@ -233,6 +234,7 @@ const RadioOuterContext = createContext<RadioOuterState | null>(null);
  * @todo this will inevitably introduce headaches.
  */
 const RadioOuterProvider = ({children}: { children: ReactNode }) => {
+	const storeRef = useContext(InternalRadioContext);
 	const defaultHowlOptions = useMemo(
 		() => ({
 			html5: true,
@@ -399,6 +401,77 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 	}, []);
 	const switcher = useCallback(() => {
 	}, []);
+
+	/**
+	 * Skip to a specific track by index.
+	 * Unlike setCurrentTrack (which only updates the store), this actually
+	 * switches the Howler audio source to the new track.
+	 */
+	const skipToTrack = useCallback(
+		(requestedIndex: number) => {
+			if (!tracker.current || !current.current?.h) return;
+			if (tracks.length === 0) return;
+
+			// Cancel the current rAF loop
+			if (animationFrameID.current) {
+				cancelAnimationFrame(animationFrameID.current);
+				animationFrameID.current = null;
+			}
+
+			// Clear any pending timeouts
+			if (timoutID.current) {
+				clearTimeout(timoutID.current);
+				timoutID.current = null;
+			}
+
+			const wasPlaying = playing;
+
+			// Stop current audio
+			if (current.current.h.playing()) {
+				current.current.h.stop();
+			}
+
+			// Update store index (handles wrap-around, shuffle, reverse)
+			setCurrentTrack(requestedIndex);
+
+			// Get the resolved track from the store after update
+			const resolvedState = storeRef?.getState();
+			const resolvedIndex = resolvedState?.currentIndex ?? 0;
+			const newTrack = tracks[resolvedIndex];
+			if (!newTrack || !newTrack.url) return;
+
+			// Reset phase
+			phase.current = PLAY;
+
+			// Clean track times for the new track
+			cleanTrack();
+
+			// Switch the Howler source
+			current.current.h.switchTrack({
+				src: [newTrack.url],
+				...defaultHowlOptions,
+			});
+			current.current.trackIndex = resolvedIndex;
+
+			// Re-observe track status
+			if (unobserver.current) {
+				unobserver.current();
+				unobserver.current = null;
+			}
+			unobserver.current = observeTrackStatus(current.current.h);
+
+			// If was playing, start playing the new track
+			if (wasPlaying) {
+				current.current.h.once("load", () => {
+					if (current.current?.h) {
+						current.current.h.play();
+					}
+				});
+			}
+		},
+		[tracks, playing, setCurrentTrack, storeRef, cleanTrack, defaultHowlOptions, observeTrackStatus]
+	);
+
 	useEffect(() => {
 		if (!tracker.current) {
 			if (unobserver.current) {
@@ -414,7 +487,6 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 			}
 			return;
 		}
-		cleanTrack();
 
 		const phasedCallback = () => {
 			if (!tracker.current) {
@@ -533,6 +605,15 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 			current.current.h.play();
 			phasedCallback();
 		} else {
+			// Capture the current time before pausing so the counter holds its value
+			if (current.current?.h) {
+				const dur = current.current.h.duration();
+				const elapsed = current.current.h.seek();
+				if (dur > 0 && typeof elapsed === "number") {
+					setTrackTime(elapsed, dur);
+				}
+			}
+
 			if (current.current.h.playing()) {
 				current.current.h.once("fade", () => {
 					current.current.h.pause();
@@ -548,7 +629,6 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 			animationFrameID.current = null;
 		}
 	}, [
-		cleanTrack,
 		clearTimout,
 		defaultHowlOptions,
 		observeTrackStatus,
@@ -573,6 +653,7 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 				setPaused,
 				playing,
 				setCurrentTrack,
+				skipToTrack,
 				toggle,
 				currentTrackPlayer: current.current,
 				setPlaybackRate,
