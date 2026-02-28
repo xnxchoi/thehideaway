@@ -76,7 +76,7 @@ export const TapeCounter = ({height = 36, className}: TapeCounterProps) => {
 			setRemainingMinutes(0);
 			setRemainingSeconds(0);
 		}
-	}, [dura, e])
+	}, [dura, e, currentTrackIndex])
 
 	return (
 		<m.div
