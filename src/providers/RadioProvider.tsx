@@ -385,12 +385,6 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 			if (!tracker.current || !current.current?.h) return;
 			if (tracks.length === 0) return;
 
-			// Cancel the current rAF loop
-			if (animationFrameID.current) {
-				cancelAnimationFrame(animationFrameID.current);
-				animationFrameID.current = null;
-			}
-
 			// Clear any pending timeouts
 			if (timoutID.current) {
 				clearTimeout(timoutID.current);
@@ -498,6 +492,7 @@ const RadioOuterProvider = ({children}: { children: ReactNode }) => {
 						next.current.h.unload();
 					}
 				});
+				next.current.trackIndex = nextIndex;
 			} else if (phase.current === FADE_IN) {
 				phase.current = PLAY;
 				clearTimout();
