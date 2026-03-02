@@ -1,5 +1,5 @@
 import {errorToast} from "@/components/ui/sonner";
-import {betterAuthOptions} from "@/lib/auth/options";
+import type {BetterAuthOptions} from "@/lib/auth/options";
 import {accessControl} from "@/lib/auth/permissions";
 import {admin, author, editor, patron, user} from "@/lib/auth/roles";
 import {passkeyClient} from "@better-auth/passkey/client";
@@ -106,7 +106,7 @@ export const authClient = createAuthClient({
 			}
 		}
 	},
-	$InferAuth: betterAuthOptions
+	$InferAuth: {} as BetterAuthOptions
 });
 
 export const {
