@@ -3,6 +3,7 @@ import { AuthUIProvider } from "@/lib/auth/betterauth-ui/src";
 import { authClient } from "@/lib/auth/client";
 import { Link } from "@/components/UX/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
+import { NaverIcon } from "@/lib/auth/betterauth-ui/src/components/provider-icons";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const router = useTransitionRouter();
@@ -18,7 +19,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       }}
       passkey={true}
       credentials={{
-        forgotPassword: false,
+        forgotPassword: true,
         confirmPassword: false,
         username: true
       }}
@@ -28,6 +29,11 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
         }
       }}
       social={{ providers: ["google"] }}
+      genericOAuth={{
+        providers: [
+          { provider: "naver", name: "Naver", icon: NaverIcon }
+        ]
+      }}
       basePath="/"
       Link={Link}
       viewPaths={{

@@ -25,7 +25,13 @@ export default function Page() {
             </div>
             The Hideaway.
           </Link>
-          <AuthCard view="SIGN_UP" />
+          <AuthCard view="SIGN_UP" redirectTo="/me" />
+          <p className="text-center text-xs opacity-40">
+            By signing up, you agree to our{" "}
+            <Link href="/terms" className="underline hover:opacity-70">Terms</Link>
+            {" "}and{" "}
+            <Link href="/privacy" className="underline hover:opacity-70">Privacy Policy</Link>.
+          </p>
         </div>
 	      <Suspense>
 		      <VGradientModule/></Suspense>

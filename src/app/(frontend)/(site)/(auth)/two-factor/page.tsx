@@ -16,11 +16,13 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { Link } from "@/components/UX/Link/Link";
 import { useState } from "react";
 import { RPage } from "@/components/UX/Transition";
+import { useTransitionRouter } from "next-transition-router";
 
 export default function Component() {
   const [totpCode, setTotpCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const router = useTransitionRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +38,7 @@ export default function Component() {
         if (res.data?.token) {
           setSuccess(true);
           setError("");
+          router.push("/me");
         } else {
           setError("Invalid TOTP code");
         }
