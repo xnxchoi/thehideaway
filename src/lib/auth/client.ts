@@ -6,11 +6,13 @@ import {passkeyClient} from "@better-auth/passkey/client";
 import {
 	adminClient,
 	emailOTPClient,
+	genericOAuthClient,
 	inferAdditionalFields,
 	magicLinkClient,
 	multiSessionClient,
 	organizationClient,
-	twoFactorClient
+	twoFactorClient,
+	usernameClient
 } from "better-auth/client/plugins";
 import {createAuthClient} from "better-auth/react";
 
@@ -22,12 +24,11 @@ export const authClient = createAuthClient({
 				window.location.href = "/two-factor";
 			}
 		}),
-		// usernameClient(),
-		// anonymousClient(),
-		// phoneNumberClient(),
+		usernameClient(),
 		passkeyClient(),
 		magicLinkClient(),
 		emailOTPClient(),
+		genericOAuthClient(),
 		organizationClient(),
 		adminClient({
 			ac: accessControl,
@@ -38,7 +39,7 @@ export const authClient = createAuthClient({
 				patron,
 				editor
 			}
-		}), // apiKeyClient(),
+		}),
 		multiSessionClient(),
 		inferAdditionalFields({
 			user: {

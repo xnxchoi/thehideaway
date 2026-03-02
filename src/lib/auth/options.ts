@@ -1,39 +1,41 @@
 // import { openAPI } from "better-auth/plugins/open-api";
-// import { nextCookies } from "better-auth/plugins/next-cookies";
-import {patron} from "@/lib/auth/roles";
 import {passkey} from "@better-auth/passkey";
 import type {BetterAuthOptions as BetterAuthOptionsType} from "better-auth";
 import {emailHarmony} from "better-auth-harmony";
 import {nextCookies} from "better-auth/next-js";
 import {admin as adminPlugin} from "better-auth/plugins/admin";
 import {emailOTP} from "better-auth/plugins/email-otp";
+import {genericOAuth} from "better-auth/plugins/generic-oauth";
 import {magicLink} from "better-auth/plugins/magic-link";
 import {multiSession} from "better-auth/plugins/multi-session";
 import {organization} from "better-auth/plugins/organization";
 import {twoFactor} from "better-auth/plugins/two-factor";
 import {username} from "better-auth/plugins/username";
 import type {PayloadAuthOptions} from "payload-auth";
+import {BetterAuthEmailService} from "@/lib/email/better-auth-integration";
 
-// Initialize email service
-// const emailService = new BetterAuthEmailService();
+const emailService = new BetterAuthEmailService();
+
+const appURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL!;
+const trustedOrigins = [appURL];
+if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
+	trustedOrigins.push(process.env.NEXT_PUBLIC_PRODUCTION_URL);
+}
 
 const options: BetterAuthOptionsType = {
 	appName: "hideaway-validator",
-	baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
-	trustedOrigins: [process.env.NEXT_PUBLIC_BETTER_AUTH_URL!],
+	baseURL: appURL,
+	trustedOrigins,
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: true,
-		// autoSignIn: true,
-		// async sendResetPassword({user, url}) {
-		// 	try {
-		// 		await emailService.sendPasswordReset(user.email, url);
-		// 	} catch (error) {
-		// 		console.error("Failed to send password reset email:", error);
-		// 		// Fallback to console log if email fails
-		// 		console.log("Send reset password for user: ", user.id, "at url", url);
-		// 	}
-		// }
+		async sendResetPassword({user, url}) {
+			try {
+				await emailService.sendPasswordReset(user.email, url);
+			} catch (error) {
+				console.error("Failed to send password reset email:", error);
+			}
+		}
 	},
 	socialProviders: {
 		google: {
@@ -59,31 +61,26 @@ const options: BetterAuthOptionsType = {
 	emailVerification: {
 		sendOnSignUp: true,
 		autoSignInAfterVerification: true,
-		// async sendVerificationEmail({user, url}) {
-		// 	try {
-		// 		await emailService.sendOTP(
-		// 			user.email,
-		// 			url.split("=").pop() || "",
-		// 			"email-verification"
-		// 		);
-		// 	} catch (error) {
-		// 		console.error("Failed to send verification email:", error);
-		// 		console.log("Send verification email for user: ", url);
-		// 	}
-		// }
+		async sendVerificationEmail({user, url}) {
+			try {
+				// Better Auth passes the full URL; OTP is the token in the URL
+				const otp = url.split("=").pop() || "";
+				await emailService.sendOTP(user.email, otp, "email-verification");
+			} catch (error) {
+				console.error("Failed to send verification email:", error);
+			}
+		}
 	},
 
 	user: {
 		changeEmail: {
-			enabled: false,
+			enabled: true,
 			sendChangeEmailVerification: async ({user, newEmail, url, token}) => {
-				console.log(
-					"Send change email verification for user: ",
-					user,
-					newEmail,
-					url,
-					token
-				);
+				try {
+					await emailService.sendOTP(newEmail, token, "email-verification");
+				} catch (error) {
+					console.error("Failed to send change email verification:", error);
+				}
 			}
 		},
 		deleteUser: {
@@ -115,7 +112,7 @@ const options: BetterAuthOptionsType = {
 	account: {
 		accountLinking: {
 			enabled: true,
-			trustedProviders: ["google", "email-password"]
+			trustedProviders: ["google", "email-password", "naver"]
 		}
 	},
 
@@ -133,12 +130,10 @@ export const betterAuthPlugins = [
 		otpOptions: {
 			async sendOTP({user, otp}) {
 				try {
-					// UserWithTwoFactor doesn't have email property directly, need to get it from the user object
 					const userEmail = (user as any).email || "";
-					// await emailService.send2FACode(userEmail, otp);
+					await emailService.send2FACode(userEmail, otp);
 				} catch (error) {
 					console.error("Failed to send 2FA OTP:", error);
-					console.log("Send OTP for user: ", user, otp);
 				}
 			}
 		}
@@ -146,31 +141,29 @@ export const betterAuthPlugins = [
 	magicLink({
 		sendMagicLink: async ({email, token, url}, _request) => {
 			try {
-				// await emailService.sendMagicLink(email, token, url);
+				await emailService.sendMagicLink(email, token, url);
 			} catch (error) {
 				console.error("Failed to send magic link:", error);
-				console.log("Send magic link for user: ", email, token, url);
 			}
 		}
 	}),
 	emailOTP({
 		async sendVerificationOTP({email, otp, type}) {
 			try {
-				// await emailService.sendOTP(
-				// 	email,
-				// 	otp,
-				// 	type as "sign-in" | "email-verification"
-				// );
+				await emailService.sendOTP(
+					email,
+					otp,
+					type as "sign-in" | "email-verification"
+				);
 			} catch (error) {
 				console.error("Failed to send verification OTP:", error);
-				console.log("Send verification OTP for user: ", email, otp, type);
 			}
 		}
 	}),
 	passkey({
-		rpID: "localhost",
-		rpName: "Localhost",
-		origin: "http://localhost:3000"
+		rpID: new URL(appURL).hostname,
+		rpName: "The Hideaway",
+		origin: appURL
 	}),
 
 	adminPlugin(),
@@ -180,12 +173,43 @@ export const betterAuthPlugins = [
 			enabled: true
 		},
 		async sendInvitationEmail(data) {
-			const inviteLink = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/accept-invitation/${data.id}`;
+			const inviteLink = `${appURL}/accept-invitation/${data.id}`;
 			console.log("Send invite for org: ", data, inviteLink);
 		},
 
 	}),
 	multiSession(),
+	genericOAuth({
+		config: [
+			{
+				providerId: "naver",
+				clientId: process.env.AUTH_NAVER_ID!,
+				clientSecret: process.env.AUTH_NAVER_SECRET!,
+				authorizationUrl: "https://nid.naver.com/oauth2.0/authorize",
+				tokenUrl: "https://nid.naver.com/oauth2.0/token",
+				userInfoUrl: "https://openapi.naver.com/v1/nid/me",
+				scopes: ["profile", "email"],
+				mapProfileToUser: async (profile) => {
+					// Naver user info is nested under profile.response
+					const p = (profile as any).response || profile;
+					const email = p.email || "";
+					const username = email.split("@")[0] || p.nickname || p.id;
+					return {
+						email,
+						name: p.name || p.nickname || username,
+						username,
+						displayUsername: p.nickname || p.name || username,
+						emailVerified: true,
+						slug: username,
+						firstName: p.name?.split(" ")[0],
+						image: p.profile_image,
+						banned: false,
+						onboarded: false
+					};
+				}
+			}
+		]
+	}),
 	// openAPI(),
 	nextCookies(),
 ] satisfies BetterAuthOptionsType["plugins"];
@@ -279,35 +303,6 @@ export const betterAuthPluginOptions = {
 				}
 			};
 
-			// options.collection.fields = [
-			//   {
-			//     type: "tabs",
-			//     admin: {
-			//       components: {
-			//         Field: {
-			//           path: "@/payload/fields/Tabs/UserTabs.tsx#TabsField",
-			//           clientProps: {
-			//             tabsAccess: {
-			//               Collections: "author"
-			//             }
-			//           }
-			//         }
-			//       }
-			//     },
-			//     tabs: [
-			//       {
-			//         label: "Profile", fields: profileFields
-			//       },
-			//       {
-			//         label: "Account", fields: accountFields
-			//       }, {
-			//         label: "Collections", fields: [
-
-			// ]
-			//       },
-			//     ]
-			//   }
-			// ]
 			return collection;
 		}
 	},

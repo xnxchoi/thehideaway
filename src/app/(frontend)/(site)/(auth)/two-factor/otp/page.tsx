@@ -23,8 +23,8 @@ export default function Component() {
 	const [isError, setIsError] = useState(false);
 	const [isValidated, setIsValidated] = useState(false);
 
-	// In a real app, this email would come from your authentication context
-	const userEmail = "user@example.com";
+	const { data: session } = authClient.useSession();
+	const userEmail = session?.user?.email ?? "";
 
 	const requestOTP = async () => {
 		const res = await authClient.twoFactor.sendOtp();
@@ -43,7 +43,7 @@ export default function Component() {
 			setMessage("OTP validated successfully");
 			setIsError(false);
 			setIsValidated(true);
-			router.push("/");
+			router.push("/me");
 		} else {
 			setIsError(true);
 			setMessage("Invalid OTP");
