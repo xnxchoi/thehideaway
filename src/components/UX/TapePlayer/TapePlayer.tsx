@@ -20,14 +20,14 @@ import type { TapePlayerProps } from "./types";
  *   - "drawer": Compact drawer (Mobile)
  *   - "full": Complete tape deck
  */
-export const TapePlayer = ({ variant, className }: TapePlayerProps) => {
+export const TapePlayer = ({variant, className, scrollHint = true}: TapePlayerProps) => {
   const hasRadio = useRadioStore(useShallow((t) => t.hasRadio));
 
   if (!hasRadio) return null;
 
   switch (variant) {
     case "hero":
-      return <HeroPlayer className={className} />;
+      return <HeroPlayer className={className} scrollHint={scrollHint}/>;
     case "sidebar":
       return <SidebarPlayer className={className} />;
     case "drawer":

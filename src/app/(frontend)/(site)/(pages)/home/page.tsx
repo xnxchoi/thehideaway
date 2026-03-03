@@ -1,4 +1,5 @@
 import {HomeArticleLayout} from "@/components/layouts/HomeArticleLayout";
+import {TapePlayer} from "@/components/UX/TapePlayer";
 import {RPage} from "@/components/UX/Transition";
 import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
 import {Metadata} from "next";
@@ -11,7 +12,11 @@ export default async function HomePage() {
 			<div className="pt-30 pb-10 md:pt-[23px] lg:pt-[80px]">
 				<div>
 					<Suspense>
-						<HomeArticleLayout posts={posts.docs}/></Suspense>
+						<HomeArticleLayout posts={posts.docs}/>
+					</Suspense>
+				</div>
+				<div className={"p-5 overflow-hidden rounded-lg h-[40bvh]"}>
+					<TapePlayer variant="hero" scrollHint={false} className="min-h-[35vh]"/>
 				</div>
 			</div>
 		</RPage>

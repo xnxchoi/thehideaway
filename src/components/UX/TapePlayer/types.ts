@@ -4,6 +4,7 @@ export type SpeedDialMode = "rate" | "scrub";
 
 export type TapePlayerProps = {
   variant: TapePlayerVariant;
+  scrollHint?: boolean;
   className?: string;
 };
 

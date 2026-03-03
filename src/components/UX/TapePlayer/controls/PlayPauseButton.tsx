@@ -111,28 +111,12 @@ export const PlayPauseButton = ({
 		const playingAsIs = state.get();
 		//If playing (=convert to pause)
 		if (playingAsIs) {
-			howlPlayingsRef.current.fade(0.1, 0.3, 0.5)
 			howlPauserRef.current.seek(0);
-			howlPauserRef.current.volume(0)
-
-			howlPlayingsRef.current.once("pause", () => {
-				howlPauserRef.current.once("play", () => {
-					howlPauserRef.current.fade(0, 0.3, 0.3);
-					howlPauserRef.current.once("end", () => {
-						toggle();
-					})
-				})
-				howlPauserRef.current.play()
-
-			})
-			howlPlayingsRef.current.once("fade", () => {
-				morphTL.current.play();
-
-				howlPlayingsRef.current.pause()
-
-			})
-			howlPlayingsRef.current.fade(0.3, 0.1, 0.3)
-
+			howlPauserRef.current.volume(0.3)
+			howlPlayingsRef.current.pause()
+			howlPauserRef.current.play()
+			morphTL.current.play();
+			toggle();
 		} else {
 			howlPlayingsRef.current.seek(0)
 			howlPlayerRef.current.seek(0);

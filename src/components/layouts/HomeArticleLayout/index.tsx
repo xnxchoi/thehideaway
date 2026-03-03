@@ -88,6 +88,7 @@ export const HomeArticleLayout = (props: {
 						)}
 					</div>
 				</div>
+
 				<ArticleList posts={posts}/>
 			</div>
 		</div>
@@ -130,7 +131,7 @@ const ArticleList = (
 							articleID={id}
 							index={index}
 							allowList={[]}
-							
+
 							bookmarks={bookmarks}
 							bookmarksCount={bookmarksCount}
 							category={category}
