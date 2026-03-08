@@ -2,8 +2,8 @@ import type { UIFieldServerProps } from "payload";
 import type {
   PayloadAuthOptions,
   BuiltBetterAuthSchema
-} from "@/better-auth/types";
-import type { Passkey } from "@/better-auth/generated-types";
+} from "@payload-auth/better-auth/types";
+import type { Passkey } from "@payload-auth/better-auth/generated-types";
 
 export type PasskeyWithId = Passkey & { id: string; createdAt: Date };
 

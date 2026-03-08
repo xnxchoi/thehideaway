@@ -1,4 +1,4 @@
-import type { ModelKey } from "@/better-auth/generated-types";
+import type { ModelKey } from "@payload-auth/better-auth/generated-types";
 import type { CollectionConfig } from "payload";
 import { baModelKey, baseSlugs } from "../../constants";
 import type {

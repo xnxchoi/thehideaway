@@ -1,5 +1,5 @@
 import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
-import type { SanitizedBetterAuthOptions } from "@/better-auth/plugin/types";
+import type { SanitizedBetterAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 /**
  * Sets up a middleware that converts session.user.role from an a single string seperated by commas back to an array only for /admin routes

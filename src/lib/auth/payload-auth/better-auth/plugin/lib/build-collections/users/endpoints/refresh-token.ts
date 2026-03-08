@@ -1,14 +1,15 @@
+import { adminEndpoints } from "@payload-auth/better-auth/plugin/constants";
+import { getSignedCookie } from "@payload-auth/better-auth/plugin/helpers/get-signed-cookie";
+import { getPayloadAuth } from "@payload-auth/better-auth/plugin/lib/get-payload-auth";
+import type { GenericEndpointContext } from "better-auth";
 import { setCookieCache } from "better-auth/cookies";
 import {
+  CollectionSlug,
   type Endpoint,
   getFieldsToSign,
   refreshOperation,
   TypedUser
 } from "payload";
-import { getPayloadAuth } from "@/better-auth/plugin/lib/get-payload-auth";
-import { adminEndpoints } from "@/better-auth/plugin/constants";
-import { getSignedCookie } from "@/better-auth/plugin/helpers/get-signed-cookie";
-import type { GenericEndpointContext } from "better-auth";
 
 export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
   const endpoint: Endpoint = {
@@ -17,7 +18,7 @@ export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
     handler: async (req) => {
       const payload = await getPayloadAuth(req.payload.config);
       const authContext = await payload.betterAuth?.$context;
-      const userCollection = payload.collections[userSlug];
+      const userCollection = payload.collections[userSlug as CollectionSlug];
 
       if (!userCollection) {
         return new Response(
@@ -71,7 +72,7 @@ export const getRefreshTokenEndpoint = (userSlug: string): Endpoint => {
       }
 
       const user = await payload.findByID({
-        collection: userSlug as string,
+        collection: "users",
         id: res.session.userId
       });
 

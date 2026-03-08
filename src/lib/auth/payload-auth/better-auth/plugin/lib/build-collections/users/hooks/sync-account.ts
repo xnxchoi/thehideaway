@@ -1,9 +1,9 @@
-import { BETTER_AUTH_CONTEXT_KEY } from "@/better-auth/adapter";
-import { baModelKey } from "@/better-auth/plugin/constants";
+import { BETTER_AUTH_CONTEXT_KEY } from "@payload-auth/better-auth/adapter";
+import { baModelKey } from "@payload-auth/better-auth/plugin/constants";
 import {
   getCollectionByModelKey,
   getCollectionFieldNameByFieldKey
-} from "@/better-auth/plugin/helpers/get-collection";
+} from "@payload-auth/better-auth/plugin/helpers/get-collection";
 import type { CollectionAfterChangeHook } from "payload";
 
 export function getSyncAccountHook(): CollectionAfterChangeHook {
@@ -49,7 +49,7 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
     );
 
     const user = await req.payload.findByID({
-      collection: userCollection.slug,
+      collection: "users",
       id: doc.id,
       depth: 0,
       req,
@@ -63,7 +63,7 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
     if (operation === "create" && !(BETTER_AUTH_CONTEXT_KEY in context)) {
       try {
         await req.payload.create({
-          collection: accountCollection.slug,
+          collection: "accounts",
           data: {
             [userIdFieldName]: doc.id,
             [accountIdFieldName]: doc.id.toString(),

@@ -4,10 +4,10 @@ import type { AdminViewServerProps } from "payload";
 import { formatAdminURL } from "payload/shared";
 import { MinimalTemplate } from "@payloadcms/next/templates";
 import { z } from "zod";
-import { FormHeader } from "@/shared/form/ui/header";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
 import { PasswordResetForm } from "./client";
-import { adminRoutes } from "@/better-auth/plugin/constants";
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 const resetPasswordParamsSchema = z.object({
   token: z.string()

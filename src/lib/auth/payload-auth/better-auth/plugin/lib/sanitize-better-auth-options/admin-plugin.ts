@@ -2,7 +2,7 @@ import { baModelKey, defaults } from "../../constants";
 import type {
   PayloadAuthOptions,
   BetterAuthSchemas
-} from "@/better-auth/types";
+} from "@payload-auth/better-auth/types";
 import { set } from "../../utils/set";
 import { getSchemaCollectionSlug } from "../build-collections/utils/collection-schema";
 

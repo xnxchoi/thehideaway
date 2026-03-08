@@ -2,12 +2,12 @@
 
 import React, { useMemo } from "react";
 import { z } from "zod";
-import { Form, FormInputWrap } from "@/shared/form/ui";
-import { useRouter } from "next/navigation.js";
+import { Form, FormInputWrap } from "@payload-auth/shared/form/ui";
+import { useRouter } from "next/navigation";
 import { formatAdminURL } from "payload/shared";
 import { createAuthClient } from "better-auth/react";
 import { useAuth, useConfig, useTranslation, toast } from "@payloadcms/ui";
-import { useAppForm } from "@/shared/form";
+import { useAppForm } from "@payload-auth/shared/form";
 
 type PasswordResetFormArgs = {
   readonly token: string;

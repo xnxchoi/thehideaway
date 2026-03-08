@@ -1,18 +1,23 @@
+import { AdminInvitation, User } from "@payload-types";
 import React from "react";
 import { AdminLoginClient } from "./client";
 import { redirect } from "next/navigation";
-import { Logo } from "@/shared/components/logo";
-import { getSafeRedirect } from "@/better-auth/plugin/payload/utils/get-safe-redirect";
-import { checkPluginExists } from "@/better-auth/plugin/helpers/check-plugin-exists";
+import { Logo } from "@payload-auth/shared/components/logo";
+import { getSafeRedirect } from "@payload-auth/better-auth/plugin/payload/utils/get-safe-redirect";
+import { checkPluginExists } from "@payload-auth/better-auth/plugin/helpers/check-plugin-exists";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
 import {
   adminRoutes,
   defaults,
   supportedBAPluginIds
-} from "@/better-auth/plugin/constants";
+} from "@payload-auth/better-auth/plugin/constants";
 import { MinimalTemplate } from "@payloadcms/next/templates";
-import { type AdminViewServerProps, type ServerProps } from "payload";
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import {
+  type AdminViewServerProps,
+  type CollectionSlug,
+  type ServerProps
+} from "payload";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 export const loginBaseClass = "login";
 
@@ -49,7 +54,7 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   }
 
   const adminCount = await req.payload.count({
-    collection: userSlug,
+    collection: userSlug as CollectionSlug,
     where: {
       role: {
         equals: adminRole
@@ -60,7 +65,7 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   if (adminCount.totalDocs === 0) {
     // Check if we already have an admin invitation
     const existingInvitations = await req.payload.find({
-      collection: adminInvitationsSlug,
+      collection: "admin-invitations",
       where: {
         role: {
           equals: adminRole
@@ -77,9 +82,9 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
       // Generate a new secure invite token
       token = crypto.randomUUID();
       await req.payload.create({
-        collection: adminInvitationsSlug,
+        collection: "admin-invitations",
         data: {
-          role: adminRole,
+          role: adminRole as User["role"],
           token
         }
       });
@@ -123,7 +128,7 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   );
   const loginMethods = pluginOptions.admin?.loginMethods ?? [];
   const loginWithUsername =
-    collections?.[userSlug]?.config.auth.loginWithUsername;
+    collections?.[userSlug as CollectionSlug]?.config.auth.loginWithUsername;
   const loginIdentifiers: ("email" | "username")[] = (() => {
     if (!hasUsernamePlugin || !loginWithUsername) return ["email"];
     const allowEmail =

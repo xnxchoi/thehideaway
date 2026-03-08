@@ -1,6 +1,6 @@
-import { baModelKey } from "@/better-auth/plugin/constants";
-import { getCollectionByModelKey } from "@/better-auth/plugin/helpers/get-collection";
-import { getPayloadAuth } from "@/better-auth/plugin/lib/get-payload-auth";
+import { baModelKey } from "@payload-auth/better-auth/plugin/constants";
+import { getCollectionByModelKey } from "@payload-auth/better-auth/plugin/helpers/get-collection";
+import { getPayloadAuth } from "@payload-auth/better-auth/plugin/lib/get-payload-auth";
 import { cookies } from "next/headers";
 import type { CollectionAfterLogoutHook, PayloadRequest } from "payload";
 
@@ -67,7 +67,7 @@ async function deleteSessionFromDb(
   if (!rawCookieValue) return;
   const [token] = rawCookieValue.split(".");
   const { docs } = await payload.find({
-    collection: slug,
+    collection: "sessions",
     where: { token: { equals: token } },
     limit: 1,
     req
@@ -76,7 +76,7 @@ async function deleteSessionFromDb(
   if (!session) return;
   try {
     await payload.delete({
-      collection: slug,
+      collection: "sessions",
       where: { id: { equals: session.id } },
       req
     });

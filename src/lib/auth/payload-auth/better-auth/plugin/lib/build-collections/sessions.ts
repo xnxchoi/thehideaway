@@ -1,17 +1,19 @@
-import { baModelKey, baseSlugs } from "../../constants";
-import { getAdminAccess } from "../../helpers/get-admin-access";
-import { getCollectionFields } from "./utils/transform-schema-fields-to-payload";
-import { getDefaultCollectionSlug } from "../../helpers/get-collection-slug";
-import { assertAllSchemaFields } from "./utils/collection-schema";
-import { getSchemaCollectionSlug } from "./utils/collection-schema";
-
-import type { CollectionConfig } from "payload";
-import type { Session } from "@/better-auth/generated-types";
+import type { Session } from "@payload-auth/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides,
   FieldRule
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
+
+import type { CollectionConfig, CollectionSlug } from "payload";
+import { baModelKey, baseSlugs } from "../../constants";
+import { getAdminAccess } from "../../helpers/get-admin-access";
+import { getDefaultCollectionSlug } from "../../helpers/get-collection-slug";
+import {
+  assertAllSchemaFields,
+  getSchemaCollectionSlug
+} from "./utils/collection-schema";
+import { getCollectionFields } from "./utils/transform-schema-fields-to-payload";
 
 export function buildSessionsCollection({
   incomingCollections,
@@ -66,7 +68,8 @@ export function buildSessionsCollection({
     }),
     impersonatedBy: () => ({
       type: "relationship",
-      relationTo: pluginOptions.users?.slug ?? baseSlugs.users,
+      relationTo: (pluginOptions.users?.slug ??
+        baseSlugs.users) as CollectionSlug,
       required: false,
       saveToJWT: true,
       admin: {
@@ -81,7 +84,7 @@ export function buildSessionsCollection({
       relationTo: getDefaultCollectionSlug({
         modelKey: baModelKey.organization,
         pluginOptions
-      }),
+      }) as CollectionSlug,
       admin: {
         readOnly: true,
         description: "The currently active organization for the session"
@@ -94,7 +97,7 @@ export function buildSessionsCollection({
       relationTo: getDefaultCollectionSlug({
         modelKey: baModelKey.team,
         pluginOptions
-      }),
+      }) as CollectionSlug,
       admin: {
         readOnly: true,
         description: "The currently active team for the session"

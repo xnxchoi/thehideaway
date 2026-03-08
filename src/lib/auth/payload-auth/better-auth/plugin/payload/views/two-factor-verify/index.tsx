@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
-import type { AdminViewServerProps } from "payload";
+import type { AdminViewServerProps, CollectionSlug } from "payload";
 import React from "react";
 import { TwoFactorVerifyForm } from "./client";
 import { cookies } from "next/headers";
 import { getSafeRedirect } from "../../utils/get-safe-redirect";
-import { valueOrDefaultString } from "@/shared/utils/value-or-default";
+import { valueOrDefaultString } from "@payload-auth/shared/utils/value-or-default";
 import {
   adminRoutes,
   supportedBAPluginIds
-} from "@/better-auth/plugin/constants";
-import { PayloadAuthOptions } from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/constants";
+import { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { MinimalTemplate } from "@payloadcms/next/templates";
 
 interface TwoFactorVerifyProps extends AdminViewServerProps {
@@ -58,7 +58,7 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = async ({
     redirect(`${adminRoute}${loginRoute}`);
   }
   const { totalDocs: isValidTwoFactorToken } = await payload.count({
-    collection: verificationsSlug,
+    collection: verificationsSlug as CollectionSlug,
     where: {
       identifier: {
         equals: twoFactorVerifyToken

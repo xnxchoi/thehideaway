@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "./UX/Button";
 import {
   Command,
   CommandGroup,
@@ -10,16 +9,17 @@ import {
   CommandSeparator
 } from "@/components/ui/command";
 import {
-	PopoverRoot,
   PopoverContent,
+  PopoverRoot,
   PopoverTrigger
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth/client";
 import { useBetterAuth } from "@/lib/auth/context";
+import { User } from "@payload-types";
 import { ChevronDown, PlusCircle } from "lucide-react";
 import { useTransitionRouter } from "next-transition-router";
 import { use, useState } from "react";
-import { User } from "@/payload-types";
+import { Button } from "./Button";
 
 export default function AccountSwitcher() {
   const { currentUserPromise, deviceSessionsPromise } = useBetterAuth();
@@ -31,34 +31,37 @@ export default function AccountSwitcher() {
   const router = useTransitionRouter();
 
   return (
-	  <PopoverRoot open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          data-expanded={open}
-          role="combobox"
-          aria-expanded={open}
-          aria-label="Select a user"
-          className="outline-groove group flex w-[250px] items-center justify-between rounded-[12px] px-4 font-sans text-foreground shadow-sm/25 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-foreground/10 dark:shadow-md/30"
-          style={{
-	          outlineColor: "oklch(from var(--muted-faded-fg) l c h/.3)"
-          }}
-        >
-          <div className="flex items-center gap-2 px-1 py-1.5">
-            {open ? "Accounts " : "Currently :"}{" "}
-            <Avatar className="mr-2 h-6 w-6">
-              <AvatarImage
-                src={currentUser?.image || ""}
-                alt={currentUser?.name ?? ""}
-              />
-              <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="truncate font-medium">{currentUser?.name}</span>
-          </div>
-          <div className="transition-transform duration-200 ease-out-power3 group-data-[expanded=true]:rotate-180">
-            <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-          </div>
-        </Button>
-      </PopoverTrigger>
+    <PopoverRoot open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        nativeButton={true}
+        render={() => (
+          <Button
+            data-expanded={open}
+            role="combobox"
+            aria-expanded={open}
+            aria-label="Select a user"
+            className="outline-groove group flex w-[250px] items-center justify-between rounded-[12px] px-4 font-sans text-foreground shadow-sm/25 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-foreground/10 dark:shadow-md/30"
+            style={{
+              outlineColor: "oklch(from var(--muted-faded-fg) l c h/.3)"
+            }}
+          >
+            <div className="flex items-center gap-2 px-1 py-1.5">
+              {open ? "Accounts " : "Currently :"}{" "}
+              <Avatar className="mr-2 h-6 w-6">
+                <AvatarImage
+                  src={currentUser?.image || ""}
+                  alt={currentUser?.name ?? ""}
+                />
+                <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="truncate font-medium">{currentUser?.name}</span>
+            </div>
+            <div className="transition-transform duration-200 ease-out-power3 group-data-[expanded=true]:rotate-180">
+              <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+            </div>
+          </Button>
+        )}
+      />
       <PopoverContent className="z-[150] w-[250px] border border-border bg-button-background-inverted p-0 font-sans text-foreground shadow-md backdrop-blur-[4px]">
         <Command>
           <CommandList>
@@ -89,7 +92,7 @@ export default function AccountSwitcher() {
                 </div>
               </CommandItem>
             </CommandGroup>
-	          <CommandSeparator className={"bg-nav-foreground/30!"}/>
+            <CommandSeparator className={"bg-nav-foreground/30!"} />
             <CommandGroup
               className={"[&_[cmdk-group-heading]]:text-foreground!"}
               heading="Switch Account"
@@ -122,7 +125,7 @@ export default function AccountSwitcher() {
                   ))}
             </CommandGroup>
           </CommandList>
-	        <CommandSeparator className={"bg-nav-button-foreground/30!"}/>
+          <CommandSeparator className={"bg-nav-button-foreground/30!"} />
           <CommandList>
             <CommandGroup>
               <CommandItem
@@ -141,6 +144,6 @@ export default function AccountSwitcher() {
           </CommandList>
         </Command>
       </PopoverContent>
-	  </PopoverRoot>
+    </PopoverRoot>
   );
 }

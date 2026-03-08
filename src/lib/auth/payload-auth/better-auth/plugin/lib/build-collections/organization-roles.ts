@@ -11,8 +11,8 @@ import type { CollectionConfig, JoinField } from "payload";
 import type {
   BuildCollectionProps,
   FieldOverrides
-} from "@/better-auth/plugin/types";
-import type { OrganizationRole } from "@/better-auth/generated-types";
+} from "@payload-auth/better-auth/plugin/types";
+import type { OrganizationRole } from "@payload-auth/better-auth/generated-types";
 
 export function buildOrganizationRolesCollection({
   incomingCollections,

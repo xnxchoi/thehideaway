@@ -29,7 +29,7 @@ export function applyDisabledDefaultAuthConfig({
       ...config.admin?.components,
       afterLogin: [
         {
-          path: "payload-auth/better-auth/plugin/rsc#RSCRedirect",
+          path: "@payload-auth/better-auth/plugin/rsc#RSCRedirect",
           serverProps: {
             pluginOptions,
             redirectTo: `${config.routes?.admin === undefined ? "/admin" : config.routes.admin.replace(/\/+$/, "")}${adminRoutes.adminLogin}`
@@ -39,7 +39,7 @@ export function applyDisabledDefaultAuthConfig({
       ],
       logout: {
         Button: {
-          path: "payload-auth/better-auth/plugin/client#LogoutButton"
+          path: "@payload-auth/better-auth/plugin/client#LogoutButton"
         }
       },
       views: {
@@ -47,7 +47,7 @@ export function applyDisabledDefaultAuthConfig({
         adminLogin: {
           path: adminRoutes.adminLogin,
           Component: {
-            path: "payload-auth/better-auth/plugin/rsc#AdminLogin",
+            path: "@payload-auth/better-auth/plugin/rsc#AdminLogin",
             serverProps: {
               pluginOptions,
               adminInvitationsSlug:
@@ -58,7 +58,7 @@ export function applyDisabledDefaultAuthConfig({
         adminSignup: {
           path: adminRoutes.adminSignup,
           Component: {
-            path: "payload-auth/better-auth/plugin/rsc#AdminSignup",
+            path: "@payload-auth/better-auth/plugin/rsc#AdminSignup",
             serverProps: {
               pluginOptions,
               adminInvitationsSlug:
@@ -69,7 +69,7 @@ export function applyDisabledDefaultAuthConfig({
         forgotPassword: {
           path: adminRoutes.forgotPassword,
           Component: {
-            path: "payload-auth/better-auth/plugin/rsc#ForgotPassword",
+            path: "@payload-auth/better-auth/plugin/rsc#ForgotPassword",
             serverProps: {
               pluginOptions
             }
@@ -78,7 +78,7 @@ export function applyDisabledDefaultAuthConfig({
         resetPassword: {
           path: adminRoutes.resetPassword,
           Component: {
-            path: "payload-auth/better-auth/plugin/rsc#ResetPassword",
+            path: "@payload-auth/better-auth/plugin/rsc#ResetPassword",
             serverProps: {
               pluginOptions
             }
@@ -91,7 +91,7 @@ export function applyDisabledDefaultAuthConfig({
           twoFactorVerify: {
             path: adminRoutes.twoFactorVerify,
             Component: {
-              path: "payload-auth/better-auth/plugin/rsc#TwoFactorVerify",
+              path: "@payload-auth/better-auth/plugin/rsc#TwoFactorVerify",
               serverProps: {
                 pluginOptions: pluginOptions,
                 verificationsSlug:

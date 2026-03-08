@@ -1,5 +1,5 @@
-import type { Access, FieldAccess } from "payload";
-import type { PayloadRequest } from "payload";
+import { Admin, User } from "@payload-types";
+import type { Access, FieldAccess, PayloadRequest } from "payload";
 
 export type AdminRolesConfig = {
   adminRoles?: string[];
@@ -72,7 +72,7 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
 
     if (!user) return false;
 
-    if (user[idField] === id && data) {
+    if ((user as User | Admin)["id"] === id && data) {
       const dataKeys = Object.keys(data);
 
       const hasCurrentPassword = dataKeys.includes("currentPassword");
@@ -84,7 +84,7 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
           if (!user.email) return false;
 
           const result = await req.payload.login({
-            collection: userSlug,
+            collection: userSlug as "users" | "admins",
             data: {
               email: user.email,
               password: data.currentPassword

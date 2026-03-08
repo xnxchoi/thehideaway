@@ -1,7 +1,7 @@
 "use client";
 
-import { socialProviders } from "@/better-auth/plugin/constants";
-import type { SocialProvider } from "@/better-auth/plugin/types";
+import { socialProviders } from "@payload-auth/better-auth/plugin/constants";
+import type { SocialProvider } from "@payload-auth/better-auth/plugin/types";
 import { Icons } from "@/shared/components/icons";
 import { isValidEmail } from "@/shared/form/validation";
 import { Button, toast } from "@payloadcms/ui";

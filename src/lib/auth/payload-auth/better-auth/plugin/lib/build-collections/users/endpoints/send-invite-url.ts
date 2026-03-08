@@ -6,8 +6,8 @@ import {
 } from "payload";
 import { status as httpStatus } from "http-status";
 import { z } from "zod";
-import { adminEndpoints } from "@/better-auth/plugin/constants";
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { adminEndpoints } from "@payload-auth/better-auth/plugin/constants";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 const requestSchema = z.object({
   email: z.string().email(),

@@ -1,10 +1,10 @@
+import { adminEndpoints } from "@payload-auth/better-auth/plugin/constants";
+import { generateAdminInviteUrl } from "@payload-auth/better-auth/plugin/payload/utils/generate-admin-invite-url";
+import { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
+import { User } from "@payload-types";
 import { status as httpStatus } from "http-status";
-import { PayloadAuthOptions } from "@/better-auth/plugin/types";
-import { addDataAndFileToRequest } from "payload";
-import { generateAdminInviteUrl } from "@/better-auth/plugin/payload/utils/generate-admin-invite-url";
 
-import { type Endpoint } from "payload";
-import { adminEndpoints, baseSlugs } from "@/better-auth/plugin/constants";
+import { addDataAndFileToRequest, type Endpoint } from "payload";
 
 type InviteEndpointProps = {
   roles: { label: string; value: string }[];
@@ -53,11 +53,10 @@ export const getGenerateInviteUrlEndpoint = ({
 
       try {
         await req.payload.create({
-          collection:
-            pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
+          collection: "admin-invitations",
           data: {
             token,
-            role: body.role.value,
+            role: body.role.value as User["role"],
             url: inviteLink
           }
         });

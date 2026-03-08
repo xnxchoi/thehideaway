@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,27 +16,14 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/types/*": [
-        "./src/types/*"
-      ],
-      "@payload-types": [
-        "./src/payload-types.ts"
-      ],
-      "@payload-config": [
-        "./src/payload.config.ts"
-      ],
-      "@betterauth-ui": [
-        "./src/lib/auth/betterauth-ui/src"
-      ],
-      "@betterauth-ui/*": [
-        "./src/lib/auth/betterauth-ui/src/*"
-      ],
-      "@/AccessControlled/*": [
-        "./src/payload/fields/AccessControlled/*"
-      ]
+      "@/*": ["./src/*"],
+      "@/types/*": ["./src/types/*"],
+      "@payload-types": ["./src/payload-types.ts"],
+      "@payload-config": ["./src/payload.config.ts"],
+      "@payload-auth/*": ["./src/lib/auth/payload-auth/*"],
+      "@betterauth-ui": ["./src/lib/auth/betterauth-ui/src"],
+      "@betterauth-ui/*": ["./src/lib/auth/betterauth-ui/src/*"],
+      "@/AccessControlled/*": ["./src/payload/fields/AccessControlled/*"]
     },
     "plugins": [
       {
@@ -56,7 +39,5 @@
     ".next/dev/types/**/*.ts",
     "public/scripts/brightness.worker.js"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

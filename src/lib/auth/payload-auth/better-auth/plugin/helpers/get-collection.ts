@@ -1,7 +1,7 @@
 import type {
   BetterAuthFullSchema,
   ModelKey
-} from "@/better-auth/generated-types";
+} from "@payload-auth/better-auth/generated-types";
 import {
   flattenAllFields,
   type Collection,

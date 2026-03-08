@@ -1,13 +1,13 @@
 import React from "react";
 import { z } from "zod";
-import { Logo } from "@/shared/components/logo";
+import { Logo } from "@payload-auth/shared/components/logo";
 import { AdminSignupClient } from "./client";
-import { FormHeader } from "@/shared/form/ui/header";
-import { supportedBAPluginIds } from "@/better-auth/plugin/constants";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
+import { supportedBAPluginIds } from "@payload-auth/better-auth/plugin/constants";
 import { MinimalTemplate } from "@payloadcms/next/templates";
-import type { AdminViewServerProps } from "payload";
+import type { AdminViewServerProps, CollectionSlug } from "payload";
 import type { PayloadAuthOptions } from "../../../types";
-import { checkPluginExists } from "@/better-auth/plugin/helpers/check-plugin-exists";
+import { checkPluginExists } from "@payload-auth/better-auth/plugin/helpers/check-plugin-exists";
 
 //  Avoid the need for custom styles
 const baseClass = "login";
@@ -51,7 +51,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
     hasInvalidToken = true;
   } else {
     const { totalDocs: isValidInvite } = await req.payload.count({
-      collection: adminInvitationsSlug,
+      collection: adminInvitationsSlug as CollectionSlug,
       where: { token: { equals: data.token } }
     });
     if (!isValidInvite) {
@@ -73,7 +73,7 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
     supportedBAPluginIds.magicLink
   );
   const loginWithUsername =
-    collections?.[userSlug]?.config.auth.loginWithUsername;
+    collections?.[userSlug as CollectionSlug]?.config.auth.loginWithUsername;
   const loginIdentifiers: ("email" | "username")[] = (() => {
     if (!hasUsernamePlugin || !loginWithUsername) return ["email"];
     const allowEmail =

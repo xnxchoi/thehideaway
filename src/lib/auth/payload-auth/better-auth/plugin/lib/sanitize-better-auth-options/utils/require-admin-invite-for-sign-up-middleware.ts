@@ -1,8 +1,8 @@
-import { baseSlugs } from "@/better-auth/plugin/constants";
-import { PayloadAuthOptions } from "@/better-auth/types";
+import { baseSlugs } from "@payload-auth/better-auth/plugin/constants";
+import { PayloadAuthOptions } from "@payload-auth/better-auth/types";
 import { createAuthMiddleware } from "better-auth/api";
 import type { Where } from "better-auth";
-import type { SanitizedBetterAuthOptions } from "@/better-auth/plugin/types";
+import type { SanitizedBetterAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { APIError } from "better-auth/api";
 import { z } from "zod";
 

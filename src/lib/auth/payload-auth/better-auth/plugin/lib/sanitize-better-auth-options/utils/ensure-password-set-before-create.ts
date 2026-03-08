@@ -1,4 +1,4 @@
-import type { SanitizedBetterAuthOptions } from "@/better-auth/plugin/types";
+import type { SanitizedBetterAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 /**
  * Adds a before hook to the user create operation to ensure the password is set.

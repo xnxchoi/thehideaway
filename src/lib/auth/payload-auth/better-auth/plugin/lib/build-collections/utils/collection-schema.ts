@@ -1,11 +1,11 @@
 import type {
   ModelKey,
   BetterAuthFullSchema
-} from "@/better-auth/generated-types";
+} from "@payload-auth/better-auth/generated-types";
 import type {
   BuiltBetterAuthSchema,
   BetterAuthSchemas
-} from "@/better-auth/types";
+} from "@payload-auth/better-auth/types";
 import { type CollectionConfig, flattenAllFields } from "payload";
 
 export function getSchemaCollectionSlug(

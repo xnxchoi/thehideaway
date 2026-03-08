@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import { createAuthClient } from "better-auth/react";
 import { twoFactorClient } from "better-auth/client/plugins";
-import { useAppForm } from "@/shared/form";
-import { Form, FormInputWrap } from "@/shared/form/ui";
-import { FormHeader } from "@/shared/form/ui/header";
+import { useAppForm } from "@payload-auth/shared/form";
+import { Form, FormInputWrap } from "@payload-auth/shared/form/ui";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
 import { toast, useTranslation } from "@payloadcms/ui";
 import { z } from "zod";
 import { useRouter } from "next/navigation";

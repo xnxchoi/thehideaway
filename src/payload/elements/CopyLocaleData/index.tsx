@@ -31,7 +31,7 @@ import {
 } from "@payloadcms/ui";
 
 import { DrawerHeader } from "@payloadcms/ui/elements/BulkUpload/Header";
-import { Drawer } from "@/components/vaul";
+import { Drawer } from "@/components/ui/vaul";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -83,7 +83,9 @@ export const CopyLocaleData: FC = () => {
   return (
     <Button
       id={`${baseClass}__button`}
-      className={cn("appearance-none border-none bg-transparent text-inherit! outline-none")}
+      className={cn(
+        "appearance-none border-none bg-transparent text-inherit! outline-none"
+      )}
       onClick={() => {
         if (modified) {
           toast.info(t("general:unsavedChanges"));
@@ -213,12 +215,13 @@ export const CopyLocaleDataDrawer = () => {
     >
       <Drawer.Portal>
         <Drawer.Overlay
-          role="button" className={"inset-0 z-99998 bg-faded-background/30"}
+          role="button"
+          className={"inset-0 z-99998 bg-faded-background/30"}
           style={{
             inset: 0,
             zIndex: 99998,
             backdropFilter: "blur(1px)",
-	          backgroundColor: "oklch(from var(--faded-black) l c h/.3)",
+            backgroundColor: "oklch(from var(--faded-black) l c h/.3)",
             position: "fixed"
           }}
         />
@@ -255,7 +258,7 @@ export const CopyLocaleDataDrawer = () => {
               flexDirection: "column",
               overflowY: "auto",
               borderRadius: "12px",
-	            backgroundColor: "oklch(from var(--faded-bg) l c h/.8)",
+              backgroundColor: "oklch(from var(--faded-bg) l c h/.8)",
               backdropFilter: "blur(8px)",
               fontFamily: "var(--font-sans)"
             }}

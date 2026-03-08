@@ -2,11 +2,11 @@
 
 import { createAuthClient } from "better-auth/react";
 import { useMemo, useState } from "react";
-import { adminRoutes } from "@/better-auth/plugin/constants";
-import { useAppForm } from "@/shared/form";
-import { Form, FormInputWrap } from "@/shared/form/ui";
-import { FormHeader } from "@/shared/form/ui/header";
-import { emailRegex } from "@/shared/utils/regex";
+import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
+import { useAppForm } from "@payload-auth/shared/form";
+import { Form, FormInputWrap } from "@payload-auth/shared/form/ui";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
+import { emailRegex } from "@payload-auth/shared/utils/regex";
 import { toast, useConfig, useTranslation } from "@payloadcms/ui";
 import type { FC } from "react";
 import { z } from "zod";

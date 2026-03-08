@@ -1,13 +1,12 @@
-import "server-only";
-import nodemailer from 'nodemailer';
-import {BasePayload} from "payload";
+import nodemailer from "nodemailer";
+import { BasePayload } from "payload";
 
 export enum EmailCategory {
-  NOTIFICATIONS = 'notifications',
-  ALERTS = 'alerts', 
-  VALIDATORS = 'validators',
-  AUTHENTICATORS = 'authenticators',
-  MISC = 'misc'
+  NOTIFICATIONS = "notifications",
+  ALERTS = "alerts",
+  VALIDATORS = "validators",
+  AUTHENTICATORS = "authenticators",
+  MISC = "misc"
 }
 
 interface QuotaTracker {
@@ -19,41 +18,47 @@ export class BetterAuthEmailService {
   private transporter: nodemailer.Transporter;
   private payload?: BasePayload;
   private dailyLimit = 300; // Brevo free tier
-  
-  private quotaTracker: QuotaTracker = { dailyCount: 0, lastReset:  new Date().toISOString().split('T')[0] || '' };
+
+  private quotaTracker: QuotaTracker = {
+    dailyCount: 0,
+    lastReset: new Date().toISOString().split("T")[0] || ""
+  };
 
   constructor(payload?: BasePayload) {
     this.payload = payload;
     this.transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
+      host: "smtp-relay.brevo.com",
       port: 587,
       secure: false,
       auth: {
         user: process.env.BREVO_SMTP_USER!,
-        pass: process.env.BREVO_SMTP_PASS!,
-      },
+        pass: process.env.BREVO_SMTP_PASS!
+      }
     });
   }
 
   private checkAndResetQuota(): void {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     if (!today) {
-      throw new Error('Failed to get today\'s date');
+      throw new Error("Failed to get today's date");
     }
     if (this.quotaTracker.lastReset !== today) {
       this.quotaTracker = { dailyCount: 0, lastReset: today };
     }
   }
 
-  private canSendEmail(category: EmailCategory, userTriggered: boolean = false): {
+  private canSendEmail(
+    category: EmailCategory,
+    userTriggered: boolean = false
+  ): {
     canSend: boolean;
-    action: 'send' | 'defer' | 'disable' | 'block';
+    action: "send" | "defer" | "disable" | "block";
     reason?: string;
   } {
     this.checkAndResetQuota();
 
     if (this.quotaTracker.dailyCount < this.dailyLimit) {
-      return { canSend: true, action: 'send' };
+      return { canSend: true, action: "send" };
     }
 
     // Apply your categorization logic
@@ -61,38 +66,41 @@ export class BetterAuthEmailService {
       case EmailCategory.NOTIFICATIONS:
         return {
           canSend: false,
-          action: 'defer',
-          reason: 'Daily quota exceeded. Notification deferred to next quota period.'
+          action: "defer",
+          reason:
+            "Daily quota exceeded. Notification deferred to next quota period."
         };
 
       case EmailCategory.ALERTS:
         return {
           canSend: false,
-          action: userTriggered ? 'disable' : 'defer',
-          reason: userTriggered 
-            ? 'Daily quota exceeded. Action temporarily disabled until next quota period.'
-            : 'Daily quota exceeded. Alert deferred to next quota period.'
+          action: userTriggered ? "disable" : "defer",
+          reason: userTriggered
+            ? "Daily quota exceeded. Action temporarily disabled until next quota period."
+            : "Daily quota exceeded. Alert deferred to next quota period."
         };
 
       case EmailCategory.VALIDATORS:
         return {
           canSend: false,
-          action: 'defer',
-          reason: 'Daily quota exceeded. Validation email deferred to next quota period.'
+          action: "defer",
+          reason:
+            "Daily quota exceeded. Validation email deferred to next quota period."
         };
 
       case EmailCategory.AUTHENTICATORS:
         return {
           canSend: false,
-          action: 'disable',
-          reason: 'Daily quota exceeded. Authentication action disabled until next quota period.'
+          action: "disable",
+          reason:
+            "Daily quota exceeded. Authentication action disabled until next quota period."
         };
 
       default:
         return {
           canSend: false,
-          action: 'block',
-          reason: 'Daily quota exceeded.'
+          action: "block",
+          reason: "Daily quota exceeded."
         };
     }
   }
@@ -104,24 +112,30 @@ export class BetterAuthEmailService {
     text?: string;
   }): Promise<void> {
     const mailOptions = {
-      from: `${process.env.EMAIL_FROM_NAME || 'The Hideaway'} <${process.env.EMAIL_FROM || 'concierge@hideawayseoul.com'}>`,
+      from: `${process.env.EMAIL_FROM_NAME || "The Hideaway"} <${process.env.EMAIL_FROM || "concierge@hideawayseoul.com"}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
-      text: options.text,
+      text: options.text
     };
 
     await this.transporter.sendMail(mailOptions);
     this.quotaTracker.dailyCount++;
-    
+
     if (this.payload) {
-      this.payload.logger.info(`Email sent to ${options.to}: ${options.subject}`);
+      this.payload.logger.info(
+        `Email sent to ${options.to}: ${options.subject}`
+      );
     }
   }
 
-  async sendMagicLink(email: string, token: string, url: string): Promise<void> {
+  async sendMagicLink(
+    email: string,
+    token: string,
+    url: string
+  ): Promise<void> {
     const quotaCheck = this.canSendEmail(EmailCategory.AUTHENTICATORS, true);
-    
+
     if (!quotaCheck.canSend) {
       if (this.payload) {
         this.payload.logger.warn(`Magic link blocked: ${quotaCheck.reason}`);
@@ -144,34 +158,41 @@ export class BetterAuthEmailService {
 
     await this.sendEmailInternal({
       to: email,
-      subject: 'Sign in to The Hideaway',
+      subject: "Sign in to The Hideaway",
       html,
       text: `Sign in to The Hideaway: ${url}`
     });
   }
 
-  async sendOTP(email: string, otp: string, type: 'sign-in' | 'email-verification'): Promise<void> {
-    const category = type === 'email-verification' ? EmailCategory.VALIDATORS : EmailCategory.AUTHENTICATORS;
+  async sendOTP(
+    email: string,
+    otp: string,
+    type: "sign-in" | "email-verification"
+  ): Promise<void> {
+    const category =
+      type === "email-verification"
+        ? EmailCategory.VALIDATORS
+        : EmailCategory.AUTHENTICATORS;
     const quotaCheck = this.canSendEmail(category, true);
-    
+
     if (!quotaCheck.canSend) {
       if (this.payload) {
         this.payload.logger.warn(`OTP blocked: ${quotaCheck.reason}`);
       }
-      
-      if (quotaCheck.action === 'defer' && type === 'email-verification') {
+
+      if (quotaCheck.action === "defer" && type === "email-verification") {
         // For email verification, we can defer
         return;
       }
-      
+
       throw new Error(`OTP unavailable: ${quotaCheck.reason}`);
     }
 
-    const isVerification = type === 'email-verification';
+    const isVerification = type === "email-verification";
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>${isVerification ? 'Verify your email' : 'Your verification code'}</h2>
-        <p>Use this code to ${isVerification ? 'verify your email address' : 'sign in to your account'}:</p>
+        <h2>${isVerification ? "Verify your email" : "Your verification code"}</h2>
+        <p>Use this code to ${isVerification ? "verify your email address" : "sign in to your account"}:</p>
         <div style="background-color: #f8f9fa; padding: 20px; text-align: center; margin: 20px 0; border-radius: 5px;">
           <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #007bff;">${otp}</span>
         </div>
@@ -181,7 +202,9 @@ export class BetterAuthEmailService {
 
     await this.sendEmailInternal({
       to: email,
-      subject: isVerification ? 'Verify your email - The Hideaway' : 'Your verification code - The Hideaway',
+      subject: isVerification
+        ? "Verify your email - The Hideaway"
+        : "Your verification code - The Hideaway",
       html,
       text: `Your verification code: ${otp}`
     });
@@ -189,10 +212,12 @@ export class BetterAuthEmailService {
 
   async sendPasswordReset(email: string, url: string): Promise<void> {
     const quotaCheck = this.canSendEmail(EmailCategory.VALIDATORS, true);
-    
+
     if (!quotaCheck.canSend) {
       if (this.payload) {
-        this.payload.logger.warn(`Password reset blocked: ${quotaCheck.reason}`);
+        this.payload.logger.warn(
+          `Password reset blocked: ${quotaCheck.reason}`
+        );
       }
       throw new Error(`Password reset unavailable: ${quotaCheck.reason}`);
     }
@@ -213,7 +238,7 @@ export class BetterAuthEmailService {
 
     await this.sendEmailInternal({
       to: email,
-      subject: 'Reset your password - The Hideaway',
+      subject: "Reset your password - The Hideaway",
       html,
       text: `Reset your password: ${url}`
     });
@@ -224,7 +249,7 @@ export class BetterAuthEmailService {
    */
   async send2FACode(email: string, code: string): Promise<void> {
     const quotaCheck = this.canSendEmail(EmailCategory.AUTHENTICATORS, true);
-    
+
     if (!quotaCheck.canSend) {
       if (this.payload) {
         this.payload.logger.warn(`2FA code blocked: ${quotaCheck.reason}`);
@@ -246,7 +271,7 @@ export class BetterAuthEmailService {
 
     await this.sendEmailInternal({
       to: email,
-      subject: 'Your Two-Factor Authentication Code - The Hideaway',
+      subject: "Your Two-Factor Authentication Code - The Hideaway",
       html,
       text: `Your 2FA code: ${code}`
     });
@@ -255,15 +280,21 @@ export class BetterAuthEmailService {
   /**
    * Send Email Harmony validation email
    */
-  async sendEmailHarmonyValidation(email: string, token: string, url: string): Promise<void> {
+  async sendEmailHarmonyValidation(
+    email: string,
+    token: string,
+    url: string
+  ): Promise<void> {
     const quotaCheck = this.canSendEmail(EmailCategory.VALIDATORS, false);
-    
+
     if (!quotaCheck.canSend) {
       if (this.payload) {
-        this.payload.logger.warn(`Email harmony validation blocked: ${quotaCheck.reason}`);
+        this.payload.logger.warn(
+          `Email harmony validation blocked: ${quotaCheck.reason}`
+        );
       }
       // For validators, we can defer instead of throwing
-      if (quotaCheck.action === 'defer') {
+      if (quotaCheck.action === "defer") {
         return;
       }
       throw new Error(`Email validation unavailable: ${quotaCheck.reason}`);
@@ -289,7 +320,7 @@ export class BetterAuthEmailService {
 
     await this.sendEmailInternal({
       to: email,
-      subject: 'Verify Your Email Address - The Hideaway',
+      subject: "Verify Your Email Address - The Hideaway",
       html,
       text: `Verify your email: ${url}`
     });
@@ -300,7 +331,7 @@ export class BetterAuthEmailService {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
-    
+
     return {
       used: this.quotaTracker.dailyCount,
       remaining: Math.max(0, this.dailyLimit - this.quotaTracker.dailyCount),

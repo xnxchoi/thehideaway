@@ -1,6 +1,6 @@
 import type { CollectionAfterChangeHook } from "payload";
-import type { BetterAuthSchemas } from "@/better-auth/plugin/types";
-import { baModelKey } from "@/better-auth/plugin/constants";
+import type { BetterAuthSchemas } from "@payload-auth/better-auth/plugin/types";
+import { baModelKey } from "@payload-auth/better-auth/plugin/constants";
 import {
   getSchemaCollectionSlug,
   getSchemaFieldName
@@ -36,7 +36,7 @@ export function getSyncPasswordToUserHook(
     }
 
     const account = await req.payload.findByID({
-      collection: accountSlug,
+      collection: "accounts",
       id: doc.id,
       depth: 0,
       req,
@@ -58,7 +58,7 @@ export function getSyncPasswordToUserHook(
 
     try {
       await req.payload.update({
-        collection: userSlug,
+        collection: "users",
         id: userId,
         data: {
           salt,

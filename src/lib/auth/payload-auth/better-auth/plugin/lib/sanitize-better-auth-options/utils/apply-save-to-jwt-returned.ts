@@ -1,8 +1,8 @@
-import { baModelKey } from "@/better-auth/plugin/constants";
+import { baModelKey } from "@payload-auth/better-auth/plugin/constants";
 import type {
   BetterAuthSchemas,
   SanitizedBetterAuthOptions
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 import { getSchemaCollectionSlug } from "../../build-collections/utils/collection-schema";
 import type { CollectionConfig } from "payload";
 import { flattenAllFields } from "payload";

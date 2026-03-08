@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import type { BasePayload } from "payload";
-import { payloadAdapter } from "payload-auth/better-auth/adapter";
+import { payloadAdapter } from "@payload-auth/better-auth/adapter";
 import type {
   BetterAuthFunctionOptions,
   PayloadAuthOptions,

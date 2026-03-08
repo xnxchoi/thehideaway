@@ -6,12 +6,12 @@ import {
   getSchemaCollectionSlug
 } from "./utils/collection-schema";
 import type { CollectionConfig } from "payload";
-import type { Apikey } from "@/better-auth/generated-types";
+import type { Apikey } from "@payload-auth/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides,
   FieldRule
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 
 export function buildApiKeysCollection({
   incomingCollections,

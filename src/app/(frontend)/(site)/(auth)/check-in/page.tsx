@@ -1,10 +1,10 @@
 import { PageRedirect, RPage } from "@/components/UX/Transition";
 import { Link } from "@/components/UX/Link/Link";
-import { LoginForm } from "@/components/login-form";
+import { LoginForm } from "@/components/UX/login-form";
 import { Logo } from "@/components/UX/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient";
 import { authClient } from "@/lib/auth/client";
-import {Suspense} from "react";
+import { Suspense } from "react";
 
 export default async function CheckInPage() {
   const { data } = await authClient.getSession();
@@ -16,7 +16,7 @@ export default async function CheckInPage() {
       <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center gap-10 p-9 md:p-16">
         <div
           className={
-	          "absolute inset-[35px] z-[120] flex rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]"
+            "absolute inset-[35px] z-[120] flex rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]"
           }
         ></div>
         <div className="z-[120] flex w-full max-w-[384px] flex-col gap-9">
@@ -31,8 +31,9 @@ export default async function CheckInPage() {
           </Link>
           <LoginForm />
         </div>
-	      <Suspense>
-		      <VGradientModule/></Suspense>
+        <Suspense>
+          <VGradientModule />
+        </Suspense>
       </div>
     </RPage>
   );

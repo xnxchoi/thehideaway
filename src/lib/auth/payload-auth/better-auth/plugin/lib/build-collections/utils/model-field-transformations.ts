@@ -1,4 +1,4 @@
-import { FieldRule } from "@/better-auth/plugin/types";
+import { FieldRule } from "@payload-auth/better-auth/plugin/types";
 import type { DBFieldAttribute } from "better-auth/db";
 import type { Field } from "payload";
 import {

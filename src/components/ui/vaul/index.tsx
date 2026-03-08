@@ -23,7 +23,7 @@ import { useControllableState } from "./use-controllable-state";
 import { useScaleBackground } from "./use-scale-background";
 import { usePositionFixed } from "./use-position-fixed";
 import { isIOS, isMobileFirefox } from "./browser";
-import { SideNotch } from "../UX/SideNotch";
+import { SideNotch } from "../../UX/SideNotch";
 
 export interface WithFadeFromProps {
   /**

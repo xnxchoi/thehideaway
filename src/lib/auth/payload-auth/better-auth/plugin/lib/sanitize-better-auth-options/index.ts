@@ -4,7 +4,7 @@ import {
   baseSlugs,
   defaults,
   supportedBAPluginIds
-} from "@/better-auth/plugin/constants";
+} from "@payload-auth/better-auth/plugin/constants";
 import { set } from "../../utils/set";
 import {
   getSchemaCollectionSlug,
@@ -24,7 +24,7 @@ import type {
   PayloadAuthOptions,
   BetterAuthSchemas,
   SanitizedBetterAuthOptions
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 import type { Config, Payload } from "payload";
 import { configureTwoFactorPlugin } from "./two-factor-plugin";
 import { requireAdminInviteForSignUpMiddleware } from "./utils/require-admin-invite-for-sign-up-middleware";

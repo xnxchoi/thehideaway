@@ -8,11 +8,11 @@ import {
 } from "./utils/collection-schema";
 
 import type { CollectionConfig } from "payload";
-import type { Jwks } from "@/better-auth/generated-types";
+import type { Jwks } from "@payload-auth/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 
 export function buildJwksCollection({
   incomingCollections,

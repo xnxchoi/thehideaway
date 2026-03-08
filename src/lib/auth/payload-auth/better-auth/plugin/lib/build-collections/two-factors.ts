@@ -8,7 +8,7 @@ import {
 } from "./utils/collection-schema";
 
 import type { CollectionConfig } from "payload";
-import type { TwoFactor } from "@/better-auth/generated-types";
+import type { TwoFactor } from "@payload-auth/better-auth/generated-types";
 import type { BuildCollectionProps, FieldOverrides } from "../../types";
 
 export function buildTwoFactorsCollection({

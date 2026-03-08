@@ -1,4 +1,4 @@
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { isAdminWithRoles } from "../lib/build-collections/utils/payload-access";
 
 export function getAdminAccess(pluginOptions: PayloadAuthOptions) {

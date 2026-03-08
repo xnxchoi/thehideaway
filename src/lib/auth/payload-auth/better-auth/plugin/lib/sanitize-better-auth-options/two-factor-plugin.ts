@@ -1,10 +1,13 @@
-import { baModelFieldKeys, baModelKey } from "@/better-auth/plugin/constants";
-import { set } from "@/better-auth/plugin/utils/set";
+import {
+  baModelFieldKeys,
+  baModelKey
+} from "@payload-auth/better-auth/plugin/constants";
+import { set } from "@payload-auth/better-auth/plugin/utils/set";
 import {
   getSchemaCollectionSlug,
   getSchemaFieldName
 } from "../build-collections/utils/collection-schema";
-import type { BetterAuthSchemas } from "@/better-auth/types";
+import type { BetterAuthSchemas } from "@payload-auth/better-auth/types";
 
 export function configureTwoFactorPlugin(
   plugin: any,

@@ -8,11 +8,11 @@ import {
 import { assertAllSchemaFields } from "./utils/collection-schema";
 
 import type { CollectionConfig } from "payload";
-import type { SsoProvider } from "@/better-auth/generated-types";
+import type { SsoProvider } from "@payload-auth/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 
 export function buildSsoProvidersCollection({
   incomingCollections,

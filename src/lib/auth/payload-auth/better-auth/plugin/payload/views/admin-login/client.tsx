@@ -1,14 +1,14 @@
 "use client";
 
-import { getSafeRedirect } from "@/better-auth/plugin/payload/utils/get-safe-redirect";
+import { getSafeRedirect } from "@payload-auth/better-auth/plugin/payload/utils/get-safe-redirect";
 import {
   LoginFormProvider,
   CredentialsForm,
   AlternativeMethods
-} from "@/better-auth/plugin/payload/components/login-form";
+} from "@payload-auth/better-auth/plugin/payload/components/login-form";
 import { useConfig } from "@payloadcms/ui";
 import React from "react";
-import type { LoginMethod } from "@/better-auth/plugin/types";
+import type { LoginMethod } from "@payload-auth/better-auth/plugin/types";
 
 type AdminLoginClientProps = {
   loginMethods: LoginMethod[];

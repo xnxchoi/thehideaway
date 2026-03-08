@@ -1,4 +1,4 @@
-import { ModelKey } from "@/better-auth/generated-types";
+import { ModelKey } from "@payload-auth/better-auth/generated-types";
 import { type DBFieldAttribute, getAuthTables } from "better-auth/db";
 import {
   baModelFieldKeysToFieldNames,

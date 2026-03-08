@@ -1,6 +1,6 @@
 "use client";
 
-import type { LoginMethod } from "@/better-auth/plugin/types";
+import type { LoginMethod } from "@payload-auth/better-auth/plugin/types";
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { createAuthClient } from "better-auth/react";
 import {
@@ -10,7 +10,7 @@ import {
 } from "better-auth/client/plugins";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { useRouter } from "next/navigation";
-import { adminRoutes } from "@/better-auth/plugin/constants";
+import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
 
 type LoginFormContextValue = {
   loginMethods: LoginMethod[];

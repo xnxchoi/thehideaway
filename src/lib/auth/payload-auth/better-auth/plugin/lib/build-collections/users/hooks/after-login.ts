@@ -1,9 +1,9 @@
-import { baModelKey } from "@/better-auth/plugin/constants";
-import { getCollectionByModelKey } from "@/better-auth/plugin/helpers/get-collection";
-import { getIp } from "@/better-auth/plugin/helpers/get-ip";
-import { prepareSessionData } from "@/better-auth/plugin/helpers/prepare-session-data";
-import { getPayloadAuth } from "@/better-auth/plugin/lib/get-payload-auth";
-import { generateId, Session } from "better-auth";
+import { baModelKey } from "@payload-auth/better-auth/plugin/constants";
+import { getCollectionByModelKey } from "@payload-auth/better-auth/plugin/helpers/get-collection";
+import { getIp } from "@payload-auth/better-auth/plugin/helpers/get-ip";
+import { prepareSessionData } from "@payload-auth/better-auth/plugin/helpers/prepare-session-data";
+import { getPayloadAuth } from "@payload-auth/better-auth/plugin/lib/get-payload-auth";
+import { generateId, type Session as BetterSession } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import {
@@ -12,6 +12,7 @@ import {
 } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
 import { CollectionAfterLoginHook } from "payload";
+
 /**
  * This hook is used to sync the admin login token with better-auth session token
  * It also creates a new session in better-auth
@@ -35,17 +36,19 @@ export function getAfterLoginHook() {
       payload.betterAuth.options.session?.expiresIn || 60 * 60 * 24 * 7; // 7 days
     // we can't use internal adapter as we can cause a race condition unless we pass req to the payload.create
     const session = (await payload.create({
-      collection: sessionCollection.slug,
+      collection: "sessions",
       data: {
         ipAddress: getIp(req.headers, payload.betterAuth.options) || "",
         userAgent: req.headers?.get("user-agent") || "",
         user: user.id,
         token: generateId(32),
-        expiresAt: new Date(Date.now() + sessionExpiration * 1000)
+        expiresAt: new Date(
+          Date.now() + sessionExpiration * 1000
+        ) as unknown as string
       },
       req,
       depth: 0
-    })) as Session;
+    })) as unknown as BetterSession;
 
     const betterAuthHandleRequest = createAuthMiddleware(
       async (ctx): Promise<Headers | null> => {

@@ -11,8 +11,8 @@ import type { CollectionConfig } from "payload";
 import type {
   BuildCollectionProps,
   FieldOverrides
-} from "@/better-auth/plugin/types";
-import type { Member } from "@/better-auth/generated-types";
+} from "@payload-auth/better-auth/plugin/types";
+import type { Member } from "@payload-auth/better-auth/generated-types";
 
 export function buildMembersCollection({
   incomingCollections,

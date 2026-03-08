@@ -1,10 +1,10 @@
-import { baModelKey } from "@/better-auth/plugin/constants";
-import { getCollectionByModelKey } from "@/better-auth/plugin/helpers/get-collection";
+import { baModelKey } from "@payload-auth/better-auth/plugin/constants";
+import { getCollectionByModelKey } from "@payload-auth/better-auth/plugin/helpers/get-collection";
 import {
+  type CollectionBeforeDeleteHook,
   commitTransaction,
   initTransaction,
-  killTransaction,
-  type CollectionBeforeDeleteHook
+  killTransaction
 } from "payload";
 
 export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
@@ -29,7 +29,7 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
       const shouldCommit = await initTransaction(req);
 
       await payload.delete({
-        collection: accountsSlug,
+        collection: "accounts",
         where: {
           user: {
             equals: userId
@@ -39,7 +39,7 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
       });
 
       await payload.delete({
-        collection: sessionsSlug,
+        collection: "sessions",
         where: {
           user: {
             equals: userId
@@ -49,7 +49,7 @@ export function getBeforeDeleteHook(): CollectionBeforeDeleteHook {
       });
 
       await payload.delete({
-        collection: verificationsSlug,
+        collection: "verifications",
         where: {
           value: {
             like: `"${userId}"`

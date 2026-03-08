@@ -2,18 +2,18 @@
 
 import { useConfig, toast, useTranslation } from "@payloadcms/ui";
 import React, { useState } from "react";
-import type { LoginMethod } from "@/better-auth/plugin/types";
+import type { LoginMethod } from "@payload-auth/better-auth/plugin/types";
 import {
   LoginFormProvider,
   AlternativeMethods
-} from "@/better-auth/plugin/payload/components/login-form";
-import { getSafeRedirect } from "@/better-auth/plugin/payload/utils/get-safe-redirect";
-import { adminEndpoints } from "@/better-auth/plugin/constants";
+} from "@payload-auth/better-auth/plugin/payload/components/login-form";
+import { getSafeRedirect } from "@payload-auth/better-auth/plugin/payload/utils/get-safe-redirect";
+import { adminEndpoints } from "@payload-auth/better-auth/plugin/constants";
 import type { LoginWithUsernameOptions } from "payload";
-import { useAppForm } from "@/shared/form";
-import { Form, FormInputWrap } from "@/shared/form/ui";
-import { FormHeader } from "@/shared/form/ui/header";
-import { createSignupSchema } from "@/shared/form/validation";
+import { useAppForm } from "@payload-auth/shared/form";
+import { Form, FormInputWrap } from "@payload-auth/shared/form/ui";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
+import { createSignupSchema } from "@payload-auth/shared/form/validation";
 import { createAuthClient } from "better-auth/react";
 import { usernameClient } from "better-auth/client/plugins";
 

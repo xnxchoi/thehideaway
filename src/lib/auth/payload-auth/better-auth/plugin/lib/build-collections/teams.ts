@@ -6,7 +6,7 @@ import {
   getSchemaFieldName
 } from "./utils/collection-schema";
 import { getCollectionFields } from "./utils/transform-schema-fields-to-payload";
-import type { Team } from "@/better-auth/generated-types";
+import type { Team } from "@payload-auth/better-auth/generated-types";
 import type { CollectionConfig } from "payload";
 import type {
   BuildCollectionProps,

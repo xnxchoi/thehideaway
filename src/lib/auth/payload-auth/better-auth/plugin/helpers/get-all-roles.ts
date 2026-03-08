@@ -1,4 +1,4 @@
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 export function getAllRoleOptions(pluginOptions: PayloadAuthOptions) {
   const adminRoles = pluginOptions.users?.adminRoles ?? ["admin"];

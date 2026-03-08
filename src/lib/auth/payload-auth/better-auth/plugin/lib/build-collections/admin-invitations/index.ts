@@ -2,9 +2,12 @@ import { isAdminWithRoles } from "../utils/payload-access";
 import { generateAdminInviteUrl } from "../../../payload/utils/generate-admin-invite-url";
 import { getUrlBeforeChangeHook } from "./hooks/get-url-before-change";
 import { getAdminInviteUrlAfterReadHook } from "./hooks/get-url-after-read";
-import { baseSlugs, defaults } from "@/better-auth/plugin/constants";
+import {
+  baseSlugs,
+  defaults
+} from "@payload-auth/better-auth/plugin/constants";
 import type { CollectionConfig } from "payload";
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 
 export function buildAdminInvitationsCollection({
   incomingCollections,
@@ -70,7 +73,7 @@ export function buildAdminInvitationsCollection({
           components: {
             afterInput: [
               {
-                path: "payload-auth/shared/payload/fields#GenerateUuidButton"
+                path: "@payload-auth/shared/payload/fields#GenerateUuidButton"
               }
             ]
           }
@@ -94,7 +97,7 @@ export function buildAdminInvitationsCollection({
           components: {
             afterInput: [
               {
-                path: "payload-auth/shared/payload/fields#FieldCopyButton"
+                path: "@payload-auth/shared/payload/fields#FieldCopyButton"
               }
             ]
           }

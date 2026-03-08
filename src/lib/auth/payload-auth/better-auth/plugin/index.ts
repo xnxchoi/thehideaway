@@ -1,6 +1,4 @@
-import type { BetterAuthOptions } from "better-auth/types";
-import { getPayload, SanitizedConfig, type Config } from "payload";
-import { payloadAdapter } from "payload-auth/better-auth/adapter";
+import { type Config, SanitizedConfig } from "payload";
 import { getDefaultBetterAuthSchema } from "./helpers/get-better-auth-schema";
 import { syncResolvedSchemaWithCollectionMap } from "./helpers/sync-resolved-schema-with-collection-map";
 import { applyDisabledDefaultAuthConfig } from "./lib/apply-disabled-default-auth-config";
@@ -9,7 +7,6 @@ import { initBetterAuth } from "./lib/init-better-auth";
 import { sanitizeBetterAuthOptions } from "./lib/sanitize-better-auth-options/index";
 import { setLoginMethods } from "./lib/set-login-methods";
 import type { PayloadAuthOptions } from "./types";
-import { set } from "./utils/set";
 
 export * from "./helpers/index";
 export { getPayloadAuth } from "./lib/get-payload-auth";

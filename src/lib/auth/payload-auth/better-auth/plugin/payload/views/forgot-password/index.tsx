@@ -3,10 +3,10 @@ import { Button, Translation } from "@payloadcms/ui";
 import Link from "next/link";
 import type { AdminViewServerProps } from "payload";
 import { formatAdminURL } from "payload/shared";
-import { FormHeader } from "@/shared/form/ui/header";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
 import { ForgotPasswordForm } from "./client";
-import { adminRoutes } from "@/better-auth/plugin/constants";
-import type { PayloadAuthOptions } from "@/better-auth/plugin/types";
+import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
+import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { MinimalTemplate } from "@payloadcms/next/templates";
 
 type ForgotPasswordProps = AdminViewServerProps & {

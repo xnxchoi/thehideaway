@@ -1,18 +1,18 @@
-import { getAuthTables } from "better-auth/db";
-import type { ModelKey } from "@/better-auth/generated-types";
+import type { ModelKey } from "@payload-auth/better-auth/generated-types";
+import {
+  getCollectionByModelKey,
+  getCollectionFieldNameByFieldKeyUntyped,
+  getFieldKeyByCollectionFieldName
+} from "@payload-auth/better-auth/plugin/helpers/get-collection";
 import type { BetterAuthOptions, Where } from "better-auth";
 import type { DBFieldAttribute } from "better-auth/db";
+import { getAuthTables } from "better-auth/db";
 import {
   type BasePayload,
   type CollectionSlug,
   flattenAllFields,
   type Where as PayloadWhere
 } from "payload";
-import {
-  getCollectionByModelKey,
-  getCollectionFieldNameByFieldKeyUntyped,
-  getFieldKeyByCollectionFieldName
-} from "@/better-auth/plugin/helpers/get-collection";
 
 export const createTransform = (
   options: BetterAuthOptions,
@@ -72,7 +72,8 @@ export const createTransform = (
     collectionSlug: string,
     fieldName: string
   ): boolean {
-    const collection = payload.collections[collectionSlug];
+    const collection =
+      payload.collections[collectionSlug as CollectionSlug] || undefined;
     if (!collection) return false;
 
     const fields = flattenAllFields({ fields: collection.config.fields });

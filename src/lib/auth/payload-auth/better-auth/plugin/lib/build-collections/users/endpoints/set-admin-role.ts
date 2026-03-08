@@ -1,9 +1,10 @@
-import { z } from "zod";
-import { type Endpoint } from "payload";
+import { adminEndpoints } from "@payload-auth/better-auth/plugin/constants";
+import { User } from "@payload-types";
 import { status as httpStatus } from "http-status";
+import { type Endpoint } from "payload";
+import { z } from "zod";
 import { PayloadAuthOptions } from "../../../../types";
 import { getPayloadAuth } from "../../../get-payload-auth";
-import { adminEndpoints, baseSlugs } from "@/better-auth/plugin/constants";
 
 const setAdminRoleSchema = z.object({
   token: z.string().optional(),
@@ -38,8 +39,7 @@ export const getSetAdminRoleEndpoint = (
       }
       const { token, redirect } = schema.data;
       const invite = await req.payload.find({
-        collection:
-          pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
+        collection: "admin-invitations",
         where: {
           token: { equals: token }
         },
@@ -51,19 +51,19 @@ export const getSetAdminRoleEndpoint = (
           { status: httpStatus.UNAUTHORIZED }
         );
       }
-      const role = invite.docs[0].role as string;
+      const role = invite.docs[0].role as User["role"];
       try {
         const updatedUser = await req.payload.update({
-          collection: userSlug,
+          collection: "users",
           id: session.user.id,
           data: {
-            role: [role]
+            role: role
           },
           overrideAccess: true
         });
         await req.payload.delete({
-          collection:
-            pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
+          collection: "admin-invitations",
+
           where: {
             token: {
               equals: token

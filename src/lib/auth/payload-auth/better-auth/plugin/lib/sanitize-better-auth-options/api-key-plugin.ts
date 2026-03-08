@@ -1,5 +1,8 @@
-import { baModelFieldKeys, baModelKey } from "@/better-auth/plugin/constants";
-import type { BetterAuthSchemas } from "@/better-auth/types";
+import {
+  baModelFieldKeys,
+  baModelKey
+} from "@payload-auth/better-auth/plugin/constants";
+import type { BetterAuthSchemas } from "@payload-auth/better-auth/types";
 import { set } from "../../utils/set";
 import {
   getSchemaCollectionSlug,

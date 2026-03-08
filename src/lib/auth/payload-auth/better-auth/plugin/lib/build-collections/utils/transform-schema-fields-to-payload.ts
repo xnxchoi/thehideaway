@@ -1,7 +1,7 @@
 import type {
   BuiltBetterAuthSchema,
   FieldRule
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 import type { DBFieldAttribute } from "better-auth/db";
 import type { Field, RelationshipField } from "payload";
 import { getAdditionalFieldProperties } from "./model-field-transformations";

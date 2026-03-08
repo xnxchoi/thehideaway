@@ -1,6 +1,6 @@
 "use client";
 
-import { adminRoutes } from "@/better-auth/plugin/constants";
+import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
 import { useAppForm } from "@/shared/form";
 import { Form, FormError, FormInputWrap } from "@/shared/form/ui";
 import { FormHeader } from "@/shared/form/ui/header";

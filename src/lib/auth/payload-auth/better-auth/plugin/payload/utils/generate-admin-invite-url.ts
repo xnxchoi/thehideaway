@@ -1,5 +1,5 @@
-import { adminRoutes } from "@/better-auth/plugin/constants";
-import type { GenerateAdminInviteUrlFn } from "@/better-auth/plugin/types";
+import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
+import type { GenerateAdminInviteUrlFn } from "@payload-auth/better-auth/plugin/types";
 
 export const generateAdminInviteUrl: GenerateAdminInviteUrlFn = ({
   payload,

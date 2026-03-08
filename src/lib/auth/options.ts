@@ -1,362 +1,371 @@
 // import { openAPI } from "better-auth/plugins/open-api";
-import {passkey} from "@better-auth/passkey";
-import type {BetterAuthOptions as BetterAuthOptionsType} from "better-auth";
-import {emailHarmony} from "better-auth-harmony";
-import {nextCookies} from "better-auth/next-js";
-import {admin as adminPlugin} from "better-auth/plugins/admin";
-import {emailOTP} from "better-auth/plugins/email-otp";
-import {genericOAuth} from "better-auth/plugins/generic-oauth";
-import {magicLink} from "better-auth/plugins/magic-link";
-import {multiSession} from "better-auth/plugins/multi-session";
-import {organization} from "better-auth/plugins/organization";
-import {twoFactor} from "better-auth/plugins/two-factor";
-import {username} from "better-auth/plugins/username";
-import type {PayloadAuthOptions} from "payload-auth";
-import {BetterAuthEmailService} from "@/lib/email/better-auth-integration";
+import { BetterAuthEmailService } from "@/lib/email/better-auth-integration";
+import { passkey } from "@better-auth/passkey";
+import type { PayloadAuthOptions } from "@payload-auth/index";
+import type { BetterAuthOptions as BetterAuthOptionsType } from "better-auth";
+import { emailHarmony } from "better-auth-harmony";
+import { nextCookies } from "better-auth/next-js";
+import { admin as adminPlugin } from "better-auth/plugins/admin";
+import { emailOTP } from "better-auth/plugins/email-otp";
+import { genericOAuth } from "better-auth/plugins/generic-oauth";
+import { magicLink } from "better-auth/plugins/magic-link";
+import { multiSession } from "better-auth/plugins/multi-session";
+import { organization } from "better-auth/plugins/organization";
+import { twoFactor } from "better-auth/plugins/two-factor";
+import { username } from "better-auth/plugins/username";
 
 const emailService = new BetterAuthEmailService();
 
 const appURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL!;
 const trustedOrigins = [appURL];
 if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
-	trustedOrigins.push(process.env.NEXT_PUBLIC_PRODUCTION_URL);
+  trustedOrigins.push(process.env.NEXT_PUBLIC_PRODUCTION_URL);
 }
 
 const options: BetterAuthOptionsType = {
-	appName: "hideaway-validator",
-	baseURL: appURL,
-	trustedOrigins,
-	emailAndPassword: {
-		enabled: true,
-		requireEmailVerification: true,
-		async sendResetPassword({user, url}) {
-			try {
-				await emailService.sendPasswordReset(user.email, url);
-			} catch (error) {
-				console.error("Failed to send password reset email:", error);
-			}
-		}
-	},
-	socialProviders: {
-		google: {
-			clientId: process.env.GOOGLE_CLIENT_ID as string,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-			mapProfileToUser: async (profile) => {
-				return {
-					email: profile.email,
-					name: profile.name,
-					username: profile.email.split("@")[0] || profile.name,
-					onboarded: false,
-					displayUsername: profile.name || profile.email.split("@")[0],
-					emailVerified: true,
-					slug: profile.email.split("@")[0],
-					firstName: profile.given_name,
-					lastName: profile.family_name,
-					image: profile.picture,
-					banned: false
-				};
-			}
-		}
-	},
-	emailVerification: {
-		sendOnSignUp: true,
-		autoSignInAfterVerification: true,
-		async sendVerificationEmail({user, url}) {
-			try {
-				// Better Auth passes the full URL; OTP is the token in the URL
-				const otp = url.split("=").pop() || "";
-				await emailService.sendOTP(user.email, otp, "email-verification");
-			} catch (error) {
-				console.error("Failed to send verification email:", error);
-			}
-		}
-	},
+  appName: "hideaway-validator",
+  baseURL: appURL,
+  trustedOrigins,
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    async sendResetPassword({ user, url }) {
+      try {
+        await emailService.sendPasswordReset(user.email, url);
+      } catch (error) {
+        console.error("Failed to send password reset email:", error);
+      }
+    }
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      mapProfileToUser: async (profile) => {
+        return {
+          email: profile.email,
+          name: profile.name,
+          username: profile.email.split("@")[0] || profile.name,
+          onboarded: false,
+          displayUsername: profile.name || profile.email.split("@")[0],
+          emailVerified: true,
+          slug: profile.email.split("@")[0],
+          firstName: profile.given_name,
+          lastName: profile.family_name,
+          image: profile.picture,
+          banned: false
+        };
+      }
+    }
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    async sendVerificationEmail({ user, url }) {
+      try {
+        // Better Auth passes the full URL; OTP is the token in the URL
+        const otp = url.split("=").pop() || "";
+        await emailService.sendOTP(user.email, otp, "email-verification");
+      } catch (error) {
+        console.error("Failed to send verification email:", error);
+      }
+    }
+  },
 
-	user: {
-		changeEmail: {
-			enabled: true,
-			sendChangeEmailVerification: async ({user, newEmail, url, token}) => {
-				try {
-					await emailService.sendOTP(newEmail, token, "email-verification");
-				} catch (error) {
-					console.error("Failed to send change email verification:", error);
-				}
-			}
-		},
-		deleteUser: {
-			enabled: true,
-			sendDeleteAccountVerification: async ({user, url, token}) => {
-				// Send delete account verification
-			},
-			beforeDelete: async (user) => {
-				// Perform actions before user deletion
-			},
-			afterDelete: async (user) => {
-				// Perform cleanup after user deletion
-			}
-		},
-		additionalFields: {
-			role: {
-				type: "string",
-				defaultValue: "author",
-				input: false
-			}
-		}
-	},
-	session: {
-		cookieCache: {
-			enabled: true,
-			maxAge: 5 * 60 // Cache duration in seconds
-		}
-	},
-	account: {
-		accountLinking: {
-			enabled: true,
-			trustedProviders: ["google", "email-password", "naver"]
-		}
-	},
+  user: {
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
+        try {
+          await emailService.sendOTP(newEmail, token, "email-verification");
+        } catch (error) {
+          console.error("Failed to send change email verification:", error);
+        }
+      }
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: async ({ user, url, token }) => {
+        // Send delete account verification
+      },
+      beforeDelete: async (user) => {
+        // Perform actions before user deletion
+      },
+      afterDelete: async (user) => {
+        // Perform cleanup after user deletion
+      }
+    },
+    additionalFields: {
+      role: {
+        type: "string",
+        defaultValue: "author",
+        input: false
+      }
+    }
+  },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60 // Cache duration in seconds
+    }
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "email-password", "naver"]
+    }
+  },
 
-	advanced: {
-		database: {
-			generateId: "uuid"
-		}
-	}
+  advanced: {
+    database: {
+      generateId: "uuid"
+    }
+  }
 } satisfies BetterAuthOptionsType;
 export const betterAuthPlugins = [
-	username(),
-	emailHarmony(),
-	twoFactor({
-		issuer: "hideaway-validator",
-		otpOptions: {
-			async sendOTP({user, otp}) {
-				try {
-					const userEmail = (user as any).email || "";
-					await emailService.send2FACode(userEmail, otp);
-				} catch (error) {
-					console.error("Failed to send 2FA OTP:", error);
-				}
-			}
-		}
-	}),
-	magicLink({
-		sendMagicLink: async ({email, token, url}, _request) => {
-			try {
-				await emailService.sendMagicLink(email, token, url);
-			} catch (error) {
-				console.error("Failed to send magic link:", error);
-			}
-		}
-	}),
-	emailOTP({
-		async sendVerificationOTP({email, otp, type}) {
-			try {
-				await emailService.sendOTP(
-					email,
-					otp,
-					type as "sign-in" | "email-verification"
-				);
-			} catch (error) {
-				console.error("Failed to send verification OTP:", error);
-			}
-		}
-	}),
-	passkey({
-		rpID: new URL(appURL).hostname,
-		rpName: "The Hideaway",
-		origin: appURL
-	}),
+  username(),
+  emailHarmony(),
+  twoFactor({
+    issuer: "hideaway-validator",
+    otpOptions: {
+      async sendOTP({ user, otp }) {
+        try {
+          const userEmail = (user as any).email || "";
+          await emailService.send2FACode(userEmail, otp);
+        } catch (error) {
+          console.error("Failed to send 2FA OTP:", error);
+        }
+      }
+    }
+  }),
+  magicLink({
+    sendMagicLink: async ({ email, token, url }, _request) => {
+      try {
+        await emailService.sendMagicLink(email, token, url);
+      } catch (error) {
+        console.error("Failed to send magic link:", error);
+      }
+    }
+  }),
+  emailOTP({
+    async sendVerificationOTP({ email, otp, type }) {
+      try {
+        await emailService.sendOTP(
+          email,
+          otp,
+          type as "sign-in" | "email-verification"
+        );
+      } catch (error) {
+        console.error("Failed to send verification OTP:", error);
+      }
+    }
+  }),
+  passkey({
+    rpID: new URL(appURL).hostname,
+    rpName: "The Hideaway",
+    origin: appURL
+  }),
 
-	adminPlugin(),
+  adminPlugin(),
 
-	organization({
-		teams: {
-			enabled: true
-		},
-		async sendInvitationEmail(data) {
-			const inviteLink = `${appURL}/accept-invitation/${data.id}`;
-			console.log("Send invite for org: ", data, inviteLink);
-		},
-
-	}),
-	multiSession(),
-	genericOAuth({
-		config: [
-			{
-				providerId: "naver",
-				clientId: process.env.AUTH_NAVER_ID!,
-				clientSecret: process.env.AUTH_NAVER_SECRET!,
-				authorizationUrl: "https://nid.naver.com/oauth2.0/authorize",
-				tokenUrl: "https://nid.naver.com/oauth2.0/token",
-				userInfoUrl: "https://openapi.naver.com/v1/nid/me",
-				scopes: ["profile", "email"],
-				mapProfileToUser: async (profile) => {
-					// Naver user info is nested under profile.response
-					const p = (profile as any).response || profile;
-					const email = p.email || "";
-					const username = email.split("@")[0] || p.nickname || p.id;
-					return {
-						email,
-						name: p.name || p.nickname || username,
-						username,
-						displayUsername: p.nickname || p.name || username,
-						emailVerified: true,
-						slug: username,
-						firstName: p.name?.split(" ")[0],
-						image: p.profile_image,
-						banned: false,
-						onboarded: false
-					};
-				}
-			}
-		]
-	}),
-	// openAPI(),
-	nextCookies(),
+  organization({
+    teams: {
+      enabled: true
+    },
+    async sendInvitationEmail(data) {
+      const inviteLink = `${appURL}/accept-invitation/${data.id}`;
+      console.log("Send invite for org: ", data, inviteLink);
+    }
+  }),
+  multiSession(),
+  genericOAuth({
+    config: [
+      {
+        providerId: "naver",
+        clientId: process.env.AUTH_NAVER_ID!,
+        clientSecret: process.env.AUTH_NAVER_SECRET!,
+        authorizationUrl: "https://nid.naver.com/oauth2.0/authorize",
+        tokenUrl: "https://nid.naver.com/oauth2.0/token",
+        userInfoUrl: "https://openapi.naver.com/v1/nid/me",
+        scopes: ["profile", "email"],
+        mapProfileToUser: async (profile) => {
+          // Naver user info is nested under profile.response
+          const p = (profile as any).response || profile;
+          const email = p.email || "";
+          const username = email.split("@")[0] || p.nickname || p.id;
+          return {
+            email,
+            name: p.name || p.nickname || username,
+            username,
+            displayUsername: p.nickname || p.name || username,
+            emailVerified: true,
+            slug: username,
+            firstName: p.name?.split(" ")[0],
+            image: p.profile_image,
+            banned: false,
+            onboarded: false
+          };
+        }
+      }
+    ]
+  }),
+  // openAPI(),
+  nextCookies()
 ] satisfies BetterAuthOptionsType["plugins"];
 
 export type BetterAuthPlugins = typeof betterAuthPlugins;
 
 export const betterAuthOptions = {
-	...options,
-	plugins: betterAuthPlugins
+  ...options,
+  plugins: betterAuthPlugins
 } satisfies BetterAuthOptionsType;
 export type BetterAuthOptions = typeof betterAuthOptions;
 export const betterAuthPluginOptions = {
-	disabled: false,
-	debug: {
-		logTables: process.env.NODE_ENV !== "production",
-		enableDebugLogs: process.env.NODE_ENV !== "production"
-	},
-	disableDefaultPayloadAuth: true,
-	hidePluginCollections: true,
-	users: {
-		slug: "users", // not required, this is the default anyways
-		hidden: false,
-		roles: ["admin", "author", "editor", "user", "patron"],
-		defaultRole: "author",
+  disabled: false,
+  debug: {
+    logTables: process.env.NODE_ENV !== "production",
+    enableDebugLogs: process.env.NODE_ENV !== "production"
+  },
+  disableDefaultPayloadAuth: true,
+  hidePluginCollections: true,
+  users: {
+    slug: "users", // not required, this is the default anyways
+    hidden: false,
+    roles: ["admin", "author", "editor", "user", "patron"],
+    defaultRole: "author",
 
-		adminRoles: ["admin"],
-		allowedFields: [
-			"name",
-			"image",
-			"portrait",
-			"bio",
-			"displayUsername",
-			"slug",
-			"location",
-			"firstName",
-			"lastName",
-			"collections",
-			"bookmarks"
-		],
-		collectionOverrides: (options) => {
-			const collection = {...options.collection};
-			collection.access = {
-				...collection.access,
-				admin: ({req}) => {
-					const user = req?.user;
-					if (!user) return false;
-					if (user.collection === "admins") return true;
-					if (user && typeof user === "object" && "banned" in user && (user as any).banned)
-						return false;
-					return true;
-				},
+    adminRoles: ["admin"],
+    allowedFields: [
+      "name",
+      "image",
+      "portrait",
+      "bio",
+      "displayUsername",
+      "slug",
+      "location",
+      "firstName",
+      "lastName",
+      "collections",
+      "bookmarks"
+    ],
+    collectionOverrides: (options) => {
+      const collection = { ...options.collection };
+      collection.access = {
+        ...collection.access,
+        admin: ({ req }) => {
+          const user = req?.user;
+          if (!user) return false;
+          if (user.collection === "admins") return true;
+          if (
+            user &&
+            typeof user === "object" &&
+            "banned" in user &&
+            (user as any).banned
+          )
+            return false;
+          return true;
+        },
 
-				update: ({req}) => {
-					const user = req?.user;
-					if (!user) return false;
-					if (user.collection === "admins") return true;
-					if (user.role === "admin") {
-						return true;
-					}
-					if (user && typeof user === "object" && "banned" in user && (user as any).banned) {
-						return false;
-					}
-					return {
-						id: {
-							equals: user.id
-						}
-					};
-				},
-				delete: ({req}) => {
-					const user = req.user;
-					if (user?.collection === "admins") return true;
-					if (user && user.role === "admin") {
-						return true;
-					}
+        update: ({ req }) => {
+          const user = req?.user;
+          if (!user) return false;
+          if (user.collection === "admins") return true;
+          if (user.role === "admin") {
+            return true;
+          }
+          if (
+            user &&
+            typeof user === "object" &&
+            "banned" in user &&
+            (user as any).banned
+          ) {
+            return false;
+          }
+          return {
+            id: {
+              equals: user.id
+            }
+          };
+        },
+        delete: ({ req }) => {
+          const user = req.user;
+          if (user?.collection === "admins") return true;
+          if (user && user.role === "admin") {
+            return true;
+          }
 
-					return {
-						id: {
-							equals: user?.id
-						}
-					};
-				}
-			};
-			collection.admin = {
-				...collection.admin,
-				hidden: ({user}) => {
-					if (!user) return true;
+          return {
+            id: {
+              equals: user?.id
+            }
+          };
+        }
+      };
+      collection.admin = {
+        ...collection.admin,
+        hidden: ({ user }) => {
+          if (!user) return true;
 
-					if (user?.role === "admin") return false;
-					if (user?.role === "editor") return false;
-					return true;
-				}
-			};
+          if (user?.role === "admin") return false;
+          if (user?.role === "editor") return false;
+          return true;
+        }
+      };
 
-			return collection;
-		}
-	},
-	accounts: {
-		slug: "accounts",
-		collectionOverrides: (options) => {
-			options.collection.admin = {
-				...options.collection.admin,
-				hidden: ({user}) => {
-					if (!user) return true;
-					if (user?.role === "admin") return false;
-					return true;
-				}
-			};
-			return options.collection;
-		}
-	},
-	sessions: {
-		slug: "sessions",
-		collectionOverrides: (options) => {
-			options.collection.admin = {
-				...options.collection.admin,
-				hidden: ({user}) => {
-					if (!user) return true;
-					if (user?.role === "admin") return false;
-					return true;
-				}
-			};
+      return collection;
+    }
+  },
+  accounts: {
+    slug: "accounts",
+    collectionOverrides: (options) => {
+      options.collection.admin = {
+        ...options.collection.admin,
+        hidden: ({ user }) => {
+          if (!user) return true;
+          if (user?.role === "admin") return false;
+          return true;
+        }
+      };
+      return options.collection;
+    }
+  },
+  sessions: {
+    slug: "sessions",
+    collectionOverrides: (options) => {
+      options.collection.admin = {
+        ...options.collection.admin,
+        hidden: ({ user }) => {
+          if (!user) return true;
+          if (user?.role === "admin") return false;
+          return true;
+        }
+      };
 
-			return options.collection;
-		}
-	},
-	verifications: {
-		slug: "verifications",
-		collectionOverrides: (options) => {
-			options.collection.admin = {
-				...options.collection.admin,
-				hidden: ({user}) => {
-					if (!user) return true;
-					if (user?.role === "admin") return false;
-					return true;
-				}
-			};
-			return options.collection;
-		}
-	},
-	adminInvitations: {
-		sendInviteEmail: async ({payload, email, url}) => {
-			console.log("Send admin invite: ", email, url);
-			return {
-				success: true
-			};
-		}
-	},
-	betterAuthOptions
+      return options.collection;
+    }
+  },
+  verifications: {
+    slug: "verifications",
+    collectionOverrides: (options) => {
+      options.collection.admin = {
+        ...options.collection.admin,
+        hidden: ({ user }) => {
+          if (!user) return true;
+          if (user?.role === "admin") return false;
+          return true;
+        }
+      };
+      return options.collection;
+    }
+  },
+  adminInvitations: {
+    sendInviteEmail: async ({ payload, email, url }) => {
+      console.log("Send admin invite: ", email, url);
+      return {
+        success: true
+      };
+    }
+  },
+  betterAuthOptions
 } satisfies PayloadAuthOptions;
-export type ConstructedBetterAuthPluginOptions = typeof betterAuthPluginOptions
+export type ConstructedBetterAuthPluginOptions = typeof betterAuthPluginOptions;

@@ -1,6 +1,6 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import { Drawer } from "@/components/vaul";
+import { Drawer } from "@/components/ui/vaul";
 import { SPRING_EASE } from "@/constants/animations";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useRadioStore } from "@/providers/RadioProvider";
@@ -280,7 +280,7 @@ export const SideDrawer = () => {
           />
         )}
         <Mrawer
-	        className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-nav-foreground outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
+          className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-nav-foreground outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
           style={{
             borderTopRightRadius: borderTopRadius,
             borderTopLeftRadius: borderTopRadius,
@@ -300,7 +300,7 @@ export const SideDrawer = () => {
             />
           )}
           <m.div
-	          className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-nav-background max-md:h-[65vh] max-md:w-full"
+            className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-nav-background max-md:h-[65vh] max-md:w-full"
             onMouseEnter={() => {
               setCursor(null);
               setCursorTheme("dark");

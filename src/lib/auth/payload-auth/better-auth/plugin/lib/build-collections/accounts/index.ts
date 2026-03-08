@@ -1,4 +1,7 @@
-import { baModelKey, defaults } from "@/better-auth/plugin/constants";
+import {
+  baModelKey,
+  defaults
+} from "@payload-auth/better-auth/plugin/constants";
 import {
   assertAllSchemaFields,
   getSchemaFieldName
@@ -9,14 +12,14 @@ import {
 } from "../utils/payload-access";
 import { getCollectionFields } from "../utils/transform-schema-fields-to-payload";
 import { getSyncPasswordToUserHook } from "./hooks/sync-password-to-user";
-import type { Account } from "@/better-auth/generated-types";
+import type { Account } from "@payload-auth/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides
-} from "@/better-auth/plugin/types";
+} from "@payload-auth/better-auth/plugin/types";
 import type { CollectionConfig } from "payload";
 import { getSchemaCollectionSlug } from "../utils/collection-schema";
-import type { FieldRule } from "@/better-auth/plugin/types";
+import type { FieldRule } from "@payload-auth/better-auth/plugin/types";
 
 export function buildAccountsCollection({
   incomingCollections,

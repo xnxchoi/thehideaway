@@ -1,18 +1,18 @@
-import { baModelFieldKeys, baModelKey } from "../../constants";
-import { getAdminAccess } from "../../helpers/get-admin-access";
-import { getCollectionFields } from "./utils/transform-schema-fields-to-payload";
-import {
-  getSchemaCollectionSlug,
-  getSchemaFieldName
-} from "./utils/collection-schema";
-import { assertAllSchemaFields } from "./utils/collection-schema";
-
-import type { CollectionConfig, JoinField } from "payload";
+import type { Organization } from "@payload-auth/better-auth/generated-types";
 import type {
   BuildCollectionProps,
   FieldOverrides
-} from "@/better-auth/plugin/types";
-import type { Organization } from "@/better-auth/generated-types";
+} from "@payload-auth/better-auth/plugin/types";
+
+import type { CollectionConfig, JoinField } from "payload";
+import { baModelFieldKeys, baModelKey } from "../../constants";
+import { getAdminAccess } from "../../helpers/get-admin-access";
+import {
+  assertAllSchemaFields,
+  getSchemaCollectionSlug,
+  getSchemaFieldName
+} from "./utils/collection-schema";
+import { getCollectionFields } from "./utils/transform-schema-fields-to-payload";
 
 export function buildOrganizationsCollection({
   incomingCollections,
@@ -79,7 +79,7 @@ export function buildOrganizationsCollection({
       name: baModelKey.member,
       type: "join",
       hasMany: true,
-      collection: memberSlug,
+      collection: "members",
       on: getSchemaFieldName(
         resolvedSchemas,
         baModelKey.member,
@@ -93,7 +93,7 @@ export function buildOrganizationsCollection({
       name: baModelKey.invitation,
       type: "join",
       hasMany: true,
-      collection: invitationSlug,
+      collection: "invitations",
       on: getSchemaFieldName(
         resolvedSchemas,
         baModelKey.invitation,
@@ -107,7 +107,7 @@ export function buildOrganizationsCollection({
       name: baModelKey.team,
       type: "join",
       hasMany: true,
-      collection: teamSlug,
+      collection: "teams",
       on: getSchemaFieldName(
         resolvedSchemas,
         baModelKey.team,

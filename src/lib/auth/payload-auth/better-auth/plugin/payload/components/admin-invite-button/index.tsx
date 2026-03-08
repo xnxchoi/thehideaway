@@ -13,7 +13,7 @@ import {
   useConfig,
   useModal
 } from "@payloadcms/ui";
-import { adminEndpoints } from "@/better-auth/plugin/constants";
+import { adminEndpoints } from "@payload-auth/better-auth/plugin/constants";
 
 import "./index.scss";
 
