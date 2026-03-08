@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useShallow } from "zustand/shallow";
 import { useMotionValue, useSpring } from "motion/react";
-import { springGSAP } from "@/constants/animations";
+import { SPRING_EASE } from "@/constants/animations";
 import * as m from "motion/react-m";
 
 export const Controlbar = () => {
@@ -31,13 +31,13 @@ export const Controlbar = () => {
   const op = useMotionValue(1);
   const locationBottom = useMotionValue(`0px`);
   const opacity = useSpring(op, {
-    ...springGSAP.power3.out,
+    ...SPRING_EASE.power3.out,
     visualDuration: 0.2,
     damping: 40,
     stiffness: 1000
   });
   const bottom = useSpring(locationBottom, {
-    ...springGSAP.power3.out,
+    ...SPRING_EASE.power3.out,
     visualDuration: 0.4,
     damping: 40,
     stiffness: 1000

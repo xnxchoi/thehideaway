@@ -1,8 +1,9 @@
 # Ignore log files
 *.log
+*.zip
+*.psd
 
-# Ignore node_modules folder
-node_modules/
+
 
 # Environment files with secrets (DO NOT COMMIT)
 .env.local
@@ -11,34 +12,38 @@ node_modules/
 .env.production.local
 .env.production
 
+# Ignore node_modules folder
+node_modules/
+
 # .env file can be committed as it contains only example values
-.grave/
 # Ignore MacOS .DS_Store file
+.hintrc
+.filenignore
 .DS_Store
+.grave/
 .vscode/
 .idea/
-.next/
-.pnpm-store/
-.turbo/
-public/!/src/payload/fields/Article/Cover/backup/ImageContextB.tsx
+.next
+.pnpm-store
+.turbo
+.claude
+
+backup/
+migrations/
+test*/
+
+/src/lib/migrations/**/
+!/src/lib/migrations/
+
 /public/users/
 /public/media/
-!/public/media/
-!/public/assets/media/
+/public/images/
+#!/public/assets/media
+
+!/public/assets/three/tape
+
+
 !/src/app/(frontend)/(site)/essays/DemoOfArchive.tsx
-src/lib/migrations/
-**/backup/
-*.psd!/src/components/UX/Signature/__backup.tsx
-/src/components/layouts/Registration/Plate/Plaque copy.tsx
+!/src/components/UX/Signature/__backup.tsx
+src/**/* copy*
 /src/components/layouts/Registration/Plate/ThreeCSG.ts
-/public/assets/media/unsplash-omRMbFSqN6A.webp
-/public/assets/media/unsplash-omRMbFSqN6A-300x441.jpg
-/public/assets/media/unsplash-omRMbFSqN6A-500x500.jpg
-/public/assets/media/unsplash-omRMbFSqN6A-600x882.jpg
-/public/assets/media/unsplash-omRMbFSqN6A-900x1322.jpg
-/public/assets/media/unsplash-omRMbFSqN6A-1200x630.jpg
-/public/assets/media/unsplash-omRMbFSqN6A-1400x2057.jpg
-/public/assets/media/unsplash-omRMbFSqN6A-1920x2821.jpg
-/.claude/worktrees/brave-margulis/
-/.claude/worktrees/hopeful-nightingale/
-/.hintrc

@@ -1,7 +1,7 @@
 import { Where } from "payload";
 import React from "react";
 
-import { HomeArticleLayout } from "@/components/layouts/HomeArticleLayout";
+import { HomeArticleLayout } from "@/components/layouts/ArticleFrontpage";
 import type { HeroSquareBlock as HeroSquareBlockProps } from "@/payload-types";
 import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
 import {PostOverview} from "@/types/collections/posts";

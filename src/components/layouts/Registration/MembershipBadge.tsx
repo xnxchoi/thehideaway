@@ -53,9 +53,9 @@ import {
   type MeshStandardMaterial,
   type PointLight
 } from "three";
-const ASSETS_BASE_PATH = "/assets/rp_plaque";
-const TEXTURE_BASE_PATH = `${ASSETS_BASE_PATH}/textures`;
-const OBJ_BASE_PATH = `${ASSETS_BASE_PATH}/model`;
+const ASSETS_BASE_PATH = "/assets/three";
+const OBJ_BASE_PATH = `${ASSETS_BASE_PATH}/badge`;
+const materialTexturesPath = `${ASSETS_BASE_PATH}/materials`;
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 
@@ -131,7 +131,7 @@ export function Plaque({
   name2?: string;
 }) {
   const { width, height } = useThree((state) => state.size);
-  const plaq = useGLTF(`${OBJ_BASE_PATH}/pp-transformed.glb`) as PlaqueChildren;
+  const plaq = useGLTF(`${OBJ_BASE_PATH}/model.glb`) as PlaqueChildren;
   const band = useRef<
       ThreeElements["mesh"] & {
         geometry: MeshLineGeometry;
@@ -162,7 +162,7 @@ export function Plaque({
     angularDamping: 2,
     linearDamping: 2
   };
-  const bandTexture = useTexture("/assets/model/ha.png");
+  const bandTexture = useTexture("/assets/three/materials/band/base.png");
 
   const handler = useCursorHandlers("three");
   const { onPointerOver, onPointerOut } = handler;
@@ -397,7 +397,7 @@ function Model({
   const [maxH, setMaxH] = useState(1);
 
   const titaniumNormalMap = useTexture(
-    `${TEXTURE_BASE_PATH}/titanium_n.png`,
+    `${materialTexturesPath}/titanium/normal.png`,
     (texture) => {
       texture.wrapS = texture.wrapT = RepeatWrapping;
       texture.colorSpace = NoColorSpace;
@@ -410,7 +410,7 @@ function Model({
     }
   );
   const titaniumMap = useTexture(
-    `${TEXTURE_BASE_PATH}/titanium_d.png`,
+    `${materialTexturesPath}/titanium/displacement.png`,
     (texture) => {
       texture.wrapS = texture.wrapT = RepeatWrapping;
       texture.colorSpace = SRGBColorSpace;
@@ -423,7 +423,7 @@ function Model({
     }
   );
   const titaniumDisMap = useTexture(
-    `${TEXTURE_BASE_PATH}/titanium_b.png`,
+    `${materialTexturesPath}/titanium/base.png`,
     (texture) => {
       texture.wrapS = texture.wrapT = RepeatWrapping;
       texture.colorSpace = NoColorSpace;
@@ -436,7 +436,7 @@ function Model({
     }
   );
   const titaniumAnisoMap = useTexture(
-    `${TEXTURE_BASE_PATH}/titanium_anis.png`,
+    `${materialTexturesPath}/titanium/aniso.png`,
     (texture) => {
       texture.wrapS = texture.wrapT = RepeatWrapping;
       texture.colorSpace = NoColorSpace;
@@ -449,7 +449,7 @@ function Model({
     }
   );
   const titaniumHeightMap = useTexture(
-    `${TEXTURE_BASE_PATH}/titanium_h.png`,
+    `${materialTexturesPath}/titanium/height.png`,
     (texture) => {
       texture.wrapS = texture.wrapT = RepeatWrapping;
       texture.colorSpace = NoColorSpace;
@@ -763,10 +763,11 @@ function Model({
 }
 
 //frame bump
-useTexture.preload(`${TEXTURE_BASE_PATH}/frame_engraving_b.png`);
-useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_n.png`);
-useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_r.png`);
-useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_b.png`);
-useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_d.png`);
-useTexture.preload(`${TEXTURE_BASE_PATH}/titanium_h.png`);
-useGLTF.preload(`${OBJ_BASE_PATH}/pp-transformed.glb`);
+useTexture.preload(`${materialTexturesPath}/engraving/base.png`);
+useTexture.preload(`${materialTexturesPath}/titanium/normal.png`);
+useTexture.preload(`${materialTexturesPath}/titanium/roughness.png`);
+useTexture.preload(`${materialTexturesPath}/titanium/base.png`);
+useTexture.preload(`${materialTexturesPath}/titanium/displacement.png`);
+useTexture.preload(`${materialTexturesPath}/titanium/height.png`);
+useTexture.preload(`${materialTexturesPath}/titanium/aniso.png`);
+useGLTF.preload(`${OBJ_BASE_PATH}/model.glb`);

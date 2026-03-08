@@ -109,7 +109,6 @@ export function MMM(canvas) {
   // Animation loop to render
   let time,
     lastTime = 0;
-  let interval = 450;
   let rafID = 0;
   const update = () => {
     // calculate delta time

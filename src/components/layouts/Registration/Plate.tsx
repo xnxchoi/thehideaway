@@ -10,7 +10,14 @@ import {
   MeshPhysicalMaterial
 } from "three";
 import { animated, Globals, useSpring } from "@react-spring/three";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import {
   Center,
   Environment,
@@ -32,6 +39,9 @@ import { useKinetics } from "@/components/layouts/Registration/KineticProvider";
 import { useShallow } from "zustand/shallow";
 
 const glbPath = "/assets/plate/pl/PACKAGE_2.glb";
+/**
+ * TODO: port over files in the paths below to the new directory (/assets/three/...)
+ */
 const color = {
     pc: "/assets/plate/pl/col540.png",
     mobile: "/assets/plate/pl/col540.png"
@@ -233,7 +243,7 @@ export function RP_Plate({
       setCurH(currentH);
       setScale(to);
     },
-    [maxW, maxH, signRef, setSmoothText, setScale, setCurW, setCurH]
+    [boxSizer, boxSizeGetter, maxW, maxH]
   );
   const lastTime = useRef<number>(0);
 
@@ -264,7 +274,7 @@ export function RP_Plate({
       to.current && clearTimeout(to.current);
       gsap.ticker.remove(tickF);
     };
-  }, [firstName, lastName]);
+  }, [firstName, lastName, tickF]);
 
   const moveTO = useRef<ReturnType<typeof setTimeout>>(null!);
 
@@ -307,7 +317,7 @@ export function RP_Plate({
         setRotate(rrr);
       }
     }),
-    [rotate, moveTO]
+    [rotate, setSpring]
   );
   const physicalMeshProps = useMemo(
     () => ({
@@ -369,20 +379,23 @@ export function RP_Plate({
   );
   const transitionOutType = useRPStore(useShallow((l) => l.transitionOutType)),
     pageIsTransitioning = useRPStore(useShallow((l) => l.pageIsTransitioning));
-  const [m, ss] = useState(0);
+  const transOutCount = useRef(0);
+  const transitionOut = useEffectEvent(() => {
+    if (transOutCount.current < 2) {
+      transOutCount.current++;
+    } else {
+      normalMap.dispose();
+      roughnessMap.dispose();
+      colorMap.dispose();
+      transOutCount.current = 0;
+    }
+  });
   useEffect(() => {
     if (
       pageIsTransitioning &&
-      (transitionOutType === "MENU_TO_PAGE" || transitionOutType === "NORMAL")
+      (transitionOutType === "FROM_MENU" || transitionOutType === "FADE")
     ) {
-      if (m < 2) {
-        ss((ms) => ms + 1);
-      } else {
-        ss((ms) => 0);
-        normalMap.dispose();
-        roughnessMap.dispose();
-        colorMap.dispose();
-      }
+      transitionOut();
     }
   }, [transitionOutType, pageIsTransitioning]);
   useEffect(() => {

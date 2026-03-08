@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { SoundBar } from "../Radio/soundBar";
 import { TimeComponent } from "./TimeComponent";
-import { springGSAP } from "@/constants/animations";
+import { SPRING_EASE } from "@/constants/animations";
 
 type SideNotchProps = {
   sideDrawer?: boolean;
@@ -62,7 +62,7 @@ const DeskNotch = (props: SideNotchProps) => {
   const notchLeft = useMotionValue(left);
 
   const notchSpring = useSpring(notchLeft, {
-    ...springGSAP.power2.inOut,
+    ...SPRING_EASE.power2.inOut,
     visualDuration: 0.6
   });
   useEffect(() => {

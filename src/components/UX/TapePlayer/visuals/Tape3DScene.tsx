@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import {Suspense, useEffect, useState, type ComponentProps} from "react"
-import {Canvas} from "@react-three/fiber"
-import {OrbitControls} from "@react-three/drei"
-import * as THREE from "three"
-import {TapeModel} from "./TapeModel"
+import { cn } from "@/lib/utils";
+import { Suspense, useEffect, useState, type ComponentProps } from "react";
+import { View } from "@react-three/drei";
+import { useInView } from "react-intersection-observer";
+import { TapeModel } from "./TapeModel";
 
 interface Tape3DSceneProps {
-	/**
-	 * The DOM element id used as the GSAP ScrollTrigger trigger.
-	 * The element should exist in the page at or near where the 3D model
-	 * is visible. Defaults to "webgl_trigger".
-	 */
-	scrollTriggerId?: string
-	className?: string
-	style?: ComponentProps<"div">["style"]
+  /**
+   * The DOM element id used as the GSAP ScrollTrigger trigger.
+   * The element should exist in the page at or near where the 3D model
+   * is visible. Defaults to "webgl_trigger".
+   */
+  scrollTriggerId?: string;
+  className?: string;
+  style?: ComponentProps<"div">["style"];
 }
 
 /**
@@ -24,59 +24,54 @@ interface Tape3DSceneProps {
  *   ≥ 992px  → 16:9 (desktop)
  */
 function useResponsiveAspectRatio() {
-	const [ratio, setRatio] = useState("16 / 9")
+  const [ratio, setRatio] = useState("16 / 9");
 
-	useEffect(() => {
-		const update = () => {
-			const w = window.innerWidth
-			if (w < 480) setRatio("9 / 16")
-			else if (w <= 991) setRatio("1 / 1")
-			else setRatio("16 / 9")
-		}
-		update()
-		window.addEventListener("resize", update)
-		return () => window.removeEventListener("resize", update)
-	}, [])
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w < 480) setRatio("9 / 16");
+      else if (w <= 991) setRatio("1 / 1");
+      else setRatio("16 / 9");
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
-	return ratio
+  return ratio;
 }
 
+/**
+ * Renders the tape player 3D model into the project's shared Canvas
+ * (MainInternal) via drei's View system.
+ *
+ * The container div controls the responsive aspect ratio; the View
+ * fills it with `position: absolute, inset: 0`. Visibility is tracked
+ * via useInView so the PerspectiveCamera inside only becomes the
+ * default camera while the component is on-screen.
+ */
 export function Tape3DScene({
-	                            scrollTriggerId = "webgl_trigger",
-	                            className,
-	                            style,
-                            }: Tape3DSceneProps) {
-	const aspectRatio = useResponsiveAspectRatio()
+  scrollTriggerId = "webgl_trigger",
+  className,
+  style
+}: Tape3DSceneProps) {
+  const aspectRatio = useResponsiveAspectRatio();
+  const { ref, inView } = useInView({ threshold: 0.1 });
 
-	return (
-		<div
-			className={className}
-			style={{width: "100%", aspectRatio, ...style}}
-		>
-			<Canvas
-				shadows
-				dpr={[1, 2]}
-				camera={{fov: 10, position: [-8, -3, 15]}}
-				gl={{
-					antialias: true,
-					alpha: true,
-				}}
-				onCreated={({gl, scene, camera}) => {
-					gl.shadowMap.type = THREE.PCFSoftShadowMap
-					gl.toneMapping = THREE.ACESFilmicToneMapping
-					gl.toneMappingExposure = 1
-					gl.outputColorSpace = THREE.SRGBColorSpace
-					// Slight upward scene tilt matching original lr.rotation.set(.1, 0, 0)
-					scene.rotation.set(0.1, 0, 0)
-					// Camera looks at origin, matching original Fr.lookAt(0, 0, 0)
-					camera.lookAt(0, 0, 0)
-				}}
-			>
-				<Suspense fallback={null}>
-					<TapeModel scrollTriggerId={scrollTriggerId}/>
-				</Suspense>
-				<OrbitControls enableDamping/>
-			</Canvas>
-		</div>
-	)
+  return (
+    <div
+      ref={ref}
+      className={cn("relative h-screen w-full", className)}
+      style={{ aspectRatio, ...style }}
+    >
+      <View
+        className="absolute inset-[auto_0%_.5%] h-screen w-full"
+        id={scrollTriggerId}
+      >
+        <Suspense fallback={null}>
+          <TapeModel scrollTriggerId={scrollTriggerId} inView={inView} />
+        </Suspense>
+      </View>
+    </div>
+  );
 }

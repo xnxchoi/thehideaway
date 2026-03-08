@@ -29,21 +29,30 @@ export const SoundBar = ({}: SoundBarProps) => {
     lastCursorState.current = cursorState;
   }, [hovered, cursorState]);
   const setCursor = useCursor((state) => state.setCursorState);
-
-  const { onMouseEnter, onMouseLeave } = useDomCursor({
-    enterCondition: () =>
-      trackStatus === "playing"
-        ? (setHovered(true), "MUTE")
-        : trackStatus === "paused"
-          ? (setHovered(true), "RP.FM")
-          : null,
-
-    onLeave: () => setHovered(false)
-  });
   const stateRef = useRef(trackStatus);
   useEffect(() => {
     stateRef.current = trackStatus;
   }, [trackStatus]);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    enterCondition: () => {
+      switch (stateRef.current) {
+        case "playing":
+          return (setHovered(true), "MUTE");
+        case "seeking":
+          return (setHovered(true), "SEEKING");
+        case "paused":
+        case "stopped":
+        case "idle":
+        case "ended":
+          return (setHovered(true), "RP.FM");
+        default:
+          return null;
+      }
+    },
+
+    onLeave: () => setHovered(false)
+  });
+
   const onClick = useCallback(() => {
     switch (stateRef.current) {
       case "playing":
@@ -52,6 +61,9 @@ export const SoundBar = ({}: SoundBarProps) => {
         toggle();
         break;
       case "paused":
+      case "idle":
+      case "stopped":
+      case "ended":
         setCursor("MUTE");
         setHovered(true);
         toggle();
@@ -94,9 +106,7 @@ export const SoundBar = ({}: SoundBarProps) => {
         data-themed="color, background-color"
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
-          playing
-	          ? "bg-nav-foreground"
-	          : "bg-nav-foreground/50",
+          playing ? "bg-nav-foreground" : "bg-nav-foreground/50",
           "delay-[0s]"
         )}
       ></div>
@@ -104,9 +114,7 @@ export const SoundBar = ({}: SoundBarProps) => {
         data-themed="color, background-color"
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
-          playing
-	          ? "bg-nav-foreground"
-	          : "bg-nav-button-foreground/50",
+          playing ? "bg-nav-foreground" : "bg-nav-button-foreground/50",
           "delay-[-0.4s]"
         )}
       ></div>
@@ -114,9 +122,7 @@ export const SoundBar = ({}: SoundBarProps) => {
         data-themed="color, background-color"
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
-          playing
-	          ? "bg-nav-foreground"
-	          : "bg-nav-foreground/50",
+          playing ? "bg-nav-foreground" : "bg-nav-foreground/50",
           "delay-[-0.2s]"
         )}
       ></div>
@@ -124,9 +130,7 @@ export const SoundBar = ({}: SoundBarProps) => {
         data-themed="color, background-color"
         className={cn(
           "c-soundwave__bar group-soundbar:data-[active=true]:animate-soundwave h-[4px] w-[2px] origin-center rounded-[1px] transition-[background-color] duration-300 ease-power4",
-          playing
-	          ? "bg-nav-foreground"
-	          : "bg-nav-foreground/50",
+          playing ? "bg-nav-foreground" : "bg-nav-foreground/50",
           "delay-[-0.4s]"
         )}
       ></div>

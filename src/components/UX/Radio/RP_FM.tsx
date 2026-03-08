@@ -11,7 +11,7 @@ import * as m from "motion/react-m";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { cn } from "../../../lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "../Button";
 import { BASETRACK } from "./constants";
 import LP_Small from "./disk.png";
@@ -225,7 +225,7 @@ const LP = () => {
             <div
               className="outline-groove absolute flex aspect-square w-full items-center justify-center overflow-hidden rounded-full outline-1"
               // style={{
-	            //   outlineColor: "var(--bleu-400)/.25)"
+              //   outlineColor: "var(--bleu-400)/.25)"
               // }}
             >
               <Image

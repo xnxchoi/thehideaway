@@ -1,7 +1,7 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Drawer } from "@/components/vaul";
-import { springGSAP } from "@/constants/animations";
+import { SPRING_EASE } from "@/constants/animations";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useRadioStore } from "@/providers/RadioProvider";
 import { useCursor, useRPStore } from "@/providers/RP_Pro";
@@ -42,12 +42,12 @@ export const SideVaul = (props: { children: ReactNode }) => {
   }, []);
   const width = useMotionValue("100vw");
   const widthMotion = useSpring(width, {
-    ...springGSAP.power3.out,
+    ...SPRING_EASE.power3.out,
     visualDuration: 0.5
   });
   const height = useMotionValue("100vh");
   const heightMotion = useSpring(height, {
-    ...springGSAP.power3.out,
+    ...SPRING_EASE.power3.out,
     visualDuration: 0.5
   });
   const [snapPoints, setSnapPoints] = useState<Array<string | number>>([]);
@@ -221,14 +221,14 @@ export const SideDrawer = () => {
   const [doo, setDoo] = useState(false);
   const borderTopRad = useMotionValue(16);
   const borderTopRadius = useSpring(borderTopRad, {
-    ...springGSAP.power2.out,
+    ...SPRING_EASE.power2.out,
     stiffness: 1000,
     damping: 40,
     visualDuration: 0.5
   });
   const borderBottomRad = useMotionValue(16);
   const borderBottomRadius = useSpring(borderBottomRad, {
-    ...springGSAP.power2.out,
+    ...SPRING_EASE.power2.out,
     stiffness: 1000,
     damping: 40,
     visualDuration: 0.5
