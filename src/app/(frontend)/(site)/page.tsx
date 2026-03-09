@@ -1,6 +1,5 @@
 import { HomeArticleLayout } from "@/components/layouts/ArticleFrontpage";
-import { TapePlayer } from "@/components/UX/TapePlayer";
-import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
+import { StationHideawayHero } from "@/components/sections/StationHideaway/block";
 
 import { RPage } from "@/components/UX/Transition";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
@@ -20,14 +19,7 @@ export default async function HomePage() {
             <HomeArticleLayout posts={posts.docs} />
           </Suspense>
         </div>
-        <Tape3DScene />
-        <div className={"h-[40bvh] overflow-hidden rounded-lg p-5"}>
-          <TapePlayer
-            variant="hero"
-            scrollHint={false}
-            className="min-h-[35vh]"
-          />
-        </div>
+        <StationHideawayHero />
       </div>
     </RPage>
   );
