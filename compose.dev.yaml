@@ -2,7 +2,7 @@ services:
   payload:
     restart: always
     container_name: payload
-    image: node:24.3.0-alpine
+    image: node:latest
     volumes:
       - .:/home/node/app
       - node_modules:/home/node/app/node_modules
@@ -62,7 +62,7 @@ services:
       context: ./postgres
       dockerfile: dev.Dockerfile
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s

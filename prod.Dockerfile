@@ -1,6 +1,6 @@
 # syntax=docker.io/docker/dockerfile:1
 
-FROM node:22.15.0-alpine AS base
+FROM node:latest AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -15,7 +15,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 # Update Corepack to the version with the fix and enable PNPM
 RUN npm install -g corepack@0.34.0 && \
     corepack enable && \
-    corepack prepare pnpm@10.15.0 --activate
+    corepack prepare pnpm@10.30.3 --activate
 # ADDED CODE 1 END
 
 # Install dependencies based on the preferred package manager
@@ -43,7 +43,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 # Update Corepack to the version with the fix and enable PNPM
 RUN npm install -g corepack@0.34.0 && \
     corepack enable && \
-    corepack prepare pnpm@10.15.0 --activate
+    corepack prepare pnpm@10.30.3 --activate
 # ADDED CODE 2 END
 
 # Only set public environment variables at build time

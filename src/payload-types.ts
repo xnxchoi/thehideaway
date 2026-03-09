@@ -221,6 +221,9 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
   };
   locale: 'en' | 'ko';
+  widgets: {
+    collections: CollectionsWidget;
+  };
   user: User | Admin;
   jobs: {
     tasks: {
@@ -1200,7 +1203,34 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout?: (CallToActionBlock | ContentBlock | Image | ArchiveBlock | FOTDBlock | HeroSquareBlock)[] | null;
+  layout?:
+    | (
+        | CallToActionBlock
+        | ContentBlock
+        | {
+            id: string | null;
+            media?:
+              | ({
+                  relationTo: 'media';
+                  value: string | Media;
+                } | null)
+              | ({
+                  relationTo: 'userMedia';
+                  value: string | UserMedia;
+                } | null)
+              | ({
+                  relationTo: 'assets';
+                  value: string | Asset;
+                } | null);
+            span?: number | null;
+            blockName?: string | null;
+            blockType: 'image';
+          }
+        | ArchiveBlock
+        | FOTDBlock
+        | HeroSquareBlock
+      )[]
+    | null;
   pageLayout: {
     id: string;
     footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
@@ -1502,29 +1532,6 @@ export interface ContentBlock {
     | null;
   blockName?: string | null;
   blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Image".
- */
-export interface Image {
-  id: string | null;
-  media?:
-    | ({
-        relationTo: 'media';
-        value: string | Media;
-      } | null)
-    | ({
-        relationTo: 'userMedia';
-        value: string | UserMedia;
-      } | null)
-    | ({
-        relationTo: 'assets';
-        value: string | Asset;
-      } | null);
-  span?: number | null;
-  blockName?: string | null;
-  blockType: 'image';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4321,6 +4328,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskWelcomeUser".
  */
 export interface TaskWelcomeUser {
@@ -4351,17 +4368,46 @@ export interface TaskWelcomeUsers {
  */
 export interface TaskCreateCollectionExport {
   input: {
-    name?: string | null;
+    id: string;
+    name: string;
+    batchSize?: number | null;
+    collectionSlug:
+      | 'users'
+      | 'assets'
+      | 'categories'
+      | 'media'
+      | 'tags'
+      | 'notifications'
+      | 'pages'
+      | 'posts'
+      | 'userMedia'
+      | 'profile'
+      | 'albums'
+      | 'tracks'
+      | 'playlists'
+      | 'follows'
+      | 'bookmarks'
+      | 'userViews'
+      | 'surf'
+      | 'citations'
+      | 'responses'
+      | 'compilations'
+      | 'admins'
+      | 'email-quota'
+      | 'deferred-emails'
+      | 'exports'
+      | 'imports';
+    drafts?: ('yes' | 'no') | null;
+    exportCollection: string;
+    fields?: string[] | null;
     format: 'csv' | 'json';
     limit?: number | null;
+    locale?: string | null;
+    maxLimit?: number | null;
     page?: number | null;
     sort?: string | null;
-    sortOrder?: ('asc' | 'desc') | null;
-    locale?: ('all' | 'en' | 'ko') | null;
-    drafts?: ('yes' | 'no') | null;
-    selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
-    fields?: string[] | null;
-    collectionSlug: string;
+    userCollection?: string | null;
+    userID?: string | null;
     where?:
       | {
           [k: string]: unknown;
@@ -4371,12 +4417,6 @@ export interface TaskCreateCollectionExport {
       | number
       | boolean
       | null;
-    id?: string | null;
-    batchSize?: number | null;
-    userID?: string | null;
-    userCollection?: string | null;
-    exportCollection?: string | null;
-    maxLimit?: number | null;
   };
   output?: unknown;
 }
@@ -4425,6 +4465,29 @@ export interface TaskSchedulePublish {
  */
 export interface WorkflowOnboardUsers {
   input?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Image".
+ */
+export interface Image {
+  id: string | null;
+  media?:
+    | ({
+        relationTo: 'media';
+        value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'userMedia';
+        value: string | UserMedia;
+      } | null)
+    | ({
+        relationTo: 'assets';
+        value: string | Asset;
+      } | null);
+  span?: number | null;
+  blockName?: string | null;
+  blockType: 'image';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -35,10 +35,10 @@ const nextConfig: NextConfig = {
     }
   },
   experimental: {
-	  typedEnv: true,
-	  serverActions: {
-		  bodySizeLimit: "2.5mb"
-	  }
+    typedEnv: true,
+    serverActions: {
+      bodySizeLimit: "2.5mb"
+    }
   },
   serverExternalPackages: ["pdfmake"],
   webpack: (config, { isServer, webpack }) => {
@@ -55,14 +55,14 @@ const nextConfig: NextConfig = {
       type: "asset/source"
     });
 
-	  config.plugins.push(
-		  new webpack.IgnorePlugin({
-			  resourceRegExp: /^pg-native$|^cloudflare:sockets$/
-		  })
-	  );
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^pg-native$|^cloudflare:sockets$/
+      })
+    );
     return config;
   },
-	sassOptions: {includePaths: ["src", "src/app/(payload)"]},
+  sassOptions: { includePaths: ["src", "src/app/(payload)"] },
   reactStrictMode: true,
 
   typescript: {
@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true
   },
-	cacheComponents: true,
+  cacheComponents: true,
   async redirects() {
     return [
       {
