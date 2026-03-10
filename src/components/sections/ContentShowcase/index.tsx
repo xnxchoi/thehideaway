@@ -1,22 +1,23 @@
 "use client";
+import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
 import { Link } from "@/components/UX/Link/Link";
-import {PostOverview} from "@/types/collections/posts";
+import { FrontImage } from "@/components/core/Media/FrontImage";
+import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
+import { cn } from "@/lib/utils";
+import { useCursor } from "@/providers/RP_Pro";
+
+import { useTheme } from "@/providers/Theme";
+import { Theme } from "@/providers/Theme/types";
+import { PostOverview } from "@/types/collections/posts";
 import {
   ComponentPropsWithoutRef,
   useCallback,
   useEffect,
   useState
 } from "react";
-import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
-import { cn } from "@/lib/utils";
-
-import { useTheme } from "@/providers/Theme";
-import { Theme } from "@/providers/Theme/types";
-import { useCursor } from "@/providers/RP_Pro";
 
 export const HomeSquare = (
-	props: { article: PostOverview } & ComponentPropsWithoutRef<"div">
+  props: { article: PostOverview } & ComponentPropsWithoutRef<"div">
 ) => {
   const { article, ...rest } = props;
   const category =
@@ -46,11 +47,12 @@ export const HomeSquare = (
       onMouseEnter={() => onEnter(inverse)}
       onMouseLeave={() => onLeave()}
       href={"/essays/" + `${article.slug}`}
-      className="col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] bg-faded-foreground/&.95)] p-[20px] text-center text-faded-background lg:col-span-full dark:bg-off-white/95"
+      className="bg-faded-foreground/&.95)] col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] p-[20px] text-center text-faded-background lg:col-span-full dark:bg-off-white/95"
     >
       <div
         className={cn(
-          "relative min-h-px w-full min-w-px overflow-hidden rounded-[5px]"
+          "relative min-h-px w-full min-w-px overflow-hidden rounded-[5px]",
+          !!article.image ? "aspect-[100/56]" : "aspect-square"
         )}
       >
         {article.image ? (
@@ -60,11 +62,11 @@ export const HomeSquare = (
             imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full transition-opacity duration-400"
           />
         ) : (
-          <div className="absolute top-0 block h-full w-full rounded-[5px] object-cover transition-opacity duration-400" />
+          <PlaceHolderImage />
         )}
       </div>
       <RP_BadgeTag
-	      className="border-background text-background"
+        className="border-background text-background"
         content={category}
       />
       <div className="flex w-full flex-col items-center justify-center pb-8">

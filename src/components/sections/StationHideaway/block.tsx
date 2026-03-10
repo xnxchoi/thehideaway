@@ -29,30 +29,30 @@ export function StationHideawayHero({ className }: { className?: string }) {
   // Tracks scroll progress across the full 250vh section height
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start start", "end end"],
+    offset: ["start center", "end 15%"]
   });
 
   // ── "HIDDEN" billboard (top-left) ─────────────────────────────────────────
-  const topTextY = useTransform(scrollYProgress, [0, 1], ["0vh", "-70vh"]);
+  const topTextY = useTransform(scrollYProgress, [0, 1], ["30vh", "0vh"]);
   const topTextOpacity = useTransform(
     scrollYProgress,
-    [0, 0.08, 0.45, 0.6],
-    [0, 1, 1, 0]
+    [0, 0.08, 0.45, 0.8],
+    [0.2, 0.6, 1, 0.8]
   );
 
   // ── "· Radio" label (top-right) ───────────────────────────────────────────
-  const labelY = useTransform(scrollYProgress, [0, 1], ["0vh", "-50vh"]);
+  const labelY = useTransform(scrollYProgress, [0, 1], ["50vh", "-10vh"]);
   const labelOpacity = useTransform(
     scrollYProgress,
     [0, 0.1, 0.5, 0.65],
-    [0, 1, 1, 0]
+    [0, 1, 1, 0.5]
   );
 
   // ── Tape3DScene — float in, LINGER, drift away ────────────────────────────
   const sceneY = useTransform(
     scrollYProgress,
-    [0, 0.25, 0.55, 0.75, 1],
-    ["0vh", "-15vh", "-20vh", "-22vh", "-55vh"]
+    [0, 0.35, 0.55, 0.7, 1],
+    ["50vh", "15vh", "10vh", "6vh", "-70vh"]
   );
   const sceneOpacity = useTransform(
     scrollYProgress,
@@ -61,11 +61,11 @@ export function StationHideawayHero({ className }: { className?: string }) {
   );
 
   // ── TapePlayer — nearly static, grounded ─────────────────────────────────
-  const playerY = useTransform(scrollYProgress, [0, 1], ["0vh", "-5vh"]);
+  const playerY = useTransform(scrollYProgress, [0, 1], ["20vh", "-25vh"]);
   const playerOpacity = useTransform(scrollYProgress, [0, 0.15, 1], [0, 1, 1]);
 
   // ── "SOUNDS" billboard (bottom-right) ────────────────────────────────────
-  const bottomTextY = useTransform(scrollYProgress, [0, 1], ["20vh", "-40vh"]);
+  const bottomTextY = useTransform(scrollYProgress, [0, 1], ["25vh", "-10vh"]);
   const bottomTextOpacity = useTransform(
     scrollYProgress,
     [0, 0.35, 0.5, 0.8, 1],
@@ -76,18 +76,17 @@ export function StationHideawayHero({ className }: { className?: string }) {
     <section
       ref={sectionRef}
       id="station-hideaway-hero"
-      className={cn("relative w-full", className)}
+      className={cn("relative w-full min-w-screen", className)}
       style={{ minHeight: "250vh" }}
     >
       {/* ── Sticky viewport container ──────────────────────────────────────── */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-
         {/* Background glow — subtle, matches HeroPlayer's bleu-400 palette */}
         <div
           className="pointer-events-none absolute inset-0 z-0"
           style={{
             background:
-              "radial-gradient(ellipse 120% 80% at 60% 50%, oklch(from var(--bleu-400) l c h / 0.05) 0%, transparent 65%)",
+              "radial-gradient(ellipse 107% 90% at 63% 60%, oklch(from var(--piercing-orange) l c h / .125) 0%, transparent 65%)"
           }}
           aria-hidden="true"
         />
@@ -100,12 +99,12 @@ export function StationHideawayHero({ className }: { className?: string }) {
          */}
         <m.div
           style={{ y: playerY, opacity: playerOpacity }}
-          className="absolute inset-x-0 bottom-0 z-[10] flex justify-center pb-8 md:pb-16"
+          className="absolute inset-x-0 bottom-0 z-[10] flex min-w-[70vw] justify-center pb-8 md:pb-16"
         >
           <TapePlayer
             variant="hero"
             scrollHint={false}
-            className="min-h-0 w-full max-w-sm"
+            className="min-h-0 w-full max-w-(--maxContainerWidth)"
           />
         </m.div>
 
@@ -139,22 +138,22 @@ export function StationHideawayHero({ className }: { className?: string }) {
         {/* "HIDDEN" — top-left, bleeds off left edge */}
         <m.div
           style={{ y: topTextY, opacity: topTextOpacity }}
-          className="pointer-events-none absolute top-6 left-[-0.02em] z-[30] select-none font-sans font-black uppercase leading-none tracking-[-0.04em] text-[clamp(8rem,18vw,22rem)] text-fg/[0.07]"
+          className="text-fg/[0.07] pointer-events-none absolute top-6 left-[-0.02em] z-[30] font-sans text-[clamp(8rem,18vw,22rem)] leading-none font-black tracking-[-0.04em] uppercase select-none"
           aria-hidden="true"
         >
-          HIDDEN
+          RP
         </m.div>
 
         {/* "· Radio" label — top-right */}
         <m.div
           style={{ y: labelY, opacity: labelOpacity }}
-          className="pointer-events-none absolute top-6 right-6 z-[30] flex select-none flex-col items-end gap-0.5 text-right"
+          className="pointer-events-none absolute top-6 right-6 z-[30] flex flex-col items-end gap-0.5 text-right select-none"
           aria-hidden="true"
         >
-          <span className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-faded-fg/50">
+          <span className="text-faded-fg/80 text-md font-mono tracking-[0.2em] uppercase">
             · Radio
           </span>
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.15em] text-faded-fg/25">
+          <span className="text-faded-fg/80 text-md font-mono tracking-[0.15em] uppercase">
             Station Hideaway
           </span>
         </m.div>
@@ -162,15 +161,15 @@ export function StationHideawayHero({ className }: { className?: string }) {
         {/* "SOUNDS" — bottom-right, bleeds off right edge */}
         <m.div
           style={{ y: bottomTextY, opacity: bottomTextOpacity }}
-          className="pointer-events-none absolute bottom-4 right-[-0.02em] z-[30] select-none text-right font-sans font-black uppercase leading-none tracking-[-0.04em] text-[clamp(8rem,18vw,22rem)] text-fg/[0.07]"
+          className="text-fg/[0.07] pointer-events-none absolute right-[-0.02em] bottom-4 z-[30] text-right font-sans text-[clamp(8rem,18vw,22rem)] leading-none font-black tracking-[-0.04em] uppercase select-none"
           aria-hidden="true"
         >
-          SOUNDS
+          FM
         </m.div>
 
         {/* Decorative signal line between the two billboard text anchors */}
         <div
-          className="pointer-events-none absolute inset-x-6 bottom-[calc(4vh+clamp(8rem,18vw,22rem))] z-[30] h-px bg-gradient-to-r from-transparent via-fg/10 to-transparent"
+          className="via-fg/10 pointer-events-none absolute inset-x-6 bottom-[calc(4vh+clamp(8rem,18vw,22rem))] z-[30] h-px bg-gradient-to-r from-transparent to-transparent"
           aria-hidden="true"
         />
       </div>

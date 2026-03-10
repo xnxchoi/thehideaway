@@ -2,12 +2,12 @@
 
 import React, { useEffect, useRef } from "react";
 
-import type { MediaProps as MediaProps } from "../types";
+import type { MediaElementProps, MediaProps as MediaProps } from "../types";
 
 import { getMediaUrl } from "@/utilities/getMediaUrl";
 import { cn } from "@/lib/utils";
 
-export const VideoMedia: React.FC<MediaProps> = (props) => {
+export const VideoMedia: React.FC<MediaElementProps<"video">> = (props) => {
   const { onClick, resource, videoClassName } = props;
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -23,8 +23,16 @@ export const VideoMedia: React.FC<MediaProps> = (props) => {
     }
   }, []);
 
-  if (resource && typeof resource === "object") {
-    const { filename } = resource;
+  if (
+    !!resource &&
+    typeof resource === "object" &&
+    "value" in resource &&
+    !!resource.value &&
+    typeof resource.value === "object" &&
+    "filename" in resource.value &&
+    typeof resource.value.filename === "string"
+  ) {
+    const { filename } = resource.value;
 
     return (
       <video

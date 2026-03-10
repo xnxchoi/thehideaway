@@ -1,477 +1,605 @@
-import {RangyRange, RangySelection} from "rangy/lib/rangy-core";
-import messages from 'messages/en.json'
-import {locales} from "@/i18n/request";
+import { locales } from "@/i18n/request";
+import messages from "messages/en.json";
+import { RangyRange, RangySelection } from "rangy/lib/rangy-core";
 
-declare module 'next-intl' {
-
-	interface AppConfig {
-		Locale: (typeof locales)[number]
-		Messages: typeof messages
-	}
+declare module "next-intl" {
+  interface AppConfig {
+    Locale: (typeof locales)[number];
+    Messages: typeof messages;
+  }
 }
 declare module "*.glsl" {
-	const file: string;
-	export default file;
+  const file: string;
+  export default file;
 }
 declare module "*.frag" {
-	const file: string;
-	export default file;
+  const file: string;
+  export default file;
 }
 declare module "*.vert" {
-	const value: string;
-	export default value;
+  const value: string;
+  export default value;
 }
 
-export type Direction = | "forward" | "forwards" | "backward" | "backwards" | boolean;
-export type NodeType = | "NODE_BEFORE" | "NODE_AFTER" | "NODE_BEFORE_AND_AFTER" | "NODE_INSIDE";
+export type Direction =
+  | "forward"
+  | "forwards"
+  | "backward"
+  | "backwards"
+  | boolean;
+export type NodeType =
+  | "NODE_BEFORE"
+  | "NODE_AFTER"
+  | "NODE_BEFORE_AND_AFTER"
+  | "NODE_INSIDE";
 
 export interface CookieOptions {
-	expires?: Date;
-	path?: string;
-	domain?: string;
-	secure?: boolean;
+  expires?: Date;
+  path?: string;
+  domain?: string;
+  secure?: boolean;
 }
 
 export interface DomPosition {
-	node: Node;
-	offset: number;
+  node: Node;
+  offset: number;
 }
 
 export type RangyStatic = typeof import("rangy");
 
 declare module "rangy" {
-	interface RangySelection extends Selection {
-		nativeSelection: Selection;
-		rangeCount: number;
-		isCollapsed: boolean;
-		anchorNode: Node | null;
-		anchorOffset: number;
-		focusNode: Node | null;
-		focusOffset: number;
+  interface RangySelection extends Selection {
+    nativeSelection: Selection;
+    rangeCount: number;
+    isCollapsed: boolean;
+    anchorNode: Node | null;
+    anchorOffset: number;
+    focusNode: Node | null;
+    focusOffset: number;
 
-		addRange(range: RangyRange, direction?: Direction | boolean): void;
+    addRange(range: RangyRange, direction?: Direction | boolean): void;
 
-		getRangeAt(index: number): RangyRange;
+    getRangeAt(index: number): RangyRange;
 
-		isBackwards(): boolean;
+    isBackwards(): boolean;
 
-		removeAllRanges(): void;
+    removeAllRanges(): void;
 
-		removeRange(range: RangyRange): void;
+    removeRange(range: RangyRange): void;
 
-		refresh(checkForChanges?: boolean): any;
+    refresh(checkForChanges?: boolean): any;
 
-		collapse(node: Node, offset: number): void;
+    collapse(node: Node, offset: number): void;
 
-		collapseToStart(): void;
+    collapseToStart(): void;
 
-		setSingleRange(range: RangyRange, direction?: Direction): void;
+    setSingleRange(range: RangyRange, direction?: Direction): void;
 
-		collapseToEnd(): void;
+    collapseToEnd(): void;
 
-		selectAllChildren(node: Node): void;
+    selectAllChildren(node: Node): void;
 
-		deleteFromDocument(): void;
+    deleteFromDocument(): void;
 
-		toString(): string;
+    toString(): string;
 
-		toHtml(): string;
+    toHtml(): string;
 
-		getAllRanges(): RangyRange[];
+    getAllRanges(): RangyRange[];
 
-		getNativeTextRange(): Range;
+    getNativeTextRange(): Range;
 
-		getSingleRange(range: RangyRange, direction: Direction): any;
+    getSingleRange(range: RangyRange, direction: Direction): any;
 
-		setRanges(ranges: RangyRange[]): any;
+    setRanges(ranges: RangyRange[]): any;
 
-		containsNode(node: Node, partial: boolean): boolean;
+    containsNode(node: Node, partial: boolean): boolean;
 
-		getBookmark(containerNode: Node): any;
+    getBookmark(containerNode: Node): any;
 
-		moveToBookmark(bookmark: object): any;
+    moveToBookmark(bookmark: object): any;
 
-		saveRanges(): object;
+    saveRanges(): object;
 
-		restoreRanges(saved: object): any;
+    restoreRanges(saved: object): any;
 
-		detach(): any;
+    detach(): any;
 
-		inspect(): string;
-	}
+    inspect(): string;
+  }
 
-	interface RangyRange extends Range {
-		startContainer: Node;
-		startOffset: number;
-		endContainer: Node;
-		endOffset: number;
-		commonAncestorContainer: Node;
-		collapsed: boolean;
+  interface RangyRange extends Range {
+    startContainer: Node;
+    startOffset: number;
+    endContainer: Node;
+    endOffset: number;
+    commonAncestorContainer: Node;
+    collapsed: boolean;
 
-		setStart(node: Node, offset: number): void;
+    setStart(node: Node, offset: number): void;
 
-		setStartBefore(node: Node): void;
+    setStartBefore(node: Node): void;
 
-		setStartAfter(node: Node): void;
+    setStartAfter(node: Node): void;
 
-		setEnd(node: Node, offset: number): void;
+    setEnd(node: Node, offset: number): void;
 
-		setEndBefore(node: Node): void;
+    setEndBefore(node: Node): void;
 
-		setEndAfter(node: Node): void;
+    setEndAfter(node: Node): void;
 
-		setStartAndEnd(startNode: Node, startOffset: number, endNode?: Node, endOffset?: number,): any;
+    setStartAndEnd(
+      startNode: Node,
+      startOffset: number,
+      endNode?: Node,
+      endOffset?: number
+    ): any;
 
-		selectNode(node: Node): any;
+    selectNode(node: Node): any;
 
-		selectNodeContents(node: Node): any;
+    selectNodeContents(node: Node): any;
 
-		collapse(toStart?: boolean): void;
+    collapse(toStart?: boolean): void;
 
-		compareBoundaryPoints(comparisonType: number, range: RangyRange): number;
+    compareBoundaryPoints(comparisonType: number, range: RangyRange): number;
 
-		insertNode(node: Node): any;
+    insertNode(node: Node): any;
 
-		cloneContents(): DocumentFragment;
+    cloneContents(): DocumentFragment;
 
-		extractContents(): DocumentFragment;
+    extractContents(): DocumentFragment;
 
-		deleteContents(): void;
+    deleteContents(): void;
 
-		canSurroundContents(): boolean;
+    canSurroundContents(): boolean;
 
-		surroundContents(node: Node): boolean;
+    surroundContents(node: Node): boolean;
 
-		cloneRange(): RangyRange;
+    cloneRange(): RangyRange;
 
-		isValid(): boolean;
+    isValid(): boolean;
 
-		toString(): string;
+    toString(): string;
 
-		toHtml(): string;
+    toHtml(): string;
 
-		compareNode(node: Node): NodeType;
+    compareNode(node: Node): NodeType;
 
-		comparePoint(node: Node, offset: number): -1 | 0 | 1;
+    comparePoint(node: Node, offset: number): -1 | 0 | 1;
 
-		intersectsOrTouchesRange(range: RangyRange): boolean;
+    intersectsOrTouchesRange(range: RangyRange): boolean;
 
-		intersectsRange(range: RangyRange): boolean;
+    intersectsRange(range: RangyRange): boolean;
 
-		intersectsNode(node: Node, touchingIsIntersecting?: boolean): boolean;
+    intersectsNode(node: Node, touchingIsIntersecting?: boolean): boolean;
 
-		intersection(range: RangyRange): RangyRange | null;
+    intersection(range: RangyRange): RangyRange | null;
 
-		union(range: RangyRange): RangyRange | null;
+    union(range: RangyRange): RangyRange | null;
 
-		isPointInRange(node: Node, offset: number): boolean;
+    isPointInRange(node: Node, offset: number): boolean;
 
-		createContextualFragment(fragment: string): DocumentFragment;
+    createContextualFragment(fragment: string): DocumentFragment;
 
-		containsNode(node: Node, partial: boolean): boolean;
+    containsNode(node: Node, partial: boolean): boolean;
 
-		containsNodeContents(node: Node): boolean;
+    containsNodeContents(node: Node): boolean;
 
-		containsNodeText(node: Node): boolean;
+    containsNodeText(node: Node): boolean;
 
-		containsRange(range: RangyRange): boolean;
+    containsRange(range: RangyRange): boolean;
 
-		splitBoundaries(): any;
+    splitBoundaries(): any;
 
-		normalizeBoundaries(): any;
+    normalizeBoundaries(): any;
 
-		collapseToPoint(node: Node, offset: number): any;
+    collapseToPoint(node: Node, offset: number): any;
 
-		collapseBefore(node: Node): any;
+    collapseBefore(node: Node): any;
 
-		collapseAfter(node: Node): any;
+    collapseAfter(node: Node): any;
 
-		getNodes(nodeTypes?: any[], filter?: (node: Node) => boolean): Node[];
+    getNodes(nodeTypes?: any[], filter?: (node: Node) => boolean): Node[];
 
-		getBookmark(containerNode?: Node): { start: number; end: number };
+    getBookmark(containerNode?: Node): { start: number; end: number };
 
-		moveToBookmark(bookmark: object): any;
+    moveToBookmark(bookmark: object): any;
 
-		getDocument(): Document;
+    getDocument(): Document;
 
-		inspect(): string;
+    inspect(): string;
 
-		equals(range: RangyRange): boolean;
+    equals(range: RangyRange): boolean;
 
-		refresh(): any;
+    refresh(): any;
 
-		select(): any;
+    select(): any;
 
-		detach(): void;
+    detach(): void;
 
-		text(): string;
+    text(): string;
 
-		nativeRange: Range;
-	}
-
-
+    nativeRange: Range;
+  }
 }
 
-export type Direction = | "forward" | "forwards" | "backward" | "backwards" | boolean;
-export type NodeType = | "NODE_BEFORE" | "NODE_AFTER" | "NODE_BEFORE_AND_AFTER" | "NODE_INSIDE";
+export type Direction =
+  | "forward"
+  | "forwards"
+  | "backward"
+  | "backwards"
+  | boolean;
+export type NodeType =
+  | "NODE_BEFORE"
+  | "NODE_AFTER"
+  | "NODE_BEFORE_AND_AFTER"
+  | "NODE_INSIDE";
 
 export interface CookieOptions {
-	expires?: Date;
-	path?: string;
-	domain?: string;
-	secure?: boolean;
+  expires?: Date;
+  path?: string;
+  domain?: string;
+  secure?: boolean;
 }
 
 export interface DomPosition {
-	node: Node;
-	offset: number;
+  node: Node;
+  offset: number;
 }
 
 export type RangyStatic = typeof import("rangy");
 
-declare module "rangy/lib/rangy-selectionsaverestore" {
-}
-export type RangeSaveInfo={
-	document:Document;
-	startMarkerId:string;
-	endMarkerId: string;
-	collapsed: boolean;
-	backward: boolean;
-	toString: ()=>string;
+declare module "rangy/lib/rangy-selectionsaverestore" {}
+export type RangeSaveInfo = {
+  document: Document;
+  startMarkerId: string;
+  endMarkerId: string;
+  collapsed: boolean;
+  backward: boolean;
+  toString: () => string;
 };
 declare global {
-	namespace rangy {
-		interface savedSelection{win?:Window;rangeInfos:RangeSaveInfo[];restored:boolean;} ;
-		function saveSelection(win?: Window): savedSelection;
+  namespace rangy {
+    interface savedSelection {
+      win?: Window;
+      rangeInfos: RangeSaveInfo[];
+      restored: boolean;
+    }
+    function saveSelection(win?: Window): savedSelection;
 
-		function restoreSelection(savedSelection: savedSelection, preserveDirection?: boolean): boolean;
+    function restoreSelection(
+      savedSelection: savedSelection,
+      preserveDirection?: boolean
+    ): boolean;
 
-		function saveRange(range: Range): RangeSaveInfo;
+    function saveRange(range: Range): RangeSaveInfo;
 
-		function restoreRange(savedRange: RangeSaveInfo, normalize?: boolean): Range;
+    function restoreRange(
+      savedRange: RangeSaveInfo,
+      normalize?: boolean
+    ): Range;
 
-		function saveRanges(ranges: Range[], direction?: Direction | boolean): RangeSaveInfo[];
+    function saveRanges(
+      ranges: Range[],
+      direction?: Direction | boolean
+    ): RangeSaveInfo[];
 
-		function restoreRanges(savedRanges: RangeSaveInfo[]): Range[];
+    function restoreRanges(savedRanges: RangeSaveInfo[]): Range[];
 
-		function removeMarkers(savedSelection: savedSelection): void;
+    function removeMarkers(savedSelection: savedSelection): void;
 
-		function getNativeSelection(win?: Window): Selection;
+    function getNativeSelection(win?: Window): Selection;
 
-		function getSelection(win?: Window): RangySelection;
+    function getSelection(win?: Window): RangySelection;
 
-		function createRange(doc?: Document | Window | HTMLIFrameElement,): RangyRange;
+    function createRange(
+      doc?: Document | Window | HTMLIFrameElement
+    ): RangyRange;
 
-		function createRangyRange(doc?: Document | Window | HTMLIFrameElement,): RangyRange;
+    function createRangyRange(
+      doc?: Document | Window | HTMLIFrameElement
+    ): RangyRange;
 
-		function createNativeRange(doc?: Document | Window | HTMLIFrameElement,): Range;
+    function createNativeRange(
+      doc?: Document | Window | HTMLIFrameElement
+    ): Range;
 
-		function addInitListener(listener: (rangy: RangyStatic) => void): void;
+    function addInitListener(listener: (rangy: RangyStatic) => void): void;
+
+    function createMissingNativeApi(): void;
 
-		function createMissingNativeApi(): void;
+    function shim(): void;
 
-		function shim(): void;
+    function serializeSelection(
+      selection?: RangySelection,
+      omitChecksum?: boolean,
+      root?: Node
+    ): string;
 
-		function serializeSelection(selection?: RangySelection, omitChecksum?: boolean, root?: Node,): string;
+    function canDeserializeSelection(
+      serializedSelection: string,
+      root?: Node,
+      win?: Window
+    ): boolean;
 
-		function canDeserializeSelection(serializedSelection: string, root?: Node, win?: Window,): boolean;
+    function deserializeSelection(
+      serializedSelection: string,
+      root?: Node,
+      win?: Window
+    ): RangySelection;
 
-		function deserializeSelection(serializedSelection: string, root?: Node, win?: Window,): RangySelection;
+    function serializeRange(
+      range: RangyRange,
+      omitChecksum?: boolean,
+      root?: Node
+    ): string;
 
-		function serializeRange(range: RangyRange, omitChecksum?: boolean, root?: Node,): string;
+    function canDeserializeRange(
+      serializedRange: string,
+      root?: Node,
+      doc?: Document
+    ): boolean;
 
-		function canDeserializeRange(serializedRange: string, root?: Node, doc?: Document,): boolean;
+    function deserializeRange(
+      serializedRange: string,
+      root?: Node,
+      doc?: Document
+    ): RangyRange;
 
-		function deserializeRange(serializedRange: string, root?: Node, doc?: Document,): RangyRange;
+    function serializePosition(node: Node, offset: number, root?: Node): string;
 
-		function serializePosition(node: Node, offset: number, root?: Node): string;
+    function deserializePosition(
+      serializedPosition: string,
+      root?: Node,
+      doc?: Document
+    ): DomPosition;
 
-		function deserializePosition(serializedPosition: string, root?: Node, doc?: Document,): DomPosition;
+    function restoreSelectionFromCookie(win?: Window): boolean;
 
-		function restoreSelectionFromCookie(win?: Window): boolean;
+    function isHostObject(obj: any, prop: string): boolean;
 
-		function isHostObject(obj: any, prop: string): boolean;
+    function isHostMethod(obj: any, method: string): boolean;
 
-		function isHostMethod(obj: any, method: string): boolean;
+    function isHostProperty(obj: any, prop: string): boolean;
 
-		function isHostProperty(obj: any, prop: string): boolean;
+    function areHostObjects(obj: any, props: string[]): boolean;
 
-		function areHostObjects(obj: any, props: string[]): boolean;
+    function areHostMethods(obj: any, methods: string[]): boolean;
 
-		function areHostMethods(obj: any, methods: string[]): boolean;
+    function areHostProperties(obj: any, props: string[]): boolean;
 
-		function areHostProperties(obj: any, props: string[]): boolean;
+    function toArray(arrayLike: any): any[];
 
-		function toArray(arrayLike: any): any[];
+    function serializeSelection(
+      selection?: RangySelection,
+      omitChecksum?: boolean,
+      root?: Node
+    ): string;
 
-		function serializeSelection(selection?: RangySelection, omitChecksum?: boolean, root?: Node,): string;
+    function canDeserializeSelection(
+      serializedSelection: string,
+      root?: Node,
+      win?: Window
+    ): boolean;
 
-		function canDeserializeSelection(serializedSelection: string, root?: Node, win?: Window,): boolean;
+    function deserializeSelection(
+      serializedSelection: string,
+      root?: Node,
+      win?: Window
+    ): RangySelection;
 
-		function deserializeSelection(serializedSelection: string, root?: Node, win?: Window,): RangySelection;
+    function serializeRange(
+      range: RangyRange,
+      omitChecksum?: boolean,
+      root?: Node
+    ): string;
 
-		function serializeRange(range: RangyRange, omitChecksum?: boolean, root?: Node,): string;
+    function canDeserializeRange(
+      serializedRange: string,
+      root?: Node,
+      doc?: Document
+    ): boolean;
 
-		function canDeserializeRange(serializedRange: string, root?: Node, doc?: Document,): boolean;
+    function deserializeRange(
+      serializedRange: string,
+      root?: Node,
+      doc?: Document
+    ): RangyRange;
 
-		function deserializeRange(serializedRange: string, root?: Node, doc?: Document,): RangyRange;
+    function serializePosition(node: Node, offset: number, root?: Node): string;
 
-		function serializePosition(node: Node, offset: number, root?: Node): string;
+    function deserializePosition(
+      serializedPosition: string,
+      root?: Node,
+      doc?: Document
+    ): DomPosition;
 
-		function deserializePosition(serializedPosition: string, root?: Node, doc?: Document,): DomPosition;
+    function saveSelectionCookie(win?: Window, props?: CookieOptions): void;
 
-		function saveSelectionCookie(win?: Window, props?: CookieOptions): void;
+    function restoreSelectionFromCookie(win?: Window): boolean;
 
-		function restoreSelectionFromCookie(win?: Window): boolean;
+    interface SelectionSaveRestoreModule {
+      saveSelection(win?: Window): object | null;
 
-		interface SelectionSaveRestoreModule {
-			saveSelection(win?: Window): object | null;
+      restoreSelection(
+        savedSelection: object,
+        preserveDirection?: boolean
+      ): boolean;
 
-			restoreSelection(savedSelection: object, preserveDirection?: boolean): boolean;
+      saveRange(range: Range): object;
 
-			saveRange(range: Range): object;
+      restoreRange(savedRange: object, normalize?: boolean): Range;
 
-			restoreRange(savedRange: object, normalize?: boolean): Range;
+      saveRanges(ranges: Range[], direction?: Direction | boolean): object[];
 
-			saveRanges(ranges: Range[], direction?: Direction | boolean): object[];
+      restoreRanges(savedRanges: object[]): Range[];
 
-			restoreRanges(savedRanges: object[]): Range[];
+      removeMarkers(savedSelection: object): void;
+    }
 
-			removeMarkers(savedSelection: object): void;
-		}
+    interface RangyClassApplierOptions {
+      elementTagName?: string;
+      elementProperties?: { [key: string]: string };
+      elementAttributes?: { [key: string]: string };
+      ignoreWhiteSpace?: boolean;
+      applyToEditableOnly?: boolean;
+      tagNames?: string[] | string;
+      normalize?: boolean;
+      onElementCreate?:
+        | ((element: Element, classApplier: RangyClassApplier) => any)
+        | undefined;
+      useExistingElements?: boolean;
+    }
 
-		interface RangyClassApplierOptions {
-			elementTagName?: string;
-			elementProperties?: { [key: string]: string };
-			elementAttributes?: { [key: string]: string };
-			ignoreWhiteSpace?: boolean;
-			applyToEditableOnly?: boolean;
-			tagNames?: string[] | string;
-			normalize?: boolean;
-			onElementCreate?: | ((element: Element, classApplier: RangyClassApplier) => any) | undefined;
-			useExistingElements?: boolean;
-		}
+    interface RangyClassApplier {
+      applyToSelection(win?: Window): void;
 
-		interface RangyClassApplier {
-			applyToSelection(win?: Window): void;
+      undoToSelection(win?: Window): void;
 
-			undoToSelection(win?: Window): void;
+      isAppliedToSelection(win?: Window): boolean;
 
-			isAppliedToSelection(win?: Window): boolean;
+      toggleSelection(win?: Window): void;
 
-			toggleSelection(win?: Window): void;
+      applyToRange(range: RangyRange): void;
 
-			applyToRange(range: RangyRange): void;
+      undoToRange(range: RangyRange): void;
 
-			undoToRange(range: RangyRange): void;
+      isAppliedToRange(range: RangyRange): boolean;
 
-			isAppliedToRange(range: RangyRange): boolean;
+      toggleRange(range: RangyRange): void;
 
-			toggleRange(range: RangyRange): void;
+      detach(doc?: Document | Window | HTMLIFrameElement): void;
 
-			detach(doc?: Document | Window | HTMLIFrameElement): void;
+      className: string;
+      cssClass: string;
+    }
 
-			className: string;
-			cssClass: string;
-		}
+    function createClassApplier(
+      className: string,
+      options?: RangyClassApplierOptions,
+      tagNames?: string[] | string
+    ): RangyClassApplier;
 
-		function createClassApplier(className: string, options?: RangyClassApplierOptions, tagNames?: string[] | string,): RangyClassApplier;
+    interface RangyHighlighter {
+      addClassApplier(
+        classApplier: RangyClassApplier,
+        options?: RangyHighlighterAddClassOptions
+      ): void;
 
-		interface RangyHighlighter {
-			addClassApplier(classApplier: RangyClassApplier, options?: RangyHighlighterAddClassOptions,): void;
+      highlightSelection(
+        className: string,
+        options?: RangyHighlightOptions
+      ): string[];
 
-			highlightSelection(className: string, options?: RangyHighlightOptions,): string[];
+      unhighlightSelection(selection?: RangySelection): boolean;
 
-			unhighlightSelection(selection?: RangySelection): boolean;
+      removeAllHighlights(): void;
 
-			removeAllHighlights(): void;
+      serialize(highlights?: RangyHighlight[]): string;
 
-			serialize(highlights?: RangyHighlight[]): string;
+      deserialize(serialized: string): RangyHighlight[];
 
-			deserialize(serialized: string): RangyHighlight[];
+      getHighlightForElement(el: Element): RangyHighlight | null;
+    }
 
-			getHighlightForElement(el: Element): RangyHighlight | null;
-		}
+    interface RangyHighlighterAddClassOptions {
+      priority?: number;
+      exclusive?: boolean;
+    }
 
-		interface RangyHighlighterAddClassOptions {
-			priority?: number;
-			exclusive?: boolean;
-		}
+    interface RangyHighlightOptions {
+      selection?: RangySelection;
+      exclusive?: boolean;
+      containerElementId?: string;
+    }
 
-		interface RangyHighlightOptions {
-			selection?: RangySelection;
-			exclusive?: boolean;
-			containerElementId?: string;
-		}
+    interface RangyHighlight {
+      id: string;
+      classApplier: RangyClassApplier;
+      characterRange: {
+        start: number;
+        end: number;
+        containerElement: Node;
+      };
 
-		interface RangyHighlight {
-			id: string;
-			classApplier: RangyClassApplier;
-			characterRange: {
-				start: number; end: number; containerElement: Node;
-			};
+      containsElement(el: Node): boolean;
 
-			containsElement(el: Node): boolean;
+      containsRange(range: RangyRange): boolean;
 
-			containsRange(range: RangyRange): boolean;
+      intersectsRange(range: RangyRange): boolean;
 
-			intersectsRange(range: RangyRange): boolean;
+      isCharacterRange(containerElement: Node): boolean;
 
-			isCharacterRange(containerElement: Node): boolean;
+      getRange(containerElement?: Node): RangyRange;
+    }
 
-			getRange(containerElement?: Node): RangyRange;
-		}
+    function createHighlighter(
+      doc?: Document | Window | HTMLIFrameElement,
+      type?: "textContent" | "textRange"
+    ): RangyHighlighter;
 
-		function createHighlighter(doc?: Document | Window | HTMLIFrameElement, type?: "textContent" | "textRange",): RangyHighlighter;
+    interface RangyWordOptions {
+      includeTrailingSpace?: boolean;
+      wordRegex?: RegExp;
+    }
 
-		interface RangyWordOptions {
-			includeTrailingSpace?: boolean;
-			wordRegex?: RegExp;
-		}
+    interface RangyCharacterOptions {
+      includeBlockContentTrailingSpace?: boolean;
+      includeSpaceBeforeBr?: boolean;
+      includePreLineTrailingSpace?: boolean;
+      ignoreCharacters?: string;
+    }
 
-		interface RangyCharacterOptions {
-			includeBlockContentTrailingSpace?: boolean;
-			includeSpaceBeforeBr?: boolean;
-			includePreLineTrailingSpace?: boolean;
-			ignoreCharacters?: string;
-		}
+    interface RangyTextOptions
+      extends RangyWordOptions, RangyCharacterOptions {}
 
-		interface RangyTextOptions extends RangyWordOptions, RangyCharacterOptions {
-		}
+    interface RangyFindTextOptions {
+      caseSensitive?: boolean;
+      withinRange?: RangyRange;
+      wholeWordsOnly?: boolean;
+      wrap?: boolean;
+      direction?: "forward" | "backward";
+      wordOptions?: RangyWordOptions;
+      characterOptions?: RangyCharacterOptions;
+    }
 
-		interface RangyFindTextOptions {
-			caseSensitive?: boolean;
-			withinRange?: RangyRange;
-			wholeWordsOnly?: boolean;
-			wrap?: boolean;
-			direction?: "forward" | "backward";
-			wordOptions?: RangyWordOptions;
-			characterOptions?: RangyCharacterOptions;
-		}
+    interface RangyTextExpandOptions extends RangyTextOptions {
+      trim?: boolean;
+      trimStart?: boolean;
+      trimEnd?: boolean;
+    }
 
-		interface RangyTextExpandOptions extends RangyTextOptions {
-			trim?: boolean;
-			trimStart?: boolean;
-			trimEnd?: boolean;
-		}
+    interface RangyTextRange {
+      moveStart(
+        unit: string,
+        count: number,
+        options?: RangyTextOptions
+      ): number;
 
-		interface RangyTextRange {
-			moveStart(unit: string, count: number, options?: RangyTextOptions,): number;
+      moveEnd(unit: string, count: number, options?: RangyTextOptions): number;
 
-			moveEnd(unit: string, count: number, options?: RangyTextOptions): number;
+      move(unit: string, count: number, options?: RangyTextOptions): number;
 
-			move(unit: string, count: number, options?: RangyTextOptions): number;
+      expand(unit: string, options?: RangyTextExpandOptions): boolean;
 
-			expand(unit: string, options?: RangyTextExpandOptions): boolean;
+      text(): string;
 
-			text(): string;
+      selectCharacters(
+        containerNode: Node,
+        startIndex: number,
+        endIndex: number
+      ): void;
 
-			selectCharacters(containerNode: Node, startIndex: number, endIndex: number,): void;
+      toCharacterRange(
+        containerNode: Node,
+        options?: RangyTextOptions
+      ): { start: number; end: number };
 
-			toCharacterRange(containerNode: Node, options?: RangyTextOptions,): { start: number; end: number };
-
-			findText(searchTerm: string | RegExp, options?: RangyFindTextOptions,): boolean;
-		}
-	}
-
+      findText(
+        searchTerm: string | RegExp,
+        options?: RangyFindTextOptions
+      ): boolean;
+    }
+  }
 }
+export { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";

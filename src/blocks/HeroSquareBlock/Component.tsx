@@ -1,10 +1,10 @@
 import { Where } from "payload";
 import React from "react";
 
-import { HomeArticleLayout } from "@/components/layouts/ArticleFrontpage";
+import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
 import type { HeroSquareBlock as HeroSquareBlockProps } from "@/payload-types";
-import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
-import {PostOverview} from "@/types/collections/posts";
+import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
+import { PostOverview } from "@/types/collections/posts";
 
 export const HeroSquareBlock: React.FC<
   {
@@ -20,7 +20,7 @@ export const HeroSquareBlock: React.FC<
     selectedDocs
   } = props;
   const limit = limitFromProps || 8;
-	const posts: PostOverview[] = [];
+  const posts: PostOverview[] = [];
 
   if (populateBy === "collection") {
     const flattenedCategories = categories?.map((category) => {
@@ -33,7 +33,7 @@ export const HeroSquareBlock: React.FC<
         in: flattenedCategories
       };
     }
-	  const fetchedPosts = await queryPostOverviews({
+    const fetchedPosts = await queryPostOverviews({
       where,
       limit
     });
@@ -43,7 +43,7 @@ export const HeroSquareBlock: React.FC<
       posts.push(...fetchedPosts);
     }
 
-    return <HomeArticleLayout posts={posts} />;
+    return <ArticleHero posts={posts} />;
   } else {
     return <></>;
   }

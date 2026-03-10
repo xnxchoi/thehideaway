@@ -3,9 +3,9 @@ import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
 import { Link } from "@/components/UX/Link/Link";
 import { useCursor, useMenu } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import type {PostOverview} from "@/types/collections/posts";
+import type { PostOverview } from "@/types/collections/posts";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FrontImage } from "../Media/FrontImage";
+import { FrontImage } from "@/components/core/Media/FrontImage";
 import { useShallow } from "zustand/shallow";
 import { useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
@@ -14,8 +14,8 @@ export const PrevNext = ({
   prev: previousPost,
   next: nextPost
 }: {
-	prev: PostOverview | null;
-	next: PostOverview | null;
+  prev: PostOverview | null;
+  next: PostOverview | null;
 }) => {
   const [prev, setPreviousPost] = useState(
     previousPost || fallback({ direction: "prev" })
@@ -84,7 +84,7 @@ export const PrevNext = ({
   return (
     <m.div
       className={
-	      "boder-t-[1px] sticky top-[0px] z-0 mt-[-10px] flex w-screen flex-col justify-between overflow-hidden border-0 border-solid border-foreground bg-faded-foreground pt-0 pb-[8px] text-background"
+        "boder-t-[1px] sticky top-[0px] z-0 mt-[-10px] flex w-screen flex-col justify-between overflow-hidden border-0 border-solid border-foreground bg-faded-foreground pt-0 pb-[8px] text-background"
       }
       style={{ bottom: contBottom, top: cot }}
       ref={containerRef}
@@ -92,7 +92,7 @@ export const PrevNext = ({
       onMouseLeave={resetCursorTheme}
     >
       <div
-	      className="relative flex h-[calc(100svh-35px)] min-h-[400px] w-full items-start gap-[31px] bg-faded-foreground pb-[24px] after:absolute after:bottom-0 after:left-0 after:mt-[12px] after:h-px after:w-full after:border-t-[1px] after:border-solid after:border-foreground after:opacity-20 after:content-[''] min-lg:p-[0_27px_24px_26px] [&_h1]:m-0 [&_h1]:leading-[0.84] [&>a]:h-full [&>a]:w-1/2 [&>a]:text-faded-background"
+        className="relative flex h-[calc(100svh-35px)] min-h-[400px] w-full items-start gap-[31px] bg-faded-foreground pb-[24px] after:absolute after:bottom-0 after:left-0 after:mt-[12px] after:h-px after:w-full after:border-t-[1px] after:border-solid after:border-foreground after:opacity-20 after:content-[''] min-lg:p-[0_27px_24px_26px] [&_h1]:m-0 [&_h1]:leading-[0.84] [&>a]:h-full [&>a]:w-1/2 [&>a]:text-faded-background"
         style={{ textDecoration: "none" }}
       >
         <div
@@ -105,8 +105,7 @@ export const PrevNext = ({
           onClick={resetCursorTheme}
           className={"overflow-hidden rounded-lg"}
         >
-	        <div
-		        className="relative flex h-full w-full flex-col justify-end bg-faded-foreground text-faded-background transition-colors duration-200 ease-out-power2 hover:bg-faded-background/40 hover:text-faded-foreground min-lg:px-[14px] min-lg:py-[10px]">
+          <div className="relative flex h-full w-full flex-col justify-end bg-faded-foreground text-faded-background transition-colors duration-200 ease-out-power2 hover:bg-faded-background/40 hover:text-faded-foreground min-lg:px-[14px] min-lg:py-[10px]">
             {prev && "image" in prev && prev.image && (
               <div className="absolute inset-0 z-[0] opacity-0 transition-opacity duration-400 ease-out-power2 hover:opacity-35">
                 <FrontImage
@@ -136,8 +135,7 @@ export const PrevNext = ({
           onClick={resetCursorTheme}
           className={"overflow-hidden rounded-lg"}
         >
-	        <div
-		        className="relative flex h-full w-full flex-col justify-end bg-faded-foreground break-words text-faded-background transition-colors duration-200 ease-out-power2 hover:bg-faded-background/40 hover:text-faded-foreground min-lg:px-[14px] min-lg:py-[10px]">
+          <div className="relative flex h-full w-full flex-col justify-end bg-faded-foreground break-words text-faded-background transition-colors duration-200 ease-out-power2 hover:bg-faded-background/40 hover:text-faded-foreground min-lg:px-[14px] min-lg:py-[10px]">
             {next && "image" in next && next.image && (
               <div className="absolute inset-0 z-[0] opacity-0 mix-blend-overlay transition-opacity duration-400 ease-out-power2 hover:opacity-35">
                 <FrontImage

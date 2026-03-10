@@ -1,4 +1,4 @@
-import { HomeArticleLayout } from "@/components/layouts/ArticleFrontpage";
+import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
 import { TapePlayer } from "@/components/UX/TapePlayer";
 import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
 import { RPage } from "@/components/UX/Transition";
@@ -13,7 +13,7 @@ export default async function HomePage() {
       <div className="pt-30 pb-10 md:pt-[23px] lg:pt-[80px]">
         <div>
           <Suspense>
-            <HomeArticleLayout posts={posts.docs} />
+            <ArticleHero posts={posts.docs} />
           </Suspense>
         </div>
 

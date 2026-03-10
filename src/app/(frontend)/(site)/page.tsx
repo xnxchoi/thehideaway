@@ -1,4 +1,4 @@
-import { HomeArticleLayout } from "@/components/layouts/ArticleFrontpage";
+import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
 import { StationHideawayHero } from "@/components/sections/StationHideaway/block";
 
 import { RPage } from "@/components/UX/Transition";
@@ -13,10 +13,10 @@ export default async function HomePage() {
 
   return (
     <RPage slug={["home"]} type={"pages"}>
-      <div className="pt-30 pb-10 md:pt-[23px] lg:pt-[80px]">
+      <div className="h-full min-h-dvh w-full pt-30 pb-10 md:pt-[23px] lg:pt-[80px]">
         <div>
           <Suspense>
-            <HomeArticleLayout posts={posts.docs} />
+            <ArticleHero posts={posts.docs} />
           </Suspense>
         </div>
         <StationHideawayHero />

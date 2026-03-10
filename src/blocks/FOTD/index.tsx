@@ -4,8 +4,8 @@ import { Link } from "@/components/UX/Link/Link";
 import { DateTime } from "luxon";
 import { HomeSquare } from "@/components/sections/ContentShowcase";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
-import {PostOverview} from "@/types/collections/posts";
+import { FrontImage } from "@/components/core/Media/FrontImage";
+import { PostOverview } from "@/types/collections/posts";
 
 export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
   const { posts } = props;
@@ -15,11 +15,10 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
       className="mb-[48px] justify-center gap-x-[20px] rounded-[2rem] p-[2rem] md:block lg:mr-[2rem] lg:ml-[2rem] xl:mb-[100px] xl:flex xl:gap-x-[90px]"
       style={{
         background:
-	        "linear-gradient(180deg, var(--faded-bg), oklch(from var(--bg) l c h/0))"
+          "linear-gradient(180deg, var(--faded-bg), oklch(from var(--bg) l c h/0))"
       }}
     >
-	    <div
-		    className="mb-6 border-b-[1px] border-solid border-foreground/50)] md:min-w-1/2 md:flex-[1] md:border-b-0 md:pb-0 lg:min-w-[680px]">
+      <div className="border-foreground/50)] mb-6 border-b-[1px] border-solid md:min-w-1/2 md:flex-[1] md:border-b-0 md:pb-0 lg:min-w-[680px]">
         <div className="grid grid-cols-[1fr_1fr] gap-y-[20px] lg:grid-cols-[repeat(4,1fr)] lg:gap-x-[20px]">
           {posts[0] && <HomeSquare article={posts[0]} />}
           {posts[1] && (
@@ -81,7 +80,7 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
   );
 };
 const ArticleList = (
-	props: { posts: PostOverview[] } & ComponentProps<"div">
+  props: { posts: PostOverview[] } & ComponentProps<"div">
 ) => {
   const { posts, ...rest } = props;
 
@@ -136,14 +135,11 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
   const { title, image, link, date, author, index } = props;
   return (
     <>
-	    <div
-		    className="absolute z-[10] mt-[30px] ml-[4px] flex h-[15px] w-[15px] items-center justify-center rounded-[50%] bg-off-foreground/40 text-[1.1rem] lg:mt-[20px] lg:ml-[-40px] lg:h-[20px] lg:w-[20px]">
+      <div className="absolute z-[10] mt-[30px] ml-[4px] flex h-[15px] w-[15px] items-center justify-center rounded-[50%] bg-off-foreground/40 text-[1.1rem] lg:mt-[20px] lg:ml-[-40px] lg:h-[20px] lg:w-[20px]">
         {index + 1}
       </div>
-	    <div
-		    className="relative flex flex-row-reverse justify-between border-b-[1px] border-foreground/50 pt-[16px] pr-0 pb-[10px] pl-0 lg:pt-[20px] lg:pb-[20px]">
-		    <div
-			    className="relative ml-[16px] aspect-square h-[75px] self-start bg-off-background/10">
+      <div className="relative flex flex-row-reverse justify-between border-b-[1px] border-foreground/50 pt-[16px] pr-0 pb-[10px] pl-0 lg:pt-[20px] lg:pb-[20px]">
+        <div className="relative ml-[16px] aspect-square h-[75px] self-start bg-off-background/10">
           <div>
             {image && (
               <Image
@@ -186,8 +182,7 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
                     {date.length > 0 && DateTime.fromISO(date).toRelative()}
                   </time>
                 </span>
-	              <span
-		              className="mx-3 inline text-[1.1rem] tracking-[0.1em] text-faded-foreground uppercase before:content-['|']">
+                <span className="mx-3 inline text-[1.1rem] tracking-[0.1em] text-faded-foreground uppercase before:content-['|']">
                   <Link
                     className="mr-2 inline-block whitespace-nowrap"
                     href={link + "/#comments"}
@@ -209,8 +204,7 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
                       />
                     </svg>
                     <span className="mx-[4px] my-0 inline-flex flex-[0_0_auto] leading-[20px]">
-                      <span
-	                      className="text-[1.1rem] tracking-widest text-faded-foreground uppercase">
+                      <span className="text-[1.1rem] tracking-widest text-faded-foreground uppercase">
                         0
                       </span>
                     </span>

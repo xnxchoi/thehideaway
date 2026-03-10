@@ -1,10 +1,10 @@
 import React from "react";
 import { formatDateTime } from "@/utilities/formatDateTime";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
-import {PostOverview} from "@/types/collections/posts";
+import { FrontImage } from "@/components/core/Media/FrontImage";
+import { PostOverview } from "@/types/collections/posts";
 
 export const PostHero: React.FC<{
-	post: PostOverview;
+  post: PostOverview;
 }> = ({ post }) => {
   const {
     image,

@@ -1,6 +1,7 @@
+import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
 import { HomeSquare } from "@/components/sections/ContentShowcase";
 import { Link } from "@/components/UX/Link/Link";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
+import { FrontImage } from "@/components/core/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
@@ -8,14 +9,14 @@ import { DateTime } from "luxon";
 import { cacheLife } from "next/cache";
 import { ComponentProps, ComponentPropsWithoutRef } from "react";
 
-export const HomeArticleLayout = (props: {
+export const ArticleHero = (props: {
   posts: PostOverview[];
   className?: string;
 }) => {
   const { posts, className } = props;
 
   return (
-    <div className="mx-2.5 my-0 max-w-[600px] sm:mx-auto lg:max-w-[98vw]">
+    <div className="mx-2.5 my-0 min-h-[85vh] max-w-[600px] sm:mx-auto lg:max-w-[98vw]">
       <div
         className={cn(
           `mb-[48px] justify-center gap-x-[20px] rounded-4xl bg-linear-to-b from-faded-background/95 to-transparent p-5 bg-blend-darken md:block md:p-8 lg:mr-8 lg:ml-8 xl:mb-[100px] xl:flex xl:gap-x-[90px] dark:from-off-black/95`
@@ -29,13 +30,19 @@ export const HomeArticleLayout = (props: {
                 href={"/essays/" + `${posts[1].slug}`}
                 className="grid gap-y-[20px] border-t border-r border-solid border-foreground/50 bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] md:border-b lg:col-[1/3] lg:row-2 lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
-                <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3]">
-                  {posts[1].image && (
+                <div
+                  className={cn(
+                    "relative aspect-square min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3]"
+                  )}
+                >
+                  {(posts[1].image && (
                     <FrontImage
                       aspectRatio={1}
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
                       resource={posts[1].image}
                     />
+                  )) || (
+                    <PlaceHolderImage className="aspect-square rounded-[5px]" />
                   )}
                 </div>
                 <RP_BadgeTag
@@ -59,12 +66,14 @@ export const HomeArticleLayout = (props: {
                 className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
               >
                 <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3] lg:aspect-square">
-                  {posts[2].image && (
+                  {(posts[2].image && (
                     <FrontImage
                       aspectRatio={1}
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
                       resource={posts[2].image}
                     />
+                  )) || (
+                    <PlaceHolderImage className="aspect-square rounded-[5px]" />
                   )}
                 </div>
                 <RP_BadgeTag
@@ -183,11 +192,13 @@ const Article = async (
       </div>
       <div className="relative flex flex-row-reverse justify-between border-b-[1px] border-foreground/50 pt-[16px] pr-0 pb-[15px] pl-0 lg:pt-[20px] lg:pb-[20px]">
         <div className="relative ml-[16px] aspect-[4/3] h-[75px] self-start bg-off-background/10">
-          {image && (
+          {(image && (
             <FrontImage
               className="border-color-off-background/90 absolute inset-0 rounded-[4px] border-[1px] border-solid"
               resource={image}
             />
+          )) || (
+            <PlaceHolderImage className="border-color-off-background/90 absolute inset-0 rounded-[4px] border-[1px] border-solid" />
           )}
         </div>
         <div className="grow self-start">

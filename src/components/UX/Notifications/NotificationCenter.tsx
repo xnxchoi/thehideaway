@@ -32,7 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { ReferencedLink } from "@/components/UX/Link/referencedLink";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
+import { FrontImage } from "@/components/core/Media/FrontImage";
 import { useHumanDate } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";
@@ -125,7 +125,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
   const [filteredNotifications, setFilteredNotifications] = useState<
     SyncedNotification[]
   >([]);
-	const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const [groupedNotifications, setGroupedNotifications] = useState<
     Record<string, SyncedNotification[]>

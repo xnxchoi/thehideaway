@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "@/providers/Theme";
-import {AuthorOverview} from "@/types/collections/users";
+import { AuthorOverview } from "@/types/collections/users";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { CollectionSlug } from "payload";
@@ -14,7 +14,7 @@ import { useDomCursor } from "../core/cursorWrapper";
 import { Link } from "../UX/Link/Link";
 import { Button } from "../UX/Button";
 import { ReferencedLink } from "../UX/Link/referencedLink";
-import { FrontImage } from "../UX/Media/FrontImage";
+import { FrontImage } from "@/components/core/Media/FrontImage";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Skeleton } from "./skeleton";
 

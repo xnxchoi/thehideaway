@@ -15,7 +15,7 @@ import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useInView } from "@/hooks/useInView";
 import { useTheme } from "@/providers/Theme";
 import { useIsMobile as useIsNarrow } from "@/providers/MiddleMan";
-import { FrontImage } from "@/components/UX/Media/FrontImage";
+import { FrontImage } from "@/components/core/Media/FrontImage";
 import { useShallow } from "zustand/shallow";
 import imager from "./ff.jpeg";
 gsap.registerPlugin(ScrollTrigger);

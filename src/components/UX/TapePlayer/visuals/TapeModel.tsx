@@ -25,6 +25,7 @@ import {
   Environment,
   OrbitControls,
   PerspectiveCamera,
+  RenderTexture,
   useGLTF
 } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
@@ -32,9 +33,17 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
 import { useMotionValue } from "motion/react";
-import { useCallback, useEffect, useEffectEvent, useMemo, useRef } from "react";
+import {
+  use,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef
+} from "react";
 import {
   ACESFilmicToneMapping,
+  BufferGeometry,
   Color,
   LinearFilter,
   Material,
@@ -51,9 +60,9 @@ import {
 } from "three";
 import { OrbitControls as OrbitControls_ } from "three-stdlib";
 import { useShallow } from "zustand/shallow";
-
+import { Text } from "@react-three/drei";
 gsap.registerPlugin(ScrollTrigger);
-
+const ralewayDots = import("@/../public/assets/fonts/RalewayDots.ttf");
 // ─── DRACO decoder path ───────────────────────────────────────────────────────
 // The files are already copied to /public/draco/ (from rip/).
 useGLTF.setDecoderPath("/draco/");
@@ -141,12 +150,15 @@ export function TapeModel({
 
   /** Exponentially smoothed velocity (qc in original). */
   const smoothedVelocityRef = useRef(0);
-
+  const rale = use(async () => await ralewayDots.then((r) => r.default));
   /** The PointLight so GSAP can animate its position. */
   const lightRef = useRef<PointLight>(null!);
 
   /** Reference to the replaced Metal MeshStandardMaterial. */
   const metalMatRef = useRef<MeshStandardMaterial | null>(null);
+  const displayScreen = useRef<Object3D | null>(null);
+  const displayScreenMatRef = useRef<MeshStandardMaterial | null>(null);
+  const displayScreenMeshRef = useRef<BufferGeometry | null>(null);
   const isResetting = useRef(false);
   const interactingValue = useMotionValue(false);
   // ─── Material setup, disk ref, video texture ────────────────────────────────
@@ -171,6 +183,7 @@ export function TapeModel({
 
       // ── Display mesh — video texture as emissive map ─────────────────────
       if (mat.name === "Display") {
+        displayScreen.current = obj;
         const video = document.createElement("video");
         video.src = VIDEO_URL;
         video.crossOrigin = "anonymous";
@@ -185,9 +198,12 @@ export function TapeModel({
         videoTex.flipY = false;
 
         const displayMat = obj.material as MeshStandardMaterial;
+
         // 0x96F7FF decoded from original decimal literal 9893887
         displayMat.emissive = new Color(0x96f7ff);
         displayMat.emissiveIntensity = 200;
+        displayScreenMatRef.current = displayMat;
+        displayScreenMeshRef.current = obj.geometry;
         displayMat.emissiveMap = videoTex;
         displayMat.needsUpdate = true;
 
@@ -229,20 +245,22 @@ export function TapeModel({
       if (mat.name.startsWith("Metal")) {
         if (mat.name === "Metal") {
           metalMate = obj.material as MeshStandardMaterial;
+
+          const metalMat = new MeshStandardMaterial({
+            color: "#EBEFF4",
+            metalness: 0.85,
+            roughness: 0.2,
+            envMapIntensity: 0.1,
+            normalMap: metalMate.normalMap,
+            normalScale: metalMate.normalScale?.clone()
+          });
+          metalMat.normalScale?.set(0.5, 0.5);
+          metalMat.needsUpdate = true;
+          metalMatRef.current = metalMat;
+          obj.material = metalMat;
+        } else if (metalMatRef.current) {
+          obj.material = metalMatRef.current;
         }
-        const original = metalMate || (obj.material as MeshStandardMaterial);
-        const metalMat = new MeshStandardMaterial({
-          color: "#EBEFF4",
-          metalness: 0.85,
-          roughness: 0.2,
-          envMapIntensity: 0.1,
-          normalMap: original.normalMap,
-          normalScale: original.normalScale?.clone()
-        });
-        metalMat.normalScale?.set(0.5, 0.5);
-        metalMat.needsUpdate = true;
-        obj.material = metalMat;
-        metalMatRef.current = metalMat;
       }
     });
   }, [scene]);
@@ -412,9 +430,12 @@ export function TapeModel({
     if (document.hidden) return;
 
     if (diskRef.current) {
+      const isPlaying = lastTrackstatus.current === "playing";
+
       // Exponential smoothing: qc += (hg - qc) * 0.1
       smoothedVelocityRef.current +=
-        (scrollVelocityRef.current - smoothedVelocityRef.current) * 0.1;
+        (scrollVelocityRef.current - smoothedVelocityRef.current) *
+        (isPlaying ? 0.17 : 0.1);
       diskRef.current.rotation.y +=
         BASE_DISK_SPEED + smoothedVelocityRef.current;
     }
@@ -488,7 +509,16 @@ export function TapeModel({
         />
 
         {/* The GLTF model — materials are overridden in useEffect above */}
-        <primitive object={scene} />
+        <primitive object={scene}>
+          <mesh {...displayScreenMeshRef.current}>
+            <meshStandardMaterial {...displayScreenMatRef.current}>
+              <RenderTexture attach="emissiveMap">
+                <Text font={}></Text>
+              </RenderTexture>
+            </meshStandardMaterial>
+            <bufferGeometry {...displayScreenMeshRef.current} />
+          </mesh>
+        </primitive>
       </group>
     </>
   );

@@ -6,7 +6,7 @@
 
 
 # Environment files with secrets (DO NOT COMMIT)
-.env.local
+#.env.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -14,7 +14,7 @@
 
 # Ignore node_modules folder
 node_modules/
-
+tests/
 # .env file can be committed as it contains only example values
 # Ignore MacOS .DS_Store file
 .hintrc
@@ -44,6 +44,6 @@ test*/
 
 
 !/src/app/(frontend)/(site)/essays/DemoOfArchive.tsx
-!/src/components/UX/Signature/__backup.tsx
+*__backup.tsx
 src/**/* copy*
 /src/components/layouts/Registration/Plate/ThreeCSG.ts

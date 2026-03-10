@@ -37,11 +37,7 @@ async function appendExtensionSql() {
     const originalContent = await fs.readFile(migrationFilePath, "utf-8");
 
     // 4. Check if the script has already been added.
-    if (
-      originalContent.includes(
-	      "CREATE OR REPLACE FUNCTION nanoid"
-      )
-    ) {
+    if (originalContent.includes("CREATE OR REPLACE FUNCTION nanoid")) {
       console.log("✅ Extension SQL already exists. Nothing to do. Exiting.");
       return;
     }

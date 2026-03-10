@@ -1,18 +1,18 @@
 "use client";
 
-import { createStore } from "zustand/vanilla";
-import type { Footer, Media } from "@/payload-types";
-import type { CSSProperties, RefObject } from "react";
-import { getMenuPagePreviewKey, getPageTypeFromUrl } from "@/utilities/Helpers";
-import type { PageTransitionType } from "@/components/UX/Transition";
-import type { Theme } from "@/providers/Theme/types";
-import type { Variant } from "motion/react";
-import { isInternalLink } from "@/utilities/isInternalLink";
-import { PageType } from "./Routing/RP_Voyageur";
-import { isEqual } from "lodash-es";
-import { subscribeWithSelector } from "zustand/middleware";
+import { ViewportSizes } from "@/components/core/Media/types";
 import { PayloadLinkProps } from "@/components/UX/Link/types";
-import { ViewportSizes } from "@/components/UX/Media/types";
+import type { PageTransitionType } from "@/components/UX/Transition";
+import type { Footer, Media } from "@/payload-types";
+import type { Theme } from "@/providers/Theme/types";
+import { getMenuPagePreviewKey, getPageTypeFromUrl } from "@/utilities/Helpers";
+import { isInternalLink } from "@/utilities/isInternalLink";
+import { isEqual } from "lodash-es";
+import type { Variant } from "motion/react";
+import type { CSSProperties, RefObject } from "react";
+import { subscribeWithSelector } from "zustand/middleware";
+import { createStore } from "zustand/vanilla";
+import { PageType } from "./Routing/RP_Voyageur";
 
 type CommonLinkProps = Omit<PayloadLinkProps, "reference" | "url" | "type">;
 

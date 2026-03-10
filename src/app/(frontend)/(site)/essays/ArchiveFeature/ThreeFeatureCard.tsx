@@ -1,10 +1,10 @@
 "use client";
 
-import type {ComponentProps, CSSProperties, ReactNode} from "react";
-import type {OverviewItem} from "./ArchiveFeatureCard";
-import {FrontImage} from "@/components/UX/Media/FrontImage";
-import {Link} from "@/components/UX/Link/Link";
-import {RP_BadgeTag} from "@/components/UX/RP_BadgeTag";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { OverviewItem } from "./ArchiveFeatureCard";
+import { FrontImage } from "@/components/core/Media/FrontImage";
+import { Link } from "@/components/UX/Link/Link";
+import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 
 export function ThreeFeatureCard({
   contents
@@ -35,7 +35,6 @@ function FirstCard({ item }: { item: OverviewItem }) {
         {"image" in item && item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-
             resource={item.image}
           />
         )}
@@ -75,7 +74,6 @@ function SecondCard({ item }: { item: OverviewItem }) {
         {item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
-
             resource={item.image}
           />
         )}

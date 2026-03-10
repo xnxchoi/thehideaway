@@ -1,5 +1,5 @@
 "use client";
-import type { ViewportSizes } from "@/components/UX/Media/types";
+import type { ViewportSizes } from "@/components/core/Media/types";
 import { cssVariables } from "@/cssVariables";
 import { useDeviceInfo, useMenu, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
@@ -30,8 +30,8 @@ const RP_Cursor = dynamic(
   }
 );
 export const MobileContext = createContext<{
-	isMobile: boolean;
-	isTouch: boolean;
+  isMobile: boolean;
+  isTouch: boolean;
 }>({
   isMobile: false,
   isTouch: false
@@ -81,7 +81,7 @@ const MobileProvider = ({ children }: { children: ReactNode }) => {
   // }, [viewportWidth, viewportHeight, setSnapPoints]);
 
   const resize = useWindowResize({
-	  debounce: 50,
+    debounce: 50,
     detectVisibilityChange: false
   });
   useEffect(() => {
