@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     // Resolve session via better-auth
     const session = await payload.betterAuth.api.getSession({
-      headers: req.headers,
+      headers: req.headers
     });
 
     if (!session?.user?.id) {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       id: userId,
       overrideAccess: true,
       context: { overrideAccess: true },
-      data: { onboarded: true },
+      data: { onboarded: true }
     });
 
     return NextResponse.json({ ok: true });

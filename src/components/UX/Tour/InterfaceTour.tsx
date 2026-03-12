@@ -95,21 +95,21 @@ function TourTooltip({
       {/* Header */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+          <span className="text-[11px] font-medium tracking-wider uppercase text-muted-foreground">
             {index + 1} / {total}
           </span>
           {target.shortcut && (
-            <kbd className="rounded border border-foreground/10 bg-foreground/5 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+            <kbd className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-foreground/10 bg-foreground/5 text-muted-foreground">
               {target.shortcut}
             </kbd>
           )}
         </div>
-        <h3 className="text-base leading-snug font-medium text-foreground">
+        <h3 className="text-base font-medium text-foreground leading-snug">
           {target.label}
         </h3>
       </div>
 
-      <p className="text-sm leading-relaxed text-muted-foreground">
+      <p className="text-sm text-muted-foreground leading-relaxed">
         {target.description}
       </p>
 
@@ -118,19 +118,19 @@ function TourTooltip({
         <button
           onClick={onPrev}
           disabled={index === 0}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none"
         >
           ← Prev
         </button>
         <button
           onClick={onClose}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Close
         </button>
         <button
           onClick={onNext}
-          className="text-sm font-medium text-foreground transition-colors hover:text-foreground/70"
+          className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
         >
           {index === total - 1 ? "Done" : "Next →"}
         </button>
@@ -143,33 +143,30 @@ function TourTooltip({
 
 function SpotlightOverlay({
   rect,
-  onClick
+  onClick,
 }: {
   rect: Rect;
   onClick: () => void;
 }) {
   const prefersReduced = useReducedMotion();
 
-  const sp =
-    rect === EMPTY_RECT
-      ? null
-      : {
-          x: rect.left - PADDING,
-          y: rect.top - PADDING,
-          w: rect.width + PADDING * 2,
-          h: rect.height + PADDING * 2
-        };
+  const sp = rect === EMPTY_RECT ? null : {
+    x: rect.left - PADDING,
+    y: rect.top - PADDING,
+    w: rect.width + PADDING * 2,
+    h: rect.height + PADDING * 2,
+  };
 
   return (
     <m.div
-      className="pointer-events-none fixed inset-0 z-[501]"
+      className="fixed inset-0 z-[501] pointer-events-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: prefersReduced ? 0 : 0.2 }}
     >
       <svg
-        className="pointer-events-none absolute inset-0 h-full w-full"
+        className="absolute inset-0 w-full h-full pointer-events-none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
@@ -184,6 +181,7 @@ function SpotlightOverlay({
                 height={sp.h}
                 rx={10}
                 fill="black"
+                initial={prefersReduced ? {} : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ type: "spring", ...SPRING_EASE.power3.out }}
               />
@@ -203,7 +201,7 @@ function SpotlightOverlay({
       {/* Spotlight border ring */}
       {sp && (
         <m.div
-          className="pointer-events-none absolute rounded-[10px] border border-foreground/20"
+          className="absolute rounded-[10px] border border-foreground/20 pointer-events-none"
           initial={prefersReduced ? {} : { opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", ...SPRING_EASE.power3.out }}
@@ -211,7 +209,7 @@ function SpotlightOverlay({
             left: sp.x,
             top: sp.y,
             width: sp.w,
-            height: sp.h
+            height: sp.h,
           }}
         />
       )}
