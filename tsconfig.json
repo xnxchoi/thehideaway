@@ -20,6 +20,7 @@
       "@/types/*": ["./src/types/*"],
       "@payload-types": ["./src/payload-types.ts"],
       "@payload-config": ["./src/payload.config.ts"],
+      "meshline": ["./src/components/three/meshline"],
       "@payload-auth/*": ["./src/lib/auth/payload-auth/*"],
       "@betterauth-ui": ["./src/lib/auth/betterauth-ui/src"],
       "@betterauth-ui/*": ["./src/lib/auth/betterauth-ui/src/*"],

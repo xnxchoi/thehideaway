@@ -31,7 +31,11 @@ import {
 import { upperCase } from "lodash-es";
 import { easing } from "maath";
 import { cubic } from "maath/easing";
-import { MeshLineGeometry, MeshLineMaterial, raycast } from "meshline";
+import {
+  MeshLineGeometry,
+  MeshLineMaterial,
+  raycast
+} from "@/components/three/meshline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Box3,
