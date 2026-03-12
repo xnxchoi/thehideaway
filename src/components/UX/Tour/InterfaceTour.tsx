@@ -1,10 +1,9 @@
 "use client";
 
-import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
+import { SPRING_EASE } from "@/constants/animations";
 import type { TourTarget } from "@/stores/Tour/TourStore";
-import { useLenis } from "lenis/react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import {
   useCallback,
@@ -48,6 +47,8 @@ function TourTooltip({
   onPrev: () => void;
   onClose: () => void;
 }) {
+  const prefersReduced = useReducedMotion();
+
   // Position tooltip outside spotlit element
   const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -86,9 +87,9 @@ function TourTooltip({
         "flex flex-col gap-4 p-5"
       )}
       style={{ left: x, top: y }}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -4 }}
+      initial={prefersReduced ? { opacity: 0 } : { opacity: 0, y: 6 }}
+      animate={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      exit={prefersReduced ? { opacity: 0 } : { opacity: 0, y: -4 }}
       transition={{ type: "spring", ...SPRING_EASE.power3.out }}
     >
       {/* Header */}
@@ -147,6 +148,8 @@ function SpotlightOverlay({
   rect: Rect;
   onClick: () => void;
 }) {
+  const prefersReduced = useReducedMotion();
+
   const sp =
     rect === EMPTY_RECT
       ? null
@@ -163,7 +166,7 @@ function SpotlightOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: prefersReduced ? 0 : 0.2 }}
     >
       <svg
         className="pointer-events-none absolute inset-0 h-full w-full"
@@ -181,7 +184,6 @@ function SpotlightOverlay({
                 height={sp.h}
                 rx={10}
                 fill="black"
-                initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ type: "spring", ...SPRING_EASE.power3.out }}
               />
@@ -202,7 +204,7 @@ function SpotlightOverlay({
       {sp && (
         <m.div
           className="pointer-events-none absolute rounded-[10px] border border-foreground/20"
-          initial={{ opacity: 0, scale: 0.96 }}
+          initial={prefersReduced ? {} : { opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", ...SPRING_EASE.power3.out }}
           style={{
@@ -297,7 +299,7 @@ export function InterfaceTourTrigger() {
   const openInterfaceTour = useTourStore((s) => s.openInterfaceTour);
   const ifActive = useTourStore((s) => s.ifActive);
   const regActive = useTourStore((s) => s.regActive);
-  const lenis = useLenis();
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // `?` key (Shift+/) when not typing in an input
@@ -311,13 +313,12 @@ export function InterfaceTourTrigger() {
       if (e.key === "?" && !isTyping && !regActive) {
         e.preventDefault();
         if (ifActive) return; // already open
-        lenis && lenis.stop();
         openInterfaceTour();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [ifActive, regActive, openInterfaceTour, lenis]);
+  }, [ifActive, regActive, openInterfaceTour]);
 
   return null;
 }

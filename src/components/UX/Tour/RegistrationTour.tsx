@@ -4,16 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MotionPillButton } from "@/components/UX/Button";
 import { SPRING_EASE } from "@/constants/animations";
-import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
 import { useLenis } from "lenis/react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTourStore } from "./TourProvider";
+import { authClient } from "@/lib/auth/client";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -185,8 +185,7 @@ function ProgressDots({
 
 const slideVariants = {
   enter: (dir: 1 | -1) => ({
-    x: dir * 28,
-    opacity: 0
+    x: dir * 28
   }),
   center: {
     x: 0,
@@ -221,6 +220,7 @@ export function RegistrationTour() {
     (s) => s.dismissRegistrationTour
   );
   const setRegSubmitting = useTourStore((s) => s.setRegSubmitting);
+
   const sessionFirstName = useRPSession((s) => s.firstName);
   const setFirstNameSession = useRPSession((s) => s.setFirstName);
   const setLastNameSession = useRPSession((s) => s.setLastName);
@@ -232,6 +232,8 @@ export function RegistrationTour() {
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [link, setLink] = useState("");
+
+  const prefersReduced = useReducedMotion();
 
   // Keyboard navigation
   useEffect(() => {
@@ -340,10 +342,10 @@ export function RegistrationTour() {
       <m.div
         className={cn(
           "relative z-10 mx-4 w-full max-w-[440px]",
-          "rounded-2xl border border-foreground/8 bg-muted-faded-background shadow-2xl",
+          "rounded-2xl border border-foreground/8 bg-background shadow-2xl",
           "flex flex-col overflow-hidden"
         )}
-        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        initial={{ opacity: 0, y: prefersReduced ? 0 : 16, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.99 }}
         transition={{ type: "spring", ...SPRING_EASE.power3.out }}
@@ -352,13 +354,13 @@ export function RegistrationTour() {
         <div className="flex items-start justify-between px-8 pt-8 pb-2">
           <ProgressDots steps={regSteps} current={regStep} />
           {!isLast && (
-            <MotionPillButton
+            <button
               onClick={dismissRegistrationTour}
-              className="text-sm leading-none text-foreground/30"
+              className="cursor-pointer text-sm leading-none text-foreground/30 transition-colors hover:text-foreground/60"
               aria-label="Skip onboarding"
             >
               Skip
-            </MotionPillButton>
+            </button>
           )}
         </div>
 
@@ -368,28 +370,7 @@ export function RegistrationTour() {
             <m.div
               key={regStep}
               custom={dir}
-              variants={{
-                enter: (dir: 1 | -1) => ({
-                  x: dir * 28,
-                  opacity: 0
-                }),
-                center: {
-                  x: 0,
-                  opacity: 1,
-                  transition: {
-                    type: "spring" as const,
-                    ...SPRING_EASE.power3.out
-                  }
-                },
-                exit: (dir: 1 | -1) => ({
-                  x: dir * -20,
-                  opacity: 0,
-                  transition: {
-                    duration: 0.18,
-                    ease: [0.25, 0.46, 0.45, 0.94]
-                  }
-                })
-              }}
+              variants={prefersReduced ? {} : slideVariants}
               initial="enter"
               animate="center"
               exit="exit"
@@ -463,7 +444,7 @@ export function RegistrationTour() {
   );
 }
 
-// ─── Tour trigger — mounts at layout level, watches session ──────────────────
+//─── Tour trigger — mounts at layout level, watches session ──────────────────
 
 export function RegistrationTourTrigger() {
   const sessionId = useRPSession((s) => s.id);
