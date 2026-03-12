@@ -1,12 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MotionPillButton } from "@/components/UX/Button";
-import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
+import { SPRING_EASE } from "@/constants/animations";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
 import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
@@ -170,10 +171,10 @@ function ProgressDots({
           className={cn(
             "rounded-full transition-all duration-300",
             i === currentIndex
-              ? "h-1.5 w-5 bg-foreground"
+              ? "w-5 h-1.5 bg-foreground"
               : i < currentIndex
-                ? "h-1.5 w-1.5 bg-foreground/40"
-                : "h-1.5 w-1.5 bg-foreground/15"
+              ? "w-1.5 h-1.5 bg-foreground/40"
+              : "w-1.5 h-1.5 bg-foreground/15"
           )}
         />
       ))}
@@ -357,7 +358,7 @@ export function RegistrationTour() {
           {!isLast && (
             <button
               onClick={dismissRegistrationTour}
-              className="cursor-pointer text-sm leading-none text-foreground/30 transition-colors hover:text-foreground/60"
+              className="text-foreground/30 hover:text-foreground/60 transition-colors text-sm leading-none cursor-pointer"
               aria-label="Skip onboarding"
             >
               Skip
@@ -433,10 +434,10 @@ export function RegistrationTour() {
             {regSubmitting
               ? "Saving…"
               : isLast
-                ? "Get started"
-                : regStep === "welcome"
-                  ? "Continue"
-                  : "Next"}
+              ? "Get started"
+              : regStep === "welcome"
+              ? "Continue"
+              : "Next"}
           </MotionPillButton>
         </div>
       </m.div>
