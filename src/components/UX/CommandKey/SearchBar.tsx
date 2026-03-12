@@ -172,6 +172,7 @@ export const SearchBar = ({
           render={
             <MotionPillButton
               key={uid}
+              data-tour="searchbar"
               className={cn(
                 "rp_btn bt_sm gap-x-1 hover:border-current! hover:bg-transparent! data-[state=true]:border-current!",
                 className

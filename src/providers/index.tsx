@@ -20,6 +20,7 @@ import { SessionProvider } from "./Session/providers";
 import { CMDKeyManager, ThemeProvider } from "./Theme";
 import { PortalProvider } from "@/components/UX/Transition/Portaller";
 import { TransitionProvider } from "./TransitionProvider";
+import { TourProvider, TourOrchestrator } from "@/components/UX/Tour";
 
 const motion = () => import("./Motion").then((r) => r.default);
 export const Providers: React.FC<{
@@ -42,9 +43,13 @@ export const Providers: React.FC<{
                               <MiddleMan>
 	                              <TooltipProvider>
                                 <CMDKeyManager />
-                                <HeaderThemeProvider>
-                                  {children}
-                                </HeaderThemeProvider></TooltipProvider>
+                                <TourProvider>
+                                  <TourOrchestrator />
+                                  <HeaderThemeProvider>
+                                    {children}
+                                  </HeaderThemeProvider>
+                                </TourProvider>
+                                </TooltipProvider>
                               </MiddleMan>
                             </SearchBarProvider>
                           </MenuProvider>

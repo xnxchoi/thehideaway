@@ -280,6 +280,7 @@ export const SideDrawer = () => {
           />
         )}
         <Mrawer
+          data-tour="side-drawer"
           className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-nav-foreground outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
           style={{
             borderTopRightRadius: borderTopRadius,

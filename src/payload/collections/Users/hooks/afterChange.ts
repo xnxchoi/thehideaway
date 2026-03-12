@@ -135,40 +135,22 @@ export const createN = async ({
   await createNotification(
     {
       title: `Welcome to The Hideaway.`,
-      content: `Good ${greeting}, ${firstName}!\nWe are amazed to have you!\nWe just need a few more details to get started.\nPlease visit the link below to complete your onboarding :)`,
+      content: `Good ${greeting}, ${firstName}!\nWe are glad to have you here.\nAn onboarding guide will walk you through the essentials — you can revisit it any time by pressing ?.`,
       type: "system",
       importance: 1,
       recipient: id,
       sticky: false,
       actionLink: {
-        label: "Profile Completion",
-        url: `/account/onboarding`,
+        label: "Explore",
+        url: `/`,
         type: "custom",
         newTab: false
       }
     },
     req
   );
-
-  await payload.update({
-    req,
-    collection: "users",
-    overrideAccess: true,
-    context: {
-      overrideAccess: true,
-      user: {
-        role: req.user?.role || "guest"
-      }
-    },
-    where: {
-      id: {
-        equals: id
-      }
-    },
-    data: {
-      onboarded: true
-    }
-  });
+  // onboarded is intentionally left as false here.
+  // The in-app registration tour sets it to true once the user completes it.
 };
 const createAndReturnPayload = cache(
   async ({

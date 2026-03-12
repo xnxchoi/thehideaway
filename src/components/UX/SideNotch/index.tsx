@@ -136,6 +136,7 @@ const DeskNotch = (props: SideNotchProps) => {
   return (
     <m.div
       className="fixed bottom-[80px] z-[239] h-[17vh] w-[35px] p-0"
+      data-tour="side-notch"
       ref={notchRef}
       variants={variants}
       animate={v}
