@@ -20,6 +20,14 @@ declare module "*.vert" {
   const value: string;
   export default value;
 }
+declare module "*.ttf" {
+  const value: string;
+  export default value;
+}
+declare module "*.otf" {
+  const value: string;
+  export default value;
+}
 
 export type Direction =
   | "forward"

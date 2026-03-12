@@ -1,7 +1,7 @@
-import {withPayload} from "@payloadcms/next/withPayload";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 import createNextIntlPlugin from "next-intl/plugin";
-import type {NextConfig} from "next/types";
+import type { NextConfig } from "next/types";
 
 const withNextIntl = createNextIntlPlugin();
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
       "*.{glsl,vs,fs,vert,frag}": {
         loaders: ["raw-loader"],
         as: "*.js"
+      },
+      "*.{ttf,otf}": {
+        loaders: ["raw-loader"],
+        as: "*.js"
       }
     }
   },
@@ -54,7 +58,10 @@ const nextConfig: NextConfig = {
       test: /\.glsl$|\.frag$|\.vert$/i,
       type: "asset/source"
     });
-
+    config.module.rules.push({
+      test: /\.ttf$|\.otf$/i,
+      type: "asset/source"
+    });
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /^pg-native$|^cloudflare:sockets$/

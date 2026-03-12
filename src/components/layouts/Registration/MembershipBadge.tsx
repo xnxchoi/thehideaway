@@ -475,7 +475,7 @@ function Model({
         setMaxW(currentW);
       }
     }
-  }, [boxSizeGetter, boxSizer, materials, nodes]);
+  }, [materials, nodes]);
 
   const to = useRef<ReturnType<typeof setTimeout>>(null!);
 

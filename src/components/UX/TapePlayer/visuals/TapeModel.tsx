@@ -26,27 +26,31 @@ import {
   OrbitControls,
   PerspectiveCamera,
   RenderTexture,
+  Text,
   useGLTF
 } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
-import { useMotionValue } from "motion/react";
+import { useMotionTemplate, useMotionValue, useTransform } from "motion/react";
 import {
-  use,
   useCallback,
   useEffect,
   useEffectEvent,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from "react";
 import {
   ACESFilmicToneMapping,
+  Box3,
   BufferGeometry,
   Color,
+  Group,
   LinearFilter,
   Material,
+  MathUtils,
   Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
@@ -55,14 +59,13 @@ import {
   PointLight,
   RGBAFormat,
   SRGBColorSpace,
-  Vector3,
-  VideoTexture
+  Texture,
+  Vector3
 } from "three";
 import { OrbitControls as OrbitControls_ } from "three-stdlib";
 import { useShallow } from "zustand/shallow";
-import { Text } from "@react-three/drei";
+
 gsap.registerPlugin(ScrollTrigger);
-const ralewayDots = import("@/../public/assets/fonts/RalewayDots.ttf");
 // ─── DRACO decoder path ───────────────────────────────────────────────────────
 // The files are already copied to /public/draco/ (from rip/).
 useGLTF.setDecoderPath("/draco/");
@@ -147,16 +150,19 @@ export function TapeModel({
   const INITIAL_TARGET_POS = useMemo(() => new Vector3(0, 0, 0), []);
   /** Raw scroll velocity fed by Lenis (hg in original). */
   const scrollVelocityRef = useRef(0);
-
+  const displayBounds = useRef(new Box3()),
+    displayCenter = useRef(new Vector3());
+  const textWidth = useRef(10);
   /** Exponentially smoothed velocity (qc in original). */
   const smoothedVelocityRef = useRef(0);
-  const rale = use(async () => await ralewayDots.then((r) => r.default));
+
   /** The PointLight so GSAP can animate its position. */
   const lightRef = useRef<PointLight>(null!);
 
   /** Reference to the replaced Metal MeshStandardMaterial. */
   const metalMatRef = useRef<MeshStandardMaterial | null>(null);
   const displayScreen = useRef<Object3D | null>(null);
+  const displayEmissiveRef = useRef<Texture | null>(null);
   const displayScreenMatRef = useRef<MeshStandardMaterial | null>(null);
   const displayScreenMeshRef = useRef<BufferGeometry | null>(null);
   const isResetting = useRef(false);
@@ -184,18 +190,18 @@ export function TapeModel({
       // ── Display mesh — video texture as emissive map ─────────────────────
       if (mat.name === "Display") {
         displayScreen.current = obj;
-        const video = document.createElement("video");
-        video.src = VIDEO_URL;
-        video.crossOrigin = "anonymous";
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-
-        const videoTex = new VideoTexture(video);
-        videoTex.minFilter = LinearFilter;
-        videoTex.magFilter = LinearFilter;
-        videoTex.format = RGBAFormat;
-        videoTex.flipY = false;
+        // const video = document.createElement("video");
+        // video.src = VIDEO_URL;
+        // video.crossOrigin = "anonymous";
+        // video.loop = true;
+        // video.muted = true;
+        // video.playsInline = true;
+        //
+        // const videoTex = new VideoTexture(video);
+        // videoTex.minFilter = LinearFilter;
+        // videoTex.magFilter = LinearFilter;
+        // videoTex.format = RGBAFormat;
+        // videoTex.flipY = false;
 
         const displayMat = obj.material as MeshStandardMaterial;
 
@@ -204,14 +210,16 @@ export function TapeModel({
         displayMat.emissiveIntensity = 200;
         displayScreenMatRef.current = displayMat;
         displayScreenMeshRef.current = obj.geometry;
-        displayMat.emissiveMap = videoTex;
+        // displayMat.emissiveMap = videoTex;
+        displayMat.emissiveMap = displayEmissiveRef.current;
+        // dis playMat.emissiveMap!.flipY = true;
         displayMat.needsUpdate = true;
 
         // Attempt autoplay after a short delay (mirrors original 2 s setTimeout)
         setTimeout(() => {
-          video.play().catch(() => {
-            // Autoplay may be blocked on mobile until user gesture
-          });
+          // video.play().catch(() => {
+          //   // Autoplay may be blocked on mobile until user gesture
+          // });
         }, 2000);
       }
 
@@ -333,6 +341,23 @@ export function TapeModel({
     }
     lastTrackstatus.current = state;
   }, [seeking, trackStatus]);
+  const curI = useRadioStore(useShallow((r) => r.currentIndex));
+  const tracks = useRadioStore(useShallow((r) => r.tracks));
+
+  const curTrack = useMotionValue(tracks[curI]);
+  useEffect(() => {
+    curTrack.set(tracks[curI]);
+  }, [curI, tracks, curTrack]);
+  const curArtistValue = useTransform(() => curTrack.get().artist);
+  const curTitleValue = useTransform(() => curTrack.get().title);
+  const textRef1 = useRef<Object3D>(null),
+    textRef2 = useRef<Object3D>(null);
+  const nowPlaying = useMotionTemplate`   ${curArtistValue} - ${curTitleValue}   `;
+  const [playingString, setPlayingString] = useState(nowPlaying.get());
+  nowPlaying.on("change", (e) => {
+    setPlayingString(e);
+  });
+
   // ─── GSAP ScrollTrigger animations ───────────────────────────────────────
   const createScrollTrigger = useEffectEvent(() => {
     if (!scene || !lightRef.current) return;
@@ -422,10 +447,11 @@ export function TapeModel({
   useLenis(({ velocity }) => {
     scrollVelocityRef.current = -velocity * 0.005;
   });
+  const firstTime = useRef(0);
   const lastRotation = useRef(activeButtonRef.current?.rotation.z ?? 0);
   // ─── Animation loop ───────────────────────────────────────────────────────
   // Mirrors the requestAnimationFrame loop (dg) from the original.
-  useFrame((state, delta) => {
+  useFrame(({ camera }, delta) => {
     // Pause rendering when tab is hidden (mirrors Gl / document.hidden check)
     if (document.hidden) return;
 
@@ -440,11 +466,11 @@ export function TapeModel({
         BASE_DISK_SPEED + smoothedVelocityRef.current;
     }
     if (isResetting.current) {
-      state.camera.position.lerp(INITIAL_CAMERA_POS, delta * 5);
+      camera.position.lerp(INITIAL_CAMERA_POS, delta * 5);
       controlsRef.current.target.lerp(INITIAL_TARGET_POS, delta * 5);
       controlsRef.current.update();
 
-      const distToCam = state.camera.position.distanceTo(INITIAL_CAMERA_POS);
+      const distToCam = camera.position.distanceTo(INITIAL_CAMERA_POS);
       const distToTarget =
         controlsRef.current.target.distanceTo(INITIAL_TARGET_POS);
 
@@ -452,6 +478,14 @@ export function TapeModel({
         // 4. Mutate the ref to stop the loop. Again, no re-render!
         isResetting.current = false;
       }
+    }
+    firstTime.current += (delta * 5) / 10;
+    if (textRef1.current) {
+      textRef1.current.position.x = firstTime.current % textWidth.current;
+    }
+    if (textRef2.current) {
+      textRef2.current.position.x =
+        (firstTime.current % textWidth.current) - textWidth.current;
     }
   });
 
@@ -510,10 +544,51 @@ export function TapeModel({
 
         {/* The GLTF model — materials are overridden in useEffect above */}
         <primitive object={scene}>
-          <mesh {...displayScreenMeshRef.current}>
-            <meshStandardMaterial {...displayScreenMatRef.current}>
-              <RenderTexture attach="emissiveMap">
-                <Text font={}></Text>
+          <mesh ref={displayScreen}>
+            <meshStandardMaterial
+              emissive={new Color(0x96f7ff)}
+              emissiveIntensity={200}
+              {...displayScreenMatRef.current}
+            >
+              <RenderTexture
+                ref={displayEmissiveRef}
+                format={RGBAFormat}
+                flipY={true}
+                colorSpace={SRGBColorSpace}
+                magFilter={LinearFilter}
+                minFilter={LinearFilter}
+              >
+                <group rotation={[Math.PI, 0, 0]} position={[0, 0, 0]}>
+                  <Text
+                    ref={textRef1}
+                    onSync={(troik) => {
+                      if (troik) {
+                        const troika = troik as Object3D;
+                        displayBounds.current.setFromObject(troika, false);
+                        const size = displayBounds.current.getSize(
+                          displayCenter.current
+                        );
+                        textWidth.current = size.x;
+                      }
+                    }}
+                    font={"/assets/fonts/Workbench.ttf"}
+                    color={"#c5dcdc"}
+                    fontSize={1.1}
+                    fillOpacity={0.6}
+                  >
+                    {playingString}
+                  </Text>
+                  <Text
+                    position={[-textWidth.current, 0, 0]}
+                    font={"/assets/fonts/Workbench.ttf"}
+                    color={"#c5dcdc"}
+                    ref={textRef2}
+                    fontSize={1.1}
+                    fillOpacity={0.6}
+                  >
+                    {playingString}
+                  </Text>
+                </group>
               </RenderTexture>
             </meshStandardMaterial>
             <bufferGeometry {...displayScreenMeshRef.current} />
@@ -521,5 +596,119 @@ export function TapeModel({
         </primitive>
       </group>
     </>
+  );
+}
+interface DisplayScreenTextProps {
+  text: string;
+  isActive: boolean;
+  isMarquee?: boolean;
+  speed?: number;
+}
+export function DisplayScreenText({
+  text,
+  isActive,
+  isMarquee = false,
+  speed = 2.5
+}: DisplayScreenTextProps) {
+  const groupRef = useRef<Group>(null);
+  const materialRef1 = useRef<MeshStandardMaterial>(null);
+  const materialRef2 = useRef<MeshStandardMaterial>(null);
+
+  // State to hold the measured width of a single text block
+  const [textWidth, setTextWidth] = useState(text.length);
+
+  // We pad the text heavily so there's a natural visual gap before it repeats
+  const paddedText = text + "      *** ";
+
+  useFrame((_, delta) => {
+    // 1. Handle Smooth Opacity for both text meshes
+    // const targetOpacity = isActive ? 1 : 0;
+    const targetOpacity = 1;
+    if (materialRef1.current) {
+      materialRef1.current.opacity = MathUtils.damp(
+        materialRef1.current.opacity,
+        targetOpacity,
+        8,
+        delta
+      );
+    }
+    if (materialRef2.current) {
+      materialRef2.current.opacity = MathUtils.damp(
+        materialRef2.current.opacity,
+        targetOpacity,
+        8,
+        delta
+      );
+    }
+
+    // 2. The Seamless Marquee Logic
+    if (isMarquee && groupRef.current && textWidth > 0) {
+      if (isActive) {
+        groupRef.current.position.x -= speed * delta;
+
+        // Once the group shifts left by exactly the width of ONE text block,
+        // we snap it back by that exact same amount.
+        if (groupRef.current.position.x <= -textWidth) {
+          // We use += instead of = 0 to preserve any fractional leftover movement,
+          // which prevents micro-stutters during the snap!
+          groupRef.current.position.x += textWidth;
+        }
+      } else {
+        groupRef.current.position.x = 0;
+      }
+    }
+  });
+
+  return (
+    // We anchor the whole group at 0.
+    // If it's a marquee, we push the text slightly to the right to start.
+    <group ref={groupRef} position={[isMarquee ? 0 : 0, 0, 0]}>
+      {/* Primary Text */}
+      <Text
+        font={"/assets/fonts/BitcountGrid.ttf"}
+        fontSize={2}
+        anchorX={isMarquee ? "left" : "center"}
+        anchorY="middle"
+        // onSync={(troikaText) => {
+        //   if (!isMarquee) return;
+        //   troikaText.geometry.computeBoundingBox();
+        //   const box = troikaText.geometry.boundingBox;
+        //   if (box) {
+        //     const width = box.max.x - box.min.x;
+        //     // Only update state if the width changes to prevent React render loops
+        //     if (Math.abs(textWidth - width) > 0.01) {
+        //       setTextWidth(width);
+        //     }
+        //   }
+        // }}
+      >
+        {isMarquee ? paddedText : text}
+        <meshStandardMaterial
+          ref={materialRef1}
+          color="#96f7ff"
+          transparent
+          opacity={0}
+        />
+      </Text>
+
+      {/* Duplicate Text — Only renders if it's a marquee and we know where to place it */}
+      {isMarquee && textWidth > 0 && (
+        <Text
+          position={[textWidth, 0, 0]} // Placed exactly at the tail end of the first string!
+          font={"/assets/fonts/BitcountGrid.ttf"}
+          fontSize={2}
+          anchorX="left"
+          anchorY="middle"
+        >
+          {paddedText}
+          <meshStandardMaterial
+            ref={materialRef2}
+            color="#96f7ff"
+            transparent
+            opacity={0}
+          />
+        </Text>
+      )}
+    </group>
   );
 }

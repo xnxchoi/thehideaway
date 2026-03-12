@@ -1,11 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { TapePlayer } from "@/components/UX/TapePlayer";
 import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
-import * as m from "motion/react-m";
+import { cn } from "@/lib/utils";
 import { useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import * as m from "motion/react-m";
+import { useRef, useState } from "react";
 
 /**
  * StationHideawayHero
@@ -33,7 +33,7 @@ export function StationHideawayHero({ className }: { className?: string }) {
   });
 
   // ── "HIDDEN" billboard (top-left) ─────────────────────────────────────────
-  const topTextY = useTransform(scrollYProgress, [0, 1], ["30vh", "0vh"]);
+  const topTextY = useTransform(scrollYProgress, [0, 1], ["20vh", "-30vh"]);
   const topTextOpacity = useTransform(
     scrollYProgress,
     [0, 0.08, 0.45, 0.8],
@@ -51,17 +51,20 @@ export function StationHideawayHero({ className }: { className?: string }) {
   // ── Tape3DScene — float in, LINGER, drift away ────────────────────────────
   const sceneY = useTransform(
     scrollYProgress,
-    [0, 0.35, 0.55, 0.7, 1],
-    ["50vh", "15vh", "10vh", "6vh", "-70vh"]
+    [0, 0.25, 0.35, 0.5, 0.85, 1],
+    ["50vh", "10vh", "5vh", "-5vh", "-75vh", "-150vh"]
   );
   const sceneOpacity = useTransform(
     scrollYProgress,
     [0, 0.1, 0.6, 0.85, 1],
     [0, 1, 1, 0.8, 0]
   );
-
+  const [sc, setSc] = useState(scrollYProgress.get());
+  scrollYProgress.on("change", (v) => {
+    setSc(v);
+  });
   // ── TapePlayer — nearly static, grounded ─────────────────────────────────
-  const playerY = useTransform(scrollYProgress, [0, 1], ["20vh", "-25vh"]);
+  const playerY = useTransform(scrollYProgress, [0, 1], ["0vh", "-20vh"]);
   const playerOpacity = useTransform(scrollYProgress, [0, 0.15, 1], [0, 1, 1]);
 
   // ── "SOUNDS" billboard (bottom-right) ────────────────────────────────────
@@ -79,6 +82,7 @@ export function StationHideawayHero({ className }: { className?: string }) {
       className={cn("relative w-full min-w-screen", className)}
       style={{ minHeight: "250vh" }}
     >
+      <div className="fixed top-4 left-5 text-2xl">{sc}</div>
       {/* ── Sticky viewport container ──────────────────────────────────────── */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         {/* Background glow — subtle, matches HeroPlayer's bleu-400 palette */}
