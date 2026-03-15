@@ -13,7 +13,6 @@ import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useShallow } from "zustand/shallow";
 import { useTourStore } from "./TourProvider";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
@@ -21,42 +20,61 @@ import { useTourStore } from "./TourProvider";
 type StepConfig = {
   title: string;
   subtitle: string;
+  optional?: boolean;
 };
 
 const STEP_COPY: Record<RegistrationStep, StepConfig> = {
   welcome: {
-    title: "Welcome to The Hideaway.",
-    subtitle: "A few quick details and you're all set."
+    title: "Welcome to\nThe Hideaway.",
+    subtitle: "A few quick details and you're all set.",
   },
-  name: {
-    title: "What should we call you?",
-    subtitle: "This is how you'll appear across the platform."
+  identity: {
+    title: "What should\nwe call you?",
+    subtitle: "This is how you'll appear across the platform.",
   },
-  profile: {
-    title: "Tell us about yourself.",
-    subtitle: "Optional — but it helps others find and connect with you."
+  bio: {
+    title: "About you.",
+    subtitle: "A short bio helps others find and connect with you.",
+    optional: true,
+  },
+  details: {
+    title: "Where are you\ncoming from?",
+    subtitle: "Your location and a link — both optional.",
+    optional: true,
   },
   complete: {
     title: "You're in.",
-    subtitle: "Everything is set. Start exploring whenever you're ready."
-  }
+    subtitle: "Start exploring whenever you're ready.",
+  },
 };
 
-// ─── Step components ──────────────────────────────────────────────────────────
+// Steps shown in the indicator (exclude welcome)
+const INDICATOR_STEPS: RegistrationStep[] = [
+  "identity",
+  "bio",
+  "details",
+  "complete",
+];
+
+// ─── Input primitive ──────────────────────────────────────────────────────────
+
+const pillCn =
+  "w-full px-5 py-3.5 rounded-full bg-transparent border border-foreground/15 " +
+  "text-foreground text-[15px] placeholder:text-muted-foreground/35 " +
+  "focus:outline-none focus:border-foreground/45 transition-colors duration-150 " +
+  "autofill:bg-transparent";
+
+// ─── Step content components ──────────────────────────────────────────────────
 
 function WelcomeStep({ firstName }: { firstName: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      {firstName ? (
-        <p className="text-sm text-muted-foreground">
-          Good to have you, {firstName}.
-        </p>
-      ) : null}
-    </div>
-  );
+  return firstName ? (
+    <p className="text-[15px] text-muted-foreground">
+      Good to have you, {firstName}.
+    </p>
+  ) : null;
 }
 
-function NameStep({
+function IdentityStep({
   first,
   last,
   onFirst,
@@ -67,21 +85,23 @@ function NameStep({
   onFirst: (v: string) => void;
   onLast: (v: string) => void;
 }) {
-  const firstRef = useRef<HTMLInputElement>(null);
+  const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    firstRef.current?.focus();
+    ref.current?.focus();
   }, []);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Input
-        ref={firstRef}
+    <div className="flex flex-col gap-3">
+      <input
+        ref={ref}
+        className={pillCn}
         placeholder="First name"
         value={first}
         onChange={(e) => onFirst(e.target.value)}
         autoComplete="given-name"
       />
-      <Input
+      <input
+        className={pillCn}
         placeholder="Last name"
         value={last}
         onChange={(e) => onLast(e.target.value)}
@@ -91,43 +111,68 @@ function NameStep({
   );
 }
 
-function ProfileStep({
+function BioStep({
   bio,
-  location,
-  link,
   onBio,
-  onLocation,
-  onLink
 }: {
   bio: string;
-  location: string;
-  link: string;
   onBio: (v: string) => void;
-  onLocation: (v: string) => void;
-  onLink: (v: string) => void;
 }) {
-  const bioRef = useRef<HTMLTextAreaElement>(null);
+  const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    bioRef.current?.focus();
+    ref.current?.focus();
   }, []);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Textarea
-        ref={bioRef}
-        placeholder="A short bio"
+    <div className="flex flex-col gap-2">
+      <textarea
+        ref={ref}
+        className={
+          "w-full px-5 py-4 rounded-2xl bg-transparent border border-foreground/15 " +
+          "text-foreground text-[15px] placeholder:text-muted-foreground/35 " +
+          "focus:outline-none focus:border-foreground/45 transition-colors duration-150 " +
+          "resize-none min-h-[112px] leading-relaxed"
+        }
+        placeholder="Your passion, work, interests — keep it interesting."
         value={bio}
         onChange={(e) => onBio(e.target.value)}
-        className="min-h-[88px] resize-none"
         maxLength={200}
       />
-      <Input
-        placeholder="Location  (e.g. Seoul, KR)"
+      <span className="text-xs text-muted-foreground/35 text-right tabular-nums">
+        {bio.length}/200
+      </span>
+    </div>
+  );
+}
+
+function DetailsStep({
+  location,
+  link,
+  onLocation,
+  onLink
+}: {
+  location: string;
+  link: string;
+  onLocation: (v: string) => void;
+  onLink: (v: string) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <input
+        ref={ref}
+        className={pillCn}
+        placeholder="Location (e.g. Seoul, KR)"
         value={location}
         onChange={(e) => onLocation(e.target.value)}
         autoComplete="address-level2"
       />
-      <Input
+      <input
+        className={pillCn}
         placeholder="Website or social link"
         value={link}
         onChange={(e) => onLink(e.target.value)}
@@ -140,80 +185,180 @@ function ProfileStep({
 
 function CompleteStep() {
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm text-muted-foreground">
-        You can always update your profile in settings.
-      </p>
-    </div>
+    <p className="text-[15px] text-muted-foreground">
+      You can always update your profile in settings.
+    </p>
   );
 }
 
-// ─── Progress indicator ────────────────────────────────────────────────────────
+// ─── Step indicators ──────────────────────────────────────────────────────────
 
-function ProgressDots({
-  steps,
-  current
+function StepIndicators({
+  current,
 }: {
-  steps: RegistrationStep[];
   current: RegistrationStep;
 }) {
-  const currentIndex = steps.indexOf(current);
+  const currentIdx = INDICATOR_STEPS.indexOf(current);
+
   return (
     <div
       className="flex items-center gap-1.5"
       role="progressbar"
-      aria-valuenow={currentIndex + 1}
-      aria-valuemax={steps.length}
+      aria-valuenow={Math.max(0, currentIdx + 1)}
+      aria-valuemax={INDICATOR_STEPS.length}
     >
-      {steps.map((step, i) => (
-        <span
-          key={step}
-          className={cn(
-            "rounded-full transition-all duration-300",
-            i === currentIndex
-              ? "h-1.5 w-5 bg-foreground"
-              : i < currentIndex
-                ? "h-1.5 w-1.5 bg-foreground/40"
-                : "h-1.5 w-1.5 bg-foreground/15"
-          )}
-        />
-      ))}
+      {INDICATOR_STEPS.map((step, i) => {
+        const isPast = i < currentIdx;
+        const isCurrent = i === currentIdx;
+
+        return (
+          <span
+            key={step}
+            className={cn(
+              "flex items-center justify-center rounded-full text-[11px] font-medium",
+              "transition-all duration-300",
+              isCurrent
+                ? "w-6 h-6 bg-foreground text-background"
+                : isPast
+                ? "w-6 h-6 border border-foreground/25 text-foreground/40"
+                : "w-6 h-6 border border-foreground/10 text-foreground/20"
+            )}
+          >
+            {isPast ? (
+              // Checkmark for completed steps
+              <svg
+                width="10"
+                height="8"
+                viewBox="0 0 10 8"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M1 4L3.5 6.5L9 1"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              i + 1
+            )}
+          </span>
+        );
+      })}
     </div>
+  );
+}
+
+// ─── Exit warning ─────────────────────────────────────────────────────────────
+
+function ExitWarning({
+  isRequiredSection,
+  onConfirm,
+  onCancel,
+}: {
+  isRequiredSection: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  // Trap focus within the warning
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onCancel]);
+
+  return (
+    <m.div
+      className="absolute inset-0 z-10 flex items-center justify-center px-6"
+      style={{ backdropFilter: "blur(8px)", background: "rgba(var(--background-rgb, 255 255 255) / 0.7)" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={onCancel}
+    >
+      <m.div
+        className={cn(
+          "bg-background border border-foreground/8 rounded-2xl p-7",
+          "w-full max-w-[360px] shadow-2xl flex flex-col gap-5"
+        )}
+        initial={{ scale: 0.96, y: 12, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.97, y: 6, opacity: 0 }}
+        transition={{ type: "spring", ...SPRING_EASE.power3.out }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col gap-2">
+          <h3 className="text-[17px] font-medium leading-snug text-foreground">
+            {isRequiredSection
+              ? "You haven't set your name yet."
+              : "Leave without saving?"}
+          </h3>
+          <p className="text-[14px] text-muted-foreground leading-relaxed">
+            {isRequiredSection
+              ? "Your name is required to fully use your account. You can complete this anytime from your profile settings."
+              : "Your profile changes won't be saved. You can always update these in settings."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-full text-[13px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            autoFocus
+          >
+            Stay
+          </button>
+          <button
+            onClick={onConfirm}
+            className={cn(
+              "px-4 py-2 rounded-full text-[13px] font-medium transition-colors cursor-pointer",
+              isRequiredSection
+                ? "bg-red-500/10 text-red-500 hover:bg-red-500/15"
+                : "bg-foreground/8 text-foreground hover:bg-foreground/12"
+            )}
+          >
+            {isRequiredSection ? "Skip for now" : "Leave"}
+          </button>
+        </div>
+      </m.div>
+    </m.div>
   );
 }
 
 // ─── Slide variants ───────────────────────────────────────────────────────────
 
-const slideVariants: Variants = {
-  enter: (dir: 1 | -1) => ({
-    x: dir * 28,
-    opacity: 0
+const slideVariants:Variants = {
+  initial: (dir: 1 | -1) => ({
+    y: dir > 0 ? "105%" : "-50%",
+    opacity: 0,
   }),
-  center: {
-    x: 0,
+  animate: {
+    y: "0%",
     opacity: 1,
     transition: {
       type: "spring" as const,
-      ...SPRING_EASE.power3.out
-    }
+      ...SPRING_EASE.power3.out,
+    },
   },
   exit: (dir: 1 | -1) => ({
-    x: dir * -20,
+    y: dir > 0 ? "-40%" : "90%",
     opacity: 0,
     transition: {
-      duration: 0.18,
-      ease: [0.25, 0.46, 0.45, 0.94]
-    }
-  })
+      duration: 0.22,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  }),
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function RegistrationTour() {
-  const regActive = useTourStore((s) => s.regActive);
   const regStep = useTourStore((s) => s.regStep);
-  const regSteps = useTourStore(useShallow((s) => s.regSteps));
-  const regPending = useTourStore(useShallow((s) => s.regPending));
+  const regSteps = useTourStore((s) => s.regSteps);
   const regSubmitting = useTourStore((s) => s.regSubmitting);
   const regNext = useTourStore((s) => s.regNext);
   const regPrev = useTourStore((s) => s.regPrev);
@@ -224,40 +369,82 @@ export function RegistrationTour() {
   const setRegSubmitting = useTourStore((s) => s.setRegSubmitting);
 
   const sessionFirstName = useRPSession((s) => s.firstName);
+  const sessionLastName = useRPSession((s) => s.lastName);
   const setFirstNameSession = useRPSession((s) => s.setFirstName);
   const setLastNameSession = useRPSession((s) => s.setLastName);
   const setOnboarded = useRPSession((s) => s.setOnboarded);
 
   const [dir, setDir] = useState<1 | -1>(1);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState(sessionFirstName ?? "");
+  const [lastName, setLastName] = useState(sessionLastName ?? "");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [link, setLink] = useState("");
 
+  const [showExitWarning, setShowExitWarning] = useState(false);
+
   const prefersReduced = useReducedMotion();
 
-  // Keyboard navigation
+  // ── Derived state ───────────────────────────────────────────────────────────
+
+  const isFormDirty =
+    firstName.trim().length > 0 ||
+    lastName.trim().length > 0 ||
+    bio.trim().length > 0 ||
+    location.trim().length > 0 ||
+    link.trim().length > 0;
+
+  // Required section = welcome or identity steps
+  const isInRequiredSection =
+    regStep === "welcome" || regStep === "identity";
+
+  const isFirst = regStep === "welcome";
+  const isLast = regStep === "complete";
+
+  // ── beforeunload warning ────────────────────────────────────────────────────
+
   useEffect(() => {
-    if (!regActive) return;
+    if (!isFormDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isFormDirty]);
+
+  // ── Keyboard: Escape ────────────────────────────────────────────────────────
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") dismissRegistrationTour();
+      if (e.key === "Escape" && !isLast && !showExitWarning) {
+        handleDismissRequest();
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [regActive, dismissRegistrationTour]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLast, showExitWarning, regStep]);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
+
+  const handleDismissRequest = useCallback(() => {
+    if (regStep === "welcome") {
+      dismissRegistrationTour();
+      return;
+    }
+    setShowExitWarning(true);
+  }, [regStep, dismissRegistrationTour]);
 
   const canAdvance = useCallback((): boolean => {
-    if (regStep === "name") return firstName.trim().length > 0;
+    if (regStep === "identity") return firstName.trim().length > 0;
     return true;
   }, [regStep, firstName]);
 
   const handleNext = useCallback(async () => {
     if (regStep === "complete") {
-      // Final step — commit all data
       setRegSubmitting(true);
       try {
-        // Update user profile fields
         const updates: Record<string, string> = {};
         if (firstName.trim()) updates.firstName = firstName.trim();
         if (lastName.trim()) updates.lastName = lastName.trim();
@@ -271,18 +458,15 @@ export function RegistrationTour() {
           );
         }
 
-        // Update local session immediately so UI responds
         if (updates.firstName) setFirstNameSession(updates.firstName);
         if (updates.lastName) setLastNameSession(updates.lastName);
         setOnboarded(true);
 
-        // Mark onboarding complete server-side (fire-and-forget; don't block UX)
+        // Fire-and-forget — marks onboarded server-side
         fetch("/api/onboarding", {
           method: "POST",
-          credentials: "include"
-        }).catch(
-          () => {} // swallow — session is already optimistically marked
-        );
+          credentials: "include",
+        }).catch(() => {});
 
         closeRegistrationTour();
       } catch {
@@ -317,74 +501,72 @@ export function RegistrationTour() {
   }, [regPrev]);
 
   const stepCopy = STEP_COPY[regStep];
-  const isFirst = regStep === regSteps[0];
-  const isLast = regStep === "complete";
-  const currentIndex = regSteps.indexOf(regStep);
 
-  if (!regActive) return null;
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="fixed inset-0 z-[500] flex items-center justify-center"
+    <m.div
+      className="fixed inset-0 z-[500] bg-background flex flex-col"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
       role="dialog"
       aria-modal="true"
       aria-label="Onboarding"
     >
-      {/* Backdrop */}
-      <m.div
-        className="absolute inset-0 bg-background/80 backdrop-blur-md"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
-        onClick={isLast ? undefined : dismissRegistrationTour}
-      />
+      {/* ── Header ── */}
+      <header className="shrink-0 flex items-center justify-between px-8 md:px-14 pt-8">
+        {/* Brand */}
+        <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/30 select-none">
+          The Hideaway
+        </span>
 
-      {/* Card */}
-      <m.div
-        className={cn(
-          "relative z-10 mx-4 w-full max-w-[440px]",
-          "rounded-2xl border border-foreground/8 bg-background shadow-2xl",
-          "flex flex-col overflow-hidden"
-        )}
-        initial={{ opacity: 0, y: prefersReduced ? 0 : 16, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 8, scale: 0.99 }}
-        transition={{ type: "spring", ...SPRING_EASE.power3.out }}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between px-8 pt-8 pb-2">
-          <ProgressDots steps={regSteps} current={regStep} />
+        <div className="flex items-center gap-4">
+          <StepIndicators current={regStep} />
           {!isLast && (
             <button
-              onClick={dismissRegistrationTour}
-              className="cursor-pointer text-sm leading-none text-foreground/30 transition-colors hover:text-foreground/60"
+              onClick={handleDismissRequest}
+              className="text-[13px] text-muted-foreground/50 hover:text-foreground/70 transition-colors cursor-pointer"
               aria-label="Skip onboarding"
             >
               Skip
             </button>
           )}
         </div>
+      </header>
 
-        {/* Step content — animated */}
-        <div className="flex min-h-[240px] flex-col gap-6 px-8 pt-6 pb-8">
-          <AnimatePresence mode="wait" custom={dir} initial={false}>
+      {/* ── Content ── */}
+      <main
+        className="flex-1 flex items-center justify-center px-8 md:px-14 overflow-hidden py-8"
+        style={{ perspective: "1500px" }}
+      >
+        <div className="w-full max-w-[460px]">
+          <AnimatePresence mode="popLayout" custom={dir} initial={false}>
             <m.div
               key={regStep}
               custom={dir}
               variants={prefersReduced ? {} : slideVariants}
-              initial="enter"
-              animate="center"
+              initial="initial"
+              animate="animate"
               exit="exit"
-              className="flex flex-col gap-5"
+              className="flex flex-col gap-8"
             >
               {/* Title block */}
-              <div className="flex flex-col gap-1.5">
-                <h2 className="text-[22px] leading-snug font-medium tracking-[-0.01em] text-foreground">
+              <div className="flex flex-col gap-2.5">
+                <h1
+                  className="font-medium leading-[1.15] tracking-[-0.025em] text-foreground whitespace-pre-line"
+                  style={{ fontSize: "clamp(2rem, 5.5vw, 2.75rem)" }}
+                >
                   {stepCopy.title}
-                </h2>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                </h1>
+                <p className="text-[15px] text-muted-foreground leading-relaxed">
                   {stepCopy.subtitle}
+                  {stepCopy.optional && (
+                    <span className="ml-2 text-[10px] font-medium uppercase tracking-[0.1em] text-foreground/25">
+                      optional
+                    </span>
+                  )}
                 </p>
               </div>
 
@@ -392,20 +574,21 @@ export function RegistrationTour() {
               {regStep === "welcome" && (
                 <WelcomeStep firstName={sessionFirstName} />
               )}
-              {regStep === "name" && (
-                <NameStep
+              {regStep === "identity" && (
+                <IdentityStep
                   first={firstName}
                   last={lastName}
                   onFirst={setFirstName}
                   onLast={setLastName}
                 />
               )}
-              {regStep === "profile" && (
-                <ProfileStep
-                  bio={bio}
+              {regStep === "bio" && (
+                <BioStep bio={bio} onBio={setBio} />
+              )}
+              {regStep === "details" && (
+                <DetailsStep
                   location={location}
                   link={link}
-                  onBio={setBio}
                   onLocation={setLocation}
                   onLink={setLink}
                 />
@@ -414,34 +597,70 @@ export function RegistrationTour() {
             </m.div>
           </AnimatePresence>
         </div>
+      </main>
 
-        {/* Footer — actions */}
-        <div className="flex items-center gap-3 px-8 pb-8">
-          {!isFirst && (
-            <MotionPillButton
-              onClick={handleBack}
-              disabled={regSubmitting}
-              className="text-muted-foreground hover:text-foreground"
+      {/* ── Footer ── */}
+      <footer className="shrink-0 flex items-center justify-between px-8 md:px-14 pb-8">
+        {!isFirst ? (
+          <MotionPillButton
+            onClick={handleBack}
+            disabled={regSubmitting}
+            className="text-[13px] text-muted-foreground/50 hover:text-foreground/70 transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
             >
+              <path
+                d="M8.5 3L4.5 7L8.5 11"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
               Back
             </MotionPillButton>
-          )}
+          ):<div/>}
           <MotionPillButton
-            className="ml-auto min-w-[120px]"
-            onClick={handleNext}
-            disabled={!canAdvance() || regSubmitting}
-          >
-            {regSubmitting
-              ? "Saving…"
-              : isLast
-                ? "Get started"
-                : regStep === "welcome"
-                  ? "Continue"
-                  : "Next"}
+          onClick={handleNext}
+          disabled={!canAdvance() || regSubmitting}
+          className={cn(
+            "px-7 py-3 rounded-full text-[14px] font-medium",
+            "bg-foreground text-background",
+            "hover:bg-foreground/90 active:scale-[0.97]",
+            "transition-all duration-150",
+            "disabled:opacity-25 disabled:cursor-not-allowed disabled:active:scale-100",
+            "min-w-[140px] text-center"
+          )}
+        >
+          {regSubmitting
+            ? "Saving…"
+            : isLast
+            ? "Get started"
+            : regStep === "welcome"
+            ? "Let's go"
+            : "Continue"}
           </MotionPillButton>
-        </div>
-      </m.div>
-    </div>
+      </footer>
+
+      {/* ── Exit warning ── */}
+      <AnimatePresence>
+        {showExitWarning && (
+          <ExitWarning
+            isRequiredSection={isInRequiredSection}
+            onConfirm={() => {
+              setShowExitWarning(false);
+              dismissRegistrationTour();
+            }}
+            onCancel={() => setShowExitWarning(false)}
+          />
+        )}
+      </AnimatePresence>
+    </m.div>
   );
 }
 
@@ -461,7 +680,6 @@ export function RegistrationTourTrigger() {
   const triggered = useRef(false);
 
   useEffect(() => {
-    // Only trigger once per session mount, for logged-in non-onboarded users
     if (
       !triggered.current &&
       sessionId &&
@@ -470,12 +688,9 @@ export function RegistrationTourTrigger() {
       !regDismissed
     ) {
       triggered.current = true;
-      const needsName = !firstName?.trim() || !lastName?.trim();
-      // Profile is optional — only surface if user has nothing
-      const needsProfile = false; // always optional, can expand later
+      const needsIdentity = !firstName?.trim() || !lastName?.trim();
       console.log("lenis", lenis);
-      lenis && lenis.stop();
-      openRegistrationTour({ needsName, needsProfile });
+      lenis && lenis.stop();  openRegistrationTour({ needsIdentity });
     }
   }, [
     sessionId,

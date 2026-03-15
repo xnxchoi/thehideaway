@@ -5,20 +5,24 @@ import { subscribeWithSelector } from "zustand/middleware";
 
 // ─── Registration Tour ────────────────────────────────────────────────────────
 
-export type RegistrationStep = "welcome" | "name" | "profile" | "complete";
+export type RegistrationStep =
+  | "welcome"
+  | "identity"   // firstName + lastName (required)
+  | "bio"        // bio textarea (optional)
+  | "details"    // location + link (optional)
+  | "complete";
 
 export type PendingFields = {
-  needsName: boolean;
-  needsProfile: boolean; // bio, location, link
+  needsIdentity: boolean; // firstName or lastName missing
 };
 
-const buildSteps = (p: PendingFields): RegistrationStep[] => {
-  const s: RegistrationStep[] = ["welcome"];
-  if (p.needsName) s.push("name");
-  if (p.needsProfile) s.push("profile");
-  s.push("complete");
-  return s;
-};
+const REG_STEPS: RegistrationStep[] = [
+  "welcome",
+  "identity",
+  "bio",
+  "details",
+  "complete",
+];
 
 // ─── Interface Guide ──────────────────────────────────────────────────────────
 
@@ -90,8 +94,8 @@ export const createTourStore = () =>
       // ── Registration ──────────────────────────────────────────────────────
       regActive: false,
       regStep: "welcome",
-      regSteps: ["welcome", "complete"],
-      regPending: { needsName: false, needsProfile: false },
+      regSteps: REG_STEPS,
+      regPending: { needsIdentity: false },
       regSubmitting: false,
       regDismissed: false,
 
@@ -100,7 +104,7 @@ export const createTourStore = () =>
           regActive: true,
           regDismissed: false,
           regStep: "welcome",
-          regSteps: buildSteps(pending),
+          regSteps: REG_STEPS,
           regPending: pending,
         }),
 
