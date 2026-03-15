@@ -47,3 +47,7 @@ test*/
 *__backup.tsx
 src/**/* copy*
 /src/components/layouts/Registration/Plate/ThreeCSG.ts
+
+readmes/**/*.js
+readmes/**/*.css
+readmes/**/*.html
