@@ -1,16 +1,17 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { SPRING_EASE } from "@/constants/animations";
+import { cn } from "@/lib/utils";
 import type { TourTarget } from "@/stores/Tour/TourStore";
-import { AnimatePresence, useReducedMotion } from "motion/react";
+import { useLenis } from "lenis/react";
+import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTourStore } from "./TourProvider";
@@ -37,7 +38,7 @@ function TourTooltip({
   total,
   onNext,
   onPrev,
-  onClose,
+  onClose
 }: {
   target: TourTarget;
   rect: Rect;
@@ -47,8 +48,6 @@ function TourTooltip({
   onPrev: () => void;
   onClose: () => void;
 }) {
-  const prefersReduced = useReducedMotion();
-
   // Position tooltip outside spotlit element
   const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -83,33 +82,33 @@ function TourTooltip({
       key={target.id}
       className={cn(
         "fixed z-[502] w-[280px]",
-        "bg-background border border-foreground/10 rounded-xl shadow-xl",
+        "rounded-xl border border-foreground/10 bg-background shadow-xl",
         "flex flex-col gap-4 p-5"
       )}
       style={{ left: x, top: y }}
-      initial={prefersReduced ? { opacity: 0 } : { opacity: 0, y: 6 }}
-      animate={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      exit={prefersReduced ? { opacity: 0 } : { opacity: 0, y: -4 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
       transition={{ type: "spring", ...SPRING_EASE.power3.out }}
     >
       {/* Header */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium tracking-wider uppercase text-muted-foreground">
+          <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
             {index + 1} / {total}
           </span>
           {target.shortcut && (
-            <kbd className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-foreground/10 bg-foreground/5 text-muted-foreground">
+            <kbd className="rounded border border-foreground/10 bg-foreground/5 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
               {target.shortcut}
             </kbd>
           )}
         </div>
-        <h3 className="text-base font-medium text-foreground leading-snug">
+        <h3 className="text-base leading-snug font-medium text-foreground">
           {target.label}
         </h3>
       </div>
 
-      <p className="text-sm text-muted-foreground leading-relaxed">
+      <p className="text-sm leading-relaxed text-muted-foreground">
         {target.description}
       </p>
 
@@ -118,19 +117,19 @@ function TourTooltip({
         <button
           onClick={onPrev}
           disabled={index === 0}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:pointer-events-none"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
         >
           ← Prev
         </button>
         <button
           onClick={onClose}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Close
         </button>
         <button
           onClick={onNext}
-          className="text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+          className="text-sm font-medium text-foreground transition-colors hover:text-foreground/70"
         >
           {index === total - 1 ? "Done" : "Next →"}
         </button>
@@ -143,30 +142,31 @@ function TourTooltip({
 
 function SpotlightOverlay({
   rect,
-  onClick,
+  onClick
 }: {
   rect: Rect;
   onClick: () => void;
 }) {
-  const prefersReduced = useReducedMotion();
-
-  const sp = rect === EMPTY_RECT ? null : {
-    x: rect.left - PADDING,
-    y: rect.top - PADDING,
-    w: rect.width + PADDING * 2,
-    h: rect.height + PADDING * 2,
-  };
+  const sp =
+    rect === EMPTY_RECT
+      ? null
+      : {
+          x: rect.left - PADDING,
+          y: rect.top - PADDING,
+          w: rect.width + PADDING * 2,
+          h: rect.height + PADDING * 2
+        };
 
   return (
     <m.div
-      className="fixed inset-0 z-[501] pointer-events-none"
+      className="pointer-events-none fixed inset-0 z-[501]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: prefersReduced ? 0 : 0.2 }}
+      transition={{ duration: 0.2 }}
     >
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
+        className="pointer-events-none absolute inset-0 h-full w-full"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
@@ -181,7 +181,7 @@ function SpotlightOverlay({
                 height={sp.h}
                 rx={10}
                 fill="black"
-                initial={prefersReduced ? {} : { opacity: 0 }}
+                initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ type: "spring", ...SPRING_EASE.power3.out }}
               />
@@ -193,7 +193,7 @@ function SpotlightOverlay({
           height="100%"
           fill="oklch(0 0 0 / 0.6)"
           mask="url(#tour-mask)"
-          className="pointer-events-auto cursor-pointer"
+          className="pointer-events-auto"
           onClick={onClick}
         />
       </svg>
@@ -201,15 +201,15 @@ function SpotlightOverlay({
       {/* Spotlight border ring */}
       {sp && (
         <m.div
-          className="absolute rounded-[10px] border border-foreground/20 pointer-events-none"
-          initial={prefersReduced ? {} : { opacity: 0, scale: 0.96 }}
+          className="pointer-events-none absolute rounded-[10px] border border-foreground/20"
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", ...SPRING_EASE.power3.out }}
           style={{
             left: sp.x,
             top: sp.y,
             width: sp.w,
-            height: sp.h,
+            height: sp.h
           }}
         />
       )}
@@ -297,24 +297,27 @@ export function InterfaceTourTrigger() {
   const openInterfaceTour = useTourStore((s) => s.openInterfaceTour);
   const ifActive = useTourStore((s) => s.ifActive);
   const regActive = useTourStore((s) => s.regActive);
-
+  const lenis = useLenis();
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // `?` key (Shift+/) when not typing in an input
       const tag = (e.target as HTMLElement)?.tagName;
       const isTyping =
-        tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" ||
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
         (e.target as HTMLElement)?.isContentEditable;
 
       if (e.key === "?" && !isTyping && !regActive) {
         e.preventDefault();
         if (ifActive) return; // already open
+        lenis && lenis.stop();
         openInterfaceTour();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [ifActive, regActive, openInterfaceTour]);
+  }, [ifActive, regActive, openInterfaceTour, lenis]);
 
   return null;
 }

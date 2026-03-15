@@ -1,4 +1,5 @@
 import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
+import { StationHideawayHero } from "@/components/sections/StationHideaway/block";
 import { TapePlayer } from "@/components/UX/TapePlayer";
 import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
 import { RPage } from "@/components/UX/Transition";
@@ -16,14 +17,7 @@ export default async function HomePage() {
             <ArticleHero posts={posts.docs} />
           </Suspense>
         </div>
-
-        <div className={"h-[40bvh] overflow-hidden rounded-lg p-5"}>
-          <TapePlayer
-            variant="hero"
-            scrollHint={false}
-            className="min-h-[35vh]"
-          />
-        </div>
+        <StationHideawayHero />
       </div>
     </RPage>
   );
