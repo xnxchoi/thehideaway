@@ -13,6 +13,7 @@ import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLenis } from "lenis/react";
 import { useTourStore } from "./TourProvider";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
@@ -384,6 +385,15 @@ export function RegistrationTour() {
   const [showExitWarning, setShowExitWarning] = useState(false);
 
   const prefersReduced = useReducedMotion();
+  const lenis = useLenis();
+
+  // ── Lock scroll while tour is open ──────────────────────────────────────────
+  useEffect(() => {
+    lenis?.stop();
+    return () => {
+      lenis?.start();
+    };
+  }, [lenis]);
 
   // ── Derived state ───────────────────────────────────────────────────────────
 
