@@ -1,4 +1,5 @@
 import { afterSchemaInit } from "@/lib/scripts/afterSchemaInit";
+import { syncTrackMedia } from "@/lib/scripts/syncTrackMedia";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
@@ -7,13 +8,10 @@ import { Footer } from "@/payload/collections/Footer/config";
 import { Header } from "@/payload/collections/Header";
 import { createProfile } from "@/payload/collections/Profile/operations/createProfile";
 import { createN } from "@/payload/collections/Users/hooks/afterChange";
-import { formatSlug } from "@/payload/fields/slug/formatSlug";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";
 import { plugins } from "@/payload/plugins";
 import { User } from "@payload-types";
 import { postgresAdapter } from "@payloadcms/db-postgres";
-import fs from "fs/promises";
-import { parseFile } from "music-metadata";
 import { nanoid } from "nanoid";
 import path from "path";
 import { buildConfig, PayloadRequest } from "payload";
@@ -24,7 +22,6 @@ import { getServerSideURL } from "./utilities/getURL";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-const trackDirectory = path.resolve(dirname, "..", "public", "track_media");
 
 export default buildConfig({
   localization: { defaultLocale: "en", locales: ["en", "ko"], fallback: true },
@@ -106,8 +103,7 @@ export default buildConfig({
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   onInit: async (payload) => {
-    console.log("Initializing Payload...");
-    console.log("track_media directory: ", trackDirectory);
+    payload.logger.info("Initializing Payload...");
     const tags: [string, string][] = [
       ["Life", "life"],
       ["Startup", "startup"],
@@ -186,234 +182,9 @@ export default buildConfig({
         payload.logger.error("Error creating user concierge:", e);
       });
     if (typeof uid === "string") {
-      const tracksScanned = await fs
-        .readdir(trackDirectory)
-        .then((r) =>
-          r.filter((item) => path.extname(item).toLowerCase() === ".ogg")
-        );
-
-      if (tracksScanned.length === 0) {
-        payload.logger.info("⚠️ No tracks found in track_media directory");
-      } else {
-        const readtrackPromises = tracksScanned.map(async (track) => {
-          const trackurl = path.join(trackDirectory, track);
-          const trackMetadata = await parseFile(trackurl, { duration: true });
-
-          if (trackMetadata) {
-            const {
-              artist,
-              track: { no: track_number },
-              title,
-              album
-            } = trackMetadata.common || {};
-            const { duration } = trackMetadata.format || {};
-
-            if (
-              !!duration &&
-              !!artist &&
-              !!title &&
-              !!album &&
-              !!track_number
-            ) {
-              const slug = track.replace(".ogg", "");
-              return {
-                artist,
-                title,
-                album,
-                duration,
-                track_number,
-                slug,
-                url: `/track_media/${track}`
-              };
-            }
-          }
-          throw new Error(`Invalid metadata for track ${track}`);
-        });
-
-        const validTracks = await Promise.allSettled(readtrackPromises)
-          .then((r) => r.filter((v) => v.status === "fulfilled"))
-          .then((x) => x.map((t) => t.value));
-
-        // 1. Deduplicate albums using a Map
-        const albumMap = new Map<string, { title: string; artist: string }>();
-        validTracks.forEach(({ album, artist }) => {
-          albumMap.set(`${album}-${artist}`, { title: album, artist });
-        });
-        const requiredAlbums = Array.from(albumMap.values());
-
-        // 2. Fetch or create Albums, storing their Document IDs
-        const albumRecords = new Map<string, string>(); // Maps "album-artist" to Album ID
-
-        const albumPromises = requiredAlbums.map(async ({ title, artist }) => {
-          let albumId: string | null = null;
-
-          const existingAlbum = await payload
-            .find({
-              collection: "albums",
-              pagination: false,
-              limit: 1,
-              where: {
-                and: [
-                  { title: { equals: title } },
-                  { artist: { equals: artist } }
-                ]
-              },
-              overrideAccess: true,
-              select: { title: true }
-            })
-            .then((v) => v.docs?.[0] || null)
-            .catch(() => null);
-
-          if (existingAlbum) {
-            albumId = existingAlbum.id as string;
-          } else {
-            const newAlbum = await payload
-              .create({
-                collection: "albums",
-                draft: false,
-                overrideAccess: true,
-                data: {
-                  title,
-                  slug: formatSlug(title),
-                  artist,
-                  visibility: "public",
-                  hashId: nanoid(11),
-                  author: uid,
-                  slugLock: true
-                }
-              })
-              .catch((e) => {
-                payload.logger.error(
-                  `Error creating album ${title} by ${artist}:`,
-                  e
-                );
-              });
-            newAlbum && (albumId = newAlbum.id);
-          }
-
-          if (albumId) {
-            return { albumId, title, artist };
-          }
-          throw new Error(`Failed to create album ${title} by ${artist}`);
-        });
-        const albumResults = await Promise.allSettled(albumPromises).then((e) =>
-          e.filter((v) => v.status === "fulfilled").map((s) => s.value)
-        );
-        albumResults.forEach(({ title, artist, albumId }) =>
-          albumRecords.set(`${title}-${artist}`, albumId)
-        );
-        // 3. Sort tracks by track_number so the playlist is in order
-        validTracks.sort((a, b) => a.track_number - b.track_number);
-
-        // 4. Create Tracks and collect their IDs
-        const trackIds: string[] = [];
-
-        const trackPromises = validTracks.map(async (trackInfo) => {
-          const albumId = albumRecords.get(
-            `${trackInfo.album}-${trackInfo.artist}`
-          );
-
-          if (!albumId) {
-            payload.logger.error(
-              `Skipping track ${trackInfo.title} due to missing album ID.`
-            );
-            throw new Error(
-              `Failed to find album ID for track ${trackInfo.title}`
-            );
-          }
-
-          const newTrack = await payload
-            .create({
-              collection: "tracks",
-              draft: false,
-              overrideAccess: true,
-              data: {
-                author: uid,
-                title: trackInfo.title,
-                slug: trackInfo.slug,
-                slugLock: true,
-                hashId: nanoid(11),
-                visibility: "public",
-                artist: trackInfo.artist,
-                track_number: trackInfo.track_number,
-                album: albumId,
-                url: trackInfo.url
-              }
-            })
-            .catch((e) => {
-              payload.logger.error(
-                `Error creating track ${trackInfo.title} by ${trackInfo.artist}:`,
-                e
-              );
-              return null;
-            });
-          if (!!newTrack) {
-            return newTrack.id;
-          }
-          throw new Error(
-            `Failed to create track ${trackInfo.title} by ${trackInfo.artist}`
-          );
-        });
-        const trackResults = await Promise.allSettled(trackPromises).then((e) =>
-          e.filter((v) => v.status === "fulfilled").map((s) => s.value)
-        );
-        trackIds.push(...trackResults);
-        // 5. Create Playlist (Assuming all tracks belong to a single album as per your prompt)
-        if (trackIds.length > 0 && requiredAlbums.length > 0) {
-          // We'll name the playlist after the first detected album
-          const playlistTitle = `${requiredAlbums[0].title}`;
-
-          const newPlaylist = await payload
-            .create({
-              collection: "playlists",
-              draft: false,
-              overrideAccess: true,
-              data: {
-                title: playlistTitle,
-                author: [uid], // Schema requires an array here
-                visibility: "public",
-                hashId: nanoid(11),
-                slugLock: true,
-                slug: formatSlug(playlistTitle),
-                tracks: trackIds
-              }
-            })
-            .catch((e) => {
-              payload.logger.error("Error creating playlist:", e);
-              return null;
-            });
-          if (!!newPlaylist) {
-            payload.logger.info(
-              `✅ Successfully created album, tracks, and playlist: ${playlistTitle}`
-            );
-            const headerGlobal = await payload.findGlobal({
-              slug: "header",
-              depth: 0
-            });
-
-            // Safely extract existing playlist IDs (handling initial null/undefined states)
-            const currentRadioPlaylists = Array.isArray(headerGlobal.radio)
-              ? (headerGlobal.radio as string[])
-              : [];
-
-            const newPlaylistId = newPlaylist.id as string;
-
-            // If this playlist isn't already in the global config, append it
-            if (!currentRadioPlaylists.includes(newPlaylistId)) {
-              await payload.updateGlobal({
-                slug: "header",
-                data: {
-                  // Appends to the end. To put it at the front, do: [newPlaylistId, ...currentRadioPlaylists]
-                  radio: [...currentRadioPlaylists, newPlaylistId]
-                }
-              });
-              payload.logger.info(
-                `✅ Appended playlist ${newPlaylistId} to the global Header radio config.`
-              );
-            }
-          }
-        }
-      }
+      await syncTrackMedia(payload, uid).catch((e) => {
+        payload.logger.error("syncTrackMedia failed:", e);
+      });
       const pr = tags.map(([title, slug]) =>
         payload
           .count({

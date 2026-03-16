@@ -6,23 +6,23 @@
  * and re-run `payload generate:db-schema` to regenerate this file.
  */
 
-import {relations, sql} from "@payloadcms/db-postgres/drizzle";
+import { relations, sql } from "@payloadcms/db-postgres/drizzle";
 import {
-    type AnyPgColumn,
-    boolean,
-    foreignKey,
-    index,
-    integer,
-    jsonb,
-    numeric,
-    pgEnum,
-    pgTable,
-    serial,
-    text,
-    timestamp,
-    uniqueIndex,
-    uuid,
-    varchar
+  type AnyPgColumn,
+  boolean,
+  foreignKey,
+  index,
+  integer,
+  jsonb,
+  numeric,
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar
 } from "@payloadcms/db-postgres/drizzle/pg-core";
 
 export const enum__locales = pgEnum("enum__locales", ["en", "ko"]);
@@ -119,7 +119,7 @@ export const enum_pages_blocks_archive_relation_to = pgEnum(
 );
 export const enum_pages_blocks_fotd_relation_to = pgEnum(
   "enum_pages_blocks_fotd_relation_to",
-  ["posts", "delta"]
+  ["posts", "surf"]
 );
 export const enum_pages_blocks_fotd_populate_by = pgEnum(
   "enum_pages_blocks_fotd_populate_by",
@@ -185,7 +185,7 @@ export const enum__pages_v_blocks_archive_relation_to = pgEnum(
 );
 export const enum__pages_v_blocks_fotd_relation_to = pgEnum(
   "enum__pages_v_blocks_fotd_relation_to",
-  ["posts", "delta"]
+  ["posts", "surf"]
 );
 export const enum__pages_v_blocks_fotd_populate_by = pgEnum(
   "enum__pages_v_blocks_fotd_populate_by",
@@ -225,18 +225,6 @@ export const enum__posts_v_version_status = pgEnum(
 );
 export const enum__posts_v_published_locale = pgEnum(
   "enum__posts_v_published_locale",
-  ["en", "ko"]
-);
-export const enum_delta_status = pgEnum("enum_delta_status", [
-  "draft",
-  "published"
-]);
-export const enum__delta_v_version_status = pgEnum(
-  "enum__delta_v_version_status",
-  ["draft", "published"]
-);
-export const enum__delta_v_published_locale = pgEnum(
-  "enum__delta_v_published_locale",
   ["en", "ko"]
 );
 export const enum_profile_status = pgEnum("enum_profile_status", [
@@ -311,6 +299,31 @@ export const enum__playlists_v_published_locale = pgEnum(
   "enum__playlists_v_published_locale",
   ["en", "ko"]
 );
+export const enum_surf_source = pgEnum("enum_surf_source", [
+  "x",
+  "twitter",
+  "substack",
+  "instagram",
+  "youtube",
+  "external",
+  "medium"
+]);
+export const enum_surf_status = pgEnum("enum_surf_status", [
+  "draft",
+  "published"
+]);
+export const enum__surf_v_version_source = pgEnum(
+  "enum__surf_v_version_source",
+  ["x", "twitter", "substack", "instagram", "youtube", "external", "medium"]
+);
+export const enum__surf_v_version_status = pgEnum(
+  "enum__surf_v_version_status",
+  ["draft", "published"]
+);
+export const enum__surf_v_published_locale = pgEnum(
+  "enum__surf_v_published_locale",
+  ["en", "ko"]
+);
 export const enum_responses_status = pgEnum("enum_responses_status", [
   "draft",
   "published"
@@ -345,10 +358,6 @@ export const enum_exports_locale = pgEnum("enum_exports_locale", [
   "ko"
 ]);
 export const enum_exports_drafts = pgEnum("enum_exports_drafts", ["yes", "no"]);
-export const enum_imports_collection_slug = pgEnum(
-  "enum_imports_collection_slug",
-  ["posts"]
-);
 export const enum_imports_import_mode = pgEnum("enum_imports_import_mode", [
   "create",
   "update",
@@ -1526,7 +1535,7 @@ export const notifications_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     usersID: varchar("users_id"),
     profileID: uuid("profile_id"),
     bookmarksID: varchar("bookmarks_id"),
@@ -1544,7 +1553,7 @@ export const notifications_rels = pgTable(
     index("notifications_rels_parent_idx").on(columns.parent),
     index("notifications_rels_path_idx").on(columns.path),
     index("notifications_rels_posts_id_idx").on(columns.postsID),
-    index("notifications_rels_delta_id_idx").on(columns.deltaID),
+    index("notifications_rels_surf_id_idx").on(columns.surfID),
     index("notifications_rels_users_id_idx").on(columns.usersID),
     index("notifications_rels_profile_id_idx").on(columns.profileID),
     index("notifications_rels_bookmarks_id_idx").on(columns.bookmarksID),
@@ -1569,9 +1578,9 @@ export const notifications_rels = pgTable(
       name: "notifications_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "notifications_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "notifications_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["usersID"]],
@@ -1975,7 +1984,7 @@ export const pages_rels = pgTable(
     path: varchar("path").notNull(),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -1993,7 +2002,7 @@ export const pages_rels = pgTable(
     index("pages_rels_path_idx").on(columns.path),
     index("pages_rels_pages_id_idx").on(columns.pagesID),
     index("pages_rels_posts_id_idx").on(columns.postsID),
-    index("pages_rels_delta_id_idx").on(columns.deltaID),
+    index("pages_rels_surf_id_idx").on(columns.surfID),
     index("pages_rels_users_id_idx").on(columns.usersID),
     index("pages_rels_albums_id_idx").on(columns.albumsID),
     index("pages_rels_tracks_id_idx").on(columns.tracksID),
@@ -2020,9 +2029,9 @@ export const pages_rels = pgTable(
       name: "pages_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "pages_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "pages_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["usersID"]],
@@ -2486,7 +2495,7 @@ export const _pages_v_rels = pgTable(
     path: varchar("path").notNull(),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -2504,7 +2513,7 @@ export const _pages_v_rels = pgTable(
     index("_pages_v_rels_path_idx").on(columns.path),
     index("_pages_v_rels_pages_id_idx").on(columns.pagesID),
     index("_pages_v_rels_posts_id_idx").on(columns.postsID),
-    index("_pages_v_rels_delta_id_idx").on(columns.deltaID),
+    index("_pages_v_rels_surf_id_idx").on(columns.surfID),
     index("_pages_v_rels_users_id_idx").on(columns.usersID),
     index("_pages_v_rels_albums_id_idx").on(columns.albumsID),
     index("_pages_v_rels_tracks_id_idx").on(columns.tracksID),
@@ -2531,9 +2540,9 @@ export const _pages_v_rels = pgTable(
       name: "_pages_v_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "_pages_v_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "_pages_v_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["usersID"]],
@@ -3062,310 +3071,6 @@ export const user_media_rels = pgTable(
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "user_media_rels_users_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const delta = pgTable(
-  "delta",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    title: varchar("title"),
-    richTitle: jsonb("rich_title"),
-    source: varchar("source"),
-    content: jsonb("content"),
-    subtitle: varchar("subtitle"),
-    category: varchar("category_id").references(() => categories.id, {
-      onDelete: "set null"
-    }),
-    slugKey: varchar("slug_key"),
-    commentsEnabled: boolean("comments_enabled").default(true),
-    hashId: varchar("hash_id"),
-    slugLock: boolean("slug_lock"),
-    slug: varchar("slug"),
-    publishedAt: timestamp("published_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    author: uuid("author_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    locked: boolean("locked").default(false),
-    authority: numeric("authority", { mode: "number" }).default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    _status: enum_delta_status("_status").default("draft")
-  },
-  (columns) => [
-    index("delta_source_idx").on(columns.source),
-    index("delta_category_idx").on(columns.category),
-    index("delta_slug_key_idx").on(columns.slugKey),
-    index("delta_comments_enabled_idx").on(columns.commentsEnabled),
-    index("delta_hash_id_idx").on(columns.hashId),
-    index("delta_author_idx").on(columns.author),
-    index("delta_authority_idx").on(columns.authority),
-    index("delta_updated_at_idx").on(columns.updatedAt),
-    index("delta_created_at_idx").on(columns.createdAt),
-    index("delta__status_idx").on(columns._status)
-  ]
-);
-
-export const delta_locales = pgTable(
-  "delta_locales",
-  {
-    meta_title: varchar("meta_title"),
-    meta_image: varchar("meta_image_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-    meta_description: varchar("meta_description"),
-    id: serial("id").primaryKey(),
-    _locale: enum__locales("_locale").notNull(),
-    _parentID: uuid("_parent_id").notNull()
-  },
-  (columns) => [
-    index("delta_meta_meta_image_idx").on(columns.meta_image, columns._locale),
-    uniqueIndex("delta_locales_locale_parent_id_unique").on(
-      columns._locale,
-      columns._parentID
-    ),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [delta.id],
-      name: "delta_locales_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const delta_rels = pgTable(
-  "delta_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    tagsID: varchar("tags_id"),
-    deltaID: uuid("delta_id"),
-    postsID: varchar("posts_id"),
-    usersID: varchar("users_id")
-  },
-  (columns) => [
-    index("delta_rels_order_idx").on(columns.order),
-    index("delta_rels_parent_idx").on(columns.parent),
-    index("delta_rels_path_idx").on(columns.path),
-    index("delta_rels_tags_id_idx").on(columns.tagsID),
-    index("delta_rels_delta_id_idx").on(columns.deltaID),
-    index("delta_rels_posts_id_idx").on(columns.postsID),
-    index("delta_rels_users_id_idx").on(columns.usersID),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [delta.id],
-      name: "delta_rels_parent_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["tagsID"]],
-      foreignColumns: [tags.id],
-      name: "delta_rels_tags_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "delta_rels_delta_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["postsID"]],
-      foreignColumns: [posts.id],
-      name: "delta_rels_posts_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["usersID"]],
-      foreignColumns: [users.id],
-      name: "delta_rels_users_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const _delta_v = pgTable(
-  "_delta_v",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    parent: uuid("parent_id").references(() => delta.id, {
-      onDelete: "set null"
-    }),
-    version_title: varchar("version_title"),
-    version_richTitle: jsonb("version_rich_title"),
-    version_source: varchar("version_source"),
-    version_content: jsonb("version_content"),
-    version_subtitle: varchar("version_subtitle"),
-    version_category: varchar("version_category_id").references(
-      () => categories.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    version_slugKey: varchar("version_slug_key"),
-    version_commentsEnabled: boolean("version_comments_enabled").default(true),
-    version_hashId: varchar("version_hash_id"),
-    version_slugLock: boolean("version_slug_lock"),
-    version_slug: varchar("version_slug"),
-    version_publishedAt: timestamp("version_published_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version_author: uuid("version_author_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    version_locked: boolean("version_locked").default(false),
-    version_authority: numeric("version_authority", { mode: "number" }).default(
-      0
-    ),
-    version_updatedAt: timestamp("version_updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version_createdAt: timestamp("version_created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    version__status:
-      enum__delta_v_version_status("version__status").default("draft"),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    snapshot: boolean("snapshot"),
-    publishedLocale: enum__delta_v_published_locale("published_locale"),
-    latest: boolean("latest")
-  },
-  (columns) => [
-    index("_delta_v_parent_idx").on(columns.parent),
-    index("_delta_v_version_version_source_idx").on(columns.version_source),
-    index("_delta_v_version_version_category_idx").on(columns.version_category),
-    index("_delta_v_version_version_slug_key_idx").on(columns.version_slugKey),
-    index("_delta_v_version_version_comments_enabled_idx").on(
-      columns.version_commentsEnabled
-    ),
-    index("_delta_v_version_version_hash_id_idx").on(columns.version_hashId),
-    index("_delta_v_version_version_author_idx").on(columns.version_author),
-    index("_delta_v_version_version_authority_idx").on(
-      columns.version_authority
-    ),
-    index("_delta_v_version_version_updated_at_idx").on(
-      columns.version_updatedAt
-    ),
-    index("_delta_v_version_version_created_at_idx").on(
-      columns.version_createdAt
-    ),
-    index("_delta_v_version_version__status_idx").on(columns.version__status),
-    index("_delta_v_created_at_idx").on(columns.createdAt),
-    index("_delta_v_updated_at_idx").on(columns.updatedAt),
-    index("_delta_v_snapshot_idx").on(columns.snapshot),
-    index("_delta_v_published_locale_idx").on(columns.publishedLocale),
-    index("_delta_v_latest_idx").on(columns.latest)
-  ]
-);
-
-export const _delta_v_locales = pgTable(
-  "_delta_v_locales",
-  {
-    version_meta_title: varchar("version_meta_title"),
-    version_meta_image: varchar("version_meta_image_id").references(
-      () => media.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    version_meta_description: varchar("version_meta_description"),
-    id: serial("id").primaryKey(),
-    _locale: enum__locales("_locale").notNull(),
-    _parentID: uuid("_parent_id").notNull()
-  },
-  (columns) => [
-    index("_delta_v_version_meta_version_meta_image_idx").on(
-      columns.version_meta_image,
-      columns._locale
-    ),
-    uniqueIndex("_delta_v_locales_locale_parent_id_unique").on(
-      columns._locale,
-      columns._parentID
-    ),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [_delta_v.id],
-      name: "_delta_v_locales_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const _delta_v_rels = pgTable(
-  "_delta_v_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    tagsID: varchar("tags_id"),
-    deltaID: uuid("delta_id"),
-    postsID: varchar("posts_id"),
-    usersID: varchar("users_id")
-  },
-  (columns) => [
-    index("_delta_v_rels_order_idx").on(columns.order),
-    index("_delta_v_rels_parent_idx").on(columns.parent),
-    index("_delta_v_rels_path_idx").on(columns.path),
-    index("_delta_v_rels_tags_id_idx").on(columns.tagsID),
-    index("_delta_v_rels_delta_id_idx").on(columns.deltaID),
-    index("_delta_v_rels_posts_id_idx").on(columns.postsID),
-    index("_delta_v_rels_users_id_idx").on(columns.usersID),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [_delta_v.id],
-      name: "_delta_v_rels_parent_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["tagsID"]],
-      foreignColumns: [tags.id],
-      name: "_delta_v_rels_tags_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "_delta_v_rels_delta_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["postsID"]],
-      foreignColumns: [posts.id],
-      name: "_delta_v_rels_posts_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["usersID"]],
-      foreignColumns: [users.id],
-      name: "_delta_v_rels_users_fk"
     }).onDelete("cascade")
   ]
 );
@@ -4363,7 +4068,7 @@ export const bookmarks_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     profileID: uuid("profile_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
@@ -4376,7 +4081,7 @@ export const bookmarks_rels = pgTable(
     index("bookmarks_rels_parent_idx").on(columns.parent),
     index("bookmarks_rels_path_idx").on(columns.path),
     index("bookmarks_rels_posts_id_idx").on(columns.postsID),
-    index("bookmarks_rels_delta_id_idx").on(columns.deltaID),
+    index("bookmarks_rels_surf_id_idx").on(columns.surfID),
     index("bookmarks_rels_profile_id_idx").on(columns.profileID),
     index("bookmarks_rels_users_id_idx").on(columns.usersID),
     index("bookmarks_rels_albums_id_idx").on(columns.albumsID),
@@ -4394,9 +4099,9 @@ export const bookmarks_rels = pgTable(
       name: "bookmarks_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "bookmarks_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "bookmarks_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["profileID"]],
@@ -4480,7 +4185,7 @@ export const user_views_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     playlistsID: uuid("playlists_id"),
     profileID: uuid("profile_id"),
     albumsID: uuid("albums_id"),
@@ -4491,7 +4196,7 @@ export const user_views_rels = pgTable(
     index("user_views_rels_parent_idx").on(columns.parent),
     index("user_views_rels_path_idx").on(columns.path),
     index("user_views_rels_posts_id_idx").on(columns.postsID),
-    index("user_views_rels_delta_id_idx").on(columns.deltaID),
+    index("user_views_rels_surf_id_idx").on(columns.surfID),
     index("user_views_rels_playlists_id_idx").on(columns.playlistsID),
     index("user_views_rels_profile_id_idx").on(columns.profileID),
     index("user_views_rels_albums_id_idx").on(columns.albumsID),
@@ -4507,9 +4212,9 @@ export const user_views_rels = pgTable(
       name: "user_views_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "user_views_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "user_views_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["playlistsID"]],
@@ -4530,6 +4235,309 @@ export const user_views_rels = pgTable(
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "user_views_rels_tracks_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const surf = pgTable(
+  "surf",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title"),
+    richTitle: jsonb("rich_title"),
+    source: enum_surf_source("source").default("external"),
+    content: jsonb("content"),
+    category: varchar("category_id").references(() => categories.id, {
+      onDelete: "set null"
+    }),
+    slugKey: varchar("slug_key"),
+    hashId: varchar("hash_id"),
+    commentsEnabled: boolean("comments_enabled").default(true),
+    slugLock: boolean("slug_lock"),
+    slug: varchar("slug"),
+    publishedAt: timestamp("published_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    author: uuid("author_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    locked: boolean("locked").default(false),
+    authority: numeric("authority", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    _status: enum_surf_status("_status").default("draft")
+  },
+  (columns) => [
+    index("surf_source_idx").on(columns.source),
+    index("surf_category_idx").on(columns.category),
+    index("surf_slug_key_idx").on(columns.slugKey),
+    index("surf_hash_id_idx").on(columns.hashId),
+    index("surf_comments_enabled_idx").on(columns.commentsEnabled),
+    index("surf_author_idx").on(columns.author),
+    index("surf_authority_idx").on(columns.authority),
+    index("surf_updated_at_idx").on(columns.updatedAt),
+    index("surf_created_at_idx").on(columns.createdAt),
+    index("surf__status_idx").on(columns._status)
+  ]
+);
+
+export const surf_locales = pgTable(
+  "surf_locales",
+  {
+    meta_title: varchar("meta_title"),
+    meta_image: varchar("meta_image_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    meta_description: varchar("meta_description"),
+    id: serial("id").primaryKey(),
+    _locale: enum__locales("_locale").notNull(),
+    _parentID: uuid("_parent_id").notNull()
+  },
+  (columns) => [
+    index("surf_meta_meta_image_idx").on(columns.meta_image, columns._locale),
+    uniqueIndex("surf_locales_locale_parent_id_unique").on(
+      columns._locale,
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [surf.id],
+      name: "surf_locales_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const surf_rels = pgTable(
+  "surf_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    tagsID: varchar("tags_id"),
+    surfID: uuid("surf_id"),
+    postsID: varchar("posts_id"),
+    usersID: varchar("users_id")
+  },
+  (columns) => [
+    index("surf_rels_order_idx").on(columns.order),
+    index("surf_rels_parent_idx").on(columns.parent),
+    index("surf_rels_path_idx").on(columns.path),
+    index("surf_rels_tags_id_idx").on(columns.tagsID),
+    index("surf_rels_surf_id_idx").on(columns.surfID),
+    index("surf_rels_posts_id_idx").on(columns.postsID),
+    index("surf_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [surf.id],
+      name: "surf_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["tagsID"]],
+      foreignColumns: [tags.id],
+      name: "surf_rels_tags_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "surf_rels_surf_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["postsID"]],
+      foreignColumns: [posts.id],
+      name: "surf_rels_posts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["usersID"]],
+      foreignColumns: [users.id],
+      name: "surf_rels_users_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const _surf_v = pgTable(
+  "_surf_v",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    parent: uuid("parent_id").references(() => surf.id, {
+      onDelete: "set null"
+    }),
+    version_title: varchar("version_title"),
+    version_richTitle: jsonb("version_rich_title"),
+    version_source:
+      enum__surf_v_version_source("version_source").default("external"),
+    version_content: jsonb("version_content"),
+    version_category: varchar("version_category_id").references(
+      () => categories.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    version_slugKey: varchar("version_slug_key"),
+    version_hashId: varchar("version_hash_id"),
+    version_commentsEnabled: boolean("version_comments_enabled").default(true),
+    version_slugLock: boolean("version_slug_lock"),
+    version_slug: varchar("version_slug"),
+    version_publishedAt: timestamp("version_published_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version_author: uuid("version_author_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    version_locked: boolean("version_locked").default(false),
+    version_authority: numeric("version_authority", { mode: "number" }).default(
+      0
+    ),
+    version_updatedAt: timestamp("version_updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version_createdAt: timestamp("version_created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version__status:
+      enum__surf_v_version_status("version__status").default("draft"),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    snapshot: boolean("snapshot"),
+    publishedLocale: enum__surf_v_published_locale("published_locale"),
+    latest: boolean("latest")
+  },
+  (columns) => [
+    index("_surf_v_parent_idx").on(columns.parent),
+    index("_surf_v_version_version_source_idx").on(columns.version_source),
+    index("_surf_v_version_version_category_idx").on(columns.version_category),
+    index("_surf_v_version_version_slug_key_idx").on(columns.version_slugKey),
+    index("_surf_v_version_version_hash_id_idx").on(columns.version_hashId),
+    index("_surf_v_version_version_comments_enabled_idx").on(
+      columns.version_commentsEnabled
+    ),
+    index("_surf_v_version_version_author_idx").on(columns.version_author),
+    index("_surf_v_version_version_authority_idx").on(
+      columns.version_authority
+    ),
+    index("_surf_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_surf_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_surf_v_version_version__status_idx").on(columns.version__status),
+    index("_surf_v_created_at_idx").on(columns.createdAt),
+    index("_surf_v_updated_at_idx").on(columns.updatedAt),
+    index("_surf_v_snapshot_idx").on(columns.snapshot),
+    index("_surf_v_published_locale_idx").on(columns.publishedLocale),
+    index("_surf_v_latest_idx").on(columns.latest)
+  ]
+);
+
+export const _surf_v_locales = pgTable(
+  "_surf_v_locales",
+  {
+    version_meta_title: varchar("version_meta_title"),
+    version_meta_image: varchar("version_meta_image_id").references(
+      () => media.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    version_meta_description: varchar("version_meta_description"),
+    id: serial("id").primaryKey(),
+    _locale: enum__locales("_locale").notNull(),
+    _parentID: uuid("_parent_id").notNull()
+  },
+  (columns) => [
+    index("_surf_v_version_meta_version_meta_image_idx").on(
+      columns.version_meta_image,
+      columns._locale
+    ),
+    uniqueIndex("_surf_v_locales_locale_parent_id_unique").on(
+      columns._locale,
+      columns._parentID
+    ),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [_surf_v.id],
+      name: "_surf_v_locales_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const _surf_v_rels = pgTable(
+  "_surf_v_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    tagsID: varchar("tags_id"),
+    surfID: uuid("surf_id"),
+    postsID: varchar("posts_id"),
+    usersID: varchar("users_id")
+  },
+  (columns) => [
+    index("_surf_v_rels_order_idx").on(columns.order),
+    index("_surf_v_rels_parent_idx").on(columns.parent),
+    index("_surf_v_rels_path_idx").on(columns.path),
+    index("_surf_v_rels_tags_id_idx").on(columns.tagsID),
+    index("_surf_v_rels_surf_id_idx").on(columns.surfID),
+    index("_surf_v_rels_posts_id_idx").on(columns.postsID),
+    index("_surf_v_rels_users_id_idx").on(columns.usersID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [_surf_v.id],
+      name: "_surf_v_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["tagsID"]],
+      foreignColumns: [tags.id],
+      name: "_surf_v_rels_tags_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "_surf_v_rels_surf_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["postsID"]],
+      foreignColumns: [posts.id],
+      name: "_surf_v_rels_posts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["usersID"]],
+      foreignColumns: [users.id],
+      name: "_surf_v_rels_users_fk"
     }).onDelete("cascade")
   ]
 );
@@ -4588,14 +4596,14 @@ export const citations_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     postsID: varchar("posts_id")
   },
   (columns) => [
     index("citations_rels_order_idx").on(columns.order),
     index("citations_rels_parent_idx").on(columns.parent),
     index("citations_rels_path_idx").on(columns.path),
-    index("citations_rels_delta_id_idx").on(columns.deltaID),
+    index("citations_rels_surf_id_idx").on(columns.surfID),
     index("citations_rels_posts_id_idx").on(columns.postsID),
     foreignKey({
       columns: [columns["parent"]],
@@ -4603,9 +4611,9 @@ export const citations_rels = pgTable(
       name: "citations_rels_parent_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "citations_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "citations_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["postsID"]],
@@ -4662,7 +4670,7 @@ export const responses_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     responsesID: varchar("responses_id"),
     citationsID: uuid("citations_id"),
     usersID: varchar("users_id")
@@ -4672,7 +4680,7 @@ export const responses_rels = pgTable(
     index("responses_rels_parent_idx").on(columns.parent),
     index("responses_rels_path_idx").on(columns.path),
     index("responses_rels_posts_id_idx").on(columns.postsID),
-    index("responses_rels_delta_id_idx").on(columns.deltaID),
+    index("responses_rels_surf_id_idx").on(columns.surfID),
     index("responses_rels_responses_id_idx").on(columns.responsesID),
     index("responses_rels_citations_id_idx").on(columns.citationsID),
     index("responses_rels_users_id_idx").on(columns.usersID),
@@ -4687,9 +4695,9 @@ export const responses_rels = pgTable(
       name: "responses_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "responses_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "responses_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["responsesID"]],
@@ -4787,7 +4795,7 @@ export const _responses_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     responsesID: varchar("responses_id"),
     citationsID: uuid("citations_id"),
     usersID: varchar("users_id")
@@ -4797,7 +4805,7 @@ export const _responses_v_rels = pgTable(
     index("_responses_v_rels_parent_idx").on(columns.parent),
     index("_responses_v_rels_path_idx").on(columns.path),
     index("_responses_v_rels_posts_id_idx").on(columns.postsID),
-    index("_responses_v_rels_delta_id_idx").on(columns.deltaID),
+    index("_responses_v_rels_surf_id_idx").on(columns.surfID),
     index("_responses_v_rels_responses_id_idx").on(columns.responsesID),
     index("_responses_v_rels_citations_id_idx").on(columns.citationsID),
     index("_responses_v_rels_users_id_idx").on(columns.usersID),
@@ -4812,9 +4820,9 @@ export const _responses_v_rels = pgTable(
       name: "_responses_v_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "_responses_v_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "_responses_v_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["responsesID"]],
@@ -5063,14 +5071,14 @@ export const exports = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name"),
-    format: enum_exports_format("format").default("csv"),
+    format: enum_exports_format("format").notNull().default("csv"),
     limit: numeric("limit", { mode: "number" }),
     page: numeric("page", { mode: "number" }).default(1),
     sort: varchar("sort"),
     sortOrder: enum_exports_sort_order("sort_order"),
     locale: enum_exports_locale("locale").default("all"),
     drafts: enum_exports_drafts("drafts").default("yes"),
-    collectionSlug: varchar("collection_slug").notNull(),
+    collectionSlug: varchar("collection_slug").notNull().default("posts"),
     where: jsonb("where").default(sql`'{}'::jsonb`),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -5126,7 +5134,7 @@ export const imports = pgTable(
   "imports",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    collectionSlug: enum_imports_collection_slug("collection_slug").notNull(),
+    collectionSlug: varchar("collection_slug").notNull().default("posts"),
     importMode: enum_imports_import_mode("import_mode"),
     matchField: varchar("match_field").default("id"),
     status: enum_imports_status("status").default("pending"),
@@ -5378,7 +5386,7 @@ export const search_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     profileID: uuid("profile_id"),
     pagesID: varchar("pages_id"),
     tracksID: uuid("tracks_id"),
@@ -5393,7 +5401,7 @@ export const search_rels = pgTable(
     index("search_rels_parent_idx").on(columns.parent),
     index("search_rels_path_idx").on(columns.path),
     index("search_rels_posts_id_idx").on(columns.postsID),
-    index("search_rels_delta_id_idx").on(columns.deltaID),
+    index("search_rels_surf_id_idx").on(columns.surfID),
     index("search_rels_profile_id_idx").on(columns.profileID),
     index("search_rels_pages_id_idx").on(columns.pagesID),
     index("search_rels_tracks_id_idx").on(columns.tracksID),
@@ -5413,9 +5421,9 @@ export const search_rels = pgTable(
       name: "search_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "search_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "search_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["profileID"]],
@@ -6040,26 +6048,19 @@ export const header_nav_items = pgTable(
   ]
 );
 
-export const header = pgTable(
-  "header",
-  {
-    id: varchar("id").primaryKey(),
-    radio: uuid("radio_id").references(() => playlists.id, {
-      onDelete: "set null"
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-  },
-  (columns) => [index("header_radio_idx").on(columns.radio)]
-);
+export const header = pgTable("header", {
+  id: varchar("id").primaryKey(),
+  updatedAt: timestamp("updated_at", {
+    mode: "string",
+    withTimezone: true,
+    precision: 3
+  }),
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+    precision: 3
+  })
+});
 
 export const header_rels = pgTable(
   "header_rels",
@@ -6068,13 +6069,13 @@ export const header_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
+    playlistsID: uuid("playlists_id"),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
-    playlistsID: uuid("playlists_id"),
     organizationsID: uuid("organizations_id"),
     categoriesID: varchar("categories_id")
   },
@@ -6082,19 +6083,24 @@ export const header_rels = pgTable(
     index("header_rels_order_idx").on(columns.order),
     index("header_rels_parent_idx").on(columns.parent),
     index("header_rels_path_idx").on(columns.path),
+    index("header_rels_playlists_id_idx").on(columns.playlistsID),
     index("header_rels_pages_id_idx").on(columns.pagesID),
     index("header_rels_posts_id_idx").on(columns.postsID),
-    index("header_rels_delta_id_idx").on(columns.deltaID),
+    index("header_rels_surf_id_idx").on(columns.surfID),
     index("header_rels_users_id_idx").on(columns.usersID),
     index("header_rels_albums_id_idx").on(columns.albumsID),
     index("header_rels_tracks_id_idx").on(columns.tracksID),
-    index("header_rels_playlists_id_idx").on(columns.playlistsID),
     index("header_rels_organizations_id_idx").on(columns.organizationsID),
     index("header_rels_categories_id_idx").on(columns.categoriesID),
     foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [header.id],
       name: "header_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["playlistsID"]],
+      foreignColumns: [playlists.id],
+      name: "header_rels_playlists_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["pagesID"]],
@@ -6107,9 +6113,9 @@ export const header_rels = pgTable(
       name: "header_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "header_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "header_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["usersID"]],
@@ -6125,11 +6131,6 @@ export const header_rels = pgTable(
       columns: [columns["tracksID"]],
       foreignColumns: [tracks.id],
       name: "header_rels_tracks_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["playlistsID"]],
-      foreignColumns: [playlists.id],
-      name: "header_rels_playlists_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["organizationsID"]],
@@ -6300,7 +6301,7 @@ export const footer_rels = pgTable(
     path: varchar("path").notNull(),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    deltaID: uuid("delta_id"),
+    surfID: uuid("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -6314,7 +6315,7 @@ export const footer_rels = pgTable(
     index("footer_rels_path_idx").on(columns.path),
     index("footer_rels_pages_id_idx").on(columns.pagesID),
     index("footer_rels_posts_id_idx").on(columns.postsID),
-    index("footer_rels_delta_id_idx").on(columns.deltaID),
+    index("footer_rels_surf_id_idx").on(columns.surfID),
     index("footer_rels_users_id_idx").on(columns.usersID),
     index("footer_rels_albums_id_idx").on(columns.albumsID),
     index("footer_rels_tracks_id_idx").on(columns.tracksID),
@@ -6337,9 +6338,9 @@ export const footer_rels = pgTable(
       name: "footer_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["deltaID"]],
-      foreignColumns: [delta.id],
-      name: "footer_rels_delta_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "footer_rels_surf_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["usersID"]],
@@ -6587,10 +6588,10 @@ export const relations_notifications_rels = relations(
       references: [posts.id],
       relationName: "posts"
     }),
-    deltaID: one(delta, {
-      fields: [notifications_rels.deltaID],
-      references: [delta.id],
-      relationName: "delta"
+    surfID: one(surf, {
+      fields: [notifications_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
     }),
     usersID: one(users, {
       fields: [notifications_rels.usersID],
@@ -6804,10 +6805,10 @@ export const relations_pages_rels = relations(pages_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "posts"
   }),
-  deltaID: one(delta, {
-    fields: [pages_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
+  surfID: one(surf, {
+    fields: [pages_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
   }),
   usersID: one(users, {
     fields: [pages_rels.usersID],
@@ -7034,10 +7035,10 @@ export const relations__pages_v_rels = relations(_pages_v_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "posts"
   }),
-  deltaID: one(delta, {
-    fields: [_pages_v_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
+  surfID: one(surf, {
+    fields: [_pages_v_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
   }),
   usersID: one(users, {
     fields: [_pages_v_rels.usersID],
@@ -7298,128 +7299,6 @@ export const relations_user_media = relations(user_media, ({ one, many }) => ({
     relationName: "folder"
   }),
   _rels: many(user_media_rels, {
-    relationName: "_rels"
-  })
-}));
-export const relations_delta_locales = relations(delta_locales, ({ one }) => ({
-  _parentID: one(delta, {
-    fields: [delta_locales._parentID],
-    references: [delta.id],
-    relationName: "_locales"
-  }),
-  meta_image: one(media, {
-    fields: [delta_locales.meta_image],
-    references: [media.id],
-    relationName: "meta_image"
-  })
-}));
-export const relations_delta_rels = relations(delta_rels, ({ one }) => ({
-  parent: one(delta, {
-    fields: [delta_rels.parent],
-    references: [delta.id],
-    relationName: "_rels"
-  }),
-  tagsID: one(tags, {
-    fields: [delta_rels.tagsID],
-    references: [tags.id],
-    relationName: "tags"
-  }),
-  deltaID: one(delta, {
-    fields: [delta_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
-  }),
-  postsID: one(posts, {
-    fields: [delta_rels.postsID],
-    references: [posts.id],
-    relationName: "posts"
-  }),
-  usersID: one(users, {
-    fields: [delta_rels.usersID],
-    references: [users.id],
-    relationName: "users"
-  })
-}));
-export const relations_delta = relations(delta, ({ one, many }) => ({
-  category: one(categories, {
-    fields: [delta.category],
-    references: [categories.id],
-    relationName: "category"
-  }),
-  author: one(users, {
-    fields: [delta.author],
-    references: [users.id],
-    relationName: "author"
-  }),
-  _locales: many(delta_locales, {
-    relationName: "_locales"
-  }),
-  _rels: many(delta_rels, {
-    relationName: "_rels"
-  })
-}));
-export const relations__delta_v_locales = relations(
-  _delta_v_locales,
-  ({ one }) => ({
-    _parentID: one(_delta_v, {
-      fields: [_delta_v_locales._parentID],
-      references: [_delta_v.id],
-      relationName: "_locales"
-    }),
-    version_meta_image: one(media, {
-      fields: [_delta_v_locales.version_meta_image],
-      references: [media.id],
-      relationName: "version_meta_image"
-    })
-  })
-);
-export const relations__delta_v_rels = relations(_delta_v_rels, ({ one }) => ({
-  parent: one(_delta_v, {
-    fields: [_delta_v_rels.parent],
-    references: [_delta_v.id],
-    relationName: "_rels"
-  }),
-  tagsID: one(tags, {
-    fields: [_delta_v_rels.tagsID],
-    references: [tags.id],
-    relationName: "tags"
-  }),
-  deltaID: one(delta, {
-    fields: [_delta_v_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
-  }),
-  postsID: one(posts, {
-    fields: [_delta_v_rels.postsID],
-    references: [posts.id],
-    relationName: "posts"
-  }),
-  usersID: one(users, {
-    fields: [_delta_v_rels.usersID],
-    references: [users.id],
-    relationName: "users"
-  })
-}));
-export const relations__delta_v = relations(_delta_v, ({ one, many }) => ({
-  parent: one(delta, {
-    fields: [_delta_v.parent],
-    references: [delta.id],
-    relationName: "parent"
-  }),
-  version_category: one(categories, {
-    fields: [_delta_v.version_category],
-    references: [categories.id],
-    relationName: "version_category"
-  }),
-  version_author: one(users, {
-    fields: [_delta_v.version_author],
-    references: [users.id],
-    relationName: "version_author"
-  }),
-  _locales: many(_delta_v_locales, {
-    relationName: "_locales"
-  }),
-  _rels: many(_delta_v_rels, {
     relationName: "_rels"
   })
 }));
@@ -7768,10 +7647,10 @@ export const relations_bookmarks_rels = relations(
       references: [posts.id],
       relationName: "posts"
     }),
-    deltaID: one(delta, {
-      fields: [bookmarks_rels.deltaID],
-      references: [delta.id],
-      relationName: "delta"
+    surfID: one(surf, {
+      fields: [bookmarks_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
     }),
     profileID: one(profile, {
       fields: [bookmarks_rels.profileID],
@@ -7828,10 +7707,10 @@ export const relations_user_views_rels = relations(
       references: [posts.id],
       relationName: "posts"
     }),
-    deltaID: one(delta, {
-      fields: [user_views_rels.deltaID],
-      references: [delta.id],
-      relationName: "delta"
+    surfID: one(surf, {
+      fields: [user_views_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
     }),
     playlistsID: one(playlists, {
       fields: [user_views_rels.playlistsID],
@@ -7865,6 +7744,128 @@ export const relations_user_views = relations(user_views, ({ one, many }) => ({
     relationName: "_rels"
   })
 }));
+export const relations_surf_locales = relations(surf_locales, ({ one }) => ({
+  _parentID: one(surf, {
+    fields: [surf_locales._parentID],
+    references: [surf.id],
+    relationName: "_locales"
+  }),
+  meta_image: one(media, {
+    fields: [surf_locales.meta_image],
+    references: [media.id],
+    relationName: "meta_image"
+  })
+}));
+export const relations_surf_rels = relations(surf_rels, ({ one }) => ({
+  parent: one(surf, {
+    fields: [surf_rels.parent],
+    references: [surf.id],
+    relationName: "_rels"
+  }),
+  tagsID: one(tags, {
+    fields: [surf_rels.tagsID],
+    references: [tags.id],
+    relationName: "tags"
+  }),
+  surfID: one(surf, {
+    fields: [surf_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
+  }),
+  postsID: one(posts, {
+    fields: [surf_rels.postsID],
+    references: [posts.id],
+    relationName: "posts"
+  }),
+  usersID: one(users, {
+    fields: [surf_rels.usersID],
+    references: [users.id],
+    relationName: "users"
+  })
+}));
+export const relations_surf = relations(surf, ({ one, many }) => ({
+  category: one(categories, {
+    fields: [surf.category],
+    references: [categories.id],
+    relationName: "category"
+  }),
+  author: one(users, {
+    fields: [surf.author],
+    references: [users.id],
+    relationName: "author"
+  }),
+  _locales: many(surf_locales, {
+    relationName: "_locales"
+  }),
+  _rels: many(surf_rels, {
+    relationName: "_rels"
+  })
+}));
+export const relations__surf_v_locales = relations(
+  _surf_v_locales,
+  ({ one }) => ({
+    _parentID: one(_surf_v, {
+      fields: [_surf_v_locales._parentID],
+      references: [_surf_v.id],
+      relationName: "_locales"
+    }),
+    version_meta_image: one(media, {
+      fields: [_surf_v_locales.version_meta_image],
+      references: [media.id],
+      relationName: "version_meta_image"
+    })
+  })
+);
+export const relations__surf_v_rels = relations(_surf_v_rels, ({ one }) => ({
+  parent: one(_surf_v, {
+    fields: [_surf_v_rels.parent],
+    references: [_surf_v.id],
+    relationName: "_rels"
+  }),
+  tagsID: one(tags, {
+    fields: [_surf_v_rels.tagsID],
+    references: [tags.id],
+    relationName: "tags"
+  }),
+  surfID: one(surf, {
+    fields: [_surf_v_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
+  }),
+  postsID: one(posts, {
+    fields: [_surf_v_rels.postsID],
+    references: [posts.id],
+    relationName: "posts"
+  }),
+  usersID: one(users, {
+    fields: [_surf_v_rels.usersID],
+    references: [users.id],
+    relationName: "users"
+  })
+}));
+export const relations__surf_v = relations(_surf_v, ({ one, many }) => ({
+  parent: one(surf, {
+    fields: [_surf_v.parent],
+    references: [surf.id],
+    relationName: "parent"
+  }),
+  version_category: one(categories, {
+    fields: [_surf_v.version_category],
+    references: [categories.id],
+    relationName: "version_category"
+  }),
+  version_author: one(users, {
+    fields: [_surf_v.version_author],
+    references: [users.id],
+    relationName: "version_author"
+  }),
+  _locales: many(_surf_v_locales, {
+    relationName: "_locales"
+  }),
+  _rels: many(_surf_v_rels, {
+    relationName: "_rels"
+  })
+}));
 export const relations_citations_rels = relations(
   citations_rels,
   ({ one }) => ({
@@ -7873,10 +7874,10 @@ export const relations_citations_rels = relations(
       references: [citations.id],
       relationName: "_rels"
     }),
-    deltaID: one(delta, {
-      fields: [citations_rels.deltaID],
-      references: [delta.id],
-      relationName: "delta"
+    surfID: one(surf, {
+      fields: [citations_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
     }),
     postsID: one(posts, {
       fields: [citations_rels.postsID],
@@ -7913,10 +7914,10 @@ export const relations_responses_rels = relations(
       references: [posts.id],
       relationName: "posts"
     }),
-    deltaID: one(delta, {
-      fields: [responses_rels.deltaID],
-      references: [delta.id],
-      relationName: "delta"
+    surfID: one(surf, {
+      fields: [responses_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
     }),
     responsesID: one(responses, {
       fields: [responses_rels.responsesID],
@@ -7958,10 +7959,10 @@ export const relations__responses_v_rels = relations(
       references: [posts.id],
       relationName: "posts"
     }),
-    deltaID: one(delta, {
-      fields: [_responses_v_rels.deltaID],
-      references: [delta.id],
-      relationName: "delta"
+    surfID: one(surf, {
+      fields: [_responses_v_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
     }),
     responsesID: one(responses, {
       fields: [_responses_v_rels.responsesID],
@@ -8137,10 +8138,10 @@ export const relations_search_rels = relations(search_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "posts"
   }),
-  deltaID: one(delta, {
-    fields: [search_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
+  surfID: one(surf, {
+    fields: [search_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
   }),
   profileID: one(profile, {
     fields: [search_rels.profileID],
@@ -8468,6 +8469,11 @@ export const relations_header_rels = relations(header_rels, ({ one }) => ({
     references: [header.id],
     relationName: "_rels"
   }),
+  playlistsID: one(playlists, {
+    fields: [header_rels.playlistsID],
+    references: [playlists.id],
+    relationName: "playlists"
+  }),
   pagesID: one(pages, {
     fields: [header_rels.pagesID],
     references: [pages.id],
@@ -8478,10 +8484,10 @@ export const relations_header_rels = relations(header_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "posts"
   }),
-  deltaID: one(delta, {
-    fields: [header_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
+  surfID: one(surf, {
+    fields: [header_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
   }),
   usersID: one(users, {
     fields: [header_rels.usersID],
@@ -8498,11 +8504,6 @@ export const relations_header_rels = relations(header_rels, ({ one }) => ({
     references: [tracks.id],
     relationName: "tracks"
   }),
-  playlistsID: one(playlists, {
-    fields: [header_rels.playlistsID],
-    references: [playlists.id],
-    relationName: "playlists"
-  }),
   organizationsID: one(organizations, {
     fields: [header_rels.organizationsID],
     references: [organizations.id],
@@ -8514,12 +8515,7 @@ export const relations_header_rels = relations(header_rels, ({ one }) => ({
     relationName: "categories"
   })
 }));
-export const relations_header = relations(header, ({ one, many }) => ({
-  radio: one(playlists, {
-    fields: [header.radio],
-    references: [playlists.id],
-    relationName: "radio"
-  }),
+export const relations_header = relations(header, ({ many }) => ({
   navItems: many(header_nav_items, {
     relationName: "navItems"
   }),
@@ -8583,10 +8579,10 @@ export const relations_footer_rels = relations(footer_rels, ({ one }) => ({
     references: [posts.id],
     relationName: "posts"
   }),
-  deltaID: one(delta, {
-    fields: [footer_rels.deltaID],
-    references: [delta.id],
-    relationName: "delta"
+  surfID: one(surf, {
+    fields: [footer_rels.surfID],
+    references: [surf.id],
+    relationName: "surf"
   }),
   usersID: one(users, {
     fields: [footer_rels.usersID],
@@ -8705,9 +8701,6 @@ type DatabaseSchema = {
   enum_posts_status: typeof enum_posts_status;
   enum__posts_v_version_status: typeof enum__posts_v_version_status;
   enum__posts_v_published_locale: typeof enum__posts_v_published_locale;
-  enum_delta_status: typeof enum_delta_status;
-  enum__delta_v_version_status: typeof enum__delta_v_version_status;
-  enum__delta_v_published_locale: typeof enum__delta_v_published_locale;
   enum_profile_status: typeof enum_profile_status;
   enum__profile_v_version_status: typeof enum__profile_v_version_status;
   enum__profile_v_published_locale: typeof enum__profile_v_published_locale;
@@ -8726,6 +8719,11 @@ type DatabaseSchema = {
   enum__playlists_v_version_visibility: typeof enum__playlists_v_version_visibility;
   enum__playlists_v_version_status: typeof enum__playlists_v_version_status;
   enum__playlists_v_published_locale: typeof enum__playlists_v_published_locale;
+  enum_surf_source: typeof enum_surf_source;
+  enum_surf_status: typeof enum_surf_status;
+  enum__surf_v_version_source: typeof enum__surf_v_version_source;
+  enum__surf_v_version_status: typeof enum__surf_v_version_status;
+  enum__surf_v_published_locale: typeof enum__surf_v_published_locale;
   enum_responses_status: typeof enum_responses_status;
   enum__responses_v_version_status: typeof enum__responses_v_version_status;
   enum__responses_v_published_locale: typeof enum__responses_v_published_locale;
@@ -8735,7 +8733,6 @@ type DatabaseSchema = {
   enum_exports_sort_order: typeof enum_exports_sort_order;
   enum_exports_locale: typeof enum_exports_locale;
   enum_exports_drafts: typeof enum_exports_drafts;
-  enum_imports_collection_slug: typeof enum_imports_collection_slug;
   enum_imports_import_mode: typeof enum_imports_import_mode;
   enum_imports_status: typeof enum_imports_status;
   enum_redirects_to_type: typeof enum_redirects_to_type;
@@ -8808,12 +8805,6 @@ type DatabaseSchema = {
   _posts_v_rels: typeof _posts_v_rels;
   user_media: typeof user_media;
   user_media_rels: typeof user_media_rels;
-  delta: typeof delta;
-  delta_locales: typeof delta_locales;
-  delta_rels: typeof delta_rels;
-  _delta_v: typeof _delta_v;
-  _delta_v_locales: typeof _delta_v_locales;
-  _delta_v_rels: typeof _delta_v_rels;
   profile_slides: typeof profile_slides;
   profile: typeof profile;
   profile_rels: typeof profile_rels;
@@ -8837,6 +8828,12 @@ type DatabaseSchema = {
   bookmarks_rels: typeof bookmarks_rels;
   user_views: typeof user_views;
   user_views_rels: typeof user_views_rels;
+  surf: typeof surf;
+  surf_locales: typeof surf_locales;
+  surf_rels: typeof surf_rels;
+  _surf_v: typeof _surf_v;
+  _surf_v_locales: typeof _surf_v_locales;
+  _surf_v_rels: typeof _surf_v_rels;
   citations: typeof citations;
   citations_rels: typeof citations_rels;
   responses: typeof responses;
@@ -8938,12 +8935,6 @@ type DatabaseSchema = {
   relations__posts_v: typeof relations__posts_v;
   relations_user_media_rels: typeof relations_user_media_rels;
   relations_user_media: typeof relations_user_media;
-  relations_delta_locales: typeof relations_delta_locales;
-  relations_delta_rels: typeof relations_delta_rels;
-  relations_delta: typeof relations_delta;
-  relations__delta_v_locales: typeof relations__delta_v_locales;
-  relations__delta_v_rels: typeof relations__delta_v_rels;
-  relations__delta_v: typeof relations__delta_v;
   relations_profile_slides: typeof relations_profile_slides;
   relations_profile_rels: typeof relations_profile_rels;
   relations_profile: typeof relations_profile;
@@ -8967,6 +8958,12 @@ type DatabaseSchema = {
   relations_bookmarks: typeof relations_bookmarks;
   relations_user_views_rels: typeof relations_user_views_rels;
   relations_user_views: typeof relations_user_views;
+  relations_surf_locales: typeof relations_surf_locales;
+  relations_surf_rels: typeof relations_surf_rels;
+  relations_surf: typeof relations_surf;
+  relations__surf_v_locales: typeof relations__surf_v_locales;
+  relations__surf_v_rels: typeof relations__surf_v_rels;
+  relations__surf_v: typeof relations__surf_v;
   relations_citations_rels: typeof relations_citations_rels;
   relations_citations: typeof relations_citations;
   relations_responses_rels: typeof relations_responses_rels;
