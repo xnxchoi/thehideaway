@@ -13,53 +13,53 @@
  * via the `definition` "supportedTimezones".
  */
 export type SupportedTimezones =
-  | 'Pacific/Midway'
-  | 'Pacific/Niue'
-  | 'Pacific/Honolulu'
-  | 'Pacific/Rarotonga'
-  | 'America/Anchorage'
-  | 'Pacific/Gambier'
-  | 'America/Los_Angeles'
-  | 'America/Tijuana'
-  | 'America/Denver'
-  | 'America/Phoenix'
-  | 'America/Chicago'
-  | 'America/Guatemala'
-  | 'America/New_York'
-  | 'America/Bogota'
-  | 'America/Caracas'
-  | 'America/Santiago'
-  | 'America/Buenos_Aires'
-  | 'America/Sao_Paulo'
-  | 'Atlantic/South_Georgia'
-  | 'Atlantic/Azores'
-  | 'Atlantic/Cape_Verde'
-  | 'Europe/London'
-  | 'Europe/Berlin'
-  | 'Africa/Lagos'
-  | 'Europe/Athens'
-  | 'Africa/Cairo'
-  | 'Europe/Moscow'
-  | 'Asia/Riyadh'
-  | 'Asia/Dubai'
-  | 'Asia/Baku'
-  | 'Asia/Karachi'
-  | 'Asia/Tashkent'
-  | 'Asia/Calcutta'
-  | 'Asia/Dhaka'
-  | 'Asia/Almaty'
-  | 'Asia/Jakarta'
-  | 'Asia/Bangkok'
-  | 'Asia/Shanghai'
-  | 'Asia/Singapore'
-  | 'Asia/Tokyo'
-  | 'Asia/Seoul'
-  | 'Australia/Brisbane'
-  | 'Australia/Sydney'
-  | 'Pacific/Guam'
-  | 'Pacific/Noumea'
-  | 'Pacific/Auckland'
-  | 'Pacific/Fiji';
+  | "Pacific/Midway"
+  | "Pacific/Niue"
+  | "Pacific/Honolulu"
+  | "Pacific/Rarotonga"
+  | "America/Anchorage"
+  | "Pacific/Gambier"
+  | "America/Los_Angeles"
+  | "America/Tijuana"
+  | "America/Denver"
+  | "America/Phoenix"
+  | "America/Chicago"
+  | "America/Guatemala"
+  | "America/New_York"
+  | "America/Bogota"
+  | "America/Caracas"
+  | "America/Santiago"
+  | "America/Buenos_Aires"
+  | "America/Sao_Paulo"
+  | "Atlantic/South_Georgia"
+  | "Atlantic/Azores"
+  | "Atlantic/Cape_Verde"
+  | "Europe/London"
+  | "Europe/Berlin"
+  | "Africa/Lagos"
+  | "Europe/Athens"
+  | "Africa/Cairo"
+  | "Europe/Moscow"
+  | "Asia/Riyadh"
+  | "Asia/Dubai"
+  | "Asia/Baku"
+  | "Asia/Karachi"
+  | "Asia/Tashkent"
+  | "Asia/Calcutta"
+  | "Asia/Dhaka"
+  | "Asia/Almaty"
+  | "Asia/Jakarta"
+  | "Asia/Bangkok"
+  | "Asia/Shanghai"
+  | "Asia/Singapore"
+  | "Asia/Tokyo"
+  | "Asia/Seoul"
+  | "Australia/Brisbane"
+  | "Australia/Sydney"
+  | "Pacific/Guam"
+  | "Pacific/Noumea"
+  | "Pacific/Auckland"
+  | "Pacific/Fiji";
 
 export interface Config {
   auth: {
@@ -79,7 +79,7 @@ export interface Config {
     teamMembers: TeamMember;
     members: Member;
     invitations: Invitation;
-    'admin-invitations': AdminInvitation;
+    "admin-invitations": AdminInvitation;
     assets: Asset;
     categories: Category;
     media: Media;
@@ -100,66 +100,73 @@ export interface Config {
     responses: Response;
     compilations: Compilation;
     admins: Admin;
-    'email-quota': EmailQuota;
-    'deferred-emails': DeferredEmail;
+    "email-quota": EmailQuota;
+    "deferred-emails": DeferredEmail;
     exports: Export;
     imports: Import;
     redirects: Redirect;
     search: Search;
-    'payload-kv': PayloadKv;
-    'payload-jobs': PayloadJob;
-    'payload-folders': FolderInterface;
-    'payload-locked-documents': PayloadLockedDocument;
-    'payload-preferences': PayloadPreference;
-    'payload-migrations': PayloadMigration;
+    "payload-kv": PayloadKv;
+    "payload-jobs": PayloadJob;
+    "payload-folders": FolderInterface;
+    "payload-locked-documents": PayloadLockedDocument;
+    "payload-preferences": PayloadPreference;
+    "payload-migrations": PayloadMigration;
   };
   collectionsJoins: {
     users: {
-      profile: 'profile';
-      bookmarks: 'bookmarks';
-      followers: 'follows';
-      following: 'follows';
-      notifications: 'notifications';
-      account: 'accounts';
-      session: 'sessions';
+      profile: "profile";
+      bookmarks: "bookmarks";
+      followers: "follows";
+      following: "follows";
+      notifications: "notifications";
+      account: "accounts";
+      session: "sessions";
     };
     organizations: {
-      member: 'members';
-      invitation: 'invitations';
-      team: 'teams';
+      member: "members";
+      invitation: "invitations";
+      team: "teams";
     };
     assets: {
-      compiled: 'compilations';
+      compiled: "compilations";
     };
     categories: {
-      categorized: 'surf' | 'posts';
+      categorized: "surf" | "posts";
     };
     tags: {
-      taggedItems: 'posts' | 'surf' | 'playlists' | 'albums' | 'profile' | 'pages' | 'tracks';
+      taggedItems:
+        | "posts"
+        | "surf"
+        | "playlists"
+        | "albums"
+        | "profile"
+        | "pages"
+        | "tracks";
     };
     posts: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     userMedia: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     profile: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     albums: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     tracks: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     playlists: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     surf: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
-    'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'userMedia';
+    "payload-folders": {
+      documentsAndFolders: "payload-folders" | "userMedia";
     };
   };
   collectionsSelect: {
@@ -174,7 +181,9 @@ export interface Config {
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
-    'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
+    "admin-invitations":
+      | AdminInvitationsSelect<false>
+      | AdminInvitationsSelect<true>;
     assets: AssetsSelect<false> | AssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -195,23 +204,34 @@ export interface Config {
     responses: ResponsesSelect<false> | ResponsesSelect<true>;
     compilations: CompilationsSelect<false> | CompilationsSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
-    'email-quota': EmailQuotaSelect<false> | EmailQuotaSelect<true>;
-    'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
+    "email-quota": EmailQuotaSelect<false> | EmailQuotaSelect<true>;
+    "deferred-emails": DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
-    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
-    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
-    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
-    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
-    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>;
+    "payload-jobs": PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    "payload-folders": PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
+    "payload-locked-documents":
+      | PayloadLockedDocumentsSelect<false>
+      | PayloadLockedDocumentsSelect<true>;
+    "payload-preferences":
+      | PayloadPreferencesSelect<false>
+      | PayloadPreferencesSelect<true>;
+    "payload-migrations":
+      | PayloadMigrationsSelect<false>
+      | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ko') | ('en' | 'ko')[];
+  fallbackLocale:
+    | ("false" | "none" | "null")
+    | false
+    | null
+    | ("en" | "ko")
+    | ("en" | "ko")[];
   globals: {
     header: Header;
     footer: Footer;
@@ -220,7 +240,7 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: 'en' | 'ko';
+  locale: "en" | "ko";
   widgets: {
     collections: CollectionsWidget;
   };
@@ -321,7 +341,7 @@ export interface User {
   /**
    * The role/ roles of the user
    */
-  role: 'admin' | 'author' | 'editor' | 'user' | 'patron';
+  role: "admin" | "author" | "editor" | "user" | "patron";
   onboarded: boolean;
   /**
    * Whether the user is banned from the platform
@@ -398,8 +418,8 @@ export interface User {
     image?: (string | null) | UserMedia;
     description?: string | null;
   };
-  _status?: ('draft' | 'published') | null;
-  collection: 'users';
+  _status?: ("draft" | "published") | null;
+  collection: "users";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -429,8 +449,15 @@ export interface Profile {
               version: number;
               [k: string]: unknown;
             }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            direction: ("ltr" | "rtl") | null;
+            format:
+              | "left"
+              | "start"
+              | "center"
+              | "right"
+              | "end"
+              | "justify"
+              | "";
             indent: number;
             version: number;
           };
@@ -452,7 +479,7 @@ export interface Profile {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -549,35 +576,35 @@ export interface Bookmark {
   user: string | User;
   target:
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       }
     | {
-        relationTo: 'surf';
+        relationTo: "surf";
         value: string | Surf;
       }
     | {
-        relationTo: 'profile';
+        relationTo: "profile";
         value: string | Profile;
       }
     | {
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       }
     | {
-        relationTo: 'albums';
+        relationTo: "albums";
         value: string | Album;
       }
     | {
-        relationTo: 'playlists';
+        relationTo: "playlists";
         value: string | Playlist;
       }
     | {
-        relationTo: 'tracks';
+        relationTo: "tracks";
         value: string | Track;
       }
     | {
-        relationTo: 'userMedia';
+        relationTo: "userMedia";
         value: string | UserMedia;
       };
   updatedAt: string;
@@ -591,15 +618,15 @@ export interface Post {
   id: string;
   image?:
     | ({
-        relationTo: 'userMedia';
+        relationTo: "userMedia";
         value: string | UserMedia;
       } | null)
     | ({
-        relationTo: 'assets';
+        relationTo: "assets";
         value: string | Asset;
       } | null)
     | ({
-        relationTo: 'media';
+        relationTo: "media";
         value: string | Media;
       } | null);
   coverPosition?: number | null;
@@ -612,8 +639,8 @@ export interface Post {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -627,8 +654,8 @@ export interface Post {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -666,7 +693,7 @@ export interface Post {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -761,11 +788,11 @@ export interface Compilation {
   title: string;
   items: (
     | {
-        relationTo: 'assets';
+        relationTo: "assets";
         value: string | Asset;
       }
     | {
-        relationTo: 'media';
+        relationTo: "media";
         value: string | Media;
       }
   )[];
@@ -866,11 +893,11 @@ export interface Category {
   categorized?: {
     docs?: (
       | {
-          relationTo?: 'surf';
+          relationTo?: "surf";
           value: string | Surf;
         }
       | {
-          relationTo?: 'posts';
+          relationTo?: "posts";
           value: string | Post;
         }
     )[];
@@ -896,14 +923,21 @@ export interface Surf {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
     [k: string]: unknown;
   } | null;
-  source: 'x' | 'twitter' | 'substack' | 'instagram' | 'youtube' | 'external' | 'medium';
+  source:
+    | "x"
+    | "twitter"
+    | "substack"
+    | "instagram"
+    | "youtube"
+    | "external"
+    | "medium";
   content: {
     root: {
       type: string;
@@ -912,8 +946,8 @@ export interface Surf {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -931,11 +965,11 @@ export interface Surf {
   relatedSurfs?:
     | (
         | {
-            relationTo: 'surf';
+            relationTo: "surf";
             value: string | Surf;
           }
         | {
-            relationTo: 'posts';
+            relationTo: "posts";
             value: string | Post;
           }
       )[]
@@ -961,7 +995,7 @@ export interface Surf {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -979,31 +1013,31 @@ export interface Tag {
   taggedItems?: {
     docs?: (
       | {
-          relationTo?: 'posts';
+          relationTo?: "posts";
           value: string | Post;
         }
       | {
-          relationTo?: 'surf';
+          relationTo?: "surf";
           value: string | Surf;
         }
       | {
-          relationTo?: 'playlists';
+          relationTo?: "playlists";
           value: string | Playlist;
         }
       | {
-          relationTo?: 'albums';
+          relationTo?: "albums";
           value: string | Album;
         }
       | {
-          relationTo?: 'profile';
+          relationTo?: "profile";
           value: string | Profile;
         }
       | {
-          relationTo?: 'pages';
+          relationTo?: "pages";
           value: string | Page;
         }
       | {
-          relationTo?: 'tracks';
+          relationTo?: "tracks";
           value: string | Track;
         }
     )[];
@@ -1030,7 +1064,7 @@ export interface Playlist {
   };
   tagged?: (string | Tag)[] | null;
   author: (string | User)[];
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   publishedAt?: string | null;
   slugKey?: string | null;
   hashId: string;
@@ -1044,7 +1078,7 @@ export interface Playlist {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1065,7 +1099,7 @@ export interface Track {
   tagged?: (string | Tag)[] | null;
   artist: string;
   description?: string | null;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   author: string | User;
   slugKey?: string | null;
   hashId: string;
@@ -1079,7 +1113,7 @@ export interface Track {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -1107,7 +1141,7 @@ export interface Album {
   };
   tagged?: (string | Tag)[] | null;
   description?: string | null;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   publishedAt?: string | null;
   author: string | User;
   slugKey?: string | null;
@@ -1122,7 +1156,7 @@ export interface Album {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1133,7 +1167,7 @@ export interface Page {
   title: string;
   hero: {
     id: string;
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: "none" | "highImpact" | "mediumImpact" | "lowImpact";
     richText?: {
       root: {
         type: string;
@@ -1142,8 +1176,8 @@ export interface Page {
           version: number;
           [k: string]: unknown;
         }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        direction: ("ltr" | "rtl") | null;
+        format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
         indent: number;
         version: number;
       };
@@ -1152,43 +1186,43 @@ export interface Page {
     links?:
       | {
           link: {
-            type: 'reference' | 'custom';
+            type: "reference" | "custom";
             newTab: boolean;
             reference?:
               | ({
-                  relationTo: 'pages';
+                  relationTo: "pages";
                   value: string | Page;
                 } | null)
               | ({
-                  relationTo: 'posts';
+                  relationTo: "posts";
                   value: string | Post;
                 } | null)
               | ({
-                  relationTo: 'surf';
+                  relationTo: "surf";
                   value: string | Surf;
                 } | null)
               | ({
-                  relationTo: 'users';
+                  relationTo: "users";
                   value: string | User;
                 } | null)
               | ({
-                  relationTo: 'albums';
+                  relationTo: "albums";
                   value: string | Album;
                 } | null)
               | ({
-                  relationTo: 'tracks';
+                  relationTo: "tracks";
                   value: string | Track;
                 } | null)
               | ({
-                  relationTo: 'playlists';
+                  relationTo: "playlists";
                   value: string | Playlist;
                 } | null)
               | ({
-                  relationTo: 'organizations';
+                  relationTo: "organizations";
                   value: string | Organization;
                 } | null)
               | ({
-                  relationTo: 'categories';
+                  relationTo: "categories";
                   value: string | Category;
                 } | null);
             url?: string | null;
@@ -1196,7 +1230,7 @@ export interface Page {
             /**
              * Choose how the link should be rendered.
              */
-            appearance?: ('default' | 'outline') | null;
+            appearance?: ("default" | "outline") | null;
           };
           id?: string | null;
         }[]
@@ -1211,20 +1245,20 @@ export interface Page {
             id: string | null;
             media?:
               | ({
-                  relationTo: 'media';
+                  relationTo: "media";
                   value: string | Media;
                 } | null)
               | ({
-                  relationTo: 'userMedia';
+                  relationTo: "userMedia";
                   value: string | UserMedia;
                 } | null)
               | ({
-                  relationTo: 'assets';
+                  relationTo: "assets";
                   value: string | Asset;
                 } | null);
             span?: number | null;
             blockName?: string | null;
-            blockType: 'image';
+            blockType: "image";
           }
         | ArchiveBlock
         | FOTDBlock
@@ -1233,7 +1267,7 @@ export interface Page {
     | null;
   pageLayout: {
     id: string;
-    footerType?: ('standard' | 'linksOnly' | 'hidden') | null;
+    footerType?: ("standard" | "linksOnly" | "hidden") | null;
   };
   meta?: {
     title?: string | null;
@@ -1254,7 +1288,7 @@ export interface Page {
   authority?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * Organizations are groups of users that share access to certain resources.
@@ -1393,8 +1427,8 @@ export interface CallToActionBlock {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -1403,43 +1437,43 @@ export interface CallToActionBlock {
   links?:
     | {
         link: {
-          type: 'reference' | 'custom';
+          type: "reference" | "custom";
           newTab: boolean;
           reference?:
             | ({
-                relationTo: 'pages';
+                relationTo: "pages";
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts';
+                relationTo: "posts";
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'surf';
+                relationTo: "surf";
                 value: string | Surf;
               } | null)
             | ({
-                relationTo: 'users';
+                relationTo: "users";
                 value: string | User;
               } | null)
             | ({
-                relationTo: 'albums';
+                relationTo: "albums";
                 value: string | Album;
               } | null)
             | ({
-                relationTo: 'tracks';
+                relationTo: "tracks";
                 value: string | Track;
               } | null)
             | ({
-                relationTo: 'playlists';
+                relationTo: "playlists";
                 value: string | Playlist;
               } | null)
             | ({
-                relationTo: 'organizations';
+                relationTo: "organizations";
                 value: string | Organization;
               } | null)
             | ({
-                relationTo: 'categories';
+                relationTo: "categories";
                 value: string | Category;
               } | null);
           url?: string | null;
@@ -1447,13 +1481,13 @@ export interface CallToActionBlock {
           /**
            * Choose how the link should be rendered.
            */
-          appearance?: ('default' | 'outline') | null;
+          appearance?: ("default" | "outline") | null;
         };
         id?: string | null;
       }[]
     | null;
   blockName?: string | null;
-  blockType: 'cta';
+  blockType: "cta";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1464,7 +1498,7 @@ export interface ContentBlock {
   columns?:
     | {
         id: string;
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        size?: ("oneThird" | "half" | "twoThirds" | "full") | null;
         richText?: {
           root: {
             type: string;
@@ -1473,8 +1507,15 @@ export interface ContentBlock {
               version: number;
               [k: string]: unknown;
             }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            direction: ("ltr" | "rtl") | null;
+            format:
+              | "left"
+              | "start"
+              | "center"
+              | "right"
+              | "end"
+              | "justify"
+              | "";
             indent: number;
             version: number;
           };
@@ -1482,43 +1523,43 @@ export interface ContentBlock {
         } | null;
         enableLink?: boolean | null;
         link?: {
-          type: 'reference' | 'custom';
+          type: "reference" | "custom";
           newTab: boolean;
           reference?:
             | ({
-                relationTo: 'pages';
+                relationTo: "pages";
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts';
+                relationTo: "posts";
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'surf';
+                relationTo: "surf";
                 value: string | Surf;
               } | null)
             | ({
-                relationTo: 'users';
+                relationTo: "users";
                 value: string | User;
               } | null)
             | ({
-                relationTo: 'albums';
+                relationTo: "albums";
                 value: string | Album;
               } | null)
             | ({
-                relationTo: 'tracks';
+                relationTo: "tracks";
                 value: string | Track;
               } | null)
             | ({
-                relationTo: 'playlists';
+                relationTo: "playlists";
                 value: string | Playlist;
               } | null)
             | ({
-                relationTo: 'organizations';
+                relationTo: "organizations";
                 value: string | Organization;
               } | null)
             | ({
-                relationTo: 'categories';
+                relationTo: "categories";
                 value: string | Category;
               } | null);
           url?: string | null;
@@ -1526,12 +1567,12 @@ export interface ContentBlock {
           /**
            * Choose how the link should be rendered.
            */
-          appearance?: ('default' | 'outline') | null;
+          appearance?: ("default" | "outline") | null;
         };
       }[]
     | null;
   blockName?: string | null;
-  blockType: 'content';
+  blockType: "content";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1547,25 +1588,25 @@ export interface ArchiveBlock {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
     [k: string]: unknown;
   } | null;
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | null;
+  populateBy?: ("collection" | "selection") | null;
+  relationTo?: "posts" | null;
   categories?: (string | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       }[]
     | null;
   blockName?: string | null;
-  blockType: 'archive';
+  blockType: "archive";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1582,31 +1623,31 @@ export interface FOTDBlock {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
     [k: string]: unknown;
   };
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: ('posts' | 'surf')[] | null;
+  populateBy?: ("collection" | "selection") | null;
+  relationTo?: ("posts" | "surf")[] | null;
   categories?: (string | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
     | (
         | {
-            relationTo: 'posts';
+            relationTo: "posts";
             value: string | Post;
           }
         | {
-            relationTo: 'pages';
+            relationTo: "pages";
             value: string | Page;
           }
       )[]
     | null;
   blockName?: string | null;
-  blockType: 'fotd';
+  blockType: "fotd";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1622,25 +1663,25 @@ export interface HeroSquareBlock {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
     [k: string]: unknown;
   } | null;
-  populateBy?: ('collection' | 'selection') | null;
+  populateBy?: ("collection" | "selection") | null;
   limit?: number | null;
-  relationTo?: 'posts' | null;
+  relationTo?: "posts" | null;
   categories?: (string | Category)[] | null;
   selectedDocs?:
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       }[]
     | null;
   blockName?: string | null;
-  blockType: 'heroSquare';
+  blockType: "heroSquare";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1653,18 +1694,18 @@ export interface FolderInterface {
   documentsAndFolders?: {
     docs?: (
       | {
-          relationTo?: 'payload-folders';
+          relationTo?: "payload-folders";
           value: string | FolderInterface;
         }
       | {
-          relationTo?: 'userMedia';
+          relationTo?: "userMedia";
           value: string | UserMedia;
         }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: 'userMedia'[] | null;
+  folderType?: "userMedia"[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1690,47 +1731,47 @@ export interface Notification {
   recipient: string | User;
   trigger?:
     | ({
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       } | null)
     | ({
-        relationTo: 'surf';
+        relationTo: "surf";
         value: string | Surf;
       } | null)
     | ({
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       } | null)
     | ({
-        relationTo: 'profile';
+        relationTo: "profile";
         value: string | Profile;
       } | null)
     | ({
-        relationTo: 'bookmarks';
+        relationTo: "bookmarks";
         value: string | Bookmark;
       } | null)
     | ({
-        relationTo: 'follows';
+        relationTo: "follows";
         value: string | Follow;
       } | null)
     | ({
-        relationTo: 'responses';
+        relationTo: "responses";
         value: string | Response;
       } | null);
   thumbnail?: (string | null) | Asset;
   type:
-    | 'comment'
-    | 'follow'
-    | 'mention'
-    | 'system'
-    | 'access'
-    | 'bookmark'
-    | 'profile'
-    | 'post'
-    | 'surf'
-    | 'notification';
+    | "comment"
+    | "follow"
+    | "mention"
+    | "system"
+    | "access"
+    | "bookmark"
+    | "profile"
+    | "post"
+    | "surf"
+    | "notification";
   importance: number;
-  status: 'unread' | 'read' | 'dismissed';
+  status: "unread" | "read" | "dismissed";
   read: boolean;
   dismissed: boolean;
   readAt?: string | null;
@@ -1738,43 +1779,43 @@ export interface Notification {
   title: string;
   content: string;
   actionLink: {
-    type: 'reference' | 'custom';
+    type: "reference" | "custom";
     newTab: boolean;
     reference?:
       | ({
-          relationTo: 'pages';
+          relationTo: "pages";
           value: string | Page;
         } | null)
       | ({
-          relationTo: 'posts';
+          relationTo: "posts";
           value: string | Post;
         } | null)
       | ({
-          relationTo: 'surf';
+          relationTo: "surf";
           value: string | Surf;
         } | null)
       | ({
-          relationTo: 'users';
+          relationTo: "users";
           value: string | User;
         } | null)
       | ({
-          relationTo: 'albums';
+          relationTo: "albums";
           value: string | Album;
         } | null)
       | ({
-          relationTo: 'tracks';
+          relationTo: "tracks";
           value: string | Track;
         } | null)
       | ({
-          relationTo: 'playlists';
+          relationTo: "playlists";
           value: string | Playlist;
         } | null)
       | ({
-          relationTo: 'organizations';
+          relationTo: "organizations";
           value: string | Organization;
         } | null)
       | ({
-          relationTo: 'categories';
+          relationTo: "categories";
           value: string | Category;
         } | null);
     url?: string | null;
@@ -1782,7 +1823,7 @@ export interface Notification {
     /**
      * Choose how the link should be rendered.
      */
-    appearance?: ('default' | 'outline') | null;
+    appearance?: ("default" | "outline") | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1801,8 +1842,8 @@ export interface Response {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -1811,11 +1852,11 @@ export interface Response {
   author: string | User;
   target:
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       }
     | {
-        relationTo: 'surf';
+        relationTo: "surf";
         value: string | Surf;
       };
   isEdited: boolean;
@@ -1823,11 +1864,11 @@ export interface Response {
   hash: string;
   parent?:
     | ({
-        relationTo: 'responses';
+        relationTo: "responses";
         value: string | Response;
       } | null)
     | ({
-        relationTo: 'citations';
+        relationTo: "citations";
         value: string | Citation;
       } | null);
   mentions?: (string | User)[] | null;
@@ -1837,7 +1878,7 @@ export interface Response {
   isSticky: boolean;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1857,11 +1898,11 @@ export interface Citation {
   author: string | User;
   target:
     | {
-        relationTo: 'surf';
+        relationTo: "surf";
         value: string | Surf;
       }
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       };
   cited: string | User;
@@ -2078,7 +2119,7 @@ export interface TeamMember {
  */
 export interface AdminInvitation {
   id: string;
-  role: 'admin' | 'author' | 'editor' | 'user' | 'patron';
+  role: "admin" | "author" | "editor" | "user" | "patron";
   token: string;
   url?: string | null;
   updatedAt: string;
@@ -2093,27 +2134,27 @@ export interface UserView {
   user: string | User;
   target:
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       }
     | {
-        relationTo: 'surf';
+        relationTo: "surf";
         value: string | Surf;
       }
     | {
-        relationTo: 'playlists';
+        relationTo: "playlists";
         value: string | Playlist;
       }
     | {
-        relationTo: 'profile';
+        relationTo: "profile";
         value: string | Profile;
       }
     | {
-        relationTo: 'albums';
+        relationTo: "albums";
         value: string | Album;
       }
     | {
-        relationTo: 'tracks';
+        relationTo: "tracks";
         value: string | Track;
       };
   /**
@@ -2143,7 +2184,7 @@ export interface Admin {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'patron' | 'editor' | 'author';
+  role: "admin" | "user" | "patron" | "editor" | "author";
   /**
    * Upload your profile picture here.
    */
@@ -2163,7 +2204,7 @@ export interface Admin {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
-  collection: 'admins';
+  collection: "admins";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2192,13 +2233,18 @@ export interface DeferredEmail {
    * Serialized email data to be sent later
    */
   emailData: string;
-  category: 'notifications' | 'alerts' | 'validators' | 'authenticators' | 'misc';
+  category:
+    | "notifications"
+    | "alerts"
+    | "validators"
+    | "authenticators"
+    | "misc";
   /**
    * When this email should be sent
    */
   scheduledFor: string;
   attempts: number;
-  status: 'pending' | 'sent' | 'failed';
+  status: "pending" | "sent" | "failed";
   sentAt?: string | null;
   lastError?: string | null;
   updatedAt: string;
@@ -2211,14 +2257,14 @@ export interface DeferredEmail {
 export interface Export {
   id: string;
   name?: string | null;
-  format: 'csv' | 'json';
+  format: "csv" | "json";
   limit?: number | null;
   page?: number | null;
   sort?: string | null;
-  sortOrder?: ('asc' | 'desc') | null;
-  locale?: ('all' | 'en' | 'ko') | null;
-  drafts?: ('yes' | 'no') | null;
-  selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
+  sortOrder?: ("asc" | "desc") | null;
+  locale?: ("all" | "en" | "ko") | null;
+  drafts?: ("yes" | "no") | null;
+  selectionToUse?: ("currentSelection" | "currentFilters" | "all") | null;
   fields?: string[] | null;
   collectionSlug: string;
   where?:
@@ -2249,9 +2295,9 @@ export interface Export {
 export interface Import {
   id: string;
   collectionSlug: string;
-  importMode?: ('create' | 'update' | 'upsert') | null;
+  importMode?: ("create" | "update" | "upsert") | null;
   matchField?: string | null;
-  status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
+  status?: ("pending" | "completed" | "partial" | "failed") | null;
   summary?: {
     imported?: number | null;
     updated?: number | null;
@@ -2290,14 +2336,14 @@ export interface Redirect {
    */
   from: string;
   to?: {
-    type?: ('reference' | 'custom') | null;
+    type?: ("reference" | "custom") | null;
     reference?:
       | ({
-          relationTo: 'pages';
+          relationTo: "pages";
           value: string | Page;
         } | null)
       | ({
-          relationTo: 'posts';
+          relationTo: "posts";
           value: string | Post;
         } | null);
     url?: string | null;
@@ -2317,31 +2363,31 @@ export interface Search {
   collection?: string | null;
   doc:
     | {
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       }
     | {
-        relationTo: 'surf';
+        relationTo: "surf";
         value: string | Surf;
       }
     | {
-        relationTo: 'profile';
+        relationTo: "profile";
         value: string | Profile;
       }
     | {
-        relationTo: 'pages';
+        relationTo: "pages";
         value: string | Page;
       }
     | {
-        relationTo: 'tracks';
+        relationTo: "tracks";
         value: string | Track;
       }
     | {
-        relationTo: 'playlists';
+        relationTo: "playlists";
         value: string | Playlist;
       }
     | {
-        relationTo: 'albums';
+        relationTo: "albums";
         value: string | Album;
       };
   id: string;
@@ -2380,15 +2426,15 @@ export interface Search {
     description?: string | null;
     image?:
       | ({
-          relationTo: 'media';
+          relationTo: "media";
           value: string | Media;
         } | null)
       | ({
-          relationTo: 'assets';
+          relationTo: "assets";
           value: string | Asset;
         } | null)
       | ({
-          relationTo: 'userMedia';
+          relationTo: "userMedia";
           value: string | UserMedia;
         } | null);
   };
@@ -2464,12 +2510,12 @@ export interface PayloadJob {
         executedAt: string;
         completedAt: string;
         taskSlug:
-          | 'inline'
-          | 'welcomeUser'
-          | 'welcomeUsers'
-          | 'createCollectionExport'
-          | 'createCollectionImport'
-          | 'schedulePublish';
+          | "inline"
+          | "welcomeUser"
+          | "welcomeUsers"
+          | "createCollectionExport"
+          | "createCollectionImport"
+          | "schedulePublish";
         taskID: string;
         input?:
           | {
@@ -2489,7 +2535,7 @@ export interface PayloadJob {
           | number
           | boolean
           | null;
-        state: 'failed' | 'succeeded';
+        state: "failed" | "succeeded";
         error?:
           | {
               [k: string]: unknown;
@@ -2502,15 +2548,15 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  workflowSlug?: 'onboardUsers' | null;
+  workflowSlug?: "onboardUsers" | null;
   taskSlug?:
     | (
-        | 'inline'
-        | 'welcomeUser'
-        | 'welcomeUsers'
-        | 'createCollectionExport'
-        | 'createCollectionImport'
-        | 'schedulePublish'
+        | "inline"
+        | "welcomeUser"
+        | "welcomeUsers"
+        | "createCollectionExport"
+        | "createCollectionImport"
+        | "schedulePublish"
       )
     | null;
   queue?: string | null;
@@ -2528,133 +2574,133 @@ export interface PayloadLockedDocument {
   id: string;
   document?:
     | ({
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       } | null)
     | ({
-        relationTo: 'sessions';
+        relationTo: "sessions";
         value: string | Session;
       } | null)
     | ({
-        relationTo: 'accounts';
+        relationTo: "accounts";
         value: string | Account;
       } | null)
     | ({
-        relationTo: 'verifications';
+        relationTo: "verifications";
         value: string | Verification;
       } | null)
     | ({
-        relationTo: 'twoFactors';
+        relationTo: "twoFactors";
         value: string | TwoFactor;
       } | null)
     | ({
-        relationTo: 'passkeys';
+        relationTo: "passkeys";
         value: string | Passkey;
       } | null)
     | ({
-        relationTo: 'organizations';
+        relationTo: "organizations";
         value: string | Organization;
       } | null)
     | ({
-        relationTo: 'teams';
+        relationTo: "teams";
         value: string | Team;
       } | null)
     | ({
-        relationTo: 'teamMembers';
+        relationTo: "teamMembers";
         value: string | TeamMember;
       } | null)
     | ({
-        relationTo: 'members';
+        relationTo: "members";
         value: string | Member;
       } | null)
     | ({
-        relationTo: 'invitations';
+        relationTo: "invitations";
         value: string | Invitation;
       } | null)
     | ({
-        relationTo: 'admin-invitations';
+        relationTo: "admin-invitations";
         value: string | AdminInvitation;
       } | null)
     | ({
-        relationTo: 'assets';
+        relationTo: "assets";
         value: string | Asset;
       } | null)
     | ({
-        relationTo: 'categories';
+        relationTo: "categories";
         value: string | Category;
       } | null)
     | ({
-        relationTo: 'media';
+        relationTo: "media";
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'notifications';
+        relationTo: "notifications";
         value: string | Notification;
       } | null)
     | ({
-        relationTo: 'pages';
+        relationTo: "pages";
         value: string | Page;
       } | null)
     | ({
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       } | null)
     | ({
-        relationTo: 'userMedia';
+        relationTo: "userMedia";
         value: string | UserMedia;
       } | null)
     | ({
-        relationTo: 'profile';
+        relationTo: "profile";
         value: string | Profile;
       } | null)
     | ({
-        relationTo: 'bookmarks';
+        relationTo: "bookmarks";
         value: string | Bookmark;
       } | null)
     | ({
-        relationTo: 'userViews';
+        relationTo: "userViews";
         value: string | UserView;
       } | null)
     | ({
-        relationTo: 'responses';
+        relationTo: "responses";
         value: string | Response;
       } | null)
     | ({
-        relationTo: 'compilations';
+        relationTo: "compilations";
         value: string | Compilation;
       } | null)
     | ({
-        relationTo: 'admins';
+        relationTo: "admins";
         value: string | Admin;
       } | null)
     | ({
-        relationTo: 'email-quota';
+        relationTo: "email-quota";
         value: string | EmailQuota;
       } | null)
     | ({
-        relationTo: 'deferred-emails';
+        relationTo: "deferred-emails";
         value: string | DeferredEmail;
       } | null)
     | ({
-        relationTo: 'redirects';
+        relationTo: "redirects";
         value: string | Redirect;
       } | null)
     | ({
-        relationTo: 'search';
+        relationTo: "search";
         value: string | Search;
       } | null)
     | ({
-        relationTo: 'payload-folders';
+        relationTo: "payload-folders";
         value: string | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user:
     | {
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       }
     | {
-        relationTo: 'admins';
+        relationTo: "admins";
         value: string | Admin;
       };
   updatedAt: string;
@@ -2668,11 +2714,11 @@ export interface PayloadPreference {
   id: string;
   user:
     | {
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       }
     | {
-        relationTo: 'admins';
+        relationTo: "admins";
         value: string | Admin;
       };
   key?: string | null;
@@ -3943,46 +3989,46 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: string;
-  radio?: (string | null) | Playlist;
+  radio: (string | Playlist)[];
   navItems: {
     link: {
-      type: 'reference' | 'custom';
+      type: "reference" | "custom";
       newTab: boolean;
       reference?:
         | ({
-            relationTo: 'pages';
+            relationTo: "pages";
             value: string | Page;
           } | null)
         | ({
-            relationTo: 'posts';
+            relationTo: "posts";
             value: string | Post;
           } | null)
         | ({
-            relationTo: 'surf';
+            relationTo: "surf";
             value: string | Surf;
           } | null)
         | ({
-            relationTo: 'users';
+            relationTo: "users";
             value: string | User;
           } | null)
         | ({
-            relationTo: 'albums';
+            relationTo: "albums";
             value: string | Album;
           } | null)
         | ({
-            relationTo: 'tracks';
+            relationTo: "tracks";
             value: string | Track;
           } | null)
         | ({
-            relationTo: 'playlists';
+            relationTo: "playlists";
             value: string | Playlist;
           } | null)
         | ({
-            relationTo: 'organizations';
+            relationTo: "organizations";
             value: string | Organization;
           } | null)
         | ({
-            relationTo: 'categories';
+            relationTo: "categories";
             value: string | Category;
           } | null);
       url?: string | null;
@@ -3990,7 +4036,7 @@ export interface Header {
       /**
        * Choose how the link should be rendered.
        */
-      appearance?: 'default' | null;
+      appearance?: "default" | null;
     };
     previewMedia?: {
       desktop?: (string | null) | Media;
@@ -4011,43 +4057,43 @@ export interface Footer {
   navItems?:
     | {
         link: {
-          type: 'reference' | 'custom';
+          type: "reference" | "custom";
           newTab: boolean;
           reference?:
             | ({
-                relationTo: 'pages';
+                relationTo: "pages";
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts';
+                relationTo: "posts";
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'surf';
+                relationTo: "surf";
                 value: string | Surf;
               } | null)
             | ({
-                relationTo: 'users';
+                relationTo: "users";
                 value: string | User;
               } | null)
             | ({
-                relationTo: 'albums';
+                relationTo: "albums";
                 value: string | Album;
               } | null)
             | ({
-                relationTo: 'tracks';
+                relationTo: "tracks";
                 value: string | Track;
               } | null)
             | ({
-                relationTo: 'playlists';
+                relationTo: "playlists";
                 value: string | Playlist;
               } | null)
             | ({
-                relationTo: 'organizations';
+                relationTo: "organizations";
                 value: string | Organization;
               } | null)
             | ({
-                relationTo: 'categories';
+                relationTo: "categories";
                 value: string | Category;
               } | null);
           url?: string | null;
@@ -4059,43 +4105,43 @@ export interface Footer {
   column1Links?:
     | {
         link: {
-          type: 'reference' | 'custom';
+          type: "reference" | "custom";
           newTab: boolean;
           reference?:
             | ({
-                relationTo: 'pages';
+                relationTo: "pages";
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts';
+                relationTo: "posts";
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'surf';
+                relationTo: "surf";
                 value: string | Surf;
               } | null)
             | ({
-                relationTo: 'users';
+                relationTo: "users";
                 value: string | User;
               } | null)
             | ({
-                relationTo: 'albums';
+                relationTo: "albums";
                 value: string | Album;
               } | null)
             | ({
-                relationTo: 'tracks';
+                relationTo: "tracks";
                 value: string | Track;
               } | null)
             | ({
-                relationTo: 'playlists';
+                relationTo: "playlists";
                 value: string | Playlist;
               } | null)
             | ({
-                relationTo: 'organizations';
+                relationTo: "organizations";
                 value: string | Organization;
               } | null)
             | ({
-                relationTo: 'categories';
+                relationTo: "categories";
                 value: string | Category;
               } | null);
           url?: string | null;
@@ -4107,43 +4153,43 @@ export interface Footer {
   column2Links?:
     | {
         link: {
-          type: 'reference' | 'custom';
+          type: "reference" | "custom";
           newTab: boolean;
           reference?:
             | ({
-                relationTo: 'pages';
+                relationTo: "pages";
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts';
+                relationTo: "posts";
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'surf';
+                relationTo: "surf";
                 value: string | Surf;
               } | null)
             | ({
-                relationTo: 'users';
+                relationTo: "users";
                 value: string | User;
               } | null)
             | ({
-                relationTo: 'albums';
+                relationTo: "albums";
                 value: string | Album;
               } | null)
             | ({
-                relationTo: 'tracks';
+                relationTo: "tracks";
                 value: string | Track;
               } | null)
             | ({
-                relationTo: 'playlists';
+                relationTo: "playlists";
                 value: string | Playlist;
               } | null)
             | ({
-                relationTo: 'organizations';
+                relationTo: "organizations";
                 value: string | Organization;
               } | null)
             | ({
-                relationTo: 'categories';
+                relationTo: "categories";
                 value: string | Category;
               } | null);
           url?: string | null;
@@ -4155,43 +4201,43 @@ export interface Footer {
   column3Links?:
     | {
         link: {
-          type: 'reference' | 'custom';
+          type: "reference" | "custom";
           newTab: boolean;
           reference?:
             | ({
-                relationTo: 'pages';
+                relationTo: "pages";
                 value: string | Page;
               } | null)
             | ({
-                relationTo: 'posts';
+                relationTo: "posts";
                 value: string | Post;
               } | null)
             | ({
-                relationTo: 'surf';
+                relationTo: "surf";
                 value: string | Surf;
               } | null)
             | ({
-                relationTo: 'users';
+                relationTo: "users";
                 value: string | User;
               } | null)
             | ({
-                relationTo: 'albums';
+                relationTo: "albums";
                 value: string | Album;
               } | null)
             | ({
-                relationTo: 'tracks';
+                relationTo: "tracks";
                 value: string | Track;
               } | null)
             | ({
-                relationTo: 'playlists';
+                relationTo: "playlists";
                 value: string | Playlist;
               } | null)
             | ({
-                relationTo: 'organizations';
+                relationTo: "organizations";
                 value: string | Organization;
               } | null)
             | ({
-                relationTo: 'categories';
+                relationTo: "categories";
                 value: string | Category;
               } | null);
           url?: string | null;
@@ -4334,7 +4380,7 @@ export interface CollectionsWidget {
   data?: {
     [k: string]: unknown;
   };
-  width: 'full';
+  width: "full";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4372,35 +4418,35 @@ export interface TaskCreateCollectionExport {
     name: string;
     batchSize?: number | null;
     collectionSlug:
-      | 'users'
-      | 'assets'
-      | 'categories'
-      | 'media'
-      | 'tags'
-      | 'notifications'
-      | 'pages'
-      | 'posts'
-      | 'userMedia'
-      | 'profile'
-      | 'albums'
-      | 'tracks'
-      | 'playlists'
-      | 'follows'
-      | 'bookmarks'
-      | 'userViews'
-      | 'surf'
-      | 'citations'
-      | 'responses'
-      | 'compilations'
-      | 'admins'
-      | 'email-quota'
-      | 'deferred-emails'
-      | 'exports'
-      | 'imports';
-    drafts?: ('yes' | 'no') | null;
+      | "users"
+      | "assets"
+      | "categories"
+      | "media"
+      | "tags"
+      | "notifications"
+      | "pages"
+      | "posts"
+      | "userMedia"
+      | "profile"
+      | "albums"
+      | "tracks"
+      | "playlists"
+      | "follows"
+      | "bookmarks"
+      | "userViews"
+      | "surf"
+      | "citations"
+      | "responses"
+      | "compilations"
+      | "admins"
+      | "email-quota"
+      | "deferred-emails"
+      | "exports"
+      | "imports";
+    drafts?: ("yes" | "no") | null;
     exportCollection: string;
     fields?: string[] | null;
-    format: 'csv' | 'json';
+    format: "csv" | "json";
     limit?: number | null;
     locale?: string | null;
     maxLimit?: number | null;
@@ -4432,7 +4478,7 @@ export interface TaskCreateCollectionImport {
     userCollection?: string | null;
     batchSize?: number | null;
     debug?: boolean | null;
-    defaultVersionStatus?: ('draft' | 'published') | null;
+    defaultVersionStatus?: ("draft" | "published") | null;
     maxLimit?: number | null;
   };
   output?: unknown;
@@ -4443,15 +4489,15 @@ export interface TaskCreateCollectionImport {
  */
 export interface TaskSchedulePublish {
   input: {
-    type?: ('publish' | 'unpublish') | null;
+    type?: ("publish" | "unpublish") | null;
     locale?: string | null;
     doc?:
       | ({
-          relationTo: 'posts';
+          relationTo: "posts";
           value: string | Post;
         } | null)
       | ({
-          relationTo: 'surf';
+          relationTo: "surf";
           value: string | Surf;
         } | null);
     global?: string | null;
@@ -4474,20 +4520,20 @@ export interface Image {
   id: string | null;
   media?:
     | ({
-        relationTo: 'media';
+        relationTo: "media";
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'userMedia';
+        relationTo: "userMedia";
         value: string | UserMedia;
       } | null)
     | ({
-        relationTo: 'assets';
+        relationTo: "assets";
         value: string | Asset;
       } | null);
   span?: number | null;
   blockName?: string | null;
-  blockType: 'image';
+  blockType: "image";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4495,10 +4541,10 @@ export interface Image {
  */
 export interface CodeBlock {
   id: string | null;
-  language?: ('typescript' | 'javascript' | 'css') | null;
+  language?: ("typescript" | "javascript" | "css") | null;
   code: string;
   blockName?: string | null;
-  blockType: 'code';
+  blockType: "code";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4508,7 +4554,6 @@ export interface Auth {
   [k: string]: unknown;
 }
 
-
-declare module 'payload' {
+declare module "payload" {
   export interface GeneratedTypes extends Config {}
 }
