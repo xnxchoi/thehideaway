@@ -1,19 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { MotionPillButton } from "@/components/UX/Button";
+import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import { SPRING_EASE } from "@/constants/animations";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
 import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLenis } from "lenis/react";
 import { useTourStore } from "./TourProvider";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
@@ -27,26 +23,26 @@ type StepConfig = {
 const STEP_COPY: Record<RegistrationStep, StepConfig> = {
   welcome: {
     title: "Welcome to\nThe Hideaway.",
-    subtitle: "A few quick details and you're all set.",
+    subtitle: "A few quick details and you're all set."
   },
   identity: {
     title: "What should\nwe call you?",
-    subtitle: "This is how you'll appear across the platform.",
+    subtitle: "This is how you'll appear across the platform."
   },
   bio: {
     title: "About you.",
     subtitle: "A short bio helps others find and connect with you.",
-    optional: true,
+    optional: true
   },
   details: {
     title: "Where are you\ncoming from?",
     subtitle: "Your location and a link — both optional.",
-    optional: true,
+    optional: true
   },
   complete: {
     title: "You're in.",
-    subtitle: "Start exploring whenever you're ready.",
-  },
+    subtitle: "Start exploring whenever you're ready."
+  }
 };
 
 // Steps shown in the indicator (exclude welcome)
@@ -54,7 +50,7 @@ const INDICATOR_STEPS: RegistrationStep[] = [
   "identity",
   "bio",
   "details",
-  "complete",
+  "complete"
 ];
 
 // ─── Input primitive ──────────────────────────────────────────────────────────
@@ -112,13 +108,7 @@ function IdentityStep({
   );
 }
 
-function BioStep({
-  bio,
-  onBio,
-}: {
-  bio: string;
-  onBio: (v: string) => void;
-}) {
+function BioStep({ bio, onBio }: { bio: string; onBio: (v: string) => void }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     ref.current?.focus();
@@ -129,17 +119,17 @@ function BioStep({
       <textarea
         ref={ref}
         className={
-          "w-full px-5 py-4 rounded-2xl bg-transparent border border-foreground/15 " +
-          "text-foreground text-[15px] placeholder:text-muted-foreground/35 " +
-          "focus:outline-none focus:border-foreground/45 transition-colors duration-150 " +
-          "resize-none min-h-[112px] leading-relaxed"
+          "w-full rounded-2xl border border-foreground/15 bg-transparent px-5 py-4 " +
+          "text-[15px] text-foreground placeholder:text-muted-foreground/35 " +
+          "transition-colors duration-150 focus:border-foreground/45 focus:outline-none " +
+          "min-h-[112px] resize-none leading-relaxed"
         }
         placeholder="Your passion, work, interests — keep it interesting."
         value={bio}
         onChange={(e) => onBio(e.target.value)}
         maxLength={200}
       />
-      <span className="text-xs text-muted-foreground/35 text-right tabular-nums">
+      <span className="text-right text-xs text-muted-foreground/35 tabular-nums">
         {bio.length}/200
       </span>
     </div>
@@ -194,11 +184,7 @@ function CompleteStep() {
 
 // ─── Step indicators ──────────────────────────────────────────────────────────
 
-function StepIndicators({
-  current,
-}: {
-  current: RegistrationStep;
-}) {
+function StepIndicators({ current }: { current: RegistrationStep }) {
   const currentIdx = INDICATOR_STEPS.indexOf(current);
 
   return (
@@ -219,10 +205,10 @@ function StepIndicators({
               "flex items-center justify-center rounded-full text-[11px] font-medium",
               "transition-all duration-300",
               isCurrent
-                ? "w-6 h-6 bg-foreground text-background"
+                ? "h-6 w-6 bg-foreground text-background"
                 : isPast
-                ? "w-6 h-6 border border-foreground/25 text-foreground/40"
-                : "w-6 h-6 border border-foreground/10 text-foreground/20"
+                  ? "h-6 w-6 border border-foreground/25 text-foreground/40"
+                  : "h-6 w-6 border border-foreground/10 text-foreground/20"
             )}
           >
             {isPast ? (
@@ -257,7 +243,7 @@ function StepIndicators({
 function ExitWarning({
   isRequiredSection,
   onConfirm,
-  onCancel,
+  onCancel
 }: {
   isRequiredSection: boolean;
   onConfirm: () => void;
@@ -275,7 +261,10 @@ function ExitWarning({
   return (
     <m.div
       className="absolute inset-0 z-10 flex items-center justify-center px-6"
-      style={{ backdropFilter: "blur(8px)", background: "rgba(var(--background-rgb, 255 255 255) / 0.7)" }}
+      style={{
+        backdropFilter: "blur(8px)",
+        background: "rgba(var(--background-rgb, 255 255 255) / 0.7)"
+      }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -284,8 +273,8 @@ function ExitWarning({
     >
       <m.div
         className={cn(
-          "bg-background border border-foreground/8 rounded-2xl p-7",
-          "w-full max-w-[360px] shadow-2xl flex flex-col gap-5"
+          "rounded-2xl border border-foreground/8 bg-background p-7",
+          "flex w-full max-w-[360px] flex-col gap-5 shadow-2xl"
         )}
         initial={{ scale: 0.96, y: 12, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -294,21 +283,21 @@ function ExitWarning({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-2">
-          <h3 className="text-[17px] font-medium leading-snug text-foreground">
+          <h3 className="text-[17px] leading-snug font-medium text-foreground">
             {isRequiredSection
               ? "You haven't set your name yet."
               : "Leave without saving?"}
           </h3>
-          <p className="text-[14px] text-muted-foreground leading-relaxed">
+          <p className="text-[14px] leading-relaxed text-muted-foreground">
             {isRequiredSection
               ? "Your name is required to fully use your account. You can complete this anytime from your profile settings."
               : "Your profile changes won't be saved. You can always update these in settings."}
           </p>
         </div>
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-full text-[13px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="cursor-pointer rounded-full px-4 py-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             autoFocus
           >
             Stay
@@ -316,7 +305,7 @@ function ExitWarning({
           <button
             onClick={onConfirm}
             className={cn(
-              "px-4 py-2 rounded-full text-[13px] font-medium transition-colors cursor-pointer",
+              "cursor-pointer rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
               isRequiredSection
                 ? "bg-red-500/10 text-red-500 hover:bg-red-500/15"
                 : "bg-foreground/8 text-foreground hover:bg-foreground/12"
@@ -332,27 +321,27 @@ function ExitWarning({
 
 // ─── Slide variants ───────────────────────────────────────────────────────────
 
-const slideVariants:Variants = {
+const slideVariants: Variants = {
   initial: (dir: 1 | -1) => ({
     y: dir > 0 ? "105%" : "-50%",
-    opacity: 0,
+    opacity: 0
   }),
   animate: {
     y: "0%",
     opacity: 1,
     transition: {
       type: "spring" as const,
-      ...SPRING_EASE.power3.out,
-    },
+      ...SPRING_EASE.power3.out
+    }
   },
   exit: (dir: 1 | -1) => ({
     y: dir > 0 ? "-40%" : "90%",
     opacity: 0,
     transition: {
       duration: 0.22,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
-  }),
+      ease: [0.25, 0.46, 0.45, 0.94]
+    }
+  })
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -405,8 +394,7 @@ export function RegistrationTour() {
     link.trim().length > 0;
 
   // Required section = welcome or identity steps
-  const isInRequiredSection =
-    regStep === "welcome" || regStep === "identity";
+  const isInRequiredSection = regStep === "welcome" || regStep === "identity";
 
   const isFirst = regStep === "welcome";
   const isLast = regStep === "complete";
@@ -433,7 +421,7 @@ export function RegistrationTour() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLast, showExitWarning, regStep]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
@@ -475,7 +463,7 @@ export function RegistrationTour() {
         // Fire-and-forget — marks onboarded server-side
         fetch("/api/onboarding", {
           method: "POST",
-          credentials: "include",
+          credentials: "include"
         }).catch(() => {});
 
         closeRegistrationTour();
@@ -516,7 +504,7 @@ export function RegistrationTour() {
 
   return (
     <m.div
-      className="fixed inset-0 z-[500] bg-background flex flex-col"
+      className="fixed inset-0 z-[500] flex flex-col bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -526,9 +514,9 @@ export function RegistrationTour() {
       aria-label="Onboarding"
     >
       {/* ── Header ── */}
-      <header className="shrink-0 flex items-center justify-between px-8 md:px-14 pt-8">
+      <header className="flex shrink-0 items-center justify-between px-8 pt-8 md:px-14">
         {/* Brand */}
-        <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/30 select-none">
+        <span className="text-[11px] font-medium tracking-[0.12em] text-foreground/30 uppercase select-none">
           The Hideaway
         </span>
 
@@ -537,7 +525,7 @@ export function RegistrationTour() {
           {!isLast && (
             <button
               onClick={handleDismissRequest}
-              className="text-[13px] text-muted-foreground/50 hover:text-foreground/70 transition-colors cursor-pointer"
+              className="cursor-pointer text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
               aria-label="Skip onboarding"
             >
               Skip
@@ -548,7 +536,7 @@ export function RegistrationTour() {
 
       {/* ── Content ── */}
       <main
-        className="flex-1 flex items-center justify-center px-8 md:px-14 overflow-hidden py-8"
+        className="flex flex-1 items-center justify-center overflow-hidden px-8 py-8 md:px-14"
         style={{ perspective: "1500px" }}
       >
         <div className="w-full max-w-[460px]">
@@ -565,15 +553,15 @@ export function RegistrationTour() {
               {/* Title block */}
               <div className="flex flex-col gap-2.5">
                 <h1
-                  className="font-medium leading-[1.15] tracking-[-0.025em] text-foreground whitespace-pre-line"
+                  className="leading-[1.15] font-medium tracking-[-0.025em] whitespace-pre-line text-foreground"
                   style={{ fontSize: "clamp(2rem, 5.5vw, 2.75rem)" }}
                 >
                   {stepCopy.title}
                 </h1>
-                <p className="text-[15px] text-muted-foreground leading-relaxed">
+                <p className="text-[15px] leading-relaxed text-muted-foreground">
                   {stepCopy.subtitle}
                   {stepCopy.optional && (
-                    <span className="ml-2 text-[10px] font-medium uppercase tracking-[0.1em] text-foreground/25">
+                    <span className="ml-2 text-[10px] font-medium tracking-[0.1em] text-foreground/25 uppercase">
                       optional
                     </span>
                   )}
@@ -592,9 +580,7 @@ export function RegistrationTour() {
                   onLast={setLastName}
                 />
               )}
-              {regStep === "bio" && (
-                <BioStep bio={bio} onBio={setBio} />
-              )}
+              {regStep === "bio" && <BioStep bio={bio} onBio={setBio} />}
               {regStep === "details" && (
                 <DetailsStep
                   location={location}
@@ -610,12 +596,12 @@ export function RegistrationTour() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="shrink-0 flex items-center justify-between px-8 md:px-14 pb-8">
+      <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
         {!isFirst ? (
           <MotionPillButton
             onClick={handleBack}
             disabled={regSubmitting}
-            className="text-[13px] text-muted-foreground/50 hover:text-foreground/70 transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+            className="flex cursor-pointer items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
           >
             <svg
               width="14"
@@ -632,29 +618,31 @@ export function RegistrationTour() {
                 strokeLinejoin="round"
               />
             </svg>
-              Back
-            </MotionPillButton>
-          ):<div/>}
-          <MotionPillButton
+            Back
+          </MotionPillButton>
+        ) : (
+          <div />
+        )}
+        <MotionPillButton
           onClick={handleNext}
           disabled={!canAdvance() || regSubmitting}
           className={cn(
-            "px-7 py-3 rounded-full text-[14px] font-medium",
+            "rounded-full px-7 py-3 text-[14px] font-medium",
             "bg-foreground text-background",
             "hover:bg-foreground/90 active:scale-[0.97]",
             "transition-all duration-150",
-            "disabled:opacity-25 disabled:cursor-not-allowed disabled:active:scale-100",
+            "disabled:cursor-not-allowed disabled:opacity-25 disabled:active:scale-100",
             "min-w-[140px] text-center"
           )}
         >
           {regSubmitting
             ? "Saving…"
             : isLast
-            ? "Get started"
-            : regStep === "welcome"
-            ? "Let's go"
-            : "Continue"}
-          </MotionPillButton>
+              ? "Get started"
+              : regStep === "welcome"
+                ? "Let's go"
+                : "Continue"}
+        </MotionPillButton>
       </footer>
 
       {/* ── Exit warning ── */}
@@ -700,7 +688,8 @@ export function RegistrationTourTrigger() {
       triggered.current = true;
       const needsIdentity = !firstName?.trim() || !lastName?.trim();
       console.log("lenis", lenis);
-      lenis && lenis.stop();  openRegistrationTour({ needsIdentity });
+      lenis && lenis.stop();
+      openRegistrationTour({ needsIdentity });
     }
   }, [
     sessionId,

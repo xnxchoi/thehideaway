@@ -1,4 +1,5 @@
 import { getPayload } from "@/lib/payload";
+import { User } from "@payload-types";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -27,7 +28,10 @@ export async function POST(req: NextRequest) {
       collection: "users",
       id: userId,
       overrideAccess: true,
-      context: { overrideAccess: true },
+      context: {
+        overrideAccess: true,
+        user: { role: session.user.role as unknown as User["role"] }
+      },
       data: { onboarded: true }
     });
 
