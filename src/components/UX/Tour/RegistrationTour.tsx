@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MotionPillButton } from "@/components/UX/Button";
 import { SPRING_EASE } from "@/constants/animations";
+import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
@@ -14,7 +14,6 @@ import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTourStore } from "./TourProvider";
-import { authClient } from "@/lib/auth/client";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -26,20 +25,20 @@ type StepConfig = {
 const STEP_COPY: Record<RegistrationStep, StepConfig> = {
   welcome: {
     title: "Welcome to The Hideaway.",
-    subtitle: "A few quick details and you're all set.",
+    subtitle: "A few quick details and you're all set."
   },
   name: {
     title: "What should we call you?",
-    subtitle: "This is how you'll appear across the platform.",
+    subtitle: "This is how you'll appear across the platform."
   },
   profile: {
     title: "Tell us about yourself.",
-    subtitle: "Optional — but it helps others find and connect with you.",
+    subtitle: "Optional — but it helps others find and connect with you."
   },
   complete: {
     title: "You're in.",
-    subtitle: "Everything is set. Start exploring whenever you're ready.",
-  },
+    subtitle: "Everything is set. Start exploring whenever you're ready."
+  }
 };
 
 // ─── Step components ──────────────────────────────────────────────────────────
@@ -60,7 +59,7 @@ function NameStep({
   first,
   last,
   onFirst,
-  onLast,
+  onLast
 }: {
   first: string;
   last: string;
@@ -97,7 +96,7 @@ function ProfileStep({
   link,
   onBio,
   onLocation,
-  onLink,
+  onLink
 }: {
   bio: string;
   location: string;
@@ -118,7 +117,7 @@ function ProfileStep({
         placeholder="A short bio"
         value={bio}
         onChange={(e) => onBio(e.target.value)}
-        className="resize-none min-h-[88px]"
+        className="min-h-[88px] resize-none"
         maxLength={200}
       />
       <Input
@@ -152,24 +151,29 @@ function CompleteStep() {
 
 function ProgressDots({
   steps,
-  current,
+  current
 }: {
   steps: RegistrationStep[];
   current: RegistrationStep;
 }) {
   const currentIndex = steps.indexOf(current);
   return (
-    <div className="flex items-center gap-1.5" role="progressbar" aria-valuenow={currentIndex + 1} aria-valuemax={steps.length}>
+    <div
+      className="flex items-center gap-1.5"
+      role="progressbar"
+      aria-valuenow={currentIndex + 1}
+      aria-valuemax={steps.length}
+    >
       {steps.map((step, i) => (
         <span
           key={step}
           className={cn(
             "rounded-full transition-all duration-300",
             i === currentIndex
-              ? "w-5 h-1.5 bg-foreground"
+              ? "h-1.5 w-5 bg-foreground"
               : i < currentIndex
-              ? "w-1.5 h-1.5 bg-foreground/40"
-              : "w-1.5 h-1.5 bg-foreground/15"
+                ? "h-1.5 w-1.5 bg-foreground/40"
+                : "h-1.5 w-1.5 bg-foreground/15"
           )}
         />
       ))}
@@ -182,24 +186,24 @@ function ProgressDots({
 const slideVariants: Variants = {
   enter: (dir: 1 | -1) => ({
     x: dir * 28,
-    opacity: 0,
+    opacity: 0
   }),
   center: {
     x: 0,
     opacity: 1,
     transition: {
       type: "spring" as const,
-      ...SPRING_EASE.power3.out,
-    },
+      ...SPRING_EASE.power3.out
+    }
   },
   exit: (dir: 1 | -1) => ({
     x: dir * -20,
     opacity: 0,
     transition: {
       duration: 0.18,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
-  }),
+      ease: [0.25, 0.46, 0.45, 0.94]
+    }
+  })
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -213,7 +217,9 @@ export function RegistrationTour() {
   const regNext = useTourStore((s) => s.regNext);
   const regPrev = useTourStore((s) => s.regPrev);
   const closeRegistrationTour = useTourStore((s) => s.closeRegistrationTour);
-  const dismissRegistrationTour = useTourStore((s) => s.dismissRegistrationTour);
+  const dismissRegistrationTour = useTourStore(
+    (s) => s.dismissRegistrationTour
+  );
   const setRegSubmitting = useTourStore((s) => s.setRegSubmitting);
 
   const sessionFirstName = useRPSession((s) => s.firstName);
@@ -259,7 +265,9 @@ export function RegistrationTour() {
         if (link.trim()) updates.link = link.trim();
 
         if (Object.keys(updates).length > 0) {
-          await authClient.updateUser(updates as Parameters<typeof authClient.updateUser>[0]);
+          await authClient.updateUser(
+            updates as Parameters<typeof authClient.updateUser>[0]
+          );
         }
 
         // Update local session immediately so UI responds
@@ -299,7 +307,7 @@ export function RegistrationTour() {
     setRegSubmitting,
     setOnboarded,
     setFirstNameSession,
-    setLastNameSession,
+    setLastNameSession
   ]);
 
   const handleBack = useCallback(() => {
@@ -334,8 +342,8 @@ export function RegistrationTour() {
       {/* Card */}
       <m.div
         className={cn(
-          "relative z-10 w-full max-w-[440px] mx-4",
-          "bg-background border border-foreground/8 rounded-2xl shadow-2xl",
+          "relative z-10 mx-4 w-full max-w-[440px]",
+          "rounded-2xl border border-foreground/8 bg-background shadow-2xl",
           "flex flex-col overflow-hidden"
         )}
         initial={{ opacity: 0, y: prefersReduced ? 0 : 16, scale: 0.98 }}
@@ -344,12 +352,12 @@ export function RegistrationTour() {
         transition={{ type: "spring", ...SPRING_EASE.power3.out }}
       >
         {/* Header */}
-        <div className="px-8 pt-8 pb-2 flex items-start justify-between">
+        <div className="flex items-start justify-between px-8 pt-8 pb-2">
           <ProgressDots steps={regSteps} current={regStep} />
           {!isLast && (
             <button
               onClick={dismissRegistrationTour}
-              className="text-foreground/30 hover:text-foreground/60 transition-colors text-sm leading-none cursor-pointer"
+              className="cursor-pointer text-sm leading-none text-foreground/30 transition-colors hover:text-foreground/60"
               aria-label="Skip onboarding"
             >
               Skip
@@ -358,7 +366,7 @@ export function RegistrationTour() {
         </div>
 
         {/* Step content — animated */}
-        <div className="px-8 pt-6 pb-8 flex flex-col gap-6 min-h-[240px]">
+        <div className="flex min-h-[240px] flex-col gap-6 px-8 pt-6 pb-8">
           <AnimatePresence mode="wait" custom={dir} initial={false}>
             <m.div
               key={regStep}
@@ -371,10 +379,10 @@ export function RegistrationTour() {
             >
               {/* Title block */}
               <div className="flex flex-col gap-1.5">
-                <h2 className="text-[22px] font-medium leading-snug tracking-[-0.01em] text-foreground">
+                <h2 className="text-[22px] leading-snug font-medium tracking-[-0.01em] text-foreground">
                   {stepCopy.title}
                 </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   {stepCopy.subtitle}
                 </p>
               </div>
@@ -410,7 +418,7 @@ export function RegistrationTour() {
         <div className="flex items-center gap-3 px-8 pb-8">
           {!isFirst && (
             <MotionPillButton
-               onClick={handleBack}
+              onClick={handleBack}
               disabled={regSubmitting}
               className="text-muted-foreground hover:text-foreground"
             >
@@ -425,10 +433,10 @@ export function RegistrationTour() {
             {regSubmitting
               ? "Saving…"
               : isLast
-              ? "Get started"
-              : regStep === "welcome"
-              ? "Continue"
-              : "Next"}
+                ? "Get started"
+                : regStep === "welcome"
+                  ? "Continue"
+                  : "Next"}
           </MotionPillButton>
         </div>
       </m.div>
