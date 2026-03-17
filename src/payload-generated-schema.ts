@@ -6,25 +6,25 @@
  * and re-run `payload generate:db-schema` to regenerate this file.
  */
 
-import { relations, sql } from "@payloadcms/db-postgres/drizzle";
+import type {} from "@payloadcms/db-postgres";
 import {
-  type AnyPgColumn,
-  boolean,
-  foreignKey,
-  index,
-  integer,
-  jsonb,
-  numeric,
-  pgEnum,
   pgTable,
-  serial,
-  text,
-  timestamp,
+  index,
   uniqueIndex,
+  foreignKey,
+  varchar,
+  boolean,
+  timestamp,
+  serial,
   uuid,
-  varchar
+  numeric,
+  integer,
+  text,
+  jsonb,
+  type AnyPgColumn,
+  pgEnum
 } from "@payloadcms/db-postgres/drizzle/pg-core";
-
+import { sql, relations } from "@payloadcms/db-postgres/drizzle";
 export const enum__locales = pgEnum("enum__locales", ["en", "ko"]);
 export const enum_users_role = pgEnum("enum_users_role", [
   "admin",

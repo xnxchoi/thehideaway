@@ -8,11 +8,9 @@ import { getAssetThumb } from "@/payload/plugins/getAssetThumb";
 import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import { lockerPlugin } from "@/payload/plugins/locker/plugin";
 import { searchPlugin } from "@/payload/plugins/plugin-search";
-import { CollectionMap } from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import { beforeSyncWithSearch } from "@/payload/search/beforeSync";
 import { searchFields } from "@/payload/search/fieldOverrides";
 import { getServerSideURL } from "@/utilities/getURL";
-import { KeysOfValue } from "@/utilities/typeUtilities";
 import { blurDataUrlsPlugin } from "@oversightstudio/blur-data-urls";
 import { betterAuthPlugin } from "@payload-auth/better-auth";
 import config from "@payload-config";
@@ -194,10 +192,21 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
       return `${url}/${docCollection}/${doc.slug}`;
   }
 };
-export type LockedCollections = Exclude<
-  KeysOfValue<CollectionMap, { locked?: boolean | null }>,
-  "search"
->;
+export type LockedCollections =
+  | "assets"
+  | "media"
+  | "pages"
+  | "posts"
+  | "userMedia"
+  | "profile"
+  | "albums"
+  | "tracks"
+  | "playlists"
+  | "surf";
+//   Exclude<
+//   KeysOfValue<CollectionMap, { locked?: boolean | null }>,
+//   "search"
+// >;
 export const plugins: Plugin[] = [
   importExportPlugin({
     collections: [

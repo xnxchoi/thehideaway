@@ -2,8 +2,8 @@
 
 import { socialProviders } from "@payload-auth/better-auth/plugin/constants";
 import type { SocialProvider } from "@payload-auth/better-auth/plugin/types";
-import { Icons } from "@/shared/components/icons";
-import { isValidEmail } from "@/shared/form/validation";
+import { Icons } from "@payload-auth/shared/components/icons";
+import { isValidEmail } from "@payload-auth/shared/form/validation";
 import { Button, toast } from "@payloadcms/ui";
 import { Key, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -1,13 +1,16 @@
-import {Admin, Profile, User} from "@/payload-types";
-import {LockedCollections} from "@/payload/plugins";
-import {allowListField} from "@/payload/plugins/locker/fields/allowlist";
-import {authorityField} from "@/payload/plugins/locker/fields/authority";
-import {lockBoxField} from "@/payload/plugins/locker/fields/lockbox";
-import {LockerPluginConfig} from "@/payload/plugins/locker/plugin";
-import {RP_Roles} from "@/stores/Notification/NotificationStore";
-import {arraysEqualContents} from "@/utilities/compareArrays";
-import {mergeFields} from "@/utilities/mergeFields";
-import {SerializedEditorState} from "lexical";
+import { Admin, Profile, User } from "@/payload-types";
+import { LockedCollections } from "@/payload/plugins";
+import { allowListField } from "@/payload/plugins/locker/fields/allowlist";
+import { authorityField } from "@/payload/plugins/locker/fields/authority";
+import { lockBoxField } from "@/payload/plugins/locker/fields/lockbox";
+import { LockerPluginConfig } from "@/payload/plugins/locker/plugin";
+import { CollectionMap } from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
+import { RP_Roles } from "@/stores/Notification/NotificationStore";
+import { arraysEqualContents } from "@/utilities/compareArrays";
+import { mergeFields } from "@/utilities/mergeFields";
+import { KeysOfValue } from "@/utilities/typeUtilities";
+import { SerializedEditorState } from "lexical";
+import { revalidatePath } from "next/cache";
 import {
   Access,
   AccessArgs,
@@ -19,7 +22,7 @@ import {
   DataFromCollectionSlug,
   Where
 } from "payload";
-import {roleToAuthority} from "./fields/authority/utils";
+import { roleToAuthority } from "./fields/authority/utils";
 
 export function isDraftsEnabled<T extends CollectionSlug>({
   collection
@@ -416,12 +419,12 @@ const authorityChecker = (
   const defaultChecker = ({ user, doc, auth }: CheckerParams) =>
     Boolean(
       user &&
-        user.id &&
-        user.role &&
-        (roleToAuthority(user.role as RP_Roles) >= auth ||
-          doc.allowList?.some(
-            (r) => `${typeof r === "string" ? r : r.id}` === user.id
-          ))
+      user.id &&
+      user.role &&
+      (roleToAuthority(user.role as RP_Roles) >= auth ||
+        doc.allowList?.some(
+          (r) => `${typeof r === "string" ? r : r.id}` === user.id
+        ))
     );
   const authorChecker = (args: CheckerParams) => {
     const { user, doc } = args;
@@ -440,7 +443,7 @@ const authorityChecker = (
 
 const disallowRead = (collection: LockedCollections) => {
   switch (collection) {
-    case 'surf':
+    case "surf":
     case "posts":
       return {
         content: surrogateMap.richText satisfies SerializedEditorState,
@@ -479,8 +482,15 @@ const disallowRead = (collection: LockedCollections) => {
       return {};
   }
 };
-
-const createRevalidateDoc = <T extends LockedCollections>(
+type StateSlug = KeysOfValue<
+  Pick<CollectionMap, LockedCollections>,
+  {
+    _status?: "published" | "draft" | null;
+    slug: string;
+  }
+>;
+type State = CollectionMap[StateSlug];
+const createRevalidateDoc = <T extends StateSlug>(
   collection: T,
   config: CollectionConfig<T>
 ): CollectionAfterChangeHook<DataFromCollectionSlug<T>> | null => {
@@ -502,20 +512,15 @@ const createRevalidateDoc = <T extends LockedCollections>(
   if (!hasSlug && collection !== "profile") {
     return null;
   }
-  const aa: CollectionAfterChangeHook = ({
+  const aa: CollectionAfterChangeHook<State> = ({
     doc: doco,
     previousDoc,
-    req: { payload, context }
+    req: { payload, context },
+    operation
   }) => {
-    const doc = doco as Extract<
-      DataFromCollectionSlug<LockedCollections>,
-      {
-        _status?: "published" | "draft" | null;
-        slug: string;
-      }
-    >;
-    const prv = previousDoc as typeof doc;
-    if (!context.disableRevalidate) {
+    const doc = doco;
+    const prv = previousDoc;
+    if (!context.disableRevalidate && operation === "update") {
       if (doc._status === "published") {
         let changed = doc._status !== prv._status;
         changed = changed || doc.slug !== prv.slug;
@@ -540,9 +545,9 @@ const createRevalidateDoc = <T extends LockedCollections>(
 
           payload.logger.info(`Revalidating ${collection} at path: ${path}`);
 
-	        // revalidatePath(path);
+          revalidatePath(path);
 
-	        // revalidateTag(`${collection}-sitemap`, {expire: 50});
+          // revalidateTag(`${collection}-sitemap`, {expire: 50});
         }
       }
 
@@ -554,8 +559,8 @@ const createRevalidateDoc = <T extends LockedCollections>(
           `Revalidating old ${collection} at path: ${oldPath}`
         );
 
-	      // revalidatePath(oldPath);
-	      // revalidateTag(`${collection}-sitemap`, {expire: 50});
+        // revalidatePath(oldPath);
+        // revalidateTag(`${collection}-sitemap`, {expire: 50});
       }
     }
     return doc;
@@ -604,11 +609,13 @@ const createRevalidateDoc = <T extends LockedCollections>(
           if (changed) {
             const path = `/${collectionSlug}/${slug}`;
 
-            req.payload.logger.info(`Revalidating ${collection} at path: ${path}`);
+            req.payload.logger.info(
+              `Revalidating ${collection} at path: ${path}`
+            );
 
-	          // revalidatePath(path);
+            // revalidatePath(path);
 
-	          // revalidateTag(`users-sitemap`, {expire: 50});
+            // revalidateTag(`users-sitemap`, {expire: 50});
           }
         }
       }

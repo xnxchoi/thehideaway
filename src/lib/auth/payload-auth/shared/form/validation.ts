@@ -1,4 +1,4 @@
-import { emailRegex, usernameRegex } from "@/shared/utils/regex";
+import { emailRegex, usernameRegex } from "@payload-auth/shared/utils/regex";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------

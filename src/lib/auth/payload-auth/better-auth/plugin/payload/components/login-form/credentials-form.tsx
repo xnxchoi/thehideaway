@@ -1,11 +1,14 @@
 "use client";
 
 import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
-import { useAppForm } from "@/shared/form";
-import { Form, FormError, FormInputWrap } from "@/shared/form/ui";
-import { FormHeader } from "@/shared/form/ui/header";
-import { createLoginSchema, isValidEmail } from "@/shared/form/validation";
-import { valueOrDefaultString } from "@/shared/utils/value-or-default";
+import { useAppForm } from "@payload-auth/shared/form";
+import { Form, FormError, FormInputWrap } from "@payload-auth/shared/form/ui";
+import { FormHeader } from "@payload-auth/shared/form/ui/header";
+import {
+  createLoginSchema,
+  isValidEmail
+} from "@payload-auth/shared/form/validation";
+import { valueOrDefaultString } from "@payload-auth/shared/utils/value-or-default";
 import { useConfig, Link, toast, useTranslation } from "@payloadcms/ui";
 import { formatAdminURL } from "payload/shared";
 import React, { useState } from "react";

@@ -1,25 +1,25 @@
 "use client";
 
 import "./index.scss";
-
-import React, { useMemo, useState } from "react";
-import { XIcon, Copy } from "lucide-react";
+import { useAppForm } from "@payload-auth/shared/form";
+import { Form, FormInputWrap } from "@payload-auth/shared/form/ui";
+import { passwordField } from "@payload-auth/shared/form/validation";
 import {
   Button,
   Modal,
   toast,
-  useModal,
-  useTranslation,
+  useField,
   useFormFields,
-  useField
+  useModal,
+  useTranslation
 } from "@payloadcms/ui";
-import { createAuthClient } from "better-auth/react";
 import { twoFactorClient } from "better-auth/client/plugins";
-import { Form, FormInputWrap } from "@/shared/form/ui";
-import { z } from "zod";
-import { passwordField } from "@/shared/form/validation";
+import { createAuthClient } from "better-auth/react";
+import { Copy, XIcon } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { useAppForm } from "@/shared/form";
+
+import React, { useMemo, useState } from "react";
+import { z } from "zod";
 
 const baseClass = "two-factor-auth-modal";
 
@@ -114,7 +114,8 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
         <FormInputWrap className="two-factor-enable-form__inputWrap">
           <form.AppField
             name="password"
-            children={(field: any) => (
+            /* eslint-disable-next-line react/no-children-prop */
+            children={(field) => (
               <field.TextField
                 type="password"
                 className="password"
@@ -124,9 +125,9 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
             )}
           />
         </FormInputWrap>
-        <form.AppForm
+        <form.AppForm>
           children={<form.Submit label="Enable" loadingLabel="Enabling" />}
-        />
+        </form.AppForm>
       </Form>
     );
   };
@@ -170,7 +171,8 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
         <FormInputWrap className="tf__inputWrap">
           <form.AppField
             name="otp"
-            children={(field: any) => (
+            /* eslint-disable-next-line react/no-children-prop */
+            children={(field) => (
               <field.TextField
                 type="text"
                 className="text otp"
@@ -180,9 +182,9 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
             )}
           />
         </FormInputWrap>
-        <form.AppForm
-          children={<form.Submit label="Verify" loadingLabel="Verifying" />}
-        />
+        <form.AppForm>
+          <form.Submit label="Verify" loadingLabel="Verifying" />
+        </form.AppForm>
       </Form>
     );
   };
@@ -220,7 +222,8 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
         <FormInputWrap className="two-factor-disable-form__inputWrap">
           <form.AppField
             name="password"
-            children={(field: any) => (
+            /* eslint-disable-next-line react/no-children-prop */
+            children={(field) => (
               <field.TextField
                 type="password"
                 className="password"
@@ -230,11 +233,9 @@ export const TwoFactorAuth: React.FC<TwoFactorAuthProps> = ({
             )}
           />
         </FormInputWrap>
-        <form.AppForm
-          children={
-            <form.Submit label="Disable Two‑Factor" loadingLabel="Disabling" />
-          }
-        />
+        <form.AppForm>
+          <form.Submit label="Disable Two‑Factor" loadingLabel="Disabling" />
+        </form.AppForm>
       </Form>
     );
   };

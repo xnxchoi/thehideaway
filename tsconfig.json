@@ -22,6 +22,13 @@
       "@payload-config": ["./src/payload.config.ts"],
       "meshline": ["./src/components/three/meshline"],
       "@payload-auth/*": ["./src/lib/auth/payload-auth/*"],
+      "@payload-auth/better-auth/plugin/rsc": [
+        "./src/lib/auth/payload-auth/better-auth/plugin/payload/exports/rsc.ts"
+      ],
+      "@payload-auth/better-auth/plugin/client": [
+        "./src/lib/auth/payload-auth/better-auth/plugin/payload/exports/client.ts"
+      ],
+
       "@betterauth-ui": ["./src/lib/auth/betterauth-ui/src"],
       "@betterauth-ui/*": ["./src/lib/auth/betterauth-ui/src/*"],
       "@/AccessControlled/*": ["./src/payload/fields/AccessControlled/*"]

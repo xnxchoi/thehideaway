@@ -29,9 +29,7 @@ export const Header: GlobalConfig = {
       name: "radio",
       type: "relationship",
       relationTo: "playlists",
-      hasMany: true, // Enables an order-sensitive list of relationships
-      minRows: 1, // Enforces that at least 1 playlist must be selected
-      required: true // Ensures the field itself cannot be left empty
+      hasMany: true // Enables an order-sensitive list of relationships
     },
     {
       name: "navItems",

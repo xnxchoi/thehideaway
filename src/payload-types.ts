@@ -3989,7 +3989,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: string;
-  radio: (string | Playlist)[];
+  radio?: (string | Playlist)[] | null;
   navItems: {
     link: {
       type: "reference" | "custom";

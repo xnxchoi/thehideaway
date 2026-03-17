@@ -1,5 +1,4 @@
 import { afterSchemaInit } from "@/lib/scripts/afterSchemaInit";
-import { syncTrackMedia } from "@/lib/scripts/syncTrackMedia";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
@@ -182,9 +181,10 @@ export default buildConfig({
         payload.logger.error("Error creating user concierge:", e);
       });
     if (typeof uid === "string") {
-      await syncTrackMedia(payload, uid).catch((e) => {
-        payload.logger.error("syncTrackMedia failed:", e);
-      });
+      // await syncTrackMedia(payload, uid).catch((e) => {
+      //   payload.logger.error("syncTrackMedia failed:", e);
+      // });
+
       const pr = tags.map(([title, slug]) =>
         payload
           .count({
