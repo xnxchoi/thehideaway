@@ -171,10 +171,10 @@ function ProgressDots({
           className={cn(
             "rounded-full transition-all duration-300",
             i === currentIndex
-              ? "w-5 h-1.5 bg-foreground"
+              ? "h-1.5 w-5 bg-foreground"
               : i < currentIndex
-              ? "w-1.5 h-1.5 bg-foreground/40"
-              : "w-1.5 h-1.5 bg-foreground/15"
+                ? "h-1.5 w-1.5 bg-foreground/40"
+                : "h-1.5 w-1.5 bg-foreground/15"
           )}
         />
       ))}
@@ -358,7 +358,7 @@ export function RegistrationTour() {
           {!isLast && (
             <button
               onClick={dismissRegistrationTour}
-              className="text-foreground/30 hover:text-foreground/60 transition-colors text-sm leading-none cursor-pointer"
+              className="cursor-pointer text-sm leading-none text-foreground/30 transition-colors hover:text-foreground/60"
               aria-label="Skip onboarding"
             >
               Skip
@@ -434,10 +434,10 @@ export function RegistrationTour() {
             {regSubmitting
               ? "Saving…"
               : isLast
-              ? "Get started"
-              : regStep === "welcome"
-              ? "Continue"
-              : "Next"}
+                ? "Get started"
+                : regStep === "welcome"
+                  ? "Continue"
+                  : "Next"}
           </MotionPillButton>
         </div>
       </m.div>
