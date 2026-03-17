@@ -1,15 +1,15 @@
 "use client";
 
-import { createStore } from "zustand/vanilla";
 import { subscribeWithSelector } from "zustand/middleware";
+import { createStore } from "zustand/vanilla";
 
 // ─── Registration Tour ────────────────────────────────────────────────────────
 
 export type RegistrationStep =
   | "welcome"
-  | "identity"   // firstName + lastName (required)
-  | "bio"        // bio textarea (optional)
-  | "details"    // location + link (optional)
+  | "identity" // firstName + lastName (required)
+  | "bio" // bio textarea (optional)
+  | "details" // location + link (optional)
   | "complete";
 
 export type PendingFields = {
@@ -21,7 +21,7 @@ const REG_STEPS: RegistrationStep[] = [
   "identity",
   "bio",
   "details",
-  "complete",
+  "complete"
 ];
 
 // ─── Interface Guide ──────────────────────────────────────────────────────────
@@ -40,21 +40,21 @@ export const INTERFACE_TARGETS: TourTarget[] = [
     label: "Side Panel",
     description: "Quick access to navigation and your music player.",
     shortcut: "⌘B",
-    placement: "right",
+    placement: "right"
   },
   {
     id: "controlbar",
     label: "Control Bar",
     description: "Search, switch themes, and manage your session.",
     shortcut: "⌘K",
-    placement: "top",
+    placement: "top"
   },
   {
     id: "side-notch",
     label: "Edge Notch",
     description: "Peek the side panel without fully opening it.",
-    placement: "right",
-  },
+    placement: "right"
+  }
 ];
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ export const createTourStore = () =>
           regDismissed: false,
           regStep: "welcome",
           regSteps: REG_STEPS,
-          regPending: pending,
+          regPending: pending
         }),
 
       closeRegistrationTour: () => set({ regActive: false }),
@@ -151,7 +151,7 @@ export const createTourStore = () =>
 
       ifGoTo: (index) =>
         set({
-          ifIndex: Math.max(0, Math.min(index, INTERFACE_TARGETS.length - 1)),
-        }),
+          ifIndex: Math.max(0, Math.min(index, INTERFACE_TARGETS.length - 1))
+        })
     }))
   );
