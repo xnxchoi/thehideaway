@@ -1,5 +1,9 @@
 "use client";
-import { useDomCursor } from "@/components/core/cursorWrapper";
+import {
+  CursorStatus,
+  DomCursorOptions,
+  useDomCursor
+} from "@/components/core/cursorWrapper";
 import { cn } from "@/lib/utils";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
@@ -88,12 +92,17 @@ export const MotionPillButton = ({
   size = "sm",
   inverted = false,
   hover = false,
+  leaveCondition: lc,
+  enterCondition: ec,
   ...props
 }: {
   size?: "sm" | "md" | "lg";
   inverted?: boolean;
   hover?: boolean;
-} & MotionBtnProps) => {
+} & Partial<
+  Pick<DomCursorOptions<HTMLButtonElement>, "enterCondition" | "leaveCondition">
+> &
+  MotionBtnProps) => {
   const {
     onClick,
     disabled,
@@ -106,10 +115,17 @@ export const MotionPillButton = ({
     onEnter: (e) => {
       doME?.(e);
     },
-    enterCondition: () => (disabled ? null : "FOCUS"),
+    enterCondition: (e) =>
+      (!!ec && ec(e)) || (disabled ? null : ("FOCUS" as CursorStatus)),
+
     onLeave: (e) => {
       doML?.(e);
-    }
+    },
+    ...(!lc
+      ? {}
+      : {
+          leaveCondition: lc
+        })
   });
 
   return (

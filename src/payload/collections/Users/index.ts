@@ -1,30 +1,31 @@
-import type {User} from "@/payload-types";
-import {getUserBookmarks} from "@/payload/collections/Bookmarks/getUserBookmarks";
-import {hideIfNotAdmin} from "@/payload/collections/helpers";
-import {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
-import {getUserFollowers} from "@/payload/collections/Users/endpoints/getUserFollowers";
-import {getUserFollowing} from "@/payload/collections/Users/endpoints/getUserFollows";
-import {GotUser} from "@/payload/collections/Users/endpoints/userFieldSelect";
-import {userOverviewHandler} from "@/payload/collections/Users/endpoints/userOverview";
-import {validateHandler} from "@/payload/collections/Users/endpoints/validateHandle";
+import type { User } from "@/payload-types";
+import { getUserBookmarks } from "@/payload/collections/Bookmarks/getUserBookmarks";
+import { hideIfNotAdmin } from "@/payload/collections/helpers";
+import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import { getUserFollowers } from "@/payload/collections/Users/endpoints/getUserFollowers";
+import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserFollows";
+import { GotUser } from "@/payload/collections/Users/endpoints/userFieldSelect";
+import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
+import { validateHandler } from "@/payload/collections/Users/endpoints/validateHandle";
 import {
-	revalidateDelete as afterDeleteUser,
-	revalidateUser
+  revalidateDelete as afterDeleteUser,
+  revalidateUser
 } from "@/payload/collections/Users/hooks/revalidateUser";
-import {userHandleField} from "@/payload/fields/handle";
-import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
-import type {RP_Roles} from "@/stores/Notification/NotificationStore";
-import {enforceUserFields} from "@/types/collections/users";
-import {generatePreviewPath} from "@/utilities/generatePreviewPath";
-import {getServerSideURL} from "@/utilities/getURL";
+import { userHandleField } from "@/payload/fields/handle";
+import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
+import type { RP_Roles } from "@/stores/Notification/NotificationStore";
+import { enforceUserFields } from "@/types/collections/users";
+import { generatePreviewPath } from "@/utilities/generatePreviewPath";
+import { getServerSideURL } from "@/utilities/getURL";
+import { generateName } from "@/utilities/names";
 import {
-	MetaDescriptionField,
-	MetaImageField,
-	MetaTitleField,
-	OverviewField
+  MetaDescriptionField,
+  MetaImageField,
+  MetaTitleField,
+  OverviewField
 } from "@payloadcms/plugin-seo/fields";
-import {CollectionConfig, Where} from "payload";
-import {uuidv7} from "uuidv7";
+import { CollectionConfig, Where } from "payload";
+import { uuidv7 } from "uuidv7";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -39,10 +40,10 @@ export const Users: CollectionConfig = {
     role: true,
     protected: true,
     verified: true
-  }, forceSelect: enforceUserFields(),
+  },
+  forceSelect: enforceUserFields(),
   auth: {
-    disableLocalStrategy: true,
-
+    disableLocalStrategy: true
   },
   admin: {
     defaultColumns: ["username", "name"],
@@ -97,7 +98,7 @@ export const Users: CollectionConfig = {
       type: "text",
       required: true,
       index: true,
-      defaultValue: "First And",
+      defaultValue: () => generateName("first"),
       admin: {
         hidden: true
       }
@@ -107,7 +108,7 @@ export const Users: CollectionConfig = {
       type: "text",
       required: true,
       index: true,
-      defaultValue: "The Last",
+      defaultValue: () => generateName("last"),
       admin: {
         hidden: true
       }
@@ -169,7 +170,7 @@ export const Users: CollectionConfig = {
       type: "ui",
       admin: {
         components: {
-	        Field: "@/payload/fields/DynamicLabel"
+          Field: "@/payload/fields/DynamicLabel"
         }
       }
     },
@@ -351,7 +352,7 @@ export const Users: CollectionConfig = {
         return finalData;
       }
     ],
-	  afterChange: [revalidateUser,],
+    afterChange: [revalidateUser],
     afterDelete: [afterDeleteUser]
   },
   endpoints: [

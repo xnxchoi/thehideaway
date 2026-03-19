@@ -1,3 +1,4 @@
+import { getSession } from "@/lib/actions/auth";
 import { getPayload } from "@/lib/payload";
 import { User } from "@payload-types";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,9 +15,7 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload();
 
     // Resolve session via better-auth
-    const session = await payload.betterAuth.api.getSession({
-      headers: req.headers
-    });
+    const session = await getSession();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

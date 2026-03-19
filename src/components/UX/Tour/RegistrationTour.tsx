@@ -6,11 +6,20 @@ import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
+import { User } from "@payload-types";
 import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ChangeEventHandler,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import { useForm } from "@tanstack/react-form";
 import { useTourStore } from "./TourProvider";
+import { useMutation } from "@tanstack/react-query";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -70,23 +79,41 @@ function WelcomeStep({ firstName }: { firstName: string }) {
     </p>
   ) : null;
 }
-
+const defaultValues: NonNullable<Pick<User, "firstName" | "lastName">> = {
+  firstName: "",
+  lastName: ""
+};
 function IdentityStep({
-  first,
-  last,
+  firstName: first,
+  lastName: last,
   onFirst,
   onLast
 }: {
-  first: string;
-  last: string;
-  onFirst: (v: string) => void;
-  onLast: (v: string) => void;
+  firstName?: string;
+  lastName?: string;
+  onFirst?: (v: string) => void;
+  onLast?: (v: string) => void;
 }) {
+  const {} = useMutation({});
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
     ref.current?.focus();
   }, []);
-
+  const form = useForm({
+    defaultValues
+  });
+  const onChange1: ChangeEventHandler<HTMLInputElement> = useCallback(
+      (e) => {
+        onFirst?.(e.target.value);
+      },
+      [onFirst]
+    ),
+    onChange2: ChangeEventHandler<HTMLInputElement> = useCallback(
+      (e) => {
+        onLast?.(e.target.value);
+      },
+      [onLast]
+    );
   return (
     <div className="flex flex-col gap-3">
       <input
@@ -94,14 +121,14 @@ function IdentityStep({
         className={pillCn}
         placeholder="First name"
         value={first}
-        onChange={(e) => onFirst(e.target.value)}
+        onChange={onChange1}
         autoComplete="given-name"
       />
       <input
         className={pillCn}
         placeholder="Last name"
         value={last}
-        onChange={(e) => onLast(e.target.value)}
+        onChange={onChange2}
         autoComplete="family-name"
       />
     </div>
@@ -297,7 +324,7 @@ function ExitWarning({
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="cursor-pointer rounded-full px-4 py-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            className="rounded-full px-4 py-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             autoFocus
           >
             Stay
@@ -305,7 +332,7 @@ function ExitWarning({
           <button
             onClick={onConfirm}
             className={cn(
-              "cursor-pointer rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
+              "rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
               isRequiredSection
                 ? "bg-red-500/10 text-red-500 hover:bg-red-500/15"
                 : "bg-foreground/8 text-foreground hover:bg-foreground/12"
@@ -523,13 +550,13 @@ export function RegistrationTour() {
         <div className="flex items-center gap-4">
           <StepIndicators current={regStep} />
           {!isLast && (
-            <button
+            <MotionPillButton
               onClick={handleDismissRequest}
-              className="cursor-pointer text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
+              className="text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
               aria-label="Skip onboarding"
             >
               Skip
-            </button>
+            </MotionPillButton>
           )}
         </div>
       </header>
@@ -574,8 +601,8 @@ export function RegistrationTour() {
               )}
               {regStep === "identity" && (
                 <IdentityStep
-                  first={firstName}
-                  last={lastName}
+                  firstName={firstName}
+                  lastName={lastName}
                   onFirst={setFirstName}
                   onLast={setLastName}
                 />
@@ -601,7 +628,7 @@ export function RegistrationTour() {
           <MotionPillButton
             onClick={handleBack}
             disabled={regSubmitting}
-            className="flex cursor-pointer items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
+            className="flex items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
           >
             <svg
               width="14"
@@ -631,7 +658,7 @@ export function RegistrationTour() {
             "bg-foreground text-background",
             "hover:bg-foreground/90 active:scale-[0.97]",
             "transition-all duration-150",
-            "disabled:cursor-not-allowed disabled:opacity-25 disabled:active:scale-100",
+            "disabled:opacity-25 disabled:active:scale-100",
             "min-w-[140px] text-center"
           )}
         >

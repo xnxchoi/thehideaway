@@ -1241,25 +1241,7 @@ export interface Page {
     | (
         | CallToActionBlock
         | ContentBlock
-        | {
-            id: string | null;
-            media?:
-              | ({
-                  relationTo: "media";
-                  value: string | Media;
-                } | null)
-              | ({
-                  relationTo: "userMedia";
-                  value: string | UserMedia;
-                } | null)
-              | ({
-                  relationTo: "assets";
-                  value: string | Asset;
-                } | null);
-            span?: number | null;
-            blockName?: string | null;
-            blockType: "image";
-          }
+        | Image
         | ArchiveBlock
         | FOTDBlock
         | HeroSquareBlock
@@ -1573,6 +1555,29 @@ export interface ContentBlock {
     | null;
   blockName?: string | null;
   blockType: "content";
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Image".
+ */
+export interface Image {
+  id: string | null;
+  media?:
+    | ({
+        relationTo: "media";
+        value: string | Media;
+      } | null)
+    | ({
+        relationTo: "userMedia";
+        value: string | UserMedia;
+      } | null)
+    | ({
+        relationTo: "assets";
+        value: string | Asset;
+      } | null);
+  span?: number | null;
+  blockName?: string | null;
+  blockType: "image";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4511,29 +4516,6 @@ export interface TaskSchedulePublish {
  */
 export interface WorkflowOnboardUsers {
   input?: unknown;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Image".
- */
-export interface Image {
-  id: string | null;
-  media?:
-    | ({
-        relationTo: "media";
-        value: string | Media;
-      } | null)
-    | ({
-        relationTo: "userMedia";
-        value: string | UserMedia;
-      } | null)
-    | ({
-        relationTo: "assets";
-        value: string | Asset;
-      } | null);
-  span?: number | null;
-  blockName?: string | null;
-  blockType: "image";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
