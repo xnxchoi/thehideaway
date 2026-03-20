@@ -3,8 +3,9 @@ import path from "path";
 
 // --- Configuration ---
 // Adjust these paths to match your project structure.
-const MIGRATIONS_DIR = path.join(process.cwd(), "src", "lib", "migrations");
-const EXTENSION_SQL_FILE = path.join(process.cwd(), "postgres", "nanoid.sql");
+const ROOT_DIR=path.resolve(process.cwd());
+const MIGRATIONS_DIR =  path.resolve(ROOT_DIR,"src/lib/migrations");
+const EXTENSION_SQL_FILE = path.resolve( ROOT_DIR,"postgres", "nanoid.sql");
 // ---------------------
 
 // The exact string we want to find and prepend our SQL to.

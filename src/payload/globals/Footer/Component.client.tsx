@@ -5,7 +5,7 @@ import type { HTMLAttributes, RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ReferencedLink } from "@/components/UX/Link/referencedLink";
 import { useInView } from "@/hooks/useInView";
-import type { Footer, Media, Page } from "@/payload-types";
+import type { Footer, Media, Page } from "@payload-types";
 import { useRPStore } from "@/providers/RP_Pro";
 import { wait } from "@/utilities/wait";
 import { cn } from "@/lib/utils";

@@ -11,7 +11,7 @@ import { generateMeta } from "@/utilities/generateMeta";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import PageClient from "./page.client";
-import { RP_Footer } from "@/payload/collections/Footer/Component.client";
+import { RP_Footer } from "@/payload/globals/Footer/Component.client";
 import { RPage } from "@/components/UX/Transition";
 import { redirect } from "next/navigation";
 
@@ -51,9 +51,10 @@ export default async function Page({ params: paramsPromise }: Args) {
     querySlug = "home";
   }
   const url = `/${querySlug}`;
-	const {isEnabled: draft} = await draftMode();
+  const { isEnabled: draft } = await draftMode();
   const page = await queryPageBySlug({
-	  slug: querySlug, draft
+    slug: querySlug,
+    draft
   });
 
   if (!page) {
@@ -87,7 +88,7 @@ export async function generateMetadata({
   }
 
   const page = await queryPageBySlug({
-	  draft: false,
+    draft: false,
     slug: querySlug
   });
 
@@ -106,8 +107,14 @@ export async function generateMetadata({
   }
 }
 
-async function queryPageBySlug({slug, draft}: { slug: string; draft: boolean; }) {
-	"use cache"
+async function queryPageBySlug({
+  slug,
+  draft
+}: {
+  slug: string;
+  draft: boolean;
+}) {
+  "use cache";
   const payload = await getPayload({ config });
 
   const result = await payload.find({

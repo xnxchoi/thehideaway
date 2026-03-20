@@ -1090,6 +1090,7 @@ export interface Track {
   publishedAt?: string | null;
   track_number: number;
   album: string | Album;
+  duration: number;
   albumSlug?: string | null;
   bookmarks?: {
     docs?: (string | Bookmark)[];
@@ -3552,6 +3553,7 @@ export interface TracksSelect<T extends boolean = true> {
   publishedAt?: T;
   track_number?: T;
   album?: T;
+  duration?: T;
   albumSlug?: T;
   bookmarks?: T;
   tagged?: T;

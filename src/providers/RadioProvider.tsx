@@ -152,15 +152,11 @@ const RadioInternal = ({ children }: { children: ReactNode }) => {
     ],
     []
   );
-  const fetchTracks = useCallback(async () => {
-    return await getRadio(tracks);
-  }, [tracks]);
   const [hasRadio, setHasRadio] = useState(false);
-  useEffect(() => {
+  const initializeRadio = useEffectEvent(() => {
     !ref.current &&
       getRadio(tracks)
         .then((trackes) => {
-          console.log("tracks:", trackes);
           ref.current = createRadioStore({
             tracks: trackes,
             currentIndex: 0,
@@ -180,7 +176,11 @@ const RadioInternal = ({ children }: { children: ReactNode }) => {
         .then(() => {
           setHasRadio(true);
         });
-  }, [fetchTracks, tracks]);
+  });
+
+  useEffect(() => {
+    !hasRadio && initializeRadio();
+  }, [hasRadio]);
 
   return (
     <InternalRadioContext.Provider value={ref.current}>

@@ -30,7 +30,8 @@ export const Tracks: CollectionConfig = {
 		track_number: true,
 		url: true,
 		filename: true,
-		mimeType: true
+		mimeType: true,
+    duration:true
 	},
 	access: {
 		create: standardCreateAccess,
@@ -103,6 +104,12 @@ export const Tracks: CollectionConfig = {
 				]
 			}
 		},
+    {
+      name:"duration",
+      type:"number",
+      required: true,
+      min: 0,
+    },
 		{
 			name: "albumSlug",
 			type: "text"

@@ -503,7 +503,9 @@ export const RP_Radio = ({}: RP_RadioProps) => {
   const titleRef = useRef<HTMLDivElement>(null!);
   const artistRef = useRef<HTMLDivElement>(null!);
   const albumRef = useRef<HTMLDivElement>(null!);
-  const key1 = useMemo(nanoid, []);
+  const key1 = useMemo(() => {
+    return nanoid(13);
+  }, []);
   return (
     <AnimatePresence propagate={true} initial={true}>
       <m.div
@@ -517,7 +519,7 @@ export const RP_Radio = ({}: RP_RadioProps) => {
             </m.span>
           )}
           <span
-            className="text-xl leading-[1] font-medium tracking-tight"
+            className="text-xl leading-none font-medium tracking-tight"
             ref={titleRef}
           >
             {title}

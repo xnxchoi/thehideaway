@@ -2,10 +2,10 @@ import type { FilterOptionsProps, GlobalConfig, Where } from "payload";
 
 import { link } from "@/payload/fields/link";
 
-import { Media } from "@/payload-types";
+import { Media } from "@payload-types";
 import { uuidv7 } from "uuidv7";
 import { revalidateFooter } from "./hooks/revalidateFooter";
-import { hideIfNotAdmin } from "../helpers";
+import { hideIfNotAdmin } from "../../collections/helpers";
 
 export const Footer: GlobalConfig = {
 	slug: "footer",

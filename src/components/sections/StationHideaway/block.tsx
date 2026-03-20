@@ -33,7 +33,11 @@ export function StationHideawayHero({ className }: { className?: string }) {
   });
 
   // ── "HIDDEN" billboard (top-left) ─────────────────────────────────────────
-  const topTextY = useTransform(scrollYProgress, [0, 1], ["20vh", "-30vh"]);
+  const topTextY = useTransform(
+    scrollYProgress,
+    [0, 0.35, 1],
+    ["20vh", "0vh", "-30vh"]
+  );
   const topTextOpacity = useTransform(
     scrollYProgress,
     [0, 0.08, 0.45, 0.8],
@@ -68,11 +72,15 @@ export function StationHideawayHero({ className }: { className?: string }) {
   const playerOpacity = useTransform(scrollYProgress, [0, 0.15, 1], [0, 1, 1]);
 
   // ── "SOUNDS" billboard (bottom-right) ────────────────────────────────────
-  const bottomTextY = useTransform(scrollYProgress, [0, 1], ["25vh", "-10vh"]);
+  const bottomTextY = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.6, 1],
+    ["25vh", "0vh", "-10vh", "-20vh"]
+  );
   const bottomTextOpacity = useTransform(
     scrollYProgress,
     [0, 0.35, 0.5, 0.8, 1],
-    [0, 0, 1, 1, 0]
+    [0, 0, 1, 1, 1]
   );
 
   return (
