@@ -6,20 +6,14 @@ import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
-import { User } from "@payload-types";
 import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
-import {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useTourStore } from "./TourProvider";
 import { useMutation } from "@tanstack/react-query";
+import { useTourStore } from "./TourProvider";
+import { TextBlurIn } from "./TextBlurIn";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -62,6 +56,16 @@ const INDICATOR_STEPS: RegistrationStep[] = [
   "complete"
 ];
 
+// ─── Form types ──────────────────────────────────────────────────────────────
+
+type ProfileFormValues = {
+  firstName: string;
+  lastName: string;
+  bio: string;
+  location: string;
+  link: string;
+};
+
 // ─── Input primitive ──────────────────────────────────────────────────────────
 
 const pillCn =
@@ -70,109 +74,127 @@ const pillCn =
   "focus:outline-none focus:border-foreground/45 transition-colors duration-150 " +
   "autofill:bg-transparent";
 
+// ─── Subtle fade-up for step body content ────────────────────────────────────
+
+const bodyFadeVariants: Variants = {
+  hidden: { opacity: 0, y: 6, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }
+  }
+};
+
 // ─── Step content components ──────────────────────────────────────────────────
 
 function WelcomeStep({ firstName }: { firstName: string }) {
   return firstName ? (
-    <p className="text-[15px] text-muted-foreground">
+    <m.p
+      className="text-[15px] text-muted-foreground"
+      variants={bodyFadeVariants}
+      initial="hidden"
+      animate="visible"
+    >
       Good to have you, {firstName}.
-    </p>
+    </m.p>
   ) : null;
 }
-const defaultValues: NonNullable<Pick<User, "firstName" | "lastName">> = {
-  firstName: "",
-  lastName: ""
-};
+
 function IdentityStep({
-  firstName: first,
-  lastName: last,
-  onFirst,
-  onLast
+  form
 }: {
-  firstName?: string;
-  lastName?: string;
-  onFirst?: (v: string) => void;
-  onLast?: (v: string) => void;
+  form: ReturnType<typeof useForm<ProfileFormValues>>;
 }) {
-  const {} = useMutation({});
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
     ref.current?.focus();
   }, []);
-  const form = useForm({
-    defaultValues
-  });
-  const onChange1: ChangeEventHandler<HTMLInputElement> = useCallback(
-      (e) => {
-        onFirst?.(e.target.value);
-      },
-      [onFirst]
-    ),
-    onChange2: ChangeEventHandler<HTMLInputElement> = useCallback(
-      (e) => {
-        onLast?.(e.target.value);
-      },
-      [onLast]
-    );
+
   return (
-    <div className="flex flex-col gap-3">
-      <input
-        ref={ref}
-        className={pillCn}
-        placeholder="First name"
-        value={first}
-        onChange={onChange1}
-        autoComplete="given-name"
-      />
-      <input
-        className={pillCn}
-        placeholder="Last name"
-        value={last}
-        onChange={onChange2}
-        autoComplete="family-name"
-      />
-    </div>
+    <m.div
+      className="flex flex-col gap-3"
+      variants={bodyFadeVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <form.Field name="firstName">
+        {(field) => (
+          <input
+            ref={ref}
+            className={pillCn}
+            placeholder="First name"
+            value={field.state.value}
+            onChange={(e) => field.handleChange(e.target.value)}
+            onBlur={field.handleBlur}
+            autoComplete="given-name"
+          />
+        )}
+      </form.Field>
+      <form.Field name="lastName">
+        {(field) => (
+          <input
+            className={pillCn}
+            placeholder="Last name"
+            value={field.state.value}
+            onChange={(e) => field.handleChange(e.target.value)}
+            onBlur={field.handleBlur}
+            autoComplete="family-name"
+          />
+        )}
+      </form.Field>
+    </m.div>
   );
 }
 
-function BioStep({ bio, onBio }: { bio: string; onBio: (v: string) => void }) {
+function BioStep({
+  form
+}: {
+  form: ReturnType<typeof useForm<ProfileFormValues>>;
+}) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     ref.current?.focus();
   }, []);
 
   return (
-    <div className="flex flex-col gap-2">
-      <textarea
-        ref={ref}
-        className={
-          "w-full rounded-2xl border border-foreground/15 bg-transparent px-5 py-4 " +
-          "text-[15px] text-foreground placeholder:text-muted-foreground/35 " +
-          "transition-colors duration-150 focus:border-foreground/45 focus:outline-none " +
-          "min-h-[112px] resize-none leading-relaxed"
-        }
-        placeholder="Your passion, work, interests — keep it interesting."
-        value={bio}
-        onChange={(e) => onBio(e.target.value)}
-        maxLength={200}
-      />
-      <span className="text-right text-xs text-muted-foreground/35 tabular-nums">
-        {bio.length}/200
-      </span>
-    </div>
+    <m.div
+      className="flex flex-col gap-2"
+      variants={bodyFadeVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <form.Field name="bio">
+        {(field) => (
+          <>
+            <textarea
+              ref={ref}
+              className={
+                "w-full rounded-2xl border border-foreground/15 bg-transparent px-5 py-4 " +
+                "text-[15px] text-foreground placeholder:text-muted-foreground/35 " +
+                "transition-colors duration-150 focus:border-foreground/45 focus:outline-none " +
+                "min-h-[112px] resize-none leading-relaxed"
+              }
+              placeholder="Your passion, work, interests — keep it interesting."
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              maxLength={200}
+            />
+            <span className="text-right text-xs text-muted-foreground/35 tabular-nums">
+              {field.state.value.length}/200
+            </span>
+          </>
+        )}
+      </form.Field>
+    </m.div>
   );
 }
 
 function DetailsStep({
-  location,
-  link,
-  onLocation,
-  onLink
+  form
 }: {
-  location: string;
-  link: string;
-  onLocation: (v: string) => void;
-  onLink: (v: string) => void;
+  form: ReturnType<typeof useForm<ProfileFormValues>>;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -180,32 +202,52 @@ function DetailsStep({
   }, []);
 
   return (
-    <div className="flex flex-col gap-3">
-      <input
-        ref={ref}
-        className={pillCn}
-        placeholder="Location (e.g. Seoul, KR)"
-        value={location}
-        onChange={(e) => onLocation(e.target.value)}
-        autoComplete="address-level2"
-      />
-      <input
-        className={pillCn}
-        placeholder="Website or social link"
-        value={link}
-        onChange={(e) => onLink(e.target.value)}
-        type="url"
-        autoComplete="url"
-      />
-    </div>
+    <m.div
+      className="flex flex-col gap-3"
+      variants={bodyFadeVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <form.Field name="location">
+        {(field) => (
+          <input
+            ref={ref}
+            className={pillCn}
+            placeholder="Location (e.g. Seoul, KR)"
+            value={field.state.value}
+            onChange={(e) => field.handleChange(e.target.value)}
+            onBlur={field.handleBlur}
+            autoComplete="address-level2"
+          />
+        )}
+      </form.Field>
+      <form.Field name="link">
+        {(field) => (
+          <input
+            className={pillCn}
+            placeholder="Website or social link"
+            value={field.state.value}
+            onChange={(e) => field.handleChange(e.target.value)}
+            onBlur={field.handleBlur}
+            type="url"
+            autoComplete="url"
+          />
+        )}
+      </form.Field>
+    </m.div>
   );
 }
 
 function CompleteStep() {
   return (
-    <p className="text-[15px] text-muted-foreground">
+    <m.p
+      className="text-[15px] text-muted-foreground"
+      variants={bodyFadeVariants}
+      initial="hidden"
+      animate="visible"
+    >
       You can always update your profile in settings.
-    </p>
+    </m.p>
   );
 }
 
@@ -226,26 +268,29 @@ function StepIndicators({ current }: { current: RegistrationStep }) {
         const isCurrent = i === currentIdx;
 
         return (
-          <span
+          <m.span
             key={step}
             className={cn(
               "flex items-center justify-center rounded-full text-[11px] font-medium",
-              "transition-all duration-300",
               isCurrent
                 ? "h-6 w-6 bg-foreground text-background"
                 : isPast
                   ? "h-6 w-6 border border-foreground/25 text-foreground/40"
                   : "h-6 w-6 border border-foreground/10 text-foreground/20"
             )}
+            layout
+            transition={{ type: "spring", ...SPRING_EASE.power2.out }}
           >
             {isPast ? (
-              // Checkmark for completed steps
-              <svg
+              <m.svg
                 width="10"
                 height="8"
                 viewBox="0 0 10 8"
                 fill="none"
                 aria-hidden="true"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", ...SPRING_EASE.power3.out }}
               >
                 <path
                   d="M1 4L3.5 6.5L9 1"
@@ -254,11 +299,11 @@ function StepIndicators({ current }: { current: RegistrationStep }) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </m.svg>
             ) : (
               i + 1
             )}
-          </span>
+          </m.span>
         );
       })}
     </div>
@@ -276,7 +321,6 @@ function ExitWarning({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  // Trap focus within the warning
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCancel();
@@ -322,24 +366,24 @@ function ExitWarning({
           </p>
         </div>
         <div className="flex items-center justify-end gap-2">
-          <button
+          <MotionPillButton
             onClick={onCancel}
-            className="rounded-full px-4 py-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
             autoFocus
           >
             Stay
-          </button>
-          <button
+          </MotionPillButton>
+          <MotionPillButton
             onClick={onConfirm}
             className={cn(
-              "rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
+              "text-[13px] font-medium",
               isRequiredSection
                 ? "bg-red-500/10 text-red-500 hover:bg-red-500/15"
                 : "bg-foreground/8 text-foreground hover:bg-foreground/12"
             )}
           >
             {isRequiredSection ? "Skip for now" : "Leave"}
-          </button>
+          </MotionPillButton>
         </div>
       </m.div>
     </m.div>
@@ -371,19 +415,46 @@ const slideVariants: Variants = {
   })
 };
 
+// ─── Profile mutation ─────────────────────────────────────────────────────────
+
+type ProfilePayload = Partial<
+  Pick<ProfileFormValues, "firstName" | "lastName" | "bio" | "location" | "link">
+>;
+
+async function submitProfile(data: ProfilePayload) {
+  const updates: Record<string, string> = {};
+  if (data.firstName?.trim()) updates.firstName = data.firstName.trim();
+  if (data.lastName?.trim()) updates.lastName = data.lastName.trim();
+  if (data.bio?.trim()) updates.bio = data.bio.trim();
+  if (data.location?.trim()) updates.location = data.location.trim();
+  if (data.link?.trim()) updates.link = data.link.trim();
+
+  if (Object.keys(updates).length > 0) {
+    await authClient.updateUser(
+      updates as Parameters<typeof authClient.updateUser>[0]
+    );
+  }
+
+  // Fire-and-forget — marks onboarded server-side
+  fetch("/api/onboarding", {
+    method: "POST",
+    credentials: "include"
+  }).catch(() => {});
+
+  return updates;
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function RegistrationTour() {
   const regStep = useTourStore((s) => s.regStep);
   const regSteps = useTourStore((s) => s.regSteps);
-  const regSubmitting = useTourStore((s) => s.regSubmitting);
   const regNext = useTourStore((s) => s.regNext);
   const regPrev = useTourStore((s) => s.regPrev);
   const closeRegistrationTour = useTourStore((s) => s.closeRegistrationTour);
   const dismissRegistrationTour = useTourStore(
     (s) => s.dismissRegistrationTour
   );
-  const setRegSubmitting = useTourStore((s) => s.setRegSubmitting);
 
   const sessionFirstName = useRPSession((s) => s.firstName);
   const sessionLastName = useRPSession((s) => s.lastName);
@@ -392,18 +463,43 @@ export function RegistrationTour() {
   const setOnboarded = useRPSession((s) => s.setOnboarded);
 
   const [dir, setDir] = useState<1 | -1>(1);
-  const [firstName, setFirstName] = useState(sessionFirstName ?? "");
-  const [lastName, setLastName] = useState(sessionLastName ?? "");
-  const [bio, setBio] = useState("");
-  const [location, setLocation] = useState("");
-  const [link, setLink] = useState("");
-
   const [showExitWarning, setShowExitWarning] = useState(false);
 
   const prefersReduced = useReducedMotion();
   const lenis = useLenis();
 
-  // ── Lock scroll while tour is open ──────────────────────────────────────────
+  // ── TanStack Form ──────────────────────────────────────────────────────────
+
+  const form = useForm<ProfileFormValues>({
+    defaultValues: {
+      firstName: sessionFirstName ?? "",
+      lastName: sessionLastName ?? "",
+      bio: "",
+      location: "",
+      link: ""
+    }
+  });
+
+  // ── TanStack Query mutation ────────────────────────────────────────────────
+
+  const profileMutation = useMutation({
+    mutationKey: ["registration", "profile"],
+    mutationFn: submitProfile,
+    onSuccess: (updates) => {
+      if (updates.firstName) setFirstNameSession(updates.firstName);
+      if (updates.lastName) setLastNameSession(updates.lastName);
+      setOnboarded(true);
+      closeRegistrationTour();
+    },
+    onError: () => {
+      // Don't block the user — close anyway
+      closeRegistrationTour();
+    }
+  });
+
+  const isSubmitting = profileMutation.isPending;
+
+  // ── Lock scroll while tour is open ────────────────────────────────────────
   useEffect(() => {
     lenis?.stop();
     return () => {
@@ -411,22 +507,22 @@ export function RegistrationTour() {
     };
   }, [lenis]);
 
-  // ── Derived state ───────────────────────────────────────────────────────────
+  // ── Derived state ─────────────────────────────────────────────────────────
+
+  const formValues = form.useStore((s) => s.values);
 
   const isFormDirty =
-    firstName.trim().length > 0 ||
-    lastName.trim().length > 0 ||
-    bio.trim().length > 0 ||
-    location.trim().length > 0 ||
-    link.trim().length > 0;
+    formValues.firstName.trim().length > 0 ||
+    formValues.lastName.trim().length > 0 ||
+    formValues.bio.trim().length > 0 ||
+    formValues.location.trim().length > 0 ||
+    formValues.link.trim().length > 0;
 
-  // Required section = welcome or identity steps
   const isInRequiredSection = regStep === "welcome" || regStep === "identity";
-
   const isFirst = regStep === "welcome";
   const isLast = regStep === "complete";
 
-  // ── beforeunload warning ────────────────────────────────────────────────────
+  // ── beforeunload warning ──────────────────────────────────────────────────
 
   useEffect(() => {
     if (!isFormDirty) return;
@@ -438,7 +534,7 @@ export function RegistrationTour() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [isFormDirty]);
 
-  // ── Keyboard: Escape ────────────────────────────────────────────────────────
+  // ── Keyboard: Escape ──────────────────────────────────────────────────────
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -451,7 +547,7 @@ export function RegistrationTour() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLast, showExitWarning, regStep]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleDismissRequest = useCallback(() => {
     if (regStep === "welcome") {
@@ -462,63 +558,25 @@ export function RegistrationTour() {
   }, [regStep, dismissRegistrationTour]);
 
   const canAdvance = useCallback((): boolean => {
-    if (regStep === "identity") return firstName.trim().length > 0;
+    if (regStep === "identity") return formValues.firstName.trim().length > 0;
     return true;
-  }, [regStep, firstName]);
+  }, [regStep, formValues.firstName]);
 
   const handleNext = useCallback(async () => {
     if (regStep === "complete") {
-      setRegSubmitting(true);
-      try {
-        const updates: Record<string, string> = {};
-        if (firstName.trim()) updates.firstName = firstName.trim();
-        if (lastName.trim()) updates.lastName = lastName.trim();
-        if (bio.trim()) updates.bio = bio.trim();
-        if (location.trim()) updates.location = location.trim();
-        if (link.trim()) updates.link = link.trim();
-
-        if (Object.keys(updates).length > 0) {
-          await authClient.updateUser(
-            updates as Parameters<typeof authClient.updateUser>[0]
-          );
-        }
-
-        if (updates.firstName) setFirstNameSession(updates.firstName);
-        if (updates.lastName) setLastNameSession(updates.lastName);
-        setOnboarded(true);
-
-        // Fire-and-forget — marks onboarded server-side
-        fetch("/api/onboarding", {
-          method: "POST",
-          credentials: "include"
-        }).catch(() => {});
-
-        closeRegistrationTour();
-      } catch {
-        // Don't block the user — close anyway
-        closeRegistrationTour();
-      } finally {
-        setRegSubmitting(false);
-      }
+      profileMutation.mutate({
+        firstName: formValues.firstName,
+        lastName: formValues.lastName,
+        bio: formValues.bio,
+        location: formValues.location,
+        link: formValues.link
+      });
       return;
     }
 
     setDir(1);
     regNext();
-  }, [
-    regStep,
-    firstName,
-    lastName,
-    bio,
-    location,
-    link,
-    regNext,
-    closeRegistrationTour,
-    setRegSubmitting,
-    setOnboarded,
-    setFirstNameSession,
-    setLastNameSession
-  ]);
+  }, [regStep, formValues, regNext, profileMutation]);
 
   const handleBack = useCallback(() => {
     setDir(-1);
@@ -527,7 +585,7 @@ export function RegistrationTour() {
 
   const stepCopy = STEP_COPY[regStep];
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <m.div
@@ -577,45 +635,53 @@ export function RegistrationTour() {
               exit="exit"
               className="flex flex-col gap-8"
             >
-              {/* Title block */}
+              {/* Title block — blur-in animated */}
               <div className="flex flex-col gap-2.5">
-                <h1
-                  className="leading-[1.15] font-medium tracking-[-0.025em] whitespace-pre-line text-foreground"
+                <TextBlurIn
+                  key={`title-${regStep}`}
+                  text={stepCopy.title}
+                  as="h1"
+                  className="leading-[1.15] font-medium tracking-[-0.025em] text-foreground"
                   style={{ fontSize: "clamp(2rem, 5.5vw, 2.75rem)" }}
+                  preserveNewlines
+                  splitBy="word"
+                  stagger={0.035}
+                  delay={0.05}
+                  yOffset={6}
+                  blurAmount={6}
+                  duration={0.4}
+                />
+                <m.div
+                  initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: {
+                      duration: 0.4,
+                      delay: 0.18,
+                      ease: [0.25, 0.46, 0.45, 0.94]
+                    }
+                  }}
                 >
-                  {stepCopy.title}
-                </h1>
-                <p className="text-[15px] leading-relaxed text-muted-foreground">
-                  {stepCopy.subtitle}
-                  {stepCopy.optional && (
-                    <span className="ml-2 text-[10px] font-medium tracking-[0.1em] text-foreground/25 uppercase">
-                      optional
-                    </span>
-                  )}
-                </p>
+                  <p className="text-[15px] leading-relaxed text-muted-foreground">
+                    {stepCopy.subtitle}
+                    {stepCopy.optional && (
+                      <span className="ml-2 text-[10px] font-medium tracking-[0.1em] text-foreground/25 uppercase">
+                        optional
+                      </span>
+                    )}
+                  </p>
+                </m.div>
               </div>
 
               {/* Step body */}
               {regStep === "welcome" && (
                 <WelcomeStep firstName={sessionFirstName} />
               )}
-              {regStep === "identity" && (
-                <IdentityStep
-                  firstName={firstName}
-                  lastName={lastName}
-                  onFirst={setFirstName}
-                  onLast={setLastName}
-                />
-              )}
-              {regStep === "bio" && <BioStep bio={bio} onBio={setBio} />}
-              {regStep === "details" && (
-                <DetailsStep
-                  location={location}
-                  link={link}
-                  onLocation={setLocation}
-                  onLink={setLink}
-                />
-              )}
+              {regStep === "identity" && <IdentityStep form={form} />}
+              {regStep === "bio" && <BioStep form={form} />}
+              {regStep === "details" && <DetailsStep form={form} />}
               {regStep === "complete" && <CompleteStep />}
             </m.div>
           </AnimatePresence>
@@ -627,7 +693,7 @@ export function RegistrationTour() {
         {!isFirst ? (
           <MotionPillButton
             onClick={handleBack}
-            disabled={regSubmitting}
+            disabled={isSubmitting}
             className="flex items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
           >
             <svg
@@ -652,7 +718,7 @@ export function RegistrationTour() {
         )}
         <MotionPillButton
           onClick={handleNext}
-          disabled={!canAdvance() || regSubmitting}
+          disabled={!canAdvance() || isSubmitting}
           className={cn(
             "rounded-full px-7 py-3 text-[14px] font-medium",
             "bg-foreground text-background",
@@ -662,7 +728,7 @@ export function RegistrationTour() {
             "min-w-[140px] text-center"
           )}
         >
-          {regSubmitting
+          {isSubmitting
             ? "Saving…"
             : isLast
               ? "Get started"
@@ -714,7 +780,6 @@ export function RegistrationTourTrigger() {
     ) {
       triggered.current = true;
       const needsIdentity = !firstName?.trim() || !lastName?.trim();
-      console.log("lenis", lenis);
       lenis && lenis.stop();
       openRegistrationTour({ needsIdentity });
     }

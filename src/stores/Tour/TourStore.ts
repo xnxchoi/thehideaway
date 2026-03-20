@@ -65,7 +65,6 @@ export type TourStore = {
   regStep: RegistrationStep;
   regSteps: RegistrationStep[];
   regPending: PendingFields;
-  regSubmitting: boolean;
   regDismissed: boolean;
 
   openRegistrationTour: (pending: PendingFields) => void;
@@ -74,7 +73,6 @@ export type TourStore = {
   regNext: () => void;
   regPrev: () => void;
   regGoTo: (step: RegistrationStep) => void;
-  setRegSubmitting: (v: boolean) => void;
 
   // interface guide
   ifActive: boolean;
@@ -96,7 +94,6 @@ export const createTourStore = () =>
       regStep: "welcome",
       regSteps: REG_STEPS,
       regPending: { needsIdentity: false },
-      regSubmitting: false,
       regDismissed: false,
 
       openRegistrationTour: (pending) =>
@@ -126,8 +123,6 @@ export const createTourStore = () =>
       },
 
       regGoTo: (step) => set({ regStep: step }),
-
-      setRegSubmitting: (v) => set({ regSubmitting: v }),
 
       // ── Interface Guide ───────────────────────────────────────────────────
       ifActive: false,

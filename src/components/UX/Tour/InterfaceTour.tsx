@@ -1,9 +1,10 @@
 "use client";
 
+import { MotionPillButton } from "@/components/UX/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import type { TourTarget } from "@/stores/Tour/TourStore";
-import { AnimatePresence, useReducedMotion } from "motion/react";
+import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
 import {
   useCallback,
@@ -14,6 +15,7 @@ import {
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTourStore } from "./TourProvider";
+import { TextBlurIn } from "./TextBlurIn";
 
 // ─── Rect tracking ────────────────────────────────────────────────────────────
 
@@ -27,6 +29,18 @@ function getTargetRect(id: string): Rect {
   const r = el.getBoundingClientRect();
   return { top: r.top, left: r.left, width: r.width, height: r.height };
 }
+
+// ─── Subtle body fade for tooltip content ────────────────────────────────────
+
+const tooltipBodyVariants: Variants = {
+  hidden: { opacity: 0, y: 4, filter: "blur(3px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.35, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }
+  }
+};
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
 
@@ -95,46 +109,111 @@ function TourTooltip({
       {/* Header */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+          <m.span
+            className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.05 }}
+          >
             {index + 1} / {total}
-          </span>
+          </m.span>
           {target.shortcut && (
-            <kbd className="rounded border border-foreground/10 bg-foreground/5 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+            <m.kbd
+              className="rounded border border-foreground/10 bg-foreground/5 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.25, delay: 0.12 }}
+            >
               {target.shortcut}
-            </kbd>
+            </m.kbd>
           )}
         </div>
-        <h3 className="text-base leading-snug font-medium text-foreground">
-          {target.label}
-        </h3>
+        <TextBlurIn
+          key={`if-label-${target.id}`}
+          text={target.label}
+          as="h3"
+          className="text-base leading-snug font-medium text-foreground"
+          splitBy="word"
+          stagger={0.03}
+          delay={0.04}
+          yOffset={4}
+          blurAmount={5}
+          duration={0.35}
+        />
       </div>
 
-      <p className="text-sm leading-relaxed text-muted-foreground">
+      <m.p
+        className="text-sm leading-relaxed text-muted-foreground"
+        variants={tooltipBodyVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {target.description}
-      </p>
+      </m.p>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between gap-2">
-        <button
+      <m.div
+        className="flex items-center justify-between gap-2"
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <MotionPillButton
           onClick={onPrev}
           disabled={index === 0}
           className="text-sm text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
         >
-          ← Prev
-        </button>
-        <button
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 14 14"
+            fill="none"
+            aria-hidden="true"
+            className="mr-1"
+          >
+            <path
+              d="M8.5 3L4.5 7L8.5 11"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Prev
+        </MotionPillButton>
+        <MotionPillButton
           onClick={onClose}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="text-sm text-muted-foreground/60 transition-colors hover:text-foreground"
         >
           Close
-        </button>
-        <button
+        </MotionPillButton>
+        <MotionPillButton
           onClick={onNext}
           className="text-sm font-medium text-foreground transition-colors hover:text-foreground/70"
         >
-          {index === total - 1 ? "Done" : "Next →"}
-        </button>
-      </div>
+          {index === total - 1 ? "Done" : (
+            <>
+              Next
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+                className="ml-1"
+              >
+                <path
+                  d="M5.5 3L9.5 7L5.5 11"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </>
+          )}
+        </MotionPillButton>
+      </m.div>
     </m.div>
   );
 }
@@ -208,6 +287,29 @@ function SpotlightOverlay({
           initial={prefersReduced ? {} : { opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", ...SPRING_EASE.power3.out }}
+          style={{
+            left: sp.x,
+            top: sp.y,
+            width: sp.w,
+            height: sp.h
+          }}
+        />
+      )}
+
+      {/* Subtle pulse ring for emphasis */}
+      {sp && !prefersReduced && (
+        <m.div
+          className="pointer-events-none absolute rounded-[10px] border border-foreground/8"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{
+            opacity: [0, 0.5, 0],
+            scale: [1, 1.04, 1.06]
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
           style={{
             left: sp.x,
             top: sp.y,
