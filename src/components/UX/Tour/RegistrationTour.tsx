@@ -6,14 +6,14 @@ import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
+import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion, Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
-import { useTourStore } from "./TourProvider";
 import { TextBlurIn } from "./TextBlurIn";
+import { useTourStore } from "./TourProvider";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -58,12 +58,14 @@ const INDICATOR_STEPS: RegistrationStep[] = [
 
 // ─── Form types ──────────────────────────────────────────────────────────────
 
-type ProfileFormValues = {
-  firstName: string;
-  lastName: string;
-  bio: string;
-  location: string;
-  link: string;
+export type ProfileFormValues = {
+  step: RegistrationStep;
+  identity: {
+    firstName: string;
+    lastName: string;
+  };
+  bio: { content: string };
+  details: { location: string; link: string };
 };
 
 // ─── Input primitive ──────────────────────────────────────────────────────────
@@ -418,7 +420,10 @@ const slideVariants: Variants = {
 // ─── Profile mutation ─────────────────────────────────────────────────────────
 
 type ProfilePayload = Partial<
-  Pick<ProfileFormValues, "firstName" | "lastName" | "bio" | "location" | "link">
+  Pick<
+    ProfileFormValues,
+    "firstName" | "lastName" | "bio" | "location" | "link"
+  >
 >;
 
 async function submitProfile(data: ProfilePayload) {
