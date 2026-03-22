@@ -14,6 +14,7 @@ import {
   Fragment,
   isValidElement,
   MouseEventHandler,
+  ReactNode,
   useCallback
 } from "react";
 import type { Props } from "@/payload/elements/Button/types";
@@ -27,8 +28,18 @@ const icons = {
   plus: PlusIcon,
   swap: SwapIcon,
   x: XIcon
-};
-export const ButtonContents = ({ children, icon, showTooltip, tooltip }) => {
+} as const;
+export const ButtonContents = ({
+  children,
+  icon,
+  showTooltip,
+  tooltip
+}: {
+  children?: ReactNode;
+  icon: keyof typeof icons;
+  showTooltip?: boolean;
+  tooltip?: string;
+}) => {
   const BuiltInIcon = icons[icon];
 
   return (
@@ -49,10 +60,6 @@ export const ButtonContents = ({ children, icon, showTooltip, tooltip }) => {
       </span>
     </Fragment>
   );
-};
-type secondaryAction = {
-  label: string;
-  onClick: (event) => void;
 };
 
 export const Hutton = ({ children, className, overrides, ...props }: Props) => {

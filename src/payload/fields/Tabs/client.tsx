@@ -1,9 +1,9 @@
-"use client";
 import type {
   ClientField,
   ClientTab,
   DocumentPreferences,
   SanitizedFieldPermissions,
+  SanitizedPermissions,
   StaticDescription,
   TabsFieldClientComponent
 } from "payload";
@@ -32,6 +32,7 @@ import {
   ComponentPropsWithRef,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -131,7 +132,7 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
 
   const activeTabStaticDescription =
     typeof activeTabDescription === "function"
-      ? activeTabDescription({ i18n, t: i18n.t })
+      ? activeTabDescription({ i18n, t: i18n.t as any })
       : activeTabDescription;
 
   const hasVisibleTabs = tabStates.some(
@@ -162,25 +163,15 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
         await getPreference(preferencesKey);
       void setPreference(preferencesKey, {
         ...existingPreferences,
-        ...(path
-          ? {
-              fields: {
-                ...(existingPreferences?.fields || {}),
-                [path]: {
-                  ...existingPreferences?.fields?.[path],
-                  tabIndex: incomingTabIndex
-                }
-              }
+        ...{
+          fields: {
+            ...(existingPreferences?.fields || {}),
+            [path]: {
+              ...existingPreferences?.fields?.[path],
+              tabIndex: incomingTabIndex
             }
-          : {
-              fields: {
-                ...existingPreferences?.fields,
-                [tabsPrefKey]: {
-                  ...existingPreferences?.fields?.[tabsPrefKey],
-                  tabIndex: incomingTabIndex
-                }
-              }
-            })
+          }
+        }
       });
     },
     [
@@ -190,8 +181,7 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
       getPreference,
       preferencesKey,
       setPreference,
-      path,
-      tabsPrefKey
+      path
     ]
   );
   useGSAP(() => {
@@ -252,7 +242,30 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
       }
     }
   }, [activeTabInfo, tabStates, handleTabChange]);
-
+  const pmissions = useMemo(() => {
+    if (
+      "name" in activeTabConfig &&
+      activeTabConfig.name &&
+      typeof permissions === "object" &&
+      permissions &&
+      "fields" in permissions &&
+      !!permissions.fields
+    ) {
+      if (permissions.fields === true) return true;
+      const n = activeTabConfig.name;
+      if (!!permissions.fields[n]) {
+        return permissions.fields[activeTabConfig.name];
+      }
+    }
+    return (
+      (!!permissions && permissions) ||
+      ({
+        read: true,
+        update: true,
+        create: true
+      } satisfies SanitizedFieldPermissions)
+    );
+  }, [activeTabConfig, permissions]);
   return (
     <div
       className={[
@@ -305,17 +318,7 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
               parentPath={activePathChildrenPath}
               parentSchemaPath={activePathSchemaChildrenPath}
               path={activeTabPath}
-              permissions={
-                permissions &&
-                typeof permissions === "object" &&
-                "name" in activeTabConfig
-                  ? permissions[activeTabConfig.name] &&
-                    typeof permissions[activeTabConfig.name] === "object" &&
-                    "fields" in permissions[activeTabConfig.name]
-                    ? permissions[activeTabConfig.name].fields
-                    : permissions[activeTabConfig.name]
-                  : permissions
-              }
+              permissions={pmissions}
               readOnly={readOnly || false}
             />
           )}

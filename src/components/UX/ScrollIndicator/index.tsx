@@ -122,7 +122,6 @@ export const ScrollIndicator = () => {
     (e: Lenis) => {
       trackTO.current && clearTimeout(trackTO.current);
 
-
       setTrackk("active");
       const location = Math.min(
         e.progress * trackHeight.current,
@@ -160,11 +159,11 @@ export const ScrollIndicator = () => {
     (event) => {
       setDragging(true);
       dragControls.start(event, { snapToCursor: true });
-	    setCursor("DRAG");
+      setCursor("DRAG");
       document.documentElement.setAttribute("data-dragging", "true");
       document.body.addEventListener("pointerup", endDrag, { once: true });
     },
-	  [dragControls, endDrag, setCursor]
+    [dragControls, endDrag, setCursor]
   );
 
   useGSAP(() => {
@@ -188,7 +187,6 @@ export const ScrollIndicator = () => {
       paginated: true,
       dynamic: true,
       account: false,
-      users: true,
       "404": false,
       categories: true,
       albums: true,
@@ -269,7 +267,7 @@ export const ScrollIndicator = () => {
         <m.div
           key="scroller"
           className={cn(
-	          "scroll-indicator fixed top-[5px] right-[0px] bottom-[5px] z-[300] flex w-[40px] justify-end bg-gradient-to-r from-background/0 via-muted-faded-background/10 via-55% to-edge-black/50 transition-colors duration-150 ease-out-power2 not-data-[drag=true]:hover:animate-pulse md:top-[10px] md:bottom-[20px]"
+            "scroll-indicator fixed top-2 right-0 bottom-2 z-300 flex w-16 justify-end bg-linear-to-r from-background/0 via-muted-faded-background/10 via-55% to-edge-black/50 transition-colors duration-150 ease-out-power2 not-data-[drag=true]:hover:animate-pulse md:top-[10px] md:bottom-[20px]"
           )}
           data-drag={dragging}
           variants={{
@@ -296,13 +294,13 @@ export const ScrollIndicator = () => {
                 opacity: 1,
                 x: 0,
 
-	              borderColor: "oklch(from var(--faded-fg) l c h/0)"
+                borderColor: "oklch(from var(--faded-fg) l c h/0)"
               },
               active: {
                 opacity: 1,
                 x: 0,
 
-	              borderColor: "oklch(from var(--faded-fg) l c h/0.2)"
+                borderColor: "oklch(from var(--faded-fg) l c h/0.2)"
               }
             }}
             transition={{ duration: 0.2, ease: "easeInOut", type: "tween" }}
@@ -316,7 +314,6 @@ export const ScrollIndicator = () => {
           >
             <m.div
               ref={scrolle}
-
               dragListener={false}
               style={{
                 y: scrollYr

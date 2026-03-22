@@ -54,7 +54,7 @@ export const revalidateUser: CollectionAfterChangeHook<User> = cache(
 						payload.logger.info(`Revalidating user at path: ${path}`);
 
 						revalidatePath(path);
-						updateTag("users-sitemap");
+						revalidateTag("users-sitemap","max");
 					}
 
 					// If the page was previously published, we need to revalidate the old path
