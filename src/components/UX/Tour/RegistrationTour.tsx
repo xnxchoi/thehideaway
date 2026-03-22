@@ -23,7 +23,12 @@ import {
   useAppForm,
   withForm
 } from "@/components/UX/Tour/form";
-import type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
+import {
+  bioSchema,
+  detailsSchema,
+  identitySchema,
+  type ProfileFormValues
+} from "@/components/UX/Tour/Onboard/Form/schema";
 
 // Re-export so existing consumers aren't broken
 export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
@@ -416,6 +421,8 @@ export function RegistrationTour() {
   const regPending = useTourStore((s) => s.regPending);
 
   // Session
+  const sessionFirstName = useRPSession((s) => s.firstName);
+  const sessionLastName = useRPSession((s) => s.lastName);
   const setFirstNameSession = useRPSession((s) => s.setFirstName);
   const setLastNameSession = useRPSession((s) => s.setLastName);
   const setOnboarded = useRPSession((s) => s.setOnboarded);
@@ -439,9 +446,18 @@ export function RegistrationTour() {
   );
 
   // ── TanStack Form (single source of truth for step + field values) ────────
+  // Seed identity fields from existing session data so returning users see
+  // their name pre-filled without having to retype it.
 
   const form = useAppForm({
     ...defaultOptions,
+    defaultValues: {
+      ...defaultOptions.defaultValues,
+      identity: {
+        firstName: sessionFirstName?.trim() || "",
+        lastName: sessionLastName?.trim() || ""
+      }
+    },
     onSubmit: ({ value, formApi }) => {
       const idx = activeSteps.indexOf(value.step);
       if (idx < activeSteps.length - 1) {
@@ -534,9 +550,33 @@ export function RegistrationTour() {
     }
 
     setDir(1);
-    // Triggers validators → onSubmit (which advances the step)
-    await form.handleSubmit();
-  }, [currentStep, formValues, form, profileMutation]);
+
+    // ── Validate inline with Zod (no isSubmitting state flip = no GPU spike) ──
+    // Only call form.handleSubmit() when validation *fails*, so that TanStack
+    // Form distributes field-level error messages. On success we advance the
+    // step with a single setFieldValue call to keep re-renders minimal.
+    let valid = true;
+
+    if (currentStep === "identity") {
+      valid = identitySchema.safeParse(formValues).success;
+    } else if (currentStep === "bio") {
+      valid = bioSchema.safeParse(formValues).success;
+    } else if (currentStep === "details") {
+      valid = detailsSchema.safeParse(formValues).success;
+    }
+
+    if (!valid) {
+      // Let TanStack Form run its validators so errors appear in field components
+      await form.handleSubmit();
+      return;
+    }
+
+    // Single state change — no cascading re-renders
+    const idx = activeSteps.indexOf(currentStep);
+    if (idx < activeSteps.length - 1) {
+      form.setFieldValue("step", activeSteps[idx + 1]);
+    }
+  }, [currentStep, formValues, form, activeSteps, profileMutation]);
 
   const handleBack = useCallback(() => {
     setDir(-1);
@@ -556,6 +596,21 @@ export function RegistrationTour() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isLast, showExitWarning, handleDismissRequest]);
+
+  // ── Keyboard: Enter → advance ─────────────────────────────────────────────
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      // Let textareas use Enter for newlines
+      if (e.target instanceof HTMLTextAreaElement) return;
+      // Don't fire when a dialog / warning is up
+      if (showExitWarning || isSubmitting) return;
+      if (canAdvance) handleNext();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [canAdvance, handleNext, isSubmitting, showExitWarning]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -581,6 +636,7 @@ export function RegistrationTour() {
           <StepIndicators current={currentStep} steps={indicatorSteps} />
           {!isLast && (
             <MotionPillButton
+              type="button"
               onClick={handleDismissRequest}
               className="text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
               aria-label="Skip onboarding"
@@ -662,6 +718,7 @@ export function RegistrationTour() {
       <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
         {!isFirst ? (
           <MotionPillButton
+            type="button"
             onClick={handleBack}
             disabled={isSubmitting}
             className="flex items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
@@ -687,6 +744,7 @@ export function RegistrationTour() {
           <div />
         )}
         <MotionPillButton
+          type="button"
           onClick={handleNext}
           disabled={!canAdvance || isSubmitting}
           className={cn(
