@@ -470,10 +470,12 @@ export function RegistrationTour() {
       }
     }
   });
-
+  const formValues = useStore(form.store, (s) => s.values);
   // Derived from form state
   const currentStep = useStore(form.store, (s) => s.values.step);
-  const formValues = useStore(form.store, (s) => s.values);
+  const firstName = useStore(form.store, (s) => s.values.identity.firstName);
+  const lastName = useStore(form.store, (s) => s.values.identity.lastName);
+
   const isFormDirty = useStore(form.store, (s) => s.isDirty);
 
   // ── TanStack Query mutation ────────────────────────────────────────────────
@@ -514,13 +516,10 @@ export function RegistrationTour() {
 
   const canAdvance = useMemo((): boolean => {
     if (currentStep === "identity") {
-      return (
-        formValues.identity.firstName.trim().length >= 2 &&
-        formValues.identity.lastName.trim().length >= 2
-      );
+      return firstName.trim().length >= 2 && lastName.trim().length >= 2;
     }
     return true;
-  }, [currentStep, formValues.identity]);
+  }, [currentStep, firstName, lastName]);
 
   // ── beforeunload warning ──────────────────────────────────────────────────
 
@@ -547,9 +546,7 @@ export function RegistrationTour() {
   const handleNext = useCallback(async () => {
     if (currentStep === "complete") {
       profileMutation.mutate({
-        identity: formValues.identity,
-        bio: formValues.bio,
-        details: formValues.details
+        ...formValues
       });
       return;
     }
@@ -581,7 +578,7 @@ export function RegistrationTour() {
     if (idx < activeSteps.length - 1) {
       form.setFieldValue("step", activeSteps[idx + 1]);
     }
-  }, [currentStep, formValues, form, activeSteps, profileMutation]);
+  }, [currentStep, activeSteps, profileMutation, formValues, form]);
 
   const handleBack = useCallback(() => {
     setDir(-1);
@@ -700,7 +697,7 @@ export function RegistrationTour() {
                   <p className="text-[15px] leading-relaxed text-muted-foreground">
                     {stepCopy.subtitle}
                     {stepCopy.optional && (
-                      <span className="ml-2 text-[10px] font-medium tracking-[0.1em] text-foreground/25 uppercase">
+                      <span className="ml-2 text-small font-medium tracking-widest text-foreground/25 uppercase">
                         optional
                       </span>
                     )}
