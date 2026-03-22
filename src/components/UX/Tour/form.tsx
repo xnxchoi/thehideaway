@@ -2,7 +2,7 @@ import { MotionPillButton } from "@/components/UX/Button";
 import { cn } from "@/lib/utils";
 import { createFormHook, formOptions } from "@tanstack/react-form";
 import { HTMLMotionProps } from "motion/react";
-import { lazy, ReactNode } from "react";
+import { type ReactNode } from "react";
 import { fieldContext, formContext, useFormContext } from "./form-context";
 import {
   bioSchema,
@@ -11,9 +11,11 @@ import {
   identitySchema,
   type ProfileFormValues
 } from "./Onboard/Form/schema";
-
-const TextField = lazy(() => import("@/components/UX/Tour/Fields/text-field"));
-const TextArea = lazy(() => import("@/components/UX/Tour/Fields/text-area"));
+// Direct imports — NOT lazy. Lazy imports cause React to Suspend up to the
+// nearest Suspense boundary, which in this tree is the outer layout Suspense.
+// That unmounts Main → MainInternal → the WebGL canvas, losing the GL context.
+import TextField from "@/components/UX/Tour/Fields/text-field";
+import TextArea from "@/components/UX/Tour/Fields/text-area";
 function SubscribeButton({
   children,
   disabled,
