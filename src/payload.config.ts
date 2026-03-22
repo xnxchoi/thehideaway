@@ -1,10 +1,10 @@
-import { afterSchemaInit } from "@/lib/scripts/afterSchemaInit";
+import { afterSchemaInit } from "@/scripts/afterSchemaInit";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
 import { EmailQuota } from "@/payload/collections/EmailQuota";
-import { Footer } from "@/payload/collections/Footer/config";
-import { Header } from "@/payload/collections/Header";
+import { Footer } from "@/payload/globals/Footer/config";
+import { Header } from "@/payload/globals/Header";
 import { createProfile } from "@/payload/collections/Profile/operations/createProfile";
 import { createN } from "@/payload/collections/Users/hooks/afterChange";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";

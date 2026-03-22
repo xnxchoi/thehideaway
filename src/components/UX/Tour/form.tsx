@@ -1,3 +1,4 @@
+"use client";
 import { MotionPillButton } from "@/components/UX/Button";
 import { cn } from "@/lib/utils";
 import { createFormHook, formOptions } from "@tanstack/react-form";

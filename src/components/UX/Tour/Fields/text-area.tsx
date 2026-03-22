@@ -1,3 +1,4 @@
+"use client";
 import { useFieldContext } from "@/components/UX/Tour/form-context";
 import { cn } from "@/lib/utils";
 import * as m from "motion/react-m";
@@ -11,7 +12,15 @@ export default function TextArea({
   placeholder?: string;
 }) {
   const field = useFieldContext<string>();
-  const errors = field.state.meta.errors;
+  const errors = field.state.meta.errors as unknown as Array<{
+    code: string;
+    inclusive: boolean;
+    message: string;
+    minimum: number;
+    origin: string;
+    path: string[];
+  }>;
+  console.log(field.state.meta.errors);
 
   return (
     <>
@@ -40,7 +49,7 @@ export default function TextArea({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {errors[0].toString()}
+            {errors[0].message}
           </m.span>
         ) : (
           <span />

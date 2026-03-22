@@ -11,11 +11,19 @@ import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
 import {
   AnimatePresence,
+  useMotionValue,
   useReducedMotion,
   Variants
 } from "motion/react";
 import * as m from "motion/react-m";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  MouseEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { TextBlurIn } from "./TextBlurIn";
 import { useTourStore } from "./TourProvider";
 import {
@@ -428,10 +436,7 @@ export function RegistrationTour() {
 
   // ── Dynamic steps based on pending fields ─────────────────────────────────
 
-  const activeSteps = useMemo(
-    () => buildActiveSteps(regPending),
-    [regPending]
-  );
+  const activeSteps = useMemo(() => buildActiveSteps(regPending), [regPending]);
 
   const indicatorSteps = useMemo(
     () => activeSteps.filter((s) => s !== "welcome"),
@@ -491,16 +496,6 @@ export function RegistrationTour() {
     currentStep === "welcome" || currentStep === "identity";
   const stepCopy = STEP_COPY[currentStep] ?? STEP_COPY.welcome;
 
-  const canAdvance = useMemo((): boolean => {
-    if (currentStep === "identity") {
-      return (
-        formValues.identity.firstName.trim().length >= 2 &&
-        formValues.identity.lastName.trim().length >= 2
-      );
-    }
-    return true;
-  }, [currentStep, formValues.identity]);
-
   // ── beforeunload warning ──────────────────────────────────────────────────
 
   useEffect(() => {
@@ -512,38 +507,40 @@ export function RegistrationTour() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [isFormDirty]);
-
+  const curStep = useMotionValue(currentStep);
+  useEffect(() => {
+    curStep.set(currentStep);
+  }, [curStep, currentStep]);
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleDismissRequest = useCallback(() => {
-    if (currentStep === "welcome") {
+    if (curStep.get() === "welcome") {
       dismissRegistrationTour();
       return;
     }
     setShowExitWarning(true);
-  }, [currentStep, dismissRegistrationTour]);
+  }, [curStep, dismissRegistrationTour]);
 
-  const handleNext = useCallback(async () => {
-    if (currentStep === "complete") {
-      profileMutation.mutate({
-        identity: formValues.identity,
-        bio: formValues.bio,
-        details: formValues.details
-      });
-      return;
-    }
+  const handleNext: MouseEventHandler<HTMLButtonElement> = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    setDir(1);
-    // Triggers validators → onSubmit (which advances the step)
-    await form.handleSubmit();
-  }, [currentStep, formValues, form, profileMutation]);
+      setDir(1);
+      await form.handleSubmit();
+    },
+    [form]
+  );
 
-  const handleBack = useCallback(() => {
-    setDir(-1);
-    if (stepIdx > 0) {
-      form.setFieldValue("step", activeSteps[stepIdx - 1]);
-    }
-  }, [stepIdx, activeSteps, form]);
+  const handleBack: MouseEventHandler<HTMLButtonElement> = useCallback(
+    (e) => {
+      e.preventDefault();
+      setDir(-1);
+      if (stepIdx > 0) {
+        form.setFieldValue("step", activeSteps[stepIdx - 1]);
+      }
+    },
+    [stepIdx, activeSteps, form]
+  );
 
   // ── Keyboard: Escape ──────────────────────────────────────────────────────
 
@@ -561,10 +558,10 @@ export function RegistrationTour() {
 
   return (
     <m.div
-      className="fixed inset-0 z-[500] flex flex-col bg-background"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-300 flex flex-col bg-background/20"
+      initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+      animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+      exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
       transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
       role="dialog"
       aria-modal="true"
@@ -590,124 +587,121 @@ export function RegistrationTour() {
           )}
         </div>
       </header>
-
-      {/* ── Content ── */}
-      <main
-        className="flex flex-1 items-center justify-center overflow-hidden px-8 py-8 md:px-14"
-        style={{ perspective: "1500px" }}
+      <form
+        className="contents"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
       >
-        <div className="w-full max-w-[460px]">
-          <AnimatePresence mode="popLayout" custom={dir} initial={false}>
-            <m.div
-              key={currentStep}
-              custom={dir}
-              variants={prefersReduced ? {} : slideVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="flex flex-col gap-8"
-            >
-              {/* Title block — blur-in animated */}
-              <div className="flex flex-col gap-2.5">
-                <TextBlurIn
-                  key={`title-${currentStep}`}
-                  text={stepCopy.title}
-                  as="h1"
-                  className="leading-[1.15] font-medium tracking-[-0.025em] text-foreground"
-                  style={{ fontSize: "clamp(2rem, 5.5vw, 2.75rem)" }}
-                  preserveNewlines
-                  splitBy="word"
-                  stagger={0.035}
-                  delay={0.05}
-                  yOffset={6}
-                  blurAmount={6}
-                  duration={0.4}
-                />
-                <m.div
-                  initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    transition: {
-                      duration: 0.4,
-                      delay: 0.18,
-                      ease: [0.25, 0.46, 0.45, 0.94]
-                    }
-                  }}
-                >
-                  <p className="text-[15px] leading-relaxed text-muted-foreground">
-                    {stepCopy.subtitle}
-                    {stepCopy.optional && (
-                      <span className="ml-2 text-[10px] font-medium tracking-[0.1em] text-foreground/25 uppercase">
-                        optional
-                      </span>
-                    )}
-                  </p>
-                </m.div>
-              </div>
-
-              {/* Step body */}
-              {currentStep === "welcome" && <WelcomeStep form={form} />}
-              {currentStep === "identity" && <IdentityStep form={form} />}
-              {currentStep === "bio" && <BioStep form={form} />}
-              {currentStep === "details" && <DetailsStep form={form} />}
-              {currentStep === "complete" && <CompleteStep />}
-            </m.div>
-          </AnimatePresence>
-        </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
-        {!isFirst ? (
-          <MotionPillButton
-            onClick={handleBack}
-            disabled={isSubmitting}
-            className="flex items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M8.5 3L4.5 7L8.5 11"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Back
-          </MotionPillButton>
-        ) : (
-          <div />
-        )}
-        <MotionPillButton
-          onClick={handleNext}
-          disabled={!canAdvance || isSubmitting}
-          className={cn(
-            "rounded-full px-7 py-3 text-[14px] font-medium",
-            "bg-foreground text-background",
-            "hover:bg-foreground/90 active:scale-[0.97]",
-            "transition-all duration-150",
-            "disabled:opacity-25 disabled:active:scale-100",
-            "min-w-[140px] text-center"
-          )}
+        {/* ── Content ── */}
+        <div
+          className="flex flex-1 items-center justify-center overflow-hidden px-8 py-8 md:px-14"
+          style={{ perspective: "1500px" }}
         >
-          {isSubmitting
-            ? "Saving…"
-            : isLast
-              ? "Get started"
-              : currentStep === "welcome"
-                ? "Let's go"
-                : "Continue"}
-        </MotionPillButton>
-      </footer>
+          <div className="w-full max-w-[460px]">
+            <AnimatePresence mode="popLayout" custom={dir} initial={false}>
+              <m.div
+                key={currentStep}
+                custom={dir}
+                variants={prefersReduced ? {} : slideVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="flex flex-col gap-8"
+              >
+                {/* Title block — blur-in animated */}
+                <div className="flex flex-col gap-2.5">
+                  <TextBlurIn
+                    key={`title-${currentStep}`}
+                    text={stepCopy.title}
+                    as="h1"
+                    className="leading-[1.15] font-medium tracking-[-0.025em] text-foreground"
+                    style={{ fontSize: "clamp(2rem, 5.5vw, 2.75rem)" }}
+                    preserveNewlines
+                    splitBy="word"
+                    stagger={0.035}
+                    delay={0.05}
+                    yOffset={6}
+                    blurAmount={6}
+                    duration={0.4}
+                  />
+                  <m.div
+                    initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      filter: "blur(0px)",
+                      transition: {
+                        duration: 0.4,
+                        delay: 0.18,
+                        ease: [0.25, 0.46, 0.45, 0.94]
+                      }
+                    }}
+                  >
+                    <p className="text-[15px] leading-relaxed text-muted-foreground">
+                      {stepCopy.subtitle}
+                      {stepCopy.optional && (
+                        <span className="ml-2 text-[10px] font-medium tracking-[0.1em] text-foreground/25 uppercase">
+                          optional
+                        </span>
+                      )}
+                    </p>
+                  </m.div>
+                </div>
 
+                {/* Step body */}
+                {currentStep === "welcome" && <WelcomeStep form={form} />}
+                {currentStep === "identity" && <IdentityStep form={form} />}
+                {currentStep === "bio" && <BioStep form={form} />}
+                {currentStep === "details" && <DetailsStep form={form} />}
+                {currentStep === "complete" && <CompleteStep />}
+              </m.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* ── Footer ── */}
+        <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
+          {!isFirst ? (
+            <MotionPillButton
+              onClick={handleBack}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M8.5 3L4.5 7L8.5 11"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Back
+            </MotionPillButton>
+          ) : (
+            <div />
+          )}
+          <form.AppForm>
+            <form.SubscribeButton onClick={handleNext} disabled={isSubmitting}>
+              {isSubmitting
+                ? "Saving…"
+                : isLast
+                  ? "Get started"
+                  : currentStep === "welcome"
+                    ? "Let's go"
+                    : "Continue"}
+            </form.SubscribeButton>
+          </form.AppForm>
+        </footer>
+      </form>
       {/* ── Exit warning ── */}
       <AnimatePresence>
         {showExitWarning && (

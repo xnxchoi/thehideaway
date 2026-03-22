@@ -437,8 +437,8 @@ export const users = pgTable(
   {
     id: varchar("id").primaryKey(),
     slug: varchar("slug"),
-    firstName: varchar("first_name").default("First And"),
-    lastName: varchar("last_name").default("The Last"),
+    firstName: varchar("first_name"),
+    lastName: varchar("last_name"),
     verified: boolean("verified").default(false),
     username: varchar("username"),
     bio: varchar("bio").default("A member of The Hideaway."),
@@ -533,8 +533,8 @@ export const _users_v = pgTable(
       onDelete: "set null"
     }),
     version_slug: varchar("version_slug"),
-    version_firstName: varchar("version_first_name").default("First And"),
-    version_lastName: varchar("version_last_name").default("The Last"),
+    version_firstName: varchar("version_first_name"),
+    version_lastName: varchar("version_last_name"),
     version_verified: boolean("version_verified").default(false),
     version_username: varchar("version_username"),
     version_bio: varchar("version_bio").default("A member of The Hideaway."),
@@ -3553,6 +3553,7 @@ export const tracks = pgTable(
     album: uuid("album_id").references(() => albums.id, {
       onDelete: "set null"
     }),
+    duration: numeric("duration", { mode: "number" }),
     albumSlug: varchar("album_slug"),
     artist: varchar("artist"),
     description: varchar("description"),
@@ -3656,6 +3657,7 @@ export const _tracks_v = pgTable(
     version_album: uuid("version_album_id").references(() => albums.id, {
       onDelete: "set null"
     }),
+    version_duration: numeric("version_duration", { mode: "number" }),
     version_albumSlug: varchar("version_album_slug"),
     version_artist: varchar("version_artist"),
     version_description: varchar("version_description"),
