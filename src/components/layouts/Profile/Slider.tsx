@@ -112,9 +112,19 @@ export const Slider = (props: {
   const reqAF = useRef<ReturnType<typeof Tempus.add> | null>(null);
   useEffect(() => {
     const rest = [canvasRef, texturesRef, user];
+    // Helper: defer Tempus remover past the current dispatch cycle to avoid
+    // a Tempus bug where self-removal during dispatch makes this.callbacks[i]
+    // undefined, crashing with "Cannot read properties of undefined (reading 'samples')".
+    const deferRemove = () => {
+      if (reqAF.current) {
+        const rem = reqAF.current;
+        reqAF.current = null;
+        queueMicrotask(rem);
+      }
+    };
     const rwe = () => {
       if (isReady.current || sliderRef.current || totalCheck(targets, rest)) {
-        reqAF.current && (reqAF.current(), (reqAF.current = null));
+        deferRemove();
       }
       targets.forEach(([ref, target]) => {
         if (!ref.current) {
@@ -125,10 +135,12 @@ export const Slider = (props: {
         }
       });
       const allGood = totalCheck(targets, rest);
-      allGood
-        ? (setReady(true),
-          reqAF.current && (reqAF.current(), (reqAF.current = null)))
-        : setReady(false);
+      if (allGood) {
+        setReady(true);
+        deferRemove();
+      } else {
+        setReady(false);
+      }
     };
     reqAF.current = Tempus.add(rwe, { priority: 20, fps: 10 });
   }, [targets, totalCheck]);
