@@ -11,15 +11,19 @@ export default function TextArea({
   placeholder?: string;
 }) {
   const field = useFieldContext<string>();
+  const errors = field.state.meta.errors;
 
   return (
     <>
       <m.textarea
         className={cn(
-          "w-full rounded-2xl border border-foreground/15 bg-transparent px-5 py-4",
+          "w-full rounded-2xl border bg-transparent px-5 py-4",
           "text-[15px] text-foreground placeholder:text-muted-foreground/35",
-          "transition-colors duration-150 focus:border-foreground/45 focus:outline-none",
+          "transition-colors duration-150 focus:outline-none",
           "min-h-[112px] resize-none leading-relaxed",
+          errors.length > 0
+            ? "border-red-400/50 focus:border-red-400/70"
+            : "border-foreground/15 focus:border-foreground/45",
           className
         )}
         placeholder={placeholder}
@@ -28,9 +32,23 @@ export default function TextArea({
         onBlur={field.handleBlur}
         maxLength={maxLength}
       />
-      <span className="text-right text-xs text-muted-foreground/35 tabular-nums">
-        {field.state.value.length}/{maxLength}
-      </span>
+      <div className="flex items-center justify-between px-2">
+        {errors.length > 0 ? (
+          <m.span
+            className="text-xs text-red-400/80"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {errors[0].toString()}
+          </m.span>
+        ) : (
+          <span />
+        )}
+        <span className="text-right text-xs text-muted-foreground/35 tabular-nums">
+          {field.state.value.length}/{maxLength}
+        </span>
+      </div>
     </>
   );
 }

@@ -6,19 +6,16 @@ import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
-import { useForm, useStore } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
 import {
   AnimatePresence,
-  MotionValue,
-  useMotionValue,
   useReducedMotion,
-  useTransform,
   Variants
 } from "motion/react";
 import * as m from "motion/react-m";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TextBlurIn } from "./TextBlurIn";
 import { useTourStore } from "./TourProvider";
 import {
@@ -26,6 +23,10 @@ import {
   useAppForm,
   withForm
 } from "@/components/UX/Tour/form";
+import type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
+
+// Re-export so existing consumers aren't broken
+export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -60,25 +61,16 @@ const STEP_COPY: Record<RegistrationStep, StepConfig> = {
   }
 };
 
-// Steps shown in the indicator (exclude welcome)
-const INDICATOR_STEPS: RegistrationStep[] = [
-  "identity",
-  "bio",
-  "details",
-  "complete"
-];
+// ─── Build active steps from pending fields ──────────────────────────────────
 
-// ─── Form types ──────────────────────────────────────────────────────────────
-
-export type ProfileFormValues = {
-  step: RegistrationStep;
-  identity: {
-    firstName: string;
-    lastName: string;
-  };
-  bio: { content: string };
-  details: { location: string; link: string };
-};
+export function buildActiveSteps(pending: {
+  needsIdentity: boolean;
+}): RegistrationStep[] {
+  const steps: RegistrationStep[] = ["welcome"];
+  if (pending.needsIdentity) steps.push("identity");
+  steps.push("bio", "details", "complete");
+  return steps;
+}
 
 // ─── Subtle fade-up for step body content ────────────────────────────────────
 
@@ -214,22 +206,22 @@ function CompleteStep() {
 // ─── Step indicators ──────────────────────────────────────────────────────────
 
 function StepIndicators({
-  current
+  current,
+  steps
 }: {
-  current: MotionValue<RegistrationStep>;
+  current: RegistrationStep;
+  steps: RegistrationStep[];
 }) {
-  const currentIdx_ = useTransform(current, (v) => INDICATOR_STEPS.indexOf(v));
-  const [currentIdx, setCurrentIdx] = useState(currentIdx_.get());
-  currentIdx_.on("change", setCurrentIdx);
+  const currentIdx = steps.indexOf(current);
 
   return (
     <div
       className="flex items-center gap-1.5"
       role="progressbar"
       aria-valuenow={Math.max(0, currentIdx + 1)}
-      aria-valuemax={INDICATOR_STEPS.length}
+      aria-valuemax={steps.length}
     >
-      {INDICATOR_STEPS.map((step, i) => {
+      {steps.map((step, i) => {
         const isPast = i < currentIdx;
         const isCurrent = i === currentIdx;
 
@@ -416,15 +408,14 @@ async function submitProfile(data: ProfilePayload) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function RegistrationTour() {
-  const regNext = useTourStore((s) => s.regNext);
-  const regPrev = useTourStore((s) => s.regPrev);
+  // Tour lifecycle — Zustand
   const closeRegistrationTour = useTourStore((s) => s.closeRegistrationTour);
   const dismissRegistrationTour = useTourStore(
     (s) => s.dismissRegistrationTour
   );
+  const regPending = useTourStore((s) => s.regPending);
 
-  const sessionFirstName = useRPSession((s) => s.firstName);
-  const sessionLastName = useRPSession((s) => s.lastName);
+  // Session
   const setFirstNameSession = useRPSession((s) => s.setFirstName);
   const setLastNameSession = useRPSession((s) => s.setLastName);
   const setOnboarded = useRPSession((s) => s.setOnboarded);
@@ -435,30 +426,34 @@ export function RegistrationTour() {
   const prefersReduced = useReducedMotion();
   const lenis = useLenis();
 
-  // ── TanStack Form ──────────────────────────────────────────────────────────
+  // ── Dynamic steps based on pending fields ─────────────────────────────────
+
+  const activeSteps = useMemo(
+    () => buildActiveSteps(regPending),
+    [regPending]
+  );
+
+  const indicatorSteps = useMemo(
+    () => activeSteps.filter((s) => s !== "welcome"),
+    [activeSteps]
+  );
+
+  // ── TanStack Form (single source of truth for step + field values) ────────
 
   const form = useAppForm({
     ...defaultOptions,
     onSubmit: ({ value, formApi }) => {
-      switch (value.step) {
-        case "welcome":
-          formApi.setFieldValue("step", "identity");
-          break;
-        case "identity":
-          formApi.setFieldValue("step", "bio");
-          break;
-        case "bio":
-          formApi.setFieldValue("step", "details");
-          break;
-        case "details":
-          formApi.setFieldValue("step", "complete");
-          break;
-        // Complete : can be handled by the mutation... or not?
+      const idx = activeSteps.indexOf(value.step);
+      if (idx < activeSteps.length - 1) {
+        formApi.setFieldValue("step", activeSteps[idx + 1]);
       }
     }
   });
-  const regStep_ = useStore(form.store, (s) => s.values.step);
-  const regStep = useMotionValue(regStep_);
+
+  // Derived from form state
+  const currentStep = useStore(form.store, (s) => s.values.step);
+  const formValues = useStore(form.store, (s) => s.values);
+  const isFormDirty = useStore(form.store, (s) => s.isDirty);
 
   // ── TanStack Query mutation ────────────────────────────────────────────────
 
@@ -489,13 +484,22 @@ export function RegistrationTour() {
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
-  const formValues = useStore(form.store, (s) => s.values);
+  const stepIdx = activeSteps.indexOf(currentStep);
+  const isFirst = stepIdx === 0;
+  const isLast = currentStep === "complete";
+  const isInRequiredSection =
+    currentStep === "welcome" || currentStep === "identity";
+  const stepCopy = STEP_COPY[currentStep] ?? STEP_COPY.welcome;
 
-  const isFormDirty = useStore(form.store, (s) => s.isDirty);
-
-  const isInRequiredSection = regStep_ === "welcome" || regStep_ === "identity";
-  const isFirst = useTransform(() => regStep.get() === "welcome");
-  const isLast = useTransform(() => regStep.get() === "complete");
+  const canAdvance = useMemo((): boolean => {
+    if (currentStep === "identity") {
+      return (
+        formValues.identity.firstName.trim().length >= 2 &&
+        formValues.identity.lastName.trim().length >= 2
+      );
+    }
+    return true;
+  }, [currentStep, formValues.identity]);
 
   // ── beforeunload warning ──────────────────────────────────────────────────
 
@@ -509,6 +513,38 @@ export function RegistrationTour() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [isFormDirty]);
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  const handleDismissRequest = useCallback(() => {
+    if (currentStep === "welcome") {
+      dismissRegistrationTour();
+      return;
+    }
+    setShowExitWarning(true);
+  }, [currentStep, dismissRegistrationTour]);
+
+  const handleNext = useCallback(async () => {
+    if (currentStep === "complete") {
+      profileMutation.mutate({
+        identity: formValues.identity,
+        bio: formValues.bio,
+        details: formValues.details
+      });
+      return;
+    }
+
+    setDir(1);
+    // Triggers validators → onSubmit (which advances the step)
+    await form.handleSubmit();
+  }, [currentStep, formValues, form, profileMutation]);
+
+  const handleBack = useCallback(() => {
+    setDir(-1);
+    if (stepIdx > 0) {
+      form.setFieldValue("step", activeSteps[stepIdx - 1]);
+    }
+  }, [stepIdx, activeSteps, form]);
+
   // ── Keyboard: Escape ──────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -519,44 +555,7 @@ export function RegistrationTour() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLast, showExitWarning, regStep]);
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleDismissRequest = useCallback(() => {
-    if (regStep.get() === "welcome") {
-      dismissRegistrationTour();
-      return;
-    }
-    setShowExitWarning(true);
-  }, [regStep, dismissRegistrationTour]);
-
-  const canAdvance = useCallback((): boolean => {
-    if (regStep.get() === "identity")
-      return formValues.identity.firstName.trim().length > 0;
-    return true;
-  }, [regStep, formValues.identity.firstName]);
-
-  const handleNext = useCallback(async () => {
-    if (regStep.get() === "complete") {
-      profileMutation.mutate({
-        identity: formValues.identity,
-        bio: formValues.bio,
-        details: formValues.details
-      });
-      return;
-    }
-
-    setDir(1);
-    regNext();
-  }, [regStep, formValues, regNext, profileMutation]);
-
-  const handleBack = useCallback(() => {
-    setDir(-1);
-    regPrev();
-  }, [regPrev]);
-
-  const stepCopy = STEP_COPY[regStep.get()] || STEP_COPY.welcome;
+  }, [isLast, showExitWarning, handleDismissRequest]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -579,7 +578,7 @@ export function RegistrationTour() {
         </span>
 
         <div className="flex items-center gap-4">
-          <StepIndicators current={regStep} />
+          <StepIndicators current={currentStep} steps={indicatorSteps} />
           {!isLast && (
             <MotionPillButton
               onClick={handleDismissRequest}
@@ -600,7 +599,7 @@ export function RegistrationTour() {
         <div className="w-full max-w-[460px]">
           <AnimatePresence mode="popLayout" custom={dir} initial={false}>
             <m.div
-              key={regStep_}
+              key={currentStep}
               custom={dir}
               variants={prefersReduced ? {} : slideVariants}
               initial="initial"
@@ -611,7 +610,7 @@ export function RegistrationTour() {
               {/* Title block — blur-in animated */}
               <div className="flex flex-col gap-2.5">
                 <TextBlurIn
-                  key={`title-${regStep_}`}
+                  key={`title-${currentStep}`}
                   text={stepCopy.title}
                   as="h1"
                   className="leading-[1.15] font-medium tracking-[-0.025em] text-foreground"
@@ -649,11 +648,11 @@ export function RegistrationTour() {
               </div>
 
               {/* Step body */}
-              {regStep_ === "welcome" && <WelcomeStep form={form} />}
-              {regStep_ === "identity" && <IdentityStep form={form} />}
-              {regStep_ === "bio" && <BioStep form={form} />}
-              {regStep_ === "details" && <DetailsStep form={form} />}
-              {regStep_ === "complete" && <CompleteStep />}
+              {currentStep === "welcome" && <WelcomeStep form={form} />}
+              {currentStep === "identity" && <IdentityStep form={form} />}
+              {currentStep === "bio" && <BioStep form={form} />}
+              {currentStep === "details" && <DetailsStep form={form} />}
+              {currentStep === "complete" && <CompleteStep />}
             </m.div>
           </AnimatePresence>
         </div>
@@ -689,7 +688,7 @@ export function RegistrationTour() {
         )}
         <MotionPillButton
           onClick={handleNext}
-          disabled={!canAdvance() || isSubmitting}
+          disabled={!canAdvance || isSubmitting}
           className={cn(
             "rounded-full px-7 py-3 text-[14px] font-medium",
             "bg-foreground text-background",
@@ -703,7 +702,7 @@ export function RegistrationTour() {
             ? "Saving…"
             : isLast
               ? "Get started"
-              : regStep_ === "welcome"
+              : currentStep === "welcome"
                 ? "Let's go"
                 : "Continue"}
         </MotionPillButton>

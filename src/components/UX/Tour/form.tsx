@@ -4,12 +4,12 @@ import { createFormHook, formOptions } from "@tanstack/react-form";
 import { HTMLMotionProps } from "motion/react";
 import { lazy, ReactNode } from "react";
 import { fieldContext, formContext, useFormContext } from "./form-context";
-import { ProfileFormValues } from "@/components/UX/Tour/RegistrationTour";
 import {
   bioSchema,
   detailsSchema,
   FormSchema,
-  identitySchema
+  identitySchema,
+  type ProfileFormValues
 } from "./Onboard/Form/schema";
 
 const TextField = lazy(() => import("@/components/UX/Tour/Fields/text-field"));
@@ -51,7 +51,7 @@ const defaultValues: ProfileFormValues = {
     content: ""
   },
   details: {
-    location: "Seoul",
+    location: "",
     link: ""
   }
 };
