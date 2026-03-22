@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence } from "motion/react";
+import { Suspense } from "react";
 import { InterfaceTour, InterfaceTourTrigger } from "./InterfaceTour";
 import { RegistrationTour, RegistrationTourTrigger } from "./RegistrationTour";
 import { useTourStore } from "./TourProvider";
@@ -21,10 +22,13 @@ export function TourOrchestrator() {
       <RegistrationTourTrigger />
       <InterfaceTourTrigger />
 
-      {/* Overlays */}
-      <AnimatePresence>
-        {regActive && <RegistrationTour key="reg-tour" />}
-      </AnimatePresence>
+      {/* Overlays — Suspense here contains any lazy-loaded children so they
+          don't bubble up to the layout-level Suspense and unmount the canvas */}
+      <Suspense>
+        <AnimatePresence>
+          {regActive && <RegistrationTour key="reg-tour" />}
+        </AnimatePresence>
+      </Suspense>
 
       <InterfaceTour />
     </>
