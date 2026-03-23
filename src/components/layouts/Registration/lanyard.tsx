@@ -61,7 +61,7 @@ function Registerer(
   const name1 = useStore(form.store, (r) => r.values.identity.firstName);
   const name2 = useStore(form.store, (r) => r.values.identity.lastName);
   return (
-    <div ref={ref} className="absolute inset-0 z-5">
+    <div ref={ref} className="relative z-5 h-full flex-1">
       <View
         style={{
           right: "0",

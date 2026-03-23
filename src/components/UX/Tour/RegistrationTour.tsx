@@ -784,7 +784,7 @@ export function RegistrationTour() {
           </div>
         </div>
         {/* ── Footer ── */}
-        <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
+        <footer className="z-120 flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
           {!isFirst ? (
             <MotionPillButton
               type="button"
@@ -847,9 +847,6 @@ export function RegistrationTour() {
             />
           )}
         </AnimatePresence>{" "}
-        <form.AppForm>
-          <Lanyard type={"BADGE"} />
-        </form.AppForm>
       </m.div>
     </>
   );
