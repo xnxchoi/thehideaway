@@ -77,11 +77,12 @@ export const defaultOptions = formOptions({
     }
   }
 });
-export const { useAppForm, withForm, withFieldGroup } = createFormHook({
-  fieldComponents: { TextArea, TextField },
-  formComponents: {
-    SubscribeButton
-  },
-  fieldContext,
-  formContext
-});
+export const { useAppForm, withForm, withFieldGroup, useTypedAppFormContext } =
+  createFormHook({
+    fieldComponents: { TextArea, TextField },
+    formComponents: {
+      SubscribeButton
+    },
+    fieldContext,
+    formContext
+  });

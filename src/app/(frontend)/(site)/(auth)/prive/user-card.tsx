@@ -14,7 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/ui/copy-button";
 import {
-	DialogRoot,
+  DialogRoot,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -53,10 +53,10 @@ import { AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { useTransitionRouter } from "next-transition-router";
 import {
-	type ChangeEventHandler,
+  type ChangeEventHandler,
   type ClipboardEventHandler,
   type DragEventHandler,
-	type MouseEventHandler,
+  type MouseEventHandler,
   use,
   useCallback,
   useEffect,
@@ -97,8 +97,7 @@ export function UserCard() {
   const [isSignOut, setIsSignOut] = useState<boolean>(false);
   const [emailVerificationPending, setEmailVerificationPending] =
     useState<boolean>(false);
-  const formatter = useFormatter();
-  const now = useNow();
+
   return (
     <Card>
       <CardHeader>
@@ -178,8 +177,7 @@ export function UserCard() {
           </Alert>
         )}
         {sessions && sessions.length > 0 && (
-	        <div
-		        className="flex w-max flex-col gap-1 border-l-2 border-muted-faded-foreground/30 px-2 pl-4 font-sans">
+          <div className="flex w-max flex-col gap-1 border-l-2 border-muted-faded-foreground/30 px-2 pl-4 font-sans">
             <p className="text-base font-medium">Active Sessions</p>
             <div className="grid grid-cols-[repeat(4,1fr)] grid-rows-[repeat(1,1fr)] gap-[8px] py-2">
               {sessions
@@ -187,9 +185,10 @@ export function UserCard() {
                 .map((sessionData) => {
                   return (
                     <div
-	                    className="outline-groove group flex items-center justify-between gap-4 rounded-[12px] bg-transparent px-4 py-1.5 text-foreground shadow-xs/20 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-background hover:text-muted-faded-foreground md:shadow-sm/20 dark:shadow-sm/25 md:dark:shadow-md/25"
+                      className="outline-groove group flex items-center justify-between gap-4 rounded-[12px] bg-transparent px-4 py-1.5 text-foreground shadow-xs/20 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-background hover:text-muted-faded-foreground md:shadow-sm/20 dark:shadow-sm/25 md:dark:shadow-md/25"
                       style={{
-	                      outlineColor: "oklch(from var(--muted-faded-fg) l c h /.3)"
+                        outlineColor:
+                          "oklch(from var(--muted-faded-fg) l c h /.3)"
                       }}
                       key={sessionData.id}
                     >
@@ -255,15 +254,13 @@ export function UserCard() {
             </div>
           </div>
         )}
-	      <div
-		      className="flex items-center justify-between gap-10 border-y border-muted-faded-foreground/30 px-0 pt-4">
+        <div className="flex items-center justify-between gap-10 border-y border-muted-faded-foreground/30 px-0 pt-4">
           <div className="flex h-full w-full flex-col gap-4">
             <div className="flex h-6 w-full items-center font-sans text-lg">
               Passkeys
             </div>
             <div className="flex h-12 w-full items-center justify-between">
-	            <div
-		            className="flex h-full w-full items-center border-r border-muted-faded-foreground/30 pr-4">
+              <div className="flex h-full w-full items-center border-r border-muted-faded-foreground/30 pr-4">
                 <ListPasskeys />
               </div>
               <div className="flex h-full w-full items-center pl-4">
@@ -277,13 +274,16 @@ export function UserCard() {
             </div>
             <div className="flex items-center gap-2">
               {currentUser && !!currentUser.twoFactorEnabled && (
-	              <DialogRoot>
-                  <DialogTrigger asChild>
-                    <Button className="gap-2">
-                      <QrCode size={16} />
-                      <span className="text-xs md:text-sm">Scan QR Code</span>
-                    </Button>
-                  </DialogTrigger>
+                <DialogRoot>
+                  <DialogTrigger
+                    nativeButton={true}
+                    render={() => (
+                      <Button className="gap-2">
+                        <QrCode size={16} />
+                        <span className="text-xs md:text-sm">Scan QR Code</span>
+                      </Button>
+                    )}
+                  />
                   <DialogContent className="w-11/12 sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>Scan QR Code</DialogTitle>
@@ -337,30 +337,36 @@ export function UserCard() {
                       </div>
                     )}
                   </DialogContent>
-	              </DialogRoot>
+                </DialogRoot>
               )}
-	            <DialogRoot open={twoFactorDialog} onOpenChange={setTwoFactorDialog}>
-                <DialogTrigger asChild>
-                  <Button
-                    className={cn(
-                      "items-center justify-center gap-2 rounded-md font-sans text-base",
-                      (currentUser?.twoFactorEnabled &&
-                        "border-bleu-700 px-6 py-3 text-bleu-700") ||
-	                    "flex border-[1px] border-transparent px-3 py-1 text-faded-foreground"
-                    )}
-                  >
-                    {currentUser?.twoFactorEnabled ? (
-                      <ShieldCheck size={16} />
-                    ) : (
-                      <ChevronRightIcon className="h-4 w-4" />
-                    )}
-                    <span className="text-xs md:text-sm">
-                      {currentUser?.twoFactorEnabled
-                        ? "2FA is Enabled."
-                        : "Set up 2FA"}
-                    </span>
-                  </Button>
-                </DialogTrigger>
+              <DialogRoot
+                open={twoFactorDialog}
+                onOpenChange={setTwoFactorDialog}
+              >
+                <DialogTrigger
+                  nativeButton={true}
+                  render={() => (
+                    <Button
+                      className={cn(
+                        "items-center justify-center gap-2 rounded-md font-sans text-base",
+                        (currentUser?.twoFactorEnabled &&
+                          "border-bleu-700 px-6 py-3 text-bleu-700") ||
+                          "flex border-[1px] border-transparent px-3 py-1 text-faded-foreground"
+                      )}
+                    >
+                      {currentUser?.twoFactorEnabled ? (
+                        <ShieldCheck size={16} />
+                      ) : (
+                        <ChevronRightIcon className="h-4 w-4" />
+                      )}
+                      <span className="text-xs md:text-sm">
+                        {currentUser?.twoFactorEnabled
+                          ? "2FA is Enabled."
+                          : "Set up 2FA"}
+                      </span>
+                    </Button>
+                  )}
+                />
                 <DialogContent className="w-11/12 sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle>
@@ -475,7 +481,7 @@ export function UserCard() {
                     </Button>
                   </DialogFooter>
                 </DialogContent>
-	            </DialogRoot>
+              </DialogRoot>
             </div>
           </div>
         </div>
@@ -483,7 +489,7 @@ export function UserCard() {
       <CardFooter className="items-center justify-between gap-2">
         {accounts &&
           accounts.some((account) => {
-	          return account.scopes.includes("credential");
+            return account.scopes.includes("credential");
           }) && <ChangePassword />}
         <Button
           className="z-10 gap-2"
@@ -533,23 +539,28 @@ function ChangePassword() {
   const [open, setOpen] = useState<boolean>(false);
   const [signOutDevices, setSignOutDevices] = useState<boolean>(false);
   return (
-	  <DialogRoot open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="z-10 gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="1em"
-            height="1em"
-            viewBox="0 0 24 24"
-          >
-            <path
-              fill="currentColor"
-              d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"
-            ></path>
-          </svg>
-          <span className="text-sm text-muted-foreground">Change Password</span>
-        </Button>
-      </DialogTrigger>
+    <DialogRoot open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        nativeButton={true}
+        render={() => (
+          <Button className="z-10 gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"
+              ></path>
+            </svg>
+            <span className="text-sm text-muted-foreground">
+              Change Password
+            </span>
+          </Button>
+        )}
+      />
       <DialogContent className="w-11/12 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Change Password</DialogTitle>
@@ -633,7 +644,7 @@ function ChangePassword() {
           </Button>
         </DialogFooter>
       </DialogContent>
-	  </DialogRoot>
+    </DialogRoot>
   );
 }
 
@@ -722,36 +733,39 @@ function EditUserDialog() {
     },
     [setImage]
   );
-  const doUpload = useCallback(async (file: File) => {
-    const formD = new FormData();
-    formD.append("file", file);
-    formD.append(
-      "_payload",
-      JSON.stringify({
-        alt: "",
-        caption: `${currentUser?.name}'s profile image`,
-        _status: "published"
-      })
-    );
-    try {
-      const response = await fetch(`${url}/api/userMedia`, {
-        method: "POST",
-        body: formD,
-        credentials: "include"
-      });
-      if (response.ok) {
-        const json = await response.json();
-        console.log("imageUploadedDoc", json);
-        return json.doc as Partial<UserMedia> &
-          Required<Pick<UserMedia, "id" | "thumbnailURL" | "url">>;
+  const doUpload = useCallback(
+    async (file: File) => {
+      const formD = new FormData();
+      formD.append("file", file);
+      formD.append(
+        "_payload",
+        JSON.stringify({
+          alt: "",
+          caption: `${currentUser?.name}'s profile image`,
+          _status: "published"
+        })
+      );
+      try {
+        const response = await fetch(`${url}/api/userMedia`, {
+          method: "POST",
+          body: formD,
+          credentials: "include"
+        });
+        if (response.ok) {
+          const json = await response.json();
+          console.log("imageUploadedDoc", json);
+          return json.doc as Partial<UserMedia> &
+            Required<Pick<UserMedia, "id" | "thumbnailURL" | "url">>;
+        }
+        return null;
+      } catch (e) {
+        toast.error("Welp, something went wrong. Try again?");
+        console.log(e);
+        return null;
       }
-      return null;
-    } catch (e) {
-      toast.error("Welp, something went wrong. Try again?");
-      console.log(e);
-      return null;
-    }
-  }, []);
+    },
+    [currentUser, url]
+  );
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const fileList = e.target.files;
@@ -810,25 +824,27 @@ function EditUserDialog() {
     }
   }, [removeImage]);
 
-	const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-		e.preventDefault();
-		e.stopPropagation();
-
+  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
   }, []);
-	const onClickRemove: MouseEventHandler = useCallback((e) => {
-		e.preventDefault();
-		setRemoveImage(r => !r);
-	}, [])
+  const onClickRemove: MouseEventHandler = useCallback((e) => {
+    e.preventDefault();
+    setRemoveImage((r) => !r);
+  }, []);
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   return (
-	  <DialogRoot open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Edit size={13} />
-          Edit User
-        </Button>
-      </DialogTrigger>
+    <DialogRoot open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        nativeButton={true}
+        render={() => (
+          <Button className="gap-2">
+            <Edit size={13} />
+            Edit User
+          </Button>
+        )}
+      />
       <DialogContent className="w-11/12 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="font-sans text-3xl font-bold">
@@ -850,7 +866,7 @@ function EditUserDialog() {
                   First Name
                 </Label>
                 <Input
-	                className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
+                  className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
                   id="firstName"
                   type="firstName"
                   placeholder={currentUser?.firstName ?? ""}
@@ -865,7 +881,7 @@ function EditUserDialog() {
                   Last Name
                 </Label>
                 <Input
-	                className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
+                  className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
                   id="lastName"
                   type="lastName"
                   placeholder={currentUser?.lastName ?? ""}
@@ -885,7 +901,7 @@ function EditUserDialog() {
                   <div className="relative my-10 flex w-full flex-col items-center">
                     <div
                       className={
-	                      "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-faded-foreground/60 bg-transparent transition-all duration-300"
+                        "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-faded-foreground/60 bg-transparent transition-all duration-300"
                       }
                       onDragEnter={handleDragEnter}
                       onDragOver={handleDragOver}
@@ -896,13 +912,14 @@ function EditUserDialog() {
                       onPaste={handlePaste}
                     >
                       <input
-	                      type="checkbox" name="removeImage"
+                        type="checkbox"
+                        name="removeImage"
                         className="hidden outline-none"
                         checked={removeImage}
-	                      onChange={onChange}
+                        onChange={onChange}
                       />
                       <div
-	                      className="ease relative rounded-xl border-[1px] border-solid border-faded-foreground p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-faded-foreground hover:bg-muted-faded-foreground hover:text-faded-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
+                        className="ease relative rounded-xl border-[1px] border-solid border-faded-foreground p-5 px-3.5 py-1 text-center leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-faded-foreground hover:bg-muted-faded-foreground hover:text-faded-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:z-[10] data-[visible=true]:opacity-100"
                         data-visible={hover}
                         onMouseEnter={onMouseEnter}
                         onMouseLeave={onMouseLeave}
@@ -974,7 +991,7 @@ function EditUserDialog() {
                       {imagePreview && (
                         <div
                           className={cn(
-	                          "absolute inset-0 flex items-center justify-center gap-[8px] bg-off-black/30 backdrop-blur-lg transition-all duration-300 data-[visible=false]:z-[0] data-[visible=false]:opacity-0 data-[visible=true]:z-[55] data-[visible=true]:opacity-100"
+                            "absolute inset-0 flex items-center justify-center gap-[8px] bg-off-black/30 backdrop-blur-lg transition-all duration-300 data-[visible=false]:z-[0] data-[visible=false]:opacity-0 data-[visible=true]:z-[55] data-[visible=true]:opacity-100"
                           )}
                           data-visible={hover}
                         >
@@ -1078,7 +1095,7 @@ function EditUserDialog() {
           </Button>
         </DialogFooter>
       </DialogContent>
-	  </DialogRoot>
+    </DialogRoot>
   );
 }
 
@@ -1105,13 +1122,16 @@ function AddPasskey() {
     setIsLoading(false);
   };
   return (
-	  <DialogRoot open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2 text-xs md:text-sm">
-          <Plus size={15} />
-          Add New Passkey
-        </Button>
-      </DialogTrigger>
+    <DialogRoot open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger
+        nativeButton={true}
+        render={() => (
+          <Button className="flex items-center gap-2 text-xs md:text-sm">
+            <Plus size={15} />
+            Add New Passkey
+          </Button>
+        )}
+      />
       <DialogContent className="w-11/12 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Passkey</DialogTitle>
@@ -1147,7 +1167,7 @@ function AddPasskey() {
           </Button>
         </DialogFooter>
       </DialogContent>
-	  </DialogRoot>
+    </DialogRoot>
   );
 }
 
@@ -1175,13 +1195,16 @@ function ListPasskeys() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletePasskey, setIsDeletePasskey] = useState<boolean>(false);
   return (
-	  <DialogRoot open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2 text-xs md:text-sm">
-          <Fingerprint className="mr-2 h-4 w-4" />
-          <span>Passkeys {data?.length ? `[${data?.length}]` : ""}</span>
-        </Button>
-      </DialogTrigger>
+    <DialogRoot open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger
+        nativeButton={true}
+        render={() => (
+          <Button className="flex items-center gap-2 text-xs md:text-sm">
+            <Fingerprint className="mr-2 h-4 w-4" />
+            <span>Passkeys {data?.length ? `[${data?.length}]` : ""}</span>
+          </Button>
+        )}
+      />
       <DialogContent className="w-11/12 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="font-sans text-h3 font-semibold tracking-tighter">
@@ -1247,7 +1270,7 @@ function ListPasskeys() {
                 Add new passkey
               </Label>
               <Input
-	              className="!focus-visible:border-faded-foreground/90 border-faded-foreground/60 py-2 pb-3 text-lg placeholder:leading-[1.5] placeholder:text-muted-foreground"
+                className="!focus-visible:border-faded-foreground/90 border-faded-foreground/60 py-2 pb-3 text-lg placeholder:leading-[1.5] placeholder:text-muted-foreground"
                 id="passkey-name"
                 value={passkeyName}
                 onChange={(e) => setPasskeyName(e.target.value)}
@@ -1263,8 +1286,7 @@ function ListPasskeys() {
                 <Loader2 size={15} className="animate-spin" />
               ) : (
                 <>
-	                <Fingerprint
-		                className="mr-2 h-4 w-4 transition-colors duration-300 ease-power4 group-hover:text-foreground"/>
+                  <Fingerprint className="mr-2 h-4 w-4 transition-colors duration-300 ease-power4 group-hover:text-foreground" />
                   Create Passkey{" "}
                 </>
               )}
@@ -1280,6 +1302,6 @@ function ListPasskeys() {
           </Button>
         </DialogFooter>
       </DialogContent>
-	  </DialogRoot>
+    </DialogRoot>
   );
 }

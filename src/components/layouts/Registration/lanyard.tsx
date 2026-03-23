@@ -11,10 +11,16 @@ import {
 import { Physics } from "@react-three/rapier";
 import { useFormContext } from "react-hook-form";
 import { useInView } from "react-intersection-observer";
+import { useStore } from "@tanstack/react-form";
+import {
+  defaultOptions,
+  useAppForm,
+  useTypedAppFormContext
+} from "@/components/UX/Tour/form";
 
 export type MemberCardsType = "BADGE" | "PLATE";
 
-export function Lanyard(props: { type: MemberCardsType | string }) {
+export function Lanyard(props: { type: MemberCardsType }) {
   const { type } = props;
   return (
     <>
@@ -47,11 +53,15 @@ function Registerer(
   const { isMobile, isTouch } = useIsMobile();
 
   const isMouse = !isMobile && !isTouch;
-  const { watch } = useFormContext();
+
   const { inView, ref } = useInView();
-  const [name1, name2] = watch(["firstName", "lastName"]);
+  const form = useTypedAppFormContext({
+    ...defaultOptions
+  });
+  const name1 = useStore(form.store, (r) => r.values.identity.firstName);
+  const name2 = useStore(form.store, (r) => r.values.identity.lastName);
   return (
-    <div ref={ref} className="relative h-full w-full">
+    <div ref={ref} className="absolute inset-0 z-5">
       <View
         style={{
           right: "0",

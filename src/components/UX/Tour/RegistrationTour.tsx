@@ -3,27 +3,14 @@
 import { MotionPillButton } from "@/components/UX/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
-import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
-import {
-  AnimatePresence,
-  useMotionValue,
-  useReducedMotion,
-  Variants
-} from "motion/react";
+import { AnimatePresence, Transition, Variant, Variants } from "motion/react";
 import * as m from "motion/react-m";
-import {
-  MouseEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TextBlurIn } from "./TextBlurIn";
 import { useTourStore } from "./TourProvider";
 import {
@@ -37,6 +24,11 @@ import {
   identitySchema,
   type ProfileFormValues
 } from "@/components/UX/Tour/Onboard/Form/schema";
+import { useBetterAuth } from "@/lib/auth/context";
+import { User } from "@payload-types";
+import { Lanyard } from "@/components/layouts/Registration/lanyard";
+import { redirect, usePathname } from "next/navigation";
+import { useTransitionRouter } from "next-transition-router";
 
 // Re-export so existing consumers aren't broken
 export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
@@ -93,7 +85,7 @@ const bodyFadeVariants: Variants = {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }
+    transition: { duration: 0.84, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }
   }
 };
 
@@ -105,15 +97,34 @@ export const WelcomeStep = withForm({
     const { firstName } = form.state.values.identity;
     return (
       (firstName && (
-        <m.p
-          className="text-[15px] text-muted-foreground"
-          variants={bodyFadeVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          Good to have you, {firstName}.
-        </m.p>
-      )) || <></>
+        <TextBlurIn
+          text={`Great to see you, ${firstName}.`}
+          as="h1"
+          className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
+          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+          preserveNewlines
+          splitBy="word"
+          stagger={0.05}
+          delay={0.45}
+          yOffset={6}
+          blurAmount={6}
+          duration={0.8}
+        />
+      )) || (
+        <TextBlurIn
+          text={STEP_COPY.welcome.title}
+          as="h1"
+          className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
+          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+          preserveNewlines
+          splitBy="word"
+          stagger={0.05}
+          delay={0.45}
+          yOffset={6}
+          blurAmount={6}
+          duration={0.8}
+        />
+      )
     );
   }
 });
@@ -373,14 +384,15 @@ const slideVariants: Variants = {
     opacity: 1,
     transition: {
       type: "spring" as const,
-      ...SPRING_EASE.power3.out
+      ...SPRING_EASE.power3.out,
+      visualDuration: 0.6
     }
   },
   exit: (dir: 1 | -1) => ({
     y: dir > 0 ? "-40%" : "90%",
     opacity: 0,
     transition: {
-      duration: 0.22,
+      duration: 0.32,
       ease: [0.25, 0.46, 0.45, 0.94]
     }
   })
@@ -391,23 +403,43 @@ const slideVariants: Variants = {
 type ProfilePayload = Partial<
   Pick<ProfileFormValues, "bio" | "identity" | "details">
 >;
+type Us<T extends "bio" | "link" | "firstName" | "lastName" | "location"> =
+  User[T];
 
-async function submitProfile(data: ProfilePayload) {
-  const updates: Record<string, string> = {};
+async function submitProfile({
+  data,
+  currentProfile
+}: {
+  data: ProfilePayload;
+  currentProfile: Partial<User> &
+    Pick<User, "bio" | "link" | "firstName" | "lastName" | "location">;
+}) {
+  const updateData: Map<
+    "bio" | "link" | "firstName" | "lastName" | "location",
+    Us<"bio" | "link" | "firstName" | "lastName" | "location">
+  > = new Map();
   if (data.identity?.firstName?.trim())
-    updates.firstName = data.identity.firstName.trim();
+    data.identity.firstName.trim() !== currentProfile.firstName &&
+      updateData.set("firstName", data.identity.firstName.trim());
   if (data.identity?.lastName?.trim())
-    updates.lastName = data.identity.lastName.trim();
-  if (data.bio?.content?.trim()) updates.bio = data.bio.content.trim();
+    data.identity?.lastName?.trim() !== currentProfile.lastName &&
+      updateData.set("lastName", data.identity.lastName.trim());
+  if (data.bio?.content?.trim())
+    data.bio?.content.trim() !== currentProfile.bio &&
+      updateData.set("bio", data.bio.content.trim());
   if (data.details?.location?.trim())
-    updates.location = data.details.location.trim();
-  if (data.details?.link?.trim()) updates.link = data.details.link.trim();
-
-  if (Object.keys(updates).length > 0) {
-    await authClient.updateUser(
-      updates as Parameters<typeof authClient.updateUser>[0]
-    );
-  }
+    data.details.location.trim() !== currentProfile.location &&
+      updateData.set("location", data.details.location.trim());
+  if (data.details?.link?.trim())
+    data.details.link.trim() !== currentProfile.link &&
+      updateData.set("link", data.details.link.trim());
+  if (updateData.size === 0) return;
+  const updates = Object.fromEntries(updateData) as {
+    [x in "bio" | "link" | "firstName" | "lastName" | "location"]?: Us<x>;
+  };
+  await authClient.updateUser({ ...updates, onboarded: true } as Parameters<
+    typeof authClient.updateUser
+  >[0]);
 
   // Fire-and-forget — marks onboarded server-side
   fetch("/api/onboarding", {
@@ -429,16 +461,17 @@ export function RegistrationTour() {
   const regPending = useTourStore((s) => s.regPending);
 
   // Session
-  const sessionFirstName = useRPSession((s) => s.firstName);
-  const sessionLastName = useRPSession((s) => s.lastName);
-  const setFirstNameSession = useRPSession((s) => s.setFirstName);
-  const setLastNameSession = useRPSession((s) => s.setLastName);
-  const setOnboarded = useRPSession((s) => s.setOnboarded);
-
+  const { currentUserPromise } = useBetterAuth();
+  const currentUser = use(currentUserPromise) as
+    | (User & {
+        collection: "users";
+      })
+    | null;
+  const sessionFirstName = currentUser?.firstName;
+  const sessionLastName = currentUser?.lastName;
   const [dir, setDir] = useState<1 | -1>(1);
   const [showExitWarning, setShowExitWarning] = useState(false);
 
-  const prefersReduced = useReducedMotion();
   const lenis = useLenis();
 
   // ── Dynamic steps based on pending fields ─────────────────────────────────
@@ -461,6 +494,13 @@ export function RegistrationTour() {
       identity: {
         firstName: sessionFirstName?.trim() || "",
         lastName: sessionLastName?.trim() || ""
+      },
+      bio: {
+        content: currentUser?.bio || ""
+      },
+      details: {
+        location: currentUser?.location || "",
+        link: currentUser?.link || ""
       }
     },
     onSubmit: ({ value, formApi }) => {
@@ -484,9 +524,6 @@ export function RegistrationTour() {
     mutationKey: ["registration", "profile"],
     mutationFn: submitProfile,
     onSuccess: (updates) => {
-      if (updates.firstName) setFirstNameSession(updates.firstName);
-      if (updates.lastName) setLastNameSession(updates.lastName);
-      setOnboarded(true);
       closeRegistrationTour();
     },
     onError: () => {
@@ -545,9 +582,11 @@ export function RegistrationTour() {
 
   const handleNext = useCallback(async () => {
     if (currentStep === "complete") {
-      profileMutation.mutate({
-        ...formValues
-      });
+      currentUser &&
+        profileMutation.mutate({
+          data: { ...formValues },
+          currentProfile: currentUser as User & {}
+        });
       return;
     }
 
@@ -578,7 +617,14 @@ export function RegistrationTour() {
     if (idx < activeSteps.length - 1) {
       form.setFieldValue("step", activeSteps[idx + 1]);
     }
-  }, [currentStep, activeSteps, profileMutation, formValues, form]);
+  }, [
+    currentStep,
+    activeSteps,
+    profileMutation,
+    formValues,
+    currentUser,
+    form
+  ]);
 
   const handleBack = useCallback(() => {
     setDir(-1);
@@ -615,213 +661,238 @@ export function RegistrationTour() {
   }, [canAdvance, handleNext, isSubmitting, showExitWarning]);
 
   // ── Render ────────────────────────────────────────────────────────────────
-
+  //fixed inset-0 z-200 h-screen w-screen
   return (
-    <m.div
-      className="fixed inset-0 z-300 flex flex-col bg-background/20"
-      initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-      animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-      exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Onboarding"
-    >
-      {/* ── Header ── */}
-      <header className="flex shrink-0 items-center justify-between px-8 pt-8 md:px-14">
-        {/* Brand */}
-        <span className="text-[11px] font-medium tracking-[0.12em] text-foreground/30 uppercase select-none">
-          The Hideaway
-        </span>
+    <>
+      <m.div
+        className="fixed inset-0 z-40 flex flex-col bg-background/5 px-5 py-5"
+        initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+        animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+        exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+        transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Onboarding"
+      >
+        {/* ── Header ── */}
+        <header className="flex shrink-0 items-center justify-between px-8 pt-8 md:px-14">
+          {/* Brand */}
+          <span className="text-[11px] font-medium tracking-[0.12em] text-foreground/30 uppercase select-none">
+            The Hideaway
+          </span>
 
-        <div className="flex items-center gap-4">
-          <StepIndicators current={currentStep} steps={indicatorSteps} />
-          {!isLast && (
+          <div className="flex items-center gap-4">
+            <StepIndicators current={currentStep} steps={indicatorSteps} />
+            {!isLast && (
+              <MotionPillButton
+                type="button"
+                onClick={handleDismissRequest}
+                className="text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
+                aria-label="Skip onboarding"
+              >
+                Skip
+              </MotionPillButton>
+            )}
+          </div>
+        </header>
+        {/* ── Content ── */}
+        <div
+          className="z-20 flex flex-1 items-center justify-center overflow-hidden px-8 py-8 md:px-14"
+          style={{ perspective: "1500px" }}
+        >
+          <div className="w-full max-w-[460px]">
+            <AnimatePresence mode="popLayout" custom={dir} initial={true}>
+              <m.div
+                key={currentStep}
+                custom={dir}
+                variants={{
+                  ...slideVariants,
+                  animate: {
+                    ...slideVariants.animate,
+                    transition: {
+                      ...(
+                        slideVariants.animate as Variant & {
+                          transition: Transition;
+                        }
+                      ).transition,
+                      ...((currentStep === "welcome" && {
+                        delay: 1.1,
+                        visualDuration: 1.1
+                      }) ||
+                        {})
+                    }
+                  }
+                }}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="flex flex-col gap-8"
+              >
+                {/* Title block — blur-in animated */}
+                <div className="flex flex-col gap-2.5">
+                  {(currentStep === "welcome" && (
+                    <WelcomeStep form={form} />
+                  )) || (
+                    <TextBlurIn
+                      key={`title-${currentStep}`}
+                      text={stepCopy.title}
+                      as="h1"
+                      className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
+                      style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+                      preserveNewlines
+                      splitBy="word"
+                      stagger={0.05}
+                      delay={0.45}
+                      yOffset={6}
+                      blurAmount={6}
+                      duration={0.8}
+                    />
+                  )}
+                  <m.div
+                    initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      filter: "blur(0px)",
+                      transition: {
+                        duration: 0.8,
+                        delay: currentStep === "welcome" ? 0.5 : 0.18,
+                        ease: [0.25, 0.46, 0.45, 0.94]
+                      }
+                    }}
+                  >
+                    <m.p className="text-[15px] leading-relaxed text-muted-foreground">
+                      {stepCopy.subtitle}
+
+                      {stepCopy.optional && (
+                        <m.span className="ml-2 text-small font-medium tracking-widest text-foreground/25 uppercase">
+                          optional
+                        </m.span>
+                      )}
+                    </m.p>
+                  </m.div>
+                </div>
+
+                {/* Step body */}
+
+                {currentStep === "identity" && <IdentityStep form={form} />}
+                {currentStep === "bio" && <BioStep form={form} />}
+                {currentStep === "details" && <DetailsStep form={form} />}
+                {currentStep === "complete" && <CompleteStep />}
+              </m.div>
+            </AnimatePresence>
+          </div>
+        </div>
+        {/* ── Footer ── */}
+        <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
+          {!isFirst ? (
             <MotionPillButton
               type="button"
-              onClick={handleDismissRequest}
-              className="text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70"
-              aria-label="Skip onboarding"
+              onClick={handleBack}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 border border-foreground/50 bg-transparent text-[13px] text-foreground/50 transition-colors hover:text-foreground/70 disabled:bg-muted-foreground/60 disabled:opacity-40"
             >
-              Skip
-            </MotionPillButton>
-          )}
-        </div>
-      </header>
-
-      {/* ── Content ── */}
-      <main
-        className="flex flex-1 items-center justify-center overflow-hidden px-8 py-8 md:px-14"
-        style={{ perspective: "1500px" }}
-      >
-        <div className="w-full max-w-[460px]">
-          <AnimatePresence mode="popLayout" custom={dir} initial={false}>
-            <m.div
-              key={currentStep}
-              custom={dir}
-              variants={prefersReduced ? {} : slideVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="flex flex-col gap-8"
-            >
-              {/* Title block — blur-in animated */}
-              <div className="flex flex-col gap-2.5">
-                <TextBlurIn
-                  key={`title-${currentStep}`}
-                  text={stepCopy.title}
-                  as="h1"
-                  className="leading-[1.15] font-medium tracking-[-0.025em] text-foreground"
-                  style={{ fontSize: "clamp(2rem, 5.5vw, 2.75rem)" }}
-                  preserveNewlines
-                  splitBy="word"
-                  stagger={0.035}
-                  delay={0.05}
-                  yOffset={6}
-                  blurAmount={6}
-                  duration={0.4}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M8.5 3L4.5 7L8.5 11"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                <m.div
-                  initial={{ opacity: 0, y: 4, filter: "blur(4px)" }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    transition: {
-                      duration: 0.4,
-                      delay: 0.18,
-                      ease: [0.25, 0.46, 0.45, 0.94]
-                    }
-                  }}
-                >
-                  <p className="text-[15px] leading-relaxed text-muted-foreground">
-                    {stepCopy.subtitle}
-                    {stepCopy.optional && (
-                      <span className="ml-2 text-small font-medium tracking-widest text-foreground/25 uppercase">
-                        optional
-                      </span>
-                    )}
-                  </p>
-                </m.div>
-              </div>
-
-              {/* Step body */}
-              {currentStep === "welcome" && <WelcomeStep form={form} />}
-              {currentStep === "identity" && <IdentityStep form={form} />}
-              {currentStep === "bio" && <BioStep form={form} />}
-              {currentStep === "details" && <DetailsStep form={form} />}
-              {currentStep === "complete" && <CompleteStep />}
-            </m.div>
-          </AnimatePresence>
-        </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer className="flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
-        {!isFirst ? (
+              </svg>
+              Back
+            </MotionPillButton>
+          ) : (
+            <div />
+          )}
           <MotionPillButton
             type="button"
-            onClick={handleBack}
-            disabled={isSubmitting}
-            className="flex items-center gap-1.5 text-[13px] text-muted-foreground/50 transition-colors hover:text-foreground/70 disabled:opacity-40"
+            onClick={handleNext}
+            disabled={!canAdvance || isSubmitting}
+            className={cn(
+              "rounded-full px-7 py-3 text-[14px] font-medium",
+              "bg-foreground text-background",
+              "hover:bg-foreground/90 active:scale-[0.97]",
+              "transition-all duration-150",
+              "disabled:opacity-25 disabled:active:scale-100",
+              "min-w-[140px] text-center"
+            )}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M8.5 3L4.5 7L8.5 11"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Back
+            {isSubmitting
+              ? "Saving…"
+              : isLast
+                ? "Get started"
+                : currentStep === "welcome"
+                  ? "Let's go"
+                  : "Continue"}
           </MotionPillButton>
-        ) : (
-          <div />
-        )}
-        <MotionPillButton
-          type="button"
-          onClick={handleNext}
-          disabled={!canAdvance || isSubmitting}
-          className={cn(
-            "rounded-full px-7 py-3 text-[14px] font-medium",
-            "bg-foreground text-background",
-            "hover:bg-foreground/90 active:scale-[0.97]",
-            "transition-all duration-150",
-            "disabled:opacity-25 disabled:active:scale-100",
-            "min-w-[140px] text-center"
+        </footer>
+        {/* ── Exit warning ── */}
+        <AnimatePresence>
+          {showExitWarning && (
+            <ExitWarning
+              isRequiredSection={isInRequiredSection}
+              onConfirm={() => {
+                setShowExitWarning(false);
+                dismissRegistrationTour();
+              }}
+              onCancel={() => setShowExitWarning(false)}
+            />
           )}
-        >
-          {isSubmitting
-            ? "Saving…"
-            : isLast
-              ? "Get started"
-              : currentStep === "welcome"
-                ? "Let's go"
-                : "Continue"}
-        </MotionPillButton>
-      </footer>
-
-      {/* ── Exit warning ── */}
-      <AnimatePresence>
-        {showExitWarning && (
-          <ExitWarning
-            isRequiredSection={isInRequiredSection}
-            onConfirm={() => {
-              setShowExitWarning(false);
-              dismissRegistrationTour();
-            }}
-            onCancel={() => setShowExitWarning(false)}
-          />
-        )}
-      </AnimatePresence>
-    </m.div>
+        </AnimatePresence>{" "}
+        <form.AppForm>
+          <Lanyard type={"BADGE"} />
+        </form.AppForm>
+      </m.div>
+    </>
   );
 }
 
 // ─── Tour trigger — mounts at layout level, watches session ──────────────────
 
 export function RegistrationTourTrigger() {
-  const sessionId = useRPSession((s) => s.id);
-  const onboarded = useRPSession((s) => s.onboarded);
-  const firstName = useRPSession((s) => s.firstName);
-  const lastName = useRPSession((s) => s.lastName);
+  const { currentUserPromise } = useBetterAuth();
 
+  const currentUser = use(currentUserPromise) as User | null;
   const regActive = useTourStore((s) => s.regActive);
   const regDismissed = useTourStore((s) => s.regDismissed);
   const openRegistrationTour = useTourStore((s) => s.openRegistrationTour);
   const lenis = useLenis();
 
   const triggered = useRef(false);
-
+  const pathName = usePathname();
   useEffect(() => {
     if (
       !triggered.current &&
-      sessionId &&
-      !onboarded &&
+      currentUser &&
+      // !currentUser.onboarded &&
       !regActive &&
       !regDismissed
     ) {
       triggered.current = true;
-      const needsIdentity = !firstName?.trim() || !lastName?.trim();
-      lenis && lenis.stop();
-      openRegistrationTour({ needsIdentity });
+      if (pathName === "/me/onboarding") {
+        const needsIdentity =
+          !currentUser.firstName?.trim() || !currentUser.lastName?.trim();
+        // lenis && lenis.stop();
+        openRegistrationTour({ needsIdentity });
+      } else {
+        redirect("/me/onboarding");
+      }
     }
   }, [
-    sessionId,
-    onboarded,
-    firstName,
-    lastName,
-    regActive,
+    currentUser,
     regDismissed,
     openRegistrationTour,
-    lenis
+    lenis,
+    regActive,
+    pathName
   ]);
 
   return null;

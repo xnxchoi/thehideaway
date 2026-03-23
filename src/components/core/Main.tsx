@@ -26,7 +26,7 @@ export const Main = ({ children }: { children: ReactNode }) => {
       <Suspense>
         <MainInternal
           eventSource={mainRef}
-          frameloop={frameLoop}
+          frameloop={"always"}
           style={{
             position: "fixed",
             inset: 0,

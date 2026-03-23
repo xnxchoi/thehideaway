@@ -22,14 +22,6 @@ export function TourOrchestrator() {
       <RegistrationTourTrigger />
       <InterfaceTourTrigger />
 
-      {/* Overlays — Suspense here contains any lazy-loaded children so they
-          don't bubble up to the layout-level Suspense and unmount the canvas */}
-      <Suspense>
-        <AnimatePresence>
-          {regActive && <RegistrationTour key="reg-tour" />}
-        </AnimatePresence>
-      </Suspense>
-
       <InterfaceTour />
     </>
   );
