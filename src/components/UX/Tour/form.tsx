@@ -6,10 +6,9 @@ import { HTMLMotionProps } from "motion/react";
 import { type ReactNode } from "react";
 import { fieldContext, formContext, useFormContext } from "./form-context";
 import {
-  bioSchema,
   detailsSchema,
   FormSchema,
-  identitySchema,
+  profileSchema,
   type ProfileFormValues
 } from "./Onboard/Form/schema";
 // Direct imports — NOT lazy. Lazy imports cause React to Suspend up to the
@@ -63,12 +62,10 @@ export const defaultOptions = formOptions({
   validators: {
     onSubmit: ({ value, formApi }) => {
       switch (value.step) {
-        case "identity":
+        case "profile":
           return formApi.parseValuesWithSchema(
-            identitySchema as typeof FormSchema
+            profileSchema as typeof FormSchema
           );
-        case "bio":
-          return formApi.parseValuesWithSchema(bioSchema as typeof FormSchema);
         case "details":
           return formApi.parseValuesWithSchema(
             detailsSchema as typeof FormSchema
