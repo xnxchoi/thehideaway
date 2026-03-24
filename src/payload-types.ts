@@ -358,6 +358,15 @@ export interface User {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  onboardingProgress?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * The image of the user
    */
@@ -2723,6 +2732,7 @@ export interface UsersSelect<T extends boolean = true> {
   followers?: T;
   following?: T;
   notifications?: T;
+  onboardingProgress?: T;
   image?: T;
   createdAt?: T;
   updatedAt?: T;
