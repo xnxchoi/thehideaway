@@ -281,6 +281,18 @@ export const Users: CollectionConfig = {
         }
       },
       required: true
+    },
+    {
+      name: "onboardingProgress",
+      type: "json",
+      admin: { hidden: true },
+      access: {
+        update: ({ req }) => {
+          if (req.context.overrideAccess === true) return true;
+          if (req.user?.role === "admin") return true;
+          return false;
+        }
+      }
     }
   ],
   hooks: {

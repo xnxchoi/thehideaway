@@ -24,6 +24,10 @@ import type { Notification } from "@/payload-types";
 import { DateTime } from "luxon";
 export type RP_SessionUser = SessionType["user"];
 export type RP_SessionActions = {
+  /** Marks the session as stale so InternalHandler will refetch */
+  stale: boolean;
+  markStale: () => void;
+
   setBookmarks: ({
     bookmarks
   }: {
@@ -120,6 +124,8 @@ const createSessionStore = (
 ) => {
   return createStore<RP_LocalSession>()((set, get) => ({
     ...init,
+    stale: false,
+    markStale: () => set({ stale: true }),
     setBookmarks: ({ bookmarks }) =>
       set((state) => {
         const collections = Object.keys(
@@ -367,6 +373,43 @@ const InternalHandler = ({ children }: { children: ReactNode }) => {
   const { currentUserPromise } = useBetterAuth();
   const currentUser = use(currentUserPromise) as (User & {}) | null;
   const setSession = useRPSession((r) => r.setSession);
+  const stale = useRPSession((r) => r.stale);
+
+  // ── Refetch session when marked stale (e.g. after authClient.updateUser) ──
+  const { data: freshSession, refetch } = authClient.useSession();
+
+  useEffect(() => {
+    if (!stale) return;
+    refetch().then(() => {
+      // Reset stale flag — InternalHandler will re-sync via the main useEffect
+      // because freshSession reference changes after refetch
+      const ctx = sessionCtxRef.current;
+      if (ctx) ctx.setState({ stale: false });
+    });
+  }, [stale, refetch]);
+
+  // Keep a ref to the store so we can reset stale without going through hooks
+  const sessionCtxRef = useRef<SessionAPI | null>(null);
+  const storeCtx = useContext(SessionContext);
+  sessionCtxRef.current = storeCtx ?? null;
+
+  // ── Sync lightweight fields from freshSession after client-side refetch ──
+  useEffect(() => {
+    const user = freshSession?.user;
+    if (!user) return;
+    // Only push scalar fields that authClient.updateUser can change
+    setSession({
+      id: user.id,
+      name: user.name,
+      firstName: (user as any).firstName ?? "",
+      lastName: (user as any).lastName ?? "",
+      bio: (user as any).bio ?? "",
+      onboarded: (user as any).onboarded ?? false,
+      email: user.email,
+      image: user.image ?? null
+    });
+  }, [freshSession, setSession]);
+
   useEffect(() => {
     if (!!currentUser) {
       getBookmark({

@@ -7,19 +7,18 @@ import { createStore } from "zustand/vanilla";
 
 export type RegistrationStep =
   | "welcome"
-  | "identity" // firstName + lastName (required)
-  | "bio" // bio textarea (optional)
+  | "profile" // firstName + lastName (required) + bio (optional)
   | "details" // location + link (optional)
   | "complete";
 
 export type PendingFields = {
   needsIdentity: boolean; // firstName or lastName missing
+  hasPreexistingData: boolean; // user has some fields already filled (e.g. OAuth)
 };
 
 const REG_STEPS: RegistrationStep[] = [
   "welcome",
-  "identity",
-  "bio",
+  "profile",
   "details",
   "complete"
 ];
@@ -66,8 +65,12 @@ export type TourStore = {
   regSteps: RegistrationStep[];
   regPending: PendingFields;
   regDismissed: boolean;
+  /** Path the user was on when the tour was triggered (for post-completion nav) */
+  regFromPath: string | null;
+  /** Whether to show the non-blocking onboarding banner instead of full overlay */
+  regBannerMode: boolean;
 
-  openRegistrationTour: (pending: PendingFields) => void;
+  openRegistrationTour: (pending: PendingFields, fromPath?: string) => void;
   closeRegistrationTour: () => void;
   dismissRegistrationTour: () => void;
   regNext: () => void;
@@ -93,16 +96,20 @@ export const createTourStore = () =>
       regActive: false,
       regStep: "welcome",
       regSteps: REG_STEPS,
-      regPending: { needsIdentity: false },
+      regPending: { needsIdentity: false, hasPreexistingData: false },
       regDismissed: false,
+      regFromPath: null,
+      regBannerMode: false,
 
-      openRegistrationTour: (pending) =>
+      openRegistrationTour: (pending, fromPath) =>
         set({
           regActive: true,
           regDismissed: false,
           regStep: "welcome",
           regSteps: REG_STEPS,
-          regPending: pending
+          regPending: pending,
+          regFromPath: fromPath ?? null,
+          regBannerMode: false
         }),
 
       closeRegistrationTour: () => set({ regActive: false }),

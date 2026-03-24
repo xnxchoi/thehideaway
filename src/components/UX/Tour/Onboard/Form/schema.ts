@@ -20,6 +20,12 @@ export const bioSchema = z.object({
   })
 });
 
+// Profile = identity + bio (merged step)
+export const profileSchema = z.object({
+  ...identitySchema.shape,
+  ...bioSchema.shape,
+});
+
 // Details are optional — empty strings accepted, but if provided must meet criteria
 export const detailsSchema = z.object({
   details: z.object({
@@ -37,7 +43,7 @@ export const detailsSchema = z.object({
 // ─── Combined schema ────────────────────────────────────────────────────────
 
 export const FormSchema = z.object({
-  step: z.enum(['welcome', 'identity', 'bio', 'details', 'complete']),
+  step: z.enum(['welcome', 'profile', 'details', 'complete']),
   ...identitySchema.shape,
   ...bioSchema.shape,
   ...detailsSchema.shape,
@@ -46,7 +52,7 @@ export type FormValues = z.infer<typeof FormSchema>;
 
 // Canonical form value type used across the tour
 export type ProfileFormValues = {
-  step: 'welcome' | 'identity' | 'bio' | 'details' | 'complete';
+  step: 'welcome' | 'profile' | 'details' | 'complete';
   identity: { firstName: string; lastName: string };
   bio: { content: string };
   details: { location: string; link: string };

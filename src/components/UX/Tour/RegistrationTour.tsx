@@ -3,6 +3,7 @@
 import { MotionPillButton } from "@/components/UX/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
+import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { RegistrationStep } from "@/stores/Tour/TourStore";
 import { useStore } from "@tanstack/react-form";
@@ -19,25 +20,41 @@ import {
   withForm
 } from "@/components/UX/Tour/form";
 import {
-  bioSchema,
   detailsSchema,
-  identitySchema,
+  profileSchema,
   type ProfileFormValues
 } from "@/components/UX/Tour/Onboard/Form/schema";
 import { useBetterAuth } from "@/lib/auth/context";
 import { User } from "@payload-types";
-import { Lanyard } from "@/components/layouts/Registration/lanyard";
 import { redirect, usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-transition-router";
 
 // Re-export so existing consumers aren't broken
 export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+/** Pages where the full overlay is acceptable for returning users */
+const PASSIVE_PATHS = new Set([
+  "/",
+  "/posts",
+  "/surf",
+  "/albums",
+  "/playlists",
+  "/categories",
+  "/tags"
+]);
+
+/** sessionStorage key for dismissal persistence */
+const DISMISSED_KEY = "rp:onboarding-dismissed";
+
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
 type StepConfig = {
   title: string;
   subtitle: string;
+  /** Alternate subtitle when fields are pre-filled (OAuth etc.) */
+  subtitlePrefilled?: string;
   optional?: boolean;
 };
 
@@ -46,14 +63,10 @@ const STEP_COPY: Record<RegistrationStep, StepConfig> = {
     title: "Welcome to\nThe Hideaway.",
     subtitle: "A few quick details and you're all set."
   },
-  identity: {
-    title: "What should\nwe call you?",
-    subtitle: "This is how you'll appear across the platform."
-  },
-  bio: {
-    title: "About you.",
-    subtitle: "A short bio helps others find and connect with you.",
-    optional: true
+  profile: {
+    title: "Tell us\nabout yourself.",
+    subtitle: "Your name and a short bio to get started.",
+    subtitlePrefilled: "Confirm or update how you'll appear."
   },
   details: {
     title: "Where are you\ncoming from?",
@@ -66,15 +79,13 @@ const STEP_COPY: Record<RegistrationStep, StepConfig> = {
   }
 };
 
-// ─── Build active steps from pending fields ──────────────────────────────────
+// Steps shown in the indicator (exclude welcome)
+const INDICATOR_STEPS: RegistrationStep[] = ["profile", "details", "complete"];
 
-export function buildActiveSteps(pending: {
-  needsIdentity: boolean;
-}): RegistrationStep[] {
-  const steps: RegistrationStep[] = ["welcome"];
-  if (pending.needsIdentity) steps.push("identity");
-  steps.push("bio", "details", "complete");
-  return steps;
+// ─── Build active steps ──────────────────────────────────────────────────────
+
+export function buildActiveSteps(): RegistrationStep[] {
+  return ["welcome", "profile", "details", "complete"];
 }
 
 // ─── Subtle fade-up for step body content ────────────────────────────────────
@@ -85,7 +96,11 @@ const bodyFadeVariants: Variants = {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.84, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }
+    transition: {
+      duration: 0.84,
+      delay: 0.35,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    }
   }
 };
 
@@ -95,88 +110,80 @@ export const WelcomeStep = withForm({
   ...defaultOptions,
   render: function Render({ form }) {
     const { firstName } = form.state.values.identity;
-    return (
-      (firstName && (
-        <TextBlurIn
-          text={`Great to see you, ${firstName}.`}
-          as="h1"
-          className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
-          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
-          preserveNewlines
-          splitBy="word"
-          stagger={0.05}
-          delay={0.45}
-          yOffset={6}
-          blurAmount={6}
-          duration={0.8}
-        />
-      )) || (
-        <TextBlurIn
-          text={STEP_COPY.welcome.title}
-          as="h1"
-          className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
-          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
-          preserveNewlines
-          splitBy="word"
-          stagger={0.05}
-          delay={0.45}
-          yOffset={6}
-          blurAmount={6}
-          duration={0.8}
-        />
-      )
-    );
-  }
-});
-export const IdentityStep = withForm({
-  ...defaultOptions,
-  render: function Render({ form }) {
-    return (
-      <m.div
-        className="flex flex-col gap-3"
-        variants={bodyFadeVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <form.AppField name="identity.firstName">
-          {(field) => (
-            <field.TextField
-              placeholder="First name"
-              autoComplete="given-name"
-            />
-          )}
-        </form.AppField>
-        <form.AppField name="identity.lastName">
-          {(field) => (
-            <field.TextField
-              placeholder="Last name"
-              autoComplete="family-name"
-            />
-          )}
-        </form.AppField>
-      </m.div>
+    return firstName ? (
+      <TextBlurIn
+        text={`Great to see you, ${firstName}.`}
+        as="h1"
+        className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
+        style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+        preserveNewlines
+        splitBy="word"
+        stagger={0.05}
+        delay={0.45}
+        yOffset={6}
+        blurAmount={6}
+        duration={0.8}
+      />
+    ) : (
+      <TextBlurIn
+        text={STEP_COPY.welcome.title}
+        as="h1"
+        className="text-xl leading-[1.2] font-extrabold tracking-[-0.025em] text-foreground"
+        style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+        preserveNewlines
+        splitBy="word"
+        stagger={0.05}
+        delay={0.45}
+        yOffset={6}
+        blurAmount={6}
+        duration={0.8}
+      />
     );
   }
 });
 
-export const BioStep = withForm({
+/** Merged identity + bio step */
+export const ProfileStep = withForm({
   ...defaultOptions,
   render: function Render({ form }) {
     return (
       <m.div
-        className="flex flex-col gap-2"
+        className="flex flex-col gap-4"
         variants={bodyFadeVariants}
         initial="hidden"
         animate="visible"
       >
-        <form.AppField name="bio.content">
-          {(field) => (
-            <field.TextArea
-              placeholder="Your passion, work, interests — keep it interesting."
-              maxLength={200}
-            />
-          )}
-        </form.AppField>
+        {/* Name fields */}
+        <div className="flex flex-col gap-3">
+          <form.AppField name="identity.firstName">
+            {(field) => (
+              <field.TextField
+                placeholder="First name"
+                autoComplete="given-name"
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="identity.lastName">
+            {(field) => (
+              <field.TextField
+                placeholder="Last name"
+                autoComplete="family-name"
+              />
+            )}
+          </form.AppField>
+        </div>
+
+        {/* Bio — visually separated */}
+        <div className="pt-1">
+          <form.AppField name="bio.content">
+            {(field) => (
+              <field.TextArea
+                placeholder="Your passion, work, interests — keep it interesting."
+                maxLength={200}
+              />
+            )}
+          </form.AppField>
+        </div>
       </m.div>
     );
   }
@@ -398,56 +405,61 @@ const slideVariants: Variants = {
   })
 };
 
-// ─── Profile mutation ─────────────────────────────────────────────────────────
+// ─── Step-level submission helper ─────────────────────────────────────────────
 
-type ProfilePayload = Partial<
-  Pick<ProfileFormValues, "bio" | "identity" | "details">
->;
-type Us<T extends "bio" | "link" | "firstName" | "lastName" | "location"> =
-  User[T];
+type UserField = "bio" | "link" | "firstName" | "lastName" | "location";
 
-async function submitProfile({
+async function submitStepFields({
   data,
-  currentProfile
+  currentProfile,
+  step,
+  complete = false
 }: {
-  data: ProfilePayload;
-  currentProfile: Partial<User> &
-    Pick<User, "bio" | "link" | "firstName" | "lastName" | "location">;
+  data: Partial<ProfileFormValues>;
+  currentProfile: Pick<User, UserField>;
+  step: RegistrationStep;
+  complete?: boolean;
 }) {
-  const updateData: Map<
-    "bio" | "link" | "firstName" | "lastName" | "location",
-    Us<"bio" | "link" | "firstName" | "lastName" | "location">
-  > = new Map();
-  if (data.identity?.firstName?.trim())
-    data.identity.firstName.trim() !== currentProfile.firstName &&
-      updateData.set("firstName", data.identity.firstName.trim());
-  if (data.identity?.lastName?.trim())
-    data.identity?.lastName?.trim() !== currentProfile.lastName &&
-      updateData.set("lastName", data.identity.lastName.trim());
-  if (data.bio?.content?.trim())
-    data.bio?.content.trim() !== currentProfile.bio &&
-      updateData.set("bio", data.bio.content.trim());
-  if (data.details?.location?.trim())
-    data.details.location.trim() !== currentProfile.location &&
-      updateData.set("location", data.details.location.trim());
-  if (data.details?.link?.trim())
-    data.details.link.trim() !== currentProfile.link &&
-      updateData.set("link", data.details.link.trim());
-  if (updateData.size === 0) return;
-  const updates = Object.fromEntries(updateData) as {
-    [x in "bio" | "link" | "firstName" | "lastName" | "location"]?: Us<x>;
-  };
-  await authClient.updateUser({ ...updates, onboarded: true } as Parameters<
-    typeof authClient.updateUser
-  >[0]);
+  const updateData = new Map<UserField, User[UserField]>();
 
-  // Fire-and-forget — marks onboarded server-side
+  if (data.identity?.firstName?.trim() &&
+    data.identity.firstName.trim() !== currentProfile.firstName)
+    updateData.set("firstName", data.identity.firstName.trim());
+  if (data.identity?.lastName?.trim() &&
+    data.identity.lastName.trim() !== currentProfile.lastName)
+    updateData.set("lastName", data.identity.lastName.trim());
+  if (data.bio?.content?.trim() &&
+    data.bio.content.trim() !== currentProfile.bio)
+    updateData.set("bio", data.bio.content.trim());
+  if (data.details?.location?.trim() &&
+    data.details.location.trim() !== currentProfile.location)
+    updateData.set("location", data.details.location.trim());
+  if (data.details?.link?.trim() &&
+    data.details.link.trim() !== currentProfile.link)
+    updateData.set("link", data.details.link.trim());
+
+  // Update user fields if anything changed, or if completing
+  if (updateData.size > 0 || complete) {
+    const updates = Object.fromEntries(updateData) as Record<string, string>;
+    await authClient.updateUser({
+      ...updates,
+      ...(complete ? { onboarded: true } : {})
+    } as Parameters<typeof authClient.updateUser>[0]);
+  }
+
+  // Persist progress (or mark complete) server-side
   fetch("/api/onboarding", {
     method: "POST",
-    credentials: "include"
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(
+      complete
+        ? { complete: true }
+        : { step, fields: Object.fromEntries(updateData) }
+    )
   }).catch(() => {});
 
-  return updates;
+  return updateData.size;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -459,14 +471,16 @@ export function RegistrationTour() {
     (s) => s.dismissRegistrationTour
   );
   const regPending = useTourStore((s) => s.regPending);
+  const regFromPath = useTourStore((s) => s.regFromPath);
 
   // Session
   const { currentUserPromise } = useBetterAuth();
   const currentUser = use(currentUserPromise) as
-    | (User & {
-        collection: "users";
-      })
+    | (User & { collection: "users" })
     | null;
+  const markStale = useRPSession((s) => s.markStale);
+  const router = useTransitionRouter();
+
   const sessionFirstName = currentUser?.firstName;
   const sessionLastName = currentUser?.lastName;
   const [dir, setDir] = useState<1 | -1>(1);
@@ -474,18 +488,23 @@ export function RegistrationTour() {
 
   const lenis = useLenis();
 
-  // ── Dynamic steps based on pending fields ─────────────────────────────────
+  // ── Active steps (always the same 4 now) ──────────────────────────────────
 
-  const activeSteps = useMemo(() => buildActiveSteps(regPending), [regPending]);
+  const activeSteps = useMemo(() => buildActiveSteps(), []);
 
-  const indicatorSteps = useMemo(
-    () => activeSteps.filter((s) => s !== "welcome"),
-    [activeSteps]
+  // ── Detect preexisting data for subtitle copy ─────────────────────────────
+
+  const hasPrefilled = useMemo(
+    () =>
+      !!(
+        sessionFirstName?.trim() ||
+        sessionLastName?.trim() ||
+        currentUser?.bio?.trim()
+      ),
+    [sessionFirstName, sessionLastName, currentUser?.bio]
   );
 
   // ── TanStack Form (single source of truth for step + field values) ────────
-  // Seed identity fields from existing session data so returning users see
-  // their name pre-filled without having to retype it.
 
   const form = useAppForm({
     ...defaultOptions,
@@ -510,29 +529,41 @@ export function RegistrationTour() {
       }
     }
   });
+
   const formValues = useStore(form.store, (s) => s.values);
-  // Derived from form state
   const currentStep = useStore(form.store, (s) => s.values.step);
   const firstName = useStore(form.store, (s) => s.values.identity.firstName);
   const lastName = useStore(form.store, (s) => s.values.identity.lastName);
-
   const isFormDirty = useStore(form.store, (s) => s.isDirty);
 
-  // ── TanStack Query mutation ────────────────────────────────────────────────
+  // ── Per-step mutation (fire-and-forget, non-blocking) ─────────────────────
 
-  const profileMutation = useMutation({
-    mutationKey: ["registration", "profile"],
-    mutationFn: submitProfile,
-    onSuccess: (updates) => {
+  const stepMutation = useMutation({
+    mutationKey: ["registration", "step-save"],
+    mutationFn: submitStepFields,
+    onSettled: () => markStale()
+  });
+
+  // ── Completion mutation ───────────────────────────────────────────────────
+
+  const completeMutation = useMutation({
+    mutationKey: ["registration", "complete"],
+    mutationFn: submitStepFields,
+    onSuccess: () => {
+      markStale();
       closeRegistrationTour();
+      // Navigate back to where the user was, or home
+      const dest =
+        regFromPath && regFromPath !== "/me/onboarding" ? regFromPath : "/";
+      router.push(dest);
     },
     onError: () => {
-      // Don't block the user — close anyway
       closeRegistrationTour();
+      router.push("/");
     }
   });
 
-  const isSubmitting = profileMutation.isPending;
+  const isSubmitting = completeMutation.isPending;
 
   // ── Lock scroll while tour is open ────────────────────────────────────────
   useEffect(() => {
@@ -548,11 +579,16 @@ export function RegistrationTour() {
   const isFirst = stepIdx === 0;
   const isLast = currentStep === "complete";
   const isInRequiredSection =
-    currentStep === "welcome" || currentStep === "identity";
+    currentStep === "welcome" || currentStep === "profile";
+
   const stepCopy = STEP_COPY[currentStep] ?? STEP_COPY.welcome;
+  const subtitle =
+    hasPrefilled && stepCopy.subtitlePrefilled
+      ? stepCopy.subtitlePrefilled
+      : stepCopy.subtitle;
 
   const canAdvance = useMemo((): boolean => {
-    if (currentStep === "identity") {
+    if (currentStep === "profile") {
       return firstName.trim().length >= 2 && lastName.trim().length >= 2;
     }
     return true;
@@ -583,36 +619,40 @@ export function RegistrationTour() {
   const handleNext = useCallback(async () => {
     if (currentStep === "complete") {
       currentUser &&
-        profileMutation.mutate({
+        completeMutation.mutate({
           data: { ...formValues },
-          currentProfile: currentUser as User & {}
+          currentProfile: currentUser as User,
+          step: "complete",
+          complete: true
         });
       return;
     }
 
     setDir(1);
 
-    // ── Validate inline with Zod (no isSubmitting state flip = no GPU spike) ──
-    // Only call form.handleSubmit() when validation *fails*, so that TanStack
-    // Form distributes field-level error messages. On success we advance the
-    // step with a single setFieldValue call to keep re-renders minimal.
+    // Validate with Zod inline — only call form.handleSubmit on failure
     let valid = true;
-
-    if (currentStep === "identity") {
-      valid = identitySchema.safeParse(formValues).success;
-    } else if (currentStep === "bio") {
-      valid = bioSchema.safeParse(formValues).success;
+    if (currentStep === "profile") {
+      valid = profileSchema.safeParse(formValues).success;
     } else if (currentStep === "details") {
       valid = detailsSchema.safeParse(formValues).success;
     }
 
     if (!valid) {
-      // Let TanStack Form run its validators so errors appear in field components
       await form.handleSubmit();
       return;
     }
 
-    // Single state change — no cascading re-renders
+    // ── Per-step save (non-blocking) ──────────────────────────────────────
+    if (currentUser && (currentStep === "profile" || currentStep === "details")) {
+      stepMutation.mutate({
+        data: { ...formValues },
+        currentProfile: currentUser as User,
+        step: currentStep
+      });
+    }
+
+    // Advance step
     const idx = activeSteps.indexOf(currentStep);
     if (idx < activeSteps.length - 1) {
       form.setFieldValue("step", activeSteps[idx + 1]);
@@ -620,7 +660,8 @@ export function RegistrationTour() {
   }, [
     currentStep,
     activeSteps,
-    profileMutation,
+    completeMutation,
+    stepMutation,
     formValues,
     currentUser,
     form
@@ -650,9 +691,7 @@ export function RegistrationTour() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "Enter") return;
-      // Let textareas use Enter for newlines
       if (e.target instanceof HTMLTextAreaElement) return;
-      // Don't fire when a dialog / warning is up
       if (showExitWarning || isSubmitting) return;
       if (canAdvance) handleNext();
     };
@@ -661,7 +700,7 @@ export function RegistrationTour() {
   }, [canAdvance, handleNext, isSubmitting, showExitWarning]);
 
   // ── Render ────────────────────────────────────────────────────────────────
-  //fixed inset-0 z-200 h-screen w-screen
+
   return (
     <>
       <m.div
@@ -676,13 +715,11 @@ export function RegistrationTour() {
       >
         {/* ── Header ── */}
         <header className="flex shrink-0 items-center justify-between px-8 pt-8 md:px-14">
-          {/* Brand */}
           <span className="text-[11px] font-medium tracking-[0.12em] text-foreground/30 uppercase select-none">
             The Hideaway
           </span>
-
           <div className="flex items-center gap-4">
-            <StepIndicators current={currentStep} steps={indicatorSteps} />
+            <StepIndicators current={currentStep} steps={INDICATOR_STEPS} />
             {!isLast && (
               <MotionPillButton
                 type="button"
@@ -695,6 +732,7 @@ export function RegistrationTour() {
             )}
           </div>
         </header>
+
         {/* ── Content ── */}
         <div
           className="z-20 flex flex-1 items-center justify-center overflow-hidden px-8 py-8 md:px-14"
@@ -728,11 +766,11 @@ export function RegistrationTour() {
                 exit="exit"
                 className="flex flex-col gap-8"
               >
-                {/* Title block — blur-in animated */}
+                {/* Title block */}
                 <div className="flex flex-col gap-2.5">
-                  {(currentStep === "welcome" && (
+                  {currentStep === "welcome" ? (
                     <WelcomeStep form={form} />
-                  )) || (
+                  ) : (
                     <TextBlurIn
                       key={`title-${currentStep}`}
                       text={stepCopy.title}
@@ -762,8 +800,7 @@ export function RegistrationTour() {
                     }}
                   >
                     <m.p className="text-[15px] leading-relaxed text-muted-foreground">
-                      {stepCopy.subtitle}
-
+                      {subtitle}
                       {stepCopy.optional && (
                         <m.span className="ml-2 text-small font-medium tracking-widest text-foreground/25 uppercase">
                           optional
@@ -774,15 +811,14 @@ export function RegistrationTour() {
                 </div>
 
                 {/* Step body */}
-
-                {currentStep === "identity" && <IdentityStep form={form} />}
-                {currentStep === "bio" && <BioStep form={form} />}
+                {currentStep === "profile" && <ProfileStep form={form} />}
                 {currentStep === "details" && <DetailsStep form={form} />}
                 {currentStep === "complete" && <CompleteStep />}
               </m.div>
             </AnimatePresence>
           </div>
         </div>
+
         {/* ── Footer ── */}
         <footer className="z-120 flex shrink-0 items-center justify-between px-8 pb-8 md:px-14">
           {!isFirst ? (
@@ -834,6 +870,7 @@ export function RegistrationTour() {
                   : "Continue"}
           </MotionPillButton>
         </footer>
+
         {/* ── Exit warning ── */}
         <AnimatePresence>
           {showExitWarning && (
@@ -846,9 +883,68 @@ export function RegistrationTour() {
               onCancel={() => setShowExitWarning(false)}
             />
           )}
-        </AnimatePresence>{" "}
+        </AnimatePresence>
       </m.div>
     </>
+  );
+}
+
+// ─── Onboarding banner (non-blocking toast for active pages) ─────────────────
+
+export function OnboardingBanner({
+  onDismiss
+}: {
+  onDismiss: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      <m.div
+        className={cn(
+          "fixed bottom-6 left-1/2 z-[500] -translate-x-1/2",
+          "flex items-center gap-4 rounded-full",
+          "border border-foreground/10 bg-background/80 px-5 py-3",
+          "shadow-xl backdrop-blur-xl"
+        )}
+        initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+        transition={{ type: "spring", ...SPRING_EASE.power3.out }}
+      >
+        <span className="text-[13px] text-muted-foreground">
+          Complete your profile to get the full experience
+        </span>
+        <MotionPillButton
+          onClick={() => redirect("/me/onboarding")}
+          className={cn(
+            "text-[12px] font-medium",
+            "bg-foreground text-background",
+            "hover:bg-foreground/90"
+          )}
+        >
+          Let's go
+        </MotionPillButton>
+        <button
+          onClick={onDismiss}
+          className="ml-1 text-muted-foreground/40 transition-colors hover:text-foreground/60"
+          aria-label="Dismiss"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </m.div>
+    </AnimatePresence>
   );
 }
 
@@ -856,8 +952,8 @@ export function RegistrationTour() {
 
 export function RegistrationTourTrigger() {
   const { currentUserPromise } = useBetterAuth();
-
   const currentUser = use(currentUserPromise) as User | null;
+
   const regActive = useTourStore((s) => s.regActive);
   const regDismissed = useTourStore((s) => s.regDismissed);
   const openRegistrationTour = useTourStore((s) => s.openRegistrationTour);
@@ -865,32 +961,82 @@ export function RegistrationTourTrigger() {
 
   const triggered = useRef(false);
   const pathName = usePathname();
+
+  // Check sessionStorage for prior dismissal
+  const [bannerDismissed, setBannerDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(DISMISSED_KEY) === "true";
+  });
+
+  // Banner mode — show non-blocking toast on active pages
+  const [showBanner, setShowBanner] = useState(false);
+
   useEffect(() => {
     if (
-      !triggered.current &&
-      currentUser &&
-      // !currentUser.onboarded &&
-      !regActive &&
-      !regDismissed
-    ) {
-      triggered.current = true;
-      if (pathName === "/me/onboarding") {
-        const needsIdentity =
-          !currentUser.firstName?.trim() || !currentUser.lastName?.trim();
-        // lenis && lenis.stop();
-        openRegistrationTour({ needsIdentity });
-      } else {
-        redirect("/me/onboarding");
-      }
+      triggered.current ||
+      !currentUser ||
+      currentUser.onboarded ||
+      regActive ||
+      regDismissed ||
+      bannerDismissed
+    )
+      return;
+
+    triggered.current = true;
+    const needsIdentity =
+      !currentUser.firstName?.trim() || !currentUser.lastName?.trim();
+    const hasPreexistingData = !!(
+      currentUser.firstName?.trim() ||
+      currentUser.lastName?.trim() ||
+      currentUser.bio?.trim()
+    );
+
+    // First visit heuristic: account created < 10 min ago
+    const createdAt = currentUser.createdAt
+      ? new Date(currentUser.createdAt).getTime()
+      : 0;
+    const isFirstVisit = Date.now() - createdAt < 10 * 60 * 1000;
+
+    if (pathName === "/me/onboarding") {
+      // Already on onboarding page — open overlay directly
+      openRegistrationTour(
+        { needsIdentity, hasPreexistingData },
+        pathName
+      );
+    } else if (isFirstVisit) {
+      // Brand-new user — redirect is acceptable
+      redirect("/me/onboarding");
+    } else if (PASSIVE_PATHS.has(pathName)) {
+      // Returning user on passive page — show overlay in-place
+      openRegistrationTour(
+        { needsIdentity, hasPreexistingData },
+        pathName
+      );
+    } else {
+      // Returning user on active page — show non-blocking banner
+      setShowBanner(true);
     }
   }, [
     currentUser,
     regDismissed,
+    regActive,
     openRegistrationTour,
     lenis,
-    regActive,
-    pathName
+    pathName,
+    bannerDismissed
   ]);
+
+  if (showBanner && !regActive && !bannerDismissed) {
+    return (
+      <OnboardingBanner
+        onDismiss={() => {
+          setShowBanner(false);
+          setBannerDismissed(true);
+          sessionStorage.setItem(DISMISSED_KEY, "true");
+        }}
+      />
+    );
+  }
 
   return null;
 }
