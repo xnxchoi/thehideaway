@@ -11,9 +11,23 @@ export type RegistrationStep =
   | "details" // location + link (optional)
   | "complete";
 
+/**
+ * How incomplete the user's profile is.
+ *   required      — firstName or lastName is missing (blocking)
+ *   high-optional — >70 % of optional fields are untouched
+ *   low-optional  — ≤70 % of optional fields are untouched
+ *   complete      — user.onboarded === true
+ */
+export type OnboardingSeverity =
+  | "required"
+  | "high-optional"
+  | "low-optional"
+  | "complete";
+
 export type PendingFields = {
   needsIdentity: boolean; // firstName or lastName missing
   hasPreexistingData: boolean; // user has some fields already filled (e.g. OAuth)
+  severity: OnboardingSeverity;
 };
 
 const REG_STEPS: RegistrationStep[] = [
