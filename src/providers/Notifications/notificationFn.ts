@@ -1,6 +1,8 @@
+"use client";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import type { QueryFunction } from "@tanstack/react-query";
 import { useMemo } from "react";
+import * as queryString from "node:querystring";
 
 export const useNotificationFn = ({
   lastFetched
@@ -10,10 +12,7 @@ export const useNotificationFn = ({
   fn: QueryFunction<SyncedNotification[], [string, { user: string }, string]>;
   queryString: string;
 } => {
-  const queryString = useMemo(
-    () => (lastFetched ? `?timestamp=${lastFetched}` : ""),
-    [lastFetched]
-  );
+
   return useMemo(
     () => ({
       fn: async ({ queryKey }) => {
@@ -24,7 +23,7 @@ export const useNotificationFn = ({
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notifications/me/${fetchString}`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notifications/me${fetchString}`,
           {
             method: "GET",
             headers: {
@@ -43,7 +42,7 @@ export const useNotificationFn = ({
           return re;
         }
       },
-      queryString
+      queryString:lastFetched&&`?timestamp=${lastFetched}`||``
     }),
     [queryString]
   );

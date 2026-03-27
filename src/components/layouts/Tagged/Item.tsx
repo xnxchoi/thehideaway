@@ -1,5 +1,5 @@
 "use client";
-import { OverviewAgnosticItem } from "@/app/(frontend)/(site)/essays/ArchiveFeature/ArchiveFeatureCard";
+import { OverviewAgnosticItem } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { Link } from "@/components/UX/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";

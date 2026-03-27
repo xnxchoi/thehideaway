@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { BetterAuthError } from "better-auth";
 import type { BetterAuthOptions, Where } from "better-auth";
 import { generateSchema } from "./generate-schema";

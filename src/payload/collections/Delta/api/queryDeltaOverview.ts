@@ -157,7 +157,7 @@ export const queryOverview = cache(
 		// 2) Query for the deltas
 		const foundDeltas: PaginatedDocs<ReqSurf> = (await payload
 			.find({
-				collection: "delta",
+				collection: "surf",
 				limit,
 				page,
 				where: baseWhere,

@@ -1,9 +1,7 @@
 "use client";
 
-import { AnimatePresence } from "motion/react";
-import { Suspense } from "react";
 import { InterfaceTour, InterfaceTourTrigger } from "./InterfaceTour";
-import { RegistrationTour, RegistrationTourTrigger } from "./RegistrationTour";
+import { RegistrationTourTrigger } from "./RegistrationTour";
 import { useTourStore } from "./TourProvider";
 
 export { TourProvider } from "./TourProvider";

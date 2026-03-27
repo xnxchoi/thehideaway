@@ -59,12 +59,12 @@ const HeroTop = ({
   return (
     <div
       className={
-        "col-[1] grid items-center gap-y-[1rem] rounded-[1rem] bg-background p-[1rem] text-center text-foreground lg:col-[1/5] lg:row-[1/3] lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[1rem]"
+        "col-[1] grid items-center gap-y-[1rem] rounded-2xl bg-background p-[1rem] text-center text-foreground lg:col-[1/5] lg:row-[1/3] lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[1rem]"
       }
     >
       <Link
         className="absolute top-0 left-0 z-0 h-full w-full"
-        href={`/essays/${slug}`}
+        href={`/src/app/(frontend)/(site)/(content)/essays/${slug}`}
       ></Link>
       <HeroTopMedia image={image} />
       <HeroTopTag tag={category.title} />
@@ -179,7 +179,7 @@ const HeroSub = ({
     >
       <Link
         className="absolute top-0 left-0 z-0 h-full w-full"
-        href={`/essays/${slug}`}
+        href={`/src/app/(frontend)/(site)/(content)/essays/${slug}`}
       ></Link>
       <SubMedia image={post.image} />
       <SubTag tag={category.title} />
@@ -188,9 +188,7 @@ const HeroSub = ({
   );
 };
 const SubMedia = ({ image }: { image: PostOverview["image"] }) => {
-  return (
-    <RP_Image className={"col-[1] row-[1/4] rounded-[1rem]"} image={image} />
-  );
+  return <RP_Image className={"col-[1] row-[1/4] rounded-2xl"} image={image} />;
 };
 const SubTag = ({ tag }: { tag: string }) => {
   return (
@@ -224,7 +222,7 @@ const HeroFeature = ({ post }: { post: PostOverview }) => {
       <RP_Image
         image={post.image}
         className={
-          'z-0 col-[1/-1] row-[1/8] min-h-px self-start overflow-hidden rounded-[1rem] pt-[177%] after:absolute after:inset-0 after:bg-gradient-to-b after:from-muted-background/10 after:to-muted-background after:to-[80.6%] after:mix-blend-multiply after:content-[""] lg:h-full lg:pt-0'
+          'z-0 col-[1/-1] row-[1/8] min-h-px self-start overflow-hidden rounded-2xl pt-[177%] after:absolute after:inset-0 after:bg-gradient-to-b after:from-muted-background/10 after:to-muted-background after:to-[80.6%] after:mix-blend-multiply after:content-[""] lg:h-full lg:pt-0'
         }
       />
       <div

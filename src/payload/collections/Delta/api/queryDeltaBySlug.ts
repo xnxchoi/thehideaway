@@ -49,7 +49,7 @@ export const queryAuthorsDelta = cache(
     }
     const result = await payload
       .find({
-        collection: "delta",
+        collection: "surf",
         draft,
         limit: 1,
         overrideAccess: true,
@@ -219,7 +219,7 @@ export const queryDeltaBySlug = cache(
 
     const result = await payload
       .find({
-        collection: "delta",
+        collection: "surf",
         draft,
         where: {
           slug: {
@@ -377,7 +377,7 @@ export const queryPostByID = cache(
   async ({ id }: { id: string }): Promise<{ post: SingleSurf } | null> => {
     const payload = await getPayload({ config: configPromise });
     const post = await payload.findByID({
-      collection: "delta",
+      collection: "surf",
       id,
       select: {
         slug: true
@@ -509,7 +509,7 @@ export const queryRelatedDeltas = cache(
         queryLimit = 100 - relatedIDs.length;
       }
       const queuedDeltas = await payload.find({
-        collection: "delta",
+        collection: "surf",
         where: {
           and: and
         },

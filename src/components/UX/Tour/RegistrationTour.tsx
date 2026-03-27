@@ -28,6 +28,7 @@ import { useBetterAuth } from "@/lib/auth/context";
 import { User } from "@payload-types";
 import { redirect, usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-transition-router";
+import src from "zod";
 
 // Re-export so existing consumers aren't broken
 export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
@@ -37,13 +38,36 @@ export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema
 /** Pages where the full overlay is acceptable for returning users */
 const PASSIVE_PATHS = new Set([
   "/",
-  "/posts",
+  "/home",
+  "/radio",
   "/surf",
   "/albums",
   "/playlists",
   "/categories",
   "/tags"
 ]);
+const AUTH_PATHS = Object.freeze([
+  "/accept-invitation",
+  "/account",
+  "/admin-ba",
+  "/auth",
+  "/check-in",
+  "/forgot-password",
+  "/me",
+  "/prive",
+  "/reset-password",
+  "/sign-in",
+  "/sign-up",
+  "/two-factor"
+]);
+const CONTENT_PATHS = Object.freeze([
+  "/archived",
+  "/essays",
+  "/surf",
+  "/tagged",
+  "/users"
+]);
+const EXCLUDED_PATHS = new Set();
 
 /** sessionStorage key for dismissal persistence */
 const DISMISSED_KEY = "rp:onboarding-dismissed";
@@ -422,20 +446,30 @@ async function submitStepFields({
 }) {
   const updateData = new Map<UserField, User[UserField]>();
 
-  if (data.identity?.firstName?.trim() &&
-    data.identity.firstName.trim() !== currentProfile.firstName)
+  if (
+    data.identity?.firstName?.trim() &&
+    data.identity.firstName.trim() !== currentProfile.firstName
+  )
     updateData.set("firstName", data.identity.firstName.trim());
-  if (data.identity?.lastName?.trim() &&
-    data.identity.lastName.trim() !== currentProfile.lastName)
+  if (
+    data.identity?.lastName?.trim() &&
+    data.identity.lastName.trim() !== currentProfile.lastName
+  )
     updateData.set("lastName", data.identity.lastName.trim());
-  if (data.bio?.content?.trim() &&
-    data.bio.content.trim() !== currentProfile.bio)
+  if (
+    data.bio?.content?.trim() &&
+    data.bio.content.trim() !== currentProfile.bio
+  )
     updateData.set("bio", data.bio.content.trim());
-  if (data.details?.location?.trim() &&
-    data.details.location.trim() !== currentProfile.location)
+  if (
+    data.details?.location?.trim() &&
+    data.details.location.trim() !== currentProfile.location
+  )
     updateData.set("location", data.details.location.trim());
-  if (data.details?.link?.trim() &&
-    data.details.link.trim() !== currentProfile.link)
+  if (
+    data.details?.link?.trim() &&
+    data.details.link.trim() !== currentProfile.link
+  )
     updateData.set("link", data.details.link.trim());
 
   // Update user fields if anything changed, or if completing
@@ -644,7 +678,10 @@ export function RegistrationTour() {
     }
 
     // ── Per-step save (non-blocking) ──────────────────────────────────────
-    if (currentUser && (currentStep === "profile" || currentStep === "details")) {
+    if (
+      currentUser &&
+      (currentStep === "profile" || currentStep === "details")
+    ) {
       stepMutation.mutate({
         data: { ...formValues },
         currentProfile: currentUser as User,
@@ -891,16 +928,12 @@ export function RegistrationTour() {
 
 // ─── Onboarding banner (non-blocking toast for active pages) ─────────────────
 
-export function OnboardingBanner({
-  onDismiss
-}: {
-  onDismiss: () => void;
-}) {
+export function OnboardingBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
     <AnimatePresence>
       <m.div
         className={cn(
-          "fixed bottom-6 left-1/2 z-[500] -translate-x-1/2",
+          "fixed bottom-6 left-1/2 z-500 -translate-x-1/2",
           "flex items-center gap-4 rounded-full",
           "border border-foreground/10 bg-background/80 px-5 py-3",
           "shadow-xl backdrop-blur-xl"
@@ -921,7 +954,7 @@ export function OnboardingBanner({
             "hover:bg-foreground/90"
           )}
         >
-          Let's go
+          Let&#39;s go
         </MotionPillButton>
         <button
           onClick={onDismiss}
@@ -999,19 +1032,13 @@ export function RegistrationTourTrigger() {
 
     if (pathName === "/me/onboarding") {
       // Already on onboarding page — open overlay directly
-      openRegistrationTour(
-        { needsIdentity, hasPreexistingData },
-        pathName
-      );
+      openRegistrationTour({ needsIdentity, hasPreexistingData }, pathName);
     } else if (isFirstVisit) {
       // Brand-new user — redirect is acceptable
       redirect("/me/onboarding");
     } else if (PASSIVE_PATHS.has(pathName)) {
       // Returning user on passive page — show overlay in-place
-      openRegistrationTour(
-        { needsIdentity, hasPreexistingData },
-        pathName
-      );
+      openRegistrationTour({ needsIdentity, hasPreexistingData }, pathName);
     } else {
       // Returning user on active page — show non-blocking banner
       setShowBanner(true);

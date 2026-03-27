@@ -101,7 +101,7 @@ export const PrevNext = ({
           }
         ></div>
         <Link
-          href={`/essays/${prev.slug}`}
+          href={`/src/app/(frontend)/(site)/(content)/essays/${prev.slug}`}
           onClick={resetCursorTheme}
           className={"overflow-hidden rounded-lg"}
         >
@@ -131,7 +131,7 @@ export const PrevNext = ({
           </div>
         </Link>
         <Link
-          href={`/essays/${next.slug}`}
+          href={`/src/app/(frontend)/(site)/(content)/essays/${next.slug}`}
           onClick={resetCursorTheme}
           className={"overflow-hidden rounded-lg"}
         >

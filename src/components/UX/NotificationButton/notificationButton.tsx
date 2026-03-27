@@ -253,7 +253,7 @@ export const NotificationButton = (props: HTMLMotionProps<"button">) => {
                     duration: 0.15,
                     ease: "easeOut"
                   }}
-                  href="/me/notifications"
+                  href="/src/app/(frontend)/(site)/(auth)/me/notifications"
                   onClick={closer}
                 >
                   See All
