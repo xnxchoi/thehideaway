@@ -5,7 +5,7 @@ import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import type { RegistrationStep } from "@/stores/Tour/TourStore";
+import type { OnboardingSeverity, RegistrationStep } from "@/stores/Tour/TourStore";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
@@ -26,26 +26,34 @@ import {
 } from "@/components/UX/Tour/Onboard/Form/schema";
 import { useBetterAuth } from "@/lib/auth/context";
 import { User } from "@payload-types";
-import { redirect, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-transition-router";
-import src from "zod";
 
 // Re-export so existing consumers aren't broken
 export type { ProfileFormValues } from "@/components/UX/Tour/Onboard/Form/schema";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-/** Pages where the full overlay is acceptable for returning users */
+/**
+ * PASSIVE_PATHS — explicit allowlist, highest priority.
+ * Full in-page overlay is acceptable on these paths regardless of any other rule.
+ * Tip: content-type roots don't need to be listed here — CONTENT_PATHS list-view
+ * detection handles them. Reserve this for truly "ambient" landing/browsing pages.
+ */
 const PASSIVE_PATHS = new Set([
   "/",
   "/home",
   "/radio",
-  "/surf",
   "/albums",
   "/playlists",
   "/categories",
   "/tags"
 ]);
+
+/**
+ * AUTH_PATHS — blacklist.
+ * No onboarding rendering of any kind on these paths or their sub-paths.
+ */
 const AUTH_PATHS = Object.freeze([
   "/accept-invitation",
   "/account",
@@ -60,6 +68,23 @@ const AUTH_PATHS = Object.freeze([
   "/sign-up",
   "/two-factor"
 ]);
+
+/**
+ * ACTIVE_PATHS — manual blacklist.
+ * Suppresses onboarding rendering without adding to AUTH_PATHS.
+ * Does NOT take precedence over PASSIVE_PATHS: if a path appears in both,
+ * PASSIVE_PATHS wins (overlay is shown).
+ */
+const ACTIVE_PATHS = Object.freeze<string[]>([
+  // e.g. "/search", "/privacy", "/terms"
+]);
+
+/**
+ * CONTENT_PATHS — dynamic classification.
+ * Paths directly under these roots are classified as list vs. single-content.
+ * List views (root, /in, /in/[page]) → overlay allowed.
+ * Single-content sub-paths → only a gentle banner, never redirect.
+ */
 const CONTENT_PATHS = Object.freeze([
   "/archived",
   "/essays",
@@ -67,10 +92,83 @@ const CONTENT_PATHS = Object.freeze([
   "/tagged",
   "/users"
 ]);
-const EXCLUDED_PATHS = new Set();
 
-/** sessionStorage key for dismissal persistence */
+/** sessionStorage key for per-session banner/toast dismissal */
 const DISMISSED_KEY = "rp:onboarding-dismissed";
+
+// ─── Path classification ──────────────────────────────────────────────────────
+
+/**
+ * overlay  — render full in-page overlay
+ * content  — content single-view: show gentle bottom banner only
+ * default  — unclassified path: severity drives notification type
+ * none     — auth/blacklisted: no onboarding rendering
+ */
+type PathBucket = "overlay" | "content" | "default" | "none";
+
+/** Returns true when pathname is a paginated list view under a content root. */
+function isContentListView(pathname: string): boolean {
+  for (const root of CONTENT_PATHS) {
+    if (pathname === root) return true;
+    if (pathname === `${root}/in`) return true;
+    if (new RegExp(`^${root}/in/\\d+$`).test(pathname)) return true;
+  }
+  return false;
+}
+
+function classifyPath(pathname: string): PathBucket {
+  // 1. PASSIVE_PATHS: explicit allowlist — wins over everything
+  if (PASSIVE_PATHS.has(pathname)) return "overlay";
+
+  // 2. AUTH_PATHS: blacklist — no rendering
+  if (AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`)))
+    return "none";
+
+  // 3. ACTIVE_PATHS: manual blacklist (PASSIVE already checked, no conflict)
+  if (
+    ACTIVE_PATHS.length > 0 &&
+    ACTIVE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  )
+    return "none";
+
+  // 4. CONTENT_PATHS: dynamic — list view → overlay, single content → content
+  const isUnderContent = CONTENT_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+  if (isUnderContent) {
+    return isContentListView(pathname) ? "overlay" : "content";
+  }
+
+  // 5. Default — trigger uses severity to decide exact notification
+  return "default";
+}
+
+/** Returns true for paths where a low-severity subtle reminder is contextually fitting. */
+function isContextRelevantForSubtle(pathname: string): boolean {
+  // User profile browsing: seeing another person's profile naturally prompts
+  // "I should fill mine out too"
+  return pathname.startsWith("/users/");
+}
+
+// ─── Severity computation ─────────────────────────────────────────────────────
+
+const OPTIONAL_FIELDS = ["bio", "location", "link"] as const;
+
+/** Derive how incomplete the user's profile is. */
+export function computeSeverity(user: User): OnboardingSeverity {
+  if (user.onboarded) return "complete";
+
+  const needsIdentity = !user.firstName?.trim() || !user.lastName?.trim();
+  if (needsIdentity) return "required";
+
+  const untouched = OPTIONAL_FIELDS.filter(
+    (f) => !(user[f as keyof User] as string | null | undefined)?.trim()
+  ).length;
+
+  return untouched / OPTIONAL_FIELDS.length > 0.7
+    ? "high-optional"
+    : "low-optional";
+}
 
 // ─── Step configs ─────────────────────────────────────────────────────────────
 
@@ -926,62 +1024,236 @@ export function RegistrationTour() {
   );
 }
 
-// ─── Onboarding banner (non-blocking toast for active pages) ─────────────────
+// ─── Onboarding notification components ──────────────────────────────────────
 
-export function OnboardingBanner({ onDismiss }: { onDismiss: () => void }) {
+/**
+ * Countdown toast for required-field situations on unclassified paths.
+ * Gives the user 4 seconds to act before auto-navigating to /me/onboarding.
+ */
+export function OnboardingRedirectToast({
+  onNavigate
+}: {
+  onNavigate: () => void;
+}) {
+  const [seconds, setSeconds] = useState(4);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSeconds((s) => {
+        if (s <= 1) {
+          clearInterval(id);
+          onNavigate();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [onNavigate]);
+
   return (
-    <AnimatePresence>
-      <m.div
-        className={cn(
-          "fixed bottom-6 left-1/2 z-500 -translate-x-1/2",
-          "flex items-center gap-4 rounded-full",
-          "border border-foreground/10 bg-background/80 px-5 py-3",
-          "shadow-xl backdrop-blur-xl"
-        )}
-        initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-        transition={{ type: "spring", ...SPRING_EASE.power3.out }}
-      >
-        <span className="text-[13px] text-muted-foreground">
-          Complete your profile to get the full experience
+    <m.div
+      className={cn(
+        "fixed bottom-6 left-1/2 z-[500] -translate-x-1/2",
+        "flex items-center gap-4 rounded-2xl",
+        "border border-foreground/10 bg-background/90 px-5 py-3.5",
+        "shadow-xl backdrop-blur-xl"
+      )}
+      initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+      transition={{ type: "spring", ...SPRING_EASE.power3.out }}
+    >
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[13px] font-medium text-foreground">
+          A few details needed
         </span>
+        <span className="text-[12px] text-muted-foreground">
+          Redirecting in {seconds}s…
+        </span>
+      </div>
+      <MotionPillButton
+        onClick={onNavigate}
+        className={cn(
+          "text-[12px] font-medium",
+          "bg-foreground text-background",
+          "hover:bg-foreground/90"
+        )}
+      >
+        Go now
+      </MotionPillButton>
+    </m.div>
+  );
+}
+
+/**
+ * Medium toast for high-optional incompleteness on unclassified paths.
+ * Bottom-left card — more prominent than the subtle pill, less forceful than a redirect.
+ */
+export function OnboardingToastMedium({
+  onDismiss,
+  onNavigate
+}: {
+  onDismiss: () => void;
+  onNavigate: () => void;
+}) {
+  return (
+    <m.div
+      className={cn(
+        "fixed bottom-6 left-6 z-[500]",
+        "flex w-72 flex-col gap-3 rounded-2xl",
+        "border border-foreground/10 bg-background/90 p-5",
+        "shadow-xl backdrop-blur-xl"
+      )}
+      initial={{ opacity: 0, x: -16, filter: "blur(8px)" }}
+      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, x: -8, filter: "blur(4px)" }}
+      transition={{ type: "spring", ...SPRING_EASE.power3.out }}
+    >
+      <div className="flex flex-col gap-1">
+        <span className="text-[14px] font-medium text-foreground">
+          Finish setting up your profile
+        </span>
+        <span className="text-[12px] leading-relaxed text-muted-foreground">
+          Add your bio, location, and a link so others can get to know you.
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
         <MotionPillButton
-          onClick={() => redirect("/me/onboarding")}
+          onClick={onNavigate}
           className={cn(
             "text-[12px] font-medium",
             "bg-foreground text-background",
             "hover:bg-foreground/90"
           )}
         >
-          Let&#39;s go
+          Let&apos;s go
         </MotionPillButton>
-        <button
+        <MotionPillButton
           onClick={onDismiss}
-          className="ml-1 text-muted-foreground/40 transition-colors hover:text-foreground/60"
-          aria-label="Dismiss"
+          className="text-[12px] text-muted-foreground/50 hover:text-foreground/70"
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-      </m.div>
-    </AnimatePresence>
+          Not now
+        </MotionPillButton>
+      </div>
+    </m.div>
+  );
+}
+
+/**
+ * Subtle toast for low-optional incompleteness on context-relevant paths (e.g. /users/*).
+ * Top-right pill, appears after a short delay, auto-dismisses after 8 s.
+ */
+export function OnboardingToastSubtle({
+  onDismiss,
+  onNavigate
+}: {
+  onDismiss: () => void;
+  onNavigate: () => void;
+}) {
+  useEffect(() => {
+    const id = setTimeout(onDismiss, 8000);
+    return () => clearTimeout(id);
+  }, [onDismiss]);
+
+  return (
+    <m.div
+      className={cn(
+        "fixed right-5 top-5 z-[500]",
+        "flex items-center gap-3 rounded-full",
+        "border border-foreground/8 bg-background/80 px-4 py-2.5",
+        "shadow-lg backdrop-blur-xl"
+      )}
+      initial={{ opacity: 0, x: 12, filter: "blur(4px)" }}
+      animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, x: 8, filter: "blur(4px)" }}
+      transition={{ type: "spring", ...SPRING_EASE.power3.out, delay: 1.5 }}
+    >
+      <span className="text-[12px] text-muted-foreground">
+        Your profile is almost complete
+      </span>
+      <button
+        onClick={onNavigate}
+        className="text-[12px] font-medium text-foreground underline-offset-2 hover:underline"
+      >
+        Edit
+      </button>
+      <button
+        onClick={onDismiss}
+        className="ml-0.5 text-muted-foreground/30 transition-colors hover:text-foreground/50"
+        aria-label="Dismiss"
+      >
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path
+            d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+    </m.div>
+  );
+}
+
+/**
+ * Gentle bottom-center pill for content single-view paths.
+ * Used when the user is mid-read: non-intrusive, easily dismissed.
+ */
+export function OnboardingBanner({
+  onDismiss,
+  onNavigate
+}: {
+  onDismiss: () => void;
+  onNavigate: () => void;
+}) {
+  return (
+    <m.div
+      className={cn(
+        "fixed bottom-6 left-1/2 z-[500] -translate-x-1/2",
+        "flex items-center gap-4 rounded-full",
+        "border border-foreground/10 bg-background/80 px-5 py-3",
+        "shadow-xl backdrop-blur-xl"
+      )}
+      initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+      transition={{ type: "spring", ...SPRING_EASE.power3.out }}
+    >
+      <span className="text-[13px] text-muted-foreground">
+        Complete your profile to get the full experience
+      </span>
+      <MotionPillButton
+        onClick={onNavigate}
+        className={cn(
+          "text-[12px] font-medium",
+          "bg-foreground text-background",
+          "hover:bg-foreground/90"
+        )}
+      >
+        Let&apos;s go
+      </MotionPillButton>
+      <button
+        onClick={onDismiss}
+        className="ml-1 text-muted-foreground/40 transition-colors hover:text-foreground/60"
+        aria-label="Dismiss"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path
+            d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+    </m.div>
   );
 }
 
 // ─── Tour trigger — mounts at layout level, watches session ──────────────────
+
+type NotifyMode = "overlay" | "redirect" | "medium" | "subtle" | "banner" | "none";
 
 export function RegistrationTourTrigger() {
   const { currentUserPromise } = useBetterAuth();
@@ -990,80 +1262,133 @@ export function RegistrationTourTrigger() {
   const regActive = useTourStore((s) => s.regActive);
   const regDismissed = useTourStore((s) => s.regDismissed);
   const openRegistrationTour = useTourStore((s) => s.openRegistrationTour);
-  const lenis = useLenis();
 
-  const triggered = useRef(false);
-  const pathName = usePathname();
+  const pathname = usePathname();
+  const router = useTransitionRouter();
 
-  // Check sessionStorage for prior dismissal
+  /** Per-session dismissal: once any notification is dismissed, suppress for the session. */
   const [bannerDismissed, setBannerDismissed] = useState(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(DISMISSED_KEY) === "true";
   });
 
-  // Banner mode — show non-blocking toast on active pages
-  const [showBanner, setShowBanner] = useState(false);
+  const [notifyMode, setNotifyMode] = useState<NotifyMode>("none");
+
+  /**
+   * One-shot flag: evaluated once per component mount so navigating around
+   * the app doesn't repeatedly re-trigger overlays or toasts.
+   * Exception: /me/onboarding is always re-evaluated (handled before the flag check).
+   */
+  const triggered = useRef(false);
+
+  const dismiss = useCallback(() => {
+    setNotifyMode("none");
+    setBannerDismissed(true);
+    sessionStorage.setItem(DISMISSED_KEY, "true");
+  }, []);
+
+  const navigateToOnboarding = useCallback(() => {
+    setNotifyMode("none");
+    router.push("/me/onboarding");
+  }, [router]);
 
   useEffect(() => {
-    if (
-      triggered.current ||
-      !currentUser ||
-      currentUser.onboarded ||
-      regActive ||
-      regDismissed ||
-      bannerDismissed
-    )
-      return;
+    if (!currentUser || regActive || regDismissed) return;
 
-    triggered.current = true;
-    const needsIdentity =
-      !currentUser.firstName?.trim() || !currentUser.lastName?.trim();
+    const severity = computeSeverity(currentUser);
+    if (severity === "complete") return;
+
+    const needsIdentity = severity === "required";
     const hasPreexistingData = !!(
       currentUser.firstName?.trim() ||
       currentUser.lastName?.trim() ||
       currentUser.bio?.trim()
     );
 
-    // First visit heuristic: account created < 10 min ago
+    // /me/onboarding: RegistrationTour is rendered directly from the page, but we
+    // also call openRegistrationTour to set regActive + pending state in the store.
+    if (pathname === "/me/onboarding") {
+      openRegistrationTour({ needsIdentity, hasPreexistingData, severity }, pathname);
+      triggered.current = true;
+      return;
+    }
+
+    if (triggered.current) return;
+    triggered.current = true;
+
+    // First visit (< 10 min since account creation): redirect regardless of path.
     const createdAt = currentUser.createdAt
       ? new Date(currentUser.createdAt).getTime()
       : 0;
-    const isFirstVisit = Date.now() - createdAt < 10 * 60 * 1000;
-
-    if (pathName === "/me/onboarding") {
-      // Already on onboarding page — open overlay directly
-      openRegistrationTour({ needsIdentity, hasPreexistingData }, pathName);
-    } else if (isFirstVisit) {
-      // Brand-new user — redirect is acceptable
-      redirect("/me/onboarding");
-    } else if (PASSIVE_PATHS.has(pathName)) {
-      // Returning user on passive page — show overlay in-place
-      openRegistrationTour({ needsIdentity, hasPreexistingData }, pathName);
-    } else {
-      // Returning user on active page — show non-blocking banner
-      setShowBanner(true);
+    if (Date.now() - createdAt < 10 * 60 * 1000) {
+      router.push("/me/onboarding");
+      return;
     }
+
+    if (bannerDismissed) return;
+
+    const bucket = classifyPath(pathname);
+
+    if (bucket === "none") return;
+
+    if (bucket === "overlay") {
+      openRegistrationTour({ needsIdentity, hasPreexistingData, severity }, pathname);
+      return;
+    }
+
+    if (bucket === "content") {
+      // User is reading content — never redirect, show gentle pill only
+      setNotifyMode("banner");
+      return;
+    }
+
+    // bucket === "default": severity drives the notification type
+    if (severity === "required") {
+      setNotifyMode("redirect");
+    } else if (severity === "high-optional") {
+      setNotifyMode("medium");
+    } else if (severity === "low-optional" && isContextRelevantForSubtle(pathname)) {
+      setNotifyMode("subtle");
+    }
+    // low-optional on a non-relevant path: no notification
   }, [
     currentUser,
-    regDismissed,
     regActive,
+    regDismissed,
     openRegistrationTour,
-    lenis,
-    pathName,
+    pathname,
+    router,
     bannerDismissed
   ]);
 
-  if (showBanner && !regActive && !bannerDismissed) {
-    return (
-      <OnboardingBanner
-        onDismiss={() => {
-          setShowBanner(false);
-          setBannerDismissed(true);
-          sessionStorage.setItem(DISMISSED_KEY, "true");
-        }}
-      />
-    );
-  }
+  if (notifyMode === "none" || regActive) return null;
 
-  return null;
+  return (
+    <AnimatePresence>
+      {notifyMode === "redirect" && (
+        <OnboardingRedirectToast key="redirect" onNavigate={navigateToOnboarding} />
+      )}
+      {notifyMode === "medium" && (
+        <OnboardingToastMedium
+          key="medium"
+          onDismiss={dismiss}
+          onNavigate={navigateToOnboarding}
+        />
+      )}
+      {notifyMode === "subtle" && (
+        <OnboardingToastSubtle
+          key="subtle"
+          onDismiss={dismiss}
+          onNavigate={navigateToOnboarding}
+        />
+      )}
+      {notifyMode === "banner" && (
+        <OnboardingBanner
+          key="banner"
+          onDismiss={dismiss}
+          onNavigate={navigateToOnboarding}
+        />
+      )}
+    </AnimatePresence>
+  );
 }
