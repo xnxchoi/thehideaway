@@ -6,7 +6,6 @@ import { getUserFollowers } from "@/payload/collections/Users/endpoints/getUserF
 import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserFollows";
 import { GotUser } from "@/payload/collections/Users/endpoints/userFieldSelect";
 import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
-import { validateHandler } from "@/payload/collections/Users/endpoints/validateHandle";
 import {
   revalidateDelete as afterDeleteUser,
   revalidateUser
@@ -369,12 +368,6 @@ export const Users: CollectionConfig = {
   },
   endpoints: [
     {
-      path: "/validateHandle",
-      method: "post",
-      handler: validateHandler
-    },
-
-    {
       path: "/:id/following",
       method: "get",
       handler: getUserFollowing
@@ -474,7 +467,7 @@ export const Users: CollectionConfig = {
           id: `${rest.id}`,
           role: rest.role as RP_Roles,
           onboarded: rest.onboarded ?? false,
-          slug: rest.slug ?? rest.name,
+          slug: rest.slug ?? rest.username,
           username: rest.username ?? rest.slug ?? rest.name,
           displayUsername:
             rest.displayUsername ??

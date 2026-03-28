@@ -1,4 +1,4 @@
-import { locales } from "@/i18n/request";
+import { locales } from "@/i18n/locales";
 import messages from "messages/en.json";
 import { RangyRange, RangySelection } from "rangy/lib/rangy-core";
 

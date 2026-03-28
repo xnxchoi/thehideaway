@@ -1,52 +1,83 @@
-import type {FieldAccess, TextField} from "payload";
-import {formatUserHandleHook} from "@/payload/fields/handle/formatUserHandle";
-import {User} from "@/payload-types";
-import {nanoid} from "nanoid";
+import { User } from "@/payload-types";
+import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
+import { validateHandle } from "@/payload/fields/handle/validateHandle";
+import { nanoid } from "nanoid";
+import { FieldAccessArgs } from "node_modules/payload/dist/fields/config/types";
+import type { TextField } from "payload";
 
+export class HandleError extends Error {
+  public data?: { alts?: string[] };
+  constructor(message: string, data?: { alts?: string[] }) {
+    super(message);
+    this.name = "HandleError";
+    this.data = data;
+    Object.setPrototypeOf(this, HandleError.prototype);
+  }
+}
 type Overrides = {
-	userHandleOverrides?: Partial<TextField>;
+  userHandleOverrides?: Partial<TextField>;
 };
 
 // type UserHandle = (overrides?: Overrides) => [TextField, TextField];
 type UserHandle = (overrides?: Overrides) => [TextField];
 
 export const userHandleField: UserHandle = (overrides = {}) => {
-	const {userHandleOverrides} = overrides;
+  const { userHandleOverrides } = overrides;
 
-	// Expect ts error here because of typescript mismatching Partial<TextField> with TextField
-	// @ts-expect-error
-	const userHandleField: TextField = {
-		name: "slug", unique: true, required: true, type: "text", index: true, access: {
-			update: ({data, req, id, doc}: Parameters<FieldAccess<User>>[0]) => {
-				const docId = id || doc?.id || data?.id;
-				if (req.context.overrideAccess === true) return true;
-				if (req.user?.role === "admin") return true;
-				if (!docId) return false;
-				if (req.user && req.user.id === docId) return true;
-				return false;
-			},
-		},
+  // Expect ts error here because of typescript mismatching Partial<TextField> with TextField
+  // @ts-expect-error
+  const userHandleField: TextField = {
+    name: "slug",
+    unique: true,
+    required: true,
+    type: "text",
+    index: true,
+    access: {
+      update: ({ data, req, id, doc }: FieldAccessArgs<User>) => {
+        const docId = id || doc?.id || data?.id;
+        if (req.context.overrideAccess === true) return true;
+        if (!docId || !req.user) return false;
+        if (req.user.role === "admin") return true;
+        if (req.user.id === docId) return true;
+        return false;
+      }
+    },
 
-		saveToJWT: true, ...(userHandleOverrides || {}), hooks: {
-			// Kept this in for hook or API based updates
-			beforeValidate: [formatUserHandleHook],
-		}, admin: {
-			...(userHandleOverrides?.admin || {}), components: {
-				Field: {
-					path: "@/payload/fields/handle/ServerHandle.tsx",
-				},
-			},
-		},
-	};
-	const hashId: TextField = {
-		type: "text", name: "hashId", defaultValue: () => nanoid(11), access: {
-			update: () => false,
-		}, required: true,
-		label:"Your ID",
-		admin:{
-			readOnly:true,
-
-		},
-	}
-	return [userHandleField];
+    saveToJWT: true,
+    ...(userHandleOverrides || {}),
+    hooks: {
+      // Kept this in for hook or API based updates
+      beforeValidate: [
+        ({ value }) => {
+          return formatUserHandle(value);
+        }
+      ]
+    },
+    validate: validateHandle,
+    admin: {
+      ...(userHandleOverrides?.admin || {}),
+      components: {
+        Field: {
+          path: "@/payload/fields/handle/ServerHandle.tsx",
+          serverProps: {
+            fieldToUse: "displayUsername"
+          }
+        }
+      }
+    }
+  };
+  const hashId: TextField = {
+    type: "text",
+    name: "hashId",
+    defaultValue: () => nanoid(11),
+    access: {
+      update: () => false
+    },
+    required: true,
+    label: "Your ID",
+    admin: {
+      readOnly: true
+    }
+  };
+  return [userHandleField];
 };

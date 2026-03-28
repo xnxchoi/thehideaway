@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useContext, useMemo, useState } from "react";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn } from "../../../lib/utils";
 import { CardContent } from "@/components/ui/card";
 import type { SettingsCardProps } from "../shared/settings-card";
 import { SettingsCard } from "../shared/settings-card";

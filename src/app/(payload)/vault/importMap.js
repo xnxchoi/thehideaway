@@ -5,6 +5,7 @@ import { Passkeys as Passkeys_d50ef5c1f600afba08808f850b6a9ecc } from '@payload-
 import { default as default_58decba639b5fdd8b9aa2b304b298c23 } from '@/AccessControlled/Checkbox'
 import { TwoFactorAuth as TwoFactorAuth_98163d55ae591a15d446d874780a3951 } from '@payload-auth/better-auth/plugin/client'
 import { default as default_9463b91230b01a45ab5d81537701e380 } from '@/AccessControlled/Text'
+import { default as default_c082ee3007b313661ec122b8036f9a7d } from '@/AccessControlled/Json'
 import { OverviewComponent as OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
@@ -98,6 +99,7 @@ export const importMap = {
   "@/AccessControlled/Checkbox#default": default_58decba639b5fdd8b9aa2b304b298c23,
   "@payload-auth/better-auth/plugin/client#TwoFactorAuth": TwoFactorAuth_98163d55ae591a15d446d874780a3951,
   "@/AccessControlled/Text#default": default_9463b91230b01a45ab5d81537701e380,
+  "@/AccessControlled/Json#default": default_c082ee3007b313661ec122b8036f9a7d,
   "@payloadcms/plugin-seo/client#OverviewComponent": OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaTitleComponent": MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,

@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { ComponentProps, ReactNode } from "react";
 
-import { cn } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import { Card } from "@/components/ui/card";
 import type { UserAvatarClassNames } from "../../user-avatar";
@@ -37,8 +37,10 @@ export type SettingsCardClassNames = {
   title?: string;
 };
 
-export interface SettingsCardProps
-  extends Omit<ComponentProps<typeof Card>, "title"> {
+export interface SettingsCardProps extends Omit<
+  ComponentProps<typeof Card>,
+  "title"
+> {
   children?: ReactNode;
   className?: string;
   classNames?: SettingsCardClassNames;

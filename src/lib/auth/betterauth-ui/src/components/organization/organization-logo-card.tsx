@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { Organization } from "better-auth/plugins/organization";
 import { Trash2Icon, UploadCloudIcon } from "lucide-react";
 import {
@@ -13,7 +14,7 @@ import {
 import { useCurrentOrganization } from "../../hooks/use-current-organization";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
 import { fileToBase64, resizeAndCropImage } from "../../lib/image-utils";
-import { cn, getLocalizedError } from "../../lib/utils";
+import { getLocalizedError } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import type { SettingsCardClassNames } from "../settings/shared/settings-card";
 import { SettingsCardFooter } from "../settings/shared/settings-card-footer";

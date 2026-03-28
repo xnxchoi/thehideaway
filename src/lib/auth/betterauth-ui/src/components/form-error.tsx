@@ -1,9 +1,9 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
 import { useFormState } from "react-hook-form";
 
-import { cn } from "../lib/utils";
 import type { AuthFormClassNames } from "./auth/auth-form";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 

@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
-import { cn } from "../../../lib/utils";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "../../ui/skeleton";
 import type { SettingsCardClassNames } from "./settings-card";

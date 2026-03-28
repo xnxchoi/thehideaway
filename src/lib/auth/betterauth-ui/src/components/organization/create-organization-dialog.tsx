@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Trash2Icon, UploadCloudIcon } from "lucide-react";
 import {
@@ -14,7 +15,7 @@ import * as z from "zod";
 
 import { AuthUIContext } from "../../lib/auth-ui-provider";
 import { fileToBase64, resizeAndCropImage } from "../../lib/image-utils";
-import { cn, getLocalizedError } from "../../lib/utils";
+import { getLocalizedError } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import type { SettingsCardClassNames } from "../settings/shared/settings-card";
 import { Button } from "@/components/ui/button";
@@ -43,8 +44,9 @@ import {
 import { Input } from "../ui/input";
 import { OrganizationLogo } from "./organization-logo";
 
-export interface CreateOrganizationDialogProps
-  extends ComponentProps<typeof Dialog> {
+export interface CreateOrganizationDialogProps extends ComponentProps<
+  typeof Dialog
+> {
   className?: string;
   classNames?: SettingsCardClassNames;
   localization?: AuthLocalization;

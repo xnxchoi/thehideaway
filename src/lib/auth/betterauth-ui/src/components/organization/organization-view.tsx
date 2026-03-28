@@ -1,11 +1,12 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { MenuIcon } from "lucide-react";
 import { useContext, useEffect, useMemo } from "react";
 
 import { useCurrentOrganization } from "../../hooks/use-current-organization";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn, getViewByPath } from "../../lib/utils";
+import { getViewByPath } from "../../lib/utils";
 import type { OrganizationViewPath } from "../../server";
 import type { AccountViewProps } from "../account/account-view";
 import { ApiKeysCard } from "../settings/api-key/api-keys-card";

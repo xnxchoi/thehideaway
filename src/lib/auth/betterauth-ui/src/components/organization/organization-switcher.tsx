@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { Organization } from "better-auth/plugins/organization";
 import {
   ChevronsUpDown,
@@ -19,7 +20,7 @@ import {
 
 import { useCurrentOrganization } from "../../hooks/use-current-organization";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn, getLocalizedError } from "../../lib/utils";
+import { getLocalizedError } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import type { User } from "../../types/auth-client";
 import { Button } from "@/components/ui/button";
@@ -61,8 +62,10 @@ export interface OrganizationSwitcherClassNames {
   };
 }
 
-export interface OrganizationSwitcherProps
-  extends Omit<ComponentProps<typeof Button>, "trigger"> {
+export interface OrganizationSwitcherProps extends Omit<
+  ComponentProps<typeof Button>,
+  "trigger"
+> {
   classNames?: OrganizationSwitcherClassNames;
   align?: "center" | "start" | "end";
   alignOffset?: number;

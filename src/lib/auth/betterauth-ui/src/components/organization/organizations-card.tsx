@@ -1,9 +1,9 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { useContext, useMemo, useState } from "react";
 
 import { useIsHydrated } from "../../hooks/use-hydrated";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn } from "../../lib/utils";
 import type { SettingsCardProps } from "../settings/shared/settings-card";
 import { SettingsCard } from "../settings/shared/settings-card";
 import { SettingsCellSkeleton } from "../settings/skeletons/settings-cell-skeleton";

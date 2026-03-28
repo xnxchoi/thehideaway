@@ -1,10 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { type ComponentProps, useContext, useState } from "react";
 
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import { Button } from "@/components/ui/button";
 import {

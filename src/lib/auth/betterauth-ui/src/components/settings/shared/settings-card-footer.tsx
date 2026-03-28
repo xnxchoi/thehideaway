@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
-import { cn } from "../../../lib/utils";
 import { CardDescription, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "../../ui/skeleton";
 import { SettingsActionButton } from "./settings-action-button";

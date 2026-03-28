@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { BetterFetchOption } from "@better-fetch/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -12,7 +13,6 @@ import { useIsHydrated } from "../../../hooks/use-hydrated";
 import { useOnSuccessTransition } from "../../../hooks/use-success-transition";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
 import {
-  cn,
   getLocalizedError,
   getPasswordSchema,
   isValidEmail

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Organization } from "better-auth/plugins/organization";
 import { useContext, useMemo } from "react";
@@ -8,7 +9,7 @@ import * as z from "zod";
 
 import { useCurrentOrganization } from "../../hooks/use-current-organization";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn, getLocalizedError } from "../../lib/utils";
+import { getLocalizedError } from "../../lib/utils";
 import {
   SettingsCard,
   type SettingsCardProps

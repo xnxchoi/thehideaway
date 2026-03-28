@@ -25,7 +25,8 @@ export function useAuthData<T>({
   const {
     hooks: { useSession },
     toast,
-    localization
+    localization,
+    localizeErrors
   } = useContext(AuthUIContext);
   const { data: sessionData, isPending: sessionPending } = useSession();
 
@@ -88,7 +89,11 @@ export function useAuthData<T>({
         setError(error);
         toast({
           variant: "error",
-          message: getLocalizedError({ error, localization })
+          message: getLocalizedError({
+            error,
+            localization,
+            localizeErrors
+          })
         });
       } else {
         setError(null);
@@ -101,13 +106,17 @@ export function useAuthData<T>({
       setError(error);
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
     } finally {
       authDataCache.setRefetching(stableCacheKey, false);
       authDataCache.removeInFlightRequest(stableCacheKey);
     }
-  }, [stableCacheKey, toast, localization, cacheEntry]);
+  }, [stableCacheKey, toast, localization, localizeErrors, cacheEntry]);
 
   useEffect(() => {
     const currentUserId = sessionData?.user?.id;

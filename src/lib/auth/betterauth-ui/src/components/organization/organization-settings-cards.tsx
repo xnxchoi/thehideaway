@@ -1,9 +1,9 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useContext } from "react";
 
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import type { SettingsCardClassNames } from "../settings/shared/settings-card";
 import { DeleteOrganizationCard } from "./delete-organization-card";

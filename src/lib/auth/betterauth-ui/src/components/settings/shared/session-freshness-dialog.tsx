@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import { type ComponentProps, useContext } from "react";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +13,9 @@ import {
 } from "../../ui/dialog";
 import type { SettingsCardClassNames } from "./settings-card";
 
-export interface SessionFreshnessDialogProps
-  extends ComponentProps<typeof Dialog> {
+export interface SessionFreshnessDialogProps extends ComponentProps<
+  typeof Dialog
+> {
   classNames?: SettingsCardClassNames;
   localization?: AuthLocalization;
   title?: string;

@@ -1,4 +1,4 @@
-import {MotionValue} from "motion/react";
+import { MotionValue } from "motion/react";
 
 export const DURATION = Object.freeze({
   S: 0.6
@@ -14,8 +14,12 @@ export const VIEW_DIMENSIONS = Object.freeze({
   bottom: 20,
   left: 10
 });
-const backEaseConfig=(overshoot=1.70158)=>(p:number)=>p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0
-const easeInOutFromOut = (easeOut:(p:number)=>number) => ((p:number) => p < .5 ? (1 - easeOut(1 - (p * 2))) / 2 : .5 + easeOut((p - .5) * 2) / 2)
+const backEaseConfig =
+  (overshoot = 1.70158) =>
+  (p: number) =>
+    p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0;
+const easeInOutFromOut = (easeOut: (p: number) => number) => (p: number) =>
+  p < 0.5 ? (1 - easeOut(1 - p * 2)) / 2 : 0.5 + easeOut((p - 0.5) * 2) / 2;
 const ee = Object.freeze({
   power1: {
     in: [0.55, 0.085, 0.68, 0.53],
@@ -36,7 +40,8 @@ const ee = Object.freeze({
     in: [0.895, 0.03, 0.685, 0.22],
     out: [0.165, 0.84, 0.44, 1],
     inOut: [0.76, 0, 0.24, 1]
-  } as EASEE, sine: {
+  } as EASEE,
+  sine: {
     in: [0.12, 0, 0.39, 0],
     out: [0.61, 1, 0.88, 1],
     inOut: [0.37, 0, 0.63, 1]
@@ -50,37 +55,76 @@ const ee = Object.freeze({
     in: [0.7, 0, 0.84, 0],
     out: [0.16, 1, 0.3, 1],
     inOut: [0.87, 0, 0.13, 1]
-  } as EASEE,back:{
-
-    out:(overshoot=1.7058)=>(p:number)=>p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0,
-    in:(overshoot=1.7058)=> (p:number) => (1-(p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0)),
-    inOut:(overshoot=1.7058)=>easeInOutFromOut((p:number)=>p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0)
+  } as EASEE,
+  back: {
+    out:
+      (overshoot = 1.7058) =>
+      (p: number) =>
+        p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0,
+    in:
+      (overshoot = 1.7058) =>
+      (p: number) =>
+        1 - (p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0),
+    inOut: (overshoot = 1.7058) =>
+      easeInOutFromOut((p: number) =>
+        p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0
+      )
     // [0.36, 0, 0.66, -0.56],
     // out: [0.34, 1.56, 0.64, 1],
     // inOut: [0.68, -0.6, 0.32, 1.6]
   },
   elastic: {
-    in: (t: number) => t === 0 ? 0 : t === 1 ? 1 : -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * ((2 * Math.PI) / 3)),
-    out: (t: number) => t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1,
+    in: (t: number) =>
+      t === 0
+        ? 0
+        : t === 1
+          ? 1
+          : -Math.pow(2, 10 * t - 10) *
+            Math.sin((t * 10 - 10.75) * ((2 * Math.PI) / 3)),
+    out: (t: number) =>
+      t === 0
+        ? 0
+        : t === 1
+          ? 1
+          : Math.pow(2, -10 * t) *
+              Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) +
+            1,
     inOut: (t: number) => {
       const c5 = (2 * Math.PI) / 4.5;
-      return t === 0 ? 0 : t === 1 ? 1 : t < 0.5
-          ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
-          : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) / 2 + 1;
+      return t === 0
+        ? 0
+        : t === 1
+          ? 1
+          : t < 0.5
+            ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
+            : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) /
+                2 +
+              1;
     }
   } as EASEE
-}) ;
-export type EASEE=
-    Record<"in" | "out" | "inOut", [number, number, number, number]| ((t:number)=>number) >
-type EasCfgMp<T extends  [number, number, number, number]| ((t:number)=>number) |unknown=[number, number, number, number]| ((t:number)=>number) >=Record<"in" | "out" | "inOut", T>
-export type EASE_NAMES = keyof typeof ee;
-type BackEasee={
-  back:EasCfgMp<(overshoot?:number)=>((p:number)=>number)>
-}
-export type EASE_VARIANT = Readonly<
-    Record<
-        Exclude<EASE_NAMES,'back'>,EASEE>
->&BackEasee
+});
+type AREASE = [number, number, number, number];
+type FNEASE = (t: number) => number;
+export type EASEE = Record<"in" | "out" | "inOut", AREASE | FNEASE>;
+type EasCfgMp<
+  T extends
+    | [number, number, number, number]
+    | ((t: number) => number)
+    | unknown = [number, number, number, number] | ((t: number) => number)
+> = Record<"in" | "out" | "inOut", T>;
+type ALL_EASE = keyof typeof ee;
+type POWER_EASE<t extends 1 | 2 | 3 | 4 = 1 | 2 | 3 | 4> = `power${t}`;
+type REST_EASE = Exclude<ALL_EASE, POWER_EASE>;
+type EASE_NAMES =
+  | REST_EASE
+  | POWER_EASE
+  | `back${"overshoot" | "inOut" | "in" | "out"}${number | ""}`;
+type BackEasee = {
+  back: EasCfgMp<(overshoot?: number) => (p: number) => number>;
+};
+export type EASE_VARIANT = Readonly<Record<Exclude<REST_EASE, "back">, EASEE>> &
+  Readonly<Record<POWER_EASE, Record<"in" | "out" | "inOut", AREASE>>> &
+  BackEasee;
 export const EASING = ee as EASE_VARIANT;
 
 type SpringCfg = {
@@ -91,10 +135,13 @@ type SpringCfg = {
   restDelta?: number;
   restSpeed?: number;
 };
-type SpringEasee=EasCfgMp< SpringCfg>;
-type PowerEase=`power${1|2|3|4}`
-export const SPRING_EASE: Record<PowerEase|'sine'|'circ'|'expo'|'elastic', SpringEasee>&{
-  back:(overshoot?:number)=>SpringEasee
+type SpringEasee = EasCfgMp<SpringCfg>;
+type PowerEase = `power${1 | 2 | 3 | 4}`;
+export const SPRING_EASE: Record<
+  PowerEase | "sine" | "circ" | "expo" | "elastic",
+  SpringEasee
+> & {
+  back: (overshoot?: number) => SpringEasee;
 } = {
   power1: {
     in: {
@@ -199,7 +246,7 @@ export const SPRING_EASE: Record<PowerEase|'sine'|'circ'|'expo'|'elastic', Sprin
       restDelta: 0.001,
       restSpeed: 0.01
     }
-  },// NEW: Sine (Gentle, relaxed, lower tension than power1)
+  }, // NEW: Sine (Gentle, relaxed, lower tension than power1)
   sine: {
     in: { stiffness: 80, damping: 22, mass: 1, velocity: 0 },
     out: { stiffness: 120, damping: 24, mass: 1, velocity: 1 },
@@ -218,13 +265,14 @@ export const SPRING_EASE: Record<PowerEase|'sine'|'circ'|'expo'|'elastic', Sprin
     in: { stiffness: 400, damping: 70, mass: 1, velocity: 0 }, // Heavy friction creates a long anticipation
     out: { stiffness: 550, damping: 65, mass: 1, velocity: 4 }, // Massive initial burst, long settlement
     inOut: { stiffness: 480, damping: 68, mass: 1, velocity: 0 }
-  },back: (overshoot: number = 1.7) => {
+  },
+  back: (overshoot: number = 1.7) => {
     // Helper to calculate under-damping based on the requested overshoot
     const getDamping = (stiffness: number, os: number) => {
       const criticalDamping = 2 * Math.sqrt(stiffness); // Assuming mass is 1
       // We scale the damping down as the overshoot multiplier goes up.
       // Math.max prevents the damping from hitting 0 (which would bounce forever)
-      return Math.max(criticalDamping - (os * 8), 2);
+      return Math.max(criticalDamping - os * 8, 2);
     };
 
     return {
@@ -248,14 +296,14 @@ export const SPRING_EASE: Record<PowerEase|'sine'|'circ'|'expo'|'elastic', Sprin
         velocity: -2 * (overshoot / 1.7)
       }
     };
-  },// NEW: Elastic (Wobbly, highly under-damped)
+  }, // NEW: Elastic (Wobbly, highly under-damped)
   elastic: {
     in: { stiffness: 300, damping: 25, mass: 1, velocity: -10 },
     out: { stiffness: 400, damping: 10, mass: 1, velocity: 0 }, // Very low damping creates high-frequency oscillation
     inOut: { stiffness: 350, damping: 15, mass: 1, velocity: -5 }
   }
 };
-export const TWEEN_EASE= Object.freeze({
+export const TWEEN_EASE = Object.freeze({
   power1: {
     in: [0.55, 0.085, 0.68, 0.53],
     out: [0.25, 0.46, 0.45, 0.94],
@@ -292,18 +340,46 @@ export const TWEEN_EASE= Object.freeze({
     inOut: [0.87, 0, 0.13, 1]
   },
   back: {
-    out:(overshoot=1.7058)=>(p:number)=>p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0,
-    in:(overshoot=1.7058)=> (p:number) => (1-(p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0)),
-    inOut:(overshoot=1.7058)=>easeInOutFromOut((p:number)=>p ? ((--p) * p * ((overshoot + 1) * p + overshoot) + 1) : 0)
+    out:
+      (overshoot = 1.7058) =>
+      (p: number) =>
+        p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0,
+    in:
+      (overshoot = 1.7058) =>
+      (p: number) =>
+        1 - (p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0),
+    inOut: (overshoot = 1.7058) =>
+      easeInOutFromOut((p: number) =>
+        p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0
+      )
   },
   elastic: {
-    in: (t: number) => t === 0 ? 0 : t === 1 ? 1 : -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * ((2 * Math.PI) / 3)),
-    out: (t: number) => t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1,
+    in: (t: number) =>
+      t === 0
+        ? 0
+        : t === 1
+          ? 1
+          : -Math.pow(2, 10 * t - 10) *
+            Math.sin((t * 10 - 10.75) * ((2 * Math.PI) / 3)),
+    out: (t: number) =>
+      t === 0
+        ? 0
+        : t === 1
+          ? 1
+          : Math.pow(2, -10 * t) *
+              Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) +
+            1,
     inOut: (t: number) => {
       const c5 = (2 * Math.PI) / 4.5;
-      return t === 0 ? 0 : t === 1 ? 1 : t < 0.5
-          ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
-          : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) / 2 + 1;
+      return t === 0
+        ? 0
+        : t === 1
+          ? 1
+          : t < 0.5
+            ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
+            : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) /
+                2 +
+              1;
     }
   }
 }) as EASE_VARIANT;
@@ -318,12 +394,13 @@ export function orientSpring(
   return cfg;
 }
 export function getOrientedSpring(
-    cfg: SpringCfg,
-    currentOrMotionValue: number | MotionValue<number>,
-    target: number
+  cfg: SpringCfg,
+  currentOrMotionValue: number | MotionValue<number>,
+  target: number
 ): SpringCfg {
   // Extract the current numerical value safely
-  const current = typeof currentOrMotionValue === "number"
+  const current =
+    typeof currentOrMotionValue === "number"
       ? currentOrMotionValue
       : currentOrMotionValue.get();
 

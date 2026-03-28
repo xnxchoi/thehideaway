@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Organization } from "better-auth/plugins/organization";
 import { Loader2 } from "lucide-react";
@@ -8,7 +9,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn, getLocalizedError } from "../../lib/utils";
+import { getLocalizedError } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import type { SettingsCardClassNames } from "../settings/shared/settings-card";
 import { Button } from "@/components/ui/button";
@@ -32,8 +33,9 @@ import {
 import { Input } from "../ui/input";
 import { OrganizationCellView } from "./organization-cell-view";
 
-export interface DeleteOrganizationDialogProps
-  extends ComponentProps<typeof Dialog> {
+export interface DeleteOrganizationDialogProps extends ComponentProps<
+  typeof Dialog
+> {
   classNames?: SettingsCardClassNames;
   localization?: AuthLocalization;
   organization: Organization;

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Organization } from "better-auth/plugins/organization";
 import { Loader2 } from "lucide-react";
@@ -8,7 +9,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useLang } from "../../../hooks/use-lang";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn, getLocalizedError } from "../../../lib/utils";
+import { getLocalizedError } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import type { Refetch } from "../../../types/refetch";
 import { OrganizationCellView } from "../../organization/organization-cell-view";

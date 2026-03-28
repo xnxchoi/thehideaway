@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { BetterFetchOption } from "@better-fetch/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -12,7 +13,6 @@ import { useIsHydrated } from "../../../hooks/use-hydrated";
 import { useOnSuccessTransition } from "../../../hooks/use-success-transition";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
 import {
-  cn,
   getLocalizedError,
   getPasswordSchema,
   isValidEmail
@@ -230,8 +230,7 @@ export function SignInForm({
                   {localization.FORGOT_PASSWORD_LINK}
                 </Link>
                 <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-left scale-x-0 bg-foreground/80 transition-transform duration-300 group-hover:scale-x-100"></span>
-                <span
-	                className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-muted-faded-background/80 transition-transform duration-300 group-hover:scale-x-0"></span>
+                <span className="ease absolute bottom-[.5px] left-0 z-0 h-[1px] w-full origin-right scale-x-100 bg-muted-faded-background/80 transition-transform duration-300 group-hover:scale-x-0"></span>
               </span>
             )}
           </div>

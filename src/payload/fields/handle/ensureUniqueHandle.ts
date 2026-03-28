@@ -1,110 +1,85 @@
-"use server"
-import {draftMode} from "next/headers"
-import {addDataAndFileToRequest, type PayloadRequest} from "payload"
-import {generateSmartSlugCandidates} from "@/payload/fields/handle/smartGenerateHandles"
+"use server";
+import { authClient } from "@/lib/auth/client";
+import { getPayload } from "@/lib/payload";
+import { ensureHandleIsUnique } from "@/payload/collections/Users/endpoints/ensureHandleIsUnique";
+import { HandleError } from "@/payload/fields/handle/index";
+import { generateSmartSlugCandidates } from "@/payload/fields/handle/smartGenerateHandles";
+import { User } from "@payload-types";
 
-export const ensureUniqueHandle = async ({req}: { req: PayloadRequest }) => {
+export async function ensureUniqueHandle({
+  override,
+  handle,
+  userId
+}: {
+  userId: string;
+  override?: boolean;
+  handle: string;
+}) {
+  const payload = await getPayload();
+  const { data } = await authClient.useSession();
+  const { user: d } = data || { user: null as null | User };
+  if (!override && (!d || (d.id !== userId && d.role !== "admin"))) {
+    throw new HandleError("Unauthorized");
+  }
+  const user = await payload.findByID({
+    collection: "users",
+    id: userId,
+    select: {
+      displayUsername: true,
+      firstName: true,
+      lastName: true,
+      email: true
+    }
+  });
+  const exists = await ensureHandleIsUnique({
+    handle,
+    user: userId
+  })
+    .then((r) => r.valid)
+    .catch((e) => {
+      payload.logger.error({
+        message: `Error while checking if handle ${handle} exists`,
+        error: e
+      });
+      return false;
+    });
 
-	await addDataAndFileToRequest(req)
-	const handle = req.data?.handle
-	if (!handle) {
-		return Response.json(
-			{
-				error: "Handle is required",
-			},
-			{status: 400},
-		)
-	}
+  if (!exists) {
+    const newHandles = generateSmartSlugCandidates({
+      base: handle,
+      displayUsername: user.displayUsername ?? undefined,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+      email: user.email ?? undefined,
+      maxAttempts: 5
+    });
+    const handles: string[] = [];
+    for (const hd of newHandles) {
+      const valid = await ensureHandleIsUnique({
+        handle: hd,
+        user: userId
+      })
+        .then((r) => r.valid)
+        .catch((e) => {
+          payload.logger.error({
+            message: `Error while checking if handle ${hd} exists`,
+            error: e
+          });
+          return false;
+        });
 
-	const payload = req.payload
-	if (!req.user?.id) {
-		return Response.json({error: "forbidden"}, {status: 403})
-	}
-	const user = await payload.findByID({
-		collection: "users",
-		id: req.user?.id,
+      if (valid) {
+        handles.push(hd);
+      }
 
-		overrideAccess: true,
-		select: {
-			name: true,
-			firstName: true,
-			email: true,
-			lastName: true,
-			slug: true,
-		},
-	})
-
-	const exists = await payload.count({
-		collection: "users",
-		overrideAccess: true,
-		where: {
-			or: [
-				{
-					slug: {
-						equals: handle,
-					},
-				},
-				{
-					name: {
-						equals: handle,
-					},
-				},
-			],
-		},
-	}).then((r) => r.totalDocs > 0).catch((e) => {
-		payload.logger.error({
-			message: `Error while checking if handle ${handle} exists`,
-			error: e,
-		})
-		return true
-	})
-
-	if (exists) {
-		const newHandles = generateSmartSlugCandidates({
-			base: handle,
-			username: user.name ?? user.firstName ?? user.lastName ?? undefined,
-			email: user.email ?? undefined,
-			maxAttempts: 3,
-		})
-		const handles: string[] = []
-		for (const hd of newHandles) {
-			const exists = await payload.count({
-				collection: "users",
-
-				overrideAccess: true,
-
-				where: {
-					or: [
-						{
-							slug: {
-								equals: hd,
-							},
-						},
-						{
-							name: {
-								equals: hd,
-							},
-						},
-					],
-				},
-			}).then((r) => r.totalDocs > 0).catch((e) => {
-				payload.logger.error({
-					message: `Error while checking if handle ${hd} exists`,
-					error: e,
-				})
-				return true
-			})
-
-			if (exists) continue
-			handles.push(hd)
-		}
-		if (handles.length > 0) {
-			return Response.json(
-				{error: "handle_exists", handles},
-				{status: 409},
-			)
-		}
-		return Response.json({error: "handle_exists_no_alt"}, {status: 409})
-	}
-	return Response.json({message: "ok", handle: handle}, {status: 200})
+      if (handles.length > 2) {
+        throw new HandleError("handle_exists", { alts: handles });
+      }
+    }
+    if (handles.length > 0) {
+      throw new HandleError("handle_exists", { alts: handles });
+    }
+    throw new HandleError("no_alt_handle_exists");
+  }
+  return { message: "ok", handle: handle };
 }

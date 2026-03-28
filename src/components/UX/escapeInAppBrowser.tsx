@@ -3,7 +3,7 @@ import { useDeviceInfo } from "@/providers/RP_Pro";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "next-transition-router";
 import {
-	DialogRoot,
+  DialogRoot,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -27,10 +27,12 @@ export const EscapeInAppBrowser = () => {
 };
 const InterNalEscape = ({
   browserName,
-  pathname
+  pathname,
+  userName
 }: {
   browserName: string;
   pathname: string;
+  userName?: string;
 }) => {
   const name = useRPSession(useShallow((l) => l.name));
   const [open, setOpen] = useState(false);
@@ -45,7 +47,7 @@ const InterNalEscape = ({
 
   useEffect(() => {
     lenis?.[open ? "stop" : "start"]();
-  }, [open]);
+  }, [lenis, open]);
   const os = useDeviceInfo((r) => r.os);
   const browser = useDeviceInfo((r) => r.browser);
   useEffect(() => {
@@ -59,17 +61,16 @@ const InterNalEscape = ({
       } catch (e) {}
     }
     setOpen(true);
-  }, []);
+  }, [browser.name, os.isAndroid, os.isIOS, targetURL]);
 
   return (
-	  <DialogRoot open={open} onOpenChange={setOpen}>
+    <DialogRoot open={open} onOpenChange={setOpen}>
       <DialogContent className="overflow-hidden p-10 shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-left text-background">
             Excuse Us...
           </DialogTitle>
-	        <DialogDescription
-		        className="py-5 pr-3 text-left text-xl leading-[1.5] font-medium text-pretty text-background/80">
+          <DialogDescription className="py-5 pr-3 text-left text-xl leading-[1.5] font-medium text-pretty text-background/80">
             Welcome to The Hideaway
             {(name && `, ${name}`) || " dear guest"}!
             <br />
@@ -100,10 +101,10 @@ const InterNalEscape = ({
               defaultValue={targetURL}
               readOnly
               style={{
-	              color: "oklch(from var(--bg) l c h/.8)",
-	              border: "1px solid var(--border-subtle)",
+                color: "oklch(from var(--bg) l c h/.8)",
+                border: "1px solid var(--border-subtle)",
                 borderRadius: " 4px",
-	              backgroundColor: "oklch(from var(--off-white) l c h/.3)"
+                backgroundColor: "oklch(from var(--off-white) l c h/.3)"
               }}
             />
           </div>
@@ -124,7 +125,7 @@ const InterNalEscape = ({
           </Button>
         </div>
       </DialogContent>
-	  </DialogRoot>
+    </DialogRoot>
   );
 };
 const EscapeIOSInApp = (turl: string, browserName: string) => {

@@ -1,7 +1,40 @@
+import { User } from "@payload-types";
+
+export type LimitDepth<
+  T,
+  Limit extends number = 1,
+  Current extends number = 0
+> = Current extends Limit
+  ? T
+  : {
+      [K in RequiredKeys<T>]: T[K] extends object
+        ? LimitDepth<T[K], Limit, Increment<Current>>
+        : T[K];
+    } & {
+      [K in OptionalKeys<T>]?: T[K] extends object
+        ? LimitDepth<T[K], Limit, Increment<Current>>
+        : T[K];
+    };
+type AA<T> = T extends object ? LimitDepth<T, 1> : T;
+type CC = AA<User["profile"]>;
+type A = LimitDepth<User, 0>;
 export type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
 export type RequiredKeys<T> = {
   [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K;
 }[keyof T];
+type Length<T extends any[]> = (T extends { length: number }
+  ? T["length"]
+  : never) &
+  number;
+
+export type TupleOf<N extends number, T extends unknown[] = []> =
+  Length<T> extends N ? T : TupleOf<N, [...T, unknown]>;
+export type Pop<T extends any[]> = T extends [...infer U, unknown] ? U : never;
+// Increment adds an element to a tuple, effectively creating N + 1
+export type Increment<N extends number> = Length<[1, ...TupleOf<N>]>;
+
+// Decrement removes an element from a tuple, effectively creating N - 1
+export type Decrement<N extends number> = Length<Pop<TupleOf<N>>>;
 export type RequiredFields<T> = Pick<T, RequiredKeys<T>>;
 export type Concat<T extends string[]> = T extends [
   infer F extends string,
@@ -10,9 +43,7 @@ export type Concat<T extends string[]> = T extends [
   ? `${F}${Concat<R>}`
   : "";
 export type KeysOfValue<T, TCondition> = {
-	[K in keyof T]: T[K] extends TCondition
-		? K
-		: never;
+  [K in keyof T]: T[K] extends TCondition ? K : never;
 }[keyof T];
 export function join<T extends string[]>(...strings: T): Concat<T> {
   return strings.join("") as Concat<T>;

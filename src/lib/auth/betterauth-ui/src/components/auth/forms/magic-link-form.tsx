@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { BetterFetchOption } from "better-auth/react";
 import { Loader2 } from "lucide-react";
@@ -10,7 +11,7 @@ import * as z from "zod";
 import { useCaptcha } from "../../../hooks/use-captcha";
 import { useIsHydrated } from "../../../hooks/use-hydrated";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn, getLocalizedError, getSearchParam } from "../../../lib/utils";
+import { getLocalizedError, getSearchParam } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import { Captcha } from "../../captcha/captcha";
 import { Button } from "@/components/ui/button";

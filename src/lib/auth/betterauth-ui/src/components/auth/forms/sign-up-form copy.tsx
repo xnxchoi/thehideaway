@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { BetterFetchOption } from "better-auth/react";
 import { Loader2, Trash2Icon, UploadCloudIcon } from "lucide-react";
@@ -13,7 +14,6 @@ import { useOnSuccessTransition } from "../../../hooks/use-success-transition";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
 import { fileToBase64, resizeAndCropImage } from "../../../lib/image-utils";
 import {
-  cn,
   getLocalizedError,
   getPasswordSchema,
   getSearchParam

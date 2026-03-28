@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { BetterFetchError } from "@better-fetch/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, QrCodeIcon, SendIcon } from "lucide-react";
@@ -11,7 +12,7 @@ import * as z from "zod";
 import { useIsHydrated } from "../../../hooks/use-hydrated";
 import { useOnSuccessTransition } from "../../../hooks/use-success-transition";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn, getLocalizedError, getSearchParam } from "../../../lib/utils";
+import { getLocalizedError, getSearchParam } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import type { User } from "../../../types/auth-client";
 import { Button } from "@/components/ui/button";

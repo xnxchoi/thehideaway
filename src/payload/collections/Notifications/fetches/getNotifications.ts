@@ -1,26 +1,30 @@
 import {
-	NotificationDoc,
-	NotificationResponse,
-	ResponseNotification,
-	SyncedAsset,
-	SyncedNotification
+  NotificationDoc,
+  NotificationResponse,
+  ResponseNotification,
+  SyncedAsset,
+  SyncedNotification
 } from "@/payload/collections/Notifications/hooks/types";
-import {RalueAsDataWithRelation} from "@/types/collections/image-collections";
-import {imageSelect} from "@/types/payload-api-selects";
-import {getFallbackImage} from "@/utilities/getFallbackImage";
-import type {OptionalKeys} from "@/utilities/typeUtilities";
+import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
+import { imageSelect } from "@/types/payload-api-selects";
+import { getFallbackImage } from "@/utilities/getFallbackImage";
+import type { OptionalKeys } from "@/utilities/typeUtilities";
 import config from "@payload-config";
-import {NotificationsSelect} from "@payload-types";
-import {getPayload, type Where} from "payload";
+import { NotificationsSelect } from "@payload-types";
+import { getPayload, type Where } from "payload";
 
 type RP_NotificationKeys = keyof ResponseNotification;
-export const notifySelect = (): Pick<NotificationsSelect<true>, Exclude<RP_NotificationKeys, "id" | "fallbackImage">> & {
-	id: true
+export const notifySelect = (): Pick<
+  NotificationsSelect<true>,
+  Exclude<RP_NotificationKeys, "id" | "fallbackImage">
+> & {
+  id: true;
 } => ({
   thumbnail: true,
   content: true,
-	readAt: true, id: true,
-	type: true,
+  readAt: true,
+  id: true,
+  type: true,
   importance: true,
   status: true,
   read: true,
@@ -94,14 +98,18 @@ export const getNotifications = async ({
       ...params,
       page
     };
+  } else {
+    params = {
+      pagination: false
+    };
   }
-	const notSelect = notifySelect()
+  const notSelect = notifySelect();
   const not = (await payload
     .find({
       collection: "notifications",
       overrideAccess: true,
 
-	    select: notSelect,
+      select: notSelect,
       where: query,
 
       sort: ["-sticky", "-createdAt"],
@@ -120,8 +128,8 @@ export const getNotifications = async ({
       });
       return [];
     })) as Array<NotificationDoc>;
-	const select = imageSelect()
-	const fallbackImage = await getFallbackImage()
+  const select = imageSelect();
+  const fallbackImage = await getFallbackImage();
   const res = await Promise.allSettled(
     not.map((v, i) =>
       v.thumbnail
@@ -129,22 +137,22 @@ export const getNotifications = async ({
             .findByID({
               collection: "assets",
               id: v.thumbnail,
-	            select
+              select
             })
             .then((r) => {
-	            const {src, url, alt} = r;
-	            if (!src || !url) throw new Error("No src found in thumbnail")
-	            const last: RalueAsDataWithRelation = {
-		            relationTo: "assets",
-		            value: {
-			            src,
-			            alt,
-			            darkmode: r.darkmode,
-			            id: r.id,
+              const { src, url, alt } = r;
+              if (!src || !url) throw new Error("No src found in thumbnail");
+              const last: RalueAsDataWithRelation = {
+                relationTo: "assets",
+                value: {
+                  src,
+                  alt,
+                  darkmode: r.darkmode,
+                  id: r.id,
 
-			            url,
-		            }
-	            }
+                  url
+                }
+              };
               return last;
             })
             .then((r) => ({
@@ -165,13 +173,13 @@ export const getNotifications = async ({
   const final: NotificationResponse = [];
   res.forEach((v, i) => {
     if (v.status === "fulfilled") {
-	    final.push({
-		    ...v.value,
-		    fallbackImage,
-	    });
+      final.push({
+        ...v.value,
+        fallbackImage
+      });
     } else {
       const p = not.at(i)!;
-	    final.push({...p, thumbnail: null, fallbackImage});
+      final.push({ ...p, thumbnail: null, fallbackImage });
     }
   });
   return final;

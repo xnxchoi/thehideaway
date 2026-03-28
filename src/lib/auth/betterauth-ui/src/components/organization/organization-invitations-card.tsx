@@ -1,10 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import type { Organization } from "better-auth/plugins/organization";
 import { useContext, useMemo } from "react";
 import { useCurrentOrganization } from "../../hooks/use-current-organization";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn } from "../../lib/utils";
 import type { SettingsCardProps } from "../settings/shared/settings-card";
 import { SettingsCard } from "../settings/shared/settings-card";
 import { CardContent } from "@/components/ui/card";

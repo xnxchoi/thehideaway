@@ -1,5 +1,6 @@
 // import { openAPI } from "better-auth/plugins/open-api";
 import { BetterAuthEmailService } from "@/lib/email/better-auth-integration";
+import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
 import { passkey } from "@better-auth/passkey";
 import type { PayloadAuthOptions } from "@payload-auth/index";
 import type { BetterAuthOptions as BetterAuthOptionsType } from "better-auth";
@@ -42,17 +43,26 @@ const options: BetterAuthOptionsType = {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       mapProfileToUser: async (profile) => {
+        const {
+          email,
+          name,
+          given_name,
+          family_name,
+          picture,
+          email_verified
+        } = profile;
+        const username = profile.email.split("@")[0];
         return {
-          email: profile.email,
-          name: profile.name,
-          username: profile.email.split("@")[0] || profile.name,
+          email,
+          name,
+          username,
           onboarded: false,
-          displayUsername: profile.name || profile.email.split("@")[0],
-          emailVerified: true,
-          slug: profile.email.split("@")[0],
-          firstName: profile.given_name,
-          lastName: profile.family_name,
-          image: profile.picture,
+          displayUsername: name,
+          emailVerified: email_verified,
+          slug: formatUserHandle(username),
+          firstName: given_name,
+          lastName: family_name,
+          image: picture,
           banned: false
         };
       }

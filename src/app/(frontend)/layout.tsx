@@ -17,14 +17,14 @@ import { getContextProps } from "@/lib/auth/context/get-context-props";
 import { cn } from "@/lib/utils";
 import { LivePreviewListener } from "@/payload/components/LivePreviewListener";
 import { RadioProvider } from "@/providers/RadioProvider";
-import { InitTheme } from "@/providers/Theme/InitTheme";
 import "@/styles/hideaway.scss";
 import "@/styles/reading.scss";
+import { InitTheme } from "@/providers/Theme/InitTheme";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "lenis/dist/lenis.css";
 import { NextIntlClientProvider } from "next-intl";
-import { ReactNode, Suspense } from "react";
+import React, { ReactNode, Suspense } from "react";
 import "../../styles/globals.css";
 import "./estate.scss";
 import {
@@ -88,7 +88,7 @@ export default async function RootLayout({
                         </ContentMask>
                       </Suspense>
                     </ClientLayout>
-                  </Main>{" "}
+                  </Main>
                 </RadioProvider>
               </ClientProviders>
             </BetterAuthProvider>

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useContext, useEffect, useRef } from "react";
@@ -7,7 +8,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn, getLocalizedError, getPasswordSchema } from "../../../lib/utils";
+import { getLocalizedError, getPasswordSchema } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import type { PasswordValidation } from "../../../types/password-validation";
 import { PasswordInput } from "../../password-input";

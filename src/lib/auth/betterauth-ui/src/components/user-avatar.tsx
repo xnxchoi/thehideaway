@@ -1,11 +1,11 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { UserRoundIcon } from "lucide-react";
 import { type ComponentProps, useContext } from "react";
 
 import { AuthUIContext } from "../lib/auth-ui-provider";
 import { getGravatarUrl } from "../lib/gravatar-utils";
-import { cn } from "../lib/utils";
 import type { AuthLocalization } from "../localization/auth-localization";
 import type { Profile } from "../types/profile";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";

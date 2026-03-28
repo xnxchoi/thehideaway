@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useContext, useMemo } from "react";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
-import { cn } from "../../lib/utils";
 import { Skeleton } from "../ui/skeleton";
 import { UserAvatar } from "../user-avatar";
 import type { UserViewProps } from "../user-view";

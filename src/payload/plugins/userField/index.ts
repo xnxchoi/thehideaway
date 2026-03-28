@@ -1,6 +1,6 @@
 import { ACField } from "@/AccessControlled/plugin";
 import { User } from "@/payload-types";
-import { formatUserHandle } from "@/payload/fields/Names/formatUserHandle";
+import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
 import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { generateName } from "@/utilities/names";
@@ -101,49 +101,19 @@ export const userFieldOrganizerPlugin =
           };
           switch (field.type) {
             case "textarea":
-              fieldAdmin = {
-                ...fieldAdmin,
-                components: ACField(field.type, {
-                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
-                })
-              };
-              break;
+
             case "text":
-              fieldAdmin = {
-                ...fieldAdmin,
-                components: ACField(field.type, {
-                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
-                })
-              };
-              break;
+
             case "select":
-              fieldAdmin = {
-                ...fieldAdmin,
-                components: ACField(field.type, {
-                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
-                })
-              };
-              break;
+
             case "checkbox":
-              fieldAdmin = {
-                ...fieldAdmin,
-                components: ACField(field.type, {
-                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
-                })
-              };
-              break;
+
             case "number":
-              fieldAdmin = {
-                ...fieldAdmin,
-                components: ACField(field.type, {
-                  allowedRoles: ["author", "user", "patron", "admin", "editor"]
-                })
-              };
-              break;
+
             case "array":
               fieldAdmin = {
                 ...fieldAdmin,
-                components: ACField("array", {
+                components: ACField(field.type, {
                   allowedRoles: ["author", "user", "patron", "admin", "editor"]
                 })
               };
@@ -425,6 +395,7 @@ export const userFieldOrganizerPlugin =
       const populateUser: CollectionBeforeChangeHook<User> = (props) => {
         const { operation, data: d, req } = props;
         if (operation !== "create") return d;
+
         const firstName = d?.firstName || generateName("first", true);
         const lastName = d?.lastName || generateName("last", true);
         const userName =

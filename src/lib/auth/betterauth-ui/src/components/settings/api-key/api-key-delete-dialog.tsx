@@ -1,11 +1,12 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { KeyRoundIcon, Loader2 } from "lucide-react";
 import { type ComponentProps, useContext, useState } from "react";
 
 import { useLang } from "../../../hooks/use-lang";
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
-import { cn, getLocalizedError } from "../../../lib/utils";
+import { getLocalizedError } from "../../../lib/utils";
 import type { AuthLocalization } from "../../../localization/auth-localization";
 import type { ApiKey } from "../../../types/api-key";
 import type { Refetch } from "../../../types/refetch";

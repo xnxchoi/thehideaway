@@ -1,3 +1,5 @@
+import { LinkFields, validateUrl } from "@payloadcms/richtext-lexical";
+import { validateUrlMinimal } from "node_modules/@payloadcms/richtext-lexical/dist/lexical/utils/url";
 import type {
   CollectionSlug,
   FieldAffectingData,
@@ -7,10 +9,6 @@ import type {
   TextFieldSingleValidation,
   TypedUser
 } from "payload";
-
-import type { LinkFields } from "../nodes/types.js";
-
-import { validateUrl, validateUrlMinimal } from "../../../lexical/utils/url.js";
 
 export const getBaseFields = (
   config: SanitizedConfig,

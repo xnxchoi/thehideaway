@@ -1,12 +1,15 @@
-import {User} from "@/payload-types";
-import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
-import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
-import {authenticated, standardUpdateAccess} from "@/payload/plugins/locker/access/accessCheckers";
-import {extractImageInfo} from "@/utilities/extractImageInfo";
+import { User } from "@/payload-types";
+import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
+import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
+import {
+  authenticated,
+  standardUpdateAccess
+} from "@/payload/plugins/locker/access/accessCheckers";
+import { extractImageInfo } from "@/utilities/extractImageInfo";
 import path from "path";
-import {CollectionConfig} from "payload";
-import {fileURLToPath} from "url";
-import {uuidv7} from "uuidv7";
+import { CollectionConfig } from "payload";
+import { fileURLToPath } from "url";
+import { uuidv7 } from "uuidv7";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -42,21 +45,21 @@ export const UserMedia: CollectionConfig = {
     update: standardUpdateAccess
   },
   fields: [
-	  {
-		  name: "id",
-		  type: "text",
-		  defaultValue: uuidv7,
-		  access: {
-			  update: () => false
-		  },
-		  required: true,
-		  admin: {
-			  hidden: true
-		  }
-	  },
-	  ...authorFields(),
+    {
+      name: "id",
+      type: "text",
+      defaultValue: uuidv7,
+      access: {
+        update: () => false
+      },
+      required: true,
+      admin: {
+        hidden: true
+      }
+    },
+    ...authorFields(),
 
-	  {
+    {
       name: "bookmarks",
       collection: "bookmarks",
       type: "join",
@@ -65,8 +68,7 @@ export const UserMedia: CollectionConfig = {
   ],
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, "../../../public/users"),
-
+    staticDir: path.resolve(dirname, "../../../public/users")
   },
   hooks: {
     beforeOperation: [
@@ -97,10 +99,6 @@ export const UserMedia: CollectionConfig = {
               req.payload.logger.error("This user is banned.");
               throw new Error("This user is banned.");
             }
-            if (req.file.name.startsWith("unsplash-")) {
-              const unsplashId = req.file.name.split("-")[1];
-              unsplashId && (context.sourceId = unsplashId);
-            }
 
             const file = req.file as unknown as { md5: string };
             const hash = file.md5;
@@ -120,8 +118,8 @@ export const UserMedia: CollectionConfig = {
     beforeValidate: [
       async ({ req, context, operation, data, originalDoc }) => {
         let dt = data;
-	      if (operation === "create" && dt) {
-		      return dt;
+        if (operation === "create" && dt) {
+          return dt;
         } else {
           dt = {
             ...dt,
