@@ -1,12 +1,11 @@
-export type HandleError =
-	| {
-	valid: false;
+/** API-level response shapes (distinct from the HandleError class in index.ts) */
+export type HandleApiError =
+  | { valid: false; handle: string }
+  | { error: string };
 
-	handle: string;
-}
-	| { error: string };
 export type HandleSuccess = {
-	valid: true;
-	handle: string;
+  valid: true;
+  handle: string;
 };
-export type HandleResponse = HandleSuccess | HandleError;
+
+export type HandleResponse = HandleSuccess | HandleApiError;

@@ -9,7 +9,7 @@ export function formatUserHandleLite(input: string): string {
   return input
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9-._]/g, "") // 1. remove invalid characters
+    .replace(/[^a-z0-9._]/g, "") // 1. remove invalid chars (Instagram: letters, digits, periods, underscores only)
     .replace(/\.+/g, "."); // 2. collapse consecutive dots
 }
 
@@ -17,7 +17,7 @@ export function formatUserHandleMinimal(input: string): string {
   return input
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9-._]/g, "") // 1. remove invalid characters
+    .replace(/[^a-z0-9._]/g, "") // 1. remove invalid characters
     .replace(/\.+/g, ".") // 2. collapse consecutive dots
     .replace(/^([\.-]+)(?=[_a-z0-9])/, "")
     .replace(/(?<=[a-z0-9_])([\.-]+)$/, "");

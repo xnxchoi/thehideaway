@@ -60,7 +60,7 @@ export const userHandleField: UserHandle = (overrides = {}) => {
         Field: {
           path: "@/payload/fields/handle/ServerHandle.tsx",
           serverProps: {
-            fieldToUse: "displayUsername"
+            fieldToUse: "username"
           }
         }
       }

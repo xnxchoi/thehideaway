@@ -1,10 +1,9 @@
 "use server";
-import { authClient } from "@/lib/auth/client";
+import { getSession } from "@/lib/actions/auth";
 import { getPayload } from "@/lib/payload";
 import { ensureHandleIsUnique } from "@/payload/collections/Users/endpoints/ensureHandleIsUnique";
 import { HandleError } from "@/payload/fields/handle/index";
 import { generateSmartSlugCandidates } from "@/payload/fields/handle/smartGenerateHandles";
-import { User } from "@payload-types";
 
 export async function ensureUniqueHandle({
   override,
@@ -16,11 +15,12 @@ export async function ensureUniqueHandle({
   handle: string;
 }) {
   const payload = await getPayload();
-  const { data } = await authClient.useSession();
-  const { user: d } = data || { user: null as null | User };
-  if (!override && (!d || (d.id !== userId && d.role !== "admin"))) {
+  const { user: currentUser } = await getSession();
+
+  if (!override && (!currentUser || (currentUser.id !== userId && currentUser.role !== "admin"))) {
     throw new HandleError("Unauthorized");
   }
+
   const user = await payload.findByID({
     collection: "users",
     id: userId,
@@ -31,7 +31,8 @@ export async function ensureUniqueHandle({
       email: true
     }
   });
-  const exists = await ensureHandleIsUnique({
+
+  const isAvailable = await ensureHandleIsUnique({
     handle,
     user: userId
   })
@@ -44,42 +45,40 @@ export async function ensureUniqueHandle({
       return false;
     });
 
-  if (!exists) {
-    const newHandles = generateSmartSlugCandidates({
+  if (!isAvailable) {
+    // Generate more candidates so we can reliably surface 3–5 valid alternatives
+    const candidates = generateSmartSlugCandidates({
       base: handle,
       displayUsername: user.displayUsername ?? undefined,
       firstName: user.firstName ?? undefined,
       lastName: user.lastName ?? undefined,
       email: user.email ?? undefined,
-      maxAttempts: 5
+      maxAttempts: 12
     });
-    const handles: string[] = [];
-    for (const hd of newHandles) {
+
+    const alts: string[] = [];
+    for (const candidate of candidates) {
+      if (alts.length >= 5) break;
       const valid = await ensureHandleIsUnique({
-        handle: hd,
+        handle: candidate,
         user: userId
       })
         .then((r) => r.valid)
         .catch((e) => {
           payload.logger.error({
-            message: `Error while checking if handle ${hd} exists`,
+            message: `Error while checking if handle ${candidate} exists`,
             error: e
           });
           return false;
         });
 
       if (valid) {
-        handles.push(hd);
+        alts.push(candidate);
       }
+    }
 
-      if (handles.length > 2) {
-        throw new HandleError("handle_exists", { alts: handles });
-      }
-    }
-    if (handles.length > 0) {
-      throw new HandleError("handle_exists", { alts: handles });
-    }
-    throw new HandleError("no_alt_handle_exists");
+    throw new HandleError("handle_exists", { alts });
   }
-  return { message: "ok", handle: handle };
+
+  return { message: "ok", handle };
 }
