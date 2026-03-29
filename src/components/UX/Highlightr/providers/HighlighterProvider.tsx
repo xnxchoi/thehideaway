@@ -154,7 +154,6 @@ export const createUserHighlight = async (props: {
   citation: RangeCreateParams;
 }) => {
   const { citation } = props;
-  const arr: HighlightColors[] = ["GREEN", "YELLOW", "ORANGE", "BLUE"];
   const {
     author,
     selection,
@@ -242,7 +241,7 @@ export const updateUserHighlight = async ({
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(rest)
+        body: JSON.stringify(params)
       })
         .then(async (res) => {
           if (res.ok) {

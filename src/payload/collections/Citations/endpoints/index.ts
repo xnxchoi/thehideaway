@@ -40,11 +40,11 @@ export const citationHandler: PayloadHandler = async (req) => {
 	if (!isgood) {
 		return Response.json(
 			{
-				error: "Unauthorized",
+				error: "Forbidden",
 				message: "You have been banned from using this endpoint"
 			},
 			{
-				status: 401
+				status: 403
 			}
 		);
 	}

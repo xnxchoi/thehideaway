@@ -290,26 +290,17 @@ const PrivateNoteEditor = ({
       }
       try {
         setSaving(true);
-        // const where: Where = {
-        // 	reference: {equals: focusedHighlight.reference},
-        // };
         const body = {
           ...currentFocus.current,
           memo: mem,
           private: true
         } satisfies HighlightedRange;
-        handleUpdate(body)
-          .then(() => {
-            qc.invalidateQueries({
-              queryKey: ["savedHighlights"]
-            });
-            successToast(t("Highlights.saved"));
-          })
-          .then(() => {
-            setSaving(false);
-          });
+        await handleUpdate(body);
+        await qc.invalidateQueries({ queryKey: ["savedHighlights"] });
+        successToast(t("Highlights.saved"));
+        setOpen(false);
+        setDirty(false);
       } catch (e) {
-	      // console.log(e);
         errorToast(t("Highlights.error.save.default"));
       } finally {
         setSaving(false);

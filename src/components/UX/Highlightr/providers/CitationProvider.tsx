@@ -293,7 +293,7 @@ export const CitationProvider = ({ children }: { children: ReactNode }) => {
 export const useCitations = <T,>(selector: (state: CitationState) => T) => {
   const ctx = useContext(CitationContext);
   if (!ctx) {
-    throw new Error("useCitations must be used within a PredatorProvider");
+    throw new Error("useCitations must be used within a CitationProvider");
   }
   return selector(ctx);
 };

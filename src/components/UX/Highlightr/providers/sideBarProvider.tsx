@@ -289,7 +289,7 @@ const ResponseItem = ({
                 </div>
                 <div>
                   <span>
-                    {}
+                    {updatedAt}
                     {isEdited && (
                       <>&nbsp;{locale === "ko" ? "(수정)" : "(edited)"}</>
                     )}
@@ -331,12 +331,9 @@ const MemoInputField = () => {
   }, [value, saving]);
   const creater = useCitations((r) => r.create);
   useEffect(() => {
-    const ci = cInputWrapperRef.current;
     const input = commentInputRef.current;
-    if (ci) {
-      if (writing) {
-        input && input.focus();
-      }
+    if (writing && input) {
+      input.focus();
     }
   }, [writing]);
   const [disabled, setDisabled] = useState(value.length === 0);
@@ -352,15 +349,6 @@ const MemoInputField = () => {
     },
     [setIsWriting]
   );
-  useEffect(() => {
-    const ci = cInputWrapperRef.current;
-    const input = commentInputRef.current;
-    if (ci) {
-      if (writing) {
-        input && input.focus();
-      }
-    }
-  }, [writing]);
   return (
     <div
       className={
@@ -700,15 +688,25 @@ export const SignInCard = (
 };
 const SignInTriggerButton = () => {
   const [isOpen, setOpen] = useState(false);
+  const t = useTranslations("UI.SignIn");
   return (
     <DialogRoot open={isOpen} onOpenChange={setOpen}>
-      <DialogTrigger></DialogTrigger>
+      <DialogTrigger asChild>
+        <div
+          className={"h-full w-full cursor-pointer px-[12px] py-[8px]"}
+          onClick={() => setOpen(true)}
+        >
+          <span className={"text-base text-muted-foreground"}>
+            {t("providers")}
+          </span>
+        </div>
+      </DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>Check In</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3">
-          <SignInCard onSignInClick={() => {}} />
+          <SignInCard onSignInClick={() => setOpen(false)} />
         </div>
       </DialogContent>
     </DialogRoot>
@@ -748,7 +746,7 @@ export const MemoInput = (
         disabled={disabled}
       />
       <p
-        id="«r2q»-description"
+        id={`${id}-description`}
         className="mt-2 text-right text-xs text-off-foreground"
         role="status"
         aria-live="polite"

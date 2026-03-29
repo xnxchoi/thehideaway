@@ -61,15 +61,8 @@ export const queryCitations = cache(
 			.then((r) => r.docs || ([] as CitationRange[]));
 
 		const citations: ProcessedRangy[] = [];
-		const re = cites.filter((cite) =>
+		const existingCites = cites.filter((cite) =>
 			("text" in cite.selection) && typeof cite.selection.text === "string" && cite.selection.text.trim().length > 0);
-		const rr = await Promise.allSettled(re);
-		const existingCites = rr.flatMap((res) => {
-			if (res.status === "fulfilled") {
-				return res.value;
-			}
-			return [];
-		});
 
 		const authors = existingCites.map(async cite => getUserOverview(typeof cite.author === "string" ? cite.author : cite.author.id).then(res => ({
 			...cite,
