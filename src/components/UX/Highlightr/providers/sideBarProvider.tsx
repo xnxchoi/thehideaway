@@ -31,7 +31,7 @@ import { Drawer } from "vaul";
 import { useShallow } from "zustand/shallow";
 import { useHighlighter } from "./HighlighterProvider";
 import { useCitations } from "./CitationProvider";
-import { isValidAuthor, SignInTriggerButton } from "./author-ui";
+import { isValidAuthor, SignInTriggerButton, UserBar } from "./author-ui";
 
 export interface HighlightSidebarProps {
   open: boolean;
@@ -98,47 +98,14 @@ const CitationView = ({
               {userId && (
                 <div className={"mb-[20px] block"}>
                   <div className={"mb-[12px] flex items-center"}>
-                    <div className={"flex justify-between"}>
-                      <div className={"flex items-center"}>
-                        <div>
-                          <div className={"inline-block"}>
-                            <div className={"outline-none"} tabIndex={-1}>
-                              <Link href={`/@${userSlug}`}>
-                                <div className={"relative block"}>
-                                  <Avatar>
-                                    {(userImage && (
-                                      <AvatarImage
-                                        height={32}
-                                        width={32}
-                                        src={userImage}
-                                      />
-                                    )) || (
-                                      <AvatarFallback className={"uppercase"}>
-                                        {userName.at(0)}
-                                        {userName.at(1)}
-                                      </AvatarFallback>
-                                    )}
-                                  </Avatar>
-                                </div>
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={"block pl-[12px]"}>
-                          <div className={"flex items-center"}>
-                            <div className={"inline-block"}>
-                              <div className={"outline-none"} tabIndex={-1}>
-                                <Link href={`/@${userSlug}`}>
-                                  <div className={"flex items-baseline"}>
-                                    <p className={"break-all"}>{userName}</p>
-                                  </div>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <UserBar
+                      user={{
+                        id: userId,
+                        name: userName,
+                        image: userImage,
+                        slug: userSlug
+                      }}
+                    />
                   </div>
                   <MemoInputField />
                 </div>
