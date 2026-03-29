@@ -39,7 +39,9 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
   // ── PayloadCMS field bindings ────────────────────────────────────────────
   const { value, setValue } = useField<string>({ path });
   const { setValue: setUsernameValue } = useField<string>({ path: fieldToUse });
-  const { setValue: setDisplayLabel } = useField<string>({ path: "displayUserName" });
+  const { setValue: setDisplayLabel } = useField<string>({
+    path: "displayUserName"
+  });
 
   // ── Local UI state ───────────────────────────────────────────────────────
   const [inputValue, setInputValue] = useState<string>(value ?? "");
@@ -59,8 +61,12 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
   // ── Ghost text (IDE-style inline completion) ─────────────────────────────
   // Pick the first alternative that is a prefix-continuation of what's typed.
   const inlineSuggestion =
-    suggestions.find((s) => s.startsWith(inputValue) && s.length > inputValue.length) ?? null;
-  const ghostSuffix = inlineSuggestion ? inlineSuggestion.slice(inputValue.length) : "";
+    suggestions.find(
+      (s) => s.startsWith(inputValue) && s.length > inputValue.length
+    ) ?? null;
+  const ghostSuffix = inlineSuggestion
+    ? inlineSuggestion.slice(inputValue.length)
+    : "";
 
   // ── Commit a validated value to all synced fields ────────────────────────
   const commitValue = useCallback(
@@ -84,7 +90,9 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
 
       if (!HANDLE_TEST_REGEX.test(handle)) {
         setIsError(true);
-        setErrorMessage("Use letters, numbers, underscores, or periods (max 30)");
+        setErrorMessage(
+          "Use letters, numbers, underscores, or periods (max 30)"
+        );
         return;
       }
 
@@ -116,7 +124,9 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
 
         if (err instanceof HandleError) {
           if (err.message === "Unauthorized") {
-            setErrorMessage("You don't have permission to change this username");
+            setErrorMessage(
+              "You don't have permission to change this username"
+            );
             toast.error("Unauthorized", { duration: 3000 });
             return;
           }
@@ -164,7 +174,10 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
   const scheduleValidation = useCallback(
     (handle: string) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => validate(handle), VALIDATE_DEBOUNCE_MS);
+      debounceRef.current = setTimeout(
+        () => validate(handle),
+        VALIDATE_DEBOUNCE_MS
+      );
     },
     [validate]
   );
@@ -236,7 +249,12 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
 
   // ── Sync from field value (e.g. form reset or external change) ───────────
   useEffect(() => {
-    if (!focused && value !== undefined && value !== null && value !== inputValue) {
+    if (
+      !focused &&
+      value !== undefined &&
+      value !== null &&
+      value !== inputValue
+    ) {
       setInputValue(value);
       lastSavedRef.current = value;
     }
@@ -272,7 +290,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
       <label
         htmlFor="handle-input"
         className={cn(
-          "my-2 block text-sm transition-colors duration-200 ease",
+          "ease my-2 block text-sm transition-colors duration-200",
           isError ? "text-rouge-700" : "text-foreground"
         )}
       >
@@ -299,7 +317,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
           {/* @ prefix */}
           <span
             className={cn(
-              "pointer-events-none select-none font-mono text-sm leading-none transition-colors duration-200",
+              "pointer-events-none font-mono text-sm leading-none transition-colors duration-200 select-none",
               isError
                 ? "text-rouge-700"
                 : focused
@@ -319,13 +337,15 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
              */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 flex select-none items-center pl-[3px] font-mono text-sm leading-none"
+              className="pointer-events-none absolute inset-0 flex items-center pl-[3px] font-mono text-sm leading-none select-none"
             >
               {/* Invisible spacer matching the typed text */}
               <span className="invisible whitespace-pre">{inputValue}</span>
               {/* Faded suffix — the IDE-style ghost completion */}
               {ghostSuffix && (
-                <span className="whitespace-pre text-muted-foreground/30">{ghostSuffix}</span>
+                <span className="whitespace-pre text-muted-foreground/30">
+                  {ghostSuffix}
+                </span>
               )}
             </span>
 
@@ -355,10 +375,10 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
               }
               className={cn(
                 "relative w-full bg-transparent font-mono text-sm leading-none",
-                "border-none pl-[3px] pb-0 shadow-none outline-none",
+                "border-none pb-0 pl-[3px] shadow-none outline-none",
                 // Text is always transparent so the span layer is the visual text
                 "[color:transparent]",
-                readOnly && "cursor-not-allowed opacity-60"
+                readOnly && "opacity-60"
               )}
               style={{
                 caretColor: isError
@@ -384,7 +404,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
           <p
             id="handle-error"
             role="alert"
-            className="animate-in fade-in slide-in-from-top-0.5 text-xs text-rouge-700 duration-150"
+            className="slide-in-from-top-0.5 animate-in text-xs text-rouge-700 duration-150 fade-in"
           >
             {errorMessage}
           </p>
@@ -396,11 +416,11 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
             role="listbox"
             aria-label="Available username alternatives"
             className={cn(
-              "animate-in fade-in slide-in-from-top-1 duration-150",
+              "animate-in duration-150 fade-in slide-in-from-top-1",
               "flex flex-col gap-1.5 rounded-sm border border-foreground/10 bg-background p-2.5 shadow-sm"
             )}
           >
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">
+            <p className="text-[11px] tracking-wider text-muted-foreground/60 uppercase">
               Alternatives
             </p>
             <div className="flex flex-wrap gap-1.5">

@@ -59,8 +59,8 @@ const options: BetterAuthOptionsType = {
           onboarded: false,
           displayUsername: name,
           emailVerified: email_verified,
-          slug: formatUserHandle(username),
           firstName: given_name,
+          slug: formatUserHandle(username),
           lastName: family_name,
           image: picture,
           banned: false

@@ -1,5 +1,5 @@
 "use server";
-import { getSession } from "@/lib/actions/auth";
+import { authClient } from "@/lib/auth/client";
 import { getPayload } from "@/lib/payload";
 import { ensureHandleIsUnique } from "@/payload/collections/Users/endpoints/ensureHandleIsUnique";
 import { HandleError } from "@/payload/fields/handle/index";
@@ -15,9 +15,14 @@ export async function ensureUniqueHandle({
   handle: string;
 }) {
   const payload = await getPayload();
-  const { user: currentUser } = await getSession();
+  const { data } = await authClient.getSession();
+  const currentUser = data?.user;
 
-  if (!override && (!currentUser || (currentUser.id !== userId && currentUser.role !== "admin"))) {
+  if (
+    !override &&
+    (!currentUser ||
+      (currentUser.id !== userId && currentUser.role !== "admin"))
+  ) {
     throw new HandleError("Unauthorized");
   }
 
