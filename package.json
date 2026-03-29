@@ -16,7 +16,7 @@
     "dev:pgstart": "docker desktop start && docker start postgres",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && payload migrate && pnpm build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && node .next/standalone/server.js",
     "format": "next lint --fix && prettier '**/*.{json,yaml}' --write --ignore-path .gitignore",
-    "generate": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types&& payload generate:db-schema && payload generate:importmap",
+    "generate": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types&& payload generate:db-schema && rm src/app/\\(payload\\)/vault/importMap.js && payload generate:importmap",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:schema": "cross-env NODE_OPTIONS=--no-deprecation payload generate:db-schema",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:types",

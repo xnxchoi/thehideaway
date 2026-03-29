@@ -1,37 +1,45 @@
 "use client";
 
-import {ListDrawerProps, useAuth, useField, useListDrawer} from "@payloadcms/ui";
+import {
+  ListDrawerProps,
+  useAuth,
+  useField,
+  useListDrawer
+} from "@payloadcms/ui";
 
 import {
-	ClipboardEventHandler,
-	DragEventHandler,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState
+  ClipboardEventHandler,
+  DragEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
 } from "react";
-import {stringify} from "qs-esm";
+import { stringify } from "qs-esm";
 import * as m from "motion/react-m";
-import {cn} from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-import {errorToast, successToast} from "@/payload/components/sonner";
-import {AnimatePresence} from "motion/react";
+import { errorToast, successToast } from "@/payload/components/sonner";
+import { AnimatePresence } from "motion/react";
 import type {
-	CollectionSlug,
-	DataFromCollectionSlug,
-	FilterOptionsResult,
-	PaginatedDocs,
-	Where
+  CollectionSlug,
+  DataFromCollectionSlug,
+  FilterOptionsResult,
+  PaginatedDocs,
+  Where
 } from "payload";
 import Image from "next/image";
-import {capitalize} from "lodash-es";
-import {useDomCursor} from "@/components/core/cursorWrapper";
-import {FetchedImageDoc, ImageCollectionSlug} from "@/types/collections/image-collections";
+import { capitalize } from "lodash-es";
+import { useDomCursor } from "@/components/core/cursorWrapper";
+import {
+  FetchedImageDoc,
+  ImageCollectionSlug
+} from "@/types/collections/image-collections";
 
 type PopulatedDocs = {
   relationTo: string;
-	value: FetchedImageDoc;
+  value: FetchedImageDoc;
 }[];
 
 export type ProfileImageProps = {
@@ -99,7 +107,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
   const loadedValueDocsRef = useRef<boolean>(false);
 
   const onChange = useCallback(
-	  async (newValue: FetchedImageDoc | null, fallback?: string) => {
+    async (newValue: FetchedImageDoc | null, fallback?: string) => {
       console.log("onChange: ", newValue);
       if (!newValue) {
         setIDValue(null);
@@ -145,10 +153,10 @@ export default function ProfileImageField(props: ProfileImageProps) {
   });
 
   const [removeImage, setRemoveImage] = useState<boolean>(false);
-	const populateDocs = useCallback(
+  const populateDocs = useCallback(
     async (
-	    ids: string[],
-	    relatedCollectionSlug = "userMedia"
+      ids: string[],
+      relatedCollectionSlug = "userMedia"
     ): Promise<PaginatedDocs<FetchedImageDoc> | null> => {
       if (!ids.length) {
         return null;
@@ -190,7 +198,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
         }
       );
       if (response.ok) {
-	      const json = (await response.json()) as PaginatedDocs<FetchedImageDoc>;
+        const json = (await response.json()) as PaginatedDocs<FetchedImageDoc>;
         const sortedDocs = ids.flatMap(
           (id) =>
             json.docs.find((doc) => {
@@ -206,7 +214,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
     [serverURL]
   );
   const onUploadSuccess = useCallback(
-	  (newDocs: FetchedImageDoc[], fallback: string) => {
+    (newDocs: FetchedImageDoc[], fallback: string) => {
       const firstDoc = newDocs[0];
       if (firstDoc) {
         successToast("Image uploaded successfully");
@@ -277,7 +285,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
   );
 
   const onDocCreate = useCallback(
-	  (data: { doc?: FetchedImageDoc }) => {
+    (data: { doc?: FetchedImageDoc }) => {
       if (data.doc && data.doc !== undefined) {
         const d = data.doc;
         setPopulatedDocs((currentDocs) => [
@@ -306,19 +314,21 @@ export default function ProfileImageField(props: ProfileImageProps) {
           return [
             {
               relationTo: activeRelationTo,
-	            value: doc as FetchedImageDoc
+              value: doc as FetchedImageDoc
             }
           ];
         }
         return currentDocs;
       });
 
-	    onChange(doc as FetchedImageDoc, urlValue);
+      onChange(doc as FetchedImageDoc, urlValue);
       closeListDrawer();
     },
     [closeListDrawer, onChange, activeRelationTo, urlValue]
   );
-	const reloadDoc = useCallback<(docId: string, collectionSlug: ImageCollectionSlug) => Promise<void>>(
+  const reloadDoc = useCallback<
+    (docId: string, collectionSlug: ImageCollectionSlug) => Promise<void>
+  >(
     async (docID, collectionSlug) => {
       const docs = await populateDocs([docID], "userMedia").then((r) => {
         if (r) {
@@ -350,7 +360,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
             const updatedDocs = [...(currentDocs || [])];
             updatedDocs[existingDocIndex] = {
               relationTo: collectionSlug as ImageCollectionSlug,
-	            value: docs[0] as FetchedImageDoc
+              value: docs[0] as FetchedImageDoc
             };
 
             return updatedDocs;
@@ -399,7 +409,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
           setPopulatedDocs(
             loadedDocs.docs.map((doc) => ({
               relationTo: activeRelationTo,
-	            value: doc as FetchedImageDoc
+              value: doc as FetchedImageDoc
             }))
           );
         }
@@ -461,10 +471,10 @@ export default function ProfileImageField(props: ProfileImageProps) {
 
   return (
     <div className={cn("relative flex w-full flex-col items-center")}>
-      <div className={"w-full"}>{capitalize(idPath)}</div>
+      {/*<div className={"w-full"}>{capitalize(idPath)}</div>*/}
       <div
         className={
-	        "relative my-[2em] flex aspect-square h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-full bg-transparent transition-all duration-300 data-[inserted=false]:rounded-[12px] data-[inserted=false]:bg-muted-faded-background/50 data-[inserted=false]:text-foreground data-[inserted=false]:shadow-[0_0_1px_1px_var(--muted-faded-bg)]"
+          "relative my-[2em] flex aspect-square h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-full bg-transparent transition-all duration-300 data-[inserted=false]:rounded-[12px] data-[inserted=false]:bg-muted-faded-background/50 data-[inserted=false]:text-foreground data-[inserted=false]:shadow-[0_0_1px_1px_var(--muted-faded-bg)]"
         }
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -525,7 +535,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
           </div>
           <span className={"mx-5"}>OR</span>
           <span
-	          className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-off-background hover:bg-off-foreground hover:text-off-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:opacity-100`}
+            className={`upload__listToggler ease rounded-xl border-[1px] border-solid border-[currentColor] px-3.5 py-1 leading-[1.5] transition-[z-index,opacity,border-color,background-color,color] duration-200 hover:border-off-background hover:bg-off-foreground hover:text-off-background data-[visible=false]:z-[-1] data-[visible=false]:opacity-0 data-[visible=true]:opacity-100`}
             data-visible={!image}
             onClick={openListDrawer}
             role="button"
@@ -584,8 +594,8 @@ export default function ProfileImageField(props: ProfileImageProps) {
               onMouseEnter={onMouseEnter}
               style={{
                 color: trashHovered
-	                ? "oklch(from var(--rouge-700) l c h/.85)"
-	                : "oklch(from var(--faded-white) l c h/.85)"
+                  ? "oklch(from var(--rouge-700) l c h/.85)"
+                  : "oklch(from var(--faded-white) l c h/.85)"
               }}
               onMouseLeave={onMouseLeave}
               role="button"

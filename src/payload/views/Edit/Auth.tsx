@@ -1,13 +1,6 @@
 "use client";
 
-import type { SanitizedFieldPermissions } from "payload";
-
-import { getFieldPermissions } from "payload/shared";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-
-import { APIKey } from "./APIKey";
-import { Props } from "./types";
-import type { FC } from "react";
+import { CheckboxField } from "@/payload/fields/Checkbox/Checkbox";
 import {
   Button,
   ConfirmPasswordField,
@@ -21,7 +14,14 @@ import {
   useFormModified,
   useTranslation
 } from "@payloadcms/ui";
-import { CheckboxField } from "@/payload/fields/Checkbox/Checkbox";
+import type { SanitizedFieldPermissions } from "payload";
+
+import { getFieldPermissions } from "payload/shared";
+import type { FC } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+
+import { APIKey } from "./APIKey";
+import { Props } from "./types";
 
 const baseClass = "auth-fields";
 
@@ -120,7 +120,7 @@ export const Auth: FC<Props> = (props) => {
   const enableFields =
     (!disableLocalStrategy ||
       (typeof disableLocalStrategy === "object" &&
-        disableLocalStrategy.enableFields === true)) &&
+        disableLocalStrategy.enableFields)) &&
     (showUnlock || showPasswordFields);
 
   const disabled = readOnly || isInitializing || isTrashed;

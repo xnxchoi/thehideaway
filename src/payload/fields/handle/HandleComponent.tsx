@@ -108,7 +108,11 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
       setErrorMessage(null);
 
       try {
-        const result = await ensureUniqueHandle({ handle, userId });
+        const result = await ensureUniqueHandle({
+          handle,
+          userId,
+          override: true
+        });
         commitValue(result.handle);
         setSuggestions([]);
         setShowSuggestions(false);
@@ -377,7 +381,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
                 "relative w-full bg-transparent font-mono text-sm leading-none",
                 "border-none pb-0 pl-[3px] shadow-none outline-none",
                 // Text is always transparent so the span layer is the visual text
-                "[color:transparent]",
+                "text-foreground",
                 readOnly && "opacity-60"
               )}
               style={{

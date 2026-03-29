@@ -5,7 +5,10 @@ import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import type { OnboardingSeverity, RegistrationStep } from "@/stores/Tour/TourStore";
+import type {
+  OnboardingSeverity,
+  RegistrationStep
+} from "@/stores/Tour/TourStore";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
@@ -442,11 +445,7 @@ function ExitWarning({
 
   return (
     <m.div
-      className="absolute inset-0 z-10 flex items-center justify-center px-6"
-      style={{
-        backdropFilter: "blur(8px)",
-        background: "rgba(var(--background-rgb, 255 255 255) / 0.7)"
-      }}
+      className="bg-faded-foreground/0.7 absolute inset-250 z-10 flex items-center justify-center px-6 backdrop-blur-sm"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -490,7 +489,7 @@ function ExitWarning({
               "text-[13px] font-medium",
               isRequiredSection
                 ? "bg-red-500/10 text-red-500 hover:bg-red-500/15"
-                : "bg-foreground/8 text-foreground hover:bg-foreground/12"
+                : "bg-foreground/5 text-foreground hover:bg-foreground/15"
             )}
           >
             {isRequiredSection ? "Skip for now" : "Leave"}
@@ -543,32 +542,22 @@ async function submitStepFields({
   complete?: boolean;
 }) {
   const updateData = new Map<UserField, User[UserField]>();
-
-  if (
-    data.identity?.firstName?.trim() &&
-    data.identity.firstName.trim() !== currentProfile.firstName
-  )
-    updateData.set("firstName", data.identity.firstName.trim());
-  if (
-    data.identity?.lastName?.trim() &&
-    data.identity.lastName.trim() !== currentProfile.lastName
-  )
-    updateData.set("lastName", data.identity.lastName.trim());
-  if (
-    data.bio?.content?.trim() &&
-    data.bio.content.trim() !== currentProfile.bio
-  )
-    updateData.set("bio", data.bio.content.trim());
-  if (
-    data.details?.location?.trim() &&
-    data.details.location.trim() !== currentProfile.location
-  )
-    updateData.set("location", data.details.location.trim());
-  if (
-    data.details?.link?.trim() &&
-    data.details.link.trim() !== currentProfile.link
-  )
-    updateData.set("link", data.details.link.trim());
+  const firstName = data?.identity?.firstName?.trim();
+  if (!!firstName && firstName !== currentProfile.firstName) {
+    updateData.set("firstName", firstName);
+  }
+  const lastName = data?.identity?.lastName?.trim();
+  if (!!lastName && lastName !== currentProfile.lastName) {
+    updateData.set("lastName", lastName);
+  }
+  const bio = data?.bio?.content?.trim();
+  if (!!bio && bio !== currentProfile.bio) updateData.set("bio", bio);
+  const location = data?.details?.location?.trim();
+  if (!!location && location !== currentProfile.location) {
+    updateData.set("location", location);
+  }
+  const link = data?.details?.link?.trim();
+  if (!!link && link !== currentProfile.link) updateData.set("link", link);
 
   // Update user fields if anything changed, or if completing
   if (updateData.size > 0 || complete) {
@@ -580,15 +569,15 @@ async function submitStepFields({
   }
 
   // Persist progress (or mark complete) server-side
-  fetch("/api/onboarding", {
+  fetch("/api/users/onboarding", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(
-      complete
-        ? { complete: true }
-        : { step, fields: Object.fromEntries(updateData) }
-    )
+    body: JSON.stringify({
+      step,
+      fields: Object.fromEntries(updateData),
+      ...(complete && { complete: true })
+    })
   }).catch(() => {});
 
   return updateData.size;
@@ -752,7 +741,7 @@ export function RegistrationTour() {
     if (currentStep === "complete") {
       currentUser &&
         completeMutation.mutate({
-          data: { ...formValues },
+          data: {},
           currentProfile: currentUser as User,
           step: "complete",
           complete: true
@@ -839,7 +828,7 @@ export function RegistrationTour() {
   return (
     <>
       <m.div
-        className="fixed inset-0 z-40 flex flex-col bg-background/5 px-5 py-5"
+        className="fixed inset-0 z-40 flex flex-col bg-background/5 px-10 py-15"
         initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
         animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
         exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
@@ -1159,7 +1148,7 @@ export function OnboardingToastSubtle({
   return (
     <m.div
       className={cn(
-        "fixed right-5 top-5 z-[500]",
+        "fixed top-5 right-5 z-[500]",
         "flex items-center gap-3 rounded-full",
         "border border-foreground/8 bg-background/80 px-4 py-2.5",
         "shadow-lg backdrop-blur-xl"
@@ -1183,7 +1172,13 @@ export function OnboardingToastSubtle({
         className="ml-0.5 text-muted-foreground/30 transition-colors hover:text-foreground/50"
         aria-label="Dismiss"
       >
-        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
           <path
             d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
             stroke="currentColor"
@@ -1238,7 +1233,13 @@ export function OnboardingBanner({
         className="ml-1 text-muted-foreground/40 transition-colors hover:text-foreground/60"
         aria-label="Dismiss"
       >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
           <path
             d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
             stroke="currentColor"
@@ -1253,7 +1254,13 @@ export function OnboardingBanner({
 
 // ─── Tour trigger — mounts at layout level, watches session ──────────────────
 
-type NotifyMode = "overlay" | "redirect" | "medium" | "subtle" | "banner" | "none";
+type NotifyMode =
+  | "overlay"
+  | "redirect"
+  | "medium"
+  | "subtle"
+  | "banner"
+  | "none";
 
 export function RegistrationTourTrigger() {
   const { currentUserPromise } = useBetterAuth();
@@ -1308,7 +1315,10 @@ export function RegistrationTourTrigger() {
     // /me/onboarding: RegistrationTour is rendered directly from the page, but we
     // also call openRegistrationTour to set regActive + pending state in the store.
     if (pathname === "/me/onboarding") {
-      openRegistrationTour({ needsIdentity, hasPreexistingData, severity }, pathname);
+      openRegistrationTour(
+        { needsIdentity, hasPreexistingData, severity },
+        pathname
+      );
       triggered.current = true;
       return;
     }
@@ -1332,7 +1342,10 @@ export function RegistrationTourTrigger() {
     if (bucket === "none") return;
 
     if (bucket === "overlay") {
-      openRegistrationTour({ needsIdentity, hasPreexistingData, severity }, pathname);
+      openRegistrationTour(
+        { needsIdentity, hasPreexistingData, severity },
+        pathname
+      );
       return;
     }
 
@@ -1347,7 +1360,10 @@ export function RegistrationTourTrigger() {
       setNotifyMode("redirect");
     } else if (severity === "high-optional") {
       setNotifyMode("medium");
-    } else if (severity === "low-optional" && isContextRelevantForSubtle(pathname)) {
+    } else if (
+      severity === "low-optional" &&
+      isContextRelevantForSubtle(pathname)
+    ) {
       setNotifyMode("subtle");
     }
     // low-optional on a non-relevant path: no notification
@@ -1366,7 +1382,10 @@ export function RegistrationTourTrigger() {
   return (
     <AnimatePresence>
       {notifyMode === "redirect" && (
-        <OnboardingRedirectToast key="redirect" onNavigate={navigateToOnboarding} />
+        <OnboardingRedirectToast
+          key="redirect"
+          onNavigate={navigateToOnboarding}
+        />
       )}
       {notifyMode === "medium" && (
         <OnboardingToastMedium

@@ -1,8 +1,9 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useVaultSidebar } from "@/payload/providers/Admins";
-import { RenderFields, useAllFormFields, useFormFields } from "@payloadcms/ui";
+import { useAllFormFields, useFormFields } from "@payloadcms/ui";
 import Lenis from "lenis";
+import { RenderFields } from "@/payload/forms/RenderFields";
 import { useLenis } from "lenis/react";
 import {
   ClientField,

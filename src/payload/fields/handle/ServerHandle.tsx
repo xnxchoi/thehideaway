@@ -25,6 +25,7 @@ export default function ServerHandle(props: ServerHandleProps) {
   const data = d as Partial<User> | undefined;
   let readOnly = r || !user || !data || (!value && !data.slug);
   const serverURL = getServerSideURL();
+  console.log("permissions: ", permissions, "");
   switch (typeof permissions) {
     case "boolean":
       per.read = permissions;

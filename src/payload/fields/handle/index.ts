@@ -32,12 +32,12 @@ export const userHandleField: UserHandle = (overrides = {}) => {
     type: "text",
     index: true,
     access: {
+      read: () => true,
       update: ({ data, req, id, doc }: FieldAccessArgs<User>) => {
-        const docId = id || doc?.id || data?.id;
-        if (req.context.overrideAccess === true) return true;
-        if (!docId || !req.user) return false;
-        if (req.user.role === "admin") return true;
-        if (req.user.id === docId) return true;
+        if (req.user?.id === id || doc?.id) return true;
+        if (req.user?.role === "admin") return true;
+        if (req.context.overrideAccess) return true;
+
         return false;
       }
     },

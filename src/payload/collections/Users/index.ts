@@ -4,6 +4,7 @@ import { hideIfNotAdmin } from "@/payload/collections/helpers";
 import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { getUserFollowers } from "@/payload/collections/Users/endpoints/getUserFollowers";
 import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserFollows";
+import { onboardingHandler } from "@/payload/collections/Users/endpoints/onboardingHandler";
 import { GotUser } from "@/payload/collections/Users/endpoints/userFieldSelect";
 import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
 import {
@@ -376,6 +377,11 @@ export const Users: CollectionConfig = {
       path: "/:id/followers",
       method: "get",
       handler: getUserFollowers
+    },
+    {
+      path: "/onboarding",
+      method: "post",
+      handler: onboardingHandler
     },
 
     {

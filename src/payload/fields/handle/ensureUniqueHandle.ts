@@ -39,7 +39,8 @@ export async function ensureUniqueHandle({
 
   const isAvailable = await ensureHandleIsUnique({
     handle,
-    user: userId
+    user: userId,
+    overrides: true
   })
     .then((r) => r.valid)
     .catch((e) => {
@@ -66,6 +67,7 @@ export async function ensureUniqueHandle({
       if (alts.length >= 5) break;
       const valid = await ensureHandleIsUnique({
         handle: candidate,
+        overrides: true,
         user: userId
       })
         .then((r) => r.valid)

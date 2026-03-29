@@ -73,7 +73,11 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
   if (handle.length > 2) {
     const { valid, handle: h } = await ensureHandleIsUnique({
       handle,
-      ...base
+      ...base,
+      overrides: true
+    }).catch((e) => {
+      e instanceof Error && req.payload.logger.error(e);
+      return { valid: false, handle: undefined };
     });
     if (valid && !!h) {
       return h;
@@ -108,7 +112,8 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
   for (const candidate of candidates) {
     const { valid: exists } = await ensureHandleIsUnique({
       handle: candidate,
-      ...base
+      ...base,
+      overrides: true
     });
     if (!exists) {
       return candidate;
@@ -125,7 +130,11 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
     if (newHandle.length > 2) {
       continue;
     }
-    const r = await ensureHandleIsUnique({ handle: newHandle, ...base });
+    const r = await ensureHandleIsUnique({
+      handle: newHandle,
+      ...base,
+      overrides: true
+    });
     isOkay = r.valid;
     retry++;
   }

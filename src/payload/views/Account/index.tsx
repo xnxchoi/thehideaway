@@ -1,30 +1,27 @@
-import type {
-  AdminViewServerProps,
-  CollectionSlug,
-  DocumentViewServerPropsOnly
-} from "payload";
-import { AccountViewClient } from "./index.client";
-import type { AuthCollectionSlug } from "node_modules/@payloadcms/sdk/dist/types";
-import type { Config } from "@/payload-types";
-import { getDocumentData } from "node_modules/@payloadcms/next/dist/views/Document/getDocumentData";
-import { getDocumentPermissions } from "node_modules/@payloadcms/next/dist/views/Document/getDocumentPermissions";
-import { getIsLocked } from "node_modules/@payloadcms/next/dist/views/Document/getIsLocked";
-import { getVersions } from "node_modules/@payloadcms/next/dist/views/Document/getVersions";
-import { getDocPreferences } from "node_modules/@payloadcms/next/dist/views/Document/getDocPreferences";
-import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
-import { AccountClient } from "node_modules/@payloadcms/next/dist/views/Account/index.client";
+import { DocumentHeader } from "@payloadcms/next/rsc";
 import {
   DocumentInfoProvider,
   EditDepthProvider,
   HydrateAuthProvider
 } from "@payloadcms/ui";
-import { notFound } from "next/navigation";
-import { DocumentHeader } from "@payloadcms/next/rsc";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { EditView } from "../Edit";
-import type { FC } from "react";
+import { buildFormState } from "@payloadcms/ui/utilities/buildFormState";
 import { DateTime } from "luxon";
+import { notFound } from "next/navigation";
+import { AccountClient } from "node_modules/@payloadcms/next/dist/views/Account/index.client";
+import { getDocPreferences } from "node_modules/@payloadcms/next/dist/views/Document/getDocPreferences";
+import { getDocumentData } from "node_modules/@payloadcms/next/dist/views/Document/getDocumentData";
+import { getDocumentPermissions } from "node_modules/@payloadcms/next/dist/views/Document/getDocumentPermissions";
+import { getIsLocked } from "node_modules/@payloadcms/next/dist/views/Document/getIsLocked";
+import { getVersions } from "node_modules/@payloadcms/next/dist/views/Document/getVersions";
+import type {
+  AdminViewServerProps,
+  CollectionSlug,
+  DocumentViewServerPropsOnly
+} from "payload";
+import type { FC } from "react";
 import { DefaultEditView } from "../Edit/index.client";
+
 export const AccountView = async ({
   initPageResult,
   searchParams,

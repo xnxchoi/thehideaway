@@ -1,5 +1,5 @@
 "use server";
-import { getSession } from "@/lib/actions/auth";
+import { authClient } from "@/lib/auth/client";
 import { getPayload } from "@/lib/payload";
 import { HANDLE_TEST_REGEX } from "@/payload/fields/handle/formatUserHandle";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
@@ -21,11 +21,12 @@ export async function ensureHandleIsUnique(props: {
 > {
   const { overrides, handle, user: userId } = props;
 
-  const { user } = await getSession();
-  if (!overrides && (!user || user.id !== userId)) {
+  const { data } = await authClient.getSession();
+  const user = data?.user;
+  if (!overrides && user?.role !== "admin" && user?.id !== userId) {
     throw new Error("User is not authorized");
   }
-  const { banned } = user;
+  const banned = user?.banned ?? false;
   if (banned) {
     throw new Error("User is banned");
   }
@@ -39,7 +40,7 @@ export async function ensureHandleIsUnique(props: {
       collection: "users",
       overrideAccess: true,
       context: {
-        user: { role: user.role as unknown as RP_Roles },
+        user: { role: (user?.role || "user") as unknown as RP_Roles },
         overrideAccess: true
       },
       where: {

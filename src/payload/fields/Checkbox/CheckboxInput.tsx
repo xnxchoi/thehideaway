@@ -1,13 +1,10 @@
 "use client";
-import type { StaticLabel } from "payload";
-
-import React, { useCallback } from "react";
-
-import { RenderCustomComponent } from "@payloadcms/ui";
-import { FieldLabel } from "@payloadcms/ui";
+import { FieldLabel, RenderCustomComponent } from "@payloadcms/ui";
 
 import { CheckIcon, DividerVerticalIcon } from "@radix-ui/react-icons";
-import { useCursor } from "@/providers/RP_Pro";
+import type { StaticLabel } from "payload";
+
+import React from "react";
 
 export type CheckboxInputProps = {
   readonly AfterInput?: React.ReactNode;
@@ -44,8 +41,6 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
   readOnly,
   required
 }) => {
-  const setCursor = useCursor((r) => r.setCursorState);
-
   return (
     <div
       className={[
@@ -60,12 +55,6 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
       <div className={`${inputBaseClass}__input`}>
         {BeforeInput}
         <input
-          onMouseEnter={() => {
-            setCursor(readOnly ? null : "FOCUS");
-          }}
-          onMouseLeave={() => {
-            setCursor(null);
-          }}
           aria-label=""
           defaultChecked={Boolean(checked)}
           disabled={readOnly}

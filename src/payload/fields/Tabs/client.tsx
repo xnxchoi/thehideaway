@@ -1,33 +1,34 @@
-import type {
-  ClientField,
-  ClientTab,
-  DocumentPreferences,
-  SanitizedFieldPermissions,
-  SanitizedPermissions,
-  StaticDescription,
-  TabsFieldClientComponent
-} from "payload";
+import { RenderFields } from "@/payload/forms/RenderFields";
 
 import { useCursor } from "@/providers/RP_Pro";
 import { useGSAP } from "@gsap/react";
 import { getTranslation } from "@payloadcms/translations";
 import {
+  ErrorPill,
+  fieldBaseClass,
   FieldDescription,
   RenderCustomComponent,
-  RenderFields,
   TabComponent,
-  fieldBaseClass,
   useCollapsible,
   useDocumentInfo,
   useField,
   useFormFields,
   usePreferences,
   useTranslation,
+  WatchChildErrors,
   withCondition
 } from "@payloadcms/ui";
 import { gsap } from "gsap";
 import { Flip } from "gsap/Flip";
-import { tabHasName, toKebabCase } from "payload/shared";
+import type {
+  ClientComponentProps,
+  ClientTab,
+  DocumentPreferences,
+  SanitizedFieldPermissions,
+  StaticDescription,
+  TabsFieldClientComponent
+} from "payload";
+import { getFieldPaths, tabHasName, toKebabCase } from "payload/shared";
 import {
   ComponentPropsWithRef,
   useCallback,
@@ -71,31 +72,28 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
     parentSchemaPath = "",
     path = "",
     permissions,
-    readOnly
+    readOnly,
+    schemaPath = ""
   } = props;
 
   const { getPreference, setPreference } = usePreferences();
   const { preferencesKey } = useDocumentInfo();
   const { i18n } = useTranslation();
   const { isWithinCollapsible } = useCollapsible();
-  const tabsRef = useRef<Array<HTMLElement>>([]);
 
   const tabStates = useFormFields(([fields]) => {
     return tabs.map((tab, index) => {
       const id = tab?.id;
-      return id
-        ? {
-            index,
-            passesCondition: fields?.[id]?.passesCondition ?? true,
-            tab
-          }
-        : {
-            index,
-            passesCondition: true,
-            tab
-          };
+
+      return {
+        index,
+        passesCondition: id ? (fields?.[id]?.passesCondition ?? true) : false,
+        tab
+      };
     });
   });
+
+  const tabsRef = useRef<Array<HTMLElement>>([]);
 
   const [activeTabIndex, setActiveTabIndex] = useState<number>(
     () =>
@@ -123,67 +121,92 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
     : parentPath;
   const activeTabInfo = tabStates[activeTabIndex];
   const activeTabConfig = activeTabInfo?.tab;
-  const activePathSchemaChildrenPath = tabHasName(tabs[activeTabIndex]!)
-    ? activeTabSchemaPath
-    : parentSchemaPath;
-
   const activeTabDescription =
-    activeTabConfig!.admin?.description ?? activeTabConfig!.description;
+    activeTabConfig?.admin?.description ?? activeTabConfig?.description;
 
   const activeTabStaticDescription =
     typeof activeTabDescription === "function"
-      ? activeTabDescription({ i18n, t: i18n.t as any })
-      : activeTabDescription;
+      ? //@ts-expect-error t being a mess
+        activeTabDescription({ i18n, t: i18n.t })
+      : activeTabDescription!;
 
   const hasVisibleTabs = tabStates.some(
     ({ passesCondition }) => passesCondition
   );
 
+  const activePathSchemaChildrenPath = tabHasName(tabs[activeTabIndex]!)
+    ? activeTabSchemaPath
+    : parentSchemaPath;
+
   const handleTabChange = useCallback(
     async (incomingTabIndex: number): Promise<void> => {
       setActiveTabIndex(incomingTabIndex);
 
-      setActiveTabPath(
-        generateTabPath({
-          activeTabConfig: tabs[incomingTabIndex]!,
-          path: parentPath
-        })
+      const existingPreferences: DocumentPreferences = await getPreference(
+        preferencesKey!
       );
-      setActiveTabSchemaPath(
-        generateTabPath({
-          activeTabConfig: tabs[incomingTabIndex]!,
-          path: parentSchemaPath
-        })
-      );
-
-      if (!preferencesKey) {
-        return;
+      if (preferencesKey) {
+        void setPreference(preferencesKey, {
+          ...existingPreferences,
+          ...(path
+            ? {
+                fields: {
+                  ...(existingPreferences?.fields || {}),
+                  [path]: {
+                    ...existingPreferences?.fields?.[path],
+                    tabIndex: incomingTabIndex
+                  }
+                }
+              }
+            : {
+                fields: {
+                  ...existingPreferences?.fields,
+                  [tabsPrefKey]: {
+                    ...existingPreferences?.fields?.[tabsPrefKey],
+                    tabIndex: incomingTabIndex
+                  }
+                }
+              })
+        });
       }
-      const existingPreferences: DocumentPreferences =
-        await getPreference(preferencesKey);
-      void setPreference(preferencesKey, {
-        ...existingPreferences,
-        ...{
-          fields: {
-            ...(existingPreferences?.fields || {}),
-            [path]: {
-              ...existingPreferences?.fields?.[path],
-              tabIndex: incomingTabIndex
-            }
-          }
-        }
-      });
     },
-    [
-      tabs,
-      parentPath,
-      parentSchemaPath,
-      getPreference,
-      preferencesKey,
-      setPreference,
-      path
-    ]
+    [getPreference, preferencesKey, setPreference, path, tabsPrefKey]
   );
+
+  useEffect(() => {
+    if (preferencesKey) {
+      const getInitialPref = async () => {
+        const existingPreferences: DocumentPreferences =
+          await getPreference(preferencesKey);
+        const initialIndex = path
+          ? existingPreferences?.fields?.[path]?.tabIndex
+          : existingPreferences?.fields?.[tabsPrefKey]?.tabIndex;
+
+        const newIndex =
+          typeof initialIndex === "number" && initialIndex < tabStates.length
+            ? initialIndex
+            : 0;
+        setActiveTabIndex(newIndex);
+      };
+      void getInitialPref();
+    }
+  }, [
+    path,
+    getPreference,
+    preferencesKey,
+    tabsPrefKey,
+    tabs,
+    parentPath,
+    parentSchemaPath
+  ]);
+  useEffect(() => {
+    if (activeTabInfo?.passesCondition === false) {
+      const nextTab = tabStates.find(({ passesCondition }) => passesCondition);
+      if (nextTab) {
+        void handleTabChange(nextTab.index);
+      }
+    }
+  }, [activeTabInfo, tabStates, handleTabChange]);
   useGSAP(() => {
     if (lastActiveTab.current !== activeTabIndex) {
       const a = Flip.getState(indicatorRef.current);
@@ -234,14 +257,6 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
     parentSchemaPath
   ]);
 
-  useEffect(() => {
-    if (activeTabInfo?.passesCondition === false) {
-      const nextTab = tabStates.find(({ passesCondition }) => passesCondition);
-      if (nextTab) {
-        void handleTabChange(nextTab.index);
-      }
-    }
-  }, [activeTabInfo, tabStates, handleTabChange]);
   const pmissions = useMemo(() => {
     if (
       "name" in activeTabConfig &&
@@ -295,30 +310,55 @@ const TabsFieldComponent: TabsFieldClientComponent = (props) => {
                   }}
                   tab={tab}
                 />
-                {index < 1 && (
-                  <div className="absolute -bottom-[1px] h-[2px] w-full bg-foreground" />
+                {index === 0 && (
+                  <div
+                    ref={indicatorRef}
+                    className="absolute -bottom-[1px] h-[2px] w-full bg-foreground"
+                  />
                 )}
               </>
             ))}
           </div>
         </div>
         <div className={`${baseClass}__content-wrap`}>
-          {activeTabConfig && (
+          {activeTabConfig && !!permissions && (
             <TabContent
-              description={activeTabStaticDescription || ""}
-              fields={activeTabConfig.fields}
+              description={activeTabStaticDescription}
+              field={activeTabConfig}
               forceRender={forceRender}
               hidden={false}
-              parentIndexPath={
-                tabHasName(activeTabConfig)
-                  ? ""
-                  : `${indexPath ? indexPath + "-" : ""}` +
-                    String(activeTabInfo.index)
-              }
-              parentPath={activePathChildrenPath}
-              parentSchemaPath={activePathSchemaChildrenPath}
+              parentIndexPath={indexPath}
+              parentPath={path}
+              tabIndex={activeTabIndex}
+              parentSchemaPath={schemaPath}
               path={activeTabPath}
-              permissions={pmissions}
+              permissions={
+                permissions &&
+                typeof permissions === "object" &&
+                "name" in activeTabConfig &&
+                activeTabConfig.name
+                  ? permissions[
+                      activeTabConfig.name as keyof typeof permissions
+                    ] &&
+                    permissions[
+                      activeTabConfig.name as keyof typeof permissions
+                    ] !== undefined &&
+                    typeof permissions[
+                      activeTabConfig.name as keyof typeof permissions
+                    ] === "object" &&
+                    "fields" in
+                      (permissions[
+                        activeTabConfig.name as keyof typeof permissions
+                      ] as object)
+                    ? (permissions[
+                        activeTabConfig.name as keyof typeof permissions
+                      ] as { fields: SanitizedFieldPermissions } & object)!
+                        .fields
+                    : (permissions[
+                        activeTabConfig.name as keyof typeof permissions
+                      ] as SanitizedFieldPermissions)
+                  : permissions
+              }
               readOnly={readOnly || false}
             />
           )}
@@ -344,6 +384,13 @@ const TabComp = (
     ...rest
   } = props;
   const setCursor = useCursor((r) => r.setCursorState);
+  const [errorCount, setErrorCount] = useState<undefined | number>(undefined);
+  const path = [
+    // removes parent 'tabs' path segment, i.e. `_index-0`
+    ...(parentPath ? parentPath.split(".").slice(0, -1) : []),
+    ...(tabHasName(tab) ? [tab.name] : [])
+  ];
+
   const setCur = useCallback(
     ({
       passesCondition,
@@ -356,22 +403,30 @@ const TabComp = (
         setCursor(!passesCondition || isActive ? null : "FOCUS"),
     [setCursor]
   );
+  const fieldHasErrors = typeof errorCount !== "undefined" && errorCount > 0;
+  const { i18n } = useTranslation();
+
   const resetCur = useCallback(() => setCursor(null), [setCursor]);
   return (
     <div ref={ref}>
+      <WatchChildErrors
+        fields={tab.fields}
+        path={path}
+        setErrorCount={setErrorCount}
+      />
       <TabComponent
         parentPath={parentPath}
         setIsActive={setIsActive}
         tab={tab}
       />
       {children}
+      {fieldHasErrors && <ErrorPill count={errorCount} i18n={i18n} />}
     </div>
   );
 };
 type ActiveTabProps = {
   readonly description: StaticDescription;
-  readonly fields: ClientField[];
-  readonly forceRender?: boolean;
+  readonly field: ClientTab;
   readonly hidden: boolean;
   readonly label?: string;
   readonly parentIndexPath: string;
@@ -380,11 +435,12 @@ type ActiveTabProps = {
   readonly path: string;
   readonly permissions: SanitizedFieldPermissions;
   readonly readOnly: boolean;
-};
+  readonly tabIndex: number;
+} & Pick<ClientComponentProps, "forceRender">;
 
 function TabContent({
   description,
-  fields,
+  field,
   forceRender,
   hidden,
   label,
@@ -392,18 +448,26 @@ function TabContent({
   parentPath,
   parentSchemaPath,
   permissions,
-  readOnly
+  readOnly,
+  tabIndex
 }: ActiveTabProps) {
   const { i18n } = useTranslation();
 
   const {
-    customComponents: { AfterInput, BeforeInput, Description, Field } = {},
-    path
+    customComponents: { AfterInput, BeforeInput, Description, Field } = {}
   } = useField();
 
   if (Field) {
     return Field;
   }
+
+  const { indexPath, path, schemaPath } = getFieldPaths({
+    field,
+    index: tabIndex,
+    parentIndexPath,
+    parentPath,
+    parentSchemaPath
+  });
 
   return (
     <div
@@ -428,7 +492,7 @@ function TabContent({
       />
       {BeforeInput}
       <RenderFields
-        fields={fields}
+        fields={field.fields}
         forceRender={forceRender}
         parentIndexPath={parentIndexPath}
         parentPath={parentPath}
