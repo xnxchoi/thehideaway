@@ -447,7 +447,7 @@ export const FloatHighlightMenu = ({
               <HighlightMenuButton onClick={handleShareHighlight}>
                 <MenuButtonCaption icon={false}>Share</MenuButtonCaption>
               </HighlightMenuButton>
-              {focusedHighlight && (
+              {editorEnabled && (
                 <m.div
                   initial={{
                     scaleX: 0.001,

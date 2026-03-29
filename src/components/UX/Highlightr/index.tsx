@@ -264,7 +264,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       }),
     enabled: enableHighlight,
     staleTime: Infinity,
-    gcTime: 60 * 100
+    gcTime: 60 * 1000 * 5
   });
 
   const [highlightMap, setHighlightMap] = useState<
