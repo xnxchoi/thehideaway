@@ -41,7 +41,8 @@ import { useCitations } from "./providers/CitationProvider";
 import { useFloater } from "./providers/FloatProvider";
 import { useHighlighter } from "./providers/HighlighterProvider";
 import { useRanger } from "./providers/RangerProvider";
-import { MemoInput, SignInCard } from "./providers/sideBarProvider";
+import { SignInCard } from "./providers/author-ui";
+import { MemoInput } from "./providers/memo-input";
 import { HighlightColors, HighlightPalette, Palettes } from "./stores";
 
 type ViewStates = "edit" | "signin" | "new";
