@@ -221,32 +221,71 @@ src/payload/collections/Citations/
 
 **Commit:** `211748b`
 
+### Iteration 6 — Error handling + avatar deduplication (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | `PrivateNoteEditor.onSave` new-highlight path: fire-and-forget `.then()` chain → async IIFE with `try/catch/finally` | `PrivateHighlights.tsx` |
+| 2 | `CitationView` 40-line inline avatar block replaced with `<UserBar>` | `sideBarProvider.tsx` |
+
+**Commit:** `5044a21`
+
+### Iteration 7 — Debug log cleanup + safe error cause access (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | Remove 3 `console.log` statements from catch blocks | `HighlighterProvider.tsx`, `HighlightMenu.tsx` |
+| 2 | Inline `updateUserHighlight` fetch chain, removing no-op pass-through `.catch` | `HighlighterProvider.tsx` |
+| 3 | `deleteUserHighlight` catch: guard `e.cause` access before `"type" in cause` check | `HighlighterProvider.tsx` |
+
+**Commit:** `da2aef1`
+
+### Iteration 8 — Broken tagged link, responseNodes type cleanup (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | Fix hardcoded `/src/app/(frontend)/...` prefix on tagged links — 404 in production | `index.tsx` |
+| 2 | `updateResponseNodes`: trim to `{top, reference}` only (extra fields were discarded by state type); `for...of` loop | `index.tsx` |
+| 3 | Remove unused `AuthorOverview` import | `index.tsx` |
+
+**Commit:** `23fbd7a`
+
+### Iteration 9 — Gated fetch robustness + coreDelete guard (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | `Gated.tsx`: check `res.ok` before parsing JSON; forward `AbortSignal` to fetch | `Gated.tsx` |
+| 2 | `coreDelete`: throw `HighlightDeleteError` on invalid `els` instead of silent return | `CitationProvider.tsx` |
+| 3 | Remove duplicate `selection.removeAllRanges()` in `coreDelete` | `CitationProvider.tsx` |
+
+**Commit:** `0393073`
+
+### Iteration 10 — Dead code removal in highlight-helpers (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | Remove exported `rangeToData` function — never imported anywhere | `highlight-helpers.ts` |
+| 2 | Remove commented-out old `isMarkable` implementation | `highlight-helpers.ts` |
+
+**Commit:** (pending)
+
 ---
 
 ## Known Remaining Issues
 
 Track these across sessions. Strike through when fixed and move to Iteration Log.
 
-### Bugs
-
-- [ ] **`saving` state in `PrivateNoteEditor.onSave` edge cases** — Review early-return paths (e.g. `mem.length < 1`, missing `sv`) to ensure `saving` always resets.
-
 ### Security
 
-- [ ] **Public citations readable without auth** — The `read` access returns `{ private: { not_equals: true } }` for unauthenticated requests, exposing all public highlight activity. Evaluate if this is intentional.
+- [ ] **Public citations readable without auth** — The `read` access returns `{ private: { not_equals: true } }` for unauthenticated requests, exposing all public highlight activity. Design decision to evaluate.
 
 ### Performance
 
-- [ ] **`updateMiniMap` and `updateResponseNodes` iterate all highlights on every store change** — Could diff against previous map.
+- [ ] **`updateMiniMap` iterates all highlights on every store change** — Could diff against previous map to skip re-render when nothing changed.
 
 ### UX / Polish
 
-- [ ] **No loading indicator during highlight save** — After clicking "Highlight" in the menu, there's no optimistic/pending UI while the API call is in flight.
-- [ ] **Color picker: changing color only updates preference, not existing highlight color in DOM** — `changeCurrentHighlightColor` saves the preference for future highlights but does not re-color an existing focused highlight.
-
-### Code Quality
-
-- [ ] **`CitationView` inline avatar JSX duplicates `UserBar`** — In `sideBarProvider.tsx` `CitationView` renders its own avatar block for the current user rather than reusing `<UserBar>`. Should be consolidated.
+- [ ] **Color picker: changing color only updates preference, not focused highlight color in DOM** — `changeCurrentHighlightColor` saves for future highlights but does not re-color an existing focused highlight in real-time.
 
 ---
 
