@@ -254,30 +254,30 @@ const PrivateNoteEditor = ({
         if (sv) {
           setSaving(true);
           ranger.restoreSelection(sv);
-          createCallback({
-            params: { private: true, memo: mem },
-            container
-          })
-            .then((r) => {
+          void (async () => {
+            try {
+              const r = await createCallback({
+                params: { private: true, memo: mem },
+                container
+              });
               if (r) {
                 successToast(t("Highlights.saved"));
                 ranger.removeMarkers(sv);
               } else {
                 errorToast(t("Highlights.error.save.select"));
               }
-              qc.invalidateQueries({
-                queryKey: ["savedHighlights"]
-              });
+              await qc.invalidateQueries({ queryKey: ["savedHighlights"] });
               setOpen(false);
               setDirty(false);
-            })
-            .then(() => {
+            } catch {
+              errorToast(t("Highlights.error.save.default"));
+            } finally {
               setSaving(false);
-            });
+            }
+          })();
         } else {
           setSaving(false);
         }
-
         return;
       }
       try {
