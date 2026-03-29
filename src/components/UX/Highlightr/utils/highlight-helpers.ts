@@ -194,59 +194,6 @@ export const isMarkable = (selection: rangy.RangySelection) => {
       getAnchestorIdentifyableNode(selection.focusNode)
   );
 };
-// function isMarkable(selection: rangy.RangySelection) {
-// 	return Boolean(
-// 		!selection.isCollapsed &&
-// 		getAnchestorIdentifyableNode(selection.anchorNode) &&
-// 		getAnchestorIdentifyableNode(selection.focusNode),
-// 	);
-// }
-/**
- * Converts a range to data
- * @param {*} range
- */
-export function rangeToData(range: rangy.RangyRange) {
-  let startOffset = 0;
-  let endOffset = 0;
-
-  const startElement = walkNodes(range.startContainer, prevNode, (node) => {
-    if (!node) return null;
-    if (isIdentifyableNode(node.nextSibling)) {
-      return node.nextSibling;
-    }
-    startOffset += node?.textContent?.length || 0;
-  });
-
-  const endElement = walkNodes(range.endContainer, prevNode, (node) => {
-    if (!node) return null;
-    if (isIdentifyableNode(node.nextSibling)) {
-      return node.nextSibling;
-    }
-    endOffset += node?.textContent?.length || 0;
-  });
-  if (!startElement || !endElement) return false;
-
-  const markedElements =
-    startElement === endElement
-      ? [startElement]
-      : range.getNodes().filter((node) => isIdentifyableNode(node));
-
-  return {
-    id: startElement.id + startOffset + endElement.id + endOffset,
-    startElement: startElement.id,
-    startOffset,
-    endElement: endElement.id,
-    endOffset,
-    markedElements: markedElements.map((element) => ({
-      id: element.id // hash: element.dataset.hash,
-    })),
-    markedText: range.toString(),
-    markedHtml: range.toHtml(),
-    extendedText: markedElements.map((element) => element.textContent),
-    extendedHtml: markedElements.map((element) => element.outerHTML)
-  };
-}
-
 /**
  * Returns a safe rangy range if available, otherwise null.
  */
