@@ -68,11 +68,8 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
   const { children } = props;
 
   const [memo, setMemo] = useState<string>("");
-  const [open, setOpen] = useState(false);
-  const toggleOpen = () => {
-    setOpen(!open);
-  };
   const [isOpen, setIsOpen] = useState(false);
+  const toggleOpen = () => setIsOpen((o) => !o);
 
   const ctx = useFloating({
     placement: "right-start",
@@ -103,7 +100,7 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
       value={{
         memo,
         setMemo,
-        setOpen,
+        setOpen: setIsOpen,
         setView,
         toggleOpen,
         open: isOpen,
