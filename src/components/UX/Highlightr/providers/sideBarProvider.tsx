@@ -308,7 +308,6 @@ const ResponseItem = ({
 };
 const MemoInputField = () => {
   const user = useRPSession(useShallow((r) => r.id as string | null));
-  const memoVal = useRef(" ");
   const writing = useHighlightSidebar("writing");
   const setIsWriting = useHighlightSidebar("setWriting");
   const [value, setValue] = useState("");
@@ -324,12 +323,9 @@ const MemoInputField = () => {
   }, [focusedHighlight]);
   const commentInputRef = useRef<HTMLTextAreaElement>(null!);
   const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    if (saving) {
-      memoVal.current = value;
-    }
-  }, [value, saving]);
   const creater = useCitations((r) => r.create);
+  const saveCallback = useCitations((r) => r.update);
+  const t = useTranslations();
   useEffect(() => {
     const input = commentInputRef.current;
     if (writing && input) {
@@ -430,33 +426,36 @@ const MemoInputField = () => {
                         onClick={async (e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          const mamu = value.trim();
+                          if (!mamu) return;
                           setCursorState(null);
                           setSaving(true);
-                          const mamu = memoVal.current;
                           try {
-                            if (!mamu) {
-                              throw new HighlightCreateError(
-                                "params",
-                                "invalid"
-                              );
-                            } else if (mamu.length < 1) {
-                              throw new HighlightCreateError("memo", "empty");
+                            const focus = fc.current;
+                            if (focus) {
+                              await saveCallback({
+                                ...focus,
+                                memo: mamu,
+                                private: false
+                              });
+                            } else {
+                              const y = await creater({
+                                params: { memo: mamu, private: false },
+                                container: targetContainer.current
+                              });
+                              if (!y) throw new HighlightCreateError("unknown", "unknown");
                             }
-                            const y = await creater({
-                              params: { memo: memoVal.current, private: false },
-                              container: targetContainer.current
-                            });
-                            if (!y)
-                              throw new HighlightCreateError(
-                                "unknown",
-                                "unknown"
-                              );
-                            setSaving(false);
                             setValue("");
                             setCursorState(null);
+                            setIsWriting(false);
                           } catch (e) {
-                            if (e instanceof HighlightCreateError) {
-                            }
+                            errorToast(
+                              e instanceof HighlightCreateError
+                                ? e.message
+                                : t("Highlights.error.save.default")
+                            );
+                          } finally {
+                            setSaving(false);
                           }
                         }}
                         style={{
@@ -847,39 +846,35 @@ export const MemoButton = ({
     if (!focus) {
       if (savedSelectionRef.current) {
         setSaving(true);
-        ranger.restoreSelection(savedSelectionRef.current);
-        ranger.removeMarkers(savedSelectionRef.current);
+        const sv = savedSelectionRef.current;
         savedSelectionRef.current = null;
-        await createCallback({ params: { memo: mamu }, container }).then(
-          (r) => {
-            if (r) {
-              successToast(t("Highlights.saved"));
-            } else {
-              errorToast(t("Highlights.error.save.select"));
-            }
-            qc.invalidateQueries({
-              queryKey: [
-                "savedHighlights",
-                { value: postref.current, slug: slugref.current, userId }
-              ]
-            });
-            setOpen(false);
-            setDirty(false);
+        try {
+          ranger.restoreSelection(sv);
+          ranger.removeMarkers(sv);
+          const r = await createCallback({ params: { memo: mamu }, container });
+          if (r) {
+            successToast(t("Highlights.saved"));
+          } else {
+            errorToast(t("Highlights.error.save.select"));
           }
-        );
+          await qc.invalidateQueries({
+            queryKey: [
+              "savedHighlights",
+              { value: postref.current, slug: slugref.current, userId }
+            ]
+          });
+          setOpen(false);
+          setDirty(false);
+        } catch {
+          errorToast(t("Highlights.error.save.default"));
+        } finally {
+          setSaving(false);
+        }
       }
-      savedSelectionRef.current &&
-        (ranger.removeMarkers(savedSelectionRef.current),
-        (savedSelectionRef.current = null));
-      setSaving(false);
-
       return;
     }
     try {
       setSaving(true);
-      // const where: Where = {
-      // 	reference: {equals: focusedHighlight.reference},
-      // };
       const body = {
         ...focus,
         memo: mamu

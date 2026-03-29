@@ -59,6 +59,7 @@ import { SignedFooter } from "../Signature";
 import { DynamicBreadcrumb } from "./DynamicIsland";
 import { FloatHighlightMenu } from "./HighlightMenu";
 import { usePrivateNote } from "./PrivateHighlights";
+import { useArticle } from "./providers/ArticleProvider";
 import { useFloater } from "./providers/FloatProvider";
 import { useRanger } from "./providers/RangerProvider";
 import type { HighlightColors } from "./stores";
@@ -135,6 +136,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   useEffect(() => {
     userRef.current = user;
   }, [user]);
+  const collection = useArticle(useShallow((r) => r.collection));
   const [enableHighlight, setEnableHighlight] = useState(
     !!user && !d && !locked
   );
@@ -252,15 +254,15 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     isPending: hPending
   } = useQuery({
     placeholderData: [] as FetchedCitation[],
-    queryKey: ["savedHighlights", { value: postId, userId: user!, slug }],
+    queryKey: ["savedHighlights", { value: postId, collection, userId: user!, slug }],
     queryFn: async ({
-      queryKey: [_, { value: postId, userId: _l, slug: _s }]
+      queryKey: [_, { value: id, collection: col }]
     }: {
-      queryKey: [string, { value: string; userId: string; slug: string }];
+      queryKey: [string, { value: string; collection: typeof collection; userId: string; slug: string }];
     }) =>
       await fetchUserHighlights({
-        collection: "posts",
-        id: postId
+        collection: col,
+        id
       }),
     enabled: enableHighlight,
     staleTime: Infinity,
@@ -982,7 +984,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                     ))}
                   </Aside>
                   {locked ? (
-                    <LockedGate id={postId} collection={"posts"} />
+                    <LockedGate id={postId} collection={collection} />
                   ) : (
                     <RichText data={postContent} enableGutter={false} />
                   )}
