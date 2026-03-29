@@ -186,7 +186,6 @@ export const FloatHighlightMenu = ({
         setDirty(false);
         setMemoOpen(false);
       } catch (e) {
-        console.log(e);
         if (e instanceof HighlightCreateError) {
           errorToast(e.message);
         } else {

@@ -235,33 +235,19 @@ export const updateUserHighlight = async ({
       if (Object.entries(params).length === 0) {
         throw new HighlightUpdateError("selection", "empty");
       }
-      return await fetch(`/api/citations/${id}`, {
+      const res = await fetch(`/api/citations/${id}`, {
         method: "PATCH",
         credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(params)
-      })
-        .then(async (res) => {
-          if (res.ok) {
-            const newDoc = (await res.json()) as FetchedCitation;
-            return {
-              ...newDoc,
-              range,
-              els
-            } satisfies HighlightedRange;
-          }
-          throw new Error("Failed to update highlight", {
-            cause: {
-              type: "data"
-            }
-          });
-        })
-        .catch((e) => {
-          console.log(e);
-          throw e;
-        });
+      });
+      if (res.ok) {
+        const newDoc = (await res.json()) as FetchedCitation;
+        return { ...newDoc, range, els } satisfies HighlightedRange;
+      }
+      throw new Error("Failed to update highlight", { cause: { type: "data" } });
     }
   );
   const result: PromiseSettledResult<HighlightedRange>[] =
@@ -348,10 +334,9 @@ export const deleteUserHighlight = async (props: {
       });
     })
     .catch((e) => {
-      console.log(e);
-      const cause = e.cause;
+      const cause = e instanceof Error && e.cause && typeof e.cause === "object" ? e.cause as { type?: string } : null;
       let message = "";
-      if ("type" in cause) {
+      if (cause && "type" in cause) {
         switch (cause.type) {
           case "data":
             message += "Highlights may be deleted, but we couldn't confirm.";
