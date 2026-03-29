@@ -230,13 +230,13 @@ export const CitationProvider = ({ children }: { children: ReactNode }) => {
       if (!userId) {
         throw new HighlightDeleteError("user", "not_authenticated");
       }
-      selection.removeAllRanges();
       if (
         !focusedHighlight ||
         !("els" in focusedHighlight) ||
         !focusedHighlight.els
       )
-        return;
+        throw new HighlightDeleteError("selection", "invalid");
+      selection.removeAllRanges();
       const deleteResult = await deleteUserHighlight({
         deleteTargets: [focusedHighlight]
       });
@@ -271,9 +271,7 @@ export const CitationProvider = ({ children }: { children: ReactNode }) => {
         throw new HighlightDeleteError("unknown", "unknown");
       }
       setFocusedHighlight(null);
-
       setMenuVisibility(false);
-      selection.removeAllRanges();
     },
     [
       handleHighlightClick,

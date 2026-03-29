@@ -23,7 +23,7 @@ export default function LockedGate({
     data: gatedContent
   } = useQuery({
     queryKey: ["gated", collection, id, user],
-    queryFn: ({ signal }) => fetchGated(collection, id),
+    queryFn: ({ signal }) => fetchGated(collection, id, signal),
     refetchOnWindowFocus: false
   });
 
@@ -37,25 +37,20 @@ export default function LockedGate({
 
 async function fetchGated<T extends "posts" | "surf">(
   collection: T,
-  id: string
+  id: string,
+  signal?: AbortSignal
 ): Promise<Shaped<T>> {
-  return await fetch(`/api/gated/${collection}/${id}`, {
+  const res = await fetch(`/api/gated/${collection}/${id}`, {
     method: "get",
     credentials: "include",
-    headers: { Accept: "application/json" }
-  })
-    .then(
-      async (res) =>
-        (await res.json()) as Promise<{
-          data: Shaped<typeof collection>;
-          collection: string;
-        }>
-    )
-    .then((r) => {
-      if (r && r.data) {
-        const { data } = r;
-        return data;
-      }
-      throw new Error("Failed to fetch gated content");
-    });
+    headers: { Accept: "application/json" },
+    signal
+  });
+  if (!res.ok) throw new Error(`Failed to fetch gated content: ${res.status}`);
+  const r = (await res.json()) as {
+    data: Shaped<T>;
+    collection: string;
+  };
+  if (r?.data) return r.data;
+  throw new Error("Failed to fetch gated content");
 }
