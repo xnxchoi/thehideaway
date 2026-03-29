@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { InterfaceTour, InterfaceTourTrigger } from "./InterfaceTour";
 import { RegistrationTourTrigger } from "./RegistrationTour";
-import { useTourStore } from "./TourProvider";
 
 export { TourProvider } from "./TourProvider";
 export { useTourStore } from "./TourProvider";
@@ -12,12 +12,12 @@ export { useTourStore } from "./TourProvider";
  * It mounts both tour overlays and their activation triggers.
  */
 export function TourOrchestrator() {
-  const regActive = useTourStore((s) => s.regActive);
-
   return (
     <>
       {/* Triggers — zero-render, keyboard/session listeners */}
-      <RegistrationTourTrigger />
+      <Suspense fallback={null}>
+        <RegistrationTourTrigger />
+      </Suspense>
       <InterfaceTourTrigger />
 
       <InterfaceTour />

@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { RPage } from "@/components/UX/Transition";
 import { RegistrationTour } from "@/components/UX/Tour/RegistrationTour";
 
@@ -10,7 +11,9 @@ export default function OnboardingPage() {
       slug={["onboarding"]}
       theme={"dark"}
     >
-      <RegistrationTour />
+      <Suspense fallback={null}>
+        <RegistrationTour />
+      </Suspense>
     </RPage>
   );
 }

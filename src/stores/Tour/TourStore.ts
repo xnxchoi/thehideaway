@@ -110,7 +110,7 @@ export const createTourStore = () =>
       regActive: false,
       regStep: "welcome",
       regSteps: REG_STEPS,
-      regPending: { needsIdentity: false, hasPreexistingData: false },
+      regPending: { needsIdentity: false, hasPreexistingData: false, severity: "complete" },
       regDismissed: false,
       regFromPath: null,
       regBannerMode: false,
