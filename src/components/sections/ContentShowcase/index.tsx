@@ -1,6 +1,6 @@
 "use client";
 import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";

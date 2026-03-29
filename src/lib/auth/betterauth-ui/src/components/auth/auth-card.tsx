@@ -33,7 +33,7 @@ import { OneTap } from "./one-tap";
 import { PasskeyButton } from "./passkey-button";
 import { ProviderButton } from "./provider-button";
 import { SignOut } from "./sign-out";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 
 export interface AuthCardClassNames {
   base?: string;

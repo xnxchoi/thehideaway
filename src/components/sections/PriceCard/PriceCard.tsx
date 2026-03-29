@@ -3,7 +3,7 @@ import DoubleSwitch from "@/components/ui/DoubleSwitch";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { Starliner } from "@/components/sections/Starliner/Starliner";
 import { cn } from "@/lib/utils";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useShallow } from "zustand/shallow";
@@ -27,7 +27,7 @@ export const RP_Listing = (props: PriceCardProps) => {
       ratio={type === "founder" ? 45 / 12 : 1}
       data-card-state="default"
       className={cn(
-	      "price-card relative flex h-full flex-col items-center justify-center overflow-hidden rounded-xl border-1 border-faded-foreground bg-muted-faded-background/50 px-[3.75em] py-[4em]",
+        "price-card relative flex h-full flex-col items-center justify-center overflow-hidden rounded-xl border-1 border-faded-foreground bg-muted-faded-background/50 px-[3.75em] py-[4em]",
         className
       )}
     >

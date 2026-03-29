@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/client";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { useState } from "react";
 import { RPage } from "@/components/UX/Transition";
 import { useTransitionRouter } from "next-transition-router";

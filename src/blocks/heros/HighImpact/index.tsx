@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 
 import type { Page } from "@/payload-types";
 
-import { ReferencedLink } from "@/components/UX/Link/referencedLink";
+import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { Media } from "@/components/core/Media";
 import RichText from "@/payload/fields/RichText";
 

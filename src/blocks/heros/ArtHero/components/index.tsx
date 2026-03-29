@@ -1,5 +1,5 @@
 "use client";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import {
   FrontImage,
   FrontImageProps

@@ -12,7 +12,7 @@ import {
   FormLabel
 } from "@/components/ui/form";
 import { Input, InputFile } from "@/components/ui/input";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { Logo } from "@/components/UX/Logo";
 import "@/styles/__inputs.scss";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";

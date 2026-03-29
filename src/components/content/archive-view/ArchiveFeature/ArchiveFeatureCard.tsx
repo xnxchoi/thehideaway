@@ -1,5 +1,5 @@
 import { CoverCard } from "@/blocks/heros/ArtHero/components";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { AspectRatio } from "@/components/core/Media/types";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";

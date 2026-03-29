@@ -17,7 +17,7 @@ import * as motion from "motion/react-m";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button, PillButton } from "@/components/UX/Button";
+import { Button, PillButton } from "@/components/core/Button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
@@ -31,7 +31,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { ReferencedLink } from "@/components/UX/Link/referencedLink";
+import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { useHumanDate } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";

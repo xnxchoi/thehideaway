@@ -1,6 +1,6 @@
 import { CardPostData } from "@/payload/components/Card";
 import { Media } from "@/components/core/Media";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { DateTime } from "luxon";
 import { Fragment } from "react";
 

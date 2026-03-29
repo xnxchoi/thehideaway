@@ -1,5 +1,4 @@
-import { type ButtonTotalProps } from "@/components/ui/button";
-import { MotionPillButton } from "@/components/UX/Button";
+import { MotionPillButton } from "@/components/core/Button";
 import { EASING, SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
@@ -14,9 +13,14 @@ import {
   useTransform
 } from "motion/react";
 import * as m from "motion/react-m";
-import type { ComponentPropsWithRef, MouseEventHandler } from "react";
-import { RefObject, useCallback, useEffect, useRef } from "react";
-import { Icon } from "src/components/UX/Icon";
+import React, {
+  ComponentPropsWithRef,
+  MouseEventHandler,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef
+} from "react";
 import { useShallow } from "zustand/shallow";
 
 type MenuButtonProps = ComponentPropsWithRef<"button">;
@@ -178,7 +182,23 @@ export const MenuButton = ({
           ref={menuIconRef}
           style={{ y: iconY }}
         >
-          <Icon className={"menu__button-icon"} name={"Close"} />
+          <svg
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={"menu__button-icon"}
+          >
+            <path
+              data-themed="stroke"
+              d="M2.625 2.625L9.375 9.375"
+              stroke="currentColor"
+            />
+            <path
+              data-themed="stroke"
+              d="M2.625 9.375L9.375 2.625"
+              stroke="currentColor"
+            />
+          </svg>
         </m.span>
       </m.span>
     </MotionPillButton>

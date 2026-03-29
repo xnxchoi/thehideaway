@@ -1,6 +1,6 @@
 "use client";
 
-import { MotionPillButton } from "@/components/UX/Button";
+import { MotionPillButton } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import type { TourTarget } from "@/stores/Tour/TourStore";
@@ -156,7 +156,11 @@ function TourTooltip({
         className="flex items-center justify-between gap-2"
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{
+          duration: 0.3,
+          delay: 0.18,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }}
       >
         <MotionPillButton
           onClick={onPrev}
@@ -191,7 +195,9 @@ function TourTooltip({
           onClick={onNext}
           className="text-sm font-medium text-foreground transition-colors hover:text-foreground/70"
         >
-          {index === total - 1 ? "Done" : (
+          {index === total - 1 ? (
+            "Done"
+          ) : (
             <>
               Next
               <svg

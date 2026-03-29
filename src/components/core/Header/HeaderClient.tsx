@@ -3,7 +3,7 @@ import { CheckInButton } from "@/components/core/Header/CheckInButton";
 import { SearchBar } from "@/components/UX/CommandKey/SearchBar";
 import { DarkmodeButton } from "@/components/UX/DarkMode/Darkmode";
 import { UserDropdown } from "@/components/UX/Dropdown/RPDropDown";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { Logo, Mogo } from "@/components/UX/Logo";
 import { MenuButton } from "@/components/UX/Menu/MenuButton";
 import { NotificationButton } from "@/components/UX/NotificationButton/notificationButton";

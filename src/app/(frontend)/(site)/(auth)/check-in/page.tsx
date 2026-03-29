@@ -1,5 +1,5 @@
 import { PageRedirect, RPage } from "@/components/UX/Transition";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { LoginForm } from "@/components/UX/login-form";
 import { Logo } from "@/components/UX/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient";

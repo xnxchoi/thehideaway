@@ -3,7 +3,7 @@
 import { useLenis } from "lenis/react";
 import { forwardRef, HTMLAttributes } from "react";
 
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { useRPStore } from "@/providers/RP_Pro";
 import { cn } from "@/lib/utils";
 

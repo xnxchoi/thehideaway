@@ -1,6 +1,8 @@
 "use client";
 import { FeaturedCard } from "@/blocks/heros/ArtHero/FeatureHero";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import { Link } from "@/components/core/Link/Link";
+import { BookmarkButton } from "@/components/UX/Bookmark";
 import LockedGate from "@/components/UX/Highlightr/Gated";
 import {
   fetchUserHighlights,
@@ -8,10 +10,9 @@ import {
 } from "@/components/UX/Highlightr/providers/HighlighterProvider";
 import { ResponseMap } from "@/components/UX/Highlightr/responseMap";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
-import { Link } from "@/components/UX/Link/Link";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import type { Bookmark, User } from "@/payload-types";
+import type { User } from "@/payload-types";
 import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";
@@ -30,7 +31,6 @@ import {
   useTransitionStatus
 } from "@floating-ui/react";
 import { useGSAP } from "@gsap/react";
-import { BookmarkFilledIcon, BookmarkIcon } from "@radix-ui/react-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
 import type Lenis from "lenis";
@@ -41,14 +41,11 @@ import {
   useMotionValueEvent
 } from "motion/react";
 import { useTransitionState } from "next-transition-router";
-import type { Where } from "payload";
-import { stringify } from "qs-esm";
 
 import {
   type ComponentPropsWithoutRef,
   type ComponentPropsWithRef,
   type MouseEvent,
-  MouseEventHandler,
   ReactNode,
   useCallback,
   useEffect,
@@ -57,12 +54,11 @@ import {
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { Button, MotionBtn, PillButton } from "../Button";
+import { Button } from "../../core/Button";
 import { SignedFooter } from "../Signature";
 import { DynamicBreadcrumb } from "./DynamicIsland";
 import { FloatHighlightMenu } from "./HighlightMenu";
 import { usePrivateNote } from "./PrivateHighlights";
-import { useArticle } from "./providers/ArticleProvider";
 import { useFloater } from "./providers/FloatProvider";
 import { useRanger } from "./providers/RangerProvider";
 import type { HighlightColors } from "./stores";
@@ -1049,257 +1045,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         </div>
       </div>
     </>
-  );
-};
-const BookmarkButton = () => {
-  const qc = useQueryClient();
-  const post = useArticle(useShallow((r) => r.id as null | string));
-  const user = useRPSession(useShallow((r) => r.id as null | string));
-  const collection = useArticle(useShallow((r) => r.collection));
-  const cR = useRef(collection);
-  const pR = useRef(post);
-  const uR = useRef(user);
-  const [disabled, setDisabled] = useState(!user || !post);
-  useEffect(() => {
-    cR.current = collection;
-    pR.current = post;
-    setDisabled((r) => r || !collection || !post);
-  }, [collection, post]);
-  useEffect(() => {
-    uR.current = user;
-    setDisabled((r) => r || !user);
-  }, [user]);
-  const [initialized, setInitialized] = useState(false);
-  const fetcher = useCallback(async () => {
-    const postId = pR.current;
-    const userId = uR.current;
-    if (!userId) {
-      throw new Error("Not found");
-    }
-    if (!postId) {
-      throw new Error("Not found");
-    }
-    const where: Where = {
-      and: [
-        {
-          "target.value": {
-            equals: postId
-          }
-        },
-        {
-          user: {
-            equals: userId
-          }
-        }
-      ]
-    };
-    const r = await fetch(
-      `/api/bookmarks/count/${stringify({ where }, { addQueryPrefix: true })}`
-    );
-    if (r.ok) {
-      const res = (await r.json()) as {
-        totalDocs: number;
-      };
-      setInitialized(true);
-      return res.totalDocs > 0;
-    }
-    throw new Error("Not found");
-  }, []);
-  const {
-    data: hasBookmark,
-    isPending,
-    isError,
-    isFetching,
-    isSuccess
-  } = useQuery({
-    queryKey: [
-      "bookmarks",
-      {
-        collection: cR.current,
-        article: pR.current,
-        user: uR.current
-      }
-    ],
-    queryFn: fetcher,
-    enabled: !initialized
-  });
-  const [bookmarked, setBookmarked] = useState(Boolean(hasBookmark));
-  useEffect(() => {
-    if (!isPending) {
-      setBookmarked(hasBookmark || false);
-    }
-  }, [hasBookmark, isPending, isSuccess, isError]);
-  const removeBookmark = useRPSession((r) => r.deleteBookmark);
-  const addBookmark = useRPSession((r) => r.addBookmark);
-  const hasBookmarkRef = useRef(!!hasBookmark);
-  useEffect(() => {
-    hasBookmarkRef.current = !!hasBookmark;
-  }, [hasBookmark]);
-  const dB = useCallback(async () => {
-    const postId = pR.current;
-    const userId = uR.current;
-    if (!userId) {
-      return;
-    }
-    if (!postId) {
-      return;
-    }
-    const where: Where = {
-      and: [
-        {
-          "target.value": {
-            equals: postId
-          }
-        },
-        {
-          user: {
-            equals: userId
-          }
-        }
-      ]
-    };
-    const args = stringify({ where }, { addQueryPrefix: true });
-    const res = await fetch(`/api/bookmarks/${args}`, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(
-        async (r) => (await r.json()) as { docs: Bookmark[]; errors: object[] }
-      )
-      .then((r) => {
-        if (r.docs && r.docs.length > 0) {
-          return r.docs[0] as Bookmark;
-        }
-        return null;
-      })
-      .catch((e) => {
-        console.log(e);
-        return null;
-      });
-    if (res) {
-      removeBookmark({
-        collection: res.target.relationTo as Bookmark["target"]["relationTo"],
-        id: res.target.value as string
-      });
-      return true;
-    }
-    return false;
-  }, [removeBookmark]);
-  const cB = useCallback(async () => {
-    const postId = pR.current;
-    const userId = uR.current;
-    if (!userId) {
-      return;
-    }
-    if (!postId) {
-      return;
-    }
-    const body: Pick<Bookmark, "target" | "user"> = {
-      target: {
-        value: postId,
-        relationTo: cR.current
-      },
-      user: userId
-    };
-    const res = await fetch("/api/bookmarks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify(body)
-    })
-      .then(
-        async (r) => (await r.json()) as { doc: Bookmark; message: object[] }
-      )
-      .then((r) => {
-        if (r.doc) {
-          return r.doc as Bookmark;
-        }
-        throw new Error("Failed to create bookmark");
-      })
-      .catch((e) => {
-        console.log(e);
-        throw new Error("Failed to create bookmark");
-      });
-    if (res) {
-      addBookmark({
-        id: res.target.value as string,
-        collection: res.target.relationTo as Bookmark["target"]["relationTo"]
-      });
-      return true;
-    }
-    throw new Error("Failed to create bookmark");
-  }, [addBookmark]);
-  const createBookmark = useMutation({
-    mutationFn: cB,
-    onSuccess: (res) => {
-      if (res) {
-        qc.setQueryData(
-          [
-            "bookmarks",
-            {
-              collection: cR.current,
-              article: pR.current,
-              user: uR.current
-            }
-          ],
-          true
-        );
-      }
-    }
-  });
-  const deleteBoookmark = useMutation({
-    mutationFn: dB,
-    onSuccess: (res) => {
-      if (res) {
-        qc.setQueryData(
-          [
-            "bookmarks",
-            {
-              collection: cR.current,
-              article: pR.current,
-              user: uR.current
-            }
-          ],
-          false
-        );
-      }
-    }
-  });
-  const bookmarkSaveOrDelete: MouseEventHandler = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (hasBookmark) {
-        deleteBoookmark.mutate();
-      } else {
-        createBookmark.mutate();
-      }
-    },
-    [deleteBoookmark, createBookmark, hasBookmark]
-  );
-  return disabled ? (
-    <></>
-  ) : (
-    <div className={"flex h-8 min-w-8"}>
-      <MotionBtn
-        transition={{ type: "spring", bounce: 0.4 }}
-        whileTap={{ scale: 0.9 }}
-        whileHover={{
-          scale: 1.1
-        }}
-        onClick={bookmarkSaveOrDelete}
-        className={
-          "flex h-full items-center justify-center [&_path]:fill-muted-faded-background/55 [&_path]:stroke-none [&_path]:outline-none dark:[&_path]:fill-muted-faded-foreground/55 [&_svg]:size-8"
-        }
-        disabled={isFetching || isPending}
-      >
-        {bookmarked ? <BookmarkFilledIcon /> : <BookmarkIcon />}
-      </MotionBtn>
-    </div>
   );
 };
 

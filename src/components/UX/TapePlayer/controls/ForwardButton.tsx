@@ -1,6 +1,6 @@
 "use client";
 
-import {MotionBtn} from "@/components/UX/Button";
+import { MotionBtn } from "@/components/core/Button";
 import { cn } from "@/lib/utils";
 import { useRadio, useRadioStore } from "@/providers/RadioProvider";
 import * as m from "motion/react-m";
@@ -29,7 +29,7 @@ export const ForwardButton = ({ size = 44, className }: ForwardButtonProps) => {
   }, [skipToTrack, currentIndex, haptics]);
 
   return (
-      <MotionBtn
+    <MotionBtn
       onClick={handleClick}
       whileTap={{ scale: 0.88, rotate: 30 }}
       transition={{ type: "spring", stiffness: 400, damping: 15 }}
@@ -57,6 +57,6 @@ export const ForwardButton = ({ size = 44, className }: ForwardButtonProps) => {
           clipRule="evenodd"
         />
       </svg>
-      </MotionBtn>
+    </MotionBtn>
   );
 };

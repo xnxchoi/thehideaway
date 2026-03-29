@@ -17,7 +17,7 @@ import {
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { Controlbar } from "../Controlbar";
-import { Link } from "../Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { RP_FM } from "../Radio/RP_FM";
 import { SideNotch } from "../SideNotch";
 

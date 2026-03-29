@@ -19,7 +19,7 @@ import { User } from "@payload-types";
 import { ChevronDown, PlusCircle } from "lucide-react";
 import { useTransitionRouter } from "next-transition-router";
 import { use, useState } from "react";
-import { Button } from "./Button";
+import { Button } from "../core/Button";
 
 export default function AccountSwitcher() {
   const { currentUserPromise, deviceSessionsPromise } = useBetterAuth();

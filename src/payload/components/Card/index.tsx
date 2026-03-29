@@ -2,7 +2,7 @@
 import React from "react";
 import type { PostOverview } from "@/types/collections/posts";
 import { useClickableCardRP } from "@/utilities/useClickableCard";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 
 export type CardPostData = PostOverview;

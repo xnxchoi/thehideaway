@@ -15,7 +15,7 @@ import {
   useCallback,
   useState
 } from "react";
-import type { MotionBtnProps } from "../Link/types";
+import type { MotionBtnProps } from "@/components/core/Link/types";
 
 export const RP_Btn = (props: ComponentProps<"button">) => {
   const {

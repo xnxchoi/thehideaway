@@ -4,7 +4,7 @@ import Script from "next/script";
 import { RefObject } from "react";
 import { Header } from "@/payload-types";
 import { PageType } from "@/stores/Routing/RP_Voyageur";
-import { PayloadLinkProps } from "@/components/UX/Link/types";
+import { PayloadLinkProps } from "@/components/core/Link/types";
 
 export const lerp = (start: number, end: number, amount = 0.1) => {
   return start + (end - start) * amount;

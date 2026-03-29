@@ -11,7 +11,7 @@ import {
 import { DialogTitle } from "@/components/ui/dialog";
 import { PopoverRoot, PopoverTrigger } from "@/components/ui/popover";
 
-import { MotionPillButton } from "@/components/UX/Button";
+import { MotionPillButton } from "@/components/core/Button";
 import {
   LinkedCommandItem,
   LinkedItem

@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { EASING } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
@@ -133,7 +133,7 @@ export const RP_Menu = () => {
   const menuPageItemKeys = useRPStore(
     useShallow((l) => l.navigationPageItemKeys)
   );
-	const lastAdjustRealTime = useMemo(() => 2026, []);
+  const lastAdjustRealTime = useMemo(() => 2026, []);
   const currentPageKey = useVoyageur(useShallow((l) => l.pageKey));
   const setNavItemHovered = useRPStore((l) => l.setNavigationPageItemHovered);
   const setNavItemSelected = useRPStore((l) => l.setNavigationPageItemSelected);
@@ -737,7 +737,9 @@ const CornerStone = (
         clipRule="evenodd"
         fillRule="evenodd"
         strokeWidth={theme === "dark" ? 1.2 : 0}
-        stroke={theme === "dark" ? "oklch(from var(--n-s-bbg) l c h/.04)" : "none"}
+        stroke={
+          theme === "dark" ? "oklch(from var(--n-s-bbg) l c h/.04)" : "none"
+        }
         initial="initial"
         animate="animate"
         exit="exit"

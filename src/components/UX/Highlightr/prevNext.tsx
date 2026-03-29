@@ -1,6 +1,6 @@
 "use client";
 import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { useCursor, useMenu } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import type { PostOverview } from "@/types/collections/posts";

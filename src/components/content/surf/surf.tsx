@@ -2,7 +2,7 @@
 import { CommentBubble } from "@/components/content/CommentBubble";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { CopyLinkButton } from "@/components/ui/copy-button";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";

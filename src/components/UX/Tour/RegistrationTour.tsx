@@ -1,6 +1,6 @@
 "use client";
 
-import { MotionPillButton } from "@/components/UX/Button";
+import { MotionPillButton } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { authClient } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";

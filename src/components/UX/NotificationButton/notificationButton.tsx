@@ -1,6 +1,6 @@
 "use client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link, MotionLink } from "@/components/UX/Link/Link";
+import { Link, MotionLink } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
 import { useHumanTime } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
@@ -31,8 +31,8 @@ import {
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { useDomCursor } from "../../core/cursorWrapper";
-import { Button, MotionBtn, MotionPillButton } from "../Button";
-import { ReferencedLink } from "../Link/referencedLink";
+import { Button, MotionBtn, MotionPillButton } from "../../core/Button";
+import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { ImageMedia } from "@/components/core/Media/Image";
 

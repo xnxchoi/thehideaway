@@ -3,7 +3,7 @@ import {
   OverviewAgnosticItem
 } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { TagButton } from "@/components/UX/TagButton";
 import { RPage } from "@/components/UX/Transition";
 import { getImageOverviewByID } from "@/payload/collections/Posts/api/getImageMedia";

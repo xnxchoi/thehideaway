@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef } from "react";
-import { Link } from "../Link/Link";
+import { Link } from "@/components/core/Link/Link";
 
 type LockedProps = {
   type?: "tier" | "allowList" | "admin" | "user";
@@ -24,8 +24,7 @@ export const Locked = ({ type, content, tier, ...rest }: LockedProps) => {
         : "Access Locked";
   return (
     <div className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center">
-	    <div
-		    className="relative z-2 flex w-full flex-col flex-wrap items-center justify-center gap-[25px] rounded-[6px] bg-off-foreground/20 py-[100px] backdrop-blur-sm md:w-[calc((100vw-215px)*7/12+90px)]">
+      <div className="relative z-2 flex w-full flex-col flex-wrap items-center justify-center gap-[25px] rounded-[6px] bg-off-foreground/20 py-[100px] backdrop-blur-sm md:w-[calc((100vw-215px)*7/12+90px)]">
         <div
           className="grid h-[60px] w-[60px] place-items-center rounded-full border border-solid"
           style={{ background: "0 0" }}
@@ -51,7 +50,7 @@ export const Locked = ({ type, content, tier, ...rest }: LockedProps) => {
         <div className="relative">
           <Link
             href="/register"
-            className="relative flex h-[41px] w-full min-w-[120px] flex-[0_0_auto] flex-row items-center justify-center gap-[12px] overflow-hidden rounded-lg border-[1px] border-solid border-faded-foreground/&.8)] px-[16px] py-0 uppercase transition-colors duration-300 ease-in-out hover:border-background/10 hover:bg-faded-foreground/&.3)] hover:text-background"
+            className="border-faded-foreground/&.8)] hover:bg-faded-foreground/&.3)] relative flex h-[41px] w-full min-w-[120px] flex-[0_0_auto] flex-row items-center justify-center gap-[12px] overflow-hidden rounded-lg border-[1px] border-solid px-[16px] py-0 uppercase transition-colors duration-300 ease-in-out hover:border-background/10 hover:text-background"
           >
             <svg
               className="absolute left-[16px] m-0 inline-block h-full w-[11px] object-contain"

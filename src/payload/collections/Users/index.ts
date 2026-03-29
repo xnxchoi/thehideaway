@@ -386,7 +386,7 @@ export const Users: CollectionConfig = {
 
     {
       path: "/:id/bookmarks",
-      method: "get",
+      method: "post",
       handler: getUserBookmarks
     },
     {

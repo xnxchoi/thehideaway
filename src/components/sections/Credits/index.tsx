@@ -1,6 +1,6 @@
 "use client";
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { cn } from "@/lib/utils";
 import type { User, UserMedia } from "@/payload-types";

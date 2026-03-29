@@ -1,5 +1,5 @@
 "use client";
-import { MotionPillButton } from "@/components/UX/Button";
+import { MotionPillButton } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useRPStore } from "@/providers/RP_Pro";

@@ -1,11 +1,11 @@
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import type { ButtonProps } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Ref, RefAttributes } from "react";
 import { getUrlFromPageData } from "@/utilities/Helpers";
 import { BackendLink } from "@/stores/RP_Ui";
-import { PayloadLinkProps, RPLinkProps } from "@/components/UX/Link/types";
+import { PayloadLinkProps, RPLinkProps } from "@/components/core/Link/types";
 
 export type CMSLinkBase = {
   button?: true;

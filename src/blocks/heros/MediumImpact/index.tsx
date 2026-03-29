@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ReferencedLink } from "@/components/UX/Link/referencedLink";
+import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { Media } from "@/components/core/Media";
 import RichText from "@/payload/fields/RichText";
 import type { Page } from "@/payload-types";

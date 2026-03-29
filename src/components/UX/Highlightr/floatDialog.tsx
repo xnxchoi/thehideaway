@@ -27,7 +27,7 @@ import {
   useMemo,
   useState
 } from "react";
-import { Button } from "../Button";
+import { Button } from "../../core/Button";
 
 interface DialogOptions {
   initialOpen?: boolean;

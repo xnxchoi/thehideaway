@@ -1,4 +1,4 @@
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 
 export const CommentBubble = (props: {
   commentCount?: number;
@@ -14,8 +14,7 @@ export const CommentBubble = (props: {
         className="group before:relative before:top-px before:text-[16px] before:leading-[4px] data-[count=0]:before:content-['+']"
         data-count={commentCount}
       >
-        <span
-	        className="text-[1.1rem] leading-[1] tracking-[-0.1em] text-faded-foreground uppercase group-data-[count=0]:hidden">
+        <span className="text-[1.1rem] leading-[1] tracking-[-0.1em] text-faded-foreground uppercase group-data-[count=0]:hidden">
           {commentCount}
         </span>
       </span>

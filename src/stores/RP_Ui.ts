@@ -1,7 +1,7 @@
 "use client";
 
+import { PayloadLinkProps } from "@/components/core/Link/types";
 import { ViewportSizes } from "@/components/core/Media/types";
-import { PayloadLinkProps } from "@/components/UX/Link/types";
 import type { PageTransitionType } from "@/components/UX/Transition";
 import type { Footer, Media } from "@/payload-types";
 import type { Theme } from "@/providers/Theme/types";

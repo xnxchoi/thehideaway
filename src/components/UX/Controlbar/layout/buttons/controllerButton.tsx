@@ -4,14 +4,14 @@ import { usePathname } from "next/navigation";
 import type { ButtonHTMLAttributes, ForwardedRef, ReactNode, Ref } from "react";
 import { forwardRef } from "react";
 
-import { Link } from "@/components/UX/Link/Link";
+import { Link } from "@/components/core/Link/Link";
 import type { SVGIcoProps } from "@/components/UX/svgIco";
 import { SvgIco } from "@/components/UX/svgIco";
 import { RPTooltip } from "@/components/UX/tooltip";
 import { cn } from "@/lib/utils";
 import { LinkProps } from "next/link";
 import { Button } from "@/components/ui/button";
-import { RPLinkProps } from "@/components/UX/Link/types";
+import { RPLinkProps } from "@/components/core/Link/types";
 
 export type ExecutorSlot<Type> = {
   [Property in keyof Type]: Type[Property] extends (
@@ -88,7 +88,7 @@ export const ControllerButton = forwardRef<
                 <div>{title}</div>
               )}
             </Link>{" "}
-	          <RPTooltip content={label}/>
+            <RPTooltip content={label} />
           </>
         ) : (
           <Button
@@ -103,7 +103,7 @@ export const ControllerButton = forwardRef<
             ) : (
               <div>{title}</div>
             )}
-	          <RPTooltip content={label}/>
+            <RPTooltip content={label} />
           </Button>
         )}{" "}
       </li>

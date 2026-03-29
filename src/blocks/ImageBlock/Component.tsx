@@ -1,6 +1,6 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import { Button } from "@/components/UX/Button";
+import { Button } from "@/components/core/Button";
 import { RootImage } from "@/components/core/Media/Image";
 import type { MediaProps } from "@/components/core/Media/types";
 import { SPRING_EASE } from "@/constants/animations";

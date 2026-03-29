@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button as UIBtn } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-	DialogRoot,
+  DialogRoot,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -22,9 +22,9 @@ import { useHighlighter } from "@/components/UX/Highlightr/providers/Highlighter
 import { HighlightCreateError } from "@/components/UX/Highlightr/HighlightErrors";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
 import type { HighlightedRange } from "@/components/UX/Highlightr/types";
-import { Link } from "@/components/UX/Link/Link";
-import {AuthorOverview} from "@/types/collections/users";
-import { Button } from "../../Button";
+import { Link } from "@/components/core/Link/Link";
+import { AuthorOverview } from "@/types/collections/users";
+import { Button } from "../../../core/Button";
 import { useCharacterLimit } from "@/hooks/use-character-limit";
 import { AuthUIContext, socialProviders } from "@/lib/auth/betterauth-ui/src";
 import { ProviderButton } from "@/lib/auth/betterauth-ui/src/components/auth/provider-button";
@@ -281,9 +281,7 @@ const ResponseItem = ({
                     <div className={"outline-none"}>
                       <Link href={`/@${author.slug}`}>
                         <div className={"flex items-baseline"}>
-                          <p className={"break-all"}>
-	                          {author.name}
-                          </p>
+                          <p className={"break-all"}>{author.name}</p>
                         </div>
                       </Link>
                     </div>
@@ -658,7 +656,7 @@ export const SignInCard = (
 
   return (
     <div className={cn("flex flex-col gap-9")}>
-	    <Card className="bg-faded-background/50">
+      <Card className="bg-faded-background/50">
         <CardContent className={cn("grid gap-9")}>
           <div className="grid gap-4">
             <div
@@ -689,7 +687,7 @@ export const SignInCard = (
             <UIBtn
               variant="outline"
               onClick={onClick}
-              className="*:ease text-md ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-faded-foreground/&.65)] bg-off-background/30 px-4 py-3 font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-faded-background/65 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
+              className="*:ease text-md ease border-faded-foreground/&.65)] inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border bg-off-background/30 px-4 py-3 font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-faded-background/65 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
               disabled={isSubmitting}
             >
               <span className="">{t("providers")}</span>
@@ -703,8 +701,8 @@ export const SignInCard = (
 const SignInTriggerButton = () => {
   const [isOpen, setOpen] = useState(false);
   return (
-	  <DialogRoot open={isOpen} onOpenChange={setOpen}>
-      <DialogTrigger asChild></DialogTrigger>
+    <DialogRoot open={isOpen} onOpenChange={setOpen}>
+      <DialogTrigger></DialogTrigger>
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>Check In</DialogTitle>
@@ -713,7 +711,7 @@ const SignInTriggerButton = () => {
           <SignInCard onSignInClick={() => {}} />
         </div>
       </DialogContent>
-	  </DialogRoot>
+    </DialogRoot>
   );
 };
 export const MemoInput = (
@@ -930,32 +928,35 @@ export const MemoButton = ({
   }, [open, ranger]);
   return (
     <>
-	    <DialogRoot open={isOpen} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <HighlightMenuButton className={className} onClick={closeOnClick}>
-            {focusedHighlight && focusedHighlight.memo ? "Edit" : "Memo"}
-            <MenuButtonCaption>
-              <svg
-                width="8"
-                height="8"
-                viewBox="0 0 12 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M2 2h8v8H2z" fill="currentColor" />
-                <path
-                  d="M4 4h4v1H4zM4 6h4v1H4zM4 8h3v1H4z"
-                  fill="var(--faded-bg)"
-                />
-              </svg>
-            </MenuButtonCaption>
-          </HighlightMenuButton>
-        </DialogTrigger>
+      <DialogRoot open={isOpen} onOpenChange={setOpen}>
+        <DialogTrigger
+          nativeButton={true}
+          render={() => (
+            <HighlightMenuButton className={className} onClick={closeOnClick}>
+              {focusedHighlight && focusedHighlight.memo ? "Edit" : "Memo"}
+              <MenuButtonCaption>
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M2 2h8v8H2z" fill="currentColor" />
+                  <path
+                    d="M4 4h4v1H4zM4 6h4v1H4zM4 8h3v1H4z"
+                    fill="var(--faded-bg)"
+                  />
+                </svg>
+              </MenuButtonCaption>
+            </HighlightMenuButton>
+          )}
+        />
         <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>{view === "memo" ? "Memo" : "Sign in"}</DialogTitle>
           </DialogHeader>
-          {view === "memo" ? (
+          {(view === "memo" && (
             <div className="grid gap-3">
               <MemoInput
                 value={memo}
@@ -965,7 +966,7 @@ export const MemoButton = ({
                 className=""
               />
             </div>
-          ) : (
+          )) || (
             <div className="grid gap-3">
               <SignInCard onSignInClick={closeOnClick} />
             </div>
@@ -990,7 +991,7 @@ export const MemoButton = ({
             </div>
           </DialogFooter>
         </DialogContent>
-	    </DialogRoot>
+      </DialogRoot>
     </>
   );
 };
