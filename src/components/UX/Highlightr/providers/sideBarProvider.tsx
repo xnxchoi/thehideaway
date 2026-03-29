@@ -82,27 +82,32 @@ const HighlightSidebarContext = createContext<HighlightSidebarProps>({
   writing: false,
   setWriting: (_) => {}
 });
+const isValidAuthor = (user: AuthorOverview) =>
+  user.id !== "0" && !!user.slug;
+
 export const UserBar = ({ user }: { user: AuthorOverview }) => {
+  const linked = isValidAuthor(user);
+  const avatar = (
+    <div className={"relative block"}>
+      <Avatar>
+        {(user.image && (
+          <AvatarImage height={32} width={32} src={user.image} />
+        )) || (
+          <AvatarFallback className={"uppercase"}>
+            {user.name.at(0)}
+            {user.name.at(1)}
+          </AvatarFallback>
+        )}
+      </Avatar>
+    </div>
+  );
   return (
     <div className={"flex justify-between"}>
       <div className={"flex items-center"}>
         <div>
           <div className={"inline-block"}>
             <div className={"outline-none"} tabIndex={-1}>
-              <Link href={`/@${user.slug}`}>
-                <div className={"relative block"}>
-                  <Avatar>
-                    {(user.image && (
-                      <AvatarImage height={32} width={32} src={user.image} />
-                    )) || (
-                      <AvatarFallback className={"uppercase"}>
-                        {user.name.at(0)}
-                        {user.name.at(1)}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                </div>
-              </Link>
+              {linked ? <Link href={`/@${user.slug}`}>{avatar}</Link> : avatar}
             </div>
           </div>
         </div>
@@ -110,11 +115,13 @@ export const UserBar = ({ user }: { user: AuthorOverview }) => {
           <div className={"flex items-center"}>
             <div className={"inline-block"}>
               <div className={"outline-none"} tabIndex={-1}>
-                <Link href={`/@${user.slug}`}>
-                  <div className={"flex items-baseline"}>
+                {linked ? (
+                  <Link href={`/@${user.slug}`}>
                     <p className={"break-all"}>{user.name}</p>
-                  </div>
-                </Link>
+                  </Link>
+                ) : (
+                  <p className={"break-all"}>{user.name}</p>
+                )}
               </div>
             </div>
           </div>
@@ -245,6 +252,21 @@ const ResponseItem = ({
   isEdited?: boolean;
 }) => {
   const locale = useLocale();
+  const linked = isValidAuthor(author);
+  const avatarNode = (
+    <div className={"relative block"}>
+      <Avatar>
+        {(author.image && (
+          <AvatarImage height={32} width={32} src={author.image} />
+        )) || (
+          <AvatarFallback className={"uppercase"}>
+            {author.name.at(0)}
+            {author.name.at(1)}
+          </AvatarFallback>
+        )}
+      </Avatar>
+    </div>
+  );
   return (
     <div>
       <div className={"h-full w-full"}>
@@ -254,24 +276,9 @@ const ResponseItem = ({
               <div>
                 <div className={"inline-block"}>
                   <div className={"outline-none"} tabIndex={-1}>
-                    <Link href={`/@${author.slug}`}>
-                      <div className={"relative block"}>
-                        <Avatar>
-                          {(author.image && (
-                            <AvatarImage
-                              height={32}
-                              width={32}
-                              src={author.image}
-                            />
-                          )) || (
-                            <AvatarFallback className={"uppercase"}>
-                              {author.name.at(0)}
-                              {author.name.at(1)}
-                            </AvatarFallback>
-                          )}
-                        </Avatar>
-                      </div>
-                    </Link>
+                    {linked ? (
+                      <Link href={`/@${author.slug}`}>{avatarNode}</Link>
+                    ) : avatarNode}
                   </div>
                 </div>
               </div>
@@ -279,11 +286,13 @@ const ResponseItem = ({
                 <div className={"flex items-center"}>
                   <div className={"inline-block"}>
                     <div className={"outline-none"}>
-                      <Link href={`/@${author.slug}`}>
-                        <div className={"flex items-baseline"}>
+                      {linked ? (
+                        <Link href={`/@${author.slug}`}>
                           <p className={"break-all"}>{author.name}</p>
-                        </div>
-                      </Link>
+                        </Link>
+                      ) : (
+                        <p className={"break-all"}>{author.name}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -544,8 +553,8 @@ export const SideBarProvider = ({ children }: { children: ReactNode }) => {
             <Drawer.Title className="px-5 py-3 text-lg font-semibold">
               Response
             </Drawer.Title>
-            <Drawer.Description className="hidden text-sm text-muted-foreground">
-              Response.
+            <Drawer.Description className="sr-only">
+              View and respond to your highlight.
             </Drawer.Description>
             {content && <CitationView {...content} />}
           </Drawer.Content>
