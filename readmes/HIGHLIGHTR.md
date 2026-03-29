@@ -84,7 +84,9 @@ src/components/UX/Highlightr/
 │   ├── ArticleProvider.tsx      Article context (id, slug, author, locked, collection)
 │   ├── RangerProvider.tsx       Rangy init + classApplier + targetContainer
 │   ├── FloatProvider.tsx        Float menu open/shown state
-│   ├── sideBarProvider.tsx      Sidebar drawer + CitationView + MemoInput + SignInCard
+│   ├── sideBarProvider.tsx      Sidebar drawer (SideBarProvider, CitationView, MemoInputField)
+│   ├── author-ui.tsx            UserBar, SignInCard, SignInTriggerButton, isValidAuthor
+│   ├── memo-input.tsx           MemoInput (character-limited textarea)
 │   └── rangey.ts               Rangy module loader
 │
 ├── utils/
@@ -104,7 +106,7 @@ src/payload/collections/Citations/
 ├── endpoints/
 │   └── index.ts      Custom GET /citations/getNotes handler
 └── query/
-    └── index.ts      Server-side queryCitations (react cache, overrideAccess)
+    └── index.ts      Server-side queryCitations (single author fetch, overrideAccess guard)
 ```
 
 ### API Endpoints
@@ -169,6 +171,56 @@ src/payload/collections/Citations/
 
 **Commit:** `f5e231a`
 
+### Iteration 2 — Surf Collection Fix + Private Dialog + Memo Submit (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | `fetchUserHighlights` hardcoded `collection: "posts"` — surf posts never loaded | `index.tsx` |
+| 2 | `gcTime` query key `collection` not threaded into `queryFn` — still used hardcoded | `index.tsx` |
+| 3 | `<LockedGate collection="posts">` hardcoded — surf lock state always wrong | `index.tsx` |
+| 4 | `PrivateMemoizer` dual open state — `setOpen` from context pointed to dead `open` state | `PrivateHighlights.tsx` |
+| 5 | `MemoInputField` "Respond" always called `creater`; if focused highlight should call `saveCallback` | `sideBarProvider.tsx` |
+| 6 | `MemoButton.onSave` no-focus path missing `try/catch/finally` — `saving` stuck on failure | `sideBarProvider.tsx` |
+
+**Commit:** `dfde0ce`
+
+### Iteration 3 — N+1 Author Queries + Remove No-op Cache (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | N+1 `getUserOverview` calls in `queryCitations` — all citations share same author (filtered by userId); now single fetch | `Citations/query/index.ts` |
+| 2 | Removed `react cache()` wrapper — no RSC context in Payload endpoint handler, provided no deduplication | `Citations/query/index.ts` |
+| 3 | Removed `Promise.allSettled` on synchronous array | `Citations/query/index.ts` |
+| 4 | Converted to `for...of` loop with per-citation error logging | `Citations/query/index.ts` |
+
+**Commit:** `89263ba`
+
+### Iteration 4 — Loading States, Ghost Author Links, A11y (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | No in-flight feedback during save/delete — button now shows "Saving…"/"Deleting…" with `animate-pulse` | `HighlightMenu.tsx` |
+| 2 | Ghost user fallback linked to `/404` — `isValidAuthor` guard now conditionally renders `<Link>` only for valid authors | `sideBarProvider.tsx` |
+| 3 | `afterReadCitation` hook re-fetched author on internal `queryCitations` calls — added `if (ctx.overrideAccess) return doc` guard | `Citations/index.ts` |
+| 4 | "Private Note" button shown to unauthenticated users — wrapped in `{user && (...)}` | `HighlightMenu.tsx` |
+| 5 | `Drawer.Description className="hidden"` — changed to `sr-only` with descriptive text | `sideBarProvider.tsx` |
+
+**Commit:** `6696ed4`
+
+### Iteration 5 — sideBarProvider Split + Dead Code Removal (2026-03-30)
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | Extract `UserBar`, `SignInCard`, `SignInTriggerButton`, `isValidAuthor` → `author-ui.tsx` | new file |
+| 2 | Extract `MemoInput` → `memo-input.tsx` | new file |
+| 3 | `sideBarProvider.tsx` reduced from 999 → ~430 lines | `sideBarProvider.tsx` |
+| 4 | Remove `MemoButton` (only used by `previousVersion.tsx`, which was unreferenced) | `sideBarProvider.tsx` |
+| 5 | Delete `previousVersion.tsx` legacy dead file | deleted |
+| 6 | Remove `PrivateNoteHeader` and `PrivateDialog` dead components | `PrivateHighlights.tsx` |
+| 7 | Update `HighlightMenu` and `PrivateHighlights` to import from new module paths | both |
+
+**Commit:** `211748b`
+
 ---
 
 ## Known Remaining Issues
@@ -177,10 +229,7 @@ Track these across sessions. Strike through when fixed and move to Iteration Log
 
 ### Bugs
 
-- [ ] **`fetchUserHighlights` hardcodes `collection: "posts"`** — `index.tsx:262`. Surf posts never load their highlights. Should use `collection` from ArticleProvider store.
-- [ ] **`PrivateMemoizer` dual open state** — `open` (context) and `isOpen` (floating UI) are separate. `context.setOpen` sets `open` (unused), while `isOpen` drives the actual render. Callers using `setOpen` from context won't open the dialog.
-- [ ] **`MemoInputField` creates a new highlight instead of responding to focused one** — The "Respond" button calls `creater` regardless of whether there's a focused highlight. If a highlight is focused, it should be `saveCallback` (update). If no selection active, it should fail gracefully.
-- [ ] **`saving` state in `MemoButton.onSave` never reset on early-return paths** — Several early returns (`!mamu`, `!container`, etc.) don't reset `saving` before returning.
+- [ ] **`saving` state in `PrivateNoteEditor.onSave` edge cases** — Review early-return paths (e.g. `mem.length < 1`, missing `sv`) to ensure `saving` always resets.
 
 ### Security
 
@@ -188,24 +237,16 @@ Track these across sessions. Strike through when fixed and move to Iteration Log
 
 ### Performance
 
-- [ ] **N+1 author queries in `queryCitations`** — Each citation fires a separate `getUserOverview`. Should batch by unique author IDs and resolve once per author.
-- [ ] **`react` `cache()` on `queryCitations` provides no benefit** in endpoint handler context (not an RSC render). Can stay as-is or be removed to reduce confusion.
 - [ ] **`updateMiniMap` and `updateResponseNodes` iterate all highlights on every store change** — Could diff against previous map.
 
 ### UX / Polish
 
-- [ ] **`PrivateNoteHeader` component defined but never used** — `PrivateHighlights.tsx:383`. Dead code.
-- [ ] **`GhostUser` fallback links to `/404`** — Failed author fetches create a clickable user link that 404s. Should either show a non-linking fallback or suppress the link.
 - [ ] **No loading indicator during highlight save** — After clicking "Highlight" in the menu, there's no optimistic/pending UI while the API call is in flight.
-- [ ] **"Private Note" button visible to unauthenticated users** — Opens a sign-in dialog, which works, but showing the action at all is slightly misleading.
 - [ ] **Color picker: changing color only updates preference, not existing highlight color in DOM** — `changeCurrentHighlightColor` saves the preference for future highlights but does not re-color an existing focused highlight.
-- [ ] **Sidebar `Drawer.Description` is `hidden`** — Accessibility: screen readers won't get the drawer description. Either make it visible or use `aria-describedby` properly.
 
 ### Code Quality
 
-- [ ] **`sideBarProvider.tsx` is ~1000 lines** — Mixes Drawer, CitationView, ResponseItem, MemoInputField, SignInCard, MemoButton, MemoInput, UserBar. Should be split into focused files.
-- [ ] **Commented-out `where` query blocks** in `PrivateNoteEditor` and `MemoButton.onSave` — Clean up or implement.
-- [ ] **`open` and `isOpen` in `PrivateMemoizer`** — The external `open`/`setOpen` in context is misleading. Consolidate to one boolean.
+- [ ] **`CitationView` inline avatar JSX duplicates `UserBar`** — In `sideBarProvider.tsx` `CitationView` renders its own avatar block for the current user rather than reusing `<UserBar>`. Should be consolidated.
 
 ---
 
