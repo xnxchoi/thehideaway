@@ -41,7 +41,8 @@ import { useCitations } from "./providers/CitationProvider";
 import { useFloater } from "./providers/FloatProvider";
 import { useHighlighter } from "./providers/HighlighterProvider";
 import { useRanger } from "./providers/RangerProvider";
-import { MemoInput, SignInCard } from "./providers/sideBarProvider";
+import { SignInCard } from "./providers/author-ui";
+import { MemoInput } from "./providers/memo-input";
 import { HighlightColors, HighlightPalette, Palettes } from "./stores";
 
 type ViewStates = "edit" | "signin" | "new";
@@ -72,6 +73,7 @@ export const FloatHighlightMenu = ({
   const palettee = useMemo(() => Palettes, []);
   const privateMemoOpen = usePrivateNote((r) => r.open);
   const [memoOpen, setMemoOpen] = useState(false);
+  const [highlightSaving, setHighlightSaving] = useState(false);
   const t = useTranslations();
   const ranger = useRanger((r) => r.ranger);
   const focusedHighlight = useHighlighter(
@@ -98,10 +100,8 @@ export const FloatHighlightMenu = ({
   const handleSaveHighlight: MouseEventHandler = useCallback(
     async (e) => {
       e.stopPropagation();
-      if (!targetContainer) {
-        return;
-      }
-
+      if (!targetContainer || highlightSaving) return;
+      setHighlightSaving(true);
       try {
         if (!user) {
           throw new HighlightCreateError("user", "not_authenticated");
@@ -110,9 +110,7 @@ export const FloatHighlightMenu = ({
           throw new HighlightCreateError("target", "disabled");
         }
         if (focusedHighlight) {
-          await deleteHighlight({
-            focusedHighlight
-          });
+          await deleteHighlight({ focusedHighlight });
         } else {
           await createCallback({
             params: { private: false },
@@ -120,11 +118,11 @@ export const FloatHighlightMenu = ({
           });
         }
       } catch (e) {
-        if (e instanceof Error) {
-          if (e instanceof HighlightError) {
-            errorToast(e.message);
-          }
+        if (e instanceof HighlightError) {
+          errorToast(e.message);
         }
+      } finally {
+        setHighlightSaving(false);
       }
     },
     [
@@ -188,7 +186,6 @@ export const FloatHighlightMenu = ({
         setDirty(false);
         setMemoOpen(false);
       } catch (e) {
-        console.log(e);
         if (e instanceof HighlightCreateError) {
           errorToast(e.message);
         } else {
@@ -436,18 +433,26 @@ export const FloatHighlightMenu = ({
                   )}
                 </DialogContent>
               </DialogRoot>
-              <HighlightMenuButton onClick={handleSaveHighlight}>
+              <HighlightMenuButton
+                onClick={handleSaveHighlight}
+                disabled={highlightSaving}
+                className={highlightSaving ? "pointer-events-none animate-pulse" : undefined}
+              >
                 <MenuButtonCaption icon={false}>
-                  {focusedHighlight ? "Delete" : "Highlight"}
+                  {highlightSaving
+                    ? focusedHighlight ? "Deleting…" : "Saving…"
+                    : focusedHighlight ? "Delete" : "Highlight"}
                 </MenuButtonCaption>
               </HighlightMenuButton>
-              <HighlightMenuButton onClick={onPrivateClick}>
-                <MenuButtonCaption icon={false}>Private Note</MenuButtonCaption>
-              </HighlightMenuButton>
+              {user && (
+                <HighlightMenuButton onClick={onPrivateClick}>
+                  <MenuButtonCaption icon={false}>Private Note</MenuButtonCaption>
+                </HighlightMenuButton>
+              )}
               <HighlightMenuButton onClick={handleShareHighlight}>
                 <MenuButtonCaption icon={false}>Share</MenuButtonCaption>
               </HighlightMenuButton>
-              {focusedHighlight && (
+              {editorEnabled && (
                 <m.div
                   initial={{
                     scaleX: 0.001,

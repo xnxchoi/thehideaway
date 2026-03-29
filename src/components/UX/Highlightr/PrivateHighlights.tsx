@@ -6,8 +6,6 @@ import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import {
   autoUpdate,
-  FloatingFocusManager,
-  FloatingPortal,
   offset,
   useClick,
   useDismiss,
@@ -15,12 +13,10 @@ import {
   UseFloatingReturn,
   useInteractions,
   UseInteractionsReturn,
-  useMergeRefs,
   useRole,
   useTransitionStatus
 } from "@floating-ui/react";
 import { Button } from "@payloadcms/ui";
-import { ComponentPropsWithRef } from "@react-spring/three";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import {
@@ -32,7 +28,6 @@ import {
   useContext,
   useEffect,
   useId,
-  useMemo,
   useRef,
   useState
 } from "react";
@@ -42,7 +37,7 @@ import { useRanger } from "./providers/RangerProvider";
 
 import { useCitations } from "./providers/CitationProvider";
 import { useShallow } from "zustand/shallow";
-import { SignInCard, UserBar } from "./providers/sideBarProvider";
+import { SignInCard, UserBar } from "./providers/author-ui";
 import "./styles/_privateNote.scss";
 import { HighlightedRange } from "./types";
 
@@ -68,11 +63,8 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
   const { children } = props;
 
   const [memo, setMemo] = useState<string>("");
-  const [open, setOpen] = useState(false);
-  const toggleOpen = () => {
-    setOpen(!open);
-  };
   const [isOpen, setIsOpen] = useState(false);
+  const toggleOpen = () => setIsOpen((o) => !o);
 
   const ctx = useFloating({
     placement: "right-start",
@@ -103,7 +95,7 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
       value={{
         memo,
         setMemo,
-        setOpen,
+        setOpen: setIsOpen,
         setView,
         toggleOpen,
         open: isOpen,
@@ -262,54 +254,45 @@ const PrivateNoteEditor = ({
         if (sv) {
           setSaving(true);
           ranger.restoreSelection(sv);
-          createCallback({
-            params: { private: true, memo: mem },
-            container
-          })
-            .then((r) => {
+          void (async () => {
+            try {
+              const r = await createCallback({
+                params: { private: true, memo: mem },
+                container
+              });
               if (r) {
                 successToast(t("Highlights.saved"));
                 ranger.removeMarkers(sv);
               } else {
                 errorToast(t("Highlights.error.save.select"));
               }
-              qc.invalidateQueries({
-                queryKey: ["savedHighlights"]
-              });
+              await qc.invalidateQueries({ queryKey: ["savedHighlights"] });
               setOpen(false);
               setDirty(false);
-            })
-            .then(() => {
+            } catch {
+              errorToast(t("Highlights.error.save.default"));
+            } finally {
               setSaving(false);
-            });
+            }
+          })();
         } else {
           setSaving(false);
         }
-
         return;
       }
       try {
         setSaving(true);
-        // const where: Where = {
-        // 	reference: {equals: focusedHighlight.reference},
-        // };
         const body = {
           ...currentFocus.current,
           memo: mem,
           private: true
         } satisfies HighlightedRange;
-        handleUpdate(body)
-          .then(() => {
-            qc.invalidateQueries({
-              queryKey: ["savedHighlights"]
-            });
-            successToast(t("Highlights.saved"));
-          })
-          .then(() => {
-            setSaving(false);
-          });
+        await handleUpdate(body);
+        await qc.invalidateQueries({ queryKey: ["savedHighlights"] });
+        successToast(t("Highlights.saved"));
+        setOpen(false);
+        setDirty(false);
       } catch (e) {
-	      // console.log(e);
         errorToast(t("Highlights.error.save.default"));
       } finally {
         setSaving(false);
@@ -378,98 +361,6 @@ const PrivateNoteEditor = ({
         </div>
       </div>
     </div>
-  );
-};
-const PrivateNoteHeader = (props: {}) => {
-  const view = usePrivateNote((r) => r.view);
-
-  return (
-    <div
-      className={"flex items-center bg-muted-faded-background/85 p-[12px_20px]"}
-    >
-      <div className={"mr-[8px] -ml-[4px] block [&_svg]:align-middle"}></div>
-      <div className={"relative top-px block flex-[1_1_auto]"}>
-        <h2
-          className={
-            "text-[13px] leading-[18px] tracking-[0.077em] text-muted-foreground uppercase"
-          }
-        >
-          <span className={"text-[13px] leading-[20px] text-muted-foreground"}>
-            {view === "view" ? "Private Note" : "Edit"}
-          </span>
-        </h2>
-      </div>
-      <div className={"relative top-px block flex-[1_1_auto]"}>
-        <p className={"text-[13px] leading-[20px]"}>Learn More </p>
-      </div>
-    </div>
-  );
-};
-const PrivateDialog = (
-  props: ComponentPropsWithRef<"div"> & { children: ReactNode }
-) => {
-  const focusedHighlight = useHighlighter((r) => r.focusedHighlight);
-  const floatingStyles = usePrivateNote((r) => r.floatingStyles);
-  const fc = useRef(focusedHighlight);
-  useEffect(() => {
-    fc.current = focusedHighlight;
-  }, [focusedHighlight]);
-  const status = usePrivateNote((r) => r.status);
-  const innerRef = useRef<HTMLDivElement>(null!);
-  const { context: floatingContext, ...context } = usePrivateNote((r) => r.ctx);
-  const isMounted = usePrivateNote((r) => r.isMounted);
-  const refs = usePrivateNote((r) => r.refs);
-  const open = usePrivateNote((r) => r.open);
-  const { ref: propRef, ...reste } = props;
-  const ref = useMergeRefs([refs.setFloating, propRef]);
-  const view = usePrivateNote((r) => r.view);
-  const [opening, setOpening] = useState(false);
-  const savedSelection = useRef<rangy.savedSelection | null>(null);
-  const ranger = useRanger((r) => r.ranger);
-  useEffect(() => {
-    if (isMounted && view === "edit" && !fc.current) {
-      savedSelection.current = ranger.saveSelection();
-    } else {
-      savedSelection.current &&
-        (ranger.removeMarkers(savedSelection.current),
-        (savedSelection.current = null));
-    }
-    setOpening(isMounted);
-  }, [isMounted, view]);
-
-  return (
-    opening && (
-      <FloatingPortal>
-        <FloatingFocusManager
-          context={floatingContext}
-          modal={false}
-          disabled={!open || view !== "edit"}
-        >
-          <div
-            className={
-              "z-[250] m-0 flex overflow-hidden rounded-2xl border-none"
-            }
-            {...reste}
-            ref={ref}
-            {...context.getFloatingProps(reste)}
-            style={{ ...floatingStyles }}
-          >
-            <div
-              ref={innerRef}
-              data-status={status}
-              className={"privateNote relative z-[210] h-full w-full p-0"}
-            >
-              <div
-                className={
-                  "absolute top-0 left-0 z-[1] h-full w-full bg-faded-d-gray dark:bg-faded-l-gray"
-                }
-              />
-              {reste.children}
-            </div>
-          </div>
-        </FloatingFocusManager>
-      </FloatingPortal>
-    )
   );
 };
 export const usePrivateNote = <T,>(

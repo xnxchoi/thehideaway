@@ -17,7 +17,6 @@ import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";
 import type { SingleArticle } from "@/types/collections/posts";
-import { AuthorOverview } from "@/types/collections/users";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   autoUpdate,
@@ -59,6 +58,7 @@ import { SignedFooter } from "../Signature";
 import { DynamicBreadcrumb } from "./DynamicIsland";
 import { FloatHighlightMenu } from "./HighlightMenu";
 import { usePrivateNote } from "./PrivateHighlights";
+import { useArticle } from "./providers/ArticleProvider";
 import { useFloater } from "./providers/FloatProvider";
 import { useRanger } from "./providers/RangerProvider";
 import type { HighlightColors } from "./stores";
@@ -135,6 +135,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   useEffect(() => {
     userRef.current = user;
   }, [user]);
+  const collection = useArticle(useShallow((r) => r.collection));
   const [enableHighlight, setEnableHighlight] = useState(
     !!user && !d && !locked
   );
@@ -252,19 +253,19 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     isPending: hPending
   } = useQuery({
     placeholderData: [] as FetchedCitation[],
-    queryKey: ["savedHighlights", { value: postId, userId: user!, slug }],
+    queryKey: ["savedHighlights", { value: postId, collection, userId: user!, slug }],
     queryFn: async ({
-      queryKey: [_, { value: postId, userId: _l, slug: _s }]
+      queryKey: [_, { value: id, collection: col }]
     }: {
-      queryKey: [string, { value: string; userId: string; slug: string }];
+      queryKey: [string, { value: string; collection: typeof collection; userId: string; slug: string }];
     }) =>
       await fetchUserHighlights({
-        collection: "posts",
-        id: postId
+        collection: col,
+        id
       }),
     enabled: enableHighlight,
     staleTime: Infinity,
-    gcTime: 60 * 100
+    gcTime: 60 * 1000 * 5
   });
 
   const [highlightMap, setHighlightMap] = useState<
@@ -513,63 +514,27 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   );
   const updateResponseNodes = useCallback(
     (highlighter: Map<string, HighlightedRange>) => {
-      const highlighters = highlighter.values();
-      const b: Array<{
-        top: number;
-        reference: string;
-        memo: string;
-        quote: string;
-        author: AuthorOverview;
-        updatedAt: string;
-        createdAt: string;
-      }> = [];
-      const c: Array<{
-        top: number;
-        reference: string;
-        memo: string;
-        quote: string;
-        author: AuthorOverview;
-        updatedAt: string;
-        createdAt: string;
-      }> = [];
-      highlighters.forEach((e) => {
+      const b: Array<{ top: number; reference: string }> = [];
+      const c: Array<{ top: number; reference: string }> = [];
+      for (const e of highlighter.values()) {
+        if (!e.memo || e.memo.length === 0) continue;
         let n = 0;
         e.els.forEach((t, i) => {
           const tt = (t as HTMLElement).offsetTop;
-          if (i > 0) {
-            n = Math.min(n, tt);
-          } else {
-            n = tt;
-          }
+          n = i === 0 ? tt : Math.min(n, tt);
         });
-        if (e.memo && e.memo.length > 0) {
-          if (e?.private) {
-            const el = e.els[0] as HTMLElement;
-            const pa = el.closest(
-              '[data-selectable="true"]'
-            ) as HTMLElement | null;
-            pa && (n = pa.offsetTop);
-          }
-          const pass = {
-            quote:
-              e.quote ||
-              `${e.selection.before}${e.selection.text}${e.selection.after}`,
-            top: n,
-            reference: e.reference,
-            memo: e.memo,
-            author: e.author,
-            updatedAt: e.updatedAt,
-            createdAt: e.createdAt
-          };
-          e.private ? c.push(pass) : b.push(pass);
+        if (e.private) {
+          const pa = (e.els[0] as HTMLElement).closest(
+            '[data-selectable="true"]'
+          ) as HTMLElement | null;
+          if (pa) n = pa.offsetTop;
+          c.push({ top: n, reference: e.reference });
+        } else {
+          b.push({ top: n, reference: e.reference });
         }
-      });
-      setResponseNodes(b);
-      if (c.length > 0) {
-        setPrivateNodes(c);
-      } else {
-        setPrivateNodes([]);
       }
+      setResponseNodes(b);
+      setPrivateNodes(c);
     },
     []
   );
@@ -982,7 +947,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                     ))}
                   </Aside>
                   {locked ? (
-                    <LockedGate id={postId} collection={"posts"} />
+                    <LockedGate id={postId} collection={collection} />
                   ) : (
                     <RichText data={postContent} enableGutter={false} />
                   )}
@@ -1003,7 +968,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                             `flex appearance-none items-center justify-center overflow-hidden border border-solid border-off-foreground px-[1.4rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] transition-[border-color,background-color,padding] duration-200 outline-none [text-decoration:none] md:px-[1.2rem]`,
                             "rounded-[18px] px-4 py-1 text-[16px] font-medium"
                           )}
-                          href={`/src/app/(frontend)/(site)/(content)/tagged/${slug}`}
+                          href={`/tagged/${slug}`}
                         >
                           {title}
                         </Link>

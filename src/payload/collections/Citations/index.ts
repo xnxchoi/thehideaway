@@ -106,6 +106,8 @@ const beforeValidateCitation: CollectionBeforeValidateHook<Citation> = async (
 const afterReadCitation: CollectionAfterReadHook<Citation> = async (args) => {
   const { req, context, doc } = args;
   if (!doc || !doc.author) return doc;
+  // Skip when called from internal server queries that handle author resolution themselves
+  if (context.overrideAccess) return doc;
   //Author field is always a 0-depth value
   const { author: ad, ...rest } = doc;
   const authorId = typeof ad === "string" ? ad : ad.id;
@@ -175,6 +177,9 @@ export const Citations: CollectionConfig = {
       if (!user) {
         return false;
       }
+      if (user.banned) {
+        return false;
+      }
       return true;
     },
     update: ({ req }) => {
@@ -184,7 +189,7 @@ export const Citations: CollectionConfig = {
         return true;
       }
       const user = req.user;
-      if (!user) {
+      if (!user || user.banned) {
         return false;
       }
       if (["editor", "admin"].some((role) => role === user.role)) {
@@ -203,7 +208,7 @@ export const Citations: CollectionConfig = {
         return true;
       }
       const user = req.user;
-      if (!user) {
+      if (!user || user.banned) {
         return false;
       }
       if (["editor", "admin"].some((role) => role === user.role)) {
