@@ -10,7 +10,7 @@ export default async function CheckInPage() {
   const { data } = await authClient.getSession();
   const user = data?.user;
   return user ? (
-    <PageRedirect pageType={"users"} slug={`@${user?.name}`} />
+    <PageRedirect pageType={"profile"} slug={`@${user?.name}`} />
   ) : (
     <RPage type={"account"} slug={["check-in"]}>
       <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center gap-10 p-9 md:p-16">

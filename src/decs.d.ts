@@ -31,3 +31,4 @@ declare module "payload" {
     };
   }
 }
+declare module "@better-auth" {}

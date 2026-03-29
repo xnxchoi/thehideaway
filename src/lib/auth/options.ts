@@ -1,6 +1,7 @@
 // import { openAPI } from "better-auth/plugins/open-api";
 import { BetterAuthEmailService } from "@/lib/email/better-auth-integration";
 import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
+import { generateName } from "@/utilities/names";
 import { passkey } from "@better-auth/passkey";
 import type { PayloadAuthOptions } from "@payload-auth/index";
 import type { BetterAuthOptions as BetterAuthOptionsType } from "better-auth";
@@ -59,11 +60,34 @@ const options: BetterAuthOptionsType = {
           onboarded: false,
           displayUsername: name,
           emailVerified: email_verified,
-          slug: formatUserHandle(username),
           firstName: given_name,
+          slug: formatUserHandle(username),
           lastName: family_name,
           image: picture,
           banned: false
+        };
+      }
+    },
+    naver: {
+      clientId: process.env.AUTH_NAVER_ID!,
+      clientSecret: process.env.AUTH_NAVER_SECRET!,
+      mapProfileToUser: async (profile) => {
+        // Naver user info is nested under profile.response
+        const p = profile.response || profile;
+        const email = p.email || "";
+        const username = email.split("@")[0] || p.nickname || p.id;
+        return {
+          email,
+          name: p.name || p.nickname || username,
+          username,
+          displayUsername: p.nickname || p.name || username,
+          emailVerified: true,
+          slug: username,
+          firstName: p.name.split(" ")[0],
+          lastName: p.name.split(" ")[1] || generateName("last"),
+          image: p.profile_image,
+          banned: false,
+          onboarded: false
         };
       }
     }

@@ -65,9 +65,16 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
     throw new Error("No value provided.");
   }
   const handle = formatUserHandle(toValue);
-
+  const base = {
+    ...((operation === "update" && originalDoc && { user: originalDoc.id }) ||
+      {}),
+    overrides: overrideAccess || operation === "create"
+  };
   if (handle.length > 2) {
-    const { valid, handle: h } = await ensureHandleIsUnique({ handle });
+    const { valid, handle: h } = await ensureHandleIsUnique({
+      handle,
+      ...base
+    });
     if (valid && !!h) {
       return h;
     }
@@ -97,10 +104,7 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
       displayUsername: tg.displayUsername
     })
   });
-  const base = {
-    ...((operation === "update" && originalDoc && { user: originalDoc.id }) ||
-      {})
-  };
+
   for (const candidate of candidates) {
     const { valid: exists } = await ensureHandleIsUnique({
       handle: candidate,
@@ -121,7 +125,7 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
     if (newHandle.length > 2) {
       continue;
     }
-    const r = await ensureHandleIsUnique({ handle: newHandle });
+    const r = await ensureHandleIsUnique({ handle: newHandle, ...base });
     isOkay = r.valid;
     retry++;
   }

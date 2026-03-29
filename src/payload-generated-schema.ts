@@ -14,13 +14,13 @@ import {
   foreignKey,
   varchar,
   boolean,
+  jsonb,
   timestamp,
   serial,
   uuid,
   numeric,
   integer,
   text,
-  jsonb,
   type AnyPgColumn,
   pgEnum
 } from "@payloadcms/db-postgres/drizzle/pg-core";
@@ -452,6 +452,7 @@ export const users = pgTable(
     emailVerified: boolean("email_verified").default(false),
     name: varchar("name").default(""),
     portrait: varchar("portrait"),
+    onboardingProgress: jsonb("onboarding_progress"),
     image: varchar("image"),
     createdAt: timestamp("created_at", {
       mode: "string",
@@ -550,6 +551,7 @@ export const _users_v = pgTable(
     version_emailVerified: boolean("version_email_verified").default(false),
     version_name: varchar("version_name").default(""),
     version_portrait: varchar("version_portrait"),
+    version_onboardingProgress: jsonb("version_onboarding_progress"),
     version_image: varchar("version_image"),
     version_createdAt: timestamp("version_created_at", {
       mode: "string",

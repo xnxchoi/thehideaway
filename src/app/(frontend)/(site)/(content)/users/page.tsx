@@ -30,13 +30,15 @@ export default async function Page() {
       <PageClient>
         <div className="container mb-16">
           <div className="prose max-w-none dark:prose-invert">
-            <h1>Posts</h1>
+            <h1>Residential</h1>
           </div>
         </div>
         <div className="container mb-8">
           <PageRange
             collection="users"
-            currentPage={users.page}
+            basePath="/users"
+            totalPages={users.totalPages}
+            page={users.page}
             limit={12}
             totalDocs={users.totalDocs}
           />

@@ -7,6 +7,7 @@ import { RP_Roles } from "@/stores/Notification/NotificationStore";
 export async function ensureHandleIsUnique(props: {
   handle: string;
   user?: string;
+  overrides?: boolean;
 }): Promise<
   {
     message: string;
@@ -18,10 +19,10 @@ export async function ensureHandleIsUnique(props: {
     | { valid: true; handle: string }
   )
 > {
-  const { handle, user: userId } = props;
+  const { overrides, handle, user: userId } = props;
 
   const { user } = await getSession();
-  if (!user || user.id !== userId) {
+  if (!overrides && (!user || user.id !== userId)) {
     throw new Error("User is not authorized");
   }
   const { banned } = user;

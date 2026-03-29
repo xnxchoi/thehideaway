@@ -1,6 +1,5 @@
 import { User } from "@/payload-types";
-import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
-import { validateHandle } from "@/payload/fields/handle/validateHandle";
+import { formatUserHandleHook } from "@/payload/fields/handle/formatUserHandle";
 import { nanoid } from "nanoid";
 import { FieldAccessArgs } from "node_modules/payload/dist/fields/config/types";
 import type { TextField } from "payload";
@@ -47,13 +46,9 @@ export const userHandleField: UserHandle = (overrides = {}) => {
     ...(userHandleOverrides || {}),
     hooks: {
       // Kept this in for hook or API based updates
-      beforeValidate: [
-        ({ value }) => {
-          return formatUserHandle(value);
-        }
-      ]
+      beforeValidate: [formatUserHandleHook]
     },
-    validate: validateHandle,
+
     admin: {
       ...(userHandleOverrides?.admin || {}),
       components: {

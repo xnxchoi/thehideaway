@@ -8,7 +8,10 @@ export const validateHandle: Validate<
   TextField
 > = async (value, options) => {
   if (!value) return "No value provided";
-  const { overrideAccess, req, data, operation, id } = options;
+  const { overrideAccess, req, data, event, operation, id } = options;
+  if (event === "onChange") {
+    return true;
+  }
   const overr = overrideAccess || req.context.overrideAccess;
   const user = req.user as User;
   const payload = req.payload;

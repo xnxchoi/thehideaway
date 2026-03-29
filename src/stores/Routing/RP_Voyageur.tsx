@@ -1,7 +1,10 @@
 "use client";
-import {TaggedCollection, TaggedCollectionSlug} from "@/payload/collections/Tags";
-import {EOCollectionSlug} from "@/payload/plugins";
-import {IndexedCollections} from "@/payload/search/beforeSync";
+import {
+  TaggedCollection,
+  TaggedCollectionSlug
+} from "@/payload/collections/Tags";
+import { EOCollectionSlug } from "@/payload/plugins";
+import { IndexedCollections } from "@/payload/search/beforeSync";
 import { usePathname } from "next/navigation";
 
 import { getMenuPagePreviewKey } from "@/utilities/Helpers";
@@ -25,7 +28,11 @@ import { createStore } from "zustand/vanilla";
  *
  */
 
-export type FrontEndCollections = TaggedCollectionSlug|IndexedCollections|EOCollectionSlug
+export type FrontEndCollections =
+  | TaggedCollectionSlug
+  | IndexedCollections
+  | "users"
+  | EOCollectionSlug;
 /**
  *  Type containing all possible **valid** page type information.
  *  null value has been omitted; subject to future modifications.
