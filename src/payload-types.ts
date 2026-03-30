@@ -768,17 +768,43 @@ export interface Asset {
 export interface Compilation {
   id: string;
   title: string;
-  items: (
-    | {
-        relationTo: 'assets';
-        value: string | Asset;
-      }
-    | {
-        relationTo: 'media';
-        value: string | Media;
-      }
-  )[];
-  imagePicker: boolean;
+  hashId: string;
+  description?: string | null;
+  author: string | User;
+  visibility: 'public' | 'private';
+  coverImage?: (string | null) | Media;
+  items?:
+    | (
+        | {
+            relationTo: 'posts';
+            value: string | Post;
+          }
+        | {
+            relationTo: 'surf';
+            value: string | Surf;
+          }
+        | {
+            relationTo: 'profile';
+            value: string | Profile;
+          }
+        | {
+            relationTo: 'albums';
+            value: string | Album;
+          }
+        | {
+            relationTo: 'playlists';
+            value: string | Playlist;
+          }
+        | {
+            relationTo: 'tracks';
+            value: string | Track;
+          }
+        | {
+            relationTo: 'userMedia';
+            value: string | UserMedia;
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -864,34 +890,6 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: string;
-  title: string;
-  relatedCategories?: (string | Category)[] | null;
-  description?: string | null;
-  slug: string;
-  categorized?: {
-    docs?: (
-      | {
-          relationTo?: 'surf';
-          value: string | Surf;
-        }
-      | {
-          relationTo?: 'posts';
-          value: string | Post;
-        }
-    )[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  popularity: number;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "surf".
  */
 export interface Surf {
@@ -971,6 +969,34 @@ export interface Surf {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  title: string;
+  relatedCategories?: (string | Category)[] | null;
+  description?: string | null;
+  slug: string;
+  categorized?: {
+    docs?: (
+      | {
+          relationTo?: 'surf';
+          value: string | Surf;
+        }
+      | {
+          relationTo?: 'posts';
+          value: string | Post;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  popularity: number;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3680,8 +3706,12 @@ export interface ResponsesSelect<T extends boolean = true> {
 export interface CompilationsSelect<T extends boolean = true> {
   id?: T;
   title?: T;
+  hashId?: T;
+  description?: T;
+  author?: T;
+  visibility?: T;
+  coverImage?: T;
   items?: T;
-  imagePicker?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -336,6 +336,10 @@ export const enum__responses_v_published_locale = pgEnum(
   "enum__responses_v_published_locale",
   ["en", "ko"]
 );
+export const enum_compilations_visibility = pgEnum(
+  "enum_compilations_visibility",
+  ["public", "private"]
+);
 export const enum_deferred_emails_category = pgEnum(
   "enum_deferred_emails_category",
   ["notifications", "alerts", "validators", "authenticators", "misc"]
@@ -4851,7 +4855,19 @@ export const compilations = pgTable(
   {
     id: varchar("id").primaryKey(),
     title: varchar("title").notNull(),
-    imagePicker: boolean("image_picker").notNull().default(true),
+    hashId: varchar("hash_id").notNull(),
+    description: varchar("description"),
+    author: uuid("author_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    visibility: enum_compilations_visibility("visibility")
+      .notNull()
+      .default("private"),
+    coverImage: varchar("cover_image_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -4869,6 +4885,9 @@ export const compilations = pgTable(
   },
   (columns) => [
     index("compilations_title_idx").on(columns.title),
+    uniqueIndex("compilations_hash_id_idx").on(columns.hashId),
+    index("compilations_author_idx").on(columns.author),
+    index("compilations_cover_image_idx").on(columns.coverImage),
     index("compilations_updated_at_idx").on(columns.updatedAt),
     index("compilations_created_at_idx").on(columns.createdAt)
   ]
@@ -4881,29 +4900,64 @@ export const compilations_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-    assetsID: varchar("assets_id"),
-    mediaID: varchar("media_id")
+    postsID: varchar("posts_id"),
+    surfID: varchar("surf_id"),
+    profileID: uuid("profile_id"),
+    albumsID: uuid("albums_id"),
+    playlistsID: uuid("playlists_id"),
+    tracksID: uuid("tracks_id"),
+    userMediaID: varchar("user_media_id")
   },
   (columns) => [
     index("compilations_rels_order_idx").on(columns.order),
     index("compilations_rels_parent_idx").on(columns.parent),
     index("compilations_rels_path_idx").on(columns.path),
-    index("compilations_rels_assets_id_idx").on(columns.assetsID),
-    index("compilations_rels_media_id_idx").on(columns.mediaID),
+    index("compilations_rels_posts_id_idx").on(columns.postsID),
+    index("compilations_rels_surf_id_idx").on(columns.surfID),
+    index("compilations_rels_profile_id_idx").on(columns.profileID),
+    index("compilations_rels_albums_id_idx").on(columns.albumsID),
+    index("compilations_rels_playlists_id_idx").on(columns.playlistsID),
+    index("compilations_rels_tracks_id_idx").on(columns.tracksID),
+    index("compilations_rels_user_media_id_idx").on(columns.userMediaID),
     foreignKey({
       columns: [columns["parent"]],
       foreignColumns: [compilations.id],
       name: "compilations_rels_parent_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["assetsID"]],
-      foreignColumns: [assets.id],
-      name: "compilations_rels_assets_fk"
+      columns: [columns["postsID"]],
+      foreignColumns: [posts.id],
+      name: "compilations_rels_posts_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["mediaID"]],
-      foreignColumns: [media.id],
-      name: "compilations_rels_media_fk"
+      columns: [columns["surfID"]],
+      foreignColumns: [surf.id],
+      name: "compilations_rels_surf_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["profileID"]],
+      foreignColumns: [profile.id],
+      name: "compilations_rels_profile_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["albumsID"]],
+      foreignColumns: [albums.id],
+      name: "compilations_rels_albums_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["playlistsID"]],
+      foreignColumns: [playlists.id],
+      name: "compilations_rels_playlists_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["tracksID"]],
+      foreignColumns: [tracks.id],
+      name: "compilations_rels_tracks_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["userMediaID"]],
+      foreignColumns: [user_media.id],
+      name: "compilations_rels_user_media_fk"
     }).onDelete("cascade")
   ]
 );
@@ -8011,23 +8065,61 @@ export const relations_compilations_rels = relations(
       references: [compilations.id],
       relationName: "_rels"
     }),
-    assetsID: one(assets, {
-      fields: [compilations_rels.assetsID],
-      references: [assets.id],
-      relationName: "assets"
+    postsID: one(posts, {
+      fields: [compilations_rels.postsID],
+      references: [posts.id],
+      relationName: "posts"
     }),
-    mediaID: one(media, {
-      fields: [compilations_rels.mediaID],
-      references: [media.id],
-      relationName: "media"
+    surfID: one(surf, {
+      fields: [compilations_rels.surfID],
+      references: [surf.id],
+      relationName: "surf"
+    }),
+    profileID: one(profile, {
+      fields: [compilations_rels.profileID],
+      references: [profile.id],
+      relationName: "profile"
+    }),
+    albumsID: one(albums, {
+      fields: [compilations_rels.albumsID],
+      references: [albums.id],
+      relationName: "albums"
+    }),
+    playlistsID: one(playlists, {
+      fields: [compilations_rels.playlistsID],
+      references: [playlists.id],
+      relationName: "playlists"
+    }),
+    tracksID: one(tracks, {
+      fields: [compilations_rels.tracksID],
+      references: [tracks.id],
+      relationName: "tracks"
+    }),
+    userMediaID: one(user_media, {
+      fields: [compilations_rels.userMediaID],
+      references: [user_media.id],
+      relationName: "userMedia"
     })
   })
 );
-export const relations_compilations = relations(compilations, ({ many }) => ({
-  _rels: many(compilations_rels, {
-    relationName: "_rels"
+export const relations_compilations = relations(
+  compilations,
+  ({ one, many }) => ({
+    author: one(users, {
+      fields: [compilations.author],
+      references: [users.id],
+      relationName: "author"
+    }),
+    coverImage: one(media, {
+      fields: [compilations.coverImage],
+      references: [media.id],
+      relationName: "coverImage"
+    }),
+    _rels: many(compilations_rels, {
+      relationName: "_rels"
+    })
   })
-}));
+);
 export const relations_admins = relations(admins, ({ one }) => ({
   foto: one(media, {
     fields: [admins.foto],
@@ -8731,6 +8823,7 @@ type DatabaseSchema = {
   enum_responses_status: typeof enum_responses_status;
   enum__responses_v_version_status: typeof enum__responses_v_version_status;
   enum__responses_v_published_locale: typeof enum__responses_v_published_locale;
+  enum_compilations_visibility: typeof enum_compilations_visibility;
   enum_deferred_emails_category: typeof enum_deferred_emails_category;
   enum_deferred_emails_status: typeof enum_deferred_emails_status;
   enum_exports_format: typeof enum_exports_format;

@@ -59,6 +59,8 @@ import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { SelectColorFont as SelectColorFont_49e2daebc51d3df8679574a7e7bc2d2c } from '@/payload/fields/ColorPicker/CustomTailwindColor.tsx'
 import { SelectColorBackground as SelectColorBackground_49e2daebc51d3df8679574a7e7bc2d2c } from '@/payload/fields/ColorPicker/CustomTailwindColor.tsx'
+import { default as default_a1835759604be3a2836f43fc125fef06 } from '@/AccessControlled/Textarea'
+import { default as default_afa87387c4d4be65d2557ad468e40c6c } from '@/AccessControlled/Select'
 import { FormatField as FormatField_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { LimitField as LimitField_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { Page as Page_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
@@ -153,6 +155,8 @@ export const importMap = {
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/payload/fields/ColorPicker/CustomTailwindColor.tsx#SelectColorFont": SelectColorFont_49e2daebc51d3df8679574a7e7bc2d2c,
   "@/payload/fields/ColorPicker/CustomTailwindColor.tsx#SelectColorBackground": SelectColorBackground_49e2daebc51d3df8679574a7e7bc2d2c,
+  "@/AccessControlled/Textarea#default": default_a1835759604be3a2836f43fc125fef06,
+  "@/AccessControlled/Select#default": default_afa87387c4d4be65d2557ad468e40c6c,
   "@payloadcms/plugin-import-export/rsc#FormatField": FormatField_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#LimitField": LimitField_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#Page": Page_cdf7e044479f899a31f804427d568b36,

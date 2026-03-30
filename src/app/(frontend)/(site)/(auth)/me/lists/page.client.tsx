@@ -3,21 +3,22 @@
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
 import {
+  type CompilationSummary,
   createCompilation,
-  deleteCompilation,
-  type CompilationSummary
+  deleteCompilation
 } from "@/payload/collections/Compilations/actions";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
+  type FormEvent,
   useCallback,
   useRef,
   useState,
-  useTransition,
-  type FormEvent
+  useTransition
 } from "react";
+import { useTransitionRouter } from "next-transition-router";
+import { RPage } from "@/components/UX/Transition";
 
 type Props = {
   userId: string;
@@ -28,8 +29,12 @@ type Props = {
 const isPremium = (role: string) =>
   ["patron", "author", "editor", "admin"].includes(role);
 
-export default function ListsPageClient({ userId, role, compilations: initial }: Props) {
-  const router = useRouter();
+export default function ListsPageClient({
+  userId,
+  role,
+  compilations: initial
+}: Props) {
+  const router = useTransitionRouter();
   const [compilations, setCompilations] = useState(initial);
   const [showCreate, setShowCreate] = useState(false);
   const premium = isPremium(role);
@@ -54,13 +59,13 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
   );
 
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
+    <RPage type="account" slug={["me", "lists"]}>
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
         <div className="mx-auto max-w-5xl px-6 py-5">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                 Curated Collections
               </p>
               <h1 className="mt-0.5 text-2xl font-light tracking-tight">
@@ -75,13 +80,13 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
             <div className="flex items-center gap-4">
               <Link
                 href="/me/saved"
-                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground"
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
               >
                 ← Saved
               </Link>
               <button
                 onClick={() => setShowCreate(true)}
-                className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60"
+                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60"
               >
                 New List
               </button>
@@ -129,7 +134,7 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
           />
         )}
       </AnimatePresence>
-    </div>
+    </RPage>
   );
 }
 
@@ -181,7 +186,7 @@ function CompilationCard({
 
           {premium && (
             <div className="absolute inset-x-0 bottom-0 p-4">
-              <h3 className="text-base font-medium leading-snug tracking-tight text-white drop-shadow">
+              <h3 className="text-base leading-snug font-medium tracking-tight text-white drop-shadow">
                 {c.title}
               </h3>
               {c.description && (
@@ -195,7 +200,7 @@ function CompilationCard({
 
         {!premium && (
           <div className="p-3.5">
-            <h3 className="text-sm font-medium leading-snug tracking-tight">
+            <h3 className="text-sm leading-snug font-medium tracking-tight">
               {c.title}
             </h3>
             {c.description && (
@@ -233,7 +238,7 @@ function CompilationCard({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -4, scale: 0.96 }}
                 transition={{ duration: 0.14 }}
-                className="absolute right-0 top-7 z-30 min-w-[130px] overflow-hidden rounded-sm border border-border/30 bg-popover shadow-md"
+                className="absolute top-7 right-0 z-30 min-w-[130px] overflow-hidden rounded-sm border border-border/30 bg-popover shadow-md"
               >
                 <Link
                   href={`/me/lists/${c.hashId}`}
@@ -272,7 +277,7 @@ function CompilationCard({
 function ListPlaceholder({ title }: { title: string }) {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/40 to-muted/10">
-      <span className="select-none font-mono text-7xl font-light text-muted-foreground/10">
+      <span className="font-mono text-7xl font-light text-muted-foreground/10 select-none">
         {title.charAt(0).toUpperCase()}
       </span>
     </div>
@@ -283,7 +288,7 @@ function VisibilityBadge({ visibility }: { visibility: "public" | "private" }) {
   return (
     <span
       className={cn(
-        "font-mono text-[9px] uppercase tracking-widest",
+        "font-mono text-[9px] tracking-widest uppercase",
         visibility === "public"
           ? "text-muted-foreground/40"
           : "text-muted-foreground/25"
@@ -301,7 +306,7 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-28 text-center"
     >
-      <span className="mb-5 select-none font-mono text-6xl text-foreground/8">
+      <span className="mb-5 font-mono text-6xl text-foreground/8 select-none">
         ⊞
       </span>
       <p className="text-base font-light text-foreground/70">No lists yet.</p>
@@ -310,7 +315,7 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       </p>
       <button
         onClick={onNew}
-        className="mt-7 border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/70 transition-colors hover:border-border hover:text-foreground"
+        className="mt-7 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
       >
         Create your first list
       </button>
@@ -384,10 +389,10 @@ function CreateCompilationSheet({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-        className="fixed inset-x-4 bottom-0 z-50 mx-auto max-w-lg rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
+        className="fixed inset-x-4 bottom-0 z-50 mx-auto max-w-lg rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
       >
         <div className="flex items-center justify-between border-b border-border/20 px-6 py-4">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">
+          <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
             New List
           </p>
           <button
@@ -401,7 +406,7 @@ function CreateCompilationSheet({
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-5">
             <div>
-              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">
+              <label className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
                 Title
               </label>
               <input
@@ -415,7 +420,7 @@ function CreateCompilationSheet({
             </div>
 
             <div>
-              <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">
+              <label className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
                 Description{" "}
                 <span className="normal-case opacity-50">(optional)</span>
               </label>
@@ -428,7 +433,7 @@ function CreateCompilationSheet({
             </div>
 
             <div>
-              <label className="mb-2.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">
+              <label className="mb-2.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
                 Visibility
               </label>
               <div className="flex gap-5">
@@ -438,7 +443,7 @@ function CreateCompilationSheet({
                     type="button"
                     onClick={() => setVisibility(v)}
                     className={cn(
-                      "flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest transition-opacity",
+                      "flex items-center gap-2 font-mono text-[11px] tracking-widest uppercase transition-opacity",
                       visibility === v
                         ? "opacity-100"
                         : "opacity-35 hover:opacity-60"
@@ -460,21 +465,23 @@ function CreateCompilationSheet({
           </div>
 
           {error && (
-            <p className="mt-4 font-mono text-[10px] text-destructive">{error}</p>
+            <p className="mt-4 font-mono text-[10px] text-destructive">
+              {error}
+            </p>
           )}
 
           <div className="mt-7 flex justify-end gap-4">
             <button
               type="button"
               onClick={onClose}
-              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/50 hover:text-foreground"
+              className="font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase hover:text-foreground"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="border border-border/40 px-5 py-2 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+              className="border border-border/40 px-5 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
             >
               {isPending ? "Creating…" : "Create"}
             </button>
