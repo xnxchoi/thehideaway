@@ -339,6 +339,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   }, [scr, scrollCB]);
   const setPrivOpen = usePrivateNote((r) => r.setOpen);
   const setPrivView = usePrivateNote((r) => r.setView);
+  const setPrivMemo = usePrivateNote((r) => r.setMemo);
 
   const updateDOMRect = useCallback(
     (a: VirtualDOMRect, t: Element): VirtualDOMRect => {
@@ -422,6 +423,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         );
         if (ance) {
           prefs.setReference(ance);
+          setPrivMemo(focusedHighlight.memo ?? "");
           setPrivView("view");
           setPrivOpen(true);
         }
@@ -439,6 +441,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     getHighlightsRects,
     prefs,
     refs,
+    setPrivMemo,
     setPrivOpen,
     setPrivView,
     setVisi
@@ -507,18 +510,24 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       const contOffset = cont.offsetTop;
       highlighters.forEach((e) => {
         let n = 0;
-        let i = contOffset;
-        e.els.forEach((t, i) => {
-          const tt = (t as HTMLElement).offsetTop;
-          if (i > 0) {
-            n = Math.min(n, tt);
-          } else {
+        const i = contOffset;
+        let firstConnected = true;
+        e.els.forEach((t) => {
+          const el = t as HTMLElement;
+          // Skip stale elements that are no longer part of the live document
+          if (!el.isConnected) return;
+          const tt = el.offsetTop;
+          if (firstConnected) {
             n = tt;
+            firstConnected = false;
+          } else {
+            n = Math.min(n, tt);
           }
         });
-        i = i + n;
+        // Skip highlight entirely if none of its elements are in the live DOM
+        if (firstConnected) return;
         a.push({
-          y: i,
+          y: i + n,
           top: (n / contDimension) * wh * 0.85
         });
       });
@@ -668,6 +677,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   );
 
   useEffect(() => {
+    // Only animate when the color preference actually changed, not on every highlight add/remove
+    if (lastColorRef.current === currentColor) return;
     const targets = Array.from(highlights.values()).reduce(
       (r, e) => [...r, ...(e.els as HTMLElement[])],
       [] as HTMLElement[]
@@ -878,6 +889,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
           return r ? [r] : [];
         });
 
+        // Clear stale store entries before applying fresh highlights for this document
+        clearHighlights();
         if (ss.length > 0) addHighlighter(ss);
       }
     }
@@ -887,6 +900,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     hPending,
     hLoading,
     addHighlighter,
+    clearHighlights,
     postId
   ]);
   useLayoutEffect(() => {

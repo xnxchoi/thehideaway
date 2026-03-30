@@ -267,6 +267,21 @@ src/payload/collections/Citations/
 | 1 | Remove exported `rangeToData` function — never imported anywhere | `highlight-helpers.ts` |
 | 2 | Remove commented-out old `isMarkable` implementation | `highlight-helpers.ts` |
 
+**Commit:** `70e3fc0`
+
+### Iteration 11 — PrivateNote view memo, useMutation, minimap stale DOM, color flicker (2026-03-30)
+
+**Context:** User returned from remote session with patches to `PrivateHighlights.tsx` (Dialog refactor) and `index.tsx` (private flag check). Review found 4 remaining bugs.
+
+| # | Fix | File(s) |
+|---|---|---|
+| 1 | `PrivateMemoizer` view mode always showed empty memo — `setPrivMemo(focusedHighlight.memo)` now called before `setPrivOpen(true)` in `index.tsx` | `index.tsx` |
+| 2 | `PrivateNoteEditor.onSave` focused-highlight path: fire-and-forget `.then()` → `useMutation` with proper `onMutate`/`onSuccess`/`onError`/`onSettled` lifecycle; `finally { setSaving(false) }` no longer fires before async work completes | `PrivateHighlights.tsx` |
+| 3 | `updateMiniMap` used `offsetTop` on stale/disconnected DOM elements after navigation — added `isConnected` guard; skip entire highlight if all `els` are detached | `index.tsx` |
+| 4 | `clearHighlights()` not called before re-applying `savedHighlights` — old Map entries with dead `els` persisted across navigation, corrupting minimap positions | `index.tsx` |
+| 5 | GSAP color animation (`updateColors.current`) fired on every highlight add/delete even when color hadn't changed — added `if (lastColorRef.current === currentColor) return` guard to skip unnecessary `highlighted`-class removal flicker | `index.tsx` |
+| 6 | Remove unused `userD` (`displayUsername`) from `PrivateMemoizer` session hooks | `PrivateHighlights.tsx` |
+
 **Commit:** (pending)
 
 ---
@@ -277,15 +292,15 @@ Track these across sessions. Strike through when fixed and move to Iteration Log
 
 ### Security
 
-- [ ] **Public citations readable without auth** — The `read` access returns `{ private: { not_equals: true } }` for unauthenticated requests, exposing all public highlight activity. Design decision to evaluate.
+- [ ] **Public citations readable without auth** — The `read` access returns `{ private: { not_equals: true } }` for unauthenticated requests, exposing all public highlight activity. **Design decision: intentional** — non-private citations are reserved for a future user Profile page to showcase public highlights. No change needed.
 
 ### Performance
 
-- [ ] **`updateMiniMap` iterates all highlights on every store change** — Could diff against previous map to skip re-render when nothing changed.
+- [ ] **`updateMiniMap` iterates all highlights on every store change** — Could diff against previous map to skip re-render when nothing changed. (Stale DOM bug fixed in Iter 11; this is about further optimisation.)
 
 ### UX / Polish
 
-- [ ] **Color picker: changing color only updates preference, not focused highlight color in DOM** — `changeCurrentHighlightColor` saves for future highlights but does not re-color an existing focused highlight in real-time.
+- ~~**Color picker: changing color only updates preference, not focused highlight color in DOM**~~ — Color is applied via `var(--currentHighlight)` in CSS, reactively updated in `LayoutClient`. The GSAP animation fires on explicit color change only (Iter 11 guard). Considered resolved.
 
 ---
 

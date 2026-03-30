@@ -17,7 +17,7 @@ import {
   useTransitionStatus
 } from "@floating-ui/react";
 import { Button } from "@payloadcms/ui";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import {
   ChangeEventHandler,
@@ -90,7 +90,6 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
   const userId = useRPSession(useShallow((r) => r.id as null | string));
   const userName = useRPSession(useShallow((r) => r.name));
   const userImage = useRPSession(useShallow((r) => r.image));
-  const userD = useRPSession(useShallow((r) => r.displayUsername));
   const userS = useRPSession(useShallow((r) => r.slug));
   const [saving, setSaving] = useState(false);
 
@@ -242,6 +241,20 @@ const PrivateNoteEditor = ({
   const setOpen = usePrivateNote((r) => r.setOpen);
   const qc = useQueryClient();
   const [dirty, setDirty] = useState<boolean>(false);
+  const updateMutation = useMutation({
+    mutationFn: (body: HighlightedRange) => handleUpdate(body),
+    onMutate: () => setSaving(true),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["savedHighlights"] });
+      successToast(t("Highlights.saved"));
+      setOpen(false);
+      setDirty(false);
+    },
+    onError: () => {
+      errorToast(t("Highlights.error.save.default"));
+    },
+    onSettled: () => setSaving(false)
+  });
   const onSave = useCallback(
     (e: MouseEvent) => {
       e.stopPropagation();
@@ -280,26 +293,14 @@ const PrivateNoteEditor = ({
         }
         return;
       }
-      try {
-        setSaving(true);
-        const body = {
-          ...currentFocus.current,
-          memo: mem,
-          private: true
-        } satisfies HighlightedRange;
-        handleUpdate(body).then((r) => {
-          qc.invalidateQueries({ queryKey: ["savedHighlights"] });
-          successToast(t("Highlights.saved"));
-          setOpen(false);
-          setDirty(false);
-        });
-      } catch (e) {
-        errorToast(t("Highlights.error.save.default"));
-      } finally {
-        setSaving(false);
-      }
+      const body = {
+        ...currentFocus.current,
+        memo: mem,
+        private: true
+      } satisfies HighlightedRange;
+      updateMutation.mutate(body);
     },
-    [container, createCallback, handleUpdate, qc, ranger, setOpen, t]
+    [container, createCallback, qc, ranger, setOpen, t, updateMutation]
   );
   const cancelBtnClick = useCallback(
     (e: React.MouseEvent) => {
