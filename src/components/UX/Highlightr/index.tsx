@@ -2,7 +2,7 @@
 import { FeaturedCard } from "@/blocks/heros/ArtHero/FeatureHero";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Link } from "@/components/core/Link/Link";
-import { BookmarkButton } from "@/components/UX/Bookmark";
+import { ArticleBookmarkButton } from "@/components/UX/Bookmark";
 import LockedGate from "@/components/UX/Highlightr/Gated";
 import {
   fetchUserHighlights,
@@ -1017,7 +1017,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
             <AnimatePresence mode={"sync"} initial={true} propagate={true}>
               {shownDynamicIsland && isAtEnd && (
                 <DynamicBreadcrumb title={post.title} progress={progress}>
-                  <BookmarkButton />
+                  <ArticleBookmarkButton />
                 </DynamicBreadcrumb>
               )}
             </AnimatePresence>
