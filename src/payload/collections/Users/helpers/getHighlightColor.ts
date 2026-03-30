@@ -1,21 +1,20 @@
 "use server";
 
 import { HighlightColors, Palettes } from "@/components/UX/Highlightr/stores";
-import { getPayload } from "@/lib/payload";
+import config from "@/payload.config";
 import { randomNumber } from "@/utilities/randomNumber";
 import { DateTime } from "luxon";
 import { headers } from "next/headers";
+import { getPayload } from "payload";
 
 const colorsRegex = /^(BLUE|GREEN|ORANGE|YELLOW)$/;
 export async function getHighlightColor(
   fallbackValue: HighlightColors = "BLUE"
 ) {
   let fallback = fallbackValue;
-  const payload = await getPayload();
-  const se = await payload.betterAuth.api.getSession({
-    headers: await headers()
-  });
-  const user = se?.user.id;
+  const payload = await getPayload({ config });
+  const { user } = await payload.auth({ headers: await headers() });
+
   if (!user) throw new Error("Not authenticated");
   if (!colorsRegex.test(fallback)) {
     payload.logger.error(
@@ -27,18 +26,9 @@ export async function getHighlightColor(
     .find({
       collection: "payload-preferences",
       where: {
-        and: [
-          {
-            "user.value": {
-              equals: user
-            }
-          },
-          {
-            key: {
-              equals: "highlight-colors"
-            }
-          }
-        ]
+        key: {
+          equals: "highlight-colors"
+        }
       },
       overrideAccess: true,
       pagination: false,
@@ -58,14 +48,20 @@ export async function getHighlightColor(
 
   return await payload
     .create({
+      draft: false,
       collection: "payload-preferences",
       data: {
-        user: {
-          value: user,
-          relationTo: "users"
-        },
         key: "highlight-colors",
-        value: fallback
+        value: fallback,
+        user: {
+          relationTo: "users",
+          value: user.id
+        }
+      },
+      user,
+      context: {
+        user,
+        overrideAccess: true
       },
       overrideAccess: true
     })

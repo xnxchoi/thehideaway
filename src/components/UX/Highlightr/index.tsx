@@ -17,6 +17,7 @@ import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";
 import type { SingleArticle } from "@/types/collections/posts";
+import { AuthorOverview } from "@/types/collections/users";
 import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
@@ -220,7 +221,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       color: HighlightColors;
       user: string;
     }) =>
-      await fetch(`/api/payload-preferences/highlight-color`, {
+      await fetch(`/api/payload-preferences/highlight-colors`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -267,7 +268,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         string,
         {
           value: string;
-          collection: typeof collection;
+          collection: "posts" | "surf";
           userId: string;
           slug: string;
         }
@@ -282,12 +283,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     gcTime: 60 * 1000 * 5
   });
 
-  const [highlightMap, setHighlightMap] = useState<
-    Array<{
-      y: number;
-      top: number;
-    }>
-  >([]);
   const containerRef = useRef<HTMLDivElement>(null!);
   const lastResize = useWindowResize({
     debounce: 100,
@@ -416,11 +411,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   useEffect(() => {
     //We only handle cases where a highlight is focused, because null cases vary in expected float menu visibility
     if (focusedHighlight) {
-      if (
-        focusedHighlight.private &&
-        focusedHighlight.memo &&
-        focusedHighlight.memo.length > 0
-      ) {
+      if (focusedHighlight.private) {
         const ance = getAnchestorIdentifyableNode(
           focusedHighlight.els[0] as Node
         );
@@ -499,69 +490,70 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       lastRangeAt.current = null;
     }
   }, [prefs, ranger, refs, setFocusedHighlight, setPrivView, setVisi]);
-  // const updateMiniMap = useCallback(
-  //   (highlighter: Map<string, HighlightedRange>) => {
-  //     const highlighters = highlighter.values();
-  //     const a: Array<{
-  //       y: number;
-  //       top: number;
-  //     }> = [];
-  //     const wh = window.innerHeight;
-  //     const cont = contentRef.current;
-  //     if (!cont) return;
-  //     const contDimension = cont.offsetHeight;
-  //     const contOffset = cont.offsetTop;
-  //     highlighters.forEach((e) => {
-  //       let n = 0;
-  //       // const i = contOffset;
-  //       let firstConnected = true;
-  //       e.els.forEach((t) => {
-  //         const el = t as HTMLElement;
-  //         // Skip stale elements that are no longer part of the live document
-  //         if (!el.isConnected) return;
-  //         const tt = el.offsetTop;
-  //         if (firstConnected) {
-  //           n = tt;
-  //           firstConnected = false;
-  //         } else {
-  //           n = Math.min(n, tt);
-  //         }
-  //       });
-  //       // Skip highlight entirely if none of its elements are in the live DOM
-  //       if (firstConnected) return;
-  //       a.push({
-  //         y: contOffset + n,
-  //         top: (n / contDimension) * wh * 0.85
-  //       });
-  //     });
-  //
-  //     setHighlightMap(a);
-  //   },
-  //   []
-  // );
+
   const updateResponseNodes = useCallback(
     (highlighter: Map<string, HighlightedRange>) => {
-      const b: Array<{ top: number; reference: string }> = [];
-      const c: Array<{ top: number; reference: string }> = [];
-      for (const e of highlighter.values()) {
-        if (!e.memo || e.memo.length === 0) continue;
+      const highlighters = highlighter.values();
+      const b: Array<{
+        top: number;
+        reference: string;
+        memo: string;
+        quote: string;
+        author: AuthorOverview;
+        updatedAt: string;
+        createdAt: string;
+      }> = [];
+      const c: Array<{
+        top: number;
+        reference: string;
+        memo: string;
+        quote: string;
+        author: AuthorOverview;
+        updatedAt: string;
+        createdAt: string;
+      }> = [];
+      highlighters.forEach((e) => {
         let n = 0;
         e.els.forEach((t, i) => {
           const tt = (t as HTMLElement).offsetTop;
-          n = i === 0 ? tt : Math.min(n, tt);
+          if (i > 0) {
+            n = Math.min(n, tt);
+          } else {
+            n = tt;
+          }
         });
-        if (e.private) {
-          const pa = (e.els[0] as HTMLElement).closest(
-            '[data-selectable="true"]'
-          ) as HTMLElement | null;
-          if (pa) n = pa.offsetTop;
-          c.push({ top: n, reference: e.reference });
-        } else {
-          b.push({ top: n, reference: e.reference });
+        if (e.memo && e.memo.length > 0) {
+          if (e?.private) {
+            const el = e.els[0] as HTMLElement;
+            const pa = el.closest(
+              '[data-selectable="true"]'
+            ) as HTMLElement | null;
+            pa && (n = pa.offsetTop);
+          }
+          const pass = {
+            quote:
+              e.quote ||
+              `${e.selection.before}${e.selection.text}${e.selection.after}`,
+            top: n,
+            reference: e.reference,
+            memo: e.memo,
+            author: e.author,
+            updatedAt: e.updatedAt,
+            createdAt: e.createdAt
+          };
+          e.private ? c.push(pass) : b.push(pass);
         }
+      });
+      if (b.length > 0) {
+        setResponseNodes(b);
+      } else {
+        setResponseNodes([]);
       }
-      setResponseNodes(b);
-      setPrivateNodes(c);
+      if (c.length > 0) {
+        setPrivateNodes(c);
+      } else {
+        setPrivateNodes([]);
+      }
     },
     []
   );
@@ -625,13 +617,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     onExit
   ]);
 
-  // const updateColors = useRef<
-  //   (props: {
-  //     targets: HTMLElement[];
-  //     fromColor: HighlightColors;
-  //     toColor: HighlightColors;
-  //   }) => void
-  // >(null!);
   const addListeners = useCallback(
     (targets: HTMLElement[]) => {
       targets.forEach((e) => {
@@ -671,7 +656,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       const sequence: AnimationSequence = [
         [
           motionCallback({
-            onBackwards: () => addListeners(targets),
             onForwards: () => removeListeners(targets)
           }),
           { duration: 0 }
@@ -691,10 +675,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         ],
         [
           motionCallback({
-            onBackwards: () => (
-              targets.forEach((e) => e.classList.remove("highlighted")),
-              removeListeners(targets)
-            ),
             onForwards: () => (
               targets.forEach((e) => e.classList.add("highlighted")),
               addListeners(targets)
@@ -708,39 +688,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     },
     [addListeners, palettes, removeListeners]
   );
-  // useGSAP(
-  //   () => {
-  //     updateColors.current = (props) => {
-  //       const { targets, fromColor, toColor } = props;
-  //       const from = HighlightPalette[fromColor];
-  //       const to = HighlightPalette[toColor];
-  //       gsap.to(targets, {
-  //         onStart: () => {
-  //           removeListeners(targets);
-  //         },
-  //         delay: 0.05,
-  //         backgroundImage: `linear-gradient(to left, oklch(from ${from} l c h/.01) 0%, okclh(from ${from} l c h/.1) 40%, oklch(from ${to} l c h/.01) 50%, oklch(from ${to} l c h/.85) 100%)`,
-  //         onComplete: () => {
-  //           targets.forEach((e) => {
-  //             e.classList.add("highlighted");
-  //           });
-  //           addListeners(targets);
-  //           gsap.to(targets, {
-  //             delay: 0.2,
-  //             clearProps: "backgroundImage"
-  //           });
-  //         },
-  //         duration: 0.2,
-  //         ease: "power2.inOut"
-  //       });
-  //     };
-  //   },
-  //   { dependencies: [handleHighlightClick, addListeners], scope: containerRef }
-  // );
 
   useEffect(() => {
-    // Only animate when the color preference actually changed, not on every highlight add/remove
-    if (lastColorRef.current === currentColor) return;
     const targets = Array.from(highlights.values()).reduce(
       (r, e) => [...r, ...(e.els as HTMLElement[])],
       [] as HTMLElement[]
@@ -979,7 +928,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     hasRun.current = true;
 
     return () => {
-      setHighlightMap([]);
       setPrivateNodes([]);
       const e = cont.querySelectorAll("mark.highlighted");
       e.forEach((e) => {
@@ -994,7 +942,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     enableHighlight,
     addHighlighter
   ]);
-  const contentID = useId();
   return (
     <>
       <div
@@ -1004,7 +951,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         }}
       />{" "}
       <div className="h-full w-full">
-        <div className="h-full w-full">
+        <div className="z-3 h-full w-full">
           <div className={"w-full"}>
             <article
               className="rp-article relative w-full"
@@ -1018,7 +965,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
               >
                 <div
                   className="rp-content *:col-[main] [&>aside]:col-3"
-                  id={contentID}
                   ref={(el) => {
                     el && ((contentRef.current = el), setTargetContainer(el));
                   }}
@@ -1079,11 +1025,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
             {...getFloatingProps()}
             mounted={isMounted}
           />
-          <MiniMap
-            contentContainer={contentRef}
-            highlightMap={highlightMap}
-            scaleRatio={containerBounds}
-          />
+          <MiniMap contentContainer={contentRef} scaleRatio={containerBounds} />
         </div>
       </div>
       <div className="fixed right-0 bottom-[30px] left-0 z-[120] mx-auto mb-[24px] w-full">

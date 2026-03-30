@@ -164,16 +164,18 @@ export const SignInTriggerButton = () => {
   const t = useTranslations("UI.SignIn");
   return (
     <DialogRoot open={isOpen} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <div
-          className={"h-full w-full cursor-pointer px-[12px] py-[8px]"}
-          onClick={() => setOpen(true)}
-        >
-          <span className={"text-base text-muted-foreground"}>
-            {t("providers")}
-          </span>
-        </div>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <div
+            className={"h-full w-full cursor-pointer px-[12px] py-[8px]"}
+            onClick={() => setOpen(true)}
+          >
+            <span className={"text-base text-muted-foreground"}>
+              {t("providers")}
+            </span>
+          </div>
+        }
+      />
       <DialogContent onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>Check In</DialogTitle>

@@ -156,43 +156,37 @@ export const ImageMedia: FC<
             pictureClassName={pictureClassName}
             aspectRatio={aspectRatio}
           >
-            <picture>
-              <NextImage
-                className={cn(
-                  "inset-0 w-full max-w-full border-0 object-cover backface-hidden"
-                )}
-                onLoad={onLoad}
-                {...rest}
-                fill={true}
-                priority={priority}
-                unoptimized={true}
-                quality={100}
-                loading={loading}
-                sizes={sizes}
-                src={typeof src === "string" ? decodeURIComponent(src) : src}
-                {...fenderImageRields}
-              />
-            </picture>
+            <NextImage
+              className={cn(
+                "absolute inset-0 w-full max-w-full border-0 object-cover backface-hidden"
+              )}
+              onLoad={onLoad}
+              {...rest}
+              fill={true}
+              priority={priority}
+              unoptimized={true}
+              loading={loading}
+              sizes={sizes}
+              src={typeof src === "string" ? decodeURIComponent(src) : src}
+              {...fenderImageRields}
+            />
           </ResponsiveFrame>
         ) : (
           <m.div className={cn(baseclass, "h-full", pictureClassName)}>
-            <picture>
-              <NextImage
-                className={cn(
-                  "h-auto w-full max-w-full border-0 object-cover object-center backface-hidden"
-                )}
-                onLoad={onLoad}
-                {...rest}
-                fill={true}
-                priority={priority}
-                unoptimized={true}
-                quality={100}
-                loading={loading}
-                sizes={sizes}
-                src={typeof src === "string" ? decodeURIComponent(src) : src}
-                {...fenderImageRields}
-              />
-            </picture>
+            <NextImage
+              className={cn(
+                "absolute h-auto w-full max-w-full border-0 object-cover object-center backface-hidden"
+              )}
+              onLoad={onLoad}
+              {...rest}
+              fill={true}
+              priority={priority}
+              unoptimized={true}
+              loading={loading}
+              sizes={sizes}
+              src={typeof src === "string" ? decodeURIComponent(src) : src}
+              {...fenderImageRields}
+            />
           </m.div>
           // <NoARMedia
           //     baseClass={baseclass}

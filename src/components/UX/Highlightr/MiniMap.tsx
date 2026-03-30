@@ -1,11 +1,12 @@
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { useHighlighter } from "@/components/UX/Highlightr/providers/HighlighterProvider";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
-import { SPRING_EASE } from "@/constants/animations";
+import { SPRING_EASE, TWEEN_EASE } from "@/constants/animations";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
+import { animate } from "motion";
 import {
   HTMLMotionProps,
   MotionValue,
@@ -22,6 +23,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -52,12 +54,11 @@ const MiniMapItem = ({
     ...SPRING_EASE.power2.inOut,
     duration: 0.2
   });
-  const setUp = useEffectEvent(() => {
+  const setUp = useEffectEvent((cont: HTMLDivElement) => {
     const placement = targets
       .filter((r) => r.isConnected)
       .reduce((acc, t) => Math.min(t.offsetTop, acc), window.innerHeight);
-    const cont = contentContainer.current;
-    if (!cont) return;
+
     const contOff = cont.offsetTop;
     const contDimension = cont.offsetHeight;
     const y = contOff + placement - 250;
@@ -77,40 +78,48 @@ const MiniMapItem = ({
     onLeave
   });
   useEffect(() => {
-    setUp();
-  }, []);
+    const cont = contentContainer.current;
+    if (!cont) return;
+    setUp(cont);
+  }, [contentContainer]);
   useEffect(() => {
-    setUp();
-  }, [lastResize]);
+    const cont = contentContainer.current;
+    setUp(cont);
+  }, [contentContainer, lastResize]);
   return (
     <m.div
-      className="pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] border-foreground/20 transition-all duration-200 ease-out-power2 hover:-top-[3px] hover:h-[10px]"
+      className="pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] border-foreground/20 hover:-top-[3px]"
+      whileHover={{
+        scaleY: 3,
+        scaleX: 1.2
+      }}
       {...props}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
       style={{
-        ...style,
+        backgroundColor:
+          "color-mix(in oklch, var(--currentHighlight) 85%, var(--color-faded-white))",
         translateY
       }}
     ></m.div>
   );
 };
 export const MiniMap = ({
-  highlightMap,
   scaleRatio,
   contentContainer,
   ...props
-}: ComponentPropsWithoutRef<"div"> & {
+}: HTMLMotionProps<"div"> & {
   contentContainer: RefObject<HTMLDivElement>;
-  highlightMap: Array<{
-    y: number;
-    top: number;
-  }>;
+
   scaleRatio: number;
 }) => {
   const highlights = useHighlighter(useShallow((r) => r.highlights));
-
+  const highlightMap = useMemo(() => {
+    return Array.from(
+      highlights.values().map(({ els }) => els as HTMLElement[])
+    );
+  }, [highlights]);
   const currentColor = useHighlighter(useShallow((r) => r.currentColor));
   const mapBackdropRef = useRef<HTMLDivElement>(null!);
   const mapTrackRef = useRef<HTMLDivElement>(null!);
@@ -119,36 +128,28 @@ export const MiniMap = ({
     detectVisibilityChange: false,
     detectHeightChange: true
   });
-  const [scale_, setScale_] = useState(1);
+  // const [scale_, setScale_] = useState(1);
   const scaleValue = useMotionValue(scaleRatio);
   useEffect(() => {
-    setScale_(scaleRatio);
+    // setScale_(scaleRatio);
     scaleValue.set(scaleRatio);
   }, [lastResize, scaleRatio, scaleValue]);
-  const ccc = useMotionValue(HighlightPalette[currentColor] as string);
-  useEffect(() => {
-    ccc.set(HighlightPalette[currentColor]);
-  }, [ccc, currentColor]);
-  const ccec = useSpring(ccc, {
-    ...SPRING_EASE.power2.inOut,
-    duration: 0.2
-  });
-  const colllor = useMotionTemplate`color-mix(in oklch,${ccec} 85%, var(--color-faded-white))`;
 
-  useGSAP(() => {
-    highMaps.current.forEach((e, t) => {
-      const y = highlightMap[t]?.top;
-      if (!y) return;
-      gsap.to(e, {
-        translateY: y * scale_,
-        duration: 0.1,
-        ease: "power2.inOut"
-      });
-    });
-  }, [scale_]);
+  //
+  // useGSAP(() => {
+  //   highMaps.current.forEach((e, t) => {
+  //     const y = highlightMap[t]?.top;
+  //     if (!y) return;
+  //     gsap.to(e, {
+  //       translateY: y * scale_,
+  //       duration: 0.1,
+  //       ease: "power2.inOut"
+  //     });
+  //   });
+  // }, [scale_]);
   return (
-    <div
-      className="pointer-events-none fixed top-[55px] right-[40px] bottom-[50px] z-[250] w-[24px] origin-[0_0] scale-x-50 overflow-hidden transition-transform duration-200"
+    <m.div
+      className="pointer-events-none fixed top-24 right-[40px] bottom-20 z-[250] w-[24px] origin-[0_0] scale-x-50 overflow-hidden transition-transform duration-200"
       ref={mapTrackRef}
       {...props}
     >
@@ -156,19 +157,15 @@ export const MiniMap = ({
         ref={mapBackdropRef}
         className="absolute h-full w-full origin-[100%_0]"
       ></div>
-      {highlights
-        .values()
-        .map(({ els }) => els as HTMLElement[])
-        .map((e, t) => (
-          <MiniMapItem
-            targets={e}
-            scaleValue={scaleValue}
-            contentContainer={contentContainer}
-            key={"highMap" + t}
-            color={currentColor}
-            style={{ backgroundColor: colllor }}
-          />
-        ))}
-    </div>
+      {highlightMap.map((e, t) => (
+        <MiniMapItem
+          targets={e}
+          scaleValue={scaleValue}
+          contentContainer={contentContainer}
+          key={"highMap" + t}
+          color={currentColor}
+        />
+      ))}
+    </m.div>
   );
 };
