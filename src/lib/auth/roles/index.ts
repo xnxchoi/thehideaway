@@ -95,6 +95,7 @@ const user = accessControl.newRole({
 	bookmarks: ["read"],
 	follows: ["read"],
 	tags: ["read"],
+	compilations: ["read", "create", "update", "delete"],
 });
 
 function accessCreator(props: {
@@ -287,5 +288,6 @@ const patron = accessControl.newRole({
 	// series: ["read"],
 	bookmarks: ["read"],
 	follows: ["read"],
+	compilations: ["read", "create", "update", "delete"],
 });
 export {author, admin, user, editor, patron};

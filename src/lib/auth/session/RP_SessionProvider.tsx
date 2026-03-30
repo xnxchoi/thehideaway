@@ -95,13 +95,13 @@ const createSessionStore = (
     twoFactorEnabled: false,
     bookmarks: {
       posts: [],
-      // userMedia: [],
       surf: [],
-      profile: []
-      // albums: [],
-      // tracks: [],
-      // playlists: [],
-      // users: []
+      profile: [],
+      userMedia: [],
+      albums: [],
+      tracks: [],
+      playlists: [],
+      users: []
     },
     banned: false,
     displayUsername: null!,
