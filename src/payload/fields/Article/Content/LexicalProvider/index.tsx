@@ -1,18 +1,20 @@
-import {RP_ImageNode} from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
+import { RP_ImageNode } from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
 import type { LexicalProviderProps } from "@/payload/Lexical/defaults/types";
 import {
   EditorConfigProvider,
   getEnabledNodes,
   useEditorConfigContext
 } from "@payloadcms/richtext-lexical/client";
-import type { InitialConfigType } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposer";
-import { LexicalComposer } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposer";
+import {
+  InitialConfigType,
+  LexicalComposer
+} from "@payloadcms/richtext-lexical/lexical/react/LexicalComposer";
 import { useEditDepth } from "@payloadcms/ui";
 import type { FC, ReactNode } from "react";
 import { useMemo, useRef } from "react";
-import {LexicalEditor as LexicalEditorComponent} from "./LexicalEditor";
+import { LexicalEditor as LexicalEditorComponent } from "./LexicalEditor";
 import "./LexicalEditor.scss";
-import {DarkRoomProvider} from "../../Cover/ImageNode/DarkRoom";
+
 const NestProviders = ({
   children,
   providers
@@ -53,7 +55,6 @@ export const LexicalProvider: FC<LexicalProviderProps> = (props) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // useMemo for the initialConfig that depends on readOnly and value
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const initialConfig = useMemo<InitialConfigType>(() => {
     if (value && typeof value !== "object") {
       throw new Error(
@@ -98,13 +99,10 @@ export const LexicalProvider: FC<LexicalProviderProps> = (props) => {
   // Without it, there were cases where lexical editors inside drawers turn readOnly initially - a few miliseconds later they turn editable, but the editor does not re-render and stays readOnly.
   return (
     <LexicalComposer
-	    initialConfig={{
-		    ...initialConfig,
-		    nodes: [
-			    ...(initialConfig?.nodes || []),
-			    RP_ImageNode,
-		    ]
-	    }}
+      initialConfig={{
+        ...initialConfig,
+        nodes: [...(initialConfig?.nodes || []), RP_ImageNode]
+      }}
       key={composerKey + initialConfig.editable}
     >
       <EditorConfigProvider
@@ -119,12 +117,12 @@ export const LexicalProvider: FC<LexicalProviderProps> = (props) => {
         }
       >
         <NestProviders providers={editorConfig.features.providers}>
-	        <LexicalEditorComponent
+          <LexicalEditorComponent
             editorConfig={editorConfig}
             editorContainerRef={editorContainerRef}
             isSmallWidthViewport={isSmallWidthViewport}
             onChange={onChange}
-	        />
+          />
         </NestProviders>
       </EditorConfigProvider>
     </LexicalComposer>

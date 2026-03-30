@@ -2,6 +2,7 @@ import { useFieldContext } from "@/components/UX/Tour/form-context";
 import { cn } from "@/lib/utils";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
+import { ChangeEvent, useCallback } from "react";
 export default function TextField({
   placeholder,
   className,
@@ -10,7 +11,13 @@ export default function TextField({
 }: Omit<HTMLMotionProps<"input">, "value" | "onBlur" | "onChange">) {
   const field = useFieldContext<string>();
   const errors = field.state.meta.errors;
-
+  const handleChanger = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      field.handleChange(e.target.value);
+    },
+    [field]
+  );
   return (
     <div className="flex flex-col gap-1">
       <m.input
@@ -26,7 +33,7 @@ export default function TextField({
         )}
         placeholder={placeholder}
         value={field.state.value}
-        onChange={(e) => field.handleChange(e.target.value)}
+        onChange={handleChanger}
         onBlur={field.handleBlur}
         autoComplete={autoComplete}
         {...props}

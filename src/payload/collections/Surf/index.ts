@@ -21,6 +21,7 @@ import {PROPS_COLLAPSIBLE} from "../constants";
 import {RichTitle} from "../Posts/richTitle";
 import {getSurfBookMarks} from "./endpoints/getSurfBookmarks";
 import {afterDelete} from "./hooks/afterDelete";
+import { idField } from "@/payload/fields/IDField";
 
 export const Surfs: CollectionConfig = {
 	slug: "surf",
@@ -92,6 +93,7 @@ export const Surfs: CollectionConfig = {
 		}
 	},
 	fields: [
+    idField(),
 		{
 			name: "title",
 			type: "text",

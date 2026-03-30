@@ -12,6 +12,7 @@ export const idField = (props?: {
 		type: "text",
 		defaultValue: uuidv7,
 		access: {
+      read: () => true,
 			update: () => false,
 			...accessOverrides
 		},
@@ -22,5 +23,6 @@ export const idField = (props?: {
 		},
 		index: true,
 		unique: true,
+
 	}
 }

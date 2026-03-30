@@ -27,7 +27,7 @@ export const getDeltaHandler = cache(
 
     const result = await payload
       .find({
-        collection: "delta",
+        collection: "surf",
         where: {
           slug: {
             equals: deltaSlug

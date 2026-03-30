@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-m";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button, PillButton } from "@/components/core/Button";
@@ -39,6 +39,7 @@ import { useNotifications } from "@/providers/Notifications";
 import { BookmarkIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+
 type FilterType = "all" | "unread" | "read" | "dismissed";
 type SortType = "newest" | "oldest" | "type";
 
@@ -271,7 +272,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
             </Select>
           </div>
         </div>
-        <div className={"relative h-[4rem] w-full"}>
+        <div className={"relative h-16 w-full"}>
           {/* Bulk Actions */}
           {selectedIds.size > 0 && (
             <motion.div

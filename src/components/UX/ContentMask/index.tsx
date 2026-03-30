@@ -4,8 +4,20 @@ import { useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { gsap } from "gsap";
 import { useMotionValue } from "motion/react";
-import { Fragment, ReactNode, useCallback, useEffect, useRef } from "react";
+import { animate, AnimationSequence } from "motion";
+import {
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useRef
+} from "react";
 import { useShallow } from "zustand/shallow";
+import * as m from "motion/react-m";
+import { TWEEN_EASE } from "@/constants/animations";
+import { motionCallback } from "@/utilities/motionHelpers";
 
 export function ContentMask(l: { children: ReactNode }) {
   const windowResize = useWindowResize({ detectHeightChange: true });
@@ -31,18 +43,25 @@ export function ContentMask(l: { children: ReactNode }) {
     );
   const svgWidth = useMotionValue(1440);
   const svgHeight = useMotionValue(950);
-  useEffect(() => {
+  const rectWidth = useMotionValue(0);
+  const rectHeight = useMotionValue(0);
+  const rectX = useMotionValue(0);
+  const rectY = useMotionValue(0);
+  const rectRX = useMotionValue(0);
+  const initializeDimensions = useEffectEvent(() => {
     svgWidth.set(window.innerWidth);
     svgHeight.set(window.innerHeight);
-  }, [svgHeight, svgWidth]);
-  useEffect(() => {
     document.documentElement.style.setProperty(
       "--vh",
       window.innerHeight * 0.01 + "px"
     );
-    svgWidth.set(window.innerWidth);
-    svgHeight.set(window.innerHeight);
-  }, [svgHeight, svgWidth, windowResize]);
+  });
+  useEffect(() => {
+    initializeDimensions();
+  }, [windowResize]);
+  useLayoutEffect(() => {
+    initializeDimensions();
+  });
   const setPositioningRectDimensions = useCallback(() => {
       if (
         !svgRef.current ||
@@ -51,10 +70,7 @@ export function ContentMask(l: { children: ReactNode }) {
         !contentMaskRef.current
       )
         return;
-      gsap.set(svgRef.current, {
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
+
       const c = middlePositioningRef.current.offsetHeight,
         h = middlePositioningRef.current.getBoundingClientRect().top;
       gsap.set(rectRef.current, {
@@ -75,28 +91,100 @@ export function ContentMask(l: { children: ReactNode }) {
             setIsPreloader(!1);
           }
         })));
-      const d = middlePositioningRef.current.offsetWidth,
-        { left: h } = middlePositioningRef.current.getBoundingClientRect() || {
-          left: 0
+      const middle = middlePositioningRef.current;
+      const d = middle.offsetWidth,
+        { left } = middle.getBoundingClientRect();
+      // "FAST" === preloaderAnimationType
+      //   ? gsap.set(rectRef.current, {
+      //       attr: {
+      //         rx: 15
+      //       }
+      //     })
+      //   : timelineRef.current.to(rectRef.current, {
+      //       width: d,
+      //       attr: {
+      //         x: left,
+      //         rx: 15
+      //       },
+      //       delay: 0.2,
+      //       duration: 1,
+      //       ease: "power3.inOut"
+      //     });
+      const sequence: AnimationSequence = [];
+      if (preloaderAnimationType === "FAST") {
+        rectRX.set(15);
+      } else {
+        const transition = {
+          duration: 1,
+          type: "tween" as const,
+          ease: TWEEN_EASE.power3.inOut,
+          delay: 0.2,
+          at: 0
         };
-      "FAST" === preloaderAnimationType
-        ? gsap.set(rectRef.current, {
-            attr: {
-              rx: 15
+        sequence.push(
+          [rectWidth, d, transition],
+          [rectX, left, transition],
+          [rectRX, 15, transition],
+          [
+            motionCallback({
+              onBackwards: () => setIsAnimatingOutPreloader(false),
+              onForwards: () => setIsAnimatingOutPreloader(true)
+            }),
+            { duration: 0 }
+          ],
+          [
+            rectWidth,
+            window.innerWidth,
+            {
+              duration: k,
+              ease: TWEEN_EASE.power3.inOut,
+              delay: "FAST" === preloaderAnimationType ? 0 : 3,
+              at: 0
             }
-          })
-        : timelineRef.current.to(rectRef.current, {
-            width: d,
-            attr: {
-              x: h,
-              rx: 15
-            },
-            delay: 0.2,
-            duration: 1,
-            ease: "power3.inOut"
-          });
-      const delayTime = "FAST" === preloaderAnimationType ? 0 : 3,
-        g = k;
+          ],
+          [
+            rectHeight,
+            window.innerHeight,
+            {
+              duration: k,
+              ease: TWEEN_EASE.power3.inOut,
+              delay: "FAST" === preloaderAnimationType ? 0 : 3,
+              at: 0
+            }
+          ],
+          [
+            rectY,
+            0,
+            {
+              duration: k,
+              ease: TWEEN_EASE.power3.inOut,
+              delay: "FAST" === preloaderAnimationType ? 0 : 3,
+              at: 0
+            }
+          ],
+          [
+            rectX,
+            0,
+            {
+              duration: k,
+              ease: TWEEN_EASE.power3.inOut,
+              delay: "FAST" === preloaderAnimationType ? 0 : 3,
+              at: 0
+            }
+          ],
+          [
+            rectRX,
+            0,
+            {
+              duration: k,
+              ease: TWEEN_EASE.power3.inOut,
+              delay: "FAST" === preloaderAnimationType ? 0 : 3,
+              at: 0
+            }
+          ]
+        );
+        animate(sequence);
+      }
       timelineRef.current.to(
         rectRef.current,
         {
@@ -107,16 +195,25 @@ export function ContentMask(l: { children: ReactNode }) {
             x: 0,
             rx: 0
           },
-          duration: g,
+          duration: k,
           ease: "power3.inOut",
-          delay: delayTime,
+          delay: "FAST" === preloaderAnimationType ? 0 : 3,
           onStart: () => {
             setIsAnimatingOutPreloader(!0);
           }
         },
         0
       );
-    }, [setIsPreloader, preloaderAnimationType, setIsAnimatingOutPreloader]);
+    }, [
+      preloaderAnimationType,
+      setIsPreloader,
+      rectRX,
+      rectWidth,
+      rectX,
+      rectHeight,
+      rectY,
+      setIsAnimatingOutPreloader
+    ]);
 
   useEffect(() => {
     (setPositioningRectDimensions(),
@@ -145,7 +242,14 @@ export function ContentMask(l: { children: ReactNode }) {
           {c}
         </div>
         {isPreloader && (
-          <svg ref={svgRef} className="svg-content">
+          <m.svg
+            ref={svgRef}
+            style={{
+              width: svgWidth,
+              height: svgHeight
+            }}
+            className="svg-content"
+          >
             <defs>
               <clipPath id={clipType}>
                 <rect
@@ -160,7 +264,7 @@ export function ContentMask(l: { children: ReactNode }) {
                 />
               </clipPath>
             </defs>
-          </svg>
+          </m.svg>
         )}
       </div>
     </Fragment>

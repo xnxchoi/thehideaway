@@ -6,15 +6,7 @@
  * Converted from the minified vanilla Three.js script in ./rip/tape3d.js.
  * See the plan file for a full symbol-decoding table.
  *
- * ─── Asset TODO list ──────────────────────────────────────────────────────────
- * Before shipping to production, download the four assets and place them at:
- *
- *   /public/draco/draco_wasm_wrapper.js   ← already in rip/, move it
- *   /public/draco/draco_decoder.wasm      ← already in rip/, move it
- *   /public/models/tape/SFmodel42.gltf    ← download from original GitHub URL
- *   /public/env/urban_alley_01_1k.hdr     ← download from original GitHub URL
- *   /public/video/display.mp4             ← download from original GitHub URL
- *
+
  * Then update the TODO comments below to use the /public/ paths.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -206,8 +198,8 @@ export function TapeModel({
         const displayMat = obj.material as MeshStandardMaterial;
 
         // 0x96F7FF decoded from original decimal literal 9893887
-        displayMat.emissive = new Color(0x96f7ff);
-        displayMat.emissiveIntensity = 200;
+        displayMat.emissive = new Color("#c3f1f5");
+        displayMat.emissiveIntensity = 300;
         displayScreenMatRef.current = displayMat;
         displayScreenMeshRef.current = obj.geometry;
         // displayMat.emissiveMap = videoTex;
@@ -258,7 +250,7 @@ export function TapeModel({
             color: "#EBEFF4",
             metalness: 0.85,
             roughness: 0.2,
-            envMapIntensity: 0.1,
+            envMapIntensity: 0.156,
             normalMap: metalMate.normalMap,
             normalScale: metalMate.normalScale?.clone()
           });
@@ -348,14 +340,14 @@ export function TapeModel({
   useEffect(() => {
     curTrack.set(tracks[curI]);
   }, [curI, tracks, curTrack]);
-  const curArtistValue = useTransform(() => curTrack.get().artist);
-  const curTitleValue = useTransform(() => curTrack.get().title);
   const textRef1 = useRef<Object3D>(null),
     textRef2 = useRef<Object3D>(null);
-  const nowPlaying = useMotionTemplate`   ${curArtistValue} - ${curTitleValue}   `;
-  const [playingString, setPlayingString] = useState(nowPlaying.get());
-  nowPlaying.on("change", (e) => {
-    setPlayingString(e);
+  const [playingString, setPlayingString] = useState(
+    `   ${curTrack.get().artist} - ${curTrack.get().title}   `
+  );
+  curTrack.on("change", (e) => {
+    const { artist, title } = e;
+    setPlayingString(`   ${artist} - ${title}   `);
   });
 
   // ─── GSAP ScrollTrigger animations ───────────────────────────────────────

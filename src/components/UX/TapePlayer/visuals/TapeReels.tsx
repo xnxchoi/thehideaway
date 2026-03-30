@@ -51,7 +51,6 @@ export const TapeReels = ({ diameter = 120, className }: TapeReelsProps) => {
   const progressMV = useTransform(() => {
     const elapsedTime = elaos.get();
     const duration = durationValue.get();
-    console.log("duration", duration, "elapsedTime", elapsedTime, "progressMV");
     return duration > 0 ? elapsedTime / duration : 0;
   });
   const smoothProgressMV = useSpring(progressMV, SPRING_EASE.power4.inOut);

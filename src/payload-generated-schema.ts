@@ -1537,7 +1537,7 @@ export const notifications_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     usersID: varchar("users_id"),
     profileID: uuid("profile_id"),
     bookmarksID: varchar("bookmarks_id"),
@@ -1986,7 +1986,7 @@ export const pages_rels = pgTable(
     path: varchar("path").notNull(),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -2497,7 +2497,7 @@ export const _pages_v_rels = pgTable(
     path: varchar("path").notNull(),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -4072,7 +4072,7 @@ export const bookmarks_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     profileID: uuid("profile_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
@@ -4189,7 +4189,7 @@ export const user_views_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     playlistsID: uuid("playlists_id"),
     profileID: uuid("profile_id"),
     albumsID: uuid("albums_id"),
@@ -4246,7 +4246,7 @@ export const user_views_rels = pgTable(
 export const surf = pgTable(
   "surf",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: varchar("id").primaryKey(),
     title: varchar("title"),
     richTitle: jsonb("rich_title"),
     source: enum_surf_source("source").default("external"),
@@ -4309,7 +4309,7 @@ export const surf_locales = pgTable(
     meta_description: varchar("meta_description"),
     id: serial("id").primaryKey(),
     _locale: enum__locales("_locale").notNull(),
-    _parentID: uuid("_parent_id").notNull()
+    _parentID: varchar("_parent_id").notNull()
   },
   (columns) => [
     index("surf_meta_meta_image_idx").on(columns.meta_image, columns._locale),
@@ -4330,10 +4330,10 @@ export const surf_rels = pgTable(
   {
     id: serial("id").primaryKey(),
     order: integer("order"),
-    parent: uuid("parent_id").notNull(),
+    parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
@@ -4377,7 +4377,7 @@ export const _surf_v = pgTable(
   "_surf_v",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    parent: uuid("parent_id").references(() => surf.id, {
+    parent: varchar("parent_id").references(() => surf.id, {
       onDelete: "set null"
     }),
     version_title: varchar("version_title"),
@@ -4506,7 +4506,7 @@ export const _surf_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     postsID: varchar("posts_id"),
     usersID: varchar("users_id")
   },
@@ -4600,7 +4600,7 @@ export const citations_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     postsID: varchar("posts_id")
   },
   (columns) => [
@@ -4674,7 +4674,7 @@ export const responses_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     responsesID: varchar("responses_id"),
     citationsID: uuid("citations_id"),
     usersID: varchar("users_id")
@@ -4799,7 +4799,7 @@ export const _responses_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     responsesID: varchar("responses_id"),
     citationsID: uuid("citations_id"),
     usersID: varchar("users_id")
@@ -5390,7 +5390,7 @@ export const search_rels = pgTable(
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     profileID: uuid("profile_id"),
     pagesID: varchar("pages_id"),
     tracksID: uuid("tracks_id"),
@@ -6076,7 +6076,7 @@ export const header_rels = pgTable(
     playlistsID: uuid("playlists_id"),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
@@ -6305,7 +6305,7 @@ export const footer_rels = pgTable(
     path: varchar("path").notNull(),
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
-    surfID: uuid("surf_id"),
+    surfID: varchar("surf_id"),
     usersID: varchar("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),

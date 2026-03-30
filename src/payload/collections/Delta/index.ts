@@ -1,5 +1,5 @@
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
-import type {Delta as DeltaType} from "@/payload-types";
+import type {Surf as DeltaType} from "@/payload-types";
 import {
 	updateCategoryAfterChange,
 	updateCategoryAfterDelete
@@ -10,7 +10,7 @@ import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 
 import {slugField} from "@/payload/fields/slug";
-import {deltasAccess} from "@/payload/plugins/locker/access";
+import {surfAccess} from "@/payload/plugins/locker/access";
 import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
 import {getServerSideURL} from "@/utilities/getURL";
 import {
@@ -27,15 +27,15 @@ import {RichTitle} from "../Posts/richTitle";
 import {getDeltaBookMarks} from "./endpoints/getDeltaBookmarks";
 import {afterDelete} from "./hooks/afterDelete";
 
-export const Deltas: CollectionConfig = {
-	slug: "delta",
+export const Surfs: CollectionConfig = {
+	slug: "surf",
 	labels: {
-		singular: "Delta",
-		plural: "Deltas"
+		singular: "Surf",
+		plural: "Surf"
 	},
 	lockDocuments: false,
 
-	access: deltasAccess,
+	access: surfAccess ,
 	// This config controls what's populated by default when a post is referenced
 	// https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
 	// Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'deltas'>
@@ -60,7 +60,7 @@ export const Deltas: CollectionConfig = {
 				}
 				const path = await generatePreviewPathWithAuthor({
 					slug: typeof data?.slug === "string" ? data.slug : "",
-					collection: "delta",
+					collection: "surf",
 					req,
 					userID: author
 				});
@@ -78,7 +78,7 @@ export const Deltas: CollectionConfig = {
 			}
 			const path = await generatePreviewPathWithAuthor({
 				slug: typeof doc?.slug === "string" ? doc.slug : "",
-				collection: "delta",
+				collection: "surf",
 				req: options.req,
 				userID: author
 			});
@@ -210,7 +210,7 @@ export const Deltas: CollectionConfig = {
 					index: true
 				},
 				{
-					name: "relatedDeltas",
+					name: "relatedSurfs",
 					type: "relationship",
 
 					label: "Related",
@@ -239,7 +239,7 @@ export const Deltas: CollectionConfig = {
 						} as Where;
 						const deltas = await req.payload
 							.find({
-								collection: "delta",
+								collection: "surf",
 								where,
 								select: {
 									title: true
@@ -248,7 +248,7 @@ export const Deltas: CollectionConfig = {
 							})
 							.then((res) => res.docs)
 							.then((docs) =>
-								docs.map((doc) => ({value: doc.id, relationTo: "delta"}))
+								docs.map((doc) => ({value: doc.id, relationTo: "surf"}))
 							)
 							.catch((err) => {
 								console.error(err);
@@ -272,7 +272,7 @@ export const Deltas: CollectionConfig = {
 							});
 						return [...deltas, ...posts];
 					},
-					relationTo: ["delta", "posts"],
+					relationTo: ["surf", "posts"],
 					maxDepth: 1
 				}
 			]

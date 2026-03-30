@@ -3601,6 +3601,7 @@ export interface UserViewsSelect<T extends boolean = true> {
  * via the `definition` "surf_select".
  */
 export interface SurfSelect<T extends boolean = true> {
+  id?: T;
   title?: T;
   richTitle?: T;
   source?: T;

@@ -3,6 +3,7 @@ import {isAuthorOrEditor} from "@/payload/plugins/locker/access/accessCheckers"
 import type {CollectionConfig} from "payload"
 import {uuidv7} from "uuidv7";
 import {hideIfNotAdmin} from "./helpers"
+import { idField } from "@/payload/fields/IDField";
 
 export const Compilations: CollectionConfig = {
 	slug: "compilations",
@@ -21,19 +22,9 @@ export const Compilations: CollectionConfig = {
 		title: true,
 		items: true,
 	},
-	fields: [{
-		name: "id",
-		type: "text",
-		defaultValue: uuidv7,
-		access: {
-			update: () => false
-		},
-		required: true,
-		admin: {
-			hidden: true
-		}
-	},
-		{
+	fields: [    idField(),
+
+    {
 			name: "title",
 			type: "text",
 			required: true,

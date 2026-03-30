@@ -23,7 +23,7 @@ export const getNextDeltas: (props: {
       try {
         // Get related deltas
         const relatedDeltaDocs = await payload.find({
-          collection: "delta",
+          collection: "surf",
           where: {
             and: [
               {
@@ -87,7 +87,7 @@ export const getNextDeltas: (props: {
     // Get additional deltas to fill up to the limit
     try {
       const nextDeltas = await payload.find({
-        collection: "delta",
+        collection: "surf",
         draft: false,
         limit: lim,
         select: {

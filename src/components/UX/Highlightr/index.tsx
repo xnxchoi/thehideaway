@@ -253,11 +253,22 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     isPending: hPending
   } = useQuery({
     placeholderData: [] as FetchedCitation[],
-    queryKey: ["savedHighlights", { value: postId, collection, userId: user!, slug }],
+    queryKey: [
+      "savedHighlights",
+      { value: postId, collection, userId: user!, slug }
+    ],
     queryFn: async ({
       queryKey: [_, { value: id, collection: col }]
     }: {
-      queryKey: [string, { value: string; collection: typeof collection; userId: string; slug: string }];
+      queryKey: [
+        string,
+        {
+          value: string;
+          collection: typeof collection;
+          userId: string;
+          slug: string;
+        }
+      ];
     }) =>
       await fetchUserHighlights({
         collection: col,
@@ -401,7 +412,11 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   useEffect(() => {
     //We only handle cases where a highlight is focused, because null cases vary in expected float menu visibility
     if (focusedHighlight) {
-      if (focusedHighlight.private) {
+      if (
+        focusedHighlight.private &&
+        focusedHighlight.memo &&
+        focusedHighlight.memo.length > 0
+      ) {
         const ance = getAnchestorIdentifyableNode(
           focusedHighlight.els[0] as Node
         );

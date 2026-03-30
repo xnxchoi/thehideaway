@@ -10,6 +10,7 @@ import {DismissNotification} from "./endpoints/dismiss/dismiss";
 import {ReadAllNotifications} from "./endpoints/read-all/readAll";
 import {ReadNotification} from "./endpoints/read/read";
 import {getThumbnail} from "./hooks/getThumbnail";
+import { idField } from "@/payload/fields/IDField";
 
 const fillDataHook: CollectionBeforeValidateHook<Notification> = async ({
   data,
@@ -116,18 +117,8 @@ export const Notifications: CollectionConfig = {
       return !!(user?.role === "admin");
     }
   },
-	fields: [{
-		name: "id",
-		type: "text",
-		defaultValue: uuidv7,
-		access: {
-			update: () => false
-		},
-		required: true,
-		admin: {
-			hidden: true
-		}
-	},
+	fields: [    idField(),
+
     // Target user (recipient)
     {
       name: "recipient",

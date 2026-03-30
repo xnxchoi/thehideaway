@@ -20,11 +20,11 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     <RangerProvider>
       <FloatMenuProvider>
         <HighlighterProvider>
-          <PrivateMemoizer>
-            <CitationProvider>
+          <CitationProvider>
+            <PrivateMemoizer>
               <SideBarProvider>{children}</SideBarProvider>
-            </CitationProvider>
-          </PrivateMemoizer>
+            </PrivateMemoizer>
+          </CitationProvider>
         </HighlighterProvider>
       </FloatMenuProvider>
     </RangerProvider>

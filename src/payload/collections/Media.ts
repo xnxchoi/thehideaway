@@ -8,25 +8,14 @@ import path from "path";
 import {CollectionConfig} from "payload";
 import {fileURLToPath} from "url";
 import {uuidv7} from "uuidv7";
+import { idField } from "@/payload/fields/IDField";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 const MediaFields: CollectionConfig["fields"] = [
-	{
-		name: "id",
-		type: "text",
-		defaultValue: uuidv7,
-		access: {
-			read: () => true,
-			create: () => false,
-			update: () => false
-		},
-		required: true,
-		admin: {
-			hidden: true
-		}
-	},
-	...authorFields(false),
+  idField(),
+
+  ...authorFields(false),
 
 ];
 

@@ -15,6 +15,7 @@ import {
   isAdminOrEditor,
   standardCreateAccess
 } from "../plugins/locker/access/accessCheckers";
+import { idField } from "@/payload/fields/IDField";
 
 export type TaggedCollection = Extract<
   DataFromCollectionSlug<Exclude<CollectionSlug, "delta">>,
@@ -44,18 +45,7 @@ export const Tags: CollectionConfig<"tags"> = {
   lockDocuments: false,
   defaultPopulate: tagPop,
   fields: [
-    {
-      name: "id",
-      type: "text",
-      defaultValue: uuidv7,
-      access: {
-        update: () => false
-      },
-      required: true,
-      admin: {
-        hidden: true
-      }
-    },
+    idField(),
     {
       name: "title",
       type: "text",

@@ -3,6 +3,7 @@ import {standardUpdateAccess} from "@/payload/plugins/locker/access/accessChecke
 import type {CollectionConfig} from "payload";
 import {uuidv7} from "uuidv7";
 import {hideIfNotAdmin} from "./helpers";
+import { idField } from "@/payload/fields/IDField";
 
 export const Categories: CollectionConfig = {
 	slug: "categories",
@@ -43,19 +44,9 @@ export const Categories: CollectionConfig = {
 		title: true,
 		slug: true
 	},
-	fields: [{
-		name: "id",
-		type: "text",
-		defaultValue: uuidv7,
-		access: {
-			update: () => false
-		},
-		required: true,
-		admin: {
-			hidden: true
-		}
-	},
-		{
+	fields: [    idField(),
+
+    {
 			name: "title",
 			type: "text",
 			required: true,

@@ -2,7 +2,7 @@
 
 import { MotionPillButton } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
-import { authClient } from "@/lib/auth/client";
+import { updateUser } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type {
@@ -24,8 +24,8 @@ import {
 } from "@/components/UX/Tour/form";
 import {
   detailsSchema,
-  profileSchema,
-  type ProfileFormValues
+  type ProfileFormValues,
+  profileSchema
 } from "@/components/UX/Tour/Onboard/Form/schema";
 import { useBetterAuth } from "@/lib/auth/context";
 import { User } from "@payload-types";
@@ -528,7 +528,10 @@ const slideVariants: Variants = {
 
 // ─── Step-level submission helper ─────────────────────────────────────────────
 
-type UserField = "bio" | "link" | "firstName" | "lastName" | "location";
+type UserField = Extract<
+  keyof User,
+  "bio" | "link" | "firstName" | "lastName" | "location" | "onboarded"
+>;
 
 async function submitStepFields({
   data,
@@ -558,14 +561,17 @@ async function submitStepFields({
   }
   const link = data?.details?.link?.trim();
   if (!!link && link !== currentProfile.link) updateData.set("link", link);
-
+  if (complete !== currentProfile.onboarded)
+    updateData.set("onboarded", complete);
   // Update user fields if anything changed, or if completing
   if (updateData.size > 0 || complete) {
     const updates = Object.fromEntries(updateData) as Record<string, string>;
-    await authClient.updateUser({
-      ...updates,
-      ...(complete ? { onboarded: true } : {})
-    } as Parameters<typeof authClient.updateUser>[0]);
+    await updateUser({
+      ...updates
+    } as Parameters<typeof updateUser>[0]).then((on) => {
+      if (on.error) {
+      }
+    });
   }
 
   // Persist progress (or mark complete) server-side
@@ -596,9 +602,7 @@ export function RegistrationTour() {
 
   // Session
   const { currentUserPromise } = useBetterAuth();
-  const currentUser = use(currentUserPromise) as
-    | (User & { collection: "users" })
-    | null;
+  const currentUser = use(currentUserPromise) as User | null;
   const markStale = useRPSession((s) => s.markStale);
   const router = useTransitionRouter();
 

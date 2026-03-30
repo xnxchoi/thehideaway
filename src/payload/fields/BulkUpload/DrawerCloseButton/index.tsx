@@ -1,23 +1,26 @@
-"use client"
-import React from "react"
+"use client";
+import React from "react";
 
-import {XIcon} from "../../../icons/X/index.js"
-import {useTranslation} from "../../../providers/Translation/index.js"
-import "./index.scss"
+import "./index.scss";
+import { useTranslation, XIcon } from "@payloadcms/ui";
 
-const baseClass = "drawer-close-button"
+const baseClass = "drawer-close-button";
 
 type Props = {
-	readonly onClick: () => void
-}
+  readonly onClick: () => void;
+};
 
-export function DrawerCloseButton({onClick}: Props) {
-	const {t} = useTranslation()
+export function DrawerCloseButton({ onClick }: Props) {
+  const { t } = useTranslation();
 
-	return (
-		<button aria-label={t("general:close")} className={baseClass} onClick={onClick}
-		        type="button">
-			<XIcon/>
-		</button>
-	)
+  return (
+    <button
+      aria-label={t("general:close")}
+      className={baseClass}
+      onClick={onClick}
+      type="button"
+    >
+      <XIcon />
+    </button>
+  );
 }

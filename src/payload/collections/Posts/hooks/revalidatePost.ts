@@ -9,26 +9,29 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = async ({
   previousDoc,operation,
   req: { payload, context }
 }) => {
-  if (!context.disableRevalidate&&operation==='update') {
+  if (!context.disableRevalidate) {
     if (doc._status === "published") {
-      let changed = doc._status !== previousDoc._status;
-      changed = changed || doc.slug !== previousDoc.slug;
-      changed = changed || doc.locked !== previousDoc.locked;
-      if (doc.locked && previousDoc.locked) {
-        const nowAllowlist = doc.allowList || null;
-        const prevAllowlist = previousDoc.allowList || null;
-        if (nowAllowlist) {
-          if (prevAllowlist) {
-            changed =
-              changed || !arraysEqualContents(nowAllowlist, prevAllowlist);
-          } else {
-            changed = true;
+      let changed =operation==='create'?true: doc._status !== previousDoc._status;
+      if(operation==='update') {
+        changed = changed || doc.slug !== previousDoc.slug;
+        changed = changed || doc.locked !== previousDoc.locked;
+        if (doc.locked && previousDoc.locked) {
+          const nowAllowlist = doc.allowList || null;
+          const prevAllowlist = previousDoc.allowList || null;
+          if (nowAllowlist) {
+            if (prevAllowlist) {
+              changed =
+                changed || !arraysEqualContents(nowAllowlist, prevAllowlist);
+            } else {
+              changed = true;
+            }
           }
+          const nowAuth = doc.authority || 1;
+          const prevAuth = previousDoc.authority || 1;
+          changed = changed || nowAuth !== prevAuth;
         }
-        const nowAuth = doc.authority || 1;
-        const prevAuth = previousDoc.authority || 1;
-        changed = changed || nowAuth !== prevAuth;
       }
+
       if (changed) {
         const path = `/essays/${doc.slug}`;
 

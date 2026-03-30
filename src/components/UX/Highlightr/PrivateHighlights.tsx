@@ -31,7 +31,11 @@ import {
   useRef,
   useState
 } from "react";
-import { Dialog, DialogContent, DialogHeading } from "./floatDialog";
+import {
+  DialogRoot as Dialog,
+  DialogContent,
+  DialogHeader as DialogHeading
+} from "@/components/ui/dialog";
 import { useHighlighter } from "./providers/HighlighterProvider";
 import { useRanger } from "./providers/RangerProvider";
 
@@ -111,12 +115,8 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
     >
       {children}
       {isOpen && (
-        <Dialog open={isOpen} onOpenChange={setOpen}>
-          <DialogContent
-            focusManager={{
-              modal: false
-            }}
-          >
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogContent>
             <div
               className={
                 "flex items-center bg-muted-faded-background/85 p-[12px_20px]"
@@ -154,7 +154,7 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
                           user={{
                             name: userName,
                             image: userImage,
-                            displayUsername: userD,
+
                             slug: userS,
                             id: userId
                           }}
@@ -287,11 +287,12 @@ const PrivateNoteEditor = ({
           memo: mem,
           private: true
         } satisfies HighlightedRange;
-        await handleUpdate(body);
-        await qc.invalidateQueries({ queryKey: ["savedHighlights"] });
-        successToast(t("Highlights.saved"));
-        setOpen(false);
-        setDirty(false);
+        handleUpdate(body).then((r) => {
+          qc.invalidateQueries({ queryKey: ["savedHighlights"] });
+          successToast(t("Highlights.saved"));
+          setOpen(false);
+          setDirty(false);
+        });
       } catch (e) {
         errorToast(t("Highlights.error.save.default"));
       } finally {
