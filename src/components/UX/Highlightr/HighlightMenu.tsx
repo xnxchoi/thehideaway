@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import { MotionBtnProps } from "@/components/core/Link/types";
-import { EASING } from "@/constants/animations";
+import { HighlightedRange } from "@/components/UX/Highlightr/types";
+import { EASING, TWEEN_EASE } from "@/constants/animations";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { FloatingPortal } from "@floating-ui/react";
@@ -33,7 +34,7 @@ import React, {
 import { toast } from "sonner";
 import { useShallow } from "zustand/shallow";
 import { HighlightMenuButton, HighlightMenuProps, MenuButtonCaption } from ".";
-import { Button } from "../../core/Button";
+import { Button, MotionPill, RP_Btn } from "../../core/Button";
 import { HighlightCreateError, HighlightError } from "./HighlightErrors";
 import { usePrivateNote } from "./PrivateHighlights";
 import { useArticle } from "./providers/ArticleProvider";
@@ -70,6 +71,10 @@ export const FloatHighlightMenu = ({
   const handleUpdate = useCitations((r) => r.update);
   const deleteHighlight = useCitations((r) => r.delete);
   const targetContainer = useRanger((r) => r.targetContainer);
+  const containerRef = useRef(targetContainer);
+  useEffect(() => {
+    containerRef.current = targetContainer;
+  }, [targetContainer]);
   const palettee = useMemo(() => Palettes, []);
   const privateMemoOpen = usePrivateNote((r) => r.open);
   const [memoOpen, setMemoOpen] = useState(false);
@@ -79,6 +84,10 @@ export const FloatHighlightMenu = ({
   const focusedHighlight = useHighlighter(
     useShallow((r) => r.focusedHighlight)
   );
+  const fc = useRef(focusedHighlight);
+  useEffect(() => {
+    fc.current = focusedHighlight;
+  }, [focusedHighlight]);
   const targetId = useArticle(useShallow((r) => r.id));
   const targetSlug = useArticle(useShallow((r) => r.slug));
   const user = useRPSession(useShallow((r) => r.id as null | string));
@@ -91,6 +100,10 @@ export const FloatHighlightMenu = ({
   );
   const lastVisible = useRef(false);
   const [memo, setMemo] = useState("");
+  const memoRef = useRef(memo);
+  useEffect(() => {
+    memoRef.current = memo;
+  }, [memo]);
   const [editorEnabled, setEditorEnabled] = useState(!!user);
   const savedSelectionRef = useRef<rangy.savedSelection | null>(null);
   const qc = useQueryClient();
@@ -100,6 +113,9 @@ export const FloatHighlightMenu = ({
   const handleSaveHighlight: MouseEventHandler = useCallback(
     async (e) => {
       e.stopPropagation();
+      const focus = fc.current;
+      const container = containerRef.current;
+      if (!container) return;
       if (!targetContainer || highlightSaving) return;
       setHighlightSaving(true);
       try {
@@ -109,12 +125,12 @@ export const FloatHighlightMenu = ({
         if (postDisabled) {
           throw new HighlightCreateError("target", "disabled");
         }
-        if (focusedHighlight) {
-          await deleteHighlight({ focusedHighlight });
+        if (focus) {
+          await deleteHighlight({ focusedHighlight: focus });
         } else {
           await createCallback({
             params: { private: false },
-            container: targetContainer
+            container
           });
         }
       } catch (e) {
@@ -125,21 +141,16 @@ export const FloatHighlightMenu = ({
         setHighlightSaving(false);
       }
     },
-    [
-      createCallback,
-      deleteHighlight,
-      postDisabled,
-      targetContainer,
-      user,
-      focusedHighlight
-    ]
+    [createCallback, deleteHighlight, postDisabled, user]
   );
-  const onSave: MouseEventHandler<HTMLButtonElement> = useCallback(
-    async (e) => {
+  const onSave: MouseEventHandler = useCallback(
+    (e) => {
       e.preventDefault();
 
       try {
-        if (!targetContainer) {
+        const container = containerRef.current;
+
+        if (!container) {
           throw new HighlightCreateError("params", "container");
         }
         if (!targetId) {
@@ -153,38 +164,55 @@ export const FloatHighlightMenu = ({
           toast(t("Highlights.error.save.signin"));
           return setSaving(false);
         }
-        if (!memo || memo.length < 1) {
+        const mamu = memoRef.current;
+        if (!mamu) {
+          throw new HighlightCreateError("memo", "empty");
+        }
+        if (mamu.length < 1) {
           throw new HighlightCreateError("memo", "empty");
         }
         setSaving(true);
-        if (!focusedHighlight && !savedSelectionRef.current) {
+        const ff = fc.current;
+        if (!ff && !savedSelectionRef.current) {
           throw new HighlightCreateError("selection", "invalid");
         }
-        const r = await (focusedHighlight
-          ? handleUpdate({
-              ...focusedHighlight,
-              memo
-            })
-          : (ranger.restoreSelection(
-              savedSelectionRef.current as rangy.savedSelection
-            ),
-            createCallback({
-              params: { private: false, memo },
-              container: targetContainer
-            })));
-        setFocused(r.reference);
-        successToast(t("Highlights.saved"));
-        qc.invalidateQueries({
-          queryKey: [
-            "savedHighlights",
-            { value: targetId, userId: user, slug: targetSlug }
-          ]
-        });
-        savedSelectionRef.current &&
-          ranger.removeMarkers(savedSelectionRef.current);
-        savedSelectionRef.current = null;
-        setDirty(false);
-        setMemoOpen(false);
+        return (
+          ff
+            ? handleUpdate({
+                ...ff,
+                memo: mamu
+              })
+            : (ranger.restoreSelection(
+                savedSelectionRef.current as rangy.savedSelection
+              ),
+              createCallback({
+                params: { private: false, memo: mamu },
+                container
+              }))
+        )
+          .then((r) => {
+            setFocused(r.reference);
+
+            successToast(t("Highlights.saved"));
+            qc.invalidateQueries({
+              queryKey: [
+                "savedHighlights",
+                { value: targetId, userId: user, slug: targetSlug }
+              ]
+            });
+            savedSelectionRef.current &&
+              ranger.removeMarkers(savedSelectionRef.current);
+            savedSelectionRef.current = null;
+            setDirty(false);
+            setMemoOpen(false);
+          })
+          .catch((e) => {
+            if (e instanceof HighlightCreateError) {
+              throw e;
+            } else {
+              throw new HighlightCreateError("unknown", "unknown");
+            }
+          });
       } catch (e) {
         if (e instanceof HighlightCreateError) {
           errorToast(e.message);
@@ -202,12 +230,9 @@ export const FloatHighlightMenu = ({
       setFocused,
       t,
       qc,
-      targetContainer,
       targetId,
       targetSlug,
-      user,
-      memo,
-      focusedHighlight
+      user
     ]
   );
   const setRender = useFloater((r) => r.setOpen);
@@ -316,10 +341,8 @@ export const FloatHighlightMenu = ({
   );
   useEffect(() => {
     if (memoOpen) {
-      setMemoView(
-        !editorEnabled ? "signin" : focusedHighlight ? "edit" : "new"
-      );
-      if (editorEnabled && !focusedHighlight) {
+      setMemoView(!editorEnabled ? "signin" : fc.current ? "edit" : "new");
+      if (editorEnabled && !fc.current) {
         savedSelectionRef.current = ranger.saveSelection();
       } else {
         savedSelectionRef.current &&
@@ -332,165 +355,172 @@ export const FloatHighlightMenu = ({
         (savedSelectionRef.current = null));
     }
     setDOpen(memoOpen);
-  }, [editorEnabled, memoOpen, ranger, focusedHighlight]);
+  }, [editorEnabled, memoOpen, ranger]);
   return (
     mounted && (
-      <FloatingPortal>
+      <div
+        ref={ref}
+        key={"res"}
+        className={cn(
+          "z-[250] m-0 flex overflow-hidden rounded-[12px] border-none",
+          "pointer-events-auto"
+        )}
+        data-themed={"background-color"}
+        style={{
+          ...floatingStyles
+        }}
+        {...rest}
+      >
         <div
-          ref={ref}
-          key={"res"}
-          className={cn(
-            "z-[250] m-0 flex overflow-hidden rounded-[12px] border-none",
-            "pointer-events-auto"
-          )}
-          data-themed={"background-color"}
-          style={{
-            ...floatingStyles
-          }}
-          {...rest}
+          ref={innerRef}
+          data-status={status}
+          className={
+            "highlightMenu relative h-full w-full bg-faded-foreground/10 p-0 backdrop-blur-xl"
+          }
+          style={{ ...style, backdropFilter: "blur(16px)" }}
         >
-          <div
-            ref={innerRef}
-            data-status={status}
+          <m.div
+            initial={{
+              opacity: 0.001
+            }}
+            animate={{
+              opacity: 1
+            }}
+            exit={{
+              opacity: 0.001
+            }}
+            transition={{
+              type: "tween",
+              duration: 0.2,
+              ease: TWEEN_EASE.power2.out
+            }}
             className={
-              "highlightMenu relative h-full w-full bg-faded-foreground/10 p-0 backdrop-blur-xl"
+              "absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
             }
-            style={{ ...style, backdropFilter: "blur(16px)" }}
+          />
+          <m.div
+            className={
+              "z-[23] flex h-[44px] items-center px-3.5 text-off-background"
+            }
           >
-            <m.div
-              initial={{
-                opacity: 0.001
-              }}
-              animate={{
-                opacity: 1
-              }}
-              exit={{
-                opacity: 0.001
-              }}
-              transition={{
-                type: "tween",
-                duration: 0.2,
-                ease: EASING.power2.out
-              }}
+            <DialogRoot open={dOpen} onOpenChange={setMemoOpen}>
+              <DialogTrigger
+                nativeButton={true}
+                render={
+                  <HighlightMenuButton onClick={() => setMemoOpen(true)}>
+                    <MenuButtonCaption icon={false}>
+                      {viewMap[memoView].header}
+                    </MenuButtonCaption>
+                  </HighlightMenuButton>
+                }
+              />
+              <DialogContent onClick={(e) => e.stopPropagation()}>
+                <DialogHeader>
+                  <DialogTitle>{viewMap[memoView].title}</DialogTitle>
+                </DialogHeader>
+                {editorEnabled ? (
+                  <>
+                    <div className="grid gap-3">
+                      <MemoInput
+                        value={memo}
+                        onChange={setMemoValue}
+                        placeholder="Write a short note…"
+                        maxLength={200}
+                        className=""
+                      />
+                    </div>
+                    <DialogFooter>
+                      <div className="ml-auto flex items-center gap-2">
+                        <MotionPill className="rp_btn" onClick={closeMemo}>
+                          {dirty ? "Cancel" : "Close"}
+                        </MotionPill>
+                        <MotionPill
+                          className={cn(
+                            "rp_btn data-[disabled=true]:pointer-events-none",
+                            saving
+                              ? "pointer-events-none animate-pulse"
+                              : "pointer-events-auto"
+                          )}
+                          onClick={onSave}
+                          data-disabled={!dirty}
+                        >
+                          {saving ? "Saving…" : "Save"}
+                        </MotionPill>
+                      </div>
+                    </DialogFooter>
+                  </>
+                ) : (
+                  <div className="grid gap-3">
+                    <SignInCard onSignInClick={closeMemo} />
+                  </div>
+                )}
+              </DialogContent>
+            </DialogRoot>
+            <HighlightMenuButton
+              onClick={handleSaveHighlight}
+              disabled={highlightSaving}
               className={
-                "absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
-              }
-            />
-            <m.div
-              className={
-                "z-[23] flex h-[44px] items-center px-3.5 text-off-background"
+                highlightSaving
+                  ? "pointer-events-none animate-pulse"
+                  : undefined
               }
             >
-              <DialogRoot open={dOpen} onOpenChange={setMemoOpen}>
-                <DialogTrigger
-                  render={
-                    <HighlightMenuButton onClick={() => setMemoOpen(true)}>
-                      <MenuButtonCaption icon={false}>
-                        {viewMap[memoView].header}
-                      </MenuButtonCaption>
-                    </HighlightMenuButton>
-                  }
-                />
-                <DialogContent onClick={(e) => e.stopPropagation()}>
-                  <DialogHeader>
-                    <DialogTitle>{viewMap[memoView].title}</DialogTitle>
-                  </DialogHeader>
-                  {editorEnabled ? (
-                    <>
-                      <div className="grid gap-3">
-                        <MemoInput
-                          value={memo}
-                          onChange={setMemoValue}
-                          placeholder="Write a short note…"
-                          maxLength={200}
-                          className=""
-                        />
-                      </div>
-                      <DialogFooter>
-                        <div className="ml-auto flex items-center gap-2">
-                          <Button className={"rp_btn"} onClick={closeMemo}>
-                            {dirty ? "Cancel" : "Close"}
-                          </Button>
-                          <Button
-                            className={cn(
-                              "rp_btn",
-                              saving
-                                ? "pointer-events-none animate-pulse"
-                                : "pointer-events-auto"
-                            )}
-                            onClick={onSave}
-                            disabled={!dirty}
-                          >
-                            {saving ? "Saving…" : "Save"}
-                          </Button>
-                        </div>
-                      </DialogFooter>
-                    </>
-                  ) : (
-                    <div className="grid gap-3">
-                      <SignInCard onSignInClick={closeMemo} />
-                    </div>
-                  )}
-                </DialogContent>
-              </DialogRoot>
-              <HighlightMenuButton
-                onClick={handleSaveHighlight}
-                disabled={highlightSaving}
-                className={highlightSaving ? "pointer-events-none animate-pulse" : undefined}
+              <MenuButtonCaption icon={false}>
+                {highlightSaving
+                  ? focusedHighlight
+                    ? "Deleting…"
+                    : "Saving…"
+                  : focusedHighlight
+                    ? "Delete"
+                    : "Highlight"}
+              </MenuButtonCaption>
+            </HighlightMenuButton>
+            {user && (
+              <HighlightMenuButton onClick={onPrivateClick}>
+                <MenuButtonCaption icon={false}>Private Note</MenuButtonCaption>
+              </HighlightMenuButton>
+            )}
+            <HighlightMenuButton onClick={handleShareHighlight}>
+              <MenuButtonCaption icon={false}>Share</MenuButtonCaption>
+            </HighlightMenuButton>
+            {focusedHighlight && (
+              <m.div
+                initial={{
+                  scaleX: 0.001,
+                  opacity: 0
+                }}
+                animate={{
+                  scaleX: 1,
+                  opacity: 1
+                }}
+                exit={{
+                  scaleX: 0.001,
+                  opacity: 0
+                }}
+                transition={{
+                  type: "tween",
+                  duration: 0.2,
+                  ease: "easeOut"
+                }}
+                className={"z-[13] mr-[16px] ml-[16px] flex gap-[4px]"}
               >
-                <MenuButtonCaption icon={false}>
-                  {highlightSaving
-                    ? focusedHighlight ? "Deleting…" : "Saving…"
-                    : focusedHighlight ? "Delete" : "Highlight"}
-                </MenuButtonCaption>
-              </HighlightMenuButton>
-              {user && (
-                <HighlightMenuButton onClick={onPrivateClick}>
-                  <MenuButtonCaption icon={false}>Private Note</MenuButtonCaption>
-                </HighlightMenuButton>
-              )}
-              <HighlightMenuButton onClick={handleShareHighlight}>
-                <MenuButtonCaption icon={false}>Share</MenuButtonCaption>
-              </HighlightMenuButton>
-              {editorEnabled && (
-                <m.div
-                  initial={{
-                    scaleX: 0.001,
-                    opacity: 0
-                  }}
-                  animate={{
-                    scaleX: 1,
-                    opacity: 1
-                  }}
-                  exit={{
-                    scaleX: 0.001,
-                    opacity: 0
-                  }}
-                  transition={{
-                    type: "tween",
-                    duration: 0.2,
-                    ease: "easeOut"
-                  }}
-                  className={"z-[13] mr-[16px] ml-[16px] flex gap-[4px]"}
-                >
-                  {palettee.map((palette) => (
-                    <HighlightColorPickerItem
-                      key={palette}
-                      color={palette}
-                      handleSelect={handleChangeHighlightColor}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                      }}
-                      onMouseUp={(e) => e.stopPropagation()}
-                    />
-                  ))}
-                </m.div>
-              )}
-            </m.div>
-          </div>
+                {palettee.map((palette) => (
+                  <HighlightColorPickerItem
+                    key={palette}
+                    color={palette}
+                    handleSelect={handleChangeHighlightColor}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onMouseUp={(e) => e.stopPropagation()}
+                  />
+                ))}
+              </m.div>
+            )}
+          </m.div>
         </div>
-      </FloatingPortal>
+      </div>
     )
   );
 };

@@ -5,8 +5,8 @@ import type { ButtonHTMLAttributes, ForwardedRef, ReactNode, Ref } from "react";
 import { forwardRef } from "react";
 
 import { Link } from "@/components/core/Link/Link";
-import type { SVGIcoProps } from "@/components/UX/svgIco";
-import { SvgIco } from "@/components/UX/svgIco";
+import type { SVGIcoProps } from "@/components/UX/Icon/svgIco";
+import { SvgIco } from "@/components/UX/Icon/svgIco";
 import { RPTooltip } from "@/components/UX/tooltip";
 import { cn } from "@/lib/utils";
 import { LinkProps } from "next/link";

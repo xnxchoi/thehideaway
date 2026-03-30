@@ -1,26 +1,25 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import { Link } from "@/components/core/Link/Link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { errorToast } from "@/components/ui/sonner";
 import { HighlightCreateError } from "@/components/UX/Highlightr/HighlightErrors";
 import { HighlightPalette } from "@/components/UX/Highlightr/stores";
 import type { HighlightedRange } from "@/components/UX/Highlightr/types";
-import { Link } from "@/components/core/Link/Link";
-import type { AuthorOverview } from "@/types/collections/users";
-import { Button } from "../../../core/Button";
+import { TWEEN_EASE } from "@/constants/animations";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useCursor } from "@/providers/RP_Pro";
+import type { AuthorOverview } from "@/types/collections/users";
 import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
-import { Power2 } from "gsap";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  createContext,
   CSSProperties,
   ReactNode,
-  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -29,9 +28,10 @@ import {
 } from "react";
 import { Drawer } from "vaul";
 import { useShallow } from "zustand/shallow";
-import { useHighlighter } from "./HighlighterProvider";
-import { useCitations } from "./CitationProvider";
+import { Button } from "../../../core/Button";
 import { isValidAuthor, SignInTriggerButton, UserBar } from "./author-ui";
+import { useCitations } from "./CitationProvider";
+import { useHighlighter } from "./HighlighterProvider";
 
 export interface HighlightSidebarProps {
   open: boolean;
@@ -168,7 +168,9 @@ const ResponseItem = ({
                   <div className={"outline-none"} tabIndex={-1}>
                     {linked ? (
                       <Link href={`/@${author.slug}`}>{avatarNode}</Link>
-                    ) : avatarNode}
+                    ) : (
+                      avatarNode
+                    )}
                   </div>
                 </div>
               </div>
@@ -208,6 +210,7 @@ const ResponseItem = ({
 
 const MemoInputField = () => {
   const user = useRPSession(useShallow((r) => r.id as string | null));
+  const memoVal = useRef(" ");
   const writing = useHighlightSidebar("writing");
   const setIsWriting = useHighlightSidebar("setWriting");
   const [value, setValue] = useState("");
@@ -223,13 +226,21 @@ const MemoInputField = () => {
   }, [focusedHighlight]);
   const commentInputRef = useRef<HTMLTextAreaElement>(null!);
   const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (saving) {
+      memoVal.current = value;
+    }
+  }, [value, saving]);
   const creater = useCitations((r) => r.create);
   const saveCallback = useCitations((r) => r.update);
   const t = useTranslations();
   useEffect(() => {
+    const ci = cInputWrapperRef.current;
     const input = commentInputRef.current;
-    if (writing && input) {
-      input.focus();
+    if (ci) {
+      if (writing) {
+        input && input.focus();
+      }
     }
   }, [writing]);
   const [disabled, setDisabled] = useState(value.length === 0);
@@ -245,6 +256,15 @@ const MemoInputField = () => {
     },
     [setIsWriting]
   );
+  useEffect(() => {
+    const ci = cInputWrapperRef.current;
+    const input = commentInputRef.current;
+    if (ci) {
+      if (writing) {
+        input && input.focus();
+      }
+    }
+  }, [writing]);
   return (
     <div
       className={
@@ -273,7 +293,7 @@ const MemoInputField = () => {
               animate={`${writing}`}
               transition={{
                 duration: 0.4,
-                ease: Power2.easeIn
+                ease: TWEEN_EASE.power2.in
               }}
               className={"flex flex-col justify-between px-[12px] py-[8px]"}
             >
@@ -282,7 +302,7 @@ const MemoInputField = () => {
                   <textarea
                     data-slot="textarea"
                     className={
-                      "flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-none focus-visible:ring-[0px] focus-visible:ring-ring/0 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 relative field-sizing-content min-h-[24px] w-full resize-none whitespace-nowrap"
+                      "relative flex field-sizing-content min-h-16 min-h-[24px] w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-base whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-none focus-visible:ring-[0px] focus-visible:ring-ring/0 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40"
                     }
                     ref={commentInputRef}
                     value={value}
@@ -317,28 +337,27 @@ const MemoInputField = () => {
                       <Button
                         className={
                           saving
-                            ? "disabled:fg-muted-background rounded-[20px] px-[8px] py-[4px] text-base transition-colors duration-400 ease-in-out-2 disabled:bg-muted-foreground pointer-events-none animate-pulse"
-                            : "disabled:fg-muted-background rounded-[20px] px-[8px] py-[4px] text-base transition-colors duration-400 ease-in-out-2 disabled:bg-muted-foreground pointer-events-auto"
+                            ? "disabled:fg-muted-background pointer-events-none animate-pulse rounded-[20px] px-[8px] py-[4px] text-base transition-colors duration-400 ease-in-out-2 disabled:bg-muted-foreground"
+                            : "disabled:fg-muted-background pointer-events-auto rounded-[20px] px-[8px] py-[4px] text-base transition-colors duration-400 ease-in-out-2 disabled:bg-muted-foreground"
                         }
                         disabled={disabled}
                         onClick={async (e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          const mamu = value.trim();
-                          if (!mamu) return;
                           setCursorState(null);
                           setSaving(true);
+                          const mamu = memoVal.current;
                           try {
-                            const focus = fc.current;
-                            if (focus) {
-                              await saveCallback({
-                                ...focus,
-                                memo: mamu,
-                                private: false
-                              });
-                            } else {
+                            if (!mamu) {
+                              throw new HighlightCreateError(
+                                "params",
+                                "invalid"
+                              );
+                            } else if (mamu.length < 1) {
+                              throw new HighlightCreateError("memo", "empty");
+                            }
                               const y = await creater({
-                                params: { memo: mamu, private: false },
+                              params: { memo: memoVal.current, private: false },
                                 container: targetContainer.current
                               });
                               if (!y)
@@ -346,7 +365,7 @@ const MemoInputField = () => {
                                   "unknown",
                                   "unknown"
                                 );
-                            }
+                            setSaving(false);
                             setValue("");
                             setCursorState(null);
                             setIsWriting(false);

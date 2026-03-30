@@ -2,7 +2,7 @@ import { ComponentProps, ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
 import { Link } from "@/components/core/Link/Link";
 import { DateTime } from "luxon";
-import { HomeSquare } from "@/components/sections/ContentShowcase";
+import { HomeSquare } from "@/components/sections/HomeSquare";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { PostOverview } from "@/types/collections/posts";

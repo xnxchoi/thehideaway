@@ -1,5 +1,5 @@
 import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
-import { HomeSquare } from "@/components/sections/ContentShowcase";
+import { HomeSquare } from "@/components/sections/HomeSquare";
 import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";

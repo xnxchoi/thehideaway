@@ -1,6 +1,6 @@
 "use client";
 
-import { getHighlightColor } from "@/app/(frontend)/(site)/(content)/essays/[slug]/getHighlightColor";
+import { getHighlightColor } from "@/payload/collections/Users/helpers/getHighlightColor";
 import { useHighlighter } from "@/components/UX/Highlightr/providers/HighlighterProvider";
 import {
   HIGHLIGHT_PALETTE,
@@ -23,20 +23,14 @@ export function LayoutClient({ children }: { children: ReactNode }) {
 
   const uId = useRPSession(useShallow((r) => r.id as string | null));
 
-  const [userId, setUserId] = useState(uId || "");
-  const [loggedIn, setLoggedIn] = useState(!!uId);
-  useEffect(() => {
-    setUserId(uId || "");
-    setLoggedIn(!!uId);
-  }, [uId]);
   const {
     data: color,
     refetch: colorUpdate,
     isLoading: colorLoading,
     isPending: colorPending
   } = useQuery<HighlightColors, Error, HighlightColors, ["color", string]>({
-    queryKey: ["color", userId],
-    queryFn: async ({ queryKey: [color, userId] }) => await getHighlightColor(),
+    queryKey: ["color", uId!],
+    queryFn: async ({ queryKey: [color, userID] }) => await getHighlightColor(),
     //{       const r = await fetch("/api/payload-preferences/highlight-color", {
     //   method: "GET",
     //   credentials: "include"
@@ -68,7 +62,7 @@ export function LayoutClient({ children }: { children: ReactNode }) {
     // if (!r) throw new Error("Invalid color");
     // return r;
     //}
-    enabled: loggedIn,
+    enabled: !!uId,
     placeholderData: "BLUE",
     refetchOnWindowFocus: false,
     staleTime: Infinity,

@@ -230,6 +230,7 @@ export const CitationProvider = ({ children }: { children: ReactNode }) => {
       if (!userId) {
         throw new HighlightDeleteError("user", "not_authenticated");
       }
+      selection.removeAllRanges();
       if (
         !focusedHighlight ||
         !("els" in focusedHighlight) ||
@@ -272,6 +273,7 @@ export const CitationProvider = ({ children }: { children: ReactNode }) => {
       }
       setFocusedHighlight(null);
       setMenuVisibility(false);
+      selection.removeAllRanges();
     },
     [
       handleHighlightClick,

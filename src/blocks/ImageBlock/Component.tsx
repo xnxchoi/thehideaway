@@ -196,7 +196,7 @@ const MediaMedia = ({
             <m.div
               whileTap={{ scale: 0.98 }}
               layoutId={`dialog-${uniqueId}`}
-              className={"inset-0"}
+              className={"absolute inset-0"}
               style={{ position }}
               transition={{
                 ...SPRING_EASE.power2.inOut,
@@ -217,7 +217,6 @@ const MediaMedia = ({
                 resource={data}
                 width={data.width || undefined}
                 height={data.height || undefined}
-                quality={100}
                 onLoad={onLoad}
               />
             </m.div>
@@ -364,10 +363,9 @@ const PO = ({
             </m.div>
             <m.div
               layoutId={`dialog-${uniqueId}`}
-              style={{
-                position: "relative"
-              }}
-              className={"h-auto w-[80dvw] object-cover max-md:w-[97dvw]"}
+              className={
+                "relative h-auto w-[80dvw] object-cover max-md:w-[97dvw]"
+              }
               transition={{
                 layout: {
                   ...SPRING_EASE.power3.out,
@@ -385,7 +383,6 @@ const PO = ({
                 resource={media}
                 width={media.width || undefined}
                 height={media.height || undefined}
-                quality={100}
               />
             </m.div>
           </m.div>
