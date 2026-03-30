@@ -1,15 +1,15 @@
 "use client";
 import { FeaturedCard } from "@/blocks/heros/ArtHero/FeatureHero";
-import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Link } from "@/components/core/Link/Link";
 import { ArticleBookmarkButton } from "@/components/UX/Bookmark";
 import LockedGate from "@/components/UX/Highlightr/Gated";
+import { MiniMap } from "@/components/UX/Highlightr/MiniMap";
 import {
   fetchUserHighlights,
   useHighlighter
 } from "@/components/UX/Highlightr/providers/HighlighterProvider";
 import { ResponseMap } from "@/components/UX/Highlightr/responseMap";
-import { HighlightPalette } from "@/components/UX/Highlightr/stores";
+import { TWEEN_EASE } from "@/constants/animations";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { User } from "@/payload-types";
@@ -17,6 +17,7 @@ import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";
 import type { SingleArticle } from "@/types/collections/posts";
+import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   autoUpdate,
@@ -29,12 +30,12 @@ import {
   useInteractions,
   useTransitionStatus
 } from "@floating-ui/react";
-import { useGSAP } from "@gsap/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { gsap } from "gsap";
 import type Lenis from "lenis";
 import { useLenis } from "lenis/react";
+import { AnimationSequence } from "motion";
 import {
+  animate,
   AnimatePresence,
   useMotionValue,
   useMotionValueEvent
@@ -48,7 +49,9 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -496,46 +499,46 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       lastRangeAt.current = null;
     }
   }, [prefs, ranger, refs, setFocusedHighlight, setPrivView, setVisi]);
-  const updateMiniMap = useCallback(
-    (highlighter: Map<string, HighlightedRange>) => {
-      const highlighters = highlighter.values();
-      const a: Array<{
-        y: number;
-        top: number;
-      }> = [];
-      const wh = window.innerHeight;
-      const cont = contentRef.current;
-      if (!cont) return;
-      const contDimension = cont.offsetHeight;
-      const contOffset = cont.offsetTop;
-      highlighters.forEach((e) => {
-        let n = 0;
-        const i = contOffset;
-        let firstConnected = true;
-        e.els.forEach((t) => {
-          const el = t as HTMLElement;
-          // Skip stale elements that are no longer part of the live document
-          if (!el.isConnected) return;
-          const tt = el.offsetTop;
-          if (firstConnected) {
-            n = tt;
-            firstConnected = false;
-          } else {
-            n = Math.min(n, tt);
-          }
-        });
-        // Skip highlight entirely if none of its elements are in the live DOM
-        if (firstConnected) return;
-        a.push({
-          y: i + n,
-          top: (n / contDimension) * wh * 0.85
-        });
-      });
-
-      setHighlightMap(a);
-    },
-    []
-  );
+  // const updateMiniMap = useCallback(
+  //   (highlighter: Map<string, HighlightedRange>) => {
+  //     const highlighters = highlighter.values();
+  //     const a: Array<{
+  //       y: number;
+  //       top: number;
+  //     }> = [];
+  //     const wh = window.innerHeight;
+  //     const cont = contentRef.current;
+  //     if (!cont) return;
+  //     const contDimension = cont.offsetHeight;
+  //     const contOffset = cont.offsetTop;
+  //     highlighters.forEach((e) => {
+  //       let n = 0;
+  //       // const i = contOffset;
+  //       let firstConnected = true;
+  //       e.els.forEach((t) => {
+  //         const el = t as HTMLElement;
+  //         // Skip stale elements that are no longer part of the live document
+  //         if (!el.isConnected) return;
+  //         const tt = el.offsetTop;
+  //         if (firstConnected) {
+  //           n = tt;
+  //           firstConnected = false;
+  //         } else {
+  //           n = Math.min(n, tt);
+  //         }
+  //       });
+  //       // Skip highlight entirely if none of its elements are in the live DOM
+  //       if (firstConnected) return;
+  //       a.push({
+  //         y: contOffset + n,
+  //         top: (n / contDimension) * wh * 0.85
+  //       });
+  //     });
+  //
+  //     setHighlightMap(a);
+  //   },
+  //   []
+  // );
   const updateResponseNodes = useCallback(
     (highlighter: Map<string, HighlightedRange>) => {
       const b: Array<{ top: number; reference: string }> = [];
@@ -580,7 +583,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         e.addEventListener("mouseleave", onExit);
         e.addEventListener("click", handleHighlightClick);
       });
-      updateMiniMap(highlights);
+      // updateMiniMap(highlights);
       updateResponseNodes(highlights);
     },
     [
@@ -588,7 +591,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       handleHighlightClick,
       onEn,
       onExit,
-      updateMiniMap,
+      // updateMiniMap,
       updateResponseNodes
     ]
   );
@@ -622,13 +625,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     onExit
   ]);
 
-  const updateColors = useRef<
-    (props: {
-      targets: HTMLElement[];
-      fromColor: HighlightColors;
-      toColor: HighlightColors;
-    }) => void
-  >(null!);
+  // const updateColors = useRef<
+  //   (props: {
+  //     targets: HTMLElement[];
+  //     fromColor: HighlightColors;
+  //     toColor: HighlightColors;
+  //   }) => void
+  // >(null!);
   const addListeners = useCallback(
     (targets: HTMLElement[]) => {
       targets.forEach((e) => {
@@ -646,35 +649,94 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     },
     [handleHighlightClick]
   );
-  useGSAP(
-    () => {
-      updateColors.current = (props) => {
-        const { targets, fromColor, toColor } = props;
-        const from = HighlightPalette[fromColor];
-        const to = HighlightPalette[toColor];
-        gsap.to(targets, {
-          onStart: () => {
-            removeListeners(targets);
-          },
-          delay: 0.05,
-          backgroundImage: `linear-gradient(to left, oklch(from ${from} l c h/.01) 0%, okclh(from ${from} l c h/.1) 40%, oklch(from ${to} l c h/.01) 50%, oklch(from ${to} l c h/.85) 100%)`,
-          onComplete: () => {
-            targets.forEach((e) => {
-              e.classList.add("highlighted");
-            });
-            addListeners(targets);
-            gsap.to(targets, {
-              delay: 0.2,
-              clearProps: "backgroundImage"
-            });
-          },
-          duration: 0.2,
-          ease: "power2.inOut"
-        });
-      };
-    },
-    { dependencies: [handleHighlightClick, addListeners], scope: containerRef }
+  const palettes = useMemo(
+    () => ({
+      BLUE: "84.43% 0.065 210.91",
+      ORANGE: "78.6% 0.1658 74.9677",
+      YELLOW: "85% 0.161 82.9",
+      GREEN: "91% 0.228 124.65"
+    }),
+    []
   );
+
+  const updateColeurs = useCallback(
+    (props: {
+      targets: HTMLElement[];
+      fromColor: HighlightColors;
+      toColor: HighlightColors;
+    }) => {
+      const { targets, fromColor, toColor } = props;
+      const from = palettes[fromColor];
+      const to = palettes[toColor];
+      const sequence: AnimationSequence = [
+        [
+          motionCallback({
+            onBackwards: () => addListeners(targets),
+            onForwards: () => removeListeners(targets)
+          }),
+          { duration: 0 }
+        ],
+        [
+          targets,
+          {
+            backgroundImage: `linear-gradient(to left, oklch(${from}/.01) 0%, okclh(${from}/.1) 40%, oklch(${to}/.01) 50%, oklch(${to}/.85) 100%)`
+          },
+          {
+            type: "tween",
+            ease: TWEEN_EASE.power2.inOut,
+            duration: 0.2,
+            delay: 0.05,
+            at: 0
+          }
+        ],
+        [
+          motionCallback({
+            onBackwards: () => (
+              targets.forEach((e) => e.classList.remove("highlighted")),
+              removeListeners(targets)
+            ),
+            onForwards: () => (
+              targets.forEach((e) => e.classList.add("highlighted")),
+              addListeners(targets)
+            )
+          }),
+          { duration: 0 }
+        ],
+        [targets, { backgroundImage: "none" }]
+      ];
+      animate(sequence);
+    },
+    [addListeners, palettes, removeListeners]
+  );
+  // useGSAP(
+  //   () => {
+  //     updateColors.current = (props) => {
+  //       const { targets, fromColor, toColor } = props;
+  //       const from = HighlightPalette[fromColor];
+  //       const to = HighlightPalette[toColor];
+  //       gsap.to(targets, {
+  //         onStart: () => {
+  //           removeListeners(targets);
+  //         },
+  //         delay: 0.05,
+  //         backgroundImage: `linear-gradient(to left, oklch(from ${from} l c h/.01) 0%, okclh(from ${from} l c h/.1) 40%, oklch(from ${to} l c h/.01) 50%, oklch(from ${to} l c h/.85) 100%)`,
+  //         onComplete: () => {
+  //           targets.forEach((e) => {
+  //             e.classList.add("highlighted");
+  //           });
+  //           addListeners(targets);
+  //           gsap.to(targets, {
+  //             delay: 0.2,
+  //             clearProps: "backgroundImage"
+  //           });
+  //         },
+  //         duration: 0.2,
+  //         ease: "power2.inOut"
+  //       });
+  //     };
+  //   },
+  //   { dependencies: [handleHighlightClick, addListeners], scope: containerRef }
+  // );
 
   useEffect(() => {
     // Only animate when the color preference actually changed, not on every highlight add/remove
@@ -684,13 +746,12 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       [] as HTMLElement[]
     );
     targets.length > 0 &&
-      updateColors.current &&
-      updateColors.current({
+      updateColeurs({
         targets,
         fromColor: lastColorRef.current,
         toColor: currentColor
       });
-  }, [highlights, currentColor]);
+  }, [highlights, currentColor, updateColeurs]);
 
   const lastVisi = useRef(visi);
   useEffect(() => {
@@ -764,7 +825,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         quote: t.quote,
         createdAt: t.createdAt,
         author: t.author,
-
         range: r,
         els: h,
         selection: {
@@ -818,17 +878,15 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       } else {
         return;
       }
-
-      updateColors.current &&
-        updateColors.current({
-          targets: h,
-          fromColor: lastColorRef.current,
-          toColor: currentColorRef.current
-        });
+      updateColeurs({
+        targets: h,
+        fromColor: lastColorRef.current,
+        toColor: currentColorRef.current
+      });
       vv.removeAllRanges();
       return c;
     },
-    [classApplier, findTextNode, ranger]
+    [classApplier, updateColeurs, findTextNode, ranger]
   );
   const hasRun = useRef(false);
   useEffect(() => {
@@ -836,7 +894,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       if (savedHighlights) {
         const base = contentRef.current;
         if (!base) return;
-
         // Remove all existing highlights before re-applying
         const existingHighlights = base.querySelectorAll("mark.highlighted");
         existingHighlights.forEach((el) => {
@@ -849,7 +906,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
             parent.normalize();
           }
         });
-
         const ss = savedHighlights.flatMap((c) => {
           // If highlight already exists in DOM, create HighlightedRange with existing elements
           if (existingRefs.current.has(c.reference)) {
@@ -901,7 +957,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     hLoading,
     addHighlighter,
     clearHighlights,
-    postId
+    postId,
+    ranger
   ]);
   useLayoutEffect(() => {
     if (!window) return;
@@ -937,7 +994,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     enableHighlight,
     addHighlighter
   ]);
-
+  const contentID = useId();
   return (
     <>
       <div
@@ -961,6 +1018,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
               >
                 <div
                   className="rp-content *:col-[main] [&>aside]:col-3"
+                  id={contentID}
                   ref={(el) => {
                     el && ((contentRef.current = el), setTargetContainer(el));
                   }}
@@ -1021,8 +1079,11 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
             {...getFloatingProps()}
             mounted={isMounted}
           />
-
-          <MiniMap highlightMap={highlightMap} scaleRatio={containerBounds} />
+          <MiniMap
+            contentContainer={contentRef}
+            highlightMap={highlightMap}
+            scaleRatio={containerBounds}
+          />
         </div>
       </div>
       <div className="fixed right-0 bottom-[30px] left-0 z-[120] mx-auto mb-[24px] w-full">
@@ -1158,92 +1219,6 @@ export const MenuButtonCaption = ({
       ) : (
         <>{children}</>
       )}
-    </div>
-  );
-};
-const MiniMapItem = ({
-  onMouseEnter: onEnter,
-  onMouseLeave: onLeave,
-  style,
-  ...props
-}: ComponentPropsWithRef<"div">) => {
-  const { onMouseEnter, onMouseLeave } = useDomCursor({
-    onEnter,
-    onLeave
-  });
-  const color = useHighlighter(useShallow((r) => r.currentColor));
-  return (
-    <div
-      className="pointer-events-auto absolute top-0 left-0 z-10 h-[3px] w-full border-0 border-b-[1px] border-foreground/20 transition-all duration-200 ease-out-power2 hover:-top-[3px] hover:h-[10px]"
-      {...props}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={{
-        backgroundColor: `color-mix(in oklch,${HighlightPalette[color]} 85%, var(--color-faded-white))`,
-        ...style
-      }}
-    ></div>
-  );
-};
-const MiniMap = ({
-  highlightMap,
-  scaleRatio,
-  ...props
-}: ComponentPropsWithoutRef<"div"> & {
-  highlightMap: Array<{
-    y: number;
-    top: number;
-  }>;
-  scaleRatio: number;
-}) => {
-  const currentColor = useHighlighter(useShallow((r) => r.currentColor));
-  const mapBackdropRef = useRef<HTMLDivElement>(null!);
-  const mapTrackRef = useRef<HTMLDivElement>(null!);
-  const highMaps = useRef<HTMLDivElement[]>([]);
-  const lastResize = useWindowResize({
-    detectVisibilityChange: false,
-    detectHeightChange: true
-  });
-  const lenis = useLenis();
-  const [scale, setScale] = useState(1);
-  useEffect(() => {
-    setScale(scaleRatio);
-  }, [lastResize, scaleRatio]);
-
-  useGSAP(() => {
-    highMaps.current.forEach((e, t) => {
-      const y = highlightMap[t]?.top;
-      if (!y) return;
-      gsap.to(e, {
-        translateY: y * scale,
-        duration: 0.1,
-        ease: "power2.inOut"
-      });
-    });
-  }, [scale]);
-  return (
-    <div
-      className="pointer-events-none fixed top-[55px] right-[40px] bottom-[50px] z-[250] w-[24px] origin-[0_0] scale-x-50 overflow-hidden transition-transform duration-200"
-      ref={mapTrackRef}
-      {...props}
-    >
-      <div
-        ref={mapBackdropRef}
-        className="absolute h-full w-full origin-[100%_0]"
-      ></div>
-      {highlightMap.map((e, t) => (
-        <MiniMapItem
-          ref={(el) => {
-            el && (highMaps.current[t] = el);
-          }}
-          onClick={() => {
-            lenis?.scrollTo(e.y - 250);
-          }}
-          key={"highMap" + t}
-          color={currentColor}
-          style={{ transform: `translateY(${e.top}px)` }}
-        />
-      ))}
     </div>
   );
 };
