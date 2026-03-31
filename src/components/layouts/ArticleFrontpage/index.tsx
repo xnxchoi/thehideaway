@@ -48,7 +48,7 @@ export const ArticleHero = (props: {
                 <RP_BadgeTag
                   content={
                     (posts[1]?.category &&
-                      typeof posts[1].category !== "string" &&
+                      typeof posts[1].category === "object" &&
                       posts[1].category.title) ||
                     "RP"
                   }

@@ -5,11 +5,13 @@ import { UserAvatar } from "@/lib/auth/betterauth-ui/src";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useRPStore } from "@/providers/RP_Pro";
 import { Menu } from "@base-ui/react";
+import { useLenis } from "lenis/react";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import {
   ButtonHTMLAttributes,
   HTMLAttributes,
+  useCallback,
   useEffect,
   useState
 } from "react";
@@ -60,13 +62,22 @@ export function UserDropdown(props: HTMLMotionProps<"button">) {
   const dropdownOpen = useRPStore(useShallow((store) => store.dropdownOpen));
   const setD = useRPStore((store) => store.setDropdownOpen);
   const [isOpen, setIsOpen] = useState(false);
+  const lnis = useLenis();
+  const offD = useCallback(() => {
+    setD(false);
+    lnis?.off("scroll", offD);
+  }, [setD, lnis]);
   useEffect(() => {
     if (dropdownOpen) {
       setIsOpen(true);
+      lnis?.on("scroll", offD);
     } else {
       setIsOpen(false);
     }
-  }, [dropdownOpen]);
+    return () => {
+      lnis?.off("scroll", offD);
+    };
+  }, [dropdownOpen, lnis, offD]);
   const onSignOut = () => {
     signOut();
   };
@@ -79,7 +90,7 @@ export function UserDropdown(props: HTMLMotionProps<"button">) {
       key={id}
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
-      <Menu.Root>
+      <Menu.Root open={isOpen} onOpenChange={setD}>
         <Menu.Trigger
           render={
             <MotionPillButton

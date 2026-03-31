@@ -1,29 +1,37 @@
 "use client";
 
 import { Link } from "@/components/core/Link/Link";
-import { EASING } from "@/constants/animations";
+import { EASING, TWEEN_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
 import {
   useCursor,
   useDeviceInfo,
-  useMenu,
+  // useMenu,
   useRPStore
 } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
+// import { useGSAP } from "@gsap/react";
+// import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
-import { DateTime } from "luxon";
-import { useMotionValue, type MotionValue, type Variants } from "motion/react";
+import { AnimationSequence } from "motion";
+import {
+  animate,
+  type MotionValue,
+  useMotionValue,
+  useTransform,
+  type Variants
+} from "motion/react";
 import * as m from "motion/react-m";
 import {
   SVGAttributes,
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState
@@ -31,16 +39,45 @@ import {
 import { useShallow } from "zustand/shallow";
 
 const B = "navWindow";
-export const getNavId = () => B;
+// export const getNavId = () => B;
 
 export const RP_Menu = () => {
   const H = 590;
-  const top = useMenu(useShallow((l) => l.top));
-  const bottom = useMenu(useShallow((l) => l.bottom));
-  const right = useMenu(useShallow((l) => l.right));
-  const left = useMenu(useShallow((l) => l.left));
+  // const top = useMenu(useShallow((l) => l.top));
+  // const bottom = useMenu(useShallow((l) => l.bottom));
+  // const right = useMenu(useShallow((l) => l.right));
+  // const left = useMenu(useShallow((l) => l.left));
+
+  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
+  const navOpenValue = useMotionValue(navIsOpen);
+  useEffect(() => {
+    navOpenValue.set(navIsOpen);
+  }, [navIsOpen, navOpenValue]);
+
+  const frameDim = useMemo(
+    () => ({
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    }),
+    []
+  );
+
+  const t = useTransform(() => (navOpenValue.get() ? 0 : 10) as number);
+  const b = useTransform(() => (navOpenValue.get() ? 0 : 30) as number);
+  const r = useTransform(() => (navOpenValue.get() ? 0 : 10) as number);
+  const l = useTransform(() => (navOpenValue.get() ? 0 : 10) as number);
   const { isMobile } = useIsMobile();
+  const mobileState = useMotionValue(isMobile);
+  useEffect(() => {
+    mobileState.set(isMobile);
+  }, [isMobile, mobileState]);
   const isAndroid = useDeviceInfo((r) => r.os.isAndroid);
+  const androidState = useMotionValue(isAndroid);
+  useEffect(() => {
+    androidState.set(isAndroid);
+  }, [isAndroid, androidState]);
   const frames: FrameSide[] = ["top", "right", "bottom", "left"];
   const keyedFrames = useRef<{ [x: string]: string }>({});
   const keyedCorners = useRef<{ [x: string]: string }>({});
@@ -125,7 +162,6 @@ export const RP_Menu = () => {
   const setNavigationPageIsTransitioning = useRPStore(
     (store) => store.setNavigationPageIsTransitioning
   );
-  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const setNavIsTransitioning = useRPStore((l) => l.setNavIsTransitioning);
   const setNavIsOpen = useRPStore((l) => l.setNavIsOpen);
   const setTransitionOutType = useRPStore((l) => l.setTransitionOutType);
@@ -211,7 +247,11 @@ export const RP_Menu = () => {
   );
   const er = useRef(null),
     resizeTime = useWindowResize({ debounce: 100 }),
-    lastResize = useRef(0);
+    lastResize = useRef(0),
+    sizeAdjust = useMotionValue(resizeTime);
+  useEffect(() => {
+    sizeAdjust.set(resizeTime);
+  }, [resizeTime, sizeAdjust]);
   const focusResetTO = useRef<ReturnType<typeof setTimeout>>(null!);
   const isHome = useVoyageur((l) => l.isHome);
   useEffect(() => {
@@ -220,28 +260,88 @@ export const RP_Menu = () => {
         setNavIsOpenDebounced(navIsOpen);
       }, 400)));
   }, [setNavIsOpenDebounced, navIsOpen]);
-  const { contextSafe: anotherOne } = useGSAP({
-    dependencies: [hoveredNavItem, activeIndex],
-    scope: menuWrap
-  });
-  const resetFrames = anotherOne(() => {
-    const l = focusedRef.current !== activeIndex;
+  // const { contextSafe: anotherOne } = useGSAP({
+  //   dependencies: [hoveredNavItem, activeIndex],
+  //   scope: menuWrap
+  // });
+  // const resetFrames = anotherOne(() => {
+  //   const l = focusedRef.current !== activeIndex;
+  //   const nothingIsActive = activeIndex === -1 && hoveredNavItem === -1;
+  //   const resetElement = (
+  //     l: gsap.TweenTarget,
+  //     c: gsap.TweenTarget,
+  //     d = 0.3
+  //   ) => {
+  //     const dur = 0.3;
+  //     gsap.killTweensOf([l, c]);
+  //     gsap.to(l, {
+  //       x: "102%",
+  //       duration: dur
+  //     });
+  //     gsap.to(c, {
+  //       autoAlpha: d,
+  //       duration: dur
+  //     });
+  //   };
+  //   navLines.current.forEach((navLine, h) => {
+  //     if (!navLine) {
+  //       return;
+  //     }
+  //     const currentButton = navButtons.current[h];
+  //     if (currentButton) {
+  //       if (l) {
+  //         resetElement(navLine, currentButton, nothingIsActive ? 1 : 0.3);
+  //       }
+  //       if (
+  //         menuPageItemKeys[h] === hoveredNavItem ||
+  //         (hoveredNavItem === -1 && menuPageItemKeys[h] === activeIndex)
+  //       ) {
+  //         gsap.killTweensOf([navLine, currentButton]);
+  //         gsap.fromTo(
+  //           navLine,
+  //           {
+  //             x: "-102%"
+  //           },
+  //           {
+  //             x: 0,
+  //             duration: 0.6,
+  //             ease: "power3.out"
+  //           }
+  //         );
+  //         gsap.to(currentButton, {
+  //           autoAlpha: 1,
+  //           duration: 0.6,
+  //           ease: "power3.out"
+  //         });
+  //       } else if (
+  //         menuPageItemKeys[h] === activeRef.current ||
+  //         (hoveredNavItem !== -1 && menuPageItemKeys[h] === activeIndex) ||
+  //         activeIndex === -1
+  //       ) {
+  //         resetElement(navLine, currentButton);
+  //       }
+  //       if (nothingIsActive) {
+  //         gsap.killTweensOf([navLine, currentButton]);
+  //         resetElement(navLine, currentButton, 1);
+  //       }
+  //     }
+  //   });
+  //   activeRef.current = hoveredNavItem;
+  //   focusedRef.current = activeIndex;
+  // });
+  const resetFrame = useEffectEvent(() => {
+    const seq: AnimationSequence = [];
+    const notInFocus = focusedRef.current !== activeIndex;
     const nothingIsActive = activeIndex === -1 && hoveredNavItem === -1;
-    const resetElement = (
-      l: gsap.TweenTarget,
-      c: gsap.TweenTarget,
-      d = 0.3
-    ) => {
+    const resetElement = (l: object, c: object, d = 0.3) => {
       const dur = 0.3;
-      gsap.killTweensOf([l, c]);
-      gsap.to(l, {
-        x: "102%",
-        duration: dur
-      });
-      gsap.to(c, {
-        autoAlpha: d,
-        duration: dur
-      });
+      const base = {
+        duration: dur,
+        type: "tween" as const,
+        at: 0,
+        ease: TWEEN_EASE.power1.out
+      };
+      seq.push([l, { x: "102%" }, { ...base }], [c, { opacity: d }, base]);
     };
     navLines.current.forEach((navLine, h) => {
       if (!navLine) {
@@ -249,30 +349,41 @@ export const RP_Menu = () => {
       }
       const currentButton = navButtons.current[h];
       if (currentButton) {
-        if (l) {
+        if (notInFocus) {
           resetElement(navLine, currentButton, nothingIsActive ? 1 : 0.3);
         }
         if (
           menuPageItemKeys[h] === hoveredNavItem ||
           (hoveredNavItem === -1 && menuPageItemKeys[h] === activeIndex)
         ) {
-          gsap.killTweensOf([navLine, currentButton]);
-          gsap.fromTo(
-            navLine,
-            {
-              x: "-102%"
-            },
-            {
-              x: 0,
-              duration: 0.6,
-              ease: "power3.out"
-            }
+          seq.push(
+            [navLine, { x: "-102%" }, { at: 0, duration: 0 }],
+            [
+              navLine,
+              {
+                x: 0
+              },
+              {
+                duration: 0.6,
+                at: 0,
+                type: "tween",
+                ease: TWEEN_EASE.power3.out
+              }
+            ],
+            [
+              currentButton,
+              {
+                opacity: 1,
+                visibility: "visible"
+              },
+              {
+                type: "tween",
+                duration: 0.6,
+                at: 0,
+                ease: TWEEN_EASE.power3.out
+              }
+            ]
           );
-          gsap.to(currentButton, {
-            autoAlpha: 1,
-            duration: 0.6,
-            ease: "power3.out"
-          });
         } else if (
           menuPageItemKeys[h] === activeRef.current ||
           (hoveredNavItem !== -1 && menuPageItemKeys[h] === activeIndex) ||
@@ -281,15 +392,26 @@ export const RP_Menu = () => {
           resetElement(navLine, currentButton);
         }
         if (nothingIsActive) {
-          gsap.killTweensOf([navLine, currentButton]);
           resetElement(navLine, currentButton, 1);
         }
       }
     });
-    activeRef.current = hoveredNavItem;
-    focusedRef.current = activeIndex;
+    const prevActive = activeRef.current;
+    const prevFocused = focusedRef.current;
+    seq.push([
+      motionCallback({
+        onBackwards: () => {
+          activeRef.current = prevActive;
+          focusedRef.current = prevFocused;
+        },
+        onForwards: () => {
+          activeRef.current = hoveredNavItem;
+          focusedRef.current = activeIndex;
+        }
+      })
+    ]);
+    animate(seq);
   });
-
   useEffect(() => {
     setActiveIndex(-1);
     (isHome && window.innerHeight > H && !isMobile) ||
@@ -302,30 +424,19 @@ export const RP_Menu = () => {
       });
   }, [isHome, isMobile, menuPageItemKeys]);
   const links = useRPStore(useShallow((r) => r.navigationPageItemData));
-
-  const toggleMenuCallback = useCallback(
-    ({
-      isNavOpen,
-      needsResizing,
-      top,
-      right,
-      bottom,
-      left,
-      isMobile,
-      isAndroid
-    }: {
-      isNavOpen: boolean;
-      needsResizing: boolean;
-      top: number;
-      right: number;
-      bottom: number;
-      left: number;
-      isMobile: boolean;
-      isAndroid: boolean;
-    }) => {
+  const toggM = useEffectEvent(
+    ({ needsResizing }: { needsResizing?: boolean }) => {
       if (!er.current || !navWindow.current) {
         return;
       }
+      const isM = mobileState.get();
+      const navo = navOpenValue.get();
+      const top = t.get();
+      const right = r.get();
+      const bottom = b.get();
+      const left = l.get();
+      const isAndro = androidState.get();
+
       setNavIsTransitioning(!0);
       const navWClient = (
         navWindow.current as HTMLElement
@@ -333,43 +444,48 @@ export const RP_Menu = () => {
       const windowHeight = (navWindow.current as HTMLElement).offsetHeight;
       const windowXOff = navWClient.left;
       const windowYOff = navWClient.top;
-      gsap.killTweensOf([...menuSVgs.current, ...navItems.current, er.current]);
-
+      const seq: AnimationSequence = [];
       menuFrames.current.forEach((frame, ind) => {
         if (!frame) {
           return;
         }
-        gsap.killTweensOf(frame);
         let xOff: string | number = 0;
         let yOff: string | number = 0;
         const frameRect = frame.getBoundingClientRect();
-        if (!isNavOpen) {
+        if (!navo) {
           switch (ind) {
             case 0:
               yOff = -frameRect.height + top;
               break;
             case 1:
-              xOff = isMobile ? right - 3 : frame.offsetWidth - right;
+              xOff = isM ? right - 3 : frame.offsetWidth - right;
               break;
             case 2:
               // yOff = isMobile && os.name === 'android' ? frame.offsetHeight : '100%'
-              yOff = isMobile
-                ? isAndroid
+              yOff = isM
+                ? isAndro
                   ? frameRect.height
                   : frameRect.height - 20
                 : frameRect.height - bottom;
               break;
             case 3:
-              xOff = isMobile ? -left + 3 : -frameRect.width + left;
+              xOff = isM ? -left + 3 : -frameRect.width + left;
           }
         }
-        gsap.to(frame, {
-          x: xOff,
-          y: yOff,
-          autoAlpha: 1,
-          duration: isNavOpen ? 1.2 : 1.2,
-          ease: isNavOpen ? "power4.inOut" : "power3.inOut"
-        });
+        seq.push([
+          frame,
+          {
+            x: `${xOff}px`,
+            y: `${yOff}px`,
+            opacity: 1,
+            visibility: "visible"
+          },
+          {
+            duration: 1.2,
+            ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
+            at: 0
+          }
+        ]);
       });
       menuCorners.current.forEach((corner, indx) => {
         let xoffse = 0;
@@ -377,8 +493,7 @@ export const RP_Menu = () => {
         if (!corner) {
           return;
         }
-        gsap.killTweensOf(corner);
-        if (!isNavOpen && isMobile && isAndroid) {
+        if (!navo && isM && isAndro) {
           const l = menuFrames.current[2];
           const c = l?.offsetHeight || 0;
           switch (indx) {
@@ -389,7 +504,7 @@ export const RP_Menu = () => {
         }
         switch (indx) {
           case 0:
-            if (isNavOpen) {
+            if (navo) {
               yoffse = windowYOff;
               xoffse = windowXOff;
             } else {
@@ -398,7 +513,7 @@ export const RP_Menu = () => {
             }
             break;
           case 1:
-            if (isNavOpen) {
+            if (navo) {
               yoffse = windowYOff;
               xoffse = -windowXOff;
             } else {
@@ -407,9 +522,9 @@ export const RP_Menu = () => {
             }
             break;
           case 2:
-            if (isNavOpen) {
+            if (navo) {
               xoffse = -windowXOff;
-              yoffse = isMobile
+              yoffse = isM
                 ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
                 : -windowYOff;
             } else {
@@ -418,9 +533,9 @@ export const RP_Menu = () => {
             }
             break;
           case 3:
-            if (isNavOpen) {
+            if (navo) {
               xoffse = windowXOff;
-              yoffse = isMobile
+              yoffse = isM
                 ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
                 : -windowYOff;
             } else {
@@ -429,45 +544,246 @@ export const RP_Menu = () => {
             }
         }
 
-        gsap.to(corner, {
-          x: xoffse,
-          y: yoffse,
-          duration: isNavOpen ? 1.2 : 1.2,
-          ease: isNavOpen ? "power4.inOut" : "power3.inOut"
-        });
+        seq.push([
+          corner,
+          {
+            x: `${xoffse}px`,
+            y: `${yoffse}px`
+          },
+          {
+            duration: 1.2,
+            ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
+            at: 0
+          }
+        ]);
       });
       menuSVgs.current.forEach((svg) => {
         if (svg) {
-          const m = {
-            scale: 1,
-            duration: isNavOpen ? 1.2 : 1.2,
-            ease: isNavOpen ? "power4.inOut" : "power3.inOut"
-          };
-          needsResizing ? gsap.set(svg, m) : gsap.to(svg, m);
+          seq.push([
+            svg,
+            { scale: 1 },
+            needsResizing
+              ? {
+                  duration: 0,
+                  at: 0
+                }
+              : {
+                  duration: 1.2,
+                  ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
+                  at: 0
+                }
+          ]);
         }
       });
-      const startLoc = isMobile ? 0 : -150;
-      const moveTargets = [navigationList.current];
+      const startLoc = isM ? 0 : -150;
+      seq.push([
+        navigationList.current,
+        {
+          x: navo ? 0 : `${startLoc}px`,
+          visibility: navo ? "visible" : "hidden",
+          opacity: navo ? 1 : 0
+        },
+        {
+          type: "tween",
+          duration: navo ? 1.2 : 1.2 * 0.75,
+          ease: TWEEN_EASE.power3.out,
+          at: 0,
+          delay: navo ? 0.75 : 0
+        }
+      ]);
 
-      gsap.killTweensOf(moveTargets);
-      gsap[needsResizing ? "set" : "to"](moveTargets, {
-        x: isNavOpen ? 0 : startLoc,
-        autoAlpha: isNavOpen ? 1 : 0,
-        delay: isNavOpen ? 0.75 : 0,
-        duration: isNavOpen ? 1.2 : 1.2 * 0.75,
-        ease: "power3.out"
-      });
-      gsap[needsResizing ? "set" : "to"](er.current, {
-        autoAlpha: isNavOpen ? 1 : 0,
-        delay: isNavOpen ? 0.5 : 0,
-        duration: isNavOpen ? 1.2 : 1.2,
-        onComplete: () => {
-          setNavIsTransitioning(false);
-        }
-      });
-    },
-    [setNavIsTransitioning]
+      seq.push(
+        [
+          er.current,
+          {
+            opacity: navo ? 1 : 0,
+            visibility: navo ? "visible" : "hidden"
+          },
+          {
+            delay: navo ? 0.5 : 0,
+            duration: 1.2,
+            at: 0
+          }
+        ],
+        [
+          motionCallback({
+            onBackwards: () => {
+              setNavIsTransitioning(true);
+            },
+            onForwards: () => {
+              setNavIsTransitioning(false);
+            }
+          })
+        ]
+      );
+      animate(seq);
+    }
   );
+  // const toggleMenuCallback = useCallback(
+  //   ({
+  //     isNavOpen,
+  //     needsResizing,
+  //     top,
+  //     right,
+  //     bottom,
+  //     left,
+  //     isMobile,
+  //     isAndroid
+  //   }: {
+  //     isNavOpen: boolean;
+  //     needsResizing: boolean;
+  //     top: number;
+  //     right: number;
+  //     bottom: number;
+  //     left: number;
+  //     isMobile: boolean;
+  //     isAndroid: boolean;
+  //   }) => {
+  //     if (!er.current || !navWindow.current) {
+  //       return;
+  //     }
+  //     setNavIsTransitioning(!0);
+  //     const navWClient = (
+  //       navWindow.current as HTMLElement
+  //     ).getBoundingClientRect();
+  //     const windowHeight = (navWindow.current as HTMLElement).offsetHeight;
+  //     const windowXOff = navWClient.left;
+  //     const windowYOff = navWClient.top;
+  //     gsap.killTweensOf([...menuSVgs.current, ...navItems.current, er.current]);
+  //
+  //     menuFrames.current.forEach((frame, ind) => {
+  //       if (!frame) {
+  //         return;
+  //       }
+  //       gsap.killTweensOf(frame);
+  //       let xOff: string | number = 0;
+  //       let yOff: string | number = 0;
+  //       const frameRect = frame.getBoundingClientRect();
+  //       if (!isNavOpen) {
+  //         switch (ind) {
+  //           case 0:
+  //             yOff = -frameRect.height + top;
+  //             break;
+  //           case 1:
+  //             xOff = isMobile ? right - 3 : frame.offsetWidth - right;
+  //             break;
+  //           case 2:
+  //             // yOff = isMobile && os.name === 'android' ? frame.offsetHeight : '100%'
+  //             yOff = isMobile
+  //               ? isAndroid
+  //                 ? frameRect.height
+  //                 : frameRect.height - 20
+  //               : frameRect.height - bottom;
+  //             break;
+  //           case 3:
+  //             xOff = isMobile ? -left + 3 : -frameRect.width + left;
+  //         }
+  //       }
+  //       gsap.to(frame, {
+  //         x: xOff,
+  //         y: yOff,
+  //         autoAlpha: 1,
+  //         duration: isNavOpen ? 1.2 : 1.2,
+  //         ease: isNavOpen ? "power4.inOut" : "power3.inOut"
+  //       });
+  //     });
+  //     menuCorners.current.forEach((corner, indx) => {
+  //       let xoffse = 0;
+  //       let yoffse = 0;
+  //       if (!corner) {
+  //         return;
+  //       }
+  //       gsap.killTweensOf(corner);
+  //       if (!isNavOpen && isMobile && isAndroid) {
+  //         const l = menuFrames.current[2];
+  //         const c = l?.offsetHeight || 0;
+  //         switch (indx) {
+  //           case 2:
+  //           case 3:
+  //             yoffse = c - c / 1.5;
+  //         }
+  //       }
+  //       switch (indx) {
+  //         case 0:
+  //           if (isNavOpen) {
+  //             yoffse = windowYOff;
+  //             xoffse = windowXOff;
+  //           } else {
+  //             yoffse = top;
+  //             xoffse = left;
+  //           }
+  //           break;
+  //         case 1:
+  //           if (isNavOpen) {
+  //             yoffse = windowYOff;
+  //             xoffse = -windowXOff;
+  //           } else {
+  //             yoffse = top;
+  //             xoffse = -right;
+  //           }
+  //           break;
+  //         case 2:
+  //           if (isNavOpen) {
+  //             xoffse = -windowXOff;
+  //             yoffse = isMobile
+  //               ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
+  //               : -windowYOff;
+  //           } else {
+  //             yoffse = -bottom;
+  //             xoffse = -right;
+  //           }
+  //           break;
+  //         case 3:
+  //           if (isNavOpen) {
+  //             xoffse = windowXOff;
+  //             yoffse = isMobile
+  //               ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
+  //               : -windowYOff;
+  //           } else {
+  //             yoffse = -bottom;
+  //             xoffse = left;
+  //           }
+  //       }
+  //
+  //       gsap.to(corner, {
+  //         x: xoffse,
+  //         y: yoffse,
+  //         duration: isNavOpen ? 1.2 : 1.2,
+  //         ease: isNavOpen ? "power4.inOut" : "power3.inOut"
+  //       });
+  //     });
+  //     menuSVgs.current.forEach((svg) => {
+  //       if (svg) {
+  //         const m = {
+  //           scale: 1,
+  //           duration: isNavOpen ? 1.2 : 1.2,
+  //           ease: isNavOpen ? "power4.inOut" : "power3.inOut"
+  //         };
+  //         needsResizing ? gsap.set(svg, m) : gsap.to(svg, m);
+  //       }
+  //     });
+  //     const startLoc = isMobile ? 0 : -150;
+  //     const moveTargets = [navigationList.current];
+  //
+  //     gsap.killTweensOf(moveTargets);
+  //     gsap[needsResizing ? "set" : "to"](moveTargets, {
+  //       x: isNavOpen ? 0 : startLoc,
+  //       autoAlpha: isNavOpen ? 1 : 0,
+  //       delay: isNavOpen ? 0.75 : 0,
+  //       duration: isNavOpen ? 1.2 : 1.2 * 0.75,
+  //       ease: "power3.out"
+  //     });
+  //     gsap[needsResizing ? "set" : "to"](er.current, {
+  //       autoAlpha: isNavOpen ? 1 : 0,
+  //       delay: isNavOpen ? 0.5 : 0,
+  //       duration: isNavOpen ? 1.2 : 1.2,
+  //       onComplete: () => {
+  //         setNavIsTransitioning(false);
+  //       }
+  //     });
+  //   },
+  //   [setNavIsTransitioning]
+  // );
 
   useEffect(() => {
     (setActiveIndex(-1),
@@ -481,9 +797,12 @@ export const RP_Menu = () => {
         }));
   }, [setActiveIndex, menuPageItemKeys, currentPageKey, isHome, isMobile]);
 
+  // useEffect(() => {
+  //   resetFrames();
+  // }, [resetFrames]);
   useEffect(() => {
-    resetFrames();
-  }, [resetFrames]);
+    resetFrame();
+  }, []);
   const lastNavOpen = useRef(navIsOpen);
 
   const lenis = useLenis();
@@ -492,17 +811,18 @@ export const RP_Menu = () => {
     document.body.classList[navIsOpen ? "add" : "remove"]("menu__open");
     const needsResizing =
       lastResize.current === 0 || lastResize.current !== resizeTime;
-    toggleMenuCallback({
-      isNavOpen: navIsOpen,
-
-      needsResizing,
-      top,
-      right,
-      bottom,
-      left,
-      isAndroid,
-      isMobile
-    });
+    // toggleMenuCallback({
+    //   isNavOpen: navIsOpen,
+    //
+    //   needsResizing,
+    //   top,
+    //   right,
+    //   bottom,
+    //   left,
+    //   isAndroid,
+    //   isMobile
+    // });
+    toggM({ needsResizing });
     if (lastNavOpen.current !== navIsOpen || needsResizing) {
       lastResize.current = resizeTime;
     }
@@ -512,12 +832,12 @@ export const RP_Menu = () => {
     navIsOpen,
     resizeTime,
     setNavItemHovered,
-    toggleMenuCallback,
+    // toggleMenuCallback,
     lenis,
-    top,
-    right,
-    bottom,
-    left,
+    // top,
+    // right,
+    // bottom,
+    // left,
     isAndroid,
     isMobile
   ]);

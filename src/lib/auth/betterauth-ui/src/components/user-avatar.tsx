@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { isHangul } from "@/utilities/rp_utils";
 import { UserRoundIcon } from "lucide-react";
 import { type ComponentProps, useContext } from "react";
 
@@ -128,7 +129,9 @@ export function UserAvatar({
         className={cn("text-foreground uppercase", classNames?.fallback)}
         delayMs={src ? 600 : undefined}
       >
-        {firstTwoCharacters(name) || (
+        {name ? (
+          (isHangul(name) && name?.at(0)) || firstTwoCharacters(name)
+        ) : (
           <UserRoundIcon
             className={cn("size-[50%]", classNames?.fallbackIcon)}
           />

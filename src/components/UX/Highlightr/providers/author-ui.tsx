@@ -15,7 +15,7 @@ import type { AuthorOverview } from "@/types/collections/users";
 import { AuthUIContext, socialProviders } from "@/lib/auth/betterauth-ui/src";
 import { ProviderButton } from "@/lib/auth/betterauth-ui/src/components/auth/provider-button";
 import { cn } from "@/lib/utils";
-import { delay } from "@/utilities/rp_utils";
+import { delay, isHangul } from "@/utilities/rp_utils";
 import { useTranslations } from "next-intl";
 import { useTransitionRouter } from "next-transition-router";
 import {
@@ -40,7 +40,7 @@ export const UserBar = ({ user }: { user: AuthorOverview }) => {
         )) || (
           <AvatarFallback className={"uppercase"}>
             {user.name.at(0)}
-            {user.name.at(1)}
+            {!isHangul(user.name) && user.name.at(1)}
           </AvatarFallback>
         )}
       </Avatar>
