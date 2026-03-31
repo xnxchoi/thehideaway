@@ -35,7 +35,6 @@ import { Command, Command as CommandPrimitive } from "cmdk";
 import { CreditCard, Settings, User } from "lucide-react";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
-import { nanoid } from "nanoid";
 import { useTransitionRouter } from "next-transition-router";
 import type { CollectionSlug } from "payload";
 import {
@@ -46,7 +45,6 @@ import {
   useCallback,
   useEffect,
   useId,
-  useMemo,
   useRef,
   useState
 } from "react";
@@ -386,30 +384,6 @@ function SubCommand({
     }
   }, [subMenuOpen, listRef]);
   const user = useRPSession((l) => l);
-  const kv = useMemo(() => {
-    return {
-      b: `CV${nanoid()}`,
-      u: `Find${nanoid()}`,
-      a: `Login${nanoid()}`
-    };
-  }, []);
-  const keys = Object.keys(kv) as (keyof typeof kv)[];
-  useEffect(() => {
-    const dispatcher = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        for (const key of keys) {
-          if (e.key === key) {
-            e.preventDefault();
-            setValue(kv[key]);
-          }
-        }
-      }
-    };
-    document.addEventListener("keydown", dispatcher, { capture: true });
-    return () => {
-      document.removeEventListener("keydown", dispatcher, { capture: true });
-    };
-  }, [keys, kv, setValue]);
   return (
     <PopoverRoot
       open={subMenuOpen}
@@ -440,11 +414,6 @@ function SubCommand({
           className={"z-250"}
           side="top"
           align="start"
-
-          // onCloseAutoFocus={(e) => {
-          // 	e.preventDefault();
-          // 	inputRef?.current?.focus();
-          // }}
         >
           <Popover.Popup
             data-slot="popover-content"
@@ -461,16 +430,10 @@ function SubCommand({
                 >
                   {user && (
                     <>
-                      <SubItem link="/me" shortcut="⌘ B">
+                      <SubItem link={`/@${user.slug}`} shortcut="⌘ B">
                         My Profile
                       </SubItem>
-                      <SubItem link={`/users/@${user.slug}/cv`} shortcut="⌘ U">
-                        My CV
-                      </SubItem>
-                      <SubItem
-                        link={`/users/@${user.slug}/settings`}
-                        shortcut="⌘ A"
-                      >
+                      <SubItem link={`/vault/account`} shortcut="⌘ U">
                         Settings
                       </SubItem>
                     </>

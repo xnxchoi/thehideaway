@@ -134,7 +134,7 @@ export function UserDropdown(props: HTMLMotionProps<"button">) {
                       className={
                         "flex h-full w-full py-[8px] pr-[32px] pl-[16px] text-sm leading-[16px] text-faded-foreground/90! transition-colors duration-200 ease-out-power2 outline-none select-none before:transition-colors before:duration-200 before:ease-out-power2 hover:text-faded-background data-highlighted:relative data-highlighted:z-0 data-highlighted:text-faded-background! data-highlighted:before:absolute data-highlighted:before:inset-x-[4px] data-highlighted:before:inset-y-0 data-highlighted:before:z-[-1] data-highlighted:before:rounded-sm data-highlighted:before:bg-muted-faded-foreground/30"
                       }
-                      href={`/prive`}
+                      href={`/vault/account`}
                       title={"Settings"}
                     >
                       Settings
