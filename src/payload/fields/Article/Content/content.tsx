@@ -14,7 +14,8 @@ import {
   RenderCustomComponent,
   useEditDepth,
   useEffectEvent,
-  useField
+  useField,
+  useOperation
 } from "@payloadcms/ui";
 import { mergeFieldStyles } from "@payloadcms/ui/shared";
 import { dequal } from "dequal";
@@ -30,6 +31,7 @@ import {
 } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { LexicalProvider } from "./LexicalProvider";
+import { useRPNav } from "@/payload/providers/Admins";
 
 export type RichTextFieldProps = ComponentProps<typeof RichTextField>;
 
@@ -52,7 +54,26 @@ const ContentRichtext = (
     readOnly: readOnlyFromTopLevelProps,
     validate // Users can pass in client side validation if they WANT to, but it's not required anymore
   } = props;
-
+  const navFixed = useRPNav((r) => r.navFixed);
+  const setNavFixed = useRPNav((r) => r.setNavFixed);
+  const setNavMode = useRPNav((r) => r.setMode);
+  const navMode = useRPNav((r) => r.mode);
+  const init = useEffectEvent(() => {
+    const ogState = navFixed;
+    const ogMode = navMode;
+    setNavFixed(false);
+    setNavMode("editor");
+    return () => {
+      setNavFixed(ogState);
+      setNavMode(ogMode);
+    };
+  });
+  useEffect(() => {
+    const r = init();
+    return () => {
+      r();
+    };
+  }, []);
   const readOnlyFromProps = readOnlyFromTopLevelProps || readOnlyFromAdmin;
 
   const editDepth = useEditDepth();

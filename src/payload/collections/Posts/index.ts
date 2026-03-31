@@ -18,6 +18,7 @@ import { revalidateDelete, revalidatePost } from "./hooks/revalidatePost";
 import { RichContent } from "./richContent";
 import { RichTitle } from "./richTitle";
 import { idField } from "@/payload/fields/IDField";
+import { populateSubtitle } from "@/payload/collections/Posts/hooks/populateSubtitle";
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced
@@ -197,35 +198,26 @@ export const Posts: CollectionConfig<"posts"> = {
       }, {
         name: "relatedPosts", type: "relationship",
 
-        label: "Related", filterOptions: ({ id }) => {
-          return {
+        label: "Related", filterOptions: ({ id, user }) => {
+          if (!user) {
+            return false;
+          }
+          const idd: Where = {
             id: {
               not_in: [id]
             }
           };
-        }, hasMany: true, defaultValue: async ({ user, req }) => {
-          const where = {
-            and: [{
-              _status: {
-                equals: "published"
-              }
-            }, {
-              author: {
-                equals: user?.id
-              }
-            }]
-          } as Where;
-
-          const posts = await req.payload.find({
-            collection: "posts", where, select: {
-              title: true
+          const idddd: Where = {
+            author: {
+              equals: user.id
             }
-          }).then((res) => res.docs).then((docs) => docs.map((doc) => doc.id)).catch((err) => {
-            console.error(err);
-            return [];
-          });
-          return [...posts];
-        }, relationTo: "posts", maxDepth: 1
+          };
+          return {
+            and: [idd, idddd
+
+            ]
+          };
+        }, hasMany: true, relationTo: "posts", maxDepth: 1
       }]
     },
 
@@ -256,6 +248,7 @@ export const Posts: CollectionConfig<"posts"> = {
         hidden: true
       }
     }], hooks: {
+    beforeValidate: [populateSubtitle],
     beforeChange: [sanitizeAuthor(false), ({ data, operation, originalDoc, req }) => {
       const { user } = req;
       const datum = data as Omit<Post, "createdAt" | "updatedAt" | "id"> & Partial<Pick<Post, "createdAt" | "updatedAt" | "id">>;
@@ -282,7 +275,8 @@ export const Posts: CollectionConfig<"posts"> = {
         datum.subtitle = walkNodes(content) || "";
       }
       return data;
-    }, populatePublishedAt], afterChange: [revalidatePost],
+    }, populatePublishedAt],
+    afterChange: [revalidatePost],
 
     afterDelete: [revalidateDelete, updateCategoryAfterDelete]
   }, endpoints: [{

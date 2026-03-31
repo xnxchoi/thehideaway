@@ -1,17 +1,16 @@
 import type { EntityToGroup } from "@payloadcms/ui/shared";
+import { EntityType, groupNavItems } from "@payloadcms/ui/shared";
 import type { NavGroupPreferences, PayloadRequest, ServerProps } from "payload";
 
 import { Logout } from "@payloadcms/ui";
 import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { EntityType, groupNavItems } from "@payloadcms/ui/shared";
 import React from "react";
 
 import { NavWrapper } from "./NavWrapper/index";
-
-const baseClass = "nav";
-
 import { getNavPrefs } from "./getNavPrefs";
 import { DefaultNavClient } from "./index.client";
+
+const baseClass = "nav";
 
 export type NavProps = {
   req?: PayloadRequest;
@@ -35,7 +34,6 @@ export const DefaultNav: React.FC<NavProps> = async (props) => {
   if (!payload?.config || !req || !permissions || !visibleEntities) {
     return null;
   }
-
   const {
     admin: {
       components: { afterNavLinks, beforeNavLinks, logout }
@@ -151,7 +149,7 @@ export const DefaultNav: React.FC<NavProps> = async (props) => {
               width: 22,
               height: 22,
               display: "block",
-	            fill: "var(--faded-fg)",
+              fill: "var(--faded-fg)",
               flexShrink: 0
             }}
           >

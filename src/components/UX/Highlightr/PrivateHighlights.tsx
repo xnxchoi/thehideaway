@@ -66,6 +66,107 @@ export const PrivateMemoContext = createContext<PrivateHighlights>(null!);
 export const PrivateMemoizer = (props: { children: ReactNode }) => {
   const { children } = props;
 
+  return (
+    <PrivateInternal>
+      <Private2>{children}</Private2>
+    </PrivateInternal>
+  );
+};
+const Private2 = (props: { children: ReactNode }) => {
+  const { children } = props;
+  const userId = useRPSession(useShallow((r) => r.id as null | string));
+  const userName = useRPSession(useShallow((r) => r.name));
+  const userImage = useRPSession(useShallow((r) => r.image));
+  const userS = useRPSession(useShallow((r) => r.slug));
+  const isOpen = usePrivateNote((r) => r.open);
+  const setIsOpen = usePrivateNote((r) => r.setOpen);
+  const memo = usePrivateNote((r) => r.memo);
+  const view = usePrivateNote((r) => r.view);
+  const setSaving = usePrivateNote((r) => r.setSaving);
+  return (
+    <>
+      {children}{" "}
+      <PrivateDialog>
+        {isOpen && (
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent
+              focusManager={{
+                modal: false
+              }}
+            >
+              <div
+                className={
+                  "flex items-center bg-muted-faded-background/85 p-[12px_20px]"
+                }
+              >
+                <div
+                  className={"mr-[8px] -ml-[4px] block [&_svg]:align-middle"}
+                ></div>
+                <div className={"relative top-px block flex-[1_1_auto]"}>
+                  <DialogHeading
+                    className={
+                      "text-[13px] leading-[18px] tracking-[0.077em] text-muted-foreground uppercase"
+                    }
+                  >
+                    <span
+                      className={
+                        "text-[13px] leading-[20px] text-muted-foreground"
+                      }
+                    >
+                      {view === "view" ? "Private Note" : "Edit"}
+                    </span>
+                  </DialogHeading>
+                </div>
+                <div className={"relative top-px block flex-[1_1_auto]"}>
+                  <p className={"text-[13px] leading-[20px]"}>Learn More </p>
+                </div>
+              </div>
+              {userId ? (
+                (view === "edit" && userId && <PrivateNoteEditor />) || (
+                  <div className={"block p-[0_20px]"}>
+                    <div className={"block p-[12px_0]"}>
+                      <div className={"mb-[12px] flex items-center"}>
+                        {userId && (
+                          <UserBar
+                            user={{
+                              name: userName,
+                              image: userImage,
+
+                              slug: userS,
+                              id: userId
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className={"block whitespace-pre-wrap"}>{memo}</div>
+                    </div>
+                    <div
+                      className={
+                        "border-t-px mt-[8px] mb-0 flex border-solid border-muted-faded-background/65 p-[12px_0]"
+                      }
+                    >
+                      <div className={"text-[14px]"}></div>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <SignInCard
+                  onSignInClick={(e) => {
+                    e.preventDefault();
+                    setSaving(true);
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
+      </PrivateDialog>
+    </>
+  );
+};
+const PrivateInternal = (props: { children: ReactNode }) => {
+  const { children } = props;
+
   const [memo, setMemo] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
   const toggleOpen = () => setIsOpen((o) => !o);
@@ -87,10 +188,7 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
   const role = useRole(context.context);
   const interactions = useInteractions([click, dismiss, role]);
   const [view, setView] = useState<"edit" | "view">("view");
-  const userId = useRPSession(useShallow((r) => r.id as null | string));
-  const userName = useRPSession(useShallow((r) => r.name));
-  const userImage = useRPSession(useShallow((r) => r.image));
-  const userS = useRPSession(useShallow((r) => r.slug));
+
   const [saving, setSaving] = useState(false);
 
   return (
@@ -113,79 +211,6 @@ export const PrivateMemoizer = (props: { children: ReactNode }) => {
       }}
     >
       {children}
-      {isOpen && (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogContent
-            focusManager={{
-              modal: false
-            }}
-          >
-            <div
-              className={
-                "flex items-center bg-muted-faded-background/85 p-[12px_20px]"
-              }
-            >
-              <div
-                className={"mr-[8px] -ml-[4px] block [&_svg]:align-middle"}
-              ></div>
-              <div className={"relative top-px block flex-[1_1_auto]"}>
-                <DialogHeading
-                  className={
-                    "text-[13px] leading-[18px] tracking-[0.077em] text-muted-foreground uppercase"
-                  }
-                >
-                  <span
-                    className={
-                      "text-[13px] leading-[20px] text-muted-foreground"
-                    }
-                  >
-                    {view === "view" ? "Private Note" : "Edit"}
-                  </span>
-                </DialogHeading>
-              </div>
-              <div className={"relative top-px block flex-[1_1_auto]"}>
-                <p className={"text-[13px] leading-[20px]"}>Learn More </p>
-              </div>
-            </div>
-            {userId ? (
-              (view === "edit" && userId && <PrivateNoteEditor />) || (
-                <div className={"block p-[0_20px]"}>
-                  <div className={"block p-[12px_0]"}>
-                    <div className={"mb-[12px] flex items-center"}>
-                      {userId && (
-                        <UserBar
-                          user={{
-                            name: userName,
-                            image: userImage,
-
-                            slug: userS,
-                            id: userId
-                          }}
-                        />
-                      )}
-                    </div>
-                    <div className={"block whitespace-pre-wrap"}>{memo}</div>
-                  </div>
-                  <div
-                    className={
-                      "border-t-px mt-[8px] mb-0 flex border-solid border-muted-faded-background/65 p-[12px_0]"
-                    }
-                  >
-                    <div className={"text-[14px]"}></div>
-                  </div>
-                </div>
-              )
-            ) : (
-              <SignInCard
-                onSignInClick={(e) => {
-                  e.preventDefault();
-                  setSaving(true);
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      )}
     </PrivateMemoContext.Provider>
   );
 };
@@ -443,7 +468,7 @@ const PrivateDialog = (
         (savedSelection.current = null));
     }
     setOpening(isMounted);
-  }, [isMounted, view]);
+  }, [isMounted, ranger, view]);
 
   return (
     opening && (

@@ -121,10 +121,12 @@ export const useUserBarNav = <T,>(selector: (store: UserBarNav) => T) => {
   return selector(gg);
 };
 type NavBarStore = {
+  mode: "editor" | "default";
   navFixed: boolean;
   setNavFixed: (state: boolean) => void;
   toggleNav: () => void;
   visible: boolean;
+  setMode: (mode: "editor" | "default") => void;
   setActive: (state: boolean) => void;
 };
 const NavbarContext = createContext<NavBarStore>(null!);
@@ -139,6 +141,7 @@ const NavbarProvider = ({ children }: { children: ReactNode }) => {
     setNavFixed(!lastNavState.current);
   }, [setNavFixed]);
   const [float, setFloat] = useState(false);
+  const [mode, setMode] = useState<"editor" | "default">("default");
   const [hovered, setHovered] = useState(false);
 
   const path = usePathname();
@@ -242,6 +245,9 @@ const NavbarProvider = ({ children }: { children: ReactNode }) => {
     <NavbarContext.Provider
       value={{
         navFixed,
+        mode,
+        setMode,
+
         toggleNav,
         setNavFixed,
         visible,
@@ -266,6 +272,7 @@ const PidebarProvider = ({ children }: { children: ReactNode }) => {
   const [peeked, setPeeked] = useState(false);
   const [held, setHeld] = useState(false);
   const config = useConfig();
+  const mode = useRPNav((r) => r.mode);
   const path = usePathname();
   const enabledState = useRef(enabled);
   const setState = useCallback(
@@ -479,7 +486,7 @@ const AMDKeyManager = ({ children }: { children: ReactNode }) => {
     },
     [setPeeked]
   );
-
+  const viewMode = useRPNav((r) => r.mode);
   useEffect(() => {
     document.addEventListener("keydown", keyPressed);
     return () => document.removeEventListener("keydown", keyPressed);
@@ -488,7 +495,8 @@ const AMDKeyManager = ({ children }: { children: ReactNode }) => {
     <div
       id={"restored-vault"}
       className={cn("relative", {
-        sidebar__wrapped: pideEnabled
+        sidebar__wrapped: pideEnabled,
+        "editor-mode": viewMode === "editor"
       })}
       data-sidebar-open={pideOpen}
       data-sidebar-peek={pidePeeked}

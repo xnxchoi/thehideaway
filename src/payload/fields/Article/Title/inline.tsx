@@ -22,7 +22,7 @@ import {
   useRef,
   useState
 } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { LexicalProvider } from "./LexicalProvider";
 import { useRunDeprioritized } from "@/payload/Lexical/defaults/useRunDeprioritized";
 
@@ -192,7 +192,7 @@ const InlineRichText = (
       style={styles}
     >
       <div className={`${baseClass}__wrap`}>
-        <ErrorBoundary fallbackRender={fallbackRender} onReset={() => {}}>
+        <ErrorBoundary fallbackRender={FallbackRender} onReset={() => {}}>
           <LexicalProvider
             composerKey={pathWithEditDepth}
             editorConfig={editorConfig}
@@ -209,14 +209,18 @@ const InlineRichText = (
   );
 };
 
-function fallbackRender({ error }: { error: Error }) {
+function FallbackRender({ error }: FallbackProps) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
 
   return (
     <div className="errorBoundary" role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{ color: "red" }}>{error.message}</pre>
+      <pre style={{ color: "red" }}>
+        {(error instanceof Error && error.message) || (
+          <p>Something went wrong</p>
+        )}
+      </pre>
     </div>
   );
 }
+
 export const RichText: typeof InlineRichText = InlineRichText;
