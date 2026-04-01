@@ -218,12 +218,12 @@ export default function CompilationDetailClient({
             </span>
             <p className="font-light text-foreground/60">This list is empty.</p>
             {isOwner && (
-              <button
+              <RP_Btn
                 onClick={() => setAddPanelOpen(true)}
                 className="mt-5 font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase underline decoration-dotted underline-offset-4 hover:text-foreground"
               >
                 Add items from your saved
-              </button>
+              </RP_Btn>
             )}
           </m.div>
         ) : (
