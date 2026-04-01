@@ -1124,7 +1124,7 @@ export const HighlightMenuButton = ({
   return (
     <Button
       className={cn(
-        "z-[10] flex items-center border-0 border-r-[1px] border-dashed !border-faded-background/90 bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] !text-faded-background/90 antialiased transition-colors ease-in-out-2 last-of-type:border-r-0 hover:!text-piercing-orange hover:[&_path]:!fill-piercing-orange [&_svg]:inline-block nth-of-type-[2]:[&_svg]:-left-[0.25px] nth-last-of-type-[2]:[&_svg]:left-[0.5px]",
+        "z-[10] flex items-center border-0 border-r-[1px] border-dashed !border-faded-foreground/90 bg-transparent px-[16px] py-0 text-base leading-0 font-light tracking-[0.05rem] text-faded-foreground/90 antialiased transition-colors ease-in-out-2 last-of-type:border-r-0 hover:!text-piercing-orange hover:[&_path]:!fill-piercing-orange [&_svg]:inline-block nth-of-type-[2]:[&_svg]:-left-[0.25px] nth-last-of-type-[2]:[&_svg]:left-[0.5px]",
         className
       )}
       {...props}

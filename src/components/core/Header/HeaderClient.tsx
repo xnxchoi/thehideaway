@@ -1,10 +1,10 @@
 "use client";
 import { CheckInButton } from "@/components/core/Header/CheckInButton";
+import { Link } from "@/components/core/Link/Link";
 import { SearchBar } from "@/components/UX/CommandKey/SearchBar";
 import { DarkmodeButton } from "@/components/UX/DarkMode/Darkmode";
 import { UserDropdown } from "@/components/UX/Dropdown/RPDropDown";
-import { Link } from "@/components/core/Link/Link";
-import { Logo, Mogo } from "@/components/UX/Logo";
+import { Mogo } from "@/components/UX/Logo";
 import { MenuButton } from "@/components/UX/Menu/MenuButton";
 import { NotificationButton } from "@/components/UX/NotificationButton/notificationButton";
 import { EASING, SPRING_EASE, TWEEN_EASE } from "@/constants/animations";
@@ -12,19 +12,14 @@ import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
 import { useIsMobile } from "@/providers/MiddleMan";
-import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import { clamp } from "@/utilities/mathUtilities";
-import { motionCallback } from "@/utilities/motionHelpers";
 import { delay, rp_lerp } from "@/utilities/rp_utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { SignedIn, SignedOut } from "@betterauth-ui";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollCallback } from "lenis";
 import { useLenis } from "lenis/react";
-import { animate, AnimationSequence } from "motion";
+import { animate, AnimationPlaybackControls, cancelFrame, frame } from "motion";
 import {
   AnimatePresence,
   HTMLMotionProps,
@@ -32,7 +27,6 @@ import {
   useMotionTemplate,
   useMotionValue,
   useMotionValueEvent,
-  useScroll,
   useSpring,
   useTransform
 } from "motion/react";
@@ -46,7 +40,6 @@ import React, {
   useCallback,
   useEffect,
   useEffectEvent,
-  useMemo,
   useRef,
   useState
 } from "react";
@@ -58,13 +51,15 @@ type TransitionType =
   | "animate-to-full"
   | "transition-wipe"
   | "animate-to-previous";
+
 export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const showHeader = useRPStore(useShallow((store) => store.showHeader));
   const setHeaderVisibility = useRPStore((store) => store.setHeaderVisibility);
-  const transitionOutType = useRPStore(
-    useShallow((store) => store.transitionOutType)
-  );
-  const { scrollYProgress } = useScroll({ offset: ["50px", "400px"] });
+  const _toutt = useRPStore(useShallow((store) => store.transitionOutType));
+  const transitionOutType = useMotionValue(_toutt);
+  useEffect(() => {
+    transitionOutType.set(_toutt);
+  }, [_toutt, transitionOutType]);
   const isPreloader = useRPStore(useShallow((store) => store.isPreloader));
   const theme = useTheme(useShallow((r) => r.theme));
   const [the, setTheme] = useState(theme);
@@ -72,10 +67,12 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     themeValue.set(theme);
   }, [theme, themeValue]);
-  const transitioning = useMotionValue(false);
-  const scrubPosition = useTransform(() =>
-    transitioning.get() ? 0 : scrollYProgress.get()
-  );
+
+  // scrubPosition is the single writable source of truth for scroll progress (0–1).
+  // In scroll mode: set directly from lenis scroll events.
+  // In transition mode: animated via Motion's animate().
+  const scrubPosition = useMotionValue(0);
+
   const to = useRef<ReturnType<typeof setTimeout>>(null!);
   const [visible, setVisible] = useState(true);
   const visibleness = useMotionValue(visible);
@@ -88,69 +85,52 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     mobileState.set(isMobile);
   }, [mobileState, isMobile]);
-  const frameLeft = useMenu(useShallow((r) => r.left));
-  const frameRight = useMenu(useShallow((r) => r.right));
-  const frameLeftValue = useMotionValue(frameLeft);
-  useEffect(() => {
-    frameLeftValue.set(frameLeft);
-  }, [frameLeft, frameLeftValue]);
-  const frameRightValue = useMotionValue(frameRight);
-  useEffect(() => {
-    frameRightValue.set(frameRight);
-  }, [frameRight, frameRightValue]);
 
-  const frameTop = useMenu(useShallow((l) => l.top));
-  const frameTopValue = useMotionValue(frameTop);
+  const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
+  const navState = useMotionValue(navIsOpen);
   useEffect(() => {
-    frameTopValue.set(frameTop);
-  }, [frameTop, frameTopValue]);
-  const mainT = useTransform(() => frameTopValue.get() * 0.5);
+    navState.set(navIsOpen);
+  }, [navIsOpen, navState]);
+
+  const t = useTransform(() => (navState.get() ? 0 : 10) as number);
+  const b = useTransform(() => (navState.get() ? 0 : 30) as number);
+  const r = useTransform(() => (navState.get() ? 0 : 10) as number);
+  const l = useTransform(() => (navState.get() ? 0 : 10) as number);
+
+  const mainT = useTransform(() => t.get() * 0.5);
   const mainTop = useSpring(mainT, {
     visualDuration: 0.2,
     ...SPRING_EASE.power4.out
   });
   const gutter = useTransform(() => (mobileState.get() ? 16 : (20 as number)));
 
-  const bottom = useMenu(useShallow((r) => r.bottom));
-
   const { headerTheme } = useHeaderTheme();
-  const fxVisibility = useRPStore(useShallow((l) => l.showFXFrame));
+  const fxVisibility = useRPStore(useShallow((ll) => ll.showFXFrame));
 
-  // const inner = useRef<HTMLDivElement>(null!)
-  // ,
-  // l = useRef<HTMLDivElement>(null!),
-  // r = useRef<HTMLDivElement>(null!),
-  // c = useRef<HTMLDivElement>(null!)
-  // ;
   const [scrollDirection, setScrollDirection] =
     useState<VerticalDirection>("up");
-  const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
-  const navState = useMotionValue(navIsOpen);
-  useEffect(() => {
-    navState.set(navIsOpen);
-  }, [navIsOpen, navState]);
+
   const [isScrolling, setScrolling] = useState(false);
   useLenis(({ isScrolling, direction }) => {
     setScrolling(!!isScrolling);
     setScrollDirection(direction > -1 ? "up" : "down");
   });
   const commandRef = useRef<ComponentRef<"button">>(null!);
-  const user = useRPSession(useShallow((r) => r.id));
+  const user = useRPSession(useShallow((rr) => rr.id));
 
-  const headerTransition = useRPStore(useShallow((l) => l.headerTransition));
+  const headerTransition = useRPStore(useShallow((ll) => ll.headerTransition));
   const transitionVariant = useMotionValue(headerTransition);
   useEffect(() => {
     transitionVariant.set(headerTransition);
   }, [headerTransition, transitionVariant]);
 
-  const setHeaderTransition = useRPStore((l) => l.setHeaderTransition);
-  const isTransitioningWipe = useRPStore(
-    useShallow((l) => l.isTransitioningWipe)
-  );
-  const isWipe = useMotionValue(isTransitioningWipe);
+  const setHeaderTransition = useRPStore((ll) => ll.setHeaderTransition);
+  const _tw = useRPStore(useShallow((ll) => ll.isTransitioningWipe));
+  const isWipeTransition = useMotionValue(_tw);
   useEffect(() => {
-    isWipe.set(isTransitioningWipe);
-  }, [isTransitioningWipe, isWipe]);
+    isWipeTransition.set(_tw);
+  }, [_tw, isWipeTransition]);
+
   const _themeColour = useTransform(() => {
     const currentTheme = themeValue.get(),
       currentNav = navState.get();
@@ -163,24 +143,25 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         : 10.17;
   });
   const themeColour = useMotionTemplate`oklch(${_themeColour}% 0.001 218.99)`;
+
   const tweenNumber = useRef(0);
-  const lerpedTween = useRef(0);
+
   const getTweenPercentBasedOnScroll = useCallback(
-    (l: number) => gsap.utils.clamp(0, 1, l / 350),
+    (lv: number) => Math.min(1, Math.max(0, lv / 350)),
     []
   );
+
   const animateOnScroll = useCallback(
-    (l: number) => {
-      const c = getTweenPercentBasedOnScroll(l);
-      ((lerpedTween.current = c),
-        headerTimeline.current && headerTimeline.current.progress(c));
+    (lv: number) => {
+      scrubPosition.set(getTweenPercentBasedOnScroll(lv));
     },
-    [getTweenPercentBasedOnScroll]
+    [getTweenPercentBasedOnScroll, scrubPosition]
   );
+
   useEffect(() => {
     setTheme((headerTheme && headerTheme) || theme);
   }, [headerTheme, theme]);
-  const headerTimeline = useRef<GSAPTimeline>(null!);
+
   const _sectionTranslate = useTransform(() => {
     const isVisibility = visibleness.get(),
       tv = transitionVariant.get();
@@ -208,6 +189,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       ease: TWEEN_EASE.power4.inOut
     });
   });
+
   const sectionY = useMotionTemplate`-${sectionTranslate}%`,
     scy = useTransform(() => {
       const scft = sectionTranslate.get(),
@@ -219,53 +201,48 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const sectionLX = useMotionTemplate`-${sectionTranslate}%`,
     sectionRX = useMotionTemplate`${sectionTranslate}%`;
   const innerY = useMotionTemplate`${innerTranslate}%`;
+
   const { stage } = useTransitionState();
-  const clearPageTheme = useTheme((l) => l.clearPageTheme);
+  const clearPageTheme = useTheme((ll) => ll.clearPageTheme);
   const initiatedScroll = useRef(false);
-  const reset = useVoyageur((l) => l.reset);
-  const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
-  const setCursorState = useCursor((l) => l.setCursorState);
+  const reset = useVoyageur((ll) => ll.reset);
+  const resetCursorTheme = useCursor((ll) => ll.resetCursorTheme);
+  const setCursorState = useCursor((ll) => ll.setCursorState);
   useEffect(() => {
     setVisible(showHeader && fxVisibility);
   }, [fxVisibility, showHeader]);
+
   const headerTransitionDisabled = useRef(false);
   const lastResize = useWindowResize({
     debounce: 100,
     detectHeightChange: true
   });
+  const animateBye = useEffectEvent(async () => {
+    await delay(50);
+    clearPageTheme();
+    reset();
+    resetCursorTheme();
+    setCursorState(null);
+    to.current && clearTimeout(to.current);
+    to.current = null!;
+    setHeaderTransition(null);
+    setHeaderVisibility(true);
+  });
   useEffect(() => {
     if (stage === "leaving") {
-      delay(50).then(() => {
-        clearPageTheme();
-
-        reset();
-        resetCursorTheme();
-        setCursorState(null);
-        to.current && clearTimeout(to.current);
-        to.current = null!;
-        setHeaderTransition(null);
-        setHeaderVisibility(true);
-      });
+      animateBye();
     }
-  }, [
-    clearPageTheme,
-    reset,
-    resetCursorTheme,
-    setCursorState,
-    setHeaderTransition,
-    setHeaderVisibility,
-    stage
-  ]);
-  const progressRate = useRef(0);
-  const initiateAnimationTimeline = useRef<(() => void) | null>(null);
+  }, [stage]);
 
   const themeOK = useTransform(() => {
     const progress = scrubPosition.get();
+    const isDark = themeValue.get() === "dark";
     const darkValue = 78.94,
       lightValue = 66.06;
-    const a = themeValue.get() === "dark" ? darkValue : lightValue;
-    const b = a === darkValue ? lightValue : darkValue;
-    return a * (1 - progress) + b * progress;
+    const [from, to]: [number, number] = isDark
+      ? [darkValue, lightValue]
+      : [lightValue, darkValue];
+    return from + (from - to) * progress;
   });
   const _scrollToBtbgop = useTransform(scrubPosition, [0, 1], [0.25, 0.1]);
   const btbgop = useTransform(() =>
@@ -274,15 +251,9 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
 
   const btBackground = useMotionTemplate`oklch(${themeOK}% 0.008 176.48/${btbgop})`;
   const logoSize = useTransform(scrubPosition, [0.1, 0.3], [28, 22]);
-  const fxInnerTop = useTransform(() =>
-    navState.get() ? -frameTopValue.get() : 0
-  );
-  const initialInnerLeft = useTransform(() =>
-    navState.get() ? -frameLeftValue.get() : 0
-  );
-  const initialInnerRight = useTransform(() =>
-    navState.get() ? -frameRightValue.get() : 0
-  );
+  const fxInnerTop = useTransform(() => (navState.get() ? -t.get() : 0));
+  const initialInnerLeft = useTransform(() => (navState.get() ? -l.get() : 0));
+  const initialInnerRight = useTransform(() => (navState.get() ? -r.get() : 0));
   const ssss = useTransform(scrubPosition, [0, 0.4], [0, 1]);
   const innerLeft = useTransform(() => {
     const progress = ssss.get();
@@ -310,19 +281,10 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const mainY = useTransform(() => {
     const scrub = scrubPosition.get();
     return mobileState.get() ? 5 + 7 * scrub : scrub * 12;
-    // const mb = mobileState.get();
-    // const fc = mb ? 5 : 0;
-    // return fc + scrubPosition.get() * (12 - fc);
   });
   const translate = useMotionTemplate`translate(-50%,${mainY}px)`;
   const windowWidthValue = useMotionValue(window.innerWidth);
 
-  const condensedWidth = useTransform(() =>
-    mobileState.get() ? windowWidthValue.get() - 32 : 645
-  );
-  const mainPx = useTransform(
-    () => 36 - scrubPosition.get() * (36 + gutter.get())
-  );
   const mainWidth = useTransform(() => {
     const progress = scrubPosition.get(),
       ww = windowWidthValue.get();
@@ -339,213 +301,146 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     const dark = progress > 0.3 && themeValue.get() === "dark";
     return dark ? mainBS.get() : "none";
   });
-  useGSAP(
-    (context, contextSafe) => {
-      if (!contextSafe) {
-        return;
-      }
-      initiateAnimationTimeline.current = contextSafe(() => {
-        headerTimeline.current &&
-          (headerTimeline.current.restart(), headerTimeline.current.kill());
 
-        headerTimeline.current = gsap.timeline({
-          paused: !0
-        });
-        headerTimeline.current.fromTo(
-          progressRate,
-          {
-            current: 0
-          },
-          {
-            current: 1,
-            duration: 0.6
-          }
-        );
-      });
-    },
-    { dependencies: [lastResize] }
-  );
-  const seq: AnimationSequence = useMemo(
-    () => [
-      [scrubPosition, 0, { duration: 0, at: 0 }],
-      [
-        scrubPosition,
-        1,
-        {
-          duration: 0.6,
-          at: 0
-        }
-      ]
-    ],
-    [scrubPosition]
-  );
+  // Track running animate-to-full animation so we can cancel it before starting a new one
+  const runningAnimation = useRef<AnimationPlaybackControls | null>(null);
+
   const instantiator = useEffectEvent(() => {
     windowWidthValue.set(window.innerWidth);
-    animate(seq);
+    const target = getTweenPercentBasedOnScroll(tweenNumber.current);
+    animate(scrubPosition, [0, target], {
+      duration: 0.6,
+      type: "tween",
+      ease: TWEEN_EASE.power1.out
+    });
   });
   useEffect(() => {
     instantiator();
   }, [lastResize]);
-  useEffect(() => {
-    initiateAnimationTimeline.current && initiateAnimationTimeline.current();
-  }, [lastResize]);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null!);
-  const transitionHeader = useEffectEvent(
-    (transitionType: TransitionType, callback?: () => void) => {
-      if (transitionType === "transition-wipe") {
-        return;
-      }
-      if (
-        (gsap.killTweensOf(lerpedTween), "animate-to-full" === transitionType)
-      )
-        gsap.to(lerpedTween, {
-          current: 0,
-          duration: 0.8 * 1.2,
-          ease: "power3.inOut",
-          onUpdate: () => {
-            scrubPosition.set(lerpedTween.current);
-            headerTimeline.current &&
-              headerTimeline.current.progress(lerpedTween.current);
-          },
-          onComplete: () => {
-            callback && callback();
-          }
-        });
-      else {
-        callback && callback();
-        const rafToPosition = () => {
-          ((lerpedTween.current = rp_lerp(
-            lerpedTween.current,
-            getTweenPercentBasedOnScroll(tweenNumber.current),
-            0.08
-          )),
-            headerTimeline.current &&
-              headerTimeline.current.progress(lerpedTween.current));
-        };
 
-        (gsap.ticker.add(rafToPosition),
-          setTimeout(() => {
-            gsap.ticker.remove(rafToPosition);
-          }, 1e3));
-      }
-    }
-  );
+  const enableScrollAnimation = useCallback(() => {
+    headerTransitionDisabled.current = false;
+  }, []);
+  const haltScrollAnimation = useCallback(() => {
+    headerTransitionDisabled.current = true;
+  }, []);
+
   const setHeaderState = useCallback(
     (transitionType: TransitionType, callback?: () => void) => {
-      if (transitionType === "transition-wipe") {
-        return;
-      }
-      if (
-        (gsap.killTweensOf(lerpedTween), "animate-to-full" === transitionType)
-      )
-        gsap.to(lerpedTween, {
-          current: 0,
-          duration: 0.8 * 1.2,
-          ease: "power3.inOut",
-          onUpdate: () => {
-            scrubPosition.set(lerpedTween.current);
-            headerTimeline.current &&
-              headerTimeline.current.progress(lerpedTween.current);
-          },
-          onComplete: () => {
-            callback && callback();
-          }
-        });
-      else {
-        callback && callback();
-        const rafToPosition = () => {
-          ((lerpedTween.current = rp_lerp(
-            lerpedTween.current,
-            getTweenPercentBasedOnScroll(tweenNumber.current),
-            0.08
-          )),
-            headerTimeline.current &&
-              headerTimeline.current.progress(lerpedTween.current));
-        };
+      runningAnimation.current?.stop();
+      runningAnimation.current = null;
 
-        (gsap.ticker.add(rafToPosition),
-          setTimeout(() => {
-            gsap.ticker.remove(rafToPosition);
-          }, 1e3));
+      switch (transitionType) {
+        case "transition-wipe":
+          return;
+
+        case "animate-to-full": {
+          runningAnimation.current = animate(scrubPosition, 0, {
+            duration: 0.96,
+            type: "tween",
+            ease: TWEEN_EASE.power3.inOut,
+            onComplete: () => {
+              runningAnimation.current = null;
+              callback?.();
+            }
+          });
+          return;
+        }
+
+        default: {
+          // animate-to-previous: lerp scrubPosition back toward current scroll value
+          callback?.();
+          const lerp = () => {
+            scrubPosition.set(
+              rp_lerp(
+                scrubPosition.get(),
+                getTweenPercentBasedOnScroll(tweenNumber.current),
+                0.08
+              )
+            );
+          };
+          frame.update(lerp, true);
+          setTimeout(() => cancelFrame(lerp), 1000);
+          return;
+        }
       }
     },
     [getTweenPercentBasedOnScroll, scrubPosition]
   );
 
-  const enableScrollAnimation = useCallback(() => {
-    headerTransitionDisabled.current = false;
-    transitioning.set(true);
-  }, [transitioning]);
-  const haltScrollAnimation = useCallback(() => {
-    headerTransitionDisabled.current = true;
-    transitioning.set(false);
-  }, [transitioning]);
-  const lnis = useLenis();
-  const setLenisUp = useEffectEvent(() => {
-    const anm: ScrollCallback = ({ animatedScroll }) => {
-      if (animatedScroll) {
-        clamp(0, Math.max(0, animatedScroll - 50) / 350, 1);
-      }
-    };
-  });
   useLenis((lenis) => {
     !initiatedScroll.current &&
       ((initiatedScroll.current = !0),
-      lenis.on("scroll", (l) => {
-        if (!headerTransitionDisabled.current && l.animatedScroll) {
-          const c = l.animatedScroll;
-          (c > 50 ? (tweenNumber.current = c - 50) : (tweenNumber.current = 0),
-            animateOnScroll(tweenNumber.current));
+      lenis.on("scroll", (lv) => {
+        if (!headerTransitionDisabled.current && lv.animatedScroll) {
+          const c = lv.animatedScroll;
+          c > 50 ? (tweenNumber.current = c - 50) : (tweenNumber.current = 0);
+          animateOnScroll(tweenNumber.current);
         }
       }));
   });
-  useEffect(() => {
-    (timeoutRef.current && clearTimeout(timeoutRef.current),
-      (timeoutRef.current = setTimeout(() => {
-        if (isTransitioningWipe) {
-          (haltScrollAnimation(),
-            setHeaderState("transition-wipe", () => {
-              enableScrollAnimation();
-            }));
-          return;
-        }
-        if (navIsOpen) {
-          (haltScrollAnimation(), setHeaderState("animate-to-full"));
-          return;
-        }
-        if (typeof transitionOutType === "string") {
-          ((lerpedTween.current = 0),
-            haltScrollAnimation(),
-            setHeaderState("animate-to-full"),
-            setTimeout(() => {
-              enableScrollAnimation();
-            }, 720));
-          return;
-        }
 
-        setHeaderState("animate-to-previous", () => {
-          enableScrollAnimation();
-        });
-      }, 20)));
+  const headerDone = useCallback(() => {
+    if (isWipeTransition.get()) {
+      haltScrollAnimation();
+      setHeaderState("transition-wipe", () => {
+        enableScrollAnimation();
+      });
+      return;
+    }
+    if (navState.get()) {
+      haltScrollAnimation();
+      setHeaderState("animate-to-full");
+      return;
+    }
+    if (typeof transitionOutType.get() === "string") {
+      haltScrollAnimation();
+      setHeaderState("animate-to-full");
+      setTimeout(() => {
+        enableScrollAnimation();
+      }, 720);
+      return;
+    }
+
+    setHeaderState("animate-to-previous", () => {
+      enableScrollAnimation();
+    });
   }, [
-    navIsOpen,
-    isTransitioningWipe,
-    transitionOutType,
-    frameTop,
-    setHeaderState,
+    enableScrollAnimation,
     haltScrollAnimation,
-    enableScrollAnimation
+    isWipeTransition,
+    navState,
+    setHeaderState,
+    transitionOutType
   ]);
 
-  const onEnter: MouseEventHandler = useCallback((e) => {
+  useMotionValueEvent(navState, "change", (latestValue) => {
+    timeoutRef.current && clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(headerDone, 20);
+  });
+  useMotionValueEvent(transitionOutType, "change", (latestValue) => {
+    timeoutRef.current && clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(headerDone, 20);
+  });
+  useMotionValueEvent(transitionVariant, "change", (latestValue) => {
+    timeoutRef.current && clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(headerDone, 20);
+  });
+  useMotionValueEvent(isWipeTransition, "change", (latestValue) => {
+    timeoutRef.current && clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(headerDone, 20);
+  });
+
+  const onEnter: MouseEventHandler = useCallback(() => {
     to.current && clearTimeout(to.current);
     to.current = null!;
     to.current = setTimeout(() => {
       setVisible(true);
     }, 200);
   }, []);
-  const onLeave: MouseEventHandler = useCallback((e) => {
+  const onLeave: MouseEventHandler = useCallback(() => {
     to.current && clearTimeout(to.current);
     to.current = null!;
     to.current = setTimeout(() => {
@@ -596,34 +491,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         >
           {children}
           <AnimatePresence mode="sync" initial={false}>
-            {
-              // 	<m.div
-              //     ref={fxRef}
-              //     className={cn(
-              // 		"pointer-events-none fixed top-0 right-[10px] bottom-0 left-[10px] z-10 mx-auto",
-              // 	)}
-              // >
-              //     <div
-              //         ref={fx2Ref}
-              //         data-themed={"background-color"}
-              //         className="mask-linear-from-[#000] mask-linear-to-[transparent] absolute top-[10px] bottom-auto z-[19] h-[80px] opacity-50 backdrop-blur-[5px] backdrop-contrast-500 backdrop-saturate-[1500%] bg-[#ffffff03]"
-              //
-              //     />
-              //     <div
-              //         ref={fx3Ref}
-              //         data-themed={"background-color"}
-              //         className="mask-linear-from-[#000] mask-linear-to-[transparent] absolute top-[10px] bottom-auto z-[19] h-[60px] opacity-75 hue-rotate-0 blur-[5px] contrast-[500%] saturate-[1500%] bg-[#ffffff03]"
-              //
-              //     />
-              //     <div
-              //         ref={fx4Ref}
-              //         data-themed={"background-color"}
-              //         className="mask-linear-from-[#000] mask-linear-to-[transparent] top-fx-bottom fixed top-0 bottom-auto inset-x-0 z-[10] hidden h-[50px] blur-[5px] contrast-[500%] saturate-[1500%] bg-[#ffffff03]"
-              //
-              //     />
-              // </m.div>
-              <FXs progressRate={ssss} fxVisibility={visible} />
-            }
+            <FXs progressRate={ssss} fxVisibility={visible} />
           </AnimatePresence>
           <m.div
             key={"color-fx"}
@@ -675,7 +543,6 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
               </div>
             </m.div>
             <m.div
-              // ref={c}
               style={{
                 transform: sectionCY,
                 left: "50%",
@@ -703,7 +570,6 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
 
             <m.div
               id="r-side"
-              // ref={r}
               className={"z-20"}
               style={{
                 y: sectionY,

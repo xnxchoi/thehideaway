@@ -141,7 +141,14 @@ export const FloatHighlightMenu = ({
         setHighlightSaving(false);
       }
     },
-    [createCallback, deleteHighlight, postDisabled, user]
+    [
+      createCallback,
+      deleteHighlight,
+      highlightSaving,
+      postDisabled,
+      targetContainer,
+      user
+    ]
   );
   const onSave: MouseEventHandler = useCallback(
     (e) => {
@@ -377,7 +384,7 @@ export const FloatHighlightMenu = ({
           className={
             "highlightMenu relative h-full w-full bg-faded-foreground/10 p-0 backdrop-blur-xl"
           }
-          style={{ ...style, backdropFilter: "blur(16px)" }}
+          style={{ ...style, backdropFilter: "blur(10px)" }}
         >
           <m.div
             initial={{
@@ -395,12 +402,12 @@ export const FloatHighlightMenu = ({
               ease: TWEEN_EASE.power2.out
             }}
             className={
-              "absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
+              "absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[8px]"
             }
           />
           <m.div
             className={
-              "z-[23] flex h-[44px] items-center px-3.5 text-off-background"
+              "z-[23] flex h-[44px] items-center px-3.5 text-off-foreground"
             }
           >
             <DialogRoot open={dOpen} onOpenChange={setMemoOpen}>

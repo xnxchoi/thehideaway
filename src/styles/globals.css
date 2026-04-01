@@ -419,7 +419,7 @@ Colors
 }
 
 ::selection {
-    background-color: var(--rouge-500);
+    background-color:oklch(from var(--piercing-orange) l c h/0.85);
     color: var(--off-black);
 }
 

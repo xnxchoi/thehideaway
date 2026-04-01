@@ -122,21 +122,19 @@ const Private2 = (props: { children: ReactNode }) => {
                 </div>
               </div>
               {userId ? (
-                (view === "edit" && userId && <PrivateNoteEditor />) || (
+                (view === "edit" && <PrivateNoteEditor />) || (
                   <div className={"block p-[0_20px]"}>
                     <div className={"block p-[12px_0]"}>
                       <div className={"mb-[12px] flex items-center"}>
-                        {userId && (
-                          <UserBar
-                            user={{
-                              name: userName,
-                              image: userImage,
+                        <UserBar
+                          user={{
+                            name: userName,
+                            image: userImage,
 
-                              slug: userS,
-                              id: userId
-                            }}
-                          />
-                        )}
+                            slug: userS,
+                            id: userId
+                          }}
+                        />
                       </div>
                       <div className={"block whitespace-pre-wrap"}>{memo}</div>
                     </div>

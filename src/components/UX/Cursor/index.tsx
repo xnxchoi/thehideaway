@@ -16,7 +16,7 @@ import {
 } from "motion/react";
 import * as m from "motion/react-m";
 import { useShallow } from "zustand/shallow";
-import { EASING } from "@/constants/animations";
+import { EASING, TWEEN_EASE } from "@/constants/animations";
 
 type FOCUS = "FOCUS";
 type DRAG = "DRAG";
@@ -291,8 +291,8 @@ export default function RP_Cursor() {
   // );
 
   const baseTheme = useCursor(useShallow((l) => l.baseCursorTheme));
-	const setBaseCursorTheme = useCursor((l) => l.setBaseCursorTheme);
-	const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
+  const setBaseCursorTheme = useCursor((l) => l.setBaseCursorTheme);
+  const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
 
   useEffect(() => {
     theme && (setBaseCursorTheme(theme), !navIsOpen && resetCursorTheme());
@@ -337,7 +337,7 @@ export default function RP_Cursor() {
                 key={"wrap"}
                 className={cn(
                   "pointer-events-none flex shrink-0 cursor-none flex-col items-center justify-center overflow-hidden outline-none",
-	                "rounded-[8px] bg-nav-button/10 font-dots backdrop-blur-xs perspective-distant"
+                  "rounded-[8px] bg-nav-button/10 font-dots backdrop-blur-xs perspective-distant"
                 )}
                 style={{ width: containerWidth, height: containerHeight }}
                 variants={textCursorVariants}
@@ -374,11 +374,9 @@ export default function RP_Cursor() {
                     }
                   }}
                 >
-                  {textMarq ? (
-                    <Marquee caption={cursorState || ""} />
-                  ) : (
-                    cursorState || <></>
-                  )}
+                  {cursorState &&
+                    ((textMarq && <Marquee caption={cursorState} />) ||
+                      cursorState)}
                 </m.span>
               </m.span>
             )) || (
@@ -410,7 +408,7 @@ export default function RP_Cursor() {
                       type: "tween",
                       delay: 0.1,
                       duration: 0.2,
-                      ease: EASING.power3.out
+                      ease: TWEEN_EASE.power3.out
                     }
                   }}
                   fill="transparent"

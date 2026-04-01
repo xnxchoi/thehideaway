@@ -4,12 +4,7 @@ import { Link } from "@/components/core/Link/Link";
 import { EASING, TWEEN_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
-import {
-  useCursor,
-  useDeviceInfo,
-  // useMenu,
-  useRPStore
-} from "@/providers/RP_Pro";
+import { useCursor, useDeviceInfo, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
@@ -21,6 +16,7 @@ import { useLenis } from "lenis/react";
 import { AnimationSequence } from "motion";
 import {
   animate,
+  AnimatePresence,
   type MotionValue,
   useMotionValue,
   useTransform,
@@ -129,6 +125,11 @@ export const RP_Menu = () => {
   const focusedRef = useRef<-1 | string>(-1),
     activeRef = useRef<string | -1>(-1),
     [activeIndex, setActiveIndex] = useState<string | -1>(-1);
+  const activeIndexValue = useMotionValue(activeIndex);
+  useEffect(
+    () => activeIndexValue.set(activeIndex),
+    [activeIndexValue, activeIndex]
+  );
   const toggleMenu = useRef<
     (isNavOpen: boolean, needsResizing: boolean) => void
   >(null!);
@@ -203,6 +204,11 @@ export const RP_Menu = () => {
 
   const hoveredNavItem = useRPStore(
     useShallow((l) => l.navigationPageItemHovered)
+  );
+  const hoveredNavItemValue = useMotionValue(hoveredNavItem);
+  useEffect(
+    () => hoveredNavItemValue.set(hoveredNavItem),
+    [hoveredNavItemValue, hoveredNavItem]
   );
   const activeTO = useRef<ReturnType<typeof setTimeout>>(null!);
   useEffect(() => {
@@ -331,8 +337,10 @@ export const RP_Menu = () => {
   // });
   const resetFrame = useEffectEvent(() => {
     const seq: AnimationSequence = [];
-    const notInFocus = focusedRef.current !== activeIndex;
-    const nothingIsActive = activeIndex === -1 && hoveredNavItem === -1;
+    const ai = activeIndexValue.get();
+    const hi = hoveredNavItemValue.get();
+    const notInFocus = focusedRef.current !== ai;
+    const nothingIsActive = ai === -1 && hi === -1;
     const resetElement = (l: object, c: object, d = 0.3) => {
       const dur = 0.3;
       const base = {
@@ -341,7 +349,10 @@ export const RP_Menu = () => {
         at: 0,
         ease: TWEEN_EASE.power1.out
       };
-      seq.push([l, { x: "102%" }, { ...base }], [c, { opacity: d }, base]);
+      animate([
+        [l, { x: "102%" }, { ...base }],
+        [c, { opacity: d }, { ...base }]
+      ]);
     };
     navLines.current.forEach((navLine, h) => {
       if (!navLine) {
@@ -353,8 +364,8 @@ export const RP_Menu = () => {
           resetElement(navLine, currentButton, nothingIsActive ? 1 : 0.3);
         }
         if (
-          menuPageItemKeys[h] === hoveredNavItem ||
-          (hoveredNavItem === -1 && menuPageItemKeys[h] === activeIndex)
+          menuPageItemKeys[h] === hi ||
+          (hi === -1 && menuPageItemKeys[h] === ai)
         ) {
           seq.push(
             [navLine, { x: "-102%" }, { at: 0, duration: 0 }],
@@ -386,8 +397,8 @@ export const RP_Menu = () => {
           );
         } else if (
           menuPageItemKeys[h] === activeRef.current ||
-          (hoveredNavItem !== -1 && menuPageItemKeys[h] === activeIndex) ||
-          activeIndex === -1
+          (hi !== -1 && menuPageItemKeys[h] === ai) ||
+          ai === -1
         ) {
           resetElement(navLine, currentButton);
         }
@@ -400,13 +411,9 @@ export const RP_Menu = () => {
     const prevFocused = focusedRef.current;
     seq.push([
       motionCallback({
-        onBackwards: () => {
-          activeRef.current = prevActive;
-          focusedRef.current = prevFocused;
-        },
         onForwards: () => {
-          activeRef.current = hoveredNavItem;
-          focusedRef.current = activeIndex;
+          activeRef.current = hi;
+          focusedRef.current = ai;
         }
       })
     ]);
@@ -444,7 +451,8 @@ export const RP_Menu = () => {
       const windowHeight = (navWindow.current as HTMLElement).offsetHeight;
       const windowXOff = navWClient.left;
       const windowYOff = navWClient.top;
-      const seq: AnimationSequence = [];
+      const seq1: AnimationSequence = [];
+      const seq2: AnimationSequence = [];
       menuFrames.current.forEach((frame, ind) => {
         if (!frame) {
           return;
@@ -472,7 +480,7 @@ export const RP_Menu = () => {
               xOff = isM ? -left + 3 : -frameRect.width + left;
           }
         }
-        seq.push([
+        seq1.push([
           frame,
           {
             x: `${xOff}px`,
@@ -544,7 +552,7 @@ export const RP_Menu = () => {
             }
         }
 
-        seq.push([
+        seq1.push([
           corner,
           {
             x: `${xoffse}px`,
@@ -559,40 +567,38 @@ export const RP_Menu = () => {
       });
       menuSVgs.current.forEach((svg) => {
         if (svg) {
-          seq.push([
+          seq2.push([
             svg,
-            { scale: 1 },
-            needsResizing
-              ? {
-                  duration: 0,
-                  at: 0
-                }
-              : {
-                  duration: 1.2,
-                  ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
-                  at: 0
-                }
+            {
+              transform: "translate(0,0)"
+            },
+            {
+              type: "tween",
+              duration: needsResizing ? 0 : 1.2,
+              ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
+              at: 0
+            }
           ]);
         }
       });
       const startLoc = isM ? 0 : -150;
-      seq.push([
-        navigationList.current,
-        {
-          x: navo ? 0 : `${startLoc}px`,
-          visibility: navo ? "visible" : "hidden",
-          opacity: navo ? 1 : 0
-        },
-        {
-          type: "tween",
-          duration: navo ? 1.2 : 1.2 * 0.75,
-          ease: TWEEN_EASE.power3.out,
-          at: 0,
-          delay: navo ? 0.75 : 0
-        }
-      ]);
+      // seq2.push([
+      //   navigationList.current,
+      //   {
+      //     x: navo ? 0 : `${startLoc}px`,
+      //     visibility: navo ? "visible" : "hidden",
+      //     opacity: navo ? 1 : 0
+      //   },
+      //   {
+      //     type: "tween",
+      //     duration: navo ? 1.2 : 1.2 * 0.75,
+      //     ease: TWEEN_EASE.power3.out,
+      //     at: 0,
+      //     delay: navo ? 0.75 : 0
+      //   }
+      // ]);
 
-      seq.push(
+      seq2.push(
         [
           er.current,
           {
@@ -616,7 +622,8 @@ export const RP_Menu = () => {
           })
         ]
       );
-      animate(seq);
+      animate(seq1);
+      animate(seq2);
     }
   );
   // const toggleMenuCallback = useCallback(
@@ -868,62 +875,96 @@ export const RP_Menu = () => {
           id={B}
         />
         <nav className="menu__navigation">
-          <ul
-            className="menu__nav-items-list scroll__items"
-            ref={navigationList}
-          >
-            {links.map((l, index) => {
-              const theKey = menuPageItemKeys[index];
-              const href = l.link.url;
-              return (
-                <li
-                  className="menu__nav-item"
-                  key={index + "nav_item"}
-                  ref={(el) => {
-                    el && (navItems.current[index] = el);
-                  }}
-                  data-is-active={currentPageKey === theKey}
-                  data-themed="color"
-                  style={{}}
-                >
-                  <Link
-                    ref={(el: HTMLAnchorElement) => {
-                      el && (navButtons.current[index] = el);
-                    }}
-                    href={href}
-                    key={index + "-" + theKey}
-                    className={"button__scroll lift__button"}
-                    onMouseEnter={() =>
-                      handlePagePreviewMouseEnter(theKey || -1)
-                    }
-                    onMouseLeave={() =>
-                      isMobile || handlePagePreviewMouseLeave()
-                    }
-                    onClick={() => {
-                      handlePagePreviewClick(theKey || "default");
-                    }}
-                  >
-                    {l.link.label}
-                  </Link>
-                  <span className="menu__item-line-container">
-                    <span
-                      className="menu__item-line"
-                      data-themed="background-color"
-                      style={{
-                        translate: "none",
-                        rotate: "none",
-                        scale: "none",
-                        transform: "translate(102%, 0px)"
-                      }}
+          <AnimatePresence>
+            {navIsOpen && (
+              <m.ul
+                className="menu__nav-items-list scroll__items"
+                ref={navigationList}
+                initial={{
+                  opacity: 0,
+
+                  translateX: "-150px"
+                }}
+                animate={{
+                  opacity: 1,
+                  visibility: "visible",
+                  translateX: 0,
+                  transition: {
+                    delay: 0.75,
+                    duration: 1.2,
+                    type: "tween",
+                    ease: TWEEN_EASE.power3.out
+                  }
+                }}
+                exit={{
+                  opacity: 0,
+                  translateX: "-150px",
+                  visibility: "hidden",
+                  transition: {
+                    type: "tween",
+                    ease: TWEEN_EASE.power3.out,
+                    duration: 0.9
+                  }
+                }}
+                transition={{
+                  type: "tween",
+                  ease: TWEEN_EASE.power3.out
+                }}
+              >
+                {links.map((l, index) => {
+                  const theKey = menuPageItemKeys[index];
+                  const href = l.link.url;
+                  return (
+                    <li
+                      className="menu__nav-item"
+                      key={index + "nav_item"}
                       ref={(el) => {
-                        el && (navLines.current[index] = el);
+                        el && (navItems.current[index] = el);
                       }}
-                    />
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+                      data-is-active={currentPageKey === theKey}
+                      data-themed="color"
+                      style={{}}
+                    >
+                      <Link
+                        ref={(el: HTMLAnchorElement) => {
+                          el && (navButtons.current[index] = el);
+                        }}
+                        href={href}
+                        key={index + "-" + theKey}
+                        className={"button__scroll lift__button"}
+                        onMouseEnter={() =>
+                          handlePagePreviewMouseEnter(theKey || -1)
+                        }
+                        onMouseLeave={() =>
+                          isMobile || handlePagePreviewMouseLeave()
+                        }
+                        onClick={() => {
+                          handlePagePreviewClick(theKey || "default");
+                        }}
+                      >
+                        {l.link.label}
+                      </Link>
+                      <span className="menu__item-line-container">
+                        <span
+                          className="menu__item-line"
+                          data-themed="background-color"
+                          style={{
+                            translate: "none",
+                            rotate: "none",
+                            scale: "none",
+                            transform: "translate(102%, 0px)"
+                          }}
+                          ref={(el) => {
+                            el && (navLines.current[index] = el);
+                          }}
+                        />
+                      </span>
+                    </li>
+                  );
+                })}
+              </m.ul>
+            )}
+          </AnimatePresence>
         </nav>
         <div className="menu__noti-scroller">
           <div

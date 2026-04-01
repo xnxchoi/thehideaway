@@ -1,25 +1,26 @@
 "use client";
 
-import {InitiateHeader} from "@/components/core/Header/InitiateHeader";
-import type {Header} from "@payload-types";
+import { InitiateHeader } from "@/components/core/Header/InitiateHeader";
+import type { Header } from "@payload-types";
 import dynamic from "next/dynamic";
+import { FC } from "react";
 
 interface HeaderClientProps {
-	header: Header;
+  header: Header;
 }
 
 const HeaderWrapper = dynamic(
-	() => import("./HeaderClient").then((r) => r.HeaderClient),
-	{ssr: false}
+  () => import("./HeaderClient").then((r) => r.HeaderClient),
+  { ssr: false }
 );
-export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
-	const {header} = props;
+export const HeaderClient: FC<HeaderClientProps> = (props) => {
+  const { header } = props;
 
-	return (
-		<HeaderWrapper>
-			<InitiateHeader header={header}/>
-		</HeaderWrapper>
-	);
+  return (
+    <HeaderWrapper>
+      <InitiateHeader header={header} />
+    </HeaderWrapper>
+  );
 };
 
 // useEffect(() => {
