@@ -50,13 +50,13 @@ export default function SavedPageClient({ userId, items }: Props) {
     <div className="min-h-screen w-full bg-background text-foreground">
       {/* ── Header ────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl px-6 py-5">
+        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-xs">
                 Your Library
               </p>
-              <h1 className="mt-0.5 text-2xl font-light tracking-tight">
+              <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 Saved
                 {totalCount > 0 && (
                   <span className="ml-2.5 font-mono text-sm text-muted-foreground/50">
@@ -67,7 +67,7 @@ export default function SavedPageClient({ userId, items }: Props) {
             </div>
             <Link
               href="/me/lists"
-              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground"
+              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground xl:text-xs"
             >
               My Lists →
             </Link>
@@ -76,13 +76,13 @@ export default function SavedPageClient({ userId, items }: Props) {
           {/* Tabs */}
           {availableTabs.length > 1 && (
             <LayoutGroup id="saved-tabs">
-              <nav className="-mb-px mt-5 flex gap-5 overflow-x-auto">
+              <nav className="-mb-px mt-5 flex gap-6 overflow-x-auto xl:gap-8">
                 {availableTabs.map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={cn(
-                      "relative shrink-0 pb-3 font-mono text-[11px] uppercase tracking-widest transition-colors",
+                      "relative shrink-0 pb-3 font-mono text-[11px] uppercase tracking-widest transition-colors xl:text-xs",
                       activeTab === tab
                         ? "text-foreground"
                         : "text-muted-foreground/50 hover:text-muted-foreground"
@@ -108,7 +108,7 @@ export default function SavedPageClient({ userId, items }: Props) {
       </header>
 
       {/* ── Content ───────────────────────────────────────────────── */}
-      <main className="mx-auto max-w-5xl px-6 py-8">
+      <main className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
         <AnimatePresence mode="wait">
           {activeItems.length === 0 ? (
             <SavedEmptyState key="empty" tab={activeTab} />
@@ -120,10 +120,10 @@ export default function SavedPageClient({ userId, items }: Props) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.22 }}
               className={cn(
-                "grid gap-4",
+                "grid gap-4 xl:gap-5",
                 MUSIC_TABS.includes(activeTab)
-                  ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                  ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               )}
             >
               {activeItems.map((item) => (
@@ -176,9 +176,9 @@ function BookmarkCard({
       )}
 
       {/* Body */}
-      <div className="p-3.5">
+      <div className="p-3.5 xl:p-4">
         <Link href={item.url} className="block">
-          <h3 className="line-clamp-2 text-sm font-medium leading-snug tracking-tight transition-opacity group-hover:opacity-80">
+          <h3 className="line-clamp-2 text-sm font-medium leading-snug tracking-tight transition-opacity group-hover:opacity-80 xl:text-base">
             {item.title}
           </h3>
         </Link>
@@ -186,17 +186,17 @@ function BookmarkCard({
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {"author" in item && item.author && (
-              <span className="font-mono text-[10px] text-muted-foreground/60">
+              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.author}
               </span>
             )}
             {"source" in item && item.source && (
-              <span className="font-mono text-[10px] text-muted-foreground/60">
+              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.source}
               </span>
             )}
             {"artist" in item && item.artist && (
-              <span className="font-mono text-[10px] text-muted-foreground/60">
+              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.artist}
               </span>
             )}

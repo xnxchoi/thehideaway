@@ -57,13 +57,13 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
     <div className="min-h-screen w-full bg-background text-foreground">
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl px-6 py-5">
+        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-xs">
                 Curated Collections
               </p>
-              <h1 className="mt-0.5 text-2xl font-light tracking-tight">
+              <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 My Lists
                 {compilations.length > 0 && (
                   <span className="ml-2.5 font-mono text-sm text-muted-foreground/50">
@@ -75,13 +75,13 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
             <div className="flex items-center gap-4">
               <Link
                 href="/me/saved"
-                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground xl:text-xs"
               >
                 ← Saved
               </Link>
               <button
                 onClick={() => setShowCreate(true)}
-                className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60"
+                className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60 xl:text-xs"
               >
                 New List
               </button>
@@ -91,7 +91,7 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
       </header>
 
       {/* ── Grid ───────────────────────────────────────────── */}
-      <main className="mx-auto max-w-5xl px-6 py-8">
+      <main className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
         <AnimatePresence mode="popLayout">
           {compilations.length === 0 && !showCreate ? (
             <ListsEmptyState key="empty" onNew={() => setShowCreate(true)} />
@@ -99,10 +99,10 @@ export default function ListsPageClient({ userId, role, compilations: initial }:
             <m.div
               key="grid"
               className={cn(
-                "grid gap-5",
+                "grid gap-5 xl:gap-6",
                 premium
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                  : "grid-cols-1 sm:grid-cols-2"
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
               )}
             >
               {compilations.map((c, i) => (
@@ -180,12 +180,12 @@ function CompilationCard({
           )}
 
           {premium && (
-            <div className="absolute inset-x-0 bottom-0 p-4">
-              <h3 className="text-base font-medium leading-snug tracking-tight text-white drop-shadow">
+            <div className="absolute inset-x-0 bottom-0 p-4 xl:p-5">
+              <h3 className="text-base font-medium leading-snug tracking-tight text-white drop-shadow xl:text-lg">
                 {c.title}
               </h3>
               {c.description && (
-                <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-white/60">
+                <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-white/60 xl:text-[11px]">
                   {c.description}
                 </p>
               )}
@@ -194,12 +194,12 @@ function CompilationCard({
         </div>
 
         {!premium && (
-          <div className="p-3.5">
-            <h3 className="text-sm font-medium leading-snug tracking-tight">
+          <div className="p-3.5 xl:p-4">
+            <h3 className="text-sm font-medium leading-snug tracking-tight xl:text-base">
               {c.title}
             </h3>
             {c.description && (
-              <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-muted-foreground/60">
+              <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {c.description}
               </p>
             )}
@@ -208,9 +208,9 @@ function CompilationCard({
       </Link>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-border/15 px-3.5 py-2">
+      <div className="flex items-center justify-between border-t border-border/15 px-3.5 py-2 xl:px-4">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-muted-foreground/50">
+          <span className="font-mono text-[10px] text-muted-foreground/50 xl:text-[11px]">
             {c.itemCount} {c.itemCount === 1 ? "item" : "items"}
           </span>
           <VisibilityBadge visibility={c.visibility} />

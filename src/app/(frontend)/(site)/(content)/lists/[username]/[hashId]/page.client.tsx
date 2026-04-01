@@ -79,13 +79,13 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
         )}
 
         {/* Content */}
-        <div className="absolute inset-x-0 bottom-0 px-6 pb-8 sm:px-10 sm:pb-10">
-          <div className="mx-auto max-w-5xl">
+        <div className="absolute inset-x-0 bottom-0 px-6 pb-8 sm:px-10 sm:pb-10 xl:pb-14">
+          <div className="mx-auto max-w-7xl">
             <m.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-white/50"
+              className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-white/50 xl:text-xs"
             >
               A List by{" "}
               {authorSlug ? (
@@ -103,7 +103,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, type: "spring", bounce: 0.1 }}
-              className="text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl md:text-5xl"
+              className="text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl"
             >
               {compilation.title}
             </m.h1>
@@ -112,7 +112,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="mt-2 max-w-lg font-mono text-[11px] leading-relaxed text-white/50"
+                className="mt-2 max-w-xl font-mono text-[11px] leading-relaxed text-white/50 xl:text-xs xl:max-w-2xl"
               >
                 {compilation.description}
               </m.p>
@@ -142,11 +142,11 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
       {/* ── Filter bar ────────────────────────────────────── */}
       {availableTypes.length > 1 && (
         <div className="sticky top-0 z-10 border-b border-border/20 bg-background/90 backdrop-blur-md">
-          <div className="mx-auto flex max-w-5xl items-center gap-5 overflow-x-auto px-6 py-3.5">
+          <div className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-6 py-3.5 xl:gap-8 xl:px-10 xl:py-4">
             <button
               onClick={() => setFilter("all")}
               className={cn(
-                "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors",
+                "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors xl:text-xs",
                 filter === "all"
                   ? "text-foreground"
                   : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -159,7 +159,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
                 key={t}
                 onClick={() => setFilter(t)}
                 className={cn(
-                  "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors",
+                  "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors xl:text-xs",
                   filter === t
                     ? "text-foreground"
                     : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -173,13 +173,13 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
       )}
 
       {/* ── Items ─────────────────────────────────────────── */}
-      <div className="mx-auto max-w-5xl px-6 py-8 sm:px-10">
+      <div className="mx-auto max-w-7xl px-6 py-8 sm:px-10 xl:px-10 xl:py-12">
         {filteredItems.length === 0 ? (
-          <p className="py-16 text-center font-mono text-[11px] text-muted-foreground/40">
+          <p className="py-16 text-center font-mono text-[11px] text-muted-foreground/40 xl:text-xs">
             Nothing here yet.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 xl:gap-5">
             {filteredItems.map((item, i) => {
               const itemId =
                 typeof item.value === "string" ? item.value : item.value.id;
@@ -267,19 +267,19 @@ function PublicItemCard({
       </div>
 
       {/* Info */}
-      <div className="p-3">
+      <div className="p-3 xl:p-3.5">
         {itemUrl ? (
           <Link href={itemUrl} className="block">
-            <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight transition-opacity hover:opacity-70">
+            <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight transition-opacity hover:opacity-70 xl:text-sm">
               {title}
             </p>
           </Link>
         ) : (
-          <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight">
+          <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight xl:text-sm">
             {title}
           </p>
         )}
-        <p className="mt-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/35">
+        <p className="mt-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/35 xl:text-[10px]">
           {TYPE_LABEL[collectionSlug]}
         </p>
       </div>
