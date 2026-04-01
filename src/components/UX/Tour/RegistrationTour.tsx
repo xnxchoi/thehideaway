@@ -1,6 +1,6 @@
 "use client";
 
-import { MotionPillButton } from "@/components/core/Button";
+import { MotionPillButton, RP_Btn } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
 import { updateUser } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
@@ -1165,13 +1165,13 @@ export function OnboardingToastSubtle({
       <span className="text-[12px] text-muted-foreground">
         Your profile is almost complete
       </span>
-      <button
+      <RP_Btn
         onClick={onNavigate}
         className="text-[12px] font-medium text-foreground underline-offset-2 hover:underline"
       >
         Edit
-      </button>
-      <button
+      </RP_Btn>
+      <RP_Btn
         onClick={onDismiss}
         className="ml-0.5 text-muted-foreground/30 transition-colors hover:text-foreground/50"
         aria-label="Dismiss"
@@ -1190,7 +1190,7 @@ export function OnboardingToastSubtle({
             strokeLinecap="round"
           />
         </svg>
-      </button>
+      </RP_Btn>
     </m.div>
   );
 }
@@ -1232,7 +1232,7 @@ export function OnboardingBanner({
       >
         Let&apos;s go
       </MotionPillButton>
-      <button
+      <RP_Btn
         onClick={onDismiss}
         className="ml-1 text-muted-foreground/40 transition-colors hover:text-foreground/60"
         aria-label="Dismiss"
@@ -1251,7 +1251,7 @@ export function OnboardingBanner({
             strokeLinecap="round"
           />
         </svg>
-      </button>
+      </RP_Btn>
     </m.div>
   );
 }
