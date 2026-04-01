@@ -1,164 +1,108 @@
 "use client";
-import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
-import {AuthorOverview} from "@/types/collections/users";
-import React, { ReactNode } from "react";
-import {
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-  CommandSeparator
-} from "@/components/ui/command";
-import { useDebounce } from "@/utilities/useDebounce";
+
+import { CommandItem } from "@/components/ui/command";
 import { useSearchBar } from "@/providers/RP_Pro";
-import { useLenis } from "lenis/react";
-import { isInternalLink } from "@/utilities/isInternalLink";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import { CreditCard, Settings, User } from "lucide-react";
-import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
-import { useTransitionRouter } from "next-transition-router";
-import { useShallow } from "zustand/shallow";
-import type {
-	PostOverview
-} from "../../../types/collections/posts";
-import type {
-	SurfOverview
-} from "@/types/collections/surf";
+import { useDebounce } from "@/utilities/useDebounce";
 import { useQuery } from "@tanstack/react-query";
-import type { CollectionSlug } from "payload";
+import { useLenis } from "lenis/react";
+import { useTransitionRouter } from "next-transition-router";
+import { type ReactNode, useCallback } from "react";
 
-export function Commando() {
-  const slug = useRPSession(useShallow((l) => l.slug));
+// ─── Types ───────────────────────────────────────────────────────────────────
 
+export type SearchAPIResult = {
+  id: string;
+  title?: string;
+  name?: string;
+  username?: string;
+  slug: string;
+  collection_type:
+    | "users"
+    | "posts"
+    | "surf"
+    | "delta"
+    | "albums"
+    | "tracks"
+    | "playlists"
+    | "categories"
+    | "tags";
+  url: string;
+  score: number;
+  type: "content";
+  subtitle?: string;
+  artist?: string;
+  bio?: string;
+  published_at?: string;
+};
+
+export type SearchAPIResponse = {
+  results: SearchAPIResult[];
+  query: string;
+  collections: string[];
+  total: number;
+};
+
+// ─── Labels ──────────────────────────────────────────────────────────────────
+
+export const COLLECTION_LABELS: Record<string, string> = {
+  posts: "Essay",
+  surf: "Surf",
+  delta: "Delta",
+  users: "Person",
+  albums: "Album",
+  tracks: "Track",
+  playlists: "Playlist",
+  categories: "Category",
+  tags: "Tag",
+};
+
+export function getResultLabel(result: SearchAPIResult): string {
+  return result.title ?? result.name ?? result.username ?? result.slug;
+}
+
+export function getCollectionLabel(collectionType: string): string {
+  return COLLECTION_LABELS[collectionType] ?? collectionType;
+}
+
+// ─── Data hook ───────────────────────────────────────────────────────────────
+
+export function useSearchQuery() {
   const value = useSearchBar((l) => l.value);
-  const debouncedValue = useDebounce(value);
   const open = useSearchBar((l) => l.open);
-  const {
-    data: { docs: items, total: count } = { docs: [], total: 0 },
-    isLoading: loading,
-    isFetching: fetching,
-    refetch: refetch,
-    isPending: pending,
-    isError: error
-  } = useQuery({
-    queryKey: ["search", { debouncedValue }],
-    queryFn: async ({
-      queryKey
-    }: {
-      queryKey: [string, { debouncedValue: string }];
-    }) => {
-      const debouncedValue = queryKey[1].debouncedValue;
-      if (!open || debouncedValue.length < 1) {
-        throw new Error("not availabkle");
-      }
-      const ite = await fetch(
-        "/api/search/?q=" + encodeURIComponent(debouncedValue),
-        {
-          method: "GET"
-        }
-      );
-      if (ite.ok) {
-        const a = (await ite.json()) as {
-          docs: {
-            doc: {
-              relationTo: Extract<
-                CollectionSlug,
-                | "tags"
-                | "categories"
-                | "users"
-                | "articles"
-                | "surf"
-                | "posts"
-                | "pages"
-              >;
-              value: string;
-            };
-            content:
-              | TagOverview
-	            | CategoryOverview
-              | AuthorOverview
-	            | PostOverview
-              | SurfOverview;
-          }[];
-        };
-        if (a.docs && a.docs.length > 0) {
-          return {
-            total: a.docs.length,
-            docs: a.docs
-          };
-        } else {
-          throw new Error("not available");
-        }
-      } else {
-        throw new Error("not available");
-      }
-    },
+  const debouncedValue = useDebounce(value, 280);
 
-    enabled: open,
+  const query = useQuery<SearchAPIResponse>({
+    queryKey: ["search", debouncedValue],
+    queryFn: async () => {
+      const res = await fetch(
+        "/api/search/?q=" + encodeURIComponent(debouncedValue),
+        { method: "GET" }
+      );
+      if (!res.ok) throw new Error("Search failed");
+      return res.json() as Promise<SearchAPIResponse>;
+    },
+    enabled: open && debouncedValue.length > 0,
     refetchOnWindowFocus: false,
-    staleTime: Infinity,
-    gcTime: 500
+    staleTime: 30_000,
+    gcTime: 60_000,
+    // Keep previous results visible while new ones load
+    placeholderData: (prev) => prev,
   });
 
-  return (
-    <CommandList>
-      {(loading && <div>Loading...</div>) ||
-        (error && <CommandEmpty>Nothing found :</CommandEmpty>) ||
-        (items && count > 0 && (
-          <CommandGroup heading="Search Results">
-            {items.map((doc) => (
-              <LinkedItem
-                key={doc.doc.value + "command_doc"}
-                doc={doc.doc}
-                content={doc.content}
-              ></LinkedItem>
-            ))}
-          </CommandGroup>
-        ))}
-      <CommandSeparator />
-      {slug && (
-        <CommandGroup heading="Settings">
-          <LinkedCommandItem
-            value="profile"
-            href={`/users/${slug}`}
-            title="Profile"
-          >
-            <User />
-          </LinkedCommandItem>
-          <CommandItem>
-            <CreditCard />
-            <span>Billing</span>
-          </CommandItem>
-          <CommandItem>
-            <Settings />
-            <span>Settings</span>
-          </CommandItem>
-        </CommandGroup>
-      )}
-    </CommandList>
-  );
+  return { ...query, debouncedValue };
 }
 
-function Item({
-  children,
+// ─── Components ──────────────────────────────────────────────────────────────
+
+export const LinkedCommandItem = ({
+  href,
+  title,
   value,
-  keywords,
-  isCommand = false
+  type,
+  children,
+  ...rest
 }: {
-  children: React.ReactNode;
-  value: string;
-  keywords?: string[];
-  isCommand?: boolean;
-}) {
-  return (
-    <CommandItem value={value} keywords={keywords} onSelect={() => {}}>
-      {children}
-      <span cmdk-raycast-meta="">{isCommand ? "Command" : "Application"}</span>
-    </CommandItem>
-  );
-}
-
-export const LinkedCommandItem = (props: {
   href: string;
   title: string;
   value?: string;
@@ -166,75 +110,60 @@ export const LinkedCommandItem = (props: {
   children?: ReactNode;
   [x: string]: any;
 }) => {
-  const { href, title, value, ...rest } = props;
   const lenis = useLenis();
   const router = useTransitionRouter();
   const setOpen = useSearchBar((l) => l.setOpen);
   const url = useVoyageur((l) => l.url);
   const pathName = useVoyageur((l) => l.pathName);
   const isAnchor = href === url || href.startsWith(`${pathName}#`);
-  const handleClick = () => {
+
+  const handleClick = useCallback(() => {
     setOpen(false);
     if (isAnchor) {
-      lenis && lenis.scrollTo(href);
+      lenis?.scrollTo(href);
     } else {
       router.push(decodeURIComponent(href));
     }
-  };
+  }, [setOpen, isAnchor, lenis, href, router]);
+
   return (
     <CommandItem
       data-themed={"color,background-color"}
       value={value ?? href}
       onSelect={handleClick}
+      {...rest}
     >
-      {rest.children}
-      {title}
-      {rest.type && (
-        <div className="rp_tag absolute right-2">
-          {rest.type.endsWith("s") ? rest.type.slice(0, -1) : rest.type}
-        </div>
+      {children}
+      <span className="flex-1 truncate">{title}</span>
+      {type && (
+        <span className="rp_tag ml-2 shrink-0 opacity-50">{type}</span>
       )}
     </CommandItem>
   );
 };
 
-export const LinkedItem = (props: {
-  doc: {
-    relationTo: Extract<
-      CollectionSlug,
-      "tags" | "categories" | "users" | "articles" | "surf" | "posts" | "pages"
-    >;
-    value: string;
-  };
-  content:
-    | TagOverview
-	  | CategoryOverview
-    | AuthorOverview
-	  | PostOverview
-    | SurfOverview;
-}) => {
-  const { doc, content } = props;
+export const SearchResultItem = ({ result }: { result: SearchAPIResult }) => (
+  <LinkedCommandItem
+    href={result.url}
+    title={getResultLabel(result)}
+    value={result.id}
+    type={getCollectionLabel(result.collection_type)}
+  />
+);
 
-  const href = `${doc.relationTo}/${content.slug}`;
-  const isExternal = !isInternalLink(href);
+// ─── Legacy export ───────────────────────────────────────────────────────────
 
-  const internalLinkProps = {
-    target: isExternal ? "_blank" : undefined,
-    rel: isExternal ? "noopener noreferrer" : undefined
-  };
-  return (
-    <LinkedCommandItem
-      href={href}
-      title={
-        "name" in content
-          ? content.name
-          : "title" in content
-            ? content.title
-            : doc.value
-      }
-      value={doc.value}
-      type={doc.relationTo}
-      {...internalLinkProps}
-    />
-  );
-};
+export const LinkedItem = ({
+  doc,
+  content,
+}: {
+  doc: { relationTo: string; value: string };
+  content: any;
+}) => (
+  <LinkedCommandItem
+    href={`/${doc.relationTo}/${content?.slug ?? doc.value}`}
+    title={content?.name ?? content?.title ?? content?.username ?? doc.value}
+    value={doc.value}
+    type={getCollectionLabel(doc.relationTo)}
+  />
+);

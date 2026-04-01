@@ -73,6 +73,7 @@ function CommandDialog({
       >
         <Command
           data-themed={"background-color,height,color"}
+          shouldFilter={false}
           className={cn(
             "p-[4px] text-xl [&_[cmdk-group-heading]]:px-[8px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-[4px] [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-8 [&_[cmdk-input-wrapper]_svg]:w-8 [&_[cmdk-input]]:h-[32px] [&_[cmdk-item]]:px-[8px] [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5",
             { "overflow-hidden": !subMenuOpen }
