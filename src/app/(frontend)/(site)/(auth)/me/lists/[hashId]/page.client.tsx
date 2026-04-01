@@ -123,7 +123,7 @@ export default function CompilationDetailClient({
       {/* ── Header / Hero ───────────────────────────────────── */}
       <div className="relative">
         {/* Cover banner */}
-        <div className="relative h-44 w-full overflow-hidden bg-muted/20 sm:h-64">
+        <div className="relative h-44 w-full overflow-hidden bg-muted/20 sm:h-64 xl:h-80 2xl:h-96">
           {(compilation.coverImage as any)?.url ? (
             <>
               <Image
@@ -146,10 +146,10 @@ export default function CompilationDetailClient({
 
         {/* Nav bar */}
         <div className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 xl:px-10">
             <Link
               href="/me/lists"
-              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground"
+              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground xl:text-xs"
             >
               ← Lists
             </Link>
@@ -188,7 +188,7 @@ export default function CompilationDetailClient({
         </div>
 
         {/* Compilation meta */}
-        <div className="mx-auto max-w-5xl px-6 pb-4 pt-5">
+        <div className="mx-auto max-w-7xl px-6 pb-4 pt-5 xl:px-10 xl:pb-6 xl:pt-7">
           <CompilationMetaBlock
             compilation={compilation}
             isOwner={isOwner}
@@ -199,7 +199,7 @@ export default function CompilationDetailClient({
       </div>
 
       {/* ── Items grid ─────────────────────────────────────── */}
-      <main className="mx-auto max-w-5xl px-6 pb-16 pt-4">
+      <main className="mx-auto max-w-7xl px-6 pb-16 pt-4 xl:px-10 xl:pb-24 xl:pt-6">
         {items.length === 0 ? (
           <m.div
             initial={{ opacity: 0 }}
@@ -220,10 +220,10 @@ export default function CompilationDetailClient({
         ) : (
           <div
             className={cn(
-              "grid gap-4",
+              "grid gap-4 xl:gap-5",
               premium
-                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
-                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             )}
           >
             <AnimatePresence mode="popLayout">
@@ -330,9 +330,9 @@ function CompilationMetaBlock({
     <div className="group/meta">
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          <h1 className="text-xl font-light tracking-tight">{compilation.title}</h1>
+          <h1 className="text-xl font-light tracking-tight xl:text-2xl 2xl:text-3xl">{compilation.title}</h1>
           {compilation.description && (
-            <p className="mt-1 font-mono text-xs text-muted-foreground/60">
+            <p className="mt-1 font-mono text-xs text-muted-foreground/60 xl:text-sm">
               {compilation.description}
             </p>
           )}
@@ -441,11 +441,11 @@ function CompilationItemCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
 
-      <div className="p-2.5">
-        <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight">
+      <div className="p-2.5 xl:p-3">
+        <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight xl:text-sm">
           {title}
         </p>
-        <p className="mt-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40">
+        <p className="mt-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40 xl:text-[10px]">
           {TAB_LABELS[collectionSlug] ?? collectionSlug}
         </p>
       </div>
