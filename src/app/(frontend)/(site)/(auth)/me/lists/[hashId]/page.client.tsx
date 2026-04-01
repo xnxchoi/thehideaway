@@ -22,6 +22,8 @@ import {
   useState,
   useTransition
 } from "react";
+import { useTransitionRouter } from "next-transition-router";
+import { RP_Btn } from "@/components/core/Button";
 
 const TAB_LABELS: Record<CompilationItemType, string> = {
   posts: "Essays",
@@ -35,7 +37,10 @@ const TAB_LABELS: Record<CompilationItemType, string> = {
 
 type CompilationWithItems = Compilation & {
   itemCount: number;
-  items: Array<{ relationTo: CompilationItemType; value: string | { id: string; [k: string]: any } }>;
+  items: Array<{
+    relationTo: CompilationItemType;
+    value: string | { id: string; [k: string]: any };
+  }>;
 };
 
 type Props = {
@@ -56,12 +61,11 @@ export default function CompilationDetailClient({
   isOwner,
   bookmarkedItems
 }: Props) {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const premium = isPremium(role);
   const [compilation, setCompilation] = useState(initial);
   const [editMode, setEditMode] = useState(false);
   const [addPanelOpen, setAddPanelOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
   const items = (compilation.items ?? []) as CompilationWithItems["items"];
 
@@ -102,7 +106,9 @@ export default function CompilationDetailClient({
   );
 
   const handleUpdateMeta = useCallback(
-    async (patch: Partial<Pick<Compilation, "title" | "description" | "visibility">>) => {
+    async (
+      patch: Partial<Pick<Compilation, "title" | "description" | "visibility">>
+    ) => {
       const res = await updateCompilation({
         id: compilation.id,
         userId,
@@ -116,14 +122,15 @@ export default function CompilationDetailClient({
   );
 
   const authorObj = compilation.author as any;
-  const authorSlug = typeof authorObj === "string" ? null : authorObj?.slug ?? null;
+  const authorSlug =
+    typeof authorObj === "string" ? null : (authorObj?.slug ?? null);
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
       {/* ── Header / Hero ───────────────────────────────────── */}
       <div className="relative">
         {/* Cover banner */}
-        <div className="relative h-44 w-full overflow-hidden bg-muted/20 sm:h-64">
+        <div className="relative h-44 w-full overflow-hidden bg-muted/20 sm:h-64 xl:h-80 2xl:h-96">
           {(compilation.coverImage as any)?.url ? (
             <>
               <Image
@@ -137,7 +144,7 @@ export default function CompilationDetailClient({
             </>
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/50 to-muted/10">
-              <span className="select-none font-mono text-9xl font-light text-muted-foreground/8">
+              <span className="font-mono text-9xl font-light text-muted-foreground/8 select-none">
                 {compilation.title.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -146,39 +153,39 @@ export default function CompilationDetailClient({
 
         {/* Nav bar */}
         <div className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 xl:px-10">
             <Link
               href="/me/lists"
-              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground"
+              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
             >
               ← Lists
             </Link>
             <div className="flex items-center gap-4">
               {isOwner && (
                 <>
-                  <button
+                  <RP_Btn
                     onClick={() => setAddPanelOpen(true)}
-                    className="font-mono text-[11px] uppercase tracking-widest text-foreground/70 underline decoration-dotted underline-offset-4 hover:opacity-60"
+                    className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase underline decoration-dotted underline-offset-4 hover:opacity-60"
                   >
                     + Add
-                  </button>
-                  <button
+                  </RP_Btn>
+                  <RP_Btn
                     onClick={() => setEditMode((e) => !e)}
                     className={cn(
-                      "font-mono text-[11px] uppercase tracking-widest transition-opacity",
+                      "font-mono text-[11px] tracking-widest uppercase transition-opacity",
                       editMode
                         ? "text-foreground"
                         : "text-muted-foreground/60 hover:text-foreground"
                     )}
                   >
                     {editMode ? "Done" : "Edit"}
-                  </button>
+                  </RP_Btn>
                 </>
               )}
               {compilation.visibility === "public" && authorSlug && (
                 <Link
                   href={`/lists/${authorSlug}/${compilation.hashId}`}
-                  className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+                  className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
                 >
                   Public view →
                 </Link>
@@ -188,7 +195,7 @@ export default function CompilationDetailClient({
         </div>
 
         {/* Compilation meta */}
-        <div className="mx-auto max-w-5xl px-6 pb-4 pt-5">
+        <div className="mx-auto max-w-7xl px-6 pt-5 pb-4 xl:px-10 xl:pt-7 xl:pb-6">
           <CompilationMetaBlock
             compilation={compilation}
             isOwner={isOwner}
@@ -199,31 +206,33 @@ export default function CompilationDetailClient({
       </div>
 
       {/* ── Items grid ─────────────────────────────────────── */}
-      <main className="mx-auto max-w-5xl px-6 pb-16 pt-4">
+      <main className="mx-auto max-w-7xl px-6 pt-4 pb-16 xl:px-10 xl:pt-6 xl:pb-24">
         {items.length === 0 ? (
           <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-20 text-center"
           >
-            <span className="mb-4 select-none font-mono text-5xl text-foreground/8">◫</span>
+            <span className="mb-4 font-mono text-5xl text-foreground/8 select-none">
+              ◫
+            </span>
             <p className="font-light text-foreground/60">This list is empty.</p>
             {isOwner && (
-              <button
+              <RP_Btn
                 onClick={() => setAddPanelOpen(true)}
-                className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground/50 underline decoration-dotted underline-offset-4 hover:text-foreground"
+                className="mt-5 font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase underline decoration-dotted underline-offset-4 hover:text-foreground"
               >
                 Add items from your saved
-              </button>
+              </RP_Btn>
             )}
           </m.div>
         ) : (
           <div
             className={cn(
-              "grid gap-4",
+              "grid gap-4 xl:gap-5",
               premium
-                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
-                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             )}
           >
             <AnimatePresence mode="popLayout">
@@ -303,7 +312,7 @@ function CompilationMetaBlock({
           className="w-full resize-none border-b border-border/30 bg-transparent pb-1 font-mono text-xs text-muted-foreground focus:border-foreground/40 focus:outline-none"
         />
         <div className="flex items-center gap-4">
-          <button
+          <RP_Btn
             onClick={async () => {
               await onUpdate({
                 title: titleRef.current?.value?.trim() || compilation.title,
@@ -311,16 +320,16 @@ function CompilationMetaBlock({
               });
               setEditing(false);
             }}
-            className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 underline decoration-dotted underline-offset-4 hover:opacity-60"
+            className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 hover:opacity-60"
           >
             Save
-          </button>
-          <button
+          </RP_Btn>
+          <RP_Btn
             onClick={() => setEditing(false)}
             className="font-mono text-[11px] text-muted-foreground/50 hover:text-foreground"
           >
             Cancel
-          </button>
+          </RP_Btn>
         </div>
       </m.div>
     );
@@ -330,29 +339,32 @@ function CompilationMetaBlock({
     <div className="group/meta">
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          <h1 className="text-xl font-light tracking-tight">{compilation.title}</h1>
+          <h1 className="text-xl font-light tracking-tight xl:text-2xl 2xl:text-3xl">
+            {compilation.title}
+          </h1>
           {compilation.description && (
-            <p className="mt-1 font-mono text-xs text-muted-foreground/60">
+            <p className="mt-1 font-mono text-xs text-muted-foreground/60 xl:text-sm">
               {compilation.description}
             </p>
           )}
         </div>
         {isOwner && (
-          <button
+          <RP_Btn
             onClick={() => setEditing(true)}
             className="mt-0.5 font-mono text-[10px] text-muted-foreground/30 opacity-0 transition-opacity group-hover/meta:opacity-100 hover:text-foreground"
           >
             edit
-          </button>
+          </RP_Btn>
         )}
       </div>
       <div className="mt-2 flex items-center gap-4">
         <span className="font-mono text-[10px] text-muted-foreground/50">
-          {compilation.itemCount} {compilation.itemCount === 1 ? "item" : "items"}
+          {compilation.itemCount}{" "}
+          {compilation.itemCount === 1 ? "item" : "items"}
         </span>
         <span
           className={cn(
-            "font-mono text-[9px] uppercase tracking-widest",
+            "font-mono text-[9px] tracking-widest uppercase",
             compilation.visibility === "public"
               ? "text-muted-foreground/40"
               : "text-muted-foreground/25"
@@ -361,17 +373,17 @@ function CompilationMetaBlock({
           {compilation.visibility}
         </span>
         {isOwner && (
-          <button
+          <RP_Btn
             onClick={() =>
               onUpdate({
                 visibility:
                   compilation.visibility === "public" ? "private" : "public"
               })
             }
-            className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/30 underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
+            className="font-mono text-[9px] tracking-widest text-muted-foreground/30 uppercase underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
           >
             toggle
-          </button>
+          </RP_Btn>
         )}
       </div>
     </div>
@@ -416,7 +428,7 @@ function CompilationItemCard({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={onRemove}
-            className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 font-mono text-[10px] text-destructive shadow-sm backdrop-blur-sm hover:bg-destructive hover:text-white"
+            className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 font-mono text-[10px] text-destructive shadow-sm backdrop-blur-sm hover:bg-destructive hover:text-white"
           >
             ✕
           </m.button>
@@ -433,7 +445,7 @@ function CompilationItemCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <span className="select-none font-mono text-4xl text-muted-foreground/15">
+            <span className="font-mono text-4xl text-muted-foreground/15 select-none">
               {collectionSlug.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -441,11 +453,11 @@ function CompilationItemCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
 
-      <div className="p-2.5">
-        <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight">
+      <div className="p-2.5 xl:p-3">
+        <p className="line-clamp-2 text-xs leading-snug font-medium tracking-tight xl:text-sm">
           {title}
         </p>
-        <p className="mt-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/40">
+        <p className="mt-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/40 uppercase xl:text-[10px]">
           {TAB_LABELS[collectionSlug] ?? collectionSlug}
         </p>
       </div>
@@ -463,12 +475,15 @@ function AddFromBookmarksPanel({
 }: {
   bookmarkedItems: { [K in CompilationItemType]?: BookmarkItemTyped[] };
   existingItems: CompilationWithItems["items"];
-  onAdd: (item: { relationTo: CompilationItemType; value: string }) => Promise<void>;
+  onAdd: (item: {
+    relationTo: CompilationItemType;
+    value: string;
+  }) => Promise<void>;
   onClose: () => void;
 }) {
-  const allTabs = (
-    Object.keys(TAB_LABELS) as CompilationItemType[]
-  ).filter((t) => (bookmarkedItems[t]?.length ?? 0) > 0);
+  const allTabs = (Object.keys(TAB_LABELS) as CompilationItemType[]).filter(
+    (t) => (bookmarkedItems[t]?.length ?? 0) > 0
+  );
 
   const [activeTab, setActiveTab] = useState<CompilationItemType>(
     allTabs[0] ?? "posts"
@@ -509,33 +524,33 @@ function AddFromBookmarksPanel({
       >
         {/* Panel header */}
         <div className="flex items-center justify-between border-b border-border/20 px-5 py-4">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">
+          <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
             Add from Saved
           </p>
-          <button
+          <RP_Btn
             onClick={onClose}
             className="font-mono text-xs text-muted-foreground/50 hover:text-foreground"
           >
             ✕
-          </button>
+          </RP_Btn>
         </div>
 
         {/* Tabs */}
         {allTabs.length > 1 && (
           <div className="flex gap-4 overflow-x-auto border-b border-border/15 px-5 py-3">
             {allTabs.map((t) => (
-              <button
+              <RP_Btn
                 key={t}
                 onClick={() => setActiveTab(t)}
                 className={cn(
-                  "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors",
+                  "shrink-0 font-mono text-[10px] tracking-widest uppercase transition-colors",
                   activeTab === t
                     ? "text-foreground"
                     : "text-muted-foreground/40 hover:text-muted-foreground"
                 )}
               >
                 {TAB_LABELS[t]}
-              </button>
+              </RP_Btn>
             ))}
           </div>
         )}
@@ -554,14 +569,14 @@ function AddFromBookmarksPanel({
                 const key = `${item.collectionSlug}::${item.id}`;
                 const alreadyAdded = existingSet.has(key);
                 return (
-                  <button
+                  <RP_Btn
                     key={item.id}
                     onClick={() => handleAdd(item)}
                     disabled={alreadyAdded || adding === key}
                     className={cn(
                       "group relative overflow-hidden rounded-sm border text-left transition-all",
                       alreadyAdded
-                        ? "border-border/40 opacity-40 cursor-not-allowed"
+                        ? "cursor-not-allowed border-border/40 opacity-40"
                         : "border-border/20 hover:border-border/60"
                     )}
                   >
@@ -596,11 +611,11 @@ function AddFromBookmarksPanel({
                       )}
                     </div>
                     <div className="p-2">
-                      <p className="line-clamp-1 text-[11px] font-medium leading-snug">
+                      <p className="line-clamp-1 text-[11px] leading-snug font-medium">
                         {item.title}
                       </p>
                     </div>
-                  </button>
+                  </RP_Btn>
                 );
               })}
             </div>

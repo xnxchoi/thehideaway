@@ -3,7 +3,7 @@ import { getUserCompilations } from "@/payload/collections/Compilations/actions"
 import { redirect } from "next/navigation";
 import ListsPageClient from "./page.client";
 
-export const metadata = { title: "Reading List" };
+export const metadata = { title: "My Lists" };
 
 export default async function ListsPage() {
   const user = await currentUser();

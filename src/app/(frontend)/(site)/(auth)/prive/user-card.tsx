@@ -3,7 +3,7 @@
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/core/Button";
+import { Button, RP_Btn } from "@/components/core/Button";
 import {
   Card,
   CardContent,
@@ -1229,7 +1229,7 @@ function ListPasskeys() {
                 >
                   <TableCell>{passkey.name || "My Passkey"}</TableCell>
                   <TableCell className="text-right">
-                    <button
+                    <RP_Btn
                       onClick={async () => {
                         const res = await client.passkey.deletePasskey({
                           id: passkey.id,
@@ -1254,7 +1254,7 @@ function ListPasskeys() {
                       ) : (
                         <Trash size={15} className="text-red-600" />
                       )}
-                    </button>
+                    </RP_Btn>
                   </TableCell>
                 </TableRow>
               ))}

@@ -3,23 +3,23 @@
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
 import {
-  type CompilationSummary,
   createCompilation,
-  deleteCompilation
+  deleteCompilation,
+  type CompilationSummary
 } from "@/payload/collections/Compilations/actions";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
-  type FormEvent,
   useCallback,
   useRef,
   useState,
-  useTransition
+  useTransition,
+  type FormEvent
 } from "react";
+import { RP_Btn } from "@/components/core/Button";
 import { useTransitionRouter } from "next-transition-router";
-import { RPage } from "@/components/UX/Transition";
-import { MotionBtn, RP_Btn } from "@/components/core/Button";
 
 type Props = {
   userId: string;
@@ -60,16 +60,16 @@ export default function ListsPageClient({
   );
 
   return (
-    <div className="relative flex min-h-screen w-screen flex-col px-15 py-25">
+    <div className="min-h-screen w-full bg-background text-foreground">
       {/* ── Header ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 w-full border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-(--maxContainerWidth) px-6 py-5">
+      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Curated Collections
               </p>
-              <h1 className="mt-0.5 text-2xl font-light tracking-tight">
+              <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 My Lists
                 {compilations.length > 0 && (
                   <span className="ml-2.5 font-mono text-sm text-muted-foreground/50">
@@ -81,23 +81,23 @@ export default function ListsPageClient({
             <div className="flex items-center gap-4">
               <Link
                 href="/me/saved"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
               >
                 ← Saved
               </Link>
-              <button
+              <RP_Btn
                 onClick={() => setShowCreate(true)}
-                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60"
+                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60 xl:text-xs"
               >
                 New List
-              </button>
+              </RP_Btn>
             </div>
           </div>
         </div>
       </header>
 
       {/* ── Grid ───────────────────────────────────────────── */}
-      <main className="mx-auto h-full max-w-(--maxContainerWidth) px-6 py-8">
+      <main className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
         <AnimatePresence mode="popLayout">
           {compilations.length === 0 && !showCreate ? (
             <ListsEmptyState key="empty" onNew={() => setShowCreate(true)} />
@@ -105,10 +105,10 @@ export default function ListsPageClient({
             <m.div
               key="grid"
               className={cn(
-                "grid gap-5",
+                "grid gap-5 xl:gap-6",
                 premium
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                  : "grid-cols-1 sm:grid-cols-2"
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
               )}
             >
               {compilations.map((c, i) => (
@@ -161,14 +161,14 @@ function CompilationCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ type: "spring", bounce: 0.1, delay: index * 0.04 }}
-      className="group relative w-full overflow-hidden rounded-sm border border-border/20 bg-card transition-colors hover:border-border/50"
+      className="group relative overflow-hidden rounded-sm border border-border/20 bg-card transition-colors hover:border-border/50"
     >
       <Link href={`/me/lists/${c.hashId}`} className="block">
         {/* Cover */}
         <div
           className={cn(
             "relative w-full overflow-hidden bg-muted/20",
-            premium ? "aspect-4/3" : "aspect-video"
+            premium ? "aspect-[4/3]" : "aspect-[16/9]"
           )}
         >
           {c.coverImage?.url ? (
@@ -179,19 +179,19 @@ function CompilationCard({
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             </>
           ) : (
             <ListPlaceholder title={c.title} />
           )}
 
           {premium && (
-            <div className="absolute inset-x-0 bottom-0 p-4">
-              <h3 className="text-base leading-snug font-medium tracking-tight text-white drop-shadow">
+            <div className="absolute inset-x-0 bottom-0 p-4 xl:p-5">
+              <h3 className="text-base leading-snug font-medium tracking-tight text-white drop-shadow xl:text-lg">
                 {c.title}
               </h3>
               {c.description && (
-                <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-white/60">
+                <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-white/60 xl:text-[11px]">
                   {c.description}
                 </p>
               )}
@@ -200,12 +200,12 @@ function CompilationCard({
         </div>
 
         {!premium && (
-          <div className="p-3.5">
-            <h3 className="text-sm leading-snug font-medium tracking-tight">
+          <div className="p-3.5 xl:p-4">
+            <h3 className="text-sm leading-snug font-medium tracking-tight xl:text-base">
               {c.title}
             </h3>
             {c.description && (
-              <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-muted-foreground/60">
+              <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {c.description}
               </p>
             )}
@@ -214,16 +214,16 @@ function CompilationCard({
       </Link>
 
       {/* Footer */}
-      <div className="flex w-full items-center justify-between border-t border-border/15 px-3.5 py-2">
+      <div className="flex items-center justify-between border-t border-border/15 px-3.5 py-2 xl:px-4">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-muted-foreground/50">
+          <span className="font-mono text-[10px] text-muted-foreground/50 xl:text-[11px]">
             {c.itemCount} {c.itemCount === 1 ? "item" : "items"}
           </span>
           <VisibilityBadge visibility={c.visibility} />
         </div>
 
         <div className="relative">
-          <RP_Btn
+          <button
             onClick={(e) => {
               e.preventDefault();
               setMenuOpen((o) => !o);
@@ -231,7 +231,7 @@ function CompilationCard({
             className="flex h-6 w-6 items-center justify-center font-mono text-sm text-muted-foreground/40 transition-colors hover:text-foreground"
           >
             ···
-          </RP_Btn>
+          </button>
           <AnimatePresence>
             {menuOpen && (
               <m.div
@@ -257,7 +257,7 @@ function CompilationCard({
                     View public
                   </Link>
                 )}
-                <RP_Btn
+                <button
                   onClick={() => {
                     setMenuOpen(false);
                     onDelete();
@@ -265,7 +265,7 @@ function CompilationCard({
                   className="w-full px-3 py-2 text-left font-mono text-[11px] text-destructive hover:bg-accent"
                 >
                   Delete
-                </RP_Btn>
+                </button>
               </m.div>
             )}
           </AnimatePresence>
@@ -314,12 +314,12 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
         Create a curated list to organise and share the things you love.
       </p>
-      <RP_Btn
+      <button
         onClick={onNew}
         className="mt-7 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
       >
         Create your first list
-      </RP_Btn>
+      </button>
     </m.div>
   );
 }
@@ -382,7 +382,7 @@ function CreateCompilationSheet({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-40 bg-background/15 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
         onClick={onClose}
       />
       <m.div
@@ -390,21 +390,21 @@ function CreateCompilationSheet({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-        className="fixed inset-x-4 bottom-0 z-50 mx-auto aspect-5/4 w-full max-w-(--content-width) rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
+        className="fixed inset-x-4 bottom-0 z-50 mx-auto max-w-lg rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
       >
-        <div className="flex w-full items-center justify-between border-b border-border/20 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border/20 px-6 py-4">
           <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
             New List
           </p>
-          <MotionBtn
+          <button
             onClick={onClose}
             className="font-mono text-xs text-muted-foreground/50 hover:text-foreground"
           >
             ✕
-          </MotionBtn>
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex h-full flex-col p-6">
+        <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-5">
             <div>
               <label className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
@@ -439,7 +439,7 @@ function CreateCompilationSheet({
               </label>
               <div className="flex gap-5">
                 {(["private", "public"] as const).map((v) => (
-                  <RP_Btn
+                  <button
                     key={v}
                     type="button"
                     onClick={() => setVisibility(v)}
@@ -459,7 +459,7 @@ function CreateCompilationSheet({
                       )}
                     />
                     {v}
-                  </RP_Btn>
+                  </button>
                 ))}
               </div>
             </div>
@@ -472,20 +472,20 @@ function CreateCompilationSheet({
           )}
 
           <div className="mt-7 flex justify-end gap-4">
-            <RP_Btn
+            <button
               type="button"
               onClick={onClose}
               className="font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase hover:text-foreground"
             >
               Cancel
-            </RP_Btn>
-            <RP_Btn
+            </button>
+            <button
               type="submit"
               disabled={isPending}
               className="border border-border/40 px-5 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
             >
               {isPending ? "Creating…" : "Create"}
-            </RP_Btn>
+            </button>
           </div>
         </form>
       </m.div>
