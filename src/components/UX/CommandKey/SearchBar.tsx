@@ -1,42 +1,43 @@
 "use client";
+
 import {
-  Command as Commands,
   CommandDialog,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
-  CommandList
+  CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { DialogTitle } from "@/components/ui/dialog";
 import { PopoverRoot, PopoverTrigger } from "@/components/ui/popover";
-
 import { MotionPillButton } from "@/components/core/Button";
 import {
   LinkedCommandItem,
-  LinkedItem
+  SearchResultItem,
+  useSearchQuery,
 } from "@/components/UX/CommandKey/Commando";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useRPStore, useSearchBar } from "@/providers/RP_Pro";
 import "@/styles/__searchBar.scss";
 import { useTheme } from "@/providers/Theme";
-
-import { CategoryOverview } from "@/types/collections/meta-collections";
-import { useDebounce } from "@/utilities/useDebounce";
 import { Popover } from "@base-ui/react/popover";
 import { Tooltip } from "@base-ui/react/tooltip";
 import {
   LockOpen2Icon as LockOpen2,
   ReaderIcon,
-  RocketIcon
+  RocketIcon,
 } from "@radix-ui/react-icons";
-import { Command, Command as CommandPrimitive } from "cmdk";
-import { CreditCard, Settings, User } from "lucide-react";
+import { Command as CommandPrimitive } from "cmdk";
+import { Command as Commands } from "cmdk";
+import {
+  ArrowRight,
+  CreditCard,
+  Settings,
+  User,
+} from "lucide-react";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import { useTransitionRouter } from "next-transition-router";
-import type { CollectionSlug } from "payload";
 import {
   ComponentPropsWithoutRef,
   Fragment,
@@ -46,32 +47,42 @@ import {
   useEffect,
   useId,
   useRef,
-  useState
 } from "react";
-import type { ImageCollectionOverview } from "@/components/core/Media/types";
 
-type SearchItem = {
-  category: CategoryOverview[];
-  createdAt: string;
-  doc: { relationTo: string; value: string };
-  id: string;
-  meta: {
-    description: string;
-    image: ImageCollectionOverview;
-    title: string;
-  };
-  slug: string;
-  title: string;
-  updatedAt: string;
-};
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_POPUP_RESULTS = 5;
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SearchSkeleton() {
+  return (
+    <div className="px-1 py-2" aria-hidden="true" role="presentation">
+      {([62, 78, 50, 69] as const).map((width, i) => (
+        <div
+          key={i}
+          className="flex min-h-[2.5rem] items-center gap-3 rounded-sm px-3.5 py-2.5 md:min-h-[2.5rem]"
+          style={{ minHeight: "clamp(2.5rem, 6vw, 3rem)" }}
+        >
+          <div
+            className="h-2 animate-pulse rounded-full bg-current opacity-[0.07]"
+            style={{ width: `${width}%` }}
+          />
+          <div className="ml-auto h-2 w-10 shrink-0 animate-pulse rounded-full bg-current opacity-[0.07]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── SearchBar ────────────────────────────────────────────────────────────────
+
 export const SearchBar = ({
   className,
   style,
   ...props
 }: HTMLMotionProps<"button">) => {
   const navIsOpen = useRPStore((store) => store.navIsOpen);
-  const subMenuOpen = useSearchBar((l) => l.subMenuOpen);
-
   const setValue = useSearchBar((l) => l.setValue);
   const value = useSearchBar((l) => l.value);
   const toggleTheme = useTheme((store) => store.toggleTheme);
@@ -84,87 +95,84 @@ export const SearchBar = ({
   const setNav = useRPStore((store) => store.setNavIsOpen);
   const user = useRPSession((l) => l);
   const uid = useId();
+  const router = useTransitionRouter();
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [items, setItems] = useState<SearchItem[]>([]);
-  const [init, setInit] = useState(true);
-  const debouncedValue = useDebounce(value);
+  // ── Search data ─────────────────────────────────────────────────────────────
+  const { data, isFetching, debouncedValue } = useSearchQuery();
 
+  const isDebouncing = value.length > 0 && value !== debouncedValue;
+  const isLoading = isDebouncing || (debouncedValue.length > 0 && isFetching);
+  const results = data?.results ?? [];
+  const total = data?.total ?? 0;
+  const isInit = value.length === 0;
+  const hasResults = !isLoading && results.length > 0;
+  const isEmpty =
+    !isLoading &&
+    debouncedValue.length > 0 &&
+    !isFetching &&
+    results.length === 0;
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+
+  const handleClick = useCallback(() => toggleOpen(), [toggleOpen]);
+
+  const handleViewAll = useCallback(() => {
+    setOpen(false);
+    router.push(`/search?q=${encodeURIComponent(debouncedValue)}`);
+  }, [setOpen, router, debouncedValue]);
+
+  const onValueChange = useCallback(
+    (v: string) => setValue(v),
+    [setValue]
+  );
+
+  // ── Global ⌘K shortcut ───────────────────────────────────────────────────────
   useEffect(() => {
-    async function load() {
-      if (open && debouncedValue.length > 0) {
-        setLoading(true);
-        setInit(false);
-        const ite = await fetch(
-          "/api/search/?q=" + encodeURIComponent(debouncedValue),
-          {
-            method: "GET"
-          }
-        );
-        if (ite.ok) {
-          const a = await ite.json();
-          if (a.docs && a.docs.length > 0) {
-            setItems(a.docs.map((doc: SearchItem) => doc));
-          } else {
-            setItems([]);
-          }
-        } else {
-          setItems([]);
-        }
-        setLoading(false);
-      } else {
-        setItems([]);
-        setInit(true);
-        setLoading(false);
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        toggleOpen();
       }
-    }
-
-    load();
-  }, [debouncedValue, open]);
-
-  const handleClick = useCallback(() => {
-    toggleOpen();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [toggleOpen]);
+
+  // ── Open effects ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (open) {
       setNav(false);
-      inputRef?.current?.focus();
+      // slight delay lets the dialog animation settle before focusing
+      const t = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(t);
     }
   }, [open, setNav]);
 
   useEffect(() => {
-    const ddd = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        return (e.preventDefault(), setOpen(false));
+        e.preventDefault();
+        setOpen(false);
       }
-      if (e.metaKey || e.ctrlKey) {
-        switch (e.key) {
-          case "a":
-            return (
-              e.preventDefault(),
-              inputRef?.current?.focus(),
-              inputRef?.current?.select()
-            );
-        }
+      if ((e.metaKey || e.ctrlKey) && e.key === "a") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
       }
     };
     if (open) {
-      document.addEventListener("keydown", ddd);
+      document.addEventListener("keydown", handler);
     } else {
-      setItems([]);
       setValue("");
-      document.removeEventListener("keydown", ddd);
+      document.removeEventListener("keydown", handler);
     }
-    return () => document.removeEventListener("keydown", ddd);
+    return () => document.removeEventListener("keydown", handler);
   }, [open, setOpen, setValue]);
-  const onValueChange = useCallback(
-    (value: string) => {
-      setValue(value);
-    },
-    [setValue]
-  );
+
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <Fragment>
+      {/* ── Trigger button ── */}
       <Tooltip.Root>
         <Tooltip.Trigger
           render={
@@ -179,31 +187,35 @@ export const SearchBar = ({
               onClick={handleClick}
               data-themed={"color,background-color,fill"}
               aria-controls="h-dropdown"
-              aria-label="Toggle Menu"
+              aria-label="Open search"
               data-state={navIsOpen}
-              style={{
-                ...style
-              }}
+              style={{ ...style }}
             >
               <m.svg
                 viewBox="0 0 24 24"
                 data-themed={"fill"}
                 width="10"
                 height="10"
+                aria-hidden="true"
               >
                 <path
                   fill="currentColor"
                   d="M17.908 14.755c3.918 0 6.092 1.654 6.092 4.745 0 2.755-1.745 4.5-4.5 4.5-3.092 0-4.745-2.173-4.745-6.092v-1.806h-5.51v1.806C9.245 21.826 7.592 24 4.5 24 1.745 24 0 22.255 0 19.5c0-3.092 2.173-4.745 6.092-4.745h1.806v-5.51H6.092C2.173 9.245 0 7.592 0 4.5 0 1.745 1.745 0 4.5 0c3.092 0 4.745 2.173 4.745 6.092v1.806h5.51V6.092C14.755 2.174 16.408 0 19.5 0 22.255 0 24 1.745 24 4.5c0 3.092-2.173 4.745-6.092 4.745h-1.806v5.51zM7.898 7.898V6.092c0-3.215-1.132-4.745-3.398-4.745-2.02 0-3.153 1.133-3.153 3.153 0 2.265 1.531 3.398 4.745 3.398zm0 8.204H6.092c-3.214 0-4.745 1.132-4.745 3.398 0 2.021 1.133 3.153 3.153 3.153 2.265 0 3.398-1.531 3.398-4.745zm1.347-1.347h5.51v-5.51h-5.51zm6.857-6.857h1.806c3.214 0 4.745-1.132 4.745-3.398 0-2.02-1.132-3.153-3.153-3.153-2.265 0-3.398 1.531-3.398 4.745zM22.653 19.5c0-2.265-1.531-3.398-4.745-3.398h-1.806v1.806c0 3.215 1.133 4.745 3.398 4.745 2.02 0 3.153-1.132 3.153-3.153"
                 />
               </m.svg>
+              {/* Mobile-only label: makes the purpose clear without hotkey knowledge */}
+              <span className="sr-only sm:not-sr-only hidden text-[11px] font-medium uppercase tracking-widest sm:hidden">
+                Search
+              </span>
             </MotionPillButton>
           }
-        ></Tooltip.Trigger>
+        />
+        {/* Tooltip only meaningful on desktop (pointer devices) */}
         <Tooltip.Portal>
           <Tooltip.Positioner side="bottom" align="center" sideOffset={10}>
             <Tooltip.Popup
               className={
-                "relative flex max-w-[calc(100vw-24px)] origin-(--transform-origin) flex-col items-center overflow-hidden rounded-[6px] px-3 py-2 text-sm leading-[1.4] whitespace-nowrap outline outline-1 outline-muted-faded-foreground/50 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-instant:transition-none data-starting-style:scale-90 data-starting-style:opacity-0 dark:-outline-offset-1 dark:outline-muted-faded-foreground/90"
+                "relative hidden max-w-[calc(100vw-24px)] origin-(--transform-origin) flex-col items-center overflow-hidden rounded-[6px] px-3 py-2 text-sm leading-[1.4] whitespace-nowrap outline outline-1 outline-muted-faded-foreground/50 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-instant:transition-none data-starting-style:scale-90 data-starting-style:opacity-0 dark:-outline-offset-1 dark:outline-muted-faded-foreground/90 md:flex"
               }
             >
               ⌘ + K
@@ -212,12 +224,15 @@ export const SearchBar = ({
         </Tooltip.Portal>
       </Tooltip.Root>
 
+      {/* ── Dialog ── */}
       <CommandDialog open={open} onOpenChange={setOpen} key={"commando-dialog"}>
-        <DialogTitle></DialogTitle>
+        <DialogTitle className="sr-only">Search</DialogTitle>
+
+        {/* Input row + loading bar */}
         <div
           className={cn(
             "relative z-1 flex w-full items-center p-[8px]",
-            loading
+            isLoading && "loading"
           )}
           cmdk-rp-courier={""}
           data-slot="command-input-wrapper"
@@ -225,109 +240,119 @@ export const SearchBar = ({
           <CommandPrimitive.Input
             data-slot="command-input"
             ref={inputRef}
-            className={
-              "flex h-[32px] w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:opacity-50"
-            }
+            className="flex h-[32px] w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:opacity-50 sm:h-[40px] sm:text-base"
             data-themed={"color, background-color"}
             onValueChange={onValueChange}
-            placeholder="Search for anything we have here..."
+            placeholder="Search for anything…"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
         </div>
+
+        {/* List content — state machine */}
         <CommandList>
-          {(value.length > 0 && (
-            <CommandGroup heading="Search Results">
-              {items.map((doc) => (
-                <LinkedItem
-                  content={null!}
-                  key={doc.id + "command_doc"}
-                  {...{
-                    ...doc,
-                    doc: {
-                      relationTo: doc.doc.relationTo as Extract<
-                        CollectionSlug,
-                        | "tags"
-                        | "categories"
-                        | "users"
-                        | "articles"
-                        | "surf"
-                        | "posts"
-                        | "pages"
-                      >,
-                      value: doc.doc.value as string
-                    }
-                  }}
-                ></LinkedItem>
-              ))}
-              {!loading && items.length === 0 && (
-                <CommandEmpty>Nothing found :(</CommandEmpty>
-              )}
-            </CommandGroup>
-          )) || (
+          {isInit ? (
+            /* ── Default state ── */
             <>
-              {" "}
-              <CommandGroup heading={"Suggestions"}>
+              <CommandGroup heading="Navigate">
                 <LinkedCommandItem
-                  value="posts"
                   href="/essays"
-                  title="Latest Posts"
+                  title="Essays"
+                  value="nav-essays"
                 >
-                  <ReaderIcon />
+                  <ReaderIcon className="shrink-0" />
                 </LinkedCommandItem>
                 <LinkedCommandItem
-                  value="theteam"
                   href="/the-team"
                   title="The Team"
+                  value="nav-team"
                 >
-                  <RocketIcon />
+                  <RocketIcon className="shrink-0" />
                 </LinkedCommandItem>
               </CommandGroup>
-              {(user && (
-                <CommandGroup heading="Settings">
+
+              {user ? (
+                <CommandGroup heading="Account">
                   <LinkedCommandItem
-                    value="profile"
                     href={`/@${user.slug}`}
-                    title="Profile"
+                    title="Your Profile"
+                    value="nav-profile"
                   >
-                    <User />
+                    <User className="shrink-0 !size-[1em]" />
                   </LinkedCommandItem>
                   <LinkedCommandItem
-                    value="settings"
-                    href={`/vault/account`}
+                    href="/vault/account"
                     title="Settings"
+                    value="nav-settings"
                   >
-                    <Settings />
+                    <Settings className="shrink-0 !size-[1em]" />
                   </LinkedCommandItem>
                 </CommandGroup>
-              )) || (
-                <CommandGroup heading="Quick Links">
+              ) : (
+                <CommandGroup heading="Get Started">
                   <LinkedCommandItem
-                    value="sign-up"
-                    href={`/register`}
-                    title="Register"
+                    href="/register"
+                    title="Create Account"
+                    value="nav-register"
                   >
-                    <LockOpen2 />
+                    <LockOpen2 className="shrink-0" />
                   </LinkedCommandItem>
                   <LinkedCommandItem
-                    value="plans"
-                    href={`/plans`}
-                    title="Plans"
+                    href="/plans"
+                    title="Membership Plans"
+                    value="nav-plans"
                   >
-                    <CreditCard />
+                    <CreditCard className="shrink-0 !size-[1em]" />
                   </LinkedCommandItem>
                 </CommandGroup>
               )}
             </>
-          )}
+          ) : isLoading ? (
+            /* ── Loading state ── */
+            <SearchSkeleton />
+          ) : hasResults ? (
+            /* ── Results state ── */
+            <CommandGroup heading="Results">
+              {results.slice(0, MAX_POPUP_RESULTS).map((result) => (
+                <SearchResultItem key={result.id} result={result} />
+              ))}
+              <CommandSeparator />
+              <CommandItem
+                value={`__all__${debouncedValue}`}
+                className="mt-0.5 justify-between text-sm text-faded-foreground/70"
+                onSelect={handleViewAll}
+              >
+                <span>
+                  {total > MAX_POPUP_RESULTS
+                    ? `View all ${total} results for \u201c${debouncedValue}\u201d`
+                    : `Open search page for \u201c${debouncedValue}\u201d`}
+                </span>
+                <ArrowRight className="ml-auto shrink-0 !size-4 opacity-60" />
+              </CommandItem>
+            </CommandGroup>
+          ) : isEmpty ? (
+            /* ── Empty state ── */
+            <div className="flex flex-col items-center gap-4 px-4 py-10 text-center">
+              <p className="text-sm text-faded-foreground/60">
+                Nothing found for &ldquo;{debouncedValue}&rdquo;
+              </p>
+              <button
+                className="text-[11px] uppercase tracking-widest text-faded-foreground/40 underline underline-offset-4 transition-colors hover:text-faded-foreground/70"
+                onClick={handleViewAll}
+              >
+                Try the full archive &rarr;
+              </button>
+            </div>
+          ) : null}
         </CommandList>
+
+        {/* Footer: actions + theme toggle */}
         <div
           cmdk-raycast-footer=""
           className="absolute right-0 bottom-0 left-0 z-[56] flex w-full items-center gap-[4px] bg-faded-background/30 p-[8px]"
         >
-          <SubCommand
-            data-themed={"color, background-color"}
-            inputRef={inputRef}
-            listRef={listRef}
-          />
+          <SubCommand inputRef={inputRef} listRef={listRef} />
           <CommandItem
             value={"switch theme"}
             cmdk-action-trigger=""
@@ -345,45 +370,63 @@ export const SearchBar = ({
   );
 };
 
+// ─── SubCommand ───────────────────────────────────────────────────────────────
+
 function SubCommand({
   inputRef,
-  listRef
+  listRef,
 }: {
   inputRef: RefObject<HTMLInputElement | null>;
   listRef: RefObject<HTMLElement | null>;
 }) {
   const toggleSubMenuOpen = useSearchBar((l) => l.toggleSubMenuOpen);
   const subMenuOpen = useSearchBar((l) => l.subMenuOpen);
-  const value = useSearchBar((l) => l.value);
   const setValue = useSearchBar((l) => l.setValue);
-  const toggleTheme = useTheme((store) => store.toggleTheme);
+  const user = useRPSession((l) => l);
 
   useEffect(() => {
-    function listener(e: KeyboardEvent) {
+    const listener = (e: KeyboardEvent) => {
       if (e.key === "i" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         toggleSubMenuOpen();
       }
-    }
-
-    document.addEventListener("keydown", listener);
-
-    return () => {
-      document.removeEventListener("keydown", listener);
     };
+    document.addEventListener("keydown", listener);
+    return () => document.removeEventListener("keydown", listener);
   }, [toggleSubMenuOpen]);
 
   useEffect(() => {
     if (!listRef.current) return;
     const el = listRef.current;
-
     if (subMenuOpen) {
       el.style.overflow = "hidden";
     } else {
       el.style.overflow = "";
     }
   }, [subMenuOpen, listRef]);
-  const user = useRPSession((l) => l);
+
+  const kv = useMemo(
+    () => ({ b: `CV${nanoid()}`, u: `Find${nanoid()}`, a: `Login${nanoid()}` }),
+    []
+  );
+  const keys = Object.keys(kv) as (keyof typeof kv)[];
+
+  useEffect(() => {
+    const dispatcher = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        for (const key of keys) {
+          if (e.key === key) {
+            e.preventDefault();
+            setValue(kv[key]);
+          }
+        }
+      }
+    };
+    document.addEventListener("keydown", dispatcher, { capture: true });
+    return () =>
+      document.removeEventListener("keydown", dispatcher, { capture: true });
+  }, [keys, kv, setValue]);
+
   return (
     <PopoverRoot
       open={subMenuOpen}
@@ -391,9 +434,9 @@ function SubCommand({
       modal={false}
     >
       <PopoverTrigger
-        render={({ children, ...props }) => (
+        render={({ children, ...p }) => (
           <MotionPillButton
-            {...(props as HTMLMotionProps<"button">)}
+            {...(p as HTMLMotionProps<"button">)}
             cmdk-raycast-subcommand-trigger={""}
           >
             {children}
@@ -409,6 +452,7 @@ function SubCommand({
         <kbd>⌘</kbd>
         <kbd>I</kbd>
       </PopoverTrigger>
+
       <Popover.Portal>
         <Popover.Positioner
           className={"z-250"}
@@ -418,7 +462,6 @@ function SubCommand({
           <Popover.Popup
             data-slot="popover-content"
             className={cn(
-              "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border bg-popover p-4 text-(--n-s-fg) shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
               "commando-submenu z-[250] w-fit border-none bg-transparent p-0 shadow-none backdrop-blur-none outline-none"
             )}
           >
@@ -433,16 +476,19 @@ function SubCommand({
                       <SubItem link={`/@${user.slug}`} shortcut="⌘ B">
                         My Profile
                       </SubItem>
-                      <SubItem link={`/vault/account`} shortcut="⌘ U">
+                      <SubItem
+                        link={`/vault/account`}
+                        shortcut="⌘ U"
+                      >
                         Settings
                       </SubItem>
                     </>
                   )}
                 </CommandGroup>
               </CommandList>
-              <CommandInput
+              <CommandPrimitive.Input
                 cmdk-input=""
-                placeholder="Search for actions..."
+                placeholder="Search for actions…"
                 className="text-off-foreground placeholder:text-faded-foreground"
               />
             </Commands>
@@ -453,6 +499,8 @@ function SubCommand({
   );
 }
 
+// ─── SubItem ──────────────────────────────────────────────────────────────────
+
 function SubItem({
   children,
   shortcut,
@@ -462,46 +510,38 @@ function SubItem({
   children: ReactNode;
   shortcut: string;
   link?: string;
-} & ComponentPropsWithoutRef<typeof Command.Item>) {
-  if (link) {
-    return (
-      <LinkedSubItem shortcut={shortcut} link={link} {...props}>
-        {children}
-      </LinkedSubItem>
-    );
-  }
-
+} & ComponentPropsWithoutRef<typeof CommandPrimitive.Item>) {
+  if (link) return <LinkedSubItem shortcut={shortcut} link={link} {...props}>{children}</LinkedSubItem>;
   return (
     <CommandItem {...props}>
       {children}
       <div cmdk-raycast-submenu-shortcuts="">
-        {shortcut.split(" ").map((key) => {
-          return <kbd key={key}>{key}</kbd>;
-        })}
+        {shortcut.split(" ").map((key) => <kbd key={key}>{key}</kbd>)}
       </div>
     </CommandItem>
   );
 }
 
-const LinkedSubItem = (
-  props: {
-    children: ReactNode;
-    shortcut: string;
-    link: string;
-  } & ComponentPropsWithoutRef<typeof Command.Item>
-) => {
-  const { link, shortcut, children, ...rest } = props;
-  const href = link;
+const LinkedSubItem = ({
+  link,
+  shortcut,
+  children,
+  ...rest
+}: {
+  children: ReactNode;
+  shortcut: string;
+  link: string;
+} & ComponentPropsWithoutRef<typeof CommandPrimitive.Item>) => {
   const router = useTransitionRouter();
-  const selectCallback = useCallback(() => router.push(href), [href, router]);
-
+  const selectCallback = useCallback(
+    () => router.push(link),
+    [link, router]
+  );
   return (
-    <CommandItem value={href} onSelect={selectCallback} {...rest}>
+    <CommandItem value={link} onSelect={selectCallback} {...rest}>
       {children}
       <div cmdk-raycast-submenu-shortcuts="">
-        {shortcut.split(" ").map((key) => {
-          return <kbd key={key}>{key}</kbd>;
-        })}
+        {shortcut.split(" ").map((key) => <kbd key={key}>{key}</kbd>)}
       </div>
     </CommandItem>
   );

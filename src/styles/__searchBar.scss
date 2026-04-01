@@ -1,15 +1,25 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Search / Command palette  ·  __searchBar.scss
+   ─────────────────────────────────────────────────────────────────────────────
+   Design notes:
+   - Desktop: centred dialog, 640 px wide, opens from top-of-page
+   - Mobile (≤ 639 px): bottom sheet, 100 % wide, slides up from bottom edge
+     with a drag-handle affordance — no hotkey required, thumb-friendly
+   ───────────────────────────────────────────────────────────────────────────── */
+
 [cmdk-root] {
   transition-timing-function: ease-in-out;
   transition-duration: 0.3s;
-  transition-property: color, background-color, border-color, height, width, opacity, visibility;
+  transition-property: color, background-color, border-color, height, width,
+    opacity, visibility;
   font-size: var(--text-h6);
   position: relative;
   padding-bottom: 40px;
 }
 
+/* ─── Input ─────────────────────────────────────────────────────────────────── */
 
 input[cmdk-input] {
-
   line-height: 1.25;
   border: none;
   width: 100%;
@@ -17,12 +27,20 @@ input[cmdk-input] {
   background: inherit;
   outline: inherit;
   font-size: 1.5rem;
-
 }
 
+/* Prevent iOS Safari zoom-on-focus (font-size must be ≥ 16 px) */
+@media (max-width: 639px) {
+  input[cmdk-input] {
+    font-size: 1rem;
+  }
+}
+
+/* ─── Kbd chips ──────────────────────────────────────────────────────────────── */
+
 kbd {
-  background: oklch(from var(--faded-fg) l c h/0.8);
-  color: oklch(from var(--bg) l c h/1);
+  background: oklch(from var(--faded-fg) l c h / 0.8);
+  color: oklch(from var(--bg) l c h / 1);
   height: 20px;
   width: 20px;
   border-radius: 4px;
@@ -37,117 +55,59 @@ kbd {
   text-align: center;
 
   &:first-of-type {
-    kbd {
-      background: oklch(from var(--faded-fg) l c h/0.8);
-      color: oklch(from var(--bg) l c h/1);
-      height: 20px;
-      width: 20px;
-      border-radius: 4px;
-      padding: 0 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition-property: background-color, color, border-color;
-      transition-duration: 0.2s;
-      transition-timing-function: ease-in-out;
-      line-height: 1;
-      text-align: center;
-    }
-
     margin-left: 8px;
   }
 }
 
-[cmdk-raycast-top-shine] {
-  .dark {
-    background: linear-gradient(90deg,
-        rgba(56, 189, 248, 0),
-            oklch(from var(--off-white) l c h/0.5) 20%,
-            oklch(from var(--faded-black) l c h/0.5) 67.19%,
-        rgba(236, 72, 153, 0));
-    height: 1px;
-    position: absolute;
-    top: -1px;
-    width: 100%;
-    z-index: -1;
-    opacity: 0;
-    animation: showTopShine 0.1s ease forwards 0.2s;
-  }
-}
+/* ─── Loading bar on input row ───────────────────────────────────────────────── */
 
 [cmdk-rp-courier] {
-  border-bottom: 1px solid oklch(from var(--border-subtle) l c h/0.4);
+  border-bottom: 1px solid oklch(from var(--border-subtle) l c h / 0.4);
   --loader-color: var(--border);
 
   &::after {
-    content: '';
+    content: "";
     width: 50%;
-
     height: 1px;
     position: absolute;
-    background: linear-gradient(90deg, transparent 0%, var(--loader-color) 50%, transparent 100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--loader-color) 50%,
+      transparent 100%
+    );
     top: auto;
     bottom: 1px;
+    left: 0;
     opacity: 0;
     animation-duration: 1.5s;
-    animation-delay: 1s;
     animation-timing-function: ease;
     animation-name: loading;
+    /* Start paused; .loading class activates it */
+    animation-play-state: paused;
+    animation-iteration-count: infinite;
   }
 
-  &.loading {
-    &::after {
-      opacity: 1;
-      animation-play-state: running;
-      animation-iteration-count: infinite;
-    }
+  /* Class applied programmatically while fetching */
+  &.loading::after {
+    opacity: 1;
+    animation-play-state: running;
+    animation-delay: 0.6s; /* grace period — fast responses show no flash */
   }
 }
 
-[cmdk-raycast-loader] {
-  --loader-color: oklch(from var(--border-subtle) l c h/1);
-  border: 0;
-  width: 100%;
-  left: 0;
-  height: 1px;
-  background: oklch(from var(--border-subtle) l c h/0.8);
-  position: relative;
-  overflow: visible;
-  display: block;
-  margin-top: 4px;
-  margin-bottom: 10px;
-
-  &::after {
-    content: '';
-    width: 50%;
-    height: 1px;
-    position: absolute;
-    background: linear-gradient(90deg, transparent 0%, var(--loader-color) 50%, transparent 100%);
-    top: -1px;
-    opacity: 0;
-    animation-duration: 1.5s;
-    animation-delay: 1s;
-    animation-timing-function: ease;
-    animation-name: loading;
-  }
-
-  &.loading {
-    &::after {
-      animation-play-state: running;
-      animation-iteration-count: infinite;
-    }
-  }
-}
+/* ─── Meta tag ───────────────────────────────────────────────────────────────── */
 
 [cmdk-raycast-meta] {
   margin-left: auto;
-  color: oklch(from var(--bg) l c h/1);
+  color: oklch(from var(--bg) l c h / 1);
   font-size: 13px;
 }
 
+/* ─── List ───────────────────────────────────────────────────────────────────── */
+
 [cmdk-list] {
   padding: 8px;
-
   border-radius: 4px;
   height: max-content;
   overflow: auto;
@@ -157,10 +117,11 @@ kbd {
   transition-property: height;
 }
 
+/* ─── Trigger / sub-command buttons ─────────────────────────────────────────── */
+
 [cmdk-raycast-open-trigger],
 [cmdk-raycast-subcommand-trigger] {
-
-  padding: 0px 4px 0px 8px;
+  padding: 0 4px 0 8px;
   border-radius: 6px;
   font-weight: 500;
   font-size: 12px;
@@ -178,8 +139,7 @@ kbd {
 }
 
 [cmdk-action-trigger] {
-
-  padding: 0px 4px 0px 8px;
+  padding: 0 4px 0 8px;
   border-radius: 6px;
   font-weight: 500;
   font-size: 12px;
@@ -195,13 +155,13 @@ kbd {
   transition-timing-function: ease-in-out;
 
   kbd {
-    color: oklch(from var(--off-bg) l c h/1);
-    background: oklch(from var(--off-fg) l c h/0.7);
+    color: oklch(from var(--off-bg) l c h / 1);
+    background: oklch(from var(--off-fg) l c h / 0.7);
   }
 
-  &[data-selected='true'] {
-    background: oklch(from var(--n-s-bg) l c h/0.4);
-    color: oklch(from var(--n-s-fg) l c h/1);
+  &[data-selected="true"] {
+    background: oklch(from var(--n-s-bg) l c h / 0.4);
+    color: oklch(from var(--n-s-fg) l c h / 1);
   }
 }
 
@@ -223,71 +183,159 @@ kbd {
 
   hr {
     height: 100%;
-    background: oklch(from var(--border-subtle) l c h/1);
+    background: oklch(from var(--border-subtle) l c h / 1);
     border: 0;
     width: 1px;
   }
 
-  &[aria-expanded='true'],
+  &[aria-expanded="true"],
   &:hover {
-    background: oklch(from var(--faded-bg) l c h/0.4);
-    color: oklch(from var(--off-fg) l c h/1);
+    background: oklch(from var(--faded-bg) l c h / 0.4);
+    color: oklch(from var(--off-fg) l c h / 1);
   }
 }
 
+/* ─── Separator ──────────────────────────────────────────────────────────────── */
+
 [cmdk-separator] {
   width: 100%;
-
   margin: 4px 0;
 }
 
+/* ─── Group heading ──────────────────────────────────────────────────────────── */
 
 [cmdk-group-heading] {
   user-select: none;
-  font-size: 12px;
-
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   border-radius: 0;
-  padding: 8px;
+  padding: 10px 8px 6px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid oklch(from var(--muted-faded-fg) l c h/0.6);
+  border-bottom: 1px solid oklch(from var(--muted-faded-fg) l c h / 0.4);
+  color: oklch(from var(--faded-fg) l c h / 0.7);
 }
 
 [cmdk-group-items] {
-  margin: 8px 0;
+  margin: 6px 0;
 }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────────── */
 
 [cmdk-raycast-footer] {
   height: 40px;
-  border-top: 1px outset oklch(from var(--border) l c h/0.8);
+  border-top: 1px outset oklch(from var(--border) l c h / 0.8);
   border-radius: 0 0 7px 7px;
 
   hr {
     height: 12px;
     width: 1px;
     border: 0;
-    background: oklch(from var(--border-subtle) l c h/0.8);
-    margin: 0 4px 0px 12px;
+    background: oklch(from var(--border-subtle) l c h / 0.8);
+    margin: 0 4px 0 12px;
   }
 }
+
+/* ─── Dialog positioning — DESKTOP ──────────────────────────────────────────── */
 
 [cmdk-dialog] {
   z-index: var(--layer-portal);
   position: fixed;
   left: 50%;
-  top: var(--page-top);
+  top: var(--page-top, 4rem);
   transform: translateX(-50%);
 
   [cmdk] {
     width: 640px;
     transform-origin: center center;
-    animation: dialogIn var(--transition-fast) forwards;
+    animation: dialogIn var(--transition-fast, 0.18s) forwards;
   }
 
-  &[data-state='closed'] [cmdk] {
-    animation: dialogOut var(--transition-fast) forwards;
+  &[data-state="closed"] [cmdk] {
+    animation: dialogOut var(--transition-fast, 0.18s) forwards;
   }
 }
+
+/* ─── Dialog positioning — MOBILE (bottom sheet) ────────────────────────────── */
+
+@media (max-width: 639px) {
+  [cmdk-dialog] {
+    /* Reset desktop centering */
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+
+    [cmdk] {
+      width: 100% !important;
+      max-width: 100%;
+      /* Rounded only at the top — sheet sits flush at the bottom */
+      border-radius: 20px 20px 0 0 !important;
+      /* Respect notch / home-indicator */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      /* Cap height so results remain scrollable above the keyboard */
+      max-height: 82dvh;
+      overflow: hidden;
+      animation: sheetIn var(--transition-fast, 0.22s) cubic-bezier(0.16, 1, 0.3, 1)
+        forwards;
+      transform-origin: bottom center;
+    }
+
+    &[data-state="closed"] [cmdk] {
+      animation: sheetOut var(--transition-fast, 0.18s) ease-in forwards;
+    }
+
+    /* Drag-handle affordance */
+    [cmdk]::before {
+      content: "";
+      display: block;
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      background: currentColor;
+      opacity: 0.15;
+      margin: 10px auto 2px;
+      flex-shrink: 0;
+    }
+
+    /* Larger touch targets in the list */
+    [cmdk-item] {
+      min-height: 52px !important;
+      padding-top: 14px !important;
+      padding-bottom: 14px !important;
+    }
+
+    /* Larger input height on mobile */
+    input[cmdk-input] {
+      height: 44px !important;
+      font-size: 1rem !important;
+    }
+
+    /* Full-width footer so thumb can easily tap */
+    [cmdk-raycast-footer] {
+      justify-content: space-around;
+    }
+  }
+}
+
+/* ─── Mobile search trigger — larger touch target ───────────────────────────── */
+
+@media (max-width: 639px) {
+  [data-tour="searchbar"] {
+    /* Ensure at least 44 × 44 px (Apple HIG / WCAG 2.5.5) */
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
+}
+
+/* ─── Empty state ────────────────────────────────────────────────────────────── */
 
 [cmdk-empty] {
   font-size: 14px;
@@ -296,44 +344,9 @@ kbd {
   justify-content: center;
   height: 64px;
   white-space: pre-wrap;
-
 }
 
-@keyframes loading {
-  0% {
-    opacity: 0;
-    transform: translateX(0);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translateX(100%);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateX(0);
-  }
-}
-
-@keyframes shine {
-  to {
-    background-position: 200% center;
-    opacity: 0;
-  }
-}
-
-@keyframes border {
-  to {
-    box-shadow: 0 0 0 1px oklch(from var(--muted-faded-fg) l c h/0.8);
-  }
-}
-
-@keyframes showTopShine {
-  to {
-    opacity: 1;
-  }
-}
+/* ─── Sub-command popup ──────────────────────────────────────────────────────── */
 
 .commando-submenu {
   backdrop-filter: blur(4px);
@@ -344,14 +357,14 @@ kbd {
     width: 320px;
     min-height: fit-content;
     padding-bottom: 0;
-    border: 1px solid oklch(from var(--border-subtle) l c h/0.8);
-    background: oklch(from var(--off-bg) l c h/0.5);
+    border: 1px solid oklch(from var(--border-subtle) l c h / 0.8);
+    background: oklch(from var(--off-bg) l c h / 0.5);
     border-radius: 8px;
   }
 
   [cmdk-group-heading] {
-    color: oklch(from var(--faded-fg) l c h/1);
-    border-bottom-color: oklch(from var(--muted-faded-fg) l c h/0.6);
+    color: oklch(from var(--faded-fg) l c h / 1);
+    border-bottom-color: oklch(from var(--muted-faded-fg) l c h / 0.6);
   }
 
   [cmdk-list] {
@@ -368,8 +381,8 @@ kbd {
     gap: 2px;
 
     kbd {
-      background: oklch(from var(--faded-fg) l c h/0.8);
-      color: oklch(from var(--n-s-bg) l c h/1);
+      background: oklch(from var(--faded-fg) l c h / 0.8);
+      color: oklch(from var(--n-s-bg) l c h / 1);
       height: 20px;
       width: 20px;
       border-radius: 4px;
@@ -387,38 +400,35 @@ kbd {
 
   [cmdk-item] {
     height: 40px;
-
-
     border-radius: 8px;
     font-size: 13px;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px;
-    color: oklch(from var(--off-fg) l c h/0.8);
+    color: oklch(from var(--off-fg) l c h / 0.8);
     user-select: none;
     will-change: background, color;
     transition: all 150ms ease;
     transition-property: none;
 
     & [cmdk-raycast-submenu-shortcuts] kbd {
-      background: oklch(from var(--faded-bg) l c h/0.3);
-      color: oklch(from var(--off-fg) l c h/1);
+      background: oklch(from var(--faded-bg) l c h / 0.3);
+      color: oklch(from var(--off-fg) l c h / 1);
     }
 
-    &[aria-selected='true'] {
-      background: oklch(from var(--off-bg) l c h/0.3);
-      color: oklch(from var(--n-s-fg) l c h/1);
+    &[aria-selected="true"] {
+      background: oklch(from var(--off-bg) l c h / 0.3);
+      color: oklch(from var(--n-s-fg) l c h / 1);
 
       [cmdk-raycast-submenu-shortcuts] kbd {
-        background: oklch(from var(--faded-fg) l c h/0.3);
-        color: oklch(from var(--off-bg) l c h/1);
+        background: oklch(from var(--faded-fg) l c h / 0.3);
+        color: oklch(from var(--off-bg) l c h / 1);
       }
     }
 
-    &[aria-disabled='true'] {
+    &[aria-disabled="true"] {
       color: var(--gray8);
-
     }
 
     svg {
@@ -427,47 +437,97 @@ kbd {
     }
   }
 
-
   svg {
-    color: oklch(from var(--n-s-fg) l c h/1);
+    color: oklch(from var(--n-s-fg) l c h / 1);
   }
 
   input[cmdk-input] {
-    color: oklch(from var(--n-s-fg) l c h/1);
+    color: oklch(from var(--n-s-fg) l c h / 1);
 
     &::placeholder {
-      color: oklch(from var(--n-s-fg) l c h/0.8);
+      color: oklch(from var(--n-s-fg) l c h / 0.8);
     }
   }
-
 }
 
-@keyframes slideIn {
+/* ─── Keyframes ──────────────────────────────────────────────────────────────── */
+
+/* Loader sweep */
+@keyframes loading {
   0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  40% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(200%);
+  }
+}
+
+/* Desktop dialog open / close */
+@keyframes dialogIn {
+  from {
     opacity: 0;
     transform: scale(0.96);
   }
-
-  100% {
+  to {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-@keyframes slideOut {
-  0% {
+@keyframes dialogOut {
+  from {
     opacity: 1;
     transform: scale(1);
   }
-
-  100% {
+  to {
     opacity: 0;
     transform: scale(0.96);
   }
 }
 
-@media (max-width: 640px) {
-  [cmdk-input] {
-    font-size: 16px;
+/* Mobile bottom sheet open / close */
+@keyframes sheetIn {
+  from {
+    opacity: 0.6;
+    transform: translateY(100%);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheetOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* Search-page loading bar sweep (used with Tailwind animate- prefix via CSS var) */
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+/* ─── Search-page loading bar utility ───────────────────────────────────────── */
+.animate-loading-bar {
+  animation: loading-bar 1.4s ease-in-out infinite;
 }
