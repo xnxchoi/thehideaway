@@ -12,6 +12,7 @@ import { RPage } from "@/components/UX/Transition";
 import { useDebounce } from "@/utilities/useDebounce";
 import { useQuery } from "@tanstack/react-query";
 import * as m from "motion/react-m";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -90,31 +91,32 @@ function ResultSkeleton() {
 
 // ─── Result item ──────────────────────────────────────────────────────────────
 
-function ResultItem({ result }: { result: SearchAPIResult }) {
+function ResultItem({ result, index }: { result: SearchAPIResult; index: number }) {
   const label = getResultLabel(result);
 
   return (
     <m.li
-      initial={{ opacity: 0, y: 4 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ type: "spring", bounce: 0.1, delay: index * 0.04 }}
     >
-      <a
+      <Link
         href={result.url}
+        prefetch
         className="group flex min-h-[3rem] items-center gap-4 border-b border-current/[0.06] py-3.5 transition-colors duration-150 hover:border-current/20 sm:py-4"
       >
-        <span className="flex-1 truncate text-base font-medium leading-snug text-faded-foreground transition-colors group-hover:text-foreground sm:text-lg">
+        <span className="flex-1 truncate text-sm font-medium leading-snug text-muted-foreground transition-colors group-hover:text-foreground sm:text-base">
           {label}
         </span>
         {result.subtitle && (
-          <span className="hidden max-w-xs truncate text-sm text-faded-foreground/50 md:block">
+          <span className="hidden max-w-xs truncate font-mono text-[10px] text-muted-foreground/50 xl:text-[11px] md:block">
             {result.subtitle}
           </span>
         )}
-        <span className="rp_tag ml-auto shrink-0 text-xs opacity-40 transition-opacity group-hover:opacity-70">
+        <span className="rp_tag ml-auto shrink-0 opacity-40 transition-opacity group-hover:opacity-70">
           {getCollectionLabel(result.collection_type)}
         </span>
-      </a>
+      </Link>
     </m.li>
   );
 }
@@ -140,12 +142,12 @@ function ResultGroup({
       transition={{ duration: 0.2 }}
       aria-label={label}
     >
-      <h3 className="mb-1 mt-10 text-[10px] uppercase tracking-[0.15em] text-faded-foreground/40 first:mt-0">
+      <h3 className="mb-1 mt-10 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 first:mt-0 xl:text-xs">
         {label}
       </h3>
       <ul>
-        {items.map((result) => (
-          <ResultItem key={result.id} result={result} />
+        {items.map((result, index) => (
+          <ResultItem key={result.id} result={result} index={index} />
         ))}
       </ul>
     </m.section>
@@ -228,7 +230,7 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <RPage type="search" slug={["search"]}>
-      <m.div className="min-h-screen py-20 sm:py-28">
+      <m.div className="min-h-screen py-20 sm:py-28 xl:py-32">
         <div className="container max-w-3xl">
           {/* ── Search input ── */}
           <div className="relative">
@@ -269,7 +271,7 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
           </div>
 
           {/* ── Result count ── */}
-          <div className="mt-4 h-5 text-xs uppercase tracking-widest text-faded-foreground/40">
+          <div className="mt-4 h-5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/40 xl:text-[11px]">
             {hasResults && (
               <m.span
                 key={debouncedQuery}
@@ -285,10 +287,10 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
           {/* ── Content area ── */}
           <div className="mt-2">
             {!query && (
-              <div className="flex flex-col items-start gap-2 py-16 text-faded-foreground/40">
-                <p className="text-base">Start typing to search…</p>
-                <p className="text-sm opacity-60">
-                  Essays, surf, people, music, categories
+              <div className="flex flex-col items-start gap-1.5 py-16">
+                <p className="text-base font-light text-foreground/50">Start typing to search…</p>
+                <p className="font-mono text-[10px] text-muted-foreground/40 xl:text-[11px]">
+                  Essays · Surf · People · Albums · Tracks · Playlists
                 </p>
               </div>
             )}
@@ -304,13 +306,15 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
               <m.div
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="py-16 text-faded-foreground/50"
+                transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                className="flex flex-col items-center justify-center py-24 text-center"
               >
-                <p className="text-base">
+                <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+                <p className="text-base font-light text-foreground/70">
                   No results for &ldquo;{debouncedQuery}&rdquo;
                 </p>
-                <p className="mt-2 text-sm opacity-60">
-                  Try a different spelling or broader term.
+                <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+                  Try a different spelling or a broader term.
                 </p>
               </m.div>
             )}
