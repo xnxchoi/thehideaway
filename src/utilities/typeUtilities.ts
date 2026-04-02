@@ -1,23 +1,24 @@
-import { User } from "@payload-types";
-
-export type LimitDepth<
-  T,
-  Limit extends number = 1,
-  Current extends number = 0
-> = Current extends Limit
-  ? T
-  : {
-      [K in RequiredKeys<T>]: T[K] extends object
-        ? LimitDepth<T[K], Limit, Increment<Current>>
-        : T[K];
-    } & {
-      [K in OptionalKeys<T>]?: T[K] extends object
-        ? LimitDepth<T[K], Limit, Increment<Current>>
-        : T[K];
-    };
-type AA<T> = T extends object ? LimitDepth<T, 1> : T;
-type CC = AA<User["profile"]>;
-type A = LimitDepth<User, 0>;
+// export type LimitDepth<
+//   T,
+//   Limit extends number = 1,
+//   Current extends number = 0
+// > = Current extends Limit
+//   ? T extends Array<infer I>
+//     ? LimitDepth<I, Limit, Current>
+//     : T extends TypeWithID | string
+//       ? string
+//       : never
+//   : {
+//       [K in RequiredKeys<T>]: T[K] extends object
+//         ? LimitDepth<T[K], Limit, Increment<Current>>
+//         : T[K];
+//     } & {
+//       [K in OptionalKeys<T>]?: T[K] extends object
+//         ? LimitDepth<T[K], Limit, Increment<Current>>
+//         : T[K];
+//     };
+// type AA<T> = T extends object ? LimitDepth<T, 1> : T;
+// type A = LimitDepth<User["profile"], 1>;
 export type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
 export type RequiredKeys<T> = {
   [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K;
@@ -27,27 +28,12 @@ type Length<T extends any[]> = (T extends { length: number }
   : never) &
   number;
 
+/**
+ * Array, Tuples
+ */
 export type TupleOf<N extends number, T extends unknown[] = []> =
   Length<T> extends N ? T : TupleOf<N, [...T, unknown]>;
 export type Pop<T extends any[]> = T extends [...infer U, unknown] ? U : never;
-// Increment adds an element to a tuple, effectively creating N + 1
-export type Increment<N extends number> = Length<[1, ...TupleOf<N>]>;
-
-// Decrement removes an element from a tuple, effectively creating N - 1
-export type Decrement<N extends number> = Length<Pop<TupleOf<N>>>;
-export type RequiredFields<T> = Pick<T, RequiredKeys<T>>;
-export type Concat<T extends string[]> = T extends [
-  infer F extends string,
-  ...infer R extends string[]
-]
-  ? `${F}${Concat<R>}`
-  : "";
-export type KeysOfValue<T, TCondition> = {
-  [K in keyof T]: T[K] extends TCondition ? K : never;
-}[keyof T];
-export function join<T extends string[]>(...strings: T): Concat<T> {
-  return strings.join("") as Concat<T>;
-}
 
 // add an element to the end of a tuple
 type Push<L extends any[], T> = ((r: any, ...x: L) => void) extends (
@@ -55,6 +41,56 @@ type Push<L extends any[], T> = ((r: any, ...x: L) => void) extends (
 ) => void
   ? { [K in keyof L2]-?: K extends keyof L ? L[K] : T }
   : never;
+
+// Increment adds an element to a tuple, effectively creating N + 1
+export type Increment<N extends number> = Length<[1, ...TupleOf<N>]>;
+
+// Decrement removes an element from a tuple, effectively creating N - 1
+export type Decrement<N extends number> = Length<Pop<TupleOf<N>>>;
+
+export type RequiredFields<T> = Pick<T, RequiredKeys<T>>;
+/**
+ * Strings
+ */
+export type Concat<T extends string[]> = T extends [
+  infer F extends string,
+  ...infer R extends string[]
+]
+  ? `${F}${Concat<R>}`
+  : "";
+
+/**
+ * Keys extraction
+ */
+
+export type KeysOfValue<T, TCondition> = {
+  [K in keyof T]: T[K] extends TCondition ? K : never;
+}[keyof T];
+type FixArr<T> = T extends readonly any[] ? Omit<T, keyof any[] | number> : T;
+type DropInitDot<T> = T extends `.${infer U}` ? U : T;
+export type DeepKeys<
+  T,
+  Limit extends number = 1,
+  Current extends number = 0
+> = T extends object
+  ? Current extends Limit
+    ? {
+        [K in keyof T & string]: `${`.${K}`}${""}`;
+      }[keyof T & string]
+    : Current extends 0
+      ? {
+          [K in keyof T &
+            string]: `${K}${"" | DeepKeys<FixArr<T[K]>, Limit, Increment<Current>>}`;
+        }[keyof T & string]
+      : {
+          [K in keyof T &
+            string]: `${`.${K}`}${"" | DeepKeys<FixArr<T[K]>, Limit, Increment<Current>>}`;
+        }[keyof T & string]
+  : never;
+
+export function join<T extends string[]>(...strings: T): Concat<T> {
+  return strings.join("") as Concat<T>;
+}
 
 export type Prepend<Tuple extends any[], Addend> = ((
   _: Addend,
@@ -69,6 +105,10 @@ export type Reverse<Tuple extends any[], Prefix extends any[] = []> = {
     ? Reverse<Next, Prepend<Prefix, First>>
     : never;
 }[Tuple extends [any, ...any[]] ? 1 : 0];
+
+/**
+ * Unions & Intersections
+ */
 
 // convert a union to an intersection: X | Y | Z ==> X & Y & Z
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
@@ -88,17 +128,17 @@ type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true;
 // takes last from union
 type PopUnion<U> = UnionToOvlds<U> extends (a: infer A) => void ? A : never;
 
-/** END IMPLEMENTATION  */
-
 export type OptionalKeys<T> = {
   [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never;
 }[keyof T];
 
-export type ExcludeOptionalProps<T> = Pick<T, RequiredKeys<T>>;
+export type RequiredOnly<T> = Pick<T, RequiredKeys<T>>;
 export type ExcludeProperties<Type, Att extends keyof Type> = {
   [Property in keyof Type as Exclude<Property, Att>]: Type[Property];
 };
-export type RequireKeys<Type, T extends keyof Type> = Required<Pick<Type, T>> &
+export type RequireByKeys<Type, T extends keyof Type> = Required<
+  Pick<Type, T>
+> &
   Omit<Type, T>;
 export type RequireKeysAndRestOptional<Type, T extends keyof Type> = Required<
   Pick<Type, T>

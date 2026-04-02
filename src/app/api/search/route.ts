@@ -1,7 +1,8 @@
-import { getPayload } from "payload";
+import { SearchAPIResult } from "@/components/UX/CommandKey/Commando";
 import config from "@/payload.config";
-import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@payloadcms/db-postgres";
+import { NextRequest, NextResponse } from "next/server";
+import { getPayload } from "payload";
 
 interface QueryResult<T = any> {
   rows: T[];
@@ -108,7 +109,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const results: any[] = [];
+    const results: SearchAPIResult[] = [];
 
     for (const collection of collections) {
       const config = collectionConfigs[collection];

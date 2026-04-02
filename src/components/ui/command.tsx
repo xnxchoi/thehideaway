@@ -1,9 +1,10 @@
 "use client";
 
+import { HTMLMotionProps } from "motion/react";
 import * as React from "react";
-import {useRef, useEffect, useState, ComponentProps} from "react";
+import { useRef, useEffect, useState, ComponentProps } from "react";
 import { Command as CommandPrimitive } from "cmdk";
-
+import * as m from "motion/react-m";
 import { cn } from "@/lib/utils";
 import {
   DialogRoot,
@@ -14,11 +15,24 @@ import {
 } from "@/components/ui/dialog";
 import { useSearchBar } from "@/providers/RP_Pro";
 import { useDomCursor } from "../core/cursorWrapper";
-
+const KommandPrimitive = m.create(CommandPrimitive);
+function KMD({ className, ...props }: ComponentProps<typeof KommandPrimitive>) {
+  return (
+    <KommandPrimitive
+      data-slot="command"
+      className={cn(
+        "flex h-full w-full flex-col rounded-xl shadow-lg/30",
+        className
+      )}
+      data-themed={"background-color"}
+      {...props}
+    />
+  );
+}
 function Command({
   className,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive>) {
+}: ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
       data-slot="command"
@@ -39,10 +53,11 @@ function CommandDialog({
   open,
   onOpenChange,
   ...props
-                       }: Omit<ComponentProps<typeof DialogRoot>, "children"> & ComponentProps<typeof DialogContent> & {
-  title?: string;
-  description?: string;
-}) {
+}: Omit<ComponentProps<typeof DialogRoot>, "children"> &
+  ComponentProps<typeof DialogContent> & {
+    title?: string;
+    description?: string;
+  }) {
   const subMenuOpen = useSearchBar((l) => l.subMenuOpen);
   const lastExpanded = useRef(false);
   const [referenceHeight, setReferenceHeight] = useState("initial");
@@ -58,7 +73,7 @@ function CommandDialog({
     }
   }, [subMenuOpen]);
   return (
-      <DialogRoot open={open} onOpenChange={onOpenChange} {...props}>
+    <DialogRoot open={open} onOpenChange={onOpenChange} {...props}>
       <DialogHeader className="sr-only">
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
@@ -71,7 +86,7 @@ function CommandDialog({
           minHeight: referenceHeight
         }}
       >
-        <Command
+        <KMD
           data-themed={"background-color,height,color"}
           shouldFilter={false}
           className={cn(
@@ -80,16 +95,28 @@ function CommandDialog({
           )}
         >
           {children}
-        </Command>
+        </KMD>
       </DialogContent>
-      </DialogRoot>
+    </DialogRoot>
   );
 }
-
+const KMDInputPrimitive = m.create(CommandPrimitive.Input);
+function KMDInput({
+  className,
+  ...props
+}: ComponentProps<typeof KMDInputPrimitive>) {
+  return (
+    <KMDInputPrimitive
+      data-slot="command-input"
+      className={cn(className)}
+      {...props}
+    />
+  );
+}
 function CommandInput({
   className,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+}: ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div
       className="z-1 flex w-full items-center p-[8px]"
@@ -99,7 +126,7 @@ function CommandInput({
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-	        "flex h-[44px] w-full rounded-md bg-transparent py-5 text-sm outline-hidden placeholder:text-background disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-[44px] w-full rounded-md bg-transparent py-5 text-sm outline-hidden placeholder:text-background disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         data-themed={"color, background-color,height,placeholder-color"}
@@ -112,7 +139,7 @@ function CommandInput({
 function CommandList({
   className,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.List>) {
+}: ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
       data-slot="command-list"
@@ -127,7 +154,7 @@ function CommandList({
 
 function CommandEmpty({
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Empty>) {
+}: ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
       data-slot="command-empty"
@@ -140,12 +167,12 @@ function CommandEmpty({
 function CommandGroup({
   className,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Group>) {
+}: ComponentProps<typeof CommandPrimitive.Group>) {
   return (
     <CommandPrimitive.Group
       data-slot="command-group"
       className={cn(
-	      "overflow-hidden rounded-[4px] py-[6px] [&_[cmdk-group-heading]]:text-xl [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-faded-foreground",
+        "overflow-hidden rounded-[4px] py-[6px] [&_[cmdk-group-heading]]:text-xl [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-faded-foreground",
         className
       )}
       {...props}
@@ -156,7 +183,7 @@ function CommandGroup({
 function CommandSeparator({
   className,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Separator>) {
+}: ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
     <CommandPrimitive.Separator
       data-slot="command-separator"
@@ -171,7 +198,7 @@ function CommandItem({
   onMouseEnter: onEnter,
   onMouseLeave: onLeave,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Item>) {
+}: ComponentProps<typeof CommandPrimitive.Item>) {
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     onEnter,
     onLeave
@@ -189,10 +216,7 @@ function CommandItem({
   );
 }
 
-function CommandShortcut({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
+function CommandShortcut({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       data-slot="command-shortcut"
@@ -214,6 +238,7 @@ export {
   Command,
   CommandDialog,
   CommandInput,
+  KMDInput,
   CommandList,
   CommandEmpty,
   CommandGroup,

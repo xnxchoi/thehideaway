@@ -249,6 +249,7 @@ export const beforeSyncWithSearch: BeforeSync = async (
 
   return {
     ...finalDoc,
+    collection,
     doc: {
       relationTo: collection,
       value: searchDraft.doc.value

@@ -2,7 +2,7 @@
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
 import { TagOverview } from "@/types/collections/meta-collections";
-import { MakeRequired } from "@/utilities/typeUtilities";
+import { MakeRequired, RequireByKeys } from "@/utilities/typeUtilities";
 import { ComponentProps } from "react";
 
 export const TagButton = ({
@@ -15,8 +15,7 @@ export const TagButton = ({
   ...props
 }: Omit<ComponentProps<typeof Link>, "href"> & {
   selected?: boolean;
-  tag: Omit<TagOverview, "title" | "slug"> &
-    MakeRequired<Pick<TagOverview, "title" | "slug">>;
+  tag: RequireByKeys<TagOverview, "title" | "slug">;
 }) => {
   return (
     <Link

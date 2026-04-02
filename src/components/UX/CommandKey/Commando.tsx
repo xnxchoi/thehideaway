@@ -1,6 +1,7 @@
 "use client";
 
 import { CommandItem } from "@/components/ui/command";
+import { IndexedCollections } from "@/payload/search/beforeSync";
 import { useSearchBar } from "@/providers/RP_Pro";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { useDebounce } from "@/utilities/useDebounce";
@@ -17,16 +18,7 @@ export type SearchAPIResult = {
   name?: string;
   username?: string;
   slug: string;
-  collection_type:
-    | "users"
-    | "posts"
-    | "surf"
-    | "delta"
-    | "albums"
-    | "tracks"
-    | "playlists"
-    | "categories"
-    | "tags";
+  collection_type: IndexedCollections;
   url: string;
   score: number;
   type: "content";
@@ -54,7 +46,7 @@ export const COLLECTION_LABELS: Record<string, string> = {
   tracks: "Track",
   playlists: "Playlist",
   categories: "Category",
-  tags: "Tag",
+  tags: "Tag"
 };
 
 export function getResultLabel(result: SearchAPIResult): string {
@@ -87,7 +79,7 @@ export function useSearchQuery() {
     staleTime: 30_000,
     gcTime: 60_000,
     // Keep previous results visible while new ones load
-    placeholderData: (prev) => prev,
+    placeholderData: (prev) => prev
   });
 
   return { ...query, debouncedValue };
@@ -135,9 +127,7 @@ export const LinkedCommandItem = ({
     >
       {children}
       <span className="flex-1 truncate">{title}</span>
-      {type && (
-        <span className="rp_tag ml-2 shrink-0 opacity-50">{type}</span>
-      )}
+      {type && <span className="rp_tag ml-2 shrink-0 opacity-50">{type}</span>}
     </CommandItem>
   );
 };
@@ -155,7 +145,7 @@ export const SearchResultItem = ({ result }: { result: SearchAPIResult }) => (
 
 export const LinkedItem = ({
   doc,
-  content,
+  content
 }: {
   doc: { relationTo: string; value: string };
   content: any;

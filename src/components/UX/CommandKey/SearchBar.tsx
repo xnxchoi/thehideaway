@@ -1,19 +1,20 @@
 "use client";
 
+import { MotionPillButton } from "@/components/core/Button";
 import {
   CommandDialog,
   CommandGroup,
   CommandItem,
   CommandList,
   CommandSeparator,
+  KMDInput
 } from "@/components/ui/command";
 import { DialogTitle } from "@/components/ui/dialog";
 import { PopoverRoot, PopoverTrigger } from "@/components/ui/popover";
-import { MotionPillButton } from "@/components/core/Button";
 import {
   LinkedCommandItem,
   SearchResultItem,
-  useSearchQuery,
+  useSearchQuery
 } from "@/components/UX/CommandKey/Commando";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
@@ -25,18 +26,13 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import {
   LockOpen2Icon as LockOpen2,
   ReaderIcon,
-  RocketIcon,
+  RocketIcon
 } from "@radix-ui/react-icons";
-import { Command as CommandPrimitive } from "cmdk";
-import { Command as Commands } from "cmdk";
-import {
-  ArrowRight,
-  CreditCard,
-  Settings,
-  User,
-} from "lucide-react";
-import { HTMLMotionProps } from "motion/react";
+import { Command as CommandPrimitive, Command as Commands } from "cmdk";
+import { ArrowRight, CreditCard, Settings, User } from "lucide-react";
+import { HTMLMotionProps, useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
+import { nanoid } from "nanoid";
 import { useTransitionRouter } from "next-transition-router";
 import {
   ComponentPropsWithoutRef,
@@ -46,8 +42,9 @@ import {
   useCallback,
   useEffect,
   useId,
-  useRef,
-} from "react";
+  useMemo,
+  useRef
+} from "react"; // ─── Constants ────────────────────────────────────────────────────────────────
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -96,13 +93,42 @@ export const SearchBar = ({
   const user = useRPSession((l) => l);
   const uid = useId();
   const router = useTransitionRouter();
-
+  const vValue = useMotionValue(value);
+  useEffect(() => {
+    vValue.set(value);
+  }, [value, vValue]);
   // ── Search data ─────────────────────────────────────────────────────────────
   const { data, isFetching, debouncedValue } = useSearchQuery();
+  const iFetching = useMotionValue(isFetching);
+  useEffect(() => {
+    iFetching.set(isFetching);
+  }, [isFetching, iFetching]);
+  const debouncedValued = useMotionValue(debouncedValue);
+  useEffect(() => {
+    debouncedValued.set(debouncedValue);
+  }, [debouncedValued, debouncedValue]);
 
-  const isDebouncing = value.length > 0 && value !== debouncedValue;
-  const isLoading = isDebouncing || (debouncedValue.length > 0 && isFetching);
-  const results = data?.results ?? [];
+  const isDebouncing = useTransform(() => {
+    const v = vValue.get();
+    const dbd = debouncedValued.get();
+    return v.length > 0 && v !== dbd;
+  });
+  const isLoading = useTransform(
+    () =>
+      isDebouncing.get() ||
+      (debouncedValued.get().length > 0 && iFetching.get())
+  );
+  const resultsValue = useMotionValue(data?.results ?? []);
+  useEffect(() => {
+    const bef = resultsValue.get();
+    if (
+      data?.results &&
+      typeof data.results === "object" &&
+      Array.isArray(data.results)
+    ) {
+      resultsValue.set(Array.from(new Set([...bef, ...data.results])));
+    }
+  }, [data, resultsValue]);
   const total = data?.total ?? 0;
   const isInit = value.length === 0;
   const hasResults = !isLoading && results.length > 0;
@@ -121,30 +147,18 @@ export const SearchBar = ({
     router.push(`/search?q=${encodeURIComponent(debouncedValue)}`);
   }, [setOpen, router, debouncedValue]);
 
-  const onValueChange = useCallback(
-    (v: string) => setValue(v),
-    [setValue]
-  );
+  const onValueChange = useCallback((v: string) => setValue(v), [setValue]);
 
   // ── Global ⌘K shortcut ───────────────────────────────────────────────────────
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        toggleOpen();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [toggleOpen]);
-
+  useEffect(() => {}, [toggleOpen]);
+  const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ── Open effects ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (open) {
       setNav(false);
       // slight delay lets the dialog animation settle before focusing
-      const t = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(t);
+      focusTimeoutRef.current && clearTimeout(focusTimeoutRef.current);
+      focusTimeoutRef.current = setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open, setNav]);
 
@@ -204,18 +218,18 @@ export const SearchBar = ({
                 />
               </m.svg>
               {/* Mobile-only label: makes the purpose clear without hotkey knowledge */}
-              <span className="sr-only sm:not-sr-only hidden text-[11px] font-medium uppercase tracking-widest sm:hidden">
+              <span className="sr-only hidden text-[11px] font-medium tracking-widest uppercase sm:not-sr-only sm:hidden">
                 Search
               </span>
             </MotionPillButton>
           }
         />
         {/* Tooltip only meaningful on desktop (pointer devices) */}
-        <Tooltip.Portal>
-          <Tooltip.Positioner side="bottom" align="center" sideOffset={10}>
+        <Tooltip.Portal className={"z-300"}>
+          <Tooltip.Positioner side="bottom" align="center" sideOffset={25}>
             <Tooltip.Popup
               className={
-                "relative hidden max-w-[calc(100vw-24px)] origin-(--transform-origin) flex-col items-center overflow-hidden rounded-[6px] px-3 py-2 text-sm leading-[1.4] whitespace-nowrap outline outline-1 outline-muted-faded-foreground/50 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-instant:transition-none data-starting-style:scale-90 data-starting-style:opacity-0 dark:-outline-offset-1 dark:outline-muted-faded-foreground/90 md:flex"
+                "relative z-300 hidden max-w-[calc(100vw-24px)] origin-(--transform-origin) flex-col items-center overflow-hidden rounded-[6px] bg-muted-faded-background/50 px-3 py-2 text-sm leading-[1.4] whitespace-nowrap text-faded-foreground outline outline-1 outline-muted-faded-foreground/50 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-instant:transition-none data-starting-style:scale-90 data-starting-style:opacity-0 md:flex dark:-outline-offset-1 dark:outline-muted-faded-foreground/90"
               }
             >
               ⌘ + K
@@ -229,7 +243,7 @@ export const SearchBar = ({
         <DialogTitle className="sr-only">Search</DialogTitle>
 
         {/* Input row + loading bar */}
-        <div
+        <m.div
           className={cn(
             "relative z-1 flex w-full items-center p-[8px]",
             isLoading && "loading"
@@ -237,18 +251,19 @@ export const SearchBar = ({
           cmdk-rp-courier={""}
           data-slot="command-input-wrapper"
         >
-          <CommandPrimitive.Input
+          <KMDInput
             data-slot="command-input"
             ref={inputRef}
             className="flex h-[32px] w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:opacity-50 sm:h-[40px] sm:text-base"
             data-themed={"color, background-color"}
             onValueChange={onValueChange}
+            value={value}
             placeholder="Search for anything…"
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
           />
-        </div>
+        </m.div>
 
         {/* List content — state machine */}
         <CommandList>
@@ -279,14 +294,14 @@ export const SearchBar = ({
                     title="Your Profile"
                     value="nav-profile"
                   >
-                    <User className="shrink-0 !size-[1em]" />
+                    <User className="!size-[1em] shrink-0" />
                   </LinkedCommandItem>
                   <LinkedCommandItem
                     href="/vault/account"
                     title="Settings"
                     value="nav-settings"
                   >
-                    <Settings className="shrink-0 !size-[1em]" />
+                    <Settings className="!size-[1em] shrink-0" />
                   </LinkedCommandItem>
                 </CommandGroup>
               ) : (
@@ -303,7 +318,7 @@ export const SearchBar = ({
                     title="Membership Plans"
                     value="nav-plans"
                   >
-                    <CreditCard className="shrink-0 !size-[1em]" />
+                    <CreditCard className="!size-[1em] shrink-0" />
                   </LinkedCommandItem>
                 </CommandGroup>
               )}
@@ -328,7 +343,7 @@ export const SearchBar = ({
                     ? `View all ${total} results for \u201c${debouncedValue}\u201d`
                     : `Open search page for \u201c${debouncedValue}\u201d`}
                 </span>
-                <ArrowRight className="ml-auto shrink-0 !size-4 opacity-60" />
+                <ArrowRight className="ml-auto !size-4 shrink-0 opacity-60" />
               </CommandItem>
             </CommandGroup>
           ) : isEmpty ? (
@@ -338,7 +353,7 @@ export const SearchBar = ({
                 Nothing found for &ldquo;{debouncedValue}&rdquo;
               </p>
               <button
-                className="text-[11px] uppercase tracking-widest text-faded-foreground/40 underline underline-offset-4 transition-colors hover:text-faded-foreground/70"
+                className="text-[11px] tracking-widest text-faded-foreground/40 uppercase underline underline-offset-4 transition-colors hover:text-faded-foreground/70"
                 onClick={handleViewAll}
               >
                 Try the full archive &rarr;
@@ -374,7 +389,7 @@ export const SearchBar = ({
 
 function SubCommand({
   inputRef,
-  listRef,
+  listRef
 }: {
   inputRef: RefObject<HTMLInputElement | null>;
   listRef: RefObject<HTMLElement | null>;
@@ -454,11 +469,7 @@ function SubCommand({
       </PopoverTrigger>
 
       <Popover.Portal>
-        <Popover.Positioner
-          className={"z-250"}
-          side="top"
-          align="start"
-        >
+        <Popover.Positioner className={"z-250"} side="top" align="start">
           <Popover.Popup
             data-slot="popover-content"
             className={cn(
@@ -476,10 +487,7 @@ function SubCommand({
                       <SubItem link={`/@${user.slug}`} shortcut="⌘ B">
                         My Profile
                       </SubItem>
-                      <SubItem
-                        link={`/vault/account`}
-                        shortcut="⌘ U"
-                      >
+                      <SubItem link={`/vault/account`} shortcut="⌘ U">
                         Settings
                       </SubItem>
                     </>
@@ -511,12 +519,19 @@ function SubItem({
   shortcut: string;
   link?: string;
 } & ComponentPropsWithoutRef<typeof CommandPrimitive.Item>) {
-  if (link) return <LinkedSubItem shortcut={shortcut} link={link} {...props}>{children}</LinkedSubItem>;
+  if (link)
+    return (
+      <LinkedSubItem shortcut={shortcut} link={link} {...props}>
+        {children}
+      </LinkedSubItem>
+    );
   return (
     <CommandItem {...props}>
       {children}
       <div cmdk-raycast-submenu-shortcuts="">
-        {shortcut.split(" ").map((key) => <kbd key={key}>{key}</kbd>)}
+        {shortcut.split(" ").map((key) => (
+          <kbd key={key}>{key}</kbd>
+        ))}
       </div>
     </CommandItem>
   );
@@ -533,15 +548,14 @@ const LinkedSubItem = ({
   link: string;
 } & ComponentPropsWithoutRef<typeof CommandPrimitive.Item>) => {
   const router = useTransitionRouter();
-  const selectCallback = useCallback(
-    () => router.push(link),
-    [link, router]
-  );
+  const selectCallback = useCallback(() => router.push(link), [link, router]);
   return (
     <CommandItem value={link} onSelect={selectCallback} {...rest}>
       {children}
       <div cmdk-raycast-submenu-shortcuts="">
-        {shortcut.split(" ").map((key) => <kbd key={key}>{key}</kbd>)}
+        {shortcut.split(" ").map((key) => (
+          <kbd key={key}>{key}</kbd>
+        ))}
       </div>
     </CommandItem>
   );

@@ -1,17 +1,15 @@
-import { afterSchemaInit } from "@/scripts/afterSchemaInit";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
 import { EmailQuota } from "@/payload/collections/EmailQuota";
-import { Footer } from "@/payload/globals/Footer/config";
-import { Header } from "@/payload/globals/Header";
 import { createProfile } from "@/payload/collections/Profile/operations/createProfile";
 import { createN } from "@/payload/collections/Users/hooks/afterChange";
+import { Footer } from "@/payload/globals/Footer/config";
+import { Header } from "@/payload/globals/Header";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";
 import { plugins } from "@/payload/plugins";
-import { User } from "@payload-types";
+import { afterSchemaInit } from "@/scripts/afterSchemaInit";
 import { postgresAdapter } from "@payloadcms/db-postgres";
-import { nanoid } from "nanoid";
 import path from "path";
 import { buildConfig, PayloadRequest } from "payload";
 import sharp from "sharp";
@@ -127,7 +125,7 @@ export default buildConfig({
       ["Relationships", "relationships"],
       ["Sports", "sports"]
     ];
-    const uid = await payload
+    let uid = await payload
       .find({
         collection: "users",
         where: {
@@ -151,9 +149,13 @@ export default buildConfig({
         pagination: false,
         limit: 1
       })
-      .then(async ({ docs }) => {
-        if (!docs[0]) {
-          return await payload
+      .then(({ docs }) => docs[0]?.id);
+    if (!uid) {
+      console.log("Creating user concierge");
+      const transactionID = await payload.db.beginTransaction();
+      if (transactionID) {
+        try {
+          const id = await payload
             .create({
               collection: "users",
               draft: false,
@@ -170,74 +172,81 @@ export default buildConfig({
                 onboarded: true,
                 banned: false,
                 twoFactorEnabled: false
+              },
+              req: {
+                transactionID
               }
             })
             .then(({ id }) => id);
-        } else {
-          return (docs[0] as User).id;
+          await payload.db.commitTransaction(transactionID);
+          if (id) {
+            uid = id;
+          }
+        } catch {
+          console.log("FUCK");
+          await payload.db.rollbackTransaction(transactionID);
         }
-      })
-      .catch((e) => {
-        payload.logger.error("Error creating user concierge:", e);
-      });
-    if (typeof uid === "string") {
-      // await syncTrackMedia(payload, uid).catch((e) => {
-      //   payload.logger.error("syncTrackMedia failed:", e);
-      // });
-
-      const pr = tags.map(([title, slug]) =>
-        payload
-          .count({
-            collection: "tags",
-            overrideAccess: true,
-            where: {
-              title: {
-                equals: title
-              }
-            }
-          })
-          .then((r) =>
-            r.totalDocs < 1 ? ([title, slug] as [string, string]) : slug
-          )
-          .catch((e) =>
-            payload.logger.error(
-              "Error while querying for unitinialized tag " + slug + ": ",
-              e
-            )
-          )
-      );
-      const results = await Promise.allSettled(pr);
-      const notErrored = results.filter((v) => v.status === "fulfilled");
-      const errored = results.filter((r) => r.status === "rejected");
-      const left = notErrored
-        .map((rx) => rx.value)
-        .filter((t) => Array.isArray(t));
-      if (left.length > 0) {
-        const over = left.map(([title, slug]) =>
-          payload
-            .create({
-              collection: "tags",
-              draft: false,
-              overrideAccess: true,
-              data: {
-                title,
-                slug,
-                hashId: nanoid(11),
-                slugLock: true,
-                tagCount: 0,
-                author: uid
-              }
-            })
-            .then((r) => r.slug)
-        );
-        await Promise.allSettled(over)
-          .then((r) => r.filter((x) => x.status === "fulfilled"))
-          .then((g) => g.map((xx) => xx.value))
-          .then((s) => console.log("Tags created:", s));
       }
-    } else {
-      payload.logger.error("Error in locating admin user with name concierge");
     }
+
+    // if (typeof uid === "string") {
+    //   // await syncTrackMedia(payload, uid).catch((e) => {
+    //   //   payload.logger.error("syncTrackMedia failed:", e);
+    //   // });
+    //
+    //   const pr = tags.map(([title, slug]) =>
+    //     payload
+    //       .count({
+    //         collection: "tags",
+    //         overrideAccess: true,
+    //         where: {
+    //           title: {
+    //             equals: title
+    //           }
+    //         }
+    //       })
+    //       .then((r) =>
+    //         r.totalDocs < 1 ? ([title, slug] as [string, string]) : slug
+    //       )
+    //       .catch((e) =>
+    //         payload.logger.error(
+    //           "Error while querying for unitinialized tag " + slug + ": ",
+    //           e
+    //         )
+    //       )
+    //   );
+    //   const results = await Promise.allSettled(pr);
+    //   const notErrored = results.filter((v) => v.status === "fulfilled");
+    //   const errored = results.filter((r) => r.status === "rejected");
+    //   const left = notErrored
+    //     .map((rx) => rx.value)
+    //     .filter((t) => Array.isArray(t));
+    //   if (left.length > 0) {
+    //     const over = left.map(([title, slug]) =>
+    //       payload
+    //         .create({
+    //           collection: "tags",
+    //           draft: false,
+    //           overrideAccess: true,
+    //           data: {
+    //             title,
+    //             slug,
+    //             hashId: nanoid(11),
+    //             slugLock: true,
+    //             tagCount: 0,
+    //             author: uid
+    //           }
+    //         })
+    //         .then((r) => r.slug)
+    //     );
+    //     await Promise.allSettled(over)
+    //       .then((r) => r.filter((x) => x.status === "fulfilled"))
+    //       .then((g) => g.map((xx) => xx.value))
+    //       .then((s) => console.log("Tags created:", s));
+    //   }
+    // } else {
+    //   payload.logger.error("Error in locating admin user with name concierge");
+    // }
     await payload
       .count({
         collection: "categories",

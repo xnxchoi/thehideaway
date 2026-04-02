@@ -1,9 +1,11 @@
 "use client";
-
+import { HTMLMotionProps } from "motion/react";
+import * as m from "motion/react-m";
 import { cn } from "@/lib/utils";
 import { useCursor } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { Dialog as DialogPrimitive } from "@base-ui/react";
+import { ComponentType } from "react";
 import * as React from "react";
 import { useDomCursor } from "../core/cursorWrapper";
 
@@ -61,12 +63,10 @@ function DialogOverlay({
   );
 }
 
-interface DialogContentProps extends React.ComponentProps<
-  typeof DialogPrimitive.Popup
-> {
-  open?: boolean;
-}
-
+const OmniaPortal = m.create(DialogPortal);
+const OmniaOverlay = m.create(DialogOverlay);
+const OmniaViewport = m.create(DialogPrimitive.Viewport);
+const OmniaContent = m.create(DialogPrimitive.Popup);
 function DialogContent({
   className,
   onMouseEnter: nEnter,
@@ -74,21 +74,23 @@ function DialogContent({
   children,
   open = true,
   ...props
-}: DialogContentProps) {
+}: HTMLMotionProps<"div"> & {
+  open?: boolean;
+}) {
   const setCursorTheme = useCursor((l) => l.setCursorTheme);
   const theme = useTheme((l) => l.theme);
 
   return (
-    <DialogPortal data-slot="dialog-portal">
-      <DialogOverlay />
-      <DialogPrimitive.Viewport>
-        <DialogPrimitive.Popup
+    <OmniaPortal data-slot="dialog-portal" data-lenis-prevent="true">
+      <OmniaOverlay />
+      <OmniaViewport>
+        <OmniaContent
           data-slot="dialog-content"
           data-themed={"background-color,color,height"}
           className={"pointer-events-none"}
           {...props}
         >
-          <div
+          <m.div
             className={cn(
               "pointer-events-auto fixed top-[45%] left-[50%] z-[245] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl bg-faded-background/40 p-6 text-faded-foreground shadow-lg/25 outline-1 outline-muted-faded-foreground/20! backdrop-blur-xs duration-200 ease-out-power2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-[550px] dark:bg-faded-background/80 dark:shadow-xl/40 dark:shadow-gray-900/30 dark:outline-muted-faded-foreground/40!",
               className
@@ -96,11 +98,11 @@ function DialogContent({
             data-lenis-prevent="true"
           >
             {children}
-          </div>
+          </m.div>
           <DialogClose className="absolute top-6 right-10 rounded-sm text-foreground opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent"></DialogClose>
-        </DialogPrimitive.Popup>
-      </DialogPrimitive.Viewport>
-    </DialogPortal>
+        </OmniaContent>
+      </OmniaViewport>
+    </OmniaPortal>
   );
 }
 

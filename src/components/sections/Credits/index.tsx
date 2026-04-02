@@ -2,6 +2,7 @@
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
+import { ImageMedia } from "@/components/core/Media/Image";
 import { cn } from "@/lib/utils";
 import type { User, UserMedia } from "@/payload-types";
 import { useIsMobile } from "@/utilities/getBreakpoints";
@@ -481,7 +482,7 @@ const CreditsInner = (props: CreditComponentProps) => {
         void 0 !== t &&
         !isParty &&
         initConfettis());
-  }, [teamData, activeProfile, isParty]);
+  }, [activeProfile, wW, positions, isParty, initConfettis]);
   const [gap, setGap] = useState(100 / teamData.length);
   useEffect(() => {
     const newLength = teamData.length;
@@ -511,7 +512,7 @@ const CreditsInner = (props: CreditComponentProps) => {
     } else {
       pause();
     }
-  }, [playing, locked, hidden]);
+  }, [playing, locked, hidden, play, pause, hideProfil]);
   const setCursor = useCursor((state) => state.setCursorState);
 
   return (
@@ -627,11 +628,10 @@ const CreditsInner = (props: CreditComponentProps) => {
                 animate={portraitState}
                 exit={"hidden"}
               >
-                <FrontImage
+                <ImageMedia
                   key={`bgImg-${activeProfile.id}`}
                   imgClassName={`w-full h-full object-cover absolute`}
-                  resource={activeProfile.image}
-                  isUser={true}
+                  src={activeProfile.image}
                 />
               </m.div>
               <m.div
