@@ -4,6 +4,7 @@ import { DeferredEmails } from "@/payload/collections/DeferredEmails";
 import { EmailQuota } from "@/payload/collections/EmailQuota";
 import { createProfile } from "@/payload/collections/Profile/operations/createProfile";
 import { createN } from "@/payload/collections/Users/hooks/afterChange";
+import { calculateSearchScore } from "@/payload/search/calculateScore";
 import { Footer } from "@/payload/globals/Footer/config";
 import { Header } from "@/payload/globals/Header";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";
@@ -483,6 +484,62 @@ export default buildConfig({
           }
         }
       }
+      {
+        slug: "refreshSearchScores",
+        label: "Recalculate relevance scores for all search index documents",
+        outputSchema: [
+          {
+            name: "processed",
+            type: "number",
+            required: true
+          }
+        ],
+        handler: async ({ req }) => {
+          const { payload } = req;
+          const BATCH = 100;
+          let page = 1;
+          let processed = 0;
+
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const { docs, hasNextPage } = await payload.find({
+              collection: "search",
+              limit: BATCH,
+              page,
+              depth: 0,
+              overrideAccess: true
+            });
+
+            for (const doc of docs) {
+              const newScore = calculateSearchScore({
+                priority: doc.priority,
+                createdAt: doc.createdAt,
+                hasImage: !!(doc.meta?.image),
+                hasDescription: !!(doc.meta?.description),
+                hasTags: Array.isArray(doc.tags) && doc.tags.length > 0,
+                hasCategory: Array.isArray(doc.category) && doc.category.length > 0
+              });
+
+              if (newScore !== (doc as any).score) {
+                await payload.update({
+                  collection: "search",
+                  id: doc.id,
+                  data: { score: newScore } as any,
+                  depth: 0,
+                  overrideAccess: true
+                });
+              }
+              processed++;
+            }
+
+            if (!hasNextPage) break;
+            page++;
+          }
+
+          payload.logger.info(`refreshSearchScores: updated ${processed} search documents`);
+          return { output: { processed } };
+        }
+      }
     ],
     workflows: [
       {
@@ -492,6 +549,14 @@ export default buildConfig({
           await tasks.welcomeUsers("1");
         },
         queue: "halfHour"
+      },
+      {
+        slug: "refreshSearch",
+        label: "Daily refresh of search relevance scores",
+        handler: async ({ tasks }) => {
+          await tasks.refreshSearchScores("1");
+        },
+        queue: "daily"
       }
     ],
     autoRun: [
@@ -499,8 +564,12 @@ export default buildConfig({
         cron: "*/15 * * * *", // every 15 minutes
         limit: 100, // limit jobs to process each run
         queue: "quarterHour" // name of the queue
+      },
+      {
+        cron: "0 3 * * *", // daily at 03:00 UTC
+        limit: 1,
+        queue: "daily"
       }
-      // add as many cron jobs as you want
     ]
   },
   typescript: {

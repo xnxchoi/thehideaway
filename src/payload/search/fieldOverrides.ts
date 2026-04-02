@@ -5,6 +5,23 @@ import {uuidv7} from "uuidv7";
 export const searchFields: Field[] = [
 	idField(),
 
+	/**
+	 * Composite relevance score — calculated on every sync and refreshed daily by
+	 * the refreshSearchScores job. Combines editorial priority, content freshness,
+	 * and content richness. See src/payload/search/calculateScore.ts for details.
+	 */
+	{
+		name: "score",
+		type: "number",
+		index: true,
+		defaultValue: 0,
+		admin: {
+			readOnly: true,
+			position: "sidebar",
+			description: "Auto-calculated relevance score (priority + recency + richness)"
+		}
+	},
+
 	{
 		name: "slug",
 		type: "text",

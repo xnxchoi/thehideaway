@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       collection: "search",
       where: { and: [searchWhere, accessWhere] },
       limit,
-      sort: "-priority",
+      sort: "-score",
       depth: 0,
       overrideAccess: true
     });
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       slug: doc.slug,
       collection_type: doc.collection as IndexedCollections,
       url: collectionToUrl(doc.collection, doc.slug),
-      score: doc.priority ?? 0,
+      score: (doc as any).score ?? doc.priority ?? 0,
       type: "content" as const,
       subtitle: doc.meta?.description || undefined
     }));

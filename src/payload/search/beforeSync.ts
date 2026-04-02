@@ -1,6 +1,7 @@
 import { getPayload } from "@/lib/payload";
 import { Category, Post, Profile, Search } from "@/payload-types";
 import { BeforeSync, DocToSync } from "@/payload/plugins/plugin-search/types";
+import { calculateSearchScore } from "@/payload/search/calculateScore";
 import { CategoryOverview } from "@/types/collections/meta-collections";
 import { DataFromCollectionSlug } from "payload";
 import { uuidv7 } from "uuidv7";
@@ -247,12 +248,25 @@ export const beforeSyncWithSearch: BeforeSync = async (
     finalDoc.id = uuidv7();
   }
 
+  // Calculate composite relevance score at index time
+  const score = calculateSearchScore({
+    priority: (searchDraft as any).priority ?? 0,
+    createdAt: (targetDoc as any).createdAt ?? new Date().toISOString(),
+    hasImage: !!(finalDoc.meta?.image),
+    hasDescription: !!(finalDoc.meta?.description),
+    hasTags: Array.isArray(finalDoc.tags) && finalDoc.tags.length > 0,
+    hasCategory: Array.isArray(finalDoc.category) && finalDoc.category.length > 0
+  });
+
+  // DocToSync is Omit<Search,...>. `score` will be part of Search once types are
+  // regenerated after the migration — cast is safe and intentional.
   return {
     ...finalDoc,
+    score,
     collection,
     doc: {
       relationTo: collection,
       value: searchDraft.doc.value
     }
-  } satisfies DocToSync;
+  } as DocToSync;
 };
