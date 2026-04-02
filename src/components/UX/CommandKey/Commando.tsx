@@ -40,13 +40,11 @@ export type SearchAPIResponse = {
 export const COLLECTION_LABELS: Record<string, string> = {
   posts: "Essay",
   surf: "Surf",
-  delta: "Delta",
-  users: "Person",
+  profile: "Person",
   albums: "Album",
   tracks: "Track",
   playlists: "Playlist",
-  categories: "Category",
-  tags: "Tag"
+  pages: "Page"
 };
 
 export function getResultLabel(result: SearchAPIResult): string {

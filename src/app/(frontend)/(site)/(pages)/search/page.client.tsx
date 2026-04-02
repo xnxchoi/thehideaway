@@ -33,13 +33,11 @@ function groupByCollection(results: SearchAPIResult[]): GroupedResults {
 const COLLECTION_ORDER = [
   "posts",
   "surf",
-  "delta",
-  "users",
+  "profile",
   "albums",
   "tracks",
   "playlists",
-  "categories",
-  "tags",
+  "pages",
 ];
 
 function sortedGroupEntries(

@@ -1,223 +1,115 @@
-import { SearchAPIResult } from "@/components/UX/CommandKey/Commando";
+import type {
+  SearchAPIResponse,
+  SearchAPIResult
+} from "@/components/UX/CommandKey/Commando";
+import type { IndexedCollections } from "@/payload/search/beforeSync";
+import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import config from "@/payload.config";
-import { sql } from "@payloadcms/db-postgres";
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getPayload } from "payload";
+import type { Where } from "payload";
 
-interface QueryResult<T = any> {
-  rows: T[];
-}
-
-type CollectionSlug =
-  | "users"
-  | "posts"
-  | "delta"
-  | "albums"
-  | "tracks"
-  | "playlists"
-  | "categories"
-  | "tags";
-
-const collectionConfigs = {
-  users: {
-    table: "users",
-    urlPattern: "/users/{slug}",
-    selectFields: [
-      "id",
-      "username",
-      "slug",
-      "name",
-      "image",
-      "bio",
-      "location"
-    ],
-    filters: "_status = 'published' AND banned = false"
-  },
-  posts: {
-    table: "posts",
-    urlPattern: "/essays/{slug}",
-    selectFields: [
-      "id",
-      "title",
-      "subtitle",
-      "slug",
-      "author_id",
-      "published_at"
-    ],
-    filters: "_status = 'published'"
-  },
-  delta: {
-    table: "delta",
-    urlPattern: "/delta/{slug}",
-    selectFields: [
-      "id",
-      "title",
-      "source",
-      "slug",
-      "author_id",
-      "published_at"
-    ],
-    filters: "_status = 'published'"
-  },
-  albums: {
-    table: "albums",
-    urlPattern: "/albums/{slug}",
-    selectFields: ["id", "title", "artist", "slug", "cover_id", "published_at"],
-    filters: "_status = 'published' AND visibility = 'public'"
-  },
-  tracks: {
-    table: "tracks",
-    urlPattern: "/tracks/{slug}",
-    selectFields: ["id", "title", "artist", "slug", "album_id", "published_at"],
-    filters: "_status = 'published' AND visibility = 'public'"
-  },
-  playlists: {
-    table: "playlists",
-    urlPattern: "/playlists/{slug}",
-    selectFields: ["id", "title", "slug", "cover_id", "published_at"],
-    filters: "_status = 'published' AND visibility = 'public'"
-  },
-  categories: {
-    table: "categories",
-    urlPattern: "/categories/{slug}",
-    selectFields: ["id", "title", "description", "slug"],
-    filters: "1=1"
-  },
-  tags: {
-    table: "tags",
-    urlPattern: "/tagged/{slug}",
-    selectFields: ["id", "title", "slug", "author_id"],
-    filters: "1=1"
+function collectionToUrl(collection: string, slug: string): string {
+  switch (collection) {
+    case "posts":
+      return `/essays/${slug}`;
+    case "surf":
+      return `/surf/${slug}`;
+    case "profile":
+      return `/users/${slug}`;
+    case "pages":
+      return `/${slug}`;
+    case "albums":
+      return `/rp.fm/albums/${slug}`;
+    case "playlists":
+      return `/rp.fm/playlists/${slug}`;
+    case "tracks":
+      return `/rp.fm/tracks/${slug}`;
+    default:
+      return `/${slug}`;
   }
-} as const;
+}
 
 export async function GET(request: NextRequest) {
   const payload = await getPayload({ config });
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q");
-  const collectionsParam = searchParams.get("collections");
-  const collections =
-    collectionsParam
-      ?.split(",")
-      .filter((c): c is CollectionSlug =>
-        Object.keys(collectionConfigs).includes(c)
-      ) || (Object.keys(collectionConfigs) as CollectionSlug[]);
-  const limit = Math.min(parseInt(searchParams.get("limit") || "10"), 50);
+  const query = searchParams.get("q")?.trim();
+  const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
-  if (!query) {
-    return NextResponse.json({ results: [] });
+  if (!query || query.length < 1) {
+    return NextResponse.json({
+      results: [],
+      query: "",
+      collections: [],
+      total: 0
+    } satisfies SearchAPIResponse);
   }
 
-  try {
-    const results: SearchAPIResult[] = [];
+  // Resolve current user for access control
+  const { user } = await payload.auth({ headers: await headers() });
 
-    for (const collection of collections) {
-      const config = collectionConfigs[collection];
-      if (!config) continue;
-
-      const selectFieldsStr = config.selectFields.join(", ");
-
-      try {
-        // Full-text search with mixed Korean/English support
-        const ftsQuery = sql`
-          SELECT 
-            ${sql.raw(selectFieldsStr)},
-            ts_rank(search_vector, plainto_tsquery('simple', ${sql.param(query)})) as rank,
-            ${sql.param(collection)} as collection_type
-          FROM ${sql.raw(config.table)}
-          WHERE 
-            search_vector @@ plainto_tsquery('simple', ${sql.param(query)})
-            AND ${sql.raw(config.filters)}
-          ORDER BY rank DESC, created_at DESC
-          LIMIT ${sql.param(Math.ceil(limit / collections.length))}
-        `;
-
-        const ftsResults = (await payload.db.drizzle.execute(
-          ftsQuery
-        )) as QueryResult;
-
-        // Get searchable fields for trigram similarity
-        const searchableFields = config.selectFields.filter((f) =>
-          ["title", "name", "username", "slug"].some((searchField) =>
-            f.includes(searchField)
-          )
-        );
-
-        if (searchableFields.length > 0) {
-          const similarityExpression = searchableFields
-            .map((f) => `similarity(${f}, ${sql.param(query)})`)
-            .join(", ");
-
-          const trigramCondition = searchableFields
-            .map((f) => `${f} % ${sql.param(query)}`)
-            .join(" OR ");
-
-          const excludeIds =
-            ftsResults.rows.length > 0
-              ? ftsResults.rows.map((r: any) => `'${r.id}'`).join(",")
-              : "NULL";
-
-          const similarQuery = sql`
-            SELECT DISTINCT
-              ${sql.raw(selectFieldsStr)},
-              GREATEST(${sql.raw(similarityExpression)}) as similarity_score,
-              ${sql.param(collection)} as collection_type
-            FROM ${sql.raw(config.table)}
-            WHERE (${sql.raw(trigramCondition)})
-            AND ${sql.raw(config.filters)}
-            AND id NOT IN (${sql.raw(excludeIds)})
-            ORDER BY similarity_score DESC
-            LIMIT ${sql.param(Math.max(0, Math.ceil(limit / collections.length) - ftsResults.rows.length))}
-          `;
-
-          const similarResults = (await payload.db.drizzle.execute(
-            similarQuery
-          )) as QueryResult;
-
-          // Combine and format results
-          const collectionResults = [
-            ...ftsResults.rows,
-            ...similarResults.rows
-          ].map((item: any) => ({
-            ...item,
-            collection: collection,
-            url: config.urlPattern.replace("{slug}", item.slug || ""),
-            score: item.rank || item.similarity_score || 0,
-            type: "content"
-          }));
-
-          results.push(...collectionResults);
-        } else {
-          // Just use FTS results if no searchable fields for trigrams
-          const collectionResults = ftsResults.rows.map((item: any) => ({
-            ...item,
-            collection: collection,
-            url: config.urlPattern.replace("{slug}", item.slug || ""),
-            score: item.rank || 0,
-            type: "content"
-          }));
-
-          results.push(...collectionResults);
-        }
-      } catch (error) {
-        console.error(`Search error for ${collection}:`, error);
-        // Continue with other collections even if one fails
+  // Access control mirrors the baseFilter defined in plugins/index.ts
+  const accessWhere: Where = user
+    ? {
+        or: [
+          { authority: { less_than_equal: roleToAuthority(user.role) } },
+          { locked: { not_equals: true } },
+          { "author.key": { equals: user.id } }
+        ]
       }
-    }
+    : {
+        or: [
+          { locked: { not_equals: true } },
+          { authority: { less_than_equal: 1 } }
+        ]
+      };
 
-    // Sort all results by score and limit
-    const sortedResults = results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+  // Text match across indexed fields
+  const searchWhere: Where = {
+    or: [
+      { title: { like: query } },
+      { slug: { like: query } },
+      { "meta.title": { like: query } },
+      { "meta.description": { like: query } },
+      { "author.name": { like: query } },
+      { "category.title": { like: query } },
+      { "tags.title": { like: query } }
+    ]
+  };
+
+  try {
+    const found = await payload.find({
+      collection: "search",
+      where: { and: [searchWhere, accessWhere] },
+      limit,
+      sort: "-priority",
+      depth: 0,
+      overrideAccess: true
+    });
+
+    const results: SearchAPIResult[] = found.docs.map((doc) => ({
+      id: doc.id,
+      title: doc.title || undefined,
+      slug: doc.slug,
+      collection_type: doc.collection as IndexedCollections,
+      url: collectionToUrl(doc.collection, doc.slug),
+      score: doc.priority ?? 0,
+      type: "content" as const,
+      subtitle: doc.meta?.description || undefined
+    }));
 
     return NextResponse.json({
-      results: sortedResults,
+      results,
       query,
-      collections: collections,
-      total: sortedResults.length
-    });
+      collections: [...new Set(results.map((r) => r.collection_type))],
+      total: found.totalDocs
+    } satisfies SearchAPIResponse);
   } catch (error) {
-    console.error("Search error:", error);
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    payload.logger.error({ error, msg: "Search API error" });
+    return NextResponse.json(
+      { results: [], query, collections: [], total: 0 },
+      { status: 500 }
+    );
   }
 }
