@@ -3,7 +3,7 @@ const SITE_URL =
   process.env.VERCEL_PROJECT_PRODUCTION_URL ||
   "https://hideawayseoul.com";
 
-/** @type {import('next-sitemap').IConfig} */
+/** @type {import("next-sitemap").IConfig} */
 module.exports = {
   siteUrl: SITE_URL,
   generateRobotsTxt: true,

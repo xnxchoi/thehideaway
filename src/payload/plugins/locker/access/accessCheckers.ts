@@ -2,13 +2,10 @@ import type {Admin, User} from "@/payload-types";
 import {CollectionMap} from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import {FieldAccessArgs} from "node_modules/payload/dist/fields/config/types";
 import {Access, AccessArgs, Field, FieldAccess, Where} from "payload";
+import { AuthorCollections } from "@/payload/collections/Compilations/actions";
 
 type isAuthenticated = (args: AccessArgs<User> | AccessArgs<Admin>) => boolean;
-type AuthorCollections = Extract<CollectionMap[keyof CollectionMap], {
-	author: string | User
-}> | Extract<CollectionMap[keyof CollectionMap], {
-	author: string[] | User[]
-}>
+
 type RP_Roles = NonNullable<User["role"]>;
 
 export const checkRole = (

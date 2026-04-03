@@ -1584,8 +1584,8 @@ function sliderInternal({
       WEBGL_MOUSE.material.uniforms.mouse.value.x = vMouseDamp.x / WW;
       WEBGL_MOUSE.material.uniforms.mouse.value.y = 1 - vMouseDamp.y / WH;
       WEBGL_MOUSE.material.uniforms.mouseTrailsSize.value = clamp(
-        0,
         WEBGL_MOUSE.params.mouse.size,
+        0,
         1
       );
       WEBGL_MOUSE.material.uniforms.mouseTrailsAgeRatio.value =
@@ -1607,7 +1607,7 @@ function sliderInternal({
       WEBGL.renderer.render(WEBGL_MOUSE.scene, WEBGL.o_camera);
     },
     onResize: () => {
-      const i = clamp(1, RES, 1.75);
+      const i = clamp(RES, 1, 1.75);
       WEBGL_MOUSE.fbo && WEBGL_MOUSE.fbo.setSize(WW * i, WH * i);
       WEBGL_MOUSE.mesh &&
         ((WEBGL_MOUSE.mesh.scale.x = WEBGL.width),

@@ -8,7 +8,8 @@ import type { CompilationItemType } from "@/payload/collections/Compilations";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { RP_Btn } from "@/components/core/Button";
 
 const TAB_LABELS: Record<CompilationItemType, string> = {
   posts: "Essays",
@@ -53,7 +54,7 @@ export default function SavedPageClient({ userId, items }: Props) {
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-xs">
+              <p className="font-mono text-small tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Your Library
               </p>
               <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
@@ -67,7 +68,7 @@ export default function SavedPageClient({ userId, items }: Props) {
             </div>
             <Link
               href="/me/lists"
-              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 transition-colors hover:text-foreground xl:text-xs"
+              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
             >
               My Lists →
             </Link>
@@ -76,13 +77,13 @@ export default function SavedPageClient({ userId, items }: Props) {
           {/* Tabs */}
           {availableTabs.length > 1 && (
             <LayoutGroup id="saved-tabs">
-              <nav className="-mb-px mt-5 flex gap-6 overflow-x-auto xl:gap-8">
+              <nav className="mt-5 -mb-px flex gap-6 overflow-x-auto xl:gap-8">
                 {availableTabs.map((tab) => (
-                  <button
+                  <RP_Btn
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={cn(
-                      "relative shrink-0 pb-3 font-mono text-[11px] uppercase tracking-widest transition-colors xl:text-xs",
+                      "relative shrink-0 pb-3 font-mono text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
                       activeTab === tab
                         ? "text-foreground"
                         : "text-muted-foreground/50 hover:text-muted-foreground"
@@ -96,10 +97,14 @@ export default function SavedPageClient({ userId, items }: Props) {
                       <m.span
                         layoutId="tab-indicator"
                         className="absolute inset-x-0 bottom-0 h-px bg-foreground"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                        transition={{
+                          type: "spring",
+                          bounce: 0.2,
+                          duration: 0.4
+                        }}
                       />
                     )}
-                  </button>
+                  </RP_Btn>
                 ))}
               </nav>
             </LayoutGroup>
@@ -146,7 +151,7 @@ function BookmarkCard({
   item: BookmarkItemTyped;
   userId: string;
 }) {
-  const isSquare = MUSIC_TABS.includes(item.collectionSlug);
+  const isSquare = MUSIC_TABS.some((akl) => akl === item.collection);
 
   return (
     <m.div
@@ -162,7 +167,7 @@ function BookmarkCard({
         <div
           className={cn(
             "relative w-full overflow-hidden",
-            isSquare ? "aspect-square" : "aspect-[16/9]"
+            isSquare ? "aspect-square" : "aspect-video"
           )}
         >
           <Image
@@ -178,7 +183,7 @@ function BookmarkCard({
       {/* Body */}
       <div className="p-3.5 xl:p-4">
         <Link href={item.url} className="block">
-          <h3 className="line-clamp-2 text-sm font-medium leading-snug tracking-tight transition-opacity group-hover:opacity-80 xl:text-base">
+          <h3 className="line-clamp-2 text-sm leading-snug font-medium tracking-tight transition-opacity group-hover:opacity-80 xl:text-base">
             {item.title}
           </h3>
         </Link>
@@ -186,17 +191,17 @@ function BookmarkCard({
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {"author" in item && item.author && (
-              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
-                {item.author}
+              <span className="font-mono text-small text-muted-foreground/60 xl:text-[11px]">
+                {typeof item.author === "object" && item.author.name}
               </span>
             )}
             {"source" in item && item.source && (
-              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-mono text-small text-muted-foreground/60 xl:text-[11px]">
                 {item.source}
               </span>
             )}
             {"artist" in item && item.artist && (
-              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-mono text-small text-muted-foreground/60 xl:text-[11px]">
                 {item.artist}
               </span>
             )}
@@ -205,7 +210,7 @@ function BookmarkCard({
           {/* Bookmark toggle — removes from saved on click */}
           <div className="opacity-0 transition-opacity group-hover:opacity-100">
             <BookmarkButton
-              collectionSlug={item.collectionSlug}
+              collectionSlug={item.collection}
               itemId={item.id}
               userId={userId}
               className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground/50 transition-colors hover:text-foreground [&_svg]:size-[14px]"
@@ -220,7 +225,10 @@ function BookmarkCard({
 // ── Empty State ────────────────────────────────────────────────────────────
 
 function SavedEmptyState({ tab }: { tab: CompilationItemType }) {
-  const messages: Record<CompilationItemType, { headline: string; sub: string }> = {
+  const messages: Record<
+    CompilationItemType,
+    { headline: string; sub: string }
+  > = {
     posts: {
       headline: "No saved essays yet.",
       sub: "Bookmark essays while reading to collect them here."

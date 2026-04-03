@@ -13,6 +13,7 @@ import { DialogTitle } from "@/components/ui/dialog";
 import { PopoverRoot, PopoverTrigger } from "@/components/ui/popover";
 import {
   LinkedCommandItem,
+  SearchAPIResult,
   SearchResultItem,
   useSearchQuery
 } from "@/components/UX/CommandKey/Commando";
@@ -43,7 +44,8 @@ import {
   useEffect,
   useId,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from "react"; // ─── Constants ────────────────────────────────────────────────────────────────
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -118,18 +120,13 @@ export const SearchBar = ({
       isDebouncing.get() ||
       (debouncedValued.get().length > 0 && iFetching.get())
   );
+  const [results, setResults] = useState<SearchAPIResult[]>([]);
   const resultsValue = useMotionValue(data?.results ?? []);
   useEffect(() => {
-    const bef = resultsValue.get();
-    if (
-      data?.results &&
-      typeof data.results === "object" &&
-      Array.isArray(data.results)
-    ) {
-      resultsValue.set(Array.from(new Set([...bef, ...data.results])));
-    }
-  }, [data, resultsValue]);
-  const total = data?.total ?? 0;
+    const re = data?.results || [];
+    re.length > 0 && setResults((r) => Array.from(new Set([...r, ...re])));
+  }, [data]);
+  const total = results.length;
   const isInit = value.length === 0;
   const hasResults = !isLoading && results.length > 0;
   const isEmpty =

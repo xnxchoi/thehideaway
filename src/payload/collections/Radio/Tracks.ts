@@ -94,7 +94,12 @@ export const Tracks: CollectionConfig = {
 								select: {
 									slug: true
 								}
-							});
+							}).catch(e=>{
+                req.payload.logger.error(
+                  "Errpr"
+                )
+                return null
+              });
 							if (album) {
 								siblingData.albumSlug = album.slug;
 							}
@@ -179,6 +184,6 @@ export const Tracks: CollectionConfig = {
 	endpoints: [{path: "stream/:id", method: "get", handler: StreamHandler}],
 	hooks: {
 		afterChange: [],
-		beforeChange: [sanitizeAuthor(false), populatePublishedAt]
+		beforeChange: [sanitizeAuthor(false) ]
 	}
 };

@@ -808,7 +808,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
       const yP = e.clientY;
       const distance =
         ((yP - lastPosition.current) / window.innerHeight / 2) * 100;
-      const yD = clamp(0, translateY.get() + distance, 100);
+      const yD = clamp(translateY.get() + distance, 0, 100);
       translateY.set(yD);
       transformPosition.set(`center ${yD}%`);
       lastPosition.current = yP;

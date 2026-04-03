@@ -85,8 +85,8 @@ export const userViewHandler: PayloadHandler = async (req) => {
 	const payload = req.payload
 
 	const targetCollection = targetType as TrackedTargetType
-	const progressNumber = clamp(0.00, progress, 1.00)
-	const viewedBoolean = typeof viewed === 'boolean' ? viewed : progressNumber > 0
+	const progressNumber = clamp(progress, 0.00, 1.00)
+  const viewedBoolean = typeof viewed === 'boolean' ? viewed : progressNumber > 0
 	const res: {
 		id: string
 		user: string

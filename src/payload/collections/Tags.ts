@@ -3,7 +3,7 @@ import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
 import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
 import { CollectionMap } from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import { KeysOfValue } from "@/utilities/typeUtilities";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import {
   CollectionConfig,
   CollectionSlug,
@@ -16,6 +16,7 @@ import {
   standardCreateAccess
 } from "../plugins/locker/access/accessCheckers";
 import { idField } from "@/payload/fields/IDField";
+import { revalidateTagged } from "@/payload/collections/Tags/hooks/revalidateTagged";
 
 export type TaggedCollection = Extract<
   DataFromCollectionSlug<Exclude<CollectionSlug, "delta">>,
@@ -91,25 +92,7 @@ export const Tags: CollectionConfig<"tags"> = {
   hooks: {
     beforeChange: [sanitizeAuthor(false)],
     afterChange: [
-      ({ collection, operation, doc, previousDoc }) => {
-        revalidateTag("tag-data", "max");
-
-        switch (operation) {
-          case "create":
-            {
-            }
-            break;
-          case "update":
-            {
-              revalidatePath("/tagged/" + doc.slug, "page");
-              if (previousDoc?.slug !== doc?.slug) {
-                revalidatePath("/tagged/" + previousDoc.slug, "page");
-              }
-              revalidateTag("tag-" + (doc as Tag).slug, "max");
-            }
-            break;
-        }
-      }
+      revalidateTagged
     ]
   }
 };

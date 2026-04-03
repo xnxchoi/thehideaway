@@ -184,7 +184,7 @@ const RP_CTXER = ({ children }: { children: ReactNode }) => {
         dispatch({
           type: "UPDATE",
           path: "span",
-          value: clamp(144, spanValue || 700, 700)
+          value: clamp(spanValue || 700, 144, 700)
         }),
         setModified(true)
       )
@@ -214,8 +214,8 @@ const RP_CTXER = ({ children }: { children: ReactNode }) => {
         return;
       }
       const { width, naturalWidth } = props;
-      const maxWidth = clamp(700, naturalWidth || 700, 1440);
-      const toBe = clamp(144, width, maxWidth);
+      const maxWidth = clamp(naturalWidth || 700, 700, 1440);
+      const toBe = clamp(width, 144, maxWidth);
       _setSpan(toBe);
       lastChangeTime.current = now;
     },

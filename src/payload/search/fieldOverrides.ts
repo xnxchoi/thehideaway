@@ -1,6 +1,7 @@
 import {idField} from "@/payload/fields/IDField";
 import {Field} from "payload";
 import {uuidv7} from "uuidv7";
+import { populateCategory } from "@/payload/search/hooks/beforeValidate";
 
 export const searchFields: Field[] = [
 	idField(),
@@ -139,7 +140,10 @@ export const searchFields: Field[] = [
 		index: true,
 		admin: {
 			readOnly: true
-		}, required: true,
+		},  required: true,
+    hooks:{
+      beforeValidate:[populateCategory]
+    },
 		defaultValue: async ({req}) => {
 			const payload = req.payload;
 			const categiry = await payload.find({

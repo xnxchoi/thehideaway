@@ -47,12 +47,12 @@ export const HomeSquare = (
       onMouseEnter={() => onEnter(inverse)}
       onMouseLeave={() => onLeave()}
       href={"/essays/" + `${article.slug}`}
-      className="bg-faded-foreground/&.95)] col-span-full flex flex-col items-center gap-y-[10px] rounded-[10px] p-[20px] text-center text-faded-background lg:col-span-full dark:bg-off-white/95"
+      className="col-span-full flex flex-col items-center gap-y-4 rounded-2xl bg-faded-foreground/95 p-8 text-center text-faded-background lg:col-span-full dark:bg-off-white/95"
     >
       <div
         className={cn(
           "relative min-h-px w-full min-w-px overflow-hidden rounded-[5px]",
-          !!article.image ? "aspect-[100/56]" : "aspect-square"
+          !!article.image ? "aspect-100/56" : "aspect-square"
         )}
       >
         {article.image ? (
@@ -77,11 +77,11 @@ export const HomeSquare = (
         >
           {article.title}
         </span>
-        <span className="m-0 max-w-[70%] font-sans text-[1.4rem] leading-[1] lg:mt-[-5px] lg:text-[1.6rem]">
+        <span className="m-0 max-w-[70%] font-sans text-[1.4rem] leading-none lg:-mt-2 lg:text-[1.6rem]">
           {article.subtitle}
         </span>
       </div>
-      <div className="inline-block max-w-[70%] text-[1.1rem] uppercase lg:mt-[-10px] lg:text-[1.2rem]">
+      <div className="inline-block max-w-[70%] text-[1.1rem] uppercase lg:-mt-4 lg:text-[1.2rem]">
         {article.author.name}
       </div>
     </Link>

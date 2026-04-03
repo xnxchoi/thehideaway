@@ -9,7 +9,7 @@ import {
 	TypedCollectionSelect
 } from "payload"
 
-export type FetchedCompilation<T extends (Flatten<Compilation["items"]>["relationTo"])> = {
+export type FetchedCompilation<T extends (NonNullable<Flatten<Compilation["items"]>>["relationTo"])> = {
 	id: string;
 	title: string;
 	items: Array<

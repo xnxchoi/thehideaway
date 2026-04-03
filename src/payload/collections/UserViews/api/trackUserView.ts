@@ -118,8 +118,8 @@ export const trackUserView = cache(async ({
 			payload.logger.error('Error finding user view:', e)
 			return null
 		})
-		const normalizedProgress = clamp(0.00, progress, 1.00)
-		let dataViewed = normalizedProgress > 0
+		const normalizedProgress = clamp(progress, 0.00, 1.00)
+    let dataViewed = normalizedProgress > 0
 		if (typeof viewed === 'boolean') {
 			dataViewed = viewed || dataViewed
 		}

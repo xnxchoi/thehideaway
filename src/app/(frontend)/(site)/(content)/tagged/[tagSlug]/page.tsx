@@ -12,7 +12,6 @@ import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
 import { searchOverviewSelect } from "@/types/collections/search";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
-import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";
@@ -30,7 +29,7 @@ export async function generateStaticParams() {
     overrideAccess: true
   });
 
-  const slugs = tags.docs.map((tag) => ({ slug: tag.slug }));
+  const slugs = tags.docs.map((tag) => ({ tagSlug: tag.slug }));
   return [...slugs];
 }
 
@@ -152,7 +151,6 @@ export default async function Page({ params: paramsPromise }: Args) {
 
 async function getTag({ slug }: { slug: string }) {
   "use cache";
-  cacheTag("tag-data");
   const payload = await getPayload({ config });
 
   const tag = await payload
@@ -215,7 +213,6 @@ async function getTagPosts({
   }[]
 > {
   "use cache";
-  cacheTag("tags-posts", "tag-" + slug);
   const payload = await getPayload({ config });
   const tagged = await payload
     .find({

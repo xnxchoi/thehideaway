@@ -229,6 +229,7 @@ export interface Config {
     tasks: {
       welcomeUser: TaskWelcomeUser;
       welcomeUsers: TaskWelcomeUsers;
+      refreshSearchScores: TaskRefreshSearchScores;
       createCollectionExport: TaskCreateCollectionExport;
       createCollectionImport: TaskCreateCollectionImport;
       schedulePublish: TaskSchedulePublish;
@@ -239,6 +240,7 @@ export interface Config {
     };
     workflows: {
       onboardUsers: WorkflowOnboardUsers;
+      refreshSearch: WorkflowRefreshSearch;
     };
   };
 }
@@ -2377,6 +2379,10 @@ export interface Search {
         value: string | Album;
       };
   id: string;
+  /**
+   * Auto-calculated relevance score (priority + recency + richness)
+   */
+  score?: number | null;
   slug: string;
   author: {
     id: string;
@@ -2499,6 +2505,7 @@ export interface PayloadJob {
           | 'inline'
           | 'welcomeUser'
           | 'welcomeUsers'
+          | 'refreshSearchScores'
           | 'createCollectionExport'
           | 'createCollectionImport'
           | 'schedulePublish';
@@ -2534,12 +2541,13 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  workflowSlug?: 'onboardUsers' | null;
+  workflowSlug?: ('onboardUsers' | 'refreshSearch') | null;
   taskSlug?:
     | (
         | 'inline'
         | 'welcomeUser'
         | 'welcomeUsers'
+        | 'refreshSearchScores'
         | 'createCollectionExport'
         | 'createCollectionImport'
         | 'schedulePublish'
@@ -3847,6 +3855,7 @@ export interface SearchSelect<T extends boolean = true> {
   collection?: T;
   doc?: T;
   id?: T;
+  score?: T;
   slug?: T;
   author?:
     | T
@@ -4403,6 +4412,16 @@ export interface TaskWelcomeUsers {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskRefreshSearchScores".
+ */
+export interface TaskRefreshSearchScores {
+  input?: unknown;
+  output: {
+    processed: number;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskCreateCollectionExport".
  */
 export interface TaskCreateCollectionExport {
@@ -4503,6 +4522,13 @@ export interface TaskSchedulePublish {
  * via the `definition` "WorkflowOnboardUsers".
  */
 export interface WorkflowOnboardUsers {
+  input?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkflowRefreshSearch".
+ */
+export interface WorkflowRefreshSearch {
   input?: unknown;
 }
 /**

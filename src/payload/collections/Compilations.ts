@@ -3,28 +3,18 @@ import { authenticated } from "@/payload/plugins/locker/access/accessCheckers";
 import { idField } from "@/payload/fields/IDField";
 import { hideIfNotAdmin } from "./helpers";
 import { nanoid } from "nanoid";
-import type { Access, CollectionConfig, Where } from "payload";
+import type { Access, CollectionConfig, CollectionSlug, Where } from "payload";
 
-export const compilationItemTypes = [
-  "posts",
-  "surf",
-  "profile",
-  "albums",
-  "playlists",
-  "tracks",
-  "userMedia"
-] as const;
+export const compilationItemTypes = ["posts", "surf", "profile", "albums", "playlists", "tracks",
+  "userMedia"] as const;
 
-export type CompilationItemType = (typeof compilationItemTypes)[number];
+export type CompilationItemType = Extract<CollectionSlug, "posts" | "surf" | "profile" | "albums" | "playlists" | "tracks" | "userMedia">
 
 const compilationReadAccess: Access = ({ req }) => {
   if (req.user?.role === "admin") return true;
   if (!req.user) return { visibility: { equals: "public" } } as Where;
   return {
-    or: [
-      { visibility: { equals: "public" } },
-      { author: { equals: req.user.id } }
-    ]
+    or: [{ visibility: { equals: "public" } }, { author: { equals: req.user.id } }]
   } as Where;
 };
 
@@ -38,55 +28,33 @@ export const Compilations: CollectionConfig = {
   slug: "compilations",
 
   access: {
-    create: authenticated,
-    read: compilationReadAccess,
-    update: compilationMutateAccess,
-    delete: compilationMutateAccess
+    create: authenticated, read: compilationReadAccess, update: compilationMutateAccess, delete: compilationMutateAccess
   },
 
   admin: {
-    useAsTitle: "title",
-    hidden: hideIfNotAdmin
+    useAsTitle: "title", hidden: hideIfNotAdmin
   },
 
   forceSelect: {
-    title: true,
-    hashId: true,
-    visibility: true,
-    author: true
+    title: true, hashId: true, visibility: true, author: true
   },
 
-  fields: [
-    idField(),
+  fields: [idField(),
 
     {
-      name: "title",
-      type: "text",
-      required: true,
-      index: true,
-      admin: {
+      name: "title", type: "text", required: true, index: true, admin: {
         components: ACField("text")
       }
     },
 
     {
-      name: "hashId",
-      type: "text",
-      index: true,
-      unique: true,
-      required: true,
-      defaultValue: () => nanoid(11),
-      access: {
-        read: () => true,
-        update: () => false
-      },
-      admin: { hidden: true }
+      name: "hashId", type: "text", index: true, unique: true, required: true, defaultValue: () => nanoid(11), access: {
+        read: () => true, update: () => false
+      }, admin: { hidden: true }
     },
 
     {
-      name: "description",
-      type: "textarea",
-      admin: {
+      name: "description", type: "textarea", admin: {
         components: ACField("textarea")
       }
     },
@@ -110,10 +78,7 @@ export const Compilations: CollectionConfig = {
     {
       name: "visibility",
       type: "select",
-      options: [
-        { label: "Public", value: "public" },
-        { label: "Private", value: "private" }
-      ],
+      options: [{ label: "Public", value: "public" }, { label: "Private", value: "private" }],
       defaultValue: "private",
       required: true,
       admin: {
@@ -122,37 +87,23 @@ export const Compilations: CollectionConfig = {
     },
 
     {
-      name: "coverImage",
-      type: "relationship",
-      relationTo: "media",
-      hasMany: false,
-      maxDepth: 1,
-      admin: {
+      name: "coverImage", type: "relationship", relationTo: "media", hasMany: false, maxDepth: 1, admin: {
         components: ACField("relationship")
       }
     },
 
     {
-      name: "items",
-      type: "relationship",
-      relationTo: [...compilationItemTypes],
-      hasMany: true,
-      maxDepth: 2,
-      admin: {
+      name: "items", type: "relationship", relationTo: [...compilationItemTypes], hasMany: true, maxDepth: 2, admin: {
         components: ACField("relationship")
       }
-    }
-  ],
+    }],
 
   hooks: {
-    beforeChange: [
-      ({ data, operation, req }) => {
-        if (operation === "create" && req.user && !data.author) {
-          data.author = req.user.id;
-        }
-        return data;
+    beforeChange: [({ data, operation, req }) => {
+      if (operation === "create" && req.user && !data.author) {
+        data.author = req.user.id;
       }
-    ],
-    afterRead: []
+      return data;
+    }], afterRead: []
   }
 };

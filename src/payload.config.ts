@@ -17,6 +17,8 @@ import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { uuidv7 } from "uuidv7";
 import { getServerSideURL } from "./utilities/getURL";
+import { syncTrackMedia } from "@/lib/scripts/syncTrackMedia";
+import { nanoid } from "nanoid";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -27,12 +29,10 @@ export default buildConfig({
   admin: {
     routes: {
       browseByFolder: "/vault/folio"
-    },
-    components: {
+    }, components: {
       providers: ["@/payload/providers/Admins/index.tsx"],
       graphics: {
-        Logo: "@/graphics/Logo/index.tsx#Logo",
-        Icon: "@/graphics/Icon/index.tsx#Icon"
+        Logo: "@/graphics/Logo/index.tsx#Logo", Icon: "@/graphics/Icon/index.tsx#Icon"
       },
       afterNavLinks: ["@/payload/elements/LogOut/index.tsx#LogoutButton"],
       actions: ["@/payload/components/Actions/index.tsx"],
@@ -44,152 +44,134 @@ export default buildConfig({
         //   Component: "@/payload/views/Edit/index.client.tsx#DefaultEditView"
         // }
       }
-    },
-    user: "users",
-    importMap: {
+    }, user: "users", importMap: {
       baseDir: path.resolve(dirname)
-    },
-    livePreview: {
-      collections: ["posts", "pages", "profile"],
-      breakpoints: [
-        {
-          label: "Mobile",
-          name: "mobile",
-          width: 375,
-          height: 667
-        },
-        {
-          label: "Tablet",
-          name: "tablet",
-          width: 768,
-          height: 1024
-        },
-        {
-          label: "Desktop",
-          name: "desktop",
-          width: 1440,
-          height: 900
-        }
-      ]
-    },
-    meta: {
-      title: "PRIVATE AREA",
-      titleSuffix: "- The Hideaway",
-      icons: [
-        {
-          type: "image/png",
-          rel: "icon",
-          url: "/assets/favicon.svg"
-        }
-      ]
+    }, livePreview: {
+      collections: ["posts", "pages", "profile"], breakpoints: [{
+        label: "Mobile", name: "mobile", width: 375, height: 667
+      }, {
+        label: "Tablet", name: "tablet", width: 768, height: 1024
+      }, {
+        label: "Desktop", name: "desktop", width: 1440, height: 900
+      }]
+    }, meta: {
+      title: "PRIVATE AREA", titleSuffix: "- The Hideaway", icons: [{
+        type: "image/png", rel: "icon", url: "/assets/favicon.svg"
+      }]
     }
   }, // This config helps us configure global or default features that the other editors can inherit
 
   editor: defaultLexical,
   db: postgresAdapter({
-    push: false,
-    migrationDir: path.resolve(dirname, "lib/migrations"),
-    pool: {
-      max: 350,
-      connectionString: process.env.DATABASE_URI
-    },
-    idType: "uuid",
-    allowIDOnCreate: false,
-    afterSchemaInit: [afterSchemaInit]
+    push: false, migrationDir: path.resolve(dirname, "lib/migrations"), pool: {
+      max: 350, connectionString: process.env.DATABASE_URI
+    }, idType: "uuid", allowIDOnCreate: false, afterSchemaInit: [afterSchemaInit]
   }),
   collections: [...collections, Admins, EmailQuota, DeferredEmails],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   onInit: async (payload) => {
     payload.logger.info("Initializing Payload...");
-    const tags: [string, string][] = [
-      ["Life", "life"],
-      ["Startup", "startup"],
-      ["Blockchain", "blockchain"],
-      ["Poetry", "poetry"],
-      ["Life Lessons", "lifeLessons"],
-      ["Politics", "politics"],
-      ["Health", "health"],
-      ["Love", "love"],
-      ["Travel", "travel"],
-      ["Technology", "technology"],
-      ["Entrepreneurship", "entrepreneurship"],
-      ["Self Improvement", "selfImprovement"],
-      ["Education", "education"],
-      ["Writing", "writing"],
-      ["Business", "business"],
-      ["Cryptocurrency", "cryptocurrency"],
-      ["Bitcoin", "bitcoin"],
-      ["Design", "design"],
-      ["Social Media", "socialMedia"],
-      ["Music", "music"],
-      ["Relationships", "relationships"],
-      ["Sports", "sports"]
-    ];
-    let uid = await payload
-      .find({
-        collection: "users",
-        where: {
-          and: [
-            {
-              role: {
-                equals: "admin"
-              }
-            },
-            {
-              name: {
-                equals: "concierge"
-              }
-            }
-          ]
-        },
-        overrideAccess: true,
-        select: {
-          slug: true
-        },
-        pagination: false,
-        limit: 1
-      })
-      .then(({ docs }) => docs[0]?.id);
+    const tags: [string, string][] = [["Life", "life"], ["Startup", "startup"], ["Blockchain", "blockchain"],
+      ["Poetry", "poetry"], ["Life Lessons", "lifeLessons"], ["Politics", "politics"], ["Health", "health"],
+      ["Love", "love"], ["Travel", "travel"], ["Technology", "technology"], ["Entrepreneurship", "entrepreneurship"],
+      ["Self Improvement", "selfImprovement"], ["Education", "education"], ["Writing", "writing"],
+      ["Business", "business"], ["Cryptocurrency", "cryptocurrency"], ["Bitcoin", "bitcoin"], ["Design", "design"],
+      ["Social Media", "socialMedia"], ["Music", "music"], ["Relationships", "relationships"], ["Sports", "sports"]];
+    let uid = await payload.find({
+      collection: "users", where: {
+        and: [{
+          role: {
+            equals: "admin"
+          }
+        }, {
+          name: {
+            equals: "concierge"
+          }
+        }]
+      }, overrideAccess: true, select: {
+        slug: true
+      }, pagination: false, limit: 1
+    }).then(({ docs }) => docs[0]?.id);
     if (!uid) {
       console.log("Creating user concierge");
-      const transactionID = await payload.db.beginTransaction();
-      if (transactionID) {
-        try {
-          const id = await payload
-            .create({
-              collection: "users",
-              draft: false,
-              data: {
-                name: "concierge",
-                role: "admin",
-                slug: "concierge",
-                email: "sean.sungyoon.choi@gmail.com",
-                username: "concierge",
-                emailVerified: true,
-                verified: true,
-                firstName: "The",
-                lastName: "Concierge",
-                onboarded: true,
-                banned: false,
-                twoFactorEnabled: false
-              },
-              req: {
-                transactionID
-              }
-            })
-            .then(({ id }) => id);
-          await payload.db.commitTransaction(transactionID);
-          if (id) {
-            uid = id;
-          }
-        } catch {
-          console.log("FUCK");
-          await payload.db.rollbackTransaction(transactionID);
+      await payload.create({
+        collection: "users", draft: false, data: {
+          name: "concierge",
+          role: "admin",
+          slug: "concierge",
+          email: "sean.sungyoon.choi@gmail.com",
+          username: "concierge",
+          emailVerified: true,
+          verified: true,
+          firstName: "The",
+          lastName: "Concierge",
+          onboarded: true,
+          banned: false,
+          twoFactorEnabled: false
         }
-      }
+      }).then(({ id }) => {
+        uid = id;
+      });
     }
+    const catid=await payload
+    .find({
+      collection: "categories",
+      overrideAccess: true,
+      where: {
+        slug: { equals: "uncategorized" }
+      },limit:1,
+      pagination:false,
+      select:{
+        slug:true,
+      }
+    })
+    .then(async ({ docs }) => {
+      if (!docs[0] ) {
+        const c=await payload.create({
+          collection: "categories",
+          draft: false,
+          overrideAccess: true,
+          data: {
+            popularity: 0,
+            title: "Uncategorized",
+            slug: "uncategorized",
+            description:
+              "Default bucket for all reflections without a category.",
+            relatedCategories: []
+          }
+        });
+        return c.id;
+      }else{
+        return docs[0].id;
+      }
+    })
+    .catch((error) => {
+      payload.logger.error("Error creating uncategorized category:", error);
+    });
+    if (!!uid&&typeof catid==='string') {
 
+      syncTrackMedia(payload, uid).catch((e) => {
+        payload.logger.error("syncTrackMedia failed:", e);
+        throw new Error("syncTrackMedia failed");
+      });
+      Promise.allSettled(tags.map(([title, slug]) => payload.count({
+        collection: "tags", overrideAccess: true, where: {
+          title: {
+            equals: title
+          }
+        }
+      }).then((r) => r.totalDocs < 1 ? ([title, slug] as [string, string]) : null).catch(r => {
+        return [title, slug] as [string, string];
+      }))).then((r) => r.filter(v => v.status === "fulfilled")).then(r => r.filter(x => x.value !== null)).
+        then(s => s.map(f => f.value as [string, string])).then((re) => re.map(([title, slug]) => payload.create({
+        collection: "tags", draft: false, overrideAccess: true, data: {
+          title, slug, hashId: nanoid(11), slugLock: true, tagCount: 0, author: uid
+        }
+      })));
+
+
+    }
     // if (typeof uid === "string") {
     //   // await syncTrackMedia(payload, uid).catch((e) => {
     //   //   payload.logger.error("syncTrackMedia failed:", e);
@@ -248,34 +230,7 @@ export default buildConfig({
     // } else {
     //   payload.logger.error("Error in locating admin user with name concierge");
     // }
-    await payload
-      .count({
-        collection: "categories",
-        overrideAccess: true,
-        where: {
-          slug: { equals: "uncategorized" }
-        }
-      })
-      .then(async ({ totalDocs }) => {
-        if (totalDocs === 0) {
-          await payload.create({
-            collection: "categories",
-            draft: false,
-            overrideAccess: true,
-            data: {
-              popularity: 0,
-              title: "Uncategorized",
-              slug: "uncategorized",
-              description:
-                "Default bucket for all reflections without a category.",
-              relatedCategories: []
-            }
-          });
-        }
-      })
-      .catch((error) => {
-        payload.logger.error("Error creating uncategorized category:", error);
-      });
+
   },
   plugins,
   bin: [],
@@ -284,18 +239,11 @@ export default buildConfig({
   jobs: {
     jobsCollectionOverrides: ({ defaultJobsCollection }) => {
       return {
-        ...defaultJobsCollection,
-        fields: [
-          ...defaultJobsCollection.fields,
-          {
-            type: "text",
-            name: "id",
-            defaultValue: () => uuidv7()
-          }
-        ]
+        ...defaultJobsCollection, fields: [...defaultJobsCollection.fields, {
+          type: "text", name: "id", defaultValue: () => uuidv7()
+        }]
       };
-    },
-    access: {
+    }, access: {
       run: ({ req }: { req: PayloadRequest }): boolean => {
         // Allow logged in users to execute this endpoint (default)
         if (req.user) return true;
@@ -306,251 +254,166 @@ export default buildConfig({
         const authHeader = req.headers.get("authorization");
         return authHeader === `Bearer ${process.env.CRON_SECRET}`;
       }
-    },
-    tasks: [
-      {
-        slug: "welcomeUser",
-        label: "Add welcome notification & profile for new user",
-        inputSchema: [
-          {
-            name: "userId",
-            type: "text",
-            required: true
-          }
-        ],
-        outputSchema: [
-          {
-            name: "userId",
-            type: "text",
-            required: true
-          },
-          {
-            name: "slug",
-            type: "text",
-            required: true
-          }
-        ],
-        handler: async ({ input, req }) => {
-          req.payload.logger.info(
-            `=== NEW USER WELCOME MESSAGE JOB STARTED ===`
-          );
-          try {
-            const userDoc = await req.payload.findByID({
-              collection: "users",
-              id: input.userId
-            });
-            // Step 1: Create Profile
-            await createProfile({ req, doc: userDoc });
-            // Step 2: Create welcome notification
-            await createN({
-              user: userDoc,
-              req
-            });
-            await req.payload.update({
-              collection: "users",
-              where: {
-                id: {
-                  equals: userDoc.id
+    }, tasks: [{
+      slug: "welcomeUser", label: "Add welcome notification & profile for new user", inputSchema: [{
+        name: "userId", type: "text", required: true
+      }], outputSchema: [{
+        name: "userId", type: "text", required: true
+      }, {
+        name: "slug", type: "text", required: true
+      }], handler: async ({ input, req }) => {
+        req.payload.logger.info(`=== NEW USER WELCOME MESSAGE JOB STARTED ===`);
+        try {
+          const userDoc = await req.payload.findByID({
+            collection: "users", id: input.userId
+          });
+          // Step 1: Create Profile
+          await createProfile({ req, doc: userDoc });
+          // Step 2: Create welcome notification
+          await createN({
+            user: userDoc, req
+          });
+          await req.payload.update({
+            collection: "users", where: {
+              id: {
+                equals: userDoc.id
+              }
+            }, data: {
+              ...userDoc, onboarded: true
+            }, req, context: {
+              user: {
+                role: userDoc.role
+              }, overrideAccess: true
+            }, overrideAccess: true
+          });
+          req.payload.logger.info(`Updated user ${userDoc.slug}`);
+          const result = {
+            user: { slug: userDoc.slug, userId: userDoc.id }
+          };
+          req.payload.logger.info(`=== USER WELCOME NOTIFICATIONS JOB COMPLETED ===`);
+          req.payload.logger.info(`Result: ${JSON.stringify(result)}`);
+
+          return { output: result };
+        } catch (error) {
+          req.payload.logger.error(`=== USER WELCOME NOTIFICATIONS JOB ERROR ===`);
+          req.payload.logger.error(`Error in new user welcome: ${(error as Error).message}`);
+          throw error;
+        }
+      }
+    }, {
+      slug: "welcomeUsers", label: "Add welcome notification & profile for all new users", outputSchema: [{
+        name: "users", type: "array", fields: [{
+          name: "userId", type: "text", required: true
+        }, {
+          name: "slug", type: "text", required: true
+        }], required: true
+      }], handler: async ({ req }) => {
+        req.payload.logger.info(`=== NEW USER BATCH JOB STARTED ===`);
+        try {
+          const userResults: { userId: string; slug: string }[] = [];
+          const users = await req.payload.find({
+            collection: "users", where: {
+              and: [{
+                onboarded: {
+                  not_equals: true
                 }
-              },
-              data: {
-                ...userDoc,
-                onboarded: true
-              },
-              req,
-              context: {
-                user: {
-                  role: userDoc.role
-                },
-                overrideAccess: true
-              },
-              overrideAccess: true
-            });
-            req.payload.logger.info(`Updated user ${userDoc.slug}`);
-            const result = {
-              user: { slug: userDoc.slug, userId: userDoc.id }
-            };
-            req.payload.logger.info(
-              `=== USER WELCOME NOTIFICATIONS JOB COMPLETED ===`
-            );
-            req.payload.logger.info(`Result: ${JSON.stringify(result)}`);
-
-            return { output: result };
-          } catch (error) {
-            req.payload.logger.error(
-              `=== USER WELCOME NOTIFICATIONS JOB ERROR ===`
-            );
-            req.payload.logger.error(
-              `Error in new user welcome: ${(error as Error).message}`
-            );
-            throw error;
-          }
-        }
-      },
-      {
-        slug: "welcomeUsers",
-        label: "Add welcome notification & profile for all new users",
-        outputSchema: [
-          {
-            name: "users",
-            type: "array",
-            fields: [
-              {
-                name: "userId",
-                type: "text",
-                required: true
-              },
-              {
-                name: "slug",
-                type: "text",
-                required: true
-              }
-            ],
-            required: true
-          }
-        ],
-        handler: async ({ req }) => {
-          req.payload.logger.info(`=== NEW USER BATCH JOB STARTED ===`);
-          try {
-            const userResults: { userId: string; slug: string }[] = [];
-            const users = await req.payload
-              .find({
-                collection: "users",
-                where: {
-                  and: [
-                    {
-                      onboarded: {
-                        not_equals: true
-                      }
-                    },
-                    {
-                      banned: {
-                        not_equals: true
-                      }
-                    }
-                  ]
-                },
-                req,
-                limit: 1000
-              })
-              .then((r) => r.docs);
-            for (const userDoc of users) {
-              try {
-                // Step 1: Create Profile
-                await createProfile({ req, doc: userDoc });
-                // Step 2: Create welcome notification
-                await createN({
-                  user: userDoc,
-                  req
-                });
-                await req.payload.update({
-                  collection: "users",
-                  where: {
-                    id: {
-                      equals: userDoc.id
-                    }
-                  },
-                  data: {
-                    onboarded: true
-                  },
-                  req,
-                  context: {
-                    user: {
-                      role: userDoc.role
-                    },
-                    overrideAccess: true
-                  },
-                  overrideAccess: true
-                });
-                req.payload.logger.info(`Updated user ${userDoc.slug}`);
-                const result = { slug: userDoc.slug, userId: userDoc.id };
-                userResults.push(result);
-              } catch (e) {
-                req.payload.logger.error(
-                  `Error in welcoming user ${userDoc.slug}: ${(e as Error).message}`
-                );
-              }
-            }
-            req.payload.logger.info(`=== NEW USER BATCH JOB COMPLETED ===`);
-            const result = [...userResults];
-            req.payload.logger.info(`Result: ${JSON.stringify(result)}`);
-            return { output: result };
-          } catch (error) {
-            req.payload.logger.error(`=== NEW USER BATCH JOB ERROR ===`);
-            req.payload.logger.error(
-              `Error in batch updating users: ${(error as Error).message}`
-            );
-            throw error;
-          }
-        }
-      }
-      {
-        slug: "refreshSearchScores",
-        label: "Recalculate relevance scores for all search index documents",
-        outputSchema: [
-          {
-            name: "processed",
-            type: "number",
-            required: true
-          }
-        ],
-        handler: async ({ req }) => {
-          const { payload } = req;
-          const BATCH = 100;
-          let page = 1;
-          let processed = 0;
-
-          // eslint-disable-next-line no-constant-condition
-          while (true) {
-            const { docs, hasNextPage } = await payload.find({
-              collection: "search",
-              limit: BATCH,
-              page,
-              depth: 0,
-              overrideAccess: true
-            });
-
-            for (const doc of docs) {
-              const newScore = calculateSearchScore({
-                priority: doc.priority,
-                createdAt: doc.createdAt,
-                hasImage: !!(doc.meta?.image),
-                hasDescription: !!(doc.meta?.description),
-                hasTags: Array.isArray(doc.tags) && doc.tags.length > 0,
-                hasCategory: Array.isArray(doc.category) && doc.category.length > 0
+              }, {
+                banned: {
+                  not_equals: true
+                }
+              }]
+            }, req, limit: 1000
+          }).then((r) => r.docs);
+          for (const userDoc of users) {
+            try {
+              // Step 1: Create Profile
+              await createProfile({ req, doc: userDoc });
+              // Step 2: Create welcome notification
+              await createN({
+                user: userDoc, req
               });
-
-              if (newScore !== (doc as any).score) {
-                await payload.update({
-                  collection: "search",
-                  id: doc.id,
-                  data: { score: newScore } as any,
-                  depth: 0,
-                  overrideAccess: true
-                });
-              }
-              processed++;
+              await req.payload.update({
+                collection: "users", where: {
+                  id: {
+                    equals: userDoc.id
+                  }
+                }, data: {
+                  onboarded: true
+                }, req, context: {
+                  user: {
+                    role: userDoc.role
+                  }, overrideAccess: true
+                }, overrideAccess: true
+              });
+              req.payload.logger.info(`Updated user ${userDoc.slug}`);
+              const result = { slug: userDoc.slug, userId: userDoc.id };
+              userResults.push(result);
+            } catch (e) {
+              req.payload.logger.error(`Error in welcoming user ${userDoc.slug}: ${(e as Error).message}`);
             }
-
-            if (!hasNextPage) break;
-            page++;
           }
-
-          payload.logger.info(`refreshSearchScores: updated ${processed} search documents`);
-          return { output: { processed } };
+          req.payload.logger.info(`=== NEW USER BATCH JOB COMPLETED ===`);
+          const result = [...userResults];
+          req.payload.logger.info(`Result: ${JSON.stringify(result)}`);
+          return { output: result };
+        } catch (error) {
+          req.payload.logger.error(`=== NEW USER BATCH JOB ERROR ===`);
+          req.payload.logger.error(`Error in batch updating users: ${(error as Error).message}`);
+          throw error;
         }
       }
-    ],
-    workflows: [
-      {
-        slug: "onboardUsers",
-        label: "workflow run regularly to sync newly created users",
-        handler: async ({ job, tasks, inlineTask, req }) => {
-          await tasks.welcomeUsers("1");
-        },
-        queue: "halfHour"
+    }, {
+      slug: "refreshSearchScores",
+      label: "Recalculate relevance scores for all search index documents",
+      outputSchema: [{
+        name: "processed", type: "number", required: true
+      }],
+      handler: async ({ req }) => {
+        const { payload } = req;
+        const BATCH = 100;
+        let page = 1;
+        let processed = 0;
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { docs, hasNextPage } = await payload.find({
+            collection: "search", limit: BATCH, page, depth: 0, overrideAccess: true
+          });
+
+          for (const doc of docs) {
+            const newScore = calculateSearchScore({
+              priority: doc.priority,
+              createdAt: doc.createdAt,
+              hasImage: !!(doc.meta?.image),
+              hasDescription: !!(doc.meta?.description),
+              hasTags: Array.isArray(doc.tags) && doc.tags.length > 0,
+              hasCategory: Array.isArray(doc.category) && doc.category.length > 0
+            });
+
+            if (newScore !== (doc as any).score) {
+              await payload.update({
+                collection: "search", id: doc.id, data: { score: newScore } as any, depth: 0, overrideAccess: true
+              });
+            }
+            processed++;
+          }
+
+          if (!hasNextPage) break;
+          page++;
+        }
+
+        payload.logger.info(`refreshSearchScores: updated ${processed} search documents`);
+        return { output: { processed } };
+      }
+    }], workflows: [{
+      slug: "onboardUsers",
+      label: "workflow run regularly to sync newly created users",
+      handler: async ({ job, tasks, inlineTask, req }) => {
+        await tasks.welcomeUsers("1");
       },
-      {
+      queue: "halfHour"
+    } ,
+    {
         slug: "refreshSearch",
         label: "Daily refresh of search relevance scores",
         handler: async ({ tasks }) => {
@@ -558,19 +421,14 @@ export default buildConfig({
         },
         queue: "daily"
       }
-    ],
-    autoRun: [
-      {
-        cron: "*/15 * * * *", // every 15 minutes
-        limit: 100, // limit jobs to process each run
-        queue: "quarterHour" // name of the queue
-      },
-      {
-        cron: "0 3 * * *", // daily at 03:00 UTC
-        limit: 1,
-        queue: "daily"
-      }
-    ]
+    ], autoRun: [{
+      cron: "*/15 * * * *", // every 15 minutes
+      limit: 100, // limit jobs to process each run
+      queue: "quarterHour" // name of the queue
+    }, {
+      cron: "0 3 * * *", // daily at 03:00 UTC
+      limit: 1, queue: "daily"
+    }]
   },
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts")

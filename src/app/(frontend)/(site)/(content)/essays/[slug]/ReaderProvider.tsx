@@ -67,7 +67,7 @@ const createReadStore = (
             setPastQueue,
             currentIndex
           } = get();
-          const idx = clamp(0, index, queue.length - 1);
+          const idx = clamp(index, 0, queue.length - 1);
           if (idx === currentIndex) {
             return;
           }

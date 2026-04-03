@@ -223,7 +223,7 @@ function CompilationCard({
         </div>
 
         <div className="relative">
-          <button
+          <RP_Btn
             onClick={(e) => {
               e.preventDefault();
               setMenuOpen((o) => !o);
@@ -231,7 +231,7 @@ function CompilationCard({
             className="flex h-6 w-6 items-center justify-center font-mono text-sm text-muted-foreground/40 transition-colors hover:text-foreground"
           >
             ···
-          </button>
+          </RP_Btn>
           <AnimatePresence>
             {menuOpen && (
               <m.div
@@ -257,7 +257,7 @@ function CompilationCard({
                     View public
                   </Link>
                 )}
-                <button
+                <RP_Btn
                   onClick={() => {
                     setMenuOpen(false);
                     onDelete();
@@ -265,7 +265,7 @@ function CompilationCard({
                   className="w-full px-3 py-2 text-left font-mono text-[11px] text-destructive hover:bg-accent"
                 >
                   Delete
-                </button>
+                </RP_Btn>
               </m.div>
             )}
           </AnimatePresence>
@@ -314,12 +314,12 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
         Create a curated list to organise and share the things you love.
       </p>
-      <button
+      <RP_Btn
         onClick={onNew}
         className="mt-7 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
       >
         Create your first list
-      </button>
+      </RP_Btn>
     </m.div>
   );
 }
@@ -396,12 +396,12 @@ function CreateCompilationSheet({
           <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
             New List
           </p>
-          <button
+          <RP_Btn
             onClick={onClose}
             className="font-mono text-xs text-muted-foreground/50 hover:text-foreground"
           >
             ✕
-          </button>
+          </RP_Btn>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
@@ -439,7 +439,7 @@ function CreateCompilationSheet({
               </label>
               <div className="flex gap-5">
                 {(["private", "public"] as const).map((v) => (
-                  <button
+                  <RP_Btn
                     key={v}
                     type="button"
                     onClick={() => setVisibility(v)}
@@ -459,7 +459,7 @@ function CreateCompilationSheet({
                       )}
                     />
                     {v}
-                  </button>
+                  </RP_Btn>
                 ))}
               </div>
             </div>
@@ -472,20 +472,20 @@ function CreateCompilationSheet({
           )}
 
           <div className="mt-7 flex justify-end gap-4">
-            <button
+            <RP_Btn
               type="button"
               onClick={onClose}
               className="font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase hover:text-foreground"
             >
               Cancel
-            </button>
-            <button
+            </RP_Btn>
+            <RP_Btn
               type="submit"
               disabled={isPending}
               className="border border-border/40 px-5 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
             >
               {isPending ? "Creating…" : "Create"}
-            </button>
+            </RP_Btn>
           </div>
         </form>
       </m.div>

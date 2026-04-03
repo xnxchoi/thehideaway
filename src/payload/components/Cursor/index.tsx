@@ -164,7 +164,7 @@ export default function Admin_Cursor() {
     innerRad.set(ii);
     const width = !isTC
       ? 1
-      : clamp(85, ((cursorState.length * 5 + 7) / 4) * textWidth.current, 120);
+      : clamp(((cursorState.length * 5 + 7) / 4) * textWidth.current, 85, 120);
     const height = !isTC ? 1 : 40;
     const currentW = containerWidth.get();
     const currentH = containerHeight.get();

@@ -383,6 +383,7 @@ export const enum_payload_jobs_log_task_slug = pgEnum(
     "inline",
     "welcomeUser",
     "welcomeUsers",
+    "refreshSearchScores",
     "createCollectionExport",
     "createCollectionImport",
     "schedulePublish"
@@ -394,7 +395,7 @@ export const enum_payload_jobs_log_state = pgEnum(
 );
 export const enum_payload_jobs_workflow_slug = pgEnum(
   "enum_payload_jobs_workflow_slug",
-  ["onboardUsers"]
+  ["onboardUsers", "refreshSearch"]
 );
 export const enum_payload_jobs_task_slug = pgEnum(
   "enum_payload_jobs_task_slug",
@@ -402,6 +403,7 @@ export const enum_payload_jobs_task_slug = pgEnum(
     "inline",
     "welcomeUser",
     "welcomeUsers",
+    "refreshSearchScores",
     "createCollectionExport",
     "createCollectionImport",
     "schedulePublish"
@@ -5386,6 +5388,7 @@ export const search = pgTable(
     id: varchar("id").primaryKey(),
     priority: numeric("priority", { mode: "number" }),
     collection: varchar("collection").default("posts"),
+    score: numeric("score", { mode: "number" }).default(0),
     slug: varchar("slug").notNull(),
     locked: boolean("locked").notNull().default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
@@ -5407,6 +5410,7 @@ export const search = pgTable(
       .notNull()
   },
   (columns) => [
+    index("search_score_idx").on(columns.score),
     index("search_slug_idx").on(columns.slug),
     index("search_locked_idx").on(columns.locked),
     index("search_authority_idx").on(columns.authority),
