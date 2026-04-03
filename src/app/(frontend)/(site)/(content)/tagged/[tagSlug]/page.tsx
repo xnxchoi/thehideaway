@@ -12,6 +12,7 @@ import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
 import { searchOverviewSelect } from "@/types/collections/search";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
+import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";
@@ -151,6 +152,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
 async function getTag({ slug }: { slug: string }) {
   "use cache";
+  cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
 
   const tag = await payload
@@ -175,6 +177,7 @@ async function getTag({ slug }: { slug: string }) {
 
 async function getTags({ slug }: { slug: string }) {
   "use cache";
+  cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
   const tags = await payload.find({
     collection: "tags",
@@ -213,6 +216,7 @@ async function getTagPosts({
   }[]
 > {
   "use cache";
+  cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
   const tagged = await payload
     .find({
@@ -296,24 +300,7 @@ export async function generateMetadata({
   params: paramsPromise
 }: Args): Promise<Metadata> {
   const { tagSlug: slug } = await paramsPromise;
-  const payload = await getPayload({ config });
-  const tag = await payload
-    .find({
-      collection: "tags",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      limit: 1,
-      select: {
-        title: true,
-        slug: true,
-        id: true
-      }
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch((e) => (console.error(e), null));
+  const tag = await getTag({ slug });
   if (!tag) {
     return {
       title: "Tagged"

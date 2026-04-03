@@ -21,6 +21,7 @@ import {PROPS_COLLAPSIBLE} from "../constants";
 import {RichTitle} from "../Posts/richTitle";
 import {getSurfBookMarks} from "./endpoints/getSurfBookmarks";
 import {afterDelete} from "./hooks/afterDelete";
+import {revalidateSurf, revalidateSurfDelete} from "./hooks/revalidateSurf";
 import { idField } from "@/payload/fields/IDField";
 
 export const Surfs: CollectionConfig = {
@@ -343,8 +344,8 @@ export const Surfs: CollectionConfig = {
 	],
 	hooks: {
 		beforeChange: [sanitizeAuthor(false), populatePublishedAt],
-		afterChange: [validateSurf,   ],
-		afterDelete: [afterDelete,  ]
+		afterChange: [validateSurf, revalidateSurf],
+		afterDelete: [afterDelete, revalidateSurfDelete]
 	},
 	versions: {
 		drafts: {

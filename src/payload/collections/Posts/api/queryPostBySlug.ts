@@ -1,4 +1,3 @@
-"use server";
 import {authClient} from "@/lib/auth/client";
 import {Post} from "@/payload-types";
 import {getImageMedia} from "@/payload/collections/Posts/api/getImageMedia";
@@ -20,6 +19,7 @@ import {
 import {AuthorOverview, userOverviewSelect} from "@/types/collections/users";
 import {imageSelect} from "@/types/payload-api-selects"
 import configPromise from "@payload-config";
+import {cacheTag} from "next/cache";
 import {draftMode} from "next/headers";
 import {CollectionSlug, DataFromCollectionSlug, getPayload, Where} from "payload";
 import {cache} from "react";
@@ -224,6 +224,7 @@ export const queryPostBySlug =
 		next: null | PostOverview;
 	} | null> => {
 		"use cache"
+		cacheTag("post-" + sl);
 		const {isEnabled: draft} = await draftMode();
 		let slug = sl;
 		if (sl.includes("+")) {

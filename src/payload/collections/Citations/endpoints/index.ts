@@ -1,4 +1,3 @@
-"use server";
 import {HighlightsCollectionSlug} from "@/components/UX/Highlightr/types";
 import {queryCitations} from "@/payload/collections/Citations/query";
 import {PayloadHandler} from "payload";

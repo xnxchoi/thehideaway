@@ -1,4 +1,3 @@
-"use server";
 import { authClient } from "@/lib/auth/client";
 import { getPayload } from "@/lib/payload";
 import { HANDLE_TEST_REGEX } from "@/payload/fields/handle/formatUserHandle";

@@ -41,6 +41,7 @@ export default async function Post({ params: paramsPromise }: Args) {
   "use cache";
   cacheLife("hours");
   const { slug = "" } = await paramsPromise;
+  cacheTag("post-" + slug);
   if (slug.length < 1) return <PayloadRedirects url={"/home"} />;
   const p = await queryPostBySlug({ slug });
   if (!p) return <PayloadRedirects url={"/home"} />;

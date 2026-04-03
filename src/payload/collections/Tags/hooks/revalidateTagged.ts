@@ -1,10 +1,8 @@
-"use server";
-
 import { CollectionAfterChangeHook } from "payload";
 import { Tag } from "@payload-types";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-export const revalidateTagged: CollectionAfterChangeHook<Tag> = async ({ collection, operation, doc, previousDoc }) => {
+export const revalidateTagged: CollectionAfterChangeHook<Tag> = async ({ operation, doc, previousDoc }) => {
 
   switch (operation) {
     case "update": {
@@ -12,7 +10,7 @@ export const revalidateTagged: CollectionAfterChangeHook<Tag> = async ({ collect
       if (previousDoc?.slug !== doc?.slug) {
         revalidatePath("/tagged/" + previousDoc.slug, "page");
       }
-      revalidateTag("tag-" + (doc as Tag).slug, "max");
+      revalidateTag("tag-" + (doc as Tag).slug);
     }
       break;
   }

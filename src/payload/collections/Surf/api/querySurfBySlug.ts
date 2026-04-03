@@ -1,4 +1,3 @@
-"use server";
 import {authClient} from "@/lib/auth/client";
 import {type Surf} from "@/payload-types";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";

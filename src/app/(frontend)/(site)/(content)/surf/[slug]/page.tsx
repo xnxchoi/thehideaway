@@ -1,5 +1,6 @@
 import {getPayload} from "payload";
 import configPromise from "@payload-config";
+import {cacheTag} from "next/cache";
 import {draftMode} from "next/headers";
 import {notFound} from "next/navigation";
 
@@ -45,6 +46,7 @@ export default async function SurfPage({params}: Args) {
 
 async function getSurf({draft, slug}: { slug: string; draft: boolean; }) {
 	"use cache"
+	cacheTag("surf-" + slug);
 	const payload = await getPayload({config: configPromise});
 	const surfs = await payload.find({
 		collection: "surf",
@@ -68,22 +70,8 @@ async function getSurf({draft, slug}: { slug: string; draft: boolean; }) {
 
 export async function generateMetadata({params}: Args) {
 	const {slug} = await params;
-	const payload = await getPayload({config: configPromise});
 	const enabledDrafts = await draftMode();
-	const surfs = await payload.find({
-		collection: "surf",
-		draft: enabledDrafts.isEnabled,
-		where: {
-			slug: {
-				equals: slug,
-			},
-		},
-		select: {
-			title: true,
-		},
-		limit: 1,
-		overrideAccess: true,
-	});
+	const surfs = await getSurf({slug, draft: enabledDrafts.isEnabled});
 	if (!surfs.docs.length) {
 		return {
 			title: "404",

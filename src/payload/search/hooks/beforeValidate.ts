@@ -1,4 +1,3 @@
-"use server";
 import { FieldHook } from "payload";
 import { Search } from "@payload-types";
 import { getDefaultCategorySearch } from "@/components/layouts/Categories/actions/getDefaultCat";

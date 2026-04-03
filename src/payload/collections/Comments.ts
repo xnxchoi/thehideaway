@@ -398,11 +398,21 @@ export const commentsPlugin =
             r.type === "collapsible" && r.label && r.label === PROPS_COLLAPSIBLE
         ) as null | CollapsibleField;
         if (f) {
-          const ff = f.fields.slice(0, 3),
-            ff2 = f.fields.slice(3);
-          f.fields = [...ff, commentsField, ...ff2];
-          collection.fields = collectionFields;
+          const alreadyAdded = f.fields.some(
+            (field) => "name" in field && field.name === "commentsEnabled"
+          );
+          if (!alreadyAdded) {
+            const fIndex = collectionFields.indexOf(f);
+            const ff = f.fields.slice(0, 3),
+              ff2 = f.fields.slice(3);
+            collectionFields[fIndex] = { ...f, fields: [...ff, commentsField, ...ff2] };
+            collection.fields = collectionFields;
+          }
         } else {
+          const alreadyAdded = collectionFields.some(
+            (field) => "name" in field && field.name === "commentsEnabled"
+          );
+          if (!alreadyAdded) {
           collection.fields = [
             ...collectionFields,
             commentsField
@@ -455,6 +465,7 @@ export const commentsPlugin =
             //   defaultSort: ["isSticky", "-createdAt"]
             // }
           ];
+          }
         }
 
         collection.hooks = {

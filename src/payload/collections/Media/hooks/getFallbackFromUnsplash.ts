@@ -1,4 +1,3 @@
-"use server";
 import {blurhashToDataURI} from "@/payload/collections/Media/hooks/blurHashToDataUrl";
 import {formatUnsplashData} from "@/payload/collections/Media/hooks/unsplashData";
 import {RenderImageFields} from "@/types/collections/image-collections";

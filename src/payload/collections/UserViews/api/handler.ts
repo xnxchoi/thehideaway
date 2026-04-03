@@ -1,4 +1,3 @@
-"use server"
 import {clamp} from "@/utilities/mathUtilities"
 import {addDataAndFileToRequest, PayloadHandler} from "payload"
 import {type TrackedTargetType, trackUserView} from "./trackUserView"

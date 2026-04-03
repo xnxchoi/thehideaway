@@ -1,4 +1,3 @@
-"use server"
 import {getPayload} from "@/lib/payload";
 import {cache} from "react";
 

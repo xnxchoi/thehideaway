@@ -3,7 +3,6 @@ import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
 import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
 import { CollectionMap } from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
 import { KeysOfValue } from "@/utilities/typeUtilities";
-import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import {
   CollectionConfig,
   CollectionSlug,

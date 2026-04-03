@@ -6,6 +6,7 @@ import {CategoryOverview, TagOverview} from "@/types/collections/meta-collection
 import {userOverviewSelect} from "@/types/collections/users";
 
 import configPromise from "@payload-config";
+import {cacheTag} from "next/cache";
 import {BasePayload, FindArgs, FindOneArgs, getPayload, PaginatedDocs, SelectType} from "payload";
 import {cache} from "react";
 import {PostOverview} from "../../../../types/collections/posts";
@@ -119,6 +120,7 @@ export const getPostOverviews = async <T extends Omit<FindArgs, "collection" | "
 
  }: T) => {
 	"use cache"
+	cacheTag("posts-sitemap");
 	const payload = await getPayload({config: configPromise});
 
 	const {

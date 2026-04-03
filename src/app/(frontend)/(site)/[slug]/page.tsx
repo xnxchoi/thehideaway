@@ -1,5 +1,5 @@
-"use server";
 import type { Metadata } from "next";
+import { cacheTag } from "next/cache";
 import { draftMode } from "next/headers";
 
 import { cache } from "react";
@@ -115,6 +115,7 @@ async function queryPageBySlug({
   draft: boolean;
 }) {
   "use cache";
+  cacheTag("page-" + slug);
   const payload = await getPayload({ config });
 
   const result = await payload.find({

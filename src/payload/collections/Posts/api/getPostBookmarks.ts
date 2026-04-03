@@ -1,4 +1,3 @@
-"use server"
 import {getPayload, Payload} from "payload"
 import {cache} from "react"
 import config from '@payload-config'

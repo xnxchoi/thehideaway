@@ -6,6 +6,7 @@ import {queryUserBySlug} from "@/payload/collections/Users/operations/queryMembe
 import {generateMeta} from "@/utilities/generateMeta";
 import {randomNumber} from "@/utilities/randomNumber";
 import config from "@payload-config";
+import {cacheTag} from "next/cache";
 import type {Metadata} from "next";
 import {redirect} from "next/navigation";
 import {getPayload, PaginatedDocs} from "payload";
@@ -116,6 +117,7 @@ export async function generateMetadata({
 
 async function getUserPage({userSlug}: { userSlug: string }) {
 	"use cache"
+	cacheTag("user-" + userSlug);
 	const payload = await getPayload({config});
 	const page = await payload
 		.find({
@@ -143,6 +145,7 @@ async function getUserPage({userSlug}: { userSlug: string }) {
 
 async function getSlidesProfile({id, user}: { id: string; user: string }) {
 	"use cache"
+	cacheTag("user-" + user);
 	const payload = await getPayload({config});
 
 	const slides = await payload

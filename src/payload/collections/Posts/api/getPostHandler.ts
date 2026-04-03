@@ -1,4 +1,3 @@
-"use server";
 import {getImageMedia} from "@/payload/collections/Posts/api/getImageMedia";
 import {singlePostSelect} from "@/payload/collections/Posts/api/queryBase";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";

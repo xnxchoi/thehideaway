@@ -1,4 +1,3 @@
-"use server";
 
 import { HighlightColors, Palettes } from "@/components/UX/Highlightr/stores";
 import config from "@/payload.config";

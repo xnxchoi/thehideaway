@@ -1,4 +1,3 @@
-"use server";
 import {getPayload} from "payload";
 import configPromise from "@payload-config";
 

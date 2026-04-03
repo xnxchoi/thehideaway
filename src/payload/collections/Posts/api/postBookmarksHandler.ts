@@ -1,4 +1,3 @@
-"use server"
 import {CollectionSlug, PayloadHandler, PayloadRequest} from "payload"
 import {cache} from "react"
 import {getPostBookMarks} from "./getPostBookmarks"

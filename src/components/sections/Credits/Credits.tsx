@@ -1,4 +1,3 @@
-"use server";
 import {getPayload} from "@/lib/payload";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 import {RP_Roles} from "@/stores/Notification/NotificationStore";

@@ -1,5 +1,3 @@
-"use server";
-
 import { cache } from "react";
 import { createMD5, md5 } from "hash-wasm";
 import { DateTime } from "luxon";

@@ -1,4 +1,3 @@
-"use server";
 import {CollectionSlug, PayloadHandler, PayloadRequest} from "payload";
 
 
