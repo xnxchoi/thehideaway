@@ -109,10 +109,11 @@ export function MentionsPlugin(): JSX.Element | null {
       editor.update(() => {
         const mentionNode = $createMentionNode({
           data: selectedOption.data,
-          value: selectedOption.value
+          id: selectedOption.data.id
         });
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode);
+          mentionNode.selectNext();
         }
         closeMenu();
       });

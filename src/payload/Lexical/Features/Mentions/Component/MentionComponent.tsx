@@ -1,17 +1,11 @@
+"use client";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import {
-  ComponentProps,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { MentionItem } from "../nodes/types";
 import {
   $getNodeByKey,
@@ -38,32 +32,23 @@ import {
   mergeRegister
 } from "@payloadcms/richtext-lexical/lexical/utils";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import { useIsFocused } from "../../FocusTracker/useIsFocused";
 import { stringify } from "qs-esm";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
 
-type MentionComponentProps = ComponentProps<"span"> & {
+type MentionComponentProps = {
   data: MentionItem | string;
   nodeKey: NodeKey;
 };
-export const MentionComponent = ({
-  data,
-  children,
-  ref,
-  nodeKey,
-  ...rest
-}: MentionComponentProps) => {
+
+export const MentionComponent = ({ data, nodeKey }: MentionComponentProps) => {
   const [editor] = useLexicalComposerContext();
+  const internalRef = useRef<HTMLSpanElement>(null);
+
   const select = useMemo(
-    () => ({
-      image: true,
-      id: true,
-      name: true,
-      slug: true
-    }),
+    () => ({ image: true, id: true, name: true, slug: true }),
     []
   );
+
   const findByIdFn = useCallback(
     async ({ mentionId }: { mentionId: string }) => {
       const res = await fetch(
@@ -78,36 +63,27 @@ export const MentionComponent = ({
         }
       );
       if (res.ok) {
-        const r = (await res.json()) as MentionItem;
-        return r;
+        return (await res.json()) as MentionItem;
       }
       throw new Error("Mention find ID API failed");
     },
     [select]
   );
 
-  const {
-    isFetching: isFetchingByID,
-    isLoading: isLoadingByID,
-    isPending: isPendingByID,
-    error: errorByID,
-    isError: isErrorByID,
-    data: mentionedData
-  } = useQuery({
+  const { isFetching, isLoading, data: mentionedData } = useQuery({
     initialData: typeof data === "string" ? null : data,
     queryKey: [
-      {
-        mentionedId: typeof data === "string" ? data : undefined
-      }
+      "mention",
+      { mentionedId: typeof data === "string" ? data : data.id }
     ],
-    enabled: Boolean(typeof data === "string"),
+    enabled: typeof data === "string",
     queryFn: () => findByIdFn({ mentionId: data as string }),
     staleTime: Infinity
   });
 
-  const isEditorFocused = useIsFocused();
   const [isSelected, setSelected, clearSelection] =
     useLexicalNodeSelection(nodeKey);
+
   const onDelete = useCallback(
     (payload: KeyboardEvent) => {
       if (isSelected && $isNodeSelection($getSelection())) {
@@ -125,61 +101,48 @@ export const MentionComponent = ({
   const onArrowLeftPress = useCallback(
     (event: KeyboardEvent) => {
       const node = $getNodeByKey(nodeKey);
-      if (!node?.isSelected()) {
-        return false;
-      }
+      if (!node?.isSelected()) return false;
       let handled = false;
       const nodeToSelect = node.getPreviousSibling();
       if ($isElementNode(nodeToSelect)) {
         nodeToSelect.selectEnd();
         handled = true;
-      }
-      if ($isTextNode(nodeToSelect)) {
+      } else if ($isTextNode(nodeToSelect)) {
         nodeToSelect.select();
         handled = true;
-      }
-      if ($isDecoratorNode(nodeToSelect)) {
+      } else if ($isDecoratorNode(nodeToSelect)) {
         nodeToSelect.selectNext();
         handled = true;
-      }
-      if (nodeToSelect === null) {
+      } else if (nodeToSelect === null) {
         node.selectPrevious();
         handled = true;
       }
-      if (handled) {
-        event.preventDefault();
-      }
+      if (handled) event.preventDefault();
       return handled;
     },
     [nodeKey]
   );
+
   const onArrowRightPress = useCallback(
     (event: KeyboardEvent) => {
       const node = $getNodeByKey(nodeKey);
-      if (!node?.isSelected()) {
-        return false;
-      }
+      if (!node?.isSelected()) return false;
       let handled = false;
       const nodeToSelect = node.getNextSibling();
       if ($isElementNode(nodeToSelect)) {
         nodeToSelect.selectStart();
         handled = true;
-      }
-      if ($isTextNode(nodeToSelect)) {
+      } else if ($isTextNode(nodeToSelect)) {
         nodeToSelect.select(0, 0);
         handled = true;
-      }
-      if ($isDecoratorNode(nodeToSelect)) {
+      } else if ($isDecoratorNode(nodeToSelect)) {
         nodeToSelect.selectPrevious();
         handled = true;
-      }
-      if (nodeToSelect === null) {
+      } else if (nodeToSelect === null) {
         node.selectNext();
         handled = true;
       }
-      if (handled) {
-        event.preventDefault();
-      }
+      if (handled) event.preventDefault();
       return handled;
     },
     [nodeKey]
@@ -187,41 +150,29 @@ export const MentionComponent = ({
 
   const onClick = useCallback(
     (event: MouseEvent) => {
-      if (!ref) return false;
-      if (typeof ref !== "object") return false;
       if (
-        event.target === ref.current ||
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
-        ref.current?.contains(event.target as Node)
+        event.target === internalRef.current ||
+        internalRef.current?.contains(event.target as Node)
       ) {
-        if (!event.shiftKey) {
-          clearSelection();
-        }
+        if (!event.shiftKey) clearSelection();
         setSelected(true);
         return true;
       }
       return false;
     },
-    [clearSelection, ref, setSelected]
+    [clearSelection, setSelected]
   );
+
   const onBlur = useCallback(() => {
     const node = $getNodeByKey(nodeKey);
-    if (!node?.isSelected()) {
-      return false;
-    }
-
-    const selection = $getSelection();
-    if (!$isNodeSelection(selection)) {
-      return false;
-    }
-
+    if (!node?.isSelected()) return false;
+    if (!$isNodeSelection($getSelection())) return false;
     $setSelection(null);
     return false;
   }, [nodeKey]);
 
   const onSelectionChange = useCallback(() => {
     if (IS_IOS && isSelected) {
-      // needed to keep the cursor in the editor when clicking next to a selected mention
       setSelected(false);
       return true;
     }
@@ -229,17 +180,13 @@ export const MentionComponent = ({
   }, [isSelected, setSelected]);
 
   useEffect(() => {
-    const unregister = mergeRegister(
+    return mergeRegister(
       editor.registerCommand<MouseEvent>(
         CLICK_COMMAND,
         onClick,
         COMMAND_PRIORITY_LOW
       ),
-      editor.registerCommand(
-        KEY_DELETE_COMMAND,
-        onDelete,
-        COMMAND_PRIORITY_LOW
-      ),
+      editor.registerCommand(KEY_DELETE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
       editor.registerCommand(
         KEY_BACKSPACE_COMMAND,
         onDelete,
@@ -262,9 +209,6 @@ export const MentionComponent = ({
         COMMAND_PRIORITY_LOW
       )
     );
-    return () => {
-      unregister();
-    };
   }, [
     editor,
     onArrowLeftPress,
@@ -274,27 +218,37 @@ export const MentionComponent = ({
     onBlur,
     onSelectionChange
   ]);
-  return isLoadingByID || isFetchingByID || isLoadingByID ? (
-    <Skeleton />
-  ) : isErrorByID || !mentionedData ? (
-    <></>
-  ) : (
+
+  if (isLoading || isFetching) {
+    return <Skeleton className="inline-block h-4 w-16 align-middle" />;
+  }
+
+  if (!mentionedData) return null;
+
+  return (
     <Tooltip>
-      <TooltipTrigger
-        render={() => (
-          <span
-            data-mention-data={JSON.stringify(mentionedData)}
-            data-mention-value={mentionedData.id}
-            role="button"
-            {...rest}
-            ref={ref}
-          >
-            {mentionedData?.name}
-          </span>
-        )}
-      />
-      <TooltipContent>
-        <p>{mentionedData?.name}</p>
+      <TooltipTrigger asChild>
+        <span
+          ref={internalRef}
+          data-mention-data={JSON.stringify(mentionedData)}
+          data-mention-value={mentionedData.id}
+          role="button"
+          tabIndex={-1}
+          style={{
+            backgroundColor: "oklch(from var(--bleu-500) l c h / 0.12)",
+            borderColor: "oklch(from var(--bleu-500) l c h / 0.3)",
+            ...(isSelected
+              ? { outline: "1px solid oklch(from var(--bleu-500) l c h / 0.6)" }
+              : {})
+          }}
+          className="inline-flex cursor-pointer items-center gap-0.5 rounded-sm border px-1 font-mono text-[11px] text-foreground/80 transition-colors select-none"
+        >
+          <span className="opacity-50">@</span>
+          {mentionedData.name}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="font-mono text-[10px]">
+        @{mentionedData.slug ?? mentionedData.name}
       </TooltipContent>
     </Tooltip>
   );
