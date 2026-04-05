@@ -1,54 +1,313 @@
-# The Hideaway — Design & Code Guidelines
+# The Hideaway
+
+## What This Is
+
+An editorial platform and content management system built on **Next.js 16 + Payload CMS + PostgreSQL**. Think Medium meets a private members' club: users read long-form essays, highlight and annotate text, curate personal collections, listen to music, and manage profiles — all wrapped in a typographic-first, monochrome aesthetic.
+
+The platform is bilingual (English / Korean) and supports tiered access via user roles.
+
+**Domain:** `hideawayseoul.com`
+**Admin panel:** `/vault`
+**Database name:** `theestate`
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack, React 19) |
+| CMS | Payload CMS (latest) with custom collections, plugins, fields |
+| Database | PostgreSQL via Drizzle ORM (`@payloadcms/db-postgres`) |
+| Auth | Better Auth — email/password, Google, Naver, passkeys, 2FA |
+| Styling | Tailwind CSS 4 + SCSS modules for complex features |
+| State (client) | Zustand stores + React Query (TanStack) |
+| Animations | Motion (Framer Motion) for UI; GSAP for scroll/timeline |
+| 3D | Three.js + React Three Fiber + Drei + Rapier (physics) |
+| Audio | Howler.js + music-metadata for parsing |
+| Rich text | Lexical (Payload's editor) with custom features |
+| i18n | next-intl (locales: `en`, `ko`) |
+| Email | Nodemailer via Brevo SMTP |
+| Images | Sharp for optimization, Blurhash for placeholders |
+| Validation | Zod 4 |
+| UI primitives | Radix UI + shadcn/ui |
+| IDs | UUID v7 (Payload), nanoid (citations/references) |
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (frontend)/
+│   │   ├── (site)/
+│   │   │   ├── (pages)/          Static pages (home, radio, plans, search, privacy...)
+│   │   │   ├── (content)/        Dynamic content (essays, surf, lists, users)
+│   │   │   └── (auth)/           Login, signup, forgot-password
+│   │   └── (dev)/                Dev-only utilities
+│   ├── (payload)/                Payload admin → /vault
+│   └── api/                      API routes (auth, search, notifications, image-courier)
+│
+├── payload/
+│   ├── collections/              All Payload collections (see below)
+│   ├── globals/                  Header, Footer
+│   ├── plugins/                  locker, membership, image-search, search, tag, likes
+│   ├── fields/                   Custom field types (slug, handle, image, rich text, estate)
+│   ├── Lexical/                  Rich text editor config + custom features (mentions, etc.)
+│   └── search/                   Search scoring logic
+│
+├── lib/
+│   ├── auth/payload-auth/        Better Auth ↔ Payload integration
+│   ├── migrations/               Drizzle migration files
+│   └── actions/auth.ts           Auth server actions
+│
+├── providers/                    React context (Session, Theme, Query, Radio)
+├── stores/                       Zustand stores (RP_Ui, Device, Cursor, Notification, Routing)
+├── components/
+│   ├── UX/                       Interactive: Radio, TapePlayer, Highlightr, CommandKey, Cursor, Tour
+│   ├── core/                     Layout primitives (Link, Media, Main)
+│   ├── three/                    Three.js components (meshline)
+│   ├── ui/                       shadcn/ui components
+│   └── sections/                 Page sections
+│
+├── hooks/                        Custom React hooks
+├── styles/                       Global CSS/SCSS (globals.css, hideaway.scss, reading.scss)
+├── utilities/                    Helpers (getURL, getMeUser, getMediaUrl, Helpers.ts)
+├── types/                        TypeScript types (payload-types.ts is auto-generated)
+├── constants/                    API endpoints, animation values, localStorage keys
+├── i18n/                         Locale config
+└── access/                       Access control helpers
+
+messages/                         i18n JSON files (en.json, ko.json)
+readmes/                          Feature dev docs (HIGHLIGHTR.md, SSE_NOTIFICATIONS.md, etc.)
+nginx/                            Reverse proxy config
+postgres/                         DB Docker setup + nanoid SQL extension
+```
+
+---
+
+## Payload CMS Collections
+
+### Content
+- **Posts** — Long-form essays with rich text, media, categories, tags
+- **Surf** — Shorter-form content (trend/wave articles)
+- **Pages** — Static/marketing pages
+- **Series / SeriesItem / SeriesSubmission** — Multi-part content series
+- **Categories, Tags** — Taxonomy
+
+### Users & Social
+- **Users** — Accounts with roles, profiles, locales, versioning
+- **Profile** — Public-facing user profiles
+- **Follows** — User follow relationships
+- **Bookmarks** — Saved content
+- **Comments** — Content comments
+- **Notifications** — Real-time (SSE) notifications
+- **UserViews** — Analytics tracking
+- **Citations** — Highlight/annotation system (Highlightr)
+
+### Media
+- **Media** — Core image/file assets
+- **UserMedia** — User uploads
+- **ExternalMedia** — Third-party references
+- **Assets** — Static system files
+
+### Audio (Radio)
+- **Albums, Tracks, Playlists** — Full music system with stream endpoint
+
+### Commerce
+- **Products, ProductCategory, Plans, Prices, Subscriptions** — Membership tiers
+- **Invoices** — PDF generation via pdfmake
+- **Coupons, FXRate, Holidays** — Pricing support
+
+### System
+- **Admins** — Admin-only users (separate from Users)
+- **DeferredEmails, EmailQuota** — Email queue and rate limiting
+- **Sessions** — SSE-integrated session management
+- **Compilations / CompiledCompilations** — Curated content lists
+
+---
+
+## Key Subsystems
+
+### Highlightr (Text Annotation)
+The core content-interaction layer. Users highlight text, add memos (public, 200 char), private notes, and share selections. Full dev reference: `readmes/HIGHLIGHTR.md`.
+
+- **Stack:** Rangy (selection) + floating-ui (menus) + Zustand (state) + React Query (data)
+- **Backend:** `Citations` collection with access control
+- **Key pattern:** `reference` (nanoid, used in DOM) vs `id` (DB UUID, used in API)
+- **Location:** `src/components/UX/Highlightr/`
+
+### Real-Time Notifications (SSE)
+Server-Sent Events replace polling. Full reference: `readmes/SSE_NOTIFICATIONS.md`.
+
+- **Endpoint:** `/api/notifications/stream`
+- **Hook:** `useNotificationSSE.ts`
+- **Fallback:** HTTP polling when SSE unavailable
+- **Hooks:** Payload collection hooks trigger SSE broadcasts on CRUD
+
+### Search
+Payload's search plugin with custom composite relevance scoring (priority + recency + richness).
+
+- **API:** `/api/search?q=query&limit=20`
+- **Scoring:** `src/payload/search/calculateScore.ts`
+- **UI:** CMDK command palette + `/search` page
+
+### Audio (Radio)
+Music playback via Howler.js. Albums, tracks, and playlists with a cassette tape player UI.
+
+- **Stream:** Payload custom endpoint at `/Radio/endpoints/stream.ts`
+- **Provider:** `RadioProvider.tsx`
+- **UI:** `src/components/UX/Radio/`, `src/components/UX/TapePlayer/`
+
+### Access Control (Locker Plugin)
+Role-based access at collection and field level. Roles: `admin`, `editor`, `author`, `patron`, `user`.
+
+### Image Search Plugin
+Admin-side image search across Unsplash, Pexels, Pixabay with LRU caching.
+
+---
+
+## Authentication
+
+- **Framework:** Better Auth integrated with Payload CMS
+- **Providers:** Email/password, Google OAuth, Naver OAuth, Passkeys (WebAuthn), TOTP 2FA
+- **Routes:** `/api/auth/[...all]` (Better Auth catch-all)
+- **Session:** Cookie-based, server-validated via `payload.betterAuth`
+- **Hook:** `useRPSession` for client-side session access
+- **Admin seed:** On init, creates a `concierge` admin user if none exists
+
+---
+
+## Routing
+
+### URL Rewrites
+- `/@:user/essays/:slug` → `/essays/:slug`
+- `/@:user/:path*` → `/users/:user/:path*`
+
+### Route Groups
+- `(frontend)/(site)/(pages)/` — Static pages
+- `(frontend)/(site)/(content)/` — Dynamic content with slugs
+- `(frontend)/(site)/(auth)/` — Auth flows
+- `(payload)/` — Admin panel at `/vault`
+
+### Middleware
+- CORS headers for `NEXT_PUBLIC_SERVER_URL`
+- IE browser detection → incompatibility redirect
+
+---
+
+## Database & Migrations
+
+- **ORM:** Drizzle via `@payloadcms/db-postgres`
+- **ID type:** UUID (v7)
+- **Pool:** Max 350 connections
+- **Migrations:** `src/lib/migrations/` — run via `pnpm migrate`
+- **Schema push disabled** (`push: false`) — always use migrations
+- **Scripts:** `pnpm migrate`, `pnpm migrate:fresh`, `pnpm micreate`, `pnpm generate:types`
+
+---
+
+## Development
+
+### Scripts
+```bash
+pnpm dev              # Start dev server (Turbopack)
+pnpm dev:pgstart      # Start PostgreSQL Docker container
+pnpm dev:init         # Start DB + migrate + run dev
+pnpm build            # Production build
+pnpm generate:types   # Regenerate Payload types → src/types/payload-types.ts
+pnpm generate:schema  # Generate DB schema
+pnpm lint             # ESLint
+pnpm format           # Prettier
+```
+
+### Deployment
+Docker-based (dev.Dockerfile, prod.Dockerfile) behind Nginx reverse proxy. Full guide: `readmes/DEPLOYMENT.md`.
+
+### Feature Dev Docs
+Cross-session continuity documents for complex subsystems live in `readmes/`:
+- `HIGHLIGHTR.md` — Text annotation system (architecture, iteration log, known issues)
+- `SSE_NOTIFICATIONS.md` — Real-time notification architecture
+- `SSE_SECURITY_GUIDE.md` — SSE security considerations
+- `DEPLOYMENT.md` — Docker deployment guide
+- `BREVO_SETUP.md` — Email service setup
+- `tour-flow/` — Onboarding tour development docs
+
+**Read the relevant `readmes/*.md` file before working on any of these subsystems.**
+
+---
+
+## File Conventions
+
+- `page.tsx` — Server component (data fetching, auth checks, redirects)
+- `page.client.tsx` — Client component (default export, receives server-fetched props)
+- `actions.ts` — Server actions (`"use server"`) co-located with the collection they serve
+- Collections live in `src/payload/collections/`; subdirectories for hooks, endpoints, actions
+- Types are auto-generated — run `pnpm generate:types` after collection schema changes
+- `payload-types.ts` is the generated file — never edit manually
+
+---
+
+## State Management Patterns
+
+| What | Where | Tool |
+|---|---|---|
+| UI state (sidebar, viewport, theme) | `stores/RP_Ui.ts` | Zustand |
+| Device detection | `stores/Device/` | Zustand |
+| Custom cursor | `stores/Cursor/` | Zustand |
+| Notification queue | `stores/Notification/` | Zustand |
+| Routing state | `stores/Routing/` | Zustand |
+| Server data (fetching, caching) | Components/hooks | React Query |
+| Auth session | `providers/Session/` | Context |
+| Theme (light/dark) | `providers/Theme/` | next-themes + Context |
+| Highlightr citations | `components/UX/Highlightr/providers/` | Zustand + Context |
+
+**Pattern:** Use `useShallow` on Zustand selectors when selecting Map/object values to prevent unnecessary re-renders.
+
+---
 
 ## Aesthetic Direction
 
-The Hideaway is an editorial platform with a quiet, typographic-first aesthetic. Design references:
+The Hideaway is editorial with a quiet, typographic-first aesthetic. Design references: Medium (hierarchy, reading), Longblack.co (content as object), metalab.com (restraint, whitespace), Awwwards (curation UI), jonway.studio (compilation grids).
 
-- **Medium** — information hierarchy, reading experience, clean spatial rhythm
-- **Longblack.co** — highlight prettification, content as object, editorial gravitas
-- **metalab.com** — restraint, systematic whitespace, confident negative space
-- **Awwwards.com** — curation UI, bookmark-to-collection flows
-- **jonway.studio** — compilation aesthetic, editorial grids, identity-forward layouts
-
-The governing tone is: *sparse, intentional, typographically confident*. Features should feel discovered rather than advertised. Avoid decoration for its own sake.
+The governing tone: *sparse, intentional, typographically confident*. Features should feel discovered rather than advertised.
 
 ---
 
 ## Layout Containers
 
-Always use `max-w-7xl` as the base container for content pages. This prevents excessive gutters on wide displays (MacBook Pro 16", external monitors) while remaining comfortable on laptop screens.
-
 ```tsx
-// Standard container
+// Standard container — always use max-w-7xl for primary page layouts
 <div className="mx-auto max-w-7xl px-6 xl:px-10">
 
 // Narrow (prose / forms)
 <div className="mx-auto max-w-2xl px-6">
 
 // Full-bleed (heroes, banners)
-<section className="w-full">  {/* no max-width */}
+<section className="w-full">
 ```
 
-**Never use `max-w-5xl` for primary page layouts** — it creates awkward gutters above ~1100px.
+**Never use `max-w-5xl`** for primary page layouts — it creates awkward gutters above ~1100px.
 
 ---
 
 ## Responsive Breakpoints
 
-Always author for mobile-first, but **never stop at `lg:`**. Every grid and spacing value should have an `xl:` variant.
+Mobile-first. **Never stop at `lg:`** — every grid and spacing value needs an `xl:` variant.
 
-| Breakpoint | Width  | Context |
-|-----------|--------|---------|
-| `sm:`     | 640px  | Large phone / small tablet |
-| `md:`     | 768px  | Tablet |
-| `lg:`     | 1024px | Small laptop |
-| `xl:`     | 1280px | MacBook 13–14" |
-| `2xl:`    | 1536px | MacBook Pro 16" / large monitors |
+| Breakpoint | Width | Context |
+|---|---|---|
+| `sm:` | 640px | Large phone / small tablet |
+| `md:` | 768px | Tablet |
+| `lg:` | 1024px | Small laptop |
+| `xl:` | 1280px | MacBook 13–14" |
+| `2xl:` | 1536px | MacBook Pro 16" / large monitors |
 
 ### Grid column targets
 
 | Content type | sm | md | lg | xl | 2xl |
-|-------------|----|----|----|----|-----|
+|---|---|---|---|---|---|
 | Editorial cards (posts, surf, profile) | 1 | 2 | 3 | 4 | 4 |
 | Music / square tiles (albums, tracks, playlists) | 2 | 3 | 4 | 5 | 6 |
 | Compilation cards (premium, 4:3) | 1 | 2 | 3 | 4 | 4 |
@@ -66,12 +325,12 @@ className="gap-5 xl:gap-6"      // larger card grids
 
 ## Typography Scale
 
-Typography is the primary design element. Use weight `font-light` for display headings; `font-medium` only for card titles and UI labels; `font-mono` for metadata, counts, badges, and navigation labels.
+Typography is the primary design element. `font-light` for display headings; `font-medium` only for card titles and UI labels; `font-mono` for metadata, counts, badges, and navigation labels.
 
 ### Display / hero headings
 
 ```tsx
-// Page heroes (public facing)
+// Page heroes
 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl font-light tracking-tight"
 
 // Page section headings
@@ -81,19 +340,19 @@ className="text-2xl xl:text-3xl font-light tracking-tight"
 className="text-xl xl:text-2xl 2xl:text-3xl font-light tracking-tight"
 ```
 
-### Monospace UI labels (nav, eyebrows, badges)
+### Monospace UI labels
 
 ```tsx
 // Primary nav / action labels
 className="font-mono text-[11px] uppercase tracking-widest xl:text-xs"
 
-// Eyebrow / category labels (above headings)
+// Eyebrow / category labels
 className="font-mono text-[10px] uppercase tracking-[0.2em] xl:text-xs"
 
-// Metadata / counts / secondary labels
+// Metadata / counts
 className="font-mono text-[10px] xl:text-[11px]"
 
-// Micro badges (visibility, type)
+// Micro badges
 className="font-mono text-[9px] uppercase tracking-widest xl:text-[10px]"
 ```
 
@@ -106,7 +365,7 @@ className="text-sm font-medium leading-snug tracking-tight xl:text-base"
 // Card descriptions / subtitles
 className="font-mono text-[10px] xl:text-[11px]"
 
-// Prose / descriptions (longer text)
+// Prose
 className="font-mono text-[11px] xl:text-xs leading-relaxed"
 ```
 
@@ -114,73 +373,58 @@ className="font-mono text-[11px] xl:text-xs leading-relaxed"
 
 ## Color & Opacity System
 
-The design uses a single foreground/background token system with **opacity as the primary tonal tool** — not separate grey tokens.
+Single foreground/background tokens with **opacity as the primary tonal tool** — no separate grey tokens.
 
 ```tsx
-// Primary text
-text-foreground
+text-foreground                // Primary text
+text-foreground/70             // Secondary
+text-muted-foreground          // Subdued
+text-muted-foreground/60       // Tertiary / metadata
+text-muted-foreground/40       // Ghost / hint
 
-// Secondary text (subdued)
-text-foreground/70
-text-muted-foreground
+border-border/20               // Subtle (default card edge)
+border-border/30               // Standard divider
+border-border/50               // Hover / active
 
-// Tertiary / metadata
-text-muted-foreground/60
-
-// Ghost / hint
-text-muted-foreground/40
-text-muted-foreground/25
-
-// Borders
-border-border/20   // very subtle (default card edge)
-border-border/30   // standard divider
-border-border/50   // hover / active state
-
-// Backgrounds
-bg-card            // card/surface
-bg-muted/20        // image placeholder
-bg-background/80   // overlay (backdrop)
-bg-background/90   // sticky header
+bg-card                        // Card surface
+bg-muted/20                    // Image placeholder
+bg-background/80               // Overlay backdrop
+bg-background/90               // Sticky header
 ```
 
-Never reach for new color tokens — use opacity variants of existing tokens.
+Never create new color tokens — use opacity variants of existing tokens.
 
 ---
 
 ## Card Anatomy
 
-Cards follow a consistent anatomy across the site:
-
 ```
 ┌──────────────────────────┐
-│  [image area]            │  aspect-ratio locked, overflow-hidden
+│  [image]                 │  aspect-ratio locked, overflow-hidden
 │  ↳ gradient overlay      │  from-transparent to-background/60
-│  ↳ hover: scale(1.04)    │  transition-transform duration-500
+│  ↳ hover: scale(1.04)   │  transition-transform duration-500
 ├──────────────────────────┤
-│  [body]          p-3.5   │  xl:p-4
-│   Title          text-sm │  xl:text-base, font-medium
-│   Subtitle       text-xs │  font-mono, muted-foreground/60
-├──────────────────────────┤  (optional footer row)
-│  [meta]          py-2    │  item count, visibility badge, context menu
+│  [body]         p-3.5    │  xl:p-4
+│   Title         text-sm  │  xl:text-base, font-medium
+│   Subtitle      text-xs  │  font-mono, muted-foreground/60
+├──────────────────────────┤  (optional footer)
+│  [meta]         py-2     │  item count, visibility badge, context menu
 └──────────────────────────┘
 ```
 
-All cards use `rounded-sm` (not `rounded-lg`) and `border-border/20`. On hover: `border-border/50`.
+All cards: `rounded-sm` (not `rounded-lg`), `border-border/20`. On hover: `border-border/50`.
 
 ---
 
 ## Sticky Headers
-
-Every auth page has a sticky top header with this structure:
 
 ```tsx
 <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
   <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
     <div className="flex items-end justify-between">
       {/* Left: eyebrow label + h1 */}
-      {/* Right: nav links / actions (font-mono text-[11px] uppercase tracking-widest) */}
+      {/* Right: nav links (font-mono text-[11px] uppercase tracking-widest) */}
     </div>
-    {/* Optional: tab bar below, -mb-px */}
   </div>
 </header>
 ```
@@ -189,26 +433,24 @@ Every auth page has a sticky top header with this structure:
 
 ## Heroes (Full-Bleed)
 
-Used on public-facing collection/compilation pages:
-
 ```tsx
 <section className="relative h-[55vh] min-h-[340px] w-full overflow-hidden">
-  {/* Background: cover image or gradient fallback with large initial letter */}
+  {/* Cover image or gradient fallback with large initial letter */}
   {/* Gradient overlay: from-black/30 via-black/40 to-background */}
-  {/* Content anchored to bottom-left inside max-w-7xl container */}
+  {/* Content anchored bottom-left inside max-w-7xl container */}
 </section>
 ```
 
-The initial-letter fallback uses `text-[20vw] font-mono font-light text-foreground/[0.04]` — barely visible, purely textural.
+Initial-letter fallback: `text-[20vw] font-mono font-light text-foreground/[0.04]`
 
 ---
 
 ## Animations
 
-Use Framer Motion (`motion/react` / `motion/react-m`) consistently:
+Use Motion (`motion/react` / `motion/react-m`):
 
 ```tsx
-// Standard card entrance
+// Card entrance
 initial={{ opacity: 0, scale: 0.97 }}
 animate={{ opacity: 1, scale: 1 }}
 transition={{ type: "spring", bounce: 0.15, duration: 0.35 }}
@@ -219,74 +461,62 @@ transition={{ type: "spring", bounce: 0.1, delay: index * 0.04 }}
 // Page/tab transitions
 initial={{ opacity: 0, y: 8 }}
 animate={{ opacity: 1, y: 0 }}
-exit={{ opacity: 0, y: -8 }}
 transition={{ duration: 0.22 }}
 
-// Panels / sheets (slide from edge)
+// Panels/sheets
 initial={{ x: "100%" }}
 animate={{ x: 0 }}
-exit={{ x: "100%" }}
 transition={{ type: "spring", bounce: 0.05, duration: 0.4 }}
 
-// Modals / overlays
+// Modals
 initial={{ opacity: 0, y: 24 }}
 animate={{ opacity: 1, y: 0 }}
-exit={{ opacity: 0, y: 24 }}
 transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
 ```
 
-Use `LayoutGroup` + `layoutId` for animated tab indicators. Keep `bounce` low (0.05–0.2) — the aesthetic is calm, not bouncy.
+Use `LayoutGroup` + `layoutId` for tab indicators. Keep `bounce` low (0.05–0.2).
 
 ---
 
 ## Empty States
-
-Every collection view has a bespoke empty state. Pattern:
 
 ```tsx
 <div className="flex flex-col items-center justify-center py-24 text-center">
   <span className="mb-4 font-mono text-5xl opacity-10">{symbol}</span>
   <p className="text-base font-light text-foreground/70">{headline}</p>
   <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">{sub}</p>
-  {/* Optional CTA */}
   <button className="mt-7 border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest ...">
     {cta}
   </button>
 </div>
 ```
 
-Symbol candidates: `◫` (saved), `⊞` (lists), `○` (profiles), etc. Keep opacity at 10% — purely suggestive.
+Symbol candidates: `◫` (saved), `⊞` (lists), `○` (profiles). Opacity 10%.
 
 ---
 
 ## Role-Based Layout Tiering
 
-Premium users (`patron`, `author`, `editor`, `admin`) receive editorial-grade layouts. Free users (`user`) receive standard layouts.
+Premium (`patron`, `author`, `editor`, `admin`) get editorial-grade layouts. Free (`user`) get standard.
 
 ```tsx
 const isPremium = (role: string) =>
   ["patron", "author", "editor", "admin"].includes(role);
 ```
 
-Premium differentiators:
-- More grid columns
-- 4:3 cover-overlay cards vs 16:9 standard cards
-- Denser information display
-- Overlay title on cover image (premium) vs below-image title (free)
-
-Subscription role assignment is not yet implemented. Use the `role` field on the user directly.
+Premium: more grid columns, 4:3 overlay cards, denser display. Free: 16:9 standard cards, title below image. Subscription assignment is not yet wired — role is set directly on the user.
 
 ---
 
 ## Forms & Inputs
 
-Use borderless, bottom-border-only inputs:
+Borderless, bottom-border-only:
 
 ```tsx
 <input className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none" />
 ```
 
-Submit buttons:
+Submit buttons — never filled/coloured:
 
 ```tsx
 <button className="border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground disabled:opacity-40">
@@ -294,13 +524,4 @@ Submit buttons:
 </button>
 ```
 
-Never use filled/coloured CTA buttons. Actions are communicated through text weight, underlines, and border visibility — not fill color.
-
----
-
-## File Conventions
-
-- `page.tsx` — server component (data fetching, auth checks, redirects)
-- `page.client.tsx` — client component (default export, receives server-fetched props)
-- `actions.ts` — server actions (`"use server"`) co-located next to the collection they serve
-- Collections live in `src/payload/collections/`; if a collection needs server actions, create a subdirectory: `Collections/actions.ts`
+Actions are communicated through text weight, underlines, and border visibility — not fill color.
