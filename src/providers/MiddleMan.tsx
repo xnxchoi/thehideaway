@@ -1,7 +1,7 @@
 "use client";
 import type { ViewportSizes } from "@/components/core/Media/types";
 import { cssVariables } from "@/cssVariables";
-import { useDeviceInfo, useMenu, useRPStore } from "@/providers/RP_Pro";
+import { useDeviceInfo, useFrameState, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import {
   defaultTheme,
@@ -10,18 +10,23 @@ import {
 } from "@/providers/Theme/shared";
 import { themeIsValid } from "@/providers/Theme/types";
 import canUseDOM from "@/utilities/canUseDOM";
+import { getIsMobile } from "@/utilities/getBreakpoints";
 import { storageAvailable } from "@/utilities/isLocalStorageAvailable";
 import { useWindowResize } from "@/utilities/use_window_resize";
+import {
+  useMotionValue,
+  useMotionValueEvent,
+  useTransform
+} from "motion/react";
 import dynamic from "next/dynamic";
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
-  useState,
-  type ReactNode
+  useState
 } from "react";
-import { useShallow } from "zustand/shallow";
 
 const RP_Cursor = dynamic(
   () => import("@/components/UX/Cursor").then((m) => m.default),
@@ -37,33 +42,44 @@ export const MobileContext = createContext<{
   isTouch: false
 });
 
-const MobileProvider = ({ children }: { children: ReactNode }) => {
+export const MobileProvider = ({ children }: { children: ReactNode }) => {
   const [isTouch, setIsTouch] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(
+    getIsMobile(window.innerWidth)
+  );
+  const mobileState = useMotionValue(isMobile);
+  useEffect(() => {
+    mobileState.set(isMobile);
+  }, [isMobile, mobileState]);
   const MOBILE_BREAKPOINT = 640;
   const setViewportDimensions = useRPStore((r) => r.setViewportDimensions);
   const setViewportSize = useRPStore((r) => r.setViewportSize);
   const [vs, setVs] = useState<ViewportSizes>("lg");
   const setSnapPoints = useRPStore((r) => r.setSnapPoints);
-  const left = useMenu(useShallow((r) => r.left));
-  const bottom = useMenu(useShallow((r) => r.bottom));
+  const { left, bottom } = useFrameState();
+  const vw = useMotionValue(window.innerWidth);
+  const vh = useMotionValue(window.innerHeight);
 
-  const viewportWidth = useRPStore((r) => r.viewportWidth);
-  const viewportHeight = useRPStore((r) => r.viewportHeight);
   const onResize = useCallback(() => {
     setViewportDimensions({
       width: window.innerWidth,
       height: window.innerHeight
     });
-  }, [setViewportDimensions]);
+    vw.set(window.innerWidth);
+    vh.set(window.innerHeight);
+    const v = getIsMobile(window.innerWidth)
+      ? window.innerHeight * 0.35 + bottom.get()
+      : window.innerWidth * 0.76 + left.get();
+    setSnapPoints([`${v}px`, 1]);
+  }, [bottom, left, setSnapPoints, setViewportDimensions, vh, vw]);
 
-  useEffect(() => {
-    if (!isMobile) {
-      setSnapPoints([viewportWidth * 0.76 + left + "px", 1]);
-    } else {
-      setSnapPoints([viewportHeight * 0.35 + bottom + "px", 1]);
-    }
-  }, [bottom, isMobile, viewportWidth, left, setSnapPoints, viewportHeight]);
+  // useEffect(() => {
+  //   if (!isMobile) {
+  //     setSnapPoints([viewportWidth * 0.76 + left + "px", 1]);
+  //   } else {
+  //     setSnapPoints([viewportHeight * 0.35 + bottom + "px", 1]);
+  //   }
+  // }, [bottom, isMobile, viewportWidth, left, setSnapPoints, viewportHeight]);
   useEffect(() => {
     window.addEventListener("resize", onResize);
     onResize();

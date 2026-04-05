@@ -1,3 +1,4 @@
+"use server"
 import {clamp} from "@/utilities/mathUtilities"
 import {UserView} from "@payload-types";
 import {Payload} from "payload"

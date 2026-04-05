@@ -239,8 +239,8 @@ const initialState: RP_Voyage = {
 };
 
 const setHome = (pathName: string) => pathName === "/" || pathName === "/home";
-const setPageK = (slug: string[]) =>
-  slug.length > 0 ? getMenuPagePreviewKey("pages", slug[0]!) : "default";
+const setPageK = (slug: string[], type: PageType = "pages") =>
+  slug.length > 0 ? getMenuPagePreviewKey(type, slug[0]!) : "default";
 export const createVoyageur = (initState: RP_Voyage = initialState) => {
   return createStore<RP_Voyages>()((set) => ({
     ...initState,

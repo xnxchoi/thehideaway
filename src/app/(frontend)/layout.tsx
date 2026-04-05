@@ -1,3 +1,4 @@
+"use server";
 import { Header } from "@/components/core/Header/Component";
 import { Main } from "@/components/core/Main";
 import { Toaster } from "@/components/ui/sonner";

@@ -1,6 +1,5 @@
 import { accountViewPaths } from "@betterauth-ui/lib/view-paths";
 import { AccountView } from "@betterauth-ui/components/account/account-view";
-export const dynamicParams = false;
 export function generateStaticParams() {
   return Object.values(accountViewPaths).map((path) => ({ path }));
 }

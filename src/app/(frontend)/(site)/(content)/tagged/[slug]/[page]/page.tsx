@@ -2,22 +2,20 @@ import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 
 import { PageRange } from "@/components/UX/PageRange";
 import { RPage } from "@/components/UX/Transition";
-import { deltaOverviewSelect } from "@/payload/collections/Delta/api/queryDeltaOverview";
 import { postOverviewSelect } from "@/payload/collections/Posts/api/queryBase";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
 import { surfOverviewSelect } from "@/payload/collections/Surf/api/querySurfOverview";
 import { TaggedCollectionSlug } from "@/payload/collections/Tags";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
-import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { getPayload, TypedCollectionSelect } from "payload";
 
 import PageClient from "./page.client";
 
-export async function generateStaticParams(params: { tagSlug: string }) {
-  const { tagSlug } = params;
+export async function generateStaticParams(params: { slug: string }) {
+  const { slug } = params;
   const payload = await getPayload({ config });
 
   const tagAffiliates = await payload
@@ -25,7 +23,7 @@ export async function generateStaticParams(params: { tagSlug: string }) {
       collection: "tags",
       where: {
         slug: {
-          equals: tagSlug
+          equals: slug
         }
       },
       select: { taggedItems: true, slug: true },
@@ -58,14 +56,14 @@ export async function generateStaticParams(params: { tagSlug: string }) {
 
 type Args = {
   params: Promise<{
-    tagSlug: string;
+    slug: string;
     page: `${number}`;
   }>;
 };
 
 export default async function Page({ params: paramsPromise }: Args) {
-  const { tagSlug, page } = await paramsPromise;
-  const tag = await getTag({ slug: tagSlug });
+  const { slug, page } = await paramsPromise;
+  const tag = await getTag({ slug });
   if (!tag) {
     notFound();
   }
@@ -81,7 +79,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     }
   });
   return (
-    <RPage type="tags" slug={[tagSlug]}>
+    <RPage type="tags" slug={[slug]}>
       <PageClient>
         <div className="relative flex w-full flex-col items-center justify-center">
           <CatTitle>{tag.title}</CatTitle>
@@ -107,7 +105,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           <PageRange
             collection="posts"
             page={Number(page)}
-            basePath={`tagged/${tagSlug}`}
+            basePath={`tagged/${slug}`}
             limit={12}
             totalDocs={posts.totalDocs}
           />
@@ -118,8 +116,8 @@ export default async function Page({ params: paramsPromise }: Args) {
 }
 
 async function getTag({ slug }: { slug: string }) {
-  "use cache";
-  cacheLife("days");
+  // "use cache";
+  // cacheLife("days");
   const payload = await getPayload({ config });
   return await payload
     .find({
@@ -129,6 +127,7 @@ async function getTag({ slug }: { slug: string }) {
           equals: slug
         }
       },
+      pagination: false,
       overrideAccess: true,
       limit: 1,
       select: {
@@ -141,7 +140,7 @@ async function getTag({ slug }: { slug: string }) {
 }
 
 async function getTagPosts({ id }: { id: string }) {
-  "use cache";
+  // "use cache";
   const buildSelect = <T extends TaggedCollectionSlug>(
     collectionSlug: T
   ): TypedCollectionSelect[T] => {
@@ -169,8 +168,8 @@ async function getTagPosts({ id }: { id: string }) {
 export async function generateMetadata({
   params: paramsPromise
 }: Args): Promise<Metadata> {
-  const { tagSlug, page } = await paramsPromise;
+  const { slug, page } = await paramsPromise;
   return {
-    title: `Tagged: ${tagSlug || ""} - ${page || ""}`
+    title: `Tagged: ${slug || ""} - ${page || ""}`
   };
 }

@@ -1,19 +1,18 @@
-import VGradient from "@/components/UX/Gradient";
-import { useIsMobile } from "@/providers/MiddleMan";
-import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
-import { type ReactNode, useCallback, useEffect, useRef } from "react";
-import { Button } from "../../core/Button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { useShallow } from "zustand/shallow";
-import { useMotionValue, useSpring } from "motion/react";
 import { SPRING_EASE } from "@/constants/animations";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/providers/MiddleMan";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
+import { useMotionValue, useSpring } from "motion/react";
 import * as m from "motion/react-m";
+import Image from "next/image";
+import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { useShallow } from "zustand/shallow";
+import { Button } from "../../core/Button";
 
 export const Controlbar = () => {
   const { isMobile } = useIsMobile();
@@ -26,7 +25,6 @@ export const Controlbar = () => {
   const ctrlRef = useRef<HTMLDivElement>(null!);
   const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
   const snapPoints = useRPStore(useShallow((r) => r.snapPoints));
-  const bott = useMenu((r) => r.bottom);
   const op = useMotionValue(1);
   const locationBottom = useMotionValue(`0px`);
   const opacity = useSpring(op, {

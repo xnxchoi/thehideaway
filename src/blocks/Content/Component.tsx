@@ -1,10 +1,9 @@
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import React from "react";
 import { cn } from "@/lib/utils";
 
 import RichText from "@/payload/fields/RichText";
 import type { ContentBlock as ContentBlockProps } from "@/payload-types";
-
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
 
 export const ContentBlock: React.FC<
   {

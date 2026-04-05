@@ -1,5 +1,6 @@
 "use client";
 
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { useTheme } from "@/providers/Theme";
 import { AuthorOverview } from "@/types/collections/users";
 import { Cross1Icon } from "@radix-ui/react-icons";
@@ -13,7 +14,6 @@ import type { SyncedNotification } from "../../payload/collections/Notifications
 import { useDomCursor } from "../core/cursorWrapper";
 import { Link } from "@/components/core/Link/Link";
 import { Button } from "../core/Button";
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Skeleton } from "./skeleton";

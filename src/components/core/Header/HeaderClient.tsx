@@ -12,7 +12,7 @@ import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
 import { useIsMobile } from "@/providers/MiddleMan";
-import { useCursor, useRPStore } from "@/providers/RP_Pro";
+import { useCursor, useFrameState, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { delay, rp_lerp } from "@/utilities/rp_utils";
@@ -51,7 +51,6 @@ type TransitionType =
   | "animate-to-full"
   | "transition-wipe"
   | "animate-to-previous";
-
 export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const showHeader = useRPStore(useShallow((store) => store.showHeader));
   const setHeaderVisibility = useRPStore((store) => store.setHeaderVisibility);
@@ -87,17 +86,8 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   }, [mobileState, isMobile]);
 
   const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
-  const navState = useMotionValue(navIsOpen);
-  useEffect(() => {
-    navState.set(navIsOpen);
-  }, [navIsOpen, navState]);
-
-  const t = useTransform(() => (navState.get() ? 0 : 10) as number);
-  const b = useTransform(() => (navState.get() ? 0 : 30) as number);
-  const r = useTransform(() => (navState.get() ? 0 : 10) as number);
-  const l = useTransform(() => (navState.get() ? 0 : 10) as number);
-
-  const mainT = useTransform(() => t.get() * 0.5);
+  const { left, top, bottom, right, navState } = useFrameState();
+  const mainT = useTransform(() => top.get() * 0.5);
   const mainTop = useSpring(mainT, {
     visualDuration: 0.2,
     ...SPRING_EASE.power4.out
@@ -251,9 +241,13 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
 
   const btBackground = useMotionTemplate`oklch(${themeOK}% 0.008 176.48/${btbgop})`;
   const logoSize = useTransform(scrubPosition, [0.1, 0.3], [28, 22]);
-  const fxInnerTop = useTransform(() => (navState.get() ? -t.get() : 0));
-  const initialInnerLeft = useTransform(() => (navState.get() ? -l.get() : 0));
-  const initialInnerRight = useTransform(() => (navState.get() ? -r.get() : 0));
+  const fxInnerTop = useTransform(() => (navState.get() ? -top.get() : 0));
+  const initialInnerLeft = useTransform(() =>
+    navState.get() ? -left.get() : 0
+  );
+  const initialInnerRight = useTransform(() =>
+    navState.get() ? -right.get() : 0
+  );
   const ssss = useTransform(scrubPosition, [0, 0.4], [0, 1]);
   const innerLeft = useTransform(() => {
     const progress = ssss.get();

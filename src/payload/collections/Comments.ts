@@ -1,19 +1,24 @@
-import {BoldFeature, ItalicFeature, lexicalEditor} from "@payloadcms/richtext-lexical";
-import {nanoid} from "nanoid";
-import type {CheckboxField} from "payload";
+import {
+  BoldFeature,
+  ItalicFeature,
+  lexicalEditor
+} from "@payloadcms/richtext-lexical";
+import { nanoid } from "nanoid";
 import {
   Access,
   AccessArgs,
+  CheckboxField,
   type CollapsibleField,
   CollectionConfig,
   CollectionSlug,
   FieldAccess,
+  flattenAllFields,
   Plugin
 } from "payload";
-import {uuidv7} from "uuidv7";
-import {Post, Response, Surf} from "../../payload-types";
-import {ACField} from "../fields/AccessControlled/plugin"
-import {PROPS_COLLAPSIBLE} from "./constants";
+import { uuidv7 } from "uuidv7";
+import { Post, Response, Surf } from "../../payload-types";
+import { ACField } from "../fields/AccessControlled/plugin";
+import { PROPS_COLLAPSIBLE } from "./constants";
 
 // Access control functions
 const isAdminOrAuthor: Access = ({ req: { user } }) => {
@@ -361,9 +366,9 @@ const commentsField: CheckboxField = {
   index: true,
   admin: {
     position: "sidebar",
-	  components: ACField("checkbox", {
-		  allowAuthor: true,
-	  })
+    components: ACField("checkbox", {
+      allowAuthor: true
+    })
   }
 };
 export const commentsPlugin =
@@ -393,26 +398,24 @@ export const commentsPlugin =
       );
       if (collection) {
         const collectionFields = [...collection.fields];
+        const allFields = flattenAllFields({
+          cache: true,
+          fields: collectionFields
+        });
+        const commentsExist = allFields.some(
+          (r) => r.type === "checkbox" && r.name === commentsField.name
+        );
+        if (commentsExist) continue;
         const f = collectionFields.find(
           (r) =>
             r.type === "collapsible" && r.label && r.label === PROPS_COLLAPSIBLE
         ) as null | CollapsibleField;
         if (f) {
-          const alreadyAdded = f.fields.some(
-            (field) => "name" in field && field.name === "commentsEnabled"
-          );
-          if (!alreadyAdded) {
-            const fIndex = collectionFields.indexOf(f);
-            const ff = f.fields.slice(0, 3),
-              ff2 = f.fields.slice(3);
-            collectionFields[fIndex] = { ...f, fields: [...ff, commentsField, ...ff2] };
-            collection.fields = collectionFields;
-          }
+          const ff = f.fields.slice(0, 3),
+            ff2 = f.fields.slice(3);
+          f.fields = [...ff, commentsField, ...ff2];
+          collection.fields = collectionFields;
         } else {
-          const alreadyAdded = collectionFields.some(
-            (field) => "name" in field && field.name === "commentsEnabled"
-          );
-          if (!alreadyAdded) {
           collection.fields = [
             ...collectionFields,
             commentsField
@@ -465,7 +468,6 @@ export const commentsPlugin =
             //   defaultSort: ["isSticky", "-createdAt"]
             // }
           ];
-          }
         }
 
         collection.hooks = {

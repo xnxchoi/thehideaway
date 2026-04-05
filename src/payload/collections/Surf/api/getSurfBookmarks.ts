@@ -1,3 +1,4 @@
+"use server"
 import {Payload} from "payload"
 import {cache} from "react"
 

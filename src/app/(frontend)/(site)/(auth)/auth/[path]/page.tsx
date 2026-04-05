@@ -1,7 +1,6 @@
 import { RPage } from "@/components/UX/Transition";
 import { AuthView, authViewPaths } from "@betterauth-ui";
 
-export const dynamicParams = false;
 export function generateStaticParams() {
   return Object.values(authViewPaths).map((path) => ({ path }));
 }

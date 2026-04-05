@@ -3610,7 +3610,8 @@ export const tracks = pgTable(
     index("tracks_updated_at_idx").on(columns.updatedAt),
     index("tracks_created_at_idx").on(columns.createdAt),
     index("tracks__status_idx").on(columns._status),
-    index("tracks_filename_idx").on(columns.filename)
+    index("tracks_filename_idx").on(columns.filename),
+    index("artist_album_idx").on(columns.artist, columns.album)
   ]
 );
 
@@ -3746,7 +3747,11 @@ export const _tracks_v = pgTable(
     index("_tracks_v_snapshot_idx").on(columns.snapshot),
     index("_tracks_v_published_locale_idx").on(columns.publishedLocale),
     index("_tracks_v_latest_idx").on(columns.latest),
-    index("_tracks_v_autosave_idx").on(columns.autosave)
+    index("_tracks_v_autosave_idx").on(columns.autosave),
+    index("version_artist_version_album_idx").on(
+      columns.version_artist,
+      columns.version_album
+    )
   ]
 );
 

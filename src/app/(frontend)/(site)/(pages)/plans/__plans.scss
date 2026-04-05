@@ -270,14 +270,14 @@
 
 @media screen and (max-width: 991px) {
   .price-card {
-    aspect-ratio: 1 / 1.25;
+    //aspect-ratio: 1 / 1.25;
     padding: 3em 2em;
   }
 }
 
 @media screen and (max-width: 767px) {
   .price-card {
-    aspect-ratio: 1 / 1.5;
+    //aspect-ratio: 1 / 1.5;
     padding-left: 1.5em;
     padding-right: 1.5em;
   }

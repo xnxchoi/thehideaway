@@ -1,10 +1,10 @@
 "use client";
 
 import { RPage } from "@/components/UX/Transition";
-import { Media, User, UserMedia } from "@payload-types";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
 import { useMenu, useRPStore } from "@/providers/RP_Pro";
-import React, { useEffect, useMemo, useRef } from "react";
+import { Media, User, UserMedia } from "@payload-types";
+import React, { useEffect, useEffectEvent, useMemo, useRef } from "react";
 
 const PageClient = (props: {
   user: Pick<
@@ -31,43 +31,30 @@ const PageClient = (props: {
   const pageSlug = useMemo(() => [`@${user?.slug ?? "f"}`], [user]);
   const { setHeaderTheme } = useHeaderTheme();
   const setHeaderTransition = useRPStore((l) => l.setHeaderTransition);
-  const setFrame = useMenu((l) => l.setFrame);
-  const frameDim = useMemo(
-    () => ({
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0
-    }),
-    []
-  );
+  const setFullscreen = useMenu((r) => r.setFullscreen);
   const showFXFrames = useRPStore((r) => r.setFXFrameVisibility);
   const exitCallback = useRef<string>(null!);
   const navIsOpen = useRPStore((r) => r.navIsOpen);
-  const resetFrames = useMenu((l) => l.resetFrames);
   const setHeaderVisibility = useRPStore((l) => l.setHeaderVisibility);
-  useEffect(() => {
+  const onInitialize = useEffectEvent(() => {
     setHeaderTheme("dark");
     setHeaderTransition("slide");
     setHeaderVisibility(false);
-  }, [setHeaderTheme, setHeaderTransition, setHeaderVisibility]);
+    setFullscreen(true);
+  });
   useEffect(() => {
-    navIsOpen ? resetFrames() : setFrame(frameDim);
+    onInitialize();
+    return () => {
+      setFullscreen(false);
+    };
+  }, []);
+  useEffect(() => {
     setHeaderVisibility(navIsOpen);
     !navIsOpen && showFXFrames(true);
     return () => {
-      resetFrames();
       showFXFrames(true);
     };
-  }, [
-    frameDim,
-    navIsOpen,
-    resetFrames,
-    setFrame,
-    setHeaderVisibility,
-    showFXFrames
-  ]);
-
+  }, [navIsOpen, setHeaderVisibility, showFXFrames]);
   useEffect(() => {}, []);
 
   return (

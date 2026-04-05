@@ -1,3 +1,4 @@
+"use server"
 import {readFile} from "fs/promises"
 import {PayloadHandler} from "payload"
 

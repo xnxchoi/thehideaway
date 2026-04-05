@@ -1,3 +1,4 @@
+"use server"
 import {parseFile} from "music-metadata";
 
 export async function readRadioTrack({url}: { url: string }) {

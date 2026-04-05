@@ -3,12 +3,13 @@
 import { PayloadLinkProps } from "@/components/core/Link/types";
 import { ViewportSizes } from "@/components/core/Media/types";
 import type { PageTransitionType } from "@/components/UX/Transition";
-import type { Footer, Media } from "@/payload-types";
+import { Footer, Header, Media } from "@/payload-types";
 import type { Theme } from "@/providers/Theme/types";
 import { getMenuPagePreviewKey, getPageTypeFromUrl } from "@/utilities/Helpers";
-import { isInternalLink } from "@/utilities/isInternalLink";
+import { Flatten } from "@/utilities/typeUtilities";
 import { isEqual } from "lodash-es";
 import type { Variant } from "motion/react";
+import { DataFromCollectionSlug } from "payload";
 import type { CSSProperties, RefObject } from "react";
 import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
@@ -16,12 +17,18 @@ import { PageType } from "./Routing/RP_Voyageur";
 
 type CommonLinkProps = Omit<PayloadLinkProps, "reference" | "url" | "type">;
 
-export type CustomLink = Required<{ type: "custom" } & { url: string }> &
-  CommonLinkProps;
-export type ReferenceLink = Required<
-  { type: "reference" } & Pick<PayloadLinkProps, "reference">
-> &
-  CommonLinkProps;
+export type CustomLink = { type: "custom"; url: string } & CommonLinkProps;
+type RefCols = NonNullable<
+  Flatten<Header["navItems"]>["link"]["reference"]
+>["relationTo"];
+export type ReferenceLink<T extends RefCols = RefCols> = {
+  type: "reference";
+  reference: {
+    relationTo: T;
+
+    value: string | DataFromCollectionSlug<T>;
+  };
+} & CommonLinkProps;
 export type BackendLink<T extends PayloadLinkProps> = T["type"] extends "custom"
   ? CustomLink
   : ReferenceLink;
@@ -676,15 +683,10 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
           (state) => ({
             ...state,
             navigationPageItemData: c,
-            navigationPageItemKeys: c?.flatMap((l) => {
-              if (!l?.link || !l?.link.type) return [];
-              const typee = isInternalLink(l.link.url)
-                ? "internal"
-                : "external";
-              if (typee === "external") {
-                if (!l.link.url) return [];
-                const xxx = l.link.url.split("/");
-                return getMenuPagePreviewKey("pages", xxx[0] || "");
+            navigationPageItemKeys: c.map((l) => {
+              if (l.link.type === "reference") {
+                const xxx = l.link.url.split("/")[1];
+                return getMenuPagePreviewKey("pages", xxx);
               }
               // const link =
               //   (l.link.reference &&

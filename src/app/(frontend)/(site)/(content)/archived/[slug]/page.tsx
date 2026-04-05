@@ -23,7 +23,7 @@ export async function generateStaticParams() {
       popularity: true
     },
     sort: "-popularity",
-
+    pagination: false,
     overrideAccess: true
   });
 
@@ -131,7 +131,7 @@ export async function generateMetadata({
 }
 
 async function getCategory({ slug }: { slug: string }) {
-  "use cache";
+  // "use cache";
   const payload = await getPayload({ config });
 
   const cat = await payload
@@ -154,7 +154,7 @@ async function getCategory({ slug }: { slug: string }) {
 }
 
 async function getCategoryPosts({ id }: { id: string }) {
-  "use cache";
+  // "use cache";
   const payload = await getPayload({ config });
   const postSel = payload
     .find({

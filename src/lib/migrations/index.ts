@@ -7,6 +7,7 @@ import * as migration_20260330_084157 from './20260330_084157';
 import * as migration_20260330_120000 from './20260330_120000';
 import * as migration_20260403_044023 from './20260403_044023';
 import * as migration_20260403_search_score from './20260403_search_score';
+import * as migration_20260404_072209 from './20260404_072209';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20260403_search_score.up,
     down: migration_20260403_search_score.down,
-    name: '20260403_search_score'
+    name: '20260403_search_score',
+  },
+  {
+    up: migration_20260404_072209.up,
+    down: migration_20260404_072209.down,
+    name: '20260404_072209'
   },
 ];

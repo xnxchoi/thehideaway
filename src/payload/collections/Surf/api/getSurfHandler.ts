@@ -1,3 +1,4 @@
+"use server";
 import {surfOverviewSelect} from "@/payload/collections/Surf/api/querySurfOverview";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 

@@ -1,4 +1,5 @@
 "use client";
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link, MotionLink } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,6 @@ import {
 import { useShallow } from "zustand/shallow";
 import { useDomCursor } from "../../core/cursorWrapper";
 import { Button, MotionBtn, MotionPillButton } from "../../core/Button";
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { ImageMedia } from "@/components/core/Media/Image";
 

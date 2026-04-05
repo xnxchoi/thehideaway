@@ -1,3 +1,4 @@
+"use server";
 
 import {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
 import {GotUser, userSelectRP} from "@/payload/collections/Users/endpoints/userFieldSelect";

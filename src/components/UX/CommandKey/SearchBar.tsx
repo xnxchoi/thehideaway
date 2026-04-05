@@ -1,6 +1,6 @@
 "use client";
 
-import { MotionPillButton } from "@/components/core/Button";
+import { MotionPillButton, RP_Btn } from "@/components/core/Button";
 import {
   CommandDialog,
   CommandGroup,
@@ -128,12 +128,13 @@ export const SearchBar = ({
   }, [data]);
   const total = results.length;
   const isInit = value.length === 0;
-  const hasResults = !isLoading && results.length > 0;
+  const hasResults = !isLoading && data?.results && data.results.length > 0;
   const isEmpty =
     !isLoading &&
     debouncedValue.length > 0 &&
     !isFetching &&
-    results.length === 0;
+    data &&
+    data.results.length === 0;
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
@@ -326,7 +327,7 @@ export const SearchBar = ({
           ) : hasResults ? (
             /* ── Results state ── */
             <CommandGroup heading="Results">
-              {results.slice(0, MAX_POPUP_RESULTS).map((result) => (
+              {data.results.slice(0, MAX_POPUP_RESULTS).map((result) => (
                 <SearchResultItem key={result.id} result={result} />
               ))}
               <CommandSeparator />
@@ -349,12 +350,12 @@ export const SearchBar = ({
               <p className="text-sm text-faded-foreground/60">
                 Nothing found for &ldquo;{debouncedValue}&rdquo;
               </p>
-              <button
+              <RP_Btn
                 className="text-[11px] tracking-widest text-faded-foreground/40 uppercase underline underline-offset-4 transition-colors hover:text-faded-foreground/70"
                 onClick={handleViewAll}
               >
                 Try the full archive &rarr;
-              </button>
+              </RP_Btn>
             </div>
           ) : null}
         </CommandList>

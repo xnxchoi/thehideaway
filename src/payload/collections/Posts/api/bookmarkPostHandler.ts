@@ -1,3 +1,4 @@
+"use server";
 import { CollectionSlug, PayloadHandler, PayloadRequest } from "payload";
 import { cache } from "react";
 import { createBookmark, deleteBookmark } from "../../Bookmarks/createBookmark";

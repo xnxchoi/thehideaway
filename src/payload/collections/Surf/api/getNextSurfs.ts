@@ -1,3 +1,4 @@
+"use server";
 import { getPayload, PaginatedDocs } from "payload";
 import configPromise from "@payload-config";
 import { Surf } from "@/payload-types";

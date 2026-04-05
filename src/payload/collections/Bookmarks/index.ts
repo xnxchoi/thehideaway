@@ -1,9 +1,9 @@
 import { getBookmarkExistance } from "@/payload/collections/Bookmarks/server/getBookmarkExistance";
+import { createValidQueryStringRegex } from "@/utilities/regexUtilities";
 import { Bookmark } from "@payload-types";
 import { NextResponse } from "next/server";
 import { CollectionConfig } from "payload";
 import { uuidv7 } from "uuidv7";
-import { createValidQueryStringRegex } from "../../../utilities/regexUtilities";
 import { filterByCurrentUser } from "../helpers";
 
 export const bookmarkTypes: Bookmark["target"]["relationTo"][] = [

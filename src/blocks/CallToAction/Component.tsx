@@ -1,9 +1,9 @@
 "use client";
-import React from "react";
-
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
-import RichText from "@/payload/fields/RichText";
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import type { CallToActionBlock as CTABlockProps } from "@/payload-types";
+
+import RichText from "@/payload/fields/RichText";
+import React from "react";
 
 export const CallToActionBlock: React.FC<
   {
@@ -20,7 +20,7 @@ export const CallToActionBlock: React.FC<
         </div>
         <div className="flex flex-col gap-8">
           {(links || []).map(({ link }, i) => {
-            return <ReferencedLink key={i} size="lg" link={link} />;
+            return <ReferencedLink key={i} link={link} />;
           })}
         </div>
       </div>

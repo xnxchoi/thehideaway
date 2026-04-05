@@ -1,17 +1,20 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import { SPRING_EASE } from "@/constants/animations";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useRadioStore } from "@/providers/RadioProvider";
-import { useCursor, useMenu, useRPStore } from "@/providers/RP_Pro";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { useMotionValue, useSpring, Variants } from "motion/react";
+import { useCursor, useFrameState, useRPStore } from "@/providers/RP_Pro";
+import {
+  useMotionValue,
+  useSpring,
+  useTransform,
+  Variants
+} from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { SoundBar } from "../Radio/soundBar";
 import { TimeComponent } from "./TimeComponent";
-import { SPRING_EASE } from "@/constants/animations";
 
 type SideNotchProps = {
   sideDrawer?: boolean;
@@ -20,11 +23,7 @@ export const SideNotch = (props: SideNotchProps) => {
   const { sideDrawer = false } = props;
   const { isMobile } = useIsMobile();
   const lastMobile = useRef(isMobile);
-  const setSidebarIsTransitioning = useRPStore(
-    (state) => state.setSideDrawerIsTransitioning
-  );
   const [wantMobile, setWantMobile] = useState(isMobile);
-  const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
   useEffect(() => {
     if (lastMobile.current !== isMobile) {
       setWantMobile(isMobile);
@@ -41,7 +40,10 @@ const DeskNotch = (props: SideNotchProps) => {
   const { sideDrawer = false } = props;
   const navIsOpen = useRPStore(useShallow((state) => state.navIsOpen));
   const setSidebarOpen = useRPStore((state) => state.setSideDrawerOpen);
-
+  const sidedrawervalue = useMotionValue(sideDrawer);
+  useEffect(() => {
+    sidedrawervalue.set(sideDrawer);
+  }, [sideDrawer, sidedrawervalue]);
   const isOpen = useRPStore(useShallow((state) => state.sidebarOpen));
   const setCurTheme = useCursor((state) => state.setCursorTheme);
   const resetCursorTheme = useCursor((state) => state.resetCursorTheme);
@@ -55,19 +57,25 @@ const DeskNotch = (props: SideNotchProps) => {
       setSidebarOpen(false);
     }
   }, [navIsOpen, setSidebarOpen]);
-  const left = useMenu(useShallow((r) => r.left));
+
   const notchRef = useRef<HTMLDivElement>(null);
   const viewportWidth = useRPStore(useShallow((r) => r.viewportWidth));
+  const vw = useMotionValue(viewportWidth);
+  useEffect(() => {
+    vw.set(viewportWidth);
+  }, [viewportWidth, vw]);
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
-  const notchLeft = useMotionValue(left);
-
+  const { left } = useFrameState();
+  const notchLeft = useTransform(() =>
+    sidedrawervalue.get() ? vw.get() * 0.24 - 1 : 2 * left.get()
+  );
   const notchSpring = useSpring(notchLeft, {
     ...SPRING_EASE.power2.inOut,
     visualDuration: 0.6
   });
-  useEffect(() => {
-    notchSpring.set(sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left);
-  }, [left, viewportWidth, sideDrawer, notchSpring]);
+  // useEffect(() => {
+  //   notchSpring.set(sideDrawer ? viewportWidth * 0.24 - 1 : 2 * left);
+  // }, [left, viewportWidth, sideDrawer, notchSpring]);
   // useGSAP(
   //   () => {
   //     gsap.to(notchRef.current, {
@@ -156,7 +164,7 @@ const DeskNotch = (props: SideNotchProps) => {
     >
       <m.div
         className={
-	        "relative flex h-full w-full items-center justify-center bg-nav-background mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[5px] py-[15px] min-lg:mask-[url(/assets/notch@2x.png)]"
+          "relative flex h-full w-full items-center justify-center bg-nav-background mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[5px] py-[15px] min-lg:mask-[url(/assets/notch@2x.png)]"
         }
         onMouseEnter={onEnter}
         onMouseLeave={resetCursorTheme}
@@ -173,9 +181,7 @@ const DeskNotch = (props: SideNotchProps) => {
             onClick={toggleSideDrawer}
             className="z-[100] flex items-center justify-center gap-[6px] font-sans text-xs font-bold text-nav-foreground"
           >
-            <span className="relative flex h-full w-full items-center justify-start overflow-hidden">
-              <TimeComponent />
-            </span>
+            <span className="relative flex h-full w-full items-center justify-start overflow-hidden"></span>
           </m.span>
           {hasRadio && <SoundBar />}
         </m.div>
@@ -199,21 +205,22 @@ const MobileNotch = (props: SideNotchProps) => {
       setSidebarOpen(false);
     }
   }, [navIsOpen, setSidebarOpen]);
-  const bottom = useMenu(useShallow((r) => r.bottom));
+  const { bottom: b } = useFrameState();
+  const side = useMotionValue(sideDrawer);
+  const btm = useTransform(() => {
+    return side.get() ? window.innerHeight * 0.1 : b.get();
+  });
+  const bottom = useSpring(btm, {
+    ...SPRING_EASE.power2.inOut,
+    visualDuration: 0.6
+  });
+  useEffect(() => {
+    side.set(sideDrawer);
+  }, [sideDrawer, side]);
   const notchRef = useRef<HTMLDivElement>(null);
 
   const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
-  useGSAP(
-    () => {
-      gsap.to(notchRef.current, {
-        duration: 0.6,
-        delay: 0.3,
-        ease: "power2.inOut",
-        bottom: sideDrawer ? window.innerHeight * 0.1 : bottom
-      });
-    },
-    { dependencies: [bottom] }
-  );
+
   const variants: Variants = useMemo(
     () => ({
       hidden: {
@@ -278,13 +285,16 @@ const MobileNotch = (props: SideNotchProps) => {
       className="fixed bottom-[30px] z-[239] h-[70px] w-[45vw] p-0"
       ref={notchRef}
       variants={variants}
+      style={{
+        bottom
+      }}
       animate={v}
       initial={"idle"}
       exit={"exit"}
     >
       <m.div
         className={
-	        "relative flex h-full w-full items-center justify-center bg-nav-background mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[15px] py-[5px]"
+          "relative flex h-full w-full items-center justify-center bg-nav-background mask-[url(/assets/notch.png)] mask-size-[100%_100%] px-[15px] py-[5px]"
         }
         data-themed="background-color, color"
       >
@@ -299,9 +309,9 @@ const MobileNotch = (props: SideNotchProps) => {
             onClick={toggleSideDrawer}
             className="z-[100] flex flex-col items-center justify-center gap-[2.5px] font-sans text-[12px] font-bold text-nav-foreground"
           >
-	          <div className="h-[2px] w-[8px] bg-nav-foreground"></div>
-	          <div className="h-[2px] w-[8px] bg-nav-foreground"></div>
-	          <div className="h-[2px] w-[8px] bg-nav-foreground"></div>
+            <div className="h-[2px] w-[8px] bg-nav-foreground"></div>
+            <div className="h-[2px] w-[8px] bg-nav-foreground"></div>
+            <div className="h-[2px] w-[8px] bg-nav-foreground"></div>
           </m.span>
           {hasRadio && <SoundBar />}
         </m.div>

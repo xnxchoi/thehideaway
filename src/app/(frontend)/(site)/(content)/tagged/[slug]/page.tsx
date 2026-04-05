@@ -2,8 +2,8 @@ import {
   ArchiveFeatureCard,
   OverviewAgnosticItem
 } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
-import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import { Link } from "@/components/core/Link/Link";
+import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import { TagButton } from "@/components/UX/TagButton";
 import { RPage } from "@/components/UX/Transition";
 import { getImageOverviewByID } from "@/payload/collections/Posts/api/getImageMedia";
@@ -12,7 +12,6 @@ import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
 import { searchOverviewSelect } from "@/types/collections/search";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 import config from "@payload-config";
-import { cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";
@@ -27,21 +26,22 @@ export async function generateStaticParams() {
     select: {
       slug: true
     },
-    overrideAccess: true
+    overrideAccess: true,
+    pagination: false
   });
 
-  const slugs = tags.docs.map((tag) => ({ tagSlug: tag.slug }));
+  const slugs = tags.docs.map((tag) => ({ slug: tag.slug }));
   return [...slugs];
 }
 
 type Args = {
   params: Promise<{
-    tagSlug: string;
+    slug: string;
   }>;
 };
 export default async function Page({ params: paramsPromise }: Args) {
-  const { tagSlug } = await paramsPromise;
-  const tag = await getTag({ slug: tagSlug });
+  const { slug } = await paramsPromise;
+  const tag = await getTag({ slug });
   if (!tag) {
     return notFound();
   }
@@ -49,7 +49,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     id: tag.id,
     slug: tag.slug
   });
-  const topTags = await getTags({ slug: tagSlug });
+  const topTags = await getTags({ slug });
   const firstFive = posts.slice(0, 5).map(({ value }) => value);
   const rest = posts.slice(5);
   const tagg = {
@@ -99,7 +99,7 @@ export default async function Page({ params: paramsPromise }: Args) {
                   <TagButton
                     tag={tagger}
                     key={tagger.slug}
-                    selected={tagSlug === tagger.slug}
+                    selected={slug === tagger.slug}
                   />
                 ))}
               </div>
@@ -151,8 +151,8 @@ export default async function Page({ params: paramsPromise }: Args) {
 }
 
 async function getTag({ slug }: { slug: string }) {
-  "use cache";
-  cacheTag("tag-" + slug);
+  // "use cache";
+  // cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
 
   const tag = await payload
@@ -176,8 +176,8 @@ async function getTag({ slug }: { slug: string }) {
 }
 
 async function getTags({ slug }: { slug: string }) {
-  "use cache";
-  cacheTag("tag-" + slug);
+  // "use cache";
+  // cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
   const tags = await payload.find({
     collection: "tags",
@@ -215,8 +215,8 @@ async function getTagPosts({
     value: OverviewAgnosticItem;
   }[]
 > {
-  "use cache";
-  cacheTag("tag-" + slug);
+  // "use cache";
+  // cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
   const tagged = await payload
     .find({
@@ -299,7 +299,8 @@ async function getTagPosts({
 export async function generateMetadata({
   params: paramsPromise
 }: Args): Promise<Metadata> {
-  const { tagSlug: slug } = await paramsPromise;
+  // "use cache";
+  const { slug } = await paramsPromise;
   const tag = await getTag({ slug });
   if (!tag) {
     return {

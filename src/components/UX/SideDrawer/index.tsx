@@ -332,11 +332,13 @@ export const SideDrawer = () => {
               {hasRadio && <RP_FM />}
             </div>
           </m.div>
-          {isMobile ? (
-            (open && <Controlbar />) || <> </>
-          ) : (
-            <SideNotch sideDrawer={true} />
-          )}
+          <AnimatePresence>
+            {isMobile ? (
+              (open && <Controlbar />) || <> </>
+            ) : (
+              <SideNotch sideDrawer={true} />
+            )}
+          </AnimatePresence>
         </Mrawer>
       </Drawer.Portal>
     </Drawer.Root>

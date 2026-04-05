@@ -1,3 +1,4 @@
+"use server";
 
 import {getNotifications} from "@/payload/collections/Notifications/fetches/getNotifications";
 import {NotificationResponse} from "@/payload/collections/Notifications/hooks/types";

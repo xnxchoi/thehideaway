@@ -1,15 +1,15 @@
 "use client";
-import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
 import { Link } from "@/components/core/Link/Link";
-import { useCursor, useMenu } from "@/providers/RP_Pro";
-import { useWindowResize } from "@/utilities/use_window_resize";
-import type { PostOverview } from "@/types/collections/posts";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { FrontImage } from "@/components/core/Media/FrontImage";
-import { useShallow } from "zustand/shallow";
-import { useMotionValue } from "motion/react";
-import * as m from "motion/react-m";
+import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
+import { useCursor, useFrameState } from "@/providers/RP_Pro";
+import type { PostOverview } from "@/types/collections/posts";
+import { useWindowResize } from "@/utilities/use_window_resize";
 import { useLenis } from "lenis/react";
+import { useMotionValue, useTransform } from "motion/react";
+import * as m from "motion/react-m";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 export const PrevNext = ({
   prev: previousPost,
   next: nextPost
@@ -30,10 +30,14 @@ export const PrevNext = ({
   });
   const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const toggleCursorTheme = useCursor((r) => r.toggleCursorTheme);
+
   const containerRef = useRef<HTMLDivElement>(null!);
-  const bottom = useMenu(useShallow((r) => r.bottom));
-  const contBottom = useMotionValue(bottom);
-  const lastBottom = useRef(bottom);
+  const { bottom } = useFrameState();
+  const h1 = useMotionValue(0),
+    h2 = useMotionValue(0);
+  const contBottom = useTransform(
+    () => bottom.get() + h2.get() - h1.get() - 36
+  );
   useEffect(() => {
     setPreviousPost(previousPost || fallback({ direction: "prev" }));
     setNextPost(nextPost || fallback({ direction: "next" }));
@@ -42,12 +46,9 @@ export const PrevNext = ({
     if (!containerRef.current) {
       return;
     }
-
-    const e = containerRef.current.getBoundingClientRect().height;
-    const t = document.documentElement.clientHeight;
-    contBottom.set((e - t) * -1 - 36 + bottom);
-    lastBottom.current = bottom;
-  }, [lastResize, bottom, contBottom]);
+    h1.set(containerRef.current.getBoundingClientRect().height);
+    h2.set(document.documentElement.clientHeight);
+  }, [lastResize, h1, h2]);
   const lnis = useLenis();
   const cot = useMotionValue("0px");
 
@@ -61,10 +62,9 @@ export const PrevNext = ({
           containerRef.current &&
           containerRef.current.getBoundingClientRect().top < 36
         ) {
-          const e = containerRef.current.getBoundingClientRect().height;
-          const t = window.innerHeight;
           cot.set("auto");
-          contBottom.set((e - t) * -1 - 36 + lastBottom.current);
+          h2.set(window.innerHeight);
+          h1.set(containerRef.current.getBoundingClientRect().height);
         }
 
         isThrottled = true;
@@ -74,7 +74,7 @@ export const PrevNext = ({
         }, 100);
       }
     };
-  }, [contBottom, cot]);
+  }, [cot, h1, h2]);
   useEffect(() => {
     lnis?.on("scroll", throttledScroll);
     return () => {

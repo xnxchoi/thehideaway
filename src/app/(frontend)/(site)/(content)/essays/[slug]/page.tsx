@@ -4,12 +4,11 @@ import { RPage } from "@/components/UX/Transition";
 import { queryPostBySlug } from "@/payload/collections/Posts/api/queryPostBySlug";
 import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
 import { generateMeta } from "@/utilities/generateMeta";
-import { getServerSideURL } from "@/utilities/getURL";
 import configPromise from "@payload-config";
 import type { Metadata } from "next";
-import { cacheLife, cacheTag } from "next/cache";
 import { getPayload } from "payload";
 import PageClient from "./page.client";
+
 // export const dynamic = "force-static";
 
 export async function generateStaticParams() {
@@ -38,10 +37,10 @@ type Args = {
 };
 
 export default async function Post({ params: paramsPromise }: Args) {
-  "use cache";
-  cacheLife("hours");
+  // "use cache";
+  // cacheLife("hours");
   const { slug = "" } = await paramsPromise;
-  cacheTag("post-" + slug);
+  // cacheTag("post-" + slug);
   if (slug.length < 1) return <PayloadRedirects url={"/home"} />;
   const p = await queryPostBySlug({ slug });
   if (!p) return <PayloadRedirects url={"/home"} />;

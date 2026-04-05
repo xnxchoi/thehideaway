@@ -1,7 +1,7 @@
 import config from "@/payload.config";
-import {sql} from "@payloadcms/db-postgres";
-import {NextRequest, NextResponse} from "next/server";
-import {getPayload} from "payload";
+import { sql } from "@payloadcms/db-postgres";
+import { NextRequest, NextResponse } from "next/server";
+import { getPayload } from "payload";
 
 interface UserSearchResult {
   id: string;
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Use PostgreSQL full-text search with ranking
-    const ftsResults = await payload.db.drizzle.execute<UserSearchRcesult[]>(
+    const ftsResults = await payload.db.drizzle.execute<UserSearchResult[]>(
       sql`
       SELECT 
         id, username, slug, name, image, bio, location,
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
       total: allResults.length
     });
   } catch (error) {
-	  // console.error("User search error:", error);
+    // console.error("User search error:", error);
 
     // Fallback to basic Payload search if PostgreSQL search fails
     const users = await payload.find({

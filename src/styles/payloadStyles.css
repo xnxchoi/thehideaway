@@ -86,7 +86,7 @@ color utility to any element that depends on these defaults.
   }
 
   * {
-    @apply border-border;
+    /*@apply border-border;*/
   }
 
   small {
@@ -122,7 +122,6 @@ color utility to any element that depends on these defaults.
   }
 
   body {
-    @apply bg-background text-foreground;
   }
 
   hr {
@@ -765,11 +764,10 @@ html {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    /*@apply border-border outline-ring/50;*/
   }
 
   body {
-    @apply bg-background text-foreground;
   }
 }
 

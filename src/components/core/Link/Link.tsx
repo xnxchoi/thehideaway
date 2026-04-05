@@ -9,14 +9,18 @@ import { useLenis } from "lenis/react";
 import * as m from "motion/react-m";
 import { Link as NextLink } from "next-transition-router";
 import { usePathname } from "next/navigation";
-// import NextLink from "next/link";
+
 import {
   type ComponentProps,
   MouseEventHandler,
   ReactNode,
   RefAttributes,
+  use,
   useCallback,
-  useMemo
+  useEffect,
+  useMemo,
+  useRef,
+  useState
 } from "react";
 import { useTransitionSetter } from "../../UX/Transition/useTransitionSetter";
 
@@ -27,18 +31,22 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     onMouseLeave: doML,
     onMouseEnter: doME,
     className,
-    ref,
     disabled = false,
     ...rest
   } = props;
 
   const lenis = useLenis();
-
-  const { onMouseEnter, onMouseLeave } = useDomCursor({
-    onEnter: doME,
-    onLeave: doML
-  });
   const currentPath = usePathname();
+  const { isActivePath } = useLinkPaths({ href });
+  const isActivePathRef = useRef(isActivePath);
+  const disabledRef = useRef(disabled);
+  useEffect(() => {
+    isActivePathRef.current = isActivePath;
+  }, [isActivePath]);
+  useEffect(() => {
+    disabledRef.current = disabled;
+  }, [disabled]);
+
   const propsToPass = useMemo(() => {
     const toPass: Partial<RPLinkProps> = {};
     if (!isInternalLink(href)) {
@@ -47,13 +55,19 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     }
     return toPass;
   }, [href]);
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    onEnter: doME,
+    onLeave: doML,
+    enterCondition: () =>
+      disabledRef.current || isActivePathRef.current ? null : "FOCUS"
+  });
 
-  const isAnchor = useMemo(
-    () => href.startsWith("#") || href.startsWith(`${currentPath}#`),
-    [href, currentPath]
-  );
+  const [isAnchor, setIsAnchor] = useState(false);
+  useEffect(() => {
+    setIsAnchor(href.startsWith("#") || href.startsWith(`${currentPath}#`));
+  }, [href, currentPath]);
   const { setGenericPageTransition } = useTransitionSetter();
-  const { contextSafe } = useGSAP();
+
   const handleClick: MouseEventHandler = useCallback(
     (e) => {
       onClick?.();
@@ -88,13 +102,12 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
             }
           : handleClick
       }
-      ref={ref as RefAttributes<HTMLAnchorElement>["ref"]}
       onMouseEnter={disabled ? void 0 : onMouseEnter}
       onMouseLeave={disabled ? void 0 : onMouseLeave}
     />
   );
 };
-const NextMotion = m.create(RP_Link);
+export const NextMotion = m.create(RP_Link);
 
 export function MotionLink(props: ComponentProps<typeof NextMotion>) {
   return <NextMotion {...props} />;
@@ -127,3 +140,28 @@ export function LinkUnderlined(
     </span>
   );
 }
+
+export const useLinkPaths = ({ href }: { href: string }) => {
+  const path = useMemo(() => {
+    if (!href) {
+      console.log("no href");
+      return "";
+    }
+    const url = new URL(href, "http://localhost");
+    console.log(`url constructed, ${url.pathname}`);
+    return url.pathname;
+  }, [href]);
+  const currentPath = usePathname();
+  const [isActivePath, setIsActivePath] = useState(currentPath === path);
+  useEffect(() => {
+    if (path === "/" || path === "/home") {
+      setIsActivePath(["/", "/home"].some((p) => p === currentPath));
+    } else {
+      setIsActivePath(path === currentPath);
+    }
+  }, [path, currentPath]);
+  return {
+    path,
+    isActivePath
+  };
+};

@@ -1,6 +1,5 @@
 "use client";
-import { Concat, join } from "@/utilities/typeUtilities";
-import { VIEW_DIMENSIONS } from "@/constants/animations";
+import { Concat } from "@/utilities/typeUtilities";
 import { createStore } from "zustand/vanilla";
 
 type VerticalFrame = "top" | "bottom";
@@ -26,65 +25,101 @@ const viewDimensions = (viewport: string) => {
   return 0;
 };
 
-type MenuStructure = Record<FrameSide, number> & {
-  base: { [x in FrameSide]: number };
+// type MenuStructure = Record<FrameSide, number> & {
+// base: { [x in FrameSide]: number };
+// };
+type FSCondition = () => boolean;
+type MenuStructure = {
+  fullscreen: boolean;
 };
-
 type MenuStructureActions = {
-  setFrame: (props: Partial<{ [x in FrameSide]: number | string }>) => void;
-  setBase: (props: Partial<{ [x in FrameSide]: number }>) => void;
-  resetFrames: () => void;
+  // setFrame: (props: Partial<{ [x in FrameSide]: number | string }>) => void;
+  // setBase: (props: Partial<{ [x in FrameSide]: number }>) => void;
+  setFullscreen: (l: boolean) => void;
 };
-
-const initMenus: MenuStructure = {
-  top: 10,
-  right: 10,
-  bottom: 30,
-  left: 10,
-  base: {
-    top: 10,
-    right: 10,
-    bottom: 30,
-    left: 10
-  }
-};
+//
+// const initMenus: MenuStructure = {
+//   top: 10,
+//   right: 10,
+//   bottom: 30,
+//   left: 10,
+//   base: {
+//     top: 10,
+//     right: 10,
+//     bottom: 30,
+//     left: 10
+//   }
+// };
 export type RP_BluePrint = MenuStructure & MenuStructureActions;
-
-export const createMenuStructure = (initState: MenuStructure = initMenus) => {
+export const createMenuStructure = () => {
   return createStore<RP_BluePrint>()((set) => ({
-    ...initState,
-    setFrame: (props: Partial<{ [x in FrameSide]: number | string }>) =>
-      set((state) => {
-        const temp = { ...initMenus };
-        for (const [key, value] of Object.entries(props)) {
-          if (typeof value === "string") {
-            temp[key as FrameSide] = viewDimensions(value);
-          } else {
-            temp[key as FrameSide] = value;
-          }
-        }
-        return {
-          ...state,
-          ...temp
-        };
-      }),
-    resetFrames: () =>
-      set((state) => {
-        return {
-          ...state,
-          left: state.base.left,
-          right: state.base.right,
-          top: state.base.top,
-          bottom: state.base.bottom
-        };
-      }),
-    setBase: (props: Partial<{ [x in FrameSide]: number }>) =>
-      set((state) => {
-        const temp = { ...initMenus.base };
-        for (const [key, value] of Object.entries(props)) {
-          temp[key as FrameSide] = value;
-        }
-        return { ...state, ...temp };
-      })
+    fullscreen: false,
+    setFullscreen: (l: boolean) => set({ fullscreen: l })
   }));
 };
+// fsCondition: new Map(),
+//   removeFSCondition: (id) => {
+//   set((state) => {
+//     const mm = new Map(state.fsCondition);
+//     if (mm.has(id)) {
+//       mm.delete(id);
+//     }
+//     const r = {
+//       ...state,
+//       fsCondition: mm
+//     };
+//     return r;
+//   });
+// },
+//   addFSCondition: (fs) => {
+//   const id = nanoid();
+//   set((state) => {
+//     const mm = new Map(state.fsCondition);
+//     mm.set(id, { callback: fs });
+//     const r = {
+//       ...state,
+//       fsCondition: mm
+//     };
+//     return r;
+//   });
+//   return id;
+// }
+// }));
+// export const createMenuStructure = (initState: MenuStructure = initMenus) => {
+//   return createStore<RP_BluePrint>()((set) => ({
+//     ...initState,
+//     setFrame: (props: Partial<{ [x in FrameSide]: number | string }>) =>
+//       set((state) => {
+//         const temp = { ...initMenus };
+//         for (const [key, value] of Object.entries(props)) {
+//           if (typeof value === "string") {
+//             temp[key as FrameSide] = viewDimensions(value);
+//           } else {
+//             temp[key as FrameSide] = value;
+//           }
+//         }
+//         return {
+//           ...state,
+//           ...temp
+//         };
+//       }),
+//     resetFrames: () =>
+//       set((state) => {
+//         return {
+//           ...state,
+//           left: state.base.left,
+//           right: state.base.right,
+//           top: state.base.top,
+//           bottom: state.base.bottom
+//         };
+//       }),
+//     setBase: (props: Partial<{ [x in FrameSide]: number }>) =>
+//       set((state) => {
+//         const temp = { ...initMenus.base };
+//         for (const [key, value] of Object.entries(props)) {
+//           temp[key as FrameSide] = value;
+//         }
+//         return { ...state, ...temp };
+//       })
+//   }));
+// };

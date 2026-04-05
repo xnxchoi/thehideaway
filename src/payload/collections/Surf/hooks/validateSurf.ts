@@ -1,3 +1,4 @@
+"use server";
 import { revalidatePath } from "next/cache";
 import type { CollectionAfterChangeHook } from "payload";
 import { Surf } from "@/payload-types";

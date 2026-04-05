@@ -1,3 +1,4 @@
+"use server"
 import {PayloadHandler, PayloadRequest} from "payload"
 import {User} from "better-auth"
 import {cache} from "react"

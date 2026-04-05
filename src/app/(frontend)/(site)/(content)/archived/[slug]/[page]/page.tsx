@@ -166,7 +166,7 @@ async function getPostsWithCategory({
   id: string;
   page: `${number}`;
 }) {
-  "use cache";
+  // "use cache";
   return await queryPostOverviews({
     limit: 12,
     page: Number(page),
@@ -180,7 +180,7 @@ async function getPostsWithCategory({
 }
 
 async function getCategoryPage({ slug }: { slug: string }) {
-  "use cache";
+  // "use cache";
   const payload = await getPayload({ config });
   return await payload
     .find({

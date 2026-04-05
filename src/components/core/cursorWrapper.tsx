@@ -75,7 +75,7 @@ type DomHandlers<E extends HTMLElement> = {
   onMouseLeave: MouseEventHandler<E>;
 };
 
-export function useDomCursor<E extends HTMLElement>({
+export function useDomCursor<E extends HTMLElement = HTMLElement>({
   onEnter,
   onLeave,
   enterCondition,

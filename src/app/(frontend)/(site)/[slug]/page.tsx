@@ -1,19 +1,17 @@
-import type { Metadata } from "next";
-import { cacheTag } from "next/cache";
-import { draftMode } from "next/headers";
-
-import { cache } from "react";
+"use server";
+import { RenderHero } from "@/blocks/heros/RenderHero";
 
 import { RenderBlocks } from "@/blocks/RenderBlocks";
-import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
-import { RenderHero } from "@/blocks/heros/RenderHero";
-import { generateMeta } from "@/utilities/generateMeta";
-import { getPayload } from "payload";
-import config from "@payload-config";
-import PageClient from "./page.client";
-import { RP_Footer } from "@/payload/globals/Footer/Component.client";
 import { RPage } from "@/components/UX/Transition";
+import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
+import { RP_Footer } from "@/payload/globals/Footer/Component.client";
+import { generateMeta } from "@/utilities/generateMeta";
+import config from "@payload-config";
+import type { Metadata } from "next";
+import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
+import { getPayload } from "payload";
+import PageClient from "./page.client";
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config });
@@ -114,8 +112,7 @@ async function queryPageBySlug({
   slug: string;
   draft: boolean;
 }) {
-  "use cache";
-  cacheTag("page-" + slug);
+  // "use cache";
   const payload = await getPayload({ config });
 
   const result = await payload.find({

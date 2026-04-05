@@ -1,3 +1,4 @@
+"use server"
 import {PayloadHandler, PayloadRequest} from "payload"
 import {cache} from "react"
 import {getSurfBookMarks} from "./getSurfBookmarks"

@@ -1,3 +1,4 @@
+"use server";
 import {User} from "@/payload-types";
 import {createNotification} from "@/payload/collections/Notifications/hooks/createNotification";
 import {RequireKeysAndRestOptional} from "@/utilities/typeUtilities";

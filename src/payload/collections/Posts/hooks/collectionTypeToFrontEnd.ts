@@ -1,18 +1,20 @@
 import { CollectionSlug } from "payload";
 
-export const collectionTypeToFrontEnd = (collection: CollectionSlug,type:'singular'|'plural'='singular')=>
-{
-  const singular = type === 'singular'
+export const collectionTypeToFrontEnd = (
+  collection: CollectionSlug,
+  type: "singular" | "plural" = "plural"
+) => {
+  const singular = type === "singular";
   switch (collection) {
     case "posts":
-      return singular? "essay":"essays"
+      return singular ? "essay" : "essays";
     case "tags":
-      return "tagged"
+      return "tagged";
     case "categories":
-      return singular? "theme":"themes"
+      return "archived";
     case "surf":
-      return "surf"
+      return "surf";
     default:
-      return collection
+      return collection;
   }
-}
+};

@@ -1,3 +1,4 @@
+"use server";
 import { authClient } from "@/lib/auth/client";
 import config from "@/payload.config";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";

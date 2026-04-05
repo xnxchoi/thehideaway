@@ -2,15 +2,15 @@ import type {
   SearchAPIResponse,
   SearchAPIResult
 } from "@/components/UX/CommandKey/Commando";
-import type { IndexedCollections } from "@/payload/search/beforeSync";
-import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import config from "@/payload.config";
+import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
+import type { IndexedCollections } from "@/payload/search/beforeSync";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getPayload } from "payload";
 import type { Where } from "payload";
+import { CollectionSlug, getPayload } from "payload";
 
-function collectionToUrl(collection: string, slug: string): string {
+function collectionToUrl(collection: CollectionSlug, slug: string): string {
   switch (collection) {
     case "posts":
       return `/essays/${slug}`;
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       title: doc.title || undefined,
       slug: doc.slug,
       collection_type: doc.collection as IndexedCollections,
-      url: collectionToUrl(doc.collection, doc.slug),
+      url: collectionToUrl(doc.collection as IndexedCollections, doc.slug),
       score: (doc as any).score ?? doc.priority ?? 0,
       type: "content" as const,
       subtitle: doc.meta?.description || undefined

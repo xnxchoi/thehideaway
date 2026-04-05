@@ -3,9 +3,10 @@
 import { TapePlayer } from "@/components/UX/TapePlayer";
 import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/providers/MiddleMan";
 import { useScroll, useTransform } from "motion/react";
 import * as m from "motion/react-m";
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 
 /**
  * StationHideawayHero
@@ -25,7 +26,7 @@ import { useRef, useState } from "react";
  */
 export function StationHideawayHero({ className }: { className?: string }) {
   const sectionRef = useRef<HTMLElement>(null);
-
+  const { isMobile } = useIsMobile();
   // Tracks scroll progress across the full 250vh section height
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -138,11 +139,15 @@ export function StationHideawayHero({ className }: { className?: string }) {
           style={{ y: sceneY, opacity: sceneOpacity }}
           className="absolute inset-0 z-[20]"
         >
-          <Tape3DScene
-            scrollTriggerId="station-hideaway-hero"
-            className="absolute inset-0 !h-full"
-            style={{ aspectRatio: "unset" }}
-          />
+          {!isMobile && (
+            <Suspense>
+              <Tape3DScene
+                scrollTriggerId="station-hideaway-hero"
+                className="absolute inset-0 !h-full"
+                style={{ aspectRatio: "unset" }}
+              />
+            </Suspense>
+          )}
         </m.div>
 
         {/* ── z-30: Billboard text ─────────────────────────────────────────── */}

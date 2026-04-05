@@ -1,7 +1,7 @@
 import {Post} from "@/payload-types";
 import {arraysEqualContents} from "@/utilities/compareArrays";
 
-import {revalidatePath, revalidateTag} from "next/cache";
+import {revalidatePath} from "next/cache";
 import type {CollectionAfterChangeHook, CollectionAfterDeleteHook} from "payload";
 
 export const revalidatePost: CollectionAfterChangeHook<Post> = async ({
@@ -38,8 +38,8 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = async ({
         payload.logger.info(`Revalidating post at path: ${path}`);
 
         revalidatePath(path);
-        revalidateTag("post-" + doc.slug);
-        revalidateTag("posts-sitemap");
+
+	      // revalidateTag("posts-sitemap", {expire: 50});
       }
     }
 
@@ -50,8 +50,7 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = async ({
       payload.logger.info(`Revalidating old post at path: ${oldPath}`);
 
       revalidatePath(oldPath);
-      revalidateTag("post-" + previousDoc.slug);
-      revalidateTag("posts-sitemap");
+	    // revalidateTag("posts-sitemap", {expire: 50});
     }
   }
   return doc;
@@ -65,8 +64,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Post> = async ({
     const path = `/essays/${doc?.slug}`;
 
     revalidatePath(path);
-    revalidateTag("post-" + doc?.slug);
-    revalidateTag("posts-sitemap");
+	  // revalidateTag("posts-sitemap", {expire: 50});
   }
 
   return doc;

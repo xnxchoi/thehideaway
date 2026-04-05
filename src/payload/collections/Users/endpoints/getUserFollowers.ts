@@ -1,3 +1,4 @@
+"use server"
 import {PayloadHandler, PayloadRequest} from "payload"
 
 export const getUserFollowers: PayloadHandler = async (req: PayloadRequest) => {

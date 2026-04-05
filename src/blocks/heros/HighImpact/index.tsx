@@ -1,10 +1,10 @@
 "use client";
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { useHeaderTheme } from "@/providers/HeaderTheme";
 import React, { useEffect } from "react";
 
 import type { Page } from "@/payload-types";
 
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { Media } from "@/components/core/Media";
 import RichText from "@/payload/fields/RichText";
 
@@ -36,18 +36,7 @@ export const HighImpactHero: React.FC<Page["hero"]> = ({
                   <li key={i}>
                     <ReferencedLink
                       link={{
-                        ...link,
-                        reference:
-                          (link.reference &&
-                            link.reference.value &&
-                            link.reference.relationTo && {
-                              relationTo: link.reference.relationTo,
-                              value:
-                                typeof link.reference.value === "object"
-                                  ? link.reference.value.id
-                                  : link.reference.value
-                            }) ||
-                          null!
+                        ...link
                       }}
                     />
                   </li>
@@ -63,7 +52,10 @@ export const HighImpactHero: React.FC<Page["hero"]> = ({
             fill
             imgClassName="-z-10 object-cover"
             priority
-            resource={media}
+            resource={{
+              relationTo: "media",
+              value: media
+            }}
           />
         )}
       </div>

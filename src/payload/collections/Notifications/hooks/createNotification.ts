@@ -1,3 +1,4 @@
+"use server";
 import { PayloadRequest } from "payload";
 import { Notification } from "@/payload-types";
 import { buildNotification } from "@/payload/collections/Notifications/hooks/helpers/buildNotificationData";

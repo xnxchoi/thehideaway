@@ -123,7 +123,7 @@ export const SplitSection = () => {
       firstName: firstName ?? "",
       lastName: lastName ?? "",
       portrait: undefined,
-      email: email ?? "nothing@hideawayseoul.com"
+      email: email
     }
   });
   const fileRef = form.register("portrait");

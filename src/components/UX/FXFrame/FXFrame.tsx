@@ -1,21 +1,21 @@
 "use client";
-import { SPRING_EASE } from "@/constants/animations";
+import { SPRING_EASE, TWEEN_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
-import { useMenu, useRPStore } from "@/providers/RP_Pro";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { AnimatePresence, useSpring } from "motion/react";
+import { useFrameState, useRPStore } from "@/providers/RP_Pro";
+import { AnimatePresence, useMotionValue, useSpring } from "motion/react";
 import * as m from "motion/react-m";
 import { useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 export const FXFrame = () => {
   const showFXFrame = useRPStore(useShallow((l) => l.showFXFrame));
+  const fxVisibileValue = useMotionValue(showFXFrame);
+  useEffect(() => {
+    fxVisibileValue.set(showFXFrame);
+  }, [fxVisibileValue, showFXFrame]);
   const setShowFXFrame = useRPStore((l) => l.setFXFrameVisibility);
   const fxWrapperRef = useRef<HTMLDivElement>(null!);
-  const left = useMenu(useShallow((l) => l.left));
-  const right = useMenu(useShallow((l) => l.right));
-  const bottom = useMenu(useShallow((l) => l.bottom));
+  const { left, right, bottom } = useFrameState();
   const showHeader = useRPStore(useShallow((r) => r.showHeader));
 
   const l = useSpring(left, {
@@ -30,26 +30,6 @@ export const FXFrame = () => {
     ...SPRING_EASE.power3.inOut,
     visualDuration: 0.4
   });
-  useGSAP(
-    () => {
-      if (fxWrapperRef.current) {
-        gsap.to(fxWrapperRef.current, {
-          autoAlpha: showFXFrame ? 1 : 0,
-
-          duration: 0.4,
-          ease: "power3.inOut"
-        });
-      }
-    },
-    { dependencies: [showFXFrame, bottom, left, right], scope: fxWrapperRef }
-  );
-  useEffect(() => {
-    if (fxWrapperRef.current) {
-      b.set(bottom);
-      l.set(left);
-      r.set(right);
-    }
-  }, [b, bottom, l, left, r, right]);
   return (
     <AnimatePresence>
       {showFXFrame && showHeader && (
@@ -61,14 +41,16 @@ export const FXFrame = () => {
             opacity: 1,
             transition: {
               duration: 0.3,
-              ease: "easeIn"
+              ease: TWEEN_EASE.power3.inOut,
+              type: "tween"
             }
           }}
           exit={{
             opacity: 0,
             transition: {
               duration: 0.2,
-              ease: "easeOut"
+              ease: TWEEN_EASE.power2.out,
+              type: "tween"
             }
           }}
           className={cn(

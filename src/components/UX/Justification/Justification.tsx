@@ -95,9 +95,9 @@ export const Justification = (props: {
         </p>
       </div>
       <div id={"overlayer"}>
-	      <AnimatePresence initial={true} mode="wait">
+        <AnimatePresence initial={true} mode="wait">
           {visibility && (
-	          <>
+            <>
               <m.div
                 key={"the_pitch_bg"}
                 ref={bgRE}
@@ -158,14 +158,14 @@ export const Justification = (props: {
                 ></m.div>
                 <m.div
                   key={"the_pitch_content_inner"}
-                  className="absolute top-[50%] left-[55%] z-[22] flex h-min w-min transform-[translate(-50%,-50%)] flex-nowrap items-end justify-center gap-[10px] overflow-visible p-0"
+                  className="absolute top-1/2 left-[55%] z-[22] flex h-min w-min transform-[translate(-50%,-50%)] flex-nowrap items-end justify-center gap-[10px] overflow-visible p-0 max-md:left-1/2 max-md:flex-col"
                   style={{
                     flex: "0 0 auto"
                   }}
                 >
                   <m.div
                     key={"the_pitch_content_inner_video"}
-                    className="relative h-[550px] w-[550px] flex-none"
+                    className="relative h-[550px] w-[550px] flex-none max-md:aspect-square max-md:h-auto max-md:w-[95vw]"
                     initial={{
                       opacity: 1,
                       rotate: 0,
@@ -293,7 +293,7 @@ export const Justification = (props: {
                   </m.div>
                 </m.div>
               </m.div>
-	          </>
+            </>
           )}
         </AnimatePresence>
       </div>

@@ -1,3 +1,4 @@
+"use server";
 import {getUserOverview} from "@/payload/collections/Posts/api/queryPostOverviews";
 import {PayloadHandler} from "payload";
 

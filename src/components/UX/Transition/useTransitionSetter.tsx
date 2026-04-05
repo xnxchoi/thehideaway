@@ -17,30 +17,26 @@ export const useTransitionSetter = () => {
     navisopref.current = navIsOpen;
   }, [navIsOpen]);
   const setGenericPageTransition = useCallback(() => {
-		  // console.log(
-		  //   "setting generic page transition,nav is open?",
-		  //   navisopref.current
-		  // );
-      navisopref.current ||
-        ((setTransitionOutType(null), setIsTransitioningWipe(true)),
-        setNavigationPageItemSelected(-1));
-    }, [
-      setTransitionOutType,
-      setIsTransitioningWipe,
-      setNavigationPageItemSelected
-    ]),
-    goToPage = useCallback(
-      (l: string) => {
-        (setGenericPageTransition(),
-          setTimeout(() => {
-            l &&
-              router.push(l, {
-                scroll: false
-              });
-          }, 120));
-      },
-      [router, setGenericPageTransition]
-    );
+    navisopref.current ||
+      ((setTransitionOutType(null), setIsTransitioningWipe(true)),
+      setNavigationPageItemSelected(-1));
+  }, [
+    setTransitionOutType,
+    setIsTransitioningWipe,
+    setNavigationPageItemSelected
+  ]);
+  const goToPage = useCallback(
+    (l: string) => {
+      (setGenericPageTransition(),
+        setTimeout(() => {
+          l &&
+            router.push(l, {
+              scroll: false
+            });
+        }, 120));
+    },
+    [router, setGenericPageTransition]
+  );
   return {
     goToPage,
     setGenericPageTransition

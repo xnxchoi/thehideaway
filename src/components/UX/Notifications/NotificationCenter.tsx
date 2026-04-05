@@ -1,5 +1,6 @@
 "use client";
 
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import {
   Archive,
   AtSignIcon,
@@ -31,7 +32,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { useHumanDate } from "@/payload/collections/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";

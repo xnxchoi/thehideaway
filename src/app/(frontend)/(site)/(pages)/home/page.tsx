@@ -24,7 +24,7 @@ export default async function HomePage() {
 }
 
 async function getHomePosts() {
-  "use cache";
+  // "use cache";
   const posts = await queryPostOverviews({
     limit: 8,
     where: {

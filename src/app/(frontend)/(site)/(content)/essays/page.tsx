@@ -1,13 +1,8 @@
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import { RPage } from "@/components/UX/Transition";
-import {
-  paginatedPosts,
-  queryPostOverviews
-} from "@/payload/collections/Posts/api/queryPostOverviews";
+import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
-import { cacheTag } from "next/cache";
 import type { Metadata } from "next/types";
-import { ArchiveFeatureCard } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import PageClient from "./page.client";
 
 export default async function Page() {
@@ -54,8 +49,8 @@ export default async function Page() {
   );
 }
 async function getFrontPagePosts() {
-  "use cache";
-  cacheTag("posts-sitemap");
+  // "use cache";
+  // cacheTag("posts-sitemap");
   return await queryPostOverviews({
     limit: 12,
     page: 1

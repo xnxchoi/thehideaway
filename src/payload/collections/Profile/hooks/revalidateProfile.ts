@@ -1,3 +1,4 @@
+"use server";
 import type {CollectionAfterChangeHook} from "payload";
 
 import {revalidatePath, revalidateTag} from "next/cache";
@@ -41,7 +42,7 @@ export const revalidateProfile: CollectionAfterChangeHook<Profile> = async ({
 
 				revalidatePath(path);
 
-				revalidateTag("users-sitemap");
+				revalidateTag("users-sitemap", {expire: 50});
 			}
 
 			// If the post was previously published, we need to revalidate the old path
@@ -53,7 +54,7 @@ export const revalidateProfile: CollectionAfterChangeHook<Profile> = async ({
 				);
 
 				revalidatePath(oldPath);
-				revalidateTag("users-sitemap");
+				revalidateTag("users-sitemap", {expire: 50});
 			}
 		} catch (e) {
 			console.error(e);

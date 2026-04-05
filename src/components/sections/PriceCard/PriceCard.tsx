@@ -1,5 +1,6 @@
 "use client";
 import DoubleSwitch from "@/components/ui/DoubleSwitch";
+import { useIsMobile } from "@/providers/MiddleMan";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { Starliner } from "@/components/sections/Starliner/Starliner";
 import { cn } from "@/lib/utils";
@@ -22,9 +23,18 @@ export const PriceCard = (props: PriceCardProps) => {
 };
 export const RP_Listing = (props: PriceCardProps) => {
   const { type, children, className, ...rest } = props;
+  const { isMobile } = useIsMobile();
   return (
     <AspectRatio
-      ratio={type === "founder" ? 45 / 12 : 1}
+      ratio={
+        type === "founder"
+          ? isMobile
+            ? 16 / 9
+            : 45 / 12
+          : isMobile
+            ? 5 / 4
+            : 1
+      }
       data-card-state="default"
       className={cn(
         "price-card relative flex h-full flex-col items-center justify-center overflow-hidden rounded-xl border-1 border-faded-foreground bg-muted-faded-background/50 px-[3.75em] py-[4em]",
@@ -58,7 +68,7 @@ const StandardCard = () => {
     }
   }, [user, userRole]);
   return (
-    <div className="w-full px-0 sm:w-[50%] sm:px-[.5em]">
+    <div className="w-full px-0 sm:px-[.5em]">
       <RP_Listing type={"standard"}>
         <div data-price-overlay="main" className="price-card-content">
           <div className="price-card-top">
@@ -104,7 +114,7 @@ const ProCard = () => {
   );
 
   return (
-    <div className="w-full px-0 sm:w-[50%] sm:px-[.5em]">
+    <div className="w-full px-0 sm:px-[.5em]">
       <RP_Listing type={"pro"} className="price-card-pro">
         <div data-price-overlay="trigger" className="price-card-tag">
           <button className="price-card-tag__inner">

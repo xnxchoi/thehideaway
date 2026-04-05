@@ -1,3 +1,4 @@
+"use server";
 import type {
 	CollectionAfterChangeHook,
 	CollectionAfterDeleteHook
@@ -18,7 +19,7 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = async ({
 			payload.logger.info(`Revalidating page at path: ${path}`);
 
 			revalidatePath(path);
-			revalidateTag("pages-sitemap");
+			revalidateTag("pages-sitemap", {expire: 50});
 		}
 
 		// If the page was previously published, we need to revalidate the old path
@@ -28,7 +29,7 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = async ({
 			payload.logger.info(`Revalidating old page at path: ${oldPath}`);
 
 			revalidatePath(oldPath);
-			revalidateTag("pages-sitemap");
+			revalidateTag("pages-sitemap", {expire: 50});
 		}
 	}
 	return doc;
@@ -41,7 +42,7 @@ export const revalidateDelete: CollectionAfterDeleteHook<Page> = async ({
 	if (!context.disableRevalidate) {
 		const path = `/${doc?.slug}`;
 		revalidatePath(path);
-		revalidateTag("pages-sitemap");
+		revalidateTag("pages-sitemap", {expire: 50});
 	}
 
 	return doc;

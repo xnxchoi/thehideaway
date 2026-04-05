@@ -1,56 +1,49 @@
-import type {HTMLMotionProps} from "motion/react";
-import type {LinkProps as NextLinkProps} from "next/link";
-import {DataFromCollectionSlug} from "payload";
-import {type ComponentProps, ComponentPropsWithoutRef} from "react";
+import type { ButtonProps } from "@/components/ui/button";
+import { Flatten } from "@/utilities/typeUtilities";
+import { Header } from "@payload-types";
+import type { HTMLMotionProps } from "motion/react";
+import type { LinkProps as NextLinkProps } from "next/link";
+import { DataFromCollectionSlug } from "payload";
+import {
+  type ComponentProps,
+  ComponentPropsWithoutRef,
+  RefObject
+} from "react";
 
-export type PayloadLinkProps = {
-  type: "reference" | "custom";
+export type LinkedCollectionSlug = NonNullable<
+  Flatten<Header["navItems"]>["link"]["reference"]
+>["relationTo"];
+export type LinkReference<
+  T extends LinkedCollectionSlug = LinkedCollectionSlug
+> = {
+  relationTo: T;
+  value: string | DataFromCollectionSlug<T>;
+};
+export type PayloadLinkProps<
+  T extends "reference" | "custom" = "reference" | "custom"
+> = {
+  url?: null | string;
   newTab?: boolean;
-  reference?: {
-    relationTo:
-      | "pages"
-      | "users"
-      | "posts"
-      | "surf"
-      | "albums"
-      | "tracks"
-      | "playlists"
-      | "organizations"
-      | "categories";
-    value:
-      | DataFromCollectionSlug<
-          | "pages"
-          | "users"
-          | "posts"
-          | "surf"
-          | "albums"
-          | "tracks"
-          | "playlists"
-          | "organizations"
-          | "categories"
-        >
-      | DataFromCollectionSlug<
-          | "pages"
-          | "users"
-          | "posts"
-          | "surf"
-          | "albums"
-          | "tracks"
-          | "playlists"
-          | "organizations"
-          | "categories"
-        >["id"];
-  } | null;
-  url?: string | null;
   label?: string;
   appearance?: "default" | "outline" | null;
-};
+  type: T;
+} & (T extends "reference"
+  ? {
+      reference: LinkReference;
+    }
+  : T extends "custom"
+    ? {
+        reference?: null;
+      }
+    : never);
 type AllowedTags = HTMLAnchorElement | HTMLSpanElement | HTMLDivElement;
-export type RPLinkProps = Omit<
+type NativePropsA = Omit<
   ComponentProps<"a">,
-  "onMouseEnter" | "onClick" | "onMouseLeave"
-> &
-  Omit<NextLinkProps, "onMouseEnter" | "onClick" | "onMouseLeave"> & {
+  keyof NextLinkProps | "onMouseEnter" | "onClick" | "onMouseLeave" | "href"
+>;
+export type RPLinkProps = NativePropsA &
+  Omit<NextLinkProps, "onMouseEnter" | "onClick" | "onMouseLeave" | "href"> & {
+    href: string;
     onMouseLeave?: () => void;
     onMouseEnter?: () => void;
     onClick?: () => void;
@@ -66,4 +59,19 @@ export type RPButtonProps = Omit<
 export type RPLinkPropsWithRef = RPLinkProps & {
   disabled?: boolean;
 };
-export type MotionBtnProps = HTMLMotionProps<"button">
+export type MotionBtnProps = HTMLMotionProps<"button">;
+export type CMSLinkBase = ({
+  label?: string;
+} & Partial<RPLinkProps> & { link: PayloadLinkProps }) &
+  (
+    | {
+        button: true;
+        variant: ButtonProps["variant"];
+        size: ButtonProps["size"];
+        ref?: RefObject<HTMLButtonElement>;
+      }
+    | {
+        button?: false;
+        ref?: RefObject<HTMLAnchorElement>;
+      }
+  );

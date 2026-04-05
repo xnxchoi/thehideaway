@@ -1,29 +1,47 @@
 "use client";
 
-import { Link } from "@/components/core/Link/Link";
+import { useDomCursor } from "@/components/core/cursorWrapper";
+import { useLinkPaths } from "@/components/core/Link/Link";
+import { RPLinkPropsWithRef } from "@/components/core/Link/types";
+import { useTransitionSetter } from "@/components/UX/Transition/useTransitionSetter";
 import { EASING, TWEEN_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
-import { useCursor, useDeviceInfo, useRPStore } from "@/providers/RP_Pro";
+import {
+  useCursor,
+  useDeviceInfo,
+  useFrameFactor,
+  useFrameState,
+  useRPStore
+} from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { isInternalLink } from "@/utilities/isInternalLink";
 import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
+import { index } from "@payloadcms/db-postgres/drizzle/pg-core";
 // import { useGSAP } from "@gsap/react";
 // import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
+import { DateTime } from "luxon";
 import { AnimationSequence } from "motion";
 import {
   animate,
   AnimatePresence,
   type MotionValue,
+  useMotionTemplate,
   useMotionValue,
+  useMotionValueEvent,
   useTransform,
   type Variants
 } from "motion/react";
 import * as m from "motion/react-m";
+import { Link as NextLink } from "next-transition-router";
+import { usePathname } from "next/navigation";
 import {
+  ComponentProps,
+  MouseEventHandler,
   SVGAttributes,
   useCallback,
   useEffect,
@@ -35,35 +53,10 @@ import {
 import { useShallow } from "zustand/shallow";
 
 const B = "navWindow";
-// export const getNavId = () => B;
 
 export const RP_Menu = () => {
-  const H = 590;
-  // const top = useMenu(useShallow((l) => l.top));
-  // const bottom = useMenu(useShallow((l) => l.bottom));
-  // const right = useMenu(useShallow((l) => l.right));
-  // const left = useMenu(useShallow((l) => l.left));
-
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
-  const navOpenValue = useMotionValue(navIsOpen);
-  useEffect(() => {
-    navOpenValue.set(navIsOpen);
-  }, [navIsOpen, navOpenValue]);
-
-  const frameDim = useMemo(
-    () => ({
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0
-    }),
-    []
-  );
-
-  const t = useTransform(() => (navOpenValue.get() ? 0 : 10) as number);
-  const b = useTransform(() => (navOpenValue.get() ? 0 : 30) as number);
-  const r = useTransform(() => (navOpenValue.get() ? 0 : 10) as number);
-  const l = useTransform(() => (navOpenValue.get() ? 0 : 10) as number);
+  const { left: l, right: r, top: t, bottom: b, navState } = useFrameState();
   const { isMobile } = useIsMobile();
   const mobileState = useMotionValue(isMobile);
   useEffect(() => {
@@ -115,33 +108,17 @@ export const RP_Menu = () => {
     []
   );
 
-  const size = useMotionValue(isMobile ? "2rem" : "2.2rem");
+  const _size = useTransform(() => (mobileState.get() ? 2 : (2.2 as number)));
+  const size = useMotionTemplate`${_size}rem`;
 
-  useEffect(() => {
-    // viewbox.set(isMobile ? `0 0 56.15 56.15` : `0 0 28.07 28.07`);
-
-    size.set(isMobile ? "2rem" : "2.2rem");
-  }, [isMobile, size]);
-  const focusedRef = useRef<-1 | string>(-1),
-    activeRef = useRef<string | -1>(-1),
-    [activeIndex, setActiveIndex] = useState<string | -1>(-1);
-  const activeIndexValue = useMotionValue(activeIndex);
-  useEffect(
-    () => activeIndexValue.set(activeIndex),
-    [activeIndexValue, activeIndex]
-  );
-  const toggleMenu = useRef<
-    (isNavOpen: boolean, needsResizing: boolean) => void
-  >(null!);
+  const activeIndexValue = useFrameFactor((r) => r.activeKey);
   const setNavOpeningElement = useRPStore((l) => l.setNavOpeningElement);
   /**
    * Ref Objects for Navigation Items
    *
    */
   const navigationList = useRef<HTMLUListElement>(null!);
-  const navItems = useRef<HTMLLIElement[]>([]);
-  const navLines = useRef<HTMLSpanElement[]>([]);
-  const navButtons = useRef<HTMLAnchorElement[]>([]);
+
   const navWindow = useRef<HTMLDivElement>(null!);
   /**
    *  Menu Frame ref Objects
@@ -159,98 +136,43 @@ export const RP_Menu = () => {
    *  Transition / UI Functions
    */
 
-  const setCanInteract = useRPStore((store) => store.setCanInteract);
-  const setNavigationPageIsTransitioning = useRPStore(
-    (store) => store.setNavigationPageIsTransitioning
-  );
   const setNavIsTransitioning = useRPStore((l) => l.setNavIsTransitioning);
   const setNavIsOpen = useRPStore((l) => l.setNavIsOpen);
-  const setTransitionOutType = useRPStore((l) => l.setTransitionOutType);
   const setNavIsOpenDebounced = useRPStore((l) => l.setNavIsOpenDebounced);
   const menuPageItemKeys = useRPStore(
     useShallow((l) => l.navigationPageItemKeys)
   );
-  const lastAdjustRealTime = useMemo(() => 2026, []);
-  const currentPageKey = useVoyageur(useShallow((l) => l.pageKey));
-  const setNavItemHovered = useRPStore((l) => l.setNavigationPageItemHovered);
-  const setNavItemSelected = useRPStore((l) => l.setNavigationPageItemSelected);
+  const lastAdjustRealTime = useMemo(() => DateTime.now().get("year"), []);
+
+  const setNavItemHovered = useFrameFactor((r) => r.setFocusedKey);
   const menuWrap = useRef<HTMLDivElement>(null!);
   const pathVariants: Variants = useMemo(
     () => ({
       initial: {
-        opacity: 0,
-        visibility: "hidden"
+        opacity: 0
       },
       animate: {
-        opacity: 1,
-        visibility: "visible"
+        opacity: 1
       },
       exit: {
-        opacity: 0,
-        visibility: "hidden"
+        opacity: 0
       }
     }),
     []
   );
-  const handlePagePreviewMouseEnter = useCallback(
-    (pagekey: string | -1) => {
-      currentPageKey !== pagekey && setNavItemHovered(pagekey);
-    },
-    [currentPageKey, setNavItemHovered]
-  );
-  const handlePagePreviewMouseLeave = useCallback(() => {
-    setNavItemHovered(-1);
-  }, [setNavItemHovered]);
+  const hoveredNavItemValue = useFrameFactor((r) => r.focusedKey);
 
-  const hoveredNavItem = useRPStore(
-    useShallow((l) => l.navigationPageItemHovered)
-  );
-  const hoveredNavItemValue = useMotionValue(hoveredNavItem);
-  useEffect(
-    () => hoveredNavItemValue.set(hoveredNavItem),
-    [hoveredNavItemValue, hoveredNavItem]
-  );
-  const activeTO = useRef<ReturnType<typeof setTimeout>>(null!);
-  useEffect(() => {
-    if (hoveredNavItem === -1) {
-      {
-        activeTO.current && clearTimeout(activeTO.current);
-        activeTO.current = setTimeout(() => {
-          setActiveIndex(currentPageKey);
-        }, 450);
-      }
-    }
-  }, [currentPageKey, hoveredNavItem]);
-  const menuToPageCallback = useCallback(
-    (pagekey: string) => {
-      (setNavItemSelected(pagekey),
-        setTransitionOutType("FROM_MENU"),
-        setNavigationPageIsTransitioning(true));
-      setTimeout(() => {
-        setCanInteract(true);
-        setNavIsOpen(!1);
-        setTransitionOutType(null);
-      }, 1200);
-    },
-    [
-      setNavItemSelected,
-      setNavigationPageIsTransitioning,
-      setCanInteract,
-      setNavIsOpen,
-      setTransitionOutType
-    ]
-  );
-  const handlePagePreviewClick = useCallback(
-    (pageKey: string) => {
-      isMobile
-        ? (handlePagePreviewMouseEnter(pageKey),
-          setTimeout(() => {
-            menuToPageCallback(pageKey);
-          }, 300))
-        : menuToPageCallback(pageKey);
-    },
-    [handlePagePreviewMouseEnter, isMobile, menuToPageCallback]
-  );
+  const activeTO = useRef<ReturnType<typeof setTimeout>>(null);
+  useMotionValueEvent(hoveredNavItemValue, "change", (v) => {
+    activeTO.current && clearTimeout(activeTO.current);
+    activeTO.current =
+      v === -1
+        ? setTimeout(() => {
+            setNavItemHovered(activeIndexValue.get());
+          }, 400)
+        : null;
+  });
+
   const er = useRef(null),
     resizeTime = useWindowResize({ debounce: 100 }),
     lastResize = useRef(0),
@@ -259,190 +181,26 @@ export const RP_Menu = () => {
     sizeAdjust.set(resizeTime);
   }, [resizeTime, sizeAdjust]);
   const focusResetTO = useRef<ReturnType<typeof setTimeout>>(null!);
-  const isHome = useVoyageur((l) => l.isHome);
   useEffect(() => {
     (focusResetTO.current && clearTimeout(focusResetTO.current),
       (focusResetTO.current = setTimeout(() => {
         setNavIsOpenDebounced(navIsOpen);
       }, 400)));
   }, [setNavIsOpenDebounced, navIsOpen]);
-  // const { contextSafe: anotherOne } = useGSAP({
-  //   dependencies: [hoveredNavItem, activeIndex],
-  //   scope: menuWrap
-  // });
-  // const resetFrames = anotherOne(() => {
-  //   const l = focusedRef.current !== activeIndex;
-  //   const nothingIsActive = activeIndex === -1 && hoveredNavItem === -1;
-  //   const resetElement = (
-  //     l: gsap.TweenTarget,
-  //     c: gsap.TweenTarget,
-  //     d = 0.3
-  //   ) => {
-  //     const dur = 0.3;
-  //     gsap.killTweensOf([l, c]);
-  //     gsap.to(l, {
-  //       x: "102%",
-  //       duration: dur
-  //     });
-  //     gsap.to(c, {
-  //       autoAlpha: d,
-  //       duration: dur
-  //     });
-  //   };
-  //   navLines.current.forEach((navLine, h) => {
-  //     if (!navLine) {
-  //       return;
-  //     }
-  //     const currentButton = navButtons.current[h];
-  //     if (currentButton) {
-  //       if (l) {
-  //         resetElement(navLine, currentButton, nothingIsActive ? 1 : 0.3);
-  //       }
-  //       if (
-  //         menuPageItemKeys[h] === hoveredNavItem ||
-  //         (hoveredNavItem === -1 && menuPageItemKeys[h] === activeIndex)
-  //       ) {
-  //         gsap.killTweensOf([navLine, currentButton]);
-  //         gsap.fromTo(
-  //           navLine,
-  //           {
-  //             x: "-102%"
-  //           },
-  //           {
-  //             x: 0,
-  //             duration: 0.6,
-  //             ease: "power3.out"
-  //           }
-  //         );
-  //         gsap.to(currentButton, {
-  //           autoAlpha: 1,
-  //           duration: 0.6,
-  //           ease: "power3.out"
-  //         });
-  //       } else if (
-  //         menuPageItemKeys[h] === activeRef.current ||
-  //         (hoveredNavItem !== -1 && menuPageItemKeys[h] === activeIndex) ||
-  //         activeIndex === -1
-  //       ) {
-  //         resetElement(navLine, currentButton);
-  //       }
-  //       if (nothingIsActive) {
-  //         gsap.killTweensOf([navLine, currentButton]);
-  //         resetElement(navLine, currentButton, 1);
-  //       }
-  //     }
-  //   });
-  //   activeRef.current = hoveredNavItem;
-  //   focusedRef.current = activeIndex;
-  // });
-  const resetFrame = useEffectEvent(() => {
-    const seq: AnimationSequence = [];
-    const ai = activeIndexValue.get();
-    const hi = hoveredNavItemValue.get();
-    const notInFocus = focusedRef.current !== ai;
-    const nothingIsActive = ai === -1 && hi === -1;
-    const resetElement = (l: object, c: object, d = 0.3) => {
-      const dur = 0.3;
-      const base = {
-        duration: dur,
-        type: "tween" as const,
-        at: 0,
-        ease: TWEEN_EASE.power1.out
-      };
-      animate([
-        [l, { x: "102%" }, { ...base }],
-        [c, { opacity: d }, { ...base }]
-      ]);
-    };
-    navLines.current.forEach((navLine, h) => {
-      if (!navLine) {
-        return;
-      }
-      const currentButton = navButtons.current[h];
-      if (currentButton) {
-        if (notInFocus) {
-          resetElement(navLine, currentButton, nothingIsActive ? 1 : 0.3);
-        }
-        if (
-          menuPageItemKeys[h] === hi ||
-          (hi === -1 && menuPageItemKeys[h] === ai)
-        ) {
-          seq.push(
-            [navLine, { x: "-102%" }, { at: 0, duration: 0 }],
-            [
-              navLine,
-              {
-                x: 0
-              },
-              {
-                duration: 0.6,
-                at: 0,
-                type: "tween",
-                ease: TWEEN_EASE.power3.out
-              }
-            ],
-            [
-              currentButton,
-              {
-                opacity: 1,
-                visibility: "visible"
-              },
-              {
-                type: "tween",
-                duration: 0.6,
-                at: 0,
-                ease: TWEEN_EASE.power3.out
-              }
-            ]
-          );
-        } else if (
-          menuPageItemKeys[h] === activeRef.current ||
-          (hi !== -1 && menuPageItemKeys[h] === ai) ||
-          ai === -1
-        ) {
-          resetElement(navLine, currentButton);
-        }
-        if (nothingIsActive) {
-          resetElement(navLine, currentButton, 1);
-        }
-      }
-    });
-    const prevActive = activeRef.current;
-    const prevFocused = focusedRef.current;
-    seq.push([
-      motionCallback({
-        onForwards: () => {
-          activeRef.current = hi;
-          focusedRef.current = ai;
-        }
-      })
-    ]);
-    animate(seq);
-  });
-  useEffect(() => {
-    setActiveIndex(-1);
-    (isHome && window.innerHeight > H && !isMobile) ||
-      navItems.current.forEach((el, ind) => {
-        if (el && el.dataset.isActive == "true") {
-          setTimeout(() => {
-            setActiveIndex(menuPageItemKeys[ind] || -1);
-          }, 400);
-        }
-      });
-  }, [isHome, isMobile, menuPageItemKeys]);
+
   const links = useRPStore(useShallow((r) => r.navigationPageItemData));
+
   const toggM = useEffectEvent(
     ({ needsResizing }: { needsResizing?: boolean }) => {
       if (!er.current || !navWindow.current) {
         return;
       }
-      const isM = mobileState.get();
-      const navo = navOpenValue.get();
+      const navo = navState.get();
+
       const top = t.get();
       const right = r.get();
       const bottom = b.get();
       const left = l.get();
-      const isAndro = androidState.get();
 
       setNavIsTransitioning(!0);
       const navWClient = (
@@ -462,22 +220,26 @@ export const RP_Menu = () => {
         const frameRect = frame.getBoundingClientRect();
         if (!navo) {
           switch (ind) {
+            //top
             case 0:
               yOff = -frameRect.height + top;
               break;
+            //right
             case 1:
-              xOff = isM ? right - 3 : frame.offsetWidth - right;
+              xOff = isMobile ? right - 3 : frame.offsetWidth - right;
               break;
+            //bottom
             case 2:
               // yOff = isMobile && os.name === 'android' ? frame.offsetHeight : '100%'
-              yOff = isM
-                ? isAndro
+              yOff = isMobile
+                ? isAndroid
                   ? frameRect.height
                   : frameRect.height - 20
                 : frameRect.height - bottom;
               break;
+            //left
             case 3:
-              xOff = isM ? -left + 3 : -frameRect.width + left;
+              xOff = isMobile ? -left + 3 : -frameRect.width + left;
           }
         }
         seq1.push([
@@ -485,8 +247,7 @@ export const RP_Menu = () => {
           {
             x: `${xOff}px`,
             y: `${yOff}px`,
-            opacity: 1,
-            visibility: "visible"
+            opacity: 1
           },
           {
             duration: 1.2,
@@ -501,7 +262,7 @@ export const RP_Menu = () => {
         if (!corner) {
           return;
         }
-        if (!navo && isM && isAndro) {
+        if (!navo && isMobile && isAndroid) {
           const l = menuFrames.current[2];
           const c = l?.offsetHeight || 0;
           switch (indx) {
@@ -532,7 +293,7 @@ export const RP_Menu = () => {
           case 2:
             if (navo) {
               xoffse = -windowXOff;
-              yoffse = isM
+              yoffse = isMobile
                 ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
                 : -windowYOff;
             } else {
@@ -543,7 +304,7 @@ export const RP_Menu = () => {
           case 3:
             if (navo) {
               xoffse = windowXOff;
-              yoffse = isM
+              yoffse = isMobile
                 ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
                 : -windowYOff;
             } else {
@@ -581,7 +342,7 @@ export const RP_Menu = () => {
           ]);
         }
       });
-      const startLoc = isM ? 0 : -150;
+      const startLoc = isMobile ? 0 : -150;
       // seq2.push([
       //   navigationList.current,
       //   {
@@ -626,190 +387,7 @@ export const RP_Menu = () => {
       animate(seq2);
     }
   );
-  // const toggleMenuCallback = useCallback(
-  //   ({
-  //     isNavOpen,
-  //     needsResizing,
-  //     top,
-  //     right,
-  //     bottom,
-  //     left,
-  //     isMobile,
-  //     isAndroid
-  //   }: {
-  //     isNavOpen: boolean;
-  //     needsResizing: boolean;
-  //     top: number;
-  //     right: number;
-  //     bottom: number;
-  //     left: number;
-  //     isMobile: boolean;
-  //     isAndroid: boolean;
-  //   }) => {
-  //     if (!er.current || !navWindow.current) {
-  //       return;
-  //     }
-  //     setNavIsTransitioning(!0);
-  //     const navWClient = (
-  //       navWindow.current as HTMLElement
-  //     ).getBoundingClientRect();
-  //     const windowHeight = (navWindow.current as HTMLElement).offsetHeight;
-  //     const windowXOff = navWClient.left;
-  //     const windowYOff = navWClient.top;
-  //     gsap.killTweensOf([...menuSVgs.current, ...navItems.current, er.current]);
-  //
-  //     menuFrames.current.forEach((frame, ind) => {
-  //       if (!frame) {
-  //         return;
-  //       }
-  //       gsap.killTweensOf(frame);
-  //       let xOff: string | number = 0;
-  //       let yOff: string | number = 0;
-  //       const frameRect = frame.getBoundingClientRect();
-  //       if (!isNavOpen) {
-  //         switch (ind) {
-  //           case 0:
-  //             yOff = -frameRect.height + top;
-  //             break;
-  //           case 1:
-  //             xOff = isMobile ? right - 3 : frame.offsetWidth - right;
-  //             break;
-  //           case 2:
-  //             // yOff = isMobile && os.name === 'android' ? frame.offsetHeight : '100%'
-  //             yOff = isMobile
-  //               ? isAndroid
-  //                 ? frameRect.height
-  //                 : frameRect.height - 20
-  //               : frameRect.height - bottom;
-  //             break;
-  //           case 3:
-  //             xOff = isMobile ? -left + 3 : -frameRect.width + left;
-  //         }
-  //       }
-  //       gsap.to(frame, {
-  //         x: xOff,
-  //         y: yOff,
-  //         autoAlpha: 1,
-  //         duration: isNavOpen ? 1.2 : 1.2,
-  //         ease: isNavOpen ? "power4.inOut" : "power3.inOut"
-  //       });
-  //     });
-  //     menuCorners.current.forEach((corner, indx) => {
-  //       let xoffse = 0;
-  //       let yoffse = 0;
-  //       if (!corner) {
-  //         return;
-  //       }
-  //       gsap.killTweensOf(corner);
-  //       if (!isNavOpen && isMobile && isAndroid) {
-  //         const l = menuFrames.current[2];
-  //         const c = l?.offsetHeight || 0;
-  //         switch (indx) {
-  //           case 2:
-  //           case 3:
-  //             yoffse = c - c / 1.5;
-  //         }
-  //       }
-  //       switch (indx) {
-  //         case 0:
-  //           if (isNavOpen) {
-  //             yoffse = windowYOff;
-  //             xoffse = windowXOff;
-  //           } else {
-  //             yoffse = top;
-  //             xoffse = left;
-  //           }
-  //           break;
-  //         case 1:
-  //           if (isNavOpen) {
-  //             yoffse = windowYOff;
-  //             xoffse = -windowXOff;
-  //           } else {
-  //             yoffse = top;
-  //             xoffse = -right;
-  //           }
-  //           break;
-  //         case 2:
-  //           if (isNavOpen) {
-  //             xoffse = -windowXOff;
-  //             yoffse = isMobile
-  //               ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
-  //               : -windowYOff;
-  //           } else {
-  //             yoffse = -bottom;
-  //             xoffse = -right;
-  //           }
-  //           break;
-  //         case 3:
-  //           if (isNavOpen) {
-  //             xoffse = windowXOff;
-  //             yoffse = isMobile
-  //               ? -((window.innerHeight - (windowHeight + windowYOff)) * 1) + 1
-  //               : -windowYOff;
-  //           } else {
-  //             yoffse = -bottom;
-  //             xoffse = left;
-  //           }
-  //       }
-  //
-  //       gsap.to(corner, {
-  //         x: xoffse,
-  //         y: yoffse,
-  //         duration: isNavOpen ? 1.2 : 1.2,
-  //         ease: isNavOpen ? "power4.inOut" : "power3.inOut"
-  //       });
-  //     });
-  //     menuSVgs.current.forEach((svg) => {
-  //       if (svg) {
-  //         const m = {
-  //           scale: 1,
-  //           duration: isNavOpen ? 1.2 : 1.2,
-  //           ease: isNavOpen ? "power4.inOut" : "power3.inOut"
-  //         };
-  //         needsResizing ? gsap.set(svg, m) : gsap.to(svg, m);
-  //       }
-  //     });
-  //     const startLoc = isMobile ? 0 : -150;
-  //     const moveTargets = [navigationList.current];
-  //
-  //     gsap.killTweensOf(moveTargets);
-  //     gsap[needsResizing ? "set" : "to"](moveTargets, {
-  //       x: isNavOpen ? 0 : startLoc,
-  //       autoAlpha: isNavOpen ? 1 : 0,
-  //       delay: isNavOpen ? 0.75 : 0,
-  //       duration: isNavOpen ? 1.2 : 1.2 * 0.75,
-  //       ease: "power3.out"
-  //     });
-  //     gsap[needsResizing ? "set" : "to"](er.current, {
-  //       autoAlpha: isNavOpen ? 1 : 0,
-  //       delay: isNavOpen ? 0.5 : 0,
-  //       duration: isNavOpen ? 1.2 : 1.2,
-  //       onComplete: () => {
-  //         setNavIsTransitioning(false);
-  //       }
-  //     });
-  //   },
-  //   [setNavIsTransitioning]
-  // );
 
-  useEffect(() => {
-    (setActiveIndex(-1),
-      (isHome && window.innerHeight > H && !isMobile) ||
-        navItems.current.forEach((l, c) => {
-          l &&
-            "true" === l.dataset.isActive &&
-            setTimeout(() => {
-              setActiveIndex(menuPageItemKeys[c] || -1);
-            }, 400);
-        }));
-  }, [setActiveIndex, menuPageItemKeys, currentPageKey, isHome, isMobile]);
-
-  // useEffect(() => {
-  //   resetFrames();
-  // }, [resetFrames]);
-  useEffect(() => {
-    resetFrame();
-  }, []);
   const lastNavOpen = useRef(navIsOpen);
 
   const lenis = useLenis();
@@ -829,6 +407,7 @@ export const RP_Menu = () => {
     //   isAndroid,
     //   isMobile
     // });
+    navState.set(navIsOpen);
     toggM({ needsResizing });
     if (lastNavOpen.current !== navIsOpen || needsResizing) {
       lastResize.current = resizeTime;
@@ -837,7 +416,9 @@ export const RP_Menu = () => {
     navIsOpen || setNavItemHovered(-1);
   }, [
     navIsOpen,
+    navState,
     resizeTime,
+    isMobile,
     setNavItemHovered,
     // toggleMenuCallback,
     lenis,
@@ -883,12 +464,12 @@ export const RP_Menu = () => {
                 initial={{
                   opacity: 0,
 
-                  translateX: "-150px"
+                  x: "-150px"
                 }}
                 animate={{
                   opacity: 1,
                   visibility: "visible",
-                  translateX: 0,
+                  x: 0,
                   transition: {
                     delay: 0.75,
                     duration: 1.2,
@@ -898,7 +479,7 @@ export const RP_Menu = () => {
                 }}
                 exit={{
                   opacity: 0,
-                  translateX: "-150px",
+                  x: "-150px",
                   visibility: "hidden",
                   transition: {
                     type: "tween",
@@ -915,51 +496,13 @@ export const RP_Menu = () => {
                   const theKey = menuPageItemKeys[index];
                   const href = l.link.url;
                   return (
-                    <li
-                      className="menu__nav-item"
-                      key={index + "nav_item"}
-                      ref={(el) => {
-                        el && (navItems.current[index] = el);
-                      }}
-                      data-is-active={currentPageKey === theKey}
-                      data-themed="color"
-                      style={{}}
+                    <RP_Navigator
+                      href={href}
+                      key={theKey + `_${index}`}
+                      theKey={theKey}
                     >
-                      <Link
-                        ref={(el: HTMLAnchorElement) => {
-                          el && (navButtons.current[index] = el);
-                        }}
-                        href={href}
-                        key={index + "-" + theKey}
-                        className={"button__scroll lift__button"}
-                        onMouseEnter={() =>
-                          handlePagePreviewMouseEnter(theKey || -1)
-                        }
-                        onMouseLeave={() =>
-                          isMobile || handlePagePreviewMouseLeave()
-                        }
-                        onClick={() => {
-                          handlePagePreviewClick(theKey || "default");
-                        }}
-                      >
-                        {l.link.label}
-                      </Link>
-                      <span className="menu__item-line-container">
-                        <span
-                          className="menu__item-line"
-                          data-themed="background-color"
-                          style={{
-                            translate: "none",
-                            rotate: "none",
-                            scale: "none",
-                            transform: "translate(102%, 0px)"
-                          }}
-                          ref={(el) => {
-                            el && (navLines.current[index] = el);
-                          }}
-                        />
-                      </span>
-                    </li>
+                      {l.link.label}
+                    </RP_Navigator>
                   );
                 })}
               </m.ul>
@@ -978,9 +521,19 @@ export const RP_Menu = () => {
         <div>
           {frames.map((frame, ind) => {
             return (
-              <div
+              <m.div
                 className={cn("menu__frame", `frame-${frame}`)}
                 id={`frame-${frame}`}
+                style={{
+                  x:
+                    frame === "top" || frame === "bottom"
+                      ? 0
+                      : `${frame === "left" ? "-" : ""}${isMobile ? 100 : 102}%`,
+                  y:
+                    frame === "left" || frame === "right"
+                      ? 0
+                      : `${frame === "top" ? "-" : ""}${isMobile ? 100 : 102}%`
+                }}
                 ref={(el) => {
                   if (el) {
                     menuFrames.current[ind] = el;
@@ -1050,8 +603,6 @@ const CornerStone = (
     pathVariants: Variants;
   } & SVGAttributes<SVGPathElement>
 ) => {
-  const ref = useRef<SVGSVGElement>(null);
-
   const { side, path, size, viewbox, pathVariants } = props;
 
   const theme = useTheme((state) => state.theme);
@@ -1059,7 +610,6 @@ const CornerStone = (
   return (
     <m.svg
       id={`cs_${side}`}
-      ref={ref}
       className={"absolute inset-0 inline-block"}
       viewBox={viewbox}
       style={{ width: size, height: size }}
@@ -1114,3 +664,293 @@ const CornerStone = (
     </m.svg>
   );
 };
+const RP_Navigator = (
+  props: Omit<
+    ComponentProps<typeof MotionLink>,
+    "onClick" | "onMouseEnter" | "onMouseLeave" | "href" | "children"
+  > &
+    Pick<
+      RPLinkPropsWithRef,
+      | "onClick"
+      | "onMouseEnter"
+      | "onMouseLeave"
+      | "disabled"
+      | "children"
+      | "href"
+    > & {
+      theKey: string;
+    }
+) => {
+  const {
+    href,
+    onClick,
+    onMouseLeave: doML,
+    onMouseEnter: doME,
+    className,
+    children,
+    disabled = false,
+    theKey,
+    ...rest
+  } = props;
+  const lenis = useLenis();
+  const currentPath = usePathname();
+  const { isActivePath } = useLinkPaths({ href });
+
+  const disabledRef = useRef(disabled);
+  const { isMobile } = useIsMobile();
+  const mobileState = useMotionValue(isMobile);
+  useEffect(() => {
+    mobileState.set(isMobile);
+  }, [mobileState, isMobile]);
+  const setNavItemHovered = useFrameFactor((r) => r.setFocusedKey);
+  const setNavItemSelected = useFrameFactor((r) => r.setActiveKey);
+  const activeNavItem = useFrameFactor((r) => r.activeKey);
+  const focusedItem = useFrameFactor((r) => r.focusedKey);
+
+  const isActivePage = useMotionValue(isActivePath);
+  useEffect(() => {
+    isActivePage.set(isActivePath);
+  }, [isActivePath, isActivePage]);
+  const handlePagePreviewMouseEnter = useCallback(() => {
+    if (disabledRef.current) {
+      return;
+    }
+    if (!isActivePage.get()) {
+      setNavItemHovered(theKey);
+    }
+  }, [isActivePage, setNavItemHovered, theKey]);
+  const translateX = useMotionValue(`-102%`);
+  const opacity = useMotionValue(isActivePath ? 1 : 0.3);
+  const setTransitionOutType = useRPStore((r) => r.setTransitionOutType);
+  const setNavIsOpen = useRPStore((r) => r.setNavIsOpen);
+  const setNavPageIsTransitioning = useRPStore(
+    (r) => r.setNavigationPageIsTransitioning
+  );
+  const setCanInteract = useRPStore((r) => r.setCanInteract);
+
+  useEffect(() => {
+    disabledRef.current = disabled;
+  }, [disabled]);
+  const resetElements = useCallback(
+    (op: number = 0.3) => {
+      const comms = {
+        type: "tween" as const,
+        ease: TWEEN_EASE.power1.out,
+        duration: 0.3,
+        at: 0
+      };
+
+      animate([
+        [translateX, "102%", comms],
+        [opacity, op, comms]
+      ]);
+    },
+    [opacity, translateX]
+  );
+  const resetElement = useCallback(
+    (op: number = 0.3) => {
+      const comms = {
+        type: "tween" as const,
+        ease: TWEEN_EASE.power1.out,
+        duration: 0.3,
+        at: 0
+      };
+
+      return [
+        [translateX, "102%", comms],
+        [opacity, op, comms]
+      ] as AnimationSequence;
+    },
+    [opacity, translateX]
+  );
+  useMotionValueEvent(isActivePage, "change", (v) => {
+    v && setNavItemSelected(theKey);
+  });
+  const currentlyFocused = useRef<-1 | string>(-1);
+  const resetFrame = useCallback(() => {
+    const hi = focusedItem.get(),
+      ai = activeNavItem.get();
+    const nothingIsActive = hi === -1 && ai === -1;
+    const seq: AnimationSequence = [];
+    if (ai !== currentlyFocused.current) {
+      resetElements(nothingIsActive ? 1 : 0.3);
+    }
+    if (
+      (hi !== -1 && hi === theKey) ||
+      (hi === -1 && ai !== -1 && ai === theKey)
+    ) {
+      seq.push(
+        [translateX, "-102%", { at: 0, duration: 0 }],
+        [opacity, 0, { at: 0, duration: 0 }],
+        [
+          translateX,
+          "0%",
+          {
+            duration: 0.6,
+            at: 0,
+            type: "tween",
+            ease: TWEEN_EASE.power3.out
+          }
+        ],
+        [
+          opacity,
+          1,
+
+          {
+            type: "tween",
+            duration: 0.6,
+            at: 0,
+            ease: TWEEN_EASE.power3.out
+          }
+        ]
+      );
+    } else if (
+      (hi !== -1 && hi !== theKey) ||
+      (hi === -1 && ai !== -1 && ai !== theKey)
+    ) {
+      seq.push(...resetElement(0.3));
+    }
+    if (nothingIsActive) {
+      seq.push(...resetElement(1));
+    }
+
+    seq.push([
+      motionCallback({
+        onForwards: () => (currentlyFocused.current = activeNavItem.get())
+      }),
+      {
+        duration: 0
+      }
+    ]);
+    animate(seq);
+  }, [
+    activeNavItem,
+    focusedItem,
+    opacity,
+    resetElement,
+    resetElements,
+    theKey,
+    translateX
+  ]);
+  const frameRsetTO = useRef<ReturnType<typeof setTimeout>>(null);
+  useEffect(() => {
+    frameRsetTO.current = setTimeout(resetFrame, 50);
+  }, [resetFrame]);
+  useMotionValueEvent(activeNavItem, "change", (v) => {
+    frameRsetTO.current && clearTimeout(frameRsetTO.current);
+    frameRsetTO.current = setTimeout(resetFrame, 50);
+  });
+  useMotionValueEvent(focusedItem, "change", (v) => {
+    frameRsetTO.current && clearTimeout(frameRsetTO.current);
+    frameRsetTO.current = setTimeout(resetFrame, 50);
+  });
+  const isHome = useVoyageur(useShallow((r) => r.isHome));
+  useEffect(() => {
+    setNavItemSelected(-1);
+    (isHome && window.innerHeight > 590 && !isMobile) ||
+      (isActivePath &&
+        setTimeout(() => {
+          setNavItemSelected(theKey);
+        }, 400));
+  }, [isActivePath, isHome, isMobile, setNavItemSelected, theKey]);
+  const propsToPass = useMemo(() => {
+    const toPass: Partial<ComponentProps<typeof MotionLink>> = {};
+    if (!isInternalLink(href)) {
+      toPass.target = "_blank";
+      toPass.rel = "noreferrer";
+    }
+    return toPass;
+  }, [href]);
+  const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLAnchorElement>({
+    onEnter: (event) => {
+      event.preventDefault();
+      doME?.();
+      handlePagePreviewMouseEnter();
+    },
+    onLeave: (event) => {
+      doML?.();
+      setNavItemHovered(null);
+    },
+    enterCondition: () =>
+      disabledRef.current || isActivePage.get() ? null : "FOCUS"
+  });
+
+  const [isAnchor, setIsAnchor] = useState(false);
+  useEffect(() => {
+    setIsAnchor(href.startsWith("#") || href.startsWith(`${currentPath}#`));
+  }, [href, currentPath]);
+  const { setGenericPageTransition } = useTransitionSetter();
+  const menuToPageCallback = useCallback(() => {
+    (setNavItemSelected(theKey),
+      setTransitionOutType("FROM_MENU"),
+      setNavPageIsTransitioning(true));
+    setTimeout(() => {
+      setCanInteract(true);
+      setNavIsOpen(!1);
+      setTransitionOutType(null);
+    }, 1200);
+  }, [
+    setCanInteract,
+    setNavIsOpen,
+    setNavItemSelected,
+    setNavPageIsTransitioning,
+    setTransitionOutType,
+    theKey
+  ]);
+  const handleClick: MouseEventHandler = useCallback(
+    (e) => {
+      onClick?.();
+      mobileState.get()
+        ? (handlePagePreviewMouseEnter(),
+          setTimeout(() => {
+            menuToPageCallback();
+          }, 300))
+        : menuToPageCallback();
+    },
+    [onClick, mobileState, handlePagePreviewMouseEnter, menuToPageCallback]
+  );
+  if (!href || typeof href !== "string") {
+    return <div className={className}>{props.children}</div>;
+  }
+
+  return (
+    <m.li
+      className="menu__nav-item"
+      key={index + "nav_item"}
+      data-is-active={isActivePath}
+      data-themed="color"
+      style={{ opacity }}
+    >
+      <MotionLink
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={handleClick}
+        className={cn(
+          {
+            link_hashLink: isAnchor
+          },
+
+          "button__scroll lift__button"
+        )}
+        {...rest}
+        {...propsToPass}
+        style={{
+          opacity
+        }}
+        href={href}
+      >
+        {children}
+      </MotionLink>
+      <span className="menu__item-line-container">
+        <m.span
+          className="absolute top-0 left-0 h-full w-full bg-background"
+          data-themed="background-color"
+          style={{
+            x: translateX
+          }}
+        />
+      </span>
+    </m.li>
+  );
+};
+const MotionLink = m.create(NextLink);

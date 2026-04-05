@@ -59,7 +59,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
         link: {
           type: "string",
           label: "Link",
-          placeholder: "https://hideawayseoul.com/",
+          placeholder: "",
           required: false,
           description: "Your website or social media link"
         }

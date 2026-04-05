@@ -8,7 +8,11 @@ import {
   DeviceStore,
   HA_DEVICE
 } from "@/stores/Device/DeviceStore";
-import { createMenuStructure, RP_BluePrint } from "@/stores/Frame_Ctrl";
+import {
+  createMenuStructure,
+  FrameSide,
+  RP_BluePrint
+} from "@/stores/Frame_Ctrl";
 
 import { createHAStore, HA_VAULT } from "@/stores/RP_Ui";
 
@@ -16,11 +20,20 @@ import { createId } from "@paralleldrive/cuid2";
 import { getThumbmark } from "@thumbmarkjs/thumbmarkjs";
 
 import InAppSpy from "inapp-spy";
-import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import { MotionValue, useMotionValue, useTransform } from "motion/react";
+import { useTransitionState } from "next-transition-router";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef
+} from "react";
 
 import { UAParser } from "ua-parser-js";
 import { useStore } from "zustand";
-import { shallow } from "zustand/shallow";
+import { shallow, useShallow } from "zustand/shallow";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 
 export type HAAPI = ReturnType<typeof createHAStore>;
@@ -269,6 +282,16 @@ export const useDeviceInfo = <T,>(selector: (store: DeviceStore) => T) => {
   return useStore(deviceContext, selector);
 };
 type MenuAPI = ReturnType<typeof createMenuStructure>;
+type FramerAPI = {
+  [x in FrameSide]: MotionValue<number>;
+} & {
+  navState: MotionValue<boolean>;
+  activeKey: MotionValue<string | -1>;
+  setActiveKey: (key: string | null | -1) => void;
+  focusedKey: MotionValue<string | -1>;
+  setFocusedKey: (key: string | null | -1) => void;
+};
+const FrameContext = createContext<FramerAPI | undefined>(undefined);
 const MenuContext = createContext<MenuAPI | undefined>(undefined);
 export const MenuProvider = ({ children }: { children: ReactNode }) => {
   const bleuContext = useRef<MenuAPI>(undefined);
@@ -277,9 +300,9 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <MenuContext.Provider value={bleuContext.current}>
-      {children}
-    </MenuContext.Provider>
+    <MenuContext value={bleuContext.current}>
+      <AMG>{children}</AMG>
+    </MenuContext>
   );
 };
 export const useMenu = <T,>(selector: (store: RP_BluePrint) => T): T => {
@@ -288,4 +311,73 @@ export const useMenu = <T,>(selector: (store: RP_BluePrint) => T): T => {
     throw new Error("useMenu must be used within a MenuProvider");
   }
   return useStore(store, selector);
+};
+export const useFrameState = <T,>() => {
+  const store = useContext(FrameContext);
+  if (!store)
+    throw new Error("useFrameState must be used within a MenuProvider");
+  return store;
+};
+export const useFrameFactor = <T,>(selector: (store: FramerAPI) => T) => {
+  const store = useContext(FrameContext);
+  if (!store)
+    throw new Error("useFrameState must be used within a MenuProvider");
+  return selector(store);
+};
+const AMG = ({ children }: { children: ReactNode }) => {
+  const { stage } = useTransitionState();
+  const navIsOpen = useRPStore(useShallow((r) => r.navIsOpen));
+  const navState = useMotionValue(navIsOpen);
+
+  const activeKey = useMotionValue<string | -1>(-1);
+  const setActiveKey = useCallback(
+    (key: string | null | -1) => {
+      const cur = activeKey.get();
+      const to = key || -1;
+      cur !== to && activeKey.set(to);
+    },
+    [activeKey]
+  );
+  useEffect(() => {
+    if (stage === "leaving") {
+      activeKey.set(-1);
+    }
+  }, [stage, activeKey]);
+  const focusedKey = useMotionValue<string | -1>(-1);
+  const setFocusedKey = useCallback(
+    (key: string | null | -1) => {
+      const cur = focusedKey.get();
+      const to = key || -1;
+      cur !== to && focusedKey.set(to);
+    },
+    [focusedKey]
+  );
+  const fullscreen = useMenu((l) => l.fullscreen);
+  const fsVal = useMotionValue(fullscreen);
+  useEffect(() => {
+    fsVal.set(fullscreen);
+  }, [fullscreen, fsVal]);
+  const top = useTransform(() => (fsVal.get() ? 0 : 10) as number);
+  const left = useTransform(() => (fsVal.get() ? 0 : 10) as number);
+  const bottom = useTransform(() => (fsVal.get() ? 0 : 30) as number);
+  const right = useTransform(() => (fsVal.get() ? 0 : 10) as number);
+
+  return (
+    <FrameContext
+      value={{
+        activeKey,
+        setActiveKey,
+        setFocusedKey,
+        focusedKey,
+        left,
+
+        top,
+        bottom,
+        right,
+        navState
+      }}
+    >
+      {children}
+    </FrameContext>
+  );
 };

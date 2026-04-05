@@ -2,7 +2,7 @@ import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 
 import { CodeBlock } from "@/blocks/Code/Component";
 import { PostedImage } from "@/blocks/ImageBlock/Component";
-import { ReferencedLink } from "@/components/core/Link/referencedLink";
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import type {
   CallToActionBlock as CTABlockProps,
   CodeBlock as CodeBlockProps,

@@ -1,12 +1,11 @@
-import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
-import { HomeSquare } from "@/components/sections/HomeSquare";
 import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
+import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
+import { HomeSquare } from "@/components/sections/HomeSquare";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
 import { DateTime } from "luxon";
-import { cacheLife } from "next/cache";
 import { ComponentProps, ComponentPropsWithoutRef } from "react";
 
 export const ArticleHero = (props: {
@@ -170,8 +169,8 @@ const Article = async (
       index: number;
     }
 ) => {
-  "use cache";
-  cacheLife("max");
+  // "use cache";
+  // cacheLife("max");
   const {
     title,
     image,
