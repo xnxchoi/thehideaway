@@ -14,41 +14,42 @@ import { getPayload, TypedCollectionSelect } from "payload";
 
 import PageClient from "./page.client";
 
-export async function generateStaticParams(params: { slug: string }) {
+export async function generateStaticParams({
+  params
+}: {
+  params: { slug: string };
+}) {
   const { slug } = params;
   const payload = await getPayload({ config });
 
-  const tagAffiliates = await payload
+  const tag = await payload
     .find({
       collection: "tags",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      select: { taggedItems: true, slug: true },
+      where: { slug: { equals: slug } },
+      select: { id: true },
       limit: 1,
       overrideAccess: true,
       pagination: false
     })
-    .then((result) => result.docs[0] || null)
-    .catch((e) => (console.error(e), null));
-  if (
-    !tagAffiliates ||
-    !tagAffiliates.taggedItems ||
-    !tagAffiliates.taggedItems.docs
-  ) {
-    return [];
-  }
-  const totalDocs =
-    tagAffiliates.taggedItems.totalDocs ||
-    tagAffiliates.taggedItems.docs.length;
+    .then((result) => result.docs[0] ?? null)
+    .catch(() => null);
+
+  if (!tag) return [];
+
+  const { totalDocs } = await payload
+    .find({
+      collection: "search",
+      where: { "tags.key": { in: [tag.id] } },
+      limit: 0,
+      overrideAccess: true,
+      pagination: false
+    })
+    .catch(() => ({ totalDocs: 0 }));
+
   const totalPages = Math.ceil(totalDocs / 12);
   const pages: { page: `${number}` }[] = [];
   for (let i = 1; i <= totalPages; i++) {
-    pages.push({
-      page: `${i}`
-    });
+    pages.push({ page: `${i}` });
   }
 
   return pages;
