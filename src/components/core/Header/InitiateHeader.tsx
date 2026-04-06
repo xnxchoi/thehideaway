@@ -1,5 +1,5 @@
 "use client";
-import { PayloadLinkProps } from "@/components/core/Link/types";
+import { DEV_LINKS, MENU_LINKS, type NavLink } from "@/constants/navigation";
 import { useRPStore } from "@/providers/RP_Pro";
 import { getMenuPagePreviewKey, getPageTypeFromUrl } from "@/utilities/Helpers";
 import { Header } from "@payload-types";
@@ -14,43 +14,10 @@ export const InitiateHeader = ({ header }: { header: Header }) => {
   const setNavigationPreviewMediaByKey = useRPStore(
     (store) => store.setNavigationPreviewMediaByKey
   );
-  const link = (
-    href: string,
-    label: string
-  ): PayloadLinkProps & { url: string } => {
-    return {
-      type: "custom",
-      url: href,
-      newTab: false,
-      label: label
-    };
-  };
-  // const setRadioTracks = useRadio((store) => store.setTracks)
-  // const setRadioPlaylist = useRadio((store) => store.setPlaylist)
-  // useEffect(() => {
-  //   if (radio && typeof radio === 'object') {
-  //     if (Array.isArray(radio.tracks) && radio.tracks.length > 0 && radio.tracks[0] && typeof radio.tracks[0] === 'object') {
-  //       setRadioTracks((radio.tracks as Track[]))
-  //       setRadioPlaylist({
-  //         id: radio.id,
-  //         title: radio.title,
-  //         index: 0,
-  //         time: 0,
-  //       })
-  //     }
-  //   }
-  // }, [])
-  const links: (PayloadLinkProps & { url: string })[] = useMemo(
+  const links: NavLink[] = useMemo(
     () => [
-      link("/", "Reception"),
-      link("/essays", "Latest"),
-      link("/plans", "Plans"),
-      link("/the-team", "The Team"),
-      link("/lostinseoul", "LOSTINSEOUL"),
-      link("/register", "Register"),
-      ...(process.env.NODE_ENV === "development"
-        ? [link("/dev", "DEV"), link("/dashboard", "Dashboard")]
-        : [])
+      ...MENU_LINKS,
+      ...(process.env.NODE_ENV === "development" ? DEV_LINKS : [])
     ],
     []
   );

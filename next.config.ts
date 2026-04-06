@@ -98,10 +98,21 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      // Vanity URLs: /@user/content-type/slug → internal route
+      // Order matters — specific rewrites before the catch-all
       {
         source: "/@:user/essays/:slug",
         destination: "/essays/:slug"
       },
+      {
+        source: "/@:user/surf/:slug",
+        destination: "/surf/:slug"
+      },
+      {
+        source: "/@:user/lists/:hashId",
+        destination: "/lists/:user/:hashId"
+      },
+      // Catch-all: /@user/anything → /users/user/anything
       {
         source: "/@:user/:path*",
         destination: "/users/:user/:path*"

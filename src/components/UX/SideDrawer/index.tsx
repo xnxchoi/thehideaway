@@ -18,6 +18,7 @@ import {
 import { useShallow } from "zustand/shallow";
 import { Controlbar } from "../Controlbar";
 import { Link } from "@/components/core/Link/Link";
+import { SIDE_DRAWER_LINKS } from "@/constants/navigation";
 import { RP_FM } from "../Radio/RP_FM";
 import { SideNotch } from "../SideNotch";
 
@@ -320,10 +321,11 @@ export const SideDrawer = () => {
               {open && (
                 <m.div className="col-[2/8] row-[3/10] px-4">
                   <div className="flex flex-col gap-5 font-sans text-[23px]">
-                    <Link href="/home">Home</Link>
-                    <Link href="/users">Directory</Link>
-                    <Link href="/archives">Archives</Link>
-                    <Link href="/essays">Latest</Link>
+                    {SIDE_DRAWER_LINKS.map((link) => (
+                      <Link key={link.url} href={link.url}>
+                        {link.label}
+                      </Link>
+                    ))}
                   </div>
                 </m.div>
               )}
