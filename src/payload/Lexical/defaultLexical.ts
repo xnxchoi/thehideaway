@@ -15,11 +15,15 @@ import {
 	UnorderedListFeature
 } from "@payloadcms/richtext-lexical";
 import type {TextFieldSingleValidation} from "payload";
+import { FormatImportFeature } from "./Features/FormatImport";
+import { LinkPreviewFeature } from "./Features/LinkPreview";
 
 export const defaultLexical = lexicalEditor({
 	features: ({defaultFeatures}) => {
 		return [
 			...defaultFeatures,
+			FormatImportFeature(),
+			LinkPreviewFeature(),
 			SubscriptFeature(),
 			SuperscriptFeature(),
 			UnorderedListFeature(),

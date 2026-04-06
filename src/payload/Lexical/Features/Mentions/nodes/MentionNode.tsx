@@ -159,6 +159,17 @@ export class MentionNode extends DecoratorNode<JSX.Element> {
     const self = this.getWritable();
     self.__data = data;
   }
+
+  getValue(): string {
+    const self = this.getLatest();
+    return self.__id;
+  }
+
+  setValue(id: string): void {
+    const self = this.getWritable();
+    self.__id = id;
+  }
+
   static override importDOM(): DOMConversionMap | null {
     return {
       span: (domNode: HTMLElement) => {

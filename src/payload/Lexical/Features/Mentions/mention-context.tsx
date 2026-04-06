@@ -1,8 +1,6 @@
 "use client";
-import { useDebounce } from "@/components/editor/editor-hooks/use-debounce";
-import { type MentionItem } from "@/components/editor/plugins/mentions/store";
+import type { MentionItem } from "./nodes/types";
 
-import {UserOverview} from "@/types/collections/users";
 import { useAuth } from "@payloadcms/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash-es";
@@ -38,18 +36,20 @@ export const MentionAPIContext = createContext<MentionAPI | undefined>(
 );
 export const MentionProvider = ({ children }: { children: ReactNode }) => {
   const [queryString, setQs] = useState<string | null>(null);
-  const [dQs, setDqS] = useState<string | null>(null);
-  const setDebouncedQueryString = useCallback((query: string | null) => {
-    setDqS(query);
-  }, []);
-  const setQueryString = useDebounce(setDebouncedQueryString, 15);
-  useEffect(() => {
-    setQs(dQs);
-  }, [dQs]);
-
   const lastQuery = useRef<string | null>(null);
   const lastQueryTime = useRef(0);
   const [page, setPage] = useState(1);
+
+  const setQueryString = useMemo(
+    () => debounce((query: string | null) => setQs(query), 150),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      setQueryString.cancel();
+    };
+  }, [setQueryString]);
   const [isReady, setIsReady] = useState(false);
   const { user } = useAuth();
   const userId = user?.id;
@@ -71,7 +71,7 @@ export const MentionProvider = ({ children }: { children: ReactNode }) => {
   const clear = useCallback(() => {
     setQueryString.cancel();
     qc.cancelQueries({ queryKey: ["mentionLexical"] });
-    setDqS("");
+    setQs("");
     setPage(1);
     lastQuery.current = "";
     lastQueryTime.current = 0;
@@ -190,7 +190,7 @@ export const MentionProvider = ({ children }: { children: ReactNode }) => {
   return (
     <MentionAPIContext.Provider
       value={{
-        setQueryString,
+        setQueryString: setQueryString as (query: string | null) => void,
         clear,
         isReady,
         isError,
