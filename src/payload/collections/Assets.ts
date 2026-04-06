@@ -71,12 +71,6 @@ export const Assets: CollectionConfig = {
       name: "caption",
       type: "text"
     },
-    {
-	    name: "compiled",
-	    type: "join",
-	    collection: "compilations",
-	    on: "items",
-    }
   ],
 
   upload: {

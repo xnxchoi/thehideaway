@@ -33,7 +33,7 @@ export const ImageBlock: Block = {
 		{
 			name: "media",
 			type: "upload",
-			relationTo: ["media", "userMedia", "assets"],
+			relationTo: ["media", "userMedia"],
 			filterOptions: ({data, id, relationTo, req, user}) => {
 				return {
 					mimeType: {
