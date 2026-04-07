@@ -25,20 +25,30 @@ import vertexShader from "../shaders/ambient.vert.glsl";
 import grainShader from "../shaders/grain.glsl";
 
 // ── Theme color palettes (4-color: 2 base + 2 accent per leeroy system) ──
-// Dark: FC Porto memorial — deep navy/blue-black, very subtle warm-blue shifts
-// Grain is the star; blobs are barely-there atmospheric color
-const DARK_BG = new ThreeColor().setStyle("#070c11"); // deep navy-black
-const DARK_COLOR1 = new ThreeColor().setStyle("#182b38"); // base 1: dark steel blue
-const DARK_COLOR2 = new ThreeColor().setStyle("#14151f"); // base 2: deep indigo shadow
-const DARK_COLOR3 = new ThreeColor().setStyle("#154751"); // accent 1: muted teal-slate
-const DARK_COLOR4 = new ThreeColor().setStyle("#1f3a5c"); // accent 2: deep sapphire
-
-// Light: Richard Sancho-inspired — warm cream with teal and gold atmospheric accents
-const LIGHT_BG = new ThreeColor().setStyle("#f8f6f5");
-const LIGHT_COLOR1 = new ThreeColor().setStyle("#e8ddd0"); // base 1: warm parchment
-const LIGHT_COLOR2 = new ThreeColor().setStyle("#ddd6e0"); // base 2: cool lavender-cream
-const LIGHT_COLOR3 = new ThreeColor().setStyle("#31a6bd"); // accent 1: soft teal
-const LIGHT_COLOR4 = new ThreeColor().setStyle("#ff922c"); // accent 2: warm gold
+//
+// Brand DNA: rosso corsa red / orange / teal
+// Target: 70s/80s magazine — faded, pop-art, luscious
+//
+// Bases (color1-2): near-bg tones, barely perceptible shift — atmospheric mood
+// Accents (color3-4): recognizable hue that reads through Kawase blur
+//
+// ─── Dark ─────────────────────────────────────────────────────────────────
+// FC Porto mourning + brand red/teal as deep atmospheric tint
+// Like a dark room lit by a distant fire, with teal moonlight at the edges
+const DARK_BG = new ThreeColor().setStyle("#080a0f"); // near-black, cold undertone
+const DARK_COLOR1 = new ThreeColor().setStyle("#1a1318"); // base 1: dark burgundy-coal
+const DARK_COLOR2 = new ThreeColor().setStyle("#0f1520"); // base 2: deep blue-black
+const DARK_COLOR3 = new ThreeColor().setStyle("#3d1a1a"); // accent 1: deep ember red
+const DARK_COLOR4 = new ThreeColor().setStyle("#0f3040"); // accent 2: deep ocean teal
+//
+// ─── Light ────────────────────────────────────────────────────────────────
+// 70s sun-faded magazine: warm cream paper, watercolor washes of teal + orange
+// Bases are tinted cream, accents are the "ink" colors
+const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed"); // warm parchment
+const LIGHT_COLOR1 = new ThreeColor().setStyle("#ece2d4"); // base 1: sandy cream
+const LIGHT_COLOR2 = new ThreeColor().setStyle("#e2dbe2"); // base 2: cool mauve-cream
+const LIGHT_COLOR3 = new ThreeColor().setStyle("#2d8a8c"); // accent 1: retro teal
+const LIGHT_COLOR4 = new ThreeColor().setStyle("#d4652a"); // accent 2: burnt orange
 
 // Blob intensity: how visible the gradient blobs are
 // When playing: very subdued. When stopped: more pronounced but still dark/moody.
