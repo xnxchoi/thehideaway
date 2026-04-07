@@ -24,19 +24,21 @@ import fragmentShader from "../shaders/ambient.frag.glsl";
 import vertexShader from "../shaders/ambient.vert.glsl";
 import grainShader from "../shaders/grain.glsl";
 
-// ── Theme color palettes ──────────────────────────────────────────────────
+// ── Theme color palettes (4-color: 2 base + 2 accent per leeroy system) ──
 // Dark: FC Porto memorial — deep navy/blue-black, very subtle warm-blue shifts
 // Grain is the star; blobs are barely-there atmospheric color
 const DARK_BG = new ThreeColor().setStyle("#070c11"); // deep navy-black
-const DARK_COLOR1 = new ThreeColor().setStyle("#182b38"); // dark steel blue
-const DARK_COLOR2 = new ThreeColor().setStyle("#154751"); // muted slate
-const DARK_COLOR3 = new ThreeColor().setStyle("#14151f"); // deep indigo shadow
+const DARK_COLOR1 = new ThreeColor().setStyle("#182b38"); // base 1: dark steel blue
+const DARK_COLOR2 = new ThreeColor().setStyle("#14151f"); // base 2: deep indigo shadow
+const DARK_COLOR3 = new ThreeColor().setStyle("#154751"); // accent 1: muted teal-slate
+const DARK_COLOR4 = new ThreeColor().setStyle("#1f3a5c"); // accent 2: deep sapphire
 
-// Light: Richard Sancho-inspired — muted lavender, warm gold, soft rose on cream
+// Light: Richard Sancho-inspired — warm cream with teal and gold atmospheric accents
 const LIGHT_BG = new ThreeColor().setStyle("#f8f6f5");
-const LIGHT_COLOR1 = new ThreeColor().setStyle("#31a6bd"); // soft lavender
-const LIGHT_COLOR2 = new ThreeColor().setStyle("#ff922c"); // warm gold
-const LIGHT_COLOR3 = new ThreeColor().setStyle("#ffeac8"); // muted rose
+const LIGHT_COLOR1 = new ThreeColor().setStyle("#e8ddd0"); // base 1: warm parchment
+const LIGHT_COLOR2 = new ThreeColor().setStyle("#ddd6e0"); // base 2: cool lavender-cream
+const LIGHT_COLOR3 = new ThreeColor().setStyle("#31a6bd"); // accent 1: soft teal
+const LIGHT_COLOR4 = new ThreeColor().setStyle("#ff922c"); // accent 2: warm gold
 
 // Blob intensity: how visible the gradient blobs are
 // When playing: very subdued. When stopped: more pronounced but still dark/moody.
@@ -155,6 +157,10 @@ export function AmbientGradientMesh({
     () => new ThreeColor().copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3),
     [isDark]
   );
+  const color4 = useMemo(
+    () => new ThreeColor().copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4),
+    [isDark]
+  );
 
   const uniforms = useMemo(
     () => ({
@@ -164,13 +170,14 @@ export function AmbientGradientMesh({
       u_color1: color1,
       u_color2: color2,
       u_color3: color3,
+      u_color4: color4,
       u_audioLevel: 0.0,
       u_fogProgress: 0.0,
       u_opacity: 1.0,
       u_blobIntensity: BLOB_INTENSITY_STOPPED,
       u_noiseTexture: noiseTexture
     }),
-    [u_resolution, bgColor, color1, color2, color3, noiseTexture]
+    [u_resolution, bgColor, color1, color2, color3, color4, noiseTexture]
   );
 
   const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
@@ -195,6 +202,7 @@ export function AmbientGradientMesh({
     m.u_color1.value.copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1);
     m.u_color2.value.copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2);
     m.u_color3.value.copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3);
+    m.u_color4.value.copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4);
   }, [isDark]);
 
   // Smoothly transition blob intensity based on playing state

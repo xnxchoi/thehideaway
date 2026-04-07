@@ -1,9 +1,10 @@
 uniform float u_time;
 uniform vec4 u_resolution;
 uniform vec3 u_bgColor;
-uniform vec3 u_color1;        // primary blob color (warm amber/gold)
-uniform vec3 u_color2;        // secondary blob color (teal/cool accent)
-uniform vec3 u_color3;        // tertiary (deeper, earthier)
+uniform vec3 u_color1;        // base tone 1 (near-bg, subtle warm shift)
+uniform vec3 u_color2;        // base tone 2 (near-bg, subtle cool shift)
+uniform vec3 u_color3;        // accent 1 (primary atmospheric hue)
+uniform vec3 u_color4;        // accent 2 (secondary atmospheric hue)
 uniform float u_audioLevel;   // 0-1 audio energy → controls blob spread
 uniform float u_fogProgress;  // 0-1 idle fog
 uniform float u_opacity;
@@ -98,20 +99,22 @@ void main() {
     b3 *= mix(0.5, 1.0, snoise(nUv * 0.8 + t * 0.5) * 0.5 + 0.5);
     b4 *= mix(0.6, 1.0, noiseWarp * noiseWarp);
 
-    // ── Color mixing ──────────────────────────────────────────────────────
+    // ── Color mixing (leeroy 4-color: 2 base + 2 accent) ────────────────
     vec3 color = u_bgColor;
-
-    // Layer blobs with their colors — like overlapping colored lights
     float intensity = u_blobIntensity;
-    color = mix(color, u_color1, b1 * intensity * 0.85);
-    color = mix(color, u_color2, b2 * intensity * 0.55);
-    color = mix(color, u_color3, b3 * intensity * 0.45);
-    color = mix(color, mix(u_color1, u_color3, 0.5), b4 * intensity * 0.35);
 
-    // ── Folding / overlapping darks (FC Porto fabric look) ────────────────
-    // Where blobs overlap, create darker creases
-    float overlap = b1 * b2 + b2 * b3 + b1 * b3;
-    color = mix(color, u_bgColor * 0.7, overlap * 0.3 * intensity);
+    // Base tones — large, dominant blobs that shift the mood subtly
+    color = mix(color, u_color1, b1 * intensity * 0.85);
+    color = mix(color, u_color2, b2 * intensity * 0.70);
+
+    // Accent hues — smaller blobs that introduce atmospheric color
+    color = mix(color, u_color3, b3 * intensity * 0.55);
+    color = mix(color, u_color4, b4 * intensity * 0.45);
+
+    // ── Folding / overlapping darks ───────────────────────────────────────
+    // Where blobs overlap, create darker creases (fabric fold effect)
+    float overlap = b1 * b2 + b2 * b3 + b3 * b4 + b1 * b4;
+    color = mix(color, u_bgColor * 0.7, overlap * 0.25 * intensity);
 
     // ── Simplex noise for additional organic variation ─────────────────────
     float sn = snoise(nUv * 1.2 + t * 2.0) * 0.5 + 0.5;
