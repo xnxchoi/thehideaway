@@ -167,11 +167,10 @@ export function AmbientGradientMesh({
       u_audioLevel: 0.0,
       u_fogProgress: 0.0,
       u_opacity: 1.0,
-      u_grainIntensity: isDark ? 0.14 : 0.08,
       u_blobIntensity: BLOB_INTENSITY_STOPPED,
       u_noiseTexture: noiseTexture
     }),
-    [u_resolution, bgColor, color1, color2, color3, noiseTexture, isDark]
+    [u_resolution, bgColor, color1, color2, color3, noiseTexture]
   );
 
   const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
@@ -196,7 +195,6 @@ export function AmbientGradientMesh({
     m.u_color1.value.copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1);
     m.u_color2.value.copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2);
     m.u_color3.value.copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3);
-    m.u_grainIntensity.value = isDark ? 0.14 : 0.08;
   }, [isDark]);
 
   // Smoothly transition blob intensity based on playing state

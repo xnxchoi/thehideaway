@@ -7,7 +7,6 @@ uniform vec3 u_color3;        // tertiary (deeper, earthier)
 uniform float u_audioLevel;   // 0-1 audio energy → controls blob spread
 uniform float u_fogProgress;  // 0-1 idle fog
 uniform float u_opacity;
-uniform float u_grainIntensity;
 uniform float u_blobIntensity; // how visible the blobs are (playing vs stopped)
 uniform sampler2D u_noiseTexture;
 varying vec2 v_uv;
@@ -39,20 +38,6 @@ float snoise(vec2 v) {
     g.x = a0.x * x0.x + h.x * x0.y;
     g.yz = a0.yz * x12.xz + h.yz * x12.yw;
     return 130.0 * dot(m, g);
-}
-
-// ── Film grain ────────────────────────────────────────────────────────────
-float hash(vec2 p) {
-    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.x + p3.y) * p3.z);
-}
-
-float filmGrain(vec2 uv, float time) {
-    float g = hash(uv * 1200.0 + fract(time * 5.7) * 200.0);
-    // Harsh, contrasty grain — not soft gaussian
-    g = pow(g, 1.5) * 2.0 - 0.5;
-    return clamp(g, -0.5, 0.5);
 }
 
 // ── Soft blob (large gaussian-like radial) ────────────────────────────────
@@ -137,10 +122,6 @@ void main() {
     vignette = smoothstep(0.2, 1.5, vignette);
     float fogMask = mix(vignette, 1.0, u_fogProgress * 0.65);
     color = mix(color, u_bgColor, u_fogProgress * 0.9 * fogMask);
-
-    // ── Film grain — heavy, contrasty ─────────────────────────────────────
-    float grain = filmGrain(uv, u_time);
-    color += grain * u_grainIntensity;
 
     // ── Contrast S-curve ──────────────────────────────────────────────────
     color = clamp(color, 0.0, 1.0);
