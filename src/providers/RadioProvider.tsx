@@ -8,7 +8,13 @@ import {
   DEFAULT_TRANSITION_DURATION_MS
 } from "@/providers/radioConstant";
 import { createRadioStore, RadioStore, RP_Track } from "@/stores/Radio/Radio";
-import { Howl, HowlOptions } from "howler";
+import {
+  Howl,
+  Howler,
+  HowlListeners,
+  HowlOptions,
+  SoundSpriteDefinitions
+} from "howler";
 import { useMotionValue, useTransform } from "motion/react";
 import { nanoid } from "nanoid";
 import {
@@ -38,8 +44,34 @@ declare module "howler" {
     _format?: string | string[] | undefined;
     _autoplay: boolean;
     _loop: boolean;
+    _muted: boolean;
+    _volume: number;
     _html5: boolean;
+    _sounds: Sound[];
     _preload: boolean;
+    _rate: number;
+  }
+  interface Sound {
+    _muted: Howl["_muted"];
+    _loop: Howl["_loop"];
+    _volume: Howl["_volume"];
+    _rate: Howl["_rate"];
+    _id: number;
+    _node?: GainNode | AudioNode;
+    _parent: Howl;
+    _loadFn?: HowlListeners["onload"];
+    _loadListener: () => void;
+    _errorListener: () => void;
+    _errorFn?: HowlListeners["onloaderror"];
+    _endListener: () => void;
+
+    _seek: number;
+    _paused: boolean;
+    _ended: boolean;
+    _sprite: "__default" | SoundSpriteDefinitions;
+    create: () => Sound;
+    reset: () => Sound;
+    init: () => Sound;
   }
 }
 Howl.prototype.switchTrack = function (o) {

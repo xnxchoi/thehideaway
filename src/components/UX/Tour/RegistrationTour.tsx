@@ -568,14 +568,18 @@ async function submitStepFields({
     const updates = Object.fromEntries(updateData) as Record<string, string>;
     await updateUser({
       ...updates
-    } as Parameters<typeof updateUser>[0]).then((on) => {
-      if (on.error) {
-      }
-    });
+    } as Parameters<typeof updateUser>[0])
+      .then((on) => {
+        if (on.error) {
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   }
 
   // Persist progress (or mark complete) server-side
-  fetch("/api/users/onboarding", {
+  await fetch("/api/users/onboarding", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

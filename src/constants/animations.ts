@@ -1,3 +1,4 @@
+import type { SpringConfig } from "@react-spring/three";
 import { MotionValue } from "motion/react";
 
 export const DURATION = Object.freeze({
@@ -383,6 +384,7 @@ export const TWEEN_EASE = Object.freeze({
     }
   }
 }) as EASE_VARIANT;
+export const TE = TWEEN_EASE;
 // Helper: if animating toward a lower target, flip velocity sign on the "out" presets
 export function orientSpring(
   cfg: SpringCfg,
@@ -413,3 +415,116 @@ export function getOrientedSpring(
 
   return cfg;
 }
+/**
+ * GSAP-style ease presets for @react-spring/three (R3F).
+ *
+ * VELOCITY-FREE VARIANT — fully declarative.
+ *
+ * react-spring's `config.velocity` only applies on the first animation from
+ * rest, so it doesn't re-trigger on every state toggle in declarative usage.
+ * This variant drops `velocity` entirely and compensates by bumping tension
+ * (~15–25%) and trimming friction on `out` variants to recover the "punchy"
+ * feel. Less physically faithful to GSAP, but works with plain useSpring({...})
+ * with no imperative api.
+ *
+ * Usage in R3F:
+ *   import { useSpring, a } from '@react-spring/three';
+ *   const { scale } = useSpring({
+ *     scale: hovered ? 1.5 : 1,
+ *     config: SPRING_EASE.power2.out,
+ *   });
+ *   return <a.mesh scale={scale} />;
+ */
+
+type EaseMap<T> = {
+  in: T;
+  out: T;
+  inOut: T;
+};
+
+type RSpringEase = EaseMap<SpringConfig>;
+
+export const RSPRING_EASE: Record<
+  PowerEase | "sine" | "circ" | "expo" | "elastic",
+  RSpringEase
+> & {
+  back: (overshoot?: number) => RSpringEase;
+} = {
+  power1: {
+    in: { tension: 100, friction: 24, mass: 1, precision: 0.001 },
+    out: { tension: 180, friction: 26, mass: 1, precision: 0.001 },
+    inOut: { tension: 130, friction: 26, mass: 1, precision: 0.001 }
+  },
+  power2: {
+    in: { tension: 180, friction: 32, mass: 1, precision: 0.001 },
+    out: { tension: 280, friction: 33, mass: 1, precision: 0.001 },
+    inOut: { tension: 210, friction: 34, mass: 1, precision: 0.001 }
+  },
+  power3: {
+    in: { tension: 260, friction: 38, mass: 1, precision: 0.001 },
+    out: { tension: 390, friction: 39, mass: 1, precision: 0.001 },
+    inOut: { tension: 300, friction: 40, mass: 1, precision: 0.001 }
+  },
+  power4: {
+    in: { tension: 360, friction: 46, mass: 1, precision: 0.001 },
+    out: { tension: 540, friction: 46, mass: 1, precision: 0.001 },
+    inOut: { tension: 400, friction: 48, mass: 1, precision: 0.001 }
+  },
+
+  // Sine — gentle, relaxed
+  sine: {
+    in: { tension: 80, friction: 22, mass: 1 },
+    out: { tension: 145, friction: 22, mass: 1 },
+    inOut: { tension: 100, friction: 23, mass: 1 }
+  },
+
+  // Circ — swift start, heavily rounded off at the end
+  circ: {
+    in: { tension: 200, friction: 45, mass: 1 },
+    out: { tension: 430, friction: 42, mass: 1 },
+    inOut: { tension: 280, friction: 45, mass: 1 }
+  },
+
+  // Expo — sharp acceleration, long tail
+  expo: {
+    in: { tension: 400, friction: 70, mass: 1 },
+    out: { tension: 680, friction: 60, mass: 1 },
+    inOut: { tension: 480, friction: 68, mass: 1 }
+  },
+
+  back: (overshoot: number = 1.7): RSpringEase => {
+    // Under-damp relative to critical (2 * sqrt(tension)) to produce overshoot.
+    const getFriction = (tension: number, os: number) => {
+      const critical = 2 * Math.sqrt(tension);
+      return Math.max(critical - os * 8, 2);
+    };
+
+    return {
+      // `in` variants normally used negative initial velocity to "wind up"
+      // before launching. Without velocity, we bump tension a bit so the
+      // overshoot on settle still reads as a "back" feel.
+      in: {
+        tension: 240,
+        friction: getFriction(240, overshoot),
+        mass: 1
+      },
+      out: {
+        tension: 250,
+        friction: getFriction(250, overshoot),
+        mass: 1
+      },
+      inOut: {
+        tension: 245,
+        friction: getFriction(245, overshoot),
+        mass: 1
+      }
+    };
+  },
+
+  // Elastic — wobbly, highly under-damped
+  elastic: {
+    in: { tension: 340, friction: 22, mass: 1 },
+    out: { tension: 400, friction: 10, mass: 1 },
+    inOut: { tension: 350, friction: 15, mass: 1 }
+  }
+};

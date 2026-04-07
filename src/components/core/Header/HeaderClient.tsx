@@ -84,6 +84,27 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     mobileState.set(isMobile);
   }, [mobileState, isMobile]);
+  const [toogled, setToogled] = useState(false);
+
+  const docInnerRef = useRef<HTMLElement>(null!);
+
+  useEffect(() => {
+    const onEnter = () => setToogled(true);
+    const onLeave = () => setToogled(false);
+
+    const docInner = document.querySelector("#rp-header");
+    if (docInner) {
+      docInnerRef.current = docInner as HTMLElement;
+      docInnerRef.current.addEventListener("mouseenter", onEnter);
+      docInnerRef.current.addEventListener("mouseleave", onLeave);
+    }
+    return () => {
+      if (docInnerRef.current) {
+        docInnerRef.current.removeEventListener("mouseenter", onEnter);
+        docInnerRef.current.removeEventListener("mouseleave", onLeave);
+      }
+    };
+  }, []);
 
   const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
   const { left, top, bottom, right, navState } = useFrameState();
@@ -116,6 +137,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
 
   const setHeaderTransition = useRPStore((ll) => ll.setHeaderTransition);
   const _tw = useRPStore(useShallow((ll) => ll.isTransitioningWipe));
+
   const isWipeTransition = useMotionValue(_tw);
   useEffect(() => {
     isWipeTransition.set(_tw);
@@ -157,12 +179,22 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       tv = transitionVariant.get();
     return tv !== "slide" || isVisibility ? 0 : (100 as number);
   });
+
   const sectionTranslate = useSpring(_sectionTranslate, {
     visualDuration: 0.4,
     ...SPRING_EASE.power4.inOut
   });
   const innerTranslate = useMotionValue(0);
   const innerOpacity = useMotionValue(1);
+  const _internalOpacity = useTransform(() => {
+    const latestValue = transitionVariant.get();
+    const vis = visibleness.get();
+    return latestValue !== "fade" && latestValue !== "slide" && vis ? 0 + 1 : 0;
+  });
+  const internalOpacity = useSpring(_internalOpacity, {
+    ...SPRING_EASE.power2.inOut,
+    visualDuration: 0.3
+  });
   const innerVisibility = useTransform<
     number,
     NonNullable<CSSProperties["visibility"]>
@@ -172,6 +204,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     const iss = latestValue === "slide";
     const vis = visibleness.get();
     const ty = iss ? (vis ? 0 : -100) : 0;
+
     animate(innerTranslate, ty, {
       delay: iss ? 0.4 : 0,
       duration: iss ? 0.4 : 0.1,
@@ -477,7 +510,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
             left: "50%",
             boxShadow: mainBoxShadow
           }}
-          {...((showHeader && {
+          {...((!showHeader && {
             onMouseEnter: onEnter,
             onMouseLeave: onLeave
           }) ||
@@ -522,6 +555,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
               id="l-side"
               className="z-20"
               style={{
+                opacity: internalOpacity,
                 y: sectionY,
                 x: sectionLX
               }}
@@ -538,6 +572,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
             </m.div>
             <m.div
               style={{
+                opacity: internalOpacity,
                 transform: sectionCY,
                 left: "50%",
                 top: "50%"
@@ -566,6 +601,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
               id="r-side"
               className={"z-20"}
               style={{
+                opacity: internalOpacity,
                 y: sectionY,
                 x: sectionRX
               }}

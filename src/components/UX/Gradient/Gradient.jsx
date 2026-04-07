@@ -33,6 +33,8 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/Theme";
 import * as m from "motion/react-m";
 import { useShallow } from "zustand/shallow";
+import { animate } from "motion/react";
+import { TE } from "@/constants/animations.ts";
 
 const VisibilityContext = createContext(undefined);
 const VisibilityProvider = ({ children }) => {
@@ -204,38 +206,69 @@ const VGradientModuleInner = () => {
     colours[1].setHex(target[1]);
     colours[2].setHex(target[2]);
     colours[3].setHex(target[3]);
-
+    const seq = [];
     (gradientt.current &&
-      (gsap.to(gradientt.current.u_color[0], {
-        r: colours[0].r,
-        g: colours[0].g,
-        b: colours[0].b,
-        duration: 0.3,
-
-        ease: "power4.inOut"
-      }),
-      gsap.to(gradientt.current.u_color[1], {
-        r: colours[1].r,
-        g: colours[1].g,
-        b: colours[1].b,
-        duration: 0.3,
-
-        ease: "power4.inOut"
-      })),
-      gsap.to(gradientt.current.u_color[2], {
-        r: colours[2].r,
-        g: colours[2].g,
-        b: colours[2].b,
-        duration: 0.3,
-        ease: "power4.inOut"
-      }),
-      gsap.to(gradientt.current.u_color[3], {
-        r: colours[3].r,
-        g: colours[3].g,
-        b: colours[3].b,
-        duration: 0.3,
-        ease: "power4.inOut"
-      }));
+      seq.push(
+        ...[
+          [
+            gradientt.current.u_color[0],
+            {
+              r: colours[0].r,
+              g: colours[0].g,
+              b: colours[0].b
+            },
+            {
+              duration: 0.3,
+              type: "tween",
+              at: 0,
+              ease: TE.power4.inOut
+            }
+          ],
+          [
+            gradientt.current.u_color[1],
+            {
+              r: colours[1].r,
+              g: colours[1].g,
+              b: colours[1].b
+            },
+            {
+              duration: 0.3,
+              type: "tween",
+              at: 0,
+              ease: TE.power4.inOut
+            }
+          ],
+          [
+            gradientt.current.u_color[2],
+            {
+              r: colours[2].r,
+              g: colours[2].g,
+              b: colours[2].b
+            },
+            {
+              duration: 0.3,
+              type: "tween",
+              at: 0,
+              ease: TE.power4.inOut
+            }
+          ],
+          [
+            gradientt.current.u_color[3],
+            {
+              r: colours[3].r,
+              g: colours[3].g,
+              b: colours[3].b
+            },
+            {
+              duration: 0.3,
+              type: "tween",
+              at: 0,
+              ease: TE.power4.inOut
+            }
+          ]
+        ]
+      ),
+      animate(seq));
   }, [colorSchemes, colours, theme]);
   return (
     <>

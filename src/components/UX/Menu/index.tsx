@@ -21,8 +21,6 @@ import { isInternalLink } from "@/utilities/isInternalLink";
 import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { index } from "@payloadcms/db-postgres/drizzle/pg-core";
-// import { useGSAP } from "@gsap/react";
-// import { gsap } from "gsap";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";
 import { AnimationSequence } from "motion";
@@ -763,9 +761,7 @@ const RP_Navigator = (
     },
     [opacity, translateX]
   );
-  useMotionValueEvent(isActivePage, "change", (v) => {
-    v && setNavItemSelected(theKey);
-  });
+
   const currentlyFocused = useRef<-1 | string>(-1);
   const resetFrame = useCallback(() => {
     const hi = focusedItem.get(),
@@ -836,13 +832,26 @@ const RP_Navigator = (
   useEffect(() => {
     frameRsetTO.current = setTimeout(resetFrame, 50);
   }, [resetFrame]);
+  const setInitial = useEffectEvent(() => {
+    const is = isActivePage.get();
+    if (is) {
+      frameRsetTO.current = setTimeout(() => setNavItemSelected(theKey), 150);
+    }
+  });
+  useEffect(() => {
+    setInitial();
+  }, []);
   useMotionValueEvent(activeNavItem, "change", (v) => {
     frameRsetTO.current && clearTimeout(frameRsetTO.current);
     frameRsetTO.current = setTimeout(resetFrame, 50);
   });
   useMotionValueEvent(focusedItem, "change", (v) => {
     frameRsetTO.current && clearTimeout(frameRsetTO.current);
-    frameRsetTO.current = setTimeout(resetFrame, 50);
+    const is = isActivePage.get();
+    frameRsetTO.current =
+      v === -1 && is
+        ? setTimeout(() => setNavItemSelected(theKey), 400)
+        : setTimeout(resetFrame, 50);
   });
   const isHome = useVoyageur(useShallow((r) => r.isHome));
   useEffect(() => {
@@ -861,6 +870,7 @@ const RP_Navigator = (
     }
     return toPass;
   }, [href]);
+
   const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLAnchorElement>({
     onEnter: (event) => {
       event.preventDefault();

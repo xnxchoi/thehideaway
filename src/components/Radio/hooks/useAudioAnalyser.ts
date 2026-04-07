@@ -1,9 +1,9 @@
 "use client";
 
+import { useRadio, useRadioStore } from "@/providers/RadioProvider";
+import { Howler } from "howler";
 import { MotionValue, useMotionValue } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
-import { Howler } from "howler";
-import { useRadio, useRadioStore } from "@/providers/RadioProvider";
 import { useShallow } from "zustand/shallow";
 
 type AudioAnalyserOptions = {
@@ -40,7 +40,6 @@ export function useAudioAnalyser({
 
   const { currentTrackPlayer } = useRadio();
   const playing = useRadioStore(useShallow((s) => s.playing));
-
   const tick = useCallback(() => {
     if (!analyserRef.current) {
       audioLevel.set(0);
@@ -48,7 +47,7 @@ export function useAudioAnalyser({
     }
 
     const data = frequencyData.current;
-    analyserRef.current.getByteFrequencyData(data);
+    analyserRef.current.getByteFrequencyData(Uint8Array.from(data));
 
     // Compute normalized average energy
     let sum = 0;
@@ -80,7 +79,7 @@ export function useAudioAnalyser({
     if (!ctx) return;
 
     // Access the underlying HTML5 audio element
-    const sounds = (howl as any)._sounds;
+    const sounds = (howl as Howl)._sounds;
     if (!sounds || sounds.length === 0) return;
     const audioNode = sounds[0]._node as HTMLMediaElement | undefined;
     if (!audioNode) return;
@@ -101,14 +100,16 @@ export function useAudioAnalyser({
       try {
         const source = ctx.createMediaElementSource(audioNode);
         source.connect(analyserRef.current);
-        analyserRef.current.connect(Howler.masterGain);
+        analyserRef.current.connect(Howler.masterGain).connect(ctx.destination);
         sourceRef.current = source;
         connectedElements.add(audioNode);
       } catch {
         // Element may already be connected (e.g., hot reload)
         // Fallback: just reconnect analyser to masterGain
         try {
-          analyserRef.current.connect(Howler.masterGain);
+          analyserRef.current
+            .connect(Howler.masterGain)
+            .connect(ctx.destination);
         } catch {
           // Already connected
         }
