@@ -11,7 +11,6 @@ uniform float u_opacity;
 uniform float u_blobIntensity; // how visible the blobs are (playing vs stopped)
 uniform sampler2D u_noiseTexture;
 varying vec2 v_uv;
-varying vec3 v_color;
 
 // ── Simplex 2D noise ──────────────────────────────────────────────────────
 vec3 permute(vec3 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
