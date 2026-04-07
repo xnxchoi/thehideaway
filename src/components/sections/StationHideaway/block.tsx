@@ -24,7 +24,13 @@ import { Suspense, useRef, useState } from "react";
  * No scrolljacking — the section scrolls naturally; all motion is
  * Framer Motion scroll-linked transforms on the sticky layers.
  */
-export function StationHideawayHero({ className }: { className?: string }) {
+export function StationHideawayHero({
+  className,
+  onShowcaseActivate
+}: {
+  className?: string;
+  onShowcaseActivate?: () => void;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const { isMobile } = useIsMobile();
   // Tracks scroll progress across the full 250vh section height
@@ -93,22 +99,13 @@ export function StationHideawayHero({ className }: { className?: string }) {
     >
       {/* ── Sticky viewport container ──────────────────────────────────────── */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* Background glow — subtle, matches HeroPlayer's bleu-400 palette */}
-        <div
-          className="pointer-events-none absolute inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 107% 90% at 63% 60%, oklch(from var(--piercing-orange) l c h / .125) 0%, transparent 65%)"
-          }}
-          aria-hidden="true"
-        />
-
         {/* ── z-10: TapePlayer — grounded, nearly static ───────────────────── */}
-        {/*
-         * HeroPlayer returns null when !hasRadio — the 3D scene and text
-         * remain visible regardless. min-h-0 overrides HeroPlayer's internal
-         * min-h-[70vh]; the sticky container controls all layout sizing.
-         */}
+        <m.div
+          style={{ y: playerY, opacity: playerOpacity }}
+          className="absolute inset-0 z-[10] flex items-center justify-center"
+        >
+          <TapePlayer variant="hero" className="min-h-0" />
+        </m.div>
 
         {/* ── z-20: Tape3DScene — floats in, lingers over player, drifts away ── */}
         {/*
@@ -178,6 +175,18 @@ export function StationHideawayHero({ className }: { className?: string }) {
           className="via-fg/10 pointer-events-none absolute inset-x-6 bottom-[calc(4vh+clamp(8rem,18vw,22rem))] z-[30] h-px bg-gradient-to-r from-transparent to-transparent"
           aria-hidden="true"
         />
+
+        {/* ── Showcase mode trigger ────────────────────────────────────────── */}
+        {onShowcaseActivate && (
+          <div className="absolute right-6 bottom-8 z-[40]">
+            <button
+              onClick={onShowcaseActivate}
+              className="border-border/40 text-foreground/60 hover:border-border hover:text-foreground cursor-pointer border px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest transition-colors"
+            >
+              The Story
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
