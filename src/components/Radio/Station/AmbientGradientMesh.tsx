@@ -4,37 +4,47 @@ import { shaderMaterial, useTexture } from "@react-three/drei";
 import { extend, useFrame, useThree } from "@react-three/fiber";
 import { MotionValue } from "motion/react";
 import { useEffect, useMemo, useRef } from "react";
-import {
-  Color as ThreeColor,
-  DoubleSide,
-  RepeatWrapping,
-  Vector2,
-  Vector3
-} from "three";
+import { Color as ThreeColor, DoubleSide, RepeatWrapping, Vector4 } from "three";
 import vertexShader from "../shaders/ambient.vert.glsl";
 import fragmentShader from "../shaders/ambient.frag.glsl";
 
-// Radio-specific warm palettes: deep amber, burnt sienna, dark earth
-const RADIO_PALETTE = [
-  new ThreeColor().setHex(0x8b4513), // saddle brown
-  new ThreeColor().setHex(0xb8651a), // burnt sienna
-  new ThreeColor().setHex(0x1a1208)  // dark earth
-];
+// ── Theme color palettes ──────────────────────────────────────────────────
+// Dark: FC Porto memorial — deep navy/blue-black, very subtle warm-blue shifts
+// Grain is the star; blobs are barely-there atmospheric color
+const DARK_BG = new ThreeColor().setStyle("oklch(15% 0.015 250)");    // deep navy-black
+const DARK_COLOR1 = new ThreeColor().setStyle("oklch(28% 0.035 240)"); // dark steel blue
+const DARK_COLOR2 = new ThreeColor().setStyle("oklch(24% 0.025 200)"); // muted slate
+const DARK_COLOR3 = new ThreeColor().setStyle("oklch(20% 0.02 280)");  // deep indigo shadow
+
+// Light: Richard Sancho-inspired — muted lavender, warm gold, soft rose on cream
+const LIGHT_BG = new ThreeColor().setStyle("oklch(95% 0.005 80)");
+const LIGHT_COLOR1 = new ThreeColor().setStyle("oklch(62% 0.10 290)"); // soft lavender
+const LIGHT_COLOR2 = new ThreeColor().setStyle("oklch(70% 0.09 80)");  // warm gold
+const LIGHT_COLOR3 = new ThreeColor().setStyle("oklch(60% 0.07 20)");  // muted rose
+
+// Blob intensity: how visible the gradient blobs are
+// When playing: very subdued. When stopped: more pronounced but still dark/moody.
+const BLOB_INTENSITY_PLAYING = 0.25;
+const BLOB_INTENSITY_STOPPED = 0.6;
 
 type AmbientGradientMeshProps = {
   opacity: MotionValue<number>;
   audioLevel: MotionValue<number>;
   fogProgress: MotionValue<number>;
+  isDark: boolean;
+  playing: boolean;
 };
 
 export function AmbientGradientMesh({
   opacity,
   audioLevel,
-  fogProgress
+  fogProgress,
+  isDark,
+  playing
 }: AmbientGradientMeshProps) {
   useTexture.preload("/assets/seamless.png");
   const materialRef = useRef<any>(null);
-  const { gl } = useThree();
+  const { size } = useThree();
 
   const noiseTexture = useTexture(
     { map: "/assets/seamless.png" },
@@ -43,94 +53,106 @@ export function AmbientGradientMesh({
     }
   );
 
-  const uOffset = useMemo(() => new Vector2(0.42, 0.6), []);
-  const u_pixels = useMemo(() => new Vector2(1, 1), []);
-  const u_resolution = useMemo(() => new Vector2(1, 1), []);
-  const uAdditionalOffset = useMemo(() => new Vector2(0, 0), []);
-  const colore = useMemo(() => new ThreeColor().setRGB(122, 122, 122), []);
-  const vecc = useMemo(() => new Vector3(0, 0, 0.46), []);
+  const u_resolution = useMemo(() => new Vector4(1, 1, 1, 1), []);
 
-  const u_color = useMemo(
-    () => [
-      new ThreeColor().copy(RADIO_PALETTE[0]),
-      new ThreeColor().copy(RADIO_PALETTE[1]),
-      new ThreeColor().copy(RADIO_PALETTE[2])
-    ],
-    []
+  const bgColor = useMemo(
+    () => new ThreeColor().copy(isDark ? DARK_BG : LIGHT_BG),
+    [isDark]
+  );
+  const color1 = useMemo(
+    () => new ThreeColor().copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1),
+    [isDark]
+  );
+  const color2 = useMemo(
+    () => new ThreeColor().copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2),
+    [isDark]
+  );
+  const color3 = useMemo(
+    () => new ThreeColor().copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3),
+    [isDark]
   );
 
   const uniforms = useMemo(
     () => ({
-      u_color,
-      uColorMixer: 0,
-      uAdditionalZoom: 0,
-      uAdditionalOffset,
-      uSize: 0.2,
-      uOffset,
-      uSpeed: 0.015,
-      u_pixels,
+      u_time: 0,
       u_resolution,
-      u_time: 1.0,
-      u_noiseTexture: noiseTexture,
-      u_opacity: 0.3,
+      u_bgColor: bgColor,
+      u_color1: color1,
+      u_color2: color2,
+      u_color3: color3,
       u_audioLevel: 0.0,
-      u_fogProgress: 0.0
+      u_fogProgress: 0.0,
+      u_opacity: 1.0,
+      u_grainIntensity: isDark ? 0.14 : 0.08,
+      u_blobIntensity: BLOB_INTENSITY_STOPPED,
+      u_noiseTexture: noiseTexture
     }),
-    [uOffset, u_pixels, uAdditionalOffset, u_resolution, noiseTexture, u_color]
+    [u_resolution, bgColor, color1, color2, color3, noiseTexture, isDark]
   );
 
-  const AmbientShader = shaderMaterial(
-    uniforms,
-    vertexShader,
-    fragmentShader
-  );
+  const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
   extend({ AmbientShader });
 
-  // Sync pixel ratio
+  // Sync resolution
   useEffect(() => {
-    const dpr = window.devicePixelRatio || 2;
-    const pe = gl.domElement.parentElement;
-    if (pe) {
-      gl.domElement.width = pe.offsetWidth;
-      gl.domElement.height = pe.offsetHeight;
-    }
-    gl.setPixelRatio(dpr);
-  }, [gl]);
+    if (!materialRef.current) return;
+    materialRef.current.uniforms.u_resolution.value.set(
+      size.width,
+      size.height,
+      1,
+      1
+    );
+  }, [size]);
 
-  // Animate uniforms each frame — read MotionValues without React re-renders
+  // Update colors when theme changes
+  useEffect(() => {
+    if (!materialRef.current) return;
+    const m = materialRef.current.uniforms;
+    m.u_bgColor.value.copy(isDark ? DARK_BG : LIGHT_BG);
+    m.u_color1.value.copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1);
+    m.u_color2.value.copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2);
+    m.u_color3.value.copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3);
+    m.u_grainIntensity.value = isDark ? 0.14 : 0.08;
+  }, [isDark]);
+
+  // Smoothly transition blob intensity based on playing state
+  const targetBlobIntensity = useRef(BLOB_INTENSITY_STOPPED);
+  useEffect(() => {
+    targetBlobIntensity.current = playing
+      ? BLOB_INTENSITY_PLAYING
+      : BLOB_INTENSITY_STOPPED;
+  }, [playing]);
+
   useFrame((_state, delta) => {
     if (!materialRef.current) return;
-    const mat = materialRef.current;
+    const m = materialRef.current.uniforms;
 
-    // Time — slow crawl
-    mat.uniforms.u_time.value += delta * 0.015;
+    m.u_time.value += delta;
 
-    // Reactive uniforms from MotionValues
-    mat.uniforms.u_opacity.value = opacity.get();
-    mat.uniforms.u_audioLevel.value = audioLevel.get();
-    mat.uniforms.u_fogProgress.value = fogProgress.get();
+    // Smoothly lerp blob intensity toward target
+    const current = m.u_blobIntensity.value;
+    const target = targetBlobIntensity.current;
+    m.u_blobIntensity.value += (target - current) * delta * 1.5;
+
+    // Reactive uniforms
+    m.u_opacity.value = opacity.get();
+    m.u_fogProgress.value = fogProgress.get();
+    m.u_audioLevel.value = audioLevel.get();
   });
 
   return (
-    <>
-      <ambientLight args={[colore]} intensity={1} />
-      <directionalLight
-        color={colore.setRGB(164, 164, 164)}
-        intensity={1}
-        position={vecc}
+    <mesh>
+      {/* Simple quad — all complexity is in the fragment shader */}
+      <planeGeometry args={[1.5, 1.5, 1, 1]} />
+      {/* @ts-expect-error — dynamically extended shader material */}
+      <ambientShader
+        ref={materialRef}
+        extensions={{
+          derivatives: "#extension GL_OES_standard_derivatives: enable"
+        }}
+        side={DoubleSide}
+        transparent
       />
-      <mesh>
-        <planeGeometry args={[1.5, 1.5, 200, 200]} />
-        {/* @ts-expect-error — dynamically extended shader material */}
-        <ambientShader
-          ref={materialRef}
-          extensions={{
-            derivatives: "#extension GL_OES_standard_derivatives: enable"
-          }}
-          side={DoubleSide}
-          transparent
-        />
-      </mesh>
-    </>
+    </mesh>
   );
 }
