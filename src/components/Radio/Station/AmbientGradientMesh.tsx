@@ -51,9 +51,10 @@ const LIGHT_COLOR3 = new ThreeColor().setStyle("#2d8a8c"); // accent 1: retro te
 const LIGHT_COLOR4 = new ThreeColor().setStyle("#d4652a"); // accent 2: burnt orange
 
 // Blob intensity: how visible the gradient blobs are
-// When playing: very subdued. When stopped: more pronounced but still dark/moody.
-const BLOB_INTENSITY_PLAYING = 0.25;
-const BLOB_INTENSITY_STOPPED = 0.36;
+// Tuned for larger blobs + wider noise modulation + Kawase blur at scale 3
+// Playing: subdued background. Stopped: blobs are atmospheric but noticeable.
+const BLOB_INTENSITY_PLAYING = 0.30;
+const BLOB_INTENSITY_STOPPED = 0.42;
 
 type AmbientGradientMeshProps = {
   opacity: MotionValue<number>;
@@ -107,8 +108,10 @@ export function AmbientGradientMesh({
     // Passes
     const renderPass = new RenderPass(scene, camera);
 
-    const blurPass = new KawaseBlurPass({ kernelSize: 2 });
-    blurPass.scale = 2;
+    // Kawase blur — higher scale = thicker fold compression at blob edges
+    // Leeroy uses scale 2 for normal, 5 for menu. We use 3 for pronounced folds.
+    const blurPass = new KawaseBlurPass({ kernelSize: 3 });
+    blurPass.scale = 3;
 
     const grainEffect = new Effect("grain", grainShader, {
       blendFunction: BlendFunction.NORMAL,

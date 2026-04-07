@@ -49,7 +49,7 @@ float blob(vec2 uv, vec2 center, float radius, float softness) {
 
 void main() {
     vec2 uv = v_uv;
-    float t = u_time * 0.06; // slow organic drift
+    float t = u_time * 0.04; // very slow drift — sub-perceptual movement
 
     // Aspect-correct coordinates centered at origin
     vec2 nUv = (uv - 0.5) * 2.0;
@@ -60,75 +60,93 @@ void main() {
     float spread = 1.0 + u_audioLevel * 0.4;
     float softMod = 1.0 + u_audioLevel * 0.25;
 
-    // ── Organic blob positions — large, slow-drifting focal points ────────
-    // 4 blobs with different orbits, like a lava lamp in slow motion
+    // ── Noise-texture sampling at 3 scales (fold structure) ───────────────
+    // Scale 1: broad folds — the dominant visual rhythm
+    vec2 noiseUv1 = uv * 0.8 + t * 0.15;
+    // Scale 2: medium detail — secondary fold ridges
+    vec2 noiseUv2 = uv * 1.6 - t * 0.12;
+    // Scale 3: fine organic grain in fold edges
+    vec2 noiseUv3 = uv * 3.0 + vec2(t * 0.08, -t * 0.1);
+
+    float n1 = texture2D(u_noiseTexture, noiseUv1).r;
+    float n2 = texture2D(u_noiseTexture, noiseUv2).r;
+    float n3 = texture2D(u_noiseTexture, noiseUv3).r;
+
+    // Combined noise — weighted toward broad folds
+    float noiseWarp = n1 * 0.55 + n2 * 0.30 + n3 * 0.15;
+
+    // ── Organic blob positions ────────────────────────────────────────────
+    // Noise-perturbed orbits prevent geometric regularity
+    float np = snoise(vec2(t * 0.3, 0.0)) * 0.15;
+
+    // Base blobs (1-2): very large, slow — they set the atmospheric mood
     vec2 b1Pos = vec2(
-        sin(t * 0.71 + 1.2) * 0.7,
-        cos(t * 0.53 + 0.8) * 0.5
+        sin(t * 0.51 + 1.2) * 0.6 + np,
+        cos(t * 0.37 + 0.8) * 0.45
     );
     vec2 b2Pos = vec2(
-        cos(t * 0.47 - 0.5) * 0.8,
-        sin(t * 0.67 + 2.4) * 0.6
+        cos(t * 0.33 - 0.5) * 0.7,
+        sin(t * 0.47 + 2.4) * 0.5 - np
     );
+    // Accent blobs (3-4): moderately sized, slightly faster
     vec2 b3Pos = vec2(
-        sin(t * 0.59 + 3.1) * 0.5,
-        cos(t * 0.41 - 1.2) * 0.7
+        sin(t * 0.59 + 3.1) * 0.5 - np * 0.7,
+        cos(t * 0.41 - 1.2) * 0.6
     );
     vec2 b4Pos = vec2(
-        cos(t * 0.37 + 0.9) * 0.6,
-        sin(t * 0.83 - 0.4) * 0.4
+        cos(t * 0.43 + 0.9) * 0.55,
+        sin(t * 0.63 - 0.4) * 0.4 + np * 0.5
     );
 
-    // Large radii — these are screen-spanning blobs, not pinpoints
-    float b1 = blob(nUv, b1Pos, 0.9 * spread, 0.6 * softMod);
-    float b2 = blob(nUv, b2Pos, 0.7 * spread, 0.5 * softMod);
-    float b3 = blob(nUv, b3Pos, 0.8 * spread, 0.55 * softMod);
-    float b4 = blob(nUv, b4Pos, 0.6 * spread, 0.45 * softMod);
+    // Base blobs: very large radii for maximum fold surface area
+    float b1 = blob(nUv, b1Pos, 1.2 * spread, 0.8 * softMod);
+    float b2 = blob(nUv, b2Pos, 1.0 * spread, 0.7 * softMod);
+    // Accent blobs: slightly smaller but still screen-spanning
+    float b3 = blob(nUv, b3Pos, 0.85 * spread, 0.6 * softMod);
+    float b4 = blob(nUv, b4Pos, 0.7 * spread, 0.5 * softMod);
 
-    // ── Noise-texture distortion of blob shapes ───────────────────────────
-    // Sample the seamless texture to warp blob boundaries organically
-    vec2 noiseUv1 = uv * 1.5 + t * 0.3;
-    vec2 noiseUv2 = uv * 2.0 - t * 0.2;
-    float noiseMod1 = texture2D(u_noiseTexture, noiseUv1).r;
-    float noiseMod2 = texture2D(u_noiseTexture, noiseUv2).r;
-    float noiseWarp = (noiseMod1 + noiseMod2) * 0.5;
-
-    // Warp the blob intensities with noise for organic, fabric-like folds
-    b1 *= mix(0.6, 1.0, noiseWarp);
-    b2 *= mix(0.7, 1.0, 1.0 - noiseWarp);
-    b3 *= mix(0.5, 1.0, snoise(nUv * 0.8 + t * 0.5) * 0.5 + 0.5);
-    b4 *= mix(0.6, 1.0, noiseWarp * noiseWarp);
+    // ── Noise warp of blob intensities — creates the fabric folds ─────────
+    // Wider modulation range = deeper valleys = more visible creases after blur
+    b1 *= mix(0.25, 1.0, noiseWarp);
+    b2 *= mix(0.30, 1.0, 1.0 - noiseWarp);
+    b3 *= mix(0.20, 1.0, n2 * 0.6 + n3 * 0.4);
+    b4 *= mix(0.35, 1.0, snoise(nUv * 0.6 + t * 0.4) * 0.5 + 0.5);
 
     // ── Color mixing (leeroy 4-color: 2 base + 2 accent) ────────────────
     vec3 color = u_bgColor;
     float intensity = u_blobIntensity;
 
-    // Base tones — large, dominant blobs that shift the mood subtly
-    color = mix(color, u_color1, b1 * intensity * 0.85);
-    color = mix(color, u_color2, b2 * intensity * 0.70);
+    // Base tones — dominant atmosphere
+    color = mix(color, u_color1, b1 * intensity * 0.9);
+    color = mix(color, u_color2, b2 * intensity * 0.75);
 
-    // Accent hues — smaller blobs that introduce atmospheric color
-    color = mix(color, u_color3, b3 * intensity * 0.55);
-    color = mix(color, u_color4, b4 * intensity * 0.45);
+    // Accent hues — atmospheric color injection
+    color = mix(color, u_color3, b3 * intensity * 0.6);
+    color = mix(color, u_color4, b4 * intensity * 0.5);
 
-    // ── Folding / overlapping darks ───────────────────────────────────────
-    // Where blobs overlap, create darker creases (fabric fold effect)
+    // ── Fold creases — darkening where blobs overlap ──────────────────────
     float overlap = b1 * b2 + b2 * b3 + b3 * b4 + b1 * b4;
-    color = mix(color, u_bgColor * 0.7, overlap * 0.25 * intensity);
+    // Additional crease from noise ridge lines
+    float ridgeLine = abs(noiseWarp - 0.5) * 2.0; // 0 at ridges, 1 in valleys
+    ridgeLine = 1.0 - smoothstep(0.0, 0.4, ridgeLine); // sharpen ridge
+    color = mix(color, u_bgColor * 0.65, overlap * 0.3 * intensity);
+    color = mix(color, u_bgColor * 0.8, ridgeLine * 0.15 * intensity);
 
-    // ── Simplex noise for additional organic variation ─────────────────────
-    float sn = snoise(nUv * 1.2 + t * 2.0) * 0.5 + 0.5;
-    color = mix(color, color * (0.85 + sn * 0.3), intensity * 0.4);
+    // ── Organic variation via simplex ─────────────────────────────────────
+    float sn = snoise(nUv * 0.9 + t * 1.5) * 0.5 + 0.5;
+    color = mix(color, color * (0.88 + sn * 0.24), intensity * 0.35);
 
-    // ── Fog: idle state pushes everything toward bg ───────────────────────
+    // ── Fog: idle state pushes toward bg ──────────────────────────────────
     float vignette = length(nUv / vec2(aspect, 1.0));
     vignette = smoothstep(0.2, 1.5, vignette);
     float fogMask = mix(vignette, 1.0, u_fogProgress * 0.65);
     color = mix(color, u_bgColor, u_fogProgress * 0.9 * fogMask);
 
-    // ── Contrast S-curve ──────────────────────────────────────────────────
+    // ── Gentle contrast — don't fight the blur ───────────────────────────
     color = clamp(color, 0.0, 1.0);
-    color = color * color * (3.0 - 2.0 * color);
+    // Softer S-curve: mix between linear and Hermite
+    vec3 sCurve = color * color * (3.0 - 2.0 * color);
+    color = mix(color, sCurve, 0.6);
 
     gl_FragColor = vec4(color, u_opacity);
 
