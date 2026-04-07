@@ -1,6 +1,6 @@
 "use client";
 
-import { PerspectiveCamera, View } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { MotionValue, animate, useMotionValue } from "motion/react";
 import { useEffect } from "react";
 import { useRadioStore } from "@/providers/RadioProvider";
@@ -20,11 +20,14 @@ type AmbientBackgroundProps = {
 /**
  * Full-screen ambient background for the Radio page.
  *
- * The shader renders the page background with:
- * - Very heavy film grain (FC Porto memorial level — the defining texture)
- * - Subtle organic blobs barely visible against the bg, more pronounced when idle
+ * Standalone Canvas (not shared View) to enable full postprocessing pipeline:
+ *   RenderPass → KawaseBlur (folds) → EffectPass (saccadé soft-light grain)
+ *
+ * Visual layers:
+ * - Organic gradient blobs driven by noise texture (seamless.png)
+ * - Kawase blur creates thick, fabric-like "folds" (à la leeroy.ca)
+ * - Grid-based stepped grain with soft-light blending (filmic, not digital)
  * - Audio drives halation spread, not color brightness
- * - Multiple CSS grain passes for extra tactile texture
  */
 export function AmbientBackground({
   fogProgress,
@@ -47,15 +50,13 @@ export function AmbientBackground({
       className="pointer-events-none absolute inset-0 z-[1]"
       aria-hidden="true"
     >
-      <View className="absolute inset-0">
-        <PerspectiveCamera
-          near={0.01}
-          far={1000}
-          position={[0, 0, 0.2]}
-          fov={35}
-          aspect={2}
-          makeDefault
-        />
+      <Canvas
+        className="absolute inset-0"
+        gl={{ antialias: false, alpha: false, premultipliedAlpha: false }}
+        camera={{ position: [0, 0, 0.2], fov: 35, near: 0.01, far: 1000 }}
+        frameloop="always"
+        dpr={[1, 2]}
+      >
         <AmbientGradientMesh
           opacity={opacity}
           audioLevel={audioLevel}
@@ -63,45 +64,7 @@ export function AmbientBackground({
           isDark={isDark}
           playing={playing}
         />
-      </View>
-
-      {/*/!* ── Heavy grain overlay — triple-pass for FC Porto level texture ─── *!/*/}
-      {/*/!* Pass 1: coarse grain, overlay blend *!/*/}
-      {/*<div*/}
-      {/*  className="absolute inset-0 z-[3]"*/}
-      {/*  style={{*/}
-      {/*    backgroundImage: "url(/assets/noise.png)",*/}
-      {/*    backgroundRepeat: "repeat",*/}
-      {/*    backgroundSize: "200px",*/}
-      {/*    opacity: isDark ? 0.28 : 0.15,*/}
-      {/*    mixBlendMode: "overlay",*/}
-      {/*    pointerEvents: "none"*/}
-      {/*  }}*/}
-      {/*/>*/}
-      {/*/!* Pass 2: fine grain, soft-light for depth *!/*/}
-      {/*<div*/}
-      {/*  className="absolute inset-0 z-[4]"*/}
-      {/*  style={{*/}
-      {/*    backgroundImage: "url(/assets/noise.png)",*/}
-      {/*    backgroundRepeat: "repeat",*/}
-      {/*    backgroundSize: "120px",*/}
-      {/*    opacity: isDark ? 0.15 : 0.08,*/}
-      {/*    mixBlendMode: "soft-light",*/}
-      {/*    pointerEvents: "none"*/}
-      {/*  }}*/}
-      {/*/>*/}
-      {/*/!* Pass 3: multiply pass for dark grain in shadows *!/*/}
-      {/*<div*/}
-      {/*  className="absolute inset-0 z-[5]"*/}
-      {/*  style={{*/}
-      {/*    backgroundImage: "url(/assets/noise.png)",*/}
-      {/*    backgroundRepeat: "repeat",*/}
-      {/*    backgroundSize: "300px",*/}
-      {/*    opacity: isDark ? 0.10 : 0.04,*/}
-      {/*    mixBlendMode: "multiply",*/}
-      {/*    pointerEvents: "none"*/}
-      {/*  }}*/}
-      {/*/>*/}
+      </Canvas>
     </div>
   );
 }

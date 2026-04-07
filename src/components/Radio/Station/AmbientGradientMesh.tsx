@@ -6,6 +6,7 @@ import { MotionValue } from "motion/react";
 import {
   BlendFunction,
   Effect,
+  EffectComposer,
   EffectPass,
   KawaseBlurPass,
   RenderPass
@@ -17,12 +18,12 @@ import {
   RepeatWrapping,
   Texture,
   Uniform,
-  Vector2,
   Vector4
 } from "three";
 import fragmentShader from "../shaders/ambient.frag.glsl";
 import vertexShader from "../shaders/ambient.vert.glsl";
-import grain from "../shaders/grain.glsl";
+import grainShader from "../shaders/grain.glsl";
+
 // ── Theme color palettes ──────────────────────────────────────────────────
 // Dark: FC Porto memorial — deep navy/blue-black, very subtle warm-blue shifts
 // Grain is the star; blobs are barely-there atmospheric color
@@ -49,42 +50,7 @@ type AmbientGradientMeshProps = {
   isDark: boolean;
   playing: boolean;
 };
-const displacementEffect = new Effect(
-  "displacement",
-  `
-    uniform vec2 uDisplacementStrength;
-    uniform float uCursorColoring;
 
-    void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-        // UV aspect fix
-        /* vec2 nUv = (-.5 + uv) * 2.;
-        if( resolution.x < resolution.y ) {
-            nUv.x *= resolution.x / resolution.y;
-        } else {
-            nUv.y *= resolution.y / resolution.x;
-        }
-        nUv = nUv / 2. + .5; */
-
-
-        vec2 dUv = vec2(
-            uv.x 
-            uv.y
-        );
-
-        vec4 color = texture2D(inputBuffer, dUv);
-
-        color.rgb += color.rgb * gpgpuColor.b * uCursorColoring;
-
-        outputColor = vec4(color.rgb, 1.0);
-    }`,
-  {
-    blendFunction: BlendFunction.NORMAL,
-    uniforms: new Map([
-      ["uDisplacementStrength" as const, new Uniform(new Vector2(2, 2))],
-      ["uCursorColoring" as const, new Uniform(1.5)]
-    ])
-  }
-);
 export function AmbientGradientMesh({
   opacity,
   audioLevel,
@@ -94,44 +60,83 @@ export function AmbientGradientMesh({
 }: AmbientGradientMeshProps) {
   useTexture.preload("/assets/seamless.png");
   const materialRef = useRef<any>(null);
-  const { size, scene, camera } = useThree();
-  const pixelSize = window.devicePixelRatio;
-  const uXCount = new Uniform(size.width / pixelSize);
-  const uYCount = new Uniform(size.height / pixelSize);
-  const uIntensity = new Uniform(1.29);
-  const renderPass = new RenderPass(scene, camera);
-  const grainEffect = new Effect("grain", grain, {
-    blendFunction: BlendFunction.NORMAL,
-    uniforms: new Map([
-      ["uXCount", uXCount],
-      ["uYCount", uYCount],
-      ["uIntensity", uIntensity]
-    ])
-  });
-  const blurPass = new KawaseBlurPass();
-  blurPass.scale = 2;
-  const effectPass = new EffectPass(camera, grainEffect);
-  const passes = [renderPass, blurPass, effectPass];
-  const noiseTexture = useTexture(
-      "/assets/seamless.png",
-      (texture: Texture) => {
-        texture.wrapS = texture.wrapT = RepeatWrapping;
-      }
-    ),
-    uTime = new Uniform(0),
-    uSize = new Uniform(0.2),
-    uOffset = new Uniform(new Vector2(0.42, 0.6)),
-    uSpeed = new Uniform(0.02),
-    uColor1 = new Uniform(new ThreeColor("rgb(65,66,73)")),
-    uColor2 = new Uniform(new ThreeColor("rgb(36,39,51)")),
-    uColor3 = new Uniform(new ThreeColor("rgb(49,103,160)")),
-    uColor4 = new Uniform(new ThreeColor("rgb(117,153,245)"));
+  const { gl, scene, camera, size } = useThree();
 
-  const uNoiseTexture = new Uniform(noiseTexture),
-    uColorMixer = new Uniform(0),
-    uMenuMode = new Uniform(0),
-    uAdditionalZoom = new Uniform(0),
-    uAdditionalOffset = new Uniform(new Vector2(0, 0));
+  const noiseTexture = useTexture(
+    "/assets/seamless.png",
+    (texture: Texture) => {
+      texture.wrapS = texture.wrapT = RepeatWrapping;
+    }
+  );
+
+  // ── Postprocessing pipeline ─────────────────────────────────────────────
+  // RenderPass → KawaseBlur (thick folds) → EffectPass (saccadé grain)
+  const composerRef = useRef<EffectComposer>(null!);
+  const grainUniformsRef = useRef<{
+    uXCount: Uniform;
+    uYCount: Uniform;
+    uIntensity: Uniform;
+  }>(null!);
+
+  useMemo(() => {
+    // Dispose previous composer if it exists (theme change, etc.)
+    if (composerRef.current) {
+      composerRef.current.dispose();
+    }
+
+    const pixelRatio = gl.getPixelRatio();
+
+    // Grain uniforms — grid-based saccadé grain from leeroy.ca
+    const uXCount = new Uniform(size.width / pixelRatio);
+    const uYCount = new Uniform(size.height / pixelRatio);
+    const uIntensity = new Uniform(1.29);
+    grainUniformsRef.current = { uXCount, uYCount, uIntensity };
+
+    // Passes
+    const renderPass = new RenderPass(scene, camera);
+
+    const blurPass = new KawaseBlurPass({ kernelSize: 2 });
+    blurPass.scale = 2;
+
+    const grainEffect = new Effect("grain", grainShader, {
+      blendFunction: BlendFunction.NORMAL,
+      uniforms: new Map<string, Uniform>([
+        ["uXCount", uXCount],
+        ["uYCount", uYCount],
+        ["uIntensity", uIntensity]
+      ])
+    });
+    const effectPass = new EffectPass(camera, grainEffect);
+
+    const composer = new EffectComposer(gl);
+    composer.addPass(renderPass);
+    composer.addPass(blurPass);
+    composer.addPass(effectPass);
+
+    composerRef.current = composer;
+  }, [gl, scene, camera]);
+
+  // Sync composer + grain uniforms on resize
+  useEffect(() => {
+    if (!composerRef.current) return;
+    composerRef.current.setSize(size.width, size.height);
+
+    const pixelRatio = gl.getPixelRatio();
+    const gu = grainUniformsRef.current;
+    if (gu) {
+      gu.uXCount.value = size.width / pixelRatio;
+      gu.uYCount.value = size.height / pixelRatio;
+    }
+  }, [size, gl]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      composerRef.current?.dispose();
+    };
+  }, []);
+
+  // ── Shader material ─────────────────────────────────────────────────────
   const u_resolution = useMemo(() => new Vector4(1, 1, 1, 1), []);
 
   const bgColor = useMemo(
@@ -202,6 +207,7 @@ export function AmbientGradientMesh({
       : BLOB_INTENSITY_STOPPED;
   }, [playing]);
 
+  // ── Render loop — priority >= 1 disables R3F auto-render ────────────────
   useFrame((_state, delta) => {
     if (!materialRef.current) return;
     const m = materialRef.current.uniforms;
@@ -213,15 +219,17 @@ export function AmbientGradientMesh({
     const target = targetBlobIntensity.current;
     m.u_blobIntensity.value += (target - current) * delta * 1.5;
 
-    // Reactive uniforms
+    // Reactive uniforms from MotionValues
     m.u_opacity.value = opacity.get();
     m.u_fogProgress.value = fogProgress.get();
     m.u_audioLevel.value = audioLevel.get();
-  });
+
+    // Render through postprocessing pipeline
+    composerRef.current?.render(delta);
+  }, 1);
 
   return (
     <mesh>
-      {/* Simple quad — all complexity is in the fragment shader */}
       <planeGeometry args={[1.5, 1.5, 1, 1]} />
       {/* @ts-expect-error — dynamically extended shader material */}
       <ambientShader
