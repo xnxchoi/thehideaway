@@ -56,17 +56,22 @@ void main() {
     float aspect = u_resolution.x / u_resolution.y;
     nUv.x *= aspect;
 
-    // Audio drives how much the blobs spread outward (halation)
+    // ── Audio reactivity ───────────────────────────────────────────────────
+    // Halation: blobs spread outward and soften on beats
     float spread = 1.0 + u_audioLevel * 0.4;
     float softMod = 1.0 + u_audioLevel * 0.25;
+    // Audio-driven position jitter — subtle rhythmic displacement
+    float audioJitter = u_audioLevel * 0.08;
+    // Audio pulses the noise scroll speed — folds breathe with the music
+    float noiseSpeedPulse = 1.0 + u_audioLevel * 0.6;
 
     // ── Noise-texture sampling at 3 scales (fold structure) ───────────────
     // Scale 1: broad folds — the dominant visual rhythm
-    vec2 noiseUv1 = uv * 0.8 + t * 0.15;
+    vec2 noiseUv1 = uv * 0.8 + t * 0.15 * noiseSpeedPulse;
     // Scale 2: medium detail — secondary fold ridges
-    vec2 noiseUv2 = uv * 1.6 - t * 0.12;
+    vec2 noiseUv2 = uv * 1.6 - t * 0.12 * noiseSpeedPulse;
     // Scale 3: fine organic grain in fold edges
-    vec2 noiseUv3 = uv * 3.0 + vec2(t * 0.08, -t * 0.1);
+    vec2 noiseUv3 = uv * 3.0 + vec2(t * 0.08, -t * 0.1) * noiseSpeedPulse;
 
     float n1 = texture2D(u_noiseTexture, noiseUv1).r;
     float n2 = texture2D(u_noiseTexture, noiseUv2).r;
@@ -78,24 +83,29 @@ void main() {
     // ── Organic blob positions ────────────────────────────────────────────
     // Noise-perturbed orbits prevent geometric regularity
     float np = snoise(vec2(t * 0.3, 0.0)) * 0.15;
+    // Audio jitter adds per-blob rhythmic displacement
+    float aj1 = snoise(vec2(u_time * 2.1, 1.0)) * audioJitter;
+    float aj2 = snoise(vec2(u_time * 1.7, 3.0)) * audioJitter;
+    float aj3 = snoise(vec2(u_time * 2.5, 5.0)) * audioJitter;
+    float aj4 = snoise(vec2(u_time * 1.9, 7.0)) * audioJitter;
 
     // Base blobs (1-2): very large, slow — they set the atmospheric mood
     vec2 b1Pos = vec2(
-        sin(t * 0.51 + 1.2) * 0.6 + np,
-        cos(t * 0.37 + 0.8) * 0.45
+        sin(t * 0.51 + 1.2) * 0.6 + np + aj1,
+        cos(t * 0.37 + 0.8) * 0.45 - aj1 * 0.7
     );
     vec2 b2Pos = vec2(
-        cos(t * 0.33 - 0.5) * 0.7,
-        sin(t * 0.47 + 2.4) * 0.5 - np
+        cos(t * 0.33 - 0.5) * 0.7 - aj2 * 0.8,
+        sin(t * 0.47 + 2.4) * 0.5 - np + aj2
     );
     // Accent blobs (3-4): moderately sized, slightly faster
     vec2 b3Pos = vec2(
-        sin(t * 0.59 + 3.1) * 0.5 - np * 0.7,
-        cos(t * 0.41 - 1.2) * 0.6
+        sin(t * 0.59 + 3.1) * 0.5 - np * 0.7 + aj3,
+        cos(t * 0.41 - 1.2) * 0.6 + aj3 * 0.6
     );
     vec2 b4Pos = vec2(
-        cos(t * 0.43 + 0.9) * 0.55,
-        sin(t * 0.63 - 0.4) * 0.4 + np * 0.5
+        cos(t * 0.43 + 0.9) * 0.55 - aj4 * 0.5,
+        sin(t * 0.63 - 0.4) * 0.4 + np * 0.5 + aj4
     );
 
     // Base blobs: very large radii for maximum fold surface area
@@ -129,8 +139,10 @@ void main() {
     // Additional crease from noise ridge lines
     float ridgeLine = abs(noiseWarp - 0.5) * 2.0; // 0 at ridges, 1 in valleys
     ridgeLine = 1.0 - smoothstep(0.0, 0.4, ridgeLine); // sharpen ridge
-    color = mix(color, u_bgColor * 0.65, overlap * 0.3 * intensity);
-    color = mix(color, u_bgColor * 0.8, ridgeLine * 0.15 * intensity);
+    // Audio deepens creases — beats compress the folds
+    float creaseDepth = 1.0 + u_audioLevel * 0.4;
+    color = mix(color, u_bgColor * 0.65, overlap * 0.3 * intensity * creaseDepth);
+    color = mix(color, u_bgColor * 0.8, ridgeLine * 0.15 * intensity * creaseDepth);
 
     // ── Organic variation via simplex ─────────────────────────────────────
     float sn = snoise(nUv * 0.9 + t * 1.5) * 0.5 + 0.5;
