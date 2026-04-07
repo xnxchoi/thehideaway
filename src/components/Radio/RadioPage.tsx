@@ -20,6 +20,7 @@ function RadioModeSwitch() {
       {mode === "station" ? (
         <m.div
           key="station"
+          className="z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -30,6 +31,7 @@ function RadioModeSwitch() {
       ) : (
         <m.div
           key="showcase"
+          className="z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -37,8 +39,8 @@ function RadioModeSwitch() {
         >
           <Suspense
             fallback={
-              <div className="flex min-h-screen items-center justify-center">
-                <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/50">
+              <div className="z-50 flex min-h-screen items-center justify-center">
+                <span className="font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase">
                   Loading...
                 </span>
               </div>

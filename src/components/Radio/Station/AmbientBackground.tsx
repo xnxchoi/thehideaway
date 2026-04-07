@@ -65,43 +65,43 @@ export function AmbientBackground({
         />
       </View>
 
-      {/* ── Heavy grain overlay — triple-pass for FC Porto level texture ─── */}
-      {/* Pass 1: coarse grain, overlay blend */}
-      <div
-        className="absolute inset-0 z-[3]"
-        style={{
-          backgroundImage: "url(/assets/noise.png)",
-          backgroundRepeat: "repeat",
-          backgroundSize: "200px",
-          opacity: isDark ? 0.28 : 0.15,
-          mixBlendMode: "overlay",
-          pointerEvents: "none"
-        }}
-      />
-      {/* Pass 2: fine grain, soft-light for depth */}
-      <div
-        className="absolute inset-0 z-[4]"
-        style={{
-          backgroundImage: "url(/assets/noise.png)",
-          backgroundRepeat: "repeat",
-          backgroundSize: "120px",
-          opacity: isDark ? 0.15 : 0.08,
-          mixBlendMode: "soft-light",
-          pointerEvents: "none"
-        }}
-      />
-      {/* Pass 3: multiply pass for dark grain in shadows */}
-      <div
-        className="absolute inset-0 z-[5]"
-        style={{
-          backgroundImage: "url(/assets/noise.png)",
-          backgroundRepeat: "repeat",
-          backgroundSize: "300px",
-          opacity: isDark ? 0.10 : 0.04,
-          mixBlendMode: "multiply",
-          pointerEvents: "none"
-        }}
-      />
+      {/*/!* ── Heavy grain overlay — triple-pass for FC Porto level texture ─── *!/*/}
+      {/*/!* Pass 1: coarse grain, overlay blend *!/*/}
+      {/*<div*/}
+      {/*  className="absolute inset-0 z-[3]"*/}
+      {/*  style={{*/}
+      {/*    backgroundImage: "url(/assets/noise.png)",*/}
+      {/*    backgroundRepeat: "repeat",*/}
+      {/*    backgroundSize: "200px",*/}
+      {/*    opacity: isDark ? 0.28 : 0.15,*/}
+      {/*    mixBlendMode: "overlay",*/}
+      {/*    pointerEvents: "none"*/}
+      {/*  }}*/}
+      {/*/>*/}
+      {/*/!* Pass 2: fine grain, soft-light for depth *!/*/}
+      {/*<div*/}
+      {/*  className="absolute inset-0 z-[4]"*/}
+      {/*  style={{*/}
+      {/*    backgroundImage: "url(/assets/noise.png)",*/}
+      {/*    backgroundRepeat: "repeat",*/}
+      {/*    backgroundSize: "120px",*/}
+      {/*    opacity: isDark ? 0.15 : 0.08,*/}
+      {/*    mixBlendMode: "soft-light",*/}
+      {/*    pointerEvents: "none"*/}
+      {/*  }}*/}
+      {/*/>*/}
+      {/*/!* Pass 3: multiply pass for dark grain in shadows *!/*/}
+      {/*<div*/}
+      {/*  className="absolute inset-0 z-[5]"*/}
+      {/*  style={{*/}
+      {/*    backgroundImage: "url(/assets/noise.png)",*/}
+      {/*    backgroundRepeat: "repeat",*/}
+      {/*    backgroundSize: "300px",*/}
+      {/*    opacity: isDark ? 0.10 : 0.04,*/}
+      {/*    mixBlendMode: "multiply",*/}
+      {/*    pointerEvents: "none"*/}
+      {/*  }}*/}
+      {/*/>*/}
     </div>
   );
 }

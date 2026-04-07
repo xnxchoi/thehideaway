@@ -52,6 +52,7 @@ export const queryPostOverviews = cache(
     limit = 10,
     page = 1,
     where,
+    draftsEnabled = false,
     sort = ["-updatedAt", "-publishedAt"],
     overrideAccess = true
   }: QueryOverviewParams) => {
@@ -126,9 +127,10 @@ export const queryPostsByIDs = cache(
   }
 );
 export const getPostOverviews = async <
-  T extends Omit<FindArgs, "collection" | "locale" | "select">
+  T extends Omit<QueryOverviewParams, "collection" | "locale" | "select">
 >({
-  where
+  where,
+  draftsEnabled = false
 }: T) => {
   const payload = await getPayload({ config: configPromise });
 
@@ -146,6 +148,7 @@ export const getPostOverviews = async <
   } = await payload
     .find({
       collection: "posts",
+      draft: draftsEnabled,
       where,
       select: { slug: true },
       overrideAccess: true
@@ -192,6 +195,7 @@ export const getPostOverview = cache(
   >({
     payload,
     id,
+    draftsEnabled = false,
     ...rests
   }: T & {
     payload: BasePayload;
@@ -200,6 +204,7 @@ export const getPostOverview = cache(
     const r = await payload.findByID({
       collection: "posts",
       id,
+      draft: draftsEnabled,
       select: postOverviewSelect(),
       ...rests
     });

@@ -1157,7 +1157,7 @@ $templateTypes: (default, minimal);
   .slash-menu-popup {
     backdrop-filter: blur(4px) grayscale(1);
     outline: groove 1px oklch(from var(--muted-faded-fg) l c h/0.7);
-    box-shadow: 4px 7px 6px 1px oklch(from var(--muted-faded-fg) l c h/0.2);
+    box-shadow: 1px 0px 2px 0px oklch(from var(--muted-faded-fg) l c h / .2)
   }
 
   &[data-sidebar-open="true"] .doc-header {

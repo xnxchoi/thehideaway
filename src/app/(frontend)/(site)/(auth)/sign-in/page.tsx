@@ -2,7 +2,7 @@ import { RPage } from "@/components/UX/Transition";
 import { AuthView as AuthCard } from "@/lib/auth/betterauth-ui/src";
 import { Link } from "@/components/core/Link/Link";
 import { Logo } from "@/components/UX/Logo";
-import { VGradientModule } from "@/components/UX/Gradient/Gradient";
+import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { Suspense } from "react";
 
 export default function Page() {

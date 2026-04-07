@@ -44,6 +44,8 @@ import { RelationshipFeatureClient as RelationshipFeatureClient_e70f5e05f09f93e0
 import { BlockquoteFeatureClient as BlockquoteFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { FormatImportClientFeature as FormatImportClientFeature_30f835d2ae0242eb618177d3e5702fc1 } from '@/payload/Lexical/Features/FormatImport/feature.client.ts'
+import { LinkPreviewClientFeature as LinkPreviewClientFeature_802a3021797535fad54daababb14a736 } from '@/payload/Lexical/Features/LinkPreview/feature.client.ts'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { RP_ImageBlock as RP_ImageBlock_96cd05edb8fb701d903b4755c5080614 } from '@/blocks/ImageBlock/Comp/client/component/index.tsx'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
@@ -140,6 +142,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BlockquoteFeatureClient": BlockquoteFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/payload/Lexical/Features/FormatImport/feature.client.ts#FormatImportClientFeature": FormatImportClientFeature_30f835d2ae0242eb618177d3e5702fc1,
+  "@/payload/Lexical/Features/LinkPreview/feature.client.ts#LinkPreviewClientFeature": LinkPreviewClientFeature_802a3021797535fad54daababb14a736,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/blocks/ImageBlock/Comp/client/component/index.tsx#RP_ImageBlock": RP_ImageBlock_96cd05edb8fb701d903b4755c5080614,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,

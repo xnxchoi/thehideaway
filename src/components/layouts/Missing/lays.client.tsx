@@ -56,47 +56,6 @@ export function MissingLayout() {
       document.dispatchEvent(new CustomEvent("transFour"));
     };
   }, [clearPageTheme, setIs404, setPage, setPageIsTransitioning, setPageTheme]);
-  const [toogled, setToogled] = useState(false);
-
-  const docInnerRef = useRef<HTMLElement>(null!);
-
-  useEffect(() => {
-    const onEnter = () => setToogled(true);
-    const onLeave = () => setToogled(false);
-
-    const docInner = document.querySelector("#rp-header");
-    if (docInner) {
-      docInnerRef.current = docInner as HTMLElement;
-      docInnerRef.current.addEventListener("mouseenter", onEnter);
-      docInnerRef.current.addEventListener("mouseleave", onLeave);
-    }
-    return () => {
-      if (docInnerRef.current) {
-        docInnerRef.current.removeEventListener("mouseenter", onEnter);
-        docInnerRef.current.removeEventListener("mouseleave", onLeave);
-      }
-    };
-  }, []);
-  useGSAP(
-    () => {
-      gsap.to(["#l-side", "#r-side", "#c-side"], {
-        autoAlpha: Number(toogled),
-        duration: 0.3,
-        delay: 0.1,
-        ease: "power2.inOut"
-      });
-      return () => {
-        gsap.killTweensOf(["#l-side", "#r-side", "#c-side"]);
-        gsap.to(["#l-side", "#r-side", "#c-side"], {
-          autoAlpha: 1,
-          duration: 0.3,
-          delay: 0.1,
-          ease: "power2.inOut"
-        });
-      };
-    },
-    { dependencies: [toogled] }
-  );
 
   return (
     <svg

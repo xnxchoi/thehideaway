@@ -39,7 +39,7 @@ export const HeroPlayer = ({
     <m.section
       ref={containerRef}
       className={cn(
-        "relative flex min-h-[70vh] w-screen flex-col items-center justify-center overflow-hidden py-16",
+        "relative z-50 flex min-h-[70vh] w-screen flex-col items-center justify-center overflow-hidden py-16",
         className
       )}
       style={{ opacity, y }}
