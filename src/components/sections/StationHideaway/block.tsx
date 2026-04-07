@@ -36,8 +36,8 @@ export function StationHideawayHero({ className }: { className?: string }) {
   // ── "HIDDEN" billboard (top-left) ─────────────────────────────────────────
   const topTextY = useTransform(
     scrollYProgress,
-    [0, 0.35, 1],
-    ["20vh", "0vh", "-30vh"]
+    [0, 0.45, 1],
+    ["30vh", "10vh", "-10vh"]
   );
   const topTextOpacity = useTransform(
     scrollYProgress,
@@ -57,7 +57,7 @@ export function StationHideawayHero({ className }: { className?: string }) {
   const sceneY = useTransform(
     scrollYProgress,
     [0, 0.25, 0.35, 0.5, 0.85, 1],
-    ["50vh", "10vh", "5vh", "-5vh", "-75vh", "-150vh"]
+    ["100vh", "80vh", "15vh", "10vh", "-5vh", "-100vh"]
   );
   const sceneOpacity = useTransform(
     scrollYProgress,
@@ -91,7 +91,6 @@ export function StationHideawayHero({ className }: { className?: string }) {
       className={cn("relative w-full min-w-screen", className)}
       style={{ minHeight: "250vh" }}
     >
-      <div className="fixed top-4 left-5 text-2xl">{sc}</div>
       {/* ── Sticky viewport container ──────────────────────────────────────── */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         {/* Background glow — subtle, matches HeroPlayer's bleu-400 palette */}
@@ -110,16 +109,6 @@ export function StationHideawayHero({ className }: { className?: string }) {
          * remain visible regardless. min-h-0 overrides HeroPlayer's internal
          * min-h-[70vh]; the sticky container controls all layout sizing.
          */}
-        <m.div
-          style={{ y: playerY, opacity: playerOpacity }}
-          className="absolute inset-x-0 bottom-0 z-[10] flex min-w-[70vw] justify-center pb-8 md:pb-16"
-        >
-          <TapePlayer
-            variant="hero"
-            scrollHint={false}
-            className="min-h-0 w-full max-w-(--maxContainerWidth)"
-          />
-        </m.div>
 
         {/* ── z-20: Tape3DScene — floats in, lingers over player, drifts away ── */}
         {/*

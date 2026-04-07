@@ -57,33 +57,5 @@ export default function PageClient({
     };
   }, [clearHighlights, resetHighlights, setTarget, resetAll, setArticle, post]);
 
-  return (
-    <div
-      className={
-        "rp_story z-120 w-screen bg-faded-white pb-[20px] leading-[1.28] dark:bg-faded-black"
-      }
-      data-themed="background-color,color"
-    >
-      {children}
-      <div
-        className="relative"
-        style={{
-	        backgroundImage: `linear-gradient(to bottom, oklch(from var(--faded-bg) l c h/1) 22%, oklch(from var(--faded-bg) l c h/0.75) 40%, oklch(from var(--faded-bg) l c h/0.5) 50%, oklch(from var(--faded-bg) l c h/0.15) 65%, oklch(from var(--faded-bg) l c h/0.05) 72%, oklch(from var(--faded-bg) l c h/0.001) 96%)`,
-          zIndex: 100,
-          height: "14vh",
-          width: "100vw",
-          top: "0px",
-          marginTop: "0px",
-          marginBottom: "-13vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative"
-        }}
-      >
-	      <div
-		      className="absolute top-0 left-0 z-50 h-px w-screen bg-linear-to-r from-muted-faded-foreground/15 from-10% via-muted-faded-foreground/75 via-50% to-muted-faded-foreground/15 to-90%"/>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }

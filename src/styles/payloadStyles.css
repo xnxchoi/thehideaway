@@ -1,8 +1,10 @@
 @layer theme, base, components, utilities;
-/* Import Tailwind CSS 4 utilities only - exclude preflight to preserve PayloadCMS admin styles */
-@import "tailwindcss/theme" layer(theme) theme(inline) theme(static);
 
-@import "tailwindcss/utilities" layer(utilities) source("../../src");
+/* Import the Tailwind theme styles */
+@import 'tailwindcss/theme.css' layer(theme);
+
+/* Import Tailwind utilities */
+@import 'tailwindcss/utilities.css' layer(utilities);
 @import "tw-animate-css";
 
 @source not "../../src/app/(frontend)";
@@ -11,6 +13,7 @@
 @source not "../../src/lib";
 @source not "../../src/stores";
 @source not "../../src/hooks";
+@config "../../tailwind.config.js";
 
 .table {
   display: block;
@@ -30,6 +33,18 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
+}
+@utility border-border{
+    border-color: var(--border);
+}
+@utility bg-background{
+    background-color: var(--background);
+}
+@utility text-foreground{
+    color: var(--foreground);
+}
+@utility text-muted{
+    color: var(--muted);
 }
 /*
 The default border color has changed to `currentColor` in Tailwind CSS v4,
@@ -86,7 +101,7 @@ color utility to any element that depends on these defaults.
   }
 
   * {
-    /*@apply border-border;*/
+    @apply border-border;
   }
 
   small {
@@ -122,6 +137,7 @@ color utility to any element that depends on these defaults.
   }
 
   body {
+    @apply bg-background text-foreground;
   }
 
   hr {
@@ -150,7 +166,7 @@ color utility to any element that depends on these defaults.
 }
 
 html {
-    opacity: 0;
+    /*opacity: 0;*/
     width: 100vw;
     overflow-x: hidden;
     box-sizing: inherit;
@@ -764,10 +780,11 @@ html {
 
 @layer base {
   * {
-    /*@apply border-border outline-ring/50;*/
+    @apply border-border;
   }
 
   body {
+    @apply bg-background text-foreground;
   }
 }
 

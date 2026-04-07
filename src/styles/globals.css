@@ -88,9 +88,6 @@ color utility to any element that depends on these defaults.
     --breakpoint-2xl: 1536px;
     --breakpoint-3xl: 1920px;
 }
-@utility bg-background{
-    background-color: var(--background);
-}
 
 @layer base {
     body {
@@ -98,7 +95,7 @@ color utility to any element that depends on these defaults.
     }
 
     * {
-        /*@apply border-border;*/
+        @apply border-border;
     }
 
     small {
@@ -1003,11 +1000,11 @@ Colors
 
 @layer base {
     * {
-        @apply  outline-ring/0;
+        @apply border-border outline-ring/0;
     }
 
     body {
-        /*@apply bg-background text-foreground;*/
+        @apply bg-background text-foreground;
     }
 }
 

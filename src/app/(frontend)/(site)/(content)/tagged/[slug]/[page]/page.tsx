@@ -26,7 +26,7 @@ export async function generateStaticParams({
     .find({
       collection: "tags",
       where: { slug: { equals: slug } },
-      select: { id: true },
+      select: {},
       limit: 1,
       overrideAccess: true,
       pagination: false

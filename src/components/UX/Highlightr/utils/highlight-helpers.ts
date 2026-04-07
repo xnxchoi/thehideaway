@@ -1,6 +1,6 @@
 export interface IdentifyableNode extends Element {
   id: string;
-  tagName: "SPAN" | "DIV" | "P" | "MARK";
+  tagName:Uppercase<keyof Pick<HTMLElementTagNameMap,'p'|'blockquote'|'li'|'span'|'div'>>|"MARK";
   dataset: {
     key: string | number;
     selectable: boolean;
@@ -29,6 +29,22 @@ export function getAnchestorIdentifyableNode(node: Node | null | undefined) {
   
   if (isIdentifyableNode(node)) {
     switch (node.tagName) {
+      case "BLOCKQUOTE":
+        return node as HTMLQuoteElement & {
+          dataset: {
+            key: string | number;
+            selectable: boolean;
+            [key: string]: unknown;
+          }
+        };
+        case "LI":
+          return node as HTMLLIElement & {
+            dataset: {
+              key: string | number;
+              selectable: boolean;
+              [key: string]: unknown;
+            }
+          }
       case "SPAN":
         return node as HTMLSpanElement & {
           dataset: {
@@ -140,12 +156,15 @@ export const isMarkable = (selection: rangy.RangySelection) => {
           | HTMLElement
           | HTMLSpanElement
           | HTMLDivElement
-          | HTMLParagraphElement
+          | HTMLParagraphElement|HTMLQuoteElement
         )) => {
     if (node === undefined) return node;
     if (node.nextSibling && isIdentifyableNode(node.nextSibling)) {
       const t = node.nextSibling.tagName;
       switch (t) {
+        case 'BLOCKQUOTE':
+          return node.nextSibling as unknown as IdentifyableNode &
+            HTMLQuoteElement;
         case "SPAN":
           return node.nextSibling as unknown as IdentifyableNode &
             HTMLSpanElement;

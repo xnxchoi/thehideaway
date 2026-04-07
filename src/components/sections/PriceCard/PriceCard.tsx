@@ -68,7 +68,7 @@ const StandardCard = () => {
     }
   }, [user, userRole]);
   return (
-    <div className="w-full px-0 sm:px-[.5em]">
+    <div className="w-full px-0 sm:px-[.5em] md:w-1/2">
       <RP_Listing type={"standard"}>
         <div data-price-overlay="main" className="price-card-content">
           <div className="price-card-top">
@@ -114,7 +114,7 @@ const ProCard = () => {
   );
 
   return (
-    <div className="w-full px-0 sm:px-[.5em]">
+    <div className="w-full px-0 sm:px-[.5em] md:w-1/2">
       <RP_Listing type={"pro"} className="price-card-pro">
         <div data-price-overlay="trigger" className="price-card-tag">
           <button className="price-card-tag__inner">

@@ -267,7 +267,7 @@ export const ScrollIndicator = () => {
         <m.div
           key="scroller"
           className={cn(
-            "scroll-indicator fixed top-2 right-0 bottom-2 z-300 flex w-16 justify-end bg-linear-to-r from-background/0 via-muted-faded-background/10 via-55% to-edge-black/50 transition-colors duration-150 ease-out-power2 not-data-[drag=true]:hover:animate-pulse md:top-[10px] md:bottom-[20px]"
+            "scroll-indicator fixed top-2 right-0 bottom-2 z-300 flex w-16 justify-end bg-linear-to-r from-background/0 via-muted-faded-background/10 via-55% to-edge-black/50 transition-colors duration-150 ease-out-power2 not-data-[drag=true]:hover:animate-pulse md:bottom-[10px]"
           )}
           data-drag={dragging}
           variants={{

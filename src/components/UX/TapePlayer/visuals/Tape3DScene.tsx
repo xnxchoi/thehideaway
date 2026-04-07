@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import { Suspense, useEffect, useState, type ComponentProps } from "react";
 import { View } from "@react-three/drei";

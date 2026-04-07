@@ -18,7 +18,6 @@ export default async function HomePage() {
             <ArticleHero posts={posts.docs} />
           </Suspense>
         </div>
-        <StationHideawayHero />
       </div>
     </RPage>
   );

@@ -39,7 +39,8 @@ import {
   animate,
   AnimatePresence,
   useMotionValue,
-  useMotionValueEvent
+  useMotionValueEvent,
+  useScroll
 } from "motion/react";
 import { useTransitionState } from "next-transition-router";
 
@@ -50,6 +51,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useEffectEvent,
   useId,
   useLayoutEffect,
   useMemo,
@@ -93,7 +95,30 @@ const Article = ({
 }: {
   post: SingleArticle;
 }) => {
-  return <ReadInternal post={{ id, slug, author, ...rest }} />;
+  return (
+    <div
+      className={
+        "rp_story z-120 mb-[15vh] w-screen bg-faded-white pb-[20px] leading-[1.28] dark:bg-faded-black"
+      }
+      data-themed="background-color,color"
+    >
+      <div
+        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-0 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground/20 bg-faded-white dark:bg-faded-black"
+        style={{
+          borderImage: "initial"
+        }}
+      />
+      <ReadInternal post={{ id, slug, author, ...rest }} />
+      <div
+        className="relative top-0 z-100 mt-0 -mb-[15vh] flex h-[16vh] w-screen items-center justify-center"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, oklch(from var(--faded-bg) l c h/1) 22%, oklch(from var(--faded-bg) l c h/0.75) 40%, oklch(from var(--faded-bg) l c h/0.5) 50%, oklch(from var(--faded-bg) l c h/0.15) 65%, oklch(from var(--faded-bg) l c h/0.05) 72%, oklch(from var(--faded-bg) l c h/0.001) 96%)`
+        }}
+      >
+        <div className="absolute top-0 left-0 z-50 h-px w-screen bg-linear-to-r from-muted-faded-foreground/15 from-10% via-muted-faded-foreground/75 via-50% to-muted-faded-foreground/15 to-90%" />
+      </div>
+    </div>
+  );
 };
 
 export type BaseGhostUserField = Extract<
@@ -147,6 +172,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const ranger = useRanger((r) => r.ranger);
   const setTargetContainer = useRanger((r) => r.setTargetContainer);
   const classApplier = useRanger((r) => r.classApplier);
+  const containerRef = useRef<HTMLDivElement>(null!);
+  const wrapperRef = useRef<HTMLDivElement>(null!);
   const { isReady } = useTransitionState();
   const visi = useFloater(useShallow((r) => r.open));
   const setVisi = useFloater((r) => r.setOpen);
@@ -173,35 +200,28 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   const [privateNodes, setPrivateNodes] = useState<
     Array<{ top: number; reference: string }>
   >([]);
+  const { scrollYProgress } = useScroll({
+    target: contentRef,
+    offset: ["start end", "end center"]
+  });
+  const { scrollYProgress: wrapperScroll } = useScroll({
+    target: wrapperRef,
+    offset: ["start end", "end center"]
+  });
   const shownDynamicIsland = useFloater((r) => r.shown);
-  const progress = useMotionValue(0);
-  const [isAtEnd, setAtEnd] = useState(progress.get() >= 0.9);
+  const [isAtEnd, setAtEnd] = useState(wrapperScroll.get() > 0.1);
   const lastRun = useRef(0);
   const lastVale = useRef(isAtEnd);
-  useMotionValueEvent(progress, "change", (cur) => {
+  useMotionValueEvent(wrapperScroll, "change", (cur) => {
     const now = performance.now();
-    if (now - lastRun.current < 100) {
+    if (now - lastRun.current < 60) {
       return;
     }
-    const prev = progress.getPrevious();
-    if (cur > 0.9) {
-      if (prev) {
-        const val = cur - prev > 0;
-        if (val !== lastVale.current) {
-          setAtEnd(val);
-          lastRun.current = now;
-          lastVale.current = val;
-        }
-      }
-    } else {
-      if (prev) {
-        const rr = prev <= 0.9;
-        if (rr !== lastVale.current) {
-          setAtEnd(rr);
-          lastRun.current = now;
-          lastVale.current = rr;
-        }
-      }
+    const val = cur < 1 && cur >= 0.1;
+    if (val !== lastVale.current) {
+      lastRun.current = now;
+      lastVale.current = val;
+      setAtEnd(val);
     }
   });
 
@@ -283,7 +303,6 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
     gcTime: 60 * 1000 * 5
   });
 
-  const containerRef = useRef<HTMLDivElement>(null!);
   const lastResize = useWindowResize({
     debounce: 100,
     detectHeightChange: true
@@ -319,22 +338,8 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   );
   const setFocusedHighlight = useHighlighter((r) => r.setFocusedHighlight);
 
-  const scrollYRef = useRef(0);
   const ratioRef = useRef(1);
-  const scrollCB = useCallback(
-    (lenis: Lenis) => {
-      if (!contentRef.current) return;
-      scrollYRef.current = lenis.scroll;
-      progress.set(lenis.progress);
-    },
-    [progress]
-  );
-  useEffect(() => {
-    scr && scr.on("scroll", scrollCB);
-    return () => {
-      scr && scr.off("scroll", scrollCB);
-    };
-  }, [scr, scrollCB]);
+
   const setPrivOpen = usePrivateNote((r) => r.setOpen);
   const setPrivView = usePrivateNote((r) => r.setView);
   const setPrivMemo = usePrivateNote((r) => r.setMemo);
@@ -591,7 +596,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       updateResponseNodes
     ]
   );
-  useEffect(() => {
+  const initializeReader = useEffectEvent(() => {
     const cont = contentRef.current;
     if (!cont) return;
     if (!isReady) return;
@@ -610,16 +615,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         e.removeEventListener("mouseleave", onExit);
       });
     };
-  }, [
-    highlights,
-    updaterC,
-    isReady,
-
-    containerMouseUp,
-    handleHighlightClick,
-    onEn,
-    onExit
-  ]);
+  });
+  useEffect(() => {
+    const resetter = initializeReader();
+    return () => {
+      resetter?.();
+    };
+  }, [highlights, isReady]);
 
   const addListeners = useCallback(
     (targets: HTMLElement[]) => {
@@ -898,9 +900,11 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
           return r ? [r] : [];
         });
 
-        // Clear stale store entries before applying fresh highlights for this document
-        clearHighlights();
-        if (ss.length > 0) addHighlighter(ss);
+        if (ss.length > 0) {
+          // Clear stale store entries before applying fresh highlights for this document
+          clearHighlights();
+          addHighlighter(ss);
+        }
       }
     }
   }, [
@@ -948,15 +952,9 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
   ]);
   return (
     <>
-      <div
-        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-30 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground opacity-20"
-        style={{
-          borderImage: "initial"
-        }}
-      />{" "}
       <div className="h-full w-full">
         <div className="z-3 h-full w-full">
-          <div className={"w-full"}>
+          <div className={"w-full"} ref={wrapperRef}>
             <article
               className="rp-article relative w-full"
               data-id={postId}
@@ -992,27 +990,31 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
               </div>
               <div
                 className={
-                  "mx-auto my-0 w-full max-w-(--maxContainerWidth) px-[40px] py-0 max-lg:px-[20px]"
+                  "mx-auto my-0 min-h-10 w-full max-w-(--maxContainerWidth) px-16 py-0 max-lg:px-8"
                 }
               >
-                <h4 className="pt-10 pb-5">Relevant Topics</h4>
-                <ul className="m-0 flex list-none flex-wrap gap-4 p-0">
-                  {post.tagged.map(({ slug, title }) => {
-                    return (
-                      <li key={slug}>
-                        <Link
-                          className={cn(
-                            `flex appearance-none items-center justify-center overflow-hidden border border-solid border-off-foreground px-[1.4rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] transition-[border-color,background-color,padding] duration-200 outline-none [text-decoration:none] md:px-[1.2rem]`,
-                            "rounded-[18px] px-4 py-1 text-[16px] font-medium"
-                          )}
-                          href={`/tagged/${slug}`}
-                        >
-                          {title}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
+                {post.tagged.length > 0 && (
+                  <>
+                    <h4 className="pt-10 pb-5">Relevant Topics</h4>
+                    <ul className="m-0 flex list-none flex-wrap gap-4 p-0">
+                      {post.tagged.map(({ slug, title }) => {
+                        return (
+                          <li key={slug}>
+                            <Link
+                              className={cn(
+                                `flex appearance-none items-center justify-center overflow-hidden border border-solid border-off-foreground px-[1.4rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] transition-[border-color,background-color,padding] duration-200 outline-none [text-decoration:none] md:px-[1.2rem]`,
+                                "rounded-[18px] px-4 py-1 text-[16px] font-medium"
+                              )}
+                              href={`/tagged/${slug}`}
+                            >
+                              {title}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
               </div>
               <div className="f-divider mt-[90px] mb-9 h-[1px] w-full min-w-[1px]" />
               <SignedFooter />
@@ -1037,7 +1039,10 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
           <div className="relative col-[2] justify-self-center">
             <AnimatePresence mode={"sync"} initial={true} propagate={true}>
               {shownDynamicIsland && isAtEnd && (
-                <DynamicBreadcrumb title={post.title} progress={progress}>
+                <DynamicBreadcrumb
+                  title={post.title}
+                  progress={scrollYProgress}
+                >
                   <ArticleBookmarkButton />
                 </DynamicBreadcrumb>
               )}

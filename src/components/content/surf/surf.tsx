@@ -14,22 +14,13 @@ import { randomNumber } from "@/utilities/randomNumber";
 import { Property } from "csstype";
 import { DateTime } from "luxon";
 import {
-  MotionValue,
   useMotionTemplate,
   useMotionValue,
   useSpring,
   useTransform
 } from "motion/react";
 import * as m from "motion/react-m";
-import {
-  CSSProperties,
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useState
-} from "react";
-import Color from "color";
+import { useCallback, useId, useMemo, useRef, useState } from "react";
 import { uuidv7 } from "uuidv7";
 import { useHumanTime } from "./useLocaleDate";
 
