@@ -12,6 +12,7 @@ import {
   RenderPass
 } from "postprocessing";
 import { useEffect, useRef } from "react";
+import type { Mesh } from "three";
 import {
   Color as ThreeColor,
   DoubleSide,
@@ -96,6 +97,7 @@ export function AmbientGradientMesh({
 }: AmbientGradientMeshProps) {
   useTexture.preload("/assets/seamless.png");
   const materialRef = useRef<any>(null);
+  const meshRef = useRef<Mesh>(null);
   const { gl, scene, camera, size } = useThree();
   const composerRef = useRef<EffectComposer | null>(null);
   const blurPassRef = useRef<KawaseBlurPass | null>(null);
@@ -225,9 +227,14 @@ export function AmbientGradientMesh({
   }, [playing]);
 
   // ── Render loop ─────────────────────────────────────────────────────────
-  // Priority 1 — runs first. We manually clear + render through EffectComposer.
+  // R3F calls gl.render(scene, camera) AFTER all useFrame callbacks.
+  // To prevent it from overwriting EffectComposer output, we:
+  //   1. Make mesh visible for our EffectComposer render
+  //   2. Render through EffectComposer (blur + grain → screen)
+  //   3. Hide mesh so R3F's auto-render has nothing to draw
   useFrame((_state, delta) => {
-    if (!materialRef.current || !composerRef.current) return;
+    if (!materialRef.current || !composerRef.current || !meshRef.current)
+      return;
     const m = materialRef.current.uniforms;
 
     // Accumulate time (delta is in seconds at ~60fps → ~0.016)
@@ -243,13 +250,15 @@ export function AmbientGradientMesh({
     m.u_fogProgress.value = fogProgress.get();
     m.u_audioLevel.value = audioLevel.get();
 
-    // Manual clear + EffectComposer render (replaces R3F's default render)
-    gl.clear();
+    // Show mesh → render through postprocessing → hide mesh
+    meshRef.current.visible = true;
     composerRef.current.render(delta);
+    meshRef.current.visible = false;
   }, 1);
 
   return (
-    <mesh>
+    // Start hidden — only visible during EffectComposer render in useFrame
+    <mesh ref={meshRef} visible={false} frustumCulled={false}>
       <planeGeometry args={[2, 2]} />
       {/* @ts-expect-error — dynamically extended shader material */}
       <ambientShader
