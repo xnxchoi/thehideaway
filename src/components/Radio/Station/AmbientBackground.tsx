@@ -23,11 +23,7 @@ type AmbientBackgroundProps = {
  * Standalone Canvas (not shared View) to enable full postprocessing pipeline:
  *   RenderPass → KawaseBlur (folds) → EffectPass (saccadé soft-light grain)
  *
- * Visual layers:
- * - Organic gradient blobs driven by noise texture (seamless.png)
- * - Kawase blur creates thick, fabric-like "folds" (à la leeroy.ca)
- * - Grid-based stepped grain with soft-light blending (filmic, not digital)
- * - Audio drives halation spread, not color brightness
+ * Uses orthographic camera + 2×2 plane so UVs map 1:1 to screen pixels.
  */
 export function AmbientBackground({
   fogProgress,
@@ -52,8 +48,9 @@ export function AmbientBackground({
     >
       <Canvas
         className="absolute inset-0"
+        orthographic
+        camera={{ zoom: 1, position: [0, 0, 1], near: 0.1, far: 10 }}
         gl={{ antialias: false, alpha: false, premultipliedAlpha: false }}
-        camera={{ position: [0, 0, 0.2], fov: 35, near: 0.01, far: 1000 }}
         frameloop="always"
         dpr={[1, 2]}
       >

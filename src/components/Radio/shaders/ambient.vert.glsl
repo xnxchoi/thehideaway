@@ -1,8 +1,8 @@
-// Minimal vertex shader — the ambient background is a flat full-screen quad.
-// All visual complexity lives in the fragment shader.
+// Full-screen quad vertex shader.
+// With orthographic camera + 2×2 plane, UVs map 1:1 to screen.
 varying vec2 v_uv;
 
 void main() {
     v_uv = uv;
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
