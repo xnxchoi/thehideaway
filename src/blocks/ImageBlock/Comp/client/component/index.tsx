@@ -93,6 +93,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useId,
   useMemo,
   useRef,
@@ -105,6 +106,7 @@ import { StoreApi, useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import { ImageResizer } from "./ImageResizer";
 import "./imageBlock.scss";
+import { boolean } from "@payloadcms/db-postgres/drizzle/pg-core";
 
 export type ElementProps = {
   className?: string;
@@ -1118,33 +1120,52 @@ const FrameGallery = () => {
       return res;
     }
   });
+  const lnis = useLenis();
+  const lenisRef = useRef<Lenis>(null);
+  const containerRef = useRef<HTMLDivElement>(null),
+    contentRef = useRef<HTMLDivElement>(null);
+  const createLenis = useEffectEvent(() => {
+    const content = contentRef.current,
+      wrapper = containerRef.current;
+    if (lnis && wrapper && content && lenisRef.current === null) {
+      const lenis = new Lenis({
+        content,
+        wrapper,
+        autoRaf: true
+      });
+      const onEnter = (e: MouseEvent) => {
+        lnis.stop();
+        lenis.start();
+      };
+      const onLeave = (e: MouseEvent) => {
+        lenis.stop();
+        lnis.start();
+      };
+      wrapper.addEventListener("mouseenter", onEnter);
+      wrapper.addEventListener("mouseleave", onLeave);
+      lenisRef.current = lenis;
+      return () => {
+        lenis.destroy();
+        lenisRef.current = null;
+        wrapper.removeEventListener("mouseenter", onEnter);
+        wrapper.removeEventListener("mouseleave", onLeave);
+      };
+    }
+  });
+  useEffect(() => {
+    const re = createLenis();
+    return () => {
+      re?.();
+    };
+  }, []);
   return (
     <m.div
-      className={
-        "relative flex h-full w-full flex-col items-start justify-center p-2.5 pb-3"
-      }
+      ref={containerRef}
+      className={"h-full w-full overflow-x-hidden overflow-y-auto pb-3"}
     >
-      <AnimatePresence mode="popLayout" initial={true}>
-        {isFetching ? (
-          <m.div
-            className="absolute inset-0 flex flex-col items-center justify-center"
-            initial={{
-              opacity: 0
-            }}
-            animate={{ opacity: 1 }}
-            exit={{
-              opacity: 0
-            }}
-            transition={{
-              type: "tween",
-              duration: 0.4,
-              ease: EASING.power3.inOut
-            }}
-          >
-            <Spinner />
-          </m.div>
-        ) : (
-          ((!isEnabled || isError) && (
+      <m.div ref={contentRef} className={"relative h-full w-full"}>
+        <AnimatePresence mode="popLayout" initial={true}>
+          {isFetching ? (
             <m.div
               className="absolute inset-0 flex flex-col items-center justify-center"
               initial={{
@@ -1160,16 +1181,36 @@ const FrameGallery = () => {
                 ease: EASING.power3.inOut
               }}
             >
-              <div />
+              <Spinner />
             </m.div>
-          )) ||
-          (collections &&
-            collections.length > 0 &&
-            collections.map((data) => (
-              <UnsplashRow key={data.id} collection={data} />
-            )))
-        )}
-      </AnimatePresence>
+          ) : (
+            ((!isEnabled || isError) && (
+              <m.div
+                className="absolute inset-0 flex flex-col items-center justify-center"
+                initial={{
+                  opacity: 0
+                }}
+                animate={{ opacity: 1 }}
+                exit={{
+                  opacity: 0
+                }}
+                transition={{
+                  type: "tween",
+                  duration: 0.4,
+                  ease: EASING.power3.inOut
+                }}
+              >
+                <div />
+              </m.div>
+            )) ||
+            (collections &&
+              collections.length > 0 &&
+              collections.map((data) => (
+                <UnsplashRow key={data.id} collection={data} />
+              )))
+          )}
+        </AnimatePresence>
+      </m.div>
     </m.div>
   );
 };
@@ -1342,13 +1383,19 @@ const UnsplashRow = ({ collection }: { collection: UnsplashCollectionDoc }) => {
   });
   return (
     <>
-      <div
+      <m.div
         className={
           "mt-2.5 mb-3 flex w-full px-3 text-sm leading-[120%] text-faded-foreground select-none"
         }
       >
         <div className={"flex self-center"}>
-          <Link href={`${collection.links.html}`} target={"_blank"}>
+          <Link
+            href={`${collection.links.html}`}
+            style={{
+              fontFamily: "var(--font-serif)"
+            }}
+            target={"_blank"}
+          >
             {collection.title}
           </Link>
         </div>
@@ -1376,7 +1423,7 @@ const UnsplashRow = ({ collection }: { collection: UnsplashCollectionDoc }) => {
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </m.div>
       <div className="flex w-full flex-wrap content-start bg-muted-faded-background/30 px-[12px] py-0">
         {isError ? (
           <>Fucl!</>

@@ -70,7 +70,11 @@ export const MentionComponent = ({ data, nodeKey }: MentionComponentProps) => {
     [select]
   );
 
-  const { isFetching, isLoading, data: mentionedData } = useQuery({
+  const {
+    isFetching,
+    isLoading,
+    data: mentionedData
+  } = useQuery({
     initialData: typeof data === "string" ? null : data,
     queryKey: [
       "mention",
@@ -186,7 +190,11 @@ export const MentionComponent = ({ data, nodeKey }: MentionComponentProps) => {
         onClick,
         COMMAND_PRIORITY_LOW
       ),
-      editor.registerCommand(KEY_DELETE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
+      editor.registerCommand(
+        KEY_DELETE_COMMAND,
+        onDelete,
+        COMMAND_PRIORITY_LOW
+      ),
       editor.registerCommand(
         KEY_BACKSPACE_COMMAND,
         onDelete,
@@ -227,26 +235,30 @@ export const MentionComponent = ({ data, nodeKey }: MentionComponentProps) => {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          ref={internalRef}
-          data-mention-data={JSON.stringify(mentionedData)}
-          data-mention-value={mentionedData.id}
-          role="button"
-          tabIndex={-1}
-          style={{
-            backgroundColor: "oklch(from var(--bleu-500) l c h / 0.12)",
-            borderColor: "oklch(from var(--bleu-500) l c h / 0.3)",
-            ...(isSelected
-              ? { outline: "1px solid oklch(from var(--bleu-500) l c h / 0.6)" }
-              : {})
-          }}
-          className="inline-flex cursor-pointer items-center gap-0.5 rounded-sm border px-1 font-mono text-[11px] text-foreground/80 transition-colors select-none"
-        >
-          <span className="opacity-50">@</span>
-          {mentionedData.name}
-        </span>
-      </TooltipTrigger>
+      <TooltipTrigger
+        render={() => (
+          <span
+            ref={internalRef}
+            data-mention-data={JSON.stringify(mentionedData)}
+            data-mention-value={mentionedData.id}
+            role="button"
+            tabIndex={-1}
+            style={{
+              backgroundColor: "oklch(from var(--bleu-500) l c h / 0.12)",
+              borderColor: "oklch(from var(--bleu-500) l c h / 0.3)",
+              ...(isSelected
+                ? {
+                    outline: "1px solid oklch(from var(--bleu-500) l c h / 0.6)"
+                  }
+                : {})
+            }}
+            className="inline-flex cursor-pointer items-center gap-0.5 rounded-sm border px-1 font-mono text-[11px] text-foreground/80 transition-colors select-none"
+          >
+            <span className="opacity-50">@</span>
+            {mentionedData.name}
+          </span>
+        )}
+      />
       <TooltipContent side="top" className="font-mono text-[10px]">
         @{mentionedData.slug ?? mentionedData.name}
       </TooltipContent>

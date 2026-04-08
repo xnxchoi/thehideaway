@@ -7,6 +7,9 @@
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import "tw-animate-css";
 
+@source "../../src/payload";
+@source "../../src/blocks";
+@source  "../../src/app/(payload)";
 @source not "../../src/app/(frontend)";
 @source not "../../src/components";
 @source not "../../src/providers";
@@ -719,6 +722,15 @@ html {
   --font-siegfried: var(--font-siegfried);
 }
 @theme inline {
+    --color-faded-background: var(--faded-background);
+    --color-faded-foreground: var(--faded-foreground);
+    --color-muted-faded-background: var(--muted-faded-background);
+    --color-muted-faded-foreground: var(--muted-faded-foreground);
+    --color-muted-off-background: var(--muted-off-background);
+    --color-muted-off-foreground: var(--muted-off-foreground);
+    --color-off-background: var(--off-background);
+    --color-off-foreground: var(--off-foreground);
+
     --color-edge-black: var(--edge-black);
     --color-rosso-corsa: var(--rosso-corsa);
     --color-pastel-sky-blue: var(--pastel-sky-blue);

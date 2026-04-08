@@ -44,8 +44,8 @@ export function VGradient() {
   );
 }
 
+useTexture.preload("/assets/seamless.png");
 function GradientInner() {
-  useTexture.preload("/assets/seamless.png");
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const noiseTexture = useTexture(
     {

@@ -1,86 +1,90 @@
-import {
-	INSERT_RP_IMAGE_COMMAND
-} from "@/payload/fields/Article/Cover/rp-image/client/drawer/commands";
-import {$createRPImageNode} from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
-import {
-	RP_InternalImageNodeData
-} from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
-import {ImageCollectionSlug} from "@/types/ImageCollections";
-import {LexicalEditor} from "@payloadcms/richtext-lexical/lexical";
-import {$getNodeByKey} from "lexical";
+import { INSERT_RP_IMAGE_COMMAND } from "@/payload/fields/Article/Cover/rp-image/client/drawer/commands";
+import { $createRPImageNode } from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
+import { RP_InternalImageNodeData } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
+import { ImageCollectionSlug } from "@/types/collections/image-collections";
+import { LexicalEditor } from "@payloadcms/richtext-lexical/lexical";
+import { $getNodeByKey } from "lexical";
 
 export const insertRPImage = <T extends ImageCollectionSlug>({
-	                                                             editor,
-	                                                             relationTo,
-	                                                             replaceNodeKey,
-	                                                             value, meta
-                                                             }: {
-	editor: LexicalEditor
-	relationTo: T
-	replaceNodeKey: null | string
+  editor,
+  relationTo,
+  replaceNodeKey,
+  value,
+  meta
+}: {
+  editor: LexicalEditor;
+  relationTo: T;
+  replaceNodeKey: null | string;
+} & (
+  | {
+      value: string;
+      meta?: RP_InternalImageNodeData;
+    }
+  | { value?: undefined; meta?: undefined }
+)) => {
+  if (!replaceNodeKey) {
+    if (value) {
+      if (!!meta) {
+        editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
+          ...meta,
+          span: 100,
+          width: meta.width || 100,
+          height: meta.height || 100,
+          alt: meta.alt || "",
+          caption: meta.caption || "",
+          darkmode: meta.darkmode || false,
 
-} & ({
-	value: string;
-	meta?: RP_InternalImageNodeData;
-} | { value?: undefined; meta?: undefined; })) => {
-	if (!replaceNodeKey) {
-		if (value) {
-			if (!!meta) {
-				editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
-					...meta,
-					span: 100,
-					width: meta.width || 100,
-					height: meta.height || 100,
-					alt: meta.alt || "",
-					caption: meta.caption || "",
-					darkmode: meta.darkmode || false,
-
-					src: meta.src as string,
-					relationTo,
-					placeholder: false,
-					value,
-				})
-			} else {
-				editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
-					relationTo,
-					value,
-					placeholder: false,
-				})
-			}
-		}
-	} else {
-		if (value) {
-			editor.update(() => {
-				const node = $getNodeByKey(replaceNodeKey)
-				if (node) {
-					node.replace($createRPImageNode({
-						data: {
-							...(meta && meta || {})
-							, relationTo,
-							value,
-						},
-					}))
-				}
-			})
-		} else {
-			editor.update(() => {
-					const node = $getNodeByKey(replaceNodeKey)
-					if (node) {
-						node.replace($createRPImageNode({
-							data: {
-								relationTo: relationTo,
-								width: 0,
-								height: 0, darkmode: false,
-								alt: "", span: 100,
-								placeholder: true,
-							}
-						}))
-					}
-				}
-			)
-		}
-	}
-}
+          src: meta.src as string,
+          relationTo,
+          placeholder: false,
+          value
+        });
+      } else {
+        editor.dispatchCommand(INSERT_RP_IMAGE_COMMAND, {
+          relationTo,
+          value,
+          placeholder: false
+        });
+      }
+    }
+  } else {
+    if (value) {
+      editor.update(() => {
+        const node = $getNodeByKey(replaceNodeKey);
+        if (node) {
+          node.replace(
+            $createRPImageNode({
+              data: {
+                ...((meta && meta) || {}),
+                relationTo,
+                value
+              }
+            })
+          );
+        }
+      });
+    } else {
+      editor.update(() => {
+        const node = $getNodeByKey(replaceNodeKey);
+        if (node) {
+          node.replace(
+            $createRPImageNode({
+              data: {
+                relationTo: relationTo,
+                width: 0,
+                height: 0,
+                darkmode: false,
+                alt: "",
+                span: 100,
+                placeholder: true
+              }
+            })
+          );
+        }
+      });
+    }
+  }
+};
 //
 // export const ImageTab = () => {
 // 	const [editor] = useLexicalComposerContext()

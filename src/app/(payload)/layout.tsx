@@ -11,9 +11,10 @@ import React, { Suspense } from "react";
 
 import { importMap } from "./vault/importMap";
 import { cn } from "@/lib/utils";
-import { Blase, NarcissianNectare, Suit, Dots } from "fonts";
+import { Blase, NarcissianNectare, Suit, Dots, Siegfried, Saint } from "fonts";
 import { GeistMono } from "geist/font/mono";
 import { InitTheme } from "@/providers/Theme/InitTheme";
+import { GeistSans } from "geist/font/sans";
 
 type Args = {
   children: React.ReactNode;
@@ -34,6 +35,18 @@ const Layout = ({ children }: Args) => (
       config={config}
       importMap={importMap}
       serverFunction={serverFunction}
+      htmlProps={{
+        className: cn(
+          Siegfried.variable,
+          GeistSans.variable,
+          GeistMono.variable,
+          Blase.variable,
+          NarcissianNectare.variable,
+          Suit.variable,
+          Dots.variable,
+          Saint.variable
+        )
+      }}
     >
       <div
         className={cn(

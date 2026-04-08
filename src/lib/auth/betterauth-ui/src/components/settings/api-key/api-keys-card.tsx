@@ -28,14 +28,14 @@ export function ApiKeysCard({
 
   localization = { ...contextLocalization, ...localization };
 
-  const { data: apiKeys, isPending, refetch } = useListApiKeys();
+  const { data, isPending, refetch } = useListApiKeys();
 
   // Filter API keys by organizationId
   const filteredApiKeys = useMemo(() => {
-    return apiKeys?.filter(
+    return data?.apiKeys?.filter(
       (apiKey) => organizationId === apiKey.metadata?.organizationId
     );
-  }, [apiKeys, organizationId]);
+  }, [data, organizationId]);
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [displayDialogOpen, setDisplayDialogOpen] = useState(false);

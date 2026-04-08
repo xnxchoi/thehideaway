@@ -449,7 +449,7 @@ export const MenuMediaPreview = ({
     <div
       ref={previewRef}
       className={cn(
-        "menu__preview-preview [visibility:hidden] z-[1] data-active:visible",
+        "menu__preview-preview invisible z-[1] data-active:visible",
         className
       )}
       data-active={navIsOpen}
