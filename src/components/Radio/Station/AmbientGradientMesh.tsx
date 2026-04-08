@@ -29,25 +29,31 @@ import grainShader from "../shaders/grain.glsl";
 // Brand DNA: rosso corsa red / orange / teal
 // Target: 70s/80s magazine — faded, pop-art, luscious
 //
-// Bases (color1-2): near-bg tones, barely perceptible shift — atmospheric mood
-// Accents (color3-4): recognizable hue that reads through Kawase blur
+// KEY INSIGHT from leeroy.ca: blob colors are MODERATELY bright even in dark
+// mode. The Kawase blur averaging is what creates subtlety — not low-luminance
+// colors. If blob colors are too close to BG, blur smears them to nothing.
+//
+// Leeroy ref luminances: bg ~6%, bases ~15-26%, accents ~36-56%.
+// Our palette follows the same structure.
 //
 // ─── Dark ─────────────────────────────────────────────────────────────────
-const DARK_BG = new ThreeColor().setStyle("#080a0f");
-const DARK_COLOR1 = new ThreeColor().setStyle("#1a1318");
-const DARK_COLOR2 = new ThreeColor().setStyle("#0f1520");
-const DARK_COLOR3 = new ThreeColor().setStyle("#3d1a1a");
-const DARK_COLOR4 = new ThreeColor().setStyle("#0f3040");
+const DARK_BG = new ThreeColor().setStyle("#080a0f");     // near-black ~4%
+const DARK_COLOR1 = new ThreeColor().setStyle("#2a2030"); // base 1: dark plum ~14%
+const DARK_COLOR2 = new ThreeColor().setStyle("#18253a"); // base 2: dark navy ~14%
+const DARK_COLOR3 = new ThreeColor().setStyle("#8c3535"); // accent 1: ember red ~28%
+const DARK_COLOR4 = new ThreeColor().setStyle("#1a6888"); // accent 2: teal ~32%
 //
 // ─── Light ────────────────────────────────────────────────────────────────
-const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed");
-const LIGHT_COLOR1 = new ThreeColor().setStyle("#ece2d4");
-const LIGHT_COLOR2 = new ThreeColor().setStyle("#e2dbe2");
-const LIGHT_COLOR3 = new ThreeColor().setStyle("#2d8a8c");
-const LIGHT_COLOR4 = new ThreeColor().setStyle("#d4652a");
+const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed");    // warm parchment
+const LIGHT_COLOR1 = new ThreeColor().setStyle("#e0d2c0"); // base 1: sandy cream
+const LIGHT_COLOR2 = new ThreeColor().setStyle("#d5cdd8"); // base 2: mauve-cream
+const LIGHT_COLOR3 = new ThreeColor().setStyle("#2d8a8c"); // accent 1: retro teal
+const LIGHT_COLOR4 = new ThreeColor().setStyle("#d4652a"); // accent 2: burnt orange
 
-const BLOB_INTENSITY_PLAYING = 0.30;
-const BLOB_INTENSITY_STOPPED = 0.42;
+// Blob intensity: how strongly colors mix against bg.
+// The blur handles subtlety — don't fight it with low intensity.
+const BLOB_INTENSITY_PLAYING = 0.50;
+const BLOB_INTENSITY_STOPPED = 0.65;
 
 // ── Shader material defined at MODULE SCOPE — created once, never recreated ──
 // Default uniform values don't matter; everything is set in useFrame/useEffect.
@@ -119,8 +125,10 @@ export function AmbientGradientMesh({
     // Passes
     const renderPass = new RenderPass(scene, camera);
 
-    const blurPass = new KawaseBlurPass({ kernelSize: 3 });
-    blurPass.scale = 3;
+    // Start with moderate blur — kernelSize MEDIUM (2), scale 2.
+    // Can increase later once gradient colors are confirmed visible.
+    const blurPass = new KawaseBlurPass({ kernelSize: 2 });
+    blurPass.scale = 2;
     blurPassRef.current = blurPass;
 
     const grainEffect = new Effect("grain", grainShader, {

@@ -48,7 +48,9 @@ float blob(vec2 uv, vec2 center, float radius, float softness) {
 
 void main() {
     vec2 uv = v_uv;
-    float t = u_time * 0.04; // very slow drift — sub-perceptual movement
+    // Time scale: ~0.15 gives visible drift over 5-10 seconds
+    // (0.04 was invisible — noise scrolled only 6% in 10 seconds)
+    float t = u_time * 0.15;
 
     // Aspect-correct coordinates centered at origin
     vec2 nUv = (uv - 0.5) * 2.0;
