@@ -20,6 +20,7 @@ import type {
 	RichTextField,
 	TextFieldSingleValidation
 } from "payload";
+import { MentionFeature } from "@/payload/Lexical/Features/Mentions";
 
 const customizedFeatureKeys = [
 	"heading",
@@ -93,7 +94,7 @@ export const RichContent = (): RichTextField => {
 						}
 					}),
 					ContentHandOffFeature(),
-
+          MentionFeature()
 				];
 			}
 		}),

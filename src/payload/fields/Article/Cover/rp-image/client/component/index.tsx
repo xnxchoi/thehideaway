@@ -50,7 +50,6 @@ import {
 import { MotionNodeDragHandlers } from "motion";
 import { MotionValue, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
-import { nanoid } from "nanoid";
 import {
   createContext,
   ReactNode,
@@ -61,6 +60,7 @@ import {
   useRef,
   useState
 } from "react";
+import { uuidv7 } from "uuidv7";
 
 export type ElementProps = {
   className?: string;
@@ -195,13 +195,12 @@ const RP_ImageNodeR = ({
     );
   }
   const span = useRPImageNode((r) => r.span);
-  const uuid=useRPImageNode((r) => r.uuid);
   const { user } = useAuth();
   // const {data, isError, isFetching,} = useRPImageNodeQuery({
   const { data, isFetching, isError, isSuccess } = useQueryForImageNode({
     value,
     relationTo,
-
+    uuid: uuidv7()
   });
   const isResizing = useRPImageNode((r) => r.isResizing);
   const theme = useTheme((r) => r.theme);
