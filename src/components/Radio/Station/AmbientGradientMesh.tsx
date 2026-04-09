@@ -38,22 +38,22 @@ import grainShader from "../shaders/grain.glsl";
 // Our palette follows the same structure.
 //
 // ─── Dark ─────────────────────────────────────────────────────────────────
-const DARK_BG = new ThreeColor().setStyle("#080a0f");     // near-black ~4%
-const DARK_COLOR1 = new ThreeColor().setStyle("#2a2030"); // base 1: dark plum ~14%
-const DARK_COLOR2 = new ThreeColor().setStyle("#18253a"); // base 2: dark navy ~14%
-const DARK_COLOR3 = new ThreeColor().setStyle("#8c3535"); // accent 1: ember red ~28%
-const DARK_COLOR4 = new ThreeColor().setStyle("#1a6888"); // accent 2: teal ~32%
+const DARK_BG = new ThreeColor().setStyle("#080a0f"); // near-black ~4%
+const DARK_COLOR1 = new ThreeColor().set("#2a2030"); // base 1: dark plum ~14%
+const DARK_COLOR2 = new ThreeColor().set("#18253a"); // base 2: dark navy ~14%
+const DARK_COLOR3 = new ThreeColor().set("#8c3535"); // accent 1: ember red ~28%
+const DARK_COLOR4 = new ThreeColor().set("#1a6888"); // accent 2: teal ~32%
 //
 // ─── Light ────────────────────────────────────────────────────────────────
-const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed");    // warm parchment
-const LIGHT_COLOR1 = new ThreeColor().setStyle("#e0d2c0"); // base 1: sandy cream
-const LIGHT_COLOR2 = new ThreeColor().setStyle("#d5cdd8"); // base 2: mauve-cream
-const LIGHT_COLOR3 = new ThreeColor().setStyle("#2d8a8c"); // accent 1: retro teal
-const LIGHT_COLOR4 = new ThreeColor().setStyle("#d4652a"); // accent 2: burnt orange
+const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed"); // warm parchment
+const LIGHT_COLOR1 = new ThreeColor().set("#e0d2c0"); // base 1: sandy cream
+const LIGHT_COLOR2 = new ThreeColor().set("#d5cdd8"); // base 2: mauve-cream
+const LIGHT_COLOR3 = new ThreeColor().set("#2d8a8c"); // accent 1: retro teal
+const LIGHT_COLOR4 = new ThreeColor().set("#d4652a"); // accent 2: burnt orange
 
 // Blob intensity: how strongly colors mix against bg.
 // The blur handles subtlety — don't fight it with low intensity.
-const BLOB_INTENSITY_PLAYING = 0.50;
+const BLOB_INTENSITY_PLAYING = 0.5;
 const BLOB_INTENSITY_STOPPED = 0.65;
 
 // ── Shader material defined at MODULE SCOPE — created once, never recreated ──
@@ -96,7 +96,7 @@ export function AmbientGradientMesh({
   playing
 }: AmbientGradientMeshProps) {
   useTexture.preload("/assets/seamless.png");
-  const materialRef = useRef<any>(null);
+  const materialRef = useRef<InstanceType<typeof AmbientShader>>(null);
   const meshRef = useRef<Mesh>(null);
   const { gl, scene, camera, size } = useThree();
   const composerRef = useRef<EffectComposer | null>(null);
@@ -179,8 +179,8 @@ export function AmbientGradientMesh({
   useEffect(() => {
     if (!materialRef.current) return;
     const m = materialRef.current;
-    m.uniforms.u_noiseTexture.value = noiseTexture;
-    m.uniforms.u_resolution.value.set(size.width, size.height, 1, 1);
+    m.u_noiseTexture = noiseTexture;
+    m.u_resolution.set(size.width, size.height, 1, 1);
 
     // Set initial theme colors
     const bg = isDark ? DARK_BG : LIGHT_BG;
@@ -188,34 +188,29 @@ export function AmbientGradientMesh({
     const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
     const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
     const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
-    m.uniforms.u_bgColor.value.copy(bg);
-    m.uniforms.u_color1.value.copy(c1);
-    m.uniforms.u_color2.value.copy(c2);
-    m.uniforms.u_color3.value.copy(c3);
-    m.uniforms.u_color4.value.copy(c4);
+    m.u_bgColor.copy(bg);
+    m.u_color1.copy(c1);
+    m.u_color2.copy(c2);
+    m.u_color3.copy(c3);
+    m.u_color4.copy(c4);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noiseTexture]);
 
   // ── Update colors when theme changes ───────────────────────────────────
   useEffect(() => {
     if (!materialRef.current) return;
-    const m = materialRef.current.uniforms;
-    m.u_bgColor.value.copy(isDark ? DARK_BG : LIGHT_BG);
-    m.u_color1.value.copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1);
-    m.u_color2.value.copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2);
-    m.u_color3.value.copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3);
-    m.u_color4.value.copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4);
+    const m = materialRef.current;
+    m.u_bgColor.copy(isDark ? DARK_BG : LIGHT_BG);
+    m.u_color1.copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1);
+    m.u_color2.copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2);
+    m.u_color3.copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3);
+    m.u_color4.copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4);
   }, [isDark]);
 
   // ── Update resolution on resize ────────────────────────────────────────
   useEffect(() => {
     if (!materialRef.current) return;
-    materialRef.current.uniforms.u_resolution.value.set(
-      size.width,
-      size.height,
-      1,
-      1
-    );
+    materialRef.current.u_resolution.set(size.width, size.height, 1, 1);
   }, [size]);
 
   // Smoothly transition blob intensity
@@ -235,20 +230,20 @@ export function AmbientGradientMesh({
   useFrame((_state, delta) => {
     if (!materialRef.current || !composerRef.current || !meshRef.current)
       return;
-    const m = materialRef.current.uniforms;
+    const m = materialRef.current;
 
     // Accumulate time (delta is in seconds at ~60fps → ~0.016)
-    m.u_time.value += delta;
+    m.u_time += delta;
 
     // Smoothly lerp blob intensity
-    const current = m.u_blobIntensity.value;
+    const current = m.u_blobIntensity;
     const target = targetBlobIntensity.current;
-    m.u_blobIntensity.value += (target - current) * Math.min(delta * 2.0, 0.1);
+    m.u_blobIntensity += (target - current) * Math.min(delta * 2.0, 0.1);
 
     // Read reactive MotionValues
-    m.u_opacity.value = opacity.get();
-    m.u_fogProgress.value = fogProgress.get();
-    m.u_audioLevel.value = audioLevel.get();
+    m.u_opacity = opacity.get();
+    m.u_fogProgress = fogProgress.get();
+    m.u_audioLevel = audioLevel.get();
 
     // Show mesh → render through postprocessing → hide mesh
     meshRef.current.visible = true;

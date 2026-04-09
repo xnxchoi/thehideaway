@@ -1,7 +1,14 @@
 "use client";
 
+import { TE } from "@/constants/animations";
 import { Canvas } from "@react-three/fiber";
-import { MotionValue, animate, useMotionValue } from "motion/react";
+import {
+  MotionValue,
+  animate,
+  useMotionValue,
+  useTransform,
+  useSpring
+} from "motion/react";
 import { useEffect } from "react";
 import { useRadioStore } from "@/providers/RadioProvider";
 import { useShallow } from "zustand/shallow";
@@ -30,16 +37,19 @@ export function AmbientBackground({
   audioLevel
 }: AmbientBackgroundProps) {
   const playing = useRadioStore(useShallow((s) => s.playing));
+  const playState = useMotionValue(playing);
+  useEffect(() => {
+    playState.set(playing);
+  }, [playState, playing]);
   const theme = useTheme((s) => s.theme);
   const isDark = theme === "dark";
-  const opacity = useMotionValue(playing ? OPACITY_PLAYING : OPACITY_STOPPED);
-
-  useEffect(() => {
-    animate(opacity, playing ? OPACITY_PLAYING : OPACITY_STOPPED, {
-      duration: 1.2,
-      ease: [0.4, 0, 0.2, 1]
-    });
-  }, [playing, opacity]);
+  const opacit = useTransform(() =>
+    playState.get() ? OPACITY_PLAYING : OPACITY_STOPPED + 0.01
+  );
+  const opacity = useSpring(opacit, {
+    ...TE.power3.out,
+    duration: 1.2
+  });
 
   return (
     <div
