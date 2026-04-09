@@ -11,7 +11,8 @@ import {
   KawaseBlurPass,
   RenderPass
 } from "postprocessing";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
+import type { Mesh } from "three";
 import {
   Color as ThreeColor,
   DoubleSide,
@@ -29,32 +30,55 @@ import grainShader from "../shaders/grain.glsl";
 // Brand DNA: rosso corsa red / orange / teal
 // Target: 70s/80s magazine — faded, pop-art, luscious
 //
-// Bases (color1-2): near-bg tones, barely perceptible shift — atmospheric mood
-// Accents (color3-4): recognizable hue that reads through Kawase blur
+// KEY INSIGHT from leeroy.ca: blob colors are MODERATELY bright even in dark
+// mode. The Kawase blur averaging is what creates subtlety — not low-luminance
+// colors. If blob colors are too close to BG, blur smears them to nothing.
+//
+// Leeroy ref luminances: bg ~6%, bases ~15-26%, accents ~36-56%.
+// Our palette follows the same structure.
 //
 // ─── Dark ─────────────────────────────────────────────────────────────────
-// FC Porto mourning + brand red/teal as deep atmospheric tint
-// Like a dark room lit by a distant fire, with teal moonlight at the edges
-const DARK_BG = new ThreeColor().setStyle("#080a0f"); // near-black, cold undertone
-const DARK_COLOR1 = new ThreeColor().setStyle("#1a1318"); // base 1: dark burgundy-coal
-const DARK_COLOR2 = new ThreeColor().setStyle("#0f1520"); // base 2: deep blue-black
-const DARK_COLOR3 = new ThreeColor().setStyle("#3d1a1a"); // accent 1: deep ember red
-const DARK_COLOR4 = new ThreeColor().setStyle("#0f3040"); // accent 2: deep ocean teal
+const DARK_BG = new ThreeColor().setStyle("#080a0f");     // near-black ~4%
+const DARK_COLOR1 = new ThreeColor().setStyle("#2a2030"); // base 1: dark plum ~14%
+const DARK_COLOR2 = new ThreeColor().setStyle("#18253a"); // base 2: dark navy ~14%
+const DARK_COLOR3 = new ThreeColor().setStyle("#8c3535"); // accent 1: ember red ~28%
+const DARK_COLOR4 = new ThreeColor().setStyle("#1a6888"); // accent 2: teal ~32%
 //
 // ─── Light ────────────────────────────────────────────────────────────────
-// 70s sun-faded magazine: warm cream paper, watercolor washes of teal + orange
-// Bases are tinted cream, accents are the "ink" colors
-const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed"); // warm parchment
-const LIGHT_COLOR1 = new ThreeColor().setStyle("#ece2d4"); // base 1: sandy cream
-const LIGHT_COLOR2 = new ThreeColor().setStyle("#e2dbe2"); // base 2: cool mauve-cream
+const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed");    // warm parchment
+const LIGHT_COLOR1 = new ThreeColor().setStyle("#e0d2c0"); // base 1: sandy cream
+const LIGHT_COLOR2 = new ThreeColor().setStyle("#d5cdd8"); // base 2: mauve-cream
 const LIGHT_COLOR3 = new ThreeColor().setStyle("#2d8a8c"); // accent 1: retro teal
 const LIGHT_COLOR4 = new ThreeColor().setStyle("#d4652a"); // accent 2: burnt orange
 
-// Blob intensity: how visible the gradient blobs are
-// Tuned for larger blobs + wider noise modulation + Kawase blur at scale 3
-// Playing: subdued background. Stopped: blobs are atmospheric but noticeable.
-const BLOB_INTENSITY_PLAYING = 0.30;
-const BLOB_INTENSITY_STOPPED = 0.42;
+// Blob intensity: how strongly colors mix against bg.
+// The blur handles subtlety — don't fight it with low intensity.
+const BLOB_INTENSITY_PLAYING = 0.50;
+const BLOB_INTENSITY_STOPPED = 0.65;
+
+// ── Shader material defined at MODULE SCOPE — created once, never recreated ──
+// Default uniform values don't matter; everything is set in useFrame/useEffect.
+const AmbientShader = shaderMaterial(
+  {
+    u_time: 0,
+    u_resolution: new Vector4(1, 1, 1, 1),
+    u_bgColor: new ThreeColor(),
+    u_color1: new ThreeColor(),
+    u_color2: new ThreeColor(),
+    u_color3: new ThreeColor(),
+    u_color4: new ThreeColor(),
+    u_audioLevel: 0.0,
+    u_fogProgress: 0.0,
+    u_opacity: 1.0,
+    u_blobIntensity: BLOB_INTENSITY_STOPPED,
+    u_noiseTexture: null as unknown as Texture
+  },
+  vertexShader,
+  fragmentShader
+);
+
+// Register once at module level
+extend({ AmbientShader });
 
 type AmbientGradientMeshProps = {
   opacity: MotionValue<number>;
@@ -73,7 +97,15 @@ export function AmbientGradientMesh({
 }: AmbientGradientMeshProps) {
   useTexture.preload("/assets/seamless.png");
   const materialRef = useRef<any>(null);
+  const meshRef = useRef<Mesh>(null);
   const { gl, scene, camera, size } = useThree();
+  const composerRef = useRef<EffectComposer | null>(null);
+  const blurPassRef = useRef<KawaseBlurPass | null>(null);
+  const grainUniformsRef = useRef<{
+    uXCount: Uniform;
+    uYCount: Uniform;
+    uIntensity: Uniform;
+  } | null>(null);
 
   const noiseTexture = useTexture(
     "/assets/seamless.png",
@@ -82,24 +114,11 @@ export function AmbientGradientMesh({
     }
   );
 
-  // ── Postprocessing pipeline ─────────────────────────────────────────────
-  // RenderPass → KawaseBlur (thick folds) → EffectPass (saccadé grain)
-  const composerRef = useRef<EffectComposer>(null!);
-  const grainUniformsRef = useRef<{
-    uXCount: Uniform;
-    uYCount: Uniform;
-    uIntensity: Uniform;
-  }>(null!);
-
-  useMemo(() => {
-    // Dispose previous composer if it exists (theme change, etc.)
-    if (composerRef.current) {
-      composerRef.current.dispose();
-    }
-
+  // ── Build postprocessing pipeline ONCE via useEffect ────────────────────
+  useEffect(() => {
     const pixelRatio = gl.getPixelRatio();
 
-    // Grain uniforms — grid-based saccadé grain from leeroy.ca
+    // Grain uniforms
     const uXCount = new Uniform(size.width / pixelRatio);
     const uYCount = new Uniform(size.height / pixelRatio);
     const uIntensity = new Uniform(1.29);
@@ -108,10 +127,11 @@ export function AmbientGradientMesh({
     // Passes
     const renderPass = new RenderPass(scene, camera);
 
-    // Kawase blur — higher scale = thicker fold compression at blob edges
-    // Leeroy uses scale 2 for normal, 5 for menu. We use 3 for pronounced folds.
-    const blurPass = new KawaseBlurPass({ kernelSize: 3 });
-    blurPass.scale = 3;
+    // Start with moderate blur — kernelSize MEDIUM (2), scale 2.
+    // Can increase later once gradient colors are confirmed visible.
+    const blurPass = new KawaseBlurPass({ kernelSize: 2 });
+    blurPass.scale = 2;
+    blurPassRef.current = blurPass;
 
     const grainEffect = new Effect("grain", grainShader, {
       blendFunction: BlendFunction.NORMAL,
@@ -127,11 +147,22 @@ export function AmbientGradientMesh({
     composer.addPass(renderPass);
     composer.addPass(blurPass);
     composer.addPass(effectPass);
-
+    composer.setSize(size.width, size.height);
     composerRef.current = composer;
-  }, [gl, scene, camera]);
 
-  // Sync composer + grain uniforms on resize
+    // Disable R3F auto-clear so our EffectComposer has full control
+    gl.autoClear = false;
+
+    return () => {
+      composer.dispose();
+      composerRef.current = null;
+      gl.autoClear = true;
+    };
+    // gl, scene, camera are stable R3F refs — this runs once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Sync sizes on resize ───────────────────────────────────────────────
   useEffect(() => {
     if (!composerRef.current) return;
     composerRef.current.setSize(size.width, size.height);
@@ -144,70 +175,28 @@ export function AmbientGradientMesh({
     }
   }, [size, gl]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      composerRef.current?.dispose();
-    };
-  }, []);
-
-  // ── Shader material ─────────────────────────────────────────────────────
-  const u_resolution = useMemo(() => new Vector4(1, 1, 1, 1), []);
-
-  const bgColor = useMemo(
-    () => new ThreeColor().copy(isDark ? DARK_BG : LIGHT_BG),
-    [isDark]
-  );
-  const color1 = useMemo(
-    () => new ThreeColor().copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1),
-    [isDark]
-  );
-  const color2 = useMemo(
-    () => new ThreeColor().copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2),
-    [isDark]
-  );
-  const color3 = useMemo(
-    () => new ThreeColor().copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3),
-    [isDark]
-  );
-  const color4 = useMemo(
-    () => new ThreeColor().copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4),
-    [isDark]
-  );
-
-  const uniforms = useMemo(
-    () => ({
-      u_time: 0,
-      u_resolution,
-      u_bgColor: bgColor,
-      u_color1: color1,
-      u_color2: color2,
-      u_color3: color3,
-      u_color4: color4,
-      u_audioLevel: 0.0,
-      u_fogProgress: 0.0,
-      u_opacity: 1.0,
-      u_blobIntensity: BLOB_INTENSITY_STOPPED,
-      u_noiseTexture: noiseTexture
-    }),
-    [u_resolution, bgColor, color1, color2, color3, color4, noiseTexture]
-  );
-
-  const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
-  extend({ AmbientShader });
-
-  // Sync resolution
+  // ── Set initial colors + texture on material (runs once after mount) ───
   useEffect(() => {
     if (!materialRef.current) return;
-    materialRef.current.uniforms.u_resolution.value.set(
-      size.width,
-      size.height,
-      1,
-      1
-    );
-  }, [size]);
+    const m = materialRef.current;
+    m.uniforms.u_noiseTexture.value = noiseTexture;
+    m.uniforms.u_resolution.value.set(size.width, size.height, 1, 1);
 
-  // Update colors when theme changes
+    // Set initial theme colors
+    const bg = isDark ? DARK_BG : LIGHT_BG;
+    const c1 = isDark ? DARK_COLOR1 : LIGHT_COLOR1;
+    const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
+    const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
+    const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
+    m.uniforms.u_bgColor.value.copy(bg);
+    m.uniforms.u_color1.value.copy(c1);
+    m.uniforms.u_color2.value.copy(c2);
+    m.uniforms.u_color3.value.copy(c3);
+    m.uniforms.u_color4.value.copy(c4);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noiseTexture]);
+
+  // ── Update colors when theme changes ───────────────────────────────────
   useEffect(() => {
     if (!materialRef.current) return;
     const m = materialRef.current.uniforms;
@@ -218,7 +207,18 @@ export function AmbientGradientMesh({
     m.u_color4.value.copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4);
   }, [isDark]);
 
-  // Smoothly transition blob intensity based on playing state
+  // ── Update resolution on resize ────────────────────────────────────────
+  useEffect(() => {
+    if (!materialRef.current) return;
+    materialRef.current.uniforms.u_resolution.value.set(
+      size.width,
+      size.height,
+      1,
+      1
+    );
+  }, [size]);
+
+  // Smoothly transition blob intensity
   const targetBlobIntensity = useRef(BLOB_INTENSITY_STOPPED);
   useEffect(() => {
     targetBlobIntensity.current = playing
@@ -226,38 +226,46 @@ export function AmbientGradientMesh({
       : BLOB_INTENSITY_STOPPED;
   }, [playing]);
 
-  // ── Render loop — priority >= 1 disables R3F auto-render ────────────────
+  // ── Render loop ─────────────────────────────────────────────────────────
+  // R3F calls gl.render(scene, camera) AFTER all useFrame callbacks.
+  // To prevent it from overwriting EffectComposer output, we:
+  //   1. Make mesh visible for our EffectComposer render
+  //   2. Render through EffectComposer (blur + grain → screen)
+  //   3. Hide mesh so R3F's auto-render has nothing to draw
   useFrame((_state, delta) => {
-    if (!materialRef.current) return;
+    if (!materialRef.current || !composerRef.current || !meshRef.current)
+      return;
     const m = materialRef.current.uniforms;
 
+    // Accumulate time (delta is in seconds at ~60fps → ~0.016)
     m.u_time.value += delta;
 
-    // Smoothly lerp blob intensity toward target
+    // Smoothly lerp blob intensity
     const current = m.u_blobIntensity.value;
     const target = targetBlobIntensity.current;
-    m.u_blobIntensity.value += (target - current) * delta * 1.5;
+    m.u_blobIntensity.value += (target - current) * Math.min(delta * 2.0, 0.1);
 
-    // Reactive uniforms from MotionValues
+    // Read reactive MotionValues
     m.u_opacity.value = opacity.get();
     m.u_fogProgress.value = fogProgress.get();
     m.u_audioLevel.value = audioLevel.get();
 
-    // Render through postprocessing pipeline
-    composerRef.current?.render(delta);
+    // Show mesh → render through postprocessing → hide mesh
+    meshRef.current.visible = true;
+    composerRef.current.render(delta);
+    meshRef.current.visible = false;
   }, 1);
 
   return (
-    <mesh>
-      <planeGeometry args={[1.5, 1.5, 1, 1]} />
+    // Start hidden — only visible during EffectComposer render in useFrame
+    <mesh ref={meshRef} visible={false} frustumCulled={false}>
+      <planeGeometry args={[2, 2]} />
       {/* @ts-expect-error — dynamically extended shader material */}
       <ambientShader
         ref={materialRef}
-        extensions={{
-          derivatives: "#extension GL_OES_standard_derivatives: enable"
-        }}
         side={DoubleSide}
-        transparent
+        depthWrite={false}
+        depthTest={false}
       />
     </mesh>
   );
