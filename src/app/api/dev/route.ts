@@ -1,4 +1,7 @@
+import config from "@/payload.config";
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { getPayload } from "payload";
 import {
   CustomTableLayout,
   Margins,
@@ -8,6 +11,8 @@ import {
 import pdfPrinter from "pdfmake";
 import * as pdfM from "pdfmake/build/pdfmake";
 import { join } from "path";
+
+const ADMIN_ROLES = new Set(["admin", "editor"]);
 
 interface PDFMakeTextProps {
   text: string;
@@ -31,7 +36,25 @@ function txt(
 }
 
 export const GET = async (req: NextRequest) => {
+  // Hard-gate: NODE_ENV must be development. Next.js inlines this at build
+  // time, so a production bundle physically cannot reach the body below.
   if (process.env.NODE_ENV !== "development") {
+    return new NextResponse("Not Found", { status: 404 });
+  }
+
+  // Defense-in-depth: even in dev, only authenticated admin-tier users may
+  // exercise the PDF preview. Murphy's law — if someone ever ships a build
+  // with NODE_ENV=development, this still fails closed.
+  try {
+    const payload = await getPayload({ config });
+    const { user } = await payload.auth({ headers: await headers() });
+    if (!user) {
+      return new NextResponse("Not Found", { status: 404 });
+    }
+    if (!ADMIN_ROLES.has(String(user.role))) {
+      return new NextResponse("Not Found", { status: 404 });
+    }
+  } catch {
     return new NextResponse("Not Found", { status: 404 });
   }
   // Convert Node stream to Web ReadableStream

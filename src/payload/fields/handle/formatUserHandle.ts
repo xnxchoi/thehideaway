@@ -65,16 +65,18 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
     throw new Error("No value provided.");
   }
   const handle = formatUserHandle(toValue);
+  // NOTE: This hook runs server-side inside a Payload field hook, which is a
+  // trusted context. ensureHandleIsUnique no longer accepts an `overrides`
+  // escape hatch — the server-side caller is implicitly trusted.
+  void overrideAccess;
   const base = {
     ...((operation === "update" && originalDoc && { user: originalDoc.id }) ||
-      {}),
-    overrides: overrideAccess || operation === "create"
+      {})
   };
   if (handle.length > 2) {
     const { valid, handle: h } = await ensureHandleIsUnique({
       handle,
-      ...base,
-      overrides: true
+      ...base
     }).catch((e) => {
       e instanceof Error && req.payload.logger.error(e);
       return { valid: false, handle: undefined };
@@ -112,8 +114,7 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
   for (const candidate of candidates) {
     const { valid: exists } = await ensureHandleIsUnique({
       handle: candidate,
-      ...base,
-      overrides: true
+      ...base
     });
     if (!exists) {
       return candidate;
@@ -132,8 +133,7 @@ export const formatUserHandleHook: FieldHook<User, User["slug"]> = async ({
     }
     const r = await ensureHandleIsUnique({
       handle: newHandle,
-      ...base,
-      overrides: true
+      ...base
     });
     isOkay = r.valid;
     retry++;

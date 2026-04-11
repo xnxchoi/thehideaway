@@ -110,8 +110,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
       try {
         const result = await ensureUniqueHandle({
           handle,
-          userId,
-          override: true
+          userId
         });
         commitValue(result.handle);
         setSuggestions([]);

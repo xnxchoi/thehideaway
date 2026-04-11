@@ -1,13 +1,14 @@
-"use server";
-import { authClient } from "@/lib/auth/client";
+// NOTE: This is a server-only helper, NOT a server action. It must never
+// carry the "use server" directive — doing so would expose the uniqueness
+// check (with its overrideAccess call) as a POST-invokable action, and the
+// prior `overrides` flag allowed unauthenticated callers to skip auth.
+// Callers are responsible for their own authorization.
 import { getPayload } from "@/lib/payload";
 import { HANDLE_TEST_REGEX } from "@/payload/fields/handle/formatUserHandle";
-import { RP_Roles } from "@/stores/Notification/NotificationStore";
 
 export async function ensureHandleIsUnique(props: {
   handle: string;
   user?: string;
-  overrides?: boolean;
 }): Promise<
   {
     message: string;
@@ -19,17 +20,8 @@ export async function ensureHandleIsUnique(props: {
     | { valid: true; handle: string }
   )
 > {
-  const { overrides, handle, user: userId } = props;
+  const { handle, user: userId } = props;
 
-  const { data } = await authClient.getSession();
-  const user = data?.user;
-  if (!overrides && user?.role !== "admin" && user?.id !== userId) {
-    throw new Error("User is not authorized");
-  }
-  const banned = user?.banned ?? false;
-  if (banned) {
-    throw new Error("User is banned");
-  }
   if (!HANDLE_TEST_REGEX.test(handle)) {
     throw new Error("Invalid handle format");
   }
@@ -39,10 +31,6 @@ export async function ensureHandleIsUnique(props: {
     .count({
       collection: "users",
       overrideAccess: true,
-      context: {
-        user: { role: (user?.role || "user") as unknown as RP_Roles },
-        overrideAccess: true
-      },
       where: {
         and: [
           {

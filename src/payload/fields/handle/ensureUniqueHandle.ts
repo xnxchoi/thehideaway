@@ -5,13 +5,16 @@ import { ensureHandleIsUnique } from "@/payload/collections/Users/endpoints/ensu
 import { HandleError } from "@/payload/fields/handle/index";
 import { generateSmartSlugCandidates } from "@/payload/fields/handle/smartGenerateHandles";
 
+// SECURITY: This is a "use server" action — anything exported here becomes a
+// POST-invokable endpoint. There is NO client-controllable auth escape hatch.
+// The prior `override` flag was removed because HandleComponent.tsx was
+// passing `override: true` from the browser, which effectively let any
+// authenticated client bypass the ownership/role check below.
 export async function ensureUniqueHandle({
-  override,
   handle,
   userId
 }: {
   userId: string;
-  override?: boolean;
   handle: string;
 }) {
   const payload = await getPayload();
@@ -19,9 +22,8 @@ export async function ensureUniqueHandle({
   const currentUser = data?.user;
 
   if (
-    !override &&
-    (!currentUser ||
-      (currentUser.id !== userId && currentUser.role !== "admin"))
+    !currentUser ||
+    (currentUser.id !== userId && currentUser.role !== "admin")
   ) {
     throw new HandleError("Unauthorized");
   }
@@ -39,8 +41,7 @@ export async function ensureUniqueHandle({
 
   const isAvailable = await ensureHandleIsUnique({
     handle,
-    user: userId,
-    overrides: true
+    user: userId
   })
     .then((r) => r.valid)
     .catch((e) => {
@@ -67,7 +68,6 @@ export async function ensureUniqueHandle({
       if (alts.length >= 5) break;
       const valid = await ensureHandleIsUnique({
         handle: candidate,
-        overrides: true,
         user: userId
       })
         .then((r) => r.valid)
