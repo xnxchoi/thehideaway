@@ -9,7 +9,7 @@ export default async function SavedPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");
 
-  const items = await getUserBookmarkedItems(user.id);
+  const items = await getUserBookmarkedItems();
 
   return <SavedPageClient userId={user.id} items={items} />;
 }

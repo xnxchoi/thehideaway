@@ -9,7 +9,7 @@ export default async function ListsPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");
 
-  const compilations = await getUserCompilations(user.id);
+  const compilations = await getUserCompilations();
 
   return (
     <ListsPageClient

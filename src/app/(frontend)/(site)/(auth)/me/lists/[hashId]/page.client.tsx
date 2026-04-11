@@ -73,8 +73,7 @@ export default function CompilationDetailClient({
     async (index: number) => {
       const res = await removeItemFromCompilation({
         compilationId: compilation.id,
-        itemIndex: index,
-        userId
+        itemIndex: index
       });
       if ("success" in res) {
         setCompilation((prev) => {
@@ -84,15 +83,14 @@ export default function CompilationDetailClient({
         });
       }
     },
-    [compilation.id, userId]
+    [compilation.id]
   );
 
   const handleAddItem = useCallback(
     async (item: { relationTo: CompilationItemType; value: string }) => {
       const res = await addItemToCompilation({
         compilationId: compilation.id,
-        item,
-        userId
+        item
       });
       if ("success" in res) {
         setCompilation((prev) => ({
@@ -102,7 +100,7 @@ export default function CompilationDetailClient({
         }));
       }
     },
-    [compilation.id, userId]
+    [compilation.id]
   );
 
   const handleUpdateMeta = useCallback(
@@ -111,14 +109,13 @@ export default function CompilationDetailClient({
     ) => {
       const res = await updateCompilation({
         id: compilation.id,
-        userId,
         patch
       });
       if ("success" in res) {
         setCompilation((prev) => ({ ...prev, ...patch }));
       }
     },
-    [compilation.id, userId]
+    [compilation.id]
   );
 
   const authorObj = compilation.author as any;

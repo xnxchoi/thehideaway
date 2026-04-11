@@ -40,15 +40,12 @@ export default function ListsPageClient({
   const [showCreate, setShowCreate] = useState(false);
   const premium = isPremium(role);
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      const res = await deleteCompilation({ id, userId });
-      if ("success" in res) {
-        setCompilations((prev) => prev.filter((c) => c.id !== id));
-      }
-    },
-    [userId]
-  );
+  const handleDelete = useCallback(async (id: string) => {
+    const res = await deleteCompilation({ id });
+    if ("success" in res) {
+      setCompilations((prev) => prev.filter((c) => c.id !== id));
+    }
+  }, []);
 
   const handleCreated = useCallback(
     (c: CompilationSummary) => {
@@ -352,8 +349,7 @@ function CreateCompilationSheet({
         const res = await createCompilation({
           title,
           description: descRef.current?.value?.trim() || undefined,
-          visibility,
-          userId
+          visibility
         });
         if ("error" in res) {
           setError(res.error);

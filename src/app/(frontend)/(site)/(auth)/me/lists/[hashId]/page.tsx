@@ -38,7 +38,7 @@ export default async function CompilationDetailPage({
 
   if (!isOwner && compilation.visibility !== "public") return notFound();
 
-  const bookmarkedItems = isOwner ? await getUserBookmarkedItems(user.id) : {};
+  const bookmarkedItems = isOwner ? await getUserBookmarkedItems() : {};
 
   return (
     <CompilationDetailClient
