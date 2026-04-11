@@ -1,6 +1,7 @@
 "use client";
 
-import { TE } from "@/constants/animations";
+import { SPRING_EASE, TE } from "@/constants/animations";
+import { OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import {
   MotionValue,
@@ -16,13 +17,8 @@ import { useTheme } from "@/providers/Theme";
 import { AmbientGradientMesh } from "./AmbientGradientMesh";
 
 // Nearly opaque always — shader itself renders the bg color, not a color overlay
-const OPACITY_PLAYING = 0.95;
-const OPACITY_STOPPED = 1.0;
 
-type AmbientBackgroundProps = {
-  fogProgress: MotionValue<number>;
-  audioLevel: MotionValue<number>;
-};
+type AmbientBackgroundProps = {};
 
 /**
  * Full-screen ambient background for the Radio page.
@@ -32,44 +28,32 @@ type AmbientBackgroundProps = {
  *
  * Uses orthographic camera + 2×2 plane so UVs map 1:1 to screen pixels.
  */
-export function AmbientBackground({
-  fogProgress,
-  audioLevel
-}: AmbientBackgroundProps) {
-  const playing = useRadioStore(useShallow((s) => s.playing));
-  const playState = useMotionValue(playing);
-  useEffect(() => {
-    playState.set(playing);
-  }, [playState, playing]);
-  const theme = useTheme((s) => s.theme);
-  const isDark = theme === "dark";
-  const opacit = useTransform(() =>
-    playState.get() ? OPACITY_PLAYING : OPACITY_STOPPED + 0.01
-  );
-  const opacity = useSpring(opacit, {
-    ...TE.power3.out,
-    duration: 1.2
-  });
-
+export function AmbientBackground({}: AmbientBackgroundProps) {
   return (
     <div
-      className="pointer-events-none absolute inset-0 z-[1]"
+      className="pointer-events-none fixed inset-0 z-[1] min-h-svh"
       aria-hidden="true"
     >
       <Canvas
         className="absolute inset-0"
-        orthographic
-        camera={{ zoom: 1, position: [0, 0, 1], near: 0.1, far: 10 }}
-        gl={{ antialias: false, alpha: false, premultipliedAlpha: false }}
+        gl={{
+          antialias: false,
+          powerPreference: "high-performance",
+          stencil: true,
+          depth: false,
+          alpha: true
+        }}
         frameloop="always"
         dpr={[1, 2]}
       >
-        <AmbientGradientMesh
-          opacity={opacity}
-          audioLevel={audioLevel}
-          fogProgress={fogProgress}
-          isDark={isDark}
-          playing={playing}
+        <AmbientGradientMesh />
+        <PerspectiveCamera
+          makeDefault
+          near={0.01}
+          far={1000}
+          position={[0, 0, 0.2]}
+          fov={35}
+          aspect={2}
         />
       </Canvas>
     </div>
@@ -80,12 +64,9 @@ export function AmbientBackground({
  * CSS-only fallback for mobile (no R3F).
  * Heavy grain + barely-there vignette on page background.
  */
-export function AmbientBackgroundFallback({
-  playing
-}: {
-  fogProgress: MotionValue<number>;
-  playing: boolean;
-}) {
+export function AmbientBackgroundFallback({}: {}) {
+  const playing = useRadioStore(useShallow((s) => s.playing));
+
   return (
     <div
       className="pointer-events-none absolute inset-0 z-[1]"

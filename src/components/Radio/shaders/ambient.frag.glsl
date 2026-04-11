@@ -1,4 +1,8 @@
+varying vec2 vUv;
 uniform float u_time;
+uniform float u_size;
+uniform vec2 u_offset;
+uniform float u_speed;
 uniform vec4 u_resolution;
 uniform vec3 u_bgColor;
 uniform vec3 u_color1;        // base tone 1 (near-bg, subtle warm shift)
@@ -10,7 +14,7 @@ uniform float u_fogProgress;  // 0-1 idle fog
 uniform float u_opacity;
 uniform float u_blobIntensity; // how visible the blobs are (playing vs stopped)
 uniform sampler2D u_noiseTexture;
-varying vec2 v_uv;
+
 
 // ── Simplex 2D noise ──────────────────────────────────────────────────────
 vec3 permute(vec3 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
@@ -47,15 +51,21 @@ float blob(vec2 uv, vec2 center, float radius, float softness) {
 }
 
 void main() {
-    vec2 uv = v_uv;
+    vec2 uv = vUv;
     // Time scale: ~0.15 gives visible drift over 5-10 seconds
     // (0.04 was invisible — noise scrolled only 6% in 10 seconds)
     float t = u_time * 0.15;
+    vec2 nUv = (-.5 + vUv) * 2.;
+    if( u_resolution.x < u_resolution.y ) {
+        nUv.x *= u_resolution.x / u_resolution.y;
+    } else {
+        nUv.y *= u_resolution.y / u_resolution.x;
+    }
+    nUv = nUv / 2. + .5;
 
-    // Aspect-correct coordinates centered at origin
-    vec2 nUv = (uv - 0.5) * 2.0;
+
     float aspect = u_resolution.x / u_resolution.y;
-    nUv.x *= aspect;
+    vec2 bUv = nUv * (u_size * 2.) + u_offset;
 
     // ── Audio reactivity ───────────────────────────────────────────────────
     // Halation: blobs spread outward and soften on beats
@@ -68,16 +78,19 @@ void main() {
 
     // ── Noise-texture sampling at 3 scales (fold structure) ───────────────
     // Scale 1: broad folds — the dominant visual rhythm
-    vec2 noiseUv1 = uv * 0.8 + t * 0.15 * noiseSpeedPulse;
+    vec2 noiseUv1 = bUv + u_offset + t * u_speed * noiseSpeedPulse;
+    bUv.y -= .5;
     // Scale 2: medium detail — secondary fold ridges
-    vec2 noiseUv2 = uv * 1.6 - t * 0.12 * noiseSpeedPulse;
-    // Scale 3: fine organic grain in fold edges
-    vec2 noiseUv3 = uv * 3.0 + vec2(t * 0.08, -t * 0.1) * noiseSpeedPulse;
+    vec2 noiseUv2 =  bUv + u_offset - t * u_speed * noiseSpeedPulse;
+
 
     float n1 = texture2D(u_noiseTexture, noiseUv1).r;
     float n2 = texture2D(u_noiseTexture, noiseUv2).r;
-    float n3 = texture2D(u_noiseTexture, noiseUv3).r;
+    float n3 = clamp((n1 + n2) / 2., 0., 1.);
 
+    // Scale 3: fine organic grain in fold edges
+    vec2 noiseUv3 = bUv + n3 * noiseSpeedPulse * .5;
+    n3 = texture2D(u_noiseTexture, noiseUv3).r;
     // Combined noise — weighted toward broad folds
     float noiseWarp = n1 * 0.55 + n2 * 0.30 + n3 * 0.15;
 
@@ -156,12 +169,11 @@ void main() {
     color = mix(color, u_bgColor, u_fogProgress * 0.9 * fogMask);
 
     // ── Gentle contrast — don't fight the blur ───────────────────────────
-    color = clamp(color, 0.0, 1.0);
+//    color = clamp(color, 0.0, 1.0);
     // Softer S-curve: mix between linear and Hermite
     vec3 sCurve = color * color * (3.0 - 2.0 * color);
     color = mix(color, sCurve, 0.6);
-
-    gl_FragColor = vec4(color, u_opacity);
+    gl_FragColor = vec4(color, 1.);
 
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

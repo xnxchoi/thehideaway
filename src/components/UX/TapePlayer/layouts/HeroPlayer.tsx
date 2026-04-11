@@ -49,7 +49,8 @@ export const HeroPlayer = ({
         className="pointer-events-none absolute inset-0 opacity-20"
         style={{
           background:
-            "radial-gradient(ellipse at center, oklch(from var(--piercing-orange) l c h /.55) 0%, transparent 70%)"
+            "radial-gradient(ellipse at center, oklch(from var(--piercing-orange) l c h /.55) 0%, transparent 70%)",
+          visibility: "hidden"
         }}
         aria-hidden="true"
       />

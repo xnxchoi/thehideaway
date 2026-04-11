@@ -1,8 +1,21 @@
 "use client";
 
+import { useAudioAnalyser } from "@/components/Radio/hooks/useAudioAnalyser";
+import { useIdleDetection } from "@/components/Radio/hooks/useIdleDetection";
+import { SPRING_EASE, TE } from "@/constants/animations";
+import { useRadioStore } from "@/providers/RadioProvider";
+import { useTheme } from "@/providers/Theme";
+import { useWindowResize } from "@/utilities/use_window_resize";
 import { shaderMaterial, useTexture } from "@react-three/drei";
 import { extend, useFrame, useThree } from "@react-three/fiber";
-import { MotionValue } from "motion/react";
+import { animate, AnimationSequence } from "motion";
+import {
+  MotionValue,
+  useMotionValue,
+  useMotionValueEvent,
+  useSpring,
+  useTransform
+} from "motion/react";
 import {
   BlendFunction,
   Effect,
@@ -11,8 +24,8 @@ import {
   KawaseBlurPass,
   RenderPass
 } from "postprocessing";
-import { useEffect, useRef } from "react";
-import type { Mesh } from "three";
+import { useEffect, useEffectEvent, useMemo, useRef } from "react";
+import { FrontSide, Mesh, Vector2, Vector3 } from "three";
 import {
   Color as ThreeColor,
   DoubleSide,
@@ -21,6 +34,7 @@ import {
   Uniform,
   Vector4
 } from "three";
+import { useShallow } from "zustand/shallow";
 import fragmentShader from "../shaders/ambient.frag.glsl";
 import vertexShader from "../shaders/ambient.vert.glsl";
 import grainShader from "../shaders/grain.glsl";
@@ -38,14 +52,14 @@ import grainShader from "../shaders/grain.glsl";
 // Our palette follows the same structure.
 //
 // ─── Dark ─────────────────────────────────────────────────────────────────
-const DARK_BG = new ThreeColor().setStyle("#080a0f"); // near-black ~4%
+const DARK_BG = new ThreeColor().set("#080a0f"); // near-black ~4%
 const DARK_COLOR1 = new ThreeColor().set("#2a2030"); // base 1: dark plum ~14%
 const DARK_COLOR2 = new ThreeColor().set("#18253a"); // base 2: dark navy ~14%
 const DARK_COLOR3 = new ThreeColor().set("#8c3535"); // accent 1: ember red ~28%
 const DARK_COLOR4 = new ThreeColor().set("#1a6888"); // accent 2: teal ~32%
 //
 // ─── Light ────────────────────────────────────────────────────────────────
-const LIGHT_BG = new ThreeColor().setStyle("#f6f2ed"); // warm parchment
+const LIGHT_BG = new ThreeColor().set("#f6f2ed"); // warm parchment
 const LIGHT_COLOR1 = new ThreeColor().set("#e0d2c0"); // base 1: sandy cream
 const LIGHT_COLOR2 = new ThreeColor().set("#d5cdd8"); // base 2: mauve-cream
 const LIGHT_COLOR3 = new ThreeColor().set("#2d8a8c"); // accent 1: retro teal
@@ -58,72 +72,86 @@ const BLOB_INTENSITY_STOPPED = 0.65;
 
 // ── Shader material defined at MODULE SCOPE — created once, never recreated ──
 // Default uniform values don't matter; everything is set in useFrame/useEffect.
-const AmbientShader = shaderMaterial(
-  {
-    u_time: 0,
-    u_resolution: new Vector4(1, 1, 1, 1),
-    u_bgColor: new ThreeColor(),
-    u_color1: new ThreeColor(),
-    u_color2: new ThreeColor(),
-    u_color3: new ThreeColor(),
-    u_color4: new ThreeColor(),
-    u_audioLevel: 0.0,
-    u_fogProgress: 0.0,
-    u_opacity: 1.0,
-    u_blobIntensity: BLOB_INTENSITY_STOPPED,
-    u_noiseTexture: null as unknown as Texture
-  },
-  vertexShader,
-  fragmentShader
-);
 
-// Register once at module level
-extend({ AmbientShader });
+type AmbientGradientMeshProps = {};
+const OPACITY_PLAYING = 0.7;
+const OPACITY_STOPPED = 1.0;
 
-type AmbientGradientMeshProps = {
-  opacity: MotionValue<number>;
-  audioLevel: MotionValue<number>;
-  fogProgress: MotionValue<number>;
-  isDark: boolean;
-  playing: boolean;
-};
-
-export function AmbientGradientMesh({
-  opacity,
-  audioLevel,
-  fogProgress,
-  isDark,
-  playing
-}: AmbientGradientMeshProps) {
+export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   useTexture.preload("/assets/seamless.png");
+  const playing = useRadioStore(useShallow((s) => s.playing));
+  const playState = useMotionValue(playing);
+  useEffect(() => {
+    playState.set(playing);
+  }, [playState, playing]);
+  const theme = useTheme((s) => s.theme);
+  const isDark = theme === "dark";
+  const opacit = useTransform(() =>
+    playState.get() ? OPACITY_PLAYING : OPACITY_STOPPED + 0.01
+  );
+  const opacity = useSpring(opacit, {
+    ...SPRING_EASE.power3.out,
+    duration: 1.2
+  });
+  // Single instances of hooks — passed to both desktop and mobile backgrounds
+  const { fogProgress } = useIdleDetection({
+    timeout: 8000,
+    maxFogTime: 15000,
+    clearDuration: 650
+  });
+  const colore = useMemo(() => new ThreeColor("rgb(122,122,122)"), []);
+  const vecc = useMemo(() => new Vector3(0, 0, 0.46), []);
+  const { audioLevel } = useAudioAnalyser({
+    fftSize: 256,
+    smoothing: 0.85
+  });
+  const uniforms = useMemo(
+    () => ({
+      u_time: 0.1,
+      u_resolution: new Vector2(1, 1),
+      u_bgColor: new ThreeColor(),
+      u_color1: new ThreeColor(),
+      u_color2: new ThreeColor(),
+      u_color3: new ThreeColor(),
+      u_color4: new ThreeColor(),
+      u_audioLevel: 0.0,
+      u_fogProgress: 0.0,
+      u_opacity: 1.0,
+      u_speed: 0.02,
+      u_size: 0.2,
+      u_offset: new Vector2(0.42, 0.6),
+      u_blobIntensity: BLOB_INTENSITY_STOPPED,
+      u_noiseTexture: null as unknown as Texture
+    }),
+    []
+  );
+  const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
+
+  // Register once at module level
+  extend({ AmbientShader });
   const materialRef = useRef<InstanceType<typeof AmbientShader>>(null);
   const meshRef = useRef<Mesh>(null);
-  const { gl, scene, camera, size } = useThree();
+  const { gl, scene, camera } = useThree();
   const composerRef = useRef<EffectComposer | null>(null);
   const blurPassRef = useRef<KawaseBlurPass | null>(null);
-  const grainUniformsRef = useRef<{
-    uXCount: Uniform;
-    uYCount: Uniform;
-    uIntensity: Uniform;
-  } | null>(null);
-
+  const grainUniforms = useMemo(() => {
+    const uXCount = new Uniform(window.innerWidth / window.devicePixelRatio);
+    const uYCount = new Uniform(window.innerHeight / window.devicePixelRatio);
+    const uIntensity = new Uniform(1.29);
+    return new Map<string, Uniform>([
+      ["uXCount", uXCount],
+      ["uYCount", uYCount],
+      ["uIntensity", uIntensity]
+    ]);
+  }, []);
+  const grainEffectsRef = useRef<Effect>(null);
   const noiseTexture = useTexture(
     "/assets/seamless.png",
     (texture: Texture) => {
       texture.wrapS = texture.wrapT = RepeatWrapping;
     }
   );
-
-  // ── Build postprocessing pipeline ONCE via useEffect ────────────────────
-  useEffect(() => {
-    const pixelRatio = gl.getPixelRatio();
-
-    // Grain uniforms
-    const uXCount = new Uniform(size.width / pixelRatio);
-    const uYCount = new Uniform(size.height / pixelRatio);
-    const uIntensity = new Uniform(1.29);
-    grainUniformsRef.current = { uXCount, uYCount, uIntensity };
-
+  const initSequence = useEffectEvent(() => {
     // Passes
     const renderPass = new RenderPass(scene, camera);
 
@@ -135,19 +163,18 @@ export function AmbientGradientMesh({
 
     const grainEffect = new Effect("grain", grainShader, {
       blendFunction: BlendFunction.NORMAL,
-      uniforms: new Map<string, Uniform>([
-        ["uXCount", uXCount],
-        ["uYCount", uYCount],
-        ["uIntensity", uIntensity]
-      ])
+      uniforms: grainUniforms
     });
+    grainEffectsRef.current = grainEffect;
     const effectPass = new EffectPass(camera, grainEffect);
 
     const composer = new EffectComposer(gl);
+    composer.multisampling = Math.min(4, 20);
+    composer.removeAllPasses();
     composer.addPass(renderPass);
     composer.addPass(blurPass);
     composer.addPass(effectPass);
-    composer.setSize(size.width, size.height);
+    composer.setSize(gl.domElement.offsetWidth, gl.domElement.offsetHeight);
     composerRef.current = composer;
 
     // Disable R3F auto-clear so our EffectComposer has full control
@@ -158,29 +185,53 @@ export function AmbientGradientMesh({
       composerRef.current = null;
       gl.autoClear = true;
     };
-    // gl, scene, camera are stable R3F refs — this runs once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+  const unmountCallback = useRef<() => void>(null);
+  // ── Build postprocessing pipeline ONCE via useEffect ────────────────────
+  useEffect(() => {
+    if (!unmountCallback.current) {
+      unmountCallback.current = initSequence();
+    }
+    return () => {
+      unmountCallback.current?.();
+    };
   }, []);
+  const onResize = useEffectEvent(() => {
+    if (!composerRef.current || !materialRef.current) return;
+    gl.setSize(window.innerWidth, window.innerHeight);
+    composerRef.current.setSize(
+      gl.domElement.offsetWidth,
+      gl.domElement.offsetHeight
+    );
 
+    const devicePixelRatio = window.devicePixelRatio || 2;
+
+    gl.setPixelRatio(devicePixelRatio);
+    materialRef.current.u_resolution.set(
+      gl.domElement.offsetWidth,
+      gl.domElement.offsetHeight
+    );
+    const gu = grainEffectsRef.current?.uniforms;
+    if (gu) {
+      const uxc = gu.get("uXCount");
+      uxc && (uxc.value = window.innerWidth / devicePixelRatio);
+      const uyc = gu.get("uYCount");
+      uyc && (uyc.value = window.innerHeight / devicePixelRatio);
+    }
+  });
+  const resizeTimestamp = useWindowResize({ debounce: 100 });
   // ── Sync sizes on resize ───────────────────────────────────────────────
   useEffect(() => {
-    if (!composerRef.current) return;
-    composerRef.current.setSize(size.width, size.height);
-
-    const pixelRatio = gl.getPixelRatio();
-    const gu = grainUniformsRef.current;
-    if (gu) {
-      gu.uXCount.value = size.width / pixelRatio;
-      gu.uYCount.value = size.height / pixelRatio;
-    }
-  }, [size, gl]);
-
-  // ── Set initial colors + texture on material (runs once after mount) ───
+    onResize();
+  }, [resizeTimestamp]);
   useEffect(() => {
+    onResize();
+  }, []);
+  // ── Set initial colors + texture on material (runs once after mount) ───
+  const initializeShaderMaterial = useEffectEvent(() => {
     if (!materialRef.current) return;
     const m = materialRef.current;
     m.u_noiseTexture = noiseTexture;
-    m.u_resolution.set(size.width, size.height, 1, 1);
 
     // Set initial theme colors
     const bg = isDark ? DARK_BG : LIGHT_BG;
@@ -188,30 +239,130 @@ export function AmbientGradientMesh({
     const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
     const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
     const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
-    m.u_bgColor.copy(bg);
-    m.u_color1.copy(c1);
-    m.u_color2.copy(c2);
-    m.u_color3.copy(c3);
-    m.u_color4.copy(c4);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noiseTexture]);
+    const seq: AnimationSequence = [
+      [
+        m.u_bgColor,
+        bg.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color1,
+        c1.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color2,
+        c2.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color3,
+        c3.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color4,
+        c4.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ]
+    ];
+    animate(seq);
+  });
+  useEffect(() => {
+    initializeShaderMaterial();
+  }, []);
 
   // ── Update colors when theme changes ───────────────────────────────────
   useEffect(() => {
     if (!materialRef.current) return;
     const m = materialRef.current;
-    m.u_bgColor.copy(isDark ? DARK_BG : LIGHT_BG);
-    m.u_color1.copy(isDark ? DARK_COLOR1 : LIGHT_COLOR1);
-    m.u_color2.copy(isDark ? DARK_COLOR2 : LIGHT_COLOR2);
-    m.u_color3.copy(isDark ? DARK_COLOR3 : LIGHT_COLOR3);
-    m.u_color4.copy(isDark ? DARK_COLOR4 : LIGHT_COLOR4);
+    // Set initial theme colors
+    const bg = isDark ? DARK_BG : LIGHT_BG;
+    const c1 = isDark ? DARK_COLOR1 : LIGHT_COLOR1;
+    const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
+    const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
+    const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
+    const seq: AnimationSequence = [
+      [
+        m.u_bgColor,
+        bg.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color1,
+        c1.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color2,
+        c2.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color3,
+        c3.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color4,
+        c4.getRGB({ r: 1, g: 1, b: 1 }),
+        {
+          ease: TE.power3.inOut,
+          duration: 0.3,
+          type: "tween",
+          at: 0
+        }
+      ]
+    ];
+    animate(seq);
   }, [isDark]);
 
   // ── Update resolution on resize ────────────────────────────────────────
-  useEffect(() => {
-    if (!materialRef.current) return;
-    materialRef.current.u_resolution.set(size.width, size.height, 1, 1);
-  }, [size]);
 
   // Smoothly transition blob intensity
   const targetBlobIntensity = useRef(BLOB_INTENSITY_STOPPED);
@@ -220,7 +371,21 @@ export function AmbientGradientMesh({
       ? BLOB_INTENSITY_PLAYING
       : BLOB_INTENSITY_STOPPED;
   }, [playing]);
-
+  useMotionValueEvent(opacity, "change", (latestValue) => {
+    const m = materialRef.current;
+    if (!m) return;
+    m.u_opacity = latestValue;
+  });
+  useMotionValueEvent(fogProgress, "change", (latestValue) => {
+    const m = materialRef.current;
+    if (!m) return;
+    m.u_fogProgress = latestValue;
+  });
+  useMotionValueEvent(audioLevel, "change", (latestValue) => {
+    const m = materialRef.current;
+    if (!m) return;
+    m.u_audioLevel = latestValue;
+  });
   // ── Render loop ─────────────────────────────────────────────────────────
   // R3F calls gl.render(scene, camera) AFTER all useFrame callbacks.
   // To prevent it from overwriting EffectComposer output, we:
@@ -228,40 +393,49 @@ export function AmbientGradientMesh({
   //   2. Render through EffectComposer (blur + grain → screen)
   //   3. Hide mesh so R3F's auto-render has nothing to draw
   useFrame((_state, delta) => {
-    if (!materialRef.current || !composerRef.current || !meshRef.current)
+    if (!materialRef.current || !composerRef.current || !meshRef.current) {
+      console.log("something is not right...");
       return;
+    }
     const m = materialRef.current;
-
+    !didit.current && (console.log(delta), (didit.current = true));
     // Accumulate time (delta is in seconds at ~60fps → ~0.016)
-    m.u_time += delta;
+    m.u_time += delta * 0.1;
 
     // Smoothly lerp blob intensity
     const current = m.u_blobIntensity;
     const target = targetBlobIntensity.current;
-    m.u_blobIntensity += (target - current) * Math.min(delta * 2.0, 0.1);
-
-    // Read reactive MotionValues
-    m.u_opacity = opacity.get();
-    m.u_fogProgress = fogProgress.get();
-    m.u_audioLevel = audioLevel.get();
+    m.u_blobIntensity += (target - current) * Math.min(delta * 0.2 * 1.5, 0.1);
+    meshRef.current.visible = true;
+    _state.gl.render(_state.scene, _state.camera);
+  }, 1);
+  const didit = useRef(false);
+  useFrame((_state, delta) => {
+    if (!materialRef.current || !composerRef.current || !meshRef.current) {
+      console.log("something is not right...");
+      return;
+    }
 
     // Show mesh → render through postprocessing → hide mesh
-    meshRef.current.visible = true;
     composerRef.current.render(delta);
     meshRef.current.visible = false;
-  }, 1);
+  }, 2);
 
   return (
-    // Start hidden — only visible during EffectComposer render in useFrame
-    <mesh ref={meshRef} visible={false} frustumCulled={false}>
-      <planeGeometry args={[2, 2]} />
-      {/* @ts-expect-error — dynamically extended shader material */}
-      <ambientShader
-        ref={materialRef}
-        side={DoubleSide}
-        depthWrite={false}
-        depthTest={false}
-      />
-    </mesh>
+    <>
+      <ambientLight args={[colore]} intensity={1} />
+      <directionalLight color={colore} intensity={1} position={vecc} />
+      <mesh ref={meshRef}>
+        <planeGeometry args={[6.5, 6.5]} />
+        {/* @ts-expect-error — dynamically extended shader material */}
+        <ambientShader
+          extensions={{
+            derivatives: "#extension GL_OES_standard_derivatives: enable"
+          }}
+          side={DoubleSide}
+          ref={materialRef}
+        />
+      </mesh>
+    </>
   );
-}
+};

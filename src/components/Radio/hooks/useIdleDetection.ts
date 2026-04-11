@@ -1,7 +1,12 @@
 "use client";
 
-import { animate, MotionValue, useMotionValue } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  animate,
+  MotionValue,
+  useAnimationFrame,
+  useMotionValue
+} from "motion/react";
+import { useCallback, useEffect, useRef } from "react";
 
 type IdleDetectionOptions = {
   /** ms before fog starts creeping in */
@@ -30,11 +35,7 @@ export function useIdleDetection({
 }: IdleDetectionOptions = {}): IdleDetectionReturn {
   const fogProgress = useMotionValue(0);
   const isIdleRef = useRef(false);
-  const [prefersReducedMotion] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fogRafRef = useRef<number | null>(null);
   const fogStartTimeRef = useRef<number | null>(null);
@@ -44,32 +45,30 @@ export function useIdleDetection({
   );
   const lastMouseMoveRef = useRef(0);
   const activeAnimationRef = useRef<ReturnType<typeof animate> | null>(null);
+  useAnimationFrame((timestamp, delta) => {
+    if (isIdleRef.current) {
+      const currentFog = fogProgress.get();
 
+      const progress = Math.min(
+        currentFog + (delta / maxFogTime) * (1 - currentFog),
+        1
+      );
+      fogProgress.set(progress);
+    }
+  });
   const startFogGrowth = useCallback(() => {
     isIdleRef.current = true;
     fogStartTimeRef.current = performance.now();
-    const currentFog = fogProgress.get();
-
-    const tick = () => {
-      if (!isIdleRef.current || fogStartTimeRef.current === null) return;
-      const elapsed = performance.now() - fogStartTimeRef.current;
-      const progress = Math.min(currentFog + (elapsed / maxFogTime) * (1 - currentFog), 1);
-      fogProgress.set(progress);
-      if (progress < 1) {
-        fogRafRef.current = requestAnimationFrame(tick);
-      }
-    };
-    fogRafRef.current = requestAnimationFrame(tick);
-  }, [fogProgress, maxFogTime]);
+  }, []);
 
   const clearFog = useCallback(() => {
     // Stop fog growth
     isIdleRef.current = false;
     fogStartTimeRef.current = null;
-    if (fogRafRef.current !== null) {
-      cancelAnimationFrame(fogRafRef.current);
-      fogRafRef.current = null;
-    }
+    // if (fogRafRef.current !== null) {
+    //   cancelAnimationFrame(fogRafRef.current);
+    //   fogRafRef.current = null;
+    // }
 
     // Calculate clear duration — faster with successive interactions
     const count = interactionCountRef.current;
@@ -114,9 +113,6 @@ export function useIdleDetection({
   }, [clearFog, fogProgress, startFogGrowth, timeout]);
 
   useEffect(() => {
-    // Disable fog mechanic entirely for reduced motion preference
-    if (prefersReducedMotion) return;
-
     const onMouseMove = () => {
       const now = performance.now();
       if (now - lastMouseMoveRef.current < MOUSE_DEBOUNCE_MS) return;
@@ -147,7 +143,7 @@ export function useIdleDetection({
         clearTimeout(interactionResetTimerRef.current);
       if (activeAnimationRef.current) activeAnimationRef.current.stop();
     };
-  }, [prefersReducedMotion, resetIdleTimer, startFogGrowth, timeout]);
+  }, [resetIdleTimer, startFogGrowth, timeout]);
 
   return {
     fogProgress,
