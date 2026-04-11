@@ -249,6 +249,44 @@ Cross-session continuity documents for complex subsystems live in `readmes/`:
 
 ---
 
+## Code Archaeology
+
+Two special directories sit outside `src/` and are excluded from the production build.
+
+### `.grave/` — Archived dead code
+
+Files that are removed from the active codebase but kept for recovery. **Never `rm` a file — always use `pnpm grave`.**
+
+```bash
+pnpm grave src/components/OldWidget.tsx          # single file
+pnpm grave src/payload/collections/Delta         # whole directory
+```
+
+- Path structure is mirrored: `src/foo/bar.tsx` → `.grave/src/foo/bar.tsx`
+- `.grave/` is **tracked by git** so the archive survives across clones
+- Excluded from Docker image via `.dockerignore`
+- Excluded from `tsconfig.json` via `"exclude": [".grave/**"]`
+- Type errors inside `.grave/` do not affect CI
+
+### `reference/` — Study/benchmark code
+
+Foreign code ripped in from external projects purely for reading and porting — not imported by any production file.
+
+- Has its own `reference/tsconfig.json` (extends root, `strict: false`) so IDEs type-check it without blocking CI
+- Excluded from main `tsconfig.json` via `"exclude": ["reference/**"]`
+- Excluded from Docker image via `.dockerignore`
+- When a file from `reference/` is ready to use, port it into `src/` properly; don't import directly
+
+### Type debt
+
+~537 TypeScript errors are deferred post-launch. `typescript.ignoreBuildErrors: true` in `next.config.ts` keeps the production build green. The full backlog with fix order lives in **`readmes/TYPE_DEBT.md`**.
+
+```bash
+pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l   # current error count
+```
+
+---
+
 ## State Management Patterns
 
 | What | Where | Tool |

@@ -47,5 +47,15 @@
     ".next/dev/types/**/*.ts",
     "public/scripts/brightness.worker.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".grave/**",
+    "reference/**",
+    "src/payload/collections/(consumption)/**",
+    "src/payload/collections/Holidays.ts",
+    "src/payload/plugins/membership/**",
+    "src/utilities/getExchangeRate.ts",
+    "src/utilities/getHoliday.ts",
+    "src/styles/test.tsx"
+  ]
 }

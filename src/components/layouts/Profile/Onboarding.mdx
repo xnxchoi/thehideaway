@@ -40,23 +40,18 @@ I want all that is mentioned above to be implemented at what are just two points
 ### i. Concept & Syntax
 
 > A lexicon of concepts I will be frequenting here .<aside>
-    💡
+*Note that the definitions are not, well, definitive in syntax (ironically); rather, try to focus on the
+implications of each concept.*
 
-    *Note that the definitions are not, well, definitive in syntax (ironically); rather, try to focus on the
-    implications of each concept.*
-
-</aside>
 
 1. "Tour"
 
- > *method of user onboarding, which provides users with an interactive, repeatable guidance to the essentials of an interface*
->
-- Key characteristics *(=what I am thinking of when I reference this)*
-  1. Modularity
-  2. Hypertextual Structure
-  3. (Website-like) Navigation; non-linear & traversable in the larger scheme (websites), consistently linear per-module (a single page)
-  4. Interactivity
-  5. Flexibility... to a degree
+ > *method of user onboarding, which provides users with an interactive, repeatable guidance to the essentials of an interface*- Key characteristics *(=what I am thinking of when I reference this)*
+1. Modularity
+2. Hypertextual Structure
+3. (Website-like) Navigation; non-linear & traversable in the larger scheme (websites), consistently linear per-module (a single page)
+4. Interactivity
+5. Flexibility... to a degree
  - Modularity enables flexible onboarding, but some of the steps could be enforced as needed
  - users can choose whether to be onboarded at all, which of the onboarding steps to be onboarded, at what time, etc. And expect the progress to be saved to pick up whenever they leave.
  - That being said, the first parts of the Tour would present some steps that are absolutely necessary.
@@ -66,29 +61,29 @@ I want all that is mentioned above to be implemented at what are just two points
   - qcreating the user record with placeholder values where necessary, then resume automatically next time user logs in.
   - I have a db column - "onboarded"- to store the state of the user object. we can expand this - EFFICIENTLY, in db terms and db query terms - to add more columns (or a separate table) that stores details like the steps - multilevel, Part 2, step3, item 1, etc- to ensure a more effective flow control when we query for each user.
 1. “Auth”:
- 1. The input form rendered in  sign-in / register using a fork of betterauth-ui.
- 2. Presents access to all 3 options - email-pw via input fields, social provider via respective buttons, and passkey via another button.
+    - The input form rendered in  sign-in / register using a fork of betterauth-ui.
+    - Presents access to all 3 options - email-pw via input fields, social provider via respective buttons, and passkey via another button.
 2. “Post-auth”
- 3. the phase of authentication where user has provided auth data that passes client-side and (some) server-side validations.
- 4. It is here where the flow here is provided based on 2 controlling logic:
-5. Has user provided sufficient & not-explicitly-invalid data value to initiate an auth flow?
-6. If not, terminate; if so, then:
-7. Does a record of a user exist that uses the provided email?
-8. if so, authenticate & handle the rest as per the protocol
-9. If not, then we move onto : Which of the required fields need input?
-10. If count of fields<1, terminate; if ≥1, we include any fields that are “pending”; by “pending” I mean…
-11. “Pending fields”
-12. Fields of the user record that are either empty/null, or just hold placeholder value
-13. Hmm.. if the field is a boolean, it could be harder to discern. We should track & store relevant info accordingly in the auth process.
-14. While the scope varies per authentication method, EMAIL is the **one thing all auth flows should provide regardless of the auth method.**
-15. "Overlay"
-16. UI design commonly observed in "Tours", where relevant information is presented adjacent to the interface part in "focus".
-17. "Focus"
-18. What it says.
-19. "Spotlight"
-20. a method of visual "focus", where the UI in question is "highlighted"
-21. "Filter"
-22. An accompanying effect to decrement visual presence of parts not in focus , usually through brightness · blur filter effects.
+    - the phase of authentication where user has provided auth data that passes client-side and (some) server-side validations.
+    - It is here where the flow here is provided based on 2 controlling logic:
+4. Has user provided sufficient & not-explicitly-invalid data value to initiate an auth flow?
+5. If not, terminate; if so, then:
+6. Does a record of a user exist that uses the provided email?
+7. if so, authenticate & handle the rest as per the protocol
+8. If not, then we move onto : Which of the required fields need input?
+9. If count of fields<1, terminate; if ≥1, we include any fields that are “pending”; by “pending” I mean…
+10. “Pending fields”
+11. Fields of the user record that are either empty/null, or just hold placeholder value
+12. Hmm.. if the field is a boolean, it could be harder to discern. We should track & store relevant info accordingly in the auth process.
+13. While the scope varies per authentication method, EMAIL is the **one thing all auth flows should provide regardless of the auth method.**
+14. "Overlay"
+15. UI design commonly observed in "Tours", where relevant information is presented adjacent to the interface part in "focus".
+16. "Focus"
+17. What it says.
+18. "Spotlight"
+19. a method of visual "focus", where the UI in question is "highlighted"
+20. "Filter"
+21. An accompanying effect to decrement visual presence of parts not in focus , usually through brightness · blur filter effects.
 
 ***More to come…***
 
@@ -104,11 +99,8 @@ I want all that is mentioned above to be implemented at what are just two points
 ## II. Flow
 
 <aside>
-    💡
-
-    *Note that the two subsections discussed here actually have little in common other than its presentation.*
-
-</aside>
+  💡
+  *Note that the two subsections discussed here actually have little in common other than its presentation.* </aside>
 
 ### i.  Registration
 

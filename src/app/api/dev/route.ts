@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   CustomTableLayout,
   Margins,
@@ -8,9 +8,32 @@ import {
 import pdfPrinter from "pdfmake";
 import * as pdfM from "pdfmake/build/pdfmake";
 import { join } from "path";
-import { textMake as txt } from "@/payload/collections/(consumption)/Invoices/pdfmake/assets";
+
+interface PDFMakeTextProps {
+  text: string;
+  fontSize?: number;
+  bold?: boolean;
+  italics?: boolean;
+  margin?: Margins;
+  alignment?: "left" | "center" | "right";
+  lineHeight?: number;
+  style?: string;
+}
+
+function txt(
+  text: string | PDFMakeTextProps,
+  options?: PDFMakeTextProps
+) {
+  if (typeof text === "string") {
+    return { text, ...options };
+  }
+  return { ...text, ...options };
+}
 
 export const GET = async (req: NextRequest) => {
+  if (process.env.NODE_ENV !== "development") {
+    return new NextResponse("Not Found", { status: 404 });
+  }
   // Convert Node stream to Web ReadableStream
   const fonts = {
     Joly: {

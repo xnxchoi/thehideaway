@@ -68,6 +68,7 @@ export const ArticleHero = (props: {
                   {(posts[2].image && (
                     <FrontImage
                       aspectRatio={1}
+                      loading="eager"
                       imgClassName="rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
                       resource={posts[2].image}
                     />

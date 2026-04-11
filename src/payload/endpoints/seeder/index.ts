@@ -42,36 +42,27 @@ export const seedRP = async ({
 
 	payload.logger.info(`— Seeding demo author and user...`);
 
-	const demoAdmin = await payload.create({
-		collection: "users",
-		data: {
-			firstName: "Claude",
-			lastName: "Severin",
-			email: "hideaway.seoul@gmail.com",
-			emailVerified: false,
-			bio: "Admin",
-			role: "admin",
-			slug: "claude",
-			name: "claude",
-			label: "@claude",
-		},
-	});
 	const demoAuthor = await payload.create({
 		collection: "users",
+    draft:false,
 		data: {
 			firstName: "Yong Jang",
 			lastName: "Seo",
 			email: "yongjangseo@gmail.com",
 			emailVerified: false,
-			bio: "Author",
-			role: "author",
+			bio: "Editor",
+			role: "editor",
 			slug: "yongjang-seo",
-			name: "yongjang",
-			label: "@yongjang",
+      verified:true,
+      username:"yonjangseo",
+      banned:false,
+      name:"Yong Jang Seo",
+      onboarded:false,
+      twoFactorEnabled:false,
+			displayUsername: "@yongjang",
 		},
 	});
 	const demoAuthorID = demoAuthor.id;
-	const demoAdminID = demoAdmin.id;
 	payload.logger.info(`— Seeding media...`);
 	const [
 		image1Buffer,
@@ -142,31 +133,32 @@ export const seedRP = async ({
 	const imageDocsIDs = imageDocs.map((imageDoc) => imageDoc.id);
 	payload.logger.info(`— Seeding categories...`);
 
-	const categories = [
+	const categories: Omit<Category, "id" | "updatedAt" | "createdAt">[] = [
 		{
 			title: "Uncategorized",
 			slug: "uncategorized",
 			relatedCategories: [],
+      popularity:10
 		},
 		{
 			title: "Finance",
 			slug: "finance",
-			relatedCategories: [],
+			relatedCategories: [],popularity:10
 		},
 		{
 			title: "Art & Consumption",
 			slug: "art-consumption",
-			relatedCategories: [],
+			relatedCategories: [],popularity:10
 		},
 		{
 			title: "Homo Economicus",
 			slug: "homo-economicus",
-			relatedCategories: [],
+			relatedCategories: [],popularity:10
 		},
 		{
 			title: "Curation",
 			slug: "curation",
-			relatedCategories: [],
+			relatedCategories: [],popularity:10
 		},
 	];
 	const categoryDocs: Category[] = []
@@ -203,70 +195,70 @@ export const seedRP = async ({
 	// Do not create posts with `Promise.all` because we want the posts to be created in order
 	// This way we can sort them by `createdAt` or `publishedAt` and they will be in the expected order
 	const docsToCreate: Omit<Post, "createdAt" | "id" | "updatedAt">[] = [
-		{
-			title: post1.title!,
-			content: post1.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[0],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post1.title!),
-			subtitle: "",
-		},
-
-		{
-			title: post2.title || "",
-			content: post2.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[1],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post2.title!),
-			subtitle: "",
-		},
-		{
-			title: post3.title!,
-			content: post3.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[2],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post3.title!),
-			subtitle: "",
-		},
-		{
-			title: post4.title!,
-			content: post4.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[3],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post4.title!),
-			subtitle: "",
-		},
-		{
-			title: post5.title!,
-			content: post5.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[4],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post5.title!),
-			subtitle: "",
-		},
-		{
-			title: post6.title!,
-			content: post6.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[5],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post6.title!),
-			subtitle: "",
-		},
-		{
-			title: post7.title!,
-			content: post7.content!,
-			category: categoryDocsIDs[0]!,
-			image: imageDocsIDs[6],
-			author: {relationTo: "users", value: demoAuthorID},
-			slug: formatSlug(post7.title!),
-			subtitle: "",
-		},
+		// {
+		// 	title: post1.title!,
+		// 	content: post1.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[0],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post1.title!),
+		// 	subtitle: "",
+		// },
+    //
+		// {
+		// 	title: post2.title || "",
+		// 	content: post2.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[1],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post2.title!),
+		// 	subtitle: "",
+		// },
+		// {
+		// 	title: post3.title!,
+		// 	content: post3.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[2],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post3.title!),
+		// 	subtitle: "",
+		// },
+		// {
+		// 	title: post4.title!,
+		// 	content: post4.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[3],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post4.title!),
+		// 	subtitle: "",
+		// },
+		// {
+		// 	title: post5.title!,
+		// 	content: post5.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[4],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post5.title!),
+		// 	subtitle: "",
+		// },
+		// {
+		// 	title: post6.title!,
+		// 	content: post6.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[5],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post6.title!),
+		// 	subtitle: "",
+		// },
+		// {
+		// 	title: post7.title!,
+		// 	content: post7.content!,
+		// 	category: categoryDocsIDs[0]!,
+		// 	image: imageDocsIDs[6],
+		// 	author: {relationTo: "users", value: demoAuthorID},
+		// 	slug: formatSlug(post7.title!),
+		// 	subtitle: "",
+		// },
 	];
 	const postDocs: Post[] = [];
 	for (const post of docsToCreate) {

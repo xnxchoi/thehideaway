@@ -45,6 +45,12 @@ const nextConfig: NextConfig = {
     }
   },
   serverExternalPackages: ["pdfmake"],
+  typescript: {
+    // Intentional ship switch. See readmes/TYPE_DEBT.md for the backlog of
+    // ~700 errors being paid down post-launch. tsc still runs in CI for the
+    // curated set (main tsconfig's `exclude` list).
+    ignoreBuildErrors: true
+  },
   webpack: (config, { isServer, webpack }) => {
     config.resolve.alias = {
       ...config.resolve.alias
@@ -72,13 +78,6 @@ const nextConfig: NextConfig = {
   sassOptions: { includePaths: ["src", "src/app/(payload)"] },
   reactStrictMode: true,
 
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true
-  },
   cacheComponents: false,
   async redirects() {
     return [

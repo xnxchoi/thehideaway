@@ -21,7 +21,9 @@ tests/
 .hintrc
 .filenignore
 .DS_Store
-.grave/**
+# .grave/ is intentionally tracked — it's the project's archival trash can.
+# Files are moved here (never deleted) via `pnpm grave <path>`.
+# Excluded from Docker builds via .dockerignore.
 .vscode/
 .idea/
 .next

@@ -1,0 +1,32 @@
+{
+  // Dedicated tsconfig for `reference/` — study-only / "benchmark target" code.
+  //
+  // Goal: give the IDE full type-checking, navigation, and variable tracking
+  // for code ripped from other codebases that you want to take apart and
+  // reimplement, WITHOUT polluting the production typecheck / build.
+  //
+  // How it works:
+  //   - The root tsconfig.json excludes `reference/**`, so `pnpm tsc --noEmit`
+  //     and Next's build never see these files.
+  //   - IDEs (VS Code, WebStorm) auto-discover this tsconfig when opening any
+  //     file inside `reference/` and use these settings instead of the root.
+  //   - Settings are deliberately loose — the point is exploration, not rigor.
+  //
+  // If you finish porting something out of here, move the ported file into
+  // `src/` and delete the original from `reference/`.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "isolatedModules": false,
+    "types": ["node", "react", "react-dom"]
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "exclude": ["node_modules"]
+}

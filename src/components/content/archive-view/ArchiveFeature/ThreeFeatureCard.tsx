@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
-import type { OverviewAgnosticItem, OverviewItem } from "./ArchiveFeatureCard";
+import type { OverviewAgnosticItem } from "./ArchiveFeatureCard";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { Link } from "@/components/core/Link/Link";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
@@ -60,20 +60,17 @@ function FirstCard({ item }: { item: OverviewAgnosticItem }) {
   );
 }
 
-function SecondCard({ item }: { item: OverviewItem }) {
+function SecondCard({ item }: { item: OverviewAgnosticItem }) {
   return (
     <div
       className={
         "col-2 row-2 flex items-start gap-y-8 rounded-2xl p-8 lg:col-[4/7] lg:row-1"
       }
     >
-      <Link
-        className={"absolute inset-0 z-0 h-full w-full"}
-        href={`/${item.collection === "posts" ? "essays" : "surf"}/${item.slug}`}
-      />
+      <Link className={"absolute inset-0 z-0 h-full w-full"} href={item.url} />
 
       <div className={"relative order-5 min-h-px w-full min-w-px rounded-2xl"}>
-        {item.image && (
+        {"image" in item && item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
             resource={item.image}
@@ -84,13 +81,13 @@ function SecondCard({ item }: { item: OverviewItem }) {
         wrapperClassName={
           "order-2 [&_>*]:!text-foreground [&_>*]:!border-foreground"
         }
-        content={item.category.title}
+        content={item.category}
       />
       <p className="order-3 m-0 font-serif text-[3rem] leading-[1.1] font-bold tracking-[-.01em] lg:text-[4.2rem]">
         {item.title}
       </p>
       <div className={"order-4 inline-block font-sans text-[1rem] uppercase"}>
-        {`By ${item.author.name}`}
+        {`By ${item.author}`}
       </div>
       <p className="order-5 m-0 block font-sans text-base leading-[1.1] font-bold tracking-[-.01em] lg:order-2 lg:text-[1.6rem]">
         {"subtitle" in item ? item.subtitle : ""}
@@ -98,18 +95,15 @@ function SecondCard({ item }: { item: OverviewItem }) {
     </div>
   );
 }
-function ThirdCard({ item }: { item: OverviewItem }) {
+function ThirdCard({ item }: { item: OverviewAgnosticItem }) {
   return (
     <div
       className={"relative mb-[8px] flex flex-col gap-y-[2rem] lg:col-[1/4]"}
     >
-      <Link
-        className={"absolute inset-0 z-0 h-full w-full"}
-        href={`/${item.collection === "posts" ? "essays" : "delta"}/${item.slug}`}
-      />
+      <Link className={"absolute inset-0 z-0 h-full w-full"} href={item.url} />
 
       <div className={"relative order-1 min-h-px w-full min-w-px rounded-2xl"}>
-        {item.image && (
+        {"image" in item && item.image && (
           <FrontImage
             imgClassName="absolute object-cover top-0 block w-full h-full max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
             resource={item.image}
@@ -121,13 +115,13 @@ function ThirdCard({ item }: { item: OverviewItem }) {
         wrapperClassName={
           "order-3 [&_>*]:!text-foreground [&_>*]:!border-foreground"
         }
-        content={item.category.title}
+        content={item.category}
       />
       <p className="order-4 m-0 font-sans text-[3rem] leading-[1.1] font-bold tracking-[-.01em] lg:text-[4.2rem]">
         {item.title}
       </p>
       <div className={"order-6 inline-block font-sans text-[1rem] uppercase"}>
-        {`By ${item.author.name}`}
+        {`By ${item.author}`}
       </div>
       <p className="order-5 m-0 block font-sans text-base leading-[1.1] font-bold tracking-[-.01em] lg:order-2 lg:text-[1.6rem]">
         {"subtitle" in item ? item.subtitle : ""}
