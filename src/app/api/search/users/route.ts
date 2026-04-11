@@ -15,10 +15,13 @@ interface UserSearchResult {
   similarity_score?: number;
 }
 
+const MAX_QUERY_LENGTH = 100;
+
 export async function GET(request: NextRequest) {
   const payload = await getPayload({ config });
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q");
+  const rawQuery = searchParams.get("q");
+  const query = rawQuery?.trim().slice(0, MAX_QUERY_LENGTH) ?? "";
 
   if (!query) {
     return NextResponse.json({ users: [] });
@@ -41,11 +44,17 @@ export async function GET(request: NextRequest) {
     `
     );
 
-    // Fallback to trigram similarity for partial matches
-    const excludeIds =
+    // Fallback to trigram similarity for partial matches.
+    // Build the NOT IN clause with parameterized values (no sql.raw) so
+    // there is no interpolated-string SQL surface, even though ids come
+    // from the DB rather than from user input.
+    const excludeClause =
       ftsResults.length > 0
-        ? ftsResults.map((u) => `'${u.id}'`).join(",")
-        : "NULL";
+        ? sql`AND id NOT IN (${sql.join(
+            ftsResults.map((u) => sql`${u.id}`),
+            sql.raw(", ")
+          )})`
+        : sql``;
 
     const similarResults = await payload.db.drizzle.execute<UserSearchResult[]>(
       sql`
@@ -58,13 +67,13 @@ export async function GET(request: NextRequest) {
         ) as similarity_score
       FROM users
       WHERE (
-        username % ${query} OR 
-        name % ${query} OR 
+        username % ${query} OR
+        name % ${query} OR
         slug % ${query}
       )
       AND _status = 'published'
       AND banned = false
-      AND id NOT IN (${sql.raw(excludeIds)})
+      ${excludeClause}
       ORDER BY similarity_score DESC
       LIMIT ${Math.max(0, 10 - ftsResults.length)}
     `
