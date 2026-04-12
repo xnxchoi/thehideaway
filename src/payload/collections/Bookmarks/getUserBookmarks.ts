@@ -1,4 +1,5 @@
 "use server";
+import { currentUser } from "@/lib/auth/context/get-context-props";
 import type { Bookmark, User } from "@/payload-types";
 import config from "@payload-config";
 import {
@@ -17,19 +18,29 @@ export type UserBookmarksResponse = {
 export const getUserBookmarks: PayloadHandler = cache(
   async (req: PayloadRequest) => {
     const { user } = req;
+    // SECURITY: require authentication and either self-lookup or admin.
+    // The Bookmarks collection has public read at the collection level, but this
+    // aggregated endpoint used to accept any userId from route params with no
+    // ownership gate, which made it trivial to enumerate any user's bookmarks.
+    if (!user) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const userId = req?.routeParams?.id as undefined | User["id"];
-    const { type } = req.query;
-    const id = userId || user?.id;
-    if (!id)
-      return Response.json(
-        { error: "Provide a user to query for; a user id" },
-        { status: 400 }
-      );
     if (userId && typeof userId !== "string")
       return Response.json(
         { error: "Provide a valid user id" },
         { status: 400 }
       );
+    const { type } = req.query;
+    const id = userId || user.id;
+    if (!id)
+      return Response.json(
+        { error: "Provide a user to query for; a user id" },
+        { status: 400 }
+      );
+    if (id !== user.id && user.role !== "admin") {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     if (!type || typeof type !== "string" || !bookmarkTypesRegex.test(type)) {
       return Response.json(
@@ -113,12 +124,17 @@ export const getUserBookmarks: PayloadHandler = cache(
 
 export const getBookmark = cache(
   async ({
-    userId,
     types
   }: {
-    userId: string;
     types: Bookmark["target"]["relationTo"][];
   }) => {
+    // SECURITY: derive the viewer from the session — never trust a caller-supplied userId.
+    // Exposed as a server action, so any authenticated client can POST this directly;
+    // accepting a userId parameter would let any user enumerate any other user's bookmarks.
+    const viewer = await currentUser();
+    if (!viewer) {
+      return {} as Record<Bookmark["target"]["relationTo"], string[]>;
+    }
     if (!types.every((t) => validTypes.includes(t))) {
       throw new Error("Invalid types");
     }
@@ -132,7 +148,7 @@ export const getBookmark = cache(
             and: [
               {
                 user: {
-                  equals: userId
+                  equals: viewer.id
                 }
               },
               {

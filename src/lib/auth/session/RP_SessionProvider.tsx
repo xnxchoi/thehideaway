@@ -413,7 +413,6 @@ const InternalHandler = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!!currentUser) {
       getBookmark({
-        userId: currentUser.id,
         types: bookmarkTypes
       })
         .then((r) => {
