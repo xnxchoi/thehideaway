@@ -70,15 +70,20 @@ export default function CompilationDetailClient({
   const items = (compilation.items ?? []) as CompilationWithItems["items"];
 
   const handleRemoveItem = useCallback(
-    async (index: number) => {
+    async (itemId: string, relationTo: string) => {
       const res = await removeItemFromCompilation({
         compilationId: compilation.id,
-        itemIndex: index
+        itemId,
+        relationTo
       });
       if ("success" in res) {
         setCompilation((prev) => {
-          const newItems = [...(prev.items as any[])];
-          newItems.splice(index, 1);
+          const newItems = (prev.items as any[]).filter(
+            (item: any) => {
+              const id = typeof item.value === "string" ? item.value : item.value?.id;
+              return !(id === itemId && item.relationTo === relationTo);
+            }
+          );
           return { ...prev, items: newItems, itemCount: newItems.length };
         });
       }
@@ -247,7 +252,7 @@ export default function CompilationDetailClient({
                     itemId={itemId}
                     itemData={itemData}
                     editMode={editMode && isOwner}
-                    onRemove={() => handleRemoveItem(index)}
+                    onRemove={() => handleRemoveItem(itemId, item.relationTo)}
                   />
                 );
               })}

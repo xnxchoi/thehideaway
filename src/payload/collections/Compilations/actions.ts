@@ -298,9 +298,9 @@ export async function addItemToCompilation({
 }
 
 export async function removeItemFromCompilation({
-  compilationId, itemIndex
+  compilationId, itemId, relationTo
 }: {
-  compilationId: string; itemIndex: number;
+  compilationId: string; itemId: string; relationTo: string;
 }): Promise<{ success: boolean } | { error: string }> {
   try {
     const viewer = await currentUser();
@@ -313,11 +313,17 @@ export async function removeItemFromCompilation({
     const ownerId = typeof existing.author === "string" ? existing.author : (existing.author as User).id;
     if (ownerId !== viewer.id) return { error: "Unauthorized" };
 
-    const currentItems = [...((existing.items || []))];
-    currentItems.splice(itemIndex, 1);
+    const currentItems = [...((existing.items || []))] as { relationTo: string; value: string }[];
+    const filtered = currentItems.filter(
+      (item) => !(item.value === itemId && item.relationTo === relationTo)
+    );
+
+    if (filtered.length === currentItems.length) {
+      return { error: "Item not found in compilation" };
+    }
 
     await payload.update({
-      collection: "compilations", id: compilationId, data: { items: currentItems }, overrideAccess: true, depth: 0
+      collection: "compilations", id: compilationId, data: { items: filtered }, overrideAccess: true, depth: 0
     });
     return { success: true };
   } catch (e) {

@@ -7,6 +7,7 @@ import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserF
 import { onboardingHandler } from "@/payload/collections/Users/endpoints/onboardingHandler";
 import { GotUser } from "@/payload/collections/Users/endpoints/userFieldSelect";
 import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
+import { createProfileHook } from "@/payload/collections/Profile/operations/createProfile";
 import {
   revalidateDelete as afterDeleteUser,
   revalidateUser
@@ -364,7 +365,7 @@ export const Users: CollectionConfig = {
         return finalData;
       }
     ],
-    afterChange: [revalidateUser],
+    afterChange: [createProfileHook, revalidateUser],
     afterDelete: [afterDeleteUser]
   },
   endpoints: [
