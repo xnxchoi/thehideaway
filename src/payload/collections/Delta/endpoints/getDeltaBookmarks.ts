@@ -36,7 +36,7 @@ export const getDeltaBookMarks: PayloadHandler = cache(async (req: PayloadReques
 		},
 	}).then(
 		result => Response.json({bookmarks: result.docs, count: result.totalDocs}, {status: 200})).
-		catch(error => Response.json({error: error.message}, {status: 500}));
+		catch(() => Response.json({error: "Failed to fetch bookmarks"}, {status: 500}));
 	return result;
 
 

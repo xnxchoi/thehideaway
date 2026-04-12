@@ -14,9 +14,9 @@ export const deltaBookmarksHandler: PayloadHandler = cache(async (req: PayloadRe
 		{error: "Provide a valid delta id"}, {status: 400})
 
 	const result = await getDeltaBookMarks({payload: req.payload, id: `${id}`}).then(
-		result => result instanceof Error ? Response.json({error: result.message},
+		result => result instanceof Error ? Response.json({error: "Failed to fetch bookmarks"},
 			{status: 500}) : Response.json({bookmarks: result.bookmarks, count: result.count},
-			{status: 200})).catch(error => Response.json({error: error.message}, {status: 500}))
+			{status: 200})).catch(() => Response.json({error: "Failed to fetch bookmarks"}, {status: 500}))
 	return result
 
 

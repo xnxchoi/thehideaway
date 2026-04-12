@@ -27,6 +27,8 @@ function isAuthenticated(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
 	const startTime = Date.now();
 
+	const payload = await getPayload({config});
+
 	try {
 		// Check authentication
 		if (!isAuthenticated(request)) {
@@ -35,8 +37,6 @@ export async function POST(request: NextRequest) {
 				{status: 401},
 			);
 		}
-
-		const payload = await getPayload({config});
 
 		payload.logger.info("=== JOB EXECUTION ENDPOINT CALLED ===");
 
@@ -60,12 +60,12 @@ export async function POST(request: NextRequest) {
 		});
 	} catch (error) {
 		const executionTime = Date.now() - startTime;
-		console.error("Error running jobs:", error);
+		payload.logger.error({ msg: "Error running jobs", err: error });
 
 		return NextResponse.json(
 			{
 				success: false,
-				error: error instanceof Error ? error.message : "Unknown error",
+				error: "Job execution failed",
 				executionTimeMs: executionTime,
 				timestamp: new Date().toISOString(),
 			},

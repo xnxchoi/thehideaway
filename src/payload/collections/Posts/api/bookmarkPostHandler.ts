@@ -41,7 +41,7 @@ export const postBookmarkSaveHandler: PayloadHandler = cache(
     }).catch((error) => error);
     if (data instanceof Error) {
       req.payload.logger.error(data.message);
-      return Response.json({ error: data.message }, { status: 500 });
+      return Response.json({ error: "Failed to save bookmark" }, { status: 500 });
     }
     return Response.json({ message: "Bookmark saved", data }, { status: 200 });
   }
@@ -84,7 +84,7 @@ export const unBookmarkPostHandler: PayloadHandler = cache(
     });
     if (data.errors.length > 0) {
       req.payload.logger.error({ message: data.errors });
-      return Response.json({ error: data.errors }, { status: 500 });
+      return Response.json({ error: "Failed to delete bookmark" }, { status: 500 });
     }
     return Response.json(
       { message: "Bookmark deleted", data: data.docs },
