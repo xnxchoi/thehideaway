@@ -1,3 +1,4 @@
+import {timingSafeEqual} from "crypto";
 import {NextRequest, NextResponse} from "next/server";
 import {getPayload} from "payload";
 import config from "@payload-config";
@@ -6,16 +7,21 @@ import config from "@payload-config";
 function isAuthenticated(request: NextRequest): boolean {
 	const cronSecret = process.env.CRON_SECRET;
 
-	if (cronSecret) {
-		const authHeader = request.headers.get("authorization");
-		const expectedAuth = `Bearer ${cronSecret}`;
-
-		if (authHeader !== expectedAuth) {
-			return false;
-		}
+	// SECURITY: if CRON_SECRET is not set, reject all requests.
+	// The old code fell through to `return true` when unset, allowing
+	// unauthenticated job execution.
+	if (!cronSecret) {
+		return false;
 	}
 
-	return true;
+	const authHeader = request.headers.get("authorization") ?? "";
+	const expected = `Bearer ${cronSecret}`;
+
+	// SECURITY: use timing-safe comparison to prevent token length leakage.
+	// Pad both to the same length so timingSafeEqual doesn't throw on mismatched sizes.
+	const a = Buffer.from(authHeader.padEnd(expected.length));
+	const b = Buffer.from(expected.padEnd(authHeader.length));
+	return a.length === b.length && timingSafeEqual(a, b);
 }
 
 export async function POST(request: NextRequest) {
