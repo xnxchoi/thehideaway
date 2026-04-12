@@ -1,3 +1,4 @@
+import {cleanupBookmarksAfterDelete} from "@/payload/hooks/cleanupBookmarksAfterDelete";
 import { StreamHandler } from "@/payload/collections/Radio/endpoints/stream";
 import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
 import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
@@ -188,6 +189,7 @@ export const Tracks: CollectionConfig = {
   endpoints: [{ path: "stream/:id", method: "get", handler: StreamHandler }],
   hooks: {
     afterChange: [],
+    afterDelete: [cleanupBookmarksAfterDelete("tracks")],
     beforeChange: [sanitizeAuthor(false)]
   }
 };

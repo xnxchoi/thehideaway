@@ -1,3 +1,4 @@
+import {cleanupBookmarksAfterDelete} from "@/payload/hooks/cleanupBookmarksAfterDelete";
 import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
@@ -144,6 +145,7 @@ export const Albums: CollectionConfig = {
   },
   hooks: {
 	  afterChange: [ ],
+	  afterDelete: [cleanupBookmarksAfterDelete("albums")],
     beforeChange: [sanitizeAuthor(false), populatePublishedAt]
   }
 };

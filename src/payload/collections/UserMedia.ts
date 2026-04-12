@@ -1,4 +1,5 @@
 import { User } from "@/payload-types";
+import {cleanupBookmarksAfterDelete} from "@/payload/hooks/cleanupBookmarksAfterDelete";
 import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
 import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
 import {
@@ -218,6 +219,7 @@ export const UserMedia: CollectionConfig = {
     //   },
     // ],
     afterDelete: [
+      cleanupBookmarksAfterDelete("userMedia"),
       // async ({ doc, collection }) => {
       //   function del(dir: string, filename: string) {
       //     const matches = [

@@ -230,9 +230,10 @@ export const Bookmarks: CollectionConfig = {
               console.error(err);
               return false;
             });
-          if (!bookmarkExists) {
-            return data;
+          if (bookmarkExists) {
+            throw new Error("Bookmark already exists");
           }
+          return data;
         }
         if (operation === "update") {
           return originalDoc;

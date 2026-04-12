@@ -7,10 +7,15 @@ export const afterDelete: CollectionAfterDeleteHook = async ({
   try {
     await payload.delete({
       collection: "bookmarks",
-      where: { target: { equals: doc.id } },
+      where: {
+        and: [
+          { "target.value": { equals: doc.id } },
+          { "target.relationTo": { equals: "surf" } }
+        ]
+      },
       overrideAccess: true
     });
   } catch (error) {
-    console.error(error);
+    payload.logger.error({ msg: "Failed to clean up bookmarks after surf delete", err: error });
   }
 };

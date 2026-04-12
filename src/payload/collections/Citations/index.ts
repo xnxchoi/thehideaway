@@ -356,7 +356,8 @@ export const Citations: CollectionConfig = {
     },
     {
       name: "memo",
-      type: "textarea"
+      type: "textarea",
+      maxLength: 200
     }
   ],
   timestamps: true,
