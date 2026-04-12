@@ -51,7 +51,27 @@ const nextConfig: NextConfig = {
     // curated set (main tsconfig's `exclude` list).
     ignoreBuildErrors: true
   },
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer, webpack, dev }) => {
+    if (dev) {
+      const existing = Array.isArray(config.watchOptions?.ignored)
+        ? config.watchOptions.ignored
+        : config.watchOptions?.ignored
+          ? [config.watchOptions.ignored]
+          : [];
+      config.watchOptions = {
+        ...config.watchOptions,
+        ignored: [
+          ...existing,
+          "**/node_modules/**",
+          "**/.git/**",
+          "**/.next/**",
+          "**/.grave/**",
+          "**/reference/**",
+          "**/src/app/(payload)/vault/importMap.js",
+          "**/src/types/payload-types.ts"
+        ].filter((p) => typeof p === "string" && p.length > 0)
+      };
+    }
     config.resolve.alias = {
       ...config.resolve.alias
     };

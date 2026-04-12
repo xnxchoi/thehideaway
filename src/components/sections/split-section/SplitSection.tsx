@@ -66,7 +66,7 @@ export const SplitSection = () => {
   const lastName = useRPSession(useShallow((r) => r.lastName));
   const portrait = useRPSession(useShallow((r) => r.portrait));
   const email = useRPSession(useShallow((r) => r.email));
-  const [type, setType] = useState<MemberCardsType | string>("BADGE");
+  const [type, setType] = useState<MemberCardsType>("BADGE");
 
   const profilePictureSchema = z
     .union([

@@ -78,12 +78,11 @@ export default function CompilationDetailClient({
       });
       if ("success" in res) {
         setCompilation((prev) => {
-          const newItems = (prev.items as any[]).filter(
-            (item: any) => {
-              const id = typeof item.value === "string" ? item.value : item.value?.id;
-              return !(id === itemId && item.relationTo === relationTo);
-            }
-          );
+          const newItems = (prev.items as any[]).filter((item: any) => {
+            const id =
+              typeof item.value === "string" ? item.value : item.value?.id;
+            return !(id === itemId && item.relationTo === relationTo);
+          });
           return { ...prev, items: newItems, itemCount: newItems.length };
         });
       }
@@ -500,10 +499,13 @@ function AddFromBookmarksPanel({
   );
 
   const handleAdd = async (item: BookmarkItemTyped) => {
-    const key = `${item.collectionSlug}::${item.id}`;
+    const key = `${item["collection"]}::${item.id}`;
     if (existingSet.has(key) || adding) return;
     setAdding(key);
-    await onAdd({ relationTo: item.collectionSlug, value: item.id });
+    await onAdd({
+      relationTo: item.collection as CompilationItemType,
+      value: item.id
+    });
     existingSet.add(key);
     setAdding(null);
   };
@@ -568,7 +570,7 @@ function AddFromBookmarksPanel({
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {(bookmarkedItems[activeTab] ?? []).map((item) => {
-                const key = `${item.collectionSlug}::${item.id}`;
+                const key = `${item.collection}::${item.id}`;
                 const alreadyAdded = existingSet.has(key);
                 return (
                   <RP_Btn
@@ -593,7 +595,7 @@ function AddFromBookmarksPanel({
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
                           <span className="font-mono text-2xl text-muted-foreground/20">
-                            {item.collectionSlug.charAt(0).toUpperCase()}
+                            {item.collection.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}

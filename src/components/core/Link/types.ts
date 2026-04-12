@@ -4,74 +4,38 @@ import { Header } from "@payload-types";
 import type { HTMLMotionProps } from "motion/react";
 import type { LinkProps as NextLinkProps } from "next/link";
 import { DataFromCollectionSlug } from "payload";
-import {
-  type ComponentProps,
-  ComponentPropsWithoutRef,
-  RefObject
-} from "react";
+import { type ComponentProps, ReactNode, RefObject } from "react";
 
-export type LinkedCollectionSlug = NonNullable<
-  Flatten<Header["navItems"]>["link"]["reference"]
->["relationTo"];
-export type LinkReference<
-  T extends LinkedCollectionSlug = LinkedCollectionSlug
-> = {
-  relationTo: T;
-  value: string | DataFromCollectionSlug<T>;
+export type LinkedCollectionSlug = NonNullable<Flatten<Header["navItems"]>["link"]["reference"]>["relationTo"];
+export type LinkReference<T extends LinkedCollectionSlug = LinkedCollectionSlug> = {
+  relationTo: T; value: string | DataFromCollectionSlug<T>;
 };
-export type PayloadLinkProps<
-  T extends "reference" | "custom" = "reference" | "custom"
-> = {
-  url?: null | string;
-  newTab?: boolean;
-  label?: string;
-  appearance?: "default" | "outline" | null;
-  type: T;
-} & (T extends "reference"
-  ? {
-      reference: LinkReference;
-    }
-  : T extends "custom"
-    ? {
-        reference?: null;
-      }
-    : never);
+export type PayloadLinkProps<T extends "reference" | "custom" = "reference" | "custom"> = {
+  url?: null | string; newTab?: boolean; label?: string; appearance?: "default" | "outline" | null; type: T;
+} & (T extends "reference" ? {
+  reference: LinkReference;
+} : T extends "custom" ? {
+  reference?: null;
+} : never);
 type AllowedTags = HTMLAnchorElement | HTMLSpanElement | HTMLDivElement;
-type NativePropsA = Omit<
-  ComponentProps<"a">,
-  keyof NextLinkProps | "onMouseEnter" | "onClick" | "onMouseLeave" | "href"
->;
-export type RPLinkProps = NativePropsA &
-  Omit<NextLinkProps, "onMouseEnter" | "onClick" | "onMouseLeave" | "href"> & {
-    href: string;
-    onMouseLeave?: () => void;
-    onMouseEnter?: () => void;
-    onClick?: () => void;
-  };
-export type RPButtonProps = Omit<
-  ComponentPropsWithoutRef<"button">,
-  "onMouseEnter" | "onClick" | "onMouseLeave"
-> & {
-  onMouseLeave?: () => void;
-  onMouseEnter?: () => void;
-  onClick?: () => void;
+type NativePropsA = Omit<ComponentProps<"a">, keyof NextLinkProps | "href">;
+export type RPLinkProps = NativePropsA & Omit<NextLinkProps, "href"> & {
+  href: string;
 };
+
 export type RPLinkPropsWithRef = RPLinkProps & {
   disabled?: boolean;
 };
 export type MotionBtnProps = HTMLMotionProps<"button">;
+type VB = Partial<Omit<RPLinkProps, keyof ComponentProps<"button">|keyof RPLinkProps>>
 export type CMSLinkBase = ({
   label?: string;
-} & Partial<RPLinkProps> & { link: PayloadLinkProps }) &
-  (
-    | {
-        button: true;
-        variant: ButtonProps["variant"];
-        size: ButtonProps["size"];
-        ref?: RefObject<HTMLButtonElement>;
-      }
-    | {
-        button?: false;
-        ref?: RefObject<HTMLAnchorElement>;
-      }
-  );
+} & VB & { link: PayloadLinkProps }) & ((ComponentProps<'button'> & {
+  button: true;
+  variant: ButtonProps["variant"];
+  size: ButtonProps["size"];
+  children?:ReactNode;
+
+}) | ({
+  button?: false;
+}&RPLinkProps));

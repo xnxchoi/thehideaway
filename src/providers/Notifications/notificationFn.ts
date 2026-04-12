@@ -2,7 +2,6 @@
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import type { QueryFunction } from "@tanstack/react-query";
 import { useMemo } from "react";
-import * as queryString from "node:querystring";
 
 export const useNotificationFn = ({
   lastFetched
@@ -42,8 +41,8 @@ export const useNotificationFn = ({
           return re;
         }
       },
-      queryString:lastFetched&&`?timestamp=${lastFetched}`||``
+      queryString: lastFetched ? `?timestamp=${lastFetched}` : ``
     }),
-    [queryString]
+    [lastFetched]
   );
 };

@@ -1,11 +1,19 @@
 "use client";
 import "./__plans.scss";
-import React from "react";
+import dynamic from "next/dynamic";
 
-const PageClient: React.FC = () => {
-	/* Force the header to be dark mode while we have an image behind it */
+const Polaroid = dynamic(
+  () => import("@/components/UX/Polaroid/index").then((m) => m.RP_POLAROID),
+  { ssr: false }
+);
+const PageClient = () => {
+  /* Force the header to be dark mode while we have an image behind it */
 
-	return <></>;
+  return (
+    <>
+      <Polaroid />
+    </>
+  );
 };
 
 export default PageClient;

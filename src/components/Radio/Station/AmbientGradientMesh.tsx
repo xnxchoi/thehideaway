@@ -24,7 +24,7 @@ import {
   KawaseBlurPass,
   RenderPass
 } from "postprocessing";
-import { useEffect, useEffectEvent, useMemo, useRef } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { FrontSide, Mesh, Vector2, Vector3 } from "three";
 import {
   Color as ThreeColor,
@@ -85,7 +85,18 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     playState.set(playing);
   }, [playState, playing]);
   const theme = useTheme((s) => s.theme);
-  const isDark = theme === "dark";
+  const [isDark, setIsDark] = useState(theme === "dark");
+  useEffect(
+    () =>
+      theme === "dark"
+        ? setIsDark(true)
+        : theme === "light"
+          ? setIsDark(false)
+          : setIsDark(
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+            ),
+    [theme]
+  );
   const opacit = useTransform(() =>
     playState.get() ? OPACITY_PLAYING : OPACITY_STOPPED + 0.01
   );
@@ -127,8 +138,6 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   );
   const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
 
-  // Register once at module level
-  extend({ AmbientShader });
   const materialRef = useRef<InstanceType<typeof AmbientShader>>(null);
   const meshRef = useRef<Mesh>(null);
   const { gl, scene, camera } = useThree();
@@ -148,7 +157,8 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   const noiseTexture = useTexture(
     "/assets/seamless.png",
     (texture: Texture) => {
-      texture.wrapS = texture.wrapT = RepeatWrapping;
+      texture.wrapS = RepeatWrapping;
+      texture.wrapT = RepeatWrapping;
     }
   );
   const initSequence = useEffectEvent(() => {
@@ -171,10 +181,10 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     const composer = new EffectComposer(gl);
     composer.multisampling = Math.min(4, 20);
     composer.removeAllPasses();
+    composer.setSize(gl.domElement.offsetWidth, gl.domElement.offsetHeight);
     composer.addPass(renderPass);
     composer.addPass(blurPass);
     composer.addPass(effectPass);
-    composer.setSize(gl.domElement.offsetWidth, gl.domElement.offsetHeight);
     composerRef.current = composer;
 
     // Disable R3F auto-clear so our EffectComposer has full control
@@ -229,10 +239,12 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   }, []);
   // ── Set initial colors + texture on material (runs once after mount) ───
   const initializeShaderMaterial = useEffectEvent(() => {
-    if (!materialRef.current) return;
-    const m = materialRef.current;
+    if (materialRef.current) return;
+    if (!meshRef.current || !noiseTexture) return;
+    const m = new AmbientShader();
     m.u_noiseTexture = noiseTexture;
-
+    materialRef.current = m;
+    meshRef.current.material = m;
     // Set initial theme colors
     const bg = isDark ? DARK_BG : LIGHT_BG;
     const c1 = isDark ? DARK_COLOR1 : LIGHT_COLOR1;
@@ -406,7 +418,6 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     const current = m.u_blobIntensity;
     const target = targetBlobIntensity.current;
     m.u_blobIntensity += (target - current) * Math.min(delta * 0.2 * 1.5, 0.1);
-    meshRef.current.visible = true;
     _state.gl.render(_state.scene, _state.camera);
   }, 1);
   const didit = useRef(false);
@@ -418,23 +429,17 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
 
     // Show mesh → render through postprocessing → hide mesh
     composerRef.current.render(delta);
-    meshRef.current.visible = false;
   }, 2);
 
   return (
     <>
-      <ambientLight args={[colore]} intensity={1} />
-      <directionalLight color={colore} intensity={1} position={vecc} />
       <mesh ref={meshRef}>
-        <planeGeometry args={[6.5, 6.5]} />
-        {/* @ts-expect-error — dynamically extended shader material */}
-        <ambientShader
-          extensions={{
-            derivatives: "#extension GL_OES_standard_derivatives: enable"
-          }}
-          side={DoubleSide}
-          ref={materialRef}
-        />
+        <planeGeometry args={[1, 1]} />
+        {/*<ambientShader*/}
+        {/*  */}
+        {/*  side={FrontSide}*/}
+        {/*  ref={materialRef}*/}
+        {/*/>*/}
       </mesh>
     </>
   );

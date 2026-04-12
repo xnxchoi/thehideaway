@@ -138,13 +138,13 @@ export const Justification = (props: {
                   opacity: 0
                 }}
                 data-lenis-prevent="true"
-                className="fixed inset-0 z-[10]"
+                className="fixed inset-0 z-10"
               />
               <m.div
                 key={"the_pitch_content"}
                 data-lenis-prevent="true"
                 layoutRoot={true}
-                className="fixed inset-0 z-[10] overflow-hidden"
+                className="fixed inset-0 z-10 overflow-hidden"
               >
                 <m.div
                   key={"the_pitch_content_close"}
@@ -158,14 +158,14 @@ export const Justification = (props: {
                 ></m.div>
                 <m.div
                   key={"the_pitch_content_inner"}
-                  className="absolute top-1/2 left-[55%] z-[22] flex h-min w-min transform-[translate(-50%,-50%)] flex-nowrap items-end justify-center gap-[10px] overflow-visible p-0 max-md:left-1/2 max-md:flex-col"
+                  className="absolute top-1/2 left-[55%] z-22 flex h-min w-min transform-[translate(-50%,-50%)] flex-nowrap items-end justify-center gap-[10px] overflow-visible p-0 max-md:left-1/2 max-md:flex-col"
                   style={{
                     flex: "0 0 auto"
                   }}
                 >
                   <m.div
                     key={"the_pitch_content_inner_video"}
-                    className="relative h-[550px] w-[550px] flex-none max-md:aspect-square max-md:h-auto max-md:w-[95vw]"
+                    className="relative h-220 w-220 flex-none max-md:aspect-square max-md:h-auto max-md:w-[95vw]"
                     initial={{
                       opacity: 1,
                       rotate: 0,
@@ -215,26 +215,26 @@ export const Justification = (props: {
                     }}
                     style={{ transformPerspective: 1200 }}
                   >
-                    <video
+                    <m.video
+                      onTap={(e) => {
+                        if (e.currentTarget) {
+                          (
+                            e.currentTarget as HTMLVideoElement & EventTarget
+                          ).muted = false;
+                        }
+                      }}
                       ref={videoRef}
+                      playsInline={true}
                       controls={false}
                       loop={true}
-                      muted={false}
+                      muted={true}
+                      className={
+                        "h-full w-full rounded-4xl bg-transparent object-cover"
+                      }
                       src="/media/f.mp4"
                       width={"100%"}
                       height={"100%"}
                       autoPlay={true}
-                      style={{
-                        objectFit: "cover",
-                        backgroundColor: "rgba(0, 0, 0, 0)",
-                        borderRadius: 20,
-                        borderTopLeftRadius: 20,
-                        borderTopRightRadius: 20,
-                        width: "100%",
-                        height: "100%",
-                        borderBottomLeftRadius: 20,
-                        borderBottomRightRadius: 20
-                      }}
                     />
                   </m.div>
                   <m.div

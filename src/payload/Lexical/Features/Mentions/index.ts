@@ -5,7 +5,7 @@ export const MentionFeature = createServerFeature({
   key: "mentionFeature",
   feature: {
     ClientFeature:
-      "@/payload/lexical/Features/Mentions/feature.client.ts#MentionClientFeature",
+      "@/payload/Lexical/Features/Mentions/feature.client.ts#MentionClientFeature",
     nodes: [createNode({ node: MentionNode })]
   }
 });

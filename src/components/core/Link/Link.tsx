@@ -68,9 +68,9 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
   }, [href, currentPath]);
   const { setGenericPageTransition } = useTransitionSetter();
 
-  const handleClick: MouseEventHandler = useCallback(
+  const handleClick: MouseEventHandler<HTMLAnchorElement> = useCallback(
     (e) => {
-      onClick?.();
+      onClick?.(e);
       if (isAnchor) {
         e.preventDefault();
         lenis && lenis.scrollTo(href);
@@ -144,11 +144,9 @@ export function LinkUnderlined(
 export const useLinkPaths = ({ href }: { href: string }) => {
   const path = useMemo(() => {
     if (!href) {
-      console.log("no href");
       return "";
     }
     const url = new URL(href, "http://localhost");
-    console.log(`url constructed, ${url.pathname}`);
     return url.pathname;
   }, [href]);
   const currentPath = usePathname();

@@ -1,36 +1,11 @@
-import { getBookmarkExistance } from "@/payload/collections/Bookmarks/server/getBookmarkExistance";
-import { createValidQueryStringRegex } from "@/utilities/regexUtilities";
+import { validTypes } from "@/payload/collections/Bookmarks/constants";
 import { Bookmark } from "@payload-types";
 import { NextResponse } from "next/server";
 import { CollectionConfig } from "payload";
 import { uuidv7 } from "uuidv7";
 import { filterByCurrentUser } from "../helpers";
 
-export const bookmarkTypes: Bookmark["target"]["relationTo"][] = [
-  "posts",
-  "surf",
-  "profile",
-
-  "users",
-  "albums",
-  "playlists",
-  //
-  "tracks",
-  "userMedia"
-];
-export const validTypes = [
-  "posts",
-  "surf",
-  "profile",
-
-  "users",
-  "albums",
-  "playlists",
-  //
-  "tracks",
-  "userMedia"
-] as const;
-export const bookmarkTypesRegex = createValidQueryStringRegex(bookmarkTypes);
+export { bookmarkTypes, validTypes, bookmarkTypesRegex } from "@/payload/collections/Bookmarks/constants";
 export const Bookmarks: CollectionConfig = {
   slug: "bookmarks",
   admin: {
@@ -150,6 +125,9 @@ export const Bookmarks: CollectionConfig = {
             }
           );
         }
+        const { getBookmarkExistance } = await import(
+          "@/payload/collections/Bookmarks/server/getBookmarkExistance"
+        );
         const res = await getBookmarkExistance({
           target: {
             relationTo: collection,

@@ -51,7 +51,7 @@ import { RP_ImageBlock as RP_ImageBlock_96cd05edb8fb701d903b4755c5080614 } from 
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { default as default_ec71de73a4eed72f2695daebfc9e27c0 } from '@/payload/fields/Article/Cover/index.tsx'
 import { RichTextField as RichTextField_0a6b2d6e7b4589879c706b11e5aed0bc } from '@/payload/fields/Article/Title/index.tsx'
-import { MentionClientFeature as MentionClientFeature_24c9204a253dfce5e0a1a0c0bdee4eec } from '@/payload/lexical/Features/Mentions/feature.client.ts'
+import { MentionClientFeature as MentionClientFeature_a5b2c8c4b4becca2042047655e95a539 } from '@/payload/Lexical/Features/Mentions/feature.client.ts'
 import { ContentHandOffClientFeature as ContentHandOffClientFeature_aa22751c66f745fa6b4a72c66eb2fd35 } from '@/payload/Lexical/Features/HandOff/feature.client'
 import { Code as Code_e24489dd60207f21ef564e6e397b0151 } from '@/blocks/Code/Component.client.tsx'
 import { RichTextField as RichTextField_ec5ea99c6b7508d66d88be717d6c2cde } from '@/payload/fields/Article/Content/index.tsx'
@@ -150,7 +150,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@/payload/fields/Article/Cover/index.tsx#default": default_ec71de73a4eed72f2695daebfc9e27c0,
   "@/payload/fields/Article/Title/index.tsx#RichTextField": RichTextField_0a6b2d6e7b4589879c706b11e5aed0bc,
-  "@/payload/lexical/Features/Mentions/feature.client.ts#MentionClientFeature": MentionClientFeature_24c9204a253dfce5e0a1a0c0bdee4eec,
+  "@/payload/Lexical/Features/Mentions/feature.client.ts#MentionClientFeature": MentionClientFeature_a5b2c8c4b4becca2042047655e95a539,
   "@/payload/Lexical/Features/HandOff/feature.client#ContentHandOffClientFeature": ContentHandOffClientFeature_aa22751c66f745fa6b4a72c66eb2fd35,
   "@/blocks/Code/Component.client.tsx#Code": Code_e24489dd60207f21ef564e6e397b0151,
   "@/payload/fields/Article/Content/index.tsx#RichTextField": RichTextField_ec5ea99c6b7508d66d88be717d6c2cde,

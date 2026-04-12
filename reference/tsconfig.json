@@ -18,13 +18,15 @@
   "compilerOptions": {
     "strict": false,
     "noImplicitAny": false,
+    "module": "esnext",
     "strictNullChecks": false,
     "noEmit": true,
+    "target": "es2020",
     "allowJs": true,
     "checkJs": false,
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "isolatedModules": false,
+    "isolatedModules": true,
     "types": ["node", "react", "react-dom"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],

@@ -3,33 +3,49 @@ import {getPayload} from "@/lib/payload"
 import {headers as requestHeaders} from "next/headers"
 
 export const getSession = async () => {
-	const payload = await getPayload()
-	const headers = await requestHeaders()
-	type Session = (typeof payload.betterAuth.$Infer)["Session"]
+	try {
+		const payload = await getPayload()
+		const headers = await requestHeaders()
+		type Session = (typeof payload.betterAuth.$Infer)["Session"]
 
-	const session = (await payload.betterAuth.api.getSession({headers})) as Session
-	return session
+		const session = (await payload.betterAuth.api.getSession({headers})) as Session
+		return session
+	} catch {
+		return null
+	}
 }
 
-export const getUserAccounts = async (): Promise<BetterPaidAccount[]> => {
-	const payload = await getPayload()
-	const headers = await requestHeaders()
-	const accounts = await payload.betterAuth.api.listUserAccounts({headers})
-	return accounts
+export const getUserAccounts = async (): Promise<BetterPaidAccount[] | null> => {
+	try {
+		const payload = await getPayload()
+		const headers = await requestHeaders()
+		const accounts = await payload.betterAuth.api.listUserAccounts({headers})
+		return accounts
+	} catch {
+		return null
+	}
 }
 
-export const getDeviceSessions = async (): Promise<BetterPaidDeviceSession[]> => {
-	const payload = await getPayload()
-	const headers = await requestHeaders()
-	const sessions = await payload.betterAuth.api.listSessions({headers})
-	return sessions
+export const getDeviceSessions = async (): Promise<BetterPaidDeviceSession[] | null> => {
+	try {
+		const payload = await getPayload()
+		const headers = await requestHeaders()
+		const sessions = await payload.betterAuth.api.listSessions({headers})
+		return sessions
+	} catch {
+		return null
+	}
 }
 
 export const currentUser = async () => {
-	const payload = await getPayload()
-	const headers = await requestHeaders()
-	const {user} = await payload.auth({headers})
-	return user
+	try {
+		const payload = await getPayload()
+		const headers = await requestHeaders()
+		const {user} = await payload.auth({headers})
+		return user
+	} catch {
+		return null
+	}
 }
 
 export const getContextProps = () => {

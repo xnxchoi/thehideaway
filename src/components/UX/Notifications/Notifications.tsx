@@ -1,12 +1,11 @@
 import { useRPStore } from "@/providers/RP_Pro";
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
 import { Link } from "@/components/core/Link/Link";
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { useNotifications } from "@/providers/Notifications";
 import { useIsMobile } from "@/providers/MiddleMan";
 
-export const Notifications = (l) => {
+export const Notifications = () => {
   const c: HTMLDivElement[] = [];
   const handler = useCursorHandlers("dom");
   const { onMouseEnter, onMouseLeave } = handler;
@@ -21,12 +20,12 @@ export const Notifications = (l) => {
   useEffect(() => {
     setDismissedNotif((r) => [...r]);
   }, [dismissedIndexAr]);
-  useEffect(() => {
-    dismissedNotif.forEach((i) => {
-      const d = dismissedIndexAr.indexOf(i);
-      gsap.to(notifItems.current[i], {});
-    });
-  }, [dismissedNotif]);
+  // useEffect(() => {
+  //   dismissedNotif.forEach((i) => {
+  //     const d = dismissedIndexAr.indexOf(i);
+  //     gsap.to(notifItems.current[i], {});
+  //   });
+  // }, [dismissedNotif]);
 
   return (
     <div ref={cont} className="flex flex-col items-center justify-start">

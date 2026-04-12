@@ -9,7 +9,7 @@ import {
   PayloadRequest
 } from "payload";
 import { cache } from "react";
-import { bookmarkTypesRegex, validTypes } from ".";
+import { bookmarkTypesRegex, validTypes } from "./constants";
 
 export type UserBookmarksResponse = {
   bookmarks: User["id"][];

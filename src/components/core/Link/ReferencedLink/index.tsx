@@ -3,6 +3,7 @@ import { getUrlFromReference } from "@/components/core/Link/ReferencedLink/getUr
 import { CMSLinkBase } from "@/components/core/Link/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ComponentProps } from "react";
 
 export const ReferencedLink = async (props: CMSLinkBase) => {
   const {
@@ -13,6 +14,7 @@ export const ReferencedLink = async (props: CMSLinkBase) => {
     onClick,
     onMouseEnter,
     onMouseLeave,
+    ref,
     label,
     ...rest
   } = props;
@@ -44,20 +46,31 @@ export const ReferencedLink = async (props: CMSLinkBase) => {
       </div>
     );
 
-  const propsToPass = {
-    onMouseLeave,
-    onMouseEnter,
-    onClick
-  };
   if (button) {
+    const propsToPass = { ...rest } as Omit<
+      ComponentProps<"button">,
+      | "button"
+      | "link"
+      | "children"
+      | "className"
+      | "onClick"
+      | "onMouseEnter"
+      | "onMouseLeave"
+      | "ref"
+      | "label"
+    >;
     return (
       <Button
         asChild
+        {...propsToPass}
         className={className}
         size={props.size}
         variant={props.variant}
-        ref={props.ref}
-        {...propsToPass}
+        ref={ref}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        type="button"
       >
         <Link className={className} href={href}>
           {label && label}
@@ -66,6 +79,18 @@ export const ReferencedLink = async (props: CMSLinkBase) => {
       </Button>
     );
   }
+  const propsToPass = { ...rest } as Omit<
+    ComponentProps<typeof Link>,
+    | "link"
+    | "children"
+    | "className"
+    | "onClick"
+    | "onMouseEnter"
+    | "onMouseLeave"
+    | "ref"
+    | "href"
+    | "label"
+  >;
   return (
     <Link className={cn(className)} href={href} {...propsToPass}>
       {label && label}

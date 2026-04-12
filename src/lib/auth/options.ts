@@ -258,7 +258,7 @@ export const betterAuthPluginOptions = {
   disabled: false,
   debug: {
     logTables: process.env.NODE_ENV !== "production",
-    enableDebugLogs: process.env.NODE_ENV !== "production"
+    enableDebugLogs: false
   },
   disableDefaultPayloadAuth: true,
   hidePluginCollections: true,

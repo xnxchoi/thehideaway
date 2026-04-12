@@ -54,7 +54,7 @@ void main() {
     vec2 uv = vUv;
     // Time scale: ~0.15 gives visible drift over 5-10 seconds
     // (0.04 was invisible — noise scrolled only 6% in 10 seconds)
-    float t = u_time * 0.15;
+    float t = u_time * 0.85;
     vec2 nUv = (-.5 + vUv) * 2.;
     if( u_resolution.x < u_resolution.y ) {
         nUv.x *= u_resolution.x / u_resolution.y;

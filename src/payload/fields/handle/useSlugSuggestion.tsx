@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {
 	formatUserHandle,
 	HANDLE_TEST_REGEX,
-} from "@/payload/fields/handle/formatUserHandle";
+} from "@/payload/fields/handle/handleFormat";
 
 export function useSlugSuggestion({
 	value,

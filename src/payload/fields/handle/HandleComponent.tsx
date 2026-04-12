@@ -8,10 +8,10 @@ import { useField } from "@payloadcms/ui";
 import {
   formatUserHandleLite,
   HANDLE_TEST_REGEX
-} from "@/payload/fields/handle/formatUserHandle";
+} from "@/payload/fields/handle/handleFormat";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { HandleError } from ".";
+import { HandleError } from "./HandleError";
 
 export type UserHandleComponentProps = {
   fieldToUse: string;

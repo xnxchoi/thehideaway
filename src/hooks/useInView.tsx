@@ -29,10 +29,7 @@ export function useInView(l: InViewOptions = {}) {
     ..._,
     ...l
   };
-  const [d, setElementToObserve]: [
-    null | HTMLElement,
-    Dispatch<SetStateAction<null | HTMLElement>>
-  ] = useState(null);
+  const [d, setElementToObserve] = useState<HTMLElement | null>(null);
   const [v, y] = useState(!1);
   const C = useRef(!1);
   const b: RefObject<ScrollTrigger | null> = useRef(null);

@@ -43,18 +43,21 @@ export function AmbientBackground({}: AmbientBackgroundProps) {
           depth: false,
           alpha: true
         }}
+        orthographic={true}
+        camera={{
+          position: [0, 0, 1],
+
+          near: 0,
+          far: 1,
+          left: -1,
+          right: 1,
+          top: 1,
+          bottom: -1
+        }}
         frameloop="always"
         dpr={[1, 2]}
       >
         <AmbientGradientMesh />
-        <PerspectiveCamera
-          makeDefault
-          near={0.01}
-          far={1000}
-          position={[0, 0, 0.2]}
-          fov={35}
-          aspect={2}
-        />
       </Canvas>
     </div>
   );

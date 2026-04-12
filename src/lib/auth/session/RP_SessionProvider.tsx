@@ -1,5 +1,5 @@
 "use client";
-import { bookmarkTypes } from "@/payload/collections/Bookmarks";
+import { bookmarkTypes } from "@/payload/collections/Bookmarks/constants";
 import { getBookmark } from "@/payload/collections/Bookmarks/getUserBookmarks";
 import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { BookmarkedCollectionSlug } from "@/payload/collections/Users/endpoints/userFieldSelect";

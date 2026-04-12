@@ -4,15 +4,7 @@ import { nanoid } from "nanoid";
 import { FieldAccessArgs } from "node_modules/payload/dist/fields/config/types";
 import type { TextField } from "payload";
 
-export class HandleError extends Error {
-  public data?: { alts?: string[] };
-  constructor(message: string, data?: { alts?: string[] }) {
-    super(message);
-    this.name = "HandleError";
-    this.data = data;
-    Object.setPrototypeOf(this, HandleError.prototype);
-  }
-}
+export { HandleError } from "./HandleError";
 type Overrides = {
   userHandleOverrides?: Partial<TextField>;
 };
