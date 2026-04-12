@@ -390,7 +390,7 @@ export const SurfContent = (props: {
 export const SurfTitle = (props: { title: string }) => {
   const { title } = props;
   return (
-    <h4 className={"inline pr-[4px] text-base font-bold tracking-normal"}>
+    <h4 className={"inline pr-[4px] text-base font-medium tracking-normal"}>
       {title}
     </h4>
   );

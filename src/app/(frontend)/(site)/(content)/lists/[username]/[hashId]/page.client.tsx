@@ -242,7 +242,7 @@ function PublicItemCard({
             collectionSlug={collectionSlug}
             itemId={itemId}
             userId={viewerId}
-            className="flex h-7 w-7 items-center justify-center rounded-sm bg-background/80 text-foreground/60 backdrop-blur-sm transition-colors hover:text-foreground [&_svg]:size-[14px]"
+            className="flex h-11 w-11 items-center justify-center rounded-sm bg-background/80 text-foreground/60 backdrop-blur-sm transition-colors hover:text-foreground [&_svg]:size-[14px]"
           />
         </div>
       )}

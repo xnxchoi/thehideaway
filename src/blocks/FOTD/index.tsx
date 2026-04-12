@@ -42,7 +42,7 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
                   "RP"
                 }
               />
-              <p className="m-0 text-[16px] font-bold tracking-[-.01em] lg:col-[2] lg:row-[2] lg:self-end">
+              <p className="m-0 text-[16px] font-medium tracking-[-.01em] lg:col-[2] lg:row-[2] lg:self-end">
                 <span className="text-3xl text-balance">{posts[1].title}</span>
               </p>
             </Link>
@@ -68,7 +68,7 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
                   "RP"
                 }
               />
-              <p className="m-0 text-[16px] font-bold tracking-[-.01em] lg:col-[2] lg:row-[2] lg:self-end">
+              <p className="m-0 text-[16px] font-medium tracking-[-.01em] lg:col-[2] lg:row-[2] lg:self-end">
                 <span className="text-3xl text-balance">{posts[2].title}</span>
               </p>
             </Link>
@@ -166,7 +166,7 @@ const Article = (props: ComponentPropsWithoutRef<"div"> & ArticleProps) => {
               <div>
                 <div className="text-[18px] tracking-normal lg:text-[20px]">
                   <Link
-                    className="shadow-[inset 0 -1px 0 0 transparent] font-bold before:absolute before:inset-0 before:z-[1] before:h-full before:w-full before:content-['']"
+                    className="shadow-[inset 0 -1px 0 0 transparent] font-medium before:absolute before:inset-0 before:z-[1] before:h-full before:w-full before:content-['']"
                     href={link}
                   >
                     {title}

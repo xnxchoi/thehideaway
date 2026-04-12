@@ -164,7 +164,7 @@ function FocusHero({
       )}
       <p
         className={
-          "order-3 col-[2/-1] m-0 text-3xl leading-[.9] font-bold tracking-[-.01em] uppercase lg:text-[4.2rem]"
+          "order-3 col-[2/-1] m-0 text-3xl leading-[.9] font-light tracking-[-.01em] uppercase lg:text-[4.2rem]"
         }
       >
         {title}
@@ -255,7 +255,7 @@ function Title({ className, children, ...props }: ComponentProps<"p">) {
   return (
     <p
       className={cn(
-        "m-0 text-[1.5rem] leading-[.9] font-bold tracking-[-.01em]",
+        "m-0 text-[1.5rem] leading-[.9] font-medium tracking-[-.01em]",
         className
       )}
       {...props}

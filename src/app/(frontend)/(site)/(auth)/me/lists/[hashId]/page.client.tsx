@@ -430,7 +430,7 @@ function CompilationItemCard({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={onRemove}
-            className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 font-mono text-[10px] text-destructive shadow-sm backdrop-blur-sm hover:bg-destructive hover:text-white"
+            className="absolute top-1 right-1 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-background/80 font-mono text-[10px] text-destructive shadow-sm backdrop-blur-sm hover:bg-destructive hover:text-white"
           >
             ✕
           </m.button>

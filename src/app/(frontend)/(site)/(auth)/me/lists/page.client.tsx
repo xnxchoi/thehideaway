@@ -225,7 +225,7 @@ function CompilationCard({
               e.preventDefault();
               setMenuOpen((o) => !o);
             }}
-            className="flex h-6 w-6 items-center justify-center font-mono text-sm text-muted-foreground/40 transition-colors hover:text-foreground"
+            className="flex h-11 w-11 items-center justify-center font-mono text-sm text-muted-foreground/40 transition-colors hover:text-foreground"
           >
             ···
           </RP_Btn>

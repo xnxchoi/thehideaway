@@ -118,7 +118,7 @@ function DataTableActionBarAction({
       <TooltipTrigger render={() => trigger} />
       <TooltipContent
         sideOffset={6}
-        className="border bg-accent font-semibold text-faded-foreground dark:bg-zinc-900 [&>span]:hidden"
+        className="border bg-accent font-semibold text-faded-foreground dark:bg-card [&>span]:hidden"
       >
         <p>{tooltip}</p>
       </TooltipContent>
@@ -161,7 +161,7 @@ function DataTableActionBarSelection<TData>({
         />
         <TooltipContent
           sideOffset={10}
-          className="flex items-center gap-3.5 border bg-accent px-3.5 py-1.5 font-semibold text-foreground dark:bg-zinc-900 [&>span]:hidden"
+          className="flex items-center gap-3.5 border bg-accent px-3.5 py-1.5 font-semibold text-foreground dark:bg-card [&>span]:hidden"
         >
           <p>Clear selection</p>
           <kbd className="rounded border bg-background px-2.5 py-px font-mono text-[0.7rem] font-normal text-foreground shadow-xs select-none">
