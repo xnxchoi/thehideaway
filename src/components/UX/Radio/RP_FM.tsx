@@ -173,7 +173,7 @@ const LP = () => {
         <m.div
           key={track.id}
           className={cn(
-            "group relative flex aspect-square w-[20rem] items-center justify-center overflow-hidden rounded-full"
+            "group relative flex aspect-square w-[14rem] sm:w-[16rem] lg:w-[20rem] items-center justify-center overflow-hidden rounded-full"
           )}
           ref={lpWrapperRef}
           data-playing={playing}

@@ -32,7 +32,7 @@ export const FullPlayer = ({ className }: FullPlayerProps) => {
   return (
     <div
       className={cn(
-        "flex w-full max-w-[480px] flex-col items-center gap-4 px-4 py-6",
+        "flex w-full max-w-[480px] xl:max-w-[560px] flex-col items-center gap-4 px-4 py-6",
         "mx-auto",
         className
       )}
