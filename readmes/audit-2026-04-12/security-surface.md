@@ -98,13 +98,18 @@ Verify `next.config.ts` headers block. Minimum needed:
 
 ---
 
-## Fix Priority Order (Phase 2)
+## Fix Status
 
-1. SSRF on `/api/image-courier` — highest blast radius
-2. SQL injection on `/api/search/users:48` — data integrity
-3. Unbounded follows endpoints (auth + pagination)
-4. `/api/dev` hard-gate
-5. `ensureHandleIsUnique` overrides bypass
-6. `createCompilation` userId trust
-7. `overrideAccess: true` audit across bookmarks/profile/users
-8. `/api/payload-jobs/run` timing-safe comparison
+| # | Issue | Status |
+|---|---|---|
+| 1 | SSRF on `/api/image-courier` | FIXED |
+| 2 | SQL injection on `/api/search/users` | FIXED |
+| 3 | Unbounded follows endpoints | FIXED |
+| 4 | `/api/dev` hard-gate | FIXED |
+| 5 | `ensureHandleIsUnique` overrides bypass | FIXED |
+| 6 | `createCompilation` userId trust | FIXED |
+| 7 | `overrideAccess: true` audit | FIXED |
+| 8 | `/api/payload-jobs/run` timing-safe | FIXED |
+| 9 | Rate limiting | FIXED (sliding-window in middleware.ts) |
+| 10 | Error message leakage | FIXED (opaque messages in all route handlers) |
+| 11 | CSP / security headers | PARTIAL (nginx has HSTS/XCO/XFO/RP but CSP is `default-src *` — no-op) |

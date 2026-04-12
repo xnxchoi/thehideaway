@@ -73,14 +73,14 @@ CLAUDE.md: "Never create new color tokens — use opacity variants of existing t
 
 ---
 
-## Phase 4 Priority Order
+## Phase 4 Status
 
-1. Missing `xl:` variants (bulk fix via grep+edit pass)
-2. Touch targets (wrap pattern)
-3. Hover-only interactions audit (TBD — needs additional recon)
+1. ~~Missing `xl:` variants~~ — DONE (Content block fixed; others use explicit positioned grids where xl: isn't applicable; data-table files don't exist)
+2. ~~Touch targets~~ — DONE (h-6/h-7 → h-11 in lists views)
+3. Hover-only interactions audit — DEFERRED (needs additional recon)
 
-## Phase 6 Priority Order
+## Phase 6 Status
 
-1. Typography violations (bulk `font-bold` → `font-light`, `font-semibold` → `font-medium` on headings)
-2. Color token violations (replace hardcoded palette with theme tokens)
-3. Additional recon needed: card radii (`rounded-lg` vs `rounded-sm`), container widths (`max-w-5xl` hunts), border visibility consistency
+1. ~~Typography violations~~ — DONE (font-bold → font-light on display headings; font-bold/font-semibold → font-medium on card titles and UI primitives)
+2. ~~Color token violations~~ — DONE (stray bg-blue-500 removed; dark:bg-zinc-900 → dark:bg-card; ConnectionStatus semantic colors left intentionally; SidebarControls is admin context)
+3. Additional recon needed: card radii (`rounded-lg` vs `rounded-sm`), container widths (`max-w-5xl` hunts), border visibility consistency — DEFERRED
