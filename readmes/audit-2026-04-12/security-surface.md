@@ -96,6 +96,27 @@ Verify `next.config.ts` headers block. Minimum needed:
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `Content-Security-Policy` with nonce-based script-src
 
+### 12. Radio stream — origin-gated + path traversal via `readFile`
+
+**File:** `src/payload/collections/Radio/endpoints/stream.ts`
+**Severity:** HIGH
+**Issue:** Endpoint streams audio for any track UUID with no access restriction. Uses `readFile(track.url)` directly — if a track record's `url` field is poisoned (e.g., via compromised admin or SQL injection), attacker can read arbitrary files from the server filesystem. Note: endpoint is not actively consumed yet (Howler loads static `/track_media/*.ogg` directly), but exists for future Payload-managed tracks.
+**Fix:** Origin/Referer gate (only requests from `NEXT_PUBLIC_SERVER_URL` allowed — blocks remote/hotlinking). Validate track ID as UUID. Resolve the real path via `fs.realpath` and assert it falls within the `public/track_media/` directory before reading.
+
+### 13. UserMedia — no MIME type restrictions (SVG XSS vector)
+
+**File:** `src/payload/collections/UserMedia.ts`
+**Severity:** MEDIUM
+**Issue:** Upload config has no `mimeTypes` allowlist. The `beforeOperation` hook checks `mimetype.indexOf("image")` but only gates the rename/darkmode logic — it does not reject non-image uploads. An SVG with embedded `<script>` uploaded to `public/users/` creates stored XSS when served directly.
+**Fix:** Add `mimeTypes` allowlist to upload config restricting to `image/jpeg`, `image/png`, `image/webp`, `image/avif`, `image/gif`. This blocks SVG and all non-image uploads at the Payload level before hooks run.
+
+### 14. SSE notifications stream — endpoint not implemented
+
+**File:** `src/app/api/notifications/stream/route.ts` (missing)
+**Severity:** MEDIUM (potential)
+**Issue:** Client-side code (`useNotificationSSE.ts`) connects to `/api/notifications/stream` but the server-side route handler does not exist. The SSE security guide (`readmes/SSE_SECURITY_GUIDE.md`) documents auth requirements but they are unimplemented. When this endpoint is built, it must validate the session before establishing the SSE connection.
+**Status:** N/A — endpoint does not exist yet. Flag for implementation review.
+
 ---
 
 ## Fix Status
@@ -113,3 +134,6 @@ Verify `next.config.ts` headers block. Minimum needed:
 | 9 | Rate limiting | FIXED (sliding-window in middleware.ts) |
 | 10 | Error message leakage | FIXED (opaque messages in all route handlers) |
 | 11 | CSP / security headers | PARTIAL (nginx has HSTS/XCO/XFO/RP but CSP is `default-src *` — no-op) |
+| 12 | Radio stream origin gate + path traversal | FIXED (origin/referer gate + UUID validation + realpath containment check) |
+| 13 | UserMedia MIME type restrictions | FIXED (allowlist: jpeg, png, webp, avif, gif) |
+| 14 | SSE stream endpoint missing | N/A (endpoint not yet implemented — flagged for review when built) |

@@ -58,8 +58,15 @@ export const UserMedia: CollectionConfig = {
     }
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, "../../../public/users")
+    staticDir: path.resolve(dirname, "../../../public/users"),
+    mimeTypes: [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+      "image/gif",
+    ],
+    filesRequiredOnCreate: true,
   },
   hooks: {
     beforeOperation: [
