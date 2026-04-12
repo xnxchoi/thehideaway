@@ -7,11 +7,11 @@
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "ci": "payload migrate && pnpm build",
-    "dev": "pnpm run dev:pgstart && pnpm run db:wait && cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev": "pnpm run dev:pgstart && pnpm run db:wait && cross-env NODE_OPTIONS=--no-deprecation next dev --webpack",
     "dev:m": "pnpm run dev:pgstart && pnpm run db:wait && cross-env NODE_OPTIONS=--no-deprecation  pnpm run migrate &&next dev",
     "db:wait": "wait-on tcp:5432",
     "dev:init": "pnpm run dev:pgstart && pnpm run db:wait && pnpm run migrate && pnpm run dev",
-    "dev:restart": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && next dev",
+    "dev:restart": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && next dev --webpack",
     "dev:docker": "sh ./devpostgres.sh",
     "dev:pgstart": "docker desktop start && docker start postgres",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && payload migrate && pnpm build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && node .next/standalone/server.js",
