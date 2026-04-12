@@ -55,3 +55,4 @@ readmes/**/*.js
 readmes/**/*.css
 readmes/**/*.html
 !/src/components/core/Header/HCC.tsx
+tsconfig.tsbuildinfo
