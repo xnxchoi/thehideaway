@@ -1,16 +1,18 @@
 "use client";
 
+import {
+  ChangePasswordCard,
+  DeleteAccountCard,
+  PasskeysCard,
+  ProvidersCard,
+  SessionsCard,
+  TwoFactorCard
+} from "@/lib/auth/betterauth-ui/src";
 import { cn } from "@/lib/utils";
 import { useContext } from "react";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
 import type { AuthLocalization } from "../../localization/auth-localization";
-import { DeleteAccountCard } from "./account/delete-account-card";
-import { PasskeysCard } from "./passkey/passkeys-card";
-import { ProvidersCard } from "./providers/providers-card";
-import { ChangePasswordCard } from "./security/change-password-card";
-import { SessionsCard } from "./security/sessions-card";
-import type { SettingsCardClassNames } from "./shared/settings-card";
-import { TwoFactorCard } from "./two-factor/two-factor-card";
+import { SettingsCardClassNames } from "./shared/settings-card";
 
 export function SecuritySettingsCards({
   className,
@@ -46,7 +48,7 @@ export function SecuritySettingsCards({
   } = useListAccounts();
 
   const credentialsLinked = accounts?.some(
-    (acc) => acc.provider === "credential"
+    (acc) => acc.providerId === "credential"
   );
 
   return (

@@ -6,7 +6,7 @@ import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import type {
   CallToActionBlock as CTABlockProps,
   CodeBlock as CodeBlockProps,
-  Media1 as MediaBlockProps
+  Image as MediaBlockProps
 } from "@/payload-types";
 import type {
   DefaultNodeTypes,
@@ -148,7 +148,7 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
                 />
               );
             case "image":
-              return <PostedImage {...block} />;
+              return <PostedImage media={block.media} />;
             // case "banner":
             //   return (
             //     <BannerBlock
@@ -243,20 +243,22 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
               const { fields } = node;
 
               return (
-                <ReferencedLink
-                  data-themed="color"
-                  key={index}
-                  link={{
-                    label: "a link",
-                    newTab: Boolean(fields?.newTab),
-                    reference: fields.doc as any,
-                    type:
-                      fields.linkType === "internal" ? "reference" : "custom"
-                  }}
-                  href={fields.url}
-                >
-                  {serializedChildren}
-                </ReferencedLink>
+                (fields.url && (
+                  <ReferencedLink
+                    data-themed="color"
+                    key={index}
+                    link={{
+                      label: "a link",
+                      newTab: Boolean(fields?.newTab),
+                      reference: fields.doc as any,
+                      type:
+                        fields.linkType === "internal" ? "reference" : "custom"
+                    }}
+                    href={fields.url}
+                  >
+                    {serializedChildren}
+                  </ReferencedLink>
+                )) || <div>{serializedChildren}</div>
               );
             }
 

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Account } from "better-auth";
 import { Loader2 } from "lucide-react";
 import { type ComponentProps, useContext } from "react";
 import { useForm } from "react-hook-form";
@@ -33,7 +34,7 @@ export interface DeleteAccountDialogProps extends ComponentProps<
   typeof Dialog
 > {
   classNames?: SettingsCardClassNames;
-  accounts?: { provider: string }[] | null;
+  accounts?: Account[] | null;
   localization?: AuthLocalization;
 }
 
@@ -54,7 +55,8 @@ export function DeleteAccountDialog({
     localization: contextLocalization,
     viewPaths,
     navigate,
-    toast
+    toast,
+    localizeErrors
   } = useContext(AuthUIContext);
 
   localization = { ...contextLocalization, ...localization };
@@ -67,7 +69,7 @@ export function DeleteAccountDialog({
     ? Date.now() - new Date(session?.createdAt).getTime() < freshAge * 1000
     : false;
   const credentialsLinked = accounts?.some(
-    (acc) => acc.provider === "credential"
+    (acc) => acc.providerId === "credential"
   );
 
   const formSchema = z.object({
@@ -122,7 +124,11 @@ export function DeleteAccountDialog({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
     }
 
@@ -152,6 +158,7 @@ export function DeleteAccountDialog({
 
         <Form {...form}>
           <form
+            method="POST"
             onSubmit={form.handleSubmit(deleteAccount)}
             className="grid gap-6"
           >

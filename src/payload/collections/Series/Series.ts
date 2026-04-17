@@ -1,12 +1,11 @@
-import {type Admin, Series, type User} from "@/payload-types";
-import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
-import {slugField} from "@/payload/fields/slug";
-import {RelAuthor} from "@/types/collections/users";
-import {AccessArgs, CollectionConfig, Where} from "payload";
-import {uuidv7} from "uuidv7";
-import {populatePublishedAt} from "../../../hooks/populatePublishedAt";
-import {getServerSideURL} from "../../../utilities/getURL";
-import {getSeriesBookMarks} from "./endpoints/getSeriesBookmarks";
+import { type Admin, type User } from "@/payload-types";
+import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
+import { RelAuthor } from "@/types/collections/users";
+import { AccessArgs, CollectionConfig, Where } from "payload";
+import { uuidv7 } from "uuidv7";
+import { populatePublishedAt } from "../../../hooks/populatePublishedAt";
+import { getServerSideURL } from "../../../utilities/getURL";
+import { getSeriesBookMarks } from "./endpoints/getSeriesBookmarks";
 
 // Helper function to check if user has permission in series
 const hasSeriesPermission = (
@@ -427,25 +426,25 @@ export const SeriesConfig: CollectionConfig = {
           pickerAppearance: "dayAndTime"
         }
       }
-    },
-    ...slugField("title", {
-      slugOverrides: {
-        access: {
-          read: () => true,
-          create: () => true,
-          update: ({ req, data, doc, siblingData }) => {
-            const context = req.context;
-            if (context.overrideAccess === true) return true;
-            const user = req.user;
-            if (!user || !user.id || !user.role) return false;
-            if (user.role === "admin") return true;
-            const seriesDoc = doc as Series;
-            if (user.collection === "admins") return true;
-            return hasSeriesPermission(user, seriesDoc, "owner");
-          }
-        }
-      }
-    })
+    }
+    // ...slugField("title", {
+    //   slugOverrides: {
+    //     access: {
+    //       read: () => true,
+    //       create: () => true,
+    //       update: ({ req, data, doc, siblingData }) => {
+    //         const context = req.context;
+    //         if (context.overrideAccess === true) return true;
+    //         const user = req.user;
+    //         if (!user || !user.id || !user.role) return false;
+    //         if (user.role === "admin") return true;
+    //         const seriesDoc = doc as Series;
+    //         if (user.collection === "admins") return true;
+    //         return hasSeriesPermission(user, seriesDoc, "owner");
+    //       }
+    //     }
+    //   }
+    // })
     // {
     //   name: "entries",
     //   type: "array",
@@ -579,17 +578,17 @@ export const SeriesConfig: CollectionConfig = {
     afterChange: [
       // Update article count after changes
       async ({ doc, operation, req }) => {
-        if (doc.articles) {
-          const publishedCount = doc.articles.length;
-          // Update the document with the new count
-          await req.payload.update({
-            collection: "series",
-            id: doc.id,
-            data: {
-              entryCount: publishedCount
-            }
-          });
-        }
+        // if (doc.articles) {
+        //   const publishedCount = doc.articles.length;
+        //   // Update the document with the new count
+        //   await req.payload.update({
+        //     collection: "series",
+        //     id: doc.id,
+        //     data: {
+        //       entryCount: publishedCount
+        //     }
+        //   });
+        // }
       }
     ]
   }

@@ -81,7 +81,11 @@ export function InvitationCell({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
     }
 

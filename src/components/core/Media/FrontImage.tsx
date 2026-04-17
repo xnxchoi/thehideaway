@@ -3,7 +3,7 @@
 import { ImageMedia } from "@/components/core/Media/Image";
 import type { MediaResource, MediaProps } from "@/components/core/Media/types";
 import { cn } from "@/lib/utils";
-import { processFetchedImage } from "@/payload/fields/Article/Cover/ImageNode/hooks/image-processors";
+import { processFetchedImage } from "@/blocks/ImageBlock/Comp/hooks/image-processors";
 import { useCursor } from "@/providers/RP_Pro";
 import {
   FetchedImageDoc,

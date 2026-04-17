@@ -87,10 +87,11 @@ export function AccountSettingsCards({
           required,
           type,
           multiline,
-          validate
+          validate,
+          errorMessage
         } = additionalField;
 
-        // @ts-ignore Custom fields are not typed
+        // @ts-expect-error Custom fields are not typed
         const defaultValue = sessionData?.user[field] as unknown;
 
         return (
@@ -108,6 +109,7 @@ export function AccountSettingsCards({
             type={type}
             multiline={multiline}
             validate={validate}
+            errorMessage={errorMessage}
           />
         );
       })}

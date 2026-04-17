@@ -18,7 +18,7 @@ export default function PrivacyPage() {
 						Privacy Policy
 					</h1>
 					<p className="mt-[1em] opacity-60 text-[.9em]">
-						Last updated: [PLACEHOLDER: Insert effective date]
+						Last updated: 2026-04-15
 					</p>
 				</div>
 
@@ -27,15 +27,15 @@ export default function PrivacyPage() {
 					<section>
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">1. Who We Are</h2>
 						<p>
-							The Hideaway (<strong>[PLACEHOLDER: Legal entity name]</strong>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;)
+							The Hideaway (<strong>Restored Projects</strong>, &ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;)
 							operates the website and platform located at{" "}
-							<strong>[PLACEHOLDER: your domain, e.g. hideawayseoul.com]</strong>.
+							<strong>hideawayseoul.com</strong>.
 							This Privacy Policy explains how we collect, use, and protect your
 							personal information when you use our services.
 						</p>
 						<p>
 							For questions about this policy, contact us at{" "}
-							<strong>[PLACEHOLDER: privacy@yourdomain.com]</strong>.
+							<strong>concierge@hideawayseoul.com</strong>.
 						</p>
 					</section>
 
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
 								address is shared with Brevo solely to deliver authentication and notification emails.
 							</li>
 							<li>
-								<strong>[PLACEHOLDER: Hosting provider, e.g. Vercel / AWS]</strong> — for platform
+								<strong>ITEasy</strong> — for platform
 								hosting and database storage.
 							</li>
 						</ul>
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
 							Your account data is retained for as long as your account is active. You may
 							delete your account at any time from your account settings, which will permanently
 							remove your profile data. Backup and log data may be retained for up to{" "}
-							<strong>[PLACEHOLDER: e.g. 30 days]</strong> after deletion.
+							<strong>90 days</strong> after deletion.
 						</p>
 					</section>
 
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
 						</ul>
 						<p className="mt-[.75em]">
 							To exercise any of these rights, contact us at{" "}
-							<strong>[PLACEHOLDER: privacy@yourdomain.com]</strong>.
+							<strong>concierge@hideawayseoul.com</strong>.
 						</p>
 					</section>
 
@@ -166,7 +166,7 @@ export default function PrivacyPage() {
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">9. Children&rsquo;s Privacy</h2>
 						<p>
 							Our services are not directed to children under the age of{" "}
-							<strong>[PLACEHOLDER: 13 / 16]</strong>. We do not knowingly collect personal
+							<strong>16</strong>. We do not knowingly collect personal
 							information from children. If you believe a child has provided us with personal
 							information, please contact us.
 						</p>
@@ -184,9 +184,9 @@ export default function PrivacyPage() {
 					<section>
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">11. Contact</h2>
 						<p>
-							<strong>[PLACEHOLDER: Legal entity name]</strong><br />
-							<strong>[PLACEHOLDER: Address]</strong><br />
-							Email: <strong>[PLACEHOLDER: privacy@yourdomain.com]</strong>
+							<strong>Restored Projects</strong><br />
+							<strong>Olympic-ro 4-gil 15, Seoul, Republic of Korea</strong><br />
+							Email: <strong>concierge@hideawayseoul.com</strong>
 						</p>
 					</section>
 

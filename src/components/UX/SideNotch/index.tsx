@@ -2,7 +2,7 @@
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { SPRING_EASE } from "@/constants/animations";
 import { useIsMobile } from "@/providers/MiddleMan";
-import { useRadioStore } from "@/providers/RadioProvider";
+import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { useCursor, useFrameState, useRPStore } from "@/providers/RP_Pro";
 import {
   useMotionValue,
@@ -64,7 +64,7 @@ const DeskNotch = (props: SideNotchProps) => {
   useEffect(() => {
     vw.set(viewportWidth);
   }, [viewportWidth, vw]);
-  const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
+  const hasRadio = useHasRadio();
   const { left } = useFrameState();
   const notchLeft = useTransform(() =>
     sidedrawervalue.get() ? vw.get() * 0.24 - 1 : 2 * left.get()
@@ -219,7 +219,7 @@ const MobileNotch = (props: SideNotchProps) => {
   }, [sideDrawer, side]);
   const notchRef = useRef<HTMLDivElement>(null);
 
-  const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
+  const hasRadio = useHasRadio();
 
   const variants: Variants = useMemo(
     () => ({

@@ -18,7 +18,7 @@ export default function TermsPage() {
 						Terms of Service
 					</h1>
 					<p className="mt-[1em] opacity-60 text-[.9em]">
-						Last updated: [PLACEHOLDER: Insert effective date]
+						Last updated: 2026-04-15
 					</p>
 				</div>
 
@@ -28,7 +28,7 @@ export default function TermsPage() {
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">1. Acceptance of Terms</h2>
 						<p>
 							By accessing or using The Hideaway platform (&ldquo;Service&rdquo;) operated by{" "}
-							<strong>[PLACEHOLDER: Legal entity name]</strong>, you agree to be bound by these
+							<strong>Restored Projects</strong>, you agree to be bound by these
 							Terms of Service. If you do not agree, do not use the Service.
 						</p>
 					</section>
@@ -36,7 +36,7 @@ export default function TermsPage() {
 					<section>
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">2. Eligibility</h2>
 						<p>
-							You must be at least <strong>[PLACEHOLDER: 13 / 16 / 18]</strong> years old to use
+							You must be at least <strong>16</strong> years old to use
 							the Service. By using the Service, you represent that you meet this age requirement.
 							If you are accessing the Service on behalf of a company or organization, you represent
 							that you have authority to bind that entity to these Terms.
@@ -115,11 +115,10 @@ export default function TermsPage() {
 					<section>
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">9. Limitation of Liability</h2>
 						<p>
-							TO THE MAXIMUM EXTENT PERMITTED BY LAW, <strong>[PLACEHOLDER: Legal entity name]</strong>{" "}
+							TO THE MAXIMUM EXTENT PERMITTED BY LAW, <strong>Restored Projects</strong>{" "}
 							SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE
 							DAMAGES ARISING FROM YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED
-							THE AMOUNT YOU PAID US IN THE PAST TWELVE MONTHS, OR{" "}
-							<strong>[PLACEHOLDER: e.g. USD $100]</strong>, WHICHEVER IS GREATER.
+							THE AMOUNT YOU PAID US IN THE TWELVE MONTHS PRECEDING THE CLAIM.
 						</p>
 					</section>
 
@@ -127,10 +126,10 @@ export default function TermsPage() {
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">10. Governing Law</h2>
 						<p>
 							These Terms are governed by the laws of{" "}
-							<strong>[PLACEHOLDER: Jurisdiction, e.g. the Republic of Korea]</strong>, without
+							<strong>the Republic of Korea</strong>, without
 							regard to its conflict of law provisions. Any disputes arising from these Terms
 							shall be resolved in the courts of{" "}
-							<strong>[PLACEHOLDER: e.g. Seoul, South Korea]</strong>.
+							<strong>Seoul, Republic of Korea</strong>.
 						</p>
 					</section>
 
@@ -147,9 +146,9 @@ export default function TermsPage() {
 						<h2 className="text-[1.4em] font-medium mb-[.75em]">12. Contact</h2>
 						<p>
 							For questions about these Terms, contact us at:<br />
-							<strong>[PLACEHOLDER: Legal entity name]</strong><br />
-							<strong>[PLACEHOLDER: Address]</strong><br />
-							Email: <strong>[PLACEHOLDER: legal@yourdomain.com]</strong>
+							<strong>Restored Projects</strong><br />
+							<strong>Olympic-ro 4-gil 15, Seoul, Republic of Korea</strong><br />
+							Email: <strong>concierge@hideawayseoul.com</strong>
 						</p>
 					</section>
 

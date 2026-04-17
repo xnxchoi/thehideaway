@@ -29,7 +29,9 @@ tests/
 .next
 .pnpm-store
 .turbo
-.claude
+/.claude/
+
+!/.claude/PRPs
 
 backup/
 migrations/

@@ -33,7 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { FrontImage } from "@/components/core/Media/FrontImage";
-import { useHumanDate } from "@/payload/collections/Delta/component/useLocaleDate";
+import { useHumanDate } from "../../../../.grave/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";
 import { BookmarkIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
@@ -489,8 +489,9 @@ const NotificationCard = ({
                       getStatusColor(notification)
                     )}
                   >
-                    {notification.actionLink ? (
+                    {notification.actionLink && notification.actionLink.url ? (
                       <ReferencedLink
+                        href={notification.actionLink.url}
                         link={notification.actionLink}
                         onClick={handleMarkRead}
                         className="hover:underline"

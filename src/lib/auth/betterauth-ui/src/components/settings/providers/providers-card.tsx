@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Account } from "better-auth";
 import { useContext } from "react";
 
 import { AuthUIContext } from "../../../lib/auth-ui-provider";
@@ -16,7 +17,7 @@ import { ProviderCell } from "./provider-cell";
 export interface ProvidersCardProps {
   className?: string;
   classNames?: SettingsCardClassNames;
-  accounts?: { accountId: string; provider: string }[] | null;
+  accounts?: Account[] | null;
   isPending?: boolean;
   localization?: Partial<AuthLocalization>;
   skipHook?: boolean;
@@ -42,6 +43,7 @@ export function ProvidersCard({
   localization = { ...contextLocalization, ...localization };
 
   if (!skipHook) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const result = useListAccounts();
     accounts = result.data;
     isPending = result.isPending;
@@ -63,6 +65,29 @@ export function ProvidersCard({
           ))
         ) : (
           <>
+            {accounts?.map((account) => {
+              const socialProvider = socialProviders.find(
+                (sp) => sp.provider === account.providerId
+              );
+              const genericOAuthProvider = genericOAuth?.providers?.find(
+                (gp) => gp.provider === account.providerId
+              );
+
+              const provider = socialProvider || genericOAuthProvider;
+              if (!provider) return null;
+
+              return (
+                <ProviderCell
+                  key={account.providerId}
+                  classNames={classNames}
+                  account={account}
+                  provider={provider}
+                  refetch={refetch}
+                  other={!socialProvider}
+                />
+              );
+            })}
+
             {social?.providers?.map((provider) => {
               const socialProvider = socialProviders.find(
                 (socialProvider) => socialProvider.provider === provider
@@ -74,7 +99,6 @@ export function ProvidersCard({
                 <ProviderCell
                   key={provider}
                   classNames={classNames}
-                  account={accounts?.find((acc) => acc.provider === provider)}
                   provider={socialProvider}
                   refetch={refetch}
                 />
@@ -86,7 +110,7 @@ export function ProvidersCard({
                 key={provider.provider}
                 classNames={classNames}
                 account={accounts?.find(
-                  (acc) => acc.provider === provider.provider
+                  (acc) => acc.providerId === provider.provider
                 )}
                 provider={provider}
                 refetch={refetch}

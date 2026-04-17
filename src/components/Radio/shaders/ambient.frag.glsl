@@ -3,7 +3,7 @@ uniform float u_time;
 uniform float u_size;
 uniform vec2 u_offset;
 uniform float u_speed;
-uniform vec4 u_resolution;
+uniform vec2 u_resolution;
 uniform vec3 u_bgColor;
 uniform vec3 u_color1;        // base tone 1 (near-bg, subtle warm shift)
 uniform vec3 u_color2;        // base tone 2 (near-bg, subtle cool shift)
@@ -157,8 +157,8 @@ void main() {
     float creaseDepth = 1.0 + u_audioLevel * 0.4;
     color = mix(color, u_bgColor * 0.65, overlap * 0.3 * intensity * creaseDepth);
     color = mix(color, u_bgColor * 0.8, ridgeLine * 0.15 * intensity * creaseDepth);
-
-    // ── Organic variation via simplex ─────────────────────────────────────
+//
+//    // ── Organic variation via simplex ─────────────────────────────────────
     float sn = snoise(nUv * 0.9 + t * 1.5) * 0.5 + 0.5;
     color = mix(color, color * (0.88 + sn * 0.24), intensity * 0.35);
 
@@ -169,7 +169,7 @@ void main() {
     color = mix(color, u_bgColor, u_fogProgress * 0.9 * fogMask);
 
     // ── Gentle contrast — don't fight the blur ───────────────────────────
-//    color = clamp(color, 0.0, 1.0);
+    color = clamp(color, 0.0, 1.0);
     // Softer S-curve: mix between linear and Hermite
     vec3 sCurve = color * color * (3.0 - 2.0 * color);
     color = mix(color, sCurve, 0.6);

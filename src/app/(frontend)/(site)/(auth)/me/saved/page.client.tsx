@@ -2,14 +2,17 @@
 
 import { BookmarkButton } from "@/components/UX/Bookmark";
 import { Link } from "@/components/core/Link/Link";
+import { RPage } from "@/components/UX/Transition";
 import { cn } from "@/lib/utils";
 import type { BookmarkItemTyped } from "@/payload/collections/Compilations/actions";
 import type { CompilationItemType } from "@/payload/collections/Compilations";
-import { AnimatePresence, LayoutGroup } from "motion/react";
+import { useRPStore } from "@/providers/RP_Pro";
+import { AnimatePresence, LayoutGroup, useScroll } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { RP_Btn } from "@/components/core/Button";
+import { useShallow } from "zustand/shallow";
 
 const TAB_LABELS: Record<CompilationItemType, string> = {
   posts: "Essays",
@@ -48,10 +51,10 @@ export default function SavedPageClient({ userId, items }: Props) {
   );
 
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
+    <RPage type="me" slug={["saved"]}>
       {/* ── Header ────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
+      <header className="sticky top-[5.5rem] z-20 border-b border-border/30 bg-background/90 backdrop-blur-md lg:top-[8rem]">
+        <div className="mx-auto max-w-screen px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
               <p className="font-mono text-small tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
@@ -113,7 +116,7 @@ export default function SavedPageClient({ userId, items }: Props) {
       </header>
 
       {/* ── Content ───────────────────────────────────────────────── */}
-      <main className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+      <section className="flex h-full w-full flex-col items-center">
         <AnimatePresence mode="wait">
           {activeItems.length === 0 ? (
             <SavedEmptyState key="empty" tab={activeTab} />
@@ -137,8 +140,8 @@ export default function SavedPageClient({ userId, items }: Props) {
             </m.div>
           )}
         </AnimatePresence>
-      </main>
-    </div>
+      </section>
+    </RPage>
   );
 }
 

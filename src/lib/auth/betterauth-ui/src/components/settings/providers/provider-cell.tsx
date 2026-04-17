@@ -1,6 +1,13 @@
 "use client";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useIsOverflow } from "@betterauth-ui/hooks/use-is-overflow";
+import { Account } from "better-auth";
 import type { SocialProvider } from "better-auth/social-providers";
 import { Loader2 } from "lucide-react";
 import { useContext, useState } from "react";
@@ -18,10 +25,7 @@ import type { SettingsCardClassNames } from "../shared/settings-card";
 export interface ProviderCellProps {
   className?: string;
   classNames?: SettingsCardClassNames;
-  account?: {
-    accountId: string;
-    provider: string;
-  } | null;
+  account?: Account | null;
   isPending?: boolean;
   localization?: Partial<AuthLocalization>;
   other?: boolean;
@@ -45,7 +49,8 @@ export function ProviderCell({
     localization: contextLocalization,
     mutators: { unlinkAccount },
     viewPaths,
-    toast
+    toast,
+    localizeErrors
   } = useContext(AuthUIContext);
 
   localization = { ...contextLocalization, ...localization };
@@ -54,7 +59,7 @@ export function ProviderCell({
 
   const handleLink = async () => {
     setIsLoading(true);
-    const callbackURL = `${baseURL}${basePath}/${viewPaths.CALLBACK}?redirectTo=${window.location.pathname}`;
+    const callbackURL = `${baseURL}${basePath}/${viewPaths.CALLBACK}?redirectTo=${encodeURIComponent(window.location.pathname)}`;
 
     try {
       if (other) {
@@ -73,7 +78,11 @@ export function ProviderCell({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
 
       setIsLoading(false);
@@ -93,7 +102,11 @@ export function ProviderCell({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
     }
 
@@ -103,23 +116,19 @@ export function ProviderCell({
   return (
     <Card
       className={cn(
-        "flex-row items-center gap-3 px-4 py-3",
+        "min-w-0 flex-row items-center gap-3 px-4 py-3",
         className,
         classNames?.cell
       )}
     >
-      {provider.icon && (
-        <provider.icon className={cn("size-4", classNames?.icon)} />
-      )}
-
-      <div className="flex-col">
-        <div className="text-sm">{provider.name}</div>
-
-        {account && <AccountInfo account={account} />}
-      </div>
+      <ProviderCellContent
+        account={account}
+        provider={provider}
+        classNames={classNames}
+      />
 
       <Button
-        className={cn("relative ms-auto", classNames?.button)}
+        className={cn("relative ms-auto shrink-0", classNames?.button)}
         disabled={isLoading}
         size="sm"
         type="button"
@@ -133,24 +142,109 @@ export function ProviderCell({
   );
 }
 
-function AccountInfo({ account }: { account: { accountId: string } }) {
+function ProviderCellContent({
+  account,
+  classNames,
+  provider
+}: {
+  account?: Account | null;
+  classNames?: SettingsCardClassNames;
+  provider: Provider;
+}) {
+  if (account) {
+    return (
+      <ConnectedProviderContent
+        account={account}
+        classNames={classNames}
+        provider={provider}
+      />
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-3">
+      <ProviderContent classNames={classNames} provider={provider} />
+    </div>
+  );
+}
+
+function ConnectedProviderContent({
+  account,
+  classNames,
+  provider
+}: {
+  account: Account;
+  classNames?: SettingsCardClassNames;
+  provider: Provider;
+}) {
   const {
     hooks: { useAccountInfo }
   } = useContext(AuthUIContext);
 
   const { data: accountInfo, isPending } = useAccountInfo({
-    accountId: account.accountId
+    query: { accountId: account.accountId }
   });
 
-  if (isPending) {
-    return <Skeleton className="my-0.5 h-3 w-28" />;
+  const email = accountInfo?.user.email;
+  const { ref: emailRef, isOverflow } = useIsOverflow<HTMLSpanElement>();
+
+  const emailElement = isPending ? (
+    <Skeleton className="my-0.5 h-3 w-28" />
+  ) : email ? (
+    <span ref={emailRef} className="truncate text-xs text-muted-foreground">
+      {email}
+    </span>
+  ) : null;
+
+  const content = (
+    <ProviderContent
+      accountInfo={emailElement}
+      classNames={classNames}
+      provider={provider}
+    />
+  );
+
+  const wrapperClassName = "flex min-w-0 flex-1 items-center gap-3";
+
+  if (email && isOverflow) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <div className={cn(wrapperClassName, "cursor-default")}>
+              {content}
+            </div>
+          }
+        />
+        <TooltipContent>
+          <p>{email}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
   }
 
-  if (!accountInfo) return null;
+  return <div className={wrapperClassName}>{content}</div>;
+}
 
+function ProviderContent({
+  accountInfo,
+  classNames,
+  provider
+}: {
+  accountInfo?: React.ReactNode;
+  classNames?: SettingsCardClassNames;
+  provider: Provider;
+}) {
   return (
-    <div className="text-xs text-muted-foreground">
-      {accountInfo?.user.email}
-    </div>
+    <>
+      {provider.icon && (
+        <provider.icon className={cn("size-4 shrink-0", classNames?.icon)} />
+      )}
+
+      <div className="flex min-w-0 flex-col">
+        <div className="text-sm">{provider.name}</div>
+        {accountInfo}
+      </div>
+    </>
   );
 }

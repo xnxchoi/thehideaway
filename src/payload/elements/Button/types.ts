@@ -1,5 +1,5 @@
 import type { CursorStatus } from "@/components/core/cursorWrapper";
-import type React, { ElementType, MouseEvent } from "react";
+import { ElementType, ReactNode, RefObject } from "react";
 
 type secondaryAction = {
   label: string;
@@ -27,7 +27,7 @@ export type Props = {
    * Setting to `true` will allow the submenu to be opened when the button is disabled
    */
   enableSubMenu?: boolean;
-  icon?: ["chevron" | "edit" | "plus" | "x"] | React.ReactNode;
+  icon?: ["chevron" | "edit" | "plus" | "x"] | ReactNode;
   iconPosition?: "left" | "right";
   iconStyle?: "none" | "with-border" | "without-border";
   id?: string;
@@ -36,11 +36,10 @@ export type Props = {
    * This prop is deprecated and will be removed in the next major version.
    * Components now import their own `Link` directly from `next/link`.
    */
-  Link?: React.ElementType;
+  Link?: ElementType;
   margin?: boolean;
   newTab?: boolean;
-  onClick?: (event: MouseEvent) => void;
-  onMouseDown?: (event: MouseEvent) => void;
+
   /**
    * Enables form submission via an onClick handler. This is only needed if
    * type="submit" does not trigger form submission, e.g. if the button DOM
@@ -49,18 +48,17 @@ export type Props = {
    * @default false
    */
   programmaticSubmit?: boolean;
-  ref?: React.RefObject<HTMLAnchorElement | HTMLButtonElement | null>;
+  ref?: RefObject<HTMLAnchorElement | HTMLButtonElement | null>;
   round?: boolean;
-  secondaryActions?: secondaryAction | secondaryAction[];
   size?: "large" | "medium" | "small";
-  SubMenuPopupContent?: (props: { close: () => void }) => React.ReactNode;
+  SubMenuPopupContent?: (props: { close: () => void }) => ReactNode;
   to?: string;
   tooltip?: string;
   type?: "button" | "submit";
   url?: string;
 } & {
   overrides?: {
-    onEnter?: { condition: (e) => CursorStatus };
-    onLeave?: { condition: (e) => CursorStatus };
+    onEnter?: { condition: (e: any) => CursorStatus };
+    onLeave?: { condition: (e: any) => CursorStatus };
   };
 };

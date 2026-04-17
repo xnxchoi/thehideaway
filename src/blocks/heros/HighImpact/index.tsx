@@ -34,11 +34,14 @@ export const HighImpactHero: React.FC<Page["hero"]> = ({
               {links.map(({ link }, i) => {
                 return (
                   <li key={i}>
-                    <ReferencedLink
-                      link={{
-                        ...link
-                      }}
-                    />
+                    {link.url && (
+                      <ReferencedLink
+                        href={link.url}
+                        link={{
+                          ...link
+                        }}
+                      />
+                    )}
                   </li>
                 );
               })}

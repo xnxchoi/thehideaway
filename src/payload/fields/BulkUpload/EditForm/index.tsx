@@ -1,27 +1,34 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
-
-import type { EditFormProps } from "./types.js";
-
-import { Form, useForm } from "@/payload/forms/Form/index.js";
-import { type FormProps } from "@/payload/forms/Form/types.js";
-import { WatchChildErrors } from "@/payload/forms/WatchChildErrors/index.js";
-import { useConfig } from "../../../providers/Config/index.js";
-import { useDocumentEvents } from "../../../providers/DocumentEvents/index.js";
-import { useDocumentInfo } from "../../../providers/DocumentInfo/index.js";
-import { OperationProvider } from "../../../providers/Operation/index.js";
-import { useServerFunctions } from "../../../providers/ServerFunctions/index.js";
+import { DocumentFields } from "@/payload/elements/DocumentFields";
+import { Upload_v4 } from "@/payload/elements/Upload";
+import { ClientCollectionConfig, JsonObject, TypeWithID } from "payload";
 import {
-  abortAndIgnore,
-  handleAbortRef
-} from "../../../utilities/abortAndIgnore.js";
-import { useDocumentDrawerContext } from "../../DocumentDrawer/Provider.js";
-import { DocumentFields } from "../../DocumentFields/index.js";
-import { MoveDocToFolder } from "../../FolderView/MoveDocToFolder/index.js";
-import { Upload_v4 } from "../../Upload/index.js";
-import { useFormsManager } from "../FormsManager/index.js";
+  Fragment,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import type { EditFormProps } from "./types";
+
 import "./index.scss";
+import {
+  Form,
+  FormProps,
+  MoveDocToFolder,
+  OperationProvider,
+  useConfig,
+  useDocumentDrawerContext,
+  useDocumentEvents,
+  useDocumentInfo,
+  useForm,
+  useServerFunctions,
+  WatchChildErrors
+} from "@payloadcms/ui";
+import { abortAndIgnore, handleAbortRef } from "@payloadcms/ui/shared";
+import { useFormsManager } from "../FormsManager";
 
 const baseClass = "collection-edit";
 
@@ -55,17 +62,20 @@ export function EditForm({
     getEntityConfig
   } = useConfig();
 
-  const abortOnChangeRef = React.useRef<AbortController>(null);
+  const abortOnChangeRef = useRef<AbortController>(null);
 
-  const collectionConfig = getEntityConfig({ collectionSlug: docSlug });
+  const collectionConfig = getEntityConfig({
+    collectionSlug: docSlug
+  }) as ClientCollectionConfig;
   const { reportUpdate } = useDocumentEvents();
 
-  const collectionSlug = collectionConfig.slug;
+  const collectionSlug = collectionConfig?.slug;
 
-  const [schemaPath] = React.useState(collectionSlug);
+  const [schemaPath] = useState(collectionSlug);
 
   const onSave = useCallback(
-    (json) => {
+    (json: JsonObject) => {
+      if (!collectionSlug) throw new Error("Collection slug is not defined");
       reportUpdate({
         doc: json?.doc || json?.result,
         drawerSlug,
@@ -74,13 +84,20 @@ export function EditForm({
         updatedAt: json?.result?.updatedAt || new Date().toISOString()
       });
 
-      if (typeof onSaveFromContext === "function") {
+      if (
+        typeof onSaveFromContext === "function" &&
+        !!json &&
+        "doc" in json &&
+        json.doc &&
+        "id" in json.doc &&
+        "result" in json
+      ) {
         void onSaveFromContext({
-          ...json,
+          ...(json as JsonObject & { doc: TypeWithID; result: TypeWithID }),
           operation: "create"
         });
       }
-      resetUploadEdits();
+      resetUploadEdits?.();
     },
     [
       collectionSlug,
@@ -93,7 +110,9 @@ export function EditForm({
 
   const onChange: NonNullable<FormProps["onChange"]>[0] = useCallback(
     async ({ formState: prevFormState, submitted }) => {
-      const controller = handleAbortRef(abortOnChangeRef);
+      const controller = handleAbortRef(
+        abortOnChangeRef as RefObject<AbortController>
+      );
 
       const docPreferences = await getDocPreferences();
 
@@ -110,7 +129,7 @@ export function EditForm({
 
       abortOnChangeRef.current = null;
 
-      return newFormState;
+      return newFormState!;
     },
     [
       collectionSlug,
@@ -125,7 +144,7 @@ export function EditForm({
     const abortOnChange = abortOnChangeRef.current;
 
     return () => {
-      abortAndIgnore(abortOnChange);
+      abortAndIgnore(abortOnChange as AbortController);
     };
   }, []);
 
@@ -139,27 +158,29 @@ export function EditForm({
         isInitializing={isInitializing}
         method="POST"
         onChange={[onChange]}
-        onSuccess={onSave}
+        onSuccess={onSave as FormProps["onSuccess"]}
         submitted={submitted}
       >
         <DocumentFields
           BeforeFields={
-            <React.Fragment>
+            <Fragment>
               {CustomUpload || (
                 <Upload_v4
-                  collectionSlug={collectionConfig.slug}
+                  collectionSlug={collectionConfig!.slug}
                   customActions={[
-                    folders && collectionConfig.folders && (
-                      <MoveDocToFolder
-                        buttonProps={{
-                          buttonStyle: "pill",
-                          size: "small"
-                        }}
-                        folderCollectionSlug={folders.slug}
-                        folderFieldName={folders.fieldName}
-                        key="move-doc-to-folder"
-                      />
-                    )
+                    folders &&
+                      "folders" in collectionConfig &&
+                      collectionConfig!.folders && (
+                        <MoveDocToFolder
+                          buttonProps={{
+                            buttonStyle: "pill",
+                            size: "small"
+                          }}
+                          folderCollectionSlug={folders.slug}
+                          folderFieldName={folders.fieldName}
+                          key="move-doc-to-folder"
+                        />
+                      )
                   ].filter(Boolean)}
                   initialState={initialState}
                   resetUploadEdits={resetUploadEdits}
@@ -168,9 +189,9 @@ export function EditForm({
                   uploadEdits={uploadEdits}
                 />
               )}
-            </React.Fragment>
+            </Fragment>
           }
-          docPermissions={docPermissions}
+          docPermissions={docPermissions!}
           fields={collectionConfig.fields}
           schemaPathSegments={[collectionConfig.slug]}
         />
@@ -186,7 +207,6 @@ function GetFieldProxy() {
   const { getFormDataRef } = useFormsManager();
 
   useEffect(() => {
-    // eslint-disable-next-line react-compiler/react-compiler -- TODO: fix
     getFormDataRef.current = getFields;
   }, [getFields, getFormDataRef]);
 
@@ -196,10 +216,10 @@ function GetFieldProxy() {
 function ReportAllErrors() {
   const { docConfig } = useDocumentInfo();
   const { activeIndex, setFormTotalErrorCount } = useFormsManager();
-  const errorCountRef = React.useRef(0);
+  const errorCountRef = useRef(0);
 
-  const reportFormErrorCount = React.useCallback(
-    (errorCount) => {
+  const reportFormErrorCount = useCallback(
+    (errorCount: number) => {
       if (errorCount === errorCountRef.current) {
         return;
       }

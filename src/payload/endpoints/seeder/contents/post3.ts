@@ -1,1684 +1,1676 @@
-import {Post} from '@/payload-types'
+import { Post } from "@/payload-types";
 
 export const post3: Partial<Post> = {
-	locked: false,
-	allowList: [
-		{
-			relationTo: 'members',
-			value: '{{AUTHOR}}',
-		},
-	],
-	authority: 0,
-	title: '수르스트뢰밍 열어보기',
-	subtitle: '"수르스트뢰밍 열어보기" ',
-	image: null,
-	content: {
-		root: {
-			children: [
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '수르스트뢰밍 열어보기',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '동전에 면이 몇 개 있는 줄 알아?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '동전의 양면 하니까 두 개 아닙니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아니야 잘 봐',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '안병장은 백 원짜리 동전의 양면을 엄지와 검지로 잡고 지면과 면을 평행하게 만들어 내 눈 앞에 들이댔다. 촘촘하게 선이 세로로 박힌 동전의 옆면이 눈에 들어온다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그럼 옆면도 포함해서 세 면입니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '네가 방금 촘촘하다고 한 건 뭔데',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그걸 입으로 말한 적은 없습니다만',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어쨌든 이럼 면이 몇 개야',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '제가 아량을 넓게 베풀어서 한 발자국 뒤로 물러나서 사물을 보는 시각을 더욱 고차원적으로',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '높여서 돋보기로 보듯 관찰해보니 동전을 가르는 촘촘한 선의 개수만큼 면이 더 있다고',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '봐도 되겠습니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그럼 이순신 장군이 쓰고 있는 이 관은 어때 이것도 면 아니야?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '동전의 한 쪽 면에 도드라지게 또 하나의 면이 올라온 모양새니까 그것도 추가해도 되겠습니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그리고 ‘백 원’이라고 가운데 이순신 장군을 두고 쓰인 글자도, 장군님의 옷이랑 얼굴이랑',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '다 각자 면으로 이루어졌다고 봐도 되겠습니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '되긴 뭘 돼. 너 동전 세울 수 있어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '한번 해보겠습니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '백 원짜리 동전 세우기, 학창시절에 학교 책상에 한 두어 번 해봤던 것 같은데',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '성공해본 기억은 없다. 사무실 책상 위에서 해봤더니 역시나 안 되던 건 지금도 안 된다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '열다섯 번쯤 해봤는데 안 된다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '안병장은 이미 딴 짓 중이다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '오백 원짜리로 해봐도 되겠습니까? 백 원짜리는 너무 어렵습니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '자.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '오백 원짜리도 의외로 더럽게 안 된다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '학이 날아가는 모양새가 촘촘하게 새겨진 오백 원짜리, 자세히 보니 꽤 정교한 조각이다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '얄미운데',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '안 됩니다. 옆면도 의외로 둥글둥글하고 볼록해서 그런지 균형이 안 잡힙니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그런데 볼록한 이 옆면도 면이라고 해도 됩니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '곡면도 면이지 바보야',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아 그렇네요',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '요? 요~?!?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '앗 죄송합니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '정신 못 차리네 이거 이거 정신 못 차려',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래서 동전에 면이 몇 개라는 겁니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '너 ‘요컨대’라는 말에 ‘요’가 한자어로 요(要)인 거 알아?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '몰랐습니다. 무슨 한잡니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '요(要)는 ‘구하다, 원하다’라는 뜻이 있고 명사로 쓰면 중요한 점이라는 뜻이야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '요컨대 요는 ‘중요한 것’이라는 말입니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '요지는 그거지. 너 요지 위에 동전 올릴 수 있어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '갑자기 무슨 헛소립니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아니 그 요지 말고 요지, 이쑤시개 말이야',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '이쑤시개가 갑자기 왜 나옵니까?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '이쑤시개를 요지라고도 부르는 거야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '요컨대 요지는 이쑤시개를 요지라고도 부른다는 말이에요?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '요? 요~????!!!!',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '죄송합니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '여기 동전 다시 돌려드리겠습니다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '나는 백 원짜리와 오백 원짜리, 도합 육백 원을 안병장에게 돌려주었다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그대로 안병장은 육백 원을 주머니에 넣었다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어디서 난 건지 알 수 없는 요지를 손가락 위에 세워서 유지하는 묘기를 보여주면서',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '안병장은 자판기로 걸어가 육백 원짜리 캔 음료를 샀다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-			],
-			direction: 'ltr',
-			format: '',
-			indent: 0,
-			type: 'root',
-			version: 1,
-		},
-	},
-	relatedPosts: [],
-	categories: [],
-	meta: {
-		title: null,
-		image: null,
-		description: null,
-	},
-	publishedAt: '2022-01-15T13:23:41.262Z',
-	author: {
-		relationTo: 'members',
-		value: '{{AUTHOR}}',
-	},
-	populatedAuthor: [],
-	slug: 'can-of-worms',
-	slugLock: false,
-	updatedAt: '2022-01-15T13:23:41.262Z',
-	createdAt: '2022-01-15T13:23:41.262Z',
-	_status: 'published',
-}
+  locked: false,
+  allowList: [],
+  authority: 0,
+  title: "수르스트뢰밍 열어보기",
+  subtitle: '"수르스트뢰밍 열어보기" ',
+  image: null,
+  content: {
+    root: {
+      children: [
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "수르스트뢰밍 열어보기",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "동전에 면이 몇 개 있는 줄 알아?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "동전의 양면 하니까 두 개 아닙니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아니야 잘 봐",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "안병장은 백 원짜리 동전의 양면을 엄지와 검지로 잡고 지면과 면을 평행하게 만들어 내 눈 앞에 들이댔다. 촘촘하게 선이 세로로 박힌 동전의 옆면이 눈에 들어온다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그럼 옆면도 포함해서 세 면입니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "네가 방금 촘촘하다고 한 건 뭔데",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그걸 입으로 말한 적은 없습니다만",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어쨌든 이럼 면이 몇 개야",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "제가 아량을 넓게 베풀어서 한 발자국 뒤로 물러나서 사물을 보는 시각을 더욱 고차원적으로",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "높여서 돋보기로 보듯 관찰해보니 동전을 가르는 촘촘한 선의 개수만큼 면이 더 있다고",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "봐도 되겠습니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그럼 이순신 장군이 쓰고 있는 이 관은 어때 이것도 면 아니야?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "동전의 한 쪽 면에 도드라지게 또 하나의 면이 올라온 모양새니까 그것도 추가해도 되겠습니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그리고 ‘백 원’이라고 가운데 이순신 장군을 두고 쓰인 글자도, 장군님의 옷이랑 얼굴이랑",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "다 각자 면으로 이루어졌다고 봐도 되겠습니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "되긴 뭘 돼. 너 동전 세울 수 있어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "한번 해보겠습니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "백 원짜리 동전 세우기, 학창시절에 학교 책상에 한 두어 번 해봤던 것 같은데",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "성공해본 기억은 없다. 사무실 책상 위에서 해봤더니 역시나 안 되던 건 지금도 안 된다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "열다섯 번쯤 해봤는데 안 된다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "안병장은 이미 딴 짓 중이다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "오백 원짜리로 해봐도 되겠습니까? 백 원짜리는 너무 어렵습니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "자.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "오백 원짜리도 의외로 더럽게 안 된다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "학이 날아가는 모양새가 촘촘하게 새겨진 오백 원짜리, 자세히 보니 꽤 정교한 조각이다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "얄미운데",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "안 됩니다. 옆면도 의외로 둥글둥글하고 볼록해서 그런지 균형이 안 잡힙니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그런데 볼록한 이 옆면도 면이라고 해도 됩니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "곡면도 면이지 바보야",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아 그렇네요",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "요? 요~?!?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "앗 죄송합니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "정신 못 차리네 이거 이거 정신 못 차려",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래서 동전에 면이 몇 개라는 겁니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "너 ‘요컨대’라는 말에 ‘요’가 한자어로 요(要)인 거 알아?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "몰랐습니다. 무슨 한잡니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "요(要)는 ‘구하다, 원하다’라는 뜻이 있고 명사로 쓰면 중요한 점이라는 뜻이야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "요컨대 요는 ‘중요한 것’이라는 말입니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "요지는 그거지. 너 요지 위에 동전 올릴 수 있어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "갑자기 무슨 헛소립니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아니 그 요지 말고 요지, 이쑤시개 말이야",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "이쑤시개가 갑자기 왜 나옵니까?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "이쑤시개를 요지라고도 부르는 거야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "요컨대 요지는 이쑤시개를 요지라고도 부른다는 말이에요?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "요? 요~????!!!!",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "죄송합니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "여기 동전 다시 돌려드리겠습니다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "나는 백 원짜리와 오백 원짜리, 도합 육백 원을 안병장에게 돌려주었다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그대로 안병장은 육백 원을 주머니에 넣었다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어디서 난 건지 알 수 없는 요지를 손가락 위에 세워서 유지하는 묘기를 보여주면서",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "안병장은 자판기로 걸어가 육백 원짜리 캔 음료를 샀다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        }
+      ],
+      direction: "ltr",
+      format: "",
+      indent: 0,
+      type: "root",
+      version: 1
+    }
+  },
+  relatedPosts: [],
+  category: "",
+  meta: {
+    title: null,
+    image: null,
+    description: null
+  },
+  publishedAt: "2022-01-15T13:23:41.262Z",
+  author: "",
+
+  slug: "can-of-worms",
+  slugLock: false,
+  updatedAt: "2022-01-15T13:23:41.262Z",
+  createdAt: "2022-01-15T13:23:41.262Z",
+  _status: "published"
+};

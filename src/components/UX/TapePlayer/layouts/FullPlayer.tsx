@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
-import { SeekKnob } from "../controls/SeekKnob";
 import { TransportBar } from "../controls/TransportBar";
 import { ProgressRail } from "../visuals/ProgressRail";
 import { TapeCounter } from "../visuals/TapeCounter";
@@ -32,7 +31,7 @@ export const FullPlayer = ({ className }: FullPlayerProps) => {
   return (
     <div
       className={cn(
-        "flex w-full max-w-[480px] xl:max-w-[560px] flex-col items-center gap-4 px-4 py-6",
+        "flex w-full max-w-[480px] flex-col items-center gap-4 px-4 py-6 xl:max-w-[560px]",
         "mx-auto",
         className
       )}
@@ -41,24 +40,15 @@ export const FullPlayer = ({ className }: FullPlayerProps) => {
       <TapeReels diameter={sizes.reelDiameter} />
 
       {/* Digital counter */}
-      <TapeCounter
-        height={sizes.counterHeight}
-        className="w-full text-sm"
-      />
+      <TapeCounter height={sizes.counterHeight} className="w-full text-sm" />
 
       {/* Track info */}
       <TrackInfo size="full" />
 
-      {/* Progress display (passive) + Seek knob */}
+      {/* Progress display (passive) */}
       <ProgressRail className="w-full" />
-      <SeekKnob size={56} />
 
-      {/* Transport controls with speed dial */}
-      <TransportBar
-        showDial={true}
-        compact={false}
-        className={cn(isTouch && "gap-8")}
-      />
+      <TransportBar compact={false} className={cn(isTouch && "gap-8")} />
     </div>
   );
 };

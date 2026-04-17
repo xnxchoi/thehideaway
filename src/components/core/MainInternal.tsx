@@ -1,4 +1,4 @@
-import { PerformanceRegress } from "@/components/UX/Gradient/Gradient";
+import { PerformanceRegress } from "@/components/UX/Gradient/Gradient_M";
 import { cn } from "@/lib/utils";
 import { OrthographicCamera, View } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
@@ -17,10 +17,14 @@ export function MainInternal({
       performance={{ min: 0.2 }}
       style={style}
       gl={{
+        ...gl,
         premultipliedAlpha: false,
         alpha: true,
 
-        ...gl
+        powerPreference: "high-performance"
+      }}
+      camera={{
+        fov: 45
       }}
       className={cn("preview__gradient", className)}
       eventSource={mainRef}

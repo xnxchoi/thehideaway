@@ -1,8 +1,8 @@
-import { CollectionAfterChangeHook } from "payload";
-import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";
-import { DateTime } from "luxon";
 import { User } from "@/payload-types";
+import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";
 import { randomNumber } from "@/utilities/randomNumber";
+import { DateTime } from "luxon";
+import { CollectionAfterChangeHook } from "payload";
 import { uuidv7 } from "uuidv7";
 
 type AfterChangeArgs = Parameters<CollectionAfterChangeHook<User>>[0];
@@ -78,11 +78,27 @@ export const createProfile = async ({ req, doc }: Rest & ReqArgs) => {
   const r = randomNumber(0, colorArrays.length - 1);
   const a = randomNumber(0, 1);
   const c = a === 0 ? 1 : 0;
+  const curProfileCount = await payload
+    .count({
+      collection: "profile",
+      where: {
+        author: {
+          equals: doc.id
+        }
+      }
+    })
+    .then((count) => count.totalDocs)
+    .catch((err) => {
+      return 0;
+    });
   await payload.create({
     collection: "profile",
+    draft: false,
     overrideAccess: true,
     data: {
       author: doc.id,
+      slug: doc.slug,
+      title: `@${doc.username}#${curProfileCount + 1}`,
       hero: {
         title: `${doc.firstName} ${doc.lastName}`,
         subtitle: "The hideaway",

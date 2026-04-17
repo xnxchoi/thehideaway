@@ -127,7 +127,11 @@ export function MagicLinkForm({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
       resetCaptcha();
     }

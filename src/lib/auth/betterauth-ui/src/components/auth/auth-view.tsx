@@ -27,6 +27,7 @@ import { OneTap } from "./one-tap";
 import { PasskeyButton } from "./passkey-button";
 import { ProviderButton } from "./provider-button";
 import { SignOut } from "./sign-out";
+import { Separator } from "@base-ui/react";
 
 export type AuthViewClassNames = {
   base?: string;
@@ -46,6 +47,7 @@ export interface AuthViewProps {
   classNames?: AuthViewClassNames;
   callbackURL?: string;
   cardHeader?: ReactNode;
+  cardFooter?: ReactNode;
   localization?: AuthLocalization;
   path?: string;
   pathname?: string;
@@ -60,6 +62,7 @@ export function AuthView({
   classNames,
   callbackURL,
   cardHeader,
+  cardFooter,
   localization,
   path: pathProp,
   pathname,
@@ -111,8 +114,11 @@ export function AuthView({
   }, []);
 
   if (view === "CALLBACK") return <AuthCallback redirectTo={redirectTo} />;
-  if (view === "SIGN_OUT") return <SignOut />;
-  if (view === "ACCEPT_INVITATION") return <AcceptInvitationCard />;
+  if (view === "SIGN_OUT") return <SignOut redirectTo={redirectTo} />;
+  if (view === "ACCEPT_INVITATION")
+    return (
+      <AcceptInvitationCard className={className} classNames={classNames} />
+    );
 
   const description =
     !credentials && !magicLink && !emailOTP
@@ -156,7 +162,7 @@ export function AuthView({
             ) && <OneTap localization={localization} redirectTo={redirectTo} />}
 
           {(credentials || magicLink || emailOTP) && (
-            <div className="flex flex-col gap-7">
+            <div className="grid gap-4">
               <AuthForm
                 classNames={classNames?.form}
                 callbackURL={callbackURL}
@@ -306,7 +312,7 @@ export function AuthView({
             )}
         </CardContent>
 
-        {credentials && signUp && (
+        {cardFooter && credentials && signUp && (
           <CardFooter
             className={cn(
               "justify-center gap-1.5 text-sm text-muted-faded-foreground",

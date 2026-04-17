@@ -38,7 +38,9 @@ export const ContentBlock: React.FC<
                 key={index}
               >
                 {richText && <RichText data={richText} enableGutter={false} />}
-                {link && enableLink && <ReferencedLink link={link} />}
+                {link && link.url && enableLink && (
+                  <ReferencedLink href={link.url} link={link} />
+                )}
               </div>
             );
           })}

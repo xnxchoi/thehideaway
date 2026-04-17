@@ -1,13 +1,15 @@
-uniform float u_time;
 uniform float u_progress;
-uniform vec4 u_resolution;
-uniform float uAdditionalZoom;
-uniform vec2 uAdditionalOffset;
-uniform vec3 u_color[3];
-uniform float uSize;
-uniform vec2 uOffset;
-uniform float uColorMixer;
-uniform float uSpeed;
+uniform float u_time;
+uniform vec3 u_color[4];
+uniform float u_colorMixer;
+uniform vec2 u_pixels;
+uniform float u_opacity;
+uniform vec2 u_additionalOffset;
+uniform float u_additionalZoom;
+uniform float u_size;
+uniform vec2 u_offset;
+uniform float u_speed;
+uniform vec2 u_resolution;
 uniform sampler2D u_noiseTexture;
 varying vec2 v_uv;
 varying vec3 v_color;
@@ -43,47 +45,17 @@ float snoise(vec2 v) {
 }
 
 void main() {
-    vec2 nUv = (-.5 + v_uv) * 2.;
-    if (u_resolution.x < u_resolution.y) {
-        nUv.x *= u_resolution.x / u_resolution.y;
-    } else {
-        nUv.y *= u_resolution.y / u_resolution.x;
-    }
-    nUv = nUv / 2. + .5;
-    float additionalZoom = uAdditionalZoom;
-    vec2 offset = uOffset + uAdditionalOffset;
 
-    vec2 bUv = nUv * (uSize * 2. + additionalZoom);
-    vec2 nUv1 = bUv + offset * (1.) + u_time * uSpeed;
-    bUv.y -= .5;
-    vec2 nUv2 = bUv + offset * (1.) - u_time * uSpeed;
-    vec4 noiseColor1 = texture2D(u_noiseTexture, nUv1);
-    float noise1 = noiseColor1.r;
-
-    vec4 noiseColor2 = texture2D(u_noiseTexture, nUv2);
-    float noise2 = noiseColor2.r;
-    float noise = clamp((noise1 + noise2) / 2., 0., 1.);
-
-    vec2 nUv3 = bUv + noise * .5;
-    noise = texture2D(u_noiseTexture, nUv3).r;
     vec3 color = vec3(0.);
-    noise = mix(noise, noise * 1.25 + .15, 0.);
-    if (noise < 0.25) {
-        color = mix(v_color, u_color[1], noise / 0.25);
-    } else if (noise < 0.5) {
-        color = mix(v_color, u_color[2], (noise - 0.25) / 0.25);
-    } else if (noise < 0.75) {
-        color = mix(v_color, u_color[2], (noise - 0.5) / 0.25);
-    } else {
+
         color = v_color;
-    }
     vec3 alt = pow(color, vec3(2.));
     alt = alt * 1. - step(.01, color);
-    color = mix(color, alt, uColorMixer);
+    color = mix(color, alt, u_colorMixer);
     gl_FragColor = vec4(v_uv, 0.0, 1.);
 
     //    gl_FragColor = vec4(v_color, 1.);
-    gl_FragColor = vec4(color, 1.);
+    gl_FragColor = vec4(color, u_opacity);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

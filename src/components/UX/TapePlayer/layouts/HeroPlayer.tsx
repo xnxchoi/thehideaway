@@ -1,11 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useRadioStore } from "@/providers/RadioProvider";
+import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import { useRef } from "react";
-import { useShallow } from "zustand/shallow";
 import { PlayPauseButton } from "@/components/UX/TapePlayer";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { TapeReels } from "../visuals/TapeReels";
@@ -30,7 +29,7 @@ export const HeroPlayer = ({
 }: HeroPlayerProps) => {
   const containerRef = useRef<HTMLElement>(null);
   const { opacity, y } = useScrollReveal(containerRef);
-  const hasRadio = useRadioStore(useShallow((t) => t.hasRadio));
+  const hasRadio = useHasRadio();
   const sizes = SIZES.hero;
 
   if (!hasRadio) return null;

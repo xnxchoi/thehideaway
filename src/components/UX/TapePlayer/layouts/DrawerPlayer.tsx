@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { SeekKnob } from "../controls/SeekKnob";
 import { TransportBar } from "../controls/TransportBar";
 import { ProgressRail } from "../visuals/ProgressRail";
 import { TapeCounter } from "../visuals/TapeCounter";
@@ -27,12 +26,7 @@ export const DrawerPlayer = ({ className }: DrawerPlayerProps) => {
   const sizes = SIZES.drawer;
 
   return (
-    <div
-      className={cn(
-        "flex w-full items-start gap-3 px-3 py-3",
-        className
-      )}
-    >
+    <div className={cn("flex w-full items-start gap-3 px-3 py-3", className)}>
       {/* Mini reels on the left */}
       <div className="flex shrink-0 items-center justify-center pt-1">
         <TapeReels diameter={sizes.reelDiameter} className="w-[120px]" />
@@ -42,11 +36,11 @@ export const DrawerPlayer = ({ className }: DrawerPlayerProps) => {
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <TrackInfo size="compact" />
         <ProgressRail thin className="w-full" />
-        <div className="flex items-center gap-2">
-          <TapeCounter height={sizes.counterHeight} className="flex-1 text-[0.6rem]" />
-          <SeekKnob size={40} />
-        </div>
-        <TransportBar compact showDial={false} />
+        <TapeCounter
+          height={sizes.counterHeight}
+          className="w-full text-[0.6rem]"
+        />
+        <TransportBar compact />
       </div>
     </div>
   );

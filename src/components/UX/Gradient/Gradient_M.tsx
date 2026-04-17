@@ -66,43 +66,6 @@ export function VGradientModule() {
   );
 }
 
-const GradientShader = shaderMaterial(
-  {
-    u_color: [
-      new ThreeColor("rgb(59 30 29)"),
-      new ThreeColor("rgb(96 50 48)"),
-      new ThreeColor("rgb(133 80 77)"),
-      new ThreeColor("rgb(165 113 110)")
-    ] as [ThreeColor, ThreeColor, ThreeColor, ThreeColor],
-    uColorMixer: 0,
-    uAdditionalZoom: 0,
-    uAdditionalOffset: new Vector2(0),
-    uSize: 0.2,
-    uOffset: new Vector2(0.42, 0.6),
-    uSpeed: 0.02,
-    u_pixels: new Vector2(1, 1),
-    u_resolution: new Vector2(1, 1),
-    u_time: 1.0,
-    u_noiseTexture: null!,
-    u_opacity: 1.0
-  } as {
-    u_color: [ThreeColor, ThreeColor, ThreeColor, ThreeColor];
-    uColorMixer: number;
-    uAdditionalZoom: number;
-    uAdditionalOffset: Vector2;
-    uSize: number;
-    uOffset: Vector2;
-    uSpeed: number;
-    u_pixels: Vector2;
-    u_resolution: Vector2;
-    u_time: number;
-    u_noiseTexture: Texture<TextureDataType>;
-    u_opacity: number;
-  },
-  vertexShader,
-  fragmentShader
-);
-
 type Uniformify<T> = {
   [K in keyof T]: IUniform<T[K]>;
 };
@@ -130,6 +93,20 @@ const VGradientModuleOuter = ({ className, children }: MiewProps) => {
     </MotionView>
   );
 };
+export type GradientUniformMap = {
+  u_color: [ThreeColor, ThreeColor, ThreeColor, ThreeColor];
+  u_colorMixer: number;
+  u_additionalZoom: number;
+  u_additionalOffset: Vector2;
+  u_size: number;
+  u_offset: Vector2;
+  u_speed: number;
+  u_pixels: Vector2;
+  u_resolution: Vector2;
+  u_time: number;
+  u_noiseTexture: Texture<TextureDataType>;
+  u_opacity: number;
+};
 const VGradientModuleInner = () => {
   const noiseTexture = useTexture("/assets/seamless.png", (texture) => {
     if ("wrapS" in texture) {
@@ -138,19 +115,10 @@ const VGradientModuleInner = () => {
   });
 
   const gradientt = useRef<
-    ShaderMaterial & {
-      u_color: [ThreeColor, ThreeColor, ThreeColor, ThreeColor];
-      uColorMixer: number;
-      uAdditionalZoom: number;
-      uAdditionalOffset: Vector2;
-      uSize: number;
-      uOffset: Vector2;
-      uSpeed: number;
-      u_pixels: Vector2;
-      u_resolution: Vector2;
-      u_time: number;
-      u_noiseTexture: Texture<TextureDataType>;
-      u_opacity: number;
+    Omit<ShaderMaterial, "uniforms"> & {
+      uniforms: {
+        [X in keyof GradientUniformMap]: IUniform<GradientUniformMap[X]>;
+      };
     }
   >(null!);
   const theme = useTheme((r) => r.theme);
@@ -184,10 +152,10 @@ const VGradientModuleInner = () => {
     ],
     [colorSchemes]
   );
-  const uOffset = useMemo(() => new Vector2(0.42, 0.6), []);
+  const u_offset = useMemo(() => new Vector2(0.42, 0.6), []);
   const u_pixels = useMemo(() => new Vector2(1, 1), []);
   const u_resolution = useMemo(() => new Vector2(1, 1), []);
-  const uAdditionalOffset = useMemo(() => new Vector2(0), []);
+  const u_additionalOffset = useMemo(() => new Vector2(0), []);
   const u_color = useMemo<[ThreeColor, ThreeColor, ThreeColor, ThreeColor]>(
     () => [
       new ThreeColor(colorSchemes[0][0]),
@@ -202,21 +170,30 @@ const VGradientModuleInner = () => {
   const vecc = useMemo(() => new Vector3(0, 0, 0.46), []);
   const uniforms = useMemo(
     () => ({
-      u_color: { value: u_color },
-      uColorMixer: { value: 0 },
-      uAdditionalZoom: { value: 0 },
-      uAdditionalOffset: { value: uAdditionalOffset },
-      uSize: { value: 0.2 },
-      uOffset: { value: uOffset },
-      uSpeed: { value: 0.02 },
-      u_pixels: { value: u_pixels },
-      u_resolution: { value: u_resolution },
-      u_time: { value: 1.0 },
-      u_noiseTexture: { value: noiseTexture },
-      u_opacity: { value: uOpacity.current }
+      u_color: u_color,
+      u_colorMixer: 0,
+      u_additionalZoom: 0,
+      u_additionalOffset: u_additionalOffset,
+      u_size: 0.2,
+      u_offset: u_offset,
+      uSpeed: 0.02,
+      u_pixels: u_pixels,
+      u_resolution: u_resolution,
+      u_time: 1.0,
+      u_noiseTexture: noiseTexture,
+      u_opacity: uOpacity.current
     }),
-    [uOffset, u_pixels, uAdditionalOffset, u_resolution, noiseTexture, u_color]
+    [
+      u_offset,
+      u_pixels,
+      u_additionalOffset,
+      u_resolution,
+      noiseTexture,
+      u_color
+    ]
   );
+  const GradientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
+  extend({ GradientShader });
   const setPR = useEffectEvent(() => {
     const devicePixelRatio = window.devicePixelRatio || 2;
     const pe = gl.domElement.parentElement;
@@ -248,7 +225,7 @@ const VGradientModuleInner = () => {
       seq.push(
         ...([
           [
-            gradientt.current.u_color[0],
+            gradientt.current.uniforms.u_color.value[0],
             {
               r: colours[0].r,
               g: colours[0].g,
@@ -262,7 +239,7 @@ const VGradientModuleInner = () => {
             }
           ],
           [
-            gradientt.current.u_color[1],
+            gradientt.current.uniforms.u_color.value[1],
             {
               r: colours[1].r,
               g: colours[1].g,
@@ -276,7 +253,7 @@ const VGradientModuleInner = () => {
             }
           ],
           [
-            gradientt.current.u_color[2],
+            gradientt.current.uniforms.u_color.value[2],
             {
               r: colours[2].r,
               g: colours[2].g,
@@ -290,7 +267,7 @@ const VGradientModuleInner = () => {
             }
           ],
           [
-            gradientt.current.u_color[3],
+            gradientt.current.uniforms.u_color.value[3],
             {
               r: colours[3].r,
               g: colours[3].g,
@@ -317,7 +294,7 @@ const VGradientModuleInner = () => {
         <gradientShader
           ref={gradientt}
           opacity={uOpacity.current}
-          uOffset={uOffset}
+          u_offset={u_offset}
           uSpeed={0.02}
           extensions={{
             derivatives: "#extension GL_OES_standard_derivatives: enable"

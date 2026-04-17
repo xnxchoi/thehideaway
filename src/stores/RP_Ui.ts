@@ -499,7 +499,7 @@ export type HA_ANIMATION = {
   navOpeningElement: HTMLElement | null;
   isPreloader: boolean;
   enablePreloaderAnimation: boolean;
-  preloaderAnimationType: string | null;
+  preloaderAnimationType: "FAST" | "SLOW";
   isAnimatingOutPreloader: boolean;
   showHeader: boolean;
   headerAnimations: Partial<{
@@ -523,6 +523,7 @@ export type HA_ANIMATION_ACT = {
   setPageIsTransitioning: (l: boolean) => void;
   setNavOpeningElement: (l: HTMLElement | null) => void;
   setIsPreloader: (isPreloader: boolean) => void;
+  setPreloaderAnimationType: (type: "FAST" | "SLOW") => void;
   togglePreloaderAnimation: (state: boolean) => void;
   setHeaderAnimations: (
     c: Partial<{
@@ -575,7 +576,7 @@ const transIn: HA_ANIMATION = {
   navIsTransitioning: false,
   transitionType: null,
   transitionOutType: null,
-  preloaderAnimationType: null,
+  preloaderAnimationType: "FAST",
   isTransitioningWipe: false,
   isPreloader: false,
   pageIsTransitioning: false,
@@ -647,6 +648,8 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
         set((state) => ({ isAnimatingOutPreloader: c })),
       togglePreloaderAnimation: (c: boolean) =>
         set((state) => ({ enablePreloaderAnimation: c })),
+      setPreloaderAnimationType: (c: "FAST" | "SLOW") =>
+        set({ preloaderAnimationType: c }),
       setCanInteract: (c: boolean) =>
         set((state) => ({
           canInteract: c

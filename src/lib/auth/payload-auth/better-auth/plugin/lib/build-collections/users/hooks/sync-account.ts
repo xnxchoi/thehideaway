@@ -4,7 +4,7 @@ import {
   getCollectionByModelKey,
   getCollectionFieldNameByFieldKey
 } from "@payload-auth/better-auth/plugin/helpers/get-collection";
-import type { CollectionAfterChangeHook } from "payload";
+import type { CollectionAfterChangeHook, CollectionSlug } from "payload";
 
 export function getSyncAccountHook(): CollectionAfterChangeHook {
   const hook: CollectionAfterChangeHook = async ({
@@ -56,8 +56,10 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
       showHiddenFields: true
     });
 
+    //@ts-expect-error kinda weird
     if (!user || !user.hash || !user.salt) return doc;
 
+    //@ts-expect-error kinda weird
     const passwordValue = `${user.salt}:${user.hash}`;
 
     if (operation === "create" && !(BETTER_AUTH_CONTEXT_KEY in context)) {
@@ -70,6 +72,7 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
             [providerIdFieldName]: "credential",
             [passwordFieldName]: passwordValue
           },
+          //@ts-expect-error kinda weird
           context: { syncAccountHook: true },
           req
         });
@@ -81,7 +84,7 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
     if (operation === "update") {
       try {
         const accounts = await req.payload.find({
-          collection: accountCollection.slug,
+          collection: accountCollection.slug as CollectionSlug,
           where: {
             and: [
               { [userIdFieldName]: { equals: doc.id } },
@@ -90,18 +93,20 @@ export function getSyncAccountHook(): CollectionAfterChangeHook {
           },
           req,
           depth: 0,
+          //@ts-expect-error kinda weird
           context: { syncAccountHook: true }
         });
 
         const account = accounts.docs.at(0);
         if (account) {
           await req.payload.update({
-            collection: accountCollection.slug,
+            collection: accountCollection.slug as CollectionSlug,
             id: account.id,
             data: {
               [passwordFieldName]: passwordValue
             },
             req,
+            //@ts-expect-error kinda weird
             context: { syncAccountHook: true }
           });
         }

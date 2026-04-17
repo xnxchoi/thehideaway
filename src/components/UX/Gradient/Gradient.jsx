@@ -73,10 +73,8 @@ export const PerformanceRegress = () => {
   useFrame((state) => {
     if (navIsTransitioning && !hasLoadedOnce.current) {
       hasLoadedOnce.current = true;
-    } else {
-      if (navIsTransitioning || sidebarOpen) {
-        state.performance.regress();
-      }
+    } else if (navIsTransitioning || sidebarOpen) {
+      state.performance.regress();
     }
   });
   return <></>;

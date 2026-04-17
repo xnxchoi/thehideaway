@@ -2,19 +2,12 @@
 import { useRPImageNode } from "@/blocks/ImageBlock/Comp/client/component/index";
 import { EASING } from "@/constants/animations";
 import { cn } from "@/lib/utils";
-import { RP_InternalImageNodeData } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
-import { useOpenState } from "@/payload/providers/Admins";
 import { MotionValue, useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import {
-  ComponentProps,
-  ReactEventHandler,
-  useCallback,
-  useEffect,
-  useRef
-} from "react";
+import { ComponentProps, ReactEventHandler, useCallback, useRef } from "react";
 import { mergeRefs } from "react-merge-refs";
+import { RP_InternalImageNodeData } from "../../server/node/RP_ImageNode";
 
 const NextImage = m.create(Image);
 export type RPImageFrameProps = ComponentProps<"img"> & {

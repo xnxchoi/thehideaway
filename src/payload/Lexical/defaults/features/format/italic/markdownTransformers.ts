@@ -1,16 +1,14 @@
-import type {
-	TextFormatTransformer
-} from "../../../packages/@lexical/markdown/MarkdownTransformers.js"
+import { TextFormatTransformer } from "@payloadcms/richtext-lexical/lexical/markdown";
 
 export const ITALIC_STAR: TextFormatTransformer = {
-	type: "text-format",
-	format: ["italic"],
-	tag: "*",
-}
+  type: "text-format",
+  format: ["italic"],
+  tag: "*"
+};
 
 export const ITALIC_UNDERSCORE: TextFormatTransformer = {
-	type: "text-format",
-	format: ["italic"],
-	intraword: false,
-	tag: "_",
-}
+  type: "text-format",
+  format: ["italic"],
+  intraword: false,
+  tag: "_"
+};

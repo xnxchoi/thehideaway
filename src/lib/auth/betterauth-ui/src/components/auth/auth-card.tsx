@@ -1,21 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { ArrowLeftIcon, Loader2 } from "lucide-react";
-import { type ReactNode, useContext, useEffect, useState } from "react";
-
-import { useIsHydrated } from "../../hooks/use-hydrated";
-import { AuthUIContext } from "../../lib/auth-ui-provider";
-import type { AuthViewPath as AuthView } from "../../lib/view-paths";
-import { socialProviders } from "../../lib/social-providers";
-import type { AuthLocalization } from "../../localization/auth-localization";
-import { AcceptInvitationCard } from "../organization/accept-invitation-card";
-import {
-  SettingsCards,
-  type SettingsCardsClassNames,
-  type SettingsView,
-  settingsViews
-} from "../settings/settings-cards";
+import { Link } from "@/components/core/Link/Link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +10,17 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { SettingsCardClassNames } from "@betterauth-ui";
+import { ArrowLeftIcon } from "lucide-react";
+import { type ReactNode, useContext, useEffect, useState } from "react";
+
+import { useIsHydrated } from "../../hooks/use-hydrated";
+import { AuthUIContext } from "../../lib/auth-ui-provider";
+import { socialProviders } from "../../lib/social-providers";
+import type { AuthViewPath as AuthView } from "../../lib/view-paths";
+import type { AuthLocalization } from "../../localization/auth-localization";
+import { AcceptInvitationCard } from "../organization/accept-invitation-card";
 import { AuthCallback } from "./auth-callback";
 import { AuthForm, type AuthFormClassNames } from "./auth-form";
 import { EmailOTPButton } from "./email-otp-button";
@@ -33,7 +29,6 @@ import { OneTap } from "./one-tap";
 import { PasskeyButton } from "./passkey-button";
 import { ProviderButton } from "./provider-button";
 import { SignOut } from "./sign-out";
-import { Link } from "@/components/core/Link/Link";
 
 export interface AuthCardClassNames {
   base?: string;
@@ -45,7 +40,7 @@ export interface AuthCardClassNames {
   form?: AuthFormClassNames;
   header?: string;
   separator?: string;
-  settings?: SettingsCardsClassNames;
+  settings?: SettingsCardClassNames;
   title?: string;
 }
 

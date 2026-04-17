@@ -168,7 +168,11 @@ function AcceptInvitationContent({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
 
       setIsAccepting(false);
@@ -193,7 +197,11 @@ function AcceptInvitationContent({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
 
       setIsRejecting(false);

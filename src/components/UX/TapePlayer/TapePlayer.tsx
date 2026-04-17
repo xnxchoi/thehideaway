@@ -1,7 +1,6 @@
 "use client";
 
-import { useRadioStore } from "@/providers/RadioProvider";
-import { useShallow } from "zustand/shallow";
+import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { DrawerPlayer } from "./layouts/DrawerPlayer";
 import { FullPlayer } from "./layouts/FullPlayer";
 import { HeroPlayer } from "./layouts/HeroPlayer";
@@ -12,7 +11,7 @@ import type { TapePlayerProps } from "./types";
  * TapePlayer — TE-inspired audio player component.
  *
  * Selects the appropriate layout variant based on the `variant` prop.
- * All variants share the same RadioStore/RadioProvider for state.
+ * All variants share the same HideawayFMProvider for state.
  *
  * Variants:
  *   - "hero": Full-width scroll-linked section
@@ -20,14 +19,18 @@ import type { TapePlayerProps } from "./types";
  *   - "drawer": Compact drawer (Mobile)
  *   - "full": Complete tape deck
  */
-export const TapePlayer = ({variant, className, scrollHint = true}: TapePlayerProps) => {
-  const hasRadio = useRadioStore(useShallow((t) => t.hasRadio));
+export const TapePlayer = ({
+  variant,
+  className,
+  scrollHint = true
+}: TapePlayerProps) => {
+  const hasRadio = useHasRadio();
 
   if (!hasRadio) return null;
 
   switch (variant) {
     case "hero":
-      return <HeroPlayer className={className} scrollHint={scrollHint}/>;
+      return <HeroPlayer className={className} scrollHint={scrollHint} />;
     case "sidebar":
       return <SidebarPlayer className={className} />;
     case "drawer":

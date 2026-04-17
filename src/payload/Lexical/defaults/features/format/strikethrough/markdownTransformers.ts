@@ -1,9 +1,7 @@
-import type {
-	TextFormatTransformer
-} from "../../../packages/@lexical/markdown/MarkdownTransformers.js"
+import { TextFormatTransformer } from "@payloadcms/richtext-lexical/lexical/markdown";
 
 export const STRIKETHROUGH: TextFormatTransformer = {
-	type: "text-format",
-	format: ["strikethrough"],
-	tag: "~~",
-}
+  type: "text-format",
+  format: ["strikethrough"],
+  tag: "~~"
+};

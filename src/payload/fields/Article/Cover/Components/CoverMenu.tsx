@@ -80,7 +80,7 @@ export const CoverMenu = ({
   imageFilePaste,
   setImage,
   setActiveCollection
-}: {
+}: HTMLMotionProps<"div"> & {
   enabled: boolean;
   hover: boolean;
   setOpenedTab: (r: TabNames | null) => void;

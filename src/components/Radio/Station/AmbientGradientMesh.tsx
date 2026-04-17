@@ -1,14 +1,20 @@
 "use client";
 
-import { useAudioAnalyser } from "@/components/Radio/hooks/useAudioAnalyser";
 import { useIdleDetection } from "@/components/Radio/hooks/useIdleDetection";
 import { SPRING_EASE, TE } from "@/constants/animations";
-import { useRadioStore } from "@/providers/RadioProvider";
+import { useAudioLevel, usePlayState } from "@/providers/HideawayFM/hooks";
 import { useTheme } from "@/providers/Theme";
+import { rp_lerp } from "@/utilities/rp_utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { shaderMaterial, useTexture } from "@react-three/drei";
+import { wait } from "@/utilities/wait";
+import {
+  OrthographicCamera,
+  shaderMaterial,
+  useTexture
+} from "@react-three/drei";
 import { extend, useFrame, useThree } from "@react-three/fiber";
-import { animate, AnimationSequence } from "motion";
+import { GPUComputationRenderer, Variable } from "three-stdlib";
+import { animate, AnimationSequence, cancelFrame, frame } from "motion";
 import {
   MotionValue,
   useMotionValue,
@@ -25,7 +31,14 @@ import {
   RenderPass
 } from "postprocessing";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
-import { FrontSide, Mesh, Vector2, Vector3 } from "three";
+import {
+  FrontSide,
+  IUniform,
+  Mesh,
+  ShaderMaterial,
+  Vector2,
+  Vector3
+} from "three";
 import {
   Color as ThreeColor,
   DoubleSide,
@@ -34,10 +47,28 @@ import {
   Uniform,
   Vector4
 } from "three";
+import { number } from "zod";
 import { useShallow } from "zustand/shallow";
 import fragmentShader from "../shaders/ambient.frag.glsl";
 import vertexShader from "../shaders/ambient.vert.glsl";
 import grainShader from "../shaders/grain.glsl";
+import simulFragShader from "../shaders/simul.frag.glsl";
+
+const displacementShader = `
+uniform sampler2D uSimulationTexture;
+uniform vec2 uDisplacementStrength;
+uniform float uCursorColoring;
+
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+    vec4 gpgpuColor = texture2D(uSimulationTexture, vUv);
+    vec2 dUv = vec2(
+        uv.x - (-0.5 + gpgpuColor.r) * uDisplacementStrength.x * gpgpuColor.b,
+        uv.y - (-0.5 + gpgpuColor.g) * uDisplacementStrength.y * gpgpuColor.b
+    );
+    vec4 color = texture2D(inputBuffer, dUv);
+    color.rgb += color.rgb * gpgpuColor.b * uCursorColoring;
+    outputColor = vec4(color.rgb, 1.0);
+}`;
 
 // ── Theme color palettes (4-color: 2 base + 2 accent per leeroy system) ──
 //
@@ -52,18 +83,18 @@ import grainShader from "../shaders/grain.glsl";
 // Our palette follows the same structure.
 //
 // ─── Dark ─────────────────────────────────────────────────────────────────
-const DARK_BG = new ThreeColor().set("#080a0f"); // near-black ~4%
-const DARK_COLOR1 = new ThreeColor().set("#2a2030"); // base 1: dark plum ~14%
-const DARK_COLOR2 = new ThreeColor().set("#18253a"); // base 2: dark navy ~14%
-const DARK_COLOR3 = new ThreeColor().set("#8c3535"); // accent 1: ember red ~28%
-const DARK_COLOR4 = new ThreeColor().set("#1a6888"); // accent 2: teal ~32%
+const DARK_BG = new ThreeColor().setHex(0x2d2d30); // near-black ~4%
+const DARK_COLOR1 = new ThreeColor().setHex(0x2a2030); // base 1: dark plum ~14%
+const DARK_COLOR2 = new ThreeColor().setHex(0x18253a); // base 2: dark navy ~14%
+const DARK_COLOR3 = new ThreeColor().setHex(0x35588c); // accent 1: ember red ~28%
+const DARK_COLOR4 = new ThreeColor().setHex(0x1a6888); // accent 2: teal ~32%
 //
 // ─── Light ────────────────────────────────────────────────────────────────
-const LIGHT_BG = new ThreeColor().set("#f6f2ed"); // warm parchment
-const LIGHT_COLOR1 = new ThreeColor().set("#e0d2c0"); // base 1: sandy cream
-const LIGHT_COLOR2 = new ThreeColor().set("#d5cdd8"); // base 2: mauve-cream
-const LIGHT_COLOR3 = new ThreeColor().set("#2d8a8c"); // accent 1: retro teal
-const LIGHT_COLOR4 = new ThreeColor().set("#d4652a"); // accent 2: burnt orange
+const LIGHT_BG = new ThreeColor().setHex(0xf6f2ed); // warm parchment
+const LIGHT_COLOR1 = new ThreeColor().setHex(0xd5923b); // base 1: sandy cream
+const LIGHT_COLOR2 = new ThreeColor().setHex(0xd5cdd8); // base 2: mauve-cream
+const LIGHT_COLOR3 = new ThreeColor().setHex(0x2d8a8c); // accent 1: retro teal
+const LIGHT_COLOR4 = new ThreeColor().setHex(0xd4652a); // accent 2: burnt orange
 
 // Blob intensity: how strongly colors mix against bg.
 // The blur handles subtlety — don't fight it with low intensity.
@@ -74,13 +105,15 @@ const BLOB_INTENSITY_STOPPED = 0.65;
 // Default uniform values don't matter; everything is set in useFrame/useEffect.
 
 type AmbientGradientMeshProps = {};
-const OPACITY_PLAYING = 0.7;
-const OPACITY_STOPPED = 1.0;
+const OPACITY_PLAYING = 0.8;
+const OPACITY_STOPPED = 0.9;
 
 export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   useTexture.preload("/assets/seamless.png");
-  const playing = useRadioStore(useShallow((s) => s.playing));
+  const { optimistic } = usePlayState();
+  const playing = optimistic === "playing";
   const playState = useMotionValue(playing);
+  const cam = useRef<typeof OrthographicCamera>(null);
   useEffect(() => {
     playState.set(playing);
   }, [playState, playing]);
@@ -112,10 +145,12 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   });
   const colore = useMemo(() => new ThreeColor("rgb(122,122,122)"), []);
   const vecc = useMemo(() => new Vector3(0, 0, 0.46), []);
-  const { audioLevel } = useAudioAnalyser({
-    fftSize: 256,
-    smoothing: 0.85
+  const radioAudio = useAudioLevel();
+
+  const noiseTexture = useTexture("/assets/seamless.png", (texture) => {
+    texture.wrapS = texture.wrapT = RepeatWrapping;
   });
+
   const uniforms = useMemo(
     () => ({
       u_time: 0.1,
@@ -127,18 +162,25 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       u_color4: new ThreeColor(),
       u_audioLevel: 0.0,
       u_fogProgress: 0.0,
-      u_opacity: 1.0,
+      u_opacity: 0.1,
       u_speed: 0.02,
       u_size: 0.2,
       u_offset: new Vector2(0.42, 0.6),
       u_blobIntensity: BLOB_INTENSITY_STOPPED,
-      u_noiseTexture: null as unknown as Texture
+      u_noiseTexture: noiseTexture as Texture
     }),
     []
   );
   const AmbientShader = shaderMaterial(uniforms, vertexShader, fragmentShader);
+  extend({ AmbientShader });
 
-  const materialRef = useRef<InstanceType<typeof AmbientShader>>(null);
+  const materialRef = useRef<
+    Omit<ShaderMaterial, "uniforms"> & {
+      uniforms: {
+        [X in keyof typeof uniforms]: IUniform<(typeof uniforms)[X]>;
+      };
+    }
+  >(null);
   const meshRef = useRef<Mesh>(null);
   const { gl, scene, camera } = useThree();
   const composerRef = useRef<EffectComposer | null>(null);
@@ -154,13 +196,116 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     ]);
   }, []);
   const grainEffectsRef = useRef<Effect>(null);
-  const noiseTexture = useTexture(
-    "/assets/seamless.png",
-    (texture: Texture) => {
-      texture.wrapS = RepeatWrapping;
-      texture.wrapT = RepeatWrapping;
-    }
+
+  // ── GPGPU mouse-trail simulation ───────────────────────────────────────
+  const mouseUv = useMemo(() => new Vector2(0.5, 0.5), []);
+  const prevMouseUv = useMemo(() => new Vector2(0.5, 0.5), []);
+  const uMouseFactor = useMemo(() => new Uniform(0), []);
+  const uSimulationTexture = useMemo(
+    () => new Uniform<Texture | null>(null),
+    []
   );
+  const gpgpuRef = useRef<GPUComputationRenderer | null>(null);
+  const tPositionVarRef = useRef<Variable | null>(null);
+
+  const initializeShaderMaterial = useEffectEvent(() => {
+    if (!materialRef.current) return;
+    if (!meshRef.current || !noiseTexture) return;
+    const m = materialRef.current;
+    // m.u_noiseTexture = noiseTexture;
+    m.uniforms.u_resolution.value = new Vector2(
+      window.innerWidth,
+      window.innerHeight
+    );
+  });
+  const setColors = useEffectEvent((duration = 0.3) => {
+    const me = materialRef.current;
+    if (!me) return;
+    const m = me.uniforms;
+    // Set initial theme colors
+    const bg = isDark ? DARK_BG : LIGHT_BG;
+    const c1 = isDark ? DARK_COLOR1 : LIGHT_COLOR1;
+    const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
+    const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
+    const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
+
+    const seq: AnimationSequence = [
+      [
+        m.u_bgColor.value,
+        {
+          r: bg.r,
+          g: bg.g,
+          b: bg.b
+        },
+        {
+          ease: TE.power2.inOut,
+          duration,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color1.value,
+        {
+          r: c1.r,
+          g: c1.g,
+          b: c1.b
+        },
+        {
+          ease: TE.power2.inOut,
+
+          duration,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color2.value,
+        {
+          r: c2.r,
+          g: c2.g,
+          b: c2.b
+        },
+        {
+          ease: TE.power2.inOut,
+
+          duration,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color3.value,
+        {
+          r: c3.r,
+          g: c3.g,
+          b: c3.b
+        },
+        {
+          ease: TE.power2.inOut,
+
+          duration,
+          type: "tween",
+          at: 0
+        }
+      ],
+      [
+        m.u_color4.value,
+        {
+          r: c4.r,
+          g: c4.g,
+          b: c4.b
+        },
+        {
+          ease: TE.power2.inOut,
+          duration,
+          type: "tween",
+          at: 0
+        }
+      ]
+    ];
+    animate(seq);
+  });
   const initSequence = useEffectEvent(() => {
     // Passes
     const renderPass = new RenderPass(scene, camera);
@@ -196,31 +341,19 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       gl.autoClear = true;
     };
   });
-  const unmountCallback = useRef<() => void>(null);
-  // ── Build postprocessing pipeline ONCE via useEffect ────────────────────
-  useEffect(() => {
-    if (!unmountCallback.current) {
-      unmountCallback.current = initSequence();
-    }
-    return () => {
-      unmountCallback.current?.();
-    };
-  }, []);
   const onResize = useEffectEvent(() => {
-    if (!composerRef.current || !materialRef.current) return;
     gl.setSize(window.innerWidth, window.innerHeight);
-    composerRef.current.setSize(
-      gl.domElement.offsetWidth,
-      gl.domElement.offsetHeight
-    );
-
     const devicePixelRatio = window.devicePixelRatio || 2;
 
+    composerRef.current &&
+      composerRef.current.setSize(window.innerWidth, window.innerHeight);
+
     gl.setPixelRatio(devicePixelRatio);
-    materialRef.current.u_resolution.set(
-      gl.domElement.offsetWidth,
-      gl.domElement.offsetHeight
-    );
+    materialRef.current &&
+      (materialRef.current.uniforms.u_resolution.value = new Vector2(
+        window.innerWidth,
+        window.innerHeight
+      ));
     const gu = grainEffectsRef.current?.uniforms;
     if (gu) {
       const uxc = gu.get("uXCount");
@@ -229,175 +362,77 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       uyc && (uyc.value = window.innerHeight / devicePixelRatio);
     }
   });
+  const unmountCallback = useRef<() => void>(null);
+  // ── Build postprocessing pipeline ONCE via useEffect ────────────────────
+  useEffect(() => {
+    if (!unmountCallback.current) {
+      initializeShaderMaterial();
+      setColors(1);
+      unmountCallback.current = initSequence();
+
+      onResize();
+    }
+    return () => {
+      unmountCallback.current?.();
+      unmountCallback.current = null;
+    };
+  }, []);
+  //
+  // // ── Pointer tracking → mouseUv / prevMouseUv / uMouseFactor ───────────
+  // useEffect(() => {
+  //   let factorTimeout: ReturnType<typeof setTimeout> | null = null;
+  //   const onPointerMove = (e: PointerEvent) => {
+  //     prevMouseUv.copy(mouseUv);
+  //     mouseUv.x = e.clientX / window.innerWidth;
+  //     mouseUv.y = 1 - e.clientY / window.innerHeight;
+  //     uMouseFactor.value = 1;
+  //     if (factorTimeout) clearTimeout(factorTimeout);
+  //     factorTimeout = setTimeout(() => {
+  //       uMouseFactor.value = 0;
+  //     }, 50);
+  //   };
+  //   window.addEventListener("pointermove", onPointerMove);
+  //   return () => {
+  //     window.removeEventListener("pointermove", onPointerMove);
+  //     if (factorTimeout) clearTimeout(factorTimeout);
+  //   };
+  // }, [mouseUv, prevMouseUv, uMouseFactor]);
+
   const resizeTimestamp = useWindowResize({ debounce: 100 });
   // ── Sync sizes on resize ───────────────────────────────────────────────
   useEffect(() => {
     onResize();
   }, [resizeTimestamp]);
-  useEffect(() => {
-    onResize();
-  }, []);
   // ── Set initial colors + texture on material (runs once after mount) ───
-  const initializeShaderMaterial = useEffectEvent(() => {
-    if (materialRef.current) return;
-    if (!meshRef.current || !noiseTexture) return;
-    const m = new AmbientShader();
-    m.u_noiseTexture = noiseTexture;
-    materialRef.current = m;
-    meshRef.current.material = m;
-    // Set initial theme colors
-    const bg = isDark ? DARK_BG : LIGHT_BG;
-    const c1 = isDark ? DARK_COLOR1 : LIGHT_COLOR1;
-    const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
-    const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
-    const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
-    const seq: AnimationSequence = [
-      [
-        m.u_bgColor,
-        bg.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color1,
-        c1.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color2,
-        c2.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color3,
-        c3.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color4,
-        c4.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ]
-    ];
-    animate(seq);
-  });
-  useEffect(() => {
-    initializeShaderMaterial();
-  }, []);
 
   // ── Update colors when theme changes ───────────────────────────────────
   useEffect(() => {
-    if (!materialRef.current) return;
-    const m = materialRef.current;
-    // Set initial theme colors
-    const bg = isDark ? DARK_BG : LIGHT_BG;
-    const c1 = isDark ? DARK_COLOR1 : LIGHT_COLOR1;
-    const c2 = isDark ? DARK_COLOR2 : LIGHT_COLOR2;
-    const c3 = isDark ? DARK_COLOR3 : LIGHT_COLOR3;
-    const c4 = isDark ? DARK_COLOR4 : LIGHT_COLOR4;
-    const seq: AnimationSequence = [
-      [
-        m.u_bgColor,
-        bg.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color1,
-        c1.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color2,
-        c2.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color3,
-        c3.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ],
-      [
-        m.u_color4,
-        c4.getRGB({ r: 1, g: 1, b: 1 }),
-        {
-          ease: TE.power3.inOut,
-          duration: 0.3,
-          type: "tween",
-          at: 0
-        }
-      ]
-    ];
-    animate(seq);
+    setColors();
   }, [isDark]);
 
   // ── Update resolution on resize ────────────────────────────────────────
 
   // Smoothly transition blob intensity
-  const targetBlobIntensity = useRef(BLOB_INTENSITY_STOPPED);
+  const _targetBlobIntensity = useMotionValue(BLOB_INTENSITY_STOPPED);
+  const targetBlobIntensity = useSpring(_targetBlobIntensity, {
+    ...SPRING_EASE.power3.inOut,
+    duration: 0.3
+  });
   useEffect(() => {
-    targetBlobIntensity.current = playing
-      ? BLOB_INTENSITY_PLAYING
-      : BLOB_INTENSITY_STOPPED;
-  }, [playing]);
+    const target = playing ? BLOB_INTENSITY_PLAYING : BLOB_INTENSITY_STOPPED;
+    _targetBlobIntensity.set(target);
+  }, [playing, _targetBlobIntensity]);
   useMotionValueEvent(opacity, "change", (latestValue) => {
     const m = materialRef.current;
     if (!m) return;
-    m.u_opacity = latestValue;
+    m.uniforms.u_opacity.value = latestValue;
   });
   useMotionValueEvent(fogProgress, "change", (latestValue) => {
     const m = materialRef.current;
     if (!m) return;
-    m.u_fogProgress = latestValue;
+    m.uniforms.u_fogProgress.value = latestValue;
   });
-  useMotionValueEvent(audioLevel, "change", (latestValue) => {
-    const m = materialRef.current;
-    if (!m) return;
-    m.u_audioLevel = latestValue;
-  });
+
   // ── Render loop ─────────────────────────────────────────────────────────
   // R3F calls gl.render(scene, camera) AFTER all useFrame callbacks.
   // To prevent it from overwriting EffectComposer output, we:
@@ -412,35 +447,50 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     const m = materialRef.current;
     !didit.current && (console.log(delta), (didit.current = true));
     // Accumulate time (delta is in seconds at ~60fps → ~0.016)
-    m.u_time += delta * 0.1;
-
+    m.uniforms.u_time.value += delta * 0.1;
+    const aud = radioAudio.get();
+    m.uniforms.u_audioLevel.value = aud;
     // Smoothly lerp blob intensity
-    const current = m.u_blobIntensity;
-    const target = targetBlobIntensity.current;
-    m.u_blobIntensity += (target - current) * Math.min(delta * 0.2 * 1.5, 0.1);
+    const current = m.uniforms.u_blobIntensity.value;
+    const target = targetBlobIntensity.get();
+    const lerpedValue = rp_lerp(current, target, 0.16);
+    m.uniforms.u_blobIntensity.value = lerpedValue;
+
+    // Tick GPGPU mouse-trail simulation
+    const gpgpu = gpgpuRef.current;
+    const tPos = tPositionVarRef.current;
+    if (gpgpu && tPos) {
+      const u = tPos.material.uniforms;
+      u.uTime.value += delta;
+      u.uDelta.value = delta * 1000;
+      u.uMouseFactor.value = uMouseFactor.value;
+      gpgpu.compute();
+      uSimulationTexture.value = gpgpu.getCurrentRenderTarget(tPos).texture;
+    }
+    meshRef.current.visible = true;
     _state.gl.render(_state.scene, _state.camera);
   }, 1);
   const didit = useRef(false);
   useFrame((_state, delta) => {
     if (!materialRef.current || !composerRef.current || !meshRef.current) {
-      console.log("something is not right...");
       return;
     }
-
     // Show mesh → render through postprocessing → hide mesh
     composerRef.current.render(delta);
+    meshRef.current.visible = false;
   }, 2);
 
   return (
-    <>
-      <mesh ref={meshRef}>
-        <planeGeometry args={[1, 1]} />
-        {/*<ambientShader*/}
-        {/*  */}
-        {/*  side={FrontSide}*/}
-        {/*  ref={materialRef}*/}
-        {/*/>*/}
-      </mesh>
-    </>
+    <mesh ref={meshRef} visible={false}>
+      <planeGeometry args={[10, 10]} />
+      {/*<ambientShader*/}
+      {/*  */}
+      {/*  side={FrontSide}*/}
+      {/*  ref={materialRef}*/}
+      {/*/>*/}
+
+      {/** @ts-expect-error this fucking thing won't reconcile **/}
+      <ambientShader ref={materialRef} side={DoubleSide} />
+    </mesh>
   );
 };

@@ -3,7 +3,7 @@ import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link, MotionLink } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
-import { useHumanTime } from "@/payload/collections/Delta/component/useLocaleDate";
+import { useHumanTime } from "../../../../.grave/Delta/component/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
@@ -544,8 +544,9 @@ const NotificationItem = (
               data-themed="color"
               style={{}}
             >
-              {(actionLink && (
+              {(actionLink && actionLink.url && (
                 <ReferencedLink
+                  href={actionLink.url}
                   onClick={onRead}
                   link={actionLink}
                   className="z-[5] inline-block bg-transparent"
@@ -640,14 +641,17 @@ function UserNotification({
                     (item.type === "follow" && "followed you") ||
                     (item.type === "comment" && "commented") ||
                     (item.type === "bookmark" && "bookmarked")}
-                  <ReferencedLink
-                    link={actionLink}
-                    onClick={onRead}
-                    className={
-                      "absolute inset-0 z-[0] bg-faded-foreground/10 opacity-0 transition-opacity duration-200 ease-out-power2 hover:opacity-100"
-                    }
-                  />
-                  .{" "}
+                  {actionLink.url && (
+                    <ReferencedLink
+                      href={actionLink.url}
+                      link={actionLink}
+                      onClick={onRead}
+                      className={
+                        "absolute inset-0 z-[0] bg-faded-foreground/10 opacity-0 transition-opacity duration-200 ease-out-power2 hover:opacity-100"
+                      }
+                    />
+                  )}
+                  .
                 </p>
                 <p className="text-xs text-muted-foreground">{humanTime}</p>
               </>

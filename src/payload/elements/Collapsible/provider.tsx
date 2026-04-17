@@ -19,6 +19,7 @@ export const CollapsibleProvider: FC<{
   children?: ReactNode;
   isCollapsed?: boolean;
   isWithinCollapsible?: boolean;
+  //
   toggle: () => void;
 }> = ({ children, isCollapsed = true, isWithinCollapsible = true, toggle }) => {
   const { isCollapsed: parentIsCollapsed, isVisible } = useCollapsible();

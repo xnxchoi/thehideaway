@@ -12,7 +12,7 @@ import {
   ReplaceImageHandle
 } from "@/payload/fields/Article/Cover/Components/CoverMenu";
 import { useDarkRoom } from "@/payload/fields/Article/Cover/ImageNode/DarkRoom";
-import { useQueryForImageNode } from "@/payload/fields/Article/Cover/ImageNode/hooks/useRPImageQuery";
+import { useQueryForImageNode } from "@/blocks/ImageBlock/Comp/hooks/useRPImageQuery";
 import { ImageResizer } from "@/payload/fields/Article/Cover/rp-image/client/component/ImageResizer";
 import {
   $isRPImageNode,

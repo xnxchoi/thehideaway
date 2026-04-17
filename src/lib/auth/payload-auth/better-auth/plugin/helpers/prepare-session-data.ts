@@ -1,3 +1,5 @@
+import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
+import { generateName } from "@/utilities/names";
 import type { Session, User } from "better-auth";
 import type { CollectionConfig } from "payload";
 import { getFieldsToSign } from "payload";
@@ -9,12 +11,25 @@ export async function prepareUser({
   user: User & Record<string, any>;
   userCollection: CollectionConfig;
 }) {
+  const first = generateName("first"),
+    last = generateName("last");
   const newUser = getFieldsToSign({
     collectionConfig: userCollection,
     email: user.email,
     user: {
+      verified: false,
+      banned: false,
+      slug: formatUserHandle(first + last),
+      username: first + last,
+      role: "user",
+      onboarded: false,
+      twoFactorEnabled: false,
+      firstName: first,
+      lastName: last,
       ...user,
-      collection: userCollection.slug
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      collection: userCollection.slug as "admins" | "users"
     }
   });
 
@@ -33,6 +48,7 @@ export async function prepareSession({
     email: "",
     user: {
       ...session,
+      //@ts-expect-error collectionSlug!
       collection: sessionCollection.slug
     }
   });

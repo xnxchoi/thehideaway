@@ -10,9 +10,10 @@ import {
   useTransform,
   useSpring
 } from "motion/react";
-import { useEffect } from "react";
-import { useRadioStore } from "@/providers/RadioProvider";
-import { useShallow } from "zustand/shallow";
+import { useEffect, useMemo, useRef } from "react";
+import { usePlayState } from "@/providers/HideawayFM/hooks";
+import { Color as ThreeColor, Scene } from "three";
+
 import { useTheme } from "@/providers/Theme";
 import { AmbientGradientMesh } from "./AmbientGradientMesh";
 
@@ -43,20 +44,15 @@ export function AmbientBackground({}: AmbientBackgroundProps) {
           depth: false,
           alpha: true
         }}
-        orthographic={true}
-        camera={{
-          position: [0, 0, 1],
-
-          near: 0,
-          far: 1,
-          left: -1,
-          right: 1,
-          top: 1,
-          bottom: -1
-        }}
         frameloop="always"
-        dpr={[1, 2]}
       >
+        <PerspectiveCamera
+          makeDefault
+          near={0.1}
+          far={1}
+          fov={35}
+          position={[0, 0, 1]}
+        />
         <AmbientGradientMesh />
       </Canvas>
     </div>
@@ -68,13 +64,11 @@ export function AmbientBackground({}: AmbientBackgroundProps) {
  * Heavy grain + barely-there vignette on page background.
  */
 export function AmbientBackgroundFallback({}: {}) {
-  const playing = useRadioStore(useShallow((s) => s.playing));
+  const { optimistic } = usePlayState();
+  const playing = optimistic === "playing";
 
   return (
-    <div
-      className="pointer-events-none absolute inset-0 z-[1]"
-      aria-hidden="true"
-    >
+    <div className="pointer-events-none relative z-[1]" aria-hidden="true">
       {/* Subtle warm vignette — barely perceptible */}
       <div
         className="absolute inset-0 transition-opacity duration-1000"

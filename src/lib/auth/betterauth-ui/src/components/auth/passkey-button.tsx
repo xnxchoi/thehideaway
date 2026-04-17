@@ -48,7 +48,8 @@ export function PasskeyButton({
           variant: "error",
           message: getLocalizedError({
             error: response.error,
-            localization
+            localization,
+            localizeErrors: true
           })
         });
 
@@ -60,7 +61,11 @@ export function PasskeyButton({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
 
       setIsSubmitting?.(false);

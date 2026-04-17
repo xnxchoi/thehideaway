@@ -1,24 +1,24 @@
-import type {CollectionConfig} from "payload";
+import type { CollectionConfig } from "payload";
 
 export const SeriesSubmissionConfig: CollectionConfig = {
   slug: "series-submissions",
   fields: [
-    {
-      name: "series",
-      type: "relationship",
-      relationTo: "series",
-      hasMany: false,
-      maxDepth: 1,
-      required: true,
-      index: true,
-      admin: {
-        hidden: true
-      },
-      access: {
-        read: () => true,
-        update: () => false
-      }
-    },
+    // {
+    //   name: "series",
+    //   type: "relationship",
+    //   relationTo: "series",
+    //   hasMany: false,
+    //   maxDepth: 1,
+    //   required: true,
+    //   index: true,
+    //   admin: {
+    //     hidden: true
+    //   },
+    //   access: {
+    //     read: () => true,
+    //     update: () => false
+    //   }
+    // },
     {
       name: "entry",
       type: "relationship",

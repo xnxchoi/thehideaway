@@ -1,8 +1,8 @@
 "use client";
-import { RPage } from "@/components/UX/Transition";
 import { Link } from "@/components/core/Link/Link";
+import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { Logo } from "@/components/UX/Logo";
-import { VGradientModule } from "@/components/UX/Gradient/Gradient";
+import { RPage } from "@/components/UX/Transition";
 import { AuthView as AuthCard } from "@/lib/auth/betterauth-ui/src";
 import { Suspense } from "react";
 

@@ -1,8 +1,8 @@
 "use client";
+import { useDraggableSortable } from "@payloadcms/ui";
 import type { ElementType, HTMLAttributes } from "react";
 import React from "react"; // TODO: abstract this out to support all routers
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import { useDraggableSortable } from "@/payload/elements/DraggableSortable/useDraggableSortable";
 import { Hink } from "./Link";
 
 export type PillProps = {

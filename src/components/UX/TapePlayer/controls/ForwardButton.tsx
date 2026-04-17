@@ -2,10 +2,8 @@
 
 import { MotionBtn } from "@/components/core/Button";
 import { cn } from "@/lib/utils";
-import { useRadio, useRadioStore } from "@/providers/RadioProvider";
-import * as m from "motion/react-m";
+import { useRadioControls } from "@/providers/HideawayFM/useRadioControls";
 import { useCallback } from "react";
-import { useShallow } from "zustand/shallow";
 import { useHaptics } from "../hooks/useHaptics";
 
 type ForwardButtonProps = {
@@ -14,19 +12,19 @@ type ForwardButtonProps = {
 };
 
 /**
- * Skip-forward control.
- * Goes to the next track in the playlist.
- * Rotation +30deg spring on press for tactile feel.
+ * Skip-forward control. Only rendered when `controls.skip` is defined
+ * (premium roles). Rotation +30deg spring on press for tactile feel.
  */
 export const ForwardButton = ({ size = 44, className }: ForwardButtonProps) => {
-  const { skipToTrack } = useRadio();
-  const currentIndex = useRadioStore(useShallow((t) => t.currentIndex));
+  const { skip } = useRadioControls();
   const haptics = useHaptics();
 
   const handleClick = useCallback(() => {
-    skipToTrack(currentIndex + 1);
+    skip?.();
     haptics.impact();
-  }, [skipToTrack, currentIndex, haptics]);
+  }, [skip, haptics]);
+
+  if (!skip) return null;
 
   return (
     <MotionBtn
@@ -49,7 +47,6 @@ export const ForwardButton = ({ size = 44, className }: ForwardButtonProps) => {
         xmlns="http://www.w3.org/2000/svg"
         className="h-[55%] w-[55%]"
       >
-        {/* Double-arrow forward icon (mirrored rewind) */}
         <path
           d="M8.14645 3.14645C7.95118 3.34171 7.95118 3.65829 8.14645 3.85355L11.2929 7L8.14645 10.1464C7.95118 10.3417 7.95118 10.6583 8.14645 10.8536C8.34171 11.0488 8.65829 11.0488 8.85355 10.8536L12.3536 7.35355C12.5488 7.15829 12.5488 6.84171 12.3536 6.64645L8.85355 3.14645C8.65829 2.95118 8.34171 2.95118 8.14645 3.14645ZM2.14645 3.14645C1.95118 3.34171 1.95118 3.65829 2.14645 3.85355L5.29289 7L2.14645 10.1464C1.95118 10.3417 1.95118 10.6583 2.14645 10.8536C2.34171 11.0488 2.65829 11.0488 2.85355 10.8536L6.35355 7.35355C6.54882 7.15829 6.54882 6.84171 6.35355 6.64645L2.85355 3.14645C2.65829 2.95118 2.34171 2.95118 2.14645 3.14645Z"
           fill="currentColor"

@@ -11,6 +11,7 @@ import {
   XIcon
 } from "@payloadcms/ui";
 import {
+  ComponentProps,
   Fragment,
   isValidElement,
   MouseEventHandler,
@@ -62,7 +63,16 @@ export const ButtonContents = ({
   );
 };
 
-export const Hutton = ({ children, className, overrides, ...props }: Props) => {
+export const Hutton = ({
+  children,
+  className,
+  overrides,
+  ...props
+}: Props &
+  Pick<
+    ComponentProps<typeof Buton>,
+    "onClick" | "onMouseDown" | "secondaryActions"
+  >) => {
   const onHover: MouseEventHandler = useCallback(
     (e) => {
       if (overrides?.onEnter?.condition) {

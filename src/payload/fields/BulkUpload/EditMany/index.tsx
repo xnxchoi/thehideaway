@@ -1,58 +1,60 @@
-"use client"
+"use client";
 
-import type {ClientCollectionConfig} from "payload"
+import {
+  Drawer,
+  DrawerToggler,
+  EditDepthProvider,
+  useAuth,
+  useTranslation
+} from "@payloadcms/ui";
+import type { ClientCollectionConfig } from "payload";
+import { FC } from "react";
 
-import React from "react"
+import { useFormsManager } from "../FormsManager/index";
+import { EditManyBulkUploadsDrawerContent } from "./DrawerContent";
+import "./index.scss";
 
-import {useAuth} from "../../../providers/Auth/index.js"
-import {EditDepthProvider} from "../../../providers/EditDepth/index.js"
-import {useTranslation} from "../../../providers/Translation/index.js"
-import {Drawer, DrawerToggler} from "../../Drawer/index.js"
-import {useFormsManager} from "../FormsManager/index.js"
-import {EditManyBulkUploadsDrawerContent} from "./DrawerContent.js"
-import "./index.scss"
-
-export const baseClass = "edit-many-bulk-uploads"
+export const baseClass = "edit-many-bulk-uploads";
 
 export type EditManyBulkUploadsProps = {
-	readonly collection: ClientCollectionConfig
-}
+  readonly collection: ClientCollectionConfig;
+};
 
-export const EditManyBulkUploads: React.FC<EditManyBulkUploadsProps> = (props) => {
-	const {collection: {slug} = {}, collection} = props
+export const EditManyBulkUploads: FC<EditManyBulkUploadsProps> = (props) => {
+  const { collection: { slug } = {}, collection } = props;
 
-	const {permissions} = useAuth()
+  const { permissions } = useAuth();
 
-	const {t} = useTranslation()
-	const {forms} = useFormsManager() // Access forms managed in bulk uploads
+  const { t } = useTranslation();
+  const { forms } = useFormsManager(); // Access forms managed in bulk uploads
 
-	const collectionPermissions = permissions?.collections?.[slug]
-	const hasUpdatePermission = collectionPermissions?.update
+  const collectionPermissions = permissions?.collections?.[slug!];
+  const hasUpdatePermission = collectionPermissions?.update;
 
-	const drawerSlug = `edit-${slug}-bulk-uploads`
+  const drawerSlug = `edit-${slug}-bulk-uploads`;
 
-	if (!hasUpdatePermission) {
-		return null
-	}
+  if (!hasUpdatePermission) {
+    return null;
+  }
 
-	return (
-		<div className={baseClass}>
-			<DrawerToggler
-				aria-label={t("general:editAll")}
-				className={`${baseClass}__toggle`}
-				slug={drawerSlug}
-			>
-				{t("general:editAll")}
-			</DrawerToggler>
-			<EditDepthProvider>
-				<Drawer Header={null} slug={drawerSlug}>
-					<EditManyBulkUploadsDrawerContent
-						collection={collection}
-						drawerSlug={drawerSlug}
-						forms={forms}
-					/>
-				</Drawer>
-			</EditDepthProvider>
-		</div>
-	)
-}
+  return (
+    <div className={baseClass}>
+      <DrawerToggler
+        aria-label={t("general:editAll")}
+        className={`${baseClass}__toggle`}
+        slug={drawerSlug}
+      >
+        {t("general:editAll")}
+      </DrawerToggler>
+      <EditDepthProvider>
+        <Drawer Header={null} slug={drawerSlug}>
+          <EditManyBulkUploadsDrawerContent
+            collection={collection}
+            drawerSlug={drawerSlug}
+            forms={forms}
+          />
+        </Drawer>
+      </EditDepthProvider>
+    </div>
+  );
+};

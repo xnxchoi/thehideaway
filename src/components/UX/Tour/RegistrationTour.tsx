@@ -5,16 +5,37 @@ import { SPRING_EASE } from "@/constants/animations";
 import { updateUser } from "@/lib/auth/client";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
+import { Users } from "@/payload/collections/Users";
 import type {
   OnboardingSeverity,
   RegistrationStep
 } from "@/stores/Tour/TourStore";
+import {
+  KeysOfUnion,
+  KeysOfValue,
+  OptionalKeys
+} from "@/utilities/typeUtilities";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useLenis } from "lenis/react";
-import { AnimatePresence, Transition, Variant, Variants } from "motion/react";
+import {
+  AnimatePresence,
+  HTMLMotionProps,
+  Transition,
+  Variant,
+  Variants
+} from "motion/react";
 import * as m from "motion/react-m";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FlattenedField, RelationshipField } from "payload";
+import {
+  ComponentProps,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { TextBlurIn } from "./TextBlurIn";
 import { useTourStore } from "./TourProvider";
 import {
@@ -150,12 +171,12 @@ function classifyPath(pathname: string): PathBucket {
 function isContextRelevantForSubtle(pathname: string): boolean {
   // User profile browsing: seeing another person's profile naturally prompts
   // "I should fill mine out too"
-  return pathname.startsWith("/users/");
+  return pathname.startsWith("/users/") || pathname.startsWith("/@");
 }
 
 // ─── Severity computation ─────────────────────────────────────────────────────
-
-const OPTIONAL_FIELDS = ["bio", "location", "link"] as const;
+const OPTIONAL_FIELDS: Array<Extract<keyof User, "bio" | "location" | "link">> =
+  ["bio", "location", "link"];
 
 /** Derive how incomplete the user's profile is. */
 export function computeSeverity(user: User): OnboardingSeverity {
@@ -564,7 +585,7 @@ async function submitStepFields({
   if (complete !== currentProfile.onboarded)
     updateData.set("onboarded", complete);
   // Update user fields if anything changed, or if completing
-  if (updateData.size > 0 || complete) {
+  if (updateData.size > 0) {
     const updates = Object.fromEntries(updateData) as Record<string, string>;
     await updateUser({
       ...updates
@@ -584,7 +605,7 @@ async function submitStepFields({
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      step,
+      step: complete ? "complete" : step,
       fields: Object.fromEntries(updateData),
       ...(complete && { complete: true })
     })
@@ -1027,11 +1048,9 @@ export function RegistrationTour() {
  * Countdown toast for required-field situations on unclassified paths.
  * Gives the user 4 seconds to act before auto-navigating to /me/onboarding.
  */
-export function OnboardingRedirectToast({
+export const OnboardingRedirectToast = ({
   onNavigate
-}: {
-  onNavigate: () => void;
-}) {
+}: ComponentProps<"div"> & { onNavigate?: () => void }) => {
   const [seconds, setSeconds] = useState(4);
 
   useEffect(() => {
@@ -1039,7 +1058,7 @@ export function OnboardingRedirectToast({
       setSeconds((s) => {
         if (s <= 1) {
           clearInterval(id);
-          onNavigate();
+          onNavigate?.();
           return 0;
         }
         return s - 1;
@@ -1081,19 +1100,19 @@ export function OnboardingRedirectToast({
       </MotionPillButton>
     </m.div>
   );
-}
+};
 
 /**
  * Medium toast for high-optional incompleteness on unclassified paths.
  * Bottom-left card — more prominent than the subtle pill, less forceful than a redirect.
  */
-export function OnboardingToastMedium({
+export const OnboardingToastMedium = ({
   onDismiss,
   onNavigate
-}: {
-  onDismiss: () => void;
-  onNavigate: () => void;
-}) {
+}: HTMLMotionProps<"div"> & {
+  onDismiss?: () => void;
+  onNavigate?: () => void;
+}) => {
   return (
     <m.div
       className={cn(
@@ -1135,7 +1154,7 @@ export function OnboardingToastMedium({
       </div>
     </m.div>
   );
-}
+};
 
 /**
  * Subtle toast for low-optional incompleteness on context-relevant paths (e.g. /users/*).
@@ -1144,7 +1163,7 @@ export function OnboardingToastMedium({
 export function OnboardingToastSubtle({
   onDismiss,
   onNavigate
-}: {
+}: HTMLMotionProps<"div"> & {
   onDismiss: () => void;
   onNavigate: () => void;
 }) {
@@ -1203,13 +1222,13 @@ export function OnboardingToastSubtle({
  * Gentle bottom-center pill for content single-view paths.
  * Used when the user is mid-read: non-intrusive, easily dismissed.
  */
-export function OnboardingBanner({
+export const OnboardingBanner = ({
   onDismiss,
   onNavigate
-}: {
+}: HTMLMotionProps<"div"> & {
   onDismiss: () => void;
   onNavigate: () => void;
-}) {
+}) => {
   return (
     <m.div
       className={cn(
@@ -1258,7 +1277,7 @@ export function OnboardingBanner({
       </RP_Btn>
     </m.div>
   );
-}
+};
 
 // ─── Tour trigger — mounts at layout level, watches session ──────────────────
 
@@ -1272,7 +1291,7 @@ type NotifyMode =
 
 export function RegistrationTourTrigger() {
   const { currentUserPromise } = useBetterAuth();
-  const currentUser = use(currentUserPromise) as User | null;
+  const currentUser = use(currentUserPromise);
 
   const regActive = useTourStore((s) => s.regActive);
   const regDismissed = useTourStore((s) => s.regDismissed);
@@ -1309,10 +1328,14 @@ export function RegistrationTourTrigger() {
 
   useEffect(() => {
     if (!currentUser || regActive || regDismissed) return;
-
-    const severity = computeSeverity(currentUser);
-    if (severity === "complete") return;
-
+    console.log("Registration tour trigger");
+    const severity = computeSeverity(currentUser as User);
+    console.log("Severity:", severity);
+    if (severity === "complete") {
+      console.log("Registration tour complete");
+      return;
+    }
+    console.log("Triggering registration tour");
     const needsIdentity = severity === "required";
     const hasPreexistingData = !!(
       currentUser.firstName?.trim() ||

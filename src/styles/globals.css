@@ -77,6 +77,16 @@ color utility to any element that depends on these defaults.
     --text-9xl--line-height: 1;
 }
 /***
+---spacing---
+***/
+@theme {
+    /*--spacing:0.4rem;*/
+    --container-8xl:88rem;
+    --container-9xl:100rem;
+    --container-10xl:112rem;
+    --container-11xl:148rem;
+}
+/***
 ---breakpoint---
 ***/
 @theme {

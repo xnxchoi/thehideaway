@@ -2,7 +2,7 @@
 
 import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
-import { useRadioStore } from "@/providers/RadioProvider";
+import { useNowPlaying } from "@/providers/HideawayFM/hooks";
 import {
   MotionValue,
   SVGMotionProps,
@@ -13,7 +13,6 @@ import {
 } from "motion/react";
 import * as m from "motion/react-m";
 import { useEffect, useId, useRef } from "react";
-import { useShallow } from "zustand/shallow";
 import { REEL_SPOKE_COUNT } from "../constants";
 import { useTapeAnimation } from "../hooks/useTapeAnimation";
 
@@ -37,22 +36,11 @@ export const TapeReels = ({ diameter = 120, className }: TapeReelsProps) => {
   const takeupRef = useRef<SVGGElement>(null);
   const maxWidth = useMotionValue(diameter * 2.67);
   const {} = useTapeAnimation(supplyRef, takeupRef, scopeRef);
-  const e = useRadioStore(useShallow((t) => t.elapsedTime));
-  const elaos = useMotionValue(e);
-  useEffect(() => elaos.set(e), [e, elaos]);
-  const currentIndex = useRadioStore(useShallow((t) => t.currentIndex));
-  const tracks = useRadioStore(useShallow((t) => t.tracks));
-  const currentTrack = useMotionValue(tracks[currentIndex]);
-  useEffect(
-    () => currentTrack.set(tracks[currentIndex]),
-    [currentIndex, currentTrack, tracks]
-  );
-  const durationValue = useTransform(() => currentTrack.get().duration);
-  const progressMV = useTransform(() => {
-    const elapsedTime = elaos.get();
-    const duration = durationValue.get();
-    return duration > 0 ? elapsedTime / duration : 0;
-  });
+  const nowPlaying = useNowPlaying();
+  const progressMV = useMotionValue(nowPlaying.progress);
+  useEffect(() => {
+    progressMV.set(nowPlaying.progress);
+  }, [nowPlaying.progress, progressMV]);
   const smoothProgressMV = useSpring(progressMV, SPRING_EASE.power4.inOut);
 
   // Reel radii: supply shrinks, takeup grows

@@ -103,7 +103,11 @@ function EmailForm({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
     }
   }
@@ -220,7 +224,11 @@ export function OTPForm({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors: true
+        })
       });
 
       form.reset();

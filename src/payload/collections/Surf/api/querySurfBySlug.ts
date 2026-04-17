@@ -1,18 +1,21 @@
 "use server";
-import {authClient} from "@/lib/auth/client";
-import {type Surf} from "@/payload-types";
-import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
-import {RP_Roles} from "@/stores/Notification/NotificationStore";
-import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
-import {AuthorSingle} from "@/types/collections/users";
+import { authClient } from "@/lib/auth/client";
+import { type Surf } from "@/payload-types";
+import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
+import { RP_Roles } from "@/stores/Notification/NotificationStore";
+import {
+  CategoryOverview,
+  TagOverview
+} from "@/types/collections/meta-collections";
+import { AuthorSingle } from "@/types/collections/users";
 import configPromise from "@payload-config";
-import {draftMode} from "next/headers";
-import {getPayload, Payload, Where} from "payload";
-import {cache} from "react";
-import {SurfOverview, SingleSurf} from "../../../../types/collections/surf";
-import type {PostOverview} from "../../../../types/collections/posts";
-import {getSurfBookMarks} from "./getSurfBookmarks";
-import {queryOverview} from "./querySurfOverview";
+import { draftMode } from "next/headers";
+import { getPayload, Payload, Where } from "payload";
+import { cache } from "react";
+import type { PostOverview } from "../../../../types/collections/posts";
+import { SingleSurf, SurfOverview } from "../../../../types/collections/surf";
+import { getSurfBookMarks } from "./getSurfBookmarks";
+import { queryOverview } from "./querySurfOverview";
 
 export const queryAuthorsSurf = cache(
   async ({
@@ -82,6 +85,7 @@ export const queryAuthorsSurf = cache(
           tagged: true,
           locked: true,
           updatedAt: true,
+          commentsEnabled: true,
           createdAt: true
         }
       })
@@ -114,7 +118,7 @@ export const queryAuthorsSurf = cache(
       bookmarksCount: 0,
       slug: post.slug,
       tagged: post.tagged ? (post.tagged as Array<TagOverview>) : [],
-	    category: post.category as CategoryOverview,
+      category: post.category as CategoryOverview,
       queuedIDs: null!,
       relatedSurfs: null!
     };
@@ -234,6 +238,7 @@ export const querySurfBySlug = cache(
           content: true,
           slug: true,
           tagged: true,
+          commentsEnabled: true,
           relatedSurfs: true,
           category: true,
           allowList: true,
@@ -281,7 +286,7 @@ export const querySurfBySlug = cache(
       publishedAt: post.publishedAt,
       bookmarksCount: 0,
       slug: post.slug,
-	    category: post.category as CategoryOverview,
+      category: post.category as CategoryOverview,
       queuedIDs: null!,
       relatedSurfs: null!,
       tagged: post.tagged ? (post.tagged as Array<TagOverview>) : []
@@ -411,12 +416,12 @@ export const queryRelatedSurfs = cache(
     | { isAuthorPage: true; author: string }
   )): Promise<{
     queuedIDs: string[];
-	  relatedSurfs: (SurfOverview | PostOverview)[];
+    relatedSurfs: (SurfOverview | PostOverview)[];
   }> => {
     //Now we first query for the posts to show in the "More Like This" sidebar
-	  const relatedItems: (SurfOverview | PostOverview)[] = [] as (
+    const relatedItems: (SurfOverview | PostOverview)[] = [] as (
       | SurfOverview
-		  | PostOverview
+      | PostOverview
     )[];
     const relatedSurfsIDs: string[] = [];
     const isAuthorMode = isAuthorPage && author;

@@ -2,13 +2,12 @@
 
 import { MotionBtn } from "@/components/core/Button";
 import { cn } from "@/lib/utils";
-import { useRadio, useRadioStore } from "@/providers/RadioProvider";
+import { usePlayState } from "@/providers/HideawayFM/hooks";
+import { useRadioControls } from "@/providers/HideawayFM/useRadioControls";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
-import { useMotionValue } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
-import { useShallow } from "zustand/shallow";
 import { ICON_PATHS } from "../constants";
 import { useHaptics } from "../hooks/useHaptics";
 
@@ -21,52 +20,22 @@ type PlayPauseButtonProps = {
 
 /**
  * Play/Pause toggle with MorphSVG icon morphing.
- * Spring scale on press, haptic feedback.
+ * Reads `optimistic` so UI flips the instant the user presses — the real
+ * Howl state reconciles behind it.
  */
 export const PlayPauseButton = ({
   size = 44,
   className
 }: PlayPauseButtonProps) => {
-  const { toggle, playing } = useRadio();
-  const trackStatus = useRadioStore(useShallow((t) => t.trackStatus));
+  const { optimistic } = usePlayState();
+  const { toggle } = useRadioControls();
+  const playing = optimistic === "playing";
   const haptics = useHaptics();
-  const howlPlayerRef = useRef<Howl>(null!),
-    howlPauserRef = useRef<Howl>(null!),
-    howlPlayingsRef = useRef<Howl>(null!);
-  useEffect(() => {
-    !howlPlayerRef.current &&
-      (howlPlayerRef.current = new Howl({
-        format: ["ogg"],
-        src: ["/assets/audio/tape_playing.ogg"],
-        autoplay: false,
-        preload: true,
-        volume: 0.1,
-        loop: false
-      }));
-    !howlPauserRef.current &&
-      (howlPauserRef.current = new Howl({
-        format: ["ogg"],
-        src: ["/assets/audio/tape_pause.ogg"],
-        autoplay: false,
-        preload: true,
-        volume: 0.1,
-        loop: false
-      }));
-    !howlPlayingsRef.current &&
-      (howlPlayingsRef.current = new Howl({
-        format: ["ogg"],
-        src: ["/assets/audio/tape_playing.ogg"],
-        autoplay: false,
-        preload: true,
-        volume: 0.1,
-        loop: true
-      }));
-  }, []);
+
   const pathRef = useRef<SVGPathElement>(null);
   const wrapperRef = useRef<HTMLButtonElement>(null);
   const morphTL = useRef<GSAPTimeline>(null!);
 
-  // Set up the MorphSVG timeline (play ↔ pause morph)
   useGSAP(
     () => {
       if (!pathRef.current) return;
@@ -96,7 +65,6 @@ export const PlayPauseButton = ({
     { scope: wrapperRef }
   );
 
-  // Drive the morph direction based on playing state
   useEffect(() => {
     if (!morphTL.current) return;
     if (playing) {
@@ -105,46 +73,16 @@ export const PlayPauseButton = ({
       morphTL.current.play();
     }
   }, [playing]);
-  const status = useRadioStore(useShallow((r) => r.playing));
-  const state = useMotionValue(status);
-  useEffect(() => {
-    state.set(status);
-  }, [status, state]);
+
   const handleClick = useCallback(() => {
-    const playingAsIs = state.get();
-    //If playing (=convert to pause)
-    if (playingAsIs) {
-      howlPauserRef.current.seek(0);
-      howlPauserRef.current.volume(0.3);
-      howlPlayingsRef.current.pause();
-      howlPauserRef.current.play();
-      morphTL.current.play();
-      toggle();
-    } else {
-      howlPlayingsRef.current.seek(0);
-      howlPlayerRef.current.seek(0);
-      howlPlayerRef.current.once("play", () => {
-        morphTL.current.reverse();
-
-        howlPlayingsRef.current.volume(0.3);
-        howlPlayingsRef.current.play();
-        howlPlayingsRef.current.once("fade", () => {
-          toggle();
-        });
-        howlPlayingsRef.current.fade(0.3, 0.1, 0.5);
-      });
-      howlPlayerRef.current.play();
-    }
+    toggle();
     haptics.impact();
-  }, [toggle, state, haptics]);
-
-  const isLoading = trackStatus === "loading";
+  }, [toggle, haptics]);
 
   return (
     <MotionBtn
       ref={wrapperRef}
       onClick={handleClick}
-      disabled={isLoading}
       whileTap={{ scale: 0.92 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
       className={cn(
@@ -152,7 +90,6 @@ export const PlayPauseButton = ({
         "text-fg transition-colors duration-200",
         "hover:text-rouge-400 active:text-rouge-500",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bleu-400",
-        "disabled:opacity-40",
         className
       )}
       style={{ width: size, height: size }}

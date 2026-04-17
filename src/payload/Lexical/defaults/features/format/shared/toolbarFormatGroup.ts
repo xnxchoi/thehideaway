@@ -1,11 +1,14 @@
-"use client"
-import type {ToolbarGroup, ToolbarGroupItem} from "../../toolbars/types.js"
+"use client";
 
-export const toolbarFormatGroupWithItems = (items: ToolbarGroupItem[]): ToolbarGroup => {
-	return {
-		type: "buttons",
-		items,
-		key: "format",
-		order: 40,
-	}
-}
+import { ToolbarGroup, ToolbarGroupItem } from "@payloadcms/richtext-lexical";
+
+export const toolbarFormatGroupWithItems = (
+  items: ToolbarGroupItem[]
+): ToolbarGroup => {
+  return {
+    type: "buttons",
+    items,
+    key: "format",
+    order: 40
+  };
+};

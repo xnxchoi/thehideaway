@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Captcha } from "@betterauth-ui/components/captcha/captcha";
+import { useCaptcha } from "@betterauth-ui/hooks/use-captcha";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useContext } from "react";
 import { useForm } from "react-hook-form";
@@ -29,7 +31,7 @@ import { InputFieldSkeleton } from "../skeletons/input-field-skeleton";
 export interface ChangePasswordCardProps {
   className?: string;
   classNames?: SettingsCardClassNames;
-  accounts?: { provider: string }[] | null;
+  accounts?: { providerId: string }[] | null;
   isPending?: boolean;
   localization?: AuthLocalization;
   skipHook?: boolean;
@@ -52,8 +54,10 @@ export function ChangePasswordCard({
     credentials,
     hooks: { useSession, useListAccounts },
     localization: contextLocalization,
+    navigate,
     viewPaths,
-    toast
+    toast,
+    localizeErrors
   } = useContext(AuthUIContext);
 
   const confirmPasswordEnabled = credentials?.confirmPassword;
@@ -62,9 +66,16 @@ export function ChangePasswordCard({
   localization = { ...contextLocalization, ...localization };
   passwordValidation = { ...contextPasswordValidation, ...passwordValidation };
 
+  const { captchaRef, getCaptchaHeaders, resetCaptcha } = useCaptcha({
+    localization
+  });
+
   const { data: sessionData } = useSession();
 
   if (!skipHook) {
+
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const result = useListAccounts();
     accounts = result.data;
     isPending = result.isPending;
@@ -118,18 +129,28 @@ export function ChangePasswordCard({
       await authClient.requestPasswordReset({
         email,
         redirectTo: `${baseURL}${basePath}/${viewPaths.RESET_PASSWORD}`,
-        fetchOptions: { throw: true }
+        fetchOptions: {
+          throw: true,
+          headers: await getCaptchaHeaders("/forget-password")
+        }
       });
 
       toast({
         variant: "success",
         message: localization.FORGOT_PASSWORD_EMAIL!
       });
+
+      navigate(`${basePath}/${viewPaths.SIGN_IN}${window.location.search}`);
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
+      resetCaptcha();
     }
   };
 
@@ -152,7 +173,11 @@ export function ChangePasswordCard({
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
     }
 
@@ -160,13 +185,16 @@ export function ChangePasswordCard({
   };
 
   const credentialsLinked = accounts?.some(
-    (acc) => acc.provider === "credential"
+    (acc) => acc.providerId === "credential"
   );
 
   if (!isPending && !credentialsLinked) {
     return (
       <Form {...setPasswordForm}>
-        <form onSubmit={setPasswordForm.handleSubmit(setPassword)}>
+        <form
+          method="POST"
+          onSubmit={setPasswordForm.handleSubmit(setPassword)}
+        >
           <SettingsCard
             title={localization.SET_PASSWORD}
             description={localization.SET_PASSWORD_DESCRIPTION}
@@ -174,7 +202,15 @@ export function ChangePasswordCard({
             isPending={isPending}
             className={className}
             classNames={classNames}
-          />
+          >
+            <div className="mx-auto w-full max-w-sm">
+              <Captcha
+                ref={captchaRef}
+                localization={localization}
+                action="/forget-password"
+              />
+            </div>
+          </SettingsCard>
         </form>
       </Form>
     );
@@ -182,7 +218,7 @@ export function ChangePasswordCard({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(changePassword)}>
+      <form method="POST" onSubmit={form.handleSubmit(changePassword)}>
         <SettingsCard
           className={className}
           classNames={classNames}

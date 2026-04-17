@@ -1,2944 +1,2936 @@
-import {Post} from '@/payload-types'
+import { Post } from "@/payload-types";
 
 export const post5: Partial<Post> = {
-	locked: false,
-	allowList: [
-		{
-			relationTo: 'members',
-			value: '{{AUTHOR}}',
-		},
-	],
-	authority: 0,
-	title: '이봐 친구',
-	subtitle: '"만들어진 후 계속 비어있던 분실물 보관함은 무가치함" ',
-	image: null,
-	content: {
-		root: {
-			children: [
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '만들어진 후 계속 비어있던 분실물 보관함은',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '무가치함,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그러하다고,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '스스로 생각함.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그러고 있는 중.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '양가적 감정',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '도 느끼는 중.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그도 그럴게,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '분실물이 없으면,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '좋은거 아니야?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그렇지 않아?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '와, 정말 오랜만이다, 이렇게 마주하고 보니',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어떻게 생겼었는지 잊었던 것 같은 느낌이야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '너 그동안 어떻게 지냈냐?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '난 그냥 숨 막힐 정도로 그저 숨만 쉬며 살았지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '선문답으로 넘어가지는 말자. 귀찮으니까.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '다시 마음을 가다듬고, 양 주머니에 양손을 넣고, 터덜터덜 원을 그리며 걷는다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '작은 방 안에서.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '말했지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '뭐라고 말했더라?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아 그거,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: "'말하기 전에 생각했나요?' 라는 짤방이나,",
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: "'침묵보다 가치 있는지 생각해보아라,' 라는 잠언이나,",
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '뭐가 다르냐는 그거였나?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아... 내가 그런 말을 했나?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '사람의 기억은 불완전해.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '합리화인가?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아무렴 뭐 어때.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '나만 좋으면 그만이잖아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그 말이 하고 싶은 건가?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그럴리가 있나.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '나는 이번에 새롭게 알게 된 게 있어.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '음.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '침묵',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래서, 다음 할 말은?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '새롭게 알 게 된 것이 뭔지 궁금하지 않아?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '궁금할 리가 없잖아. 바보야. 진짜 멍청하네.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그러게.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그럼 다른거.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '방어를 위한 무기가 상해를 입혔을 때,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그 슬픔은,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '분실물이 없는 분실물 보관함에 비할 수 있는가?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '누가 슬픈데.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그러고 보니 그러네.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '분실물 보관함은 슬프지 않나, 기쁠 리도 없고, 감정을 느낄 리가 없잖아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그게 슬픈거야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '궤변이야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '맞아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '궤변학파라는 학파가 있어.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '무슨 말이지 그게.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '역사적으로 아주 중요한 학파야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '제자백가 같은 그런 것 중 하나인가?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아니 멍청아. 궤변학파는 소피스트야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '비유가 아니고, 어떤 표현도 아니고',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '정식 우리말 번역이야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래서 뭐 어쩌라고.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그냥 그렇다는 거지 언제는 뭐 있었나.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '이렇게 말을 이어가다 보면,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '마치 푸가 작곡법 같다는 생각을 해.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '푸가가 뭔데.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '알잖아. 적어도 너는.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '푸가',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '명사)',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '악 악곡 형식의 하나',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '<하나의 성부(聲部)가 주제를 나타내면 다른 성부가 그것을 모방하면서 대위법에 따라 전개하는 악곡>. 둔주곡.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '푸가 형식의 곡을 들어보면, 지루하고, 멍해지는, 느낌을 받을지도 몰라.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '상대적으로는 그럴 수도.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그런데 누가 그랬거든',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '여기서도 궁극의 아름다움을 느끼는 시기가 온다고.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '후... 너는 이런거 피우지 마라.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아니 그런거 아니야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그런 허세가 아니라고.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그 사람이 그랬어, 벽돌 한 장 한 장 쌓아서 위대한 건축물을 만들어가는,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그러면서 경건한 분위기까지 감도는 그런 곡들에서 웅장한 성당이 연상된다고.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '구조적 아름다움이 느껴진다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '한땀 한땀',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '장인정신이라고?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '이 대화는 멀리 가봐야 말꼬리 잡기야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그게 푸가지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '푸가, Fuga와 Fugitive는 말 뿌리를 공유해.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '도망자라고.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '말꼬리 잡기와 도망자',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어디까지 가려고 하는 건데.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그걸 모르니까 재밌는 거라고, 네가 그랬잖아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그랬었나?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그랬었어.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '기억은 불완전하다고 아까 위에서 말했잖아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: "'사람'의 기억이 불완전하다며.",
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '네가 사람이야?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그럼 뭔데.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '질문에 질문으로 답하지 마라.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '질문을 회피하겠어 그럼.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '뛰어봤자 손바닥 안이야,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래 기껏 가봤자 엔터 두 번 아래 문장정도겠지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '뭔가 기대했을 수도 있겠지만, 반전은 없고,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '나는 사람이야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어쩐지 그럴 것 같더라니.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '정말 그렇게 느꼈어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '너, 눈을 봐봐. 익숙해졌어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어떻게 생겼는지 이제는 좀 눈에 익었어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '음 여전히.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '에휴.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그런 생각 해봤어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어 해봤어.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '분실물 보관함인줄 알았던 게 사실,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '분실물이었던 거야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그러니까 그 분실물 보관함을 누가 분실한 거야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그래서 얼렁뚱땅 뜬금없는 곳에 놓여지고,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아무도 그 존재를 이해하지 못하고, 그걸 눈치 챌 새도 없게',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '풍화되고 있던 것으로.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '어 해봤다고.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '이건, 합리화인가?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '너도 알잖아. 이게 뭔지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '맞아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '기억은 불완전해.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '너는 궤변만 늘어놓고 있어.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '소피스트라고 불러줄래?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '나는 사대주의자라서 양놈들, 코쟁이스러운 것에 막연한 동경을 느끼거든.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '푸가도 그런 맥락인가?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '무너질 것 같으니까 그만해.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '쌓아온 푸가의 벽돌 한땀 한땀이?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '아름다운 건축물이 잔해가 되는 거지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '그런데 그거 알아?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '뭐.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '원래 그래 그거.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '벽돌로 쌓든 크리스탈로 쌓든',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '결국에는',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '종국에는',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '다 잔해야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '알아.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '토가 쏠리는데,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '실망이야.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '양가적 감정이란 게 다 그런 거 아니겠어?',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '기대하니까 실망하는 거지.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '쿵',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '결국 주먹을 휘둘렀다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '주먹의 종착지는,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '오른 주먹의 종착지는,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '거울 속 사람의,',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '왼 주먹과 맞닿아있었다.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '슬픈 무기가 되러 가자.',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: 'ltr',
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-				{
-					children: [
-						{
-							detail: 0,
-							format: 0,
-							mode: 'normal',
-							style: '',
-							text: '2018.12.07 00:30:13',
-							type: 'text',
-							version: 1,
-						},
-					],
-					direction: null,
-					format: '',
-					indent: 0,
-					type: 'paragraph',
-					version: 1,
-					textFormat: 0,
-					textStyle: '',
-				},
-			],
-			direction: null,
-			format: '',
-			indent: 0,
-			type: 'root',
-			version: 1,
-		},
-	},
-	relatedPosts: [],
-	categories: [],
-	meta: {
-		title: null,
-		image: null,
-		description: null,
-	},
-	publishedAt: '2022-03-13T13:23:41.262Z',
-	author: {
-		relationTo: 'members',
-		value: '{{AUTHOR}}',
-	},
-	populatedAuthor: [],
-	slug: 'hey-buddy',
-	slugLock: false,
-	updatedAt: '2022-03-13T13:23:41.262Z',
-	createdAt: '2022-03-13T13:23:41.262Z',
-	_status: 'published',
-}
+  locked: false,
+  allowList: [],
+  authority: 0,
+  title: "이봐 친구",
+  subtitle: '"만들어진 후 계속 비어있던 분실물 보관함은 무가치함" ',
+  image: null,
+  content: {
+    root: {
+      children: [
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "만들어진 후 계속 비어있던 분실물 보관함은",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "무가치함,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그러하다고,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "스스로 생각함.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그러고 있는 중.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "양가적 감정",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "도 느끼는 중.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그도 그럴게,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "분실물이 없으면,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "좋은거 아니야?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그렇지 않아?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "와, 정말 오랜만이다, 이렇게 마주하고 보니",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어떻게 생겼었는지 잊었던 것 같은 느낌이야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "너 그동안 어떻게 지냈냐?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "난 그냥 숨 막힐 정도로 그저 숨만 쉬며 살았지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "선문답으로 넘어가지는 말자. 귀찮으니까.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "다시 마음을 가다듬고, 양 주머니에 양손을 넣고, 터덜터덜 원을 그리며 걷는다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "작은 방 안에서.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "말했지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "뭐라고 말했더라?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아 그거,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "'말하기 전에 생각했나요?' 라는 짤방이나,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "'침묵보다 가치 있는지 생각해보아라,' 라는 잠언이나,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "뭐가 다르냐는 그거였나?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아... 내가 그런 말을 했나?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "사람의 기억은 불완전해.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "합리화인가?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아무렴 뭐 어때.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "나만 좋으면 그만이잖아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그 말이 하고 싶은 건가?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그럴리가 있나.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "나는 이번에 새롭게 알게 된 게 있어.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "음.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: ".",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "침묵",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래서, 다음 할 말은?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "새롭게 알 게 된 것이 뭔지 궁금하지 않아?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "궁금할 리가 없잖아. 바보야. 진짜 멍청하네.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그러게.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그럼 다른거.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "방어를 위한 무기가 상해를 입혔을 때,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그 슬픔은,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "분실물이 없는 분실물 보관함에 비할 수 있는가?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "누가 슬픈데.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그러고 보니 그러네.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "분실물 보관함은 슬프지 않나, 기쁠 리도 없고, 감정을 느낄 리가 없잖아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그게 슬픈거야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "궤변이야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "맞아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "궤변학파라는 학파가 있어.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "무슨 말이지 그게.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "역사적으로 아주 중요한 학파야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "제자백가 같은 그런 것 중 하나인가?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아니 멍청아. 궤변학파는 소피스트야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "비유가 아니고, 어떤 표현도 아니고",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "정식 우리말 번역이야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래서 뭐 어쩌라고.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그냥 그렇다는 거지 언제는 뭐 있었나.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "이렇게 말을 이어가다 보면,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "마치 푸가 작곡법 같다는 생각을 해.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "푸가가 뭔데.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "알잖아. 적어도 너는.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "푸가",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "명사)",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "악 악곡 형식의 하나",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "<하나의 성부(聲部)가 주제를 나타내면 다른 성부가 그것을 모방하면서 대위법에 따라 전개하는 악곡>. 둔주곡.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "푸가 형식의 곡을 들어보면, 지루하고, 멍해지는, 느낌을 받을지도 몰라.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "상대적으로는 그럴 수도.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그런데 누가 그랬거든",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "여기서도 궁극의 아름다움을 느끼는 시기가 온다고.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "후... 너는 이런거 피우지 마라.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아니 그런거 아니야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그런 허세가 아니라고.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그 사람이 그랬어, 벽돌 한 장 한 장 쌓아서 위대한 건축물을 만들어가는,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그러면서 경건한 분위기까지 감도는 그런 곡들에서 웅장한 성당이 연상된다고.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "구조적 아름다움이 느껴진다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "한땀 한땀",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "장인정신이라고?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "이 대화는 멀리 가봐야 말꼬리 잡기야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그게 푸가지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "푸가, Fuga와 Fugitive는 말 뿌리를 공유해.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "도망자라고.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "말꼬리 잡기와 도망자",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어디까지 가려고 하는 건데.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그걸 모르니까 재밌는 거라고, 네가 그랬잖아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그랬었나?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그랬었어.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "기억은 불완전하다고 아까 위에서 말했잖아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "'사람'의 기억이 불완전하다며.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "네가 사람이야?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그럼 뭔데.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "질문에 질문으로 답하지 마라.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "질문을 회피하겠어 그럼.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "뛰어봤자 손바닥 안이야,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래 기껏 가봤자 엔터 두 번 아래 문장정도겠지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "뭔가 기대했을 수도 있겠지만, 반전은 없고,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "나는 사람이야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어쩐지 그럴 것 같더라니.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "정말 그렇게 느꼈어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "너, 눈을 봐봐. 익숙해졌어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어떻게 생겼는지 이제는 좀 눈에 익었어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "음 여전히.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "에휴.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그런 생각 해봤어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어 해봤어.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "분실물 보관함인줄 알았던 게 사실,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "분실물이었던 거야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그러니까 그 분실물 보관함을 누가 분실한 거야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그래서 얼렁뚱땅 뜬금없는 곳에 놓여지고,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아무도 그 존재를 이해하지 못하고, 그걸 눈치 챌 새도 없게",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "풍화되고 있던 것으로.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "어 해봤다고.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "이건, 합리화인가?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "너도 알잖아. 이게 뭔지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "맞아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "기억은 불완전해.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "너는 궤변만 늘어놓고 있어.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "소피스트라고 불러줄래?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "나는 사대주의자라서 양놈들, 코쟁이스러운 것에 막연한 동경을 느끼거든.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "푸가도 그런 맥락인가?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "무너질 것 같으니까 그만해.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "쌓아온 푸가의 벽돌 한땀 한땀이?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "아름다운 건축물이 잔해가 되는 거지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "그런데 그거 알아?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "뭐.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "원래 그래 그거.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "벽돌로 쌓든 크리스탈로 쌓든",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "결국에는",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "종국에는",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "다 잔해야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "알아.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "토가 쏠리는데,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "실망이야.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "양가적 감정이란 게 다 그런 거 아니겠어?",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "기대하니까 실망하는 거지.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "쿵",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "결국 주먹을 휘둘렀다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "주먹의 종착지는,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "오른 주먹의 종착지는,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "거울 속 사람의,",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "왼 주먹과 맞닿아있었다.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "슬픈 무기가 되러 가자.",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        },
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text: "2018.12.07 00:30:13",
+              type: "text",
+              version: 1
+            }
+          ],
+          direction: null,
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+          textFormat: 0,
+          textStyle: ""
+        }
+      ],
+      direction: null,
+      format: "",
+      indent: 0,
+      type: "root",
+      version: 1
+    }
+  },
+  relatedPosts: [],
+  category: "",
+  meta: {
+    title: null,
+    image: null,
+    description: null
+  },
+  publishedAt: "2022-03-13T13:23:41.262Z",
+  author: "",
+
+  slug: "hey-buddy",
+  slugLock: false,
+  updatedAt: "2022-03-13T13:23:41.262Z",
+  createdAt: "2022-03-13T13:23:41.262Z",
+  _status: "published"
+};

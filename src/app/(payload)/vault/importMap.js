@@ -96,6 +96,7 @@ import { ResetPassword as ResetPassword_d50ef5c1f600afba08808f850b6a9ecc } from 
 import { TwoFactorVerify as TwoFactorVerify_d50ef5c1f600afba08808f850b6a9ecc } from '@payload-auth/better-auth/plugin/rsc'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
+/** @type import('payload').ImportMap */
 export const importMap = {
   "src/payload/fields/ProfileImage/serverProfileField.tsx#default": default_1a3141aff576d166f396fbcc6da633bb,
   "@/payload/fields/handle/ServerHandle.tsx#default": default_7e7fbb01e2b32d11ab833cd5c7dad00d,

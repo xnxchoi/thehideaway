@@ -1,6 +1,6 @@
-import { INSERT_RP_IMAGE_COMMAND } from "@/payload/fields/Article/Cover/rp-image/client/drawer/commands";
-import { $createRPImageNode } from "@/payload/fields/Article/Cover/rp-image/client/node/RP_ImageNode";
-import { RP_InternalImageNodeData } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
+import { INSERT_RP_IMAGE_COMMAND } from "./commands";
+import { $createRPImageNode } from "../node/RP_ImageNode";
+import { RP_InternalImageNodeData } from "../../server/node/RP_ImageNode";
 import { ImageCollectionSlug } from "@/types/collections/image-collections";
 import { LexicalEditor } from "@payloadcms/richtext-lexical/lexical";
 import { $getNodeByKey } from "lexical";

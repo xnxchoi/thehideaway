@@ -1,6 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@betterauth-ui/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ReactNode, useContext, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -28,6 +35,11 @@ import {
   type SettingsCardClassNames
 } from "../shared/settings-card";
 
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
 export interface UpdateFieldCardProps {
   className?: string;
   classNames?: SettingsCardClassNames;
@@ -42,6 +54,13 @@ export interface UpdateFieldCardProps {
   multiline?: boolean;
   value?: unknown;
   validate?: (value: string) => boolean | Promise<boolean>;
+  errorMessage?: {
+    required?: string;
+    invalid?: string;
+    validate?: string;
+  };
+  options?: SelectOption[];
+  onUpdateComplete?: () => void;
 }
 
 export function UpdateFieldCard({
@@ -57,14 +76,18 @@ export function UpdateFieldCard({
   type,
   multiline,
   value,
-  validate
+  validate,
+  errorMessage,
+  options,
+  onUpdateComplete
 }: UpdateFieldCardProps) {
   const {
     hooks: { useSession },
     mutators: { updateUser },
     localization: contextLocalization,
     optimistic,
-    toast
+    toast,
+    localizeErrors
   } = useContext(AuthUIContext);
 
   const localization = useMemo(
@@ -82,29 +105,48 @@ export function UpdateFieldCard({
       ? z.preprocess(
           (val) => (!val ? undefined : Number(val)),
           z.number({
-            message: `${label} ${localization.IS_INVALID}`
+            message:
+              errorMessage?.invalid ?? `${label} ${localization.IS_INVALID}`
           })
         )
       : z.coerce
           .number({
-            message: `${label} ${localization.IS_INVALID}`
+            message:
+              errorMessage?.invalid ?? `${label} ${localization.IS_INVALID}`
           })
           .optional();
   } else if (type === "boolean") {
     fieldSchema = required
       ? z.coerce
           .boolean({
-            message: `${label} ${localization.IS_INVALID}`
+            message:
+              errorMessage?.invalid ?? `${label} ${localization.IS_INVALID}`
           })
           .refine((val) => val === true, {
-            message: `${label} ${localization.IS_REQUIRED}`
+            message:
+              errorMessage?.required ?? `${label} ${localization.IS_REQUIRED}`
           })
       : z.coerce.boolean({
-          message: `${label} ${localization.IS_INVALID}`
+          message:
+            errorMessage?.invalid ?? `${label} ${localization.IS_INVALID}`
         });
+  } else if (type === "select") {
+    fieldSchema = required
+      ? z
+          .string()
+          .min(
+            1,
+            errorMessage?.required ?? `${label} ${localization.IS_REQUIRED}`
+          )
+      : z.string().optional();
   } else {
     fieldSchema = required
-      ? z.string().min(1, `${label} ${localization.IS_REQUIRED}`)
+      ? z
+          .string()
+          .min(
+            1,
+            errorMessage?.required ?? `${label} ${localization.IS_REQUIRED}`
+          )
       : z.string().optional();
   }
 
@@ -133,9 +175,11 @@ export function UpdateFieldCard({
       !(await validate(newValue))
     ) {
       form.setError(name, {
-        message: `${label} ${localization.IS_INVALID}`
+        message:
+          errorMessage?.validate ??
+          errorMessage?.invalid ??
+          `${label} ${localization.IS_INVALID}`
       });
-
       return;
     }
 
@@ -146,17 +190,22 @@ export function UpdateFieldCard({
         variant: "success",
         message: `${label} ${localization.UPDATED_SUCCESSFULLY}`
       });
+      onUpdateComplete?.();
     } catch (error) {
       toast({
         variant: "error",
-        message: getLocalizedError({ error, localization })
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors
+        })
       });
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(updateField)}>
+      <form method="POST" onSubmit={form.handleSubmit(updateField)}>
         <SettingsCard
           className={className}
           classNames={classNames}
@@ -198,7 +247,36 @@ export function UpdateFieldCard({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      {type === "number" ? (
+                      {type === "select" ? (
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value as string}
+                          disabled={isSubmitting}
+                        >
+                          <SelectTrigger
+                            className={cn("w-full", classNames?.input)}
+                          >
+                            <SelectValue
+                              placeholder={
+                                placeholder ||
+                                (typeof label === "string"
+                                  ? label
+                                  : "Select an option")
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {options?.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : type === "number" ? (
                         <Input
                           className={classNames?.input}
                           type="number"

@@ -2,177 +2,176 @@ import { cn } from "@/lib/utils";
 import { useCoordinator } from "@/providers/CoordinatorCtx";
 import { clamp } from "@/utilities/mathUtilities";
 import type { LexicalEditor } from "@payloadcms/richtext-lexical/lexical";
-import { HTMLMotionProps, useMotionValue } from "motion/react";
+import { MotionNodeDragHandlers } from "motion";
+import { HTMLMotionProps, MotionValue, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
 import type { RefObject } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useRPImageNode } from "./index";
 
 export const ImageResizer = ({
-  isFocused,
-  hovered,
   editor,
   onResizeEnd,
   onResizeStart,
-  imageRef,
-  motionWidth
+  motionWidth,
+  imageRef
 }: {
   editor: LexicalEditor;
-  isFocused: boolean;
-  hovered: boolean;
   imageRef: RefObject<HTMLImageElement>;
-  motionWidth: ReturnType<typeof useMotionValue<number>>;
-  onResizeStart?: (e: PointerEvent) => void;
-  onResizeEnd?: (e: PointerEvent) => void;
+  motionWidth: MotionValue<number>;
+  onResizeStart: NonNullable<MotionNodeDragHandlers>["onDragStart"];
+  onResizeEnd: NonNullable<MotionNodeDragHandlers>["onDragEnd"];
 }) => {
-  const unsetCursor = useCoordinator((r) => r.unsetFn);
-  const reinitializeCursor = useCoordinator((r) => r.setFn);
-  const xVal = useCoordinator((r) => r.x),
-    yVal = useCoordinator((r) => r.y);
-
-  const [isDragging, setIsDragging] = useState(false);
+  const draggingValue = useMotionValue<boolean>(false);
+  const directionValue = useMotionValue<"east" | "west">("east");
   const maxWidth = useMemo(
-    () => imageRef.current?.naturalWidth || 700,
+    () => imageRef.current?.naturalWidth || 600,
     [imageRef]
   );
-  const handlePointerDown = useCallback(
-    (side: "left" | "right") => (e: React.PointerEvent<HTMLDivElement>) => {
-      // 1. STOP PROPAGATION: Prevents Lexical from stealing focus
-      e.preventDefault();
-      e.stopPropagation();
-
-      const target = e.currentTarget;
-      // 2. POINTER CAPTURE: Even if mouse moves outside the div, we keep receiving events
-      target.setPointerCapture(e.pointerId);
-      unsetCursor();
-      const startX = e.clientX;
-      const startWidth = motionWidth.get();
-
-      setIsDragging(true);
-      onResizeStart?.(e.nativeEvent);
-
-      const onPointerMove = (moveEvent: PointerEvent) => {
-        // Calculate delta based on side
-        const currentX = moveEvent.clientX;
-        const deltaX = currentX - startX;
-        xVal.set(currentX);
-        yVal.set(moveEvent.clientY);
-        // If dragging right handle: moving right adds width
-        // If dragging left handle: moving left (negative delta) adds width
-        const effectiveDelta = side === "right" ? deltaX : -deltaX;
-
-        const newWidth = startWidth + effectiveDelta;
-
-        // Update the motion value directly
-        motionWidth.set(clamp(newWidth, 144, maxWidth));
-      };
-
-      const onPointerUp = (upEvent: PointerEvent) => {
-        setIsDragging(false);
-        onResizeEnd?.(upEvent);
-        target.releasePointerCapture(upEvent.pointerId);
-        reinitializeCursor();
-        // Clean up listeners
-        window.removeEventListener("pointermove", onPointerMove);
-        window.removeEventListener("pointerup", onPointerUp);
-      };
-
-      // Attach listeners to window to ensure smooth drag even if cursor leaves iframe/div
-      window.addEventListener("pointermove", onPointerMove);
-      window.addEventListener("pointerup", onPointerUp);
-    },
-    [
-      unsetCursor,
-      motionWidth,
-      onResizeStart,
-      xVal,
-      yVal,
-      maxWidth,
-      onResizeEnd,
-      reinitializeCursor
-    ]
-  );
-
+  const handleDragEast: NonNullable<MotionNodeDragHandlers["onDrag"]> =
+    useCallback(
+      (event, info) => {
+        const newWidth = motionWidth.get() + info.delta.x;
+        motionWidth.set(clamp(100, newWidth, maxWidth));
+      },
+      [maxWidth, motionWidth]
+    );
+  const handleDragWest: NonNullable<MotionNodeDragHandlers["onDrag"]> =
+    useCallback(
+      (event, info) => {
+        const newWidth = motionWidth.get() - info.delta.x;
+        motionWidth.set(clamp(100, newWidth, maxWidth));
+      },
+      [maxWidth, motionWidth]
+    );
+  const dragEastStart: NonNullable<MotionNodeDragHandlers["onDragStart"]> =
+    useCallback(
+      (event, info) => {
+        const alreadyDragging = draggingValue.get();
+        const currentDirection = directionValue.get();
+        const alreadyDo = alreadyDragging && currentDirection === "west";
+        if (alreadyDo) {
+          return;
+        }
+        onResizeStart?.(event, info);
+      },
+      [directionValue, draggingValue, onResizeStart]
+    );
+  const dragWestStart: NonNullable<MotionNodeDragHandlers["onDragStart"]> =
+    useCallback(
+      (event, info) => {
+        const alreadyDragging = draggingValue.get();
+        const currentDirection = directionValue.get();
+        const alreadyDo = alreadyDragging && currentDirection === "east";
+        if (alreadyDo) {
+          return;
+        }
+        directionValue.set("west");
+        draggingValue.set(true);
+        onResizeStart?.(event, info);
+      },
+      [directionValue, draggingValue, onResizeStart]
+    );
   return (
     <>
       {" "}
       <RightResizeButton
-        onPointerDown={handlePointerDown("right")}
-        hovered={hovered}
-        isFocused={isDragging || isFocused}
+        onDragStart={dragEastStart}
+        onDrag={handleDragEast}
+        onDragEnd={onResizeEnd}
       />
       <LeftResizeButton
-        hovered={hovered}
-        onPointerDown={handlePointerDown("left")}
-        isFocused={isDragging || isFocused}
+        onDrag={handleDragWest}
+        onDragStart={dragWestStart}
+        onDragEnd={onResizeEnd}
       />
     </>
   );
 };
 
 const RightResizeButton = ({
-  onPointerDown,
-  isFocused,
-  hovered,
+  onDragEnd: onEnd,
+  onDragStart: onStart,
+  dragging,
   ...props
-}: HTMLMotionProps<"div"> & {
-  isFocused: boolean;
-  hovered: boolean;
-}) => {
+}: HTMLMotionProps<"div"> & { dragging?: boolean }) => {
   const isResizing = useRPImageNode((r) => r.isResizing);
-
+  const onDragStart: NonNullable<MotionNodeDragHandlers["onDragStart"]> =
+    useCallback(
+      (event, info) => {
+        onStart?.(event, info);
+      },
+      [onStart]
+    );
+  const onDragEnd: NonNullable<MotionNodeDragHandlers["onDragEnd"]> =
+    useCallback(
+      (event, info) => {
+        onEnd?.(event, info);
+      },
+      [onEnd]
+    );
   return (
     <m.div
       role="button"
-      onPointerDown={onPointerDown}
+      drag={"x"}
+      dragDirectionLock={true}
+      dragElastic={0}
+      dragConstraints={{ left: 0, right: 0 }}
+      draggable={!isResizing || !!dragging}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       {...props}
-      className={cn(
-        "absolute top-0 right-0 z-50 flex h-full w-6 items-center justify-center",
-        isFocused || hovered
-          ? "pointer-events-auto"
-          : "group-hover:pointer-events-none"
-      )}
+      whileDrag={{ cursor: "e-resize" }}
+      className="pointer-events-none absolute top-0 right-0 flex h-full w-6 items-center justify-center group-hover:pointer-events-auto"
     >
       <div
         className={cn(
-          "h-[48px] max-h-1/2 w-2.5 border-solid border-off-foreground/90 bg-[oklch(0.1684_0_0/60%)] transition-opacity duration-150 ease-in-out",
-          isResizing || isFocused || hovered
-            ? "opacity-100"
-            : "opacity-0 group-hover:opacity-100"
+          "h-[48px] max-h-1/2 w-2.5 border-solid border-off-foreground/90 bg-[oklch(0.1684_0_0/60%)] opacity-0 transition-opacity duration-150 ease-in-out group-hover:opacity-100"
         )}
       />
     </m.div>
   );
 };
 const LeftResizeButton = ({
-  onPointerDown,
-  isFocused,
-  hovered,
+  onDragEnd: onEnd,
+  onDragStart: onStart,
   ...props
-}: HTMLMotionProps<"div"> & {
-  isFocused: boolean;
-  hovered: boolean;
-}) => {
+}: HTMLMotionProps<"div">) => {
+  const [draggingThis, setDraggingThis] = useState(false);
   const isResizing = useRPImageNode((r) => r.isResizing);
-
+  const onDragStart: NonNullable<MotionNodeDragHandlers["onDragStart"]> =
+    useCallback(
+      (event, info) => {
+        setDraggingThis(true);
+        onStart?.(event, info);
+      },
+      [onStart]
+    );
+  const onDragEnd: NonNullable<MotionNodeDragHandlers["onDragEnd"]> =
+    useCallback(
+      (event, info) => {
+        setDraggingThis(false);
+        onEnd?.(event, info);
+      },
+      [onEnd]
+    );
   return (
     <m.div
       role="button"
-      onPointerDown={onPointerDown}
+      drag={"x"}
+      dragDirectionLock={true}
+      dragElastic={0}
+      dragConstraints={{ left: 0, right: 0 }}
+      draggable={!isResizing || draggingThis}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       {...props}
-      className={cn(
-        "absolute top-0 left-0 z-50 flex h-full w-6 items-center justify-center",
-        isResizing || isFocused || hovered
-          ? "pointer-events-auto"
-          : "group-hover:pointer-events-none"
-      )}
+      whileDrag={{ cursor: "w-resize" }}
+      className="pointer-events-none absolute top-0 left-0 flex h-full w-6 items-center justify-center group-hover:pointer-events-auto"
     >
       <div
         className={cn(
-          "h-[48px] max-h-1/2 w-2.5 border-solid border-off-foreground/90 bg-[oklch(0.1684_0_0/60%)] transition-opacity duration-150 ease-in-out",
-          isResizing || isFocused || hovered
-            ? "opacity-100"
-            : "opacity-0 group-hover:opacity-100"
+          "h-[48px] max-h-1/2 w-2.5 border-solid border-off-foreground/90 bg-[oklch(0.1684_0_0/60%)] opacity-0 transition-opacity duration-150 ease-in-out group-hover:opacity-100"
         )}
       />
     </m.div>

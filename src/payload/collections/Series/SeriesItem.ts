@@ -1,5 +1,4 @@
-import type {Series} from "@/payload-types";
-import type {CollectionConfig, FilterOptionsProps, Where} from "payload";
+import type { CollectionConfig } from "payload";
 
 export const SeriesItem: CollectionConfig = {
   slug: "series-item",
@@ -12,28 +11,28 @@ export const SeriesItem: CollectionConfig = {
       index: true,
       required: true,
       maxDepth: 0
-    },
-    {
-      name: "series",
-      type: "relationship",
-      relationTo: "series",
-      hasMany: false,
-      filterOptions: ({ req, id, data }: FilterOptionsProps<Series>) =>
-        ({
-          or: [
-            {
-              owner: { equals: req.user?.id }
-            },
-            {
-              author: {
-                equals: req.user?.id
-              }
-            }
-          ]
-        }) as Where,
-      index: true,
-      required: true,
-      maxDepth: 0
     }
+    // {
+    //   name: "series",
+    //   type: "relationship",
+    //   relationTo: "series",
+    //   hasMany: false,
+    //   filterOptions: ({ req, id, data }: FilterOptionsProps<Series>) =>
+    //     ({
+    //       or: [
+    //         {
+    //           owner: { equals: req.user?.id }
+    //         },
+    //         {
+    //           author: {
+    //             equals: req.user?.id
+    //           }
+    //         }
+    //       ]
+    //     }) as Where,
+    //   index: true,
+    //   required: true,
+    //   maxDepth: 0
+    // }
   ]
 };

@@ -874,11 +874,11 @@ const RP_Navigator = (
   const { onMouseEnter, onMouseLeave } = useDomCursor<HTMLAnchorElement>({
     onEnter: (event) => {
       event.preventDefault();
-      doME?.();
+      doME?.(event);
       handlePagePreviewMouseEnter();
     },
     onLeave: (event) => {
-      doML?.();
+      doML?.(event);
       setNavItemHovered(null);
     },
     enterCondition: () =>
@@ -907,9 +907,9 @@ const RP_Navigator = (
     setTransitionOutType,
     theKey
   ]);
-  const handleClick: MouseEventHandler = useCallback(
+  const handleClick: MouseEventHandler<HTMLAnchorElement> = useCallback(
     (e) => {
-      onClick?.();
+      onClick?.(e);
       mobileState.get()
         ? (handlePagePreviewMouseEnter(),
           setTimeout(() => {

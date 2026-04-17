@@ -3,7 +3,7 @@ import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Drawer } from "@/components/ui/vaul";
 import { SPRING_EASE } from "@/constants/animations";
 import { useIsMobile } from "@/providers/MiddleMan";
-import { useRadioStore } from "@/providers/RadioProvider";
+import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { AnimatePresence, useMotionValue, useSpring } from "motion/react";
@@ -19,7 +19,7 @@ import { useShallow } from "zustand/shallow";
 import { Controlbar } from "../Controlbar";
 import { Link } from "@/components/core/Link/Link";
 import { SIDE_DRAWER_LINKS } from "@/constants/navigation";
-import { RP_FM } from "../Radio/RP_FM";
+import { DrawerPlayer } from "@/components/UX/TapePlayer";
 import { SideNotch } from "../SideNotch";
 
 export const SIDE_DRAWER = {
@@ -172,7 +172,7 @@ export const SideDrawer = () => {
   });
   const { isMobile } = useIsMobile();
   const setCursor = useCursor((r) => r.setCursorState);
-  const hasRadio = useRadioStore(useShallow((r) => r.hasRadio));
+  const hasRadio = useHasRadio();
   const [direction, setDirection] = useState<
     "bottom" | "left" | "top" | "right" | undefined
   >(isMobile ? "bottom" : "left");
@@ -331,7 +331,7 @@ export const SideDrawer = () => {
               )}
             </AnimatePresence>
             <div className={"col-span-full row-[11/14]"}>
-              {hasRadio && <RP_FM />}
+              {hasRadio && <DrawerPlayer />}
             </div>
           </m.div>
           <AnimatePresence>

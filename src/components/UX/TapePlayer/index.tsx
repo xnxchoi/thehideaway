@@ -3,10 +3,9 @@ export { useHaptics } from "./hooks/useHaptics";
 export type {
   TapePlayerVariant,
   TapePlayerProps,
-  SpeedDialMode,
-  HapticPattern,
+  HapticPattern
 } from "./types";
-export { SIZES, SPEED_STEPS, ICON_PATHS } from "./constants";
+export { SIZES, ICON_PATHS } from "./constants";
 
 // Layout variants (for direct import if needed)
 export { FullPlayer } from "./layouts/FullPlayer";
@@ -17,7 +16,6 @@ export { HeroPlayer } from "./layouts/HeroPlayer";
 // Individual controls (for composition in custom layouts)
 export { PlayPauseButton } from "./controls/PlayPauseButton";
 export { RewindButton } from "./controls/RewindButton";
-export { SpeedDial } from "./controls/SpeedDial";
 export { TransportBar } from "./controls/TransportBar";
 
 // Visual sub-components

@@ -1,4 +1,5 @@
 import configPromise from "@payload-config";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 
@@ -67,7 +68,7 @@ async function getSurf({ slug }: { slug: string }) {
   return surfs;
 }
 
-export async function generateMetadata({ params }: Args) {
+export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug } = await params;
   const surfs = await getSurf({ slug });
   if (!surfs.docs.length) {

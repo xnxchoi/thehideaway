@@ -11,11 +11,13 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { useRadioStore } from "@/providers/RadioProvider";
+import { TWEEN_EASE } from "@/constants/animations";
+import { useNowPlaying, usePlayState } from "@/providers/HideawayFM/hooks";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   Environment,
   OrbitControls,
+  OrthographicCamera,
   PerspectiveCamera,
   RenderTexture,
   Text,
@@ -25,7 +27,13 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
-import { useMotionTemplate, useMotionValue, useTransform } from "motion/react";
+import { AnimationSequence } from "motion";
+import {
+  animate,
+  useMotionValue,
+  useMotionValueEvent,
+  useTransform
+} from "motion/react";
 import {
   useCallback,
   useEffect,
@@ -55,9 +63,14 @@ import {
   Vector3
 } from "three";
 import { OrbitControls as OrbitControls_ } from "three-stdlib";
-import { useShallow } from "zustand/shallow";
 
 gsap.registerPlugin(ScrollTrigger);
+
+/**
+ * Visual state for the tape button animation. Derived from the new
+ * HideawayFM tri-state play model + crossfading flag.
+ */
+type TapeVisualState = "seeking" | "playing" | "paused" | "stopped";
 // ─── DRACO decoder path ───────────────────────────────────────────────────────
 // The files are already copied to /public/draco/ (from rip/).
 useGLTF.setDecoderPath("/draco/");
@@ -145,6 +158,11 @@ export function TapeModel({
   const displayBounds = useRef(new Box3()),
     displayCenter = useRef(new Vector3());
   const textWidth = useRef(10);
+  const [displayAspect, setDisplayAspect] = useState<number | null>(null);
+  const DISPLAY_EMISSIVE_INTENSITY = 200;
+  const DISPLAY_HALF_HEIGHT = 1.5;
+  const FONT_SIZE_RATIO = 0.33;
+  const RENDER_TEX_HEIGHT = 256;
   /** Exponentially smoothed velocity (qc in original). */
   const smoothedVelocityRef = useRef(0);
 
@@ -182,37 +200,27 @@ export function TapeModel({
       // ── Display mesh — video texture as emissive map ─────────────────────
       if (mat.name === "Display") {
         displayScreen.current = obj;
-        // const video = document.createElement("video");
-        // video.src = VIDEO_URL;
-        // video.crossOrigin = "anonymous";
-        // video.loop = true;
-        // video.muted = true;
-        // video.playsInline = true;
-        //
-        // const videoTex = new VideoTexture(video);
-        // videoTex.minFilter = LinearFilter;
-        // videoTex.magFilter = LinearFilter;
-        // videoTex.format = RGBAFormat;
-        // videoTex.flipY = false;
-
         const displayMat = obj.material as MeshStandardMaterial;
-
-        // 0x96F7FF decoded from original decimal literal 9893887
-        displayMat.emissive = new Color("#c3f1f5");
+        displayMat.emissive = new Color(0x96f7ff);
+        // Keep display unlit until the RenderTexture aspect is computed and
+        // the texture has been wired onto the emissiveMap slot.
         displayMat.emissiveIntensity = 300;
         displayScreenMatRef.current = displayMat;
         displayScreenMeshRef.current = obj.geometry;
-        // displayMat.emissiveMap = videoTex;
         displayMat.emissiveMap = displayEmissiveRef.current;
-        // dis playMat.emissiveMap!.flipY = true;
         displayMat.needsUpdate = true;
 
-        // Attempt autoplay after a short delay (mirrors original 2 s setTimeout)
-        setTimeout(() => {
-          // video.play().catch(() => {
-          //   // Autoplay may be blocked on mobile until user gesture
-          // });
-        }, 2000);
+        // Measure the Display geometry's UV aspect so the RenderTexture +
+        // ortho camera match the physical screen shape (no stretching).
+        obj.geometry.computeBoundingBox();
+        const bb = obj.geometry.boundingBox;
+        if (bb) {
+          const size = new Vector3();
+          bb.getSize(size);
+          // Pick the two largest axes as "width × height" of the screen face.
+          const aspect = size.x / size.y;
+          setDisplayAspect(aspect);
+        }
       }
 
       // ── black_glass — MeshPhysicalMaterial with transmission ─────────────
@@ -264,6 +272,7 @@ export function TapeModel({
       }
     });
   }, [scene]);
+
   const lastResize = useWindowResize({ debounce: 100 });
   // ─── Responsive model scale ───────────────────────────────────────────────
   const onResize = useEffectEvent(() => {
@@ -276,23 +285,91 @@ export function TapeModel({
   useEffect(() => {
     onResize();
   }, [lastResize]);
-  const trackStatus = useRadioStore(useShallow((r) => r.trackStatus));
-  const lastTrackstatus = useRef(trackStatus);
-  const seeking = useRadioStore(useShallow((r) => r.seeking));
+  const playState = usePlayState();
+  const nowPlaying = useNowPlaying();
+  const seeking = nowPlaying.crossfading;
+  const trackStatus: TapeVisualState = useMemo(() => {
+    if (seeking) return "seeking";
+    switch (playState.real) {
+      case "playing":
+        return "playing";
+      case "paused":
+        return "paused";
+      default:
+        return "stopped";
+    }
+  }, [seeking, playState.real]);
+  const lastTrackstatus = useRef<TapeVisualState>(trackStatus);
+  const trackStatusValue = useMotionValue<TapeVisualState>(trackStatus);
+  useEffect(() => {
+    trackStatusValue.set(trackStatus);
+  }, [trackStatus, trackStatusValue]);
 
   const lastActive = useRef(activeButtonRef.current);
-
-  useEffect(() => {
-    let state = trackStatus;
-    if (seeking) {
-      state = "seeking";
+  const statusToButton = useCallback((status: TapeVisualState) => {
+    switch (status) {
+      case "seeking":
+        return forwardButtonRef.current;
+      case "playing":
+        return playButtonRef.current;
+      case "paused":
+      case "stopped":
+        return pauseButtonRef.current;
+      default:
+        return null;
     }
+  }, []);
+  const activeButtonValue = useTransform(() => {
+    const curState = trackStatusValue.get();
+    const ogState = trackStatusValue.getPrevious();
+    const once1 = statusToButton(curState);
+    if (!once1 && !!ogState && curState !== ogState) {
+      return statusToButton(ogState);
+    }
+    return once1;
+  });
+  const lastActiveValue = useTransform(() => activeButtonValue.getPrevious());
+  useMotionValueEvent(activeButtonValue, "change", (v) => {
+    const seq: AnimationSequence = [];
+    const r = activeButtonValue.getPrevious();
+    if (r) {
+      seq.push([
+        r.rotation,
+        {
+          y: 0
+        },
+        {
+          ease: TWEEN_EASE.expo.out,
+          duration: 0.25,
+          type: "tween",
+          at: 0
+        }
+      ]);
+    }
+    if (v) {
+      seq.push([
+        v.rotation,
+        {
+          y: 0.08
+        },
+        {
+          ease: TWEEN_EASE.back.out(1.7),
+          duration: 0.3,
+          delay: 0.05,
+          type: "tween",
+          at: 0
+        }
+      ]);
+    }
+    seq.length > 0 && animate(seq);
+  });
+  useEffect(() => {
+    const state = trackStatus;
     if (state !== lastTrackstatus.current) {
       lastActive.current = activeButtonRef.current;
       const fwdb = forwardButtonRef.current,
         playb = playButtonRef.current,
-        pauseb = pauseButtonRef.current,
-        rewb = rewindButtonRef.current;
+        pauseb = pauseButtonRef.current;
       switch (state) {
         case "seeking":
           activeButtonRef.current = fwdb;
@@ -304,51 +381,44 @@ export function TapeModel({
         case "stopped":
           activeButtonRef.current = pauseb;
           break;
-        case "ended":
-          activeButtonRef.current = lastActive.current;
-          break;
         default:
           activeButtonRef.current = null;
           break;
       }
-      [fwdb, playb, pauseb, rewb]
-        .filter((r) => r !== null)
-        .forEach((v) => {
-          const isActive = v === activeButtonRef.current;
-          if (isActive) {
-            gsap.to(v.rotation, {
-              y: 0.08,
-              duration: 0.3,
-              delay: 0.05,
-              ease: "back.out(1.7)" // Built-in tactile mechanical click!
-            });
-          } else {
-            gsap.to(v.rotation, {
-              y: 0,
-              duration: 0.25,
-              ease: "expo.out"
-            });
-          }
-        });
+      // [fwdb, playb, pauseb, rewb]
+      //   .filter((r) => r !== null)
+      //   .forEach((v) => {
+      //     const isActive = v === activeButtonRef.current;
+      //     if (isActive) {
+      //       gsap.to(v.rotation, {
+      //         y: 0.08,
+      //         duration: 0.3,
+      //         delay: 0.05,
+      //         ease: "back.out(1.7)" // Built-in tactile mechanical click!
+      //       });
+      //     } else {
+      //       gsap.to(v.rotation, {
+      //         y: 0,
+      //         duration: 0.25,
+      //         ease: "expo.out"
+      //       });
+      //     }
+      //   });
     }
     lastTrackstatus.current = state;
-  }, [seeking, trackStatus]);
-  const curI = useRadioStore(useShallow((r) => r.currentIndex));
-  const tracks = useRadioStore(useShallow((r) => r.tracks));
+  }, [trackStatus]);
 
-  const curTrack = useMotionValue(tracks[curI]);
-  useEffect(() => {
-    curTrack.set(tracks[curI]);
-  }, [curI, tracks, curTrack]);
+  const track = nowPlaying.track;
   const textRef1 = useRef<Object3D>(null),
     textRef2 = useRef<Object3D>(null);
-  const [playingString, setPlayingString] = useState(
-    `   ${curTrack.get().artist} - ${curTrack.get().title}   `
+  const [playingString, setPlayingString] = useState(() =>
+    track ? `   ${track.artist} - ${track.title}   ` : `   Hideaway FM   `
   );
-  curTrack.on("change", (e) => {
-    const { artist, title } = e;
-    setPlayingString(`   ${artist} - ${title}   `);
-  });
+  useEffect(() => {
+    setPlayingString(
+      track ? `   ${track.artist} - ${track.title}   ` : `   Hideaway FM   `
+    );
+  }, [track]);
 
   // ─── GSAP ScrollTrigger animations ───────────────────────────────────────
   const createScrollTrigger = useEffectEvent(() => {
@@ -441,6 +511,7 @@ export function TapeModel({
   });
   const firstTime = useRef(0);
   const lastRotation = useRef(activeButtonRef.current?.rotation.z ?? 0);
+
   // ─── Animation loop ───────────────────────────────────────────────────────
   // Mirrors the requestAnimationFrame loop (dg) from the original.
   useFrame(({ camera }, delta) => {
@@ -479,6 +550,22 @@ export function TapeModel({
       textRef2.current.position.x =
         (firstTime.current % textWidth.current) - textWidth.current;
     }
+    // Wire RenderTexture → real Display material's emissiveMap once both refs
+    // are populated (traverse runs before RenderTexture mounts its ref).
+    // Reveal the display only after both the texture is attached AND the
+    // geometry aspect has been measured, so the marquee isn't visible while
+    // its aspect is still being resolved.
+    if (
+      displayScreenMatRef.current &&
+      displayEmissiveRef.current &&
+      displayAspect !== null &&
+      displayScreenMatRef.current.emissiveMap !== displayEmissiveRef.current
+    ) {
+      displayScreenMatRef.current.emissiveMap = displayEmissiveRef.current;
+      displayScreenMatRef.current.emissiveIntensity =
+        DISPLAY_EMISSIVE_INTENSITY;
+      displayScreenMatRef.current.needsUpdate = true;
+    }
   });
 
   return (
@@ -505,6 +592,7 @@ export function TapeModel({
         enabled={inView}
         ref={controlsRef}
         enableZoom={false}
+        enablePan={false}
       />
 
       {/*
@@ -534,58 +622,80 @@ export function TapeModel({
           castShadow
         />
 
-        {/* The GLTF model — materials are overridden in useEffect above */}
-        <primitive object={scene}>
-          <mesh ref={displayScreen}>
-            <meshStandardMaterial
-              emissive={new Color(0x96f7ff)}
-              emissiveIntensity={200}
-              {...displayScreenMatRef.current}
+        {/*
+         * The GLTF model — materials are overridden in the traverse effect.
+         * The nested <mesh> hosts the RenderTexture whose texture is assigned
+         * onto the real Display material via displayEmissiveRef.
+         */}
+        <primitive object={scene} />
+
+        {/*
+         * Hidden helper mesh that hosts the RenderTexture. The texture is
+         * captured via displayEmissiveRef and copied onto the real Display
+         * material's emissiveMap in the useFrame wiring block above.
+         * This mesh is not rendered (visible=false) and positioned far away.
+         */}
+
+        <mesh visible={false} position={[0, -1000, 0]}>
+          <planeGeometry args={[1, 1]} />
+          <meshStandardMaterial emissiveIntensity={300}>
+            <RenderTexture
+              ref={displayEmissiveRef}
+              attach="emissiveMap"
+              width={Math.round(
+                RENDER_TEX_HEIGHT * DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO
+              )}
+              height={RENDER_TEX_HEIGHT}
+              format={RGBAFormat}
+              flipY={false}
+              colorSpace={SRGBColorSpace}
+              magFilter={LinearFilter}
+              minFilter={LinearFilter}
             >
-              <RenderTexture
-                ref={displayEmissiveRef}
-                format={RGBAFormat}
-                flipY={true}
-                colorSpace={SRGBColorSpace}
-                magFilter={LinearFilter}
-                minFilter={LinearFilter}
-              >
-                <group rotation={[Math.PI, 0, 0]} position={[0, 0, 0]}>
-                  <Text
-                    ref={textRef1}
-                    onSync={(troik) => {
-                      if (troik) {
-                        const troika = troik as Object3D;
-                        displayBounds.current.setFromObject(troika, false);
-                        const size = displayBounds.current.getSize(
-                          displayCenter.current
-                        );
-                        textWidth.current = size.x;
-                      }
-                    }}
-                    font={"/assets/fonts/Workbench.ttf"}
-                    color={"#c5dcdc"}
-                    fontSize={1.1}
-                    fillOpacity={0.6}
-                  >
-                    {playingString}
-                  </Text>
-                  <Text
-                    position={[-textWidth.current, 0, 0]}
-                    font={"/assets/fonts/Workbench.ttf"}
-                    color={"#c5dcdc"}
-                    ref={textRef2}
-                    fontSize={1.1}
-                    fillOpacity={0.6}
-                  >
-                    {playingString}
-                  </Text>
-                </group>
-              </RenderTexture>
-            </meshStandardMaterial>
-            <bufferGeometry {...displayScreenMeshRef.current} />
-          </mesh>
-        </primitive>
+              <OrthographicCamera
+                makeDefault
+                position={[0, 0, 10]}
+                left={-(DISPLAY_HALF_HEIGHT * (displayAspect ?? 8))}
+                right={DISPLAY_HALF_HEIGHT * (displayAspect ?? 8)}
+                top={DISPLAY_HALF_HEIGHT * (displayAspect ?? 8)}
+                bottom={-DISPLAY_HALF_HEIGHT * (displayAspect ?? 8)}
+                near={0.1}
+                far={100}
+              />
+              <group rotation={[Math.PI, 0, 0]} position={[0, 0, 0]}>
+                <Text
+                  ref={textRef1}
+                  onSync={(troik) => {
+                    if (troik) {
+                      const troika = troik as Object3D;
+                      displayBounds.current.setFromObject(troika, false);
+                      const size = displayBounds.current.getSize(
+                        displayCenter.current
+                      );
+                      textWidth.current = size.x;
+                    }
+                  }}
+                  font={"/assets/fonts/Workbench.ttf"}
+                  color={"#c5dcdc"}
+                  fontSize={DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO}
+                  fillOpacity={0.6}
+                >
+                  {playingString}
+                </Text>
+                <Text
+                  position={[-textWidth.current, 0, 0]}
+                  font={"/assets/fonts/Workbench.ttf"}
+                  color={"#c5dcdc"}
+                  ref={textRef2}
+                  fontSize={DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO}
+                  fillOpacity={0.6}
+                >
+                  {playingString}
+                </Text>
+              </group>
+            </RenderTexture>
+          </meshStandardMaterial>
+        </mesh>
       </group>
     </>
   );

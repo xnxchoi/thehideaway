@@ -2,17 +2,20 @@
 
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { cn } from "@/lib/utils";
-import { useRadio, useRadioStore } from "@/providers/RadioProvider";
+import { useHideawayFMControls } from "@/providers/HideawayFM";
+import { usePlayState } from "@/providers/HideawayFM/hooks";
 import { useCursor } from "@/providers/RP_Pro";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type SoundBarProps = {};
 export const SoundBar = ({}: SoundBarProps) => {
-  const { playing, toggle } = useRadio();
+  const { optimistic, real } = usePlayState();
+  const playing = optimistic === "playing";
+  const trackStatus =
+    real === "playing" ? "playing" : real === "loading" ? "seeking" : "paused";
+  const { toggle } = useHideawayFMControls();
   const [hovered, setHovered] = useState(false);
-
-  const trackStatus = useRadioStore((t) => t.trackStatus);
   const cursorState = useCursor((state) => state.cursorState);
   const lastHovered = useRef<boolean>(hovered);
   const lastCursorState = useRef<string | null>(cursorState);

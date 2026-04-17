@@ -16,7 +16,7 @@ import { BetterAuthProvider } from "@/lib/auth/context";
 import { getContextProps } from "@/lib/auth/context/get-context-props";
 import { cn } from "@/lib/utils";
 import { LivePreviewListener } from "@/payload/components/LivePreviewListener";
-import { RadioProvider } from "@/providers/RadioProvider";
+import { HideawayFMProvider } from "@/providers/HideawayFM";
 import "@/styles/hideaway.scss";
 import "@/styles/reading.scss";
 import { InitTheme } from "@/providers/Theme/InitTheme";
@@ -68,7 +68,7 @@ export default async function RootLayout({
           <NextIntlClientProvider>
             <BetterAuthProvider {...getContextProps()}>
               <ClientProviders>
-                <RadioProvider>
+                <HideawayFMProvider>
                   {/* Server-rendered components */}
                   <EscapeInAppBrowser />
                   <Toaster />
@@ -89,7 +89,7 @@ export default async function RootLayout({
                       </Suspense>
                     </ClientLayout>
                   </Main>
-                </RadioProvider>
+                </HideawayFMProvider>
               </ClientProviders>
             </BetterAuthProvider>
           </NextIntlClientProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/components/core/Link/Link";
+import { RPage } from "@/components/UX/Transition";
 import { cn } from "@/lib/utils";
 import {
   createCompilation,
@@ -57,7 +58,7 @@ export default function ListsPageClient({
   );
 
   return (
-    <div className="min-h-screen w-full bg-background text-foreground">
+    <RPage type="me" slug={["lists"]}>
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
@@ -94,7 +95,7 @@ export default function ListsPageClient({
       </header>
 
       {/* ── Grid ───────────────────────────────────────────── */}
-      <main className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+      <div className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
         <AnimatePresence mode="popLayout">
           {compilations.length === 0 && !showCreate ? (
             <ListsEmptyState key="empty" onNew={() => setShowCreate(true)} />
@@ -120,7 +121,7 @@ export default function ListsPageClient({
             </m.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
 
       {/* ── Create Sheet ─────────────────────────────────── */}
       <AnimatePresence>
@@ -132,7 +133,7 @@ export default function ListsPageClient({
           />
         )}
       </AnimatePresence>
-    </div>
+    </RPage>
   );
 }
 
@@ -378,7 +379,7 @@ function CreateCompilationSheet({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+        className="fixed inset-0 z-140 bg-muted-faded-foreground/10 backdrop-blur-sm"
         onClick={onClose}
       />
       <m.div
@@ -386,7 +387,7 @@ function CreateCompilationSheet({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-        className="fixed inset-x-4 bottom-0 z-50 mx-auto max-w-lg rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
+        className="fixed inset-x-4 bottom-0 z-150 mx-auto max-w-lg rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
       >
         <div className="flex items-center justify-between border-b border-border/20 px-6 py-4">
           <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
@@ -403,25 +404,32 @@ function CreateCompilationSheet({
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-5">
             <div>
-              <label className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              <label
+                htmlFor="title"
+                className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase"
+              >
                 Title
               </label>
               <input
+                id="title"
                 ref={titleRef}
                 type="text"
                 required
-                autoFocus
                 placeholder="e.g. Late-night reads"
-                className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
+                className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-none focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              <label
+                htmlFor="description"
+                className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase"
+              >
                 Description{" "}
                 <span className="normal-case opacity-50">(optional)</span>
               </label>
               <textarea
+                id="description"
                 ref={descRef}
                 rows={2}
                 placeholder="What's this list about?"

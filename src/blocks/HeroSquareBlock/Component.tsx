@@ -40,7 +40,7 @@ export const HeroSquareBlock: React.FC<
     if (fetchedPosts instanceof Error) {
       console.error(fetchedPosts);
     } else {
-      posts.push(...fetchedPosts);
+      posts.push(...fetchedPosts.docs);
     }
 
     return <ArticleHero posts={posts} />;
