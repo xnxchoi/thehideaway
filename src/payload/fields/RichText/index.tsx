@@ -57,11 +57,15 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
   ambientAudioStart: ({ node }: { node: unknown }) => {
     const n = node as { groupId?: string; track?: AnchorTrackRef };
     if (!n.groupId || !n.track) return null;
+    // Placeholder regions (track.trackId === "") are editor-only; skip on
+    // the public frontend.
+    if (!n.track.trackId) return null;
     return <AnchorMarkers kind="start" groupId={n.groupId} track={n.track} />;
   },
   ambientAudioEnd: ({ node }: { node: unknown }) => {
     const n = node as { groupId?: string; track?: AnchorTrackRef };
     if (!n.groupId || !n.track) return null;
+    if (!n.track.trackId) return null;
     return <AnchorMarkers kind="end" groupId={n.groupId} track={n.track} />;
   },
   autolink: ({ node, nodesToJSX }) => {

@@ -105,6 +105,8 @@ function readAnchors(root: HTMLElement): AnchorRef[] {
     try {
       const track = JSON.parse(raw) as AnchorTrackRef;
       if (!track || typeof track.trackId !== "string") continue;
+      // Skip placeholder regions — they're editor-only.
+      if (track.trackId.length === 0) continue;
       refs.push({ el, kind, groupId, track });
     } catch {
       // ignore malformed
