@@ -8,8 +8,9 @@ on exit. HideawayFM is snapshotted on take-over and restored on release.
 
 ---
 
-## Current status (2026-04-20)
+## Current status (2026-04-20, post select-mode overhaul)
 
+**Select-mode overhaul: ✅ landed.** See "Select-mode state machine" below.
 **Frontend runtime: ✅ working end-to-end.**
 - Widget lives inside `Highlightr/DynamicIsland.tsx` as a sibling of the
   bookmark button. Visible at end-of-article (where DynamicBreadcrumb shows).
@@ -376,6 +377,127 @@ Delete the `AmbientAudioFeature()` call in `Posts/richContent.ts` and the
 `ambientAudioFeature` entry in `fields/Article/Content/index.tsx`.
 Existing documents keep the anchor nodes in their JSON; they simply stop
 rendering. The widget and provider in Highlightr can also be removed.
+
+---
+
+## Select-mode state machine
+
+The editor's select-mode behaves like a calendar date-range picker: every
+interaction either advances the phase, adjusts a boundary, or gracefully
+finalizes the region. Invalid states (overlap, orphan anchor) are
+unreachable by construction.
+
+### Phases
+
+```
+IDLE
+  │ right-click → "Add ambient audio"
+  ▼
+PLACING_START ── commit → PLACING_END ── commit → PICKING_TRACK
+  │ exit (any trigger)          │                    │ track chosen
+  ▼                              ▼                    ▼
+IDLE (finalized)         IDLE (finalized)         SETTLED
+                                                       │
+                                                       │ exit trigger
+                                                       ▼
+                                                     IDLE
+```
+
+### Exit-to-finalize (never destructive)
+
+Every exit path calls `$finalizePlacement` with this resolution:
+
+| State at exit | Result |
+|---|---|
+| 0 anchors   | Both placed at viewport-center block edges. |
+| 1 anchor    | Missing one placed at end-of-block of the existing anchor. |
+| 2 anchors   | Left as-is. |
+| No track    | `PLACEHOLDER_TRACK` (track.trackId === ""). |
+
+Placeholder regions render editor-only; the frontend JSX converter and
+the runtime provider both skip them.
+
+### Exit triggers
+
+| Trigger | Detected via |
+|---|---|
+| Esc | `KEY_DOWN_COMMAND` |
+| Enter while settled/picking | `KEY_DOWN_COMMAND` |
+| Typed key during select-mode | `KEY_DOWN_COMMAND` at CRITICAL priority — finalize synchronously, return `false`, keystroke flows through |
+| Outside-click | Document-level `pointerdown` capture |
+| Page hide / route change | `window.addEventListener("pagehide", ...)` |
+| Re-invoke "Add ambient audio" | ContextMenu action calls finalize before re-arming |
+
+### Commit paths (while in placing phases)
+
+| Input | Behavior |
+|---|---|
+| ⌘⏎ or Enter | `commitFocused()` |
+| Option/Alt + Arrow | Debounced commit (180ms) |
+| Click CommitChip ("Set as start/end") | Primary mobile path |
+
+### CaretNavigator
+
+Listens to `SELECTION_CHANGE_COMMAND`, computes the block-level ancestor
+of the caret as the "focused node", writes it to the store, and renders
+a thin outline + 700ms dwell tooltip.
+
+### Anchor interactions (settled phase)
+
+- **Click anchor** → `AnchorContextMenu` with Change track / Adjust range /
+  Reload track info / Remove this region.
+- **Pointer-hold 250ms on anchor** → `AnchorDragReorder` takes over;
+  indicator bar shows proposed slot; cannot cross partner anchor.
+- **Click inside range (not on anchor)** → opens 1.4s / 96px reset window;
+  second click nearby → remove both anchors, re-enter `placingStart`.
+
+### Timing constants
+
+```ts
+CARET_DWELL_MS = 700
+OPT_ARROW_COMMIT_DEBOUNCE_MS = 180
+RESET_WINDOW_MS = 1400
+RESET_WINDOW_RADIUS_PX = 96
+DRAG_HOLD_MS = 250
+ARM_GRACE_MS (runtime) = 1000
+```
+
+### Invariants
+
+- **Overlap impossible**: `$validateProposedRange` runs post-commit with
+  rollback.
+- **Orphan impossible**: every cancel path flows through
+  `$finalizePlacement`, which always yields a valid (possibly placeholder)
+  region.
+- **Editor lock**: select-mode KEY_DOWN listener at
+  `COMMAND_PRIORITY_CRITICAL` catches all text-entry keystrokes and
+  converts them into exit-finalize + passthrough.
+
+### File map (additions)
+
+```
+plugin/
+├── CaretNavigator.tsx            focused-node outline + dwell tooltip
+├── CommitChip.tsx                floating "Set as start/end" button
+├── ResetPrompt.tsx               "Tap again nearby to reset" tooltip
+├── AnchorContextMenu.tsx         Notion-style menu on anchor tap
+├── AnchorDragReorder.tsx         hold-250ms drag, partner-anchor guard
+├── AmbientAudioPlugin.tsx        REWRITTEN — state-machine driver
+└── SelectModeOverlay.tsx         UPDATED — shows phase + hint
+
+store/
+└── ambientStore.tsx              EXTENDED — phase, focusedNodeKey,
+                                  pendingStart/EndKey, resetWindow,
+                                  dragState, anchorMenu*
+
+utils/
+└── anchors.ts                    EXTENDED — PLACEHOLDER_TRACK,
+                                  $findBlockAncestor,
+                                  $findViewportCenterBlock,
+                                  $validateProposedRange,
+                                  $insertAnchorAtBlockStart/End,
+                                  $finalizePlacement, $reorderAnchor
+```
 
 ---
 
