@@ -875,6 +875,7 @@ export function Root({
 
   return (
     <DialogPrimitive.Root
+      modal={modal}
       defaultOpen={defaultOpen}
       onOpenChange={(open) => {
         if (!dismissible && !open) return;

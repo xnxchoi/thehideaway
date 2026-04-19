@@ -1,11 +1,12 @@
 import { Missing } from "@/components/layouts/Missing/Missing";
 import { LinkUnderlined } from "@/components/core/Link/Link";
+import { RPage } from "@/components/UX/Transition";
 
 import { MissingLayout } from "../../components/layouts/Missing/lays.client";
 
 const ItemNotFound = () => {
   return (
-    <div className="h-screen w-screen">
+    <RPage type="404" slug={["404"]}>
       <div className="title-wrapper fixed h-full w-full">
         <MissingLayout />
       </div>
@@ -21,7 +22,7 @@ const ItemNotFound = () => {
           Come Back.
         </LinkUnderlined>
       </div>
-    </div>
+    </RPage>
   );
 };
 export default ItemNotFound;

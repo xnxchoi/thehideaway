@@ -19,7 +19,10 @@ import { HeaderThemeProvider } from "./HeaderTheme";
 import { QueryProvider } from "./QueryProvider";
 import { SessionProvider } from "./Session/providers";
 import { CMDKeyManager, ThemeProvider } from "./Theme";
-import { TransitionProvider } from "./TransitionProvider";
+const TransitionProvider = dynamic(
+  () => import("./TransitionProvider").then((r) => r.TransitionProvider),
+  { ssr: false }
+);
 
 const motion = () => import("./Motion").then((r) => r.default);
 const MiddleMan = dynamic(

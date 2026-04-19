@@ -11,7 +11,7 @@ export default function TextArea({
   maxLength?: number;
   placeholder?: string;
 }) {
-  const field = useFieldContext<string>();
+  const field = useFieldContext<string | undefined>();
   const errors = field.state.meta.errors as unknown as Array<{
     code: string;
     inclusive: boolean;
@@ -55,7 +55,7 @@ export default function TextArea({
           <span />
         )}
         <span className="text-right text-xs text-muted-foreground/35 tabular-nums">
-          {field.state.value.length}/{maxLength}
+          {field.state.value?.length || 0}/{maxLength}
         </span>
       </div>
     </>

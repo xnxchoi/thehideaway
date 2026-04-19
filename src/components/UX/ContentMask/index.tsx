@@ -146,10 +146,10 @@ export function ContentMask(l: { children: ReactNode }) {
     }
     sequence.push(
       [
-        motionCallback({
-          onBackwards: () => setIsAnimatingOutPreloader(false),
-          onForwards: () => setIsAnimatingOutPreloader(true)
-        }),
+        motionCallback(
+          () => setIsAnimatingOutPreloader(false),
+          () => setIsAnimatingOutPreloader(true)
+        ),
         { duration: 0 }
       ],
       [
@@ -204,11 +204,9 @@ export function ContentMask(l: { children: ReactNode }) {
         }
       ],
       [
-        motionCallback({
-          onForwards: () => {
-            setIsAnimatingOutPreloader(false);
-            setIsPreloader(false);
-          }
+        motionCallback(() => {
+          setIsAnimatingOutPreloader(false);
+          setIsPreloader(false);
         }),
         {
           duration: 0

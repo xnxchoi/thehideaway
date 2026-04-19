@@ -2,12 +2,12 @@ import type { User } from "@/payload-types";
 import { getUserBookmarks } from "@/payload/collections/Bookmarks/getUserBookmarks";
 import { hideIfNotAdmin } from "@/payload/collections/helpers";
 import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import { createProfileHook } from "@/payload/collections/Profile/operations/createProfile";
 import { getUserFollowers } from "@/payload/collections/Users/endpoints/getUserFollowers";
 import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserFollows";
 import { onboardingHandler } from "@/payload/collections/Users/endpoints/onboardingHandler";
 import { GotUser } from "@/payload/collections/Users/endpoints/userFieldSelect";
 import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
-import { createProfileHook } from "@/payload/collections/Profile/operations/createProfile";
 import {
   revalidateDelete as afterDeleteUser,
   revalidateUser
@@ -380,7 +380,7 @@ export const Users: CollectionConfig = {
       handler: getUserFollowers
     },
     {
-      path: "/onboarding",
+      path: "/:id/onboarding",
       method: "post",
       handler: onboardingHandler
     },

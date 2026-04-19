@@ -6,7 +6,13 @@ import { BookmarkFilledIcon, BookmarkIcon } from "@radix-ui/react-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Where } from "payload";
 import { stringify } from "qs-esm";
-import { MouseEventHandler, useCallback, useEffect, useRef, useState } from "react";
+import {
+  MouseEventHandler,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import { useShallow } from "zustand/shallow";
 import { MotionBtn } from "../../core/Button";
 
@@ -22,10 +28,7 @@ async function fetchBookmarkExists(
   userId: string
 ): Promise<boolean> {
   const where: Where = {
-    and: [
-      { "target.value": { equals: itemId } },
-      { user: { equals: userId } }
-    ]
+    and: [{ "target.value": { equals: itemId } }, { user: { equals: userId } }]
   };
   const r = await fetch(
     `/api/bookmarks/count/${stringify({ where }, { addQueryPrefix: true })}`
@@ -60,10 +63,7 @@ async function deleteBookmarkRequest(
   userId: string
 ): Promise<Bookmark | null> {
   const where: Where = {
-    and: [
-      { "target.value": { equals: itemId } },
-      { user: { equals: userId } }
-    ]
+    and: [{ "target.value": { equals: itemId } }, { user: { equals: userId } }]
   };
   const args = stringify({ where }, { addQueryPrefix: true });
   const r = await fetch(`/api/bookmarks/${args}`, {
@@ -88,7 +88,11 @@ export const BookmarkButton = ({
   const qc = useQueryClient();
   const queryKey = ["bookmark", { collectionSlug, itemId, userId }] as const;
 
-  const { data: hasBookmark, isPending, isFetching } = useQuery({
+  const {
+    data: hasBookmark,
+    isPending,
+    isFetching
+  } = useQuery({
     queryKey,
     queryFn: () => fetchBookmarkExists(itemId, userId),
     enabled: !!userId && !!itemId
@@ -105,7 +109,10 @@ export const BookmarkButton = ({
   const createMutation = useMutation({
     mutationFn: () => createBookmarkRequest(collectionSlug, itemId, userId),
     onSuccess: (doc) => {
-      addBookmark({ collection: doc.target.relationTo, id: doc.target.value as string });
+      addBookmark({
+        collection: doc.target.relationTo,
+        id: doc.target.value as string
+      });
       qc.setQueryData(queryKey, true);
     }
   });
@@ -114,7 +121,10 @@ export const BookmarkButton = ({
     mutationFn: () => deleteBookmarkRequest(itemId, userId),
     onSuccess: (doc) => {
       if (doc) {
-        removeBookmark({ collection: doc.target.relationTo, id: doc.target.value as string });
+        removeBookmark({
+          collection: doc.target.relationTo,
+          id: doc.target.value as string
+        });
       }
       qc.setQueryData(queryKey, false);
     }
@@ -133,10 +143,12 @@ export const BookmarkButton = ({
     [hasBookmark, createMutation, deleteMutation]
   );
 
-  const isLoading = isFetching || createMutation.isPending || deleteMutation.isPending;
+  const isLoading =
+    isFetching || createMutation.isPending || deleteMutation.isPending;
 
   return (
     <MotionBtn
+      key={"widget-bookmark"}
       transition={{ type: "spring", bounce: 0.4 }}
       whileTap={{ scale: 0.88 }}
       whileHover={{ scale: 1.12 }}

@@ -27,7 +27,7 @@ export const Article = (props: ArticleWrapperProps) => {
     >
       <SplitCard post={post} />
       <div className="mx-auto my-[28px] w-full max-w-(--maxContainerWidth) px-0 py-[32px]">
-	      <div className="rp-content &>*:col-[main] [&>aside]:col-4">
+        <div className="rp-content &>*:col-[main] [&>aside]:col-4">
           {post.disabled ? (
             <Locked />
           ) : (

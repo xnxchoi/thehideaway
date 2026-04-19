@@ -1,20 +1,8 @@
 "use client";
 
-import { SPRING_EASE, TE } from "@/constants/animations";
-import { OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import {
-  MotionValue,
-  animate,
-  useMotionValue,
-  useTransform,
-  useSpring
-} from "motion/react";
-import { useEffect, useMemo, useRef } from "react";
 import { usePlayState } from "@/providers/HideawayFM/hooks";
-import { Color as ThreeColor, Scene } from "three";
-
-import { useTheme } from "@/providers/Theme";
+import { PerspectiveCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { AmbientGradientMesh } from "./AmbientGradientMesh";
 
 // Nearly opaque always — shader itself renders the bg color, not a color overlay

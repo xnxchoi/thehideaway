@@ -2,6 +2,10 @@ import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 
 import { CodeBlock, Props as CodeBlockProps } from "@/blocks/Code/Component";
 import { PostedImage } from "@/blocks/ImageBlock/Component";
+import {
+  AnchorMarkers,
+  type AnchorTrackRef
+} from "@/components/UX/AmbientAudio/AnchorMarkers";
 import { cn } from "@/lib/utils";
 
 import type {
@@ -50,6 +54,16 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
   defaultConverters
 }) => ({
   ...defaultConverters,
+  ambientAudioStart: ({ node }: { node: unknown }) => {
+    const n = node as { groupId?: string; track?: AnchorTrackRef };
+    if (!n.groupId || !n.track) return null;
+    return <AnchorMarkers kind="start" groupId={n.groupId} track={n.track} />;
+  },
+  ambientAudioEnd: ({ node }: { node: unknown }) => {
+    const n = node as { groupId?: string; track?: AnchorTrackRef };
+    if (!n.groupId || !n.track) return null;
+    return <AnchorMarkers kind="end" groupId={n.groupId} track={n.track} />;
+  },
   autolink: ({ node, nodesToJSX }) => {
     const children = nodesToJSX({
       nodes: node.children

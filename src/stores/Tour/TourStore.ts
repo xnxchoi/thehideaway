@@ -3,6 +3,8 @@
 import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
+import type { NudgeSpec, TargetMeta } from "./types";
+
 // ─── Registration Tour ────────────────────────────────────────────────────────
 
 export type RegistrationStep =
@@ -101,6 +103,19 @@ export type TourStore = {
   ifNext: () => void;
   ifPrev: () => void;
   ifGoTo: (index: number) => void;
+
+  // ── nudge engine ────────────────────────────────────────────────────────
+  nudgeQueue: NudgeSpec[];
+  activeNudge: NudgeSpec | null;
+  targetRegistry: Map<string, TargetMeta>;
+  sessionDismissed: Set<string>;
+
+  enqueueNudge: (spec: NudgeSpec) => void;
+  dismissNudge: (id: string, opts?: { permanent?: boolean }) => void;
+  registerTarget: (meta: TargetMeta) => void;
+  unregisterTarget: (id: string) => void;
+  markSessionDismissed: (key: string) => void;
+  hasSessionDismissed: (key: string) => boolean;
 };
 
 export const createTourStore = () =>
@@ -110,7 +125,11 @@ export const createTourStore = () =>
       regActive: false,
       regStep: "welcome",
       regSteps: REG_STEPS,
-      regPending: { needsIdentity: false, hasPreexistingData: false, severity: "complete" },
+      regPending: {
+        needsIdentity: false,
+        hasPreexistingData: false,
+        severity: "complete"
+      },
       regDismissed: false,
       regFromPath: null,
       regBannerMode: false,
@@ -168,6 +187,73 @@ export const createTourStore = () =>
       ifGoTo: (index) =>
         set({
           ifIndex: Math.max(0, Math.min(index, INTERFACE_TARGETS.length - 1))
-        })
+        }),
+
+      // ── Nudge engine ──────────────────────────────────────────────────────
+      nudgeQueue: [],
+      activeNudge: null,
+      targetRegistry: new Map(),
+      sessionDismissed: new Set(),
+
+      enqueueNudge: (spec) => {
+        const { nudgeQueue, activeNudge, sessionDismissed } = get();
+        if (spec.dismissKey && sessionDismissed.has(spec.dismissKey)) return;
+        if (nudgeQueue.some((n) => n.id === spec.id)) return;
+        if (activeNudge?.id === spec.id) return;
+        const next = [...nudgeQueue, spec].sort(
+          (a, b) => (b.priority ?? 0) - (a.priority ?? 0)
+        );
+        if (!activeNudge) {
+          set({ activeNudge: next[0], nudgeQueue: next.slice(1) });
+        } else {
+          set({ nudgeQueue: next });
+        }
+      },
+
+      dismissNudge: (id, opts) => {
+        const { activeNudge, nudgeQueue, sessionDismissed } = get();
+        if (activeNudge?.id !== id) {
+          set({ nudgeQueue: nudgeQueue.filter((n) => n.id !== id) });
+          return;
+        }
+        const [head, ...rest] = nudgeQueue;
+        const nextDismissed = (() => {
+          if (!opts?.permanent || !activeNudge.dismissKey)
+            return sessionDismissed;
+          const clone = new Set(sessionDismissed);
+          clone.add(activeNudge.dismissKey);
+          return clone;
+        })();
+        set({
+          activeNudge: head ?? null,
+          nudgeQueue: rest,
+          sessionDismissed: nextDismissed
+        });
+      },
+
+      registerTarget: (meta) => {
+        const prev = get().targetRegistry;
+        const next = new Map(prev);
+        next.set(meta.id, meta);
+        set({ targetRegistry: next });
+      },
+
+      unregisterTarget: (id) => {
+        const prev = get().targetRegistry;
+        if (!prev.has(id)) return;
+        const next = new Map(prev);
+        next.delete(id);
+        set({ targetRegistry: next });
+      },
+
+      markSessionDismissed: (key) => {
+        const prev = get().sessionDismissed;
+        if (prev.has(key)) return;
+        const next = new Set(prev);
+        next.add(key);
+        set({ sessionDismissed: next });
+      },
+
+      hasSessionDismissed: (key) => get().sessionDismissed.has(key)
     }))
   );

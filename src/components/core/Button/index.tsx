@@ -130,7 +130,7 @@ export const MotionPillButton = ({
 
   return (
     <m.button
-      disabled={disabled}
+      aria-disabled={disabled}
       className={cn(
         `flex appearance-none items-center justify-center overflow-hidden border-[0.1rem] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
         size === "sm"
@@ -190,10 +190,10 @@ export const MotionPill = ({
       className={cn(
         `flex appearance-none items-center justify-center overflow-hidden border-[0.1rem] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
         size === "sm"
-          ? "h-[2.4rem] max-md:h-[2rem]"
+          ? "h-[2.4rem] rounded-[2.4rem] max-md:h-[2rem] max-md:rounded-[2rem]"
           : size === "md"
-            ? "h-[3.2rem] max-md:h-[2.56rem]"
-            : "h-[3.6rem] text-3xl max-md:h-[2.88rem]",
+            ? "h-[3.2rem] rounded-[3.2rem] max-md:h-[2.56rem] max-md:rounded-[2.56rem]"
+            : "h-[3.6rem] rounded-[3.6rem] text-3xl max-md:h-[2.56rem] max-md:rounded-[2.88rem]",
         inverted
           ? "bg-button-background-inverted text-nav-button-inverted/90 hover:border-nav-button-border-inverted/80 data-[hover=true]:border-nav-button-border-inverted/80"
           : "bg-button-background text-nav-button/90 hover:border-nav-button-border/80 data-[hover=true]:border-nav-button-border/80",

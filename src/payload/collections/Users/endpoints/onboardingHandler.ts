@@ -1,19 +1,25 @@
+import { RegistrationStep } from "@/stores/Tour/TourStore";
 import { User } from "@payload-types";
 import { NextResponse } from "next/server";
 import { addDataAndFileToRequest, PayloadHandler } from "payload";
 import { z } from "zod";
 
-type OnboardingBody = z.infer<typeof reqSchema>;
+export type OnboardingBody = z.infer<typeof reqSchema>;
+export type StepAndParams<T extends RegistrationStep = RegistrationStep> = {
+  [Z in T]: Extract<OnboardingBody, { step: Z }>;
+}[T];
 const reqSchema = z.discriminatedUnion("step", [
   z.object({
     step: z.literal("welcome"),
-    fields: z.object({
-      firstName: z.string().optional(),
-      lastName: z.string().optional(),
-      bio: z.string().max(500).optional(),
-      link: z.url().optional(),
-      location: z.string().optional()
-    }),
+    fields: z
+      .object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        bio: z.string().max(500).optional(),
+        link: z.url().optional(),
+        location: z.string().optional()
+      })
+      .optional(),
     complete: z.boolean().optional()
   }),
   z.object({
@@ -21,15 +27,20 @@ const reqSchema = z.discriminatedUnion("step", [
     fields: z.object({
       firstName: z.string().optional(),
       lastName: z.string().optional(),
-      bio: z.string().max(500).optional()
+      link: z.url().optional(),
+      location: z.string().optional(),
+      bio: z.string().max(500).nullish()
     }),
     complete: z.boolean().optional()
   }),
   z.object({
     step: z.literal("details"),
     fields: z.object({
-      link: z.url().optional(),
-      location: z.string().optional()
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
+      bio: z.string().max(500).nullish(),
+      link: z.url().nullish(),
+      location: z.string().nullish()
     }),
     complete: z.boolean().optional()
   }),
@@ -38,43 +49,72 @@ const reqSchema = z.discriminatedUnion("step", [
     fields: z.object({
       firstName: z.string().optional(),
       lastName: z.string().optional(),
-      bio: z.string().max(500).optional(),
-      link: z.url().optional(),
-      location: z.string().optional()
+      bio: z.string().max(500).nullish(),
+      link: z.url().nullish(),
+      location: z.string().nullish()
     }),
     complete: z.boolean().optional()
   })
 ]);
 export const onboardingHandler: PayloadHandler = async (req) => {
   await addDataAndFileToRequest(req);
-  const { payload, context, user, data } = req;
-  try {
-    const payload = req.payload;
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { payload, context, user, data, routeParams } = req;
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const id = routeParams?.id;
+  if (!id || typeof id !== "string" || !z.regexes.uuid7.test(id)) {
+    return Response.json({ error: "Invalid user id" }, { status: 400 });
+  }
+  const userId = user.id;
+  if (id !== userId) {
+    if (user.role !== "admin") {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const userId = user.id;
+  }
+  try {
     const body: OnboardingBody = reqSchema.parse(data);
 
     const ctx = context;
     const passedData: Partial<User> = {};
     if (body.fields) {
       if ("firstName" in body.fields) {
-        !!body.fields.firstName &&
-          (passedData.firstName = body.fields.firstName);
+        if (
+          !!body.fields.firstName &&
+          body.fields.firstName.length > 0 &&
+          body.fields.firstName !== user.firstName
+        ) {
+          passedData.firstName = body.fields.firstName;
+        }
       }
       if ("lastName" in body.fields) {
-        !!body.fields.lastName && (passedData.lastName = body.fields.lastName);
+        if (
+          !!body.fields.lastName &&
+          body.fields.lastName !== user.lastName &&
+          body.fields.lastName.length > 0
+        ) {
+          passedData.lastName = body.fields.lastName;
+        }
       }
       if ("bio" in body.fields) {
-        !!body.fields.bio && (passedData.bio = body.fields.bio);
+        if (body.fields.bio !== user.bio) {
+          passedData.bio =
+            !!body.fields.bio && body.fields.bio.length > 0
+              ? body.fields.bio
+              : null;
+        }
       }
       if ("link" in body.fields) {
-        !!body.fields.link && (passedData.link = body.fields.link);
+        passedData.link =
+          !!body.fields.link && body.fields.link.length > 0
+            ? body.fields.link
+            : null;
       }
       if ("location" in body.fields) {
-        !!body.fields.location && (passedData.location = body.fields.location);
+        passedData.location =
+          !!body.fields.location && body.fields.location.length > 0
+            ? body.fields.location
+            : null;
       }
     }
     if (body.complete) {
@@ -91,7 +131,8 @@ export const onboardingHandler: PayloadHandler = async (req) => {
           ...passedData,
           onboarded: true,
           onboardingProgress: null
-        }
+        },
+        req
       });
 
       return NextResponse.json({ ok: true, completed: true });
@@ -131,7 +172,8 @@ export const onboardingHandler: PayloadHandler = async (req) => {
             fields: body.fields ?? prev.fields ?? {},
             updatedAt: new Date().toISOString()
           }
-        }
+        },
+        req
       });
 
       return NextResponse.json({ ok: true, step: body.step });
@@ -143,7 +185,8 @@ export const onboardingHandler: PayloadHandler = async (req) => {
       id: userId,
       overrideAccess: true,
       context: ctx,
-      data: { onboarded: true }
+      data: { onboarded: true },
+      req
     });
 
     return NextResponse.json({ ok: true });

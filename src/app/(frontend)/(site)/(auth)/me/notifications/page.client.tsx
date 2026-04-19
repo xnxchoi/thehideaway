@@ -8,15 +8,14 @@ import { useEffect } from "react";
 
 export default function PageClient({ children }: { children: ReactNode }) {
   const setHeaderVisible = useRPStore((r) => r.setHeaderVisibility);
-  const setSideDrawerRendered = useRPStore((r) => r.setSideDrawerRendered);
+  const setSideDrawerOpen = useRPStore((r) => r.setSideDrawerOpen);
   useEffect(() => {
     setHeaderVisible(false);
-    setSideDrawerRendered(false);
+    setSideDrawerOpen(false);
     return () => {
       setHeaderVisible(true);
-      setSideDrawerRendered(true);
     };
-  }, [setHeaderVisible, setSideDrawerRendered]);
+  }, [setHeaderVisible]);
 
   return (
     <RPage type="account" slug={["notifications"]}>

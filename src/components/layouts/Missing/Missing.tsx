@@ -2,9 +2,13 @@
 import fragmentShader from "@/components/layouts/Missing/shader/fragment.glsl";
 import vertexShader from "@/components/layouts/Missing/shader/vertex.glsl";
 import { TWEEN_EASE } from "@/constants/animations";
+import { useRPStore } from "@/providers/RP_Pro";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { motionCallback } from "@/utilities/motionHelpers";
+import { useTexture } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { gsap } from "gsap/all";
-import { AnimatePresence } from "motion/react";
+import { animate, AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useEffect, useEffectEvent, useRef } from "react";
 import "./mis.css";
@@ -26,7 +30,7 @@ import { useShallow } from "zustand/shallow";
 export function Missing() {
   const is404 = useVoyageur(useShallow((l) => l.is404));
   const has = useRef(false);
-
+  const setHeaderTransition = useRPStore((r) => r.setHeaderTransition);
   const curt = useRef<HTMLDivElement>(null!);
   const initializeSignage = useEffectEvent(() => {
     const canvas = curt.current;
@@ -48,7 +52,10 @@ export function Missing() {
     const aspect = w / h;
     const camera = new OrthographicCamera(-aspect, aspect, 1, -1, 0.1, 1000);
 
-    const renderer = new WebGLRenderer({});
+    const renderer = new WebGLRenderer({
+      alpha: true,
+      powerPreference: "high-performance"
+    });
     canvas.appendChild(renderer.domElement);
 
     // Plane geometry covering the full viewport
@@ -81,10 +88,9 @@ export function Missing() {
       _ = canvass.width / m,
       v = canvass.height / g,
       y = Math.min(_, v);
-    const fillstyle = gsap.getProperty("html", "--color-rouge-600");
     (ctx.setTransform(y, 0, 0, y, 0, 0),
       ctx.translate((canvass.width - m * y) / 2, (canvass.height - g * y) / 2),
-      (ctx.fillStyle = `${fillstyle}`),
+      (ctx.fillStyle = `oklch(46.3% 0.187 28.3)`),
       ctx.fill(path));
     const txttr = new CanvasTexture(canvass);
 
@@ -137,15 +143,30 @@ export function Missing() {
       renderer.render(scene, camera);
       rafID = requestAnimationFrame(update);
     };
-    gsap.to(svgEl, {
-      autoAlpha: 0,
-      duration: 1,
-      ease: "power4.inOut",
-      onStart: () => {
-        resize();
-        update();
-      }
-    });
+    animate([
+      [
+        motionCallback(() => {
+          setHeaderTransition("slide");
+          resize();
+          update();
+        }),
+        {
+          duration: 0,
+          at: 0
+        }
+      ],
+      [
+        svgEl,
+        {
+          opacity: 0
+        },
+        {
+          duration: 1,
+          ease: TWEEN_EASE.power4.inOut,
+          at: 0
+        }
+      ]
+    ]);
 
     const onPointerMove = (e: MouseEvent | PointerEvent) => {
       vMouse.set(
@@ -204,7 +225,8 @@ export function Missing() {
   }, [is404]);
 
   return (
-    <AnimatePresence>
+    <>
+      <Canvas></Canvas>
       {is404 && (
         <m.div
           ref={curt}
@@ -221,8 +243,8 @@ export function Missing() {
             }
           }}
           exit={{ opacity: 0, visibility: "hidden" }}
-        />
+        ></m.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

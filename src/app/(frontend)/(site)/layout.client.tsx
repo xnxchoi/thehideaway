@@ -21,10 +21,9 @@ export function Layout(l: { children: ReactNode }) {
   }, [isPreloader, canInteract]);
 
   return (
-    <div className="rp-container" data-themed={"background-color"}>
       <AnimatePresence mode="sync" propagate={false}>
         {children}
       </AnimatePresence>
-    </div>
+
   );
 }

@@ -3,6 +3,10 @@ import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 import { CodeBlock } from "@/blocks/Code/Component";
 import { PostedImage } from "@/blocks/ImageBlock/Component";
 import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
+import {
+  AnchorMarkers,
+  type AnchorTrackRef
+} from "@/components/UX/AmbientAudio/AnchorMarkers";
 import type {
   CallToActionBlock as CTABlockProps,
   CodeBlock as CodeBlockProps,
@@ -171,6 +175,39 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
               return null;
           }
         } else {
+          const typedNode = node as unknown as {
+            type: string;
+            groupId?: string;
+            track?: AnchorTrackRef;
+          };
+          if (
+            typedNode.type === "ambientAudioStart" &&
+            typedNode.groupId &&
+            typedNode.track
+          ) {
+            return (
+              <AnchorMarkers
+                key={index}
+                kind="start"
+                groupId={typedNode.groupId}
+                track={typedNode.track}
+              />
+            );
+          }
+          if (
+            typedNode.type === "ambientAudioEnd" &&
+            typedNode.groupId &&
+            typedNode.track
+          ) {
+            return (
+              <AnchorMarkers
+                key={index}
+                kind="end"
+                groupId={typedNode.groupId}
+                track={typedNode.track}
+              />
+            );
+          }
           switch (node.type) {
             case "linebreak": {
               return <br className="col-start-2" key={index} />;

@@ -1,5 +1,6 @@
 "use client";
 
+import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import {
@@ -11,7 +12,12 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { useLenis } from "lenis/react";
-import { useDragControls, useMotionValue, useSpring } from "motion/react";
+import {
+  useDragControls,
+  useMotionValue,
+  useSpring,
+  useTransform
+} from "motion/react";
 import * as m from "motion/react-m";
 import {
   useCallback,
@@ -165,16 +171,26 @@ export const ScrollIndicator = () => {
     },
     [dragControls, endDrag, setCursor]
   );
-
-  useGSAP(() => {
-    const tovalue = pageIsTransitioning ? 0 : 1;
-    gsap.to(scrolle.current, {
-      autoAlpha: tovalue,
-      scaleY: tovalue,
-      duration: 0.2,
-      ease: "power4.inOut"
-    });
-  }, [pageIsTransitioning]);
+  const pageTransitionValue = useMotionValue(pageIsTransitioning);
+  useEffect(() => {
+    pageTransitionValue.set(pageIsTransitioning);
+  }, [pageIsTransitioning, pageTransitionValue]);
+  const _scrollScale = useTransform(() =>
+    pageTransitionValue.get() ? 0 : 1 + 0
+  );
+  const scale = useSpring(_scrollScale, {
+    ...SPRING_EASE.power4.inOut,
+    visualDuration: 0.2
+  });
+  // useGSAP(() => {
+  //   const tovalue = pageIsTransitioning ? 0 : 1;
+  //   gsap.to(scrolle.current, {
+  //     autoAlpha: tovalue,
+  //     scaleY: tovalue,
+  //     duration: 0.2,
+  //     ease: "power4.inOut"
+  //   });
+  // }, [pageIsTransitioning]);
 
   const [show, setShow] = useState(true);
   const layoutType = useVoyageur((l) => l.layoutType);

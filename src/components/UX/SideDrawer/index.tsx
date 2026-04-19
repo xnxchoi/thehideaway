@@ -6,14 +6,21 @@ import { useIsMobile } from "@/providers/MiddleMan";
 import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { AnimatePresence, useMotionValue, useSpring } from "motion/react";
+import {
+  AnimatePresence,
+  MotionValue,
+  useMotionValue,
+  useSpring,
+  useTransform
+} from "motion/react";
 import * as m from "motion/react-m";
 import {
   useCallback,
   useEffect,
   useRef,
   useState,
-  type ReactNode
+  type ReactNode,
+  useMemo
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { Controlbar } from "../Controlbar";
@@ -220,30 +227,46 @@ export const SideDrawer = () => {
     };
   }, [isMobile, setSideDrawerOpen, toggleSideDrawer]);
   const [doo, setDoo] = useState(false);
-  const borderTopRad = useMotionValue(16);
+  const mobileValue = useMotionValue(isMobile);
+  useEffect(() => {
+    mobileValue.set(isMobile);
+  }, [isMobile, mobileValue]);
+  const sidebarStateValue = useMotionValue(open);
+  useEffect(() => {
+    sidebarStateValue.set(open);
+  }, [open, sidebarStateValue]);
+  const borderTopRad = useTransform((): number => {
+    const mb = mobileValue.get(),
+      op = sidebarStateValue.get();
+    if (mb) {
+      return op ? 16 : 0;
+    } else {
+      return 16;
+    }
+  });
+  const sd = useMemo(() => SIDE_DRAWER_LINKS, []);
   const borderTopRadius = useSpring(borderTopRad, {
     ...SPRING_EASE.power2.out,
     stiffness: 1000,
     damping: 40,
     visualDuration: 0.5
   });
-  const borderBottomRad = useMotionValue(16);
+  const borderBottomRad = useTransform((): number => {
+    const mb = mobileValue.get(),
+      op = sidebarStateValue.get();
+    if (mb) {
+      return 16;
+    } else {
+      return 16;
+    }
+  });
   const borderBottomRadius = useSpring(borderBottomRad, {
     ...SPRING_EASE.power2.out,
     stiffness: 1000,
     damping: 40,
     visualDuration: 0.5
   });
-  useEffect(() => {
-    if (!isMobile) return;
-    if (open) {
-      borderTopRad.set(16);
-      borderBottomRad.set(16);
-    } else {
-      borderTopRad.set(0);
-      borderBottomRad.set(16);
-    }
-  }, [borderBottomRad, borderTopRad, isMobile, open]);
+
   useEffect(() => {
     setDoo(snapPoints.length > 0);
   }, [snapPoints]);
@@ -259,7 +282,7 @@ export const SideDrawer = () => {
       onOpenChange={onOpenChange}
       defaultOpen={true}
       snapToSequentialPoint={true}
-      modal={open}
+      modal={false}
       direction={direction}
       onDrag={(e) => {
         setIsDraggingSideDrawer(true);
@@ -320,13 +343,13 @@ export const SideDrawer = () => {
             <AnimatePresence>
               {open && (
                 <m.div className="col-[2/8] row-[3/10] px-4">
-                  <div className="flex flex-col gap-5 font-sans text-[23px]">
-                    {SIDE_DRAWER_LINKS.map((link) => (
+                  <m.div className="flex flex-col gap-5 font-sans text-[23px]">
+                    {sd.map((link) => (
                       <Link key={link.url} href={link.url}>
                         {link.label}
                       </Link>
                     ))}
-                  </div>
+                  </m.div>
                 </m.div>
               )}
             </AnimatePresence>

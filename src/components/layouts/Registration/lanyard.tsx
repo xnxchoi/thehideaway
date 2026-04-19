@@ -1,5 +1,6 @@
 "use client";
 import { Plaque } from "@/components/layouts/Registration/MembershipBadge";
+import { defaultOptions } from "@/components/UX/Tour/Onboard/Form";
 import { useIsMobile } from "@/providers/MiddleMan";
 import {
   Environment,
@@ -12,11 +13,7 @@ import { Physics } from "@react-three/rapier";
 import { useFormContext } from "react-hook-form";
 import { useInView } from "react-intersection-observer";
 import { useStore } from "@tanstack/react-form";
-import {
-  defaultOptions,
-  useAppForm,
-  useTypedAppFormContext
-} from "@/components/UX/Tour/form";
+import { useAppForm, useTypedAppFormContext } from "@/components/UX/Tour/form";
 
 export type MemberCardsType = "BADGE" | "PLATE";
 

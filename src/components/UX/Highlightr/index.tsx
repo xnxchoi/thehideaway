@@ -61,6 +61,8 @@ import {
 import { useShallow } from "zustand/shallow";
 import { Button } from "../../core/Button";
 import { SignedFooter } from "../Signature";
+import { AmbientAudioProvider } from "@/components/UX/AmbientAudio/AmbientAudioProvider";
+import { AmbientAudioWidget } from "@/components/UX/AmbientAudio/AmbientAudioWidget";
 import { DynamicBreadcrumb } from "./DynamicIsland";
 import { FloatHighlightMenu } from "./HighlightMenu";
 import { usePrivateNote } from "./PrivateHighlights";
@@ -87,7 +89,11 @@ export type RangeRect = {
   width: number;
 };
 export const Narrateur = ({ post }: { post: SingleArticle }) => {
-  return <Article post={post} />;
+  return (
+    <AmbientAudioProvider>
+      <Article post={post} />
+    </AmbientAudioProvider>
+  );
 };
 
 const Article = ({
@@ -660,12 +666,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       const from = palettes[fromColor];
       const to = palettes[toColor];
       const sequence: AnimationSequence = [
-        [
-          motionCallback({
-            onForwards: () => removeListeners(targets)
-          }),
-          { duration: 0 }
-        ],
+        [motionCallback(() => removeListeners(targets)), { duration: 0 }],
         [
           targets,
           {
@@ -680,12 +681,12 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
           }
         ],
         [
-          motionCallback({
-            onForwards: () => (
+          motionCallback(
+            () => (
               targets.forEach((e) => e.classList.add("highlighted")),
               addListeners(targets)
             )
-          }),
+          ),
           { duration: 0 }
         ],
         [targets, { backgroundImage: "none" }]
@@ -1037,13 +1038,25 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
       <div className="fixed right-0 bottom-[30px] left-0 z-[120] mx-auto mb-[24px] w-full">
         <div className={"grid grid-cols-[auto_1fr_auto] items-stretch gap-y-5"}>
           <div className="relative col-[2] justify-self-center">
-            <AnimatePresence mode={"sync"} initial={true} propagate={true}>
+            <AnimatePresence
+              mode={"sync"}
+              key={"dynamic-island"}
+              initial={true}
+              propagate={true}
+            >
               {shownDynamicIsland && isAtEnd && (
                 <DynamicBreadcrumb
                   title={post.title}
                   progress={scrollYProgress}
                 >
-                  <ArticleBookmarkButton />
+                  <AnimatePresence
+                    mode="popLayout"
+                    key={"island-widgets"}
+                    initial={true}
+                  >
+                    <AmbientAudioWidget key={"ambient-audio"} />
+                    <ArticleBookmarkButton key={"bookmark-btn"} />
+                  </AnimatePresence>
                 </DynamicBreadcrumb>
               )}
             </AnimatePresence>

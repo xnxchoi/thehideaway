@@ -9,6 +9,7 @@ import { useWindowResize } from "@/utilities/use_window_resize";
 import { wait } from "@/utilities/wait";
 import {
   OrthographicCamera,
+  ScreenQuad,
   shaderMaterial,
   useTexture
 } from "@react-three/drei";
@@ -481,8 +482,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   }, 2);
 
   return (
-    <mesh ref={meshRef} visible={false}>
-      <planeGeometry args={[10, 10]} />
+    <ScreenQuad ref={meshRef} frustumCulled={false}>
       {/*<ambientShader*/}
       {/*  */}
       {/*  side={FrontSide}*/}
@@ -491,6 +491,6 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
 
       {/** @ts-expect-error this fucking thing won't reconcile **/}
       <ambientShader ref={materialRef} side={DoubleSide} />
-    </mesh>
+    </ScreenQuad>
   );
 };

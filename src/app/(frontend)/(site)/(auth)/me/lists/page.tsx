@@ -1,9 +1,10 @@
+import type { Metadata } from "next";
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import { getUserCompilations } from "@/payload/collections/Compilations/actions";
 import { redirect } from "next/navigation";
 import ListsPageClient from "./page.client";
 
-export const metadata = { title: "My Lists" };
+export const generateMetadata = (): Metadata => ({ title: "My Lists" });
 
 export default async function ListsPage() {
   const user = await currentUser();

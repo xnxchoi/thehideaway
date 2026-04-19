@@ -4,7 +4,6 @@ import { useDomCursor } from "@/components/core/cursorWrapper";
 import { RPLinkProps, RPLinkPropsWithRef } from "@/components/core/Link/types";
 import { cn } from "@/lib/utils";
 import { isInternalLink } from "@/utilities/isInternalLink";
-import { useGSAP } from "@gsap/react";
 import { useLenis } from "lenis/react";
 import * as m from "motion/react-m";
 import { Link as NextLink } from "next-transition-router";
@@ -14,8 +13,6 @@ import {
   type ComponentProps,
   MouseEventHandler,
   ReactNode,
-  RefAttributes,
-  use,
   useCallback,
   useEffect,
   useMemo,

@@ -449,7 +449,9 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
         }
       }}
     >
-      <div ref={ref}>{children}</div>
+      <div className={"contents"} ref={ref}>
+        {children}
+      </div>
     </m.div>
   );
 };

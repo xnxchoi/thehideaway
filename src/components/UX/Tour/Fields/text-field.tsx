@@ -13,7 +13,6 @@ export default function TextField({
   const errors = field.state.meta.errors;
   const handleChanger = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      e.preventDefault();
       field.handleChange(e.target.value);
     },
     [field]

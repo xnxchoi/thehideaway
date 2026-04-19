@@ -371,14 +371,14 @@ export const RP_Menu = () => {
           }
         ],
         [
-          motionCallback({
-            onBackwards: () => {
-              setNavIsTransitioning(true);
-            },
-            onForwards: () => {
+          motionCallback(
+            () => {
               setNavIsTransitioning(false);
+            },
+            () => {
+              setNavIsTransitioning(true);
             }
-          })
+          )
         ]
       );
       animate(seq1);
@@ -811,9 +811,7 @@ const RP_Navigator = (
     }
 
     seq.push([
-      motionCallback({
-        onForwards: () => (currentlyFocused.current = activeNavItem.get())
-      }),
+      motionCallback(() => (currentlyFocused.current = activeNavItem.get())),
       {
         duration: 0
       }
