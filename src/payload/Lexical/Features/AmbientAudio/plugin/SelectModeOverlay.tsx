@@ -1,18 +1,24 @@
 "use client";
 
+import { Popover } from "@base-ui/react";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import { AnimatePresence } from "motion/react";
-import * as m from "motion/react-m";
-import { useLayoutEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useRef } from "react";
+
+import { cn } from "@/lib/utils";
 
 import { useAmbientStore } from "../store/ambientStore";
 
+interface VirtualAnchor {
+  getBoundingClientRect: () => DOMRect;
+}
+
 /**
- * Caret-adjacent status pill, Notion-style: a compact indicator floating
- * just above the focused block during placement. TrackPicker owns the UI
- * during `pickingTrack`, and `settled` is implicit — so the overlay only
- * renders while the user is actively navigating to place start or end.
+ * Compact status indicator, shown above the caret during placement. Uses
+ * base-ui Popover with a virtual anchor that resolves in priority order:
+ *   1. focused block (once CaretNavigator has armed)
+ *   2. live window selection rect (while caret is in the editor)
+ *   3. editor root top edge (initial entry, no caret movement yet)
+ * Hidden during `pickingTrack` (TrackPicker owns the UI) and `settled`.
  */
 export function SelectModeOverlay() {
   const [editor] = useLexicalComposerContext();
@@ -22,70 +28,86 @@ export function SelectModeOverlay() {
 
   const active = phase === "placingStart" || phase === "placingEnd";
 
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  // Keep the latest values in a ref so the virtual anchor function (stable
+  // identity for base-ui's positioner) always reads fresh state.
+  const stateRef = useRef({ editor, focusedNodeKey });
+  stateRef.current = { editor, focusedNodeKey };
 
-  useLayoutEffect(() => {
-    if (!active || !focusedNodeKey) {
-      setPos(null);
-      return;
-    }
-    const measure = () => {
-      const el = editor.getElementByKey(focusedNodeKey);
-      if (!el) {
-        setPos(null);
-        return;
+  const virtualAnchor = useMemo<VirtualAnchor>(
+    () => ({
+      getBoundingClientRect: () => {
+        const { editor: ed, focusedNodeKey: fkey } = stateRef.current;
+        if (fkey) {
+          const el = ed.getElementByKey(fkey);
+          if (el) return el.getBoundingClientRect();
+        }
+        if (typeof window !== "undefined") {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            const r = sel.getRangeAt(0).getBoundingClientRect();
+            if (r.top !== 0 || r.left !== 0 || r.width !== 0) return r;
+          }
+        }
+        const root = ed.getRootElement();
+        if (root) {
+          const rr = root.getBoundingClientRect();
+          return new DOMRect(rr.left + 16, rr.top + 16, 0, 0);
+        }
+        return new DOMRect(16, 16, 0, 0);
       }
-      const r = el.getBoundingClientRect();
-      setPos({ top: r.top - 34, left: r.left });
-    };
-    measure();
-    window.addEventListener("scroll", measure, { passive: true });
-    window.addEventListener("resize", measure);
-    return () => {
-      window.removeEventListener("scroll", measure);
-      window.removeEventListener("resize", measure);
-    };
-  }, [editor, focusedNodeKey, active]);
-
-  if (typeof document === "undefined") return null;
+    }),
+    []
+  );
 
   const label = phase === "placingStart" ? "Start" : "End";
-  const visible = active && pos !== null;
 
-  return createPortal(
-    <AnimatePresence initial={false}>
-      {visible ? (
-        <m.div
-          key={phase}
-          role="status"
-          aria-live="polite"
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 4 }}
-          transition={{ type: "spring", bounce: 0.12, visualDuration: 0.22 }}
-          className="pointer-events-none fixed z-[45] flex items-center gap-3 border border-border/40 bg-background/90 px-3 py-1.5 backdrop-blur-md"
-          style={{ top: pos!.top, left: Math.max(8, pos!.left) }}
+  return (
+    <Popover.Root
+      open={active}
+      onOpenChange={(next) => {
+        if (!next && active) exitSelectMode();
+      }}
+      modal={false}
+    >
+      <Popover.Portal>
+        <Popover.Positioner
+          anchor={virtualAnchor}
+          side="top"
+          align="start"
+          sideOffset={8}
+          className="outline-none"
         >
-          <span
-            aria-hidden
-            className="font-mono text-[9px] tracking-[0.24em] text-muted-foreground/50 uppercase"
-          >
-            Ambient
-          </span>
-          <span className="font-mono text-[10px] tracking-widest text-foreground/85 uppercase">
-            {label}
-          </span>
-          <button
-            type="button"
+          <Popover.Popup
+            data-ambient-portal="select-mode-overlay"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={exitSelectMode}
-            className="pointer-events-auto border border-border/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+            className={cn(
+              "z-[45] flex items-center gap-3 origin-[var(--transform-origin)]",
+              "border border-border/40 bg-background/90 px-3 py-1.5 backdrop-blur-md",
+              "transition-[transform,scale,opacity]",
+              "data-[starting-style]:scale-95 data-[starting-style]:opacity-0",
+              "data-[ending-style]:scale-95 data-[ending-style]:opacity-0"
+            )}
           >
-            Esc
-          </button>
-        </m.div>
-      ) : null}
-    </AnimatePresence>,
-    document.body
+            <span
+              aria-hidden
+              className="font-mono text-[9px] tracking-[0.24em] text-muted-foreground/50 uppercase"
+            >
+              Ambient
+            </span>
+            <span className="font-mono text-[10px] tracking-widest text-foreground/85 uppercase">
+              {label}
+            </span>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={exitSelectMode}
+              className="border border-border/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+            >
+              Esc
+            </button>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
