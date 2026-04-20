@@ -4,7 +4,7 @@
 > When `globals.css`, `CLAUDE.md`, and this document disagree, **this document is the source of truth** for design decisions, and drift must be reconciled via the Audit doc (`readmes/DESIGN_SYSTEM_AUDIT.md`).
 > Engineering ground-truth (what actually ships) lives in `src/styles/globals.css`.
 
-**Status:** Iteration 4 — Foundations + structural tokens + component canon + pattern library (layout, sticky header, hero, grid, empty/loading/error states, modals, sheets, popovers, command palette, data tables, navigation). Motion principles, iconography, voice, a11y, and reference criteria follow in Iters 5–6.
+**Status:** Iteration 5 — Foundations + structural tokens + component canon + pattern library + motion principles + iconography + microcopy voice + accessibility commitments + theming policy. Reference criteria and final manifesto polish follow in Iter 6.
 
 ---
 
@@ -34,7 +34,12 @@
 22. [Modals, sheets & popovers](#22-modals-sheets--popovers)
 23. [Command palette (CMDK)](#23-command-palette-cmdk)
 24. [Navigation](#24-navigation)
-25. [Appendix: File Map](#25-appendix-file-map)
+25. [Motion principles](#25-motion-principles)
+26. [Iconography](#26-iconography)
+27. [Microcopy & voice](#27-microcopy--voice)
+28. [Accessibility commitments](#28-accessibility-commitments)
+29. [Theming — light & dark](#29-theming--light--dark)
+30. [Appendix: File Map](#30-appendix-file-map)
 
 ---
 
@@ -1995,7 +2000,587 @@ Footer is editorial — a short essay + three columns + legal line.
 
 ---
 
-## 25. Appendix: File Map
+## 25. Motion principles
+
+Motion at The Hideaway **clarifies relationships** — it never performs. A transition tells you where something came from, where it went, or what it is doing right now. If motion is not answering one of those three questions, it is noise.
+
+### Governing rules
+
+1. **Motion is diegetic.** Every transition models a physical (or spatial) fact — panels come from where they live; scrolling-in reveals what was always there; dismissal goes toward the exit. Elements never teleport.
+2. **Exit is always faster than entry.** Entries deserve to be read; exits should get out of the way. Canonical: `--duration-moderate` in → `--duration-fast` out.
+3. **Bounce is for arrival, not emphasis.** Springs (`bounce: 0.1–0.2`) are used on entry and layout settles. Never on exit, drag, or scroll-linked motion.
+4. **One motion per surface per beat.** If two things need to move, stagger them (≤ 40ms per child, capped at 6 children — after that, collapse into a single grouped reveal).
+5. **No motion for motion's sake.** Looping, idle, "breathing" animations are banned outside the radio player's cassette-reel and the tour's pointer. If you cannot answer *"what does this explain?"*, delete it.
+6. **Scroll-linked motion obeys the viewport, not the clock.** Parallax and scroll-triggers use `IntersectionObserver` or scroll-driven animations — never `setInterval`-driven wrappers.
+
+### The five motion archetypes
+
+Every animation in the app should be one of these five and no more:
+
+| Archetype | Purpose | Canonical tokens | Example |
+|---|---|---|---|
+| **Reveal** | Bringing new content into the current surface | `--duration-moderate` + `--ease-decelerate`, `opacity 0→1 + translateY(8px→0)` | Page transitions, tab content swap, list items on mount |
+| **Dismiss** | Removing content from the current surface | `--duration-fast` + `--ease-accelerate`, `opacity 1→0 + translateY(0→4px)` | Closing toasts, removing highlights, unstaging items |
+| **Arrive** | Introducing a new surface *from elsewhere* | `--duration-moderate` + spring (`bounce: 0.1`) | Modal entry, sheet entry, popover open, notification slide-in |
+| **Carry** | Moving an element that persists between states | `--duration-slow` + `--ease-emphasized` with `layoutId` | Tab indicators, shared-element transitions, expanding cards |
+| **Linger** | A micro-delay that says *"hold, I'm computing"* | `--duration-fast` + `--ease-standard`, ≤ 120ms | Button press states, hover reveals, focus rings settling |
+
+Anything that doesn't map onto one of these five is being over-designed.
+
+### Timing ladder (the only durations we use)
+
+```
+--duration-instant    60ms    pointer-press feedback, focus ring
+--duration-fast      120ms    hover, exit, micro-reveals
+--duration-moderate  220ms    default — modals, panels, tabs
+--duration-slow      360ms    carries, shared elements, hero wipes
+--duration-stately   560ms    once-per-session moments (page chrome, onboarding step advance)
+```
+
+**Never use durations between these values.** Every ad-hoc `duration-300ms` is design drift.
+
+### Easing ladder
+
+```
+--ease-standard      cubic-bezier(0.2, 0, 0, 1)        default — reveal, in-place change
+--ease-decelerate    cubic-bezier(0, 0, 0, 1)           enters, slides-in
+--ease-accelerate    cubic-bezier(0.3, 0, 1, 1)         exits, dismisses, fly-outs
+--ease-emphasized    cubic-bezier(0.2, 0, 0, 1.15)      carries, layout settles (subtle overshoot)
+--ease-linear        linear                             progress bars, scrubbing, scroll-linked only
+```
+
+Any imported easing (`ease-out-power2`, `power3.inOut`, custom GSAP curves) is legacy and should resolve to one of these five via the Audit.
+
+### Stagger rules
+
+```ts
+// Canonical list-entry stagger
+transition={{
+  type: "spring",
+  bounce: 0.1,
+  delay: Math.min(index, 5) * 0.04, // cap at 6 children (240ms max)
+}}
+```
+
+- Cap at **6 children**. After 6, the stagger reads as lag, not rhythm.
+- For > 6 items, use a **single grouped reveal** (container fades/translates once) and let the items inherit.
+- Never stagger on exit. Exits dismiss all children simultaneously at `--duration-fast`.
+
+### Scroll-linked motion
+
+| Use | Don't use |
+|---|---|
+| `IntersectionObserver` for in-view triggers | `scroll` listeners with manual math |
+| CSS `animation-timeline: scroll()` where supported | `requestAnimationFrame` scroll hijacks |
+| GSAP `ScrollTrigger` (already in the stack) for pinned sections | Ad-hoc scroll wrappers reinventing the above |
+| `will-change: transform` *narrowly* and removed after | `will-change: transform` on permanent elements |
+
+Parallax is allowed on hero images and the home page only. Never on list items, cards, or body copy.
+
+### Reduced motion (non-negotiable)
+
+Respect `prefers-reduced-motion: reduce` absolutely. When set:
+
+- **Reveals** collapse to `opacity 0→1` only (no translate).
+- **Arrive/Dismiss** collapse to `opacity` only (no translate, no scale, no spring).
+- **Carry** still uses `layoutId` but with `--duration-instant` — the relationship is preserved, the showmanship is dropped.
+- **Linger** is preserved — it provides affordance feedback.
+- **Scroll-linked motion** is disabled entirely. Parallax is off. Pinned sections become normal-flow sections.
+
+Canonical hook:
+```ts
+// src/hooks/useReducedMotion.ts (canonical — do not re-implement)
+const prefersReducedMotion = useReducedMotion();
+const duration = prefersReducedMotion ? 0 : /* normal duration */;
+```
+
+All Motion (Framer) animations in the app should route through this hook. GSAP timelines should check `gsap.matchMedia({ "(prefers-reduced-motion: reduce)": ... })`.
+
+### Banned motion patterns
+
+- **Looping idle animations** (pulses, breathes, glows) outside the radio-player reel and tour pointer.
+- **Page-load shimmer on content.** We use typographic silence (see §21 loading).
+- **Ken Burns zoom on hero images.** Static is stronger.
+- **Flip-card hovers.** Depth comes from typography and border weight, not 3D.
+- **Count-up numbers.** If a number matters, it is stated; not animated toward.
+- **Auto-playing marquees of logos / testimonials.** The site is not a trade show booth.
+- **Bounce on exit.** Exits use `--ease-accelerate` — nothing else.
+
+### When to reach for GSAP vs. Motion (Framer)
+
+| Task | Use |
+|---|---|
+| Component mount/unmount, layout transitions, shared elements | **Motion** (`motion/react`, `motion/react-m`) |
+| Tab indicators, layout-id shared transitions | **Motion** + `LayoutGroup` |
+| Scroll-pinned sections, multi-step timelines, hero wipes | **GSAP** + `ScrollTrigger` |
+| Physics (radio tape reel, Highlightr confetti-like effects) | **Motion** (`bounce`, spring) or Rapier if 3D |
+| Scrubbable scroll video / hero | **GSAP** `ScrollTrigger` with `scrub: 1` |
+
+Default is Motion. Reach for GSAP only when the timeline is multi-step and scroll-bound — do not sprinkle GSAP into component-level interactions.
+
+---
+
+## 26. Iconography
+
+The Hideaway is typography-first. **Icons are the exception, not the rule** — most UI labels should be words. When an icon must appear, it behaves like a piece of type, not decoration.
+
+### Icon set policy
+
+**Canonical set: Lucide React** (already in the stack).
+
+- **One family only.** Do not mix Lucide with Heroicons, Radix icons, custom SVGs, or emoji-as-icon. Every exception must be tracked in the Audit.
+- **Custom SVGs are allowed** in three cases: (1) the brand mark, (2) a shape no icon set has (e.g., the cassette reel, the compilation stamp), (3) the typographic glyph registry (see §21 empty states).
+- **No emoji in UI.** Emoji render inconsistently across OSes and read as brand-less. The only exception: user-generated content (comments, annotations) where emoji is user input.
+
+### Stroke weight
+
+Lucide ships `strokeWidth={2}` by default. **We use `strokeWidth={1.5}` globally** — this aligns with `font-light` display and `font-medium` card titles, and avoids the "heavy checkmark" feeling that makes SaaS UIs look chunky.
+
+```tsx
+// Global icon default — set once via an <Icon /> wrapper or prop spread
+<Icon strokeWidth={1.5} />
+```
+
+Never pass `strokeWidth={1}` (too fragile on retina) or `strokeWidth={2.5}+` (reads as "app-y").
+
+### Icon sizes (the only four)
+
+```
+icon-xs    12px  (0.75rem)   inline-with-text metadata, badges
+icon-sm    14px  (0.875rem)  inline-with-text body copy, input adornments
+icon-md    16px  (1rem)      default — buttons, nav, list items
+icon-lg    20px  (1.25rem)   emphasized controls, header actions
+```
+
+**Banned sizes:** `10px` (unreadable), `18px` (drift between sm/md), `22px` / `24px` / `28px` (too assertive — replace with typographic glyph instead).
+
+Icons larger than 20px belong in the **typographic glyph registry** (§21) — they are typography, not icons.
+
+### Icon color
+
+Icons inherit `color` from their text context via `currentColor`. Never hardcode a fill.
+
+```tsx
+// CORRECT — inherits from parent
+<span className="text-foreground/70">
+  <Icon className="size-[var(--icon-md)]" />
+</span>
+
+// WRONG — breaks the opacity-as-tone discipline
+<Icon className="text-foreground" />
+```
+
+### Icon-plus-label composition
+
+Default pattern: **icon leads, label follows, same baseline.**
+
+```tsx
+<button className="inline-flex items-center gap-[var(--space-2)]">
+  <Icon className="size-[var(--icon-md)]" strokeWidth={1.5} />
+  <span className="font-mono text-xs uppercase tracking-[0.12em]">Save</span>
+</button>
+```
+
+- Gap is always `--space-2` (8px) — no other spacing between icon and label.
+- If the label wraps to two lines, the icon aligns to the **top** of the first line, not centered.
+- Icon-only buttons (no visible label) are banned in global nav. They are allowed in:
+  - Toolbar inside an editor (tooltip-labeled)
+  - Card context menus (the three-dot `⋯`)
+  - Icon-only close buttons on modals/panels (`×`, with aria-label)
+
+### Typographic glyphs (the preferred "icon")
+
+For empty states, section markers, and decorative anchors, **use a glyph instead of an icon**. This keeps the page typographic and avoids the "app dashboard" vibe.
+
+| Glyph | Meaning | Where |
+|---|---|---|
+| `◫` | Saved / bookmarks | Library saved state |
+| `⊞` | Lists / collections | Library lists state |
+| `○` | Profile / person | Empty user grid |
+| `⌕` | Search | No results |
+| `¶` | Prose / essay | Empty essay feed |
+| `◉` | Radio / sound | Empty radio queue |
+| `◌` | Draft / unpublished | Empty drafts |
+| `▲` | Error / caution | Page-level errors |
+| `◇` | Highlight / annotation | Empty Highlightr list |
+| `§` | Section anchor | Rare — long-form anchors |
+| `※` | Note / aside | Microcopy accent |
+
+Glyphs are always monospace, `font-light`, opacity 0.1 for background/hero use, opacity 0.4–0.7 for inline use. See §21 for placement rules.
+
+### Icon accessibility
+
+- Decorative icon (label visible): `aria-hidden="true"`.
+- Icon-only control: `aria-label="<verb-phrase>"` matching microcopy voice (§27).
+- Status icons (e.g., check in a filled step): `role="img"` + `aria-label`.
+- Never rely on icon-alone to convey state that cannot be inferred from context — pair with color AND a text label AND structure.
+
+### Banned iconography patterns
+
+- **Two-tone / duotone icons.** Breaks opacity discipline.
+- **Filled icons mixed with outline icons** in the same surface.
+- **Emoji-as-chrome** (🚀, ✨, 🔥 in UI headers / buttons).
+- **Large decorative icons** (> 20px) as section hero. Use a typographic glyph or a real image.
+- **Icons inside body paragraphs** ("Click the 🔍 icon to search"). Reference the control by its label instead.
+- **Animated icons on hover.** One exception: the radio play/pause glyph, which crossfades.
+
+---
+
+## 27. Microcopy & voice
+
+The Hideaway speaks like **a careful editor, not a cheerful assistant**. Its tone is literate, specific, and quiet. It assumes the reader is intelligent and has arrived on purpose.
+
+### Voice principles
+
+1. **Declarative, not hortatory.** State what is, not what the user should do. "Saved." not "Great — your item has been saved!"
+2. **Specific, not generic.** "No essays tagged *melancholia*" beats "No results found."
+3. **Spare, not terse.** The goal is ≤ 12 words per sentence, not telegraphic chop. Full sentences, no abbreviations.
+4. **Human, not brand-voiced.** Never "The Hideaway thinks…", never "we're working on it." First-person plural only in policy / legal text.
+5. **Confident, not apologetic.** No "Oops," "Sorry,", "Uh oh," "Whoops." Errors are named, not cushioned.
+6. **Typographic, not emotive.** No exclamation marks outside of quoted speech. No emoji. No ALL CAPS outside of the mono-label convention.
+7. **Literary where natural, never twee.** Editorial references (e.g., "The room is empty," "Nothing here yet — pull a thread") are welcome if they are specific and not whimsical.
+
+### Tone calibration (examples)
+
+| Situation | Wrong (SaaS) | Right (Hideaway) |
+|---|---|---|
+| Empty bookmarks | "You haven't saved anything yet! Start exploring 🚀" | "Nothing saved yet." |
+| Successful save | "Awesome! Your item has been saved!" | "Saved." |
+| Form validation | "Oops! Looks like that email isn't valid." | "Email address is not recognized." |
+| 404 page | "Uh oh! This page doesn't exist." | "This page is not here." |
+| 500 error | "Something went wrong. Please try again!" | "The server is not responding. Try again in a moment." |
+| Confirm destructive | "Are you sure you want to delete? This can't be undone!" | "Delete this list. This cannot be undone." |
+| Loading | "Loading awesomeness…" | (silence — see §21) |
+| Onboarding CTA | "Let's get started! 🎉" | "Begin." |
+| Email subscribe | "Join 10,000+ curious readers!" | "Receive dispatches." |
+| Notification toast | "✅ Profile updated successfully!" | "Profile updated." |
+
+### Button labels
+
+Buttons are **verbs**. Always verbs. Never nouns, never sentences.
+
+**Canonical verbs (primary):** `Save`, `Send`, `Publish`, `Open`, `Begin`, `Continue`, `Close`, `Delete`, `Remove`, `Follow`, `Subscribe`, `Sign in`, `Sign up`, `Listen`, `Read`.
+
+**Banned button labels:** `OK`, `Submit`, `Click here`, `Go`, `Next →` (use `Continue`), `Let's go`, `Get started` (use `Begin`), `Learn more` (say what — `Read the essay`, `About the plan`).
+
+Casing: **Sentence case** for sentence-like labels ("Sign in", "Publish essay"). **Mono-upper** for global-nav and page-nav labels, per §24.
+
+### Form field labels
+
+- **Sentence case.** "Email address", not "Email Address" and not "EMAIL".
+- **Descriptive, not placeholder-only.** Never use placeholder as the label — labels must persist.
+- **Optional marker: the word "(optional)"** in mono, right-of-label. Never `*` for required.
+
+### Errors
+
+Errors name the problem in the system's terms, not the user's fault.
+
+| Situation | Message |
+|---|---|
+| Network down | "No connection. The network appears to be offline." |
+| Server 500 | "The server is not responding." |
+| Validation fail | "Email address is not recognized." / "Password must be at least 12 characters." |
+| Auth expired | "This session has expired. Sign in to continue." |
+| Not found | "This page is not here." / "This essay has been moved or removed." |
+| Permission denied | "This requires a Patron subscription." (with a Link, not a marketing pitch) |
+
+Never:
+- "Oops,", "Sorry,", "Unfortunately," prefixes.
+- Stack-trace-leaking content: "undefined is not a function", "ECONNREFUSED".
+- "Please contact support" without giving a specific next step.
+
+### Empty states
+
+Empty states are two lines: **a glyph + a single sentence**. No two paragraphs of text, no marketing pitch. Optional: a single quiet CTA.
+
+```
+    ◫
+   Nothing saved yet.
+   [ Read an essay → ]
+```
+
+Avoid: "Start your journey!", "Discover amazing content!", any use of "journey", "discover", "amazing", "awesome".
+
+### Bilingual considerations (EN / KO)
+
+- **Mirror structure, don't translate word-by-word.** Korean reads more naturally with implied subjects; keep it that way.
+- **Korean sentence endings** prefer the `-합니다` form in UI chrome (polite, editorial) and `-해요` form in user-facing prompts (warm-professional). Never `-해` (too casual for the brand).
+- **Button verbs in Korean** use the `-기` nominal form for quiet labels (`저장하기`, `읽기`) or the `-하다` stem imperative for action (`저장`, `읽기` — prefer nominal in monospace chrome).
+- **Numbers, measurements, dates** stay Arabic numerals. Korean counters (개, 번, 편) only in body copy, never in mono chrome.
+- **Capitalization policy does not translate.** Korean has no case — use the `font-mono uppercase tracking-[0.12em]` rule with letter-spacing **set to 0** for Korean, because tracked Hangul reads as broken.
+- **Line length.** Korean at the same font size packs ~30% more meaning per line than English. Narrow prose containers (`--container-prose`) work for both without adjustment, but hero headlines in Korean need a `max-ch` constraint of ~18 (vs. 24 for English).
+
+### Bilingual copy pairs (reference)
+
+| Function | English | Korean |
+|---|---|---|
+| Save (mono chrome) | `SAVE` | `저장` |
+| Read (primary) | `Read the essay` | `에세이 읽기` |
+| Empty (bookmarks) | `Nothing saved yet.` | `아직 저장된 글이 없습니다.` |
+| 404 | `This page is not here.` | `이 페이지는 없습니다.` |
+| Confirm delete | `Delete this list. This cannot be undone.` | `이 리스트를 삭제합니다. 되돌릴 수 없습니다.` |
+| Subscribe | `Receive dispatches.` | `소식 받기.` |
+
+### Banned words (site-wide)
+
+Across all English copy:
+
+> `awesome`, `amazing`, `journey`, `discover`, `seamless`, `empower`, `leverage`, `unlock`, `unleash`, `delight`, `boost`, `hustle`, `crush`, `rockstar`, `ninja`, `guru`, `effortless`, `unmatched`, `revolutionize`, `disrupt`, `game-changing`, `best-in-class`, `top-notch`, `world-class`.
+
+These words signal a product, not a room.
+
+### Tense, voice, punctuation
+
+- **Present tense.** "Your profile is saved.", not "Your profile has been saved."
+- **Active voice**, except when the agent is the system ("The server is not responding.").
+- **Serial comma** yes.
+- **Em dashes** sparingly, in prose copy only — never in UI microcopy.
+- **Period at end of sentences** yes, even one-line empty-state copy.
+- **No period** at the end of button labels or chrome labels.
+
+---
+
+## 28. Accessibility commitments
+
+Accessibility is not a compliance layer; it is part of the editorial discipline. If a page is not navigable without a mouse, it is not finished.
+
+### WCAG target
+
+**WCAG 2.2 AA is the floor.** Specific surfaces (Highlightr reading view, Radio player) commit to AAA contrast and keyboard parity.
+
+### Contrast floors
+
+| Surface | Ratio | Notes |
+|---|---|---|
+| Body text on `bg-background` | ≥ 7:1 | AAA — this is reading copy |
+| Body text on `bg-card` | ≥ 4.5:1 | AA — secondary surfaces |
+| Muted text (`text-muted-foreground`) on background | ≥ 4.5:1 | AA — must still pass even at opacity |
+| Chrome labels (`font-mono` uppercase) | ≥ 4.5:1 | AA — includes the `text-foreground/70` variant |
+| Decorative glyphs at opacity 0.1 | no minimum | must never carry meaning alone |
+| Focus ring against any surface | ≥ 3:1 | strictly enforced |
+
+**Rule:** When you dial down opacity for tone (`text-foreground/70`, `/60`, `/40`), verify the effective contrast against the surface the element sits on. `/40` on `bg-background` fails AA — it is for glyph/ambient use only.
+
+### Focus rings
+
+Focus rings are **always visible on keyboard focus, never visible on pointer click**.
+
+```tsx
+// Canonical focus recipe
+className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+```
+
+Rules:
+- **Never remove the focus ring without replacing it.** Browser-default outlines are acceptable until replaced.
+- **Ring color: `foreground/70`** — neutral, always visible. Never rouge (our only accent is reserved for status, not focus).
+- **Ring offset matches the surface** — `--ring-offset-background` on background, `--ring-offset-card` on cards.
+- **No custom focus styles per component.** The recipe above is the single canonical pattern.
+
+### Keyboard interaction matrix (non-negotiable)
+
+| Element | Keys |
+|---|---|
+| Button | `Enter`, `Space` |
+| Link | `Enter` |
+| Checkbox / Switch | `Space` |
+| Radio group | `↑ ↓` or `← →` within group, `Tab` between groups |
+| Select / Combobox | `Enter` to open, `↑ ↓` to navigate, `Esc` to close, `Enter` to select |
+| Tabs | `← →` to navigate, `Home/End` for first/last, `Tab` to enter panel |
+| Modal / Dialog | `Esc` to close, `Tab` trapped inside |
+| Sheet | `Esc` to close, `Tab` trapped inside |
+| Popover | `Esc` to close, `Tab` to exit (not trapped) |
+| Menu | `↑ ↓` navigate, `Enter` select, `Esc` close, typeahead |
+| Command palette | see §23 — `⌘K ↑ ↓ Enter Esc Tab ⌘Enter` |
+
+All interactive components in `src/components/ui/` **must** implement this matrix. Drift here counts as a bug, not a feature request.
+
+### Tab order
+
+- **DOM order defines tab order.** Never use `tabindex > 0`.
+- **`tabindex="-1"`** is acceptable for programmatically-focused containers (modals on open, toasts on appear).
+- **Skip link** at the top of every page: `<a href="#main" className="sr-only focus:not-sr-only ...">Skip to content</a>` — canonical utility lives in `src/components/a11y/SkipLink.tsx`.
+
+### Screen-reader contract
+
+- **Every image has `alt`.** Decorative: `alt=""`. Content: describes the content, not the file (`"Portrait of Sontag, black-and-white"` not `"sontag_bw.jpg"`).
+- **Every icon-only control has `aria-label`.** Matching microcopy voice (§27) — verbs, not nouns.
+- **Live regions** for toasts and loading completion: `role="status" aria-live="polite"`. Use `aria-live="assertive"` only for destructive confirmations.
+- **Landmarks.** Every page has `<header>`, `<main>`, `<footer>`. Never wrap these in `<div role="main">` — use the element.
+- **Heading order is strict.** One `<h1>` per page. Never skip levels (`<h2>` → `<h4>`).
+- **Form fields have labels.** Always via `<label htmlFor>` — never placeholder-as-label. Error text uses `aria-describedby` and inputs get `aria-invalid="true"`.
+
+### Color-independence
+
+Color never carries meaning alone. Every status is reinforced by:
+
+- A text label ("Saved", "Error", "Unread")
+- A glyph or icon (§26)
+- A structural change (border weight, container)
+
+Red (`--destructive`) and rouge (`--accent`) must always pair with a word or glyph. Color-blind users must be able to use every flow.
+
+### Reduced motion
+
+See §25. This is also an a11y commitment — not just an aesthetic preference. Routing all Motion and GSAP through the canonical hooks is mandatory.
+
+### Reduced transparency (macOS)
+
+For users who set `prefers-reduced-transparency: reduce`:
+- **Backdrops** (`bg-background/80`, `bg-background/90`) become fully opaque.
+- **Glass overlays** collapse to solid `bg-card` or `bg-background`.
+- **Blur** (`backdrop-blur-*`) is dropped.
+
+Canonical:
+```css
+@media (prefers-reduced-transparency: reduce) {
+  .hdw-backdrop { background: var(--background); backdrop-filter: none; }
+}
+```
+
+### Forced colors / high-contrast mode
+
+- **Every interactive element specifies a visible border or outline** (not just background-color change) so forced-colors mode preserves affordance.
+- **Never rely on shadow** as the only surface-separator.
+- Honor `@media (forced-colors: active)` by letting system colors win (`forced-color-adjust: auto`).
+
+### Touch targets
+
+Minimum **44 × 44 px** for every interactive target on touch breakpoints (`<lg`). This is the reason button sizes collapse to `h-[var(--space-11)]` (44px) at small viewports even when their density could be lower. Density earned at desktop never comes at the cost of mobile touch affordance.
+
+### Language attributes
+
+- `<html lang="en">` or `<html lang="ko">` set per locale at the route level.
+- Inline foreign-language spans use `<span lang="ko">…</span>` — especially for EN pages that quote Korean text, and vice versa. Screen readers switch voice accordingly.
+
+### Commitments we make (public-facing)
+
+These are statements we stand behind and would publish on an accessibility page:
+
+1. Every critical flow (sign-in, read an essay, save an item, subscribe to a plan) is fully keyboard-operable.
+2. Body text meets AAA contrast on the primary reading surface.
+3. Motion and transparency reduce to text-first fallbacks.
+4. The admin panel (`/vault`) is held to AA — no exceptions.
+5. We test with VoiceOver (macOS / iOS) and NVDA (Windows) as part of release. Keyboard-only testing on every PR touching `src/components/ui/` or `src/components/core/`.
+
+### A11y audit (resolves F-001..F-00x in Audit)
+
+This section formalizes the a11y-related drift findings in `readmes/DESIGN_SYSTEM_AUDIT.md`. Remediation is tracked in the audit — reference F-ids in commits that address them.
+
+---
+
+## 29. Theming — light & dark
+
+The Hideaway ships **both light and dark**, and **dark is the default**. Light is a considered alternate — not a first-draft lit version of dark. Each theme is designed, not computed.
+
+### Default and switching
+
+- **Default: dark.** On first visit, the site renders dark (matches the brand voice, matches the reading experience at night when most users read long-form).
+- **Respect `prefers-color-scheme` on first visit only**, then defer to the user's explicit choice.
+- **Explicit toggle** lives in account settings and in the CMDK palette (`⌘K` → "Switch theme"). Not in the global nav chrome.
+- **Persisted** in `localStorage` under the canonical key `hdw:theme` with values `dark | light | system`.
+- **No flash-of-wrong-theme.** The theme is applied on `<html>` before paint via an inline script in `<head>` (Next.js `layout.tsx`). This is non-negotiable.
+
+### Theme ownership
+
+Theming is implemented via:
+
+- `<html class="dark">` or `<html class="light">` on the root
+- `@theme` block in `src/styles/globals.css` declares tokens for each
+- `next-themes` drives the toggle and persistence
+- `src/providers/Theme/` wraps the app
+
+**Never use `useTheme()` during SSR.** All theme-dependent rendering must be guarded by mount state or rendered identically in both themes on the server.
+
+### Both themes are intentional
+
+- **Dark is not "inverted light."** Shadows are softer, borders are fainter, typography may sit at slightly higher contrast weight.
+- **Light is not "washed-out dark."** Light leans warm-paper, not clinical white. Text is near-black, not pure black.
+- **Every token has a pair.** Tokens are declared in both blocks; there is no runtime computation or filter-based inversion. If a component looks right in one theme and wrong in the other, the component is wrong, not the theme.
+
+### Token parity contract
+
+Every semantic token listed in §3 **must** have both a `dark` and `light` value. The token name is the stable contract; the value differs. Drift here is a bug.
+
+```css
+@theme {
+  --background: oklch(0.14 0 0);   /* dark — default */
+  --foreground: oklch(0.96 0 0);
+  --card:       oklch(0.17 0 0);
+  /* ... */
+}
+
+.light {
+  --background: oklch(0.98 0.005 90);  /* warm paper */
+  --foreground: oklch(0.16 0 0);
+  --card:       oklch(0.995 0.003 90);
+  /* ... */
+}
+```
+
+### Per-surface overrides
+
+Some surfaces are **theme-locked**:
+
+| Surface | Lock | Why |
+|---|---|---|
+| Radio player | dark always | The cassette deck is a photographic object; it reads as itself, not as UI chrome |
+| Essay reading view | follows user theme | Reading is the primary act; user choice wins |
+| Admin panel (`/vault`) | follows user theme | No special case |
+| Marketing home hero | follows user theme (but with hand-tuned imagery per theme) | Imagery is re-selected per theme, not filtered |
+| PDF invoices | light always | Printing context |
+| Email templates | light always | Email clients can't be relied upon for dark-mode |
+
+Theme-locked surfaces set their own root class locally (`<section className="dark">...`) — they do not read from `useTheme()`.
+
+### Images and theme
+
+- **Hero and editorial imagery** is theme-aware. We ship **two source files** and pick via `<picture>` + `media="(prefers-color-scheme: ...)"`. Never filter-invert an image.
+- **Illustration / diagrams** in documentation use semantic tokens (`currentColor` + CSS custom props) so they theme automatically.
+- **User-uploaded imagery** (avatars, essay covers) does not change per theme — user intent wins.
+
+### Code samples in essays
+
+Syntax highlighting ships two palettes — a dark palette aligned with the dark theme, a light palette aligned with the light theme. Both use the same semantic token names (`--code-keyword`, `--code-string`, …). The palette is swapped by `html.light` / `html.dark`.
+
+### Focus, states, and theme
+
+- **Focus ring color** (`foreground/70`) adapts automatically — it resolves to the right value per theme without any per-theme override.
+- **Hover, active, disabled** all use opacity-as-tone and adapt automatically.
+- **Selection color** (`::selection`) is `--accent / 0.25` on both themes — rouge at low opacity works in either.
+
+### Dark-mode shadows
+
+Shadows on dark surfaces are **less visible** — they become inner highlights or border pairs, not drop shadows. See §7. The token `--shadow-sm` on dark resolves to `0 0 0 1px rgb(255 255 255 / 0.04)` rather than a softening drop shadow.
+
+### Theme-aware `color-scheme`
+
+Always declare `color-scheme` so native controls (scrollbars, date pickers, form controls) match:
+
+```css
+html { color-scheme: dark; }
+html.light { color-scheme: light; }
+```
+
+### Forced theme (niche)
+
+Some routes may force a theme regardless of user preference (marketing pages that are visually theme-locked, brand partners' embedded widgets). These routes use `<html className="dark" data-theme-forced>` and **disable the toggle UI** on that surface only. This is an escape hatch, not a common pattern.
+
+### Testing
+
+- **Snapshot every critical surface in both themes.** Login, home, essay reading view, library, plans, admin. Visual regression catches theme drift earlier than any eyeball review.
+- **Accessibility checks run on both themes.** Contrast is checked per theme; passing one does not pass both.
+
+### Banned theming patterns
+
+- **CSS filter inversion** (`filter: invert(1)`) as a "dark mode" shortcut.
+- **Runtime-computed colors** (`lighten()`, `darken()` functions reading token values at runtime).
+- **Theme-specific hardcoded hex** in components. Always read from tokens.
+- **`useTheme()` gating above-the-fold content** without mount-safety guards — causes hydration mismatch and flash.
+- **Separate dark/light component files** (`ButtonDark.tsx`, `ButtonLight.tsx`). One component, token-driven.
+
+---
+
+## 30. Appendix: File Map
 
 Where design lives in the codebase today:
 
@@ -2008,14 +2593,16 @@ Where design lives in the codebase today:
 | shadcn primitives | `src/components/ui/` | Button, Card, Input, Dialog, etc. (need canonicalization — see Audit) |
 | Core UI | `src/components/core/` | Hideaway's own Link, Media, Main, Button |
 | UX components | `src/components/UX/` | Interactive systems (Radio, TapePlayer, Highlightr, Tour, CommandKey) |
+| Motion hooks | `src/hooks/useReducedMotion.ts` | Canonical reduced-motion gate — all animations route through this |
+| Theme provider | `src/providers/Theme/` | `next-themes` wrapper + persistence |
+| Icon set | Lucide React (`lucide-react`) | Global icon family — strokeWidth 1.5 |
+| A11y utilities | `src/components/a11y/` | SkipLink, VisuallyHidden, FocusTrap |
 | Design references in project docs | `CLAUDE.md` | Layout, typography scale, card anatomy, animations |
 
 ---
 
 ## What's next (upcoming iterations)
 
-- **Iter 4:** Patterns — layout containers, sticky headers, heroes, grids, empty/loading/error states, modals, dialogs, sheets, popovers, command palette.
-- **Iter 5:** Motion principles, iconography (stroke widths + icon set selection), microcopy voice, a11y commitments, dark/light theming policy.
 - **Iter 6:** Reference selection criteria — which external designs we borrow from, and which we reject. Final aesthetic manifesto polish.
 
 ---
