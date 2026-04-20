@@ -3,14 +3,23 @@
 import type { PluginComponent } from "@payloadcms/richtext-lexical";
 import {
   $getNodeByKey,
+  $getRoot,
   COMMAND_PRIORITY_CRITICAL,
   KEY_DOWN_COMMAND
 } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { useCallback, useEffect, useRef } from "react";
 
-import { type AmbientAudioEndNode } from "../nodes/AmbientAudioEndNode";
-import { type AmbientAudioStartNode } from "../nodes/AmbientAudioStartNode";
+import {
+  $createAmbientAudioEndNode,
+  $isAmbientAudioEndNode,
+  type AmbientAudioEndNode
+} from "../nodes/AmbientAudioEndNode";
+import {
+  $createAmbientAudioStartNode,
+  $isAmbientAudioStartNode,
+  type AmbientAudioStartNode
+} from "../nodes/AmbientAudioStartNode";
 import {
   useAmbientStore,
   useAmbientStoreApi,
@@ -116,9 +125,36 @@ export const AmbientAudioPlugin: PluginComponent = () => {
         storeApi.getState().setPendingGroupId(groupId);
         storeApi.getState().setPhase("placingEnd");
       } else {
-        storeApi.getState().setPendingEndKey(insertedKey);
+        // placingEnd: end is inserted; if it landed BEFORE the start in doc
+        // order, swap the two node types in-place so the earlier anchor is
+        // always "start". Calendar-picker style.
+        let startKey = storeApi.getState().pendingStartKey;
+        let endKey: string | null = insertedKey;
+        const startNode = startKey
+          ? ($getNodeByKey(startKey) as AmbientAudioStartNode | null)
+          : null;
+        const endNode = $getNodeByKey(
+          insertedKey
+        ) as AmbientAudioEndNode | null;
+        if (
+          startNode &&
+          endNode &&
+          $isAmbientAudioStartNode(startNode) &&
+          $isAmbientAudioEndNode(endNode) &&
+          endNode.isBefore(startNode)
+        ) {
+          const track = startNode.getTrack();
+          const newStart = $createAmbientAudioStartNode({ groupId, track });
+          const newEnd = $createAmbientAudioEndNode({ groupId, track });
+          endNode.replace(newStart);
+          startNode.replace(newEnd);
+          startKey = newStart.getKey();
+          endKey = newEnd.getKey();
+        }
+        storeApi.getState().setPendingStartKey(startKey);
+        storeApi.getState().setPendingEndKey(endKey);
         storeApi.getState().setPhase("pickingTrack");
-        const el = editor.getElementByKey(insertedKey);
+        const el = endKey ? editor.getElementByKey(endKey) : null;
         storeApi.getState().openPicker({ anchorEl: el, groupId });
       }
     });
@@ -219,6 +255,23 @@ export const AmbientAudioPlugin: PluginComponent = () => {
     },
     [editor, storeApi]
   );
+
+  // Stable ref so pointer listeners can call the latest commitFocused without
+  // forcing the rootEl effect to re-register on every render.
+  const commitFocusedRef = useRef(commitFocused);
+  useEffect(() => {
+    commitFocusedRef.current = commitFocused;
+  }, [commitFocused]);
+
+  // Arrow-key commands route through Lexical's KEY_DOWN_COMMAND which only
+  // fires when the contenteditable owns focus. On entering a placement phase
+  // (e.g., from a toolbar button or popover), ensure the editor is focused
+  // so keyboard nav still works.
+  useEffect(() => {
+    if (phase === "placingStart" || phase === "placingEnd") {
+      editor.focus();
+    }
+  }, [editor, phase]);
 
   // --- Picker close handling ---------------------------------------------
   useEffect(() => {
@@ -386,6 +439,53 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       }
     };
 
+    // Calendar-click placement: first click places start, second click places
+    // end. The native click moves Lexical's caret, SELECTION_CHANGE_COMMAND
+    // updates pendingCaretPoint via CaretNavigator, then we commit.
+    const onClick = (e: MouseEvent) => {
+      const st = storeApi.getState();
+      if (st.phase !== "placingStart" && st.phase !== "placingEnd") return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-ambient-anchor]")) return;
+      if (target?.closest("[data-ambient-portal]")) return;
+      commitFocusedRef.current();
+    };
+
+    // Live preview: as the pointer moves over blocks, update focusedNodeKey
+    // so SelectionFollowOverlay paints the tentative range up to the cursor.
+    // rAF-throttled to avoid thrashing.
+    let moveRaf: number | null = null;
+    let lastX = 0;
+    let lastY = 0;
+    const onPointerMove = (e: PointerEvent) => {
+      const st = storeApi.getState();
+      if (st.phase !== "placingStart" && st.phase !== "placingEnd") return;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (moveRaf !== null) return;
+      moveRaf = window.requestAnimationFrame(() => {
+        moveRaf = null;
+        let foundKey: string | null = null;
+        editor.getEditorState().read(() => {
+          const root = $getRoot();
+          for (const child of root.getChildren()) {
+            const el = editor.getElementByKey(child.getKey());
+            if (!el) continue;
+            const r = el.getBoundingClientRect();
+            if (lastY >= r.top && lastY <= r.bottom) {
+              foundKey = child.getKey();
+              break;
+            }
+          }
+        });
+        if (foundKey) {
+          const s = storeApi.getState();
+          if (s.focusedNodeKey !== foundKey) s.setFocusedNodeKey(foundKey);
+        }
+        void lastX;
+      });
+    };
+
     const onContextMenu = (ev: Event) => {
       const me = ev as MouseEvent;
       me.preventDefault();
@@ -437,9 +537,14 @@ export const AmbientAudioPlugin: PluginComponent = () => {
 
     rootEl.addEventListener("pointerdown", onPointerDown);
     rootEl.addEventListener("contextmenu", onContextMenu);
+    rootEl.addEventListener("click", onClick);
+    rootEl.addEventListener("pointermove", onPointerMove);
     return () => {
       rootEl.removeEventListener("pointerdown", onPointerDown);
       rootEl.removeEventListener("contextmenu", onContextMenu);
+      rootEl.removeEventListener("click", onClick);
+      rootEl.removeEventListener("pointermove", onPointerMove);
+      if (moveRaf !== null) window.cancelAnimationFrame(moveRaf);
     };
   }, [editor, storeApi]);
 

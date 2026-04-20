@@ -79,6 +79,8 @@ export function SelectModeOverlay() {
         >
           <Popover.Popup
             data-ambient-portal="select-mode-overlay"
+            initialFocus={false}
+            finalFocus={false}
             onMouseDown={(e) => e.preventDefault()}
             className={cn(
               "z-[45] flex items-center gap-3 origin-[var(--transform-origin)]",
