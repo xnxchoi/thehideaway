@@ -4,7 +4,7 @@
 > When `globals.css`, `CLAUDE.md`, and this document disagree, **this document is the source of truth** for design decisions, and drift must be reconciled via the Audit doc (`readmes/DESIGN_SYSTEM_AUDIT.md`).
 > Engineering ground-truth (what actually ships) lives in `src/styles/globals.css`.
 
-**Status:** Iteration 3 — Foundations + structural tokens + component canon (buttons, cards, inputs, typography primitives, badges). Patterns, motion principles, and reference criteria follow in subsequent iterations.
+**Status:** Iteration 4 — Foundations + structural tokens + component canon + pattern library (layout, sticky header, hero, grid, empty/loading/error states, modals, sheets, popovers, command palette, data tables, navigation). Motion principles, iconography, voice, a11y, and reference criteria follow in Iters 5–6.
 
 ---
 
@@ -26,7 +26,15 @@
 14. [Inputs & Forms](#14-inputs--forms)
 15. [Typography primitives (React wrappers)](#15-typography-primitives-react-wrappers)
 16. [Badges, Tags, Pills](#16-badges-tags-pills)
-17. [Appendix: File Map](#17-appendix-file-map)
+17. [Layout containers](#17-layout-containers)
+18. [Sticky headers & page chrome](#18-sticky-headers--page-chrome)
+19. [Heroes](#19-heroes)
+20. [Grids & lists](#20-grids--lists)
+21. [Empty, loading & error states](#21-empty-loading--error-states)
+22. [Modals, sheets & popovers](#22-modals-sheets--popovers)
+23. [Command palette (CMDK)](#23-command-palette-cmdk)
+24. [Navigation](#24-navigation)
+25. [Appendix: File Map](#25-appendix-file-map)
 
 ---
 
@@ -1267,7 +1275,727 @@ No filled badges. No success-green. No soft-blue "info" chips. The system's colo
 
 ---
 
-## 17. Appendix: File Map
+## 17. Layout containers
+
+A Hideaway page has exactly three container widths. Everything else is a mistake.
+
+### 17.1 The three containers
+
+| Container | Max width | Edge padding | Token | Use |
+|---|---|---|---|---|
+| `page` | `80rem` (1280px) | `--space-6` mobile → `--space-10` 2xl+ | `--container-page` | Default for every content page |
+| `prose` | `40rem` (640px) | `--space-6` | `--container-prose` | Essay reading pane, forms, auth |
+| `full` | `100%` | `0` | `--container-full` | Heroes, full-bleed media, video |
+
+Never use `max-w-5xl` (= 64rem) as the page container — it produces a deadly gutter on MacBook Pro 16" and 1440+ monitors. Historical drift from early prototypes.
+
+### 17.2 Canonical page container
+
+```tsx
+<div className="mx-auto max-w-[var(--container-page)] px-[var(--space-6)] xl:px-[var(--space-10)]">
+  {children}
+</div>
+```
+
+This recipe currently lives as raw `max-w-7xl px-6 xl:px-10` scattered across ~3 files (see grep result in Audit). Extract into:
+
+```tsx
+// components/layout/Page.tsx
+interface PageProps {
+  width?: "page" | "prose" | "full";
+  children: ReactNode;
+  className?: string;
+}
+
+export function Page({ width = "page", children, className }: PageProps) { /* ... */ }
+```
+
+### 17.3 Vertical rhythm inside a page
+
+- Page header (sticky or not) → first content block: `--space-9` (40px)
+- Major section → major section: `--space-12` (72px) mobile, `--space-16` (128px) desktop
+- Minor section → minor section: `--space-8` (32px)
+- Last content block → footer: `--space-16`
+
+Forbidden: `mt-24`, `py-32`, or any other raw pixel-derived spacing above `--space-16`. If you need more air, you need a section break, not a larger margin.
+
+### 17.4 Page scaffolding contract
+
+Every page follows the same outer shape:
+
+```
+<Page>
+  <StickyHeader? />        ← §18, optional
+  <Hero? />                ← §19, optional
+  <main>
+    <Section>...</Section> ← any number
+    <Section>...</Section>
+  </main>
+  <FooterSpacer />         ← --space-16 tail before global footer
+</Page>
+```
+
+- The `<main>` wrapper is **required** for a11y — exactly one per route (Payload admin is separate).
+- Sections carry their own spacing internally; siblings separated by `--space-12`/`--space-16` via a `<SectionStack>` primitive or gap utility.
+
+---
+
+## 18. Sticky headers & page chrome
+
+Hideaway's sticky header is the quiet, typographic ribbon that anchors a surface without yelling.
+
+### 18.1 Structural contract
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  EYEBROW                             nav · nav · nav · nav  │
+│  H1 Page Title                                              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+  └── sticky top-0
+  └── z-index: --z-sticky
+  └── backdrop-blur: --blur-md
+  └── background: bg-background/90
+  └── border-bottom: border-border/30
+  └── padding: py-[var(--space-5)] + page container's px
+```
+
+### 18.2 Canonical snippet
+
+```tsx
+<header className="
+  sticky top-0
+  z-[var(--z-sticky)]
+  border-b border-border/30
+  bg-background/90 backdrop-blur-[var(--blur-md)]
+">
+  <div className="
+    mx-auto max-w-[var(--container-page)]
+    px-[var(--space-6)] xl:px-[var(--space-10)]
+    py-[var(--space-5)]
+  ">
+    <div className="flex items-end justify-between gap-[var(--space-6)]">
+      <div>
+        <Eyebrow>{sectionLabel}</Eyebrow>
+        <PageTitle className="mt-[var(--space-1)]">{pageTitle}</PageTitle>
+      </div>
+      <nav aria-label={sectionLabel}>
+        <ul className="flex items-center gap-[var(--space-6)]">
+          {links.map(l => (
+            <li key={l.href}>
+              <NavLink href={l.href}>{l.label}</NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+```
+
+### 18.3 Header variants
+
+| Variant | When | Differences |
+|---|---|---|
+| `chrome` *(default)* | Content pages with a title + sub-nav | Full layout above |
+| `thin` | Reading surfaces (essay detail) | No title row; only 56px-tall nav ribbon |
+| `translucent` | Over hero/media | `bg-transparent` until scrolled past hero, then `bg-background/90 backdrop-blur-md` |
+| `admin` (Vault) | `/vault/*` | Different type (SUIT → system-ui fallback allowed), darker tone |
+
+### 18.4 Scroll behavior
+
+- **Default:** Header remains visible on scroll (stays sticky).
+- **Reading surface:** Header auto-hides on scroll-down, reveals on scroll-up (GSAP ScrollTrigger). Must respect reduced-motion: if `prefers-reduced-motion: reduce`, the header stays visible.
+- **Never auto-hide on non-reading pages.** Navigation is part of the trust of the page.
+
+### 18.5 Forbidden header patterns
+
+- Sticky headers taller than `--space-16` (128px) on desktop. Breathing room lives above or below the header, not inside.
+- Drop shadows under the header (`shadow-sm`, etc.). Sole divider is the hairline `border-b`.
+- `position: fixed` instead of `sticky`. Fixed headers force page-wide padding hacks.
+- Animating background color on scroll. Transitions are opacity or blur only.
+- Two rows of sticky nav. If you need a tab row, it lives inside the page, not welded to the global chrome.
+
+---
+
+## 19. Heroes
+
+A hero is a deliberate, full-bleed statement — never decorative. It exists when the page needs one piece of media to set the tone before the reader arrives at content.
+
+### 19.1 When a hero is warranted
+
+| Yes | No |
+|---|---|
+| Landing page | Settings / account |
+| Essay detail | Library index |
+| Curated compilation cover | Search results |
+| Playlist / album detail | CMS admin |
+| Profile detail (for premium roles) | Forms |
+
+### 19.2 Size budget
+
+| Viewport | Height |
+|---|---|
+| Mobile | `55vh`, min `32rem` (320px) |
+| Tablet+ | `60vh`, min `42rem` (420px) |
+| Desktop | `65vh`, min `52rem` (520px), max `80rem` (800px) |
+
+Heroes never consume 100vh on non-landing pages. One full-viewport hero per session is the budget.
+
+### 19.3 Canonical structure
+
+```tsx
+<section className="relative w-full overflow-hidden h-[55vh] md:h-[60vh] xl:h-[65vh] min-h-[32rem] xl:min-h-[52rem]">
+  {/* Cover */}
+  {cover ? (
+    <img src={cover} alt="" className="absolute inset-0 size-full object-cover" />
+  ) : (
+    <HeroLetterFallback letter={title[0]} />
+  )}
+
+  {/* Scrim */}
+  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/30 to-transparent" />
+
+  {/* Content — anchored bottom-left inside container */}
+  <div className="absolute inset-x-0 bottom-0">
+    <div className="mx-auto max-w-[var(--container-page)] px-[var(--space-6)] xl:px-[var(--space-10)] pb-[var(--space-10)]">
+      <Eyebrow tone="default">{kicker}</Eyebrow>
+      <Display className="mt-[var(--space-3)] max-w-[18ch]">{title}</Display>
+      <Meta className="mt-[var(--space-4)]">{byline} · {date}</Meta>
+    </div>
+  </div>
+</section>
+```
+
+### 19.4 Letter fallback
+
+When a hero lacks media, the initial letter of the title fills the space as a decorative element.
+
+```tsx
+<div className="absolute inset-0 flex items-center justify-center">
+  <span className="font-mono font-light leading-none text-foreground/[0.04] text-[20vw]">
+    {letter}
+  </span>
+</div>
+```
+
+The letter is **background texture, not content** — `aria-hidden` and never keyboard-focusable.
+
+### 19.5 Content anchoring rules
+
+- Content bottom-aligned inside the page container.
+- Max text width: `~18ch` for titles, `~36ch` for sub-copy. Essay heroes may go wider (`~24ch`).
+- No centered heroes. The Hideaway hero reads like a magazine spread, left-anchored.
+- No two CTAs in a hero. One, or none.
+
+### 19.6 Forbidden hero patterns
+
+- Animated gradient backgrounds.
+- Particle canvases, WebGL hero effects (reserved for *one* specific landing moment — if multiplied, banned).
+- Autoplaying video hero with audio.
+- Hero bars with centered bold CTAs on colored fills ("Get Started →").
+- Parallax scroll-jacking on standard heroes. (Landing page has one sanctioned scrollytelling moment; other heroes stay still.)
+- Heroes taller than 65vh on non-landing pages.
+
+---
+
+## 20. Grids & lists
+
+The shape of a Hideaway surface is almost always a grid of cards. The rules of that grid are strict.
+
+### 20.1 Canonical grid recipes
+
+All grids use CSS Grid with auto-fit fallback as a safety net, and explicit column counts at breakpoints.
+
+| Grid type | sm | md | lg | xl | 2xl | Gap |
+|---|---|---|---|---|---|---|
+| Editorial cards (posts, surf, profile, list) | 1 | 2 | 3 | 4 | 4 | `--space-5` → `--space-6` xl |
+| Music tiles (album, track, playlist cover) | 2 | 3 | 4 | 5 | 6 | `--space-4` → `--space-5` xl |
+| Compilation cards (premium, 4:3) | 1 | 2 | 3 | 4 | 4 | `--space-5` |
+| Compilation cards (free, 16:9) | 1 | 2 | 3 | 3 | 4 | `--space-5` |
+| Detail item grid (premium) | 2 | 3 | 4 | 5 | 6 | `--space-4` |
+| Dashboard rows (settings, vault tables) | 1 | 1 | 2 | 2 | 3 | `--space-6` |
+
+### 20.2 Canonical snippet
+
+```tsx
+<ul className="
+  grid
+  grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+  gap-[var(--space-5)] xl:gap-[var(--space-6)]
+">
+  {items.map(item => (
+    <li key={item.id}>
+      <PostCard post={item} />
+    </li>
+  ))}
+</ul>
+```
+
+### 20.3 List primitive contract
+
+A `<CardGrid>` primitive encapsulates the responsive grammar so pages don't re-derive `grid-cols-*` from memory:
+
+```tsx
+interface CardGridProps {
+  density?: "editorial" | "music" | "premium" | "free" | "detail" | "dashboard";
+  gap?: "compact" | "standard" | "loose"; // override the density default
+  children: ReactNode;
+}
+```
+
+### 20.4 Horizontal rails (carousels)
+
+Some surfaces use horizontal scroll instead of grids — "Continue reading", "From the editor", Radio now-playing shelf.
+
+```tsx
+<div className="overflow-x-auto overscroll-x-contain -mx-[var(--space-6)] xl:-mx-[var(--space-10)] px-[var(--space-6)] xl:px-[var(--space-10)]">
+  <ul className="flex gap-[var(--space-5)] snap-x snap-mandatory">
+    {items.map(item => (
+      <li key={item.id} className="shrink-0 w-[28rem] snap-start">
+        <PostCard post={item} />
+      </li>
+    ))}
+  </ul>
+</div>
+```
+
+- Rails are **opt-in**, not default. Grid remains canonical.
+- Always snap to start.
+- Scrollbar hidden via utility, with keyboard navigation preserved (left/right arrow handlers).
+
+### 20.5 Forbidden grid patterns
+
+- `auto-fit` / `minmax()` with arbitrary `minmax(280px, 1fr)` — explicit breakpoints are the contract (Audit F-033 adjacent).
+- Grids that drop column count going up (`sm:grid-cols-3 md:grid-cols-2`).
+- Grids without `xl:` and `2xl:` variants (dead space on MacBook Pro 16"+).
+- Masonry / Pinterest layouts. Hideaway is magazine, not mood board.
+- Filled dividers between grid rows. Whitespace is the divider.
+
+---
+
+## 21. Empty, loading & error states
+
+The absence of content is a design surface. Hideaway does not ship spinners-on-whiteboxes or generic "Something went wrong." screens.
+
+### 21.1 Empty state canon
+
+Every list, grid, and search result has an empty state. The pattern is:
+
+```
+          ◫                ← 48–56px glyph, font-mono font-light, opacity 10%
+          │
+   You haven't saved       ← PageTitle-ish, but lighter — text-xl font-light
+   anything yet
+          │
+   Press ⌘K to search      ← Prose, max-w-xs, muted-foreground/50
+   and start your library. ← font-mono text-xs
+          │
+      ╭─────────╮
+      │ BROWSE  │          ← Ghost or primary button
+      ╰─────────╯
+```
+
+Canonical snippet:
+
+```tsx
+<div className="flex flex-col items-center justify-center py-[var(--space-16)] text-center">
+  <span aria-hidden className="font-mono text-5xl font-light opacity-10">
+    {symbol}
+  </span>
+  <p className="mt-[var(--space-4)] text-xl font-light tracking-tight text-foreground/80">
+    {headline}
+  </p>
+  <p className="mt-[var(--space-2)] max-w-[28ch] font-mono text-[1.1rem] text-muted-foreground/50">
+    {description}
+  </p>
+  {cta && (
+    <button className="mt-[var(--space-7)] /* ghost button */">
+      {cta}
+    </button>
+  )}
+</div>
+```
+
+### 21.2 Canonical glyphs
+
+| Context | Glyph | Rationale |
+|---|---|---|
+| Saved items / bookmarks | `◫` | Rectangular "kept" affordance |
+| Lists / collections | `⊞` | Implied structure |
+| Profiles / people | `○` | Portrait-adjacent circle |
+| Search (zero results) | `⌕` | Magnifier glyph |
+| Comments / annotations | `¶` | Pilcrow — reading history |
+| Notifications | `◉` | Filled aperture |
+| Radio / audio | `◌` | Soft circle — track slot |
+| Errors | `▲` | Triangular warning |
+
+Glyphs are always `opacity: 0.1`, `font-mono font-light`. They do **not** use icon components — they are typographic marks.
+
+### 21.3 Loading states
+
+Hideaway uses four loading idioms:
+
+| Idiom | When |
+|---|---|
+| **Skeleton (shimmer)** | Default for cards, grids, lists. Animates opacity pulse, no gradient sweep |
+| **Inline spinner** | Inside a button that's executing (`loading` prop). 1em high, inherits color |
+| **Ambient progress** | Top-of-page 2px hairline bar in `--rouge/50` for route transitions |
+| **Silence** | Operations under ~300ms — no indicator. The UI is allowed to be quiet |
+
+Skeleton rules:
+- Same shape/size as the real content it replaces (no generic "loading box").
+- `bg-muted/20`, `animate-pulse` with `--duration-moderate` → `--duration-slower` ease-linear infinite alternate.
+- No shimmering gradient sweep. We are editorial, not SaaS.
+
+```tsx
+<div className="h-[20rem] w-full rounded-[var(--radius-sm)] bg-muted/20 animate-pulse" />
+```
+
+### 21.4 Error states
+
+Three tiers, three treatments.
+
+| Severity | Location | Treatment |
+|---|---|---|
+| **Inline** (form error, single field) | Below the input | `text-destructive/90`, mono, `--text-xs` |
+| **Section** (a widget can't load) | In place of the widget | Empty-state layout with `▲` glyph + "Couldn't load" + retry ghost button |
+| **Page** (route-level crash) | Full page | Empty-state layout, large display text, link back home, error code in `<Mono>` at bottom |
+
+Canonical page-error:
+
+```tsx
+<Page width="prose">
+  <div className="flex flex-col items-center justify-center py-[var(--space-16)] text-center">
+    <span aria-hidden className="font-mono text-5xl font-light opacity-10">▲</span>
+    <h1 className="mt-[var(--space-4)] text-3xl font-light tracking-tight">
+      Something came loose.
+    </h1>
+    <p className="mt-[var(--space-2)] max-w-[32ch] font-mono text-[1.1rem] text-muted-foreground/60">
+      The page couldn't load. Try again, or head back home.
+    </p>
+    <div className="mt-[var(--space-7)] flex gap-[var(--space-3)]">
+      <RetryButton />
+      <Link href="/" /* ghost button */>Home</Link>
+    </div>
+    <code className="mt-[var(--space-12)] font-mono text-[0.9rem] text-muted-foreground/30">
+      {errorId}
+    </code>
+  </div>
+</Page>
+```
+
+### 21.5 Forbidden
+
+- Generic "Oops!" / "Uh oh!" / emoji-ridden error copy.
+- Spinners in the center of empty panels with no context.
+- Gradient shimmer sweeps on skeletons.
+- Red-filled banners at the top of the page ("Error!"). Errors live in context; globally, use the notification channel.
+- Retry buttons styled as primary-fill. Retry is always ghost.
+
+---
+
+## 22. Modals, sheets & popovers
+
+Three layered surfaces, three different jobs.
+
+### 22.1 When to use which
+
+| Surface | Job | Size |
+|---|---|---|
+| **Modal** (`<Dialog>`) | A focused decision or a short form. Blocks the page. | `max-w-[44rem]` default, `max-w-[36rem]` compact |
+| **Sheet** (`<Sheet>`) | Ancillary content that complements the page (profile quick-view, filters). Slides from edge. | Right edge on desktop; bottom on mobile |
+| **Popover** (`<Popover>`) | Contextual micro-UI anchored to a trigger (date picker, mini-menu, emoji picker). No overlay. | Auto-sized, ~`20rem` cap |
+| **Dropdown** (`<DropdownMenu>`) | A list of actions anchored to a trigger. | Auto |
+| **Tooltip** (`<Tooltip>`) | One-sentence hint, never a decision, never containing interactive content. | Auto |
+
+### 22.2 Modal canon
+
+```
+                      Backdrop: bg-background/60 backdrop-blur-[var(--blur-md)]
+           ╭──────────────────────────────────╮
+           │                                  │     Surface:
+           │ EYEBROW                        ✕ │       bg-card (same as card)
+           │ Modal Title                      │       border border-border/30
+           │                                  │       rounded-[var(--radius-md)]
+           │ Body copy, form, or content.     │       shadow (dark mode only)
+           │                                  │
+           │                                  │     Padding:
+           │                         [Ghost]  │       --space-8 desktop
+           │                        [Primary] │       --space-6 mobile
+           ╰──────────────────────────────────╯
+```
+
+Canonical snippet:
+
+```tsx
+<Dialog.Root>
+  <Dialog.Backdrop className="
+    fixed inset-0 z-[var(--z-overlay)]
+    bg-background/60 backdrop-blur-[var(--blur-md)]
+    data-[state=open]:animate-in data-[state=open]:fade-in-0
+    data-[state=closed]:animate-out data-[state=closed]:fade-out-0
+    duration-[var(--duration-moderate)] ease-[var(--ease-standard)]
+  " />
+  <Dialog.Popup className="
+    fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+    z-[var(--z-modal)]
+    w-[calc(100%-var(--space-8))] max-w-[44rem]
+    rounded-[var(--radius-md)]
+    border border-border/30 bg-card
+    p-[var(--space-6)] md:p-[var(--space-8)]
+    dark:shadow-[var(--shadow-md)]
+    data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-[0.98]
+    data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98]
+    duration-[var(--duration-moderate)] ease-[var(--ease-emphasized)]
+  ">
+    <div className="flex items-start justify-between gap-[var(--space-6)]">
+      <div>
+        <Eyebrow>{kicker}</Eyebrow>
+        <SubsectionTitle className="mt-[var(--space-2)]">{title}</SubsectionTitle>
+      </div>
+      <Dialog.Close aria-label="Close" className="/* icon button */" />
+    </div>
+
+    <div className="mt-[var(--space-6)]">{body}</div>
+
+    <div className="mt-[var(--space-8)] flex items-center justify-end gap-[var(--space-3)]">
+      {secondary}
+      {primary}
+    </div>
+  </Dialog.Popup>
+</Dialog.Root>
+```
+
+Header, body, footer are distinct regions with `--space-6` / `--space-8` separation — never crammed.
+
+### 22.3 Sheet canon
+
+- Slide from the right edge on desktop (width: `min(32rem, 100vw - 4rem)`).
+- Slide from the bottom on mobile (height: `auto`, max `85vh`).
+- Drag handle bar on mobile only (4rem wide, `--space-1` thick, `muted-foreground/30`).
+- Scroll lives inside the sheet body; header and footer stick.
+
+### 22.4 Popover canon
+
+- Radius: `--radius-sm`.
+- Border: `border-border/30`, `bg-card`.
+- Shadow: `--shadow-sm` in both modes (popovers float above content; shadow earns its keep here).
+- Padding: `--space-3` to `--space-4`.
+- Arrow: off. Hideaway popovers don't use pointer arrows.
+
+### 22.5 Animation recipe
+
+All three surfaces share the same timing vocabulary:
+
+| Property | Duration | Easing |
+|---|---|---|
+| Overlay fade | `--duration-moderate` (250ms) | `--ease-standard` |
+| Modal zoom-in | `--duration-moderate` | `--ease-emphasized` |
+| Sheet slide-in | `--duration-moderate` | `--ease-emphasized` |
+| Popover fade-in | `--duration-base` (200ms) | `--ease-decelerate` |
+| Any close | `--duration-fast` (150ms) | `--ease-accelerate` |
+
+Exit is always faster than entry (user has decided; get out of the way).
+
+### 22.6 Focus & accessibility (quick pointers; full a11y spec in Iter 5)
+
+- Focus trapped inside while open.
+- `ESC` closes.
+- Return focus to the trigger on close.
+- Body scroll locked (respect `data-lenis-prevent`).
+- `aria-modal="true"` on dialog surface.
+- First focusable element inside gets focus on open — unless it's destructive, in which case focus the cancel button.
+
+### 22.7 Forbidden
+
+- Nested modals. If you need "another modal after this one", you need a multi-step modal.
+- Modals that also act as route screens. Use a real page.
+- Fullscreen sheets masquerading as modals.
+- Tooltips with interactive content. If it's interactive, it's a popover.
+- Popovers with overlay backdrops.
+- Modal widths over `56rem`. If the content doesn't fit, it's a page, not a modal.
+- Autoplay or video heroes inside modals.
+
+---
+
+## 23. Command palette (CMDK)
+
+The command palette is Hideaway's stealthiest affordance — a quiet piece of product-power. It lives at `⌘K` / `Ctrl+K` everywhere, and its aesthetic is **search as literature**.
+
+### 23.1 Structural contract
+
+```
+                 Backdrop: bg-background/50 backdrop-blur-[var(--blur-lg)]
+   ╭─────────────────────────────────────────────╮
+   │ ⌕  Search the Hideaway                      │   ← Input row: framed variant, text-lg
+   ├─────────────────────────────────────────────┤
+   │ ESSAYS                                      │   ← Group header: Eyebrow
+   │   On silence and saving                     │   ← Item rows
+   │   A library of quiet things                 │
+   │                                             │
+   │ LISTS                                       │
+   │   Compilations · 12                         │
+   │                                             │
+   │ ACTIONS                                     │
+   │   Toggle theme                        ⌘⇧T   │
+   │   Go to library                       g l   │
+   ╰─────────────────────────────────────────────╯
+   └── width: max-w-[56rem]
+   └── bg-card
+   └── border border-border/30
+   └── rounded-[var(--radius-md)]
+   └── max-height: 70vh, scroll inside results
+```
+
+### 23.2 Row recipe
+
+```tsx
+<div data-selected={selected} className="
+  flex items-center gap-[var(--space-3)]
+  px-[var(--space-4)] py-[var(--space-3)]
+  rounded-[var(--radius-xs)]
+  text-foreground/80
+  data-[selected=true]:bg-muted/30
+  data-[selected=true]:text-foreground
+  transition-[background-color,color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]
+">
+  <Icon className="size-[1.6rem] text-muted-foreground/60" strokeWidth={1.5} />
+  <span className="flex-1 truncate text-md">{label}</span>
+  {shortcut && <Kbd>{shortcut}</Kbd>}
+</div>
+```
+
+### 23.3 Group headers
+
+Groups use `<Eyebrow>` styling, separated from their items by `--space-2`, and from the previous group by `--space-5`.
+
+### 23.4 Keyboard contract (non-negotiable)
+
+| Key | Action |
+|---|---|
+| `↑` / `↓` | Move selection |
+| `Enter` | Execute selected |
+| `Escape` | Close |
+| `⌘K` / `Ctrl+K` | Toggle open from anywhere |
+| `⌘Enter` | Execute in new tab (when applicable) |
+| `Tab` | Cycle groups (not items) |
+
+### 23.5 Empty & loading
+
+- **Empty query:** show recent + suggested. Groups: "Recent", "For you", "Try". Never a blank state.
+- **Zero results:** single centered block — `⌕` glyph at opacity 0.08, "Nothing found", "Try different words or `⌘` + action."
+- **Loading:** no spinner. Results update progressively, and a top-of-results hairline `--rouge/50` progress bar animates during network fetch.
+
+### 23.6 Forbidden
+
+- Category tabs in the command palette. Filters live in the input as tokens (`type:essay silence`).
+- Right-aligned badges that aren't shortcuts.
+- Rainbow category tint dots. Categories are text, always.
+- Closing on scroll. Palette is modal until the user dismisses.
+
+---
+
+## 24. Navigation
+
+### 24.1 Taxonomy
+
+| Surface | Role | Pattern |
+|---|---|---|
+| **Global nav** | Cross-app identity + access | Top-ribbon, monospace, opacity-tiered |
+| **Section nav** | Intra-section tabs (e.g. Library → Saved/Lists/Highlights) | Inline row, underline indicator |
+| **Breadcrumbs** | Rare — only in CMS / deep admin | Mono, `›` separator |
+| **Footer nav** | Long-tail links + legal | Editorial columns |
+| **Side rail** | `/vault` admin only | Full-height, icon + label |
+
+### 24.2 Global nav anatomy
+
+```
+[ ⌂ THE HIDEAWAY ]      Essays · Surf · Radio · Lists      [ ⌕ ] [ avatar ]
+```
+
+- Left: brand mark (wordmark in `Narcissian Nectare`, mono `ESTD` suffix optional).
+- Center: primary sections, mono uppercase, `--text-xs`, tracking `0.12em`.
+- Right: search trigger (`⌘K` opener) + session affordance.
+
+Canonical nav link:
+
+```tsx
+<Link
+  href={href}
+  className="
+    font-mono text-xs uppercase tracking-[0.12em]
+    text-foreground/60
+    hover:text-foreground
+    aria-[current=page]:text-foreground
+    transition-colors duration-[var(--duration-base)] ease-[var(--ease-standard)]
+  "
+>
+  {label}
+</Link>
+```
+
+Active state is **text opacity change only** — no underline by default, no pill background, no border. If an active indicator is needed (tabs), use a 1px underline that animates via shared `layoutId`.
+
+### 24.3 Tab indicator (section nav)
+
+```tsx
+<nav className="relative flex gap-[var(--space-6)] border-b border-border/30">
+  {tabs.map(t => (
+    <NavLink key={t.id} href={t.href} className="relative py-[var(--space-4)]">
+      {t.label}
+      {active === t.id && (
+        <motion.span
+          layoutId="tab-indicator"
+          className="absolute inset-x-0 -bottom-px h-px bg-foreground"
+        />
+      )}
+    </NavLink>
+  ))}
+</nav>
+```
+
+Underline is **1px**, `bg-foreground` (not accent). The indicator is the affordance; color isn't.
+
+### 24.4 Mobile navigation
+
+- Global nav collapses into a bottom-right icon button that opens a sheet from the right.
+- Sheet contents: primary sections as large mono labels (`text-2xl font-mono uppercase tracking-tight`), one per row, generous vertical rhythm (`--space-6` between items).
+- No hamburger icon triple-bar in the top bar. Top bar collapses to brand-only on mobile.
+
+### 24.5 Footer nav
+
+Footer is editorial — a short essay + three columns + legal line.
+
+```
+   Column 1: The Hideaway    Column 2: Catalog       Column 3: Account
+   About                     Essays                  Plans
+   Manifesto                 Surf                    Sign in
+   Press                     Radio                   Preferences
+                             Lists
+
+   ──────────────────────────────────────────────────────────────
+   © 2026 Hideaway · Seoul      Terms · Privacy · Contact
+```
+
+- Column headers: `<Eyebrow>`.
+- Column links: mono, `text-xs`, tracking `0.12em`, `text-foreground/70`, hover → `/100`.
+- Divider: `border-border/20`, single hairline.
+- Legal line: `font-mono text-[1.0rem] tracking-[0.1em] text-muted-foreground/50`.
+
+### 24.6 Forbidden navigation patterns
+
+- Filled active-state pills in nav.
+- Hover background tints under nav items ("block hover" — never).
+- Brand mark drop-shadows.
+- Hamburger icons on desktop.
+- Mega-menus. If you need a second level, it's a page with tabs.
+- Sidebar navigation on content pages. Sidebars are reserved for `/vault` admin.
+
+---
+
+## 25. Appendix: File Map
 
 Where design lives in the codebase today:
 
