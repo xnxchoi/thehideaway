@@ -4,7 +4,7 @@
 > When `globals.css`, `CLAUDE.md`, and this document disagree, **this document is the source of truth** for design decisions, and drift must be reconciled via the Audit doc (`readmes/DESIGN_SYSTEM_AUDIT.md`).
 > Engineering ground-truth (what actually ships) lives in `src/styles/globals.css`.
 
-**Status:** Iteration 1 — Foundations (manifesto, color, type). Structural tokens, components, patterns, motion, and reference criteria follow in subsequent iterations.
+**Status:** Iteration 2 — Foundations + structural tokens (spacing, radius, motion, blur, z-index, shadow, breakpoints). Components, patterns, motion principles, and reference criteria follow in subsequent iterations.
 
 ---
 
@@ -14,7 +14,14 @@
 2. [The Seven Disciplines](#2-the-seven-disciplines)
 3. [Color](#3-color)
 4. [Typography](#4-typography)
-5. [Appendix: File Map](#5-appendix-file-map)
+5. [Spacing](#5-spacing)
+6. [Radius](#6-radius)
+7. [Shadow & Elevation](#7-shadow--elevation)
+8. [Blur](#8-blur)
+9. [Motion tokens (duration & easing)](#9-motion-tokens-duration--easing)
+10. [Z-index](#10-z-index)
+11. [Breakpoints & Grid](#11-breakpoints--grid)
+12. [Appendix: File Map](#12-appendix-file-map)
 
 ---
 
@@ -315,7 +322,292 @@ For prose / CMS-driven surfaces, use the semantic layer rather than scale tokens
 
 ---
 
-## 5. Appendix: File Map
+## 5. Spacing
+
+Spacing is Hideaway's silent typography. It is more important than any decorative element. The scale is **4-based, rem-normalized** (1rem = 10px), and every spacing decision must resolve to a token.
+
+### 5.1 Scale
+
+| Token | rem | px | Role |
+|---|---|---|---|
+| `--space-0` | `0` | 0 | — |
+| `--space-1` | `0.4rem` | 4 | Icon gutters, inline badge padding |
+| `--space-2` | `0.8rem` | 8 | Tight inline spacing (tag + text) |
+| `--space-3` | `1.2rem` | 12 | Form row internal, list item internal |
+| `--space-4` | `1.6rem` | 16 | Card body padding (mobile), default gap |
+| `--space-5` | `2.4rem` | 24 | Card body padding (desktop), section gap (mobile) |
+| `--space-6` | `3.2rem` | 32 | Section gap (desktop), hero internal |
+| `--space-7` | `4.8rem` | 48 | Page section rhythm (mobile) |
+| `--space-8` | `6.4rem` | 64 | Page section rhythm (desktop) |
+| `--space-9` | `9.6rem` | 96 | Hero + footer breathing room |
+| `--space-10` | `12.8rem` | 128 | Marketing/landing breathing only |
+
+Tailwind utilities (`p-1`, `gap-4`, `py-7`, etc.) already map to this scale when `1rem = 10px`, so authors continue to use standard utilities.
+
+### 5.2 Reading rhythm (prose-specific)
+
+Long-form prose uses a dedicated rhythm independent of the UI scale. Every paragraph break is a function of **line-height × stanza multiplier**.
+
+```
+Base line-height for serif body:  1.65
+Paragraph break:                  0.8em below  (≈13px at 16px prose)
+Stanza / new-scene break:         2.4em below  (≈38px at 16px prose)
+Section heading (H2) top:         4.8em        (≈77px at 16px prose)
+```
+
+Hardcoded `mb-4` in prose surfaces is banned — use the `<Prose />` primitive (Iter 3) or the `prose.scss` stylesheet (Iter 4).
+
+### 5.3 Gap discipline
+
+| Context | Gap | Mobile → Desktop |
+|---|---|---|
+| Default content grid | `gap-4 xl:gap-5` | 16 → 24 |
+| Editorial card grid | `gap-5 xl:gap-6` | 24 → 32 |
+| Dense grid (radio tracks, admin tables) | `gap-2 xl:gap-3` | 8 → 12 |
+| Section rhythm (vertical) | `py-7 xl:py-8` | 48 → 64 |
+| Hero rhythm (vertical) | `py-8 xl:py-9` | 64 → 96 |
+
+### 5.4 Edge padding (container gutters)
+
+| Viewport | Gutter |
+|---|---|
+| `< 640px` (sm) | `px-5` (20px) |
+| `640–1279px` | `px-6` (24px) |
+| `≥ 1280px` (xl) | `px-10` (40px) |
+
+Applied through the `<Container />` primitive (Iter 3). Never reimplement inline.
+
+### 5.5 Padding discipline
+
+- Buttons: `px-5 py-2.5` (standard), `px-4 py-2` (compact), `px-6 py-3` (hero)
+- Cards: `p-3.5 xl:p-4` (default body), `p-5 xl:p-6` (roomy/editorial), `p-2 xl:p-2.5` (dense)
+- Inputs: `pb-2` (borderless bottom-border inputs), no horizontal padding unless the input has a leading icon
+- Dialogs: `p-6 md:p-8`
+- Sheets: `p-6 md:p-8`
+
+### 5.6 Forbidden
+
+- `px-7` / `py-7` outside the reading-rhythm context — breaks 4-based cadence at small sizes.
+- Any fractional non-standard value (`px-[17px]`, `gap-[22px]`) in app code.
+
+---
+
+## 6. Radius
+
+Radius in Hideaway is **small, deliberate, and nearly imperceptible**. The brand is editorial, not friendly — pillowy buttons are forbidden.
+
+### 6.1 Scale
+
+| Token | value | px | Role |
+|---|---|---|---|
+| `--radius-none` | `0` | 0 | Hairline dividers, flush typographic blocks |
+| `--radius-xs` | `0.2rem` | 2 | Inline chips, tag pills |
+| `--radius-sm` | `0.4rem` | 4 | **Default: cards, images, buttons, inputs** |
+| `--radius-md` | `0.6rem` | 6 | Dialog / popover surfaces |
+| `--radius-lg` | `0.8rem` | 8 | Sheet / drawer surfaces |
+| `--radius-xl` | `1.2rem` | 12 | Hero image wells (rare) |
+| `--radius-full` | `9999px` | — | Avatars, fully round badges, play button |
+
+### 6.2 Rules
+
+- **All content cards use `--radius-sm`.** Never `rounded-md`, never `rounded-xl`.
+- **Buttons use `--radius-sm`.** Never `rounded-full` unless it is an icon-only play/control button.
+- **Images inside cards use the card's radius.** Nested radii feel soft; a card with sharp edges must contain a sharp-edged image.
+- **Avatars are `rounded-full`.** No other element on the page is allowed `rounded-full` unless it is a play control or the Radio "rec" light.
+
+---
+
+## 7. Shadow & Elevation
+
+Hideaway uses **almost no shadow**. Elevation is expressed by borders, stacking, and — in rare cases — a single diffuse shadow.
+
+### 7.1 Scale
+
+| Token | value | Role |
+|---|---|---|
+| `--shadow-none` | none | Default card, default button |
+| `--shadow-edge` | `0 0 0 1px var(--border)` | Inline "focused" surface (search, open menu trigger) — prefer border utility |
+| `--shadow-sm` | `0 1px 2px oklch(0% 0 0 / 0.06)` | Dropdown, popover, dialog (light theme only) |
+| `--shadow-md` | `0 4px 14px oklch(0% 0 0 / 0.08)` | Sheet, drawer, toast (light theme only) |
+| `--shadow-lg` | `0 18px 48px oklch(0% 0 0 / 0.18)` | Hero media lift (editorial moments only) |
+| `--shadow-inner` | `inset 0 1px 0 oklch(100% 0 0 / 0.02)` | Inset lift on dark card surfaces |
+
+### 7.2 Dark theme policy
+
+In dark theme, `--shadow-sm` and `--shadow-md` drop to **zero** and elevation shifts to a subtle **border brightness step**:
+
+```css
+.dark { --shadow-sm: none; --shadow-md: none; }
+.dark .elevated { border-color: oklch(100% 0 0 / 0.08); }
+```
+
+Shadows on dark backgrounds look muddy; we prefer a brighter hairline instead.
+
+### 7.3 Forbidden
+
+- Multi-layer stacked shadows (Material-style `0 1px 2px ..., 0 4px 6px ..., ...`)
+- Colored shadows (`shadow-rouge-500/40`)
+- `shadow-xl` / `shadow-2xl` anywhere
+- Shadows on cards inside a grid (they compete with the grid rhythm)
+
+---
+
+## 8. Blur
+
+Blur is used sparingly — only on **sticky headers**, **dialog scrims**, and **cassette/radio artwork overlays**.
+
+| Token | value | Role |
+|---|---|---|
+| `--blur-sm` | `4px` | Sticky footer, secondary sticky |
+| `--blur-md` | `8px` | **Default: sticky header, popover backdrop** |
+| `--blur-lg` | `16px` | Dialog scrim, sheet scrim |
+| `--blur-xl` | `24px` | Radio/album artwork overlay, hero wash |
+
+### 8.1 Rules
+
+- Always pair blur with background opacity. Example: `bg-background/90 backdrop-blur-md`.
+- Never use `backdrop-blur-[…]` arbitrary values in app code.
+- Safari fallback: for surfaces that depend on blur for legibility, raise background opacity to `/95` so the surface works on browsers without `backdrop-filter`.
+
+---
+
+## 9. Motion tokens (duration & easing)
+
+Motion is a first-class token category. Durations and easings are finite, named, and reused.
+
+### 9.1 Duration scale
+
+| Token | value | Role |
+|---|---|---|
+| `--dur-instant` | `100ms` | Tooltip reveal, cursor state, near-invisible feedback |
+| `--dur-fast` | `150ms` | **Default: hover, focus, small color/border shifts** |
+| `--dur-base` | `220ms` | Tab change, popover open, page transition |
+| `--dur-slow` | `350ms` | Dialog, sheet, drawer |
+| `--dur-crawl` | `500ms` | Hero reveal, card entrance, masthead intro |
+| `--dur-epic` | `800ms` | Marketing/landing only (scrollytelling beats) |
+
+### 9.2 Easing scale
+
+Reduced from thirteen ad-hoc curves to **five canonical easings**:
+
+| Token | value | Role |
+|---|---|---|
+| `--ease-linear` | `linear` | Progress bars, audio scrubber |
+| `--ease-standard` | `cubic-bezier(0.4, 0, 0.2, 1)` | **Default — 90% of interactions** |
+| `--ease-decelerate` | `cubic-bezier(0.16, 1, 0.3, 1)` | Entrances (appear, slide-in, grow-in) |
+| `--ease-accelerate` | `cubic-bezier(0.4, 0, 1, 1)` | Exits (disappear, slide-out) |
+| `--ease-emphasized` | `cubic-bezier(0.2, 0, 0, 1)` | Editorial moments (hero, masthead reveals) |
+
+Legacy tokens (`--ease-power2`, `--ease-Sine`, `--ease-in-out-2`, etc.) are kept as aliases for one release, then removed. See Audit F-002.
+
+### 9.3 Choosing a duration
+
+```
+UI feedback (hover, focus) ──────────── dur-fast    (150)
+Content transitions (tabs, route) ───── dur-base    (220)
+Overlays (popover, dropdown) ────────── dur-base    (220)
+Dialogs (modal, sheet) ──────────────── dur-slow    (350)
+Card / hero entrances ───────────────── dur-crawl   (500)
+Marketing reveals ───────────────────── dur-epic    (800)
+```
+
+If a transition feels slow at `dur-fast`, the problem is usually the easing, not the duration. Try `ease-decelerate` before `dur-base`.
+
+### 9.4 Choosing an easing
+
+| You are animating… | Use |
+|---|---|
+| A button hover | `ease-standard` |
+| A modal opening | `ease-decelerate` |
+| A modal closing | `ease-accelerate` |
+| A card entering on scroll | `ease-decelerate` |
+| A hero headline revealing | `ease-emphasized` |
+| A progress bar | `ease-linear` |
+
+### 9.5 Motion-sensitive requirements
+
+- All tokens except `ease-linear` respect `prefers-reduced-motion: reduce` and collapse to `1ms` duration.
+- Spring-based animations (Motion `type: "spring"`) specify `bounce` between `0.05` and `0.2`. Values above `0.2` are forbidden.
+- No animation exceeds `dur-epic` (800ms) without an explicit design review.
+
+### 9.6 Tokens exported to JS
+
+Iter 2 also generates `src/styles/tokens.ts` from `globals.css` at build-time so JS motion code can reference `tokens.duration.base`, `tokens.easing.standard` instead of hardcoding the values. See Audit F-050.
+
+---
+
+## 10. Z-index
+
+A numeric z-index is a failure of stacking architecture. The scale below defines the only layers that exist.
+
+### 10.1 Scale
+
+| Layer | range | Token | Example |
+|---|---|---|---|
+| Below content | `-10 … -1` | `--z-background` (`-1`) | Decorative bg elements, grain |
+| Base | `0` | `--z-base` | Default flow content |
+| Raised | `1 … 9` | `--z-raised` (`5`) | Card hover lift, focused input |
+| Sticky UI | `10 … 19` | `--z-sticky` (`15`) | Sticky header, sticky sidebar |
+| Overlays | `20 … 29` | `--z-overlay` (`25`) | Dropdown, popover, tooltip |
+| Dialogs | `30 … 39` | `--z-dialog` (`35`) | Modal, sheet, drawer |
+| Toasts | `40 … 49` | `--z-toast` (`45`) | Notifications, ephemeral banners |
+| System | `50 … 59` | `--z-system` (`55`) | Command palette, custom cursor |
+| Debug | `100 +` | — | Dev overlays only |
+
+### 10.2 Rules
+
+- Only use the **named tokens** in app code. Numeric literals are reserved for intra-layer micro-ordering (e.g. `z-[16]` for a sticky sub-nav under a sticky header at 15).
+- Nothing in `app/(frontend)/` ships with `z-index > 55`.
+- The custom cursor is the system's highest allowed layer (`--z-system`). Nothing renders above it.
+
+---
+
+## 11. Breakpoints & Grid
+
+Mobile-first. Every grid and spacing value must include an `xl:` variant (CLAUDE.md).
+
+### 11.1 Breakpoints
+
+| Token | min-width | Context |
+|---|---|---|
+| `sm` | `640px` | Large phone, small tablet |
+| `md` | `768px` | Tablet |
+| `lg` | `1024px` | Small laptop |
+| `xl` | `1280px` | MacBook 13–14" (most users) |
+| `2xl` | `1536px` | MacBook Pro 16", external monitors |
+| `3xl` | `1920px` | 4K / ultrawide — rare, editorial only |
+
+### 11.2 Container
+
+| Container | max-w | Use |
+|---|---|---|
+| Wide | `max-w-7xl` (1280px) | **Default** — every page layout |
+| Narrow | `max-w-2xl` (672px) | Prose, forms, auth, settings rows |
+| Reading | `max-w-[68ch]` | Long-form essay body |
+| Full-bleed | `w-full` | Heroes, banners, decorative sections |
+
+**Never use `max-w-5xl` or `max-w-6xl`** — they produce awkward gutters between ~1100px and ~1400px.
+
+### 11.3 Canonical grid column counts
+
+| Content | sm | md | lg | xl | 2xl |
+|---|---|---|---|---|---|
+| Editorial cards (posts, surf) | 1 | 2 | 3 | 4 | 4 |
+| Square tiles (albums, playlists) | 2 | 3 | 4 | 5 | 6 |
+| Premium compilation (4:3) | 1 | 2 | 3 | 4 | 4 |
+| Free compilation (16:9) | 1 | 2 | 3 | 3 | 4 |
+| Dense detail (patron) | 2 | 3 | 4 | 5 | 6 |
+| Dashboard rows | 1 | 1 | 2 | 2 | 3 |
+
+### 11.4 Responsive discipline
+
+- Every grid must declare behavior at **every** breakpoint up to `2xl`. Stopping at `lg:` leaves MacBook Pro 16" users with cavernous whitespace.
+- Never shrink a column count going up. (`sm:grid-cols-3 md:grid-cols-2` is a bug.)
+- Test every screen at 320, 375, 768, 1024, 1280, 1536, 1920.
+
+---
+
+## 12. Appendix: File Map
 
 Where design lives in the codebase today:
 
