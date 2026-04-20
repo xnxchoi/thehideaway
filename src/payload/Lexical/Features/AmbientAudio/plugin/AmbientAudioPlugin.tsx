@@ -39,6 +39,7 @@ import { CaretNavigator } from "./CaretNavigator";
 import { CommitChip } from "./CommitChip";
 import { AmbientContextMenu } from "./ContextMenu";
 import { ResetPrompt } from "./ResetPrompt";
+import { SelectionFollowOverlay } from "./SelectionFollowOverlay";
 import { SelectModeOverlay } from "./SelectModeOverlay";
 import { TrackPicker } from "./TrackPicker";
 
@@ -432,8 +433,12 @@ export const AmbientAudioPlugin: PluginComponent = () => {
 
   return (
     <>
-      <AmbientContextMenu />
+      <AmbientContextMenu
+        onOpenPickerForGroup={onOpenPickerForGroup}
+        onAdjustRange={onAdjustRange}
+      />
       <SelectModeOverlay />
+      <SelectionFollowOverlay />
       <CaretNavigator />
       <CommitChip onCommit={commitFocused} />
       <ResetPrompt />
