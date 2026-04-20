@@ -465,6 +465,8 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       if (moveRaf !== null) return;
       moveRaf = window.requestAnimationFrame(() => {
         moveRaf = null;
+        const s = storeApi.getState();
+        s.setPendingPointerPoint({ x: lastX, y: lastY });
         let foundKey: string | null = null;
         editor.getEditorState().read(() => {
           const root = $getRoot();
@@ -478,12 +480,16 @@ export const AmbientAudioPlugin: PluginComponent = () => {
             }
           }
         });
-        if (foundKey) {
-          const s = storeApi.getState();
-          if (s.focusedNodeKey !== foundKey) s.setFocusedNodeKey(foundKey);
+        if (foundKey && s.focusedNodeKey !== foundKey) {
+          s.setFocusedNodeKey(foundKey);
         }
-        void lastX;
       });
+    };
+
+    const onPointerLeave = () => {
+      const st = storeApi.getState();
+      if (st.phase !== "placingStart" && st.phase !== "placingEnd") return;
+      st.setPendingPointerPoint(null);
     };
 
     const onContextMenu = (ev: Event) => {
@@ -539,11 +545,13 @@ export const AmbientAudioPlugin: PluginComponent = () => {
     rootEl.addEventListener("contextmenu", onContextMenu);
     rootEl.addEventListener("click", onClick);
     rootEl.addEventListener("pointermove", onPointerMove);
+    rootEl.addEventListener("pointerleave", onPointerLeave);
     return () => {
       rootEl.removeEventListener("pointerdown", onPointerDown);
       rootEl.removeEventListener("contextmenu", onContextMenu);
       rootEl.removeEventListener("click", onClick);
       rootEl.removeEventListener("pointermove", onPointerMove);
+      rootEl.removeEventListener("pointerleave", onPointerLeave);
       if (moveRaf !== null) window.cancelAnimationFrame(moveRaf);
     };
   }, [editor, storeApi]);

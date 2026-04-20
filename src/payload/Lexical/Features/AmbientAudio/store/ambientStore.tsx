@@ -77,6 +77,12 @@ export interface AmbientStoreState {
    * at the block edge.
    */
   pendingCaretPoint: SavedCaretPoint | null;
+  /**
+   * Live pointer position in viewport coords while placing. Drives the
+   * character-level range preview in SelectionFollowOverlay. Null when not
+   * placing or the pointer is outside the editor.
+   */
+  pendingPointerPoint: { x: number; y: number } | null;
   pendingStartKey: string | null;
   pendingEndKey: string | null;
   resetWindow: ResetWindow | null;
@@ -104,6 +110,7 @@ export interface AmbientStoreState {
   disarmCaretNav: () => void;
   setFocusedNodeKey: (key: string | null) => void;
   setPendingCaretPoint: (point: SavedCaretPoint | null) => void;
+  setPendingPointerPoint: (point: { x: number; y: number } | null) => void;
   setPendingStartKey: (key: string | null) => void;
   setPendingEndKey: (key: string | null) => void;
   openResetWindow: (x: number, y: number, expiresAt: number) => void;
@@ -132,6 +139,7 @@ type StateShape = Omit<
   | "disarmCaretNav"
   | "setFocusedNodeKey"
   | "setPendingCaretPoint"
+  | "setPendingPointerPoint"
   | "setPendingStartKey"
   | "setPendingEndKey"
   | "openResetWindow"
@@ -157,6 +165,7 @@ const INITIAL: StateShape = {
   caretNavArmed: false,
   focusedNodeKey: null,
   pendingCaretPoint: null,
+  pendingPointerPoint: null,
   pendingStartKey: null,
   pendingEndKey: null,
   resetWindow: null,
@@ -175,6 +184,7 @@ const createAmbientStore = () =>
         caretNavArmed: false,
         focusedNodeKey: null,
         pendingCaretPoint: null,
+        pendingPointerPoint: null,
         pendingStartKey: null,
         pendingEndKey: null,
         resetWindow: null,
@@ -190,6 +200,7 @@ const createAmbientStore = () =>
         caretNavArmed: false,
         focusedNodeKey: null,
         pendingCaretPoint: null,
+        pendingPointerPoint: null,
         pendingStartKey: null,
         pendingEndKey: null,
         resetWindow: null,
@@ -250,6 +261,8 @@ const createAmbientStore = () =>
       set((state) => ({ ...state, focusedNodeKey: key })),
     setPendingCaretPoint: (point) =>
       set((state) => ({ ...state, pendingCaretPoint: point })),
+    setPendingPointerPoint: (point) =>
+      set((state) => ({ ...state, pendingPointerPoint: point })),
     setPendingStartKey: (key) =>
       set((state) => ({ ...state, pendingStartKey: key })),
     setPendingEndKey: (key) =>
