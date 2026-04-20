@@ -45,6 +45,15 @@ export interface DragState {
   denied: boolean;
 }
 
+export interface ContextMenuTarget {
+  /** Non-null when the menu is opened over an existing region. */
+  groupId: string | null;
+  /** Anchor DOM element whose click or right-click opened the menu. */
+  anchorEl: HTMLElement | null;
+  /** Lexical node key of the anchor, when reachable. */
+  nodeKey: string | null;
+}
+
 export interface AmbientStoreState {
   // ---- Legacy fields (keep for backward compatibility) --------------------
   mode: AmbientMode;
@@ -56,6 +65,7 @@ export interface AmbientStoreState {
   contextMenuOpen: boolean;
   contextMenuX: number;
   contextMenuY: number;
+  contextMenuTarget: ContextMenuTarget | null;
 
   // ---- Select-mode state machine ------------------------------------------
   phase: AmbientPhase;
@@ -71,8 +81,6 @@ export interface AmbientStoreState {
   pendingEndKey: string | null;
   resetWindow: ResetWindow | null;
   dragState: DragState | null;
-  anchorMenuKey: string | null;
-  anchorMenuEl: HTMLElement | null;
 
   // ---- Actions ------------------------------------------------------------
   enterSelectMode: () => void;
@@ -84,7 +92,11 @@ export interface AmbientStoreState {
     groupId?: string | null;
   }) => void;
   closePicker: () => void;
-  openContextMenu: (x: number, y: number) => void;
+  openContextMenu: (
+    x: number,
+    y: number,
+    target?: ContextMenuTarget | null
+  ) => void;
   closeContextMenu: () => void;
 
   setPhase: (phase: AmbientPhase) => void;
@@ -101,8 +113,6 @@ export interface AmbientStoreState {
     patch: Partial<Pick<DragState, "proposedSlotKey" | "denied">>
   ) => void;
   endDrag: () => void;
-  openAnchorMenu: (nodeKey: string, anchorEl: HTMLElement | null) => void;
-  closeAnchorMenu: () => void;
 
   reset: () => void;
 }
@@ -129,8 +139,6 @@ type StateShape = Omit<
   | "startDrag"
   | "updateDrag"
   | "endDrag"
-  | "openAnchorMenu"
-  | "closeAnchorMenu"
   | "reset"
 >;
 
@@ -144,6 +152,7 @@ const INITIAL: StateShape = {
   contextMenuOpen: false,
   contextMenuX: 0,
   contextMenuY: 0,
+  contextMenuTarget: null,
   phase: "idle",
   caretNavArmed: false,
   focusedNodeKey: null,
@@ -151,9 +160,7 @@ const INITIAL: StateShape = {
   pendingStartKey: null,
   pendingEndKey: null,
   resetWindow: null,
-  dragState: null,
-  anchorMenuKey: null,
-  anchorMenuEl: null
+  dragState: null
 };
 
 const createAmbientStore = () =>
@@ -172,7 +179,8 @@ const createAmbientStore = () =>
         pendingEndKey: null,
         resetWindow: null,
         dragState: null,
-        contextMenuOpen: false
+        contextMenuOpen: false,
+        contextMenuTarget: null
       })),
     exitSelectMode: () =>
       set((state) => ({
@@ -214,15 +222,20 @@ const createAmbientStore = () =>
         pickerAnchorEl: null,
         pickerGroupId: null
       })),
-    openContextMenu: (x, y) =>
+    openContextMenu: (x, y, target = null) =>
       set((state) => ({
         ...state,
         contextMenuOpen: true,
         contextMenuX: x,
-        contextMenuY: y
+        contextMenuY: y,
+        contextMenuTarget: target ?? null
       })),
     closeContextMenu: () =>
-      set((state) => ({ ...state, contextMenuOpen: false })),
+      set((state) => ({
+        ...state,
+        contextMenuOpen: false,
+        contextMenuTarget: null
+      })),
 
     setPhase: (phase) => set((state) => ({ ...state, phase })),
     armCaretNav: () => set((state) => ({ ...state, caretNavArmed: true })),
@@ -253,14 +266,6 @@ const createAmbientStore = () =>
           : state
       ),
     endDrag: () => set((state) => ({ ...state, dragState: null })),
-    openAnchorMenu: (nodeKey, anchorEl) =>
-      set((state) => ({
-        ...state,
-        anchorMenuKey: nodeKey,
-        anchorMenuEl: anchorEl
-      })),
-    closeAnchorMenu: () =>
-      set((state) => ({ ...state, anchorMenuKey: null, anchorMenuEl: null })),
 
     reset: () => set(INITIAL as Partial<AmbientStoreState>)
   }));

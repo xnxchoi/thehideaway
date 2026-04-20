@@ -9,12 +9,8 @@ import {
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { useCallback, useEffect, useRef } from "react";
 
-import {
-  type AmbientAudioEndNode
-} from "../nodes/AmbientAudioEndNode";
-import {
-  type AmbientAudioStartNode
-} from "../nodes/AmbientAudioStartNode";
+import { type AmbientAudioEndNode } from "../nodes/AmbientAudioEndNode";
+import { type AmbientAudioStartNode } from "../nodes/AmbientAudioStartNode";
 import {
   useAmbientStore,
   useAmbientStoreApi,
@@ -28,12 +24,12 @@ import {
   $insertAnchorAtBlockEnd,
   $insertAnchorAtBlockStart,
   $insertAnchorAtSelection,
+  $listGroups,
   $removeGroup,
   $validateProposedRange,
   createGroupId,
   PLACEHOLDER_TRACK
 } from "../utils/anchors";
-import { AnchorContextMenu } from "./AnchorContextMenu";
 import { AnchorDragReorder } from "./AnchorDragReorder";
 import { CaretNavigator } from "./CaretNavigator";
 import { CommitChip } from "./CommitChip";
@@ -42,6 +38,7 @@ import { ResetPrompt } from "./ResetPrompt";
 import { SelectionFollowOverlay } from "./SelectionFollowOverlay";
 import { SelectModeOverlay } from "./SelectModeOverlay";
 import { TrackPicker } from "./TrackPicker";
+import { Menu } from "@base-ui/react";
 
 const OPT_ARROW_COMMIT_DEBOUNCE_MS = 180;
 const RESET_WINDOW_MS = 1400;
@@ -70,7 +67,7 @@ function isArrowKey(e: KeyboardEvent): boolean {
     e.key === "ArrowRight"
   );
 }
-
+export const AmbienceHandle = Menu.createHandle();
 export const AmbientAudioPlugin: PluginComponent = () => {
   const [editor] = useLexicalComposerContext();
   const storeApi = useAmbientStoreApi();
@@ -102,7 +99,12 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       const insertedKey = savedPoint
         ? $insertAnchorAtSelection(kind, groupId, PLACEHOLDER_TRACK, savedPoint)
         : ph === "placingStart"
-          ? $insertAnchorAtBlockStart(block, "start", groupId, PLACEHOLDER_TRACK)
+          ? $insertAnchorAtBlockStart(
+              block,
+              "start",
+              groupId,
+              PLACEHOLDER_TRACK
+            )
           : $insertAnchorAtBlockEnd(block, "end", groupId, PLACEHOLDER_TRACK);
 
       if (!insertedKey) return;
@@ -264,9 +266,7 @@ export const AmbientAudioPlugin: PluginComponent = () => {
         // Printable / backspace / delete while select-mode is active →
         // finalize and let the keystroke flow through.
         if (
-          (ph === "placingStart" ||
-            ph === "placingEnd" ||
-            ph === "settled") &&
+          (ph === "placingStart" || ph === "placingEnd" || ph === "settled") &&
           isPrintableKey(e) &&
           !e.metaKey &&
           !e.ctrlKey &&
@@ -323,21 +323,6 @@ export const AmbientAudioPlugin: PluginComponent = () => {
     const onPointerDown = (e: PointerEvent) => {
       const st = storeApi.getState();
 
-      const anchorEl = findAnchorElFromEvent(e.target);
-      if (anchorEl) {
-        const groupId = anchorEl.getAttribute("data-ambient-group");
-        const kind = anchorEl.getAttribute("data-ambient-anchor");
-        if (!groupId || !kind) return;
-        editor.getEditorState().read(() => {
-          const pair = $findAnchorPair(groupId);
-          const target = kind === "start" ? pair.start : pair.end;
-          if (target) {
-            storeApi.getState().openAnchorMenu(target.getKey(), anchorEl);
-          }
-        });
-        return;
-      }
-
       if (st.phase === "settled" && pointInRange(e.clientX, e.clientY)) {
         const now = performance.now();
         const existing = st.resetWindow;
@@ -362,9 +347,60 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       }
     };
 
+    const onContextMenu = (ev: Event) => {
+      const me = ev as MouseEvent;
+      me.preventDefault();
+
+      const anchorEl = findAnchorElFromEvent(me.target);
+      if (anchorEl) {
+        const groupId = anchorEl.getAttribute("data-ambient-group");
+        const kind = anchorEl.getAttribute("data-ambient-anchor");
+        let nodeKey: string | null = null;
+        if (groupId) {
+          editor.getEditorState().read(() => {
+            const pair = $findAnchorPair(groupId);
+            const target = kind === "start" ? pair.start : pair.end;
+            if (target) nodeKey = target.getKey();
+          });
+        }
+        storeApi.getState().openContextMenu(me.clientX, me.clientY, {
+          groupId,
+          anchorEl,
+          nodeKey
+        });
+        return;
+      }
+
+      let hitGroupId: string | null = null;
+      let hitAnchorEl: HTMLElement | null = null;
+      editor.getEditorState().read(() => {
+        for (const pair of $listGroups()) {
+          if (!pair.start || !pair.end) continue;
+          const startEl = editor.getElementByKey(pair.start.getKey());
+          const endEl = editor.getElementByKey(pair.end.getKey());
+          if (!startEl || !endEl) continue;
+          const sr = startEl.getBoundingClientRect();
+          const er = endEl.getBoundingClientRect();
+          if (me.clientY >= sr.top && me.clientY <= er.bottom) {
+            hitGroupId = pair.groupId;
+            hitAnchorEl = startEl;
+            break;
+          }
+        }
+      });
+
+      storeApi.getState().openContextMenu(me.clientX, me.clientY, {
+        groupId: hitGroupId,
+        anchorEl: hitAnchorEl,
+        nodeKey: null
+      });
+    };
+
     rootEl.addEventListener("pointerdown", onPointerDown);
+    rootEl.addEventListener("contextmenu", onContextMenu);
     return () => {
       rootEl.removeEventListener("pointerdown", onPointerDown);
+      rootEl.removeEventListener("contextmenu", onContextMenu);
     };
   }, [editor, storeApi]);
 
@@ -442,10 +478,6 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       <CaretNavigator />
       <CommitChip onCommit={commitFocused} />
       <ResetPrompt />
-      <AnchorContextMenu
-        onOpenPickerForGroup={onOpenPickerForGroup}
-        onAdjustRange={onAdjustRange}
-      />
       <AnchorDragReorder />
       <TrackPicker />
     </>

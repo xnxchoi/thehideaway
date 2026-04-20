@@ -444,8 +444,10 @@ a thin outline + 700ms dwell tooltip.
 
 ### Anchor interactions (settled phase)
 
-- **Click anchor** → `AnchorContextMenu` with Change track / Adjust range /
-  Reload track info / Remove this region.
+- **Click anchor** → unified `ContextMenu` (base-ui `Menu.Root` +
+  `AmbienceHandle`) with Change track / Adjust range / Reload track info /
+  Remove this region. Right-click anywhere inside a region opens the same
+  menu; right-click outside any region offers "Add ambient audio…".
 - **Pointer-hold 250ms on anchor** → `AnchorDragReorder` takes over;
   indicator bar shows proposed slot; cannot cross partner anchor.
 - **Click inside range (not on anchor)** → opens 1.4s / 96px reset window;
@@ -480,7 +482,7 @@ plugin/
 ├── CaretNavigator.tsx            focused-node outline + dwell tooltip
 ├── CommitChip.tsx                floating "Set as start/end" button
 ├── ResetPrompt.tsx               "Tap again nearby to reset" tooltip
-├── AnchorContextMenu.tsx         Notion-style menu on anchor tap
+├── ContextMenu.tsx               base-ui Menu.Root (left-click anchor + right-click region)
 ├── AnchorDragReorder.tsx         hold-250ms drag, partner-anchor guard
 ├── AmbientAudioPlugin.tsx        REWRITTEN — state-machine driver
 └── SelectModeOverlay.tsx         UPDATED — shows phase + hint

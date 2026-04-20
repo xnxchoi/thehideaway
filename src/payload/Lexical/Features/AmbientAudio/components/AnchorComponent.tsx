@@ -104,10 +104,15 @@ export function AnchorComponent({
       const dragActive = storeApi.getState().dragState;
       if (dragActive) return; // DragReorder handles the lift.
       if (!el) return;
-      storeApi.getState().openAnchorMenu(nodeKey, el);
+      if (e.button !== 0) return;
+      storeApi.getState().openContextMenu(e.clientX, e.clientY, {
+        groupId,
+        anchorEl: el,
+        nodeKey
+      });
       e.stopPropagation();
     },
-    [nodeKey, storeApi]
+    [groupId, nodeKey, storeApi]
   );
 
   const onPointerCancel = useCallback(() => {

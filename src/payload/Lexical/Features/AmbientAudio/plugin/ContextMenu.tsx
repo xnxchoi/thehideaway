@@ -1,17 +1,34 @@
 "use client";
 
+import { Menu } from "@base-ui/react";
+import {
+  $getNodeByKey,
+  type LexicalEditor
+} from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import type { ComponentProps } from "react";
+import { useCallback, useMemo } from "react";
 
+import { cn } from "@/lib/utils";
+
+import { AmbienceHandle } from "./AmbientAudioPlugin";
+import {
+  $isAmbientAudioEndNode,
+  type AmbientAudioEndNode
+} from "../nodes/AmbientAudioEndNode";
+import {
+  $isAmbientAudioStartNode,
+  type AmbientAudioStartNode
+} from "../nodes/AmbientAudioStartNode";
+import type { AmbientTrackRef } from "../nodes/types";
 import { useAmbientStore } from "../store/ambientStore";
-import { $listGroups, $removeGroup } from "../utils/anchors";
-
-interface ContextTarget {
-  groupId: string | null;
-  anchorEl: HTMLElement | null;
-}
+import {
+  $findAnchorPair,
+  $removeGroup,
+  $updateGroupTrack,
+  isPlaceholderTrack
+} from "../utils/anchors";
+import { getTrackById } from "../utils/tracks";
 
 interface AmbientContextMenuProps {
   onOpenPickerForGroup: (args: {
@@ -21,75 +38,84 @@ interface AmbientContextMenuProps {
   onAdjustRange: (groupId: string) => void;
 }
 
-const EMPTY_TARGET: ContextTarget = { groupId: null, anchorEl: null };
+function makeVirtualAnchor(x: number, y: number) {
+  const rect = {
+    x,
+    y,
+    top: y,
+    left: x,
+    right: x,
+    bottom: y,
+    width: 0,
+    height: 0,
+    toJSON() {
+      return this;
+    }
+  };
+  return { getBoundingClientRect: () => rect as DOMRect };
+}
 
 /**
- * Right-click menu on the editor root. Context-sensitive:
- *   - Inside an existing ambient region → change track / adjust range / remove.
- *   - Outside → add ambient audio (enter select mode).
- *
- * Region detection runs at contextmenu time against `$listGroups()`: a hit is
- * any group whose start/end block rects vertically bracket the click Y.
+ * Read the current group/track snapshot for an anchor node key. Used to decide
+ * whether the "Reload track info" item should be shown.
+ */
+function $readGroupFromNode(
+  editor: LexicalEditor,
+  nodeKey: string | null
+): { groupId: string | null; track: AmbientTrackRef | null } {
+  if (!nodeKey) return { groupId: null, track: null };
+  let out = { groupId: null as string | null, track: null as AmbientTrackRef | null };
+  editor.getEditorState().read(() => {
+    const node = $getNodeByKey(nodeKey);
+    if (!node) return;
+    if ($isAmbientAudioStartNode(node) || $isAmbientAudioEndNode(node)) {
+      const n = node as AmbientAudioStartNode | AmbientAudioEndNode;
+      out = { groupId: n.getGroupId(), track: n.getTrack() };
+    }
+  });
+  return out;
+}
+
+function $readGroupTrack(
+  editor: LexicalEditor,
+  groupId: string
+): AmbientTrackRef | null {
+  let track: AmbientTrackRef | null = null;
+  editor.getEditorState().read(() => {
+    const pair = $findAnchorPair(groupId);
+    const node = pair.start ?? pair.end;
+    if (node) track = node.getTrack();
+  });
+  return track;
+}
+
+/**
+ * Unified context menu for ambient audio regions. Opens on right-click anywhere
+ * in the editor root and on left-click of an anchor. Branches on the current
+ * target (from the store):
+ *   - inside an existing region → Change track / Adjust range / (Reload info) / Remove
+ *   - outside                   → Add ambient audio
  */
 export function AmbientContextMenu({
   onOpenPickerForGroup,
   onAdjustRange
 }: AmbientContextMenuProps) {
   const [editor] = useLexicalComposerContext();
-  const contextMenuOpen = useAmbientStore((s) => s.contextMenuOpen);
+  const open = useAmbientStore((s) => s.contextMenuOpen);
   const x = useAmbientStore((s) => s.contextMenuX);
   const y = useAmbientStore((s) => s.contextMenuY);
-  const openContextMenu = useAmbientStore((s) => s.openContextMenu);
+  const target = useAmbientStore((s) => s.contextMenuTarget);
   const closeContextMenu = useAmbientStore((s) => s.closeContextMenu);
   const enterSelectMode = useAmbientStore((s) => s.enterSelectMode);
 
-  const [target, setTarget] = useState<ContextTarget>(EMPTY_TARGET);
+  const virtualAnchor = useMemo(() => makeVirtualAnchor(x, y), [x, y]);
 
-  useEffect(() => {
-    const rootEl = editor.getRootElement();
-    if (!rootEl) return;
-
-    const onContextMenu = (event: Event) => {
-      const me = event as MouseEvent;
-      me.preventDefault();
-
-      let hit: ContextTarget = EMPTY_TARGET;
-      editor.getEditorState().read(() => {
-        for (const pair of $listGroups()) {
-          if (!pair.start || !pair.end) continue;
-          const startEl = editor.getElementByKey(pair.start.getKey());
-          const endEl = editor.getElementByKey(pair.end.getKey());
-          if (!startEl || !endEl) continue;
-          const sr = startEl.getBoundingClientRect();
-          const er = endEl.getBoundingClientRect();
-          if (me.clientY >= sr.top && me.clientY <= er.bottom) {
-            hit = { groupId: pair.groupId, anchorEl: startEl };
-            break;
-          }
-        }
-      });
-
-      setTarget(hit);
-      openContextMenu(me.clientX, me.clientY);
-    };
-
-    rootEl.addEventListener("contextmenu", onContextMenu);
-    return () => rootEl.removeEventListener("contextmenu", onContextMenu);
-  }, [editor, openContextMenu]);
-
-  useEffect(() => {
-    if (!contextMenuOpen) return;
-    const onDocClick = () => closeContextMenu();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeContextMenu();
-    };
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [contextMenuOpen, closeContextMenu]);
+  const onOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) closeContextMenu();
+    },
+    [closeContextMenu]
+  );
 
   const handleAdd = useCallback(() => {
     enterSelectMode();
@@ -97,7 +123,7 @@ export function AmbientContextMenu({
   }, [enterSelectMode, closeContextMenu]);
 
   const handleChangeTrack = useCallback(() => {
-    if (!target.groupId) return;
+    if (!target?.groupId) return;
     onOpenPickerForGroup({
       anchorEl: target.anchorEl,
       groupId: target.groupId
@@ -106,13 +132,13 @@ export function AmbientContextMenu({
   }, [target, onOpenPickerForGroup, closeContextMenu]);
 
   const handleAdjustRange = useCallback(() => {
-    if (!target.groupId) return;
+    if (!target?.groupId) return;
     onAdjustRange(target.groupId);
     closeContextMenu();
   }, [target, onAdjustRange, closeContextMenu]);
 
   const handleRemove = useCallback(() => {
-    if (!target.groupId) return;
+    if (!target?.groupId) return;
     const gid = target.groupId;
     editor.update(() => {
       $removeGroup(gid);
@@ -120,103 +146,125 @@ export function AmbientContextMenu({
     closeContextMenu();
   }, [target, editor, closeContextMenu]);
 
-  if (!contextMenuOpen || typeof document === "undefined") return null;
+  const handleReloadTrack = useCallback(async () => {
+    if (!target?.groupId) return;
+    const gid = target.groupId;
+    const snapshot = target.nodeKey
+      ? $readGroupFromNode(editor, target.nodeKey)
+      : { groupId: gid, track: $readGroupTrack(editor, gid) };
+    const trackId = snapshot.track?.trackId;
+    if (!trackId) {
+      closeContextMenu();
+      return;
+    }
+    try {
+      const fresh = await getTrackById(trackId);
+      if (fresh) {
+        editor.update(() => {
+          $updateGroupTrack(gid, fresh);
+        });
+      }
+    } catch {
+      // noop
+    }
+    closeContextMenu();
+  }, [target, editor, closeContextMenu]);
 
-  const insideRegion = target.groupId !== null;
+  const insideRegion = !!target?.groupId;
+  const currentTrack = insideRegion
+    ? target.nodeKey
+      ? $readGroupFromNode(editor, target.nodeKey).track
+      : $readGroupTrack(editor, target.groupId!)
+    : null;
+  const showReload = insideRegion
+    ? !!currentTrack &&
+      !isPlaceholderTrack(currentTrack) &&
+      !currentTrack.url
+    : false;
 
-  return createPortal(
-    <div
-      role="menu"
-      data-ambient-portal="context-menu"
-      onMouseDown={(e) => e.stopPropagation()}
-      style={{
-        position: "fixed",
-        top: y,
-        left: x,
-        zIndex: 10024,
-        minWidth: 220,
-        padding: 4,
-        borderRadius: 8,
-        border: "1px solid oklch(0.3 0 0 / 0.4)",
-        background: "oklch(0.13 0 0 / 0.92)",
-        backdropFilter: "blur(16px) saturate(1.3)",
-        WebkitBackdropFilter: "blur(16px) saturate(1.3)",
-        boxShadow:
-          "0 20px 40px rgba(0,0,0,0.35), 0 2px 10px rgba(0,0,0,0.2)",
-        color: "oklch(0.96 0 0 / 0.92)",
-        fontFamily: "var(--font-sans, system-ui)",
-        fontSize: 12
-      }}
-    >
-      {insideRegion ? (
-        <>
-          <MenuItem onClick={handleChangeTrack}>Change track</MenuItem>
-          <MenuItem onClick={handleAdjustRange}>Adjust range</MenuItem>
-          <MenuDivider />
-          <MenuItem onClick={handleRemove} tone="danger">
-            Remove ambient audio
-          </MenuItem>
-        </>
-      ) : (
-        <MenuItem onClick={handleAdd}>Add ambient audio…</MenuItem>
-      )}
-    </div>,
-    document.body
-  );
-}
-
-function MenuItem({
-  children,
-  onClick,
-  tone
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  tone?: "danger";
-}) {
   return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      onMouseDown={(e) => e.preventDefault()}
-      style={{
-        width: "100%",
-        padding: "8px 10px",
-        textAlign: "left",
-        background: "transparent",
-        border: "none",
-        color:
-          tone === "danger"
-            ? "oklch(0.78 0.15 28 / 0.95)"
-            : "oklch(0.96 0 0 / 0.92)",
-        cursor: "pointer",
-        borderRadius: 6,
-        fontSize: 12,
-        letterSpacing: "0.01em"
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background =
-          "oklch(0.2 0 0 / 0.6)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "transparent";
-      }}
+    <Menu.Root
+      handle={AmbienceHandle}
+      open={open}
+      onOpenChange={onOpenChange}
+      modal={false}
     >
-      {children}
-    </button>
+      <Menu.Portal>
+        <Menu.Positioner
+          anchor={virtualAnchor}
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          className="outline-none"
+        >
+          <Menu.Popup
+            data-ambient-portal="context-menu"
+            onMouseDown={(e) => e.stopPropagation()}
+            className={cn(
+              "max-w-[265px] min-w-[220px] origin-[var(--transform-origin)] rounded-md bg-[canvas] py-1.5 outline outline-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0"
+            )}
+          >
+            {insideRegion ? (
+              <>
+                <AmbientMenuItem onClick={handleChangeTrack}>
+                  Change track
+                </AmbientMenuItem>
+                <AmbientMenuItem onClick={handleAdjustRange}>
+                  Adjust range
+                </AmbientMenuItem>
+                {showReload ? (
+                  <AmbientMenuItem onClick={handleReloadTrack}>
+                    Reload track info
+                  </AmbientMenuItem>
+                ) : null}
+                <AmbientMenuDivider />
+                <AmbientMenuItem onClick={handleRemove} tone="danger">
+                  Remove this region
+                </AmbientMenuItem>
+              </>
+            ) : (
+              <AmbientMenuItem onClick={handleAdd}>
+                Add ambient audio…
+              </AmbientMenuItem>
+            )}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
   );
 }
 
-function MenuDivider() {
+function AmbientMenuItem({
+  className,
+  tone,
+  ...props
+}: ComponentProps<typeof Menu.Item> & { tone?: "danger" }) {
+  return (
+    <Menu.Item
+      className={className}
+      render={({ className: rc, ...rp }) => (
+        <div
+          className={cn(
+            "relative z-0 flex min-h-11 w-full gap-3 rounded-[6px] px-3.5 py-3.5 text-sm leading-[120%] transition-colors duration-150 ease-out-power2 outline-none select-none before:absolute before:inset-x-1 before:inset-y-0 before:z-[-1] before:rounded-sm before:bg-transparent before:transition-colors before:duration-150 before:ease-out-power2 data-[highlighted]:before:bg-muted-faded-background",
+            tone === "danger"
+              ? "data-[highlighted]:text-rouge-400"
+              : "data-[highlighted]:text-foreground",
+            rc
+          )}
+          {...rp}
+          role="button"
+        />
+      )}
+      {...props}
+    />
+  );
+}
+
+function AmbientMenuDivider() {
   return (
     <div
       aria-hidden
-      style={{
-        height: 1,
-        margin: "4px 0",
-        background: "oklch(0.3 0 0 / 0.4)"
-      }}
+      className="mx-1 my-1 h-px bg-border/30"
     />
   );
 }
