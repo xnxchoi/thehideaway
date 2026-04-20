@@ -4,7 +4,7 @@
 > When `globals.css`, `CLAUDE.md`, and this document disagree, **this document is the source of truth** for design decisions, and drift must be reconciled via the Audit doc (`readmes/DESIGN_SYSTEM_AUDIT.md`).
 > Engineering ground-truth (what actually ships) lives in `src/styles/globals.css`.
 
-**Status:** Iteration 2 — Foundations + structural tokens (spacing, radius, motion, blur, z-index, shadow, breakpoints). Components, patterns, motion principles, and reference criteria follow in subsequent iterations.
+**Status:** Iteration 3 — Foundations + structural tokens + component canon (buttons, cards, inputs, typography primitives, badges). Patterns, motion principles, and reference criteria follow in subsequent iterations.
 
 ---
 
@@ -21,7 +21,12 @@
 9. [Motion tokens (duration & easing)](#9-motion-tokens-duration--easing)
 10. [Z-index](#10-z-index)
 11. [Breakpoints & Grid](#11-breakpoints--grid)
-12. [Appendix: File Map](#12-appendix-file-map)
+12. [Buttons](#12-buttons)
+13. [Cards](#13-cards)
+14. [Inputs & Forms](#14-inputs--forms)
+15. [Typography primitives (React wrappers)](#15-typography-primitives-react-wrappers)
+16. [Badges, Tags, Pills](#16-badges-tags-pills)
+17. [Appendix: File Map](#17-appendix-file-map)
 
 ---
 
@@ -607,7 +612,662 @@ Mobile-first. Every grid and spacing value must include an `xl:` variant (CLAUDE
 
 ---
 
-## 12. Appendix: File Map
+## 12. Buttons
+
+The button is Hideaway's loudest primitive. Keep it quiet.
+
+### 12.1 Philosophy
+
+- **Border over fill.** Primary action reads as `outline` — a bordered rectangle with text. Filled buttons are for destructive confirmation only.
+- **Type is the label, not decoration.** Labels are monospace (`--font-mono`), uppercase, tracked. Sentence-case labels exist only for link variants inside prose.
+- **One charge per surface.** A screen has at most one `accent` button (Rouge). If a screen has two primary buttons, one of them is wrong.
+- **State through opacity and border-weight, not color swap.** Hover does not repaint the button.
+
+### 12.2 Canonical variants
+
+| Variant | Role | Class recipe |
+|---|---|---|
+| `primary` (default) | The single most important action on the surface | `border border-border/50 text-foreground/90 hover:border-foreground/70 hover:text-foreground` |
+| `ghost` | Recessive action that still reads as a button | `border border-transparent text-foreground/70 hover:border-border/30 hover:text-foreground` |
+| `link` | Inline textual action inside prose or dense UI | `underline decoration-border/40 underline-offset-4 hover:decoration-foreground/70` |
+| `accent` | The single rouge moment per surface — reserve for conversions | `border border-rouge/60 text-rouge hover:border-rouge hover:text-rouge` |
+| `destructive` | Irreversible action. **Only** variant permitted to use fill. | `bg-destructive text-destructive-foreground hover:bg-destructive/85` |
+| `icon` | Square button wrapping a single icon — never labelled with text | Same as `ghost` plus square sizing |
+
+All non-destructive variants share:
+```
+rounded-[var(--radius-sm)]
+font-mono text-[var(--text-xs)] uppercase tracking-[0.12em]
+transition-[color,border-color,opacity] duration-[var(--duration-base)] ease-[var(--ease-standard)]
+disabled:opacity-40 disabled:pointer-events-none
+focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground/40
+```
+
+### 12.3 Size scale
+
+Buttons use the **spacing scale** for padding, not arbitrary Tailwind heights.
+
+| Size | Height | Padding-x | Icon gap | Use |
+|---|---|---|---|---|
+| `xs` | 2.8rem (28px) | `--space-3` (12px) | `--space-2` (8px) | Dense rows, chip-like actions |
+| `sm` | 3.6rem (36px) | `--space-4` (16px) | `--space-2` | Card footers, inline controls |
+| `md` *(default)* | 4.4rem (44px) | `--space-5` (20px) | `--space-3` (12px) | Page actions, form submits |
+| `lg` | 5.2rem (52px) | `--space-6` (24px) | `--space-3` | Hero CTAs, empty-state primary |
+
+- Heights are deliberately anchored to multiples of **4px** aligned to the spacing scale. Do not invent heights like `h-13` or `h-14.5`.
+- `h-11/12/13/14.5/16` all appear in the current button component (see Audit F-030) — these must be normalised to the table above.
+- Icon-only sizes: `icon-xs` = 2.8rem square, `icon-sm` = 3.6rem, `icon-md` = 4.4rem, `icon-lg` = 5.2rem.
+
+### 12.4 Anatomy
+
+```
+┌──────────────────────────────────┐
+│ [icon?]  LABEL         [icon?]  │   gap = --space-2 or --space-3
+└──────────────────────────────────┘
+  └── border-border/50             ← hover: border-foreground/70
+  └── rounded-[var(--radius-sm)]
+  └── px-[var(--space-5)]          ← size md
+  └── font-mono uppercase text-xs tracking-[0.12em]
+```
+
+Icons are **always** `stroke-width: 1.5`, inheriting `currentColor`, sized `1em` relative to the button label.
+
+### 12.5 Canonical snippets
+
+```tsx
+// Primary — the single most important action per surface
+<button className="
+  inline-flex h-[4.4rem] items-center justify-center gap-[var(--space-3)]
+  rounded-[var(--radius-sm)] border border-border/50
+  px-[var(--space-5)]
+  font-mono text-xs uppercase tracking-[0.12em] text-foreground/90
+  transition-[color,border-color] duration-[var(--duration-base)] ease-[var(--ease-standard)]
+  hover:border-foreground/70 hover:text-foreground
+  disabled:opacity-40 disabled:pointer-events-none
+  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground/40
+">
+  Subscribe
+</button>
+
+// Ghost — recessive
+<button className="
+  inline-flex h-[3.6rem] items-center gap-[var(--space-2)]
+  rounded-[var(--radius-sm)] border border-transparent
+  px-[var(--space-4)]
+  font-mono text-xs uppercase tracking-[0.12em] text-foreground/70
+  transition-[color,border-color] duration-[var(--duration-base)] ease-[var(--ease-standard)]
+  hover:border-border/30 hover:text-foreground
+">
+  Cancel
+</button>
+
+// Accent — rouge; reserve for conversion moments
+<button className="
+  ... border-rouge/60 text-rouge
+  hover:border-rouge hover:text-rouge
+">
+  Join the Hideaway
+</button>
+
+// Icon-only
+<button aria-label="Save" className="
+  inline-flex size-[3.6rem] items-center justify-center
+  rounded-[var(--radius-sm)] border border-transparent text-foreground/70
+  hover:border-border/30 hover:text-foreground
+">
+  <BookmarkIcon className="size-[1.6rem]" strokeWidth={1.5} />
+</button>
+```
+
+### 12.6 Forbidden button patterns
+
+- Solid-fill buttons in primary/brand color (Audit F-030). Filled = destructive only.
+- `rounded-xl`, `rounded-2xl`, `rounded-full` on standard actions. Fully rounded is permitted only for icon-only pill toggles inside the Radio/TapePlayer UI.
+- Drop shadows on buttons (`shadow-sm`, `shadow-xs`). Flat, bordered, done.
+- Hover states that swap background color (e.g. `hover:bg-accent`). Hover = border-weight + text-opacity shift.
+- Sentence-case labels (unless inside prose with `variant=link`).
+- Stacking two same-rank buttons (e.g. two `primary`). Pair `primary` + `ghost` or `primary` + `link`.
+- Heights outside the {28, 36, 44, 52} scale.
+
+### 12.7 Button component contract
+
+The canonical button component (`src/components/ui/button.tsx`) must export:
+
+```tsx
+type ButtonVariant = "primary" | "ghost" | "link" | "accent" | "destructive";
+type ButtonSize = "xs" | "sm" | "md" | "lg";
+
+interface ButtonProps extends ComponentPropsWithRef<"button"> {
+  variant?: ButtonVariant;  // default: "primary"
+  size?: ButtonSize;        // default: "md"
+  asChild?: boolean;        // Radix Slot passthrough
+  loading?: boolean;        // inline spinner, disables interaction
+  leadingIcon?: ReactNode;
+  trailingIcon?: ReactNode;
+}
+```
+
+- `VaultButton` (admin-side) should be removed in favor of a single `Button` with an admin-theme context (Audit F-030).
+- `Mutton` (motion-wrapped) stays as an opt-in export for surfaces that need layout animation.
+
+---
+
+## 13. Cards
+
+The card is the editorial unit — a single work (essay, album, list, profile) rendered as a spatial object.
+
+### 13.1 Philosophy
+
+- **A card is a page in miniature.** It has a cover, a title, and quiet metadata — never a chart, never a KPI, never three side-by-side action buttons.
+- **One border, no shadow (light).** In light mode, cards defend their edge with `border-border/20`. In dark mode, a whisper of `shadow-xs` plus `border-border/30` is allowed (see §7).
+- **Media is the loudest thing on the card.** If there's cover art, it owns the top. Title comes second. Metadata last, in mono.
+- **Hover deepens, never re-skins.** Border goes from `/20` → `/50`, image scales `1.04`. No background flip, no gradient bloom.
+
+### 13.2 Canonical radius
+
+| Card type | Radius | Token |
+|---|---|---|
+| Editorial card (post, surf, profile, list) | 2px | `--radius-sm` |
+| Compilation card (premium) | 2px | `--radius-sm` |
+| Music tile (album, track, playlist cover) | 2px | `--radius-sm` |
+| Avatar | full circle | `--radius-full` |
+| Dialog / modal / sheet | 4px | `--radius-md` |
+
+The current implementations use `rounded-xl` and `rounded-lg` indiscriminately (Audit F-031). All content cards converge on `--radius-sm`.
+
+### 13.3 Card anatomy
+
+```
+┌──────────────────────────────────┐
+│                                  │
+│   [cover / media]                │  aspect-ratio locked (4:3 / 16:9 / 1:1)
+│     └── group-hover: scale(1.04) │  duration 500ms, ease-decelerate
+│     └── gradient scrim (optional)│  from-transparent to-background/60
+│                                  │
+├──────────────────────────────────┤  padding-x: --space-4
+│ EYEBROW                    01:14 │  mono 10px, tracking-[0.2em]
+│                                  │
+│ Card Title lives here            │  --text-base, font-medium
+│ and may wrap to two lines.       │  line-clamp-2
+│                                  │
+│ ─── meta · 4 min · saved ────    │  mono 11px, text-muted/60
+└──────────────────────────────────┘
+  └── border-border/20 (hover: /50)
+  └── rounded-[var(--radius-sm)]
+  └── bg-card
+  └── transition: border-color, transform 300ms
+```
+
+### 13.4 Padding & spacing inside a card
+
+- Body padding: `p-[var(--space-4)]` (= 16px) default; `p-[var(--space-5)]` (= 20px) for large cards.
+- Gap between cover and body: `0` — the border of the image meets the padding.
+- Gap between eyebrow and title: `--space-2` (8px).
+- Gap between title and meta: `--space-3` (12px).
+- Gap between meta pills: `--space-2`.
+
+### 13.5 Aspect ratios
+
+| Card | Aspect | Reason |
+|---|---|---|
+| Post (free-tier) | `16 / 9` | Matches blog thumbnails, approachable |
+| Post (premium) | `4 / 3` | More vertical, feels editorial |
+| Album / track | `1 / 1` | Square is the music affordance |
+| Playlist | `4 / 3` | Overlaps cassette/record feel without being square |
+| List (compilation) | `3 / 2` | Breathes between 4:3 and 16:9 |
+| Profile | `1 / 1` or avatar-only | Depends on card density |
+
+### 13.6 Card variants
+
+| Variant | When to use | Visual difference |
+|---|---|---|
+| `shell` (default) | Library, grid, feed | Border, body padding, hover: border → /50 |
+| `quiet` | Sub-cards inside a panel (nested) | No border, only subtle divider or surface tint |
+| `overlay` | Cards where title sits ON the image (premium, hero) | No body — title is absolute-positioned inside the cover with a gradient scrim |
+| `flat` | Dashboard-adjacent (analytics, settings summaries) | No image; title + meta + a single value |
+| `media` | Radio tiles, tape cards | Image dominates, title in mono as a data-tag |
+
+### 13.7 Canonical snippet — default shell card
+
+```tsx
+<article className="group relative flex flex-col overflow-hidden rounded-[var(--radius-sm)] border border-border/20 bg-card transition-[border-color] duration-[var(--duration-moderate)] ease-[var(--ease-standard)] hover:border-border/50">
+  <div className="relative aspect-[16/9] overflow-hidden bg-muted/20">
+    <img
+      src={cover}
+      alt=""
+      className="size-full object-cover transition-transform duration-[500ms] ease-[var(--ease-decelerate)] group-hover:scale-[1.04]"
+    />
+  </div>
+
+  <div className="flex flex-1 flex-col p-[var(--space-4)]">
+    <span className="font-mono text-[1.0rem] uppercase tracking-[0.2em] text-muted-foreground/60">
+      {category}
+    </span>
+
+    <h3 className="mt-[var(--space-2)] line-clamp-2 text-base font-medium leading-snug tracking-tight">
+      {title}
+    </h3>
+
+    <div className="mt-auto pt-[var(--space-3)] font-mono text-[1.1rem] text-muted-foreground/60">
+      {author} · {readingTime}
+    </div>
+  </div>
+</article>
+```
+
+### 13.8 Overlay card (premium)
+
+```tsx
+<article className="group relative aspect-[4/3] overflow-hidden rounded-[var(--radius-sm)] border border-border/20 hover:border-border/50">
+  <img src={cover} alt="" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/25 to-transparent" />
+  <div className="absolute inset-x-0 bottom-0 p-[var(--space-5)]">
+    <span className="font-mono text-[1.0rem] uppercase tracking-[0.2em] text-foreground/70">{eyebrow}</span>
+    <h3 className="mt-[var(--space-2)] text-xl font-light tracking-tight text-foreground">{title}</h3>
+  </div>
+</article>
+```
+
+### 13.9 Forbidden card patterns
+
+- `rounded-xl` or `rounded-lg` (Audit F-031).
+- Outline-styled borders using `outline-groove` (the current shadcn Card). Normal `border` only.
+- Heavy shadows (`shadow-lg`, `shadow-md`) in light mode.
+- Two action buttons in a card footer. One trailing link, max.
+- Gradient fills over an image for "style." Scrims must exist only when they serve legibility.
+- Stat chips inside editorial cards. Counts live in the meta line, rendered as mono text.
+
+### 13.10 Card component contract
+
+`src/components/ui/card.tsx` is the current reference but drifts from the system. Canonical contract:
+
+```tsx
+interface CardProps extends ComponentPropsWithRef<"article" | "a" | "div"> {
+  variant?: "shell" | "quiet" | "overlay" | "flat" | "media"; // default: "shell"
+  as?: "article" | "a" | "div"; // default: "article"
+  interactive?: boolean; // enables hover border + scale
+}
+
+// Subcomponents — ALWAYS used inside <Card>, never in isolation:
+<Card.Media />     // cover image slot
+<Card.Body />      // padded body
+<Card.Eyebrow />   // mono uppercase label
+<Card.Title />     // <h3>-rendered, --text-base font-medium
+<Card.Meta />      // mono metadata row
+<Card.Footer />    // bottom action row (rare)
+```
+
+---
+
+## 14. Inputs & Forms
+
+Forms are prose with blanks. Every input is a line to write on, not a filled box.
+
+### 14.1 Philosophy
+
+- **Underline, not box.** The default input is `border-b` — no frame, no fill, no shadow.
+- **Labels above, mono, tracked.** Labels read as eyebrows — uppercase mono, small.
+- **State through line-weight, not glow.** Focus = underline opacity `/30` → `/80`. No ring, no box-shadow bloom.
+- **Errors whisper in context.** Red is restricted to destructive or form-error text; the error message sits under the underline, never repaints the field.
+
+### 14.2 Canonical recipes
+
+#### Text input (default)
+
+```tsx
+<input
+  className="
+    block w-full border-0 border-b border-border/30
+    bg-transparent
+    py-[var(--space-2)] pr-[var(--space-1)]
+    text-[var(--text-md)] font-light tracking-tight
+    text-foreground placeholder:text-muted-foreground/40
+    outline-none
+    transition-[border-color] duration-[var(--duration-base)] ease-[var(--ease-standard)]
+    focus:border-foreground/80
+    disabled:opacity-40
+    aria-[invalid=true]:border-destructive/80
+  "
+/>
+```
+
+Heights are **not** fixed on bottom-border inputs — line-height + padding does the work. For filled/framed variants (see §14.5) use the button height scale.
+
+#### Textarea
+
+```tsx
+<textarea
+  rows={4}
+  className="
+    block w-full resize-y border-0 border-b border-border/30
+    bg-transparent
+    py-[var(--space-2)]
+    text-[var(--text-md)] font-light leading-relaxed tracking-tight
+    placeholder:text-muted-foreground/40
+    outline-none focus:border-foreground/80
+  "
+/>
+```
+
+#### Label
+
+```tsx
+<label className="block font-mono text-[1.0rem] uppercase tracking-[0.2em] text-muted-foreground/80">
+  Display name
+</label>
+```
+
+#### Helper / hint text
+
+```tsx
+<p className="mt-[var(--space-2)] font-mono text-[1.0rem] text-muted-foreground/60">
+  Visible on your public profile.
+</p>
+```
+
+#### Error text
+
+```tsx
+<p className="mt-[var(--space-2)] font-mono text-[1.0rem] text-destructive/90" role="alert">
+  Display name must be at least 3 characters.
+</p>
+```
+
+### 14.3 Field block anatomy
+
+```
+LABEL                                             ← mono 10px uppercase, muted-foreground/80
+[ input ──────────────────────────── ]            ← border-b (rest: border/30, focus: foreground/80)
+Helper text or error message                      ← mono 10px, muted/60 or destructive/90
+```
+
+Spacing:
+- Label → Input: `--space-2` (8px)
+- Input → Helper: `--space-2`
+- Field → Field (vertical stack in a form): `--space-6` (24px)
+- Field → Field (horizontal in a row): `--space-4` (16px)
+
+### 14.4 Checkbox, Radio, Switch
+
+All three use the same visual grammar: square or circle, hairline border, check mark in foreground.
+
+```tsx
+// Checkbox
+<input type="checkbox" className="
+  size-[1.6rem]
+  appearance-none
+  rounded-[var(--radius-xs)]
+  border border-border/50
+  bg-transparent
+  transition-[background-color,border-color] duration-[var(--duration-fast)] ease-[var(--ease-standard)]
+  checked:border-foreground checked:bg-foreground
+  checked:after:content-['✓'] checked:after:block checked:after:text-background
+  hover:border-foreground/80
+" />
+
+// Radio — same but rounded-full, check = inner dot
+// Switch — pill track (--radius-full), hairline border, knob slides on color change
+```
+
+### 14.5 Filled / framed variant (rare)
+
+Only for contexts where the bottom-border pattern is ambiguous — admin tables, search modals, command palette.
+
+```tsx
+<input className="
+  block w-full
+  rounded-[var(--radius-sm)]
+  border border-border/30
+  bg-transparent
+  px-[var(--space-3)] py-[var(--space-2)]
+  text-[var(--text-md)] font-light
+  placeholder:text-muted-foreground/40
+  focus:border-foreground/60 focus:outline-none
+" />
+```
+
+### 14.6 Field states matrix
+
+| State | Border | Label | Text | Notes |
+|---|---|---|---|---|
+| Rest | `border-border/30` | `muted-foreground/80` | `foreground` | — |
+| Hover | `border-border/60` | unchanged | unchanged | optional — many fields skip hover |
+| Focus | `border-foreground/80` | unchanged | unchanged | No ring |
+| Filled (has value) | `border-border/50` | unchanged | `foreground` | Visual cue the field carries data |
+| Disabled | `border-border/20` | opacity `/40` | `/40` | `cursor-not-allowed` |
+| Error | `border-destructive/80` | unchanged | unchanged | Error message below |
+| Read-only | `border-dashed border-border/30` | unchanged | `foreground/70` | Dashed line = "this is a fact, not a field" |
+
+### 14.7 Forbidden form patterns
+
+- Framed inputs on marketing / auth / profile surfaces (reserved for admin and CMDK).
+- `placeholder` used as label. Always a real `<label>`.
+- Floating labels that animate into the border. Hideaway uses static eyebrow labels.
+- Focus rings (`ring-2 ring-ring`), focus glows, box-shadows on focus.
+- Red outlines that persist. Error = message; border tint is supportive, not shouty.
+- `file-input` styled like a button with solid fill. Prefer a ghost button next to a filename.
+- Gradient or colored form backgrounds.
+
+### 14.8 Input component contract
+
+```tsx
+interface InputProps extends ComponentPropsWithRef<"input"> {
+  variant?: "underline" | "framed";   // default: "underline"
+  invalid?: boolean;                  // mirrors aria-invalid
+  leadingIcon?: ReactNode;
+  trailingIcon?: ReactNode;
+}
+
+interface FieldProps {
+  label: ReactNode;
+  helper?: ReactNode;
+  error?: ReactNode;
+  required?: boolean;
+  children: ReactNode;   // input / textarea / select
+}
+```
+
+A `<Field>` component is the canonical form atom — it owns label, hint, error, and spacing so no form ever manually composes `<label>+<input>+<p>`.
+
+---
+
+## 15. Typography primitives (React wrappers)
+
+A typographic design system is enforced only if it **ships as code**. Hideaway uses a small set of React primitives that encapsulate every sanctioned text recipe from §4.
+
+### 15.1 Primitive inventory
+
+| Primitive | Renders | Default recipe | When to use |
+|---|---|---|---|
+| `<Display>` | `<h1>` | §4.5 "Hero display" — `text-5xl/6xl/7xl`, `font-light`, `tracking-tight` | Landing hero only — one per page, max |
+| `<PageTitle>` | `<h1>` | `text-3xl xl:text-4xl`, `font-light`, `tracking-tight` | Top-of-page title on secondary pages |
+| `<SectionTitle>` | `<h2>` | `text-2xl xl:text-3xl`, `font-light`, `tracking-tight` | Major sections inside a page |
+| `<SubsectionTitle>` | `<h3>` | `text-xl xl:text-2xl`, `font-light`, `tracking-tight` | Nested sub-headings |
+| `<CardTitle>` | `<h3>` | `text-base`, `font-medium`, `tracking-tight`, `leading-snug` | Card headings |
+| `<Eyebrow>` | `<span>` | `font-mono text-[1.0rem] uppercase tracking-[0.2em] text-muted-foreground/80` | Category, kicker, overline |
+| `<Label>` | `<span>` / `<label>` | `font-mono text-xs uppercase tracking-[0.12em]` | Nav, button, form labels |
+| `<Meta>` | `<span>` | `font-mono text-[1.1rem] text-muted-foreground/60` | Metadata rows (read time, date, counts) |
+| `<Micro>` | `<span>` | `font-mono text-[0.9rem] uppercase tracking-[0.2em] text-muted-foreground/50` | Micro badges, footnotes |
+| `<Prose>` | `<p>` | `font-mono text-[1.1rem] xl:text-xs leading-relaxed` | Running body mono copy |
+| `<Body>` | `<p>` | `text-md font-light leading-relaxed` | Running SUIT body copy |
+| `<Lead>` | `<p>` | `text-lg xl:text-xl font-light leading-relaxed text-foreground/80` | Essay leads, section intros |
+| `<Quote>` | `<blockquote>` | Narcissian Nectare, `text-2xl font-light italic` | Pull quotes in essays |
+| `<Mono>` | `<code>` / `<span>` | `font-mono text-[0.95em]` | Inline code, IDs, timestamps |
+
+### 15.2 Contract
+
+Every primitive accepts:
+
+```tsx
+interface TypographyPrimitiveProps extends HTMLAttributes<HTMLElement> {
+  as?: ElementType;           // override the default semantic element
+  variant?: string;           // opt-in variant, e.g. <Meta variant="badge">
+  tone?: "default" | "muted" | "ghost" | "accent";  // opacity preset
+  align?: "start" | "center" | "end";
+}
+```
+
+- **The `className` prop is allowed but discouraged.** If you need a different recipe, you need a different primitive.
+- Primitives ship their own semantic element by default. Use `as` to override only when the semantic requires it (e.g. `<Eyebrow as="label">`).
+- `tone` is the opacity selector — `muted` = `/70`, `ghost` = `/40`, never a different color.
+
+### 15.3 Canonical implementation shape
+
+```tsx
+// components/typography/Eyebrow.tsx
+import { cn } from "@/lib/utils";
+import type { ElementType, HTMLAttributes, ReactNode } from "react";
+
+interface EyebrowProps extends HTMLAttributes<HTMLElement> {
+  as?: ElementType;
+  tone?: "default" | "muted" | "ghost";
+  children: ReactNode;
+}
+
+export function Eyebrow({
+  as: Tag = "span",
+  tone = "default",
+  className,
+  children,
+  ...rest
+}: EyebrowProps) {
+  return (
+    <Tag
+      className={cn(
+        "font-mono uppercase tracking-[0.2em]",
+        "text-[var(--text-xs)]",
+        tone === "default" && "text-muted-foreground/80",
+        tone === "muted" && "text-muted-foreground/60",
+        tone === "ghost" && "text-muted-foreground/40",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+}
+```
+
+### 15.4 Why wrappers (not utility classes everywhere)
+
+- **Drift prevention.** Four devs writing four different `text-xs uppercase tracking-wide` combinations is how a codebase loses its voice. One import, one recipe.
+- **Semantic correctness.** `<h1>` / `<h2>` / `<h3>` follow document outline automatically instead of being chosen at the call site.
+- **Theme migrations.** When `--text-base` moves from 1.4rem to 1.5rem, every `<CardTitle>` updates. When it's `className="text-base"` everywhere, nothing updates.
+- **Bilingual correctness.** Primitives can toggle `font-feature-settings` / `letter-spacing` when rendering Korean without callers knowing.
+- **Reviewability.** PRs read as `<PageTitle>Library</PageTitle>` — legible even to a designer reviewing code.
+
+### 15.5 Forbidden typography patterns
+
+- Using `className="text-xl font-semibold ..."` instead of a primitive (Audit F-020 / F-023).
+- Primitives that accept `weight` / `size` as props. Choose a different primitive instead; don't parameterize the scale.
+- Inline `style={{fontSize: ...}}` anywhere outside `src/components/UX/*` effects.
+- Nesting primitives to re-weight (`<Meta><strong>...</strong></Meta>`). If you need emphasis, use a different primitive.
+
+### 15.6 Primitive file map
+
+All primitives live under a single barrel:
+
+```
+src/components/typography/
+├── Display.tsx
+├── PageTitle.tsx
+├── SectionTitle.tsx
+├── SubsectionTitle.tsx
+├── CardTitle.tsx
+├── Eyebrow.tsx
+├── Label.tsx
+├── Meta.tsx
+├── Micro.tsx
+├── Prose.tsx
+├── Body.tsx
+├── Lead.tsx
+├── Quote.tsx
+├── Mono.tsx
+└── index.ts       // re-exports all
+```
+
+This directory does not yet exist — creating it and migrating surfaces is tracked under Audit F-023.
+
+---
+
+## 16. Badges, Tags, Pills
+
+Small text objects that mark status, count, category, or membership. Not decorative; always data.
+
+### 16.1 Taxonomy
+
+| Primitive | Shape | Purpose |
+|---|---|---|
+| `Badge` | `--radius-xs` rect, bordered | Status markers — "draft", "premium", "new" |
+| `Tag` | `--radius-sm` rect, bordered, tappable | Taxonomy chips — categories, topics (link to filter) |
+| `Pill` | `--radius-full`, bordered | Counts + filter chips inside toolbars |
+| `Dot` | circle, 6–8px | Inline status signal (online, unread) |
+
+### 16.2 Canonical recipes
+
+```tsx
+// Badge (status)
+<span className="
+  inline-flex items-center gap-[var(--space-1)]
+  rounded-[var(--radius-xs)] border border-border/40
+  px-[var(--space-2)] py-[0.2rem]
+  font-mono text-[0.9rem] uppercase tracking-[0.2em]
+  text-foreground/70
+">
+  Draft
+</span>
+
+// Tag (taxonomy, link)
+<a href="/tags/essays" className="
+  inline-flex items-center
+  rounded-[var(--radius-sm)] border border-border/30
+  px-[var(--space-3)] py-[var(--space-1)]
+  font-mono text-[1.0rem] uppercase tracking-[0.12em]
+  text-foreground/80
+  transition-[border-color,color]
+  hover:border-foreground/60 hover:text-foreground
+">
+  Essays
+</a>
+
+// Pill (count / filter)
+<span className="
+  inline-flex items-center gap-[var(--space-1)]
+  rounded-[var(--radius-full)] border border-border/30
+  px-[var(--space-3)] py-[0.25rem]
+  font-mono text-[1.0rem] tracking-[0.08em]
+  text-foreground/70
+">
+  24
+</span>
+
+// Dot
+<span className="inline-block size-[0.7rem] rounded-[var(--radius-full)] bg-rouge" aria-hidden />
+```
+
+### 16.3 Color discipline
+
+| Semantic | Border | Text | Use |
+|---|---|---|---|
+| Neutral | `border-border/40` | `text-foreground/70` | Default |
+| Premium | `border-rouge/50` | `text-rouge` | Patron-gated content |
+| Destructive | `border-destructive/50` | `text-destructive` | Warnings, draft-with-errors |
+| Success (rare) | `border-border/40` | `text-foreground` | Confirmation — **never green fill** |
+| Live / unread | `bg-rouge` (dot only) | — | Rouge dot is the only unread affordance |
+
+No filled badges. No success-green. No soft-blue "info" chips. The system's color charge is Rouge and only Rouge.
+
+### 16.4 Forbidden
+
+- Solid-fill badges (`bg-primary text-primary-foreground`).
+- Rainbow tag palettes ("essays" in blue, "surf" in green, etc.). Categorization is readable through text, not hue.
+- Badges taller than the line-height of the body text next to them.
+- Combining Badge + Tag + Pill styling in the same list — pick one.
+
+---
+
+## 17. Appendix: File Map
 
 Where design lives in the codebase today:
 
@@ -626,10 +1286,8 @@ Where design lives in the codebase today:
 
 ## What's next (upcoming iterations)
 
-- **Iter 2:** Structural tokens — spacing, radius, shadow, motion duration, blur, z-index.
-- **Iter 3:** Component canon — buttons, cards, inputs, dialogs, typography wrappers.
-- **Iter 4:** Patterns — layout containers, sticky headers, heroes, grids, empty/loading/error states, modals.
-- **Iter 5:** Motion principles, iconography, microcopy voice, a11y commitments, theming.
-- **Iter 6:** Reference selection criteria — which external designs we borrow from, and which we reject.
+- **Iter 4:** Patterns — layout containers, sticky headers, heroes, grids, empty/loading/error states, modals, dialogs, sheets, popovers, command palette.
+- **Iter 5:** Motion principles, iconography (stroke widths + icon set selection), microcopy voice, a11y commitments, dark/light theming policy.
+- **Iter 6:** Reference selection criteria — which external designs we borrow from, and which we reject. Final aesthetic manifesto polish.
 
 ---
