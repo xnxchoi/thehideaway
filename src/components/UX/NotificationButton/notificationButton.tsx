@@ -235,7 +235,7 @@ export const NotificationButton = (props: HTMLMotionProps<"button">) => {
               closer={closer}
             />
             <AnimatePresence>
-              {pathname !== "/me/notifications" && nItems.length > 0 && (
+              {pathname !== "/me/inbox" && nItems.length > 0 && (
                 <MotionLink
                   className={
                     "absolute right-0 bottom-1 left-0 flex w-full items-center justify-center px-3 py-1 font-sans"
@@ -253,7 +253,7 @@ export const NotificationButton = (props: HTMLMotionProps<"button">) => {
                     duration: 0.15,
                     ease: "easeOut"
                   }}
-                  href="/src/app/(frontend)/(site)/(auth)/me/notifications"
+                  href="/me/inbox"
                   onClick={closer}
                 >
                   See All

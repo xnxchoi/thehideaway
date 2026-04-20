@@ -175,7 +175,7 @@ export const LogoutButton = () => {
           <DropdownMenuItem asChild>
             <Link
               prefetch={false}
-              href="/src/app/(frontend)/(site)/(auth)/me/notifications"
+              href="/me/inbox"
             >
               Notifications
             </Link>

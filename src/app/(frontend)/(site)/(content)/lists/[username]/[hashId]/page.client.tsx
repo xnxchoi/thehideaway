@@ -128,7 +128,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
               </span>
               {isOwner && (
                 <Link
-                  href={`/me/lists/${compilation.hashId}`}
+                  href={`/me/library/lists/${compilation.hashId}`}
                   className="font-mono text-[10px] uppercase tracking-widest text-white/40 underline decoration-dotted underline-offset-2 hover:text-white/70"
                 >
                   Edit

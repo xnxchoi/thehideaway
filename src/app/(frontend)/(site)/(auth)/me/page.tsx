@@ -1,5 +1,5 @@
-import Page from "./settings/page";
+import { redirect } from "next/navigation";
 
-export default async function MePage() {
-  return <Page />;
+export default function MePage() {
+  redirect("/me/account");
 }

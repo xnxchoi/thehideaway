@@ -30,7 +30,7 @@ export const SIDE_DRAWER_LINKS: NavLink[] = [
   link("/essays", "Latest"),
   link("/users", "Directory"),
   link("/search", "Search"),
-  link("/me/saved", "Saved")
+  link("/me/library/saved", "Saved")
 ];
 
 /**
