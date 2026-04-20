@@ -4,7 +4,9 @@
 > When `globals.css`, `CLAUDE.md`, and this document disagree, **this document is the source of truth** for design decisions, and drift must be reconciled via the Audit doc (`readmes/DESIGN_SYSTEM_AUDIT.md`).
 > Engineering ground-truth (what actually ships) lives in `src/styles/globals.css`.
 
-**Status:** Iteration 5 — Foundations + structural tokens + component canon + pattern library + motion principles + iconography + microcopy voice + accessibility commitments + theming policy. Reference criteria and final manifesto polish follow in Iter 6.
+**Status:** v1.0 — Complete. Foundations + structural tokens + component canon + pattern library + motion principles + iconography + microcopy voice + accessibility commitments + theming policy + reference criteria + how-to-use.
+
+**Canonical authorship:** This document is the design system. It is revised, never rewritten. Additions land via a dated entry at the top of the relevant section; breaking changes land via a numbered amendment in the Changelog at the bottom. Treat it the way the codebase treats `payload-types.ts` — structured, owned, diffable.
 
 ---
 
@@ -39,7 +41,10 @@
 27. [Microcopy & voice](#27-microcopy--voice)
 28. [Accessibility commitments](#28-accessibility-commitments)
 29. [Theming — light & dark](#29-theming--light--dark)
-30. [Appendix: File Map](#30-appendix-file-map)
+30. [Reference criteria & curated library](#30-reference-criteria--curated-library)
+31. [How to use this document](#31-how-to-use-this-document)
+32. [Appendix: File Map](#32-appendix-file-map)
+33. [Changelog](#33-changelog)
 
 ---
 
@@ -70,7 +75,24 @@ It is not a feed. It is not a dashboard. It is a room someone built.
 
 ### The single sentence
 
-> **Hideaway is where text is the interface, silence is the default, and every deliberate touch of color means something.**
+> **Hideaway is a room someone built: text is the interface, silence is the default, and every deliberate touch of color means something.**
+
+### Promises we keep
+
+These are the commitments this system makes to every page we ship. If a screen violates one, it fails review — regardless of how beautiful it is.
+
+1. **Type earns hierarchy before color does.** A grayscale screenshot of the page should still read clearly.
+2. **The accent is never decorative.** If rouge appears, it is carrying meaning (selection, status, emphasis) — never styling.
+3. **Motion tells the truth.** Every transition reflects a spatial or state fact, and every animation survives `prefers-reduced-motion`.
+4. **The chrome is quiet.** Borders over fills, opacity over grays, typography over ornament. Nothing yells.
+5. **The reader wins ties.** When design pressure conflicts with reading experience — density, contrast, line length — reading wins.
+6. **Both languages are first-class.** Korean and English are designed together, not translated from English.
+7. **Dark is the default, and light is not an afterthought.** Both themes are designed objects.
+8. **Accessibility is load-bearing.** Keyboard, screen reader, reduced motion, and forced colors are not extras; they are the system.
+
+### The shape of the document
+
+The rest of this document is arranged from **atomic tokens** → **components** → **patterns** → **principles** → **criteria**. Read top to bottom to onboard; jump by section thereafter. Every section ends with a banned-patterns list so drift is as explicit as the canon.
 
 ---
 
@@ -2580,7 +2602,188 @@ Some routes may force a theme regardless of user preference (marketing pages tha
 
 ---
 
-## 30. Appendix: File Map
+## 30. Reference criteria & curated library
+
+We do not copy references. We extract **specific, decomposable patterns** — and only after confirming the pattern serves one of the Seven Disciplines. This section exists so external inspiration never enters the codebase as cargo.
+
+### Why this section exists (the user's original directive)
+
+Reference-gathering was deliberately deferred until the system was articulated. You cannot choose good references without knowing what you are measuring them against. Now that §1–§29 exist, this section closes the loop: here is the rubric, here is the curated shortlist, here is the reject pile.
+
+### The rubric (Accept / Borrow / Reject)
+
+For every external reference, evaluate on five axes. **A reference is only adopted when it scores ≥ 3 "Accept" across the five.**
+
+| Axis | Accept | Borrow a pattern | Reject |
+|---|---|---|---|
+| **Aesthetic fit** | Editorial, typographic-first, monochrome-with-charge | Productized but contains an isolatable editorial moment | Maximalist, loud color, gradient-forward |
+| **Hierarchy logic** | Scale + weight + spacing drive the eye | One strong pattern (e.g., a grid, a header) worth extracting | Color-coded zones, "billboard" layouts |
+| **Motion discipline** | Calm, diegetic, scroll-honest | A specific transition worth porting | Auto-playing, looping, scroll-hijacking |
+| **Bilingual viability** | Tolerates Hangul without breaking | English-only but the structural pattern is language-agnostic | Letter-spacing / typography assumes Latin-only |
+| **A11y posture** | Keyboard/SR-first visible in the implementation | A visual idea that can be re-implemented accessibly | Hover-only reveals, mouse-mandatory interactions |
+
+**Borrow a pattern** means: extract the single isolatable idea, re-implement from scratch inside our token system. Never port HTML/CSS directly.
+
+### Accepted references (the canonical library)
+
+These references are **aligned enough** that multiple patterns are worth studying. They are not to be cloned; they are lenses.
+
+| Reference | Why it's in the library | What we borrow | What we leave |
+|---|---|---|---|
+| **longblack.co** | Long-form content treated as object — cover, type, typography-led hierarchy | Card-as-object treatment, heavy covers, mono metadata strip, "issue" framing for series | Their illustrative covers (we use photographic or typographic glyphs) |
+| **Are.na** | Monochrome, text-driven, index-of-things aesthetic; bilingual tolerance | Index/list density balance, channel/block typography, mono-label eyebrows, margin rhythm | Their beige warmth (we use cooler paper in light theme) |
+| **Dirt (dirt.fyi) / The Browser** | Editorial newsletter-as-site — restraint, typographic emphasis | Issue-based list layouts, dateline chrome, serif-for-body discipline (if we ever adopt a serif) | Their ad slots and substack scaffolding |
+| **Metalab** | Restraint, whitespace, quiet product surfaces | Whitespace ratios around hero text, button border treatments, muted system messaging | Their agency-marketing scaffolding |
+| **Teenage Engineering (product + site)** | Device-as-object photography, mono chrome, tactile minimalism | Object-lit photography on hero, small monospaced metadata stamps, "serial number"-style identifiers | Their hardware-product verticals (plans, specs) |
+| **Apple (apple.com editorial surfaces only — e.g., Today at Apple, Apple News+)** | Typographic discipline, sectioned editorial rhythm, restraint at scale | Long-form article layouts, sectioned scroll rhythm, initial-letter fallbacks | Everything consumer-product-marketing (big product imagery, specs pages) |
+| **Dieter Rams principles (not a site)** | The underlying grammar: "less, but better"; innovative yet unobtrusive | The ten principles, as a mental check on any proposed feature | n/a (they're principles, not pixels) |
+| **Readymag editorial templates** | Editorial-grade magazine layouts on the web | Grid-breaking pull quotes, spread-style images, asymmetric composition in essay view | Their templating UI language |
+| **Kottke.org / Craig Mod's posts** | Typography-first personal publishing, quiet UI, long-scroll respect | Marginalia, footnote treatment, "walk" article format, mono metadata | Personal-blog-only conventions |
+| **GOV.UK** | A11y-first, keyboard-first, zero ornament, bilingual-capable | Focus-ring discipline, skip-link canon, form field pattern, 1:1 label-to-input fidelity | Their civic sans-serif (they're utility; we're editorial) |
+
+### Reject pile (and why)
+
+These references are **not** to be pulled from, even when tempting. Most of them have been suggested in prior sessions. They are recorded here so future sessions (and agents) stop re-litigating.
+
+| Reference | Surface-level appeal | Why we reject |
+|---|---|---|
+| **Fey (Fey UI kit)** | Financial-dashboard aesthetic, dense mono chrome, chart discipline | **Scope mismatch.** Fey is a trading UI — its density, ticker-tape motion, and chart-forwardness are the opposite of editorial calm. The aesthetic overlap is superficial (mono chrome); the product DNA (dashboards for decisions) is the opposite of ours (rooms for reading). Revisit only if we ship a dedicated analytics surface. |
+| **Linear** | Monochrome, crisp type, disciplined motion | Product-tool DNA. Tab-index-heavy, command-palette-centric, workspace-shaped — every surface is a database. We borrow *command palette* structure (see §23), not the look. |
+| **Vercel / Resend marketing** | Typographic, monochrome, developer-editorial | They're product marketing; the typography is performative (massive hero text, aggressive display scale). We borrow *nothing* — the moment you copy Vercel's scale, the site stops reading like editorial. |
+| **Awwwards winners (aggregate)** | Beautiful one-off microsites | 90%+ scroll-hijack, auto-play, idle animation, or gimmick-driven. Individual sites can make this library after passing the rubric; the aggregate cannot. |
+| **Most Webflow showcase sites** | Editorial adjacency | Scroll-hijacked, animation-heavy, templated. The editorial veneer is cosmetic; the underlying patterns are all webflow-shaped. |
+| **Apple product marketing (iPhone/Mac pages)** | Typographic mastery | The scroll-driven product parallax is the opposite of our motion ethic. Borrow from Apple *editorial* surfaces (see accepted list), not product pages. |
+| **Medium** | Reading-first, type-first | Too generic-reader-by-now. Medium's design no longer carries meaning; it is the baseline Hideaway diverges from. |
+| **Substack** | Reading + subscription | Newsletter funnel; community-first; chat-first. Our structure is the inverse. |
+| **Notion** | Monochrome, type-first, clean | A tool for editing documents, not reading them. Our content is finished, not malleable. |
+| **Brutalist / Neo-brutalist sites** | Editorial courage, anti-SaaS | Intentional ugliness, clashing color, chunky borders — violates Discipline 3 (Border over fill is quiet) and the single-accent rule. |
+| **Glassmorphism-driven sites** | Depth | We use blur for backdrops, not as a hero treatment. A page built on glass cards violates Discipline 2 (Opacity as tone, not chrome). |
+| **Dashboard-by-numbers admin UIs (Stripe dashboard, Linear insights)** | Information density | These are decision tools; we are a reading room. Admin (`/vault`) may borrow *data table* patterns from them; nothing else. |
+
+### Patterns we are allowed to borrow (the concrete shortlist)
+
+Distilled from the accepted library, these are the specific, isolatable patterns cleared for adoption. Anything outside this list requires running the rubric.
+
+| Pattern | Source | Adopt in |
+|---|---|---|
+| Issue/volume framing for series (cover + issue number + mono dateline) | longblack.co, The Browser | Series & Compilations (§13 card variant) |
+| Initial-letter fallback for missing hero imagery | Apple editorial, kottke.org | Heroes (§19) |
+| Mono metadata strip under card title (byline · date · read time) | longblack.co, Are.na | Essay card, Surf card (§13) |
+| Marginal footnotes / pull-quotes breaking the prose column | Craig Mod, Readymag | Essay reading view |
+| Initial-capital drop-cap on essay open | Apple Books, print magazine canon | Essay reading view (optional, per-essay) |
+| Skip link visible on first Tab press | GOV.UK | All pages (§28) |
+| Command palette with grouped sections (Go to · Actions · Recents) | Linear, Raycast | §23 CMDK |
+| "Recently viewed" siderail in admin | Stripe dashboard | `/vault` only |
+| Asymmetric hero (image 60% / text 40%) with type spilling into image margin | Readymag, Metalab | Home hero, plan-landing hero |
+| Mono serial-number stamp for object identifiers (nanoid display, issue number) | Teenage Engineering | Citations (Highlightr ref display), Compilations |
+| Photographic object-lit imagery (flat light, shadow discipline) | Teenage Engineering, Apple editorial | Plans, Radio album hero |
+| Ten-principle design-review checklist | Dieter Rams | This document's banned-pattern lists (already adopted implicitly) |
+
+### Patterns we're explicitly choosing NOT to borrow
+
+Even from accepted references:
+
+- **Are.na's "blocks" surface pattern.** Hideaway content is finished, not collected. Do not build an Are.na-like drop zone.
+- **Teenage Engineering's orange-and-cream chrome.** Our accent is rouge, our surfaces are neutral. Don't let the color palette in.
+- **Metalab's project-case-study scroll.** We have no case studies. Case-study scroll patterns are off-limits.
+- **Linear's keyboard-shortcut-first UX.** We expose shortcuts inside CMDK, not as a first-class navigation metaphor. Power-user UX is not the brand.
+
+### When a new reference is proposed
+
+The intake is explicit:
+
+1. Run the 5-axis rubric (above). Record the scores.
+2. If ≥ 3 Accept, add to "Accepted references" with the **specific pattern(s)** to study.
+3. If 0–2 Accept and a pattern is still interesting, add to "Patterns we are allowed to borrow" — not to "Accepted references."
+4. If 0 Accept, add to "Reject pile" with a one-line reason. This prevents re-litigation in the next session.
+5. Commit the update with `docs(design): reference review — <name>` and cite the rubric scores.
+
+### Banned sourcing behaviors
+
+- **Pulling from Dribbble shots.** Shots are pictures, not patterns; without implementation it is impossible to verify motion, a11y, keyboard, and reduced-motion claims.
+- **Porting HTML/CSS from external sources.** We re-implement inside our token system. Copy-pasted Tailwind classes are drift.
+- **"The Fey thing."** Fey is rejected. Do not revisit without a new, specific product use case.
+- **Training-data pattern-match.** If an agent proposes a UI and cannot cite a specific reference from the Accepted list or Allowed-patterns list, challenge the proposal; it is likely training-set drift, not a design decision.
+
+---
+
+## 31. How to use this document
+
+This document is a **working instrument**, not a manifesto on a wall. Here is the contract between it and the people (and agents) who touch the codebase.
+
+### For designers
+
+1. **Start in §1–§2.** Everything downstream assumes you've internalized the manifesto and the seven disciplines.
+2. **Token first, component second, pattern third.** When designing a new surface, reach for tokens (§3–§11) before reaching for a component. Reach for a component (§12–§16) before inventing a pattern.
+3. **Run the banned-patterns list** at the end of each relevant section against your proposed design before presenting it.
+4. **Any new token, new component, or new pattern** lands as an amendment here *first*, then in code. If it isn't in this doc, it isn't real.
+
+### For engineers
+
+1. **This document wins disagreements** between `globals.css`, `CLAUDE.md`, and itself.
+2. **Before implementing UI**, read the relevant pattern section (§17–§24) and the component sections (§12–§16) it depends on.
+3. **Use the canonical snippets as the starting point.** Don't ad-hoc. Every ad-hoc value is a future audit finding.
+4. **When you discover drift** (an existing component violates the doc), either fix it in the same PR or record it in `readmes/DESIGN_SYSTEM_AUDIT.md` with a new F-id. Never leave drift silent.
+5. **Route all motion through `useReducedMotion`** and all theme-dependent rendering through `next-themes` with mount guards. These are not suggestions.
+
+### For agents (Claude Code, codegen assistants)
+
+1. **Read this document before touching UI files.** It is the single most important context for any design-adjacent work, ahead of `CLAUDE.md` for pixel-level decisions.
+2. **Cite section numbers in commit messages** when a change implements or reconciles a rule (e.g., "per §18 Sticky headers").
+3. **Prefer "here is the rule" over "here is an example I found."** The training data is full of Tailwind and shadcn examples. This document overrides.
+4. **When proposing a new pattern**, produce the rubric pass (§30) before the implementation. Don't smuggle references.
+5. **When the user asks for a design**, confirm whether it is (a) adopting an existing pattern here, (b) extending a pattern (amendment needed), or (c) a new reference proposal (rubric needed). Ask if ambiguous.
+
+### Decision tree: "I need a new UI surface"
+
+```
+Is it covered by an existing pattern (§17–§24)?
+├── YES → Use the canonical snippet. Done.
+└── NO  → Does it compose from existing components (§12–§16)?
+         ├── YES → Compose. Document the composition if non-obvious. Done.
+         └── NO  → Is there a principle covering it (§25–§29)?
+                  ├── YES → Derive from the principle. Add a new pattern section to this doc. Done.
+                  └── NO  → This is a new system surface. Run the reference rubric (§30) if inspiration is needed, then author a new section HERE FIRST, then implement.
+```
+
+### Decision tree: "A component in the codebase violates the doc"
+
+```
+Is the violation load-bearing (in production, user-facing)?
+├── YES → Does fixing it fit in the current PR?
+│         ├── YES → Fix. Cite the section in the commit.
+│         └── NO  → Record in readmes/DESIGN_SYSTEM_AUDIT.md with a new F-id. Cite in the PR description.
+└── NO  → Fix in the current PR or open a follow-up. Don't leave drift.
+```
+
+### Common deltas (quick reference)
+
+When reviewing a PR or writing a component from scratch, these are the frequent drift points — check them first:
+
+| Check | Section |
+|---|---|
+| Is the radius `rounded-sm` / `rounded-[var(--radius-sm)]`? | §6 |
+| Is the button border-over-fill? | §12 |
+| Is the card `border border-border/20`, not `outline-1 outline-groove`? | §13 |
+| Is the input underlined, not boxed? | §14 |
+| Is the container `max-w-[var(--container-page)]`, not `max-w-5xl`? | §17 |
+| Is the sticky header `bg-background/90 backdrop-blur-[var(--blur-md)]`? | §18 |
+| Is the empty state a glyph + one sentence? | §21, §27 |
+| Is the icon strokeWidth `1.5`? | §26 |
+| Is the focus ring `focus-visible:ring-foreground/70`? | §28 |
+| Does the motion respect `useReducedMotion`? | §25, §28 |
+| Does every copy string avoid the banned-words list? | §27 |
+| Does every animation duration land on the five-step ladder? | §25 |
+
+### Update cadence
+
+- **Minor amendments** (new banned pattern, new canonical snippet, new bilingual copy pair): commit as `docs(design): §<n> — <short desc>`. Bump nothing; the doc is always current.
+- **New section** (new component, new pattern): increment the TOC, add the section, commit as `docs(design): add §<n> <title>`.
+- **Breaking change** (token rename, semantic shift): append to the Changelog (§33) with date, change, migration notes. Coordinate with any dependent code.
+
+---
+
+## 32. Appendix: File Map
 
 Where design lives in the codebase today:
 
@@ -2601,8 +2804,35 @@ Where design lives in the codebase today:
 
 ---
 
-## What's next (upcoming iterations)
+## 33. Changelog
 
-- **Iter 6:** Reference selection criteria — which external designs we borrow from, and which we reject. Final aesthetic manifesto polish.
+The doc is revised, never rewritten. Material changes — anything that invalidates existing code or flips a rule — are recorded here with a date, a one-line description, and a migration note where relevant. Typographic fixes, reorderings, and clarifications are not logged.
+
+| Date | Version | Change | Migration |
+|---|---|---|---|
+| 2026-04-20 | 0.1 | Initial scaffold: manifesto, seven disciplines, color, typography | n/a |
+| 2026-04-21 | 0.2 | Structural tokens (spacing, radius, shadow, blur, motion, z-index, grid) | Adopt `--space-*` / `--radius-*` tokens; retire ad-hoc values. See F-003..F-006 in Audit. |
+| 2026-04-21 | 0.3 | Component canon (buttons, cards, inputs, typography primitives, badges) | `Button` → border-over-fill, size ladder {28,36,44,52}; Card radius → `--radius-sm`; Input → underline pattern. See F-030, F-031, F-023 in Audit. |
+| 2026-04-21 | 0.4 | Pattern library (layout, sticky header, hero, grid, empty/loading/error, modal/sheet/popover, CMDK, nav) | New `Page` container primitive; canonical sticky header recipe. See F-033, F-035, F-036 in Audit. |
+| 2026-04-21 | 0.5 | Motion principles, iconography, microcopy voice, a11y commitments, theming policy | Lucide stroke-width → 1.5 global; five-step duration ladder; reduced-motion routing mandatory. |
+| 2026-04-21 | **1.0** | Reference criteria + curated library; "How to use" instrument section; manifesto polish with "promises we keep" block | Reject pile now enforced — **Fey is explicitly rejected**; reference intake requires 5-axis rubric pass. |
+
+### How to add a changelog entry
+
+1. Add a new row at the top of the table above (newest first after row 1).
+2. Increment the version in the **Status** line at the top of this doc.
+3. If the change is breaking, add a concise migration line. Otherwise write "n/a".
+4. Cite related Audit F-ids when applicable.
+5. Commit with `docs(design): changelog — v<n.n> <short>`.
+
+---
+
+## Closing
+
+This document exists so that every future UI decision at The Hideaway happens **once, here, first** — and so that a designer or agent encountering the codebase a year from now can learn the system in an hour, not a week.
+
+If a new surface demands a rule that is not here yet, **write the rule here first and the code second**. That is the entire discipline.
+
+— *The Hideaway, April 2026.*
 
 ---
