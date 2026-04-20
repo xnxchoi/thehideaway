@@ -165,16 +165,24 @@ export const AmbientAudioPlugin: PluginComponent = () => {
         return;
       }
 
-      editor.update(() => {
-        const result = $finalizePlacement({
-          editor,
-          pendingStartKey: s.pendingStartKey,
-          pendingEndKey: s.pendingEndKey,
-          pendingGroupId: s.pendingGroupId,
-          track: PLACEHOLDER_TRACK
+      // Only finalize when at least one anchor has been committed. Without
+      // this guard, exiting from `placingStart` with nothing placed falls
+      // through to $finalizePlacement's viewport-center fallback and spawns
+      // a ghost region — which can encase an existing settled region, i.e.
+      // violate the "no overlapping areas" invariant.
+      const hasCommits = Boolean(s.pendingStartKey || s.pendingEndKey);
+      if (hasCommits) {
+        editor.update(() => {
+          const result = $finalizePlacement({
+            editor,
+            pendingStartKey: s.pendingStartKey,
+            pendingEndKey: s.pendingEndKey,
+            pendingGroupId: s.pendingGroupId,
+            track: PLACEHOLDER_TRACK
+          });
+          void result;
         });
-        void result;
-      });
+      }
 
       storeApi.getState().exitSelectMode();
     },

@@ -1,69 +1,91 @@
 "use client";
 
-import { Button } from "@/components/core/Button";
+import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
+import { useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useAmbientStore } from "../store/ambientStore";
 
 /**
- * Sticky banner shown while in select-mode. Reflects the current phase and
- * the commit affordance appropriate to it.
+ * Caret-adjacent status pill, Notion-style: a compact indicator floating
+ * just above the focused block during placement. TrackPicker owns the UI
+ * during `pickingTrack`, and `settled` is implicit — so the overlay only
+ * renders while the user is actively navigating to place start or end.
  */
 export function SelectModeOverlay() {
+  const [editor] = useLexicalComposerContext();
   const phase = useAmbientStore((s) => s.phase);
+  const focusedNodeKey = useAmbientStore((s) => s.focusedNodeKey);
   const exitSelectMode = useAmbientStore((s) => s.exitSelectMode);
 
-  if (phase === "idle") return null;
+  const active = phase === "placingStart" || phase === "placingEnd";
 
-  const label =
-    phase === "placingStart"
-      ? "Mark the start"
-      : phase === "placingEnd"
-        ? "Mark the end"
-        : phase === "pickingTrack"
-          ? "Pick a track"
-          : "Adjust or Esc to finish";
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
-  const hint =
-    phase === "placingStart" || phase === "placingEnd"
-      ? "Move caret · ⌘⏎ to set · Esc to finish"
-      : phase === "pickingTrack"
-        ? "Search above · Esc to finish"
-        : "Tap an anchor · click range to reset · Esc to finish";
+  useLayoutEffect(() => {
+    if (!active || !focusedNodeKey) {
+      setPos(null);
+      return;
+    }
+    const measure = () => {
+      const el = editor.getElementByKey(focusedNodeKey);
+      if (!el) {
+        setPos(null);
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      setPos({ top: r.top - 34, left: r.left });
+    };
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [editor, focusedNodeKey, active]);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  const label = phase === "placingStart" ? "Start" : "End";
+  const visible = active && pos !== null;
+
+  return createPortal(
     <AnimatePresence initial={false}>
-      <m.div
-        key={phase}
-        role="status"
-        aria-live="polite"
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ type: "spring", bounce: 0.2, visualDuration: 0.26 }}
-        className="pointer-events-none sticky top-2 z-40 mx-auto mb-2 flex w-fit items-center gap-3 rounded-full border border-border/40 bg-background/85 px-3.5 py-1.5 backdrop-blur-md"
-        style={{ fontFamily: "var(--font-mono, ui-monospace)", fontSize: 10 }}
-      >
-        <span className="tracking-widest text-foreground/80 uppercase">
-          Ambient audio · {label}
-        </span>
-        <span
-          aria-hidden
-          className="text-muted-foreground/50"
-          style={{ letterSpacing: "0.08em" }}
+      {visible ? (
+        <m.div
+          key={phase}
+          role="status"
+          aria-live="polite"
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          transition={{ type: "spring", bounce: 0.12, visualDuration: 0.22 }}
+          className="pointer-events-none fixed z-[45] flex items-center gap-3 border border-border/40 bg-background/90 px-3 py-1.5 backdrop-blur-md"
+          style={{ top: pos!.top, left: Math.max(8, pos!.left) }}
         >
-          {hint}
-        </span>
-        <Button
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={exitSelectMode}
-          className="pointer-events-auto tracking-widest text-foreground/60 uppercase hover:text-foreground"
-        >
-          Esc
-        </Button>
-      </m.div>
-    </AnimatePresence>
+          <span
+            aria-hidden
+            className="font-mono text-[9px] tracking-[0.24em] text-muted-foreground/50 uppercase"
+          >
+            Ambient
+          </span>
+          <span className="font-mono text-[10px] tracking-widest text-foreground/85 uppercase">
+            {label}
+          </span>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={exitSelectMode}
+            className="pointer-events-auto border border-border/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+          >
+            Esc
+          </button>
+        </m.div>
+      ) : null}
+    </AnimatePresence>,
+    document.body
   );
 }

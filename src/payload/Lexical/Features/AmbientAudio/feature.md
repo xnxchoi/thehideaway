@@ -62,7 +62,9 @@ src/payload/Lexical/Features/AmbientAudio/
 │   │                              SelectModeOverlay, TrackPicker. Registers
 │   │                              Cmd+Arrow / Esc commands while selecting.
 │   ├── ContextMenu.tsx            Right-click menu on editor root.
-│   ├── SelectModeOverlay.tsx      Sticky banner while mode === "selecting".
+│   ├── SelectModeOverlay.tsx      Caret-adjacent status pill. Portals to
+│   │                              body, anchors above focused block during
+│   │                              placingStart/placingEnd only.
 │   └── TrackPicker.tsx            floating-ui + cmdk track search. Uses
 │                                  searchTracks() from utils/tracks.ts.
 │                                  Calls editor.update(() => $insertAnchor).
@@ -409,7 +411,7 @@ Every exit path calls `$finalizePlacement` with this resolution:
 
 | State at exit | Result |
 |---|---|
-| 0 anchors   | Both placed at viewport-center block edges. |
+| 0 anchors   | **No-op.** Plugin skips `$finalizePlacement` — user cancelled before committing anything. Prevents a ghost region from spawning at viewport center (which could encase an existing settled region and violate "no overlapping areas"). |
 | 1 anchor    | Missing one placed at end-of-block of the existing anchor. |
 | 2 anchors   | Left as-is. |
 | No track    | `PLACEHOLDER_TRACK` (track.trackId === ""). |
