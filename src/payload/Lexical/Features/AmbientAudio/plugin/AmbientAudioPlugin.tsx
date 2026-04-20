@@ -27,6 +27,7 @@ import {
   $groupRangeIndices,
   $insertAnchorAtBlockEnd,
   $insertAnchorAtBlockStart,
+  $insertAnchorAtSelection,
   $removeGroup,
   $validateProposedRange,
   createGroupId,
@@ -84,6 +85,8 @@ export const AmbientAudioPlugin: PluginComponent = () => {
     const ph = s.phase;
     if (ph !== "placingStart" && ph !== "placingEnd") return;
 
+    const savedPoint = s.pendingCaretPoint;
+
     editor.update(() => {
       const node = $getNodeByKey(focusedKey);
       if (!node) return;
@@ -91,29 +94,26 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       if (!block) return;
 
       const groupId = s.pendingGroupId ?? createGroupId();
+      const kind = ph === "placingStart" ? "start" : "end";
+
+      // Prefer caret-precise insertion; fall back to block edges only when
+      // the CaretNavigator has not yet recorded a point (should be rare).
+      const insertedKey = savedPoint
+        ? $insertAnchorAtSelection(kind, groupId, PLACEHOLDER_TRACK, savedPoint)
+        : ph === "placingStart"
+          ? $insertAnchorAtBlockStart(block, "start", groupId, PLACEHOLDER_TRACK)
+          : $insertAnchorAtBlockEnd(block, "end", groupId, PLACEHOLDER_TRACK);
+
+      if (!insertedKey) return;
 
       if (ph === "placingStart") {
-        const startKey = $insertAnchorAtBlockStart(
-          block,
-          "start",
-          groupId,
-          PLACEHOLDER_TRACK
-        );
-        if (!startKey) return;
-        storeApi.getState().setPendingStartKey(startKey);
+        storeApi.getState().setPendingStartKey(insertedKey);
         storeApi.getState().setPendingGroupId(groupId);
         storeApi.getState().setPhase("placingEnd");
       } else {
-        const endKey = $insertAnchorAtBlockEnd(
-          block,
-          "end",
-          groupId,
-          PLACEHOLDER_TRACK
-        );
-        if (!endKey) return;
-        storeApi.getState().setPendingEndKey(endKey);
+        storeApi.getState().setPendingEndKey(insertedKey);
         storeApi.getState().setPhase("pickingTrack");
-        const el = editor.getElementByKey(endKey);
+        const el = editor.getElementByKey(insertedKey);
         storeApi.getState().openPicker({ anchorEl: el, groupId });
       }
     });
@@ -201,6 +201,26 @@ export const AmbientAudioPlugin: PluginComponent = () => {
 
         if (e.key === "Escape") {
           e.preventDefault();
+          if (st.pickerOpen) {
+            st.closePicker();
+            if (ph === "pickingTrack") st.setPhase("placingEnd");
+            return true;
+          }
+          if (st.caretNavArmed) {
+            st.disarmCaretNav();
+            return true;
+          }
+          if (ph === "placingEnd" && st.pendingStartKey) {
+            const startKey = st.pendingStartKey;
+            editor.update(() => {
+              const n = $getNodeByKey(startKey);
+              if (n) n.remove();
+            });
+            st.setPendingStartKey(null);
+            st.setPendingGroupId(null);
+            st.setPhase("placingStart");
+            return true;
+          }
           finalize("esc");
           return true;
         }
@@ -245,7 +265,6 @@ export const AmbientAudioPlugin: PluginComponent = () => {
         if (
           (ph === "placingStart" ||
             ph === "placingEnd" ||
-            ph === "pickingTrack" ||
             ph === "settled") &&
           isPrintableKey(e) &&
           !e.metaKey &&
@@ -281,10 +300,9 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       return target.closest<HTMLElement>("[data-ambient-anchor]");
     };
 
-    const pointInRange = (x: number, y: number): boolean => {
+    const pointInRange = (_x: number, y: number): boolean => {
       const st = storeApi.getState();
       if (st.phase !== "settled") return false;
-      void x;
       let inRange = false;
       editor.getEditorState().read(() => {
         const pair = st.pendingGroupId

@@ -66,6 +66,7 @@ export function AmbientContextMenu() {
         type="button"
         role="menuitem"
         className="w-full cursor-pointer px-3 py-2 text-left font-mono text-[11px] text-foreground/80 hover:bg-accent/50"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           enterSelectMode();
           closeContextMenu();

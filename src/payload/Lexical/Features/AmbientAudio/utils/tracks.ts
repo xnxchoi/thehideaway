@@ -110,6 +110,5 @@ export async function getTrackById(
   if (!res.ok) throw new Error(`Track fetch failed: ${res.status}`);
 
   const doc = (await res.json()) as RawTrackDoc;
-  console.log("doc", doc);
   return toRef(doc);
 }

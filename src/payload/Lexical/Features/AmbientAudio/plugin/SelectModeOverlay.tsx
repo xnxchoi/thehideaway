@@ -57,6 +57,7 @@ export function SelectModeOverlay() {
         </span>
         <Button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={exitSelectMode}
           className="pointer-events-auto tracking-widest text-foreground/60 uppercase hover:text-foreground"
         >

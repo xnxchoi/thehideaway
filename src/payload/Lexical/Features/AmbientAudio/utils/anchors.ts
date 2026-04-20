@@ -1,8 +1,10 @@
 import {
+  $createRangeSelection,
   $getNodeByKey,
   $getRoot,
   $getSelection,
   $isRangeSelection,
+  $setSelection,
   type LexicalEditor,
   type LexicalNode
 } from "@payloadcms/richtext-lexical/lexical";
@@ -24,6 +26,17 @@ export interface AnchorPair {
   groupId: string;
   start: AmbientAudioStartNode | null;
   end: AmbientAudioEndNode | null;
+}
+
+/**
+ * A caret snapshot captured by CaretNavigator. Enough information to rebuild
+ * a collapsed RangeSelection inside an editor.update() later, so the anchor
+ * can be inserted between characters rather than at a block edge.
+ */
+export interface SavedCaretPoint {
+  nodeKey: string;
+  offset: number;
+  type: "text" | "element";
 }
 
 export function createGroupId(): string {
@@ -48,6 +61,40 @@ export function $insertAnchor(
       : $createAmbientAudioEndNode({ groupId, track });
 
   selection.insertNodes([node]);
+  return node.getKey();
+}
+
+/**
+ * Insert a single anchor at a previously saved caret point. Restores the
+ * selection from the snapshot, then delegates to `insertNodes` so the anchor
+ * lands between characters (or on an element boundary) exactly where the
+ * user had the caret — not forced to a block edge.
+ *
+ * Caller is responsible for wrapping this in editor.update().
+ */
+export function $insertAnchorAtSelection(
+  kind: AnchorKind,
+  groupId: string,
+  track: AmbientTrackRef,
+  savedPoint: SavedCaretPoint
+): string | null {
+  const target = $getNodeByKey(savedPoint.nodeKey);
+  if (!target) return null;
+
+  const selection = $createRangeSelection();
+  selection.anchor.set(savedPoint.nodeKey, savedPoint.offset, savedPoint.type);
+  selection.focus.set(savedPoint.nodeKey, savedPoint.offset, savedPoint.type);
+  $setSelection(selection);
+
+  const sel = $getSelection();
+  if (!$isRangeSelection(sel)) return null;
+
+  const node =
+    kind === "start"
+      ? $createAmbientAudioStartNode({ groupId, track })
+      : $createAmbientAudioEndNode({ groupId, track });
+
+  sel.insertNodes([node]);
   return node.getKey();
 }
 

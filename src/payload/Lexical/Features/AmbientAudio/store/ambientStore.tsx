@@ -4,6 +4,7 @@ import { createContext, useContext, useRef, type ReactNode } from "react";
 import { createStore, type StoreApi, useStore } from "zustand";
 
 import type { AnchorKind } from "../nodes/types";
+import type { SavedCaretPoint } from "../utils/anchors";
 
 /**
  * Coarse legacy mode flag. Kept so existing callers (SelectModeOverlay,
@@ -60,6 +61,12 @@ export interface AmbientStoreState {
   phase: AmbientPhase;
   caretNavArmed: boolean;
   focusedNodeKey: string | null;
+  /**
+   * Full caret snapshot (node + offset + type) captured by CaretNavigator.
+   * Used by commitFocused so anchors land exactly where the caret is, not
+   * at the block edge.
+   */
+  pendingCaretPoint: SavedCaretPoint | null;
   pendingStartKey: string | null;
   pendingEndKey: string | null;
   resetWindow: ResetWindow | null;
@@ -82,7 +89,9 @@ export interface AmbientStoreState {
 
   setPhase: (phase: AmbientPhase) => void;
   armCaretNav: () => void;
+  disarmCaretNav: () => void;
   setFocusedNodeKey: (key: string | null) => void;
+  setPendingCaretPoint: (point: SavedCaretPoint | null) => void;
   setPendingStartKey: (key: string | null) => void;
   setPendingEndKey: (key: string | null) => void;
   openResetWindow: (x: number, y: number, expiresAt: number) => void;
@@ -110,7 +119,9 @@ type StateShape = Omit<
   | "closeContextMenu"
   | "setPhase"
   | "armCaretNav"
+  | "disarmCaretNav"
   | "setFocusedNodeKey"
+  | "setPendingCaretPoint"
   | "setPendingStartKey"
   | "setPendingEndKey"
   | "openResetWindow"
@@ -136,6 +147,7 @@ const INITIAL: StateShape = {
   phase: "idle",
   caretNavArmed: false,
   focusedNodeKey: null,
+  pendingCaretPoint: null,
   pendingStartKey: null,
   pendingEndKey: null,
   resetWindow: null,
@@ -155,6 +167,7 @@ const createAmbientStore = () =>
         phase: "placingStart",
         caretNavArmed: false,
         focusedNodeKey: null,
+        pendingCaretPoint: null,
         pendingStartKey: null,
         pendingEndKey: null,
         resetWindow: null,
@@ -168,6 +181,7 @@ const createAmbientStore = () =>
         phase: "idle",
         caretNavArmed: false,
         focusedNodeKey: null,
+        pendingCaretPoint: null,
         pendingStartKey: null,
         pendingEndKey: null,
         resetWindow: null,
@@ -212,8 +226,17 @@ const createAmbientStore = () =>
 
     setPhase: (phase) => set((state) => ({ ...state, phase })),
     armCaretNav: () => set((state) => ({ ...state, caretNavArmed: true })),
+    disarmCaretNav: () =>
+      set((state) => ({
+        ...state,
+        caretNavArmed: false,
+        focusedNodeKey: null,
+        pendingCaretPoint: null
+      })),
     setFocusedNodeKey: (key) =>
       set((state) => ({ ...state, focusedNodeKey: key })),
+    setPendingCaretPoint: (point) =>
+      set((state) => ({ ...state, pendingCaretPoint: point })),
     setPendingStartKey: (key) =>
       set((state) => ({ ...state, pendingStartKey: key })),
     setPendingEndKey: (key) =>
