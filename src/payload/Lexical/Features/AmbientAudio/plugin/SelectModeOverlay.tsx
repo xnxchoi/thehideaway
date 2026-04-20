@@ -64,8 +64,12 @@ export function SelectModeOverlay() {
   return (
     <Popover.Root
       open={active}
-      onOpenChange={(next) => {
-        if (!next && active) exitSelectMode();
+      onOpenChange={(next, details) => {
+        if (next || !active) return;
+        // Only honor intentional dismiss gestures. Clicking inside the editor
+        // fires `outsidePress` (the editor is outside the popup), which would
+        // otherwise cancel placement — suppress that case.
+        if (details.reason === "escape-key") exitSelectMode();
       }}
       modal={false}
     >
