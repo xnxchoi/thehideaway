@@ -19,6 +19,7 @@ import {
 import {
   $findAnchorPair,
   $findBlockAncestor,
+  $findPlaceableBlockForEmptyExit,
   $finalizePlacement,
   $groupRangeIndices,
   $insertAnchorAtBlockEnd,
@@ -30,6 +31,7 @@ import {
   createGroupId,
   PLACEHOLDER_TRACK
 } from "../utils/anchors";
+import { toast } from "sonner";
 import { AnchorDragReorder } from "./AnchorDragReorder";
 import { CaretNavigator } from "./CaretNavigator";
 import { CommitChip } from "./CommitChip";
@@ -165,11 +167,6 @@ export const AmbientAudioPlugin: PluginComponent = () => {
         return;
       }
 
-      // Only finalize when at least one anchor has been committed. Without
-      // this guard, exiting from `placingStart` with nothing placed falls
-      // through to $finalizePlacement's viewport-center fallback and spawns
-      // a ghost region — which can encase an existing settled region, i.e.
-      // violate the "no overlapping areas" invariant.
       const hasCommits = Boolean(s.pendingStartKey || s.pendingEndKey);
       if (hasCommits) {
         editor.update(() => {
@@ -182,6 +179,40 @@ export const AmbientAudioPlugin: PluginComponent = () => {
           });
           void result;
         });
+      } else {
+        // Empty exit. Attempt a viewport-center placeholder, but only if we
+        // can find a block that doesn't overlap an existing ambient region.
+        // If every candidate overlaps, warn and drop rather than spawn a
+        // ghost region that encases an existing one.
+        let placed = false;
+        let noSlot = false;
+        editor.update(() => {
+          const block = $findPlaceableBlockForEmptyExit(editor);
+          if (!block) {
+            noSlot = true;
+            return;
+          }
+          const groupId = createGroupId();
+          const startKey = $insertAnchorAtBlockStart(
+            block,
+            "start",
+            groupId,
+            PLACEHOLDER_TRACK
+          );
+          const latestBlock = block.getLatest();
+          const endKey = $insertAnchorAtBlockEnd(
+            latestBlock,
+            "end",
+            groupId,
+            PLACEHOLDER_TRACK
+          );
+          if (startKey && endKey) placed = true;
+        });
+        if (!placed && noSlot) {
+          toast.warning("Ambient audio dropped — no room for a new region", {
+            description: "Existing regions cover the available blocks."
+          });
+        }
       }
 
       storeApi.getState().exitSelectMode();

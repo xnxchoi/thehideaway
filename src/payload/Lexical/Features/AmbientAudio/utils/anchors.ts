@@ -289,6 +289,53 @@ export function $findBlockAncestor(node: LexicalNode): LexicalNode | null {
 }
 
 /**
+ * Try viewport-center first; if that block overlaps an existing anchor
+ * group, fall back to the first non-overlapping block adjacent (above, then
+ * below) to each existing group. Returns null when nothing is placeable —
+ * the caller should warn and skip creation rather than spawn an encasing
+ * region at viewport center.
+ */
+export function $findPlaceableBlockForEmptyExit(
+  editor: LexicalEditor
+): LexicalNode | null {
+  const root = $getRoot();
+  const children = root.getChildren();
+  if (children.length === 0) return null;
+
+  const indexOf = (n: LexicalNode): number =>
+    children.findIndex((c) => c.getKey() === n.getKey());
+
+  const validate = (idx: number): boolean => {
+    if (idx < 0 || idx >= children.length) return false;
+    return $validateProposedRange({ startIdx: idx, endIdx: idx }).ok;
+  };
+
+  const center = $findViewportCenterBlock(editor);
+  if (center) {
+    const idx = indexOf(center);
+    if (validate(idx)) return center;
+  }
+
+  // Walk outward from each existing group's edges, preferring slots closest
+  // to where the user was looking.
+  const centerIdx = center ? indexOf(center) : -1;
+  const candidates: Array<{ idx: number; dist: number }> = [];
+  for (const pair of $listGroups()) {
+    const range = $groupRangeIndices(pair.start, pair.end);
+    if (!range) continue;
+    for (const idx of [range.startIdx - 1, range.endIdx + 1]) {
+      if (!validate(idx)) continue;
+      const dist = centerIdx >= 0 ? Math.abs(centerIdx - idx) : idx;
+      candidates.push({ idx, dist });
+    }
+  }
+  candidates.sort((a, b) => a.dist - b.dist);
+  if (candidates.length > 0) return children[candidates[0]!.idx] ?? null;
+
+  return null;
+}
+
+/**
  * Find the block-level node that sits at the viewport center. Walks up/down
  * to the nearest content block if the center hits whitespace.
  */
