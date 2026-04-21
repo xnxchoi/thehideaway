@@ -7,12 +7,23 @@ export default async function Page() {
   return (
     <RPage type="account" slug={["prive"]}>
       <PageClient />
-      <div
-        className="flex w-full flex-col pt-[80px] pb-[80px] text-base max-md:max-w-[calc(100vw-20px)] md:min-h-screen md:w-screen lg:pt-[100px]"
-        data-lenis-prevent
-      >
-        <div className="mx-2.5 my-0 w-full px-[15px] sm:mx-auto xl:max-w-[98vw]">
-          <div className="mx-auto flex h-full w-full flex-col gap-6 xl:max-w-screen-lg">
+      <div className="flex min-h-screen w-full flex-col" data-lenis-prevent>
+        <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
+          <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+                  Your Account
+                </p>
+                <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
+                  Settings
+                </h1>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+          <div className="flex flex-col gap-8">
             <AccountSwitcher />
             <UserCard />
           </div>
