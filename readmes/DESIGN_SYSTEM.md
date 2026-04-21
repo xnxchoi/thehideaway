@@ -568,15 +568,10 @@ At 62.5% root, `1rem = 10px`.
 - **Deleted** legacy `--button-height*`, `--button-padding` from `hideaway.scss :root`. Deleted `--button-pad` and the unused `--height-input` from `estate.scss`. Kept `--pad-input` (5 input-specific callers, out of button scope).
 - **Migrated** 15 `var(--button-*)` references in `hideaway.scss` to the new names. `--button-px-lg` (2.4rem) preserves the exact padding of the one `var(--button-pad)` caller rather than the spec's 2rem.
 
-### T-10 — Formalize duration tokens
+### T-10 — Formalize duration tokens ✅ DONE
 
-- **Add** to `globals.css` `@theme`:
-  ```css
-  --duration-fast:  150ms;
-  --duration-base:  250ms;
-  --duration-slow:  400ms;
-  ```
-- No callsite migration required — new code uses tokens, old code migrates opportunistically.
+- **Added** `--duration-fast: 150ms`, `--duration-base: 250ms`, `--duration-slow: 400ms` to the animation `@theme` block in both `globals.css` and `payloadStyles.css`. Tailwind 4 exposes these automatically as `duration-fast|base|slow` utility classes.
+- No callsite migration required — new code consumes the tokens, old code migrates opportunistically.
 
 ---
 

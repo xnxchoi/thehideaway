@@ -690,6 +690,10 @@ Colors
     --animate-lp: rotate 21s linear infinite;
     --animate-accordion-down: accordion-down 0.2s ease-out;
     --animate-accordion-up: accordion-up 0.2s ease-out;
+
+    --duration-fast: 150ms;
+    --duration-base: 250ms;
+    --duration-slow: 400ms;
 }
 .marquee-horizontal-rtl {
     animation: marquee-horizontal-rtl 25s linear infinite;

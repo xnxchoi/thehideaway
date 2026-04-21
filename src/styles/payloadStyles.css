@@ -556,6 +556,10 @@ html {
   --animate-marquee-horizontal-rtl: marquee-horizontal-rtl 40s linear infinite;
   --animate-marquee-horizontal-ltr: marquee-horizontal-ltr 40s linear infinite;
   --animate-lp: rotate 21s linear infinite;
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
 }
 .marquee-horizontal-rtl {
   animation: marquee-horizontal-rtl 25s linear infinite;
