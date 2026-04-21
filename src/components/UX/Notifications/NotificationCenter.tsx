@@ -472,7 +472,7 @@ const NotificationCard = ({
               <div className="flex items-start justify-between gap-[12px]">
                 <div className="flex-1">
                   <div className="mb-[4px] flex items-center gap-[8px]">
-                    <span className="text-lg">
+                    <span className="text-base">
                       {getNotificationIcon(notification.type)}
                     </span>
                     <Badge variant="secondary" className="text-base">
@@ -564,7 +564,7 @@ const EmptyState = ({
     className="flex flex-col items-center justify-center py-[48px] text-center"
   >
     <BellOff className="mb-[16px] h-[64px] w-[64px] text-muted-foreground/50" />
-    <h3 className="mb-[8px] text-lg font-semibold">
+    <h3 className="mb-[8px] text-base font-semibold">
       {searchQuery
         ? "No notifications found"
         : filterType === "unread"
