@@ -488,11 +488,11 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 - **Migrated** `text-lg` → `text-base` across 33 TSX files (all editorial, auth, UI primitive, and better-auth-ui dialog callsites). Responsive variants (`xl:text-lg`, `md:text-lg`, etc.) converted in the same pass; downstream visual is preserved because the new `--text-base` matches the pre-migration `--text-lg` value.
 - **Grep verification**: `\btext-lg\b` now returns only the two CSS token definitions — zero active callsites.
 
-### T-03 — Migrate `text-6xl` callsites + update `--text-6xl` to `4rem`
+### T-03 — Migrate `text-6xl` callsites + update `--text-6xl` to `4rem` ✅ DONE
 
-- **Find all** `text-6xl`. Migrate to `text-4xl`.
-- **Then update** `--text-6xl: 4rem` in `globals.css` `@theme`.
-- **Ship together.**
+- **Migrated** `text-6xl` → `text-4xl` across 4 files: `blocks/heros/PostHero/index.tsx`, `me/library/lists/page.client.tsx`, `content/lists/[username]/[hashId]/page.client.tsx`, `components/Radio/Showcase/ShowcaseHero.tsx`. Value-preserving (both resolved to 3.2rem pre-migration).
+- **Bumped** `--text-6xl: 3.2rem` → `4rem` in `globals.css:70` and `payloadStyles.css:79`.
+- **Known follow-up**: `--text-5xl` (currently `2.8rem`) sits below `--text-4xl` (`3.2rem`) — an inversion. `--text-7xl` (`3.6rem`) is tight against the new 6xl. Responsive ladders using `md:text-5xl xl:text-6xl 2xl:text-7xl` will still render non-monotonically until 5xl/7xl are fixed in a subsequent task.
 
 ### T-04 — Color duplicate aliases
 

@@ -305,7 +305,7 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-28 text-center"
     >
-      <span className="mb-5 font-mono text-6xl text-foreground/8 select-none">
+      <span className="mb-5 font-mono text-4xl text-foreground/8 select-none">
         ⊞
       </span>
       <p className="text-base font-light text-foreground/70">No lists yet.</p>
