@@ -49,7 +49,7 @@
 }
 
 .plan {
-  border-radius: var(--rounded-large);
+  border-radius: var(--radius-xl);
   background: var(--color-white);
   overflow: hidden
 }
@@ -206,7 +206,7 @@
   margin-bottom: clamp(35px, 3vw, 75px);
   padding: clamp(22px, 3vw, 44px) 20px;
   background: rgba(56, 56, 56, .5);
-  border-radius: var(--rounded-normal);
+  border-radius: var(--radius-lg);
   font-size: 20px
 }
 
@@ -324,15 +324,15 @@
   height: var(--col-height);
   padding: 0 var(--col-pad);
   background: var(--bg-secondary);
-  border-top-left-radius: var(--rounded-large);
-  border-top-right-radius: var(--rounded-large);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
   color: var(--color-white)
 }
 
 .plans-compare__table {
   border: 1px solid var(--col-border);
-  border-bottom-left-radius: var(--rounded-large);
-  border-bottom-right-radius: var(--rounded-large);
+  border-bottom-left-radius: var(--radius-xl);
+  border-bottom-right-radius: var(--radius-xl);
   overflow: hidden
 }
 
@@ -465,7 +465,7 @@
   position: relative;
   padding: clamp(50px, 5vw, 100px) 0;
   background: var(--bg-4rd);
-  border-radius: var(--rounded-large);
+  border-radius: var(--radius-xl);
   text-align: center;
   overflow: hidden
 }
@@ -831,7 +831,7 @@
   margin-top: clamp(50px, 5vw, 100px);
   padding: clamp(24px, 5vw, 50px);
   background: #f8f0ee;
-  border-radius: var(--rounded-normal);
+  border-radius: var(--radius-lg);
   font-size: 16px;
   font-size: clamp(16px, 14px + 0.3vw, 20px)
 }

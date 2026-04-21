@@ -90,7 +90,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0 var(--button-padding);
-  border-radius: 5rem;
+  border-radius: var(--radius-pill);
   text-align: center;
   height: var(--button-height-md);
 }
@@ -537,7 +537,7 @@ svg.bell-icon {
   width: var(--button-height-md);
   transition: border-color 0.2s,
   background-color 0.2s;
-  border-radius: 5rem;
+  border-radius: var(--radius-pill);
   position: relative;
   overflow: hidden;
 
@@ -1946,7 +1946,7 @@ body[data-browser="chrome"][data-device="mobile"] .menu__frame.frame-bottom {
   max-width: initial;
   font-size: var(--text-sm);
   background-color: oklch(from var(--n-s-bbg-inverted) l c h / 0.9);
-  border-radius: var(--rounded-normal);
+  border-radius: var(--radius-lg);
   color: oklch(from var(--n-s-btn) l c h / 1);
   line-height: 120%;
   transform: translate(-50%, -10px);

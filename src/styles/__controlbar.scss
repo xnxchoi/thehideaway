@@ -359,7 +359,7 @@ button.js-menu-anchor.menu-float__item.saver {
   position: relative;
   background: oklch(from var(--bg) l c h/1);
   color: oklch(from var(--fg) l c h/1);
-  border-radius: var(--rounded-normal);
+  border-radius: var(--radius-lg);
   z-index: -1;
   transition: all 400ms ease;
 }

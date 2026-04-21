@@ -64,7 +64,7 @@ color utility to any element that depends on these defaults.
   --text-sm--line-height: calc(1.25 / 0.875);
   --text-base: 1.4rem;
   --text-base--line-height: 1.75;
-  --text-lg: 1.4rem;
+  --text-lg: 1.6rem;
   --text-lg--line-height: calc(1.75 / 1.125);
   --text-xl: 1.8rem;
   --text-xl--line-height: 1.5;
@@ -128,7 +128,7 @@ color utility to any element that depends on these defaults.
   }
 
   h5 {
-    @apply text-lg leading-[var(--font-lg--line-height)] font-normal;
+    @apply text-base leading-[var(--font-base--line-height)] font-normal;
   }
 
   h6 {
@@ -164,7 +164,7 @@ color utility to any element that depends on these defaults.
   }
 
   code {
-    @apply font-mono text-lg leading-[1.75] tracking-[0.03px];
+    @apply font-mono text-base leading-[1.75] tracking-[0.03px];
   }
 }
 
@@ -205,6 +205,11 @@ html {
   --pad-inner: 5.2rem;
   --halfGutter: calc(var(--gutter) * 0.5);
   --radius: 0.8rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: 999px;
 }
 
 @media (max-width: 768px) {
@@ -541,7 +546,7 @@ html {
     --text-h2: var(--text-3xl);
     --text-h3: var(--text-2xl);
     --text-h4: var(--text-xl);
-    --text-h5: var(--text-lg);
+    --text-h5: var(--text-base);
     --text-h6: calc(var(--text-base) * 1.125);
     --text-p: var(--text-base);
 }
