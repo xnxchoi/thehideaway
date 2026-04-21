@@ -514,7 +514,21 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 - Grep `border: 0.1rem` and `border-width: 0.1rem` → replace with `1px`.
 - Same for `border-top/right/bottom/left: 0.1rem`.
 
-### T-07 — Move `estate.scss` px tokens to rem
+### T-07 — Move `estate.scss` px tokens to rem ✅ DONE
+
+Converted 7 tokens in `src/app/(frontend)/estate.scss:1-21` from px to rem using `1rem = 10px`:
+
+| Token | Before | After |
+|---|---|---|
+| `--pad-grid` | `clamp(20px, 5vw, 92px)` | `clamp(2rem, 5vw, 9.2rem)` |
+| `--min-width-col` | `200px` | `20rem` |
+| `--grid-gutter` | `36px var(--gutter)` | `3.6rem var(--gutter)` |
+| `--button-pad` | `24px` | `2.4rem` |
+| `--loader-size` | `24px` | `2.4rem` |
+| `--height-input` | `48px` | `4.8rem` |
+| `--pad-input` | `16px` | `1.6rem` |
+
+Dependent `calc()` tokens (`--check-height`, `--check-width`, `--check-left`) propagate automatically through `var(--loader-size)`. Non-token px values elsewhere in the file (image border-radius, tooltip padding, noise mask sizing) are intentionally left as px.
 
 At 62.5% root, `1rem = 10px`.
 

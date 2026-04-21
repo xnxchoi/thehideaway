@@ -1,23 +1,23 @@
 :root {
-  --pad-grid: clamp(20px, 5vw, 92px);
-  --min-width-col: 200px;
-  --grid-gutter: 36px var(--gutter);
+  --pad-grid: clamp(2rem, 5vw, 9.2rem);
+  --min-width-col: 20rem;
+  --grid-gutter: 3.6rem var(--gutter);
 
-  --button-pad: 24px;
+  --button-pad: 2.4rem;
   --button-bg: rgba(0, 0, 0, 0);
   --button-color: oklch(from var(--fg) l c h/1);
   --button-color-border: var(--bg-primary);
   --img-resizing-site: 16 / 12;
   --modal-alpha: 0.7;
-  --loader-size: 24px;
+  --loader-size: 2.4rem;
   --check-height: calc(var(--loader-size) / 2);
   --check-width: calc(var(--check-height) / 2);
   --check-left: calc(
     calc(var(--loader-size) / 6) + calc(var(--loader-size) / 12)
   );
   --check-color: oklch(from var(--fg) l c h/1);
-  --height-input: 48px;
-  --pad-input: 16px;
+  --height-input: 4.8rem;
+  --pad-input: 1.6rem;
 }
 .root {
   isolation: isolate;
