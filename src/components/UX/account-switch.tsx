@@ -40,21 +40,22 @@ export default function AccountSwitcher() {
             role="combobox"
             aria-expanded={open}
             aria-label="Select a user"
-            className="outline-groove group flex w-[250px] items-center justify-between rounded-[12px] px-4 font-sans text-foreground shadow-sm/25 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-foreground/10 dark:shadow-md/30"
-            style={{
-              outlineColor: "oklch(from var(--muted-faded-fg) l c h/.3)"
-            }}
+            className="group flex w-[250px] items-center justify-between rounded-sm border border-border/30 px-4 py-2 text-foreground transition-colors hover:border-border/60"
           >
-            <div className="flex items-center gap-2 px-1 py-1.5">
-              {open ? "Accounts " : "Currently :"}{" "}
-              <Avatar className="mr-2 h-6 w-6">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+                {open ? "Accounts" : "Current"}
+              </span>
+              <Avatar className="h-6 w-6">
                 <AvatarImage
                   src={currentUser?.image || ""}
                   alt={currentUser?.name ?? ""}
                 />
                 <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="truncate font-medium">{currentUser?.name}</span>
+              <span className="truncate text-sm font-light tracking-tight">
+                {currentUser?.name}
+              </span>
             </div>
             <div className="transition-transform duration-200 ease-out-power3 group-data-[expanded=true]:rotate-180">
               <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
@@ -62,7 +63,7 @@ export default function AccountSwitcher() {
           </Button>
         )}
       />
-      <PopoverContent className="z-[150] w-[250px] border border-border bg-button-background-inverted p-0 font-sans text-foreground shadow-md backdrop-blur-[4px]">
+      <PopoverContent className="z-[150] w-[250px] rounded-sm border border-border/30 bg-button-background-inverted p-0 text-foreground shadow-md backdrop-blur-[4px]">
         <Command>
           <CommandList>
             <CommandGroup
@@ -109,7 +110,7 @@ export default function AccountSwitcher() {
                         });
                         setOpen(false);
                       }}
-                      className="transition-colors duration-200 hover:bg-accent hover:text-rouge-400"
+                      className="transition-colors duration-200 hover:bg-accent"
                     >
                       <Avatar className="mr-2 h-5 w-5">
                         <AvatarImage src={""} alt={userSession.userId} />
@@ -133,10 +134,10 @@ export default function AccountSwitcher() {
                   setOpen(false);
                   router.push("/sign-in");
                 }}
-                className="group transition-colors duration-200 hover:bg-rouge-400 hover:text-rouge-400"
+                className="group transition-colors duration-200 hover:bg-accent"
               >
-                <PlusCircle className="mr-2 h-5 w-5 text-foreground transition-colors duration-200 group-hover:text-rouge-500/80" />
-                <span className="font-medium text-foreground transition-colors duration-200 group-hover:text-rouge-500/80">
+                <PlusCircle className="mr-2 h-5 w-5 text-foreground/70 transition-colors duration-200 group-hover:text-foreground" />
+                <span className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors duration-200 group-hover:text-foreground">
                   Add Account
                 </span>
               </CommandItem>

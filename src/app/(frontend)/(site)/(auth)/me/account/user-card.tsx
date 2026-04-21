@@ -4,13 +4,6 @@ import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, RP_Btn } from "@/components/core/Button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/ui/copy-button";
 import {
@@ -25,14 +18,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
 import { authClient as client, signOut } from "@/lib/auth/client";
 import { useBetterAuth } from "@/lib/auth/context";
 import { User, type UserMedia } from "@payload-types";
@@ -99,49 +84,51 @@ export function UserCard() {
     useState<boolean>(false);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-sans text-base">
-          Hello, {currentUser?.name}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-8 bg-background text-base text-foreground">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="hidden h-9 w-9 sm:flex">
-              {currentUser?.image ? (
-                <AvatarImage
-                  src={currentUser?.image || "#"}
-                  alt="Avatar"
-                  className="object-cover"
-                />
-              ) : (
-                <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
-              )}
-            </Avatar>
-            <div className="grid gap-1">
-              <p className="text-sm leading-none font-medium">
-                {currentUser?.name}
-              </p>
-              <p className="text-sm">{currentUser?.email}</p>
-            </div>
+    <section className="flex w-full flex-col gap-10 rounded-sm border border-border/20 bg-card p-6 xl:p-8">
+      <header className="flex items-start justify-between gap-6 border-b border-border/20 pb-6">
+        <div className="flex items-center gap-4">
+          <Avatar className="hidden h-11 w-11 sm:flex">
+            {currentUser?.image ? (
+              <AvatarImage
+                src={currentUser?.image || "#"}
+                alt="Avatar"
+                className="object-cover"
+              />
+            ) : (
+              <AvatarFallback className="bg-foreground/10 font-mono text-sm">
+                {currentUser?.name?.charAt(0)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className="flex flex-col gap-1">
+            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+              Signed in as
+            </p>
+            <p className="text-lg font-light tracking-tight">
+              {currentUser?.name}
+            </p>
+            <p className="font-mono text-[11px] text-muted-foreground/70">
+              {currentUser?.email}
+            </p>
           </div>
-          <EditUserDialog />
         </div>
+        <EditUserDialog />
+      </header>
+      <div className="grid grid-cols-1 gap-10 text-foreground">
         {currentUser?.emailVerified ? null : (
-          <Alert className="flex flex-col space-y-3">
-            <div className="flex flex-col space-y-1">
-              <AlertTitle className="text-base">
-                Verify Your Email Address
+          <Alert className="flex flex-col gap-3 rounded-sm border border-border/30 bg-muted/20 p-5">
+            <div className="flex flex-col gap-1.5">
+              <AlertTitle className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                Email unverified
               </AlertTitle>
-              <AlertDescription className="text-warm-beige text-sm">
+              <AlertDescription className="text-sm font-light tracking-tight text-foreground/80">
                 Please verify your email address. Check your inbox for the
                 verification email.
               </AlertDescription>
             </div>
             <div className="flex justify-start">
               <Button
-                className="w-full sm:w-auto"
+                className="w-full border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground sm:w-auto"
                 disabled={emailVerificationPending}
                 onClick={async () => {
                   await client.sendVerificationEmail(
@@ -177,50 +164,59 @@ export function UserCard() {
           </Alert>
         )}
         {sessions && sessions.length > 0 && (
-          <div className="flex w-max flex-col gap-1 border-l-2 border-muted-faded-foreground/30 px-2 pl-4 font-sans">
-            <p className="text-base font-medium">Active Sessions</p>
-            <div className="grid grid-cols-[repeat(4,1fr)] grid-rows-[repeat(1,1fr)] gap-[8px] py-2">
+          <div className="flex w-full flex-col gap-4">
+            <div className="flex items-baseline gap-2.5">
+              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                Active Sessions
+              </p>
+              <span className="font-mono text-[11px] text-muted-foreground/50 tabular-nums">
+                {sessions.filter((s) => s?.userAgent).length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {sessions
                 .filter((sessionData) => sessionData?.userAgent)
                 .map((sessionData) => {
                   return (
                     <div
-                      className="outline-groove group flex items-center justify-between gap-4 rounded-[12px] bg-transparent px-4 py-1.5 text-foreground shadow-xs/20 outline-1 transition-colors duration-200 ease-out-power3 hover:bg-muted-faded-background hover:text-muted-faded-foreground md:shadow-sm/20 dark:shadow-sm/25 md:dark:shadow-md/25"
-                      style={{
-                        outlineColor:
-                          "oklch(from var(--muted-faded-fg) l c h /.3)"
-                      }}
+                      className="group flex items-center justify-between gap-4 rounded-sm border border-border/20 bg-transparent px-4 py-3 text-foreground transition-colors hover:border-border/50"
                       key={sessionData.id}
                     >
-                      <span className="flex items-center gap-3 text-sm leading-[1] font-medium tracking-wide text-inherit">
+                      <span className="flex items-center gap-3 text-sm font-light tracking-tight text-inherit">
                         {new UAParser(sessionData.userAgent || "").getDevice()
                           .type === "mobile" ? (
                           <MobileIcon
                             stroke={"currentColor"}
-                            className="size-6"
+                            className="size-4"
                             strokeWidth={1}
                           />
                         ) : (
                           <Laptop
                             stroke={"currentColor"}
                             strokeWidth={1}
-                            size={16}
+                            size={14}
                           />
                         )}
-                        {new UAParser(sessionData.userAgent || "").getOS().name}
-                        ,{" "}
-                        {
-                          new UAParser(sessionData.userAgent || "").getBrowser()
-                            .name
-                        }
+                        <span className="truncate">
+                          {
+                            new UAParser(sessionData.userAgent || "").getOS()
+                              .name
+                          }
+                          {", "}
+                          {
+                            new UAParser(
+                              sessionData.userAgent || ""
+                            ).getBrowser().name
+                          }
+                        </span>
                       </span>
                       {(session?.session.id === sessionData.id && (
-                        <div className="-ml-1 font-sans text-sm font-bold text-bleu-900">
-                          Current{" "}
+                        <div className="font-mono text-[9px] tracking-widest text-foreground/70 uppercase">
+                          Current
                         </div>
                       )) || (
                         <Button
-                          className="rounded-[10px] border-[1px] border-rouge-600 bg-rouge-500/30 px-2 text-xs font-medium text-foreground opacity-80 shadow-xs/20 transition-colors duration-200 ease-out-power3 group-hover:bg-rouge-500/50 group-hover:text-muted-foreground group-hover:opacity-100 dark:shadow-sm/25"
+                          className="border border-border/40 px-2.5 py-1 font-mono text-[9px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
                           onClick={async () => {
                             setIsTerminating(sessionData.id);
                             const res = await client.revokeSession({
@@ -254,63 +250,68 @@ export function UserCard() {
             </div>
           </div>
         )}
-        <div className="flex items-center justify-between gap-10 border-y border-muted-faded-foreground/30 px-0 pt-4">
-          <div className="flex h-full w-full flex-col gap-4">
-            <div className="flex h-6 w-full items-center font-sans text-base">
+        <div className="grid grid-cols-1 gap-8 border-t border-border/20 pt-8 md:grid-cols-2 md:gap-10">
+          <div className="flex flex-col gap-4">
+            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
               Passkeys
-            </div>
-            <div className="flex h-12 w-full items-center justify-between">
-              <div className="flex h-full w-full items-center border-r border-muted-faded-foreground/30 pr-4">
-                <ListPasskeys />
-              </div>
-              <div className="flex h-full w-full items-center pl-4">
-                <AddPasskey />
-              </div>
+            </p>
+            <div className="flex items-center gap-3">
+              <ListPasskeys />
+              <AddPasskey />
             </div>
           </div>
-          <div className="flex h-full w-full flex-col gap-2">
-            <div className="flex h-6 w-full items-center font-sans text-base">
+          <div className="flex flex-col gap-4">
+            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
               Two Factor
-            </div>
+            </p>
             <div className="flex items-center gap-2">
               {currentUser && !!currentUser.twoFactorEnabled && (
                 <DialogRoot>
                   <DialogTrigger
                     nativeButton={true}
                     render={() => (
-                      <Button className="gap-2">
-                        <QrCode size={16} />
-                        <span className="text-xs md:text-sm">Scan QR Code</span>
+                      <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest uppercase transition-colors hover:border-border">
+                        <QrCode size={14} />
+                        <span>Scan QR</span>
                       </Button>
                     )}
                   />
-                  <DialogContent className="w-11/12 sm:max-w-[425px]">
+                  <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Scan QR Code</DialogTitle>
-                      <DialogDescription>
+                      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                        Security
+                      </p>
+                      <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
+                        Scan QR Code
+                      </DialogTitle>
+                      <DialogDescription className="mt-1 text-sm font-light text-foreground/70">
                         Scan the QR code with your TOTP app
                       </DialogDescription>
                     </DialogHeader>
                     {twoFactorVerifyURI ? (
-                      <>
+                      <div className="mt-4 flex flex-col gap-4">
                         <div className="flex items-center justify-center">
                           <QRCode value={twoFactorVerifyURI} />
                         </div>
                         <div className="flex items-center justify-center gap-2">
-                          <p className="text-sm">Copy URI to clipboard</p>
+                          <p className="font-mono text-[11px] text-muted-foreground/70">
+                            Copy URI to clipboard
+                          </p>
                           <CopyButton textToCopy={twoFactorVerifyURI} />
                         </div>
-                      </>
+                      </div>
                     ) : (
-                      <div className="flex flex-col gap-2">
+                      <div className="mt-4 flex flex-col gap-4">
                         <PasswordInput
                           value={twoFaPassword}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setTwoFaPassword(e.target.value)
                           }
                           placeholder="Enter Password"
+                          className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
                         />
                         <Button
+                          className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground"
                           onClick={async () => {
                             if (twoFaPassword.length < 8) {
                               toast.error(
@@ -348,10 +349,10 @@ export function UserCard() {
                   render={() => (
                     <Button
                       className={cn(
-                        "items-center justify-center gap-2 rounded-md font-sans text-base",
-                        (currentUser?.twoFactorEnabled &&
-                          "border-bleu-700 px-6 py-3 text-bleu-700") ||
-                          "flex border-[1px] border-transparent px-3 py-1 text-faded-foreground"
+                        "flex items-center justify-center gap-2 border px-4 py-2 font-mono text-[11px] tracking-widest uppercase transition-colors",
+                        currentUser?.twoFactorEnabled
+                          ? "border-border text-foreground hover:border-foreground"
+                          : "border-border/40 text-foreground/70 hover:border-border hover:text-foreground"
                       )}
                     >
                       {currentUser?.twoFactorEnabled ? (
@@ -367,38 +368,52 @@ export function UserCard() {
                     </Button>
                   )}
                 />
-                <DialogContent className="w-11/12 sm:max-w-[425px]">
+                <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>
+                    <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                      Security
+                    </p>
+                    <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
                       {currentUser?.twoFactorEnabled
                         ? "Disable 2FA"
                         : "Enable 2FA"}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="mt-1 text-sm font-light text-foreground/70">
                       {currentUser?.twoFactorEnabled
                         ? "Disable the second factor authentication from your account"
                         : "Enable 2FA to secure your account"}
                     </DialogDescription>
                   </DialogHeader>
                   {twoFactorVerifyURI ? (
-                    <div className="flex flex-col gap-2">
+                    <div className="mt-4 flex flex-col gap-4">
                       <div className="flex items-center justify-center">
                         <QRCode value={twoFactorVerifyURI} />
                       </div>
-                      <Label htmlFor="password">
-                        Scan the QR code with your TOTP app
-                      </Label>
-                      <Input
-                        value={twoFaPassword}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setTwoFaPassword(e.target.value)
-                        }
-                        placeholder="Enter OTP"
-                      />
+                      <div className="flex flex-col gap-2">
+                        <Label
+                          htmlFor="password"
+                          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                        >
+                          Scan the QR code with your TOTP app
+                        </Label>
+                        <Input
+                          value={twoFaPassword}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setTwoFaPassword(e.target.value)
+                          }
+                          placeholder="Enter OTP"
+                          className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
+                        />
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="password">Password</Label>
+                    <div className="mt-4 flex flex-col gap-2">
+                      <Label
+                        htmlFor="password"
+                        className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                      >
+                        Password
+                      </Label>
                       <PasswordInput
                         id="password"
                         placeholder="Password"
@@ -406,11 +421,13 @@ export function UserCard() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setTwoFaPassword(e.target.value)
                         }
+                        className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
                       />
                     </div>
                   )}
-                  <DialogFooter>
+                  <DialogFooter className="mt-6">
                     <Button
+                      className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
                       disabled={isPendingTwoFa}
                       onClick={async () => {
                         if (twoFaPassword.length < 8 && !twoFactorVerifyURI) {
@@ -485,14 +502,14 @@ export function UserCard() {
             </div>
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="items-center justify-between gap-2">
+      </div>
+      <footer className="flex items-center justify-between gap-3 border-t border-border/20 pt-6">
         {accounts &&
           accounts.some((account) => {
             return account.scopes.includes("credential");
           }) && <ChangePassword />}
         <Button
-          className="z-10 gap-2"
+          className="ml-auto flex items-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
           onClick={async () => {
             setIsSignOut(true);
             await signOut({
@@ -506,19 +523,17 @@ export function UserCard() {
           }}
           disabled={isSignOut}
         >
-          <span className="text-sm">
-            {isSignOut ? (
-              <Loader2 size={15} className="animate-spin" />
-            ) : (
-              <div className="flex items-center gap-2">
-                <LogOut size={16} />
-                Sign Out{" "}
-              </div>
-            )}
-          </span>
+          {isSignOut ? (
+            <Loader2 size={13} className="animate-spin" />
+          ) : (
+            <>
+              <LogOut size={13} />
+              <span>Sign Out</span>
+            </>
+          )}
         </Button>
-      </CardFooter>
-    </Card>
+      </footer>
+    </section>
   );
 }
 
@@ -543,11 +558,11 @@ function ChangePassword() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="z-10 gap-2">
+          <Button className="flex items-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="1em"
-              height="1em"
+              width="0.85em"
+              height="0.85em"
               viewBox="0 0 24 24"
             >
               <path
@@ -555,57 +570,89 @@ function ChangePassword() {
                 d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"
               ></path>
             </svg>
-            <span className="text-sm text-muted-foreground">
-              Change Password
-            </span>
+            <span>Change Password</span>
           </Button>
         )}
       />
-      <DialogContent className="w-11/12 sm:max-w-[425px]">
+      <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Change Password</DialogTitle>
-          <DialogDescription>Change your password</DialogDescription>
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Security
+          </p>
+          <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
+            Change Password
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-sm font-light text-foreground/70">
+            Update the password you use to sign in.
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-2">
-          <Label htmlFor="current-password">Current Password</Label>
-          <PasswordInput
-            id="current-password"
-            value={currentPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setCurrentPassword(e.target.value)
-            }
-            autoComplete="new-password"
-            placeholder="Password"
-          />
-          <Label htmlFor="new-password">New Password</Label>
-          <PasswordInput
-            value={newPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setNewPassword(e.target.value)
-            }
-            autoComplete="new-password"
-            placeholder="New Password"
-          />
-          <Label htmlFor="password">Confirm Password</Label>
-          <PasswordInput
-            value={confirmPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setConfirmPassword(e.target.value)
-            }
-            autoComplete="new-password"
-            placeholder="Confirm Password"
-          />
-          <div className="flex items-center gap-2">
+        <div className="mt-4 flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="current-password"
+              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+            >
+              Current Password
+            </Label>
+            <PasswordInput
+              id="current-password"
+              value={currentPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setCurrentPassword(e.target.value)
+              }
+              autoComplete="new-password"
+              placeholder="Password"
+              className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="new-password"
+              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+            >
+              New Password
+            </Label>
+            <PasswordInput
+              value={newPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNewPassword(e.target.value)
+              }
+              autoComplete="new-password"
+              placeholder="New Password"
+              className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="password"
+              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+            >
+              Confirm Password
+            </Label>
+            <PasswordInput
+              value={confirmPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setConfirmPassword(e.target.value)
+              }
+              autoComplete="new-password"
+              placeholder="Confirm Password"
+              className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
+            />
+          </div>
+          <label className="flex cursor-pointer items-center gap-3 pt-2">
             <Checkbox
               onCheckedChange={(checked) =>
                 checked ? setSignOutDevices(true) : setSignOutDevices(false)
               }
             />
-            <p className="text-sm">Sign out from other devices</p>
-          </div>
+            <span className="font-mono text-[11px] tracking-wide text-foreground/80 uppercase">
+              Sign out from other devices
+            </span>
+          </label>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button
+            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
             onClick={async () => {
               if (newPassword !== confirmPassword) {
                 toast.error("Passwords do not match");
@@ -637,7 +684,7 @@ function ChangePassword() {
             }}
           >
             {loading ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 size={13} className="animate-spin" />
             ) : (
               "Change Password"
             )}
@@ -839,18 +886,21 @@ function EditUserDialog() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="gap-2">
-            <Edit size={13} />
-            Edit User
+          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+            <Edit size={12} />
+            <span>Edit</span>
           </Button>
         )}
       />
-      <DialogContent className="w-11/12 sm:max-w-[425px]">
+      <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-sans text-3xl font-bold">
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Your Account
+          </p>
+          <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
             Edit Profile
           </DialogTitle>
-          <DialogDescription className="mt-1 mb-4 font-sans text-sm">
+          <DialogDescription className="mt-1 mb-4 text-sm font-light text-foreground/70">
             Edit your profile information.
           </DialogDescription>
         </DialogHeader>
@@ -861,12 +911,15 @@ function EditUserDialog() {
           <div className="my-4 grid gap-10">
             <div className="flex gap-4">
               {" "}
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="name" className="font-sans">
+              <div className="flex flex-col gap-2">
+                <Label
+                  htmlFor="firstName"
+                  className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                >
                   First Name
                 </Label>
                 <Input
-                  className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
+                  className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
                   id="firstName"
                   type="firstName"
                   placeholder={currentUser?.firstName ?? ""}
@@ -875,13 +928,16 @@ function EditUserDialog() {
                     setFirstName(e.target.value);
                   }}
                 />
-              </div>{" "}
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="lastName" className="font-sans">
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label
+                  htmlFor="lastName"
+                  className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                >
                   Last Name
                 </Label>
                 <Input
-                  className="font-sans placeholder:font-sans placeholder:text-muted-faded-foreground/70 placeholder:transition-all placeholder:duration-300 placeholder:ease-power3 autofill:bg-transparent autofill:font-sans autofill:text-faded-foreground"
+                  className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
                   id="lastName"
                   type="lastName"
                   placeholder={currentUser?.lastName ?? ""}
@@ -892,8 +948,11 @@ function EditUserDialog() {
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-4">
-              <Label htmlFor="image" className="font-sans">
+            <div className="flex flex-col gap-3">
+              <Label
+                htmlFor="image"
+                className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+              >
                 Profile Image
               </Label>
               <div className="flex items-end gap-4">
@@ -1023,8 +1082,9 @@ function EditUserDialog() {
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button
+            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
             disabled={isLoading}
             onClick={async () => {
               setIsLoading(true);
@@ -1088,7 +1148,7 @@ function EditUserDialog() {
             }}
           >
             {isLoading ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 size={13} className="animate-spin" />
             ) : (
               "Update"
             )}
@@ -1126,42 +1186,52 @@ function AddPasskey() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="flex items-center gap-2 text-xs md:text-sm">
-            <Plus size={15} />
-            Add New Passkey
+          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+            <Plus size={13} />
+            <span>Add Passkey</span>
           </Button>
         )}
       />
-      <DialogContent className="w-11/12 sm:max-w-[425px]">
+      <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Passkey</DialogTitle>
-          <DialogDescription>
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Security
+          </p>
+          <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
+            Add New Passkey
+          </DialogTitle>
+          <DialogDescription className="text-sm font-light text-foreground/70">
             Create a new passkey to securely access your account without a
             password.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-2">
-          <Label htmlFor="passkey-name">Passkey Name</Label>
+        <div className="mt-4 flex flex-col gap-2">
+          <Label
+            htmlFor="passkey-name"
+            className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+          >
+            Passkey Name
+          </Label>
           <Input
             id="passkey-name"
             value={passkeyName}
             onChange={(e) => setPasskeyName(e.target.value)}
-            className="!focus-visible:border-faded-foreground/90 !border-faded-foreground/&.5)] py-2 text-base placeholder:text-base placeholder:leading-[1.5] placeholder:text-faded-foreground"
+            className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
           />
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button
             disabled={isLoading}
             type="submit"
             onClick={handleAddPasskey}
-            className="flex w-full items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
           >
             {isLoading ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 size={13} className="animate-spin" />
             ) : (
               <>
-                <Fingerprint className="mr-2 h-4 w-4" />
-                Create Passkey{" "}
+                <Fingerprint size={13} />
+                Create Passkey
               </>
             )}
           </Button>
@@ -1199,78 +1269,87 @@ function ListPasskeys() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="flex items-center gap-2 text-xs md:text-sm">
-            <Fingerprint className="mr-2 h-4 w-4" />
-            <span>Passkeys {data?.length ? `[${data?.length}]` : ""}</span>
+          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+            <Fingerprint size={13} />
+            <span className="flex items-center gap-1.5">
+              Passkeys
+              {data?.length ? (
+                <span className="font-mono text-[10px] text-muted-foreground/60 tabular-nums">
+                  {data?.length}
+                </span>
+              ) : null}
+            </span>
           </Button>
         )}
       />
-      <DialogContent className="w-11/12 sm:max-w-[425px]">
+      <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-sans text-h3 font-semibold tracking-tighter">
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Security
+          </p>
+          <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
             Passkeys
           </DialogTitle>
-          <DialogDescription className="mt-4 text-sm">
-            List of passkeys
+          <DialogDescription className="mt-1 text-sm font-light text-foreground/70">
+            Registered passkeys for this account
           </DialogDescription>
         </DialogHeader>
         {data?.length ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead style={{}}>Name</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((passkey) => (
-                <TableRow
-                  key={passkey.id}
-                  className="flex items-center justify-between"
+          <ul className="mt-4 flex flex-col divide-y divide-border/20 border-y border-border/20">
+            {data.map((passkey) => (
+              <li
+                key={passkey.id}
+                className="flex items-center justify-between py-3"
+              >
+                <span className="text-sm font-light tracking-tight">
+                  {passkey.name || "My Passkey"}
+                </span>
+                <RP_Btn
+                  className="p-1 text-muted-foreground/60 transition-colors hover:text-foreground"
+                  onClick={async () => {
+                    const res = await client.passkey.deletePasskey({
+                      id: passkey.id,
+                      fetchOptions: {
+                        onRequest: () => {
+                          setIsDeletePasskey(true);
+                        },
+                        onSuccess: () => {
+                          successToast("Passkey deleted successfully");
+                          setIsDeletePasskey(false);
+                        },
+                        onError: (error) => {
+                          errorToast(error.error.message);
+                          setIsDeletePasskey(false);
+                        }
+                      }
+                    });
+                  }}
                 >
-                  <TableCell>{passkey.name || "My Passkey"}</TableCell>
-                  <TableCell className="text-right">
-                    <RP_Btn
-                      onClick={async () => {
-                        const res = await client.passkey.deletePasskey({
-                          id: passkey.id,
-                          fetchOptions: {
-                            onRequest: () => {
-                              setIsDeletePasskey(true);
-                            },
-                            onSuccess: () => {
-                              successToast("Passkey deleted successfully");
-                              setIsDeletePasskey(false);
-                            },
-                            onError: (error) => {
-                              errorToast(error.error.message);
-                              setIsDeletePasskey(false);
-                            }
-                          }
-                        });
-                      }}
-                    >
-                      {isDeletePasskey ? (
-                        <Loader2 size={15} className="animate-spin" />
-                      ) : (
-                        <Trash size={15} className="text-red-600" />
-                      )}
-                    </RP_Btn>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  {isDeletePasskey ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Trash size={13} />
+                  )}
+                </RP_Btn>
+              </li>
+            ))}
+          </ul>
         ) : (
-          <p className="my-5 text-center text-sm">No passkeys found ;/</p>
+          <p className="my-6 text-center font-mono text-[11px] text-muted-foreground/60">
+            No passkeys found
+          </p>
         )}
         {!data?.length && (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="passkey-name" className="text-sm font-normal">
+              <Label
+                htmlFor="passkey-name"
+                className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+              >
                 Add new passkey
               </Label>
               <Input
-                className="!focus-visible:border-faded-foreground/90 border-faded-foreground/60 py-2 pb-3 text-base placeholder:leading-[1.5] placeholder:text-muted-foreground"
+                className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
                 id="passkey-name"
                 value={passkeyName}
                 onChange={(e) => setPasskeyName(e.target.value)}
@@ -1280,22 +1359,22 @@ function ListPasskeys() {
             <Button
               type="submit"
               onClick={handleAddPasskey}
-              className="group mt-5 flex h-13 w-full items-center justify-center gap-2 rounded-md border border-muted-faded-foreground/60 bg-muted-faded-background/70 text-faded-foreground/70 transition-colors duration-300 ease-power4 hover:border-muted-faded-foreground/90 hover:bg-muted-faded-foreground/50"
+              className="flex w-full items-center justify-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
             >
               {isLoading ? (
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 size={13} className="animate-spin" />
               ) : (
                 <>
-                  <Fingerprint className="mr-2 h-4 w-4 transition-colors duration-300 ease-power4 group-hover:text-foreground" />
-                  Create Passkey{" "}
+                  <Fingerprint size={13} />
+                  Create Passkey
                 </>
               )}
             </Button>
           </div>
         )}
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button
-            className="transition-colors duration-300 ease-power4 hover:text-rouge-400"
+            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground"
             onClick={() => setIsOpen(false)}
           >
             Close
