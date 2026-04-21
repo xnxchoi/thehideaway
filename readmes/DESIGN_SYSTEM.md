@@ -494,15 +494,12 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 - **Bumped** `--text-6xl: 3.2rem` → `4rem` in `globals.css:70` and `payloadStyles.css:79`.
 - **Known follow-up**: `--text-5xl` (currently `2.8rem`) sits below `--text-4xl` (`3.2rem`) — an inversion. `--text-7xl` (`3.6rem`) is tight against the new 6xl. Responsive ladders using `md:text-5xl xl:text-6xl 2xl:text-7xl` will still render non-monotonically until 5xl/7xl are fixed in a subsequent task.
 
-### T-04 — Color duplicate aliases
+### T-04 — Color duplicate aliases ✅ DONE
 
-- In `globals.css` palette block, alias legacy tokens:
-  ```css
-  --red:          var(--rouge-500);
-  --rosso-corsa:  var(--rouge-500);
-  ```
-- **Delete** `--pastel-sky-blue` and `--pastel-sky-` from `payloadStyles.css`. Prefer `--pastel-sky`.
-- Grep for callsites; update any that use the deleted tokens.
+- **Aliased** `--red` and `--rosso-corsa` to `var(--rouge-500)` in `globals.css`, `payloadStyles.css`, and `custom.scss`. Rendered colors were within 0.2% ΔL in oklch — change is visually imperceptible and collapses three near-duplicates into one canonical source.
+- **Deleted** `--pastel-sky-blue` base token from `globals.css` and `payloadStyles.css` (and `custom.scss`). Deleted the `--pastel-sky-` typo token.
+- **Preserved** the Tailwind-exposed `--color-pastel-sky-blue` (used in 8 gradient stops across both stylesheets) by aliasing it to `var(--pastel-sky)` in the `@theme inline` blocks.
+- `@theme` (non-inline) blocks in `payloadStyles.css` still carry hardcoded oklch for the Tailwind palette — left alone to avoid build-time risk; the exposed palette token is semantically correct even if not aliased.
 
 ### T-05 — Convert `--bg-menu-wrapper` to oklch
 

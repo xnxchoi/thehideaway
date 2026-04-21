@@ -172,8 +172,7 @@ Colors
   --faded-d-gray: oklch(36.76% 0.003 58.67);
   --faded-l-gray: oklch(77.94% 0.003 58.67);
   --edge-black: oklch(18.22% 0 20.06);
-  --rosso-corsa: oklch(54.63% 0.224 29.2339);
-  --pastel-sky-blue: oklch(74.56% 0.14 223.0922);
+  --rosso-corsa: var(--rouge-500);
   --soft-peach: oklch(76.16% 0.1683 57.66);
   --creamy-white: oklch(94.54% 0.0499 79.86);
   --muted-olive: oklch(59.71% 0.0893 131.62);
@@ -181,7 +180,7 @@ Colors
   --piercing-orange: oklch(78.58% 0.1658 74.9677);
   --piercing-green: oklch(91.24% 0.228 124.65);
 
-  --red: oklch(54.74% 0.2224 29.01);
+  --red: var(--rouge-500);
   --green-white: oklch(96.25% 0.0198 159.76);
   --melon: oklch(81.7% 0.092 29.96);
   --blue-gray: oklch(66.76% 0.0939 249.39);

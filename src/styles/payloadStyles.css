@@ -263,8 +263,8 @@ html {
     --faded-d-gray: oklch(36.76% 0.003 58.67);
     --faded-l-gray: oklch(77.94% 0.003 58.67);
 
-    --rosso-corsa: oklch(54.63% 0.224 29.2339);
-    --red: oklch(54.74% 0.2224 29.01);
+    --rosso-corsa: var(--rouge-500);
+    --red: var(--rouge-500);
     --rouge-50: oklch(93.4% 0.032 28.3);
     --rouge-100: oklch(87.9% 0.061 28.3);
     --rouge-200: oklch(76.3% 0.135 28.3);
@@ -288,7 +288,6 @@ html {
     --muted-olive: oklch(59.71% 0.0893 131.62);
     --pastel-sky: oklch(74.56% 0.139 223.0922);
     --piercing-blue: oklch(45.2% 0.313 264.052);
-    --pastel-sky-blue: oklch(74.56% 0.14 223.0922);
     --blue-gray: oklch(66.76% 0.0166 249.39);
 
     --bleu-50: oklch(98% 0.008 214);
@@ -308,7 +307,6 @@ html {
 
   --bg: var(--grey-black);
   --fg: var(--white);
-    --pastel-sky-: oklch(74.56% 0.139 223.0922);
     --button-background: oklch(from var(--neutral-white) l c h/0.25);
     --button-background-inverted: oklch(from var(--neutral-black) l c h/0.25);
   --button-foreground: var(--n-s-fg);
@@ -738,7 +736,7 @@ html {
 
     --color-edge-black: var(--edge-black);
     --color-rosso-corsa: var(--rosso-corsa);
-    --color-pastel-sky-blue: var(--pastel-sky-blue);
+    --color-pastel-sky-blue: var(--pastel-sky);
     --color-piercing-blue: var(--piercing-blue);
     --color-soft-peach: var(--soft-peach);
     --color-creamy-white: var(--creamy-white);
