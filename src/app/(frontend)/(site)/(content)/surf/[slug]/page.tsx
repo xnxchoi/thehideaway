@@ -3,29 +3,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 
-export const generateStaticParams = async () => {
-  const payload = await getPayload({ config: configPromise });
+export const dynamic = "force-dynamic";
 
-  const surfs = await payload.find({
-    collection: "surf",
-    overrideAccess: true,
-    limit: 1000,
-    pagination: false,
-    where: {
-      _status: {
-        equals: "published"
-      }
-    },
-    select: {
-      slug: true
-    }
-  });
-  const surfSlug = surfs.docs.map((s) => ({
-    slug: s.slug
-  }));
-
-  return [...surfSlug];
-};
 type Args = {
   params: Promise<{
     slug: string;

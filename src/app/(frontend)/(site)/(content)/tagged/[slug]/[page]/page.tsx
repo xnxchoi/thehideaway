@@ -14,46 +14,7 @@ import { getPayload, TypedCollectionSelect } from "payload";
 
 import PageClient from "./page.client";
 
-export async function generateStaticParams({
-  params
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
-  const payload = await getPayload({ config });
-
-  const tag = await payload
-    .find({
-      collection: "tags",
-      where: { slug: { equals: slug } },
-      select: {},
-      limit: 1,
-      overrideAccess: true,
-      pagination: false
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch(() => null);
-
-  if (!tag) return [];
-
-  const { totalDocs } = await payload
-    .find({
-      collection: "search",
-      where: { "tags.key": { in: [tag.id] } },
-      limit: 0,
-      overrideAccess: true,
-      pagination: false
-    })
-    .catch(() => ({ totalDocs: 0 }));
-
-  const totalPages = Math.ceil(totalDocs / 12);
-  const pages: { page: `${number}` }[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ page: `${i}` });
-  }
-
-  return pages;
-}
+export const dynamic = "force-dynamic";
 
 type Args = {
   params: Promise<{

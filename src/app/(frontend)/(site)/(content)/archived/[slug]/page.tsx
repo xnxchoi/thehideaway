@@ -13,23 +13,7 @@ import { getPayload } from "payload";
 
 import PageClient from "./page.client";
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config });
-  const cats = await payload.find({
-    collection: "categories",
-    limit: 100,
-    select: {
-      slug: true,
-      popularity: true
-    },
-    sort: "-popularity",
-    pagination: false,
-    overrideAccess: true
-  });
-
-  const slugs = cats.docs.map((cat) => ({ slug: cat.slug }));
-  return [...slugs];
-}
+export const dynamic = "force-dynamic";
 
 type Args = {
   params: Promise<{

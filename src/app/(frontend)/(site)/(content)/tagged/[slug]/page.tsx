@@ -18,21 +18,7 @@ import { getPayload } from "payload";
 
 import PageClient from "./page.client";
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config });
-  const tags = await payload.find({
-    collection: "tags",
-    limit: 100,
-    select: {
-      slug: true
-    },
-    overrideAccess: true,
-    pagination: false
-  });
-
-  const slugs = tags.docs.map((tag) => ({ slug: tag.slug }));
-  return [...slugs];
-}
+export const dynamic = "force-dynamic";
 
 type Args = {
   params: Promise<{

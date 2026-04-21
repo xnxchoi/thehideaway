@@ -1,4 +1,3 @@
-"use server";
 import { RenderHero } from "@/blocks/heros/RenderHero";
 
 import { RenderBlocks } from "@/blocks/RenderBlocks";
@@ -13,24 +12,7 @@ import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import PageClient from "./page.client";
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config });
-  const pages = await payload.find({
-    collection: "pages",
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    select: {
-      slug: true
-    }
-  });
-
-  const params = pages.docs.map(({ slug }) => {
-    return { slug };
-  });
-  params.push({ slug: "home" });
-  return params;
-}
+export const dynamic = "force-dynamic";
 
 type Args = {
   params: Promise<{

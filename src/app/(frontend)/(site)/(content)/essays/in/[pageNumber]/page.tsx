@@ -10,29 +10,14 @@ import configPromise from "@payload-config";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 import PageClient from "./page.client";
+
+export const dynamic = "force-dynamic";
+
 type Args = {
   params: Promise<{
     pageNumber: `${number}`;
   }>;
 };
-
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise });
-  const { totalDocs } = await payload.count({
-    collection: "posts",
-    overrideAccess: false
-  });
-
-  const totalPages = Math.ceil(totalDocs / 12);
-
-  const pages: { pageNumber: string }[] = [];
-
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ pageNumber: String(i) });
-  }
-
-  return pages;
-}
 
 async function getPosts(page: number) {
   // "use cache"

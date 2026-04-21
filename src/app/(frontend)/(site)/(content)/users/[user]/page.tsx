@@ -11,41 +11,7 @@ import { redirect } from "next/navigation";
 import { getPayload, PaginatedDocs } from "payload";
 import React from "react";
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config });
-  const users = (await payload
-    .find({
-      collection: "users",
-      where: {
-        and: [
-          {
-            banned: {
-              not_equals: true
-            }
-          }
-        ]
-      },
-      limit: 1000,
-      pagination: false,
-      overrideAccess: true,
-      select: {
-        slug: true
-      }
-    })
-    .then((r) => r)
-    .catch((error) => {
-      console.log(error);
-      return {
-        totalDocs: 0,
-        docs: [] as { id: string; slug: string }[]
-      };
-    })) as PaginatedDocs<{ id: string; slug: string }>;
-
-  const usersl = users.docs.map(({ slug }) => {
-    return { user: slug };
-  });
-  return [...usersl];
-}
+export const dynamic = "force-dynamic";
 
 type Args = {
   params: Promise<{

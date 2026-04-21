@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
 import { StationHideawayHero } from "@/components/sections/StationHideaway/block";
 

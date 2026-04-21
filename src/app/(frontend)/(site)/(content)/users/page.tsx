@@ -1,5 +1,7 @@
 import configPromise from "@payload-config";
 import { PageRange } from "@/components/UX/PageRange";
+
+export const dynamic = "force-dynamic";
 import { Pagination } from "@/payload/components/Pagination";
 import type { Metadata } from "next/types";
 import { getPayload } from "payload";

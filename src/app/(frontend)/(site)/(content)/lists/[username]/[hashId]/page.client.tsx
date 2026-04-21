@@ -33,10 +33,18 @@ type Props = {
   viewerId: string | null;
 };
 
-export default function PublicCompilationClient({ compilation, isOwner, viewerId }: Props) {
+export default function PublicCompilationClient({
+  compilation,
+  isOwner,
+  viewerId
+}: Props) {
   const author = compilation.author as User | string;
-  const authorName = typeof author === "string" ? "Unknown" : (author.name ?? author.username ?? "—");
-  const authorSlug = typeof author === "string" ? null : (author as any).slug ?? null;
+  const authorName =
+    typeof author === "string"
+      ? "Unknown"
+      : (author.name ?? author.username ?? "—");
+  const authorSlug =
+    typeof author === "string" ? null : ((author as any).slug ?? null);
   const cover = compilation.coverImage as Media | null | undefined;
   const items = (compilation.items ?? []) as CompilationFull["items"];
 
@@ -49,7 +57,8 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
   }, [items]);
 
   const filteredItems = useMemo(
-    () => (filter === "all" ? items : items.filter((i) => i.relationTo === filter)),
+    () =>
+      filter === "all" ? items : items.filter((i) => i.relationTo === filter),
     [items, filter]
   );
 
@@ -72,7 +81,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
         ) : (
           <>
             <div className="absolute inset-0 bg-gradient-to-br from-muted/60 to-background" />
-            <span className="absolute inset-0 flex items-center justify-center select-none font-mono text-[20vw] font-light text-foreground/[0.04]">
+            <span className="absolute inset-0 flex items-center justify-center font-mono text-[20vw] font-light text-foreground/[0.04] select-none">
               {compilation.title.charAt(0).toUpperCase()}
             </span>
           </>
@@ -85,7 +94,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mb-2 font-mono text-[10px] uppercase tracking-[0.25em] text-white/50 xl:text-xs"
+              className="mb-2 font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase xl:text-xs"
             >
               A List by{" "}
               {authorSlug ? (
@@ -103,7 +112,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, type: "spring", bounce: 0.1 }}
-              className="text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl"
+              className="text-3xl leading-tight font-light tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl"
             >
               {compilation.title}
             </m.h1>
@@ -112,7 +121,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="mt-2 max-w-xl font-mono text-[11px] leading-relaxed text-white/50 xl:text-xs xl:max-w-2xl"
+                className="mt-2 max-w-xl font-mono text-[11px] leading-relaxed text-white/50 xl:max-w-2xl xl:text-xs"
               >
                 {compilation.description}
               </m.p>
@@ -124,12 +133,13 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
               className="mt-4 flex items-center gap-5"
             >
               <span className="font-mono text-[10px] text-white/40">
-                {compilation.itemCount} {compilation.itemCount === 1 ? "item" : "items"}
+                {compilation.itemCount}{" "}
+                {compilation.itemCount === 1 ? "item" : "items"}
               </span>
               {isOwner && (
                 <Link
                   href={`/me/library/lists/${compilation.hashId}`}
-                  className="font-mono text-[10px] uppercase tracking-widest text-white/40 underline decoration-dotted underline-offset-2 hover:text-white/70"
+                  className="font-mono text-[10px] tracking-widest text-white/40 uppercase underline decoration-dotted underline-offset-2 hover:text-white/70"
                 >
                   Edit
                 </Link>
@@ -146,7 +156,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
             <button
               onClick={() => setFilter("all")}
               className={cn(
-                "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors xl:text-xs",
+                "shrink-0 font-mono text-[10px] tracking-widest uppercase transition-colors xl:text-xs",
                 filter === "all"
                   ? "text-foreground"
                   : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -159,7 +169,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
                 key={t}
                 onClick={() => setFilter(t)}
                 className={cn(
-                  "shrink-0 font-mono text-[10px] uppercase tracking-widest transition-colors xl:text-xs",
+                  "shrink-0 font-mono text-[10px] tracking-widest uppercase transition-colors xl:text-xs",
                   filter === t
                     ? "text-foreground"
                     : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -179,7 +189,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
             Nothing here yet.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 xl:gap-5">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-5 2xl:grid-cols-6">
             {filteredItems.map((item, i) => {
               const itemId =
                 typeof item.value === "string" ? item.value : item.value.id;
@@ -232,12 +242,17 @@ function PublicItemCard({
     <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", bounce: 0.1, delay: index * 0.03, duration: 0.4 }}
+      transition={{
+        type: "spring",
+        bounce: 0.1,
+        delay: index * 0.03,
+        duration: 0.4
+      }}
       className="group relative overflow-hidden rounded-sm border border-border/20 bg-card transition-colors hover:border-border/40"
     >
       {/* Bookmark button (visible to logged-in viewers) */}
       {viewerId && (
-        <div className="absolute right-2 top-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute top-2 right-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
           <BookmarkButton
             collectionSlug={collectionSlug}
             itemId={itemId}
@@ -258,7 +273,7 @@ function PublicItemCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <span className="select-none font-mono text-4xl text-muted-foreground/15">
+            <span className="font-mono text-4xl text-muted-foreground/15 select-none">
               {collectionSlug.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -270,16 +285,16 @@ function PublicItemCard({
       <div className="p-3 xl:p-3.5">
         {itemUrl ? (
           <Link href={itemUrl} className="block">
-            <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight transition-opacity hover:opacity-70 xl:text-sm">
+            <p className="line-clamp-2 text-xs leading-snug font-medium tracking-tight transition-opacity hover:opacity-70 xl:text-sm">
               {title}
             </p>
           </Link>
         ) : (
-          <p className="line-clamp-2 text-xs font-medium leading-snug tracking-tight xl:text-sm">
+          <p className="line-clamp-2 text-xs leading-snug font-medium tracking-tight xl:text-sm">
             {title}
           </p>
         )}
-        <p className="mt-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/35 xl:text-[10px]">
+        <p className="mt-1 font-mono text-[9px] tracking-widest text-muted-foreground/35 uppercase xl:text-[10px]">
           {TYPE_LABEL[collectionSlug]}
         </p>
       </div>

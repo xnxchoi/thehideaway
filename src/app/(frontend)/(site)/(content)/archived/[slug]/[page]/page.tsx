@@ -14,15 +14,17 @@ import { getPayload } from "payload";
 
 import PageClient from "./page.client";
 
+export const dynamic = "force-dynamic";
+
 type Args = {
   params: Promise<{
     slug: string;
-    pageNumber: `${number}`;
+    page: `${number}`;
   }>;
 };
 
 export default async function Page({ params: paramsPromise }: Args) {
-  const { slug, pageNumber: pageFromParams } = await paramsPromise;
+  const { slug, page: pageFromParams } = await paramsPromise;
   const cat = await getCategoryPage({ slug });
   if (!cat) {
     notFound();
@@ -105,58 +107,10 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({
   params: paramsPromise
 }: Args): Promise<Metadata> {
-  const { slug, pageNumber } = await paramsPromise;
+  const { slug, page } = await paramsPromise;
   return {
-    title: `Archived: ${slug || ""} - ${pageNumber || ""}`
+    title: `Archived: ${slug || ""} - ${page || ""}`
   };
-}
-
-export async function generateStaticParams(params: { slug: string }) {
-  const { slug } = params;
-  const payload = await getPayload({ config });
-  const cat = await payload
-    .find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      limit: 1,
-      select: {
-        slug: true
-      }
-    })
-    .then((result) => result.docs[0] ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!cat) {
-    return [];
-  }
-  const categorized = await payload
-    .find({
-      collection: "categories",
-      where: {
-        slug: {
-          equals: slug
-        }
-      },
-      select: {
-        categorized: true
-      }
-    })
-    .then((result) => result.docs?.[0]?.categorized ?? null)
-    .catch((e) => (console.error(e), null));
-  if (!categorized || !categorized.totalDocs || !categorized.docs) {
-    return [];
-  }
-  const totalDocs = categorized.totalDocs;
-  const totalPages = Math.ceil(totalDocs / 12);
-  const pages: { page: string }[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ page: String(i) });
-  }
-
-  return pages;
 }
 
 async function getPostsWithCategory({

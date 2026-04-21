@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import { RPage } from "@/components/UX/Transition";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
