@@ -543,11 +543,15 @@ At 62.5% root, `1rem = 10px`.
 
 `--pad-grid: clamp(20px, 5vw, 92px)` may stay in px (it's a fluid clamp and min/max are design-visual boundaries, not typographic rhythm).
 
-### T-08 — Reclassify `min-width: 967px` queries
+### T-08 — Reclassify `min-width: 967px` queries ⏸ DEFERRED
 
-- **Grep** `@media (min-width: 967px)` and `@media only screen and (min-width: 967px)`.
-- **Audit each** — is it intended as a general desktop rule or a large-desktop enhancement?
-- **Migrate** to `@media (min-width: 1280px)` (xl) or fold into the default (remove the query) per case.
+- **Scope discovered**: 90+ `@media (min-width: 967px)` queries (plus a handful of `max-width: 967px` mirrors) across 11 SCSS files — `hideaway.scss` (~25), `__motion_scroller.scss` (~12), `__DescRows.scss` (12), `__archives.scss` (9), `Preloader/__index.scss` (7), `__reviewCard.scss` (6), `__hover_columns.scss` (5), `__parallax_grid.scss` (5). The breakpoint likely maps to an obsolete "iPad landscape / small laptop" target.
+- **Why deferred**: promoting any of these to Tailwind's 1024 (`lg:`) or 1280 (`xl:`) changes what renders at 967–1023px or 967–1279px. Without visual regression coverage at those widths, a blanket find/replace risks silent tablet/laptop regressions.
+- **Proposed per-query audit approach**:
+  1. Snapshot each affected surface at 967, 1024, 1280 in both themes.
+  2. Classify each query: *drop into default* (if desktop styles feel right everywhere), *promote to 1024* (tablet-landscape split), or *promote to 1280* (true desktop split).
+  3. Delete the `max-width: 967px` mirrors or promote them analogously.
+- Do not attempt this sweep as part of autonomous migration.
 
 ### T-09 — Unify button height/padding tokens
 
