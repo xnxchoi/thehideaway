@@ -44,7 +44,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2.5mb"
     }
   },
-  serverExternalPackages: ["pdfmake"],
+  // sharp: native binary, cannot be bundled — must be external.
+  // pdfmake: uses dynamic requires internally that break bundling.
+  serverExternalPackages: ["pdfmake", "sharp"],
   typescript: {
     // Intentional ship switch. See readmes/TYPE_DEBT.md for the backlog of
     // ~700 errors being paid down post-launch. tsc still runs in CI for the

@@ -53,14 +53,22 @@ services:
       timeout: 5s
       start_period: 40s
       retries: 3
-    # Payload runtime upload directories — mounted as named volumes so that
-    # uploaded files persist across deploys and container restarts.
-    # These dirs are excluded from the Docker image via .dockerignore.
     volumes:
+      # ── Payload runtime upload dirs ─────────────────────────────────────────
+      # Named volumes — start empty, Payload writes into them as content is
+      # uploaded via /vault. Persist across deploys and container restarts.
       - payload_media:/app/public/media
       - payload_track_media:/app/public/track_media
       - payload_users:/app/public/users
       - payload_assets_media:/app/public/assets/media
+
+      # ── Large 3D static assets ───────────────────────────────────────────────
+      # Bind mounts to host filesystem — excluded from the Docker image (~432 MB).
+      # The host dirs must be populated once (see .dockerignore bootstrap comment).
+      # Set ASSETS_HOST_PATH in .env.production to override /opt/thehideaway/assets.
+      - ${ASSETS_HOST_PATH:-/opt/thehideaway/assets}/plate:/app/public/assets/plate:ro
+      - ${ASSETS_HOST_PATH:-/opt/thehideaway/assets}/rp_plaque:/app/public/assets/rp_plaque:ro
+      - ${ASSETS_HOST_PATH:-/opt/thehideaway/assets}/three:/app/public/assets/three:ro
     deploy:
       resources:
         limits:

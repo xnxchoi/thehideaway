@@ -18,3 +18,21 @@ public/track_media/
 public/users/
 # assets/media is the Assets collection upload dir (small, same principle)
 public/assets/media/
+
+# ── Large 3D static assets (~432 MB combined) ────────────────────────────────
+# These binary/texture files are committed to git for local dev but must NOT
+# be baked into the production Docker image — they're served as plain static
+# files and have no build-time role.
+#
+# compose.prod.yaml mounts them from the VPS filesystem at runtime.
+#
+# BOOTSTRAP (run once before first prod deploy):
+#   rsync -av --progress ./public/assets/plate/     <vps>:/opt/thehideaway/assets/plate/
+#   rsync -av --progress ./public/assets/rp_plaque/ <vps>:/opt/thehideaway/assets/rp_plaque/
+#   rsync -av --progress ./public/assets/three/     <vps>:/opt/thehideaway/assets/three/
+#
+# After that, deploys are fast — the VPS host dirs persist across container
+# restarts because bind mounts are never rebuilt like named volumes.
+public/assets/plate/
+public/assets/rp_plaque/
+public/assets/three/
