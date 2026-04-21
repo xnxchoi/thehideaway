@@ -492,7 +492,13 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 
 - **Migrated** `text-6xl` → `text-4xl` across 4 files: `blocks/heros/PostHero/index.tsx`, `me/library/lists/page.client.tsx`, `content/lists/[username]/[hashId]/page.client.tsx`, `components/Radio/Showcase/ShowcaseHero.tsx`. Value-preserving (both resolved to 3.2rem pre-migration).
 - **Bumped** `--text-6xl: 3.2rem` → `4rem` in `globals.css:70` and `payloadStyles.css:79`.
-- **Known follow-up**: `--text-5xl` (currently `2.8rem`) sits below `--text-4xl` (`3.2rem`) — an inversion. `--text-7xl` (`3.6rem`) is tight against the new 6xl. Responsive ladders using `md:text-5xl xl:text-6xl 2xl:text-7xl` will still render non-monotonically until 5xl/7xl are fixed in a subsequent task.
+- **Known follow-up**: `--text-5xl` (currently `2.8rem`) sits below `--text-4xl` (`3.2rem`) — an inversion. `--text-7xl` (`3.6rem`) is tight against the new 6xl. Responsive ladders using `md:text-5xl xl:text-6xl 2xl:text-7xl` will still render non-monotonically until 5xl/7xl are fixed in a subsequent task. → **Resolved in T-11.**
+
+### T-11 — Restore monotonic text scale (5xl/7xl) ✅ DONE
+
+- **Bumped** `--text-5xl: 2.8rem` → `3.6rem` and `--text-7xl: 3.6rem` → `4.8rem` in both `globals.css` and `payloadStyles.css`. The full scale is now monotonically ascending: `1.4 · 1.6 · 1.8 · 2 · 2.4 · 3.2 · 3.6 · 4 · 4.8` rem.
+- **Reverted T-03's `xl:text-6xl → xl:text-4xl`** in the 2 responsive ladder files (`lists/[username]/[hashId]/page.client.tsx:106`, `Radio/Showcase/ShowcaseHero.tsx:48`) so the ladder steps `md → xl → 2xl` cleanly: `3.6 → 4 → 4.8`rem. The T-03 migration was value-preserving at the time but now broken the ladder once 5xl was restored. `PostHero/index.tsx:27`'s `lg:text-4xl` reverted to `lg:text-6xl` for the same reason.
+- Standalone ghost-symbol `text-5xl` callsites (4 empty-state decorations) grow `2.8 → 3.6rem`. Standalone `text-7xl` (1 ghost symbol) grows `3.6 → 4.8rem`. Modest visual increase, consistent with display intent.
 
 ### T-04 — Color duplicate aliases ✅ DONE
 

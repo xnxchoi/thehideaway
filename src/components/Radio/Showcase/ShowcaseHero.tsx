@@ -45,7 +45,7 @@ export function ShowcaseHero() {
           <p className="text-muted-foreground/50 mb-6 font-mono text-[10px] uppercase tracking-[0.2em] xl:text-xs">
             The Hideaway Sessions
           </p>
-          <h1 className="max-w-4xl text-3xl font-light tracking-tight sm:text-4xl md:text-5xl xl:text-4xl 2xl:text-7xl">
+          <h1 className="max-w-4xl text-3xl font-light tracking-tight sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl">
             {/* CONTENT SLOT: Creator name / headline */}
             Behind the Sound
           </h1>

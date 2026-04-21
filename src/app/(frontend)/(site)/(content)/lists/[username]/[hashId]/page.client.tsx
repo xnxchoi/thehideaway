@@ -103,7 +103,7 @@ export default function PublicCompilationClient({ compilation, isOwner, viewerId
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, type: "spring", bounce: 0.1 }}
-              className="text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl md:text-5xl xl:text-4xl 2xl:text-7xl"
+              className="text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl"
             >
               {compilation.title}
             </m.h1>
