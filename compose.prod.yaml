@@ -1,74 +1,179 @@
+# compose.prod.yaml
+#
+# Production deployment for hideawayseoul.com
+# VPS: ITEASY EasyCloud — 2 vCPU / 4 GB RAM / 100 GB HDD (Seoul)
+#
+# ── DEPLOY FLOW ──────────────────────────────────────────────────────────────
+#
+#  LOCAL (or CI):
+#    ./build.sh [git-sha]          — builds + tags both images, pushes to registry
+#
+#  VPS:
+#    IMAGE_TAG=<sha> ./prod.sh     — pulls + starts services
+#    ./prod.sh --migrate           — runs migrations (include before/after flag)
+#
+# ── MIGRATION NOTES ──────────────────────────────────────────────────────────
+#
+#  Migrations are intentionally NOT automatic on startup. Run them explicitly:
+#
+#    # 1. Back up first (always, even for schema-only changes):
+#    docker compose exec postgres pg_dump \
+#      -U postgres -Fc ${POSTGRES_DB} > backup-$(date +%Y%m%d-%H%M%S).dump
+#
+#    # 2. Run migrations:
+#    docker compose -f compose.prod.yaml --profile migrate \
+#      run --rm migrate
+#
+#  PG MAJOR VERSION UPGRADES (e.g. 18 → 19):
+#    Cannot swap the image tag with live data. Requires pg_dump + pg_restore.
+#    See scripts/pg-upgrade.sh for the full procedure.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
 name: theestate
+
 services:
+
+  # ── Application ─────────────────────────────────────────────────────────────
   payload:
     container_name: payload
-    volumes:
-      - node_modules:/home/node/app/node_modules
-    # No external port exposure - only accessible via Docker network
+    image: ${REGISTRY:-hideaway}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
     env_file:
       - .env.production
     environment:
-      # Override database connection for Docker network
       DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-    build:
-      context: ./
-      dockerfile: prod.Dockerfile
-      args:
-        - BUILDKIT_INLINE_CACHE=1
-        - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
-        - NEXT_PUBLIC_IMAGE_MAX_FILE_SIZE=${NEXT_PUBLIC_IMAGE_MAX_FILE_SIZE}
-        - NEXT_PUBLIC_VIDEO_MAX_FILE_SIZE=${NEXT_PUBLIC_VIDEO_MAX_FILE_SIZE}
-        - NEXT_PUBLIC_BETTER_AUTH_URL=${NEXT_PUBLIC_BETTER_AUTH_URL}
-        - NEXT_PUBLIC_EXCHANGE_RATE_URL=${NEXT_PUBLIC_EXCHANGE_RATE_URL}
-        - NEXT_PUBLIC_HOLIDAY_API_URL=${NEXT_PUBLIC_HOLIDAY_API_URL}
+      NODE_ENV: production
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    # Payload runtime upload directories — mounted as named volumes so that
+    # uploaded files persist across deploys and container restarts.
+    # These dirs are excluded from the Docker image via .dockerignore.
+    volumes:
+      - payload_media:/app/public/media
+      - payload_track_media:/app/public/track_media
+      - payload_users:/app/public/users
+      - payload_assets_media:/app/public/assets/media
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "1.5"
     networks:
       - hideaway
 
+  # ── Migration runner (one-shot, explicit) ────────────────────────────────────
+  # Only active when --profile migrate is passed. Never runs automatically.
+  # Always take a pg_dump backup before running this.
+  migrate:
+    container_name: hideaway-migrate
+    image: ${REGISTRY:-hideaway}-migrate:${IMAGE_TAG:-latest}
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URI: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - hideaway
+    profiles:
+      - migrate
+
+  # ── Nginx ────────────────────────────────────────────────────────────────────
   nginx:
-    restart: always
     container_name: nginx
+    restart: unless-stopped
     build:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ./nginx/sites-enabled/production.conf:/etc/nginx/sites-enabled/default.conf
+      # Override the built-in site config (same path → volume shadows the COPY)
+      - ./nginx/sites-enabled/production.conf:/etc/nginx/sites-enabled/production.conf
       - ./nginx/logs:/var/log/nginx
-      # Mount Let's Encrypt certificates from host
+      # Let's Encrypt certs — managed by certbot on the host
       - /etc/letsencrypt/live/hideawayseoul.com/fullchain.pem:/etc/nginx/certs/hideawayseoul.com/hideawayseoul.com.pem:ro
       - /etc/letsencrypt/live/hideawayseoul.com/privkey.pem:/etc/nginx/certs/hideawayseoul.com/hideawayseoul.com-key.pem:ro
+      # Certbot ACME webroot challenge directory
+      # On host: certbot certonly --webroot -w /var/www/certbot -d hideawayseoul.com
+      - /var/www/certbot:/var/www/certbot:ro
     ports:
       - "80:80"
       - "443:443"
     depends_on:
-      - payload
+      payload:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
     networks:
       - hideaway
 
+  # ── PostgreSQL 18 ─────────────────────────────────────────────────────────────
+  # PG 18 required: native uuidv7() function used throughout the schema.
+  # DO NOT downgrade — UUID v7 generation would break.
+  #
+  # Tuned for 4 GB RAM / HDD (random_page_cost=4 reflects spinning disk IOPS):
+  #   shared_buffers     = 1 GB   (25% of RAM)
+  #   effective_cache    = 2 GB   (50% of RAM)
+  #   work_mem           = 16 MB  (conservative; many concurrent sorts possible)
+  #   maintenance_work_mem = 128 MB
+  #   max_connections    = 50     (app pool capped at 15 in payload.config.ts)
   postgres:
-    restart: always
     container_name: postgres
-    image: postgres:latest
+    image: postgres:18-alpine
+    restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "5432:5432"
     env_file:
       - .env.production
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+      -c shared_buffers=1GB
+      -c effective_cache_size=2GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=128MB
+      -c random_page_cost=4
+      -c max_connections=50
+      -c log_min_duration_statement=1000
+    deploy:
+      resources:
+        limits:
+          memory: 1500m
+          cpus: "1"
     networks:
       - hideaway
+
 volumes:
   pgdata:
-  node_modules:
+  # Payload CMS upload volumes — persist user-uploaded content across deploys.
+  # Back these up via scripts/backup.sh (or a separate volume backup job) before
+  # any major infra change. On first deploy Docker creates them empty; Payload
+  # writes into them as files are uploaded through /vault.
+  payload_media:
+  payload_track_media:
+  payload_users:
+  payload_assets_media:
+
 networks:
   hideaway:
     external: true

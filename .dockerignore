@@ -5,3 +5,16 @@ node_modules/
 !/src/payload/collections/Users/c/dd.js
 
 /src/app/(frontend)/(site)/(content)/essays/DemoOfArchive.tsx
+
+# Payload runtime upload directories — managed via Docker named volumes.
+# These are written by Payload CMS at runtime (media uploads, user avatars,
+# audio tracks). They must NOT be baked into the image:
+#   1. Dev content would be shipped to production.
+#   2. Files uploaded in production would vanish on container restart
+#      unless mounted as a persistent volume.
+# compose.prod.yaml mounts these as named volumes on the VPS.
+public/media/
+public/track_media/
+public/users/
+# assets/media is the Assets collection upload dir (small, same principle)
+public/assets/media/
