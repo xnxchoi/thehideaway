@@ -1,4 +1,5 @@
-logs/
+logs/*
+!logs/.gitkeep
 
 # All except the example cert are ignored from version control
 # If you wish to add your certs to version control, change your 
