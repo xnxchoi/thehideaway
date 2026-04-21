@@ -41,7 +41,7 @@ a.button--outline--gray--rounded {
   background: var(--bg-subtle);
   -webkit-backdrop-filter: blur(1.4rem);
   backdrop-filter: blur(2.4rem);
-  border: .1rem solid transparent;
+  border: 1px solid transparent;
   color: var(--text-bold);
   overflow: hidden;
   transition: border-color .2s, background-color .2s, padding-right .2s;

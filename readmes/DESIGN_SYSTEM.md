@@ -506,7 +506,10 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 - **Replaced** `--bg-menu-wrapper: 12, 12, 12` (RGB tuple) with `--bg-menu-wrapper: oklch(16.54% 0 0)` in `hideaway.scss:18`. Matches the sRGB(12,12,12) gray within visual tolerance.
 - **Migrated** 3 callers from `rgba(var(--bg-menu-wrapper), 0.8)` → `oklch(from var(--bg-menu-wrapper) l c h / 0.8)` in `hideaway.scss`, `__controlbar.scss`, `__executor.scss`. Token is now a first-class color, not a component tuple.
 
-### T-06 — Standardize hairline borders to `1px`
+### T-06 — Standardize hairline borders to `1px` ✅ DONE
+
+- **Migrated** hairline `0.1rem` declarations to explicit `1px` across `hideaway.scss` (5 borders + 2 menu-line positional hairlines), `__auth.scss` (1 border), and `Button/index.tsx` (`border-[0.1rem]` → `border-[1px]` in 2 variants).
+- Rationale: `0.1rem` depends on root font-size scaling; `1px` is explicit and always renders a true hairline at any zoom level or root size.
 
 - Grep `border: 0.1rem` and `border-width: 0.1rem` → replace with `1px`.
 - Same for `border-top/right/bottom/left: 0.1rem`.

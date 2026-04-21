@@ -132,7 +132,7 @@ export const MotionPillButton = ({
     <m.button
       aria-disabled={disabled}
       className={cn(
-        `flex appearance-none items-center justify-center overflow-hidden border-[0.1rem] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
+        `flex appearance-none items-center justify-center overflow-hidden border-[1px] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
         size === "sm"
           ? "h-[2.4rem] rounded-[2.4rem] max-md:h-[2rem] max-md:rounded-[2rem]"
           : size === "md"
@@ -188,7 +188,7 @@ export const MotionPill = ({
   return (
     <m.div
       className={cn(
-        `flex appearance-none items-center justify-center overflow-hidden border-[0.1rem] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
+        `flex appearance-none items-center justify-center overflow-hidden border-[1px] border-transparent px-[1.2rem] text-sm leading-[2] font-light tracking-[-0.01em] backdrop-blur-[2.4rem] outline-none [text-decoration:none] hover:bg-transparent data-[hover=true]:bg-transparent max-md:px-[1.4rem]`,
         size === "sm"
           ? "h-[2.4rem] rounded-[2.4rem] max-md:h-[2rem] max-md:rounded-[2rem]"
           : size === "md"

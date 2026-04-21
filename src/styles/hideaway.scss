@@ -76,7 +76,7 @@ body {
   background-color: var(--button-background);
   -webkit-backdrop-filter: blur(2.4rem);
   backdrop-filter: blur(2.4rem);
-  border: 0.1rem solid transparent;
+  border: 1px solid transparent;
   color: oklch(from var(--n-s-btn) l c h / 0.9);
   overflow: hidden;
   transition: border-color 0.2s,
@@ -531,7 +531,7 @@ svg.bell-icon {
   background-color: var(--button-background);
   -webkit-backdrop-filter: blur(1.4rem);
   backdrop-filter: blur(1.4rem);
-  border: 0.1rem solid transparent;
+  border: 1px solid transparent;
   color: oklch(from var(--n-s-fg) l c h / 0.9);
   height: var(--button-height-md);
   width: var(--button-height-md);
@@ -621,7 +621,7 @@ svg.bell-icon {
   //background-color: transparent;
   -webkit-backdrop-filter: blur(1.4rem);
   backdrop-filter: blur(1.4rem);
-  border: 0.1rem solid;
+  border: 1px solid;
   border-color: transparent;
   padding: 0 8px;
   color: oklch(from var(--n-s-fg) l c h / 1);
@@ -721,7 +721,7 @@ svg.bell-icon {
   padding: 0 6px 8px 8px;
   margin-top: 0.5rem;
   margin-bottom: 4px;
-  border-bottom: 0.1rem solid oklch(from var(--n-s-fg) l c h / 1);
+  border-bottom: 1px solid oklch(from var(--n-s-fg) l c h / 1);
 }
 
 /*section links*/
@@ -749,7 +749,7 @@ svg.bell-icon {
   align-items: center;
   -webkit-box-pack: justify;
   justify-content: space-between;
-  border-top: 0.1rem solid oklch(from var(--n-s-fg) l c h / 0.5);
+  border-top: 1px solid oklch(from var(--n-s-fg) l c h / 0.5);
   transition: all 0.3s ease-in-out 0s;
   font-style: normal;
   line-height: 100%;
@@ -1297,11 +1297,11 @@ body[data-browser="chrome"][data-device="mobile"] .menu__window-pos {
 
 .menu__item-line-container {
   position: absolute;
-  bottom: 0.1rem;
+  bottom: 1px;
   left: 2rem;
   right: 1rem;
   //width: 100%;
-  height: 0.1rem;
+  height: 1px;
   overflow: hidden;
   pointer-events: none;
 }
