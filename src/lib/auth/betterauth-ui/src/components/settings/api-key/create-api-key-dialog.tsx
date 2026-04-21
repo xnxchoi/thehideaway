@@ -156,7 +156,7 @@ export function CreateApiKeyDialog({
         className={classNames?.dialog?.content}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
             {localization.CREATE_API_KEY}
           </DialogTitle>
 

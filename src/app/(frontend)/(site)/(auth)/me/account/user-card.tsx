@@ -101,7 +101,7 @@ export function UserCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-sans text-lg">
+        <CardTitle className="font-sans text-base">
           Hello, {currentUser?.name}
         </CardTitle>
       </CardHeader>
@@ -256,7 +256,7 @@ export function UserCard() {
         )}
         <div className="flex items-center justify-between gap-10 border-y border-muted-faded-foreground/30 px-0 pt-4">
           <div className="flex h-full w-full flex-col gap-4">
-            <div className="flex h-6 w-full items-center font-sans text-lg">
+            <div className="flex h-6 w-full items-center font-sans text-base">
               Passkeys
             </div>
             <div className="flex h-12 w-full items-center justify-between">
@@ -269,7 +269,7 @@ export function UserCard() {
             </div>
           </div>
           <div className="flex h-full w-full flex-col gap-2">
-            <div className="flex h-6 w-full items-center font-sans text-lg">
+            <div className="flex h-6 w-full items-center font-sans text-base">
               Two Factor
             </div>
             <div className="flex items-center gap-2">
@@ -939,7 +939,7 @@ function EditUserDialog() {
                           className={"flex items-center gap-2 px-2 py-1"}
                           htmlFor="user_settings_photo_file"
                         >
-                          <span className="text-lg">Upload File</span>
+                          <span className="text-base">Upload File</span>
                           <svg
                             className="relative inline-block h-auto bg-transparent transition-colors duration-300 outline-none"
                             viewBox="0 0 20 20"
@@ -1270,7 +1270,7 @@ function ListPasskeys() {
                 Add new passkey
               </Label>
               <Input
-                className="!focus-visible:border-faded-foreground/90 border-faded-foreground/60 py-2 pb-3 text-lg placeholder:leading-[1.5] placeholder:text-muted-foreground"
+                className="!focus-visible:border-faded-foreground/90 border-faded-foreground/60 py-2 pb-3 text-base placeholder:leading-[1.5] placeholder:text-muted-foreground"
                 id="passkey-name"
                 value={passkeyName}
                 onChange={(e) => setPasskeyName(e.target.value)}

@@ -198,7 +198,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
             className={"flex items-center gap-2 px-2 py-1"}
             htmlFor="user_settings_photo_file"
           >
-            <span className="text-lg">Upload File</span>
+            <span className="text-base">Upload File</span>
             <svg
               className="relative inline-block h-auto bg-transparent transition-colors duration-300 outline-none"
               viewBox="0 0 20 20"

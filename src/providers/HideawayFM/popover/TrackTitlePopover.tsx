@@ -137,7 +137,7 @@ export function TrackTitlePopover({
                 <div
                   className={cn(
                     "font-light tracking-tight text-foreground",
-                    "text-lg leading-snug xl:text-xl"
+                    "text-base leading-snug xl:text-xl"
                   )}
                   style={{ fontFamily: "var(--font-serif, serif)" }}
                 >

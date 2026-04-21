@@ -34,7 +34,7 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
               >
                 <Button
                   variant="outline"
-                  className="*:ease ease border-faded-foreground/&.65)] inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border bg-off-background/30 px-4 py-3 text-lg font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-off-background/50 hover:*:text-rouge-500 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
+                  className="*:ease ease border-faded-foreground/&.65)] inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border bg-off-background/30 px-4 py-3 text-base font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-off-background/50 hover:*:text-rouge-500 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
                 >
                   {authProviderIcons["Google"] || null}
                   <span>
@@ -70,7 +70,7 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
               {/*  <div className="grid gap-5">*/}
               {/*    <div className="flex items-center">*/}
               {/*      <Label htmlFor="password">Password</Label>*/}
-              {/*      <Link href="#" className="ml-auto text-lg underline-offset-4 hover:underline">*/}
+              {/*      <Link href="#" className="ml-auto text-base underline-offset-4 hover:underline">*/}
               {/*        Forgot your password?*/}
               {/*      </Link>*/}
               {/*    </div>*/}
@@ -80,7 +80,7 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
               {/*    Login*/}
               {/*  </Button>*/}
             </div>
-            <div className="text-center text-lg">
+            <div className="text-center text-base">
               Problems with your account?
               <span className="group relative mx-1 inline-flex items-center justify-center p-0">
                 <Link
@@ -96,7 +96,7 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
           </div>
         </CardContent>
       </Card>
-      <div className="text-center text-lg text-balance text-muted-foreground *:[a]:underline *:[a]:underline-offset-4 *:[a]:hover:text-primary">
+      <div className="text-center text-base text-balance text-muted-foreground *:[a]:underline *:[a]:underline-offset-4 *:[a]:hover:text-primary">
         By clicking continue, you agree to our
         <span className="group relative mx-1 inline-flex items-center justify-center p-0">
           <Link

@@ -110,7 +110,7 @@ export const DynamicBreadcrumb = ({
             </div>
             <div
               className={
-                "m-0 w-full overflow-hidden p-0 text-center align-middle font-sans text-lg font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
+                "m-0 w-full overflow-hidden p-0 text-center align-middle font-sans text-base font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
               }
             >
               {title}

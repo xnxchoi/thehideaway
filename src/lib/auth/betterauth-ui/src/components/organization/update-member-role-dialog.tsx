@@ -142,7 +142,7 @@ export function UpdateMemberRoleDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
             {localization.UPDATE_ROLE}
           </DialogTitle>
 

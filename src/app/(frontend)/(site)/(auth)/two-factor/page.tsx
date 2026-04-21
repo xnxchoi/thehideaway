@@ -85,7 +85,7 @@ export default function Component() {
             ) : (
               <div className="flex flex-col items-center justify-center space-y-2">
                 <CheckCircle2 className="h-12 w-12 text-green-500" />
-                <p className="text-lg font-semibold">Verification Successful</p>
+                <p className="text-base font-semibold">Verification Successful</p>
               </div>
             )}
           </CardContent>

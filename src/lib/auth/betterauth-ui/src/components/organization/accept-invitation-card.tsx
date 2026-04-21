@@ -228,7 +228,7 @@ function AcceptInvitationContent({
       <CardHeader
         className={cn("justify-items-center text-center", classNames?.header)}
       >
-        <CardTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+        <CardTitle className={cn("text-base md:text-xl", classNames?.title)}>
           {localization.ACCEPT_INVITATION}
         </CardTitle>
 

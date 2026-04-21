@@ -157,7 +157,7 @@ const T = (props: { post: SingleArticle; queuedIDs: string[] }) => {
                     </div>
                     <span
                       className={
-                        "m-0 overflow-hidden p-0 font-sans text-lg leading-[1.75] font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
+                        "m-0 overflow-hidden p-0 font-sans text-base leading-[1.75] font-light tracking-[0.3px] text-ellipsis whitespace-nowrap"
                       }
                     >
                       {currentPost.title}

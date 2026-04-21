@@ -94,7 +94,7 @@ const StandardCard = () => {
             aria-label="Become a guest member"
             href="/plans/guest"
             disabled={!enabled}
-            className="absolute right-[2.5em] bottom-[2.5em] left-[2.5em] rounded-lg border-2 border-solid border-muted-faded-background px-[1.5em] py-[1em] text-center text-lg transition-colors duration-200 ease-in-out hover:bg-muted-faded-background hover:text-accent"
+            className="absolute right-[2.5em] bottom-[2.5em] left-[2.5em] rounded-lg border-2 border-solid border-muted-faded-background px-[1.5em] py-[1em] text-center text-base transition-colors duration-200 ease-in-out hover:bg-muted-faded-background hover:text-accent"
           >
             {caption}
           </Link>

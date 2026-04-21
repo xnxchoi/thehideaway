@@ -91,7 +91,7 @@ export function RemoveMemberDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
             {localization.REMOVE_MEMBER}
           </DialogTitle>
 

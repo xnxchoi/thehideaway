@@ -196,7 +196,7 @@ export function CreateOrganizationDialog({
     <Dialog onOpenChange={onOpenChange} {...props}>
       <DialogContent className={classNames?.dialog?.content}>
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
             {localization.CREATE_ORGANIZATION}
           </DialogTitle>
 

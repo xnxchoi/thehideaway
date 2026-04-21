@@ -270,7 +270,7 @@ export function SignInForm({
           //   classNames?.button,
           //   classNames?.primaryButton,
           // )}
-          className="*:ease font-suit ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-faded-foreground/65 bg-off-foreground/30 px-4 py-3 text-lg leading-1 font-light tracking-wide whitespace-nowrap text-faded-foreground uppercase shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-off-background/50 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
+          className="*:ease font-suit ease inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border border-faded-foreground/65 bg-off-foreground/30 px-4 py-3 text-base leading-1 font-light tracking-wide whitespace-nowrap text-faded-foreground uppercase shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-off-background/50 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
         >
           <div
             className={

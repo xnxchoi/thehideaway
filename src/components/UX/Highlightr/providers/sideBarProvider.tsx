@@ -463,7 +463,7 @@ export const SideBarProvider = ({ children }: { children: ReactNode }) => {
               } as CSSProperties
             }
           >
-            <Drawer.Title className="px-5 py-3 text-lg font-semibold">
+            <Drawer.Title className="px-5 py-3 text-base font-semibold">
               Response
             </Drawer.Title>
             <Drawer.Description className="sr-only">

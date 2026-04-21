@@ -48,7 +48,7 @@ export function SessionFreshnessDialog({
     <Dialog onOpenChange={onOpenChange} {...props}>
       <DialogContent className={cn("sm:max-w-md", classNames?.dialog?.content)}>
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
             {title || localization?.SESSION_EXPIRED || "Session Expired"}
           </DialogTitle>
 

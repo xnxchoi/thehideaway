@@ -185,7 +185,7 @@ function CompilationCard({
 
           {premium && (
             <div className="absolute inset-x-0 bottom-0 p-4 xl:p-5">
-              <h3 className="text-base leading-snug font-medium tracking-tight text-white drop-shadow xl:text-lg">
+              <h3 className="text-base leading-snug font-medium tracking-tight text-white drop-shadow xl:text-base">
                 {c.title}
               </h3>
               {c.description && (

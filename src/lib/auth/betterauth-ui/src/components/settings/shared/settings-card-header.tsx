@@ -41,7 +41,7 @@ export function SettingsCardHeader({
         </>
       ) : (
         <>
-          <CardTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+          <CardTitle className={cn("text-base md:text-xl", classNames?.title)}>
             {title}
           </CardTitle>
 

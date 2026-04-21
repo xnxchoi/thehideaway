@@ -93,7 +93,7 @@ const FullInfo = ({ track, className }: InfoProps) => (
       <TrackTitlePopover
         kind="track"
         entity={trackEntity(track)}
-        className="font-serif text-lg leading-tight font-bold italic"
+        className="font-serif text-base leading-tight font-bold italic"
       >
         {track.title}
       </TrackTitlePopover>
