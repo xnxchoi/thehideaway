@@ -1,17 +1,25 @@
 "use client";
 
-import React, {ReactNode, useEffect} from "react";
+import React, { ReactNode, useEffect } from "react";
 
-import {useHeaderTheme} from "@/providers/HeaderTheme";
+import { useHeaderTheme } from "@/providers/HeaderTheme";
 import * as m from "motion/react-m";
 
 const PageClient = (props: { children: ReactNode }) => {
-	/* Force the header to be dark mode while we have an image behind it */
-	const {setHeaderTheme} = useHeaderTheme();
-	useEffect(() => {
-		setHeaderTheme("dark");
-	}, [setHeaderTheme]);
-	return <m.div className="py-24"> {props.children}</m.div>;
+  const { setHeaderTheme } = useHeaderTheme();
+  useEffect(() => {
+    setHeaderTheme("light");
+  }, [setHeaderTheme]);
+  return (
+    <m.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22 }}
+      className="min-h-screen"
+    >
+      {props.children}
+    </m.div>
+  );
 };
 
 export default PageClient;
