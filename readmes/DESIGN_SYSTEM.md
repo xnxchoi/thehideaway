@@ -553,20 +553,20 @@ At 62.5% root, `1rem = 10px`.
   3. Delete the `max-width: 967px` mirrors or promote them analogously.
 - Do not attempt this sweep as part of autonomous migration.
 
-### T-09 — Unify button height/padding tokens
+### T-09 — Unify button height/padding tokens ✅ DONE
 
-- **Add** to `globals.css`:
-  ```css
-  --button-h-sm: 2.4rem;
-  --button-h-md: 3.2rem;
-  --button-h-lg: 3.6rem;
-  --button-px-sm: 1.2rem;
-  --button-px-md: 1.6rem;
-  --button-px-lg: 2rem;
+- **Added** unified scale to `hideaway.scss :root` (component stylesheet retained as the home since mobile overrides live here via `@media (max-width: 768px)`):
+  ```scss
+  --button-h-sm: 2.4rem;   /* was --button-height */
+  --button-h-md: 3.2rem;   /* was --button-height-md */
+  --button-h-lg: 3.6rem;   /* was --button-height-lg */
+  --button-px-sm: 1.2rem;  /* was --button-padding */
+  --button-px-md: 1.6rem;  /* new */
+  --button-px-lg: 2.4rem;  /* was --button-pad (estate.scss) */
   ```
-- **Delete** from `hideaway.scss`: `--button-height`, `--button-height-md`, `--button-height-lg`, `--button-padding`.
-- **Delete** from `estate.scss`: `--height-input`, `--pad-input`, `--button-pad`.
-- **Update** `.rp_btn` and inputs to reference the new tokens.
+  Mobile overrides: `--button-h-sm: 2rem`, `--button-h-md: 2.56rem`, `--button-px-sm: 1.4rem`.
+- **Deleted** legacy `--button-height*`, `--button-padding` from `hideaway.scss :root`. Deleted `--button-pad` and the unused `--height-input` from `estate.scss`. Kept `--pad-input` (5 input-specific callers, out of button scope).
+- **Migrated** 15 `var(--button-*)` references in `hideaway.scss` to the new names. `--button-px-lg` (2.4rem) preserves the exact padding of the one `var(--button-pad)` caller rather than the spec's 2rem.
 
 ### T-10 — Formalize duration tokens
 

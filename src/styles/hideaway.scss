@@ -19,16 +19,19 @@
   --bg-subtle-invert: #edf1f5;
   --bg-invert: var(--fg);
   --bg-highlight: var(--red-v-2);
-  --button-padding: 1.2rem;
   --bg-highlight-invert: var(--red-v-2);
-  --button-height: 2.4rem;
-  --button-height-md: 3.2rem;
-  --button-height-lg: 3.6rem;
+
+  --button-h-sm: 2.4rem;
+  --button-h-md: 3.2rem;
+  --button-h-lg: 3.6rem;
+  --button-px-sm: 1.2rem;
+  --button-px-md: 1.6rem;
+  --button-px-lg: 2.4rem;
 
   @media (max-width: 768px) {
-    --button-padding: 1.4rem;
-    --button-height: 2rem;
-    --button-height-md: 2.56rem;
+    --button-h-sm: 2rem;
+    --button-h-md: 2.56rem;
+    --button-px-sm: 1.4rem;
   }
 }
 
@@ -89,10 +92,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--button-padding);
+  padding: 0 var(--button-px-sm);
   border-radius: var(--radius-pill);
   text-align: center;
-  height: var(--button-height-md);
+  height: var(--button-h-md);
 }
 
 .rp_btn.bt_inv {
@@ -102,7 +105,7 @@ body {
 
 @media (min-width: 967px) {
   .rp_btn {
-    height: var(--button-height);
+    height: var(--button-h-sm);
   }
 }
 
@@ -122,7 +125,7 @@ body {
 }
 
 .rp_btn.bt_lg {
-  height: var(--button-height-lg);
+  height: var(--button-h-lg);
   font-size: 2.6rem;
 }
 
@@ -288,7 +291,7 @@ body {
   height: 100%;
   position: absolute;
   text-align: center;
-  line-height: calc(var(--button-height) * 1.19);
+  line-height: calc(var(--button-h-sm) * 1.19);
   left: auto;
 }
 
@@ -296,7 +299,7 @@ body {
   .menu__button-close,
   .menu__button-text {
     line-height: 120%;
-    line-height: calc(var(--button-height) * 0.88);
+    line-height: calc(var(--button-h-sm) * 0.88);
   }
 }
 
@@ -313,7 +316,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(100% - (var(--button-padding) * 2));
+  width: calc(100% - (var(--button-px-sm) * 2));
   transform: translateY(102%);
 }
 
@@ -332,7 +335,7 @@ body {
 }
 
 .bell-button {
-  --bell-d: var(--button-height);
+  --bell-d: var(--button-h-sm);
   --bell-pad: 2rem;
   //padding:0 var(--bell-pad) 0 calc(var(--bell-pad) * .26)!important;
   padding: 0 8px !important;
@@ -352,8 +355,8 @@ body {
 
 @media (min-width: 967px) {
   .bell-button {
-    --bell-d: var(--button-height-md);
-    min-width: calc(var(--button-height-md) * 0.76);
+    --bell-d: var(--button-h-md);
+    min-width: calc(var(--button-h-md) * 0.76);
   }
 }
 
@@ -367,7 +370,7 @@ body {
   font-size: 1.3rem;
   line-height: 114%;
   letter-spacing: -0.01em;
-  //right: calc(var(--button-height) - 4px);
+  //right: calc(var(--button-h-sm) - 4px);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -533,8 +536,8 @@ svg.bell-icon {
   backdrop-filter: blur(1.4rem);
   border: 1px solid transparent;
   color: oklch(from var(--n-s-fg) l c h / 0.9);
-  height: var(--button-height-md);
-  width: var(--button-height-md);
+  height: var(--button-h-md);
+  width: var(--button-h-md);
   transition: border-color 0.2s,
   background-color 0.2s;
   border-radius: var(--radius-pill);
@@ -542,8 +545,8 @@ svg.bell-icon {
   overflow: hidden;
 
   @media (min-width: 967px) {
-    height: var(--button-height);
-    width: var(--button-height);
+    height: var(--button-h-sm);
+    width: var(--button-h-sm);
   }
 }
 
@@ -615,7 +618,7 @@ svg.bell-icon {
   border-radius: 0.6rem;
   isolation: isolate;
   position: absolute;
-  min-height: var(--button-height);
+  min-height: var(--button-h-sm);
   min-width: 2.4rem;
   overflow: clip;
   //background-color: transparent;
@@ -682,7 +685,7 @@ svg.bell-icon {
   -webkit-box-pack: center;
   border: 0;
   /* font-weight: 900; */
-  height: var(--button-height);
+  height: var(--button-h-sm);
   justify-content: center;
   position: sticky;
   top: 0;
@@ -845,8 +848,8 @@ svg.bell-icon {
   position: relative;
   justify-content: center;
   align-items: center;
-  height: var(--button-height);
-  padding: 0 var(--button-pad);
+  height: var(--button-h-sm);
+  padding: 0 var(--button-px-lg);
   color: var(--n-s-menu-i);
   text-align: center;
 

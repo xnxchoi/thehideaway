@@ -3,7 +3,6 @@
   --min-width-col: 20rem;
   --grid-gutter: 3.6rem var(--gutter);
 
-  --button-pad: 2.4rem;
   --button-bg: rgba(0, 0, 0, 0);
   --button-color: oklch(from var(--fg) l c h/1);
   --button-color-border: var(--bg-primary);
@@ -16,7 +15,6 @@
     calc(var(--loader-size) / 6) + calc(var(--loader-size) / 12)
   );
   --check-color: oklch(from var(--fg) l c h/1);
-  --height-input: 4.8rem;
   --pad-input: 1.6rem;
 }
 .root {
