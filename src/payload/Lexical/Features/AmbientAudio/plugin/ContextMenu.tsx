@@ -12,21 +12,16 @@ import { useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 import { AmbienceHandle } from "./AmbientAudioPlugin";
-import {
-  $isAmbientAudioEndNode,
-  type AmbientAudioEndNode
-} from "../nodes/AmbientAudioEndNode";
-import {
-  $isAmbientAudioStartNode,
-  type AmbientAudioStartNode
-} from "../nodes/AmbientAudioStartNode";
-import type { AmbientTrackRef } from "../nodes/types";
+import type { AmbientRegionData } from "../nodes/types";
 import { useAmbientStore } from "../store/ambientStore";
 import {
   $findAnchorPair,
+  $isAmbientAnchor,
   $removeGroup,
-  $updateGroupTrack,
-  isPlaceholderTrack
+  $updateGroupRegion,
+  getAnchorGroupId,
+  getAnchorRegion,
+  isPlaceholderRegion
 } from "../utils/anchors";
 import { getTrackById } from "../utils/tracks";
 
@@ -62,31 +57,31 @@ function makeVirtualAnchor(x: number, y: number) {
 function $readGroupFromNode(
   editor: LexicalEditor,
   nodeKey: string | null
-): { groupId: string | null; track: AmbientTrackRef | null } {
-  if (!nodeKey) return { groupId: null, track: null };
-  let out = { groupId: null as string | null, track: null as AmbientTrackRef | null };
+): { groupId: string | null; region: AmbientRegionData | null } {
+  if (!nodeKey) return { groupId: null, region: null };
+  let out = {
+    groupId: null as string | null,
+    region: null as AmbientRegionData | null
+  };
   editor.getEditorState().read(() => {
     const node = $getNodeByKey(nodeKey);
-    if (!node) return;
-    if ($isAmbientAudioStartNode(node) || $isAmbientAudioEndNode(node)) {
-      const n = node as AmbientAudioStartNode | AmbientAudioEndNode;
-      out = { groupId: n.getGroupId(), track: n.getTrack() };
-    }
+    if (!$isAmbientAnchor(node)) return;
+    out = { groupId: getAnchorGroupId(node), region: getAnchorRegion(node) };
   });
   return out;
 }
 
-function $readGroupTrack(
+function $readGroupRegion(
   editor: LexicalEditor,
   groupId: string
-): AmbientTrackRef | null {
-  let track: AmbientTrackRef | null = null;
+): AmbientRegionData | null {
+  let region: AmbientRegionData | null = null;
   editor.getEditorState().read(() => {
     const pair = $findAnchorPair(groupId);
     const node = pair.start ?? pair.end;
-    if (node) track = node.getTrack();
+    if (node) region = getAnchorRegion(node);
   });
-  return track;
+  return region;
 }
 
 /**
@@ -151,17 +146,17 @@ export function AmbientContextMenu({
     const gid = target.groupId;
     const snapshot = target.nodeKey
       ? $readGroupFromNode(editor, target.nodeKey)
-      : { groupId: gid, track: $readGroupTrack(editor, gid) };
-    const trackId = snapshot.track?.trackId;
-    if (!trackId) {
+      : { groupId: gid, region: $readGroupRegion(editor, gid) };
+    const src = snapshot.region?.source;
+    if (!src || src.provider !== "internal" || !src.trackId) {
       closeContextMenu();
       return;
     }
     try {
-      const fresh = await getTrackById(trackId);
+      const fresh = await getTrackById(src.trackId);
       if (fresh) {
         editor.update(() => {
-          $updateGroupTrack(gid, fresh);
+          $updateGroupRegion(gid, { source: fresh });
         });
       }
     } catch {
@@ -171,16 +166,17 @@ export function AmbientContextMenu({
   }, [target, editor, closeContextMenu]);
 
   const insideRegion = !!target?.groupId;
-  const currentTrack = insideRegion
+  const currentRegion = insideRegion
     ? target.nodeKey
-      ? $readGroupFromNode(editor, target.nodeKey).track
-      : $readGroupTrack(editor, target.groupId!)
+      ? $readGroupFromNode(editor, target.nodeKey).region
+      : $readGroupRegion(editor, target.groupId!)
     : null;
-  const showReload = insideRegion
-    ? !!currentTrack &&
-      !isPlaceholderTrack(currentTrack) &&
-      !currentTrack.url
-    : false;
+  const showReload =
+    insideRegion &&
+    !!currentRegion &&
+    !isPlaceholderRegion(currentRegion) &&
+    currentRegion.source.provider === "internal" &&
+    !currentRegion.source.url;
 
   return (
     <Menu.Root

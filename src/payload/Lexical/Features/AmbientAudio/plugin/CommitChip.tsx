@@ -63,13 +63,11 @@ export function CommitChip({ onCommit }: CommitChipProps) {
       transition={{ type: "spring", bounce: 0.24, visualDuration: 0.3 }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.94 }}
+      className={"fixed z-500 rounded-full px-2.5 py-5.5"}
       style={{
         position: "fixed",
         top: pos.top,
         left: Math.max(8, pos.left),
-        zIndex: 10022,
-        padding: "6px 14px",
-        borderRadius: 999,
         border: "1px solid oklch(0.7 0.1 250 / 0.4)",
         background: "oklch(0.16 0 0 / 0.88)",
         backdropFilter: "blur(14px) saturate(1.3)",

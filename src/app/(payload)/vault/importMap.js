@@ -48,6 +48,7 @@ import { FormatImportClientFeature as FormatImportClientFeature_30f835d2ae0242eb
 import { LinkPreviewClientFeature as LinkPreviewClientFeature_802a3021797535fad54daababb14a736 } from '@/payload/Lexical/Features/LinkPreview/feature.client.ts'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { RP_ImageBlock as RP_ImageBlock_96cd05edb8fb701d903b4755c5080614 } from '@/blocks/ImageBlock/Comp/client/component/index.tsx'
+import { AnchorBlockComponent as AnchorBlockComponent_f3a05cf51d71fc01a6d4f2fd1ddb27c1 } from '@/payload/Lexical/Features/AmbientAudio/components/AnchorBlockComponent.tsx'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { default as default_ec71de73a4eed72f2695daebfc9e27c0 } from '@/payload/fields/Article/Cover/index.tsx'
 import { RichTextField as RichTextField_0a6b2d6e7b4589879c706b11e5aed0bc } from '@/payload/fields/Article/Title/index.tsx'
@@ -149,6 +150,7 @@ export const importMap = {
   "@/payload/Lexical/Features/LinkPreview/feature.client.ts#LinkPreviewClientFeature": LinkPreviewClientFeature_802a3021797535fad54daababb14a736,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/blocks/ImageBlock/Comp/client/component/index.tsx#RP_ImageBlock": RP_ImageBlock_96cd05edb8fb701d903b4755c5080614,
+  "@/payload/Lexical/Features/AmbientAudio/components/AnchorBlockComponent.tsx#AnchorBlockComponent": AnchorBlockComponent_f3a05cf51d71fc01a6d4f2fd1ddb27c1,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@/payload/fields/Article/Cover/index.tsx#default": default_ec71de73a4eed72f2695daebfc9e27c0,
   "@/payload/fields/Article/Title/index.tsx#RichTextField": RichTextField_0a6b2d6e7b4589879c706b11e5aed0bc,

@@ -1,6 +1,6 @@
 import { stringify } from "qs-esm";
 
-import type { AmbientTrackRef } from "../nodes/types";
+import type { AmbientSourceInternal } from "../nodes/types";
 
 interface RawTrackDoc {
   id: string;
@@ -32,7 +32,7 @@ function resolveCover(cover: RawTrackDoc["cover"]): string | null {
   return null;
 }
 
-function toRef(doc: RawTrackDoc): AmbientTrackRef {
+function toSource(doc: RawTrackDoc): AmbientSourceInternal {
   // The Tracks collection stores uploads in /public/track_media, served
   // statically by Next at /track_media/<filename>. That path works without
   // any auth / custom endpoint and supports range requests for streaming.
@@ -40,6 +40,7 @@ function toRef(doc: RawTrackDoc): AmbientTrackRef {
     ? `/track_media/${encodeURIComponent(doc.filename)}`
     : doc.url;
   return {
+    provider: "internal",
     trackId: doc.id,
     title: doc.title,
     artist: doc.artist,
@@ -55,7 +56,7 @@ function toRef(doc: RawTrackDoc): AmbientTrackRef {
 export async function searchTracks(
   query: string,
   signal?: AbortSignal
-): Promise<AmbientTrackRef[]> {
+): Promise<AmbientSourceInternal[]> {
   const trimmed = query.trim();
   const where = trimmed
     ? {
@@ -88,7 +89,7 @@ export async function searchTracks(
   if (!res.ok) throw new Error(`Track search failed: ${res.status}`);
 
   const json = (await res.json()) as TrackListResponse;
-  return (json.docs ?? []).map(toRef);
+  return (json.docs ?? []).map(toSource);
 }
 
 /**
@@ -97,7 +98,7 @@ export async function searchTracks(
 export async function getTrackById(
   id: string,
   signal?: AbortSignal
-): Promise<AmbientTrackRef | null> {
+): Promise<AmbientSourceInternal | null> {
   const qs = stringify({ depth: 1 }, { addQueryPrefix: true });
 
   const res = await fetch(`/api/tracks/${encodeURIComponent(id)}${qs}`, {
@@ -110,5 +111,5 @@ export async function getTrackById(
   if (!res.ok) throw new Error(`Track fetch failed: ${res.status}`);
 
   const doc = (await res.json()) as RawTrackDoc;
-  return toRef(doc);
+  return toSource(doc);
 }

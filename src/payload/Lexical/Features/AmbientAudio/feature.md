@@ -6,158 +6,239 @@ Dynamic Island widget, and as they scroll through the range the track
 fades in, follows their scroll position as a virtual seek, and fades out
 on exit. HideawayFM is snapshotted on take-over and restored on release.
 
----
-
-## Current status (2026-04-20, post select-mode overhaul)
-
-**Select-mode overhaul: ✅ landed.** See "Select-mode state machine" below.
-**Frontend runtime: ✅ working end-to-end.**
-- Widget lives inside `Highlightr/DynamicIsland.tsx` as a sibling of the
-  bookmark button. Visible at end-of-article (where DynamicBreadcrumb shows).
-- Armed widget + scroll into range → grace delay → fade in.
-- Scroll-direction-coupled playback (down/idle plays, up pauses + tracks seek).
-- FM snapshot/restore works (won't resurface a random FM track on exit).
-- Loops by default; seek is driven by scroll progress within the range.
-
-**Editor: ✅ working but fragile.**
-- Right-click → "Add ambient audio…" → arm select mode → ⌘↓ start / ⌘↑ end.
-- cmdk picker hits `/api/tracks` and writes a snapshot of the track into
-  each anchor node.
-- **Known fragility:** the track is snapshotted (title/artist/url) into
-  the anchor JSON. If the Track is re-uploaded (Payload renames with
-  `-1` / `-2` suffixes on collision), the anchor still points at the
-  original filename and plays nothing. See "Phase B — Payload refactor"
-  below for the proper fix.
-
-**Phase A playback work: ✅ complete.**
-**Phase B Payload refactor: ⏳ not started.**
+> **Version:** v2 (2026-04-20) — Payload `InlineBlocks`-backed anchors.
+> For the previous custom-`DecoratorNode` architecture see
+> [`feature.v1.md`](./feature.v1.md). The migration dropped `nodes/AmbientAudioStartNode.tsx`,
+> `nodes/AmbientAudioEndNode.tsx`, `server/populateRegion.ts`, and
+> `server/validateRegion.ts` (all in `.grave/`), along with the legacy
+> serialized types and track-snapshot helpers in `nodes/types.ts`.
 
 ---
 
 ## Architecture
 
+Anchors are Payload **InlineBlocks**. A pair of blocks sharing `groupId`
+form a region. Payload owns:
+
+- the admin drawer UI for editing `source` / `playback`
+- the relationship populate/strip cycle (`source.track` as a real
+  `relationship` to `tracks`)
+- serialization + JSON schema
+
+Our code owns: the inserter/finalizer state machine, the visual anchor
+glyph inside the editor, and the frontend scroll-coupled runtime.
+
 ### Files
 
 ```
 src/payload/Lexical/Features/AmbientAudio/
-├── index.ts                       Server feature (Payload). Exports
-│                                  AmbientAudioFeature().
-├── feature.client.tsx             Client feature — wires nodes, plugin,
-│                                  and store provider into the Lexical
-│                                  editor.
-├── nodes/
-│   ├── types.ts                   AnchorKind, AmbientTrackRef, serialized
-│   │                              shapes. AMBIENT_START_TYPE /
-│   │                              AMBIENT_END_TYPE constants.
-│   ├── AmbientAudioStartNode.tsx  DecoratorNode. Stores groupId + track.
-│   │                              getType() = "ambientAudioStart".
-│   └── AmbientAudioEndNode.tsx    Mirror of Start with
-│                                  getType() = "ambientAudioEnd".
+├── index.ts                       Server feature (createServerFeature).
+│                                  Re-exports AmbientAudioAnchorBlock +
+│                                  slug so Posts/richContent can register
+│                                  it under BlocksFeature.
+├── feature.client.tsx             Client feature — registers the plugin
+│                                  and store provider.
+├── blocks/
+│   └── AmbientAudioAnchorBlock.ts Payload Block definition. Fields:
+│                                  groupId, kind (radio start|end),
+│                                  source (group: provider + track|videoId|url),
+│                                  playback (group: volume/loop/fades).
+│                                  admin.components.Block →
+│                                  AnchorBlockComponent.
 ├── components/
-│   └── AnchorComponent.tsx        Editor-only decoration (half-disk +
-│                                  title). Registers click → openPicker
-│                                  and Backspace/Delete → $removeGroup.
+│   ├── AnchorBlockComponent.tsx   Editor-only glyph. Receives the
+│                                  block's formData (including populated
+│                                  track) and builds an in-memory
+│                                  AmbientRegionData to render via
+│                                  AnchorComponent.
+│   └── AnchorComponent.tsx        Half-disk + title UI. Registers click →
+│                                  openPicker and Backspace/Delete →
+│                                  $removeGroup on the node's key.
 ├── plugin/
 │   ├── AmbientAudioPlugin.tsx     Orchestrator. Hosts ContextMenu,
-│   │                              SelectModeOverlay, TrackPicker. Registers
-│   │                              Cmd+Arrow / Esc commands while selecting.
-│   ├── ContextMenu.tsx            Right-click menu on editor root.
-│   ├── SelectModeOverlay.tsx      Caret-adjacent status pill. Portals to
-│   │                              body, anchors above focused block during
-│   │                              placingStart/placingEnd only.
-│   └── TrackPicker.tsx            floating-ui + cmdk track search. Uses
-│                                  searchTracks() from utils/tracks.ts.
-│                                  Calls editor.update(() => $insertAnchor).
+│   │                              SelectModeOverlay, TrackPicker,
+│   │                              CaretNavigator, CommitChip,
+│   │                              ResetPrompt, AnchorDragReorder.
+│   │                              Registers Cmd+Arrow / Esc / outside-
+│   │                              click commands while in select-mode.
+│   ├── ContextMenu.tsx            base-ui Menu. Right-click / click-
+│   │                              anchor entry point.
+│   ├── SelectModeOverlay.tsx      Caret-adjacent status pill (placing
+│   │                              start / placing end).
+│   ├── CaretNavigator.tsx         Focused-block outline + dwell tooltip.
+│   ├── CommitChip.tsx             "Set as start/end" floating button.
+│   ├── ResetPrompt.tsx            "Tap again nearby to reset" tooltip.
+│   ├── AnchorDragReorder.tsx      250ms hold → reorder with partner
+│   │                              guard; cross-partner shakes.
+│   ├── SelectionFollowOverlay.tsx Placeholder-region visual while the
+│   │                              author is still ranging.
+│   └── TrackPicker.tsx            floating-ui + cmdk track search over
+│                                  searchTracks() in utils/tracks.ts.
+├── nodes/
+│   └── types.ts                   AnchorKind + AmbientRegionData union
+│                                  (provider-discriminated: internal |
+│                                  youtube | url). No serialized shapes
+│                                  — Payload owns those now.
+├── server/
+│   └── scrubOnTrackDelete.ts      CollectionAfterDeleteHook on Tracks.
+│                                  Walks every Post's Lexical tree; for
+│                                  each inlineBlock with
+│                                  blockType === AMBIENT_AUDIO_ANCHOR_SLUG
+│                                  referencing the deleted track, resets
+│                                  source to { provider: "internal",
+│                                  track: null } — yields a placeholder
+│                                  region the runtime safely skips.
 ├── store/
-│   └── ambientStore.tsx           Zustand-in-context. Holds select-mode,
-│                                  pending anchor kind, picker anchor el,
-│                                  context-menu state.
+│   └── ambientStore.tsx           Zustand-in-context. Phase state
+│                                  machine, pending anchor keys,
+│                                  context-menu state, drag state.
 ├── utils/
-│   ├── anchors.ts                 $insertAnchor, $insertAnchorPair,
-│   │                              $findAnchorPair, $listGroups,
-│   │                              $removeGroup, $removeGroupByKey,
-│   │                              $updateGroupTrack. Uses nanoid for
+│   ├── anchors.ts                 $isAmbientAnchor,
+│   │                              $isAmbientStartAnchor,
+│   │                              $isAmbientEndAnchor,
+│   │                              $createAmbientAnchor(kind, groupId,
+│   │                              region), $setAnchorRegion,
+│   │                              getAnchorGroupId / getAnchorRegion,
+│   │                              $findAnchorPair, $removeGroup,
+│   │                              $updateGroupRegion,
+│   │                              $finalizePlacement,
+│   │                              $insertAnchorAtBlockStart/End,
+│   │                              $validateProposedRange,
+│   │                              $reorderAnchor. Uses nanoid for
 │   │                              groupId ("g_...").
-│   └── tracks.ts                  searchTracks(query) and getTrackById(id).
-│                                  REST against /api/tracks. toRef() maps
-│                                  track doc → AmbientTrackRef, builds the
-│                                  public URL as /track_media/<filename>
-│                                  (see "Playback URL" below).
+│   └── tracks.ts                  searchTracks(query) / getTrackById(id)
+│                                  against /api/tracks. toSource() maps
+│                                  a track doc → AmbientSourceInternal
+│                                  and builds the public URL as
+│                                  /track_media/<filename>.
 ├── feature.md                     This file.
-└── plan.md                        Original sketch. Superseded by this doc
-                                   and the archived PRP plan.
+├── feature.v1.md                  Pre-migration snapshot (DecoratorNode
+│                                  era).
+└── plan.md                        Original sketch. Superseded.
 
 src/components/UX/AmbientAudio/
-├── AnchorMarkers.tsx              Frontend-only. Rendered by the RichText
-│                                  JSX converter for ambientAudioStart/End
-│                                  types. Emits an invisible but
-│                                  layout-participating span with
-│                                  data-ambient-anchor / data-ambient-group /
-│                                  data-ambient-track-id / data-ambient-track
-│                                  (JSON of track snapshot).
-├── AmbientAudioProvider.tsx       Scroll-coupled state machine. Scans DOM
-│                                  for anchors via MutationObserver, drives
-│                                  per-group Howl instances, snapshots +
-│                                  restores HideawayFM on take-over.
-│                                  Exposes useAmbientAudio() context.
-├── AmbientAudioWidget.tsx         Compact pill button for the DynamicIsland.
-│                                  Reads context, renders morphing label.
-└── AmbientAudioRunner.tsx         ORPHANED. Early standalone version
-                                   replaced by Provider+Widget. Safe to
-                                   delete.
+├── AnchorMarkers.tsx              Frontend-only. Rendered by the
+│                                  RichText JSX converter for the
+│                                  inlineBlock with blockType ===
+│                                  ambientAudioAnchor. Emits an
+│                                  invisible layout span with
+│                                  data-ambient-anchor /
+│                                  data-ambient-group /
+│                                  data-ambient-track-id /
+│                                  data-ambient-track (JSON of the
+│                                  resolved AmbientRegionData).
+├── AmbientAudioProvider.tsx       Scroll-coupled state machine. Scans
+│                                  DOM for anchors via MutationObserver,
+│                                  drives per-group Howl instances,
+│                                  snapshots + restores HideawayFM on
+│                                  take-over. Exposes useAmbientAudio().
+├── AmbientAudioWidget.tsx         Compact pill button for the
+│                                  DynamicIsland.
+└── AmbientAudioRunner.tsx         ORPHANED; scheduled for grave.
 ```
 
 ### Wiring
 
-- `src/payload/collections/Posts/richContent.ts`
-  registers `AmbientAudioFeature()` and adds `ambientAudioFeature` to
-  `customizedFeatureKeys`.
-- `src/payload/fields/Article/Content/index.tsx`
-  registers `AmbientAudioClientFeature` under `clientFeatures.ambientAudioFeature`.
-- `src/payload/fields/RichText/index.tsx`
-  has `ambientAudioStart` / `ambientAudioEnd` entries in `jsxConverters`.
-  These render `<AnchorMarkers />` for each node type.
-- `src/components/UX/Highlightr/index.tsx`
-  wraps `<Article>` inside `Narrateur` with `<AmbientAudioProvider>` and
-  adds `<AmbientAudioWidget />` as a child of `<DynamicBreadcrumb>`.
+- `src/payload/collections/Posts/richContent.ts` registers
+  `AmbientAudioFeature()` and adds `AmbientAudioAnchorBlock` to the
+  `BlocksFeature({ inlineBlocks: [...] })` config alongside other
+  inline-block types.
+- `src/payload/fields/Article/Content/index.tsx` registers
+  `AmbientAudioClientFeature` under
+  `clientFeatures.ambientAudioFeature`.
+- `src/payload/fields/RichText/index.tsx` routes the `inlineBlock`
+  JSX converter: when `fields.blockType === AMBIENT_AUDIO_ANCHOR_SLUG`
+  it renders `<AnchorMarkers />`.
+- `src/payload/collections/Radio/Tracks.ts` registers
+  `scrubAmbientRefsOnTrackDelete` as an `afterDelete` hook.
+- `src/components/UX/Highlightr/index.tsx` wraps `<Article>` inside
+  `Narrateur` with `<AmbientAudioProvider>` and adds
+  `<AmbientAudioWidget />` as a child of `<DynamicBreadcrumb>`.
 
 ---
 
-## Runtime behavior
+## Data model
 
-### Data model (saved in Lexical JSON)
+### Persisted (Payload InlineBlock fields)
 
 ```ts
-{ type: "ambientAudioStart", version: 1, groupId: "g_aB3xQ7",
-  track: { trackId, title?, artist?, url?, duration?, cover? } }
-{ type: "ambientAudioEnd",   version: 1, groupId: "g_aB3xQ7",
-  track: { ... same snapshot ... } }
+{
+  blockType: "ambientAudioAnchor",
+  id: "<ObjectId, auto>",
+  groupId: "g_aB3xQ7",
+  kind: "start" | "end",
+  source: {
+    provider: "internal",
+    track: "<trackId>" | { id, ...populated } | null
+  } | {
+    provider: "youtube",
+    videoId: string,
+    startSeconds?: number | null,
+    endSeconds?: number | null
+  } | {
+    provider: "url",
+    url: string
+  },
+  playback?: {
+    volume?: number,
+    loop?: boolean,
+    fadeInMs?: number,
+    fadeOutMs?: number
+  }
+}
 ```
 
-Start and end share `groupId`. Track snapshot is duplicated on both nodes
-(redundant but fast).
+`source.track` is a real Payload `relationship` (depth-controlled). At
+`depth: 0` it's a string id; at `depth >= 1` it's the populated track
+doc. The scrub hook rewrites it to `null` when the referenced track is
+deleted. The frontend tolerates both shapes and treats a missing track
+as a placeholder region.
 
-### Playback URL
+### Runtime (in-memory)
 
-`utils/tracks.ts` `toRef()` builds:
+```ts
+type AmbientRegionData = {
+  source: AmbientSourceInternal | AmbientSourceYouTube | AmbientSourceUrl;
+  playback?: AmbientPlayback;
+};
+```
+
+The provider-discriminated `AmbientSource` union lives in
+[`nodes/types.ts`](./nodes/types.ts). `utils/anchors.ts` `encodeRegion`
+and `decodeRegion` bridge between the persisted block fields and the
+runtime shape — e.g. `AmbientSourceInternal.trackId` on the runtime
+side ↔ `source.track` (string | populated | null) on the persisted
+side.
+
+### Placeholder regions
+
+A region with `source.provider === "internal"` and no track (id empty
+or null) is a **placeholder**. It renders editor-only (so the author
+can see where they committed the region before picking a track), and
+both the JSX converter and the frontend runtime skip it.
+
+---
+
+## Playback URL
+
+`utils/tracks.ts` `toSource()` builds:
+
 ```
 url: `/track_media/${encodeURIComponent(doc.filename)}`
 ```
+
 The Tracks collection uploads to `/public/track_media/`. Next.js serves
-this as a static path. No auth, no custom endpoint.
+this as a static path. No auth, no custom endpoint. If `doc.filename`
+is missing, falls back to `doc.url`.
 
-If `doc.filename` is missing (unlikely), falls back to `doc.url` as
-returned by Payload.
+Because `source.track` is a real relationship, re-uploading a track
+(which Payload handles by renaming on collision, e.g. `foo-1.mp3`)
+doesn't orphan the anchor: the next page load fetches the current
+`filename` via the populated relationship.
 
-### Lazy re-hydration
+---
 
-On page load the `AmbientAudioProvider` scans the rendered DOM. If a group
-has no `track.url` (old anchor saved before this field was captured), the
-provider calls `getTrackById(trackId)` and patches the group in state,
-**preserving the existing Howl instance** so we don't orphan audio
-elements and exhaust Howler's html5 pool.
-
-### State machine (scroll-coupled)
+## Runtime state machine (scroll-coupled)
 
 ```
                     ┌──────────┐  arm button flip  ┌──────────┐
@@ -189,6 +270,7 @@ elements and exhaust Howler's html5 pool.
 ```
 
 Key constants (in `AmbientAudioProvider.tsx`):
+
 - `FADE_IN_MS = 2200`
 - `FADE_OUT_MS = 1200`
 - `ARM_GRACE_MS = 1000`
@@ -200,8 +282,7 @@ Key constants (in `AmbientAudioProvider.tsx`):
 
 On first take-over we capture `{ wasPlaying, seekSec }` from
 `useHideawayFM`. On release we `fmControls.seek(snap.seekSec)` and
-`fmControls.play()` only if `wasPlaying` was true. Otherwise we leave FM
-paused. This fixes the "phantom FM track on exit" bug.
+`fmControls.play()` only if `wasPlaying` was true.
 
 ### Autoplay unlock
 
@@ -209,185 +290,24 @@ The widget's `toggle()` call is a user gesture. Inside it we:
 1. Resume `Howler.ctx` if suspended.
 2. Play a 0.05s silent data-URL WAV via `new Audio()` — flips browser's
    "user has interacted with audio" flag for the session.
-3. `play()` every loaded Howl at volume 0, then `pause()` each 20ms later
-   (warms them up, unlocks their underlying `<audio>` elements).
+3. `play()` every loaded Howl at volume 0, then `pause()` each 20ms
+   later (warms them up, unlocks their underlying `<audio>` elements).
 
 ### Fade robustness
 
 `Howl.fade(from, to, ms)` doesn't always run if called before the audio
-has actually begun playing. `fadeIn()` registers `h.once("play", runFade)`
-and backs it up with a 600ms timeout that just sets `volume(HEAD_ROOM)`
-directly if the fade never kicked in.
+has begun playing. `fadeIn()` registers `h.once("play", runFade)` and
+backs it up with a 600ms timeout that sets `volume(HEAD_ROOM)` directly
+if the fade never kicked in.
 
 ---
 
-## Phase B — Payload refactor (not done)
+## Editor — select-mode state machine
 
-### The problem
-
-The anchor stores a snapshot of the track ref (`{ trackId, title, artist,
-url, duration, cover }`). If the Track doc is updated (file re-uploaded,
-renamed, etc.) the snapshot in the anchor gets stale.
-
-We saw this in testing: the Track had been uploaded twice, so Payload
-renamed the new upload to `MOTION FREESTYLE-1.mp3`, but the anchor still
-pointed at `MOTION FREESTYLE.mp3` (the original, now missing).
-
-The current lazy-fetch patch (`AmbientAudioProvider` re-fetches by ID on
-load) works but is fragile — if the DB's `filename` itself is stale for
-any reason, we still play the wrong file or 404.
-
-### The fix
-
-Replace the two DecoratorNode anchors with Lexical **inline Blocks**
-(`InlineBlocksFeature`) that carry a proper **upload relationship** to
-the Tracks collection. Payload auto-populates related documents on fetch,
-so the frontend always receives the current track shape — no snapshot
-drift possible.
-
-### Shape proposal
-
-Option A — two blocks sharing `regionId`:
-```ts
-{
-  slug: "ambient-audio-start",
-  fields: [
-    { name: "regionId", type: "text", required: true },
-    { name: "track", type: "upload", relationTo: "tracks", required: true,
-      maxDepth: 1 },
-    { name: "startSeek", type: "number", defaultValue: 0 },
-  ],
-}
-{
-  slug: "ambient-audio-end",
-  fields: [
-    { name: "regionId", type: "text", required: true },
-    { name: "endSeek", type: "number" }, // defaults to track.duration at render
-  ],
-}
-```
-
-Pros: mirrors existing two-anchor mental model; block-level serializer
-stays simple.
-Cons: two nodes to keep in sync; orphaned `end` must be tolerated.
-
-Option B — single block with range metadata:
-```ts
-{
-  slug: "ambient-audio",
-  fields: [
-    { name: "track", type: "upload", relationTo: "tracks", required: true,
-      maxDepth: 1 },
-    { name: "startSeek", type: "number", defaultValue: 0 },
-    { name: "endSeek", type: "number" },
-    { name: "anchorMode", type: "select",
-      options: ["range", "inline-marker"], defaultValue: "range" },
-  ],
-}
-```
-Needs a different mechanism for marking the end of the range (e.g.,
-walking siblings until next ambient block, or a region-end marker).
-
-**Recommendation:** Option A. It preserves the current structural model
-and drops in cleanly.
-
-### Tracks collection hooks
-
-Add to `src/payload/collections/Radio/Tracks.ts`:
-
-1. `afterDelete` hook: when a Track is deleted, find every Post whose
-   `content` JSON references this track's id (scan for
-   `ambient-audio-start` / `ambient-audio-end` blocks with a matching
-   upload id) and remove the region (or flag the Post for review).
-
-2. `afterChange` hook: invalidate any ISR/CDN caches for posts
-   referencing the changed track, so a re-upload propagates.
-
-Payload 3 exposes `populate` / `depth` — with `maxDepth: 1` on the upload
-field, the track doc will be hydrated into the Lexical JSON automatically
-on fetch. The frontend converter then reads `node.fields.track.url` /
-`.filename` directly — no lazy-fetch needed.
-
-### Migration
-
-Existing anchors (two decorator nodes with snapshot) need to be migrated:
-
-1. Walk every Post's `content` JSON.
-2. For each `ambientAudioStart` / `ambientAudioEnd` pair (matched by
-   `groupId`), translate to the new block type, copying `groupId` →
-   `regionId` and `track.trackId` → `track` relationship id.
-3. Drop the old `track` snapshot fields.
-
-Write as a Payload migration in `src/lib/migrations/`.
-
-### Editor-side changes
-
-- Delete `nodes/AmbientAudioStartNode.tsx` and `AmbientAudioEndNode.tsx`.
-- Register ambient audio blocks via
-  `BlocksFeature({ blocks: [AmbientAudioStart, AmbientAudioEnd] })` or
-  `InlineBlocksFeature({...})` if available.
-- The Select-Mode plugin still exists; `$insertAnchor` inserts a
-  blocks-feature node instead of a DecoratorNode.
-- TrackPicker still returns a track; instead of writing a snapshot, we
-  write `{ regionId, track: trackId }`.
-- `AnchorComponent.tsx` becomes the block's `components.Block` in the
-  field config — same half-disk glyph + title rendering.
-
-### Frontend-side changes
-
-- `AnchorMarkers.tsx` is replaced by a Block component in
-  `RichText/index.tsx` `jsxConverters.blocks["ambient-audio-start"]`. It
-  reads `node.fields.track` (populated) to emit the marker span.
-- `AmbientAudioProvider.tsx` needs only a small tweak: `readAnchors()`
-  can drop the JSON.parse of the full track snapshot and instead read
-  only `trackId`, then fetch fresh via `getTrackById` on mount. Or the
-  block can serialize the fresh track shape into the data attribute at
-  render time — simpler, matches current pattern.
-
-### Order of operations
-
-1. Add new block configs + serializer converters.
-2. Ship a dual-read frontend (handle both old decorator nodes and new
-   blocks) so the site doesn't break during rollout.
-3. Write the migration; run against staging; verify.
-4. Remove the old DecoratorNode code paths.
-
----
-
-## Known issues / loose ends
-
-- `AmbientAudioRunner.tsx` is orphaned (replaced by Provider + Widget).
-  Safe to delete in a cleanup pass.
-- `serialize.tsx` has a legacy `if (typedNode.type === "ambientAudioStart"...)`
-  branch that's unreachable because the live path is `jsxConverters` in
-  `RichText/index.tsx`. Safe to clean up later.
-- `StreamHandler` at `src/payload/collections/Radio/endpoints/stream.ts`
-  has a pre-existing bug — it does `realpath(track.url)` where `track.url`
-  is a URL path, not a filesystem path, so it 404s for newly-uploaded
-  tracks. Unrelated to this feature; we bypassed by using `/track_media/`
-  static URLs instead. Worth fixing separately.
-- Widget visibility is tied to `shownDynamicIsland && isAtEnd` (the
-  Highlightr breadcrumb appears near the end of articles). If the user
-  wants the widget visible earlier, relax that condition in
-  `Highlightr/index.tsx` around line 1036.
-
----
-
-## Removing the feature cleanly
-
-Delete the `AmbientAudioFeature()` call in `Posts/richContent.ts` and the
-`ambientAudioFeature` entry in `fields/Article/Content/index.tsx`.
-Existing documents keep the anchor nodes in their JSON; they simply stop
-rendering. The widget and provider in Highlightr can also be removed.
-
----
-
-## Select-mode state machine
-
-The editor's select-mode behaves like a calendar date-range picker: every
-interaction either advances the phase, adjusts a boundary, or gracefully
-finalizes the region. Invalid states (overlap, orphan anchor) are
-unreachable by construction.
+Select-mode behaves like a calendar date-range picker: every interaction
+either advances the phase, adjusts a boundary, or gracefully finalizes
+the region. Invalid states (overlap, orphan anchor) are unreachable by
+construction.
 
 ### Phases
 
@@ -414,10 +334,7 @@ Every exit path calls `$finalizePlacement` with this resolution:
 | 0 anchors   | **No-op.** Plugin skips `$finalizePlacement` — user cancelled before committing anything. Prevents a ghost region from spawning at viewport center (which could encase an existing settled region and violate "no overlapping areas"). |
 | 1 anchor    | Missing one placed at end-of-block of the existing anchor. |
 | 2 anchors   | Left as-is. |
-| No track    | `PLACEHOLDER_TRACK` (track.trackId === ""). |
-
-Placeholder regions render editor-only; the frontend JSX converter and
-the runtime provider both skip them.
+| No track    | Placeholder region (`source.track === null`). |
 
 ### Exit triggers
 
@@ -438,22 +355,19 @@ the runtime provider both skip them.
 | Option/Alt + Arrow | Debounced commit (180ms) |
 | Click CommitChip ("Set as start/end") | Primary mobile path |
 
-### CaretNavigator
-
-Listens to `SELECTION_CHANGE_COMMAND`, computes the block-level ancestor
-of the caret as the "focused node", writes it to the store, and renders
-a thin outline + 700ms dwell tooltip.
-
 ### Anchor interactions (settled phase)
 
 - **Click anchor** → unified `ContextMenu` (base-ui `Menu.Root` +
-  `AmbienceHandle`) with Change track / Adjust range / Reload track info /
-  Remove this region. Right-click anywhere inside a region opens the same
-  menu; right-click outside any region offers "Add ambient audio…".
+  `AmbienceHandle`) with Change track / Adjust range / Reload track
+  info / Remove this region. Right-click anywhere inside a region opens
+  the same menu; right-click outside any region offers "Add ambient
+  audio…".
 - **Pointer-hold 250ms on anchor** → `AnchorDragReorder` takes over;
-  indicator bar shows proposed slot; cannot cross partner anchor.
-- **Click inside range (not on anchor)** → opens 1.4s / 96px reset window;
-  second click nearby → remove both anchors, re-enter `placingStart`.
+  indicator bar shows proposed slot; cannot cross partner anchor
+  (shake + pin at partner-adjacent slot if attempted).
+- **Click inside range (not on anchor)** → opens 1.4s / 96px reset
+  window; second click nearby → remove both anchors, re-enter
+  `placingStart`.
 
 ### Timing constants
 
@@ -468,51 +382,42 @@ ARM_GRACE_MS (runtime) = 1000
 
 ### Invariants
 
-- **Overlap impossible**: `$validateProposedRange` runs post-commit with
-  rollback.
+- **Overlap impossible**: `$validateProposedRange` runs post-commit
+  with rollback.
 - **Orphan impossible**: every cancel path flows through
-  `$finalizePlacement`, which always yields a valid (possibly placeholder)
-  region.
-- **Editor lock**: select-mode KEY_DOWN listener at
-  `COMMAND_PRIORITY_CRITICAL` catches all text-entry keystrokes and
+  `$finalizePlacement`, which always yields a valid (possibly
+  placeholder) region.
+- **Editor lock**: select-mode `KEY_DOWN` listener at
+  `COMMAND_PRIORITY_CRITICAL` catches text-entry keystrokes and
   converts them into exit-finalize + passthrough.
-
-### File map (additions)
-
-```
-plugin/
-├── CaretNavigator.tsx            focused-node outline + dwell tooltip
-├── CommitChip.tsx                floating "Set as start/end" button
-├── ResetPrompt.tsx               "Tap again nearby to reset" tooltip
-├── ContextMenu.tsx               base-ui Menu.Root (left-click anchor + right-click region)
-├── AnchorDragReorder.tsx         hold-250ms drag, partner-anchor guard
-├── AmbientAudioPlugin.tsx        REWRITTEN — state-machine driver
-└── SelectModeOverlay.tsx         UPDATED — shows phase + hint
-
-store/
-└── ambientStore.tsx              EXTENDED — phase, focusedNodeKey,
-                                  pendingStart/EndKey, resetWindow,
-                                  dragState, anchorMenu*
-
-utils/
-└── anchors.ts                    EXTENDED — PLACEHOLDER_TRACK,
-                                  $findBlockAncestor,
-                                  $findViewportCenterBlock,
-                                  $validateProposedRange,
-                                  $insertAnchorAtBlockStart/End,
-                                  $finalizePlacement, $reorderAnchor
-```
 
 ---
 
-## Resuming in a fresh session
+## Track-delete integrity
 
-Tell the next session:
+`scrubAmbientRefsOnTrackDelete` (see [`server/scrubOnTrackDelete.ts`](./server/scrubOnTrackDelete.ts))
+fires as an `afterDelete` hook on the Tracks collection.
 
-> Read `src/payload/Lexical/Features/AmbientAudio/feature.md`.
-> Frontend runtime is working; we're now doing Phase B — converting the
-> anchor nodes from DecoratorNodes-with-snapshots to Payload inline Blocks
-> with upload relationships to the Tracks collection, plus hooks on the
-> Tracks collection to propagate updates/deletes.
-> Proceed with the "Phase B — Payload refactor" plan in feature.md,
-> starting with the dual-read frontend so we can ship incrementally.
+It paginates every Post (`depth: 0`, `draft: true`), walks the Lexical
+tree, and for each `inlineBlock` whose `fields.blockType ===
+AMBIENT_AUDIO_ANCHOR_SLUG` and `fields.source` references the deleted
+track id (either as a string or as a populated object), rewrites
+`fields.source` to `{ provider: "internal", track: null }`. The post
+is re-saved only when at least one node changed.
+
+Older versions retain the stale reference by design (version history).
+The runtime tolerates `null`-populated `source.track`, so a partial
+scrub is a cleanliness hazard, not a correctness one.
+
+---
+
+## Removing the feature cleanly
+
+Remove `AmbientAudioAnchorBlock` from `BlocksFeature.inlineBlocks` in
+`Posts/richContent.ts` and the `AmbientAudioClientFeature` entry in
+`fields/Article/Content/index.tsx`. Existing documents retain the
+inline-block nodes in their JSON; they simply stop rendering. Drop the
+widget and provider in Highlightr.
+
+The `scrubAmbientRefsOnTrackDelete` hook on `Tracks` can be removed
+last (no-op once no Posts carry ambient anchors).

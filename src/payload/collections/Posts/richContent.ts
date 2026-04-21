@@ -21,7 +21,10 @@ import type {
   TextFieldSingleValidation
 } from "payload";
 import { MentionFeature } from "@/payload/Lexical/Features/Mentions";
-import { AmbientAudioFeature } from "@/payload/Lexical/Features/AmbientAudio";
+import {
+  AmbientAudioAnchorBlock,
+  AmbientAudioFeature
+} from "@/payload/Lexical/Features/AmbientAudio";
 
 const customizedFeatureKeys = [
   "heading",
@@ -60,7 +63,10 @@ export const RichContent = (): RichTextField => {
               "pages"
             ]
           }),
-          BlocksFeature({ blocks: [Code, ImageBlock] }),
+          BlocksFeature({
+            blocks: [Code, ImageBlock],
+            inlineBlocks: [AmbientAudioAnchorBlock]
+          }),
           InlineToolbarFeature(),
           HorizontalRuleFeature(),
           LinkFeature({

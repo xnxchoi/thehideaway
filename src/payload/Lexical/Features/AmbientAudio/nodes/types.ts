@@ -1,36 +1,54 @@
-import type {
-  SerializedLexicalNode,
-  Spread
-} from "@payloadcms/richtext-lexical/lexical";
+import type { Track } from "@/payload-types";
 
 export type AnchorKind = "start" | "end";
 
-export interface AmbientTrackRef {
+export type AmbientProvider = "internal" | "youtube" | "url";
+
+export interface AmbientSourceInternal {
+  provider: "internal";
   trackId: string;
   title?: string;
   artist?: string;
   cover?: string | null;
   duration?: number;
   url?: string;
+  track?: Track | null;
 }
 
-export type SerializedAmbientAnchorBase = Spread<
-  {
-    groupId: string;
-    track: AmbientTrackRef;
-  },
-  SerializedLexicalNode
->;
+export interface AmbientSourceYouTube {
+  provider: "youtube";
+  videoId: string;
+  title?: string;
+  author?: string;
+  thumbnail?: string | null;
+  duration?: number;
+  startSeconds?: number;
+  endSeconds?: number;
+}
 
-export type SerializedAmbientAudioStartNode = Spread<
-  { type: "ambientAudioStart" },
-  SerializedAmbientAnchorBase
->;
+export interface AmbientSourceUrl {
+  provider: "url";
+  url: string;
+  title?: string;
+  artist?: string;
+  cover?: string | null;
+  duration?: number;
+  mimeType?: string;
+}
 
-export type SerializedAmbientAudioEndNode = Spread<
-  { type: "ambientAudioEnd" },
-  SerializedAmbientAnchorBase
->;
+export type AmbientSource =
+  | AmbientSourceInternal
+  | AmbientSourceYouTube
+  | AmbientSourceUrl;
 
-export const AMBIENT_START_TYPE = "ambientAudioStart" as const;
-export const AMBIENT_END_TYPE = "ambientAudioEnd" as const;
+export interface AmbientPlayback {
+  volume?: number;
+  loop?: boolean;
+  fadeInMs?: number;
+  fadeOutMs?: number;
+}
+
+export interface AmbientRegionData {
+  source: AmbientSource;
+  playback?: AmbientPlayback;
+}

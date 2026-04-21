@@ -15,32 +15,59 @@ import { mergeRegister } from "@payloadcms/richtext-lexical/lexical/utils";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef } from "react";
 
-import type { AmbientTrackRef, AnchorKind } from "../nodes/types";
-import { useAmbientStoreApi } from "../store/ambientStore";
-import { $removeGroupByKey, isPlaceholderTrack } from "../utils/anchors";
+import type { AmbientRegionData, AnchorKind } from "../nodes/types";
+import { useAmbientStore, useAmbientStoreApi } from "../store/ambientStore";
+import { $removeGroupByKey, isPlaceholderRegion } from "../utils/anchors";
+import { getGroupColor, groupColorOklch } from "../utils/groupColors";
 
-const DRAG_HOLD_MS = 250;
+const DRAG_HOLD_MS = 180;
+const DRAG_SLOP_PX = 4;
+
+function deriveAnchorLabel(
+  region: AmbientRegionData,
+  isPlaceholder: boolean
+): { label: string; sub: string | null } {
+  if (isPlaceholder) return { label: "Set track", sub: null };
+  const src = region.source;
+  if (src.provider === "internal") {
+    return {
+      label: src.title ?? "unknown",
+      sub: src.artist ?? null
+    };
+  }
+  if (src.provider === "youtube") {
+    return {
+      label: src.title ?? src.videoId,
+      sub: src.author ?? "YouTube"
+    };
+  }
+  return {
+    label: src.title ?? src.url,
+    sub: src.artist ?? null
+  };
+}
 
 interface AnchorComponentProps {
   kind: AnchorKind;
   nodeKey: NodeKey;
   groupId: string;
-  track: AmbientTrackRef;
+  region: AmbientRegionData;
 }
 
 export function AnchorComponent({
   kind,
   nodeKey,
   groupId,
-  track
-}: AnchorComponentProps) {
+  region
+}: AnchorComponentProps): ReturnType<typeof m.span> {
   const [editor] = useLexicalComposerContext();
   const storeApi = useAmbientStoreApi();
   const ref = useRef<HTMLSpanElement>(null);
   const [isSelected] = useLexicalNodeSelection(nodeKey);
-  const isPlaceholder = isPlaceholderTrack(track);
-
-  const holdTimerRef = useRef<number | null>(null);
+  const isPlaceholder = isPlaceholderRegion(region);
+  const isDragging = useAmbientStore(
+    (s) => s.dragState?.nodeKey === nodeKey
+  );
 
   // Backspace / Delete while selected → remove whole group.
   const onDelete = useCallback(
@@ -67,88 +94,159 @@ export function AnchorComponent({
     );
   }, [editor, onDelete]);
 
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLSpanElement>) => {
-      const el = ref.current;
-      if (!el) return;
-      e.stopPropagation();
-      try {
-        el.setPointerCapture(e.pointerId);
-      } catch {
-        // noop
-      }
-      if (holdTimerRef.current) window.clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = window.setTimeout(() => {
-        holdTimerRef.current = null;
-        // Promote to drag. AnchorDragReorder takes over from here.
-        storeApi.getState().startDrag({
-          nodeKey,
-          pointerId: e.pointerId,
-          originX: e.clientX,
-          originY: e.clientY,
-          proposedSlotKey: null,
-          denied: false
-        });
-      }, DRAG_HOLD_MS);
-    },
-    [nodeKey, storeApi]
-  );
+  // Native DOM pointer handling. React's synthetic event system runs inside
+  // Lexical/Payload's editor DOM tree where some handlers on ancestor nodes
+  // stopPropagation() on capture phase, which was swallowing our React
+  // onPointerDown. Binding directly to the element sidesteps that entirely.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
 
-  const onPointerUp = useCallback(
-    (e: React.PointerEvent<HTMLSpanElement>) => {
-      const el = ref.current;
-      if (holdTimerRef.current) {
-        window.clearTimeout(holdTimerRef.current);
-        holdTimerRef.current = null;
+    let holdTimer: number | null = null;
+    let activePointerId: number | null = null;
+    let originX = 0;
+    let originY = 0;
+    let dragStarted = false;
+
+    const clearHold = () => {
+      if (holdTimer !== null) {
+        window.clearTimeout(holdTimer);
+        holdTimer = null;
       }
+    };
+
+    const promoteToDrag = (e: PointerEvent) => {
+      dragStarted = true;
+      storeApi.getState().startDrag({
+        nodeKey,
+        pointerId: e.pointerId,
+        originX: e.clientX,
+        originY: e.clientY,
+        proposedSlotKey: null,
+        denied: false
+      });
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (activePointerId === null || e.pointerId !== activePointerId) return;
+      if (dragStarted) return;
+      const dx = e.clientX - originX;
+      const dy = e.clientY - originY;
+      if (dx * dx + dy * dy > DRAG_SLOP_PX * DRAG_SLOP_PX) {
+        clearHold();
+        promoteToDrag(e);
+      }
+    };
+
+    const onUp = (e: PointerEvent) => {
+      if (activePointerId === null || e.pointerId !== activePointerId) return;
+
       const dragActive = storeApi.getState().dragState;
-      if (dragActive) return; // DragReorder handles the lift.
-      if (!el) return;
+      const wasClick = !dragStarted && !dragActive;
+      cleanup();
+
+      // AnchorDragReorder owns the lift when a drag is active.
+      if (dragActive) return;
+      if (!wasClick) return;
       if (e.button !== 0) return;
+
       storeApi.getState().openContextMenu(e.clientX, e.clientY, {
         groupId,
         anchorEl: el,
         nodeKey
       });
+    };
+
+    const onCancel = (e: PointerEvent) => {
+      if (activePointerId === null || e.pointerId !== activePointerId) return;
+      cleanup();
+    };
+
+    const cleanup = () => {
+      clearHold();
+      activePointerId = null;
+      dragStarted = false;
+      window.removeEventListener("pointermove", onMove, true);
+      window.removeEventListener("pointerup", onUp, true);
+      window.removeEventListener("pointercancel", onCancel, true);
+    };
+
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      // Prevent Lexical text-selection from swallowing the gesture.
       e.stopPropagation();
-    },
-    [groupId, nodeKey, storeApi]
-  );
+      e.preventDefault();
 
-  const onPointerCancel = useCallback(() => {
-    if (holdTimerRef.current) {
-      window.clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-  }, []);
+      activePointerId = e.pointerId;
+      originX = e.clientX;
+      originY = e.clientY;
+      dragStarted = false;
 
-  const label = isPlaceholder ? "Set track" : (track.title ?? "unknown");
-  const sub = isPlaceholder ? null : (track.artist ?? null);
+      clearHold();
+      holdTimer = window.setTimeout(() => {
+        holdTimer = null;
+        promoteToDrag(e);
+      }, DRAG_HOLD_MS);
+
+      window.addEventListener("pointermove", onMove, true);
+      window.addEventListener("pointerup", onUp, true);
+      window.addEventListener("pointercancel", onCancel, true);
+    };
+
+    const onContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      storeApi.getState().openContextMenu(e.clientX, e.clientY, {
+        groupId,
+        anchorEl: el,
+        nodeKey
+      });
+    };
+
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("contextmenu", onContextMenu);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("contextmenu", onContextMenu);
+      cleanup();
+    };
+  }, [groupId, nodeKey, storeApi]);
+
+  const { label, sub } = deriveAnchorLabel(region, isPlaceholder);
+  const groupColor = getGroupColor(groupId);
+  const textAlpha = isPlaceholder ? 0.55 : 0.9;
+  const borderAlpha = isPlaceholder ? 0.35 : isSelected ? 0.85 : 0.55;
 
   return (
     <m.span
       ref={ref}
       data-ambient-anchor={kind}
       data-ambient-group={groupId}
+      data-ambient-group-color={groupColor.token}
       data-ambient-placeholder={isPlaceholder ? "true" : "false"}
       data-selected={isSelected ? "true" : "false"}
       role="button"
       tabIndex={-1}
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerCancel}
       className={
         "ambient-anchor inline-flex items-center gap-1 border-b align-baseline font-mono text-xs tracking-wider select-none"
       }
+      animate={{
+        scale: isDragging ? 1.08 : 1,
+        y: isDragging ? -1 : 0
+      }}
+      transition={{ type: "spring", stiffness: 420, damping: 22 }}
       style={{
         borderBottomStyle: isSelected ? "solid" : "dotted",
         borderBottomWidth: 1,
+        borderBottomColor: groupColorOklch(groupColor, borderAlpha),
         padding: "0 3px",
-        color: isPlaceholder
-          ? "oklch(0.7 0 0 / 0.55)"
-          : "oklch(0.7 0 0 / 0.9)",
+        color: groupColorOklch(groupColor, textAlpha),
         opacity: isPlaceholder ? 0.75 : 1,
-        cursor: "pointer"
+        cursor: isDragging ? "grabbing" : "grab",
+        boxShadow: isDragging
+          ? `0 6px 16px -4px ${groupColorOklch(groupColor, 0.4)}`
+          : undefined,
+        touchAction: "none"
       }}
     >
       <m.span
@@ -159,7 +257,7 @@ export function AnchorComponent({
           height: 10,
           borderRadius: "50%",
           background: "currentColor",
-          opacity: isPlaceholder ? 0.35 : 0.55,
+          opacity: isPlaceholder ? 0.35 : 0.7,
           clipPath: kind === "start" ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)"
         }}
       />

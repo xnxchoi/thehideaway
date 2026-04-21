@@ -92,7 +92,7 @@ export default buildConfig({
     push: false,
     migrationDir: path.resolve(dirname, "lib/migrations"),
     pool: {
-      max: 350,
+      max: 15,
       connectionString: process.env.DATABASE_URI
     },
     idType: "uuid",

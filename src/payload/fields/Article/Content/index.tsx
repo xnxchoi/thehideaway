@@ -3,6 +3,10 @@
 import type { FeatureClientSchemaMap } from "@/payload/Lexical/defaults/types";
 import { ContentHandOffClientFeature } from "@/payload/Lexical/Features/HandOff/feature.client";
 import { AmbientAudioClientFeature } from "@/payload/Lexical/Features/AmbientAudio/feature.client";
+import {
+  AMBIENT_AUDIO_ANCHOR_SLUG,
+  AmbientAudioAnchorBlock
+} from "@/payload/Lexical/Features/AmbientAudio";
 
 import {
   type BaseClientFeatureProps,
@@ -674,7 +678,24 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
                 }
               ]
             }
-          ]
+          ],
+        [`${schemaPath}.lexical_internal_feature.blocks.lexical_inline_blocks.${AMBIENT_AUDIO_ANCHOR_SLUG}.fields`]:
+          [
+            {
+              name: "_components",
+              type: "ui",
+              admin: {}
+            },
+            ...AmbientAudioAnchorBlock.fields
+          ] as never,
+        [`${schemaPath}.lexical_internal_feature.blocks.lexical_inline_blocks.${AMBIENT_AUDIO_ANCHOR_SLUG}`]:
+          [
+            {
+              name: `lexical_inline_blocks_${AMBIENT_AUDIO_ANCHOR_SLUG}`,
+              type: "blocks",
+              blocks: [AmbientAudioAnchorBlock]
+            }
+          ] as never
       },
       upload: {}
     };

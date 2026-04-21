@@ -58,6 +58,7 @@ import {
   ChangeEventHandler,
   type ComponentProps,
   ComponentType,
+  FormEventHandler,
   MouseEventHandler,
   useCallback,
   useEffect,
@@ -87,7 +88,7 @@ export const CoverMenu = ({
   setActiveCollection: (r: ImageCollectionSlug) => void;
   onClickRemove: () => void;
   onRepositionClick: MouseEventHandler;
-  imageFilePaste: ChangeEventHandler;
+  imageFilePaste: FormEventHandler;
   setImage: (r: string | null | ProcessedImage) => void;
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);

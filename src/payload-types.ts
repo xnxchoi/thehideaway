@@ -4524,6 +4524,31 @@ export interface WorkflowRefreshSearch {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AmbientAudioAnchorBlock".
+ */
+export interface AmbientAudioAnchorBlock {
+  groupId: string;
+  kind: 'start' | 'end';
+  source: {
+    provider: 'internal' | 'youtube' | 'url';
+    track?: (string | null) | Track;
+    videoId?: string | null;
+    startSeconds?: number | null;
+    endSeconds?: number | null;
+    url?: string | null;
+  };
+  playback?: {
+    volume?: number | null;
+    loop?: boolean | null;
+    fadeInMs?: number | null;
+    fadeOutMs?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'ambientAudioAnchor';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CodeBlock".
  */
 export interface CodeBlock {

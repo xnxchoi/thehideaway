@@ -5,21 +5,20 @@ import {
   $getRoot
 } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
-import { AnimatePresence } from "motion/react";
+import { useSpring, useTransform } from "motion/react";
 import * as m from "motion/react-m";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-import {
-  $isAmbientAudioEndNode,
-  type AmbientAudioEndNode
-} from "../nodes/AmbientAudioEndNode";
-import {
-  $isAmbientAudioStartNode,
-  type AmbientAudioStartNode
-} from "../nodes/AmbientAudioStartNode";
 import { useAmbientStore, useAmbientStoreApi } from "../store/ambientStore";
-import { $findAnchorPair, $reorderAnchor } from "../utils/anchors";
+import {
+  $findAnchorPair,
+  $isAmbientAnchor,
+  $isAmbientStartAnchor,
+  $reorderAnchor,
+  getAnchorGroupId
+} from "../utils/anchors";
+import { getGroupColor, groupColorOklch } from "../utils/groupColors";
 
 interface SlotCandidate {
   key: string;
@@ -47,11 +46,35 @@ export function AnchorDragReorder() {
     denied: boolean;
   } | null>(null);
 
+  // Resolve the dragged anchor's groupId once per drag session, so the
+  // indicator bar can adopt the group's palette hue and stay visually
+  // coherent with the anchor chip itself.
+  const [draggedGroupId, setDraggedGroupId] = useState<string | null>(null);
+  const groupColor = useMemo(
+    () => getGroupColor(draggedGroupId ?? "__dragging__"),
+    [draggedGroupId]
+  );
+
+  // Soft spring for the bar's vertical position. Bouncy enough to signal
+  // snap, damped enough that it settles within ~1 slot change. Horizontal
+  // and width swaps use the style attributes directly — only Y benefits
+  // from the spring because that's the axis the user perceives as motion.
+  const springY = useSpring(0, { stiffness: 320, damping: 22, mass: 0.6 });
+  const transformY = useTransform(springY, (v) => `translate3d(0, ${v}px, 0)`);
+
   useEffect(() => {
     if (!dragState) {
       setIndicator(null);
+      setDraggedGroupId(null);
       return;
     }
+
+    editor.getEditorState().read(() => {
+      const node = $getNodeByKey(dragState.nodeKey);
+      if ($isAmbientAnchor(node)) {
+        setDraggedGroupId(getAnchorGroupId(node));
+      }
+    });
 
     const rootEl = editor.getRootElement();
     if (!rootEl) return;
@@ -66,14 +89,10 @@ export function AnchorDragReorder() {
       let selfIdx = -1;
       editor.getEditorState().read(() => {
         const draggedNode = $getNodeByKey(dragState.nodeKey);
-        if (!draggedNode) return;
-        const isStart = $isAmbientAudioStartNode(draggedNode);
-        const isEnd = $isAmbientAudioEndNode(draggedNode);
-        if (!isStart && !isEnd) return;
+        if (!$isAmbientAnchor(draggedNode)) return;
+        const isStart = $isAmbientStartAnchor(draggedNode);
 
-        const groupId = (
-          draggedNode as AmbientAudioStartNode | AmbientAudioEndNode
-        ).getGroupId();
+        const groupId = getAnchorGroupId(draggedNode);
         const pair = $findAnchorPair(groupId);
         const partner = isStart ? pair.end : pair.start;
 
@@ -174,38 +193,40 @@ export function AnchorDragReorder() {
     };
   }, [dragState, editor, store]);
 
+  useEffect(() => {
+    if (indicator) springY.set(indicator.top);
+  }, [indicator, springY]);
+
   if (!dragState || !indicator || typeof document === "undefined") return null;
 
   return createPortal(
-    <AnimatePresence initial={false}>
-      <m.div
-        key={`bar-${indicator.top}-${indicator.denied}`}
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: 1,
-          x: indicator.denied ? [0, -4, 4, -2, 2, 0] : 0
-        }}
-        exit={{ opacity: 0 }}
-        transition={
-          indicator.denied
-            ? { duration: 0.18, ease: "easeOut" }
-            : { duration: 0.1 }
-        }
-        style={{
-          position: "fixed",
-          top: indicator.top,
-          left: indicator.left,
-          width: indicator.width,
-          height: 2,
-          borderRadius: 2,
-          background: indicator.denied
-            ? "oklch(0.78 0.15 28 / 0.85)"
-            : "oklch(0.7 0.1 250 / 0.85)",
-          zIndex: 10025,
-          pointerEvents: "none"
-        }}
-      />
-    </AnimatePresence>,
+    <m.div
+      initial={{ opacity: 0 }}
+      animate={{
+        opacity: 1,
+        x: indicator.denied ? [0, -4, 4, -2, 2, 0] : 0
+      }}
+      transition={
+        indicator.denied
+          ? { duration: 0.18, ease: "easeOut" }
+          : { duration: 0.12 }
+      }
+      style={{
+        position: "fixed",
+        top: 0,
+        left: indicator.left,
+        width: indicator.width,
+        height: 2,
+        borderRadius: 2,
+        transform: transformY,
+        background: indicator.denied
+          ? "oklch(0.78 0.15 28 / 0.85)"
+          : groupColorOklch(groupColor, 0.85),
+        zIndex: 10025,
+        pointerEvents: "none",
+        willChange: "transform"
+      }}
+    />,
     document.body
   );
 }

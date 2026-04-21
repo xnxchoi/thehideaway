@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useAmbientStore } from "../store/ambientStore";
+import { getGroupColor, groupColorOklch } from "../utils/groupColors";
 
 interface Rect {
   top: number;
@@ -36,12 +37,17 @@ interface BlockBand {
 export function SelectionFollowOverlay() {
   const [editor] = useLexicalComposerContext();
   const phase = useAmbientStore((s) => s.phase);
+  const pendingGroupId = useAmbientStore((s) => s.pendingGroupId);
   const pendingStartKey = useAmbientStore((s) => s.pendingStartKey);
   const pendingEndKey = useAmbientStore((s) => s.pendingEndKey);
   const focusedNodeKey = useAmbientStore((s) => s.focusedNodeKey);
   const pointerPoint = useAmbientStore((s) => s.pendingPointerPoint);
 
   const active = phase === "placingStart" || phase === "placingEnd";
+  // If no groupId is pending yet (first anchor not committed), fall back to a
+  // neutral hue derived from a stable sentinel so colors stay consistent
+  // across re-renders of the same placement session.
+  const groupColor = getGroupColor(pendingGroupId ?? "__pending__");
 
   const [blockBand, setBlockBand] = useState<BlockBand | null>(null);
   const [rangeRects, setRangeRects] = useState<Rect[]>([]);
@@ -151,8 +157,8 @@ export function SelectionFollowOverlay() {
             height: blockBand.height,
             zIndex: 10014,
             pointerEvents: "none",
-            background: "oklch(0.7 0.1 250 / 0.05)",
-            borderLeft: "2px solid oklch(0.7 0.1 250 / 0.35)"
+            background: groupColorOklch(groupColor, 0.05),
+            borderLeft: `2px solid ${groupColorOklch(groupColor, 0.35)}`
           }}
         />
       )}
@@ -167,7 +173,7 @@ export function SelectionFollowOverlay() {
             height: r.height,
             zIndex: 10015,
             pointerEvents: "none",
-            background: "oklch(0.7 0.1 250 / 0.22)",
+            background: groupColorOklch(groupColor, 0.22),
             mixBlendMode: "multiply"
           }}
         />

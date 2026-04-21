@@ -9,36 +9,55 @@ import {
   type LexicalNode,
   type NodeKey
 } from "@payloadcms/richtext-lexical/lexical";
-import type { JSX } from "react";
 
 import { AnchorComponent } from "../components/AnchorComponent";
 import {
   AMBIENT_END_TYPE,
+  isAmbientRegionData,
+  legacyTrackToRegion,
+  stripPopulatedRegion,
+  type AmbientRegionData,
   type AmbientTrackRef,
+  type LegacySerializedAmbientAnchor,
   type SerializedAmbientAudioEndNode
 } from "./types";
+import { JSX } from "react";
 
-function $convertEndElement(domNode: HTMLElement): DOMConversionOutput | null {
-  const groupId = domNode.getAttribute("data-ambient-group");
-  const raw = domNode.getAttribute("data-ambient-track");
-  if (!groupId || !raw) return null;
+function parseRegionFromDOM(raw: string): AmbientRegionData | null {
   try {
-    const track = JSON.parse(raw) as AmbientTrackRef;
-    if (!track || typeof track.trackId !== "string") return null;
-    return { node: $createAmbientAudioEndNode({ groupId, track }) };
+    const parsed = JSON.parse(raw) as unknown;
+    if (isAmbientRegionData(parsed)) return parsed;
+    if (parsed && typeof parsed === "object") {
+      const maybeTrack = parsed as AmbientTrackRef;
+      if (typeof maybeTrack.trackId === "string") {
+        return legacyTrackToRegion(maybeTrack);
+      }
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
+function $convertEndElement(domNode: HTMLElement): DOMConversionOutput | null {
+  const groupId = domNode.getAttribute("data-ambient-group");
+  const rawRegion =
+    domNode.getAttribute("data-ambient-region") ??
+    domNode.getAttribute("data-ambient-track");
+  if (!groupId || !rawRegion) return null;
+  const region = parseRegionFromDOM(rawRegion);
+  if (!region) return null;
+  return { node: $createAmbientAudioEndNode({ groupId, region }) };
+}
+
 export class AmbientAudioEndNode extends DecoratorNode<JSX.Element> {
   __groupId: string;
-  __track: AmbientTrackRef;
+  __region: AmbientRegionData;
 
-  constructor(groupId: string, track: AmbientTrackRef, key?: NodeKey) {
+  constructor(groupId: string, region: AmbientRegionData, key?: NodeKey) {
     super(key);
     this.__groupId = groupId;
-    this.__track = track;
+    this.__region = region;
   }
 
   static override getType(): string {
@@ -46,15 +65,16 @@ export class AmbientAudioEndNode extends DecoratorNode<JSX.Element> {
   }
 
   static override clone(node: AmbientAudioEndNode): AmbientAudioEndNode {
-    return new AmbientAudioEndNode(node.__groupId, node.__track, node.__key);
+    return new AmbientAudioEndNode(node.__groupId, node.__region, node.__key);
   }
 
   static override importJSON(
     serialized: SerializedAmbientAudioEndNode
   ): AmbientAudioEndNode {
+    const maybeRegion = (serialized as SerializedAmbientAudioEndNode).__region;
     return $createAmbientAudioEndNode({
-      groupId: serialized.groupId,
-      track: serialized.track
+      groupId: serialized.__groupId,
+      region: maybeRegion
     });
   }
 
@@ -62,8 +82,8 @@ export class AmbientAudioEndNode extends DecoratorNode<JSX.Element> {
     return {
       type: AMBIENT_END_TYPE,
       version: 1,
-      groupId: this.__groupId,
-      track: this.__track
+      __groupId: this.__groupId,
+      __region: stripPopulatedRegion(this.__region)
     };
   }
 
@@ -84,12 +104,14 @@ export class AmbientAudioEndNode extends DecoratorNode<JSX.Element> {
 
   override exportDOM(): DOMExportOutput {
     const element = document.createElement("span");
+    const regionForDom = stripPopulatedRegion(this.__region);
     element.setAttribute("data-ambient-anchor", "end");
     element.setAttribute("data-ambient-group", this.__groupId);
-    element.setAttribute("data-ambient-track", JSON.stringify(this.__track));
-    if (this.__track.trackId) {
-      element.setAttribute("data-ambient-track-id", this.__track.trackId);
-    }
+    element.setAttribute("data-ambient-region", JSON.stringify(regionForDom));
+    element.setAttribute(
+      "data-ambient-provider",
+      regionForDom.source.provider
+    );
     return { element };
   }
 
@@ -120,22 +142,25 @@ export class AmbientAudioEndNode extends DecoratorNode<JSX.Element> {
     return this.getLatest().__groupId;
   }
 
-  getTrack(): AmbientTrackRef {
-    return this.getLatest().__track;
+  getRegion(): AmbientRegionData {
+    return this.getLatest().__region;
   }
 
-  setTrack(track: AmbientTrackRef): void {
+  setRegion(region: AmbientRegionData): void {
     const writable = this.getWritable();
-    writable.__track = track;
+    writable.__region = region;
   }
 
-  decorate(_editor: LexicalEditor, _config: EditorConfig): JSX.Element {
+  decorate(
+    _editor: LexicalEditor,
+    _config: EditorConfig
+  ): ReturnType<typeof AnchorComponent> {
     return (
       <AnchorComponent
         kind="end"
         nodeKey={this.getKey()}
         groupId={this.getGroupId()}
-        track={this.getTrack()}
+        region={this.getRegion()}
       />
     );
   }
@@ -143,10 +168,10 @@ export class AmbientAudioEndNode extends DecoratorNode<JSX.Element> {
 
 export function $createAmbientAudioEndNode(props: {
   groupId: string;
-  track: AmbientTrackRef;
+  region: AmbientRegionData;
 }): AmbientAudioEndNode {
   return $applyNodeReplacement(
-    new AmbientAudioEndNode(props.groupId, props.track)
+    new AmbientAudioEndNode(props.groupId, props.region)
   );
 }
 

@@ -1,4 +1,9 @@
 import {
+  $createInlineBlockNode,
+  $isInlineBlockNode,
+  type InlineBlockNode
+} from "@payloadcms/richtext-lexical/client";
+import {
   $createRangeSelection,
   $getNodeByKey,
   $getRoot,
@@ -10,22 +15,63 @@ import {
 } from "@payloadcms/richtext-lexical/lexical";
 import { nanoid } from "nanoid";
 
-import {
-  $createAmbientAudioEndNode,
-  $isAmbientAudioEndNode,
-  AmbientAudioEndNode
-} from "../nodes/AmbientAudioEndNode";
-import {
-  $createAmbientAudioStartNode,
-  $isAmbientAudioStartNode,
-  AmbientAudioStartNode
-} from "../nodes/AmbientAudioStartNode";
-import type { AmbientTrackRef, AnchorKind } from "../nodes/types";
+import { AMBIENT_AUDIO_ANCHOR_SLUG } from "../blocks/AmbientAudioAnchorBlock";
+import type {
+  AmbientPlayback,
+  AmbientRegionData,
+  AmbientSource,
+  AnchorKind
+} from "../nodes/types";
+
+/**
+ * The block-schema view of an anchor's persisted source, stripped of the
+ * display fields (title/artist/cover/etc.) that belong to the populated
+ * Track relationship. The runtime in-memory `AmbientRegionData` is a
+ * superset; encode/decode bridges the two.
+ */
+type AnchorFieldSource =
+  | {
+      provider: "internal";
+      track?: string | null | { id: string | number };
+    }
+  | {
+      provider: "youtube";
+      videoId?: string | null;
+      startSeconds?: number | null;
+      endSeconds?: number | null;
+    }
+  | {
+      provider: "url";
+      url?: string | null;
+    };
+
+type AnchorFieldPlayback = {
+  volume?: number | null;
+  loop?: boolean | null;
+  fadeInMs?: number | null;
+  fadeOutMs?: number | null;
+};
+
+interface AnchorFields {
+  blockType: typeof AMBIENT_AUDIO_ANCHOR_SLUG;
+  id: string;
+  groupId: string;
+  kind: AnchorKind;
+  source?: AnchorFieldSource | null;
+  playback?: AnchorFieldPlayback | null;
+}
+
+/**
+ * Anchors are Payload inline-blocks. The concrete runtime class is
+ * `InlineBlockNode`; we narrow on `fields.blockType` to identify ambient
+ * anchors and on `fields.kind` to distinguish start from end.
+ */
+export type AmbientAnchorNode = InlineBlockNode;
 
 export interface AnchorPair {
   groupId: string;
-  start: AmbientAudioStartNode | null;
-  end: AmbientAudioEndNode | null;
+  start: AmbientAnchorNode | null;
+  end: AmbientAnchorNode | null;
 }
 
 /**
@@ -43,6 +89,167 @@ export function createGroupId(): string {
   return `g_${nanoid(10)}`;
 }
 
+function getAnchorFields(node: AmbientAnchorNode): AnchorFields {
+  return node.getFields() as AnchorFields;
+}
+
+export function $isAmbientAnchor(
+  node: LexicalNode | null | undefined
+): node is AmbientAnchorNode {
+  if (!$isInlineBlockNode(node)) return false;
+  return (
+    (node.getFields() as AnchorFields).blockType === AMBIENT_AUDIO_ANCHOR_SLUG
+  );
+}
+
+export function $isAmbientStartAnchor(
+  node: LexicalNode | null | undefined
+): node is AmbientAnchorNode {
+  return $isAmbientAnchor(node) && getAnchorFields(node).kind === "start";
+}
+
+export function $isAmbientEndAnchor(
+  node: LexicalNode | null | undefined
+): node is AmbientAnchorNode {
+  return $isAmbientAnchor(node) && getAnchorFields(node).kind === "end";
+}
+
+export function getAnchorKind(node: AmbientAnchorNode): AnchorKind {
+  return getAnchorFields(node).kind;
+}
+
+export function getAnchorGroupId(node: AmbientAnchorNode): string {
+  return getAnchorFields(node).groupId;
+}
+
+export function getAnchorRegion(node: AmbientAnchorNode): AmbientRegionData {
+  return decodeRegion(getAnchorFields(node));
+}
+
+/**
+ * Write a region snapshot back into the inline-block's fields. Second arg
+ * `true` on setFields suppresses the drawer form-state update — this is a
+ * plugin-side mutation, not a form submission.
+ */
+export function $setAnchorRegion(
+  node: AmbientAnchorNode,
+  region: AmbientRegionData
+): void {
+  const existing = getAnchorFields(node);
+  const encoded = encodeRegion(region);
+  node.setFields(
+    {
+      ...existing,
+      source: encoded.source,
+      playback: encoded.playback ?? {}
+    },
+    true
+  );
+}
+
+/**
+ * Create a new inline-block anchor node. `id` is auto-populated by
+ * `$createInlineBlockNode` if omitted.
+ */
+export function $createAmbientAnchor(
+  kind: AnchorKind,
+  groupId: string,
+  region: AmbientRegionData
+): AmbientAnchorNode {
+  const encoded = encodeRegion(region);
+  const fields = {
+    blockType: AMBIENT_AUDIO_ANCHOR_SLUG,
+    groupId,
+    kind,
+    source: encoded.source,
+    playback: encoded.playback ?? {}
+  } as unknown as AnchorFields;
+  return $createInlineBlockNode(fields) as AmbientAnchorNode;
+}
+
+function encodeRegion(region: AmbientRegionData): {
+  source: AnchorFieldSource;
+  playback: AnchorFieldPlayback | undefined;
+} {
+  const src = region.source;
+  let source: AnchorFieldSource;
+  if (src.provider === "internal") {
+    source = {
+      provider: "internal",
+      track: src.trackId && src.trackId.length > 0 ? src.trackId : null
+    };
+  } else if (src.provider === "youtube") {
+    source = {
+      provider: "youtube",
+      videoId: src.videoId,
+      startSeconds: src.startSeconds ?? null,
+      endSeconds: src.endSeconds ?? null
+    };
+  } else {
+    source = {
+      provider: "url",
+      url: src.url
+    };
+  }
+  const playback = region.playback
+    ? {
+        volume: region.playback.volume ?? null,
+        loop: region.playback.loop ?? null,
+        fadeInMs: region.playback.fadeInMs ?? null,
+        fadeOutMs: region.playback.fadeOutMs ?? null
+      }
+    : undefined;
+  return { source, playback };
+}
+
+function decodeRegion(fields: AnchorFields): AmbientRegionData {
+  const src = fields.source;
+  const playback = decodePlayback(fields.playback);
+  if (!src) {
+    return {
+      source: { provider: "internal", trackId: "" },
+      ...(playback ? { playback } : {})
+    };
+  }
+  if (src.provider === "youtube") {
+    return {
+      source: {
+        provider: "youtube",
+        videoId: src.videoId ?? "",
+        startSeconds: src.startSeconds ?? undefined,
+        endSeconds: src.endSeconds ?? undefined
+      },
+      ...(playback ? { playback } : {})
+    };
+  }
+  if (src.provider === "url") {
+    return {
+      source: { provider: "url", url: src.url ?? "" },
+      ...(playback ? { playback } : {})
+    };
+  }
+  const track = src.track;
+  let trackId = "";
+  if (typeof track === "string") trackId = track;
+  else if (track && typeof track === "object") trackId = String(track.id);
+  return {
+    source: { provider: "internal", trackId },
+    ...(playback ? { playback } : {})
+  };
+}
+
+function decodePlayback(
+  raw: AnchorFieldPlayback | null | undefined
+): AmbientPlayback | undefined {
+  if (!raw) return undefined;
+  const out: AmbientPlayback = {};
+  if (raw.volume != null) out.volume = raw.volume;
+  if (raw.loop != null) out.loop = raw.loop;
+  if (raw.fadeInMs != null) out.fadeInMs = raw.fadeInMs;
+  if (raw.fadeOutMs != null) out.fadeOutMs = raw.fadeOutMs;
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 /**
  * Insert a single anchor at the current caret/selection focus.
  * Returns the inserted node's key, or null on failure.
@@ -50,16 +257,11 @@ export function createGroupId(): string {
 export function $insertAnchor(
   kind: AnchorKind,
   groupId: string,
-  track: AmbientTrackRef
+  region: AmbientRegionData
 ): string | null {
   const selection = $getSelection();
   if (!$isRangeSelection(selection)) return null;
-
-  const node =
-    kind === "start"
-      ? $createAmbientAudioStartNode({ groupId, track })
-      : $createAmbientAudioEndNode({ groupId, track });
-
+  const node = $createAmbientAnchor(kind, groupId, region);
   selection.insertNodes([node]);
   return node.getKey();
 }
@@ -75,7 +277,7 @@ export function $insertAnchor(
 export function $insertAnchorAtSelection(
   kind: AnchorKind,
   groupId: string,
-  track: AmbientTrackRef,
+  region: AmbientRegionData,
   savedPoint: SavedCaretPoint
 ): string | null {
   const target = $getNodeByKey(savedPoint.nodeKey);
@@ -89,11 +291,7 @@ export function $insertAnchorAtSelection(
   const sel = $getSelection();
   if (!$isRangeSelection(sel)) return null;
 
-  const node =
-    kind === "start"
-      ? $createAmbientAudioStartNode({ groupId, track })
-      : $createAmbientAudioEndNode({ groupId, track });
-
+  const node = $createAmbientAnchor(kind, groupId, region);
   sel.insertNodes([node]);
   return node.getKey();
 }
@@ -105,7 +303,7 @@ export function $insertAnchorAtSelection(
  * does not shift the END index), then locate END and insertBefore START.
  */
 export function $insertAnchorPair(
-  track: AmbientTrackRef,
+  region: AmbientRegionData,
   groupId: string = createGroupId()
 ): { groupId: string; startKey: string | null; endKey: string | null } {
   const selection = $getSelection();
@@ -114,8 +312,8 @@ export function $insertAnchorPair(
   }
 
   if (selection.isCollapsed()) {
-    const startNode = $createAmbientAudioStartNode({ groupId, track });
-    const endNode = $createAmbientAudioEndNode({ groupId, track });
+    const startNode = $createAmbientAnchor("start", groupId, region);
+    const endNode = $createAmbientAnchor("end", groupId, region);
     selection.insertNodes([startNode, endNode]);
     return {
       groupId,
@@ -127,7 +325,7 @@ export function $insertAnchorPair(
   const isBackward = selection.isBackward();
   const endSide = isBackward ? "anchor" : "focus";
 
-  const endNode = $createAmbientAudioEndNode({ groupId, track });
+  const endNode = $createAmbientAnchor("end", groupId, region);
   const collapseEnd = selection.clone();
   const endPoint = selection[endSide];
   const otherKey = endSide === "focus" ? "anchor" : "focus";
@@ -138,10 +336,8 @@ export function $insertAnchorPair(
   // inserting END the selection collapsed there; re-read it to find the
   // earlier anchor's position.
   const afterEnd = $getSelection();
-  const startNode = $createAmbientAudioStartNode({ groupId, track });
+  const startNode = $createAmbientAnchor("start", groupId, region);
   if ($isRangeSelection(afterEnd)) {
-    // The collapsed selection is now next to END. Walk to the other side of
-    // the original range by collapsing to the ORIGINAL start side.
     const startSide = isBackward ? "focus" : "anchor";
     const startPoint = selection[startSide];
     const collapseStart = afterEnd.clone();
@@ -168,14 +364,14 @@ export function $insertAnchorPair(
  */
 export function $findAnchorPair(groupId: string): AnchorPair {
   const root = $getRoot();
-  let start: AmbientAudioStartNode | null = null;
-  let end: AmbientAudioEndNode | null = null;
+  let start: AmbientAnchorNode | null = null;
+  let end: AmbientAnchorNode | null = null;
 
   const walk = (node: LexicalNode): void => {
-    if ($isAmbientAudioStartNode(node) && node.getGroupId() === groupId) {
-      start = node;
-    } else if ($isAmbientAudioEndNode(node) && node.getGroupId() === groupId) {
-      end = node;
+    if ($isAmbientAnchor(node) && getAnchorGroupId(node) === groupId) {
+      const kind = getAnchorKind(node);
+      if (kind === "start") start = node;
+      else end = node;
     }
     const anyNode = node as LexicalNode & {
       getChildren?: () => LexicalNode[];
@@ -206,10 +402,11 @@ export function $listGroups(): AnchorPair[] {
   };
 
   const walk = (node: LexicalNode): void => {
-    if ($isAmbientAudioStartNode(node)) {
-      ensure(node.getGroupId()).start = node;
-    } else if ($isAmbientAudioEndNode(node)) {
-      ensure(node.getGroupId()).end = node;
+    if ($isAmbientAnchor(node)) {
+      const gid = getAnchorGroupId(node);
+      const pair = ensure(gid);
+      if (getAnchorKind(node) === "start") pair.start = node;
+      else pair.end = node;
     }
     const anyNode = node as LexicalNode & {
       getChildren?: () => LexicalNode[];
@@ -228,8 +425,8 @@ export function $listGroups(): AnchorPair[] {
  */
 export function $removeGroup(groupId: string): void {
   const { start, end } = $findAnchorPair(groupId);
-  if (start) (start as AmbientAudioStartNode).remove();
-  if (end) (end as AmbientAudioEndNode).remove();
+  if (start) start.remove();
+  if (end) end.remove();
 }
 
 /**
@@ -240,35 +437,73 @@ export function $removeGroupByKey(
   nodeKey: string
 ): void {
   const node = $getNodeByKey(nodeKey);
-  if (!node) return;
-  if ($isAmbientAudioStartNode(node) || $isAmbientAudioEndNode(node)) {
-    $removeGroup(node.getGroupId());
+  if (!node || !$isAmbientAnchor(node)) return;
+  $removeGroup(getAnchorGroupId(node));
+}
+
+/**
+ * Update the region bound to a group (both anchors kept in sync).
+ */
+export function $updateGroupRegion(
+  groupId: string,
+  region: AmbientRegionData
+): void {
+  const { start, end } = $findAnchorPair(groupId);
+  if (start) $setAnchorRegion(start, region);
+  if (end) $setAnchorRegion(end, region);
+}
+
+/**
+ * Reconcile the region payload across a group's anchor pair. Both anchors
+ * are meant to carry the same snapshot; if they drift (e.g., after a partial
+ * update) we pick the non-placeholder winner and write it back to both.
+ * Caller is responsible for wrapping in editor.update().
+ */
+export function $reconcileGroupData(groupId: string): void {
+  const { start, end } = $findAnchorPair(groupId);
+  if (!start || !end) return;
+  const startRegion = getAnchorRegion(start);
+  const endRegion = getAnchorRegion(end);
+  const startPlaceholder = isPlaceholderRegion(startRegion);
+  const endPlaceholder = isPlaceholderRegion(endRegion);
+  if (startPlaceholder && !endPlaceholder) {
+    $setAnchorRegion(start, endRegion);
+    return;
+  }
+  if (!startPlaceholder && endPlaceholder) {
+    $setAnchorRegion(end, startRegion);
+    return;
+  }
+  // Both real or both placeholder — keep start as source of truth.
+  if (JSON.stringify(startRegion) !== JSON.stringify(endRegion)) {
+    $setAnchorRegion(end, startRegion);
   }
 }
 
 /**
- * Update the track bound to a group (both anchors kept in sync).
+ * A region representing "no source picked yet". Internal provider with an
+ * empty trackId. Frontend converters / runtime filter these out; editor
+ * renders them with a muted "set track" affordance.
  */
-export function $updateGroupTrack(
-  groupId: string,
-  track: AmbientTrackRef
-): void {
-  const { start, end } = $findAnchorPair(groupId);
-  if (start) (start as AmbientAudioStartNode).setTrack(track);
-  if (end) (end as AmbientAudioEndNode).setTrack(track);
-}
+export const PLACEHOLDER_REGION: AmbientRegionData = {
+  source: { provider: "internal", trackId: "" }
+};
 
-/**
- * A track ref representing a placeholder (no track picked yet). Frontend
- * converters / runtime filter these out; editor renders them with a muted
- * "set track" affordance.
- */
-export const PLACEHOLDER_TRACK: AmbientTrackRef = { trackId: "" };
-
-export function isPlaceholderTrack(
-  t: AmbientTrackRef | undefined | null
+export function isPlaceholderRegion(
+  region: AmbientRegionData | undefined | null
 ): boolean {
-  return !t || !t.trackId || t.trackId.length === 0;
+  if (!region) return true;
+  const src = region.source;
+  if (src.provider === "internal") {
+    return !src.trackId || src.trackId.length === 0;
+  }
+  if (src.provider === "youtube") {
+    return !src.videoId || src.videoId.length === 0;
+  }
+  if (src.provider === "url") {
+    return !src.url || src.url.length === 0;
+  }
+  return true;
 }
 
 /**
@@ -382,8 +617,8 @@ export function $findViewportCenterBlock(
  * ancestor in $getRoot().getChildren(). Used by the overlap guard.
  */
 export function $groupRangeIndices(
-  start: AmbientAudioStartNode | null,
-  end: AmbientAudioEndNode | null
+  start: AmbientAnchorNode | null,
+  end: AmbientAnchorNode | null
 ): { startIdx: number; endIdx: number } | null {
   if (!start && !end) return null;
   const root = $getRoot();
@@ -440,12 +675,9 @@ export function $insertAnchorAtBlockStart(
   block: LexicalNode,
   kind: AnchorKind,
   groupId: string,
-  track: AmbientTrackRef
+  region: AmbientRegionData
 ): string | null {
-  const node =
-    kind === "start"
-      ? $createAmbientAudioStartNode({ groupId, track })
-      : $createAmbientAudioEndNode({ groupId, track });
+  const node = $createAmbientAnchor(kind, groupId, region);
   const anyBlock = block as LexicalNode & {
     getChildren?: () => LexicalNode[];
     splice?: (
@@ -470,12 +702,9 @@ export function $insertAnchorAtBlockEnd(
   block: LexicalNode,
   kind: AnchorKind,
   groupId: string,
-  track: AmbientTrackRef
+  region: AmbientRegionData
 ): string | null {
-  const node =
-    kind === "start"
-      ? $createAmbientAudioStartNode({ groupId, track })
-      : $createAmbientAudioEndNode({ groupId, track });
+  const node = $createAmbientAnchor(kind, groupId, region);
   const anyBlock = block as LexicalNode & {
     getChildren?: () => LexicalNode[];
     append?: (...children: LexicalNode[]) => void;
@@ -498,7 +727,7 @@ export function $insertAnchorAtBlockEnd(
  *   - 1 anchor    → place the missing one at the end of the existing
  *                   anchor's block.
  *   - 2 anchors   → leave as-is.
- *   - No track    → PLACEHOLDER_TRACK; frontend skips.
+ *   - No region   → PLACEHOLDER_REGION; frontend skips.
  *
  * Caller is responsible for wrapping this in editor.update().
  */
@@ -507,18 +736,18 @@ export function $finalizePlacement(args: {
   pendingStartKey: string | null;
   pendingEndKey: string | null;
   pendingGroupId: string | null;
-  track?: AmbientTrackRef;
+  region?: AmbientRegionData;
 }): { groupId: string; startKey: string; endKey: string } | null {
   const { pendingStartKey, pendingEndKey } = args;
   const pendingGroupId = args.pendingGroupId ?? createGroupId();
-  const track = args.track ?? PLACEHOLDER_TRACK;
+  const region = args.region ?? PLACEHOLDER_REGION;
 
-  const startNode = pendingStartKey
-    ? ($getNodeByKey(pendingStartKey) as AmbientAudioStartNode | null)
+  const startCandidate = pendingStartKey ? $getNodeByKey(pendingStartKey) : null;
+  const endCandidate = pendingEndKey ? $getNodeByKey(pendingEndKey) : null;
+  const startNode = $isAmbientStartAnchor(startCandidate)
+    ? startCandidate
     : null;
-  const endNode = pendingEndKey
-    ? ($getNodeByKey(pendingEndKey) as AmbientAudioEndNode | null)
-    : null;
+  const endNode = $isAmbientEndAnchor(endCandidate) ? endCandidate : null;
 
   if (startNode && endNode) {
     return {
@@ -531,7 +760,12 @@ export function $finalizePlacement(args: {
   if (startNode && !endNode) {
     const block = $findBlockAncestor(startNode);
     if (!block) return null;
-    const endKey = $insertAnchorAtBlockEnd(block, "end", pendingGroupId, track);
+    const endKey = $insertAnchorAtBlockEnd(
+      block,
+      "end",
+      pendingGroupId,
+      region
+    );
     if (!endKey) return null;
     return { groupId: pendingGroupId, startKey: startNode.getKey(), endKey };
   }
@@ -543,7 +777,7 @@ export function $finalizePlacement(args: {
       block,
       "start",
       pendingGroupId,
-      track
+      region
     );
     if (!startKey) return null;
     return { groupId: pendingGroupId, startKey, endKey: endNode.getKey() };
@@ -555,14 +789,14 @@ export function $finalizePlacement(args: {
     block,
     "start",
     pendingGroupId,
-    track
+    region
   );
   const latestBlock = block.getLatest();
   const endKey = $insertAnchorAtBlockEnd(
     latestBlock,
     "end",
     pendingGroupId,
-    track
+    region
   );
   if (!startKey || !endKey) return null;
   return { groupId: pendingGroupId, startKey, endKey };
@@ -579,9 +813,8 @@ export function $reorderAnchor(
   const node = $getNodeByKey(nodeKey);
   const target = $getNodeByKey(proposedSlotKey);
   if (!node || !target) return false;
-  if (!($isAmbientAudioStartNode(node) || $isAmbientAudioEndNode(node))) {
-    return false;
-  }
+  if (!$isAmbientAnchor(node)) return false;
   target.insertBefore(node);
   return true;
 }
+

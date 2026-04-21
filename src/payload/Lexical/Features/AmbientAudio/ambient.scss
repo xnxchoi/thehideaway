@@ -1,0 +1,22 @@
+/**
+ * Payload's default inline-block theme wraps every `InlineBlockNode` in a
+ * `.LexicalEditorTheme__inlineBlock` span with its own background, outline,
+ * padding and shadow. For ambient-audio anchors we render our own chip
+ * (group-coloured border + dotted underline) and need the outer wrapper to
+ * be invisible chrome so the chip's colour shines through.
+ */
+@layer payload-default {
+  .LexicalEditorTheme__inlineBlock:has([data-ambient-anchor]) {
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+    padding: 0;
+    margin-inline: 0.15em;
+    max-width: none;
+    border-radius: 0;
+
+    &:hover {
+      outline: none;
+    }
+  }
+}

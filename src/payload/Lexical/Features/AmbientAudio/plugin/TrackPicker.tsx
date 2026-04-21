@@ -9,6 +9,7 @@ import {
   useFloating,
   useInteractions
 } from "@floating-ui/react";
+import { SKIP_SCROLL_INTO_VIEW_TAG } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import {
   Command,
@@ -21,11 +22,11 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import type { AmbientTrackRef, AnchorKind } from "../nodes/types";
+import type { AmbientSourceInternal, AnchorKind } from "../nodes/types";
 import { useAmbientStore } from "../store/ambientStore";
 import {
   $insertAnchor,
-  $updateGroupTrack,
+  $updateGroupRegion,
   createGroupId
 } from "../utils/anchors";
 import { searchTracks } from "../utils/tracks";
@@ -52,9 +53,10 @@ export function TrackPicker() {
 
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounced(query, 160);
-  const [results, setResults] = useState<AmbientTrackRef[]>([]);
+  const [results, setResults] = useState<AmbientSourceInternal[]>([]);
   const [loading, setLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { refs, floatingStyles, context } = useFloating({
     open: pickerOpen,
@@ -79,7 +81,15 @@ export function TrackPicker() {
     if (!pickerOpen) {
       setQuery("");
       setResults([]);
+      return;
     }
+    // Focus without scrolling the input into view — the picker is positioned
+    // by floating-ui and a scroll jump here causes the viewport to jolt when
+    // the dialog opens.
+    const id = window.requestAnimationFrame(() => {
+      inputRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(id);
   }, [pickerOpen]);
 
   useEffect(() => {
@@ -102,20 +112,27 @@ export function TrackPicker() {
   }, [debouncedQuery, pickerOpen]);
 
   const handleSelect = useCallback(
-    (track: AmbientTrackRef) => {
+    (source: AmbientSourceInternal) => {
+      const region = { source };
       if (pickerGroupId) {
-        editor.update(() => {
-          $updateGroupTrack(pickerGroupId, track);
-        });
+        editor.update(
+          () => {
+            $updateGroupRegion(pickerGroupId, region);
+          },
+          { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+        );
         closePicker();
         return;
       }
 
       const groupId = pendingGroupId ?? createGroupId();
       const kind: AnchorKind = pendingAnchor ?? "start";
-      editor.update(() => {
-        $insertAnchor(kind, groupId, track);
-      });
+      editor.update(
+        () => {
+          $insertAnchor(kind, groupId, region);
+        },
+        { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+      );
       if (!pendingGroupId) setPendingGroupId(groupId);
       closePicker();
       if (kind === "end") exitSelectMode();
@@ -156,9 +173,9 @@ export function TrackPicker() {
         className="flex flex-col"
       >
         <CommandInput
+          ref={inputRef}
           value={query}
           onValueChange={setQuery}
-          autoFocus
           placeholder="Search tracks…"
           className="w-full border-b border-border/30 bg-transparent px-3 py-2 font-mono text-[11px] placeholder:text-muted-foreground/40 focus:outline-none"
         />
