@@ -2,6 +2,8 @@ import {
   ArchiveFeatureCard,
   OverviewAgnosticItem
 } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
+import { CategoryAccent } from "@/components/identity/accent/CategoryAccent";
+import { getCategoryAccent } from "@/components/identity/accent/getCategoryAccent";
 import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
 import { RPage } from "@/components/UX/Transition";
 import { queryPostsByIDs } from "@/payload/collections/Posts/api/queryPostOverviews";
@@ -37,10 +39,14 @@ export default async function Page({ params: paramsPromise }: Args) {
     })
   );
   const rest = posts.slice(5);
+  const identity = getCategoryAccent(cat);
   return (
     <RPage type="categories" slug={[cat.slug]}>
       <PageClient>
-        <div className="relative flex w-full flex-col items-center justify-center">
+        <CategoryAccent
+          identity={identity}
+          className="relative flex w-full flex-col items-center justify-center"
+        >
           <CatTitle> {cat.title}</CatTitle>
           <div
             className={
@@ -57,7 +63,10 @@ export default async function Page({ params: paramsPromise }: Args) {
                       }
                     ></div>
                     <div className={"relative block"}>
-                      <ArchiveFeatureCard contents={firstFive} type={"left"} />
+                      <ArchiveFeatureCard
+                        contents={firstFive}
+                        type={identity.layout}
+                      />
                     </div>
                   </div>
                 </div>
@@ -75,7 +84,7 @@ export default async function Page({ params: paramsPromise }: Args) {
               ))}
             </div>
           </div>
-        </div>
+        </CategoryAccent>
       </PageClient>
     </RPage>
   );
@@ -127,9 +136,11 @@ async function getCategory({ slug }: { slug: string }) {
         }
       },
       limit: 1,
+      joins: false,
       select: {
         title: true,
-        slug: true
+        slug: true,
+        identity: true
       }
     })
     .then((result) => result.docs[0] ?? null)

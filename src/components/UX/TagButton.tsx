@@ -24,7 +24,7 @@ export const TagButton = ({
         className
       )}
       {...props}
-      href={`/src/app/(frontend)/(site)/(content)/tagged/${tagg.slug}`}
+      href={`/tagged/${tagg.slug}`}
       rel={rel || "noopener follow"}
       disabled={false}
       data-current={selected}

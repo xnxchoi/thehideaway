@@ -48,7 +48,7 @@ test*/
 !/public/assets/three/tape
 
 
-!/src/app/(frontend)/(site)/(content)/essays/DemoOfArchive.tsx
+!/essays/DemoOfArchive.tsx
 *__backup.tsx
 src/**/* copy*
 /src/components/layouts/Registration/Plate/ThreeCSG.ts

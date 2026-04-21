@@ -48,14 +48,14 @@ export default async function Page() {
           <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
             <div className="flex items-end justify-between gap-6">
               <div>
-                <p className="mb-2 font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
+                <p className="mb-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   The Residency
                 </p>
                 <h1 className="text-2xl font-light tracking-tight xl:text-3xl">
                   Members
                 </h1>
               </div>
-              <p className="font-mono text-[11px] tabular-nums text-muted-foreground/60 xl:text-xs">
+              <p className="font-mono text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
                 {users.totalDocs} {users.totalDocs === 1 ? "member" : "members"}
               </p>
             </div>
@@ -116,7 +116,7 @@ function MemberCardItem({ user }: { user: MemberCard }) {
           <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
         <div className="p-3.5 xl:p-4">
-          <p className="line-clamp-1 text-sm font-medium leading-snug tracking-tight xl:text-base">
+          <p className="line-clamp-1 text-sm leading-snug font-medium tracking-tight xl:text-base">
             {displayName}
           </p>
           {user.username && user.username !== displayName && (
@@ -124,7 +124,7 @@ function MemberCardItem({ user }: { user: MemberCard }) {
               @{user.username}
             </p>
           )}
-          <p className="mt-2 font-mono text-[9px] tracking-[0.2em] uppercase text-muted-foreground/40 xl:text-[10px]">
+          <p className="mt-2 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[10px]">
             {user.role}
           </p>
         </div>

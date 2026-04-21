@@ -1,0 +1,121 @@
+/**
+ * Signature accents — poppy/retro monotone gradients.
+ *
+ * Used sparingly, only where a surface "earns" it (Category identity,
+ * bespoke pages). Most of the site stays monochrome.
+ *
+ * Each preset exposes:
+ *   --accent-{name}-from   — strong, opaque stop
+ *   --accent-{name}-to     — near-transparent fade of the same hue
+ *   --accent-{name}-solid  — flat accent for borders / eyebrow underlines
+ *
+ * The [data-accent="..."] selectors forward the active preset to the
+ * generic --accent-* vars, so downstream components can be palette-agnostic.
+ */
+
+:root {
+    /* red — ember, signal flare */
+    --accent-red-from: oklch(62.4% 0.246 28.3);
+    --accent-red-to: oklch(97% 0.02 28.3 / 0);
+    --accent-red-solid: oklch(56% 0.22 28.3);
+
+    /* amber — warm paper, late sun */
+    --accent-amber-from: oklch(78.5% 0.166 74.9);
+    --accent-amber-to: oklch(97% 0.02 74.9 / 0);
+    --accent-amber-solid: oklch(68% 0.16 74.9);
+
+    /* citrus — vinyl yellow-green */
+    --accent-citrus-from: oklch(86% 0.19 118);
+    --accent-citrus-to: oklch(97% 0.03 118 / 0);
+    --accent-citrus-solid: oklch(72% 0.17 118);
+
+    /* moss — dense green, print ink */
+    --accent-moss-from: oklch(58% 0.14 152);
+    --accent-moss-to: oklch(96% 0.02 152 / 0);
+    --accent-moss-solid: oklch(48% 0.13 152);
+
+    /* cobalt — strong blue, sky trace */
+    --accent-cobalt-from: oklch(54% 0.21 258);
+    --accent-cobalt-to: oklch(97% 0.02 258 / 0);
+    --accent-cobalt-solid: oklch(48% 0.2 258);
+
+    /* violet — dusk, synth glow */
+    --accent-violet-from: oklch(55% 0.23 296);
+    --accent-violet-to: oklch(97% 0.02 296 / 0);
+    --accent-violet-solid: oklch(48% 0.22 296);
+
+    /* blush — pink rose, soft pop */
+    --accent-blush-from: oklch(78% 0.15 18);
+    --accent-blush-to: oklch(98% 0.02 18 / 0);
+    --accent-blush-solid: oklch(66% 0.17 18);
+
+    /* ink — graphite, near-monochrome */
+    --accent-ink-from: oklch(28% 0.02 250);
+    --accent-ink-to: oklch(96% 0.01 250 / 0);
+    --accent-ink-solid: oklch(22% 0.02 250);
+
+    /* diagonal default — top-left to bottom-right */
+    --accent-angle: 135deg;
+
+    /* none (fallback) — fully transparent */
+    --accent-from: transparent;
+    --accent-to: transparent;
+    --accent-solid: currentColor;
+}
+
+[data-accent="red"] {
+    --accent-from: var(--accent-red-from);
+    --accent-to: var(--accent-red-to);
+    --accent-solid: var(--accent-red-solid);
+}
+
+[data-accent="amber"] {
+    --accent-from: var(--accent-amber-from);
+    --accent-to: var(--accent-amber-to);
+    --accent-solid: var(--accent-amber-solid);
+}
+
+[data-accent="citrus"] {
+    --accent-from: var(--accent-citrus-from);
+    --accent-to: var(--accent-citrus-to);
+    --accent-solid: var(--accent-citrus-solid);
+}
+
+[data-accent="moss"] {
+    --accent-from: var(--accent-moss-from);
+    --accent-to: var(--accent-moss-to);
+    --accent-solid: var(--accent-moss-solid);
+}
+
+[data-accent="cobalt"] {
+    --accent-from: var(--accent-cobalt-from);
+    --accent-to: var(--accent-cobalt-to);
+    --accent-solid: var(--accent-cobalt-solid);
+}
+
+[data-accent="violet"] {
+    --accent-from: var(--accent-violet-from);
+    --accent-to: var(--accent-violet-to);
+    --accent-solid: var(--accent-violet-solid);
+}
+
+[data-accent="blush"] {
+    --accent-from: var(--accent-blush-from);
+    --accent-to: var(--accent-blush-to);
+    --accent-solid: var(--accent-blush-solid);
+}
+
+[data-accent="ink"] {
+    --accent-from: var(--accent-ink-from);
+    --accent-to: var(--accent-ink-to);
+    --accent-solid: var(--accent-ink-solid);
+}
+
+/** Composed gradient — consumed by surfaces that opt in. */
+[data-accent]:not([data-accent="none"]) {
+    --accent-gradient: linear-gradient(
+            var(--accent-angle, 135deg),
+            var(--accent-from),
+            var(--accent-to)
+    );
+}

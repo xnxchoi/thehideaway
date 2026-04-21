@@ -63,7 +63,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
             <div className="flex items-end justify-between gap-6">
               <div>
-                <p className="mb-2 font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
+                <p className="mb-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   <Link
                     href={`/users/${url}`}
                     className="hover:text-foreground"
@@ -77,9 +77,8 @@ export default async function Page({ params: paramsPromise }: Args) {
                   Latest Writing
                 </h1>
               </div>
-              <p className="font-mono text-[11px] tabular-nums text-muted-foreground/60 xl:text-xs">
-                {posts.totalDocs}{" "}
-                {posts.totalDocs === 1 ? "essay" : "essays"}
+              <p className="font-mono text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
+                {posts.totalDocs} {posts.totalDocs === 1 ? "essay" : "essays"}
               </p>
             </div>
           </div>

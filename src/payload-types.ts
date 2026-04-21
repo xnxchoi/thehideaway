@@ -860,6 +860,13 @@ export interface Category {
     totalDocs?: number;
   };
   popularity: number;
+  /**
+   * Signature accent + layout for this category. Leave accent as "none" unless the category earns it.
+   */
+  identity: {
+    accent: 'none' | 'red' | 'amber' | 'citrus' | 'moss' | 'cobalt' | 'violet' | 'blush' | 'ink';
+    layout: 'left' | 'right';
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -3024,6 +3031,12 @@ export interface CategoriesSelect<T extends boolean = true> {
   slug?: T;
   categorized?: T;
   popularity?: T;
+  identity?:
+    | T
+    | {
+        accent?: T;
+        layout?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

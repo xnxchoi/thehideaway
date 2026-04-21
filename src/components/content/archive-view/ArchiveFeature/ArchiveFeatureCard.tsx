@@ -11,7 +11,7 @@ import {
 } from "@/types/collections/index";
 import { TagOverview } from "@/types/collections/meta-collections";
 import { AuthorOverview } from "@/types/collections/users";
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 export type OverviewItem<T extends OverviewSlugs = OverviewSlugs> = {
   [x in OverviewSlugs]: {
@@ -65,23 +65,7 @@ export function ArchiveFeatureCard(props: {
   );
 }
 
-const highlightMap = {
-  blue: "oklch(84.4% 0.065 214)",
-  red: "oklch(62.4% 0.246 28.3)",
-  pink: "oklch(81.7% 0.092 29.96)",
-  orange: "oklch(78.58% 0.1658 74.9677)"
-} as const;
-type HighlightColorMap = typeof highlightMap;
-type HighlightColor = keyof HighlightColorMap;
-type HighlightColorValue = HighlightColorMap[keyof HighlightColorMap];
-
-function OuterWrap({
-  children,
-  highlight = "red"
-}: {
-  children: ReactNode;
-  highlight?: HighlightColor;
-}) {
+function OuterWrap({ children }: { children: ReactNode }) {
   return (
     <div className={"h-full p-0"}>
       <div className={"relative h-full w-full"}>
@@ -90,15 +74,7 @@ function OuterWrap({
             "relative z-[150] flex w-[calc(100%-4rem)] max-w-576 flex-col items-center justify-center px-0 py-[1rem]"
           }
         >
-          <CoverCard
-            style={
-              {
-                "--highlight": highlightMap[highlight as HighlightColor]
-              } as CSSProperties & {
-                "--highlight": HighlightColorValue;
-              }
-            }
-          >
+          <CoverCard>
             <div
               className={
                 "grid gap-y-24 lg:grid-cols-[repeat(6,1fr)] lg:gap-x-8 lg:gap-y-[2.4rem]"
@@ -134,7 +110,8 @@ function FocusHero({
   return (
     <div
       className={cn(
-        "relative col-1 grid items-center gap-y-8 rounded-2xl bg-[oklch(from_var(--highlight)_l_c_h/.8)] p-8 text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
+        "relative col-1 grid items-center gap-y-8 rounded-2xl p-8 text-center lg:mb-0 lg:grid-cols-[1fr_1fr] lg:gap-x-[2rem]",
+        "bg-[var(--accent-gradient,oklch(from_var(--foreground)_l_c_h/.05))]",
         direction === "left"
           ? "lg:col-[1/5] lg:row-[1/3]"
           : "lg:col-[3/-1] lg:row-[1/3]"

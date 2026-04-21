@@ -93,7 +93,7 @@ export const CoverTag = (
   return (
     <div className={cn("rp_title-tag")}>
       <Link
-        href={`/src/app/(frontend)/(site)/(content)/archived/${category?.slug}`}
+        href={`/archived/${category?.slug}`}
         className={cn("rp_tag", className)}
       >
         {category?.title || "Untitled category"}
