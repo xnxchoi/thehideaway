@@ -180,14 +180,22 @@ export const SideDrawer = () => {
   const { isMobile } = useIsMobile();
   const setCursor = useCursor((r) => r.setCursorState);
   const hasRadio = useHasRadio();
+  // Drawer docks to bottom below the md breakpoint (768px) to align with
+  // its CSS (`max-md:` classes). This is distinct from the global `isMobile`
+  // (< 640px), which other components depend on.
+  const [isNarrow, setIsNarrow] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+  useEffect(() => {
+    setIsNarrow(window.innerWidth < 768);
+  }, [lastResize]);
   const [direction, setDirection] = useState<
     "bottom" | "left" | "top" | "right" | undefined
-  >(isMobile ? "bottom" : "left");
+  >(isNarrow ? "bottom" : "left");
 
   useEffect(() => {
-    // console.log("vaul direction!", isMobile ? "bottom" : "left");
-    setDirection(isMobile ? "bottom" : "left");
-  }, [isMobile, lastResize]);
+    setDirection(isNarrow ? "bottom" : "left");
+  }, [isNarrow]);
 
   const setCursorTheme = useCursor((r) => r.setCursorTheme);
   const resetCursor = useCursor((r) => r.resetCursorTheme);
@@ -217,7 +225,7 @@ export const SideDrawer = () => {
         toggleSideDrawer();
       }
     };
-    if (!isMobile) {
+    if (!isNarrow) {
       document.addEventListener("keydown", shortcutListenerCallback, {
         passive: true
       });
@@ -225,12 +233,12 @@ export const SideDrawer = () => {
     return () => {
       document.removeEventListener("keydown", shortcutListenerCallback);
     };
-  }, [isMobile, setSideDrawerOpen, toggleSideDrawer]);
+  }, [isNarrow, setSideDrawerOpen, toggleSideDrawer]);
   const [doo, setDoo] = useState(false);
-  const mobileValue = useMotionValue(isMobile);
+  const mobileValue = useMotionValue(isNarrow);
   useEffect(() => {
-    mobileValue.set(isMobile);
-  }, [isMobile, mobileValue]);
+    mobileValue.set(isNarrow);
+  }, [isNarrow, mobileValue]);
   const sidebarStateValue = useMotionValue(open);
   useEffect(() => {
     sidebarStateValue.set(open);
@@ -313,7 +321,7 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {isMobile && <Drawer.Handle className={"absolute!"} />}
+          {isNarrow && <Drawer.Handle className={"absolute!"} />}
           {open && (
             <div
               onClick={() => {
@@ -358,7 +366,7 @@ export const SideDrawer = () => {
             </div>
           </m.div>
           <AnimatePresence>
-            {isMobile ? (
+            {isNarrow ? (
               (open && <Controlbar />) || <> </>
             ) : (
               <SideNotch sideDrawer={true} />
