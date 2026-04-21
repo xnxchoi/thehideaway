@@ -54,16 +54,16 @@ export default function SavedPageClient({ userId, items }: Props) {
     <RPage type="me" slug={["saved"]}>
       {/* ── Header ────────────────────────────────────────────────── */}
       <header className="sticky top-[5.5rem] z-20 border-b border-border/30 bg-background/90 backdrop-blur-md lg:top-[8rem]">
-        <div className="mx-auto max-w-screen px-6 py-5 xl:px-10">
+        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-small tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Your Library
               </p>
               <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 Saved
                 {totalCount > 0 && (
-                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50">
+                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50 tabular-nums">
                     {totalCount}
                   </span>
                 )}
@@ -93,7 +93,7 @@ export default function SavedPageClient({ userId, items }: Props) {
                     )}
                   >
                     {TAB_LABELS[tab]}
-                    <span className="ml-1.5 text-[9px] opacity-60">
+                    <span className="ml-1.5 text-[9px] tabular-nums opacity-60">
                       {items[tab]?.length}
                     </span>
                     {activeTab === tab && (
@@ -116,7 +116,7 @@ export default function SavedPageClient({ userId, items }: Props) {
       </header>
 
       {/* ── Content ───────────────────────────────────────────────── */}
-      <section className="flex h-full w-full flex-col items-center">
+      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
         <AnimatePresence mode="wait">
           {activeItems.length === 0 ? (
             <SavedEmptyState key="empty" tab={activeTab} />
@@ -194,17 +194,17 @@ function BookmarkCard({
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {"author" in item && item.author && (
-              <span className="font-mono text-small text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {typeof item.author === "object" && item.author.name}
               </span>
             )}
             {"source" in item && item.source && (
-              <span className="font-mono text-small text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.source}
               </span>
             )}
             {"artist" in item && item.artist && (
-              <span className="font-mono text-small text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.artist}
               </span>
             )}

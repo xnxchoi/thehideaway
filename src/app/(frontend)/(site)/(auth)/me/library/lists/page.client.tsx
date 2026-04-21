@@ -11,7 +11,6 @@ import {
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   useCallback,
   useRef,
@@ -70,7 +69,7 @@ export default function ListsPageClient({
               <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 My Lists
                 {compilations.length > 0 && (
-                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50">
+                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50 tabular-nums">
                     {compilations.length}
                   </span>
                 )}
@@ -96,7 +95,7 @@ export default function ListsPageClient({
 
       {/* ── Grid ───────────────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           {compilations.length === 0 && !showCreate ? (
             <ListsEmptyState key="empty" onNew={() => setShowCreate(true)} />
           ) : (
@@ -154,7 +153,6 @@ function CompilationCard({
 
   return (
     <m.article
-      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
@@ -214,7 +212,7 @@ function CompilationCard({
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-border/15 px-3.5 py-2 xl:px-4">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-muted-foreground/50 xl:text-[11px]">
+          <span className="font-mono text-[10px] text-muted-foreground/50 tabular-nums xl:text-[11px]">
             {c.itemCount} {c.itemCount === 1 ? "item" : "items"}
           </span>
           <VisibilityBadge visibility={c.visibility} />
@@ -305,7 +303,7 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-28 text-center"
     >
-      <span className="mb-5 font-mono text-4xl text-foreground/8 select-none">
+      <span className="mb-5 font-mono text-4xl text-foreground/10 select-none">
         ⊞
       </span>
       <p className="text-base font-light text-foreground/70">No lists yet.</p>

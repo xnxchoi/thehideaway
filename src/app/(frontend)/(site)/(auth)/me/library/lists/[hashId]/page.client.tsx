@@ -145,7 +145,7 @@ export default function CompilationDetailClient({
             </>
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/50 to-muted/10">
-              <span className="font-mono text-9xl font-light text-muted-foreground/8 select-none">
+              <span className="font-mono text-9xl font-light text-muted-foreground/10 select-none">
                 {compilation.title.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -214,7 +214,7 @@ export default function CompilationDetailClient({
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-20 text-center"
           >
-            <span className="mb-4 font-mono text-5xl text-foreground/8 select-none">
+            <span className="mb-4 font-mono text-5xl text-foreground/10 select-none">
               ◫
             </span>
             <p className="font-light text-foreground/60">This list is empty.</p>
@@ -359,7 +359,7 @@ function CompilationMetaBlock({
         )}
       </div>
       <div className="mt-2 flex items-center gap-4">
-        <span className="font-mono text-[10px] text-muted-foreground/50">
+        <span className="font-mono text-[10px] text-muted-foreground/50 tabular-nums">
           {compilation.itemCount}{" "}
           {compilation.itemCount === 1 ? "item" : "items"}
         </span>

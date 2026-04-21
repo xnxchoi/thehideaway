@@ -297,9 +297,10 @@ export type TransitionWrapperProps = {
 export const RPage = (props: TransitionWrapperProps) => {
   const { type, slug } = props;
   const setPage = useVoyageur((l) => l.setPage);
+  const slugKey = slug.join("/");
   useEffect(() => {
-    setPage({ pageType: type, slug: slug });
-  }, [setPage, type, slug]);
+    setPage({ pageType: type, slug: slugKey ? slugKey.split("/") : [] });
+  }, [setPage, type, slugKey]);
 
   return <TransitionInternal {...props} />;
 };
