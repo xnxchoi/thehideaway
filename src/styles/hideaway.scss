@@ -15,7 +15,7 @@
   --button-bg: hsla(0, 0%, 35%, 0.2);
   --button-bg-invert: hsla(0, 0%, 73%, 0.2);
   --bg-subtle: hsla(0, 0%, 35%, 0.2);
-  --bg-menu-wrapper: 12, 12, 12;
+  --bg-menu-wrapper: oklch(16.54% 0 0);
   --bg-subtle-invert: #edf1f5;
   --bg-invert: var(--fg);
   --bg-highlight: var(--red-v-2);
@@ -58,7 +58,7 @@ body {
   position: fixed;
   left: var(--gutter);
   bottom: 1rem;
-  background-color: rgba(var(--bg-menu-wrapper), 0.8);
+  background-color: oklch(from var(--bg-menu-wrapper) l c h / 0.8);
   backdrop-filter: blur(2.4rem);
   z-index: 240;
   padding: var(--gutter-sm);

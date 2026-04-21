@@ -501,11 +501,10 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 - **Preserved** the Tailwind-exposed `--color-pastel-sky-blue` (used in 8 gradient stops across both stylesheets) by aliasing it to `var(--pastel-sky)` in the `@theme inline` blocks.
 - `@theme` (non-inline) blocks in `payloadStyles.css` still carry hardcoded oklch for the Tailwind palette — left alone to avoid build-time risk; the exposed palette token is semantically correct even if not aliased.
 
-### T-05 — Convert `--bg-menu-wrapper` to oklch
+### T-05 — Convert `--bg-menu-wrapper` to oklch ✅ DONE
 
-- Currently: `--bg-menu-wrapper: 12, 12, 12` (RGB tuple).
-- Replace with: `--bg-menu-wrapper: oklch(17% 0 0);` (or actual match).
-- Update call sites that use `rgba(var(--bg-menu-wrapper), …)` to `oklch(from var(--bg-menu-wrapper) l c h / …)`.
+- **Replaced** `--bg-menu-wrapper: 12, 12, 12` (RGB tuple) with `--bg-menu-wrapper: oklch(16.54% 0 0)` in `hideaway.scss:18`. Matches the sRGB(12,12,12) gray within visual tolerance.
+- **Migrated** 3 callers from `rgba(var(--bg-menu-wrapper), 0.8)` → `oklch(from var(--bg-menu-wrapper) l c h / 0.8)` in `hideaway.scss`, `__controlbar.scss`, `__executor.scss`. Token is now a first-class color, not a component tuple.
 
 ### T-06 — Standardize hairline borders to `1px`
 

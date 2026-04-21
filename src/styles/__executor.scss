@@ -756,7 +756,7 @@ button.js-menu-anchor.menu-float__item.saver {
   max-width: fit-content;
   padding: 6px;
   border-radius: 8px;
-  background-color: rgba(var(--bg-menu-wrapper), 0.8);
+  background-color: oklch(from var(--bg-menu-wrapper) l c h / 0.8);
   pointer-events: auto;
   transition: 400ms ease;
   transition-property: all;
