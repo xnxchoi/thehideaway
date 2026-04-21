@@ -19,7 +19,9 @@ set -euo pipefail
 
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 REGISTRY="${REGISTRY:-hideaway}"
-COMPOSE="docker compose -f compose.prod.yaml"
+# --env-file feeds compose variable interpolation (${VAR} in compose.prod.yaml).
+# The service-level env_file: directive does NOT feed this — they are separate.
+COMPOSE="docker compose -f compose.prod.yaml --env-file .env.production"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

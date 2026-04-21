@@ -1,757 +1,526 @@
-# Complete Docker Deployment Guide
+# Deployment — hideawayseoul.com
 
-This comprehensive guide covers deploying your Next.js application with Docker on a VCS (Virtual Private Server), including server optimization, backup strategies, and external services integration.
+## Architecture
 
-## 📁 File Structure Overview
+The Next.js app is built locally (or in CI), and `pack.Dockerfile` packages the pre-built
+`.next/standalone` output into a slim runtime image. NEXT_PUBLIC_* vars are baked into the
+client bundle at `pnpm build` time, so `.env.production` must exist on the build machine.
+The production stack runs three containers — `payload` (Node 24), `nginx`, and `postgres:18-alpine`
+— all on the `hideaway` Docker network, managed by `compose.prod.yaml` via `prod.sh` on the VPS.
 
-```
-├── .env                    # Example values (safe to commit)
-├── .env.production        # Production secrets (DO NOT COMMIT)
-├── compose.prod.yaml      # Production Docker Compose
-├── prod.Dockerfile        # Production Dockerfile
-├── nginx/                 # Reverse proxy configuration
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   ├── sites-enabled/
-│   └── certs/
-└── postgres/              # Database configuration
-```
+---
 
-## 🔧 Environment Configuration
+## Prerequisites
 
-### 1. Environment Files Explained
+### Local machine
 
-- **`.env`**: Contains example/default values. Safe to commit to git.
-- **`.env.local`**: Development secrets. Used locally, gitignored.
-- **`.env.production`**: Production secrets. Used on server, gitignored.
+- Node.js 20+
+- pnpm 10.33.0 (`corepack prepare pnpm@10.33.0 --activate`)
+- Docker Desktop (running)
+- `.env.production` filled with real production values (see [Part 2, Step 1](#step-1-fill-envproduction))
 
-### 2. Setting Up Production Environment
+### VPS
 
-1. Copy `.env.production` to your server
-2. Fill in your actual production values:
-   ```bash
-   # Update these values for production
-   PAYLOAD_SECRET=your_secure_random_string_here
-   NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
-   DATABASE_URI=postgresql://postgres:secure_password@postgres:5432/theestate
-   ```
+- Fresh Ubuntu 22.04 or 24.04 LTS
+- SSH access as root
+- DNS: `hideawayseoul.com` A record pointing to the server IP (propagated before TLS setup)
 
-## 🚀 Deployment Process
+---
 
-### Prerequisites on VCS Server
+## Part 1 — One-time server setup
 
-1. **Install Docker & Docker Compose**:
-   ```bash
-   # Ubuntu/Debian
-   curl -fsSL https://get.docker.com -o get-docker.sh
-   sudo sh get-docker.sh
-   sudo usermod -aG docker $USER
-   ```
+Run from your local machine. All steps are idempotent — safe to re-run.
 
-2. **Create Docker network**:
-   ```bash
-   docker network create hideaway
-   ```
-
-## 🔄 Deployment Methods
-
-### Method 1: Git-Based Deployment (Recommended)
-
-This method uses Git for version control and enables easy updates:
-
-1. **Initial Setup on Server**:
-   ```bash
-   # Clone your repository
-   git clone https://github.com/yourusername/thehideaway.git /opt/thehideaway
-   cd /opt/thehideaway
-   
-   # Create production environment file
-   cp .env.production.example .env.production
-   nano .env.production  # Fill with actual values
-   ```
-
-2. **Deploy with Dockge Integration**:
-   ```bash
-   # Install Dockge first (see Dockge section below)
-   # Then deploy your stack through Dockge web interface
-   ```
-
-3. **Updates** (Simple git pull + restart):
-   ```bash
-   cd /opt/thehideaway
-   git pull origin main
-   # Restart via Dockge web interface or:
-   docker-compose -f compose.prod.yaml up -d --build
-   ```
-
-### Method 2: Direct File Upload
-
-For cases where Git isn't available:
+### Step 1: SSH as root
 
 ```bash
-# Using rsync (recommended)
-rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.next' ./ user@your-server:/opt/thehideaway/
-
-# Or using scp
-scp -r ./ user@your-server:/opt/thehideaway/
+ssh root@<server-ip>
 ```
 
-2. **SSH into your server**:
-   ```bash
-   ssh user@your-server
-   cd /path/to/app
-   ```
+### Step 2: Run server-setup.sh
 
-3. **Set up environment file**:
-   ```bash
-   # Copy and edit the production environment file
-   cp .env.production.example .env.production
-   nano .env.production  # Edit with your actual values
-   ```
-
-4. **Deploy the application**:
-   ```bash
-   # Build and start services
-   docker compose -f compose.prod.yaml up -d --build
-   
-   # Check logs
-   docker compose -f compose.prod.yaml logs -f
-   ```
-
-## 🖥️ Complete Ubuntu Server Optimization
-
-### Initial Server Setup
+Copy the script to the server and execute it with your deploy user's SSH public key:
 
 ```bash
-# Update system packages
-sudo apt update && sudo apt dist-upgrade -y
-
-# Install essential packages
-sudo apt install -y curl wget git unzip htop ncdu tree fail2ban ufw
-
-# Ubuntu/Debian
-sudo curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
-
-# Docker Compose is now included with Docker
-# No separate installation needed for Docker Compose v2
-
-# Install Micro
-cd /usr/bin
-sudo curl https://getmic.ro/r | sudo sh
-
-
-# Create non-root user (if not already done)
-#sudo adduser deploy
-#sudo usermod -aG sudo deploy
-#sudo usermod -aG docker deploy
-
-# Configure SSH key authentication (recommended)
-# Execute these commands ON THE SERVER after SSH'ing in
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-
-# Copy your LOCAL machine's public key to the server
-# On your LOCAL machine:
-# cat ~/.ssh/id_ed25519.pub
-# Copy the output, then on the SERVER:
-sudo micro ~/.ssh/authorized_keys
-# Paste the copied content
-# Save and exit
-
-sudo chmod 600 ~/.ssh/authorized_keys
+# On the server as root:
+bash <(curl -fsSL https://raw.githubusercontent.com/xnxchoi/thehideaway/main/scripts/server-setup.sh) \
+  --deploy-key "ssh-ed25519 AAAA... your-key-here"
 ```
 
-### System Performance Optimization
+Or if you have already cloned the repo:
 
 ```bash
-# Increase file descriptor limits
-echo "* soft nofile 65536" | sudo tee -a /etc/security/limits.conf
-echo "* hard nofile 65536" | sudo tee -a /etc/security/limits.conf
-
-# Optimize kernel parameters
-sudo tee -a /etc/sysctl.conf << EOF
-# Network optimizations
-net.core.somaxconn = 65536
-net.core.netdev_max_backlog = 5000
-net.ipv4.tcp_max_syn_backlog = 65536
-net.ipv4.tcp_fin_timeout = 10
-net.ipv4.tcp_keepalive_time = 600
-net.ipv4.tcp_keepalive_intvl = 60
-net.ipv4.tcp_keepalive_probes = 10
-
-# Memory management
-vm.swappiness = 10
-vm.dirty_ratio = 15
-vm.dirty_background_ratio = 5
-EOF
-
-# Apply kernel parameters
-sudo sysctl -p
+bash scripts/server-setup.sh --deploy-key "ssh-ed25519 AAAA... your-key-here"
 ```
 
-### Security Hardening
+What this installs and configures (see `scripts/server-setup.sh` for the full list):
+- System packages, 4 GB swap, sysctl network/fd tuning
+- sshd hardening (root login disabled, password auth disabled, key-only)
+- UFW firewall (22, 80, 443 only)
+- Docker CE with log rotation and live-restore
+- `deploy` user with docker group membership and no-password sudo
+- Certbot
+- Working directories: `/home/deploy/backups`, `/home/deploy/thehideaway`, `/var/www/certbot`
+- Certbot renewal cron (daily 03:00)
+
+**Verify SSH access as the deploy user BEFORE closing the root session:**
 
 ```bash
-# Configure fail2ban
-sudo systemctl enable fail2ban
-sudo systemctl start fail2ban
-
-# Create jail for SSH
-sudo tee /etc/fail2ban/jail.local << EOF
-[sshd]
-enabled = true
-port = 22
-filter = sshd
-logpath = /var/log/auth.log
-maxretry = 3
-bantime = 3600
-findtime = 600
-EOF
-
-# Restart fail2ban
-sudo systemctl restart fail2ban
-
-# Configure firewall
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 22/tcp    # SSH
-sudo ufw allow 80/tcp    # HTTP
-sudo ufw allow 443/tcp   # HTTPS
-sudo ufw allow 5001/tcp  # Dockge
-# Restrict Dockge access to your IP only (recommended)
-# Find your IP: curl ifconfig.me or visit whatismyipaddress.com
-sudo ufw allow from YOUR_PUBLIC_IP to any port 5001
-# Example: sudo ufw allow from 203.0.113.45 to any port 5001
-
-# Alternative: Allow from anywhere (less secure)
-# sudo ufw allow 5001/tcp
-sudo ufw --force enable
-
-# Configure SSH security settings
-sudo sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sudo sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-sudo sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config
-sudo systemctl restart ssh
+# In a NEW terminal, while root session is still open:
+ssh deploy@<server-ip>
 ```
 
-### Docker Optimization
+Only close the root session once you have confirmed deploy login works. If it fails with the
+root session closed, you are locked out.
+
+### Step 3: Create the Docker network
 
 ```bash
-# Configure Docker daemon for production
-sudo tee /etc/docker/daemon.json << EOF
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  },
-  "storage-driver": "overlay2",
-  "live-restore": true,
-  "userland-proxy": false,
-  "experimental": false,
-  "metrics-addr": "127.0.0.1:9323",
-  "default-ulimits": {
-    "nofile": {
-      "Name": "nofile",
-      "Hard": 64000,
-      "Soft": 64000
-    }
-  }
-}
-EOF
-
-# Restart Docker
-sudo systemctl restart docker
-
-# Enable Docker auto-start
-sudo systemctl enable docker
+# As deploy on the VPS:
+docker network create --ipv6=true hideaway
 ```
 
-### Monitoring Setup
+### Step 4: Get the TLS certificate
+
+**Option A — standalone** (use this before nginx has ever started):
 
 ```bash
-# Install and configure htop for process monitoring
-sudo apt install -y htop iotop nethogs
-
-# Create monitoring aliases
-tee -a ~/.bashrc << EOF
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias grep='grep --color=auto'
-alias ports='netstat -tulanp'
-alias meminfo='free -m -l -t'
-alias psmem='ps auxf | sort -nr -k 4'
-alias pscpu='ps auxf | sort -nr -k 3'
-alias cpuinfo='lscpu'
-alias diskspace='df -h'
-alias folders='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn'
-alias dockerps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
-alias dockerlogs='docker compose -f /opt/thehideaway/compose.prod.yaml logs -f'
-EOF
-
-source ~/.bashrc
+# As root or deploy on the VPS:
+certbot certonly --standalone \
+  -d hideawayseoul.com \
+  -d www.hideawayseoul.com
 ```
 
-### Automatic Updates & Maintenance
+**Option B — webroot** (use this if nginx is already running on port 80):
 
 ```bash
-# Configure automatic security updates
-sudo apt install -y unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
-
-# Create maintenance script
-sudo tee /usr/local/bin/server-maintenance.sh << 'EOF'
-#!/bin/bash
-# Server maintenance script
-
-echo "Starting server maintenance..."
-
-# Update system packages
-apt update && apt upgrade -y
-
-# Clean up Docker
-docker system prune -f
-docker volume prune -f
-
-# Clean up logs older than 7 days
-find /var/log -type f -name "*.log" -mtime +7 -delete
-journalctl --vacuum-time=7d
-
-# Clean up apt cache
-apt autoremove -y
-apt autoclean
-
-# Check disk space
-df -h
-
-echo "Server maintenance completed!"
-EOF
-
-sudo chmod +x /usr/local/bin/server-maintenance.sh
-
-# Schedule weekly maintenance (Sundays at 2 AM)
-(crontab -l 2>/dev/null; echo "0 2 * * 0 /usr/local/bin/server-maintenance.sh >> /var/log/maintenance.log 2>&1") | crontab -
+certbot certonly --webroot \
+  -w /var/www/certbot \
+  -d hideawayseoul.com \
+  -d www.hideawayseoul.com
 ```
 
-## 🔒 Security & SSL Configuration
+Certs are written to `/etc/letsencrypt/live/hideawayseoul.com/`. `compose.prod.yaml` mounts
+`fullchain.pem` and `privkey.pem` from that path into the nginx container.
 
-### SSL/TLS Setup with Let's Encrypt
+---
 
-```bash
-# Install certbot
-sudo apt install -y certbot python3-certbot-nginx
+## Part 2 — Initial deployment
 
-# Update nginx configuration for your domain first
-sudo nano /opt/thehideaway/nginx/sites-enabled/production.conf
-# Ensure hideawayseoul.com is configured correctly
+Run from your local machine unless noted.
 
-# Get SSL certificate for hideawayseoul.com
-sudo certbot --nginx -d hideawayseoul.com -d www.hideawayseoul.com
+### Step 1: Fill .env.production
 
-# Test auto-renewal
-sudo certbot renew --dry-run
-
-# Set up auto-renewal cron job
-(crontab -l 2>/dev/null; echo "0 12 * * * /usr/bin/certbot renew --quiet") | crontab -
-```
-
-### Additional Security Measures
-
-**⚠️ ClamAV Warning**: ClamAV can freeze low-resource servers during installation. Skip this section if you have <2GB RAM.
+Start from `.env.production.example` in the repo root — it documents every required
+variable with placeholders and generation hints. Create `.env.production` alongside it
+and fill in every secret:
 
 ```bash
-# Option 1: Lightweight security (recommended for small VPS)
-# Install rkhunter for rootkit detection
-sudo apt install -y rkhunter
-sudo rkhunter --update
-sudo rkhunter --propupd
-
-# Schedule weekly rootkit scan
-(crontab -l 2>/dev/null; echo "0 3 * * 0 /usr/bin/rkhunter --check --skip-keypress --report-warnings-only") | crontab -
-
-# Option 2: Full antivirus (only for servers with >2GB RAM)
-# sudo apt install -y clamav clamav-daemon
-# sudo freshclam
-# sudo systemctl enable clamav-daemon
-# (crontab -l 2>/dev/null; echo "0 3 * * * /usr/bin/clamscan -r /opt --quiet --infected --remove") | crontab -
-
-# Configure logwatch for log monitoring
-sudo apt install -y logwatch
-sudo sed -i 's/MailTo = root/MailTo = your-email@domain.com/' /usr/share/logwatch/default.conf/logwatch.conf
-```
-
-**If your server froze during ClamAV installation:**
-```bash
-# After server restart, remove ClamAV
-sudo systemctl stop clamav-daemon clamav-freshclam 2>/dev/null
-sudo apt remove --purge clamav clamav-daemon -y
-sudo apt autoremove -y
-
-# Use lightweight alternative above instead
-```
-
-## 🛠 Dockge: Complete Container Management
-
-[Dockge](https://github.com/louislam/dockge) provides a web UI for Docker Compose management and is the recommended way to manage your entire deployment lifecycle.
-
-### Why Use Dockge?
-
-- **Visual Management**: Web interface for all Docker operations
-- **Easy Updates**: One-click container rebuilds and restarts
-- **Log Monitoring**: Real-time container logs in the browser
-- **Environment Management**: Edit environment variables through UI
-- **Stack Management**: Import/export Docker Compose files
-- **Terminal Access**: Built-in terminal for container debugging
-
-### Complete Dockge Setup
-
-1. **Install Dockge**:
-   ```bash
-   # Create Dockge directory
-   mkdir -p /opt/dockge
-   cd /opt/dockge
-   
-   # Download Dockge compose file
-   curl -L https://raw.githubusercontent.com/louislam/dockge/master/compose.yaml -o compose.yaml
-   
-   # Start Dockge
-   docker compose up -d
-   ```
-
-2. **Initial Dockge Configuration**:
-   ```bash
-   # Access Dockge web interface
-   # Visit: http://your-server-ip:5001
-   # Create admin account on first visit
-   ```
-
-3. **Deploy Your Application via Dockge**:
-   - **Option A**: Import existing stack
-     - In Dockge, click "Import Stack"
-     - Upload your `compose.prod.yaml`
-     - Set stack name: `thehideaway`
-     - Click "Deploy"
-   
-   - **Option B**: Create new stack
-     - Click "Create Stack"
-     - Name: `thehideaway`
-     - Copy contents of `compose.prod.yaml`
-     - Click "Deploy"
-
-4. **Managing Your Application**:
-   - **Start/Stop**: Use buttons in Dockge interface
-   - **View Logs**: Click on container names to see real-time logs
-   - **Update**: Edit compose file in Dockge, then click "Update"
-   - **Rebuild**: Click "Down" then "Up" to rebuild containers
-
-### Dockge-Integrated Deployment Workflow
-
-```bash
-# 1. Initial server setup (one-time)
-git clone https://github.com/yourusername/thehideaway.git /opt/thehideaway
-cd /opt/thehideaway
 cp .env.production.example .env.production
-nano .env.production  # Fill with actual values
+# Edit .env.production with real values
+```
 
-# 2. Install Dockge (one-time)
-mkdir -p /opt/dockge && cd /opt/dockge
-curl -L https://raw.githubusercontent.com/louislam/dockge/master/compose.yaml -o compose.yaml
-docker-compose up -d
+Variables that require real production values:
 
-# 3. Deploy via Dockge web interface
-# Visit http://your-server:5001 and import /opt/thehideaway/compose.prod.yaml
+| Variable | Notes |
+|---|---|
+| `PAYLOAD_SECRET` | Random 64-char string — `openssl rand -hex 32` |
+| `BETTER_AUTH_SECRET` | Random 64-char string |
+| `PREVIEW_SECRET` | Random 32-char string |
+| `CRON_SECRET` | Random 32-char string |
+| `POSTGRES_PASSWORD` | Strong password — no `@` or `%` chars (breaks URI parsing) |
+| `NEXT_PUBLIC_SERVER_URL` | `https://hideawayseoul.com` |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | `https://hideawayseoul.com` |
+| `COOKIE_DOMAIN` | `hideawayseoul.com` |
+| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | From Google Cloud Console |
+| `AUTH_ADMINS_GOOGLE_ID` | Admin-panel Google OAuth app |
+| `AUTH_ADMINS_GOOGLE_SECRET` | Admin-panel Google OAuth app |
+| `AUTH_NAVER_ID` | From Naver Developers |
+| `AUTH_NAVER_SECRET` | From Naver Developers |
+| `EXCHANGE_RATE_KEY` | Korea Exim Bank API |
+| `HOLIDAY_API_KEY` | data.go.kr holiday API |
+| `API_KEY_UNSPLASH` | Image search (admin only) |
+| `BREVO_SMTP_USER` | Brevo SMTP credentials |
+| `BREVO_SMTP_PASS` | Brevo SMTP credentials |
+| `ASSETS_HOST_PATH` | VPS path for 3D assets (default: `/opt/thehideaway/assets`) |
 
-# 4. Future updates
-cd /opt/thehideaway
+`DATABASE_URI` is constructed dynamically in `compose.prod.yaml` from `POSTGRES_PASSWORD`,
+`POSTGRES_USER`, and `POSTGRES_DB` — do not set it manually in `.env.production`.
+
+### Step 2: Build images
+
+From the repo root (with `.env.production` present):
+
+```bash
+./build.sh
+```
+
+This runs `pnpm build`, then packages two images tagged with the current git short SHA:
+- `hideaway:<sha>` and `hideaway:latest` — slim runtime (~300 MB)
+- `hideaway-migrate:<sha>` and `hideaway-migrate:latest` — migration runner
+
+Note the SHA printed in the output — you need it for deployment.
+
+To build and push directly to a registry:
+
+```bash
+REGISTRY=ghcr.io/xnxchoi/hideaway ./build.sh
+```
+
+### Step 3: Transfer images to VPS
+
+**Option A — registry pull** (if you used a remote REGISTRY in Step 2):
+
+```bash
+# On the VPS as deploy:
+IMAGE_TAG=<sha> REGISTRY=ghcr.io/xnxchoi/hideaway ./prod.sh
+```
+
+`prod.sh` calls `docker compose pull` which pulls from the registry automatically.
+
+**Option B — direct transfer** (no registry required, default local build):
+
+```bash
+# On your local machine:
+SHA=$(git rev-parse --short HEAD)
+
+docker save hideaway:${SHA} hideaway-migrate:${SHA} | gzip \
+  | rsync -e ssh --progress - deploy@<server-ip>:/tmp/hideaway-${SHA}.tar.gz
+
+# On the VPS as deploy:
+docker load < /tmp/hideaway-${SHA}.tar.gz
+rm /tmp/hideaway-${SHA}.tar.gz
+```
+
+### Step 4: Clone repo and copy .env.production to VPS
+
+```bash
+# SSH as deploy:
+ssh deploy@<server-ip>
+
+# Clone the repo:
+git clone https://github.com/xnxchoi/thehideaway.git ~/thehideaway
+```
+
+```bash
+# From your local machine — copy .env.production:
+scp .env.production deploy@<server-ip>:~/thehideaway/.env.production
+```
+
+### Step 5: Bootstrap 3D assets (one time only, before first deploy)
+
+The `public/assets/plate/`, `public/assets/rp_plaque/`, and `public/assets/three/`
+directories are committed to git for local dev but excluded from the Docker image via
+`.dockerignore`. They are bind-mounted from the VPS host at runtime.
+
+Create the target directories on the VPS:
+
+```bash
+# On the VPS as deploy:
+sudo mkdir -p /opt/thehideaway/assets/{plate,rp_plaque,three}
+sudo chown -R deploy:deploy /opt/thehideaway
+```
+
+Sync from your local machine (run once; the host dirs persist across all future deploys):
+
+```bash
+rsync -av --progress ./public/assets/plate/     deploy@<server-ip>:/opt/thehideaway/assets/plate/
+rsync -av --progress ./public/assets/rp_plaque/ deploy@<server-ip>:/opt/thehideaway/assets/rp_plaque/
+rsync -av --progress ./public/assets/three/     deploy@<server-ip>:/opt/thehideaway/assets/three/
+```
+
+This is a one-time operation. These files are not touched by subsequent deploys.
+
+If `ASSETS_HOST_PATH` is customised in `.env.production`, create the dirs under that path
+instead of `/opt/thehideaway/assets`.
+
+### Step 6: First deploy
+
+```bash
+# On the VPS as deploy:
+cd ~/thehideaway
+IMAGE_TAG=<sha> ./prod.sh
+```
+
+`prod.sh` will:
+1. Verify or create the `hideaway` network
+2. Pull the image (or use the locally-loaded one if no registry)
+3. Run `docker compose up -d --wait` — starts postgres, waits for its healthcheck, then starts payload and nginx
+
+Verify the deploy:
+
+```bash
+curl -s https://hideawayseoul.com/api/health
+# Expected: {"ok":true}
+```
+
+---
+
+## Part 3 — Every subsequent deploy
+
+### Local machine
+
+```bash
+# 1. Build new images
+./build.sh
+SHA=$(git rev-parse --short HEAD)
+
+# 2a. If using a registry:
+REGISTRY=ghcr.io/xnxchoi/hideaway ./build.sh
+# (build.sh pushes automatically when REGISTRY contains a /)
+
+# 2b. If transferring directly:
+docker save hideaway:${SHA} hideaway-migrate:${SHA} | gzip \
+  | rsync -e ssh --progress - deploy@<server-ip>:/tmp/hideaway-${SHA}.tar.gz
+```
+
+### VPS
+
+```bash
+ssh deploy@<server-ip>
+cd ~/thehideaway
+git pull origin main         # pull updated compose.prod.yaml and scripts
+
+# If using direct transfer (Option B):
+docker load < /tmp/hideaway-${SHA}.tar.gz
+rm /tmp/hideaway-${SHA}.tar.gz
+
+# Deploy:
+IMAGE_TAG=<sha> ./prod.sh
+```
+
+The running containers are replaced with zero-downtime (`--wait` keeps the old container
+alive until the new one passes its healthcheck).
+
+---
+
+## Part 4 — Database migrations
+
+**Migrations are never run automatically.** The migrate service only activates when you
+pass `--profile migrate` (or call `./prod.sh --migrate`). This is intentional: an
+accidental migration on a bad deploy could corrupt data.
+
+**Always take a backup before running migrations:**
+
+```bash
+# On the VPS as deploy:
+cd ~/thehideaway
+./scripts/backup.sh
+```
+
+Then run migrations:
+
+```bash
+./prod.sh --migrate
+# Equivalent to:
+# docker compose -f compose.prod.yaml exec -T postgres \
+#   pg_dump -U postgres -Fc theestate > backup-<timestamp>.dump
+# docker compose -f compose.prod.yaml --profile migrate run --rm migrate
+```
+
+To deploy a new image and run migrations in one step:
+
+```bash
+IMAGE_TAG=<sha> ./prod.sh --full
+```
+
+`--full` = deploy + backup + migrate in sequence.
+
+**PostgreSQL major version upgrades** (e.g. 18 → 19) cannot be done by swapping the image
+tag — the on-disk data format changes. Use `scripts/pg-upgrade.sh`, which performs a
+controlled dump/restore upgrade with a maintenance window.
+
+---
+
+## Part 5 — Scheduled maintenance (cron jobs)
+
+Run `scripts/cron-setup.sh` once as the `deploy` user to install all maintenance crons:
+
+```bash
+# On the VPS as deploy:
+cd ~/thehideaway
+bash scripts/cron-setup.sh
+```
+
+What gets scheduled (as the `deploy` user):
+
+| UTC | KST | Script | Purpose |
+|---|---|---|---|
+| 17:00 | 02:00 | `scripts/backup.sh` | pg_dump with 7-day retention |
+| 23:00 | 08:00 | `scripts/disk-check.sh` | Disk usage report, warns at 80%, critical at 90% |
+
+TLS cert renewal (`certbot renew`) is installed as **root** by `scripts/server-setup.sh`
+at 03:00 UTC. It is not duplicated here.
+
+Backup files are written to `/home/deploy/backups/` as `theestate-<timestamp>.dump`
+(pg_dump custom format). Default retention: 7 days. Override with `KEEP=14 ./scripts/backup.sh`.
+
+---
+
+## Part 6 — Operational reference
+
+### Viewing logs
+
+```bash
+# All services:
+docker compose -f compose.prod.yaml logs -f
+
+# Single service:
+docker compose -f compose.prod.yaml logs -f payload
+docker compose -f compose.prod.yaml logs -f nginx
+docker compose -f compose.prod.yaml logs -f postgres
+```
+
+Nginx access/error logs are also available at `~/thehideaway/nginx/logs/` on the host
+(bind-mounted from the container).
+
+### Restarting a service
+
+```bash
+docker compose -f compose.prod.yaml restart payload
+```
+
+### Restoring a database backup
+
+```bash
+# backup.sh produces pg_dump custom format (-Fc).
+# Restore with pg_restore (not psql):
+
+BACKUP_FILE=/home/deploy/backups/theestate-20260421-020000.dump
+
+docker compose -f /home/deploy/thehideaway/compose.prod.yaml exec -T postgres \
+  pg_restore -U postgres -d theestate < "${BACKUP_FILE}"
+```
+
+For a full restore to a fresh database, add `--clean --if-exists`:
+
+```bash
+docker compose -f /home/deploy/thehideaway/compose.prod.yaml exec -T postgres \
+  pg_restore -U postgres --clean --if-exists -d theestate < "${BACKUP_FILE}"
+```
+
+### Updating nginx config
+
+Edit `nginx/sites-enabled/production.conf` in the repo, pull on the VPS, then reload
+nginx without downtime:
+
+```bash
 git pull origin main
-# Then use Dockge web interface to restart containers
+docker compose -f compose.prod.yaml exec nginx nginx -s reload
 ```
 
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Environment variables not loading**:
-   - Ensure `.env.production` exists and has correct format
-   - Check file permissions: `chmod 600 .env.production`
-
-2. **Database connection issues**:
-   - Verify `DATABASE_URI` uses `postgres` as hostname (not `localhost`)
-   - Check if postgres container is healthy: `docker compose ps`
-
-3. **Nginx not starting**:
-   - Check nginx configuration: `docker compose exec nginx nginx -t`
-   - Verify SSL certificates exist in the correct paths
-
-4. **Build failures**:
-   - Clear Docker cache: `docker system prune -a`
-   - Check build logs: `docker compose logs payload`
-
-### Useful Commands
+Validate the config before reloading:
 
 ```bash
-# View logs
-docker compose -f compose.prod.yaml logs -f [service_name]
-
-# Restart services
-docker compose -f compose.prod.yaml restart
-
-# Update application
-git pull
-docker compose -f compose.prod.yaml up -d --build
-
-# Database backup
-docker compose exec postgres pg_dump -U postgres theestate > backup.sql
-
-# Database restore
-docker compose exec -T postgres psql -U postgres theestate < backup.sql
+docker compose -f compose.prod.yaml exec nginx nginx -t
 ```
 
-## 📊 Monitoring
+### Pruning old Docker images
 
-Consider setting up monitoring with:
-- **Uptime monitoring**: UptimeRobot, Pingdom
-- **Log aggregation**: ELK stack, Grafana Loki
-- **Metrics**: Prometheus + Grafana
-- **Error tracking**: Sentry
-
-## 💾 Comprehensive Backup Strategy
-
-### Automated Database Backups
+After a few deploys, unused images accumulate. Prune images older than 7 days:
 
 ```bash
-# Create backup directory
-sudo mkdir -p /opt/backups/database
-sudo chown deploy:deploy /opt/backups
-
-# Create database backup script
-tee /opt/backups/backup-database.sh << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/opt/backups/database"
-DATE=$(date +%Y%m%d_%H%M%S)
-CONTAINER_NAME="postgres"
-
-# Create backup
-docker exec $CONTAINER_NAME pg_dump -U postgres theestate | gzip > "$BACKUP_DIR/theestate_$DATE.sql.gz"
-
-# Keep only last 7 days of backups
-find $BACKUP_DIR -name "*.sql.gz" -mtime +7 -delete
-
-echo "Database backup completed: theestate_$DATE.sql.gz"
-EOF
-
-chmod +x /opt/backups/backup-database.sh
-
-# Schedule daily backups at 1 AM
-(crontab -l 2>/dev/null; echo "0 1 * * * /opt/backups/backup-database.sh >> /var/log/backup.log 2>&1") | crontab -
+docker image prune -a --filter "until=168h"
 ```
 
-### File System Backups
+Run `scripts/disk-check.sh` first to see how much space is reclaimable.
+
+### Checking health
 
 ```bash
-# Create file backup script
-tee /opt/backups/backup-files.sh << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/opt/backups/files"
-DATE=$(date +%Y%m%d_%H%M%S)
-SOURCE_DIR="/opt/thehideaway"
-
-mkdir -p $BACKUP_DIR
-
-# Backup application files (excluding node_modules, .git, .next)
-tar -czf "$BACKUP_DIR/app_$DATE.tar.gz" \
-  --exclude="node_modules" \
-  --exclude=".git" \
-  --exclude=".next" \
-  --exclude="*.log" \
-  -C /opt thehideaway
-
-# Backup uploaded media files
-docker run --rm -v theestate_pgdata:/data -v $BACKUP_DIR:/backup alpine \
-  tar -czf /backup/media_$DATE.tar.gz -C /data .
-
-# Keep only last 3 days of file backups (they're larger)
-find $BACKUP_DIR -name "*.tar.gz" -mtime +3 -delete
-
-echo "File backup completed: app_$DATE.tar.gz, media_$DATE.tar.gz"
-EOF
-
-chmod +x /opt/backups/backup-files.sh
-
-# Schedule weekly file backups (Sundays at 1:30 AM)
-(crontab -l 2>/dev/null; echo "30 1 * * 0 /opt/backups/backup-files.sh >> /var/log/backup.log 2>&1") | crontab -
+curl -s https://hideawayseoul.com/api/health
+# {"ok":true}
 ```
 
-### Backup Restoration
+The health endpoint pings the database. A 200 response means the app container is running
+and has an active DB connection.
+
+---
+
+## Part 7 — Troubleshooting
+
+### Container won't start
 
 ```bash
-# Database restore example
-gunzip -c /opt/backups/database/theestate_20240101_010000.sql.gz | \
-docker exec -i postgres psql -U postgres -d theestate
-
-# Application files restore
-tar -xzf /opt/backups/files/app_20240101_010000.tar.gz -C /opt
+docker compose -f compose.prod.yaml logs payload
 ```
 
-## 🚀 CDN Setup (Minimal Cost)
+Common causes:
+- Missing or malformed `.env.production` — check that all required vars are present
+- Postgres healthcheck not yet passing — `payload` depends on postgres being healthy;
+  watch `docker compose -f compose.prod.yaml logs postgres`
+- Wrong IMAGE_TAG — verify the tag exists with `docker images hideaway`
+- 3D asset bind mount path missing — verify `/opt/thehideaway/assets/{plate,rp_plaque,three}` exist
 
-### Option 1: Cloudflare (Free Tier)
+### DB connection refused
 
 ```bash
-# 1. Sign up at cloudflare.com
-# 2. Add your domain
-# 3. Update nameservers at your domain registrar
-# 4. Configure DNS records:
-#    A record: @ -> your-server-ip
-#    A record: www -> your-server-ip
-# 5. Enable "Proxied" status for both records
+docker compose -f compose.prod.yaml ps
+docker compose -f compose.prod.yaml logs postgres
 ```
 
-**Benefits:**
-- Free SSL certificates
-- Global CDN
-- DDoS protection
-- Caching for static assets
-- Analytics
+`DATABASE_URI` in the container is assembled from `POSTGRES_PASSWORD`, `POSTGRES_USER`,
+and `POSTGRES_DB` in `.env.production`. Verify those are set and the password contains no
+special URL characters (`@`, `%`, `#`).
 
-### Option 2: BunnyCDN (Low Cost)
-
-**Cost**: ~$1/month for 500GB bandwidth
+### TLS cert expired
 
 ```bash
-# 1. Sign up at bunny.net
-# 2. Create a Pull Zone
-# 3. Set origin URL to your domain
-# 4. Configure CNAME record: cdn.yourdomain.com -> your-bunny-url
+# Force renewal:
+certbot renew --force-renewal \
+  --webroot -w /var/www/certbot \
+  -d hideawayseoul.com \
+  -d www.hideawayseoul.com
+
+# Reload nginx to pick up the new cert:
+docker compose -f /home/deploy/thehideaway/compose.prod.yaml exec nginx nginx -s reload
 ```
 
-## ⚡ Redis Cache Setup (Minimal)
+The renewal cron installed by `server-setup.sh` runs daily at 03:00 and reloads nginx
+automatically on success. A cert expiry means the cron either failed or the hook
+did not fire. Check `crontab -l` as root to confirm the entry is present.
 
-### Docker Redis Integration
-
-Add Redis to your `compose.prod.yaml`:
-
-```yaml
-  redis:
-    restart: always
-    container_name: redis
-    image: redis:7-alpine
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
-    networks:
-      - hideaway
-    ports:
-      - "127.0.0.1:6379:6379"  # Only localhost access
-
-volumes:
-  pgdata:
-  node_modules:
-  redis_data:  # Add this line
-```
-
-### Next.js Redis Configuration
-
-Update your `.env.production`:
+### Disk full
 
 ```bash
-# Add Redis configuration
-REDIS_URL=redis://redis:6379
-REDIS_PASSWORD=  # Leave empty for no auth in private network
+bash ~/thehideaway/scripts/disk-check.sh
 ```
 
-### Redis Usage Examples
-
-```javascript
-// lib/redis.js
-import { createClient } from 'redis';
-
-const client = createClient({
-  url: process.env.REDIS_URL,
-});
-
-client.on('error', (err) => console.log('Redis Client Error', err));
-
-export async function getRedisClient() {
-  if (!client.isOpen) {
-    await client.connect();
-  }
-  return client;
-}
-
-// Example: Cache API responses
-export async function getCachedData(key, fetchFunction, ttl = 3600) {
-  const redis = await getRedisClient();
-  
-  try {
-    const cached = await redis.get(key);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-    
-    const data = await fetchFunction();
-    await redis.setEx(key, ttl, JSON.stringify(data));
-    return data;
-  } catch (error) {
-    console.error('Redis error:', error);
-    return await fetchFunction(); // Fallback to direct fetch
-  }
-}
-```
-
-## 🔄 Updates & Maintenance
-
-### Git-Based Update Workflow
+First pass — prune Docker layers:
 
 ```bash
-# On your server (via SSH or Dockge terminal)
-cd /opt/thehideaway
-git pull origin main
-
-# Via Dockge web interface:
-# 1. Go to your stack
-# 2. Click "Down" to stop containers
-# 3. Click "Up" to rebuild and start
+docker image prune -a --filter "until=168h"
+docker builder prune -f
 ```
 
-### Automated Update Script
+Second pass — old backups:
 
 ```bash
-# Create update script
-tee /opt/thehideaway/update.sh << 'EOF'
-#!/bin/bash
-cd /opt/thehideaway
-
-echo "Pulling latest changes..."
-git pull origin main
-
-echo "Rebuilding containers..."
-docker compose -f compose.prod.yaml down
-docker compose -f compose.prod.yaml up -d --build
-
-echo "Cleaning up unused images..."
-docker image prune -f
-
-echo "Update completed!"
-EOF
-
-chmod +x /opt/thehideaway/update.sh
-
-# Run updates
-./update.sh
+ls -lh /home/deploy/backups/
+# Remove backups beyond your retention window manually if needed
 ```
 
-## 🆘 Support
+The 100 GB HDD on the ITEASY VPS is the tightest constraint. Named volumes for
+`pgdata` and upload media grow with content. Monitor regularly with `disk-check.sh`.
 
-If you encounter issues:
-1. Check the logs first: `docker compose -f compose.prod.yaml logs`
-2. Verify environment variables are set correctly
-3. Ensure all required ports are open
-4. Check Docker and system resources (disk space, memory)
-5. Use Dockge web interface for easier debugging
+### App returns 502
+
+nginx is up but the payload container is not responding. Check:
+
+```bash
+docker compose -f compose.prod.yaml ps
+docker compose -f compose.prod.yaml logs --tail=50 payload
+```
+
+If the container is in a restart loop, the most common cause is a failed DB connection
+on startup. Verify postgres is healthy:
+
+```bash
+docker compose -f compose.prod.yaml exec postgres \
+  pg_isready -U postgres -d theestate
+```
+
+If postgres is healthy and payload is still crashing, check for a missing required
+environment variable — Payload will throw and exit on startup if `PAYLOAD_SECRET`
+or `DATABASE_URI` is absent or malformed.

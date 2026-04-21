@@ -21,8 +21,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# curl is needed for the HEALTHCHECK below.
-RUN apk add --no-cache curl && \
+# curl: needed for the HEALTHCHECK below.
+# libc6-compat: glibc compatibility shims required by sharp and other native
+# addons. Each Docker stage starts fresh from the base image — the apk install
+# from a previous stage is NOT inherited here.
+RUN apk add --no-cache curl libc6-compat && \
     addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
