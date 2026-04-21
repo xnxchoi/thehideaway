@@ -73,7 +73,12 @@ function CommandDialog({
     }
   }, [subMenuOpen]);
   return (
-    <DialogRoot open={open} onOpenChange={onOpenChange} {...props}>
+    <DialogRoot
+      open={open}
+      onOpenChange={onOpenChange}
+      modal="trap-focus"
+      {...props}
+    >
       <DialogHeader className="sr-only">
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>

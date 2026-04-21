@@ -56,6 +56,12 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const setHeaderVisibility = useRPStore((store) => store.setHeaderVisibility);
   const _toutt = useRPStore(useShallow((store) => store.transitionOutType));
   const transitionOutType = useMotionValue(_toutt);
+  const scrollValue = useMotionValue(0);
+  useLenis((lenis) => {
+    if (lenis.isScrolling) {
+      scrollValue.set(lenis.scroll);
+    }
+  });
   useEffect(() => {
     transitionOutType.set(_toutt);
   }, [_toutt, transitionOutType]);
@@ -379,6 +385,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         default: {
           // animate-to-previous: lerp scrubPosition back toward current scroll value
           callback?.();
+
           const lerp = () => {
             scrubPosition.set(
               rp_lerp(

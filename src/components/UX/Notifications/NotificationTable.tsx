@@ -27,7 +27,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "../../core/Button";
-import { useHumanDate } from "../../../../.grave/Delta/component/useLocaleDate";
+import { useHumanDate } from "@/hooks/useLocaleDate";
 import type { DataTableRowAction } from "@/types/data-table";
 import { NAction } from "./Table/ActionBar";
 

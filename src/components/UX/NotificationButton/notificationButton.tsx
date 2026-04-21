@@ -3,7 +3,7 @@ import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link, MotionLink } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
-import { useHumanTime } from "../../../../.grave/Delta/component/useLocaleDate";
+import { useHumanTime } from "@/hooks/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";

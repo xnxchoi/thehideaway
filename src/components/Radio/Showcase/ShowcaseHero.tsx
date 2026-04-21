@@ -31,7 +31,7 @@ export function ShowcaseHero() {
     >
       {/* Background initial letter — decorative */}
       <div
-        className="text-foreground/[0.03] pointer-events-none absolute inset-0 flex items-center justify-center select-none"
+        className="pointer-events-none absolute inset-0 flex items-center justify-center text-foreground/[0.03] select-none"
         aria-hidden="true"
       >
         <span className="font-mono text-[30vw] leading-none font-light">
@@ -42,7 +42,7 @@ export function ShowcaseHero() {
       {/* Title block */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 xl:px-10">
         <m.div style={{ y: titleY, opacity: titleOpacity }}>
-          <p className="text-muted-foreground/50 mb-6 font-mono text-[10px] uppercase tracking-[0.2em] xl:text-xs">
+          <p className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
             The Hideaway Sessions
           </p>
           <h1 className="max-w-4xl text-3xl font-light tracking-tight sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl">
@@ -56,9 +56,9 @@ export function ShowcaseHero() {
           className="mt-8"
         >
           <p className="max-w-lg font-mono text-[11px] leading-relaxed text-muted-foreground/60 xl:text-xs">
-            {/* CONTENT SLOT: Subheadline / intro teaser */}
-            A collaboration between The Hideaway and YM.FM — an exploration
-            of sound, memory, and the spaces between.
+            {/* CONTENT SLOT: Subheadline / intro teaser */}A collaboration
+            between The Hideaway and YM.FM — an exploration of sound, memory,
+            and the spaces between.
           </p>
         </m.div>
       </div>
@@ -68,7 +68,7 @@ export function ShowcaseHero() {
         <m.div
           animate={{ y: [0, 6, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/40"
+          className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase"
         >
           Scroll
         </m.div>

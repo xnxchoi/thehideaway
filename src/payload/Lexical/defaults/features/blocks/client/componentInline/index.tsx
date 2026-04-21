@@ -165,7 +165,7 @@ export const InlineBlockComponent: React.FC<Props> = (props) => {
     componentMapRenderedBlockPath
   ]?.[0] as BlocksFieldClient;
 
-  const clientBlock: ClientBlock | undefined = blocksField.blockReferences
+  const clientBlock: ClientBlock | undefined = blocksField?.blockReferences
     ? typeof blocksField?.blockReferences?.[0] === "string"
       ? config.blocksMap[
           blocksField?.blockReferences?.[0] as keyof typeof config.blocksMap

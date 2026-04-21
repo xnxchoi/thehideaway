@@ -444,7 +444,10 @@ const RP_ImageNodeR = ({
                       />{" "}
                       {isEditable && (
                         <>
-                          <FrameToolbar hover={hovered} />
+                          <FrameToolbar
+                            isFocused={isSelected}
+                            hover={hovered}
+                          />
                           <ImageResizer
                             editor={editor}
                             imageRef={imageRef}

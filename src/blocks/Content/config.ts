@@ -10,6 +10,7 @@ import {
 } from "@payloadcms/richtext-lexical"
 import type {Block, Field} from "payload"
 import {uuidv7} from "uuidv7";
+import { AmbientAudioAnchorBlock } from "@/payload/Lexical/Features/AmbientAudio";
 
 const columnFields: Field[] = [{
 	name:"id",
@@ -56,7 +57,7 @@ const columnFields: Field[] = [{
 					HeadingFeature({enabledHeadingSizes: ['h2', 'h3', 'h4']}),
 					FixedToolbarFeature(),
 					InlineToolbarFeature(), BlocksFeature({
-						blocks: [ImageBlock]
+						blocks: [ImageBlock],inlineBlocks:[AmbientAudioAnchorBlock],
 					})
 				]
 			},

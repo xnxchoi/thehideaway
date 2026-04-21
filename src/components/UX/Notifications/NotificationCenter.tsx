@@ -33,7 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { FrontImage } from "@/components/core/Media/FrontImage";
-import { useHumanDate } from "../../../../.grave/Delta/component/useLocaleDate";
+import { useHumanDate } from "@/hooks/useLocaleDate";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";
 import { BookmarkIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";

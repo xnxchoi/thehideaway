@@ -188,13 +188,4 @@ body[data-browser="chrome"][data-device="mobile"] .review__card-bg_card {
   }
 }
 
-.review__card-bg_logo {
-  width: 1.8rem;
-  color: oklch(from var(--faded-bg) l c h/0.75);
-}
 
-@media (min-width: 967px) {
-  .review__card-bg_logo {
-    width: 2.4rem;
-  }
-}
