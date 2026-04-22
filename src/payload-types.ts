@@ -4540,6 +4540,7 @@ export interface WorkflowRefreshSearch {
  * via the `definition` "AmbientAudioAnchorBlock".
  */
 export interface AmbientAudioAnchorBlock {
+  id: string | null;
   groupId: string;
   kind: 'start' | 'end';
   source: {
@@ -4556,7 +4557,6 @@ export interface AmbientAudioAnchorBlock {
     fadeInMs?: number | null;
     fadeOutMs?: number | null;
   };
-  id?: string | null;
   blockName?: string | null;
   blockType: 'ambientAudioAnchor';
 }

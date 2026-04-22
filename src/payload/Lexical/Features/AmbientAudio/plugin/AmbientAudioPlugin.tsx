@@ -32,7 +32,6 @@ import {
   $insertAnchorAtSelection,
   $isAmbientEndAnchor,
   $isAmbientStartAnchor,
-  $listGroups,
   $removeGroup,
   createGroupId,
   getAnchorRegion,
@@ -41,15 +40,15 @@ import {
 } from "../utils/anchors";
 import { $resolveCandidateOverlaps } from "../utils/overlap";
 import { toast } from "sonner";
+import { AmbientContributorRegistrar } from "../contributors/ambient";
+import { AmbientRegionHighlight } from "./AmbientRegionHighlight";
 import { AnchorDragReorder } from "./AnchorDragReorder";
 import { CaretNavigator } from "./CaretNavigator";
 import { CommitChip } from "./CommitChip";
-import { AmbientContextMenu } from "./ContextMenu";
 import { ResetPrompt } from "./ResetPrompt";
 import { SelectionFollowOverlay } from "./SelectionFollowOverlay";
 import { SelectModeOverlay } from "./SelectModeOverlay";
 import { TrackPicker } from "./TrackPicker";
-import { Menu } from "@base-ui/react";
 
 const OPT_ARROW_COMMIT_DEBOUNCE_MS = 180;
 const RESET_WINDOW_MS = 1400;
@@ -142,7 +141,7 @@ function resolvePointToCaret(
   });
   return result;
 }
-export const AmbienceHandle = Menu.createHandle();
+
 export const AmbientAudioPlugin: PluginComponent = () => {
   const [editor] = useLexicalComposerContext();
   const storeApi = useAmbientStoreApi();
@@ -152,123 +151,136 @@ export const AmbientAudioPlugin: PluginComponent = () => {
   // --- Shared commit path -------------------------------------------------
   const commitFocused = useCallback(
     (explicitPoint?: SavedCaretPoint | null) => {
-    const s = storeApi.getState();
-    const focusedKey = s.focusedNodeKey;
-    if (!focusedKey) return;
+      const s = storeApi.getState();
+      const focusedKey = s.focusedNodeKey;
+      if (!focusedKey) return;
 
-    const ph = s.phase;
-    if (ph !== "placingStart" && ph !== "placingEnd") return;
+      const ph = s.phase;
+      if (ph !== "placingStart" && ph !== "placingEnd") return;
 
-    // Prefer an explicit point supplied by the caller (e.g., resolved from
-    // the click coordinates synchronously). `pendingCaretPoint` is populated
-    // by CaretNavigator via SELECTION_CHANGE_COMMAND, which is batched and
-    // therefore stale at click-handler time — relying on it caused the
-    // end anchor to land at the previously-committed position when the user
-    // clicked somewhere new.
-    const savedPoint = explicitPoint ?? s.pendingCaretPoint;
+      // Prefer an explicit point supplied by the caller (e.g., resolved from
+      // the click coordinates synchronously). `pendingCaretPoint` is populated
+      // by CaretNavigator via SELECTION_CHANGE_COMMAND, which is batched and
+      // therefore stale at click-handler time — relying on it caused the
+      // end anchor to land at the previously-committed position when the user
+      // clicked somewhere new.
+      const savedPoint = explicitPoint ?? s.pendingCaretPoint;
 
-    editor.update(() => {
-      const node = $getNodeByKey(focusedKey);
-      if (!node) return;
-      const block = $findBlockAncestor(node);
-      if (!block) return;
+      editor.update(
+        () => {
+          const node = $getNodeByKey(focusedKey);
+          if (!node) return;
+          const block = $findBlockAncestor(node);
+          if (!block) return;
 
-      const groupId = s.pendingGroupId ?? createGroupId();
-      const kind = ph === "placingStart" ? "start" : "end";
+          const groupId = s.pendingGroupId ?? createGroupId();
+          const kind = ph === "placingStart" ? "start" : "end";
 
-      // Prefer caret-precise insertion; fall back to block edges only when
-      // the CaretNavigator has not yet recorded a point (should be rare).
-      const insertedKey = savedPoint
-        ? $insertAnchorAtSelection(
-            kind,
-            groupId,
-            PLACEHOLDER_REGION,
-            savedPoint
-          )
-        : ph === "placingStart"
-          ? $insertAnchorAtBlockStart(
-              block,
-              "start",
-              groupId,
-              PLACEHOLDER_REGION
-            )
-          : $insertAnchorAtBlockEnd(block, "end", groupId, PLACEHOLDER_REGION);
+          // Prefer caret-precise insertion; fall back to block edges only when
+          // the CaretNavigator has not yet recorded a point (should be rare).
+          const insertedKey = savedPoint
+            ? $insertAnchorAtSelection(
+                kind,
+                groupId,
+                PLACEHOLDER_REGION,
+                savedPoint
+              )
+            : ph === "placingStart"
+              ? $insertAnchorAtBlockStart(
+                  block,
+                  "start",
+                  groupId,
+                  PLACEHOLDER_REGION
+                )
+              : $insertAnchorAtBlockEnd(
+                  block,
+                  "end",
+                  groupId,
+                  PLACEHOLDER_REGION
+                );
 
-      if (!insertedKey) return;
+          if (!insertedKey) return;
 
-      if (ph === "placingStart") {
-        storeApi.getState().setPendingStartKey(insertedKey);
-        storeApi.getState().setPendingGroupId(groupId);
-        storeApi.getState().setPhase("placingEnd");
-      } else {
-        // placingEnd: end is inserted; if it landed BEFORE the start in doc
-        // order, swap the two node types in-place so the earlier anchor is
-        // always "start". Calendar-picker style.
-        let startKey = storeApi.getState().pendingStartKey;
-        let endKey: string | null = insertedKey;
-        const startCandidate = startKey ? $getNodeByKey(startKey) : null;
-        const endCandidate = $getNodeByKey(insertedKey);
-        const startNode = $isAmbientStartAnchor(startCandidate)
-          ? startCandidate
-          : null;
-        const endNode = $isAmbientEndAnchor(endCandidate)
-          ? endCandidate
-          : null;
-        if (startNode && endNode && endNode.isBefore(startNode)) {
-          const region = getAnchorRegion(startNode);
-          const newStart = $createAmbientAnchor("start", groupId, region);
-          const newEnd = $createAmbientAnchor("end", groupId, region);
-          endNode.replace(newStart);
-          startNode.replace(newEnd);
-          startKey = newStart.getKey();
-          endKey = newEnd.getKey();
-        }
-        storeApi.getState().setPendingStartKey(startKey);
-        storeApi.getState().setPendingEndKey(endKey);
-        storeApi.getState().setPhase("pickingTrack");
-        const el = endKey ? editor.getElementByKey(endKey) : null;
-        storeApi.getState().openPicker({ anchorEl: el, groupId });
-      }
-    }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
-
-    // Overlap resolution — accept, trim, or remove neighboring groups so the
-    // candidate finds a home. If the candidate itself was removed (e.g., it
-    // was encased by a media-filled existing region), revert placement state.
-    editor.update(() => {
-      const st = storeApi.getState();
-      const candidateGroupId = st.pendingGroupId;
-      if (!candidateGroupId) return;
-      // Only meaningful once both anchors exist. The resolver needs a span.
-      if (!st.pendingEndKey) return;
-
-      const { candidateSurvived } = $resolveCandidateOverlaps(
-        editor,
-        candidateGroupId
+          if (ph === "placingStart") {
+            storeApi.getState().setPendingStartKey(insertedKey);
+            storeApi.getState().setPendingGroupId(groupId);
+            storeApi.getState().setPhase("placingEnd");
+          } else {
+            // placingEnd: end is inserted; if it landed BEFORE the start in doc
+            // order, swap the two node types in-place so the earlier anchor is
+            // always "start". Calendar-picker style.
+            let startKey = storeApi.getState().pendingStartKey;
+            let endKey: string | null = insertedKey;
+            const startCandidate = startKey ? $getNodeByKey(startKey) : null;
+            const endCandidate = $getNodeByKey(insertedKey);
+            const startNode = $isAmbientStartAnchor(startCandidate)
+              ? startCandidate
+              : null;
+            const endNode = $isAmbientEndAnchor(endCandidate)
+              ? endCandidate
+              : null;
+            if (startNode && endNode && endNode.isBefore(startNode)) {
+              const region = getAnchorRegion(startNode);
+              const newStart = $createAmbientAnchor("start", groupId, region);
+              const newEnd = $createAmbientAnchor("end", groupId, region);
+              endNode.replace(newStart);
+              startNode.replace(newEnd);
+              startKey = newStart.getKey();
+              endKey = newEnd.getKey();
+            }
+            storeApi.getState().setPendingStartKey(startKey);
+            storeApi.getState().setPendingEndKey(endKey);
+            storeApi.getState().setPhase("pickingTrack");
+            const el = endKey ? editor.getElementByKey(endKey) : null;
+            storeApi.getState().openPicker({ anchorEl: el, groupId });
+          }
+        },
+        { tag: SKIP_SCROLL_INTO_VIEW_TAG }
       );
 
-      if (!candidateSurvived) {
-        if (st.phase === "pickingTrack") {
-          st.setPendingEndKey(null);
-          st.setPendingStartKey(null);
-          st.setPendingGroupId(null);
-          st.setPhase("placingStart");
-          st.closePicker();
-        } else if (st.phase === "placingEnd") {
-          st.setPendingStartKey(null);
-          st.setPendingGroupId(null);
-          st.setPhase("placingStart");
-        }
-        return;
-      }
+      // Overlap resolution — accept, trim, or remove neighboring groups so the
+      // candidate finds a home. If the candidate itself was removed (e.g., it
+      // was encased by a media-filled existing region), revert placement state.
+      editor.update(
+        () => {
+          const st = storeApi.getState();
+          const candidateGroupId = st.pendingGroupId;
+          if (!candidateGroupId) return;
+          // Only meaningful once both anchors exist. The resolver needs a span.
+          if (!st.pendingEndKey) return;
 
-      // Resolution may have moved one or both candidate anchors (remove +
-      // reinsert). Refresh the pending keys from the live pair so downstream
-      // code references current nodes.
-      const pair = $findAnchorPair(candidateGroupId);
-      st.setPendingStartKey(pair.start ? pair.start.getKey() : null);
-      st.setPendingEndKey(pair.end ? pair.end.getKey() : null);
-    }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
-  }, [editor, storeApi]);
+          const { candidateSurvived } = $resolveCandidateOverlaps(
+            editor,
+            candidateGroupId
+          );
+
+          if (!candidateSurvived) {
+            if (st.phase === "pickingTrack") {
+              st.setPendingEndKey(null);
+              st.setPendingStartKey(null);
+              st.setPendingGroupId(null);
+              st.setPhase("placingStart");
+              st.closePicker();
+            } else if (st.phase === "placingEnd") {
+              st.setPendingStartKey(null);
+              st.setPendingGroupId(null);
+              st.setPhase("placingStart");
+            }
+            return;
+          }
+
+          // Resolution may have moved one or both candidate anchors (remove +
+          // reinsert). Refresh the pending keys from the live pair so downstream
+          // code references current nodes.
+          const pair = $findAnchorPair(candidateGroupId);
+          st.setPendingStartKey(pair.start ? pair.start.getKey() : null);
+          st.setPendingEndKey(pair.end ? pair.end.getKey() : null);
+        },
+        { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+      );
+    },
+    [editor, storeApi]
+  );
 
   // --- Finalize (never destructive) ---------------------------------------
   const finalize = useCallback(
@@ -283,16 +295,19 @@ export const AmbientAudioPlugin: PluginComponent = () => {
 
       const hasCommits = Boolean(s.pendingStartKey || s.pendingEndKey);
       if (hasCommits) {
-        editor.update(() => {
-          const result = $finalizePlacement({
-            editor,
-            pendingStartKey: s.pendingStartKey,
-            pendingEndKey: s.pendingEndKey,
-            pendingGroupId: s.pendingGroupId,
-            region: PLACEHOLDER_REGION
-          });
-          void result;
-        }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
+        editor.update(
+          () => {
+            const result = $finalizePlacement({
+              editor,
+              pendingStartKey: s.pendingStartKey,
+              pendingEndKey: s.pendingEndKey,
+              pendingGroupId: s.pendingGroupId,
+              region: PLACEHOLDER_REGION
+            });
+            void result;
+          },
+          { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+        );
       } else {
         // Empty exit. Attempt a viewport-center placeholder, but only if we
         // can find a block that doesn't overlap an existing ambient region.
@@ -300,28 +315,31 @@ export const AmbientAudioPlugin: PluginComponent = () => {
         // ghost region that encases an existing one.
         let placed = false;
         let noSlot = false;
-        editor.update(() => {
-          const block = $findPlaceableBlockForEmptyExit(editor);
-          if (!block) {
-            noSlot = true;
-            return;
-          }
-          const groupId = createGroupId();
-          const startKey = $insertAnchorAtBlockStart(
-            block,
-            "start",
-            groupId,
-            PLACEHOLDER_REGION
-          );
-          const latestBlock = block.getLatest();
-          const endKey = $insertAnchorAtBlockEnd(
-            latestBlock,
-            "end",
-            groupId,
-            PLACEHOLDER_REGION
-          );
-          if (startKey && endKey) placed = true;
-        }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
+        editor.update(
+          () => {
+            const block = $findPlaceableBlockForEmptyExit(editor);
+            if (!block) {
+              noSlot = true;
+              return;
+            }
+            const groupId = createGroupId();
+            const startKey = $insertAnchorAtBlockStart(
+              block,
+              "start",
+              groupId,
+              PLACEHOLDER_REGION
+            );
+            const latestBlock = block.getLatest();
+            const endKey = $insertAnchorAtBlockEnd(
+              latestBlock,
+              "end",
+              groupId,
+              PLACEHOLDER_REGION
+            );
+            if (startKey && endKey) placed = true;
+          },
+          { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+        );
         if (!placed && noSlot) {
           toast.warning("Ambient audio dropped — no room for a new region", {
             description: "Existing regions cover the available blocks."
@@ -385,10 +403,13 @@ export const AmbientAudioPlugin: PluginComponent = () => {
           }
           if (ph === "placingEnd" && st.pendingStartKey) {
             const startKey = st.pendingStartKey;
-            editor.update(() => {
-              const n = $getNodeByKey(startKey);
-              if (n) n.remove();
-            }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
+            editor.update(
+              () => {
+                const n = $getNodeByKey(startKey);
+                if (n) n.remove();
+              },
+              { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+            );
             st.setPendingStartKey(null);
             st.setPendingGroupId(null);
             st.setPhase("placingStart");
@@ -464,13 +485,6 @@ export const AmbientAudioPlugin: PluginComponent = () => {
     const rootEl = editor.getRootElement();
     if (!rootEl) return;
 
-    const findAnchorElFromEvent = (
-      target: EventTarget | null
-    ): HTMLElement | null => {
-      if (!(target instanceof HTMLElement)) return null;
-      return target.closest<HTMLElement>("[data-ambient-anchor]");
-    };
-
     const pointInRange = (_x: number, y: number): boolean => {
       const st = storeApi.getState();
       if (st.phase !== "settled") return false;
@@ -500,9 +514,12 @@ export const AmbientAudioPlugin: PluginComponent = () => {
           const dx = e.clientX - existing.x;
           const dy = e.clientY - existing.y;
           if (Math.hypot(dx, dy) <= RESET_WINDOW_RADIUS_PX) {
-            editor.update(() => {
-              if (st.pendingGroupId) $removeGroup(st.pendingGroupId);
-            }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
+            editor.update(
+              () => {
+                if (st.pendingGroupId) $removeGroup(st.pendingGroupId);
+              },
+              { tag: SKIP_SCROLL_INTO_VIEW_TAG }
+            );
             storeApi.getState().closeResetWindow();
             storeApi.getState().setPendingStartKey(null);
             storeApi.getState().setPendingEndKey(null);
@@ -572,63 +589,12 @@ export const AmbientAudioPlugin: PluginComponent = () => {
       st.setPendingPointerPoint(null);
     };
 
-    const onContextMenu = (ev: Event) => {
-      const me = ev as MouseEvent;
-      me.preventDefault();
-
-      const anchorEl = findAnchorElFromEvent(me.target);
-      if (anchorEl) {
-        const groupId = anchorEl.getAttribute("data-ambient-group");
-        const kind = anchorEl.getAttribute("data-ambient-anchor");
-        let nodeKey: string | null = null;
-        if (groupId) {
-          editor.getEditorState().read(() => {
-            const pair = $findAnchorPair(groupId);
-            const target = kind === "start" ? pair.start : pair.end;
-            if (target) nodeKey = target.getKey();
-          });
-        }
-        storeApi.getState().openContextMenu(me.clientX, me.clientY, {
-          groupId,
-          anchorEl,
-          nodeKey
-        });
-        return;
-      }
-
-      let hitGroupId: string | null = null;
-      let hitAnchorEl: HTMLElement | null = null;
-      editor.getEditorState().read(() => {
-        for (const pair of $listGroups()) {
-          if (!pair.start || !pair.end) continue;
-          const startEl = editor.getElementByKey(pair.start.getKey());
-          const endEl = editor.getElementByKey(pair.end.getKey());
-          if (!startEl || !endEl) continue;
-          const sr = startEl.getBoundingClientRect();
-          const er = endEl.getBoundingClientRect();
-          if (me.clientY >= sr.top && me.clientY <= er.bottom) {
-            hitGroupId = pair.groupId;
-            hitAnchorEl = startEl;
-            break;
-          }
-        }
-      });
-
-      storeApi.getState().openContextMenu(me.clientX, me.clientY, {
-        groupId: hitGroupId,
-        anchorEl: hitAnchorEl,
-        nodeKey: null
-      });
-    };
-
     rootEl.addEventListener("pointerdown", onPointerDown);
-    rootEl.addEventListener("contextmenu", onContextMenu);
     rootEl.addEventListener("click", onClick);
     rootEl.addEventListener("pointermove", onPointerMove);
     rootEl.addEventListener("pointerleave", onPointerLeave);
     return () => {
       rootEl.removeEventListener("pointerdown", onPointerDown);
-      rootEl.removeEventListener("contextmenu", onContextMenu);
       rootEl.removeEventListener("click", onClick);
       rootEl.removeEventListener("pointermove", onPointerMove);
       rootEl.removeEventListener("pointerleave", onPointerLeave);
@@ -672,39 +638,10 @@ export const AmbientAudioPlugin: PluginComponent = () => {
     return () => window.removeEventListener("pagehide", onPageHide);
   }, [storeApi, finalize]);
 
-  // --- Anchor-context-menu callbacks ------------------------------------
-  const onOpenPickerForGroup = useCallback(
-    (args: { anchorEl: HTMLElement | null; groupId: string }) => {
-      storeApi.getState().openPicker({
-        anchorEl: args.anchorEl,
-        groupId: args.groupId
-      });
-      storeApi.getState().setPhase("pickingTrack");
-    },
-    [storeApi]
-  );
-
-  const onAdjustRange = useCallback(
-    (groupId: string) => {
-      editor.update(() => {
-        const pair = $findAnchorPair(groupId);
-        if (pair.start) pair.start.remove();
-        if (pair.end) pair.end.remove();
-      }, { tag: SKIP_SCROLL_INTO_VIEW_TAG });
-      storeApi.getState().setPendingStartKey(null);
-      storeApi.getState().setPendingEndKey(null);
-      storeApi.getState().setPendingGroupId(groupId);
-      storeApi.getState().setPhase("placingStart");
-    },
-    [editor, storeApi]
-  );
-
   return (
     <>
-      <AmbientContextMenu
-        onOpenPickerForGroup={onOpenPickerForGroup}
-        onAdjustRange={onAdjustRange}
-      />
+      <AmbientContributorRegistrar />
+      <AmbientRegionHighlight />
       <SelectModeOverlay />
       <SelectionFollowOverlay />
       <CaretNavigator />

@@ -1,6 +1,6 @@
 .git
 node_modules/
-.grave/
+.attic/
 /src/lib/auth/auth-payload/
 !/src/payload/collections/Users/c/dd.js
 

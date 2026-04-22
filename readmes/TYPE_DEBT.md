@@ -131,7 +131,7 @@ It's either a WIP collection or abandoned. Errors are TS2307 (missing imports) a
 | 1  | `src/payload/collections/Delta/hooks/validateDelta.ts` |
 
 **Action:** Decide: is Delta shipping? If yes, wire it into `index.ts` + fix errors.
-If no, `pnpm grave src/payload/collections/Delta`.
+If no, `pnpm attic src/payload/collections/Delta`.
 
 ---
 
@@ -155,19 +155,19 @@ Should be a sub-30-minute fix.
 
 ---
 
-### 🟡 Cluster 7 — `ShadeMarquee` (19 errors) — **grave or fix**
+### 🟡 Cluster 7 — `ShadeMarquee` (19 errors) — **attic or fix**
 
 `src/components/layouts/Profile/ShadeMarquee.tsx` is imported nowhere (grep-confirmed).
 19 errors. Either an experimental component not yet wired, or dead.
 
-**Action:** Grep for it in the profile layout. If unused: `pnpm grave src/components/layouts/Profile/ShadeMarquee.tsx`.
+**Action:** Grep for it in the profile layout. If unused: `pnpm attic src/components/layouts/Profile/ShadeMarquee.tsx`.
 
 ---
 
 ### 🟡 Cluster 8 — `TranslatingText` (10 errors) — **check imports**
 
 `src/components/UX/TranslatingText/TranslatingText.tsx` — 10 errors. Verify it's imported.
-If used, fix; if not, grave.
+If used, fix; if not, attic.
 
 ---
 
@@ -243,10 +243,10 @@ Highest-value files to tackle from this tail (most likely quick wins):
 
 1. **Delete `copy.tsx` files** in `betterauth-ui` — ~15 errors, 0 risk. (5 min)
 2. **Run `pnpm generate:types`** then re-run `tsc` — seeder errors likely disappear. (5 min)
-3. **Grave `ShadeMarquee.tsx`** if grep confirms no imports. (2 min)
-4. **Grave `public/images/img*.ts`** or move to seeder dir. (5 min)
+3. **Attic `ShadeMarquee.tsx`** if grep confirms no imports. (2 min)
+4. **Attic `public/images/img*.ts`** or move to seeder dir. (5 min)
 5. **Fix `Icon/index.tsx`** — 15 errors, likely one-liner index type fix. (20 min)
-6. **Decide Delta** — wire or grave. (15 min either way)
+6. **Decide Delta** — wire or attic. (15 min either way)
 7. **Fix `utilities/lexicalUtilities.ts`** + `components/core/s.ts` — small files, likely quick. (30 min)
 8. **BulkUpload** — tackle when the feature is ready to ship. (2–4 hrs)
 9. **Lexical custom features** — tackle after upgrading `@payloadcms/richtext-lexical`. (2–3 hrs)
@@ -263,8 +263,8 @@ pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l
 # Errors in a specific subsystem
 pnpm tsc --noEmit --pretty false 2>&1 | grep "BulkUpload"
 
-# Move a file to .grave/ (auto mirrors path)
-pnpm grave src/components/layouts/Profile/ShadeMarquee.tsx
+# Move a file to .attic/ (auto mirrors path)
+pnpm attic src/components/layouts/Profile/ShadeMarquee.tsx
 
 # Regenerate payload types (fixes stale field errors)
 pnpm generate:types

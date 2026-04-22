@@ -1,4 +1,5 @@
 import type { Block } from "payload";
+import { idField } from "@/payload/fields/IDField";
 
 export const AMBIENT_AUDIO_ANCHOR_SLUG = "ambientAudioAnchor";
 
@@ -30,6 +31,7 @@ export const AmbientAudioAnchorBlock: Block = {
     }
   },
   fields: [
+    idField(),
     {
       name: "groupId",
       type: "text",
@@ -102,8 +104,7 @@ export const AmbientAudioAnchorBlock: Block = {
           name: "url",
           type: "text",
           admin: {
-            condition: (_data, siblingData) =>
-              siblingData?.provider === "url"
+            condition: (_data, siblingData) => siblingData?.provider === "url"
           }
         }
       ]

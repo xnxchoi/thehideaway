@@ -48,6 +48,12 @@ export interface AmbientPlayback {
   fadeOutMs?: number;
 }
 
+/**
+ * In-memory runtime region shape. The editor's `AnchorComponent` and the
+ * public frontend's `AmbientAudioProvider` both consume this. Bridged to
+ * and from the persisted `AmbientAudioAnchorBlock` fields via
+ * `encodeRegion` / `decodeRegion` in `utils/anchors.ts`.
+ */
 export interface AmbientRegionData {
   source: AmbientSource;
   playback?: AmbientPlayback;

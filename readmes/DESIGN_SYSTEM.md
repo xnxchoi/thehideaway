@@ -461,7 +461,7 @@ Documented so they are not accidentally "reconciled" in future cleanups.
 - **Borderless inputs** (bottom-border only) — never revert to filled/boxed inputs.
 - **Monochrome buttons** — actions signal via text weight, underline, border. Never fill color.
 - **62.5% root + rem everywhere** — preserves the "1.6rem = 16px" readable math.
-- **`.grave/` archive convention** — see `CLAUDE.md`.
+- **`.attic/` archive convention** — see `CLAUDE.md`.
 
 ---
 
@@ -478,7 +478,7 @@ Value-preserving mapping (at 62.5% root: `0.4rem = 4px`, `0.8rem = 8px`, `1.2rem
 - **Added** derived scale (`--radius-sm/md/lg/xl`) + `--radius-pill` to `payloadStyles.css` `:root` for admin/frontend parity (was previously missing).
 - **Migrated** callsites (`--rounded-small` → `--radius-sm`, `--rounded-normal` → `--radius-lg`, `--rounded-large` → `--radius-xl`) across `__controlbar.scss`, `__tabs.scss`, `__executor.scss`, `__signup.scss`, `hideaway.scss`.
 - **Replaced** `border-radius: 5rem` → `var(--radius-pill)` in `hideaway.scss` (`.rp_btn`, `.circ-bt`) and `__auth.scss`.
-- `.grave/` archive left untouched by design.
+- `.attic/` archive left untouched by design.
 
 ### T-02 — Restore `--text-lg` to `1.6rem` + migrate callsites ✅ DONE
 

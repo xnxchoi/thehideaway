@@ -8,6 +8,10 @@ import { DocumentControls } from "@/payload/elements/DocumentControls";
 import { DocumentFields } from "@/payload/elements/DocumentFields";
 import { CourierProvider } from "@/payload/elements/DocumentFields/RP_CourierProvider";
 import { Upload } from "@/payload/elements/Upload";
+import {
+  DevThrottledLeaveGuard,
+  IS_DEV_LEAVE_DEBOUNCE_ENABLED
+} from "@/payload/views/Edit/DevThrottledLeaveGuard";
 
 import {
   DocumentLocked,
@@ -364,7 +368,6 @@ export function DefaultEditView({
   }, [
     collectionSlug,
     documentIsLocked,
-    documentLockState,
     globalSlug,
     id,
     isLockingEnabled,
@@ -378,7 +381,7 @@ export function DefaultEditView({
     async (json, ctx) => {
       const { context, formState } = ctx || {};
       const abortController = abortOnSaveRef.current;
-      if (!abortController) return;
+
       const controller = handleAbortRef(
         abortOnSaveRef as RefObject<AbortController>
       );
@@ -731,10 +734,16 @@ export function DefaultEditView({
                   />
                 )}
                 {!isReadOnlyForIncomingUser && preventLeaveWithoutSaving && (
-                  <LeaveWithoutSaving
-                    onConfirm={handleLeaveConfirm}
-                    onPrevent={handlePrevent}
-                  />
+                  <>
+                    <LeaveWithoutSaving
+                      disablePreventLeave={IS_DEV_LEAVE_DEBOUNCE_ENABLED}
+                      onConfirm={handleLeaveConfirm}
+                      onPrevent={handlePrevent}
+                    />
+                    {IS_DEV_LEAVE_DEBOUNCE_ENABLED && (
+                      <DevThrottledLeaveGuard />
+                    )}
+                  </>
                 )}
                 {!isInDrawer && (
                   <SetDocumentStepNav

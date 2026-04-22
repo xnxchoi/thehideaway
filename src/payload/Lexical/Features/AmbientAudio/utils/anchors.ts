@@ -1,9 +1,4 @@
 import {
-  $createInlineBlockNode,
-  $isInlineBlockNode,
-  type InlineBlockNode
-} from "@payloadcms/richtext-lexical/client";
-import {
   $createRangeSelection,
   $getNodeByKey,
   $getRoot,
@@ -15,58 +10,41 @@ import {
 } from "@payloadcms/richtext-lexical/lexical";
 import { nanoid } from "nanoid";
 
+import {
+  $createInlineBlockNode,
+  $isInlineBlockNode,
+  type InlineBlockNode
+} from "@payloadcms/richtext-lexical/client";
+import type { InlineBlockFields } from "@payloadcms/richtext-lexical";
+import type { AmbientAudioAnchorBlock, Track } from "@/payload-types";
+
 import { AMBIENT_AUDIO_ANCHOR_SLUG } from "../blocks/AmbientAudioAnchorBlock";
 import type {
   AmbientPlayback,
   AmbientRegionData,
-  AmbientSource,
   AnchorKind
 } from "../nodes/types";
 
 /**
- * The block-schema view of an anchor's persisted source, stripped of the
- * display fields (title/artist/cover/etc.) that belong to the populated
- * Track relationship. The runtime in-memory `AmbientRegionData` is a
- * superset; encode/decode bridges the two.
- */
-type AnchorFieldSource =
-  | {
-      provider: "internal";
-      track?: string | null | { id: string | number };
-    }
-  | {
-      provider: "youtube";
-      videoId?: string | null;
-      startSeconds?: number | null;
-      endSeconds?: number | null;
-    }
-  | {
-      provider: "url";
-      url?: string | null;
-    };
-
-type AnchorFieldPlayback = {
-  volume?: number | null;
-  loop?: boolean | null;
-  fadeInMs?: number | null;
-  fadeOutMs?: number | null;
-};
-
-interface AnchorFields {
-  blockType: typeof AMBIENT_AUDIO_ANCHOR_SLUG;
-  id: string;
-  groupId: string;
-  kind: AnchorKind;
-  source?: AnchorFieldSource | null;
-  playback?: AnchorFieldPlayback | null;
-}
-
-/**
- * Anchors are Payload inline-blocks. The concrete runtime class is
- * `InlineBlockNode`; we narrow on `fields.blockType` to identify ambient
- * anchors and on `fields.kind` to distinguish start from end.
+ * An ambient-audio anchor is a stock Lexical `InlineBlockNode` whose
+ * `fields.blockType === "ambientAudioAnchor"`. We don't subclass — doing
+ * so is incompatible with Lexical's strict type/klass identity invariants
+ * when the on-disk serialized type needs to stay `"inlineBlock"` for
+ * Payload's populate/afterDelete pipeline. The "anchor-ness" is purely a
+ * runtime predicate on the inline block's fields.
  */
 export type AmbientAnchorNode = InlineBlockNode;
+export type AmbientAnchorFields = InlineBlockFields<AmbientAudioAnchorBlock>;
+
+/**
+ * Persisted-side shapes. `AmbientAnchorFields` (the generated Payload type
+ * wrapped in `InlineBlockFields`) is what lives on the Lexical node. The
+ * runtime `AmbientRegionData` is a superset carrying display fields pulled
+ * from the populated Track relationship — `encodeRegion` / `decodeRegion`
+ * bridge the two.
+ */
+type AnchorFieldSource = AmbientAnchorFields["source"];
+type AnchorFieldPlayback = NonNullable<AmbientAnchorFields["playback"]>;
 
 export interface AnchorPair {
   groupId: string;
@@ -89,8 +67,8 @@ export function createGroupId(): string {
   return `g_${nanoid(10)}`;
 }
 
-function getAnchorFields(node: AmbientAnchorNode): AnchorFields {
-  return node.getFields() as AnchorFields;
+function getAmbientAnchorFields(node: AmbientAnchorNode): AmbientAnchorFields {
+  return node.getFields() as AmbientAnchorFields;
 }
 
 export function $isAmbientAnchor(
@@ -98,32 +76,35 @@ export function $isAmbientAnchor(
 ): node is AmbientAnchorNode {
   if (!$isInlineBlockNode(node)) return false;
   return (
-    (node.getFields() as AnchorFields).blockType === AMBIENT_AUDIO_ANCHOR_SLUG
+    (node.getFields() as AmbientAnchorFields).blockType ===
+    AMBIENT_AUDIO_ANCHOR_SLUG
   );
 }
 
 export function $isAmbientStartAnchor(
   node: LexicalNode | null | undefined
 ): node is AmbientAnchorNode {
-  return $isAmbientAnchor(node) && getAnchorFields(node).kind === "start";
+  return (
+    $isAmbientAnchor(node) && getAmbientAnchorFields(node).kind === "start"
+  );
 }
 
 export function $isAmbientEndAnchor(
   node: LexicalNode | null | undefined
 ): node is AmbientAnchorNode {
-  return $isAmbientAnchor(node) && getAnchorFields(node).kind === "end";
+  return $isAmbientAnchor(node) && getAmbientAnchorFields(node).kind === "end";
 }
 
 export function getAnchorKind(node: AmbientAnchorNode): AnchorKind {
-  return getAnchorFields(node).kind;
+  return getAmbientAnchorFields(node).kind;
 }
 
 export function getAnchorGroupId(node: AmbientAnchorNode): string {
-  return getAnchorFields(node).groupId;
+  return getAmbientAnchorFields(node).groupId;
 }
 
 export function getAnchorRegion(node: AmbientAnchorNode): AmbientRegionData {
-  return decodeRegion(getAnchorFields(node));
+  return decodeRegion(getAmbientAnchorFields(node));
 }
 
 /**
@@ -135,7 +116,7 @@ export function $setAnchorRegion(
   node: AmbientAnchorNode,
   region: AmbientRegionData
 ): void {
-  const existing = getAnchorFields(node);
+  const existing = getAmbientAnchorFields(node);
   const encoded = encodeRegion(region);
   node.setFields(
     {
@@ -146,10 +127,9 @@ export function $setAnchorRegion(
     true
   );
 }
-
 /**
- * Create a new inline-block anchor node. `id` is auto-populated by
- * `$createInlineBlockNode` if omitted.
+ * Create a new ambient-anchor inline-block node. `id` is auto-populated
+ * by `$createInlineBlockNode` when omitted.
  */
 export function $createAmbientAnchor(
   kind: AnchorKind,
@@ -157,14 +137,13 @@ export function $createAmbientAnchor(
   region: AmbientRegionData
 ): AmbientAnchorNode {
   const encoded = encodeRegion(region);
-  const fields = {
+  return $createInlineBlockNode({
     blockType: AMBIENT_AUDIO_ANCHOR_SLUG,
     groupId,
     kind,
     source: encoded.source,
     playback: encoded.playback ?? {}
-  } as unknown as AnchorFields;
-  return $createInlineBlockNode(fields) as AmbientAnchorNode;
+  } as AmbientAnchorFields);
 }
 
 function encodeRegion(region: AmbientRegionData): {
@@ -202,7 +181,38 @@ function encodeRegion(region: AmbientRegionData): {
   return { source, playback };
 }
 
-function decodeRegion(fields: AnchorFields): AmbientRegionData {
+function resolveCoverUrl(track: Track): string | null {
+  const album = track.album;
+  if (!album || typeof album !== "object") return null;
+  const cover = album.cover;
+  if (!cover || typeof cover !== "object") return null;
+  return cover.url ?? cover.sizes?.thumb?.url ?? null;
+}
+
+function trackToInternalSource(trackId: string, track: Track) {
+  const staticUrl = track.filename
+    ? `/track_media/${encodeURIComponent(track.filename)}`
+    : (track.url ?? undefined);
+  return {
+    provider: "internal" as const,
+    trackId,
+    title: track.title ?? undefined,
+    artist: track.artist ?? undefined,
+    url: staticUrl,
+    duration: track.duration ?? undefined,
+    cover: resolveCoverUrl(track),
+    track
+  };
+}
+
+/**
+ * Bridge the persisted block fields to the runtime region shape consumed
+ * by the editor glyph and the frontend scroll-coupled runtime. For
+ * `provider: "internal"`, when Payload has populated the `track`
+ * relationship (depth >= 1) we extract title/artist/cover/url/duration
+ * directly from the Track doc — otherwise we fall back to just the id.
+ */
+export function decodeRegion(fields: AmbientAnchorFields): AmbientRegionData {
   const src = fields.source;
   const playback = decodePlayback(fields.playback);
   if (!src) {
@@ -229,11 +239,17 @@ function decodeRegion(fields: AnchorFields): AmbientRegionData {
     };
   }
   const track = src.track;
-  let trackId = "";
-  if (typeof track === "string") trackId = track;
-  else if (track && typeof track === "object") trackId = String(track.id);
+  if (track && typeof track === "object") {
+    return {
+      source: trackToInternalSource(String(track.id), track),
+      ...(playback ? { playback } : {})
+    };
+  }
   return {
-    source: { provider: "internal", trackId },
+    source: {
+      provider: "internal",
+      trackId: typeof track === "string" ? track : ""
+    },
     ...(playback ? { playback } : {})
   };
 }
@@ -680,11 +696,7 @@ export function $insertAnchorAtBlockStart(
   const node = $createAmbientAnchor(kind, groupId, region);
   const anyBlock = block as LexicalNode & {
     getChildren?: () => LexicalNode[];
-    splice?: (
-      start: number,
-      deleteCount: number,
-      nodes: LexicalNode[]
-    ) => void;
+    splice?: (start: number, deleteCount: number, nodes: LexicalNode[]) => void;
   };
   if (typeof anyBlock.getChildren === "function" && anyBlock.splice) {
     anyBlock.splice(0, 0, [node]);
@@ -742,7 +754,9 @@ export function $finalizePlacement(args: {
   const pendingGroupId = args.pendingGroupId ?? createGroupId();
   const region = args.region ?? PLACEHOLDER_REGION;
 
-  const startCandidate = pendingStartKey ? $getNodeByKey(pendingStartKey) : null;
+  const startCandidate = pendingStartKey
+    ? $getNodeByKey(pendingStartKey)
+    : null;
   const endCandidate = pendingEndKey ? $getNodeByKey(pendingEndKey) : null;
   const startNode = $isAmbientStartAnchor(startCandidate)
     ? startCandidate
@@ -817,4 +831,3 @@ export function $reorderAnchor(
   target.insertBefore(node);
   return true;
 }
-

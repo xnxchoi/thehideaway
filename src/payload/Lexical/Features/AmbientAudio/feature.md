@@ -10,7 +10,7 @@ on exit. HideawayFM is snapshotted on take-over and restored on release.
 > For the previous custom-`DecoratorNode` architecture see
 > [`feature.v1.md`](./feature.v1.md). The migration dropped `nodes/AmbientAudioStartNode.tsx`,
 > `nodes/AmbientAudioEndNode.tsx`, `server/populateRegion.ts`, and
-> `server/validateRegion.ts` (all in `.grave/`), along with the legacy
+> `server/validateRegion.ts` (all in `.attic/`), along with the legacy
 > serialized types and track-snapshot helpers in `nodes/types.ts`.
 
 ---
@@ -134,7 +134,7 @@ src/components/UX/AmbientAudio/
 │                                  take-over. Exposes useAmbientAudio().
 ├── AmbientAudioWidget.tsx         Compact pill button for the
 │                                  DynamicIsland.
-└── AmbientAudioRunner.tsx         ORPHANED; scheduled for grave.
+└── AmbientAudioRunner.tsx         ORPHANED; scheduled for attic.
 ```
 
 ### Wiring

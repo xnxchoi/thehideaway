@@ -53,6 +53,7 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { default as default_ec71de73a4eed72f2695daebfc9e27c0 } from '@/payload/fields/Article/Cover/index.tsx'
 import { RichTextField as RichTextField_0a6b2d6e7b4589879c706b11e5aed0bc } from '@/payload/fields/Article/Title/index.tsx'
 import { AmbientAudioClientFeature as AmbientAudioClientFeature_9e902729de6440e8a0a9362c61fce6eb } from '@/payload/Lexical/Features/AmbientAudio/feature.client'
+import { RPContextMenuClientFeature as RPContextMenuClientFeature_31e86c5a4419436282c70efd70b2c8dc } from '@/payload/Lexical/Features/RP_CtxMenu/feature.client'
 import { MentionClientFeature as MentionClientFeature_a5b2c8c4b4becca2042047655e95a539 } from '@/payload/Lexical/Features/Mentions/feature.client.ts'
 import { ContentHandOffClientFeature as ContentHandOffClientFeature_aa22751c66f745fa6b4a72c66eb2fd35 } from '@/payload/Lexical/Features/HandOff/feature.client'
 import { Code as Code_e24489dd60207f21ef564e6e397b0151 } from '@/blocks/Code/Component.client.tsx'
@@ -155,6 +156,7 @@ export const importMap = {
   "@/payload/fields/Article/Cover/index.tsx#default": default_ec71de73a4eed72f2695daebfc9e27c0,
   "@/payload/fields/Article/Title/index.tsx#RichTextField": RichTextField_0a6b2d6e7b4589879c706b11e5aed0bc,
   "@/payload/Lexical/Features/AmbientAudio/feature.client#AmbientAudioClientFeature": AmbientAudioClientFeature_9e902729de6440e8a0a9362c61fce6eb,
+  "@/payload/Lexical/Features/RP_CtxMenu/feature.client#RPContextMenuClientFeature": RPContextMenuClientFeature_31e86c5a4419436282c70efd70b2c8dc,
   "@/payload/Lexical/Features/Mentions/feature.client.ts#MentionClientFeature": MentionClientFeature_a5b2c8c4b4becca2042047655e95a539,
   "@/payload/Lexical/Features/HandOff/feature.client#ContentHandOffClientFeature": ContentHandOffClientFeature_aa22751c66f745fa6b4a72c66eb2fd35,
   "@/blocks/Code/Component.client.tsx#Code": Code_e24489dd60207f21ef564e6e397b0151,

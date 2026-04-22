@@ -56,6 +56,14 @@ export const enum_admin_invitations_role = pgEnum(
   "enum_admin_invitations_role",
   ["admin", "author", "editor", "user", "patron"]
 );
+export const enum_categories_identity_accent = pgEnum(
+  "enum_categories_identity_accent",
+  ["none", "red", "amber", "citrus", "moss", "cobalt", "violet", "blush", "ink"]
+);
+export const enum_categories_identity_layout = pgEnum(
+  "enum_categories_identity_layout",
+  ["left", "right"]
+);
 export const enum_notifications_type = pgEnum("enum_notifications_type", [
   "comment",
   "follow",
@@ -1241,6 +1249,12 @@ export const categories = pgTable(
     description: varchar("description"),
     slug: varchar("slug").notNull(),
     popularity: numeric("popularity", { mode: "number" }).notNull().default(0),
+    identity_accent: enum_categories_identity_accent("identity_accent")
+      .notNull()
+      .default("none"),
+    identity_layout: enum_categories_identity_layout("identity_layout")
+      .notNull()
+      .default("left"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -8766,6 +8780,8 @@ type DatabaseSchema = {
   enum__users_v_version_status: typeof enum__users_v_version_status;
   enum__users_v_published_locale: typeof enum__users_v_published_locale;
   enum_admin_invitations_role: typeof enum_admin_invitations_role;
+  enum_categories_identity_accent: typeof enum_categories_identity_accent;
+  enum_categories_identity_layout: typeof enum_categories_identity_layout;
   enum_notifications_type: typeof enum_notifications_type;
   enum_notifications_status: typeof enum_notifications_status;
   enum_notifications_action_link_type: typeof enum_notifications_action_link_type;

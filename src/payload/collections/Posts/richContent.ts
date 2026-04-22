@@ -21,6 +21,7 @@ import type {
   TextFieldSingleValidation
 } from "payload";
 import { MentionFeature } from "@/payload/Lexical/Features/Mentions";
+import { RPContextMenuFeature } from "@/payload/Lexical/Features/RP_CtxMenu";
 import {
   AmbientAudioAnchorBlock,
   AmbientAudioFeature
@@ -103,6 +104,7 @@ export const RichContent = (): RichTextField => {
           }),
           ContentHandOffFeature(),
           MentionFeature(),
+          RPContextMenuFeature(),
           AmbientAudioFeature()
         ];
       }

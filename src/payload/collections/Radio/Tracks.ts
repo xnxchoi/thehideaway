@@ -1,4 +1,4 @@
-import {cleanupBookmarksAfterDelete} from "@/payload/hooks/cleanupBookmarksAfterDelete";
+import { cleanupBookmarksAfterDelete } from "@/payload/hooks/cleanupBookmarksAfterDelete";
 import { scrubAmbientRefsOnTrackDelete } from "@/payload/Lexical/Features/AmbientAudio/server/scrubOnTrackDelete";
 import { StreamHandler } from "@/payload/collections/Radio/endpoints/stream";
 import { authorFields } from "@/payload/fields/AuthorField/AuthorField";

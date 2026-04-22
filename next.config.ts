@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
           "**/node_modules/**",
           "**/.git/**",
           "**/.next/**",
-          "**/.grave/**",
+          "**/.attic/**",
           "**/reference/**",
           "**/src/app/(payload)/vault/importMap.js",
           "**/src/types/payload-types.ts"

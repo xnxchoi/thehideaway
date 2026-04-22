@@ -253,20 +253,20 @@ Cross-session continuity documents for complex subsystems live in `readmes/`:
 
 Two special directories sit outside `src/` and are excluded from the production build.
 
-### `.grave/` — Archived dead code
+### `.attic/` — Archived dormant code
 
-Files that are removed from the active codebase but kept for recovery. **Never `rm` a file — always use `pnpm grave`.**
+Files that are removed from the active codebase but kept for recovery. **Never `rm` a file — always use `pnpm attic`.**
 
 ```bash
-pnpm grave src/components/OldWidget.tsx          # single file
-pnpm grave src/payload/collections/Delta         # whole directory
+pnpm attic src/components/OldWidget.tsx          # single file
+pnpm attic src/payload/collections/Delta         # whole directory
 ```
 
-- Path structure is mirrored: `src/foo/bar.tsx` → `.grave/src/foo/bar.tsx`
-- `.grave/` is **tracked by git** so the archive survives across clones
+- Path structure is mirrored: `src/foo/bar.tsx` → `.attic/src/foo/bar.tsx`
+- `.attic/` is **tracked by git** so the archive survives across clones
 - Excluded from Docker image via `.dockerignore`
-- Excluded from `tsconfig.json` via `"exclude": [".grave/**"]`
-- Type errors inside `.grave/` do not affect CI
+- Excluded from `tsconfig.json` via `"exclude": [".attic/**"]`
+- Type errors inside `.attic/` do not affect CI
 
 ### `reference/` — Study/benchmark code
 

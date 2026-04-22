@@ -1,6 +1,5 @@
 import {
   $applyNodeReplacement,
-  DecoratorNode,
   type DOMConversionMap,
   type DOMConversionOutput,
   type DOMExportOutput,
@@ -12,14 +11,24 @@ import {
 import type { JSX } from "react";
 
 import { AnchorComponent } from "../components/AnchorComponent";
+import { type AmbientRegionData } from "./types";
+import { InlineBlockNode } from "@/payload/Lexical/defaults/features/blocks/client/nodes/InlineBlocksNode";
+import { AmbientAudioAnchorBlock, Track } from "@payload-types";
+import { StronglyTypedLeafNode } from "@payloadcms/richtext-lexical";
+import { SerializedDecoratorBlockNode } from "@payloadcms/richtext-lexical/lexical/react/LexicalDecoratorBlockNode";
+import { AnchorComponent } from "@/payload/Lexical/Features/AmbientAudio/components/AnchorComponent";
 import {
-  AMBIENT_START_TYPE,
-  type AmbientRegionData,
-  isAmbientRegionData,
-  type SerializedAmbientAudioStartNode,
-  stripPopulatedRegion
-} from "./types";
+  $createAmbientAudioStartNode,
+  AMBIENT_AUDIO_NODE_TYPE,
+  AmbientAnchorData,
+  AmbientPlaybackOptions
+} from "@/payload/Lexical/Features/AmbientAudio/nodes/server/AmbientAudioEndNode";
 
+export type SerializedAmbientAnchorNode = StronglyTypedLeafNode<
+  SerializedDecoratorBlockNode,
+  typeof AMBIENT_AUDIO_NODE_TYPE
+> &
+  AmbientAnchorData;
 function parseRegionFromDOM(raw: string): AmbientRegionData | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
@@ -40,32 +49,33 @@ function $convertStartElement(
   if (!groupId || !rawRegion) return null;
   const region = parseRegionFromDOM(rawRegion);
   if (!region) return null;
-  return { node: $createAmbientAudioStartNode({ groupId, region }) };
+  return { node: $createAmbientAudioAnchorNode({ groupId, region }) };
 }
 
-export class AmbientAudioStartNode extends DecoratorNode<JSX.Element> {
-  __groupId: string;
-  __region: AmbientRegionData;
+export class AmbientAnchorNode extends InlineBlockNode {
+  __playback: AmbientPlaybackOptions = {
+    startSeconds: 0,
+    endSeconds: 0,
+    volume: 1,
+    loop: true,
+    fadeInMs: 1400,
+    fadeOutMs: 1600
+  };
 
-  constructor(groupId: string, region: AmbientRegionData, key?: NodeKey) {
-    super(key);
+  constructor(data: AmbientAnchorData, key?: NodeKey) {
+    super();
     this.__groupId = groupId;
     this.__region = region;
   }
 
-  static override getType(): string {
-    return AMBIENT_START_TYPE;
-  }
-
-  static override clone(node: AmbientAudioStartNode): AmbientAudioStartNode {
-    return new AmbientAudioStartNode(node.__groupId, node.__region, node.__key);
+  static override clone(node: AmbientAnchorNode): AmbientAnchorNode {
+    return new AmbientAnchorNode(node.__groupId, node.__region, node.__key);
   }
 
   static override importJSON(
-    serialized: SerializedAmbientAudioStartNode
+    serialized: SerializedAmbientAnchorNode
   ): AmbientAudioStartNode {
-    const maybeRegion = (serialized as SerializedAmbientAudioStartNode)
-      .__region;
+    const maybeRegion = (serialized as SerializedAmbientAnchorNode).__region;
     const region = maybeRegion;
     return $createAmbientAudioStartNode({
       groupId: serialized.__groupId,
@@ -73,9 +83,9 @@ export class AmbientAudioStartNode extends DecoratorNode<JSX.Element> {
     });
   }
 
-  override exportJSON(): SerializedAmbientAudioStartNode {
+  override exportJSON(): SerializedAmbientAnchorNode {
     return {
-      type: AMBIENT_START_TYPE,
+      type: AMBIENT_AUDIO_NODE_TYPE,
       version: 1,
       __groupId: this.__groupId,
       __region: stripPopulatedRegion(this.__region)
@@ -89,13 +99,7 @@ export class AmbientAudioStartNode extends DecoratorNode<JSX.Element> {
     return el;
   }
 
-  updateDOM(
-    _prevNode: unknown,
-    _dom: HTMLElement,
-    _config: EditorConfig
-  ): boolean {
-    return false;
-  }
+  updateDOM() {}
 
   override exportDOM(): DOMExportOutput {
     const element = document.createElement("span");
@@ -155,17 +159,16 @@ export class AmbientAudioStartNode extends DecoratorNode<JSX.Element> {
   }
 }
 
-export function $createAmbientAudioStartNode(props: {
-  groupId: string;
-  region: AmbientRegionData;
-}): AmbientAudioStartNode {
+export function $createAmbientAudioAnchorNode(
+  props: Omit<AmbientAudioAnchorBlock, "id">
+): AmbientAnchorNode {
   return $applyNodeReplacement(
-    new AmbientAudioStartNode(props.groupId, props.region)
+    new AmbientAnchorNode(props.groupId, props.region)
   );
 }
 
-export function $isAmbientAudioStartNode(
+export function $isAmbientAnchorNode(
   node: LexicalNode | null | undefined
-): node is AmbientAudioStartNode {
-  return node instanceof AmbientAudioStartNode;
+): node is AmbientAnchorNode {
+  return node instanceof AmbientAnchorNode;
 }

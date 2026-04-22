@@ -3,21 +3,19 @@ import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 import { CodeBlock } from "@/blocks/Code/Component";
 import { PostedImage } from "@/blocks/ImageBlock/Component";
 import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
-import {
-  AnchorMarkers,
-  type AnchorTrackRef
-} from "@/components/UX/AmbientAudio/AnchorMarkers";
+import { AnchorMarkers } from "@/components/UX/AmbientAudio/AnchorMarkers";
 import type {
+  AmbientAudioAnchorBlock,
   CallToActionBlock as CTABlockProps,
   CodeBlock as CodeBlockProps,
   Image as MediaBlockProps
 } from "@/payload-types";
 import type {
   DefaultNodeTypes,
-  SerializedBlockNode
+  SerializedBlockNode,
+  SerializedInlineBlockNode
 } from "@payloadcms/richtext-lexical";
-import type { JSX } from "react";
-import React, { Fragment } from "react";
+import React, { Fragment, JSX } from "react";
 
 import {
   IS_BOLD,
@@ -31,7 +29,8 @@ import {
 
 export type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>;
+  | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>
+  | SerializedInlineBlockNode<AmbientAudioAnchorBlock>;
 
 type Props = {
   nodes: NodeTypes[];
@@ -104,7 +103,6 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
               </sup>
             );
           }
-
           return text;
         }
 
@@ -132,7 +130,20 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
 
         const serializedChildren =
           "children" in node ? serializedChildrenFn(node) : "";
-
+        if (node.type === "inlineBlock") {
+          const blockType = node.fields.blockType;
+          if (blockType === "ambientAudioAnchor") {
+            return (
+              <Fragment key={index}>
+                <AnchorMarkers
+                  kind={node.fields.kind}
+                  groupId={node.fields.groupId}
+                  source={node.fields.source}
+                />
+              </Fragment>
+            );
+          }
+        }
         if (node.type === "block") {
           const block = node.fields;
 
@@ -175,39 +186,6 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
               return null;
           }
         } else {
-          const typedNode = node as unknown as {
-            type: string;
-            groupId?: string;
-            track?: AnchorTrackRef;
-          };
-          if (
-            typedNode.type === "ambientAudioStart" &&
-            typedNode.groupId &&
-            typedNode.track
-          ) {
-            return (
-              <AnchorMarkers
-                key={index}
-                kind="start"
-                groupId={typedNode.groupId}
-                track={typedNode.track}
-              />
-            );
-          }
-          if (
-            typedNode.type === "ambientAudioEnd" &&
-            typedNode.groupId &&
-            typedNode.track
-          ) {
-            return (
-              <AnchorMarkers
-                key={index}
-                kind="end"
-                groupId={typedNode.groupId}
-                track={typedNode.track}
-              />
-            );
-          }
           switch (node.type) {
             case "linebreak": {
               return <br className="col-start-2" key={index} />;

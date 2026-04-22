@@ -38,9 +38,9 @@ reference/
     └── GrainShader.tsx
 ```
 
-## vs. `.grave/`
+## vs. `.attic/`
 
-- `.grave/` = dead code from **this project** you're keeping as a fallback. Not
+- `.attic/` = dormant code from **this project** you're keeping as a fallback. Not
   imported, not studied, just archived.
 - `reference/` = foreign code brought into the repo **on purpose** as study
   material. Not imported, but actively being read and type-checked.

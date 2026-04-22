@@ -6,8 +6,7 @@ import {
   $isNodeSelection,
   COMMAND_PRIORITY_LOW,
   KEY_BACKSPACE_COMMAND,
-  KEY_DELETE_COMMAND,
-  type NodeKey
+  KEY_DELETE_COMMAND
 } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { useLexicalNodeSelection } from "@payloadcms/richtext-lexical/lexical/react/useLexicalNodeSelection";
@@ -15,9 +14,14 @@ import { mergeRegister } from "@payloadcms/richtext-lexical/lexical/utils";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef } from "react";
 
-import type { AmbientRegionData, AnchorKind } from "../nodes/types";
+import type { AmbientRegionData } from "../nodes/types";
 import { useAmbientStore, useAmbientStoreApi } from "../store/ambientStore";
-import { $removeGroupByKey, isPlaceholderRegion } from "../utils/anchors";
+import {
+  $removeGroupByKey,
+  type AmbientAnchorFields,
+  decodeRegion,
+  isPlaceholderRegion
+} from "../utils/anchors";
 import { getGroupColor, groupColorOklch } from "../utils/groupColors";
 
 const DRAG_HOLD_MS = 180;
@@ -48,26 +52,24 @@ function deriveAnchorLabel(
 }
 
 interface AnchorComponentProps {
-  kind: AnchorKind;
-  nodeKey: NodeKey;
-  groupId: string;
-  region: AmbientRegionData;
+  nodeKey: string;
+  fields: AmbientAnchorFields;
 }
 
 export function AnchorComponent({
-  kind,
   nodeKey,
-  groupId,
-  region
+  fields
 }: AnchorComponentProps): ReturnType<typeof m.span> {
+  const kind = fields.kind ?? "start";
+  const groupId = fields.groupId;
+  const region: AmbientRegionData = decodeRegion(fields);
   const [editor] = useLexicalComposerContext();
   const storeApi = useAmbientStoreApi();
   const ref = useRef<HTMLSpanElement>(null);
   const [isSelected] = useLexicalNodeSelection(nodeKey);
   const isPlaceholder = isPlaceholderRegion(region);
-  const isDragging = useAmbientStore(
-    (s) => s.dragState?.nodeKey === nodeKey
-  );
+  const isDragging = useAmbientStore((s) => s.dragState?.nodeKey === nodeKey);
+  const setHoveredGroupId = useAmbientStore((s) => s.setHoveredGroupId);
 
   // Backspace / Delete while selected → remove whole group.
   const onDelete = useCallback(
@@ -140,21 +142,7 @@ export function AnchorComponent({
 
     const onUp = (e: PointerEvent) => {
       if (activePointerId === null || e.pointerId !== activePointerId) return;
-
-      const dragActive = storeApi.getState().dragState;
-      const wasClick = !dragStarted && !dragActive;
       cleanup();
-
-      // AnchorDragReorder owns the lift when a drag is active.
-      if (dragActive) return;
-      if (!wasClick) return;
-      if (e.button !== 0) return;
-
-      storeApi.getState().openContextMenu(e.clientX, e.clientY, {
-        groupId,
-        anchorEl: el,
-        nodeKey
-      });
     };
 
     const onCancel = (e: PointerEvent) => {
@@ -193,24 +181,12 @@ export function AnchorComponent({
       window.addEventListener("pointercancel", onCancel, true);
     };
 
-    const onContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      storeApi.getState().openContextMenu(e.clientX, e.clientY, {
-        groupId,
-        anchorEl: el,
-        nodeKey
-      });
-    };
-
     el.addEventListener("pointerdown", onDown);
-    el.addEventListener("contextmenu", onContextMenu);
     return () => {
       el.removeEventListener("pointerdown", onDown);
-      el.removeEventListener("contextmenu", onContextMenu);
       cleanup();
     };
-  }, [groupId, nodeKey, storeApi]);
+  }, [nodeKey, storeApi]);
 
   const { label, sub } = deriveAnchorLabel(region, isPlaceholder);
   const groupColor = getGroupColor(groupId);
@@ -230,6 +206,8 @@ export function AnchorComponent({
       className={
         "ambient-anchor inline-flex items-center gap-1 border-b align-baseline font-mono text-xs tracking-wider select-none"
       }
+      onPointerEnter={() => setHoveredGroupId(groupId)}
+      onPointerLeave={() => setHoveredGroupId(null)}
       animate={{
         scale: isDragging ? 1.08 : 1,
         y: isDragging ? -1 : 0

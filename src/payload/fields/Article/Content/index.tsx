@@ -7,6 +7,7 @@ import {
   AMBIENT_AUDIO_ANCHOR_SLUG,
   AmbientAudioAnchorBlock
 } from "@/payload/Lexical/Features/AmbientAudio";
+import { RPContextMenuClientFeature } from "@/payload/Lexical/Features/RP_CtxMenu/feature.client";
 
 import {
   type BaseClientFeatureProps,
@@ -55,6 +56,13 @@ export const RichTextField = (props: LexicalRichTextFieldProps) => {
           order: 0
         },
         clientFeatureProvider: ContentHandOffClientFeature
+      },
+      rpContextMenuFeature: {
+        clientFeatureProps: {
+          featureKey: "rpContextMenuFeature",
+          order: 0
+        },
+        clientFeatureProvider: RPContextMenuClientFeature
       },
       ambientAudioFeature: {
         clientFeatureProps: {

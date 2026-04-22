@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "@base-ui/react";
+import { ContextMenu, Menu } from "@base-ui/react";
 import {
   $getNodeByKey,
   type LexicalEditor
@@ -179,25 +179,24 @@ export function AmbientContextMenu({
     !currentRegion.source.url;
 
   return (
-    <Menu.Root
+    <ContextMenu.Root
       handle={AmbienceHandle}
       open={open}
       onOpenChange={onOpenChange}
-      modal={false}
     >
-      <Menu.Portal>
-        <Menu.Positioner
+      <ContextMenu.Portal>
+        <ContextMenu.Positioner
           anchor={virtualAnchor}
           side="bottom"
           align="start"
           sideOffset={4}
           className="outline-none"
         >
-          <Menu.Popup
+          <ContextMenu.Popup
             data-ambient-portal="context-menu"
             onMouseDown={(e) => e.stopPropagation()}
             className={cn(
-              "max-w-[265px] min-w-[220px] origin-[var(--transform-origin)] rounded-md bg-[canvas] py-1.5 outline outline-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0"
+              "max-w-106 min-w-74 origin-[var(--transform-origin)] rounded-md bg-[canvas] py-1.5 outline outline-1 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0"
             )}
           >
             {insideRegion ? (
@@ -223,10 +222,10 @@ export function AmbientContextMenu({
                 Add ambient audio…
               </AmbientMenuItem>
             )}
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+          </ContextMenu.Popup>
+        </ContextMenu.Positioner>
+      </ContextMenu.Portal>
+    </ContextMenu.Root>
   );
 }
 
@@ -234,9 +233,9 @@ function AmbientMenuItem({
   className,
   tone,
   ...props
-}: ComponentProps<typeof Menu.Item> & { tone?: "danger" }) {
+}: ComponentProps<typeof ContextMenu.Item> & { tone?: "danger" }) {
   return (
-    <Menu.Item
+    <ContextMenu.Item
       className={className}
       render={({ className: rc, ...rp }) => (
         <div
@@ -257,10 +256,5 @@ function AmbientMenuItem({
 }
 
 function AmbientMenuDivider() {
-  return (
-    <div
-      aria-hidden
-      className="mx-1 my-1 h-px bg-border/30"
-    />
-  );
+  return <div aria-hidden className="mx-1 my-1 h-px bg-border/30" />;
 }

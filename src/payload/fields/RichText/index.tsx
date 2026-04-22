@@ -2,13 +2,11 @@ import { CallToActionBlock } from "@/blocks/CallToAction/Component";
 
 import { CodeBlock, Props as CodeBlockProps } from "@/blocks/Code/Component";
 import { PostedImage } from "@/blocks/ImageBlock/Component";
-import {
-  AnchorMarkers,
-  type AnchorTrackRef
-} from "@/components/UX/AmbientAudio/AnchorMarkers";
+import { AnchorMarkers } from "@/components/UX/AmbientAudio/AnchorMarkers";
 import { cn } from "@/lib/utils";
 
 import type {
+  AmbientAudioAnchorBlock,
   CallToActionBlock as CTABlockProps,
   Image as MediaBlockProps
 } from "@/payload-types";
@@ -17,6 +15,7 @@ import {
   DefaultNodeTypes,
   type DefaultTypedEditorState,
   SerializedBlockNode,
+  SerializedInlineBlockNode,
   SerializedLinkNode
 } from "@payloadcms/richtext-lexical";
 import {
@@ -39,7 +38,8 @@ import {
 
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>;
+  | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>
+  | SerializedInlineBlockNode<AmbientAudioAnchorBlock>;
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!;
@@ -54,20 +54,6 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
   defaultConverters
 }) => ({
   ...defaultConverters,
-  ambientAudioStart: ({ node }: { node: unknown }) => {
-    const n = node as { groupId?: string; track?: AnchorTrackRef };
-    if (!n.groupId || !n.track) return null;
-    // Placeholder regions (track.trackId === "") are editor-only; skip on
-    // the public frontend.
-    if (!n.track.trackId) return null;
-    return <AnchorMarkers kind="start" groupId={n.groupId} track={n.track} />;
-  },
-  ambientAudioEnd: ({ node }: { node: unknown }) => {
-    const n = node as { groupId?: string; track?: AnchorTrackRef };
-    if (!n.groupId || !n.track) return null;
-    if (!n.track.trackId) return null;
-    return <AnchorMarkers kind="end" groupId={n.groupId} track={n.track} />;
-  },
   autolink: ({ node, nodesToJSX }) => {
     const children = nodesToJSX({
       nodes: node.children
@@ -277,6 +263,13 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({
       ),
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
     cta: ({ node }) => <CallToActionBlock {...node.fields} />
+  },
+  inlineBlocks: {
+    ambientAudioAnchor: ({ node }) => {
+      const { groupId, kind, source } = node.fields;
+      if (!groupId || !kind) return null;
+      return <AnchorMarkers kind={kind} groupId={groupId} source={source} />;
+    }
   }
 });
 

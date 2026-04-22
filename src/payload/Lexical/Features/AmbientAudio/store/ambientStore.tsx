@@ -45,15 +45,6 @@ export interface DragState {
   denied: boolean;
 }
 
-export interface ContextMenuTarget {
-  /** Non-null when the menu is opened over an existing region. */
-  groupId: string | null;
-  /** Anchor DOM element whose click or right-click opened the menu. */
-  anchorEl: HTMLElement | null;
-  /** Lexical node key of the anchor, when reachable. */
-  nodeKey: string | null;
-}
-
 export interface AmbientStoreState {
   // ---- Legacy fields (keep for backward compatibility) --------------------
   mode: AmbientMode;
@@ -62,10 +53,6 @@ export interface AmbientStoreState {
   pickerOpen: boolean;
   pickerAnchorEl: HTMLElement | null;
   pickerGroupId: string | null;
-  contextMenuOpen: boolean;
-  contextMenuX: number;
-  contextMenuY: number;
-  contextMenuTarget: ContextMenuTarget | null;
 
   // ---- Select-mode state machine ------------------------------------------
   phase: AmbientPhase;
@@ -87,6 +74,18 @@ export interface AmbientStoreState {
   pendingEndKey: string | null;
   resetWindow: ResetWindow | null;
   dragState: DragState | null;
+  /**
+   * Which settled region the pointer is currently hovering over (via its
+   * anchor chip). Drives the pronounced tint on `AmbientRegionHighlight`.
+   */
+  hoveredGroupId: string | null;
+  /**
+   * Which settled region the context menu is currently targeting. Set by the
+   * ambient contributor when its `resolve()` returns a hit, cleared when the
+   * menu closes. Drives the pronounced tint so users see which region a
+   * ctx-menu command will act on.
+   */
+  activeCtxGroupId: string | null;
 
   // ---- Actions ------------------------------------------------------------
   enterSelectMode: () => void;
@@ -98,12 +97,6 @@ export interface AmbientStoreState {
     groupId?: string | null;
   }) => void;
   closePicker: () => void;
-  openContextMenu: (
-    x: number,
-    y: number,
-    target?: ContextMenuTarget | null
-  ) => void;
-  closeContextMenu: () => void;
 
   setPhase: (phase: AmbientPhase) => void;
   armCaretNav: () => void;
@@ -120,6 +113,8 @@ export interface AmbientStoreState {
     patch: Partial<Pick<DragState, "proposedSlotKey" | "denied">>
   ) => void;
   endDrag: () => void;
+  setHoveredGroupId: (gid: string | null) => void;
+  setActiveCtxGroupId: (gid: string | null) => void;
 
   reset: () => void;
 }
@@ -132,8 +127,6 @@ type StateShape = Omit<
   | "setPendingGroupId"
   | "openPicker"
   | "closePicker"
-  | "openContextMenu"
-  | "closeContextMenu"
   | "setPhase"
   | "armCaretNav"
   | "disarmCaretNav"
@@ -147,6 +140,8 @@ type StateShape = Omit<
   | "startDrag"
   | "updateDrag"
   | "endDrag"
+  | "setHoveredGroupId"
+  | "setActiveCtxGroupId"
   | "reset"
 >;
 
@@ -157,10 +152,6 @@ const INITIAL: StateShape = {
   pickerOpen: false,
   pickerAnchorEl: null,
   pickerGroupId: null,
-  contextMenuOpen: false,
-  contextMenuX: 0,
-  contextMenuY: 0,
-  contextMenuTarget: null,
   phase: "idle",
   caretNavArmed: false,
   focusedNodeKey: null,
@@ -169,7 +160,9 @@ const INITIAL: StateShape = {
   pendingStartKey: null,
   pendingEndKey: null,
   resetWindow: null,
-  dragState: null
+  dragState: null,
+  hoveredGroupId: null,
+  activeCtxGroupId: null
 };
 
 const createAmbientStore = () =>
@@ -188,9 +181,7 @@ const createAmbientStore = () =>
         pendingStartKey: null,
         pendingEndKey: null,
         resetWindow: null,
-        dragState: null,
-        contextMenuOpen: false,
-        contextMenuTarget: null
+        dragState: null
       })),
     exitSelectMode: () =>
       set((state) => ({
@@ -233,20 +224,6 @@ const createAmbientStore = () =>
         pickerAnchorEl: null,
         pickerGroupId: null
       })),
-    openContextMenu: (x, y, target = null) =>
-      set((state) => ({
-        ...state,
-        contextMenuOpen: true,
-        contextMenuX: x,
-        contextMenuY: y,
-        contextMenuTarget: target ?? null
-      })),
-    closeContextMenu: () =>
-      set((state) => ({
-        ...state,
-        contextMenuOpen: false,
-        contextMenuTarget: null
-      })),
 
     setPhase: (phase) => set((state) => ({ ...state, phase })),
     armCaretNav: () => set((state) => ({ ...state, caretNavArmed: true })),
@@ -269,8 +246,7 @@ const createAmbientStore = () =>
       set((state) => ({ ...state, pendingEndKey: key })),
     openResetWindow: (x, y, expiresAt) =>
       set((state) => ({ ...state, resetWindow: { x, y, expiresAt } })),
-    closeResetWindow: () =>
-      set((state) => ({ ...state, resetWindow: null })),
+    closeResetWindow: () => set((state) => ({ ...state, resetWindow: null })),
     startDrag: (dragState) => set((state) => ({ ...state, dragState })),
     updateDrag: (patch) =>
       set((state) =>
@@ -279,6 +255,10 @@ const createAmbientStore = () =>
           : state
       ),
     endDrag: () => set((state) => ({ ...state, dragState: null })),
+    setHoveredGroupId: (gid) =>
+      set((state) => ({ ...state, hoveredGroupId: gid })),
+    setActiveCtxGroupId: (gid) =>
+      set((state) => ({ ...state, activeCtxGroupId: gid })),
 
     reset: () => set(INITIAL as Partial<AmbientStoreState>)
   }));

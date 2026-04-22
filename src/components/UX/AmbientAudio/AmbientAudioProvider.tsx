@@ -270,8 +270,9 @@ export function AmbientAudioProvider({
   useEffect(() => {
     for (const g of groups) {
       if (g.howl || !g.track.url) continue;
+      const url = decodeURIComponent(g.track.url);
       g.howl = new Howl({
-        src: [g.track.url],
+        src: [url],
         // The /api/tracks/stream/:id URL has no extension so Howler can't
         // guess the codec. We enumerate the MIME types the Tracks collection
         // accepts; Howler will pick the first the browser supports.
@@ -282,12 +283,7 @@ export function AmbientAudioProvider({
         preload: true,
         onloaderror: (_id, err) => {
           // eslint-disable-next-line no-console
-          console.warn(
-            "[AmbientAudio] failed to load",
-            g.track.url,
-            err,
-            g.track
-          );
+          console.warn("[AmbientAudio] failed to load", url, err, g.track);
         },
         onplayerror: (_id, err) => {
           // eslint-disable-next-line no-console
