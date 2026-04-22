@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  $getNodeByKey,
-  $getRoot
-} from "@payloadcms/richtext-lexical/lexical";
+import { $getNodeByKey, $getRoot } from "@payloadcms/richtext-lexical/lexical";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { useSpring, useTransform } from "motion/react";
 import * as m from "motion/react-m";

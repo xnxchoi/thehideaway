@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionPill } from "@/components/core/Button";
 import { TapePlayer } from "@/components/UX/TapePlayer";
 import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
 import { cn } from "@/lib/utils";
@@ -179,12 +180,12 @@ export function StationHideawayHero({
         {/* ── Showcase mode trigger ────────────────────────────────────────── */}
         {onShowcaseActivate && (
           <div className="absolute right-6 bottom-8 z-[40]">
-            <button
+            <MotionPill
               onClick={onShowcaseActivate}
-              className="border-border/40 text-foreground/60 hover:border-border hover:text-foreground cursor-pointer border px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest transition-colors"
+              className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/60 uppercase transition-colors hover:border-border hover:text-foreground"
             >
               The Story
-            </button>
+            </MotionPill>
           </div>
         )}
       </div>

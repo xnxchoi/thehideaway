@@ -1,6 +1,7 @@
+"use client";
 import { cn } from "@/lib/utils";
-import { Suspense, useEffect, useState, type ComponentProps } from "react";
 import { View } from "@react-three/drei";
+import { type ComponentProps, Suspense, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { TapeModel } from "./TapeModel";
 
@@ -59,12 +60,14 @@ export function Tape3DScene({
   return (
     <div
       ref={ref}
-      className={cn("relative h-screen w-full", className)}
+      className={cn("relative h-screen w-full")}
       style={{ aspectRatio, ...style }}
     >
       <View
-        className="absolute inset-[auto_0%_.5%] h-screen w-full"
-        id={scrollTriggerId}
+        className={cn(
+          "absolute inset-[auto_0%_.5%] h-screen w-full",
+          className
+        )}
       >
         <Suspense fallback={null}>
           <TapeModel scrollTriggerId={scrollTriggerId} inView={inView} />

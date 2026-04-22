@@ -1,3 +1,4 @@
+import { Admin, User } from "@payload-types";
 import type { Metadata } from "next";
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import { getUserCompilations } from "@/payload/collections/Compilations/actions";
@@ -15,7 +16,7 @@ export default async function ListsPage() {
   return (
     <ListsPageClient
       userId={user.id}
-      role={(user as any).role ?? "user"}
+      role={(user as User | Admin).role ?? "user"}
       compilations={compilations}
     />
   );

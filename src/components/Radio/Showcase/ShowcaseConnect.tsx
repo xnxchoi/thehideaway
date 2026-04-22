@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/core/Button";
 import { useScroll, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 import { useRef } from "react";
@@ -21,15 +22,12 @@ export function ShowcaseConnect() {
 
   return (
     <section ref={sectionRef} className="relative py-32 xl:py-40">
-      <m.div
-        style={{ opacity, y }}
-        className="mx-auto max-w-7xl px-6 xl:px-10"
-      >
+      <m.div style={{ opacity, y }} className="mx-auto max-w-7xl px-6 xl:px-10">
         {/* Section divider */}
-        <div className="border-border/20 mb-16 h-px w-full border-t" />
+        <div className="mb-16 h-px w-full border-t border-border/20" />
 
         <div className="flex flex-col items-center text-center">
-          <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 xl:text-xs">
+          <p className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
             Connect
           </p>
 
@@ -48,7 +46,7 @@ export function ShowcaseConnect() {
             href="https://instagram.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-3 border-b border-border/30 pb-1 font-mono text-[11px] uppercase tracking-widest transition-colors hover:border-foreground/50"
+            className="group inline-flex items-center gap-3 border-b border-border/30 pb-1 font-mono text-[11px] tracking-widest uppercase transition-colors hover:border-foreground/50"
           >
             <span>Follow on Instagram</span>
             <svg
@@ -71,12 +69,12 @@ export function ShowcaseConnect() {
 
         {/* Return to Station */}
         <div className="mt-24 flex justify-center">
-          <button
+          <Button
             onClick={() => setMode("station")}
-            className="border-border/40 text-foreground/60 hover:border-border hover:text-foreground cursor-pointer border px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest transition-colors"
+            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/60 uppercase transition-colors hover:border-border hover:text-foreground"
           >
             Back to Station
-          </button>
+          </Button>
         </div>
       </m.div>
     </section>

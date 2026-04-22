@@ -81,5 +81,52 @@
         "specialCharacter": "Special characters are not allowed"
       }
     }
+  },
+  "ComingSoon": {
+    "eyebrow": "IN DEVELOPMENT",
+    "chips": {
+      "default": "FORTHCOMING",
+      "draft": "IN DRAFT",
+      "soon": "SOON-ISH",
+      "queued": "QUEUED",
+      "wetInk": "WET INK",
+      "backstage": "BACKSTAGE",
+      "nearly": "NEARLY",
+      "patience": "PATIENCE"
+    },
+    "dispatches": {
+      "default": "This one's in the editor's stack, under a coffee ring. We'll dig it out when we dig it out.",
+      "backstage": "Not ready for company. The furniture is still arriving.",
+      "composing": "Currently being written in a room you aren't in. We'll open the door in due course.",
+      "argued": "Being argued about by adults. Leave an address and we'll tell you who won.",
+      "honest": "We started this before we should have. Come back after we finish."
+    },
+    "tooltips": {
+      "composition": {
+        "line1": "Under composition.",
+        "line2": "Do not disturb."
+      },
+      "wetInk": {
+        "line1": "Wet ink.",
+        "line2": "Hands off."
+      },
+      "editor": {
+        "line1": "In the editor's stack.",
+        "line2": "Kindly wait."
+      }
+    },
+    "toasts": {
+      "notYet": "Not yet. — Ed.",
+      "nearly": "Nearly. Not nearly enough.",
+      "tryLater": "Try the door again next week.",
+      "locked": "The door is locked. On purpose."
+    },
+    "notify": {
+      "cta": "TELL ME WHEN",
+      "placeholder": "your address",
+      "ack": "Logged. We'll write."
+    },
+    "sectionCopy": "Commentary — forthcoming. The margins are still being ruled.",
+    "cardCopy": "Something here, eventually."
   }
 }

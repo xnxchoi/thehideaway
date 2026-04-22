@@ -133,32 +133,34 @@ export const SideVaul = (props: { children: ReactNode }) => {
     onOpenChange={onOpenChange}
   >
     <Drawer.Portal>
-      {open &&
-        (isMobile ? (
-          <div
-            onClick={() => {
-              setOpen(false);
-            }}
-            className="fixed inset-0 z-[39] bg-nav-background/50 backdrop-blur-sm"
-          />
-        ) : (
-          <div
-            onClick={() => {
-              setOpen(false);
-            }}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            className="fixed inset-0 z-[39] bg-nav-background/50 backdrop-blur-sm"
-          />
-        ))}
-      <MotionDrawerContent
-        style={{
-          width: widthMotion,
-          height: heightMotion
-        }}
-      >
-        {isMobile && <Drawer.Handle />}
-      </MotionDrawerContent>
+      <AnimatePresence mode="wait">
+        {open &&
+          (isMobile ? (
+            <div
+              onClick={() => {
+                setOpen(false);
+              }}
+              className="fixed inset-0 z-[39] bg-nav-background/50 backdrop-blur-sm"
+            />
+          ) : (
+            <div
+              onClick={() => {
+                setOpen(false);
+              }}
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+              className="fixed inset-0 z-[39] bg-nav-background/50 backdrop-blur-sm"
+            />
+          ))}
+        <MotionDrawerContent
+          style={{
+            width: widthMotion,
+            height: heightMotion
+          }}
+        >
+          {isMobile && <Drawer.Handle />}
+        </MotionDrawerContent>
+      </AnimatePresence>
     </Drawer.Portal>
   </Drawer.Root>;
 };

@@ -1,12 +1,33 @@
-import { currentUser } from "@/lib/auth/context/get-context-props";
+import { currentUser } from "../../src/lib/auth/context/get-context-props";
 import {
   getCompilationByHashId,
   getUserBookmarkedItems
-} from "@/payload/collections/Compilations/actions";
+} from "../../src/payload/collections/Compilations/actions";
 import { notFound, redirect } from "next/navigation";
+import { getPayload } from "payload";
 import CompilationDetailClient from "./page.client";
-import type { User } from "@/payload-types";
+import type { User } from "../../src/payload-types";
+import configPromise from "../../src/payload.config";
+export async function generateStaticParams() {
+  const payload = await getPayload({ config: configPromise });
+  const nm = await payload.find({
+    collection: "compilations",
+    draft: false,
+    limit: 1000,
+    overrideAccess: false,
+    select: {
+      hashId: true
+    },
 
+  });
+
+  const postSlug = posts.docs.map(({ slug, id }) => {
+    return { slug: slug };
+  });
+  return [...postSlug];
+}
+
+}
 export const generateMetadata = async ({
   params
 }: {

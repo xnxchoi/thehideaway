@@ -8,6 +8,7 @@ import {
   deleteCompilation,
   type CompilationSummary
 } from "@/payload/collections/Compilations/actions";
+import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
@@ -16,18 +17,19 @@ import {
   useRef,
   useState,
   useTransition,
-  type FormEvent
+  type FormEvent,
+  useMemo
 } from "react";
 import { RP_Btn } from "@/components/core/Button";
 import { useTransitionRouter } from "next-transition-router";
 
 type Props = {
   userId: string;
-  role: string;
+  role: RP_Roles;
   compilations: CompilationSummary[];
 };
 
-const isPremium = (role: string) =>
+const isPremium = (role: RP_Roles) =>
   ["patron", "author", "editor", "admin"].includes(role);
 
 export default function ListsPageClient({
@@ -38,7 +40,7 @@ export default function ListsPageClient({
   const router = useTransitionRouter();
   const [compilations, setCompilations] = useState(initial);
   const [showCreate, setShowCreate] = useState(false);
-  const premium = isPremium(role);
+  const premium = useMemo(() => isPremium(role), [role]);
 
   const handleDelete = useCallback(async (id: string) => {
     const res = await deleteCompilation({ id });
@@ -331,7 +333,6 @@ function CreateCompilationSheet({
   onClose: () => void;
   onCreated: (c: CompilationSummary) => void;
 }) {
-  const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const [visibility, setVisibility] = useState<"public" | "private">("private");
@@ -344,28 +345,26 @@ function CreateCompilationSheet({
       if (!title) return;
       setError(null);
 
-      startTransition(async () => {
-        const res = await createCompilation({
-          title,
-          description: descRef.current?.value?.trim() || undefined,
-          visibility
-        });
-        if ("error" in res) {
-          setError(res.error);
-          return;
-        }
-        onCreated({
-          id: res.id,
-          hashId: res.hashId,
-          title,
-          description: descRef.current?.value?.trim() || null,
-          visibility,
-          coverImage: null,
-          itemCount: 0,
-          author: { id: userId, username: null, slug: null },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
+      const res = await createCompilation({
+        title,
+        description: descRef.current?.value?.trim() || undefined,
+        visibility
+      });
+      if ("error" in res) {
+        setError(res.error);
+        return;
+      }
+      onCreated({
+        id: res.id,
+        hashId: res.hashId,
+        title,
+        description: descRef.current?.value?.trim() || null,
+        visibility,
+        coverImage: null,
+        itemCount: 0,
+        author: { id: userId, username: null, slug: null },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       });
     },
     [userId, visibility, onCreated]
@@ -481,13 +480,13 @@ function CreateCompilationSheet({
             >
               Cancel
             </RP_Btn>
-            <RP_Btn
-              type="submit"
-              disabled={isPending}
-              className="border border-border/40 px-5 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
-            >
-              {isPending ? "Creating…" : "Create"}
-            </RP_Btn>
+            {/*<RP_Btn*/}
+            {/*  type="submit"*/}
+            {/*  disabled={isPending}*/}
+            {/*  className="border border-border/40 px-5 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"*/}
+            {/*>*/}
+            {/*  {isPending ? "Creating…" : "Create"}*/}
+            {/*</RP_Btn>*/}
           </div>
         </form>
       </m.div>

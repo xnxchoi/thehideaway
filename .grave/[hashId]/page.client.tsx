@@ -1,16 +1,16 @@
 "use client";
 
-import { Link } from "@/components/core/Link/Link";
-import { cn } from "@/lib/utils";
+import { Link } from "../../src/components/core/Link/Link";
+import { cn } from "../../src/lib/utils";
 import {
   addItemToCompilation,
   removeItemFromCompilation,
   updateCompilation,
   type BookmarkItemTyped,
   type CompilationSummary
-} from "@/payload/collections/Compilations/actions";
-import type { CompilationItemType } from "@/payload/collections/Compilations";
-import type { Compilation } from "@/payload-types";
+} from "../../src/payload/collections/Compilations/actions";
+import type { CompilationItemType } from "../../src/payload/collections/Compilations";
+import type { Compilation } from "../../src/payload-types";
 import { AnimatePresence, Reorder } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
@@ -23,7 +23,7 @@ import {
   useTransition
 } from "react";
 import { useTransitionRouter } from "next-transition-router";
-import { RP_Btn } from "@/components/core/Button";
+import { RP_Btn } from "../../src/components/core/Button";
 
 const TAB_LABELS: Record<CompilationItemType, string> = {
   posts: "Essays",

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function MePage() {
-  redirect("/me/account");
+  return redirect("/me/account");
 }

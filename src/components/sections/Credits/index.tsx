@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/core/Button";
 import { useCursorHandlers } from "@/components/core/cursorWrapper";
 import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
@@ -946,7 +947,7 @@ const CreditsInner = (props: CreditComponentProps) => {
             ))} */}
           </div>
         </div>
-        <button
+        <Button
           className="closeCatMob fixed flex items-center"
           onClick={hideProfil2}
           ref={closeCatMob}
@@ -963,7 +964,7 @@ const CreditsInner = (props: CreditComponentProps) => {
               <path d="m23.5328 23.269-21.80249-21.80241" />
             </g>
           </svg>
-        </button>
+        </Button>
       </div>
       <footer id="rp-footer" style={{ display: "none" }}>
         <div className="bas">

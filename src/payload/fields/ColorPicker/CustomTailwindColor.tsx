@@ -165,7 +165,7 @@ export const SelectColor: React.FC<Props> = (props) => {
                           key={clr.color + clr.label}
                           value={clr.value}
                           style={{ background: clr.value }}
-                          className="comp h-6 w-6 cursor-pointer rounded-md active:scale-105"
+                          className="comp h-6 w-6 rounded-md active:scale-105"
                           onSelect={handleSelect}
                         />
                       </TooltipTrigger>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/core/Button";
 import { Popover } from "@base-ui/react";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import { useMemo, useRef } from "react";
@@ -87,7 +88,7 @@ export function SelectModeOverlay() {
             finalFocus={false}
             onMouseDown={(e) => e.preventDefault()}
             className={cn(
-              "z-[45] flex items-center gap-3 origin-[var(--transform-origin)]",
+              "z-[45] flex origin-[var(--transform-origin)] items-center gap-3",
               "border border-border/40 bg-background/90 px-3 py-1.5 backdrop-blur-md",
               "transition-[transform,scale,opacity]",
               "data-[starting-style]:scale-95 data-[starting-style]:opacity-0",
@@ -103,14 +104,14 @@ export function SelectModeOverlay() {
             <span className="font-mono text-[10px] tracking-widest text-foreground/85 uppercase">
               {label}
             </span>
-            <button
+            <Button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={exitSelectMode}
               className="border border-border/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
             >
               Esc
-            </button>
+            </Button>
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

@@ -16,6 +16,16 @@ import {
 import { useSearchBar } from "@/providers/RP_Pro";
 import { useDomCursor } from "../core/cursorWrapper";
 const KommandPrimitive = m.create(CommandPrimitive);
+function Kommand({
+  children,
+  ...props
+}: ComponentProps<typeof KommandPrimitive>) {
+  return (
+    <KommandPrimitive data-slot="command" {...props}>
+      {children}
+    </KommandPrimitive>
+  );
+}
 function KMD({ className, ...props }: ComponentProps<typeof KommandPrimitive>) {
   return (
     <KommandPrimitive
@@ -243,11 +253,13 @@ export {
   Command,
   CommandDialog,
   CommandInput,
+  KMD,
   KMDInput,
   CommandList,
   CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandShortcut,
+  Kommand,
   CommandSeparator
 };

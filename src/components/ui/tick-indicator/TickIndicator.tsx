@@ -284,7 +284,7 @@ function TickBar({
         !accent && "bg-foreground"
       )}
       style={{
-        width: `${tickWidth}px`,
+        width: tickWidth,
         height,
         opacity,
         scaleY,

@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/core/Button";
 import DoubleSwitch from "@/components/ui/DoubleSwitch";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
@@ -117,10 +118,10 @@ const ProCard = () => {
     <div className="w-full px-0 sm:px-[.5em] md:w-1/2">
       <RP_Listing type={"pro"} className="price-card-pro">
         <div data-price-overlay="trigger" className="price-card-tag">
-          <button className="price-card-tag__inner">
+          <Button className="price-card-tag__inner">
             <div className="eyebrow">explore benefits</div>
             <div className="eyebrow circle">?</div>
-          </button>
+          </Button>
           <div className="price-overlay__close">
             <svg
               xmlns="http://www.w3.org/2000/svg"

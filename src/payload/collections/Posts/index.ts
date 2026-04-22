@@ -430,7 +430,6 @@ export const Posts: CollectionConfig<"posts"> = {
       autosave: false,
       schedulePublish: true
     },
-
     maxPerDoc: 50
   }
 };

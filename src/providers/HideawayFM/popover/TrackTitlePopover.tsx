@@ -91,7 +91,7 @@ export function TrackTitlePopover({
         aria-haspopup="dialog"
         aria-expanded={open}
         className={cn(
-          "inline cursor-pointer bg-transparent p-0 text-left transition-colors",
+          "inline bg-transparent p-0 text-left transition-colors",
           "hover:text-foreground focus-visible:text-foreground focus-visible:outline-none",
           className
         )}

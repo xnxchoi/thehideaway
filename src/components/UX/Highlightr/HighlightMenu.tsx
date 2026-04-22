@@ -1,20 +1,18 @@
 "use client";
 import { useDomCursor } from "@/components/core/cursorWrapper";
+import { MotionBtnProps } from "@/components/core/Link/types";
 import {
-  DialogRoot,
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogRoot,
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
 import { errorToast, successToast } from "@/components/ui/sonner";
-import { MotionBtnProps } from "@/components/core/Link/types";
-import { HighlightedRange } from "@/components/UX/Highlightr/types";
-import { EASING, TWEEN_EASE } from "@/constants/animations";
+import { TWEEN_EASE } from "@/constants/animations";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import { FloatingPortal } from "@floating-ui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import "./styles/_highlightMenu.scss";
 import { useMotionValue, useTransform } from "motion/react";
@@ -34,16 +32,16 @@ import React, {
 import { toast } from "sonner";
 import { useShallow } from "zustand/shallow";
 import { HighlightMenuButton, HighlightMenuProps, MenuButtonCaption } from ".";
-import { Button, MotionPill, RP_Btn } from "../../core/Button";
+import { MotionPill } from "../../core/Button";
 import { HighlightCreateError, HighlightError } from "./HighlightErrors";
 import { usePrivateNote } from "./PrivateHighlights";
 import { useArticle } from "./providers/ArticleProvider";
+import { SignInCard } from "./providers/author-ui";
 import { useCitations } from "./providers/CitationProvider";
 import { useFloater } from "./providers/FloatProvider";
 import { useHighlighter } from "./providers/HighlighterProvider";
-import { useRanger } from "./providers/RangerProvider";
-import { SignInCard } from "./providers/author-ui";
 import { MemoInput } from "./providers/memo-input";
+import { useRanger } from "./providers/RangerProvider";
 import { HighlightColors, HighlightPalette, Palettes } from "./stores";
 
 type ViewStates = "edit" | "signin" | "new";
@@ -52,10 +50,8 @@ type ViewStateMap = Record<ViewStates, Record<DialogText, string>>;
 
 export const FloatHighlightMenu = ({
   mounted,
-
   handleChangeHighlightColor,
   postDisabled,
-
   ref,
   style,
   floatingStyles,
@@ -265,19 +261,19 @@ export const FloatHighlightMenu = ({
     }),
     []
   );
-  const innerRef = useRef<HTMLDivElement>(null!);
+  const innerRef = useRef<HTMLDivElement>(null);
   const closeMemo = useCallback(() => {
     setMemoOpen(false);
   }, []);
   const doMe = useCallback(
     (e: Event) => {
       if (!e.target) return;
-      if (!innerRef.current) {
-        document.body.removeEventListener("click", doMe);
-        return;
-      }
-      if (!innerRef.current.contains(e.target as HTMLElement)) {
-        setRender(false);
+      if (
+        !innerRef.current ||
+        !innerRef.current.contains(e.target as HTMLElement)
+      ) {
+        !innerRef.current?.contains(e.target as HTMLElement) &&
+          setRender(false);
         document.body.removeEventListener("click", doMe);
       }
     },

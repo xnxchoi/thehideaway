@@ -1,4 +1,5 @@
 "use client";
+import { PillButton } from "@/components/core/Button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button as UIBtn } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -166,14 +167,14 @@ export const SignInTriggerButton = () => {
     <DialogRoot open={isOpen} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <div
-            className={"h-full w-full cursor-pointer px-[12px] py-[8px]"}
+          <PillButton
+            className={"h-full w-full px-[12px] py-[8px]"}
             onClick={() => setOpen(true)}
           >
             <span className={"text-base text-muted-foreground"}>
               {t("providers")}
             </span>
-          </div>
+          </PillButton>
         }
       />
       <DialogContent onClick={(e) => e.stopPropagation()}>

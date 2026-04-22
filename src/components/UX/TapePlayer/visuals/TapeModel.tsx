@@ -13,6 +13,7 @@
 
 import { TWEEN_EASE } from "@/constants/animations";
 import { useNowPlaying, usePlayState } from "@/providers/HideawayFM/hooks";
+import { rp_lerp } from "@/utilities/rp_utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   Environment,
@@ -21,20 +22,23 @@ import {
   PerspectiveCamera,
   RenderTexture,
   Text,
-  useGLTF
+  useGLTF,
+  useTexture
 } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
 import { AnimationSequence } from "motion";
 import {
   animate,
+  scroll,
+  useAnimationFrame,
   useMotionValue,
   useMotionValueEvent,
+  useScroll,
   useTransform
 } from "motion/react";
 import {
+  RefObject,
   useCallback,
   useEffect,
   useEffectEvent,
@@ -49,22 +53,27 @@ import {
   Color,
   Group,
   LinearFilter,
+  LinearMipmapLinearFilter,
   Material,
   MathUtils,
   Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  NoColorSpace,
   Object3D,
   PCFSoftShadowMap,
   PointLight,
+  RepeatWrapping,
   RGBAFormat,
   SRGBColorSpace,
   Texture,
+  UVMapping,
+  Vector2,
   Vector3
 } from "three";
 import { OrbitControls as OrbitControls_ } from "three-stdlib";
 
-gsap.registerPlugin(ScrollTrigger);
+// gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Visual state for the tape button animation. Derived from the new
@@ -74,7 +83,7 @@ type TapeVisualState = "seeking" | "playing" | "paused" | "stopped";
 // ─── DRACO decoder path ───────────────────────────────────────────────────────
 // The files are already copied to /public/draco/ (from rip/).
 useGLTF.setDecoderPath("/draco/");
-
+useTexture.preload("/assets/three/materials/brushed_metal/normal.jpg");
 // ─── Asset URLs ───────────────────────────────────────────────────────────────
 // Assets are served from the project's /public/ directory.
 // Update these paths once the actual model/env/video files are in place.
@@ -129,7 +138,7 @@ function TapeRendererSetup() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface TapeModelProps {
-  scrollTriggerId?: string;
+  scrollTriggerId: string;
   /**
    * Whether the parent container is currently in the viewport.
    * Controls `makeDefault` on the PerspectiveCamera and `enabled` on
@@ -144,6 +153,22 @@ export function TapeModel({
 }: TapeModelProps) {
   const controlsRef = useRef<OrbitControls_>(null!);
   const { scene } = useGLTF(MODEL_URL);
+  const texture = useTexture(
+    "/assets/three/materials/brushed_metal/normal.jpg",
+    (texture) => {
+      texture.wrapS = texture.wrapT = RepeatWrapping;
+      texture.colorSpace = NoColorSpace;
+      texture.anisotropy = 1;
+      texture.mapping = UVMapping;
+      texture.channel = 1;
+      texture.magFilter = LinearFilter;
+      texture.minFilter = LinearMipmapLinearFilter;
+      texture.repeat.set(5, 5);
+      texture.offset.set(0, -4);
+      texture.needsUpdate = true;
+      return texture;
+    }
+  );
   /** The "Disk" mesh that spins in response to scroll velocity. */
   const diskRef = useRef<Object3D | null>(null);
   const playButtonRef = useRef<Object3D | null>(null);
@@ -177,9 +202,14 @@ export function TapeModel({
   const displayScreenMeshRef = useRef<BufferGeometry | null>(null);
   const isResetting = useRef(false);
   const interactingValue = useMotionValue(false);
+  const isisis = useRef(false);
   // ─── Material setup, disk ref, video texture ────────────────────────────────
   useEffect(() => {
     if (!scene) return;
+    if (!isisis.current) {
+      console.log("scene", scene);
+      isisis.current = true;
+    }
 
     scene.receiveShadow = true;
     scene.castShadow = true;
@@ -255,20 +285,27 @@ export function TapeModel({
           metalMate = obj.material as MeshStandardMaterial;
 
           const metalMat = new MeshStandardMaterial({
+            ...metalMate,
             color: "#EBEFF4",
             metalness: 0.85,
             roughness: 0.2,
             envMapIntensity: 0.156,
-            normalMap: metalMate.normalMap,
-            normalScale: metalMate.normalScale?.clone()
+            normalMap: texture,
+            normalScale: new Vector2(0.5, 0.5)
           });
-          metalMat.normalScale?.set(0.5, 0.5);
           metalMat.needsUpdate = true;
           metalMatRef.current = metalMat;
           obj.material = metalMat;
         } else if (metalMatRef.current) {
           obj.material = metalMatRef.current;
         }
+      }
+      if (obj.name === "Disk001") {
+        obj.material = new MeshStandardMaterial({
+          ...obj.material,
+          ...(metalMatRef.current || {}),
+          normalMap: texture
+        });
       }
     });
   }, [scene]);
@@ -350,7 +387,7 @@ export function TapeModel({
       seq.push([
         v.rotation,
         {
-          y: 0.08
+          y: 0.1
         },
         {
           ease: TWEEN_EASE.back.out(1.7),
@@ -420,66 +457,108 @@ export function TapeModel({
     );
   }, [track]);
 
+  // useMotionValueEvent(progress, "change", (v) => {
+  //   scene.rotation.y = INIT_ROT_Y + v * ((2 * Math.PI) / 6);
+  //   scene.position.y = INIT_POS_Y + v * 0.6;
+  // });
   // ─── GSAP ScrollTrigger animations ───────────────────────────────────────
   const createScrollTrigger = useEffectEvent(() => {
     if (!scene || !lightRef.current) return;
     const light = lightRef.current;
     const metalMat = metalMatRef.current;
-    const triggerSelector = `#${scrollTriggerId}`;
-
+    const triggerSelector = document.getElementById(scrollTriggerId);
+    if (!triggerSelector) return;
     // 1. Model rotation.y and position.y over scroll
-    const modelST = ScrollTrigger.create({
-      trigger: triggerSelector,
-      start: "top center+=50%",
-      end: "bottom center-=50%",
-      scrub: true,
-      onUpdate: (self) => {
-        scene.rotation.y = INIT_ROT_Y + self.progress * ((2 * Math.PI) / 6);
-        scene.position.y = INIT_POS_Y + self.progress * 0.6;
+    // const modelST = ScrollTrigger.create({
+    const modelST = scroll(
+      (progress: number) => {
+        scene.rotation.y = INIT_ROT_Y + progress * ((2 * Math.PI) / 6);
+        scene.position.y = INIT_POS_Y + progress * 0.6;
+      },
+      {
+        target: triggerSelector,
+
+        offset: ["start 70%", "end 20%"]
       }
-    });
-
+    );
+    // start: "top center+=50%",
+    // end: "bottom center-=50%",
+    // trigger: triggerSelector,
+    // scrub: true,
+    // onUpdate: (self) => {
+    //   scene.rotation.y = INIT_ROT_Y + self.progress * ((2 * Math.PI) / 6);
+    //   scene.position.y = INIT_POS_Y + self.progress * 0.6;
+    // }
+    // });
+    const lightST = scroll(
+      (progress: number) => {
+        lightRef.current.position.x = (1 - progress) * -2 + -5 * progress;
+        lightRef.current.position.y = (1 - progress) * -1.3 + -5 * progress;
+      },
+      {
+        target: triggerSelector,
+        offset: ["start 70%", "end start"]
+      }
+    );
     // 2. PointLight position animation (x:-0.5, y:-0.5 — duplicate x key fixed)
-    const lightAnim = gsap.to(light.position, {
-      x: -0.5,
-      y: -0.5,
-      ease: "none"
-    });
-    const lightST = ScrollTrigger.create({
-      trigger: triggerSelector,
-      start: "top bottom-=20%",
-      end: "bottom top+=0%",
-      scrub: true,
-      animation: lightAnim
-    });
-
-    // 3. Metal material envMapIntensity 0.1 → 3
-    let metalST: ScrollTrigger | null = null;
-    let metalAnim: gsap.core.Tween | null = null;
+    // const lightAnim = gsap.to(light.position, {
+    //   x: -0.5,
+    //   y: -0.5,
+    //   ease: "none"
+    // });
+    // const lightST = ScrollTrigger.create({
+    //   trigger: triggerSelector,
+    //   start: "top bottom-=20%",
+    //   end: "bottom top+=0%",
+    //   scrub: true,
+    //   animation: lightAnim
+    // });
+    //
+    let metalST: VoidFunction | null = null;
     if (metalMat) {
-      metalAnim = gsap.to(metalMat, {
-        envMapIntensity: 3,
-        ease: "none",
-        onUpdate: () => {
+      metalST = scroll(
+        (progress: number) => {
+          metalMat.envMapIntensity = 0.1 + progress * 2.9;
           metalMat.needsUpdate = true;
+        },
+        {
+          target: triggerSelector,
+          offset: ["start 70%", "end start"]
         }
-      });
-      metalST = ScrollTrigger.create({
-        trigger: triggerSelector,
-        start: "top bottom-=20%",
-        end: "bottom top+=0%",
-        scrub: true,
-        animation: metalAnim
-      });
+      );
     }
-
     return () => {
-      modelST.kill();
-      lightST.kill();
-      lightAnim.kill();
-      metalST?.kill();
-      metalAnim?.kill();
+      modelST();
+      lightST();
+      metalST?.();
     };
+    // // 3. Metal material envMapIntensity 0.1 → 3
+    // let metalST: ScrollTrigger | null = null;
+    // let metalAnim: gsap.core.Tween | null = null;
+    // if (metalMat) {
+    //   metalAnim = gsap.to(metalMat, {
+    //     envMapIntensity: 3,
+    //     ease: "none",
+    //     onUpdate: () => {
+    //       metalMat.needsUpdate = true;
+    //     }
+    //   });
+    //   metalST = ScrollTrigger.create({
+    //     trigger: triggerSelector,
+    //     start: "top bottom-=20%",
+    //     end: "bottom top+=0%",
+    //     scrub: true,
+    //     animation: metalAnim
+    //   });
+    // }
+    //
+    // return () => {
+    //   modelST.kill();
+    //   lightST.kill();
+    //   lightAnim.kill();
+    //   metalST?.kill();
+    //   metalAnim?.kill();
+    // };
   });
   useEffect(() => {
     const onsc = createScrollTrigger();
@@ -517,7 +596,6 @@ export function TapeModel({
   useFrame(({ camera }, delta) => {
     // Pause rendering when tab is hidden (mirrors Gl / document.hidden check)
     if (document.hidden) return;
-
     if (diskRef.current) {
       const isPlaying = lastTrackstatus.current === "playing";
 
@@ -599,7 +677,7 @@ export function TapeModel({
        * Tilt group — replaces lr.rotation.set(.1, 0, 0) from the original.
        * Cannot rotate the shared R3F scene, so we wrap content in a group.
        */}
-      <group rotation={[0.1, 0, 0]}>
+      <group rotation={[0.1, 0, 0]} visible={inView}>
         {/*
          * HDR environment lighting.
          * background={false} keeps the env map for lighting only (no skybox).
@@ -660,7 +738,7 @@ export function TapeModel({
                 top={DISPLAY_HALF_HEIGHT * (displayAspect ?? 8)}
                 bottom={-DISPLAY_HALF_HEIGHT * (displayAspect ?? 8)}
                 near={0.1}
-                far={100}
+                far={10}
               />
               <group rotation={[Math.PI, 0, 0]} position={[0, 0, 0]}>
                 <Text
@@ -794,23 +872,22 @@ export function DisplayScreenText({
       </Text>
 
       {/* Duplicate Text — Only renders if it's a marquee and we know where to place it */}
-      {isMarquee && textWidth > 0 && (
-        <Text
-          position={[textWidth, 0, 0]} // Placed exactly at the tail end of the first string!
-          font={"/assets/fonts/BitcountGrid.ttf"}
-          fontSize={2}
-          anchorX="left"
-          anchorY="middle"
-        >
-          {paddedText}
-          <meshStandardMaterial
-            ref={materialRef2}
-            color="#96f7ff"
-            transparent
-            opacity={0}
-          />
-        </Text>
-      )}
+      <Text
+        position={[textWidth, 0, 0]} // Placed exactly at the tail end of the first string!
+        font={"/assets/fonts/BitcountGrid.ttf"}
+        visible={isMarquee && textWidth > 0}
+        fontSize={2}
+        anchorX="left"
+        anchorY="middle"
+      >
+        {paddedText}
+        <meshStandardMaterial
+          ref={materialRef2}
+          color="#96f7ff"
+          transparent
+          opacity={0}
+        />
+      </Text>
     </group>
   );
 }

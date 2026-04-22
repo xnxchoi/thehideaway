@@ -1,12 +1,11 @@
 import "@/styles/globals.css";
 import "@/app/(frontend)/estate.scss";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
-import { SideDrawer } from "@/components/UX/SideDrawer";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
-import { ReactNode, Suspense } from "react";
+import { ReactNode } from "react";
 
 export default async function RootLayout({
   children
