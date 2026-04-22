@@ -16,6 +16,7 @@ export default function PageClient() {
   const [magnifyAtEnds, setMagnifyAtEnds] = useState(false);
   const [accent, setAccent] = useState<string>("oklch(78% 0.16 82)");
   const [useAccent, setUseAccent] = useState(true);
+  const [accentIntensity, setAccentIntensity] = useState(0.5);
   const [entranceStagger, setEntranceStagger] = useState(18);
   const [entranceKey, setEntranceKey] = useState(0);
 
@@ -75,6 +76,8 @@ export default function PageClient() {
         setUseAccent={setUseAccent}
         accent={accent}
         setAccent={setAccent}
+        accentIntensity={accentIntensity}
+        setAccentIntensity={setAccentIntensity}
         entranceStagger={entranceStagger}
         setEntranceStagger={setEntranceStagger}
         replayEntrance={replayEntrance}
@@ -90,6 +93,7 @@ export default function PageClient() {
             magnifyStrength={magnifyStrength}
             magnifyAtEnds={magnifyAtEnds}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
             springConfig={springConfig}
           />
         </Variant>
@@ -103,6 +107,7 @@ export default function PageClient() {
             magnifyStrength={magnifyStrength}
             magnifyAtEnds={magnifyAtEnds}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
             springConfig={springConfig}
           />
         </Variant>
@@ -117,6 +122,7 @@ export default function PageClient() {
             magnifyStrength={magnifyStrength}
             magnifyAtEnds={magnifyAtEnds}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
             springConfig={springConfig}
           />
         </Variant>
@@ -128,6 +134,7 @@ export default function PageClient() {
             ticks={ticks}
             magnify={false}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
           />
         </Variant>
       </section>
@@ -143,6 +150,7 @@ export default function PageClient() {
             magnifyStrength={magnifyStrength}
             magnifyAtEnds={magnifyAtEnds}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
             springConfig={springConfig}
           />
         </Variant>
@@ -157,6 +165,7 @@ export default function PageClient() {
             magnifyStrength={magnifyStrength}
             magnifyAtEnds={magnifyAtEnds}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
             springConfig={springConfig}
           />
         </Variant>
@@ -173,6 +182,7 @@ export default function PageClient() {
             magnifyStrength={magnifyStrength}
             magnifyAtEnds={magnifyAtEnds}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
             springConfig={springConfig}
           />
         </Variant>
@@ -202,6 +212,7 @@ export default function PageClient() {
               entrance
               entranceStagger={entranceStagger}
               accent={effectiveAccent}
+              accentIntensity={accentIntensity}
               magnifyRadius={magnifyRadius}
               magnifyStrength={magnifyStrength}
               magnifyAtEnds={magnifyAtEnds}
@@ -221,6 +232,7 @@ export default function PageClient() {
               entrance
               entranceStagger={entranceStagger}
               accent={effectiveAccent}
+              accentIntensity={accentIntensity}
               magnifyRadius={magnifyRadius}
               magnifyStrength={magnifyStrength}
               magnifyAtEnds={magnifyAtEnds}
@@ -237,6 +249,7 @@ export default function PageClient() {
               entrance
               entranceStagger={entranceStagger}
               accent={effectiveAccent}
+              accentIntensity={accentIntensity}
               magnifyRadius={magnifyRadius}
               magnifyStrength={magnifyStrength}
               magnifyAtEnds={magnifyAtEnds}
@@ -253,6 +266,7 @@ export default function PageClient() {
             mode="focus"
             ticks={120}
             accent={effectiveAccent}
+            accentIntensity={accentIntensity}
           />
         </Variant>
       </section>

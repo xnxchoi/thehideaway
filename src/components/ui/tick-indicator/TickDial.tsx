@@ -213,16 +213,27 @@ function TickMark({
     return focalIndex.on("change", apply);
   }, [focalIndex, index]);
 
-  const entranceMv = useSpring(entrance ? 0 : 1, spring);
+  const entranceMv = useMotionValue(entrance ? 0 : 1);
   useEffect(() => {
     if (!entrance) {
-      entranceMv.jump(1);
+      entranceMv.set(1);
       return;
     }
-    entranceMv.jump(0);
-    const timer = setTimeout(() => entranceMv.set(1), index * entranceStagger);
-    return () => clearTimeout(timer);
-  }, [entrance, entranceStagger, entranceMv, index]);
+    entranceMv.set(0);
+    let controls: ReturnType<typeof animate> | undefined;
+    const timer = setTimeout(() => {
+      controls = animate(entranceMv, 1, {
+        type: "spring",
+        stiffness,
+        damping,
+        mass
+      });
+    }, index * entranceStagger);
+    return () => {
+      clearTimeout(timer);
+      controls?.stop();
+    };
+  }, [entrance, entranceStagger, entranceMv, index, stiffness, damping, mass]);
 
   const magnifyActive = useTransform(
     () => shouldMagnify && (magnifyAtEnds || !atEnd.get())
@@ -284,7 +295,7 @@ function TickMark({
 
   const accentPctString = useTransform(
     accentWeight,
-    (v) => `${Math.round(v * 1000) / 10}%`
+    (v) => `${Math.round(v * accentIntensity * 1000) / 10}%`
   );
   const accentedStroke = useMotionTemplate`color-mix(in oklch, ${accent ?? "transparent"} ${accentPctString}, currentColor)`;
   const stroke = accent ? accentedStroke : "currentColor";
