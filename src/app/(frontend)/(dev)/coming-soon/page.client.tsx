@@ -2,211 +2,344 @@
 
 import { useState } from "react";
 import {
-  CHIP_KEYS,
-  DISPATCH_KEYS,
-  TOAST_KEYS,
-  TOOLTIP_KEYS,
   ComingSoonCard,
   ComingSoonDialog,
   ComingSoonPanel,
   ComingSoonSection,
   ComingSoonTag,
   useComingSoon,
-  type ChipLabel,
-  type DispatchKey,
-  type ToastKey,
-  type TooltipKey
+  type DispatchKey
 } from "@/components/UX/ComingSoon";
 
 export default function PageClient() {
-  const { nudge } = useComingSoon();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [activeChip, setActiveChip] = useState<ChipLabel>("default");
-  const [activeDispatch, setActiveDispatch] = useState<DispatchKey>("default");
-
   return (
-    <div className="mx-auto max-w-7xl px-6 py-16 xl:px-10">
-      <header className="mb-16 border-b border-border/30 pb-8">
-        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-          Dev / ComingSoon
-        </p>
-        <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">
-          Coming Soon System
-        </h1>
-        <p className="mt-3 max-w-xl font-mono text-[11px] leading-relaxed text-muted-foreground/70">
-          All variants and copy keys. Switch locale in the site header to verify
-          EN ↔ KO rendering.
-        </p>
-      </header>
+    <div className="py-16">
+      <div className="mx-auto max-w-7xl px-6 xl:px-10">
+        <header className="mb-16 border-b border-border/30 pb-8">
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Dev / ComingSoon
+          </p>
+          <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">
+            Coming Soon System
+          </h1>
+          <p className="mt-3 max-w-xl font-mono text-[11px] leading-relaxed text-muted-foreground/70">
+            Components in realistic layout contexts.
+          </p>
+        </header>
+      </div>
 
-      {/* Tags */}
-      <DevSection title="Tag — all chip presets">
-        <div className="flex flex-wrap gap-3">
-          {CHIP_KEYS.map((key) => (
-            <ComingSoonTag key={key} preset={key as ChipLabel} tone="soft" />
-          ))}
-        </div>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {CHIP_KEYS.map((key) => (
-            <ComingSoonTag key={key} preset={key as ChipLabel} tone="firm" />
-          ))}
-        </div>
-      </DevSection>
+      {/* useComingSoon — nudge on a dead nav item */}
+      <Scene
+        label="useComingSoon — dead nav item fires toast"
+        hint="click 「Compilations」"
+      >
+        <MockNav />
+      </Scene>
 
-      <DevSection title="Tag — tooltip variants">
-        <div className="flex flex-wrap gap-3">
-          {TOOLTIP_KEYS.map((key) => (
-            <ComingSoonTag
-              key={key}
-              preset="default"
-              tooltip={key as TooltipKey}
-              label={key}
-            />
-          ))}
-          <ComingSoonTag preset="default" tooltip={false} label="no tooltip" />
-        </div>
-      </DevSection>
+      {/* ComingSoonTag — in a nav item + section heading */}
+      <Scene
+        label="ComingSoonTag — on a nav item and a section heading"
+        hint="hover for tooltip"
+      >
+        <MockPageHeader />
+      </Scene>
 
-      <DevSection title="Tag — interactive (onClick)">
-        <div className="flex flex-wrap gap-3">
-          {CHIP_KEYS.map((key) => (
-            <ComingSoonTag
-              key={key}
-              preset={key as ChipLabel}
-              tone="soft"
-              onClick={() => setActiveChip(key as ChipLabel)}
-            />
-          ))}
-        </div>
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-          Active: <span className="text-foreground/80">{activeChip}</span>
-        </p>
-      </DevSection>
+      {/* ComingSoonDialog — from a create toolbar */}
+      <Scene
+        label="ComingSoonDialog — triggered from an action button"
+        hint="click 「New Series」"
+      >
+        <MockCreateToolbar />
+      </Scene>
 
-      {/* Toasts */}
-      <DevSection title="useComingSoon — toast nudges">
-        <div className="flex flex-wrap gap-3">
-          {TOAST_KEYS.map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => nudge(key as ToastKey)}
-              className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
-      </DevSection>
+      {/* ComingSoonCard — in a content grid */}
+      <Scene label="ComingSoonCard — placeholder slot in a content grid">
+        <MockContentGrid />
+      </Scene>
 
-      {/* Cards */}
-      <DevSection title="Card — all presets, portrait aspect">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-8">
-          {CHIP_KEYS.map((key) => (
-            <ComingSoonCard
-              key={key}
-              preset={key as ChipLabel}
-              aspect="portrait"
-            />
-          ))}
-        </div>
-      </DevSection>
+      {/* ComingSoonSection — between page content */}
+      <Scene label="ComingSoonSection — between page sections">
+        <MockPageBody />
+      </Scene>
 
-      <DevSection title="Card — aspect ratios">
-        <div className="flex flex-wrap gap-8">
-          {(
-            [
-              { aspect: "square", w: "w-48" },
-              { aspect: "portrait", w: "w-40" },
-              { aspect: "video", w: "w-64" }
-            ] as const
-          ).map(({ aspect, w }) => (
-            <figure key={aspect} className={`flex flex-col gap-2 ${w}`}>
-              <figcaption className="font-mono text-[9px] tracking-[0.2em] text-muted-foreground/50 uppercase">
-                {aspect}
-              </figcaption>
-              <ComingSoonCard aspect={aspect} />
-            </figure>
-          ))}
-        </div>
-      </DevSection>
-
-      {/* Section strip */}
-      <DevSection title="Section — all presets">
-        <div className="flex flex-col">
-          {CHIP_KEYS.map((key) => (
-            <ComingSoonSection key={key} preset={key as ChipLabel} />
-          ))}
-        </div>
-      </DevSection>
-
-      {/* Dialog */}
-      <DevSection title="Dialog — dispatch variants">
-        <div className="flex flex-wrap gap-3">
-          {DISPATCH_KEYS.map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => {
-                setActiveDispatch(key as DispatchKey);
-                setDialogOpen(true);
-              }}
-              className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
-            >
-              {key}
-            </button>
-          ))}
-        </div>
-        <ComingSoonDialog
-          title="Something, eventually."
-          dispatch={activeDispatch}
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-        />
-      </DevSection>
-
-      {/* Panel */}
-      <DevSection title="Panel — all dispatch variants">
-        <div className="divide-y divide-border/20 border border-border/20">
-          {DISPATCH_KEYS.map((key) => (
-            <ComingSoonPanel
-              key={key}
-              title="Something, eventually."
-              dispatch={key as DispatchKey}
-              notify={false}
-              className="min-h-0 py-12"
-            />
-          ))}
-        </div>
-      </DevSection>
-
-      <DevSection title="Panel — full with notify form">
+      {/* ComingSoonPanel — as the whole route */}
+      <Scene label="ComingSoonPanel — entire route not yet ready" fullBleed>
         <ComingSoonPanel
-          title="Something, eventually."
+          title="Series"
           dispatch="composing"
           preset="wetInk"
-          topic="dev-test"
+          topic="series"
         />
-      </DevSection>
+      </Scene>
     </div>
   );
 }
 
-function DevSection({
-  title,
-  children
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+/* ─── Realistic mocks ──────────────────────────────────────────── */
+
+function MockNav() {
+  const { nudge } = useComingSoon();
+  const items = [
+    { label: "Essays", href: "#" },
+    { label: "Radio", href: "#" },
+    { label: "Lists", href: "#" }
+  ];
   return (
-    <section className="mt-16">
-      <div className="mb-6 border-b border-border/20 pb-3">
-        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+    <nav className="flex items-center gap-8 border-b border-border/30 px-6 py-4">
+      <span className="font-mono text-xs tracking-widest text-foreground/80 uppercase">
+        The Hideaway
+      </span>
+      <div className="ml-auto flex items-center gap-6">
+        {items.map((item) => (
+          <a
+            key={item.label}
+            href={item.href}
+            className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+          >
+            {item.label}
+          </a>
+        ))}
+        <button
+          type="button"
+          onClick={() => nudge("notYet")}
+          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+        >
+          Compilations
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+function MockPageHeader() {
+  const navItems = ["Essays", "Radio", "Lists"];
+  return (
+    <div>
+      <header className="flex items-end justify-between border-b border-border/30 px-6 py-5">
+        <div>
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Discover
+          </p>
+          <h1 className="mt-1 text-2xl font-light tracking-tight">Read</h1>
+        </div>
+        <nav className="flex items-center gap-5">
+          {navItems.map((item) => (
+            <a
+              key={item}
+              href="#"
+              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+            >
+              {item}
+            </a>
+          ))}
+          <span className="flex items-center gap-1.5 font-mono text-[11px] tracking-widest text-muted-foreground/40 uppercase">
+            Series
+            <ComingSoonTag preset="soon" tooltip="composition" tone="firm" />
+          </span>
+        </nav>
+      </header>
+      <div className="px-6 pt-8">
+        <div className="flex items-center gap-3">
+          <p className="font-mono text-[11px] tracking-[0.15em] text-muted-foreground/60 uppercase">
+            Long reads
+          </p>
+          <ComingSoonTag preset="draft" tooltip="editor" tone="soft" />
+        </div>
+        <p className="mt-1 font-mono text-sm text-muted-foreground/40">
+          — this section isn't ready yet —
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MockCreateToolbar() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="px-6 py-8">
+      <div className="mb-6 flex items-center gap-3 border-b border-border/20 pb-6">
+        <p className="mr-auto font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          Vault / Content
+        </p>
+        <button
+          type="button"
+          className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+        >
+          New Essay
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:border-border/60 hover:text-foreground/60"
+        >
+          New Series
+          <ComingSoonTag preset="soon" tone="firm" tooltip={false} />
+        </button>
+      </div>
+      <MockEssayRows />
+      <ComingSoonDialog
+        title="Series"
+        dispatch="composing"
+        preset="soon"
+        open={open}
+        onOpenChange={setOpen}
+        notify
+        topic="series"
+      />
+    </div>
+  );
+}
+
+function MockEssayRows() {
+  const rows = [
+    { title: "On solitude and the city", status: "Published", date: "Apr 18" },
+    { title: "What the archive remembers", status: "Draft", date: "Apr 12" },
+    {
+      title: "A season of small departures",
+      status: "Published",
+      date: "Mar 30"
+    }
+  ];
+  return (
+    <div className="divide-y divide-border/20">
+      {rows.map((row) => (
+        <div
+          key={row.title}
+          className="flex items-center justify-between py-3.5"
+        >
+          <p className="text-sm font-light tracking-tight text-foreground/80">
+            {row.title}
+          </p>
+          <div className="flex items-center gap-6">
+            <span className="font-mono text-[10px] text-muted-foreground/50">
+              {row.date}
+            </span>
+            <span className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase">
+              {row.status}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MockContentGrid() {
+  const posts = [
+    { title: "On solitude and the city", cat: "Essay" },
+    { title: "What the archive remembers", cat: "Essay" },
+    { title: "A season of small departures", cat: "Essay" }
+  ];
+  return (
+    <div className="px-6 py-8">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {posts.map((post) => (
+          <MockPostCard key={post.title} title={post.title} cat={post.cat} />
+        ))}
+        <ComingSoonCard preset="queued" aspect="portrait" />
+      </div>
+    </div>
+  );
+}
+
+function MockPostCard({ title, cat }: { title: string; cat: string }) {
+  return (
+    <div className="group flex flex-col overflow-hidden rounded-sm border border-border/20 bg-card/40 transition-colors hover:border-border/40">
+      <div className="flex aspect-[3/4] items-center justify-center bg-muted/20">
+        <span className="font-mono text-[10px] tracking-widest text-muted-foreground/20 uppercase">
+          {cat}
+        </span>
+      </div>
+      <div className="p-3.5">
+        <p className="text-sm leading-snug font-medium tracking-tight">
           {title}
         </p>
       </div>
-      {children}
+    </div>
+  );
+}
+
+function MockPageBody() {
+  return (
+    <div className="mx-auto max-w-2xl space-y-0 px-6 py-8">
+      <MockProse heading="Introduction" lines={3} />
+      <ComingSoonSection
+        preset="draft"
+        copy="Annotations — in development. Coming alongside the essay."
+      />
+      <MockProse heading="Part I" lines={4} />
+    </div>
+  );
+}
+
+function MockProse({ heading, lines }: { heading: string; lines: number }) {
+  return (
+    <div className="py-8">
+      <h2 className="mb-4 text-lg font-light tracking-tight text-foreground/80">
+        {heading}
+      </h2>
+      <div className="space-y-2">
+        {Array.from({ length: lines }).map((_, i) => (
+          <div
+            key={i}
+            className="h-3 rounded-sm bg-foreground/[0.06]"
+            style={{ width: `${75 + Math.sin(i * 2.1) * 20}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Scene wrapper ────────────────────────────────────────────── */
+
+function Scene({
+  label,
+  hint,
+  fullBleed = false,
+  children
+}: {
+  label: string;
+  hint?: string;
+  fullBleed?: boolean;
+  children: React.ReactNode;
+}) {
+  const [dark, setDark] = useState(true);
+
+  return (
+    <section className="mt-16">
+      <div className="mx-auto max-w-7xl px-6 xl:px-10">
+        <div className="mb-3 flex items-center justify-between border-b border-border/20 pb-3">
+          <div className="flex items-baseline gap-3">
+            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+              {label}
+            </p>
+            {hint && (
+              <span className="font-mono text-[10px] text-muted-foreground/40 italic">
+                {hint}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setDark((d) => !d)}
+            className="font-mono text-[9px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:text-muted-foreground/80"
+          >
+            {dark ? "light ↕" : "dark ↕"}
+          </button>
+        </div>
+      </div>
+      <div className={dark ? "dark bg-background" : "light bg-background"}>
+        {fullBleed ? (
+          children
+        ) : (
+          <div className="mx-auto max-w-7xl">
+            <div className="overflow-hidden rounded-none border border-x-0 border-border/10">
+              {children}
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
