@@ -69,9 +69,12 @@ export const ContextMenuPlugin: PluginComponent = () => {
         domTarget
       });
 
+      // Offset the popover slightly from the cursor so the first item
+      // doesn't land directly under the pointer (prevents accidental clicks
+      // on release or double-fire from the context-menu gesture).
       storeApi.getState().openMenu({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX + 12,
+        y: event.clientY + 4,
         context: ctx
       });
     };

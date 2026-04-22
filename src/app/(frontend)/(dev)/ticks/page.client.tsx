@@ -297,6 +297,8 @@ interface ControlsProps {
   setUseAccent: (b: boolean) => void;
   accent: string;
   setAccent: (s: string) => void;
+  accentIntensity: number;
+  setAccentIntensity: (n: number) => void;
   entranceStagger: number;
   setEntranceStagger: (n: number) => void;
   replayEntrance: () => void;
@@ -325,6 +327,8 @@ function Controls({
   setUseAccent,
   accent,
   setAccent,
+  accentIntensity,
+  setAccentIntensity,
   entranceStagger,
   setEntranceStagger,
   replayEntrance
@@ -469,6 +473,18 @@ function Controls({
             />
           ))}
         </div>
+      </Field>
+
+      <Field label="Accent intensity" hint={accentIntensity.toFixed(2)}>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={accentIntensity}
+          onChange={(e) => setAccentIntensity(Number(e.target.value))}
+          className="w-full"
+        />
       </Field>
 
       <Field label="Entrance stagger (ms)" hint={String(entranceStagger)}>
