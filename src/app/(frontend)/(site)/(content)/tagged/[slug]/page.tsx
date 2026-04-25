@@ -3,7 +3,7 @@ import {
   OverviewAgnosticItem
 } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { Link } from "@/components/core/Link/Link";
-import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
+import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 import { TagButton } from "@/components/UX/TagButton";
 import { RPage } from "@/components/UX/Transition";
 import { getImageOverviewByID } from "@/payload/collections/Posts/api/getImageMedia";
@@ -122,7 +122,7 @@ export default async function Page({ params: paramsPromise }: Args) {
             </div>
             <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
               {rest.map(({ value: post, relationTo }) => (
-                <TaggedItem
+                <ArticleArchiveItem
                   key={post.id}
                   {...post}
                   subtitle={post.subtitle ?? ""}

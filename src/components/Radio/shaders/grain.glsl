@@ -25,9 +25,6 @@ float noise(in vec2 p) {
     return dot(n, vec3(70.0));
 }
 
-float speed = 12.;
-// float intensity = .01;
-
 float random2d(vec2 coord) {
     return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -49,22 +46,17 @@ vec3 blendSoftLight(vec3 base, vec3 blend, float opacity) {
 
 void mainImage(const in vec4 inputColor, const in vec2 uv,
 out vec4 outputColor) {
-    float gridX = floor(uv.x * uXCount) / uXCount;
-    float gridY = 1.0 - floor(uv.y * uYCount) / uYCount;
-    float t = mod(time, 1.);
-    // float timeSpeed = time; // -> fluide (it's random, so we cant control the
-    // speed)
-    float timeSpeed = floor(t * 8.); // -> saccadé
-    // float timeSpeed = 1.;
-    // float intensity = (inputColor.r + inputColor.g + inputColor.b) / 3.;
-    float grain = random2d(vec2(gridX + timeSpeed, gridY));
-
-    grain -= grain / 2.;
-    grain *= .1;
+    // Per-pixel grain: hash directly on gl_FragCoord (device pixels) so the
+    // noise stays film-grain fine, not blocky. The previous version
+    // quantized to logical pixels (uv * count / count) which on retina
+    // displays produced 2×2 device-pixel cells = visible chunkiness.
+    // Use a tiny temporal jitter so grain isn't statically baked into UV.
+    vec2 grainCoord = gl_FragCoord.xy;
+    float grain = random2d(grainCoord) - 0.5;
+    grain *= 0.06;
 
     vec3 resultColor =
     blendSoftLight(inputColor.rgb, inputColor.rgb + grain, uIntensity);
 
     outputColor = vec4(resultColor, 1.0);
-    // outputColor = vec4(inputColor.rgb, 1.0);
 }

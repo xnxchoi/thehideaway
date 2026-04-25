@@ -2,7 +2,7 @@ import {
   ArchiveFeatureCard,
   OverviewAgnosticItem
 } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
-import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
+import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 import { PageRange } from "@/components/UX/PageRange";
 import { RPage } from "@/components/UX/Transition";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
@@ -78,7 +78,7 @@ export default async function Page({ params: paramsPromise }: Args) {
             </div>
             <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
               {rest.map(({ slug, author, category, ...post }) => (
-                <TaggedItem
+                <ArticleArchiveItem
                   key={post.id}
                   {...post}
                   author={author.name}

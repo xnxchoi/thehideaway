@@ -150,6 +150,9 @@ export function AmbientRegionHighlight() {
         const borderAlpha = b.active ? 0.4 : 0.14;
         return (
           <div
+            className={
+              "bg-transparent opacity-5 transition-opacity active:opacity-10"
+            }
             key={b.groupId}
             data-ambient-region-highlight={b.groupId}
             data-active={b.active ? "true" : "false"}
@@ -160,12 +163,8 @@ export function AmbientRegionHighlight() {
               width: b.width,
               height: b.height,
               zIndex: 10013,
-              pointerEvents: "none",
               background: groupColorOklch(color, bgAlpha),
-              borderLeft: `2px solid ${groupColorOklch(color, borderAlpha)}`,
-              mixBlendMode: "multiply",
-              transition:
-                "background-color 160ms ease, border-left-color 160ms ease"
+              borderLeft: `2px solid ${groupColorOklch(color, borderAlpha)}`
             }}
           />
         );

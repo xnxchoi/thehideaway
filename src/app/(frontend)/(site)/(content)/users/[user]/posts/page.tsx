@@ -6,7 +6,7 @@ import { Pagination } from "@/payload/components/Pagination";
 
 import PageClient from "./page.client";
 import { RPage } from "@/components/UX/Transition";
-import { TaggedItem } from "@/components/layouts/Tagged/Item";
+import { ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -96,7 +96,7 @@ export default async function Page({ params: paramsPromise }: Args) {
             <div className="flex flex-col">
               {posts.docs.map(
                 ({ id, subtitle, title, author, category, tagged }) => (
-                  <TaggedItem
+                  <ArticleArchiveItem
                     key={id}
                     author={author.name}
                     title={title}

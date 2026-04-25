@@ -6,7 +6,7 @@ import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 import { PaginatedDocs } from "payload";
 import { useEffect, useRef, useState } from "react";
 import { InView } from "react-intersection-observer";
-import { TaggedItem } from "../../../../../../../components/layouts/Tagged/Item";
+import { ArticleArchiveItem } from "../../../../../../../components/layouts/Tagged/Item";
 import type { PostOverview } from "@/types/collections/posts";
 
 const PageClient = (props: { posts: PaginatedDocs<PostOverview> }) => {
@@ -48,7 +48,7 @@ const PageClient = (props: { posts: PaginatedDocs<PostOverview> }) => {
   return (
     <div className="min-h-[calc(100vh-64px)] py-24">
       {docs.map(({ slug, author, category, ...post }) => (
-        <TaggedItem
+        <ArticleArchiveItem
           key={post.id}
           {...post}
           author={author.name}

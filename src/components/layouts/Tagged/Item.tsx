@@ -14,7 +14,7 @@ export const ArchiveWrapper = ({ children }: { children: React.ReactNode }) => {
 };
 
 type ListArticleProps = PostOverview;
-export const TaggedItem = (props: OverviewAgnosticItem) => {
+export const ArticleArchiveItem = (props: OverviewAgnosticItem) => {
   const {
     title,
     author,

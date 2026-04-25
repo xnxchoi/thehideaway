@@ -41,7 +41,9 @@ const ALL_ENABLED: Required<DefaultContributorsConfig> = {
   clipboard: true,
   transform: true,
   slashImport: true,
-  toolbarImport: true
+  // Format actions live in the inline floating toolbar; duplicating them in
+  // the context menu creates clutter without adding value. Off by default.
+  toolbarImport: false
 };
 
 export interface DefaultContributorsProviderProps extends DefaultContributorsConfig {

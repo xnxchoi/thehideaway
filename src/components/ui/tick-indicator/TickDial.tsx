@@ -54,7 +54,7 @@ function TickDial({
   value: valueProp,
   max = 1,
   mode = "fill",
-  ticks = 60,
+  ticks = 45,
   size = 140,
   tickLength: tickLengthProp = 8,
   focalExtension: focalExtensionProp = 5,
@@ -91,7 +91,11 @@ function TickDial({
 
   const sweep = endAngle - startAngle;
   const isClosedLoop = Math.abs(sweep) >= 359.9;
-  const step = isClosedLoop ? sweep / ticks : sweep / Math.max(1, ticks - 1);
+  const step = useMemo(
+    () =>
+      Math.abs(sweep) >= 359.9 ? sweep / ticks : sweep / Math.max(1, ticks - 1),
+    [ticks, sweep]
+  );
 
   const normalized = useTransform(() => {
     const mx = maxMv.get();

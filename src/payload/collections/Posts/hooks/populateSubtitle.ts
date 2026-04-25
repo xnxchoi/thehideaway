@@ -16,7 +16,7 @@ export const populateSubtitle: CollectionBeforeValidateHook<
     return data;
   }
   const user = req.user;
-  const overrideAccess = req.context.overrideAccess;
+  const overrideAccess = context.overrideAccess;
   if (
     !overrideAccess &&
     !["admin", "editor", "author"].some((role) => user?.role === role)

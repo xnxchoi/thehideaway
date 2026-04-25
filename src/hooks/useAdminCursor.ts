@@ -11,6 +11,11 @@ const INTERACTIVE_ELEMENTS_SELECTOR = [
   'input[type="range"]',
   '[role="button"]',
   '[role="link"]',
+  '[role="switch"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="slider"]',
+  '[role="menuitem"]',
   // You can add a custom attribute to any other element to make it interactive
   '[data-interactive="true"]'
 ].join(", ");

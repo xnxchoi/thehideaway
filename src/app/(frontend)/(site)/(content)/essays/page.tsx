@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
+import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 import { RPage } from "@/components/UX/Transition";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
@@ -35,7 +35,7 @@ export default async function Page() {
             </div>
             <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
               {posts.docs.map(({ slug, author, category, ...post }) => (
-                <TaggedItem
+                <ArticleArchiveItem
                   key={post.id}
                   {...post}
                   author={author.name}

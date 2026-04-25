@@ -52,7 +52,7 @@ function TickIndicator({
   value: valueProp,
   max = 1,
   mode = "fill",
-  ticks = 48,
+  ticks = 36,
   tickSpacing = 3,
   tickWidth = 1,
   tickHeight: tickHeightProp = 6,

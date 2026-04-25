@@ -130,7 +130,7 @@ export const ContextMenuPlugin: PluginComponent = () => {
           side="bottom"
           align="start"
           sideOffset={4}
-          className="outline-none"
+          className="backdrop-blur-xs outline-none"
         >
           <MenuPopup>
             <MenuRenderer

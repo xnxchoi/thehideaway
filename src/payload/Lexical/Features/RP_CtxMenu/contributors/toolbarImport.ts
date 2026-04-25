@@ -119,10 +119,18 @@ export interface ToolbarImportOptions {
   groupFilter?: ImportFilter<ToolbarGroupLike>;
   /** Override target group key. Default: "format". */
   groupKey?: string;
-  /** Override target group label. */
+  /**
+   * Label for the submenu trigger (when `wrapInSubmenu` is true) or the group
+   * section header (when false). Default: "Format".
+   */
   groupLabel?: string;
   /** Sort hint for the resulting group. Default: 60. */
   groupOrder?: number;
+  /**
+   * Wrap all imported items inside a submenu item so they don't appear flat
+   * at the root of the context menu. Default: true.
+   */
+  wrapInSubmenu?: boolean;
   /**
    * Gate the entire contribution. Default: require a real text range — most
    * inline-toolbar actions (bold, italic, links) only make sense over a
@@ -151,8 +159,9 @@ export function createToolbarImportContributor(
     filter,
     groupFilter,
     groupKey = "format",
-    groupLabel,
+    groupLabel = "Format",
     groupOrder = 60,
+    wrapInSubmenu = true,
     isActive = defaultIsActive
   } = options;
 
@@ -268,6 +277,24 @@ export function createToolbarImportContributor(
       }
 
       if (items.length === 0) return null;
+
+      if (wrapInSubmenu) {
+        const group: ContextMenuGroup = {
+          key: groupKey,
+          order: groupOrder,
+          items: [
+            {
+              kind: "submenu",
+              key: `${groupKey}.submenu`,
+              label: groupLabel,
+              order: 0,
+              items
+            }
+          ]
+        };
+        return [group];
+      }
+
       const group: ContextMenuGroup = {
         key: groupKey,
         label: groupLabel,

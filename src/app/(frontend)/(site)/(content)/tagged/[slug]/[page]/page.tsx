@@ -1,4 +1,4 @@
-import { CatTitle, TaggedItem } from "@/components/layouts/Tagged/Item";
+import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 
 import { PageRange } from "@/components/UX/PageRange";
 import { RPage } from "@/components/UX/Transition";
@@ -52,7 +52,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           >
             <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
               {posts.docs.map(({ slug, author, category, ...post }) => (
-                <TaggedItem
+                <ArticleArchiveItem
                   key={post.id}
                   {...post}
                   author={author.name}

@@ -12,7 +12,7 @@ import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/
 import { useLexicalNodeSelection } from "@payloadcms/richtext-lexical/lexical/react/useLexicalNodeSelection";
 import { mergeRegister } from "@payloadcms/richtext-lexical/lexical/utils";
 import * as m from "motion/react-m";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { AmbientRegionData } from "../nodes/types";
 import { useAmbientStore, useAmbientStoreApi } from "../store/ambientStore";
@@ -62,7 +62,10 @@ export function AnchorComponent({
 }: AnchorComponentProps): ReturnType<typeof m.span> {
   const kind = fields.kind ?? "start";
   const groupId = fields.groupId;
-  const region: AmbientRegionData = decodeRegion(fields);
+  const region: AmbientRegionData = useMemo(
+    () => decodeRegion(fields),
+    [fields]
+  );
   const [editor] = useLexicalComposerContext();
   const storeApi = useAmbientStoreApi();
   const ref = useRef<HTMLSpanElement>(null);

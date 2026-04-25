@@ -16,7 +16,7 @@ export function StationMode() {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      {/* Ambient background — R3F on desktop, CSS on mobile */}
+      {/* Ambient background — R3F on desktop, CSS on mobile (z-[1]) */}
       {!isMobile ? (
         <Suspense>
           <AmbientBackground />
@@ -25,19 +25,22 @@ export function StationMode() {
         <AmbientBackgroundFallback />
       )}
 
-      {/* Hero section with scroll-linked tape reels */}
-      <TapePlayer variant="hero" />
+      {/* Content above canvas — z-[2] creates a stacking context above z-[1] canvas */}
+      <div className="relative z-[2] flex flex-1 flex-col">
+        {/* Hero section with scroll-linked tape reels */}
+        <TapePlayer variant="hero" />
 
-      {/* Full parallax section with 3D model (desktop only) */}
-      <section className="flex flex-1 items-start justify-center">
-        {!isMobile && (
-          <Suspense>
-            <StationHideawayHero
-              onShowcaseActivate={() => setMode("showcase")}
-            />
-          </Suspense>
-        )}
-      </section>
+        {/* Full parallax section with 3D model (desktop only) */}
+        <section className="flex flex-1 items-start justify-center">
+          {!isMobile && (
+            <Suspense>
+              <StationHideawayHero
+                onShowcaseActivate={() => setMode("showcase")}
+              />
+            </Suspense>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

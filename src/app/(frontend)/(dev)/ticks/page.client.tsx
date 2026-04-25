@@ -27,7 +27,7 @@ export default function PageClient() {
   useEffect(() => {
     if (!autoplay) return;
     let raf = 0;
-    let start = performance.now();
+    const start = performance.now();
     const loop = (t: number) => {
       const elapsed = (t - start) / 4000;
       setValue(elapsed % 1);
@@ -144,7 +144,7 @@ export default function PageClient() {
           <TickDial
             value={value}
             mode="fill"
-            ticks={60}
+            ticks={45}
             size={180}
             magnifyRadius={magnifyRadius}
             magnifyStrength={magnifyStrength}
@@ -159,7 +159,7 @@ export default function PageClient() {
           <TickDial
             value={value}
             mode="focus"
-            ticks={60}
+            ticks={45}
             size={180}
             magnifyRadius={magnifyRadius}
             magnifyStrength={magnifyStrength}
@@ -207,7 +207,7 @@ export default function PageClient() {
               key={`dial-full-${entranceKey}`}
               value={value}
               mode="focus"
-              ticks={60}
+              ticks={45}
               size={180}
               entrance
               entranceStagger={entranceStagger}

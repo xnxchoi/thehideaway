@@ -174,6 +174,12 @@ export function HideawayFMProvider({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const analyserBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const analyserAttachedRef = useRef(false);
+  // HTML5-mode <audio> elements bypass Web Audio by default, so the analyser
+  // sees silence. We bridge each element via createMediaElementSource() the
+  // first time we encounter it, then route through masterGain so the analyser
+  // tap picks it up. WeakSet prevents double-bridging the same element
+  // (which would throw `InvalidStateError: HTMLMediaElement already connected`).
+  const bridgedElementsRef = useRef<WeakSet<HTMLMediaElement>>(new WeakSet());
 
   // Crossfade state tracked outside the store so the RAF loop does not
   // thrash the Zustand reducer every frame. Two-phase machine: `play` is the
@@ -718,13 +724,47 @@ export function HideawayFMProvider({
       try {
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.75;
+        // Lower smoothing → beats punch through instead of being averaged out.
+        // Visualiser needs to track rhythm, not produce a flat DC level.
+        analyser.smoothingTimeConstant = 0.55;
         master.connect(analyser);
         analyserRef.current = analyser;
         analyserBufferRef.current = new Uint8Array(analyser.frequencyBinCount);
         analyserAttachedRef.current = true;
       } catch {
         // Audio graph not ready yet; RAF loop will retry on next frame.
+      }
+    }
+
+    // Bridge HTML5 <audio> elements into Web Audio so the analyser can see
+    // them. Howler is configured with html5: true (needed for streaming long
+    // tracks), which means the audio plays through HTMLAudioElement and
+    // bypasses Howler's masterGain/AudioContext entirely. Without this bridge
+    // every visualiser reads silence regardless of what's actually playing.
+    function bridgeStudioToAnalyser(studio: RP_Studio | null): void {
+      if (!studio) return;
+      const ctx = Howler.ctx as AudioContext | undefined;
+      const master = Howler.masterGain as AudioNode | undefined;
+      if (!ctx || !master) return;
+      try {
+        // RP_Studio extends Howl directly — `_sounds` are on the studio itself.
+        // In html5 mode each Sound's `_node` is actually an HTMLAudioElement
+        // (the existing type declaration says GainNode|AudioNode for the
+        // Web Audio path, hence the `unknown` widening before the runtime
+        // instanceof check).
+        const sounds = studio._sounds ?? [];
+        for (const snd of sounds) {
+          const node = snd._node as unknown;
+          if (!node || !(node instanceof HTMLMediaElement)) continue;
+          if (bridgedElementsRef.current.has(node)) continue;
+          // Each HTMLMediaElement can have at most ONE MediaElementAudioSource
+          // ever; double-bridging throws InvalidStateError. WeakSet guards.
+          const src = ctx.createMediaElementSource(node);
+          src.connect(master);
+          bridgedElementsRef.current.add(node);
+        }
+      } catch {
+        // Element may already be connected from a prior bridge; safe to ignore.
       }
     }
 
@@ -791,14 +831,28 @@ export function HideawayFMProvider({
       if (!analyserAttachedRef.current) {
         attachAnalyser();
       }
+      // Each frame, ensure foreground+next studios' audio elements are bridged
+      // into Web Audio. Cheap (WeakSet check) for already-bridged elements.
+      bridgeStudioToAnalyser(ringRef.current.curr);
+      bridgeStudioToAnalyser(ringRef.current.next);
       const analyser = analyserRef.current;
       const buffer = analyserBufferRef.current;
       if (analyser && buffer) {
         analyser.getByteFrequencyData(buffer);
-        let sum = 0;
-        for (let i = 0; i < buffer.length; i++) sum += buffer[i];
-        const avg = sum / buffer.length / 255;
-        s.audioLevelMV.set(avg);
+        // Bass-weighted RMS: rhythm energy lives in the bottom ~25% of bins.
+        // A flat mean across all 128 bins drowns the signal in silent highs.
+        // Using bass + RMS + curve lifts a "0.04 mean" track to "0.4 RMS".
+        const bassEnd = Math.max(1, Math.floor(buffer.length * 0.25));
+        let sumSq = 0;
+        for (let i = 0; i < bassEnd; i++) {
+          const v = buffer[i] / 255;
+          sumSq += v * v;
+        }
+        const rms = Math.sqrt(sumSq / bassEnd);
+        // Curve to expand low-mid signal into a perceptible visual range.
+        // pow(x, 0.55) lifts 0.1 → 0.29, 0.2 → 0.42, 0.5 → 0.69 — stays in [0,1].
+        const level = Math.min(1, Math.pow(rms, 0.55) * 1.4);
+        s.audioLevelMV.set(level);
       }
 
       rafRef.current = window.requestAnimationFrame(tick);
