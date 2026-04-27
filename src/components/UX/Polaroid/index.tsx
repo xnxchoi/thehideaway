@@ -1,6 +1,20 @@
 "use client";
-import { gsap } from "gsap/all";
+import { FrontImage } from "@/components/core/Media/FrontImage";
+import { cn } from "@/lib/utils";
+import { useIsMobile as useIsNarrow } from "@/providers/MiddleMan";
+import { useCursor, useRPStore } from "@/providers/RP_Pro";
+import { useTheme } from "@/providers/Theme";
+import { useWindowResize } from "@/utilities/use_window_resize";
 import "@/styles/__reviewCard.scss";
+import {
+  SVGMotionProps,
+  useInView,
+  useMotionTemplate,
+  useMotionValue,
+  useScroll,
+  useTransform
+} from "motion/react";
+import * as m from "motion/react-m";
 import {
   useCallback,
   useEffect,
@@ -8,27 +22,8 @@ import {
   useRef,
   useState
 } from "react";
-import ScrollTrigger from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-import { useWindowResize } from "@/utilities/use_window_resize";
-import { useCursor, useRPStore } from "@/providers/RP_Pro";
-import { useInView } from "@/hooks/useInView";
-import { useTheme } from "@/providers/Theme";
-import { useIsMobile as useIsNarrow } from "@/providers/MiddleMan";
-import { FrontImage } from "@/components/core/Media/FrontImage";
 import { useShallow } from "zustand/shallow";
 import imager from "./ff.jpeg";
-import {
-  SVGMotionProps,
-  useMotionTemplate,
-  useMotionValue,
-  useScroll,
-  useSpring,
-  useTransform
-} from "motion/react";
-import { SPRING_EASE } from "@/constants/animations";
-import * as m from "motion/react-m";
-import { cn } from "@/lib/utils";
 
 const calculatePositioning = () => {
   const wwi = window.innerWidth;
@@ -37,7 +32,7 @@ const calculatePositioning = () => {
 
   return { y, height };
 };
-gsap.registerPlugin(ScrollTrigger);
+// gsap.registerPlugin(ScrollTrigger);
 const iUnit = 420;
 const yEdge = iUnit * 0.153;
 const instax = {
@@ -107,33 +102,30 @@ export const RP_POLAROID = () => {
     image: "/media/ff.jpeg"
   };
 
-  const { isInView, setElementToObserve } = useInView({
-    fireOnce: !1,
-    scrolltriggerStart: "top-=1000px bottom",
-    scrolltriggerEnd: "bottom+=200px top"
-  });
   const isNarrow = useIsNarrow();
   const [polar, setPolar] = useState(
     isNarrow ? polaroid.narrow : polaroid.wide
   );
 
-  const section = useRef<HTMLElement>(null!),
-    img = useRef<HTMLImageElement>(null!),
-    footer = useRef<HTMLDivElement>(null!),
-    patron = useRef<HTMLSpanElement>(null!);
-  const container = useRef<HTMLDivElement>(null!),
-    frameContent = useRef<HTMLDivElement>(null!),
-    imageContainer = useRef<HTMLDivElement>(null!),
-    frameContainer = useRef<HTMLDivElement>(null!),
-    frameContentInner = useRef<HTMLDivElement>(null!),
-    framePositioning = useRef<HTMLDivElement>(null!),
-    timeline = useRef<GSAPTimeline>(null!),
-    logo = useRef<SVGSVGElement>(null!);
-  const [osH, setOsH] = useState(0);
+  const section = useRef<HTMLElement>(null),
+    img = useRef<HTMLImageElement>(null),
+    footer = useRef<HTMLDivElement>(null),
+    patron = useRef<HTMLSpanElement>(null);
+  const container = useRef<HTMLDivElement>(null),
+    frameContent = useRef<HTMLDivElement>(null),
+    imageContainer = useRef<HTMLDivElement>(null),
+    frameContainer = useRef<HTMLDivElement>(null),
+    frameContentInner = useRef<HTMLDivElement>(null),
+    framePositioning = useRef<HTMLDivElement>(null),
+    timeline = useRef<GSAPTimeline>(null),
+    logo = useRef<SVGSVGElement>(null);
+  const isInView = useInView(section, {});
+
+  // const [osH, setOsH] = useState(0);
   const theme = useTheme((r) => r.theme);
   const white = "oklch(98.52% 0.006 23.79/1)";
   const black = "oklch(9.69% 0.0175 23.79/1)";
-  const [frameWidth, setFrameWidth] = useState(720);
+  // const [frameWidth, setFrameWidth] = useState(720);
   const [_secBG, set_secBG] = useState(theme === "dark" ? black : white);
   const [_secFG, set_secFG] = useState(theme === "dark" ? white : black);
   const themeValue = useMotionValue(theme);
@@ -167,12 +159,12 @@ export const RP_POLAROID = () => {
   }, [theme]);
 
   const windowResize = useWindowResize({ detectHeightChange: true });
-  const [height, setHeight] = useState(0),
-    [y, setY] = useState(0);
-  useEffect(() => {
-    setOsH(container.current.offsetHeight);
-    setFrameWidth(framePositioning.current.offsetWidth);
-  }, []);
+  // const [height, setHeight] = useState(0),
+  //   [y, setY] = useState(0);
+  // useEffect(() => {
+  // setOsH(container.current.offsetHeight);
+  // setFrameWidth(framePositioning.current.offsetWidth);
+  // }, []);
   const { scrollYProgress } = useScroll({
     target: container,
     offset: ["30% end", `end 90%`]
@@ -353,11 +345,11 @@ export const RP_POLAROID = () => {
   const setCursorTheme = useCursor((r) => r.setCursorTheme);
   const resetCursor = useCursor((r) => r.resetCursorTheme);
   useEffect(() => {
-    setOsH(container.current.offsetHeight);
-    setFrameWidth(framePositioning.current.offsetWidth);
-    const { y, height } = calculatePositioning();
-    setY(y);
-    setHeight(height);
+    // setOsH(container.current.offsetHeight);
+    // setFrameWidth(framePositioning.current.offsetWidth);
+    // const { y, height } = calculatePositioning();
+    // setY(y);
+    // setHeight(height);
   }, [windowResize]);
   useEffect(() => {
     setPolar(isNarrow ? polaroid.narrow : polaroid.wide);

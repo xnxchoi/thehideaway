@@ -2,16 +2,18 @@
 import type { PortalFrameTransitions } from "@/components/UX/Transition";
 import { TE } from "@/constants/animations";
 import { NavEventsProvider } from "@/providers/Navigation/_client-nav-events";
-import { useCursor, useRPStore } from "@/providers/RP_Pro";
+import { HAStoreContext, useCursor, useRPStore } from "@/providers/RP_Pro";
+import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { createTransStore, type RPT } from "@/stores/RP_Ui";
-import { motionCallback } from "@/utilities/motionHelpers";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
-import { AnimationSequence, Segment } from "motion";
+import { AnimationSequence } from "motion";
 import {
   animate,
+  HTMLMotionProps,
+  MotionValue,
   useMotionTemplate,
   useMotionValue,
   useTransform
@@ -31,12 +33,11 @@ import { useStore } from "zustand";
 import { useShallow } from "zustand/shallow";
 import { useIsMobile } from "./MiddleMan";
 import { useTheme } from "./Theme";
+
 export type TransAPI = ReturnType<typeof createTransStore>;
 export const TransContext = createContext<TransAPI | undefined>(undefined);
 
 const TransitionManager = ({ children }: { children: ReactNode }) => {
-  const clearPageTheme = useTheme((l) => l.clearPageTheme);
-  const pageType = useVoyageur((l) => l.pageType);
   const scroll = useLenis();
   gsap.registerPlugin(ScrollTrigger);
   const frameDir: Array<PortalFrameTransitions> = useMemo(
@@ -54,7 +55,10 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
     }),
     []
   );
-  const cc = useMemo(() => Object.entries(cornDir), [cornDir]);
+  const cc = useMemo(
+    () => Object.keys(cornDir).map((r) => r as CornerSide),
+    [cornDir]
+  );
   const setIsTransitioningWipe = useRPStore((r) => r.setIsTransitioningWipe);
 
   const isTransitioningWipe = useRPStore(
@@ -68,24 +72,20 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   const hasRun = useRef(false);
   const lenis = useLenis();
 
-  const frameRefs = useRef<HTMLDivElement[]>([]),
-    cornerRefs = useRef<HTMLDivElement[]>([]),
-    svgRefs = useRef<HTMLDivElement[]>([]),
-    { isMobile } = useIsMobile();
   const setTransitionOutType = useRPStore((r) => r.setTransitionOutType);
   const transitionOutType = useRPStore(
     useShallow((state) => state.transitionOutType)
   );
+  const tro = useRef(transitionOutType);
+  useEffect(() => {
+    tro.current = transitionOutType;
+  }, [transitionOutType]);
   const scrollRefresher = useCallback(() => {
     scroll && scroll.resize();
   }, [scroll]);
-  const slug = useVoyageur((l) => l.slug);
-  const pageRef = useRef({ type: pageType, pageSlug: slug });
-  const to = useRef<ReturnType<typeof setTimeout>>(null!);
   const rpContainerRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
   const navIsOpen = useRPStore((l) => l.navIsOpen);
-  const setPageIsTransitioning = useRPStore((l) => l.setPageIsTransitioning);
   const setCursor = useCursor((r) => r.setCursorState);
   const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const resetCursor = useCallback(
@@ -96,13 +96,49 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     navisopref.current = navIsOpen;
   }, [navIsOpen]);
+
+  // Synchronously mirror the values that `leaver()` reads. The Zustand `set()`
+  // call inside the click handler fires listeners synchronously, so the refs
+  // are correct BEFORE next-transition-router invokes `leaver`. Without this,
+  // the existing useEffect-based mirrors only update after React's next render
+  // commit, which is too late for the click that triggered them.
+  const haStore = useContext(HAStoreContext);
+  useEffect(() => {
+    if (!haStore) return;
+    const initial = haStore.getState();
+    tro.current = initial.transitionOutType;
+    navisopref.current = initial.navIsOpen;
+    const unsubTro = haStore.subscribe(
+      (s) => s.transitionOutType,
+      (v) => {
+        tro.current = v;
+      }
+    );
+    const unsubNav = haStore.subscribe(
+      (s) => s.navIsOpen,
+      (v) => {
+        navisopref.current = v;
+      }
+    );
+    return () => {
+      unsubTro();
+      unsubNav();
+    };
+  }, [haStore]);
   const setCanInteract = useRPStore((r) => r.setCanInteract);
   const navOpeningElement = useRef<HTMLDivElement>(null!);
-  const navElValue = useMotionValue<HTMLDivElement | false>(false);
+  const navElValue = useMotionValue<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!navOpeningElement.current) {
       const promi = async () => {
+        const startTime = Date.now();
+        const timeout = 5000; // 5 seconds timeout
+
         while (!document.getElementById("navWindow")) {
+          if (Date.now() - startTime > timeout) {
+            console.warn("navWindow element not found within timeout period");
+            return;
+          }
           await new Promise((resolve) => requestAnimationFrame(resolve));
         }
         const r = document.getElementById("navWindow") as HTMLDivElement;
@@ -112,26 +148,19 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
       promi();
     }
   }, []);
-  const animateIn = useRef<((next: () => void) => void) | null>(null!);
-
-  const animateOut = useRef<((next: () => void) => void) | null>(null!);
   const animationProgress = useMotionValue(0);
   const _svgScale = useTransform(animationProgress, [0, 1], [0, 1]);
   const _frameMoves = useTransform(animationProgress, [0, 1], [100, 0]);
-  const _cornerX = useTransform(() => {
-    const progress = animationProgress.get();
-    const zeroValue = 0;
-    const oneValue = 0.5 * window.innerWidth - 1;
-    return progress * oneValue;
-  });
-  const _cornerY = useTransform(() => {
-    const progress = animationProgress.get();
-    const nEl = navElValue.get();
-    const zeroValue = 0;
-    const oneValue =
-      (!nEl ? window.innerHeight / 2 : nEl.getBoundingClientRect().top) - 1;
-    return progress * oneValue;
-  });
+  const _cornerX = useTransform(
+    () => animationProgress.get() * (0.5 * window.innerWidth - 1)
+  );
+  const _cornerY = useTransform(
+    () =>
+      animationProgress.get() *
+      ((navElValue.get()?.getBoundingClientRect()?.top ??
+        window.innerHeight / 2) -
+        1)
+  );
   const _cornerTLX = useMotionTemplate`${_cornerX}`;
   const _cornerTLY = useMotionTemplate`${_cornerY}`;
   const _cornerTRX = useMotionTemplate`-${_cornerX}`;
@@ -466,38 +495,33 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   //     }
   //   });
   // }, []);
-  const entry = useCallback((next: () => void) => {
-    const seq: AnimationSequence = [
+  const entry = useCallback(() => {
+    return animate([
       [
         animationProgress,
         0,
-        { duration: 0.3, ease: TE.power3.inOut, type: "tween" }
-      ],
-      [
-        motionCallback(() => {
-          completeEntry();
-          next();
-        })
+        {
+          duration: 0.4,
+          ease: TE.power3.inOut,
+          type: "tween"
+        }
       ]
-    ];
-    animate(seq);
-  }, []);
-  const exit = useCallback((next: () => void) => {
-    const seq: AnimationSequence = [
+    ]);
+  }, [animationProgress]);
+  const exit = useCallback(() => {
+    return animate([
       [
         animationProgress,
         1,
-        { duration: 0.7, ease: TE.power4.inOut, at: 0, type: "tween" }
-      ],
-      [
-        motionCallback(() => {
-          completeExfil();
-          next();
-        })
+        {
+          duration: 0.7,
+          ease: TE.power4.inOut,
+          at: 0,
+          type: "tween"
+        }
       ]
-    ];
-    animate(seq);
-  }, []);
+    ]);
+  }, [animationProgress]);
   // const fire = useCallback(async () => {
   //   hasRun.current = true;
 
@@ -522,63 +546,94 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     navOpenRef.current = navIsOpen;
   }, [navIsOpen]);
-  const indexToI = useCallback((index: number) => {
+  // const indexToI = useCallback(
+  //   (index: number) => {
+  //     switch (index) {
+  //       case 0:
+  //         return {
+  //           x: _cornerTLX,
+  //           y: _cornerTLY
+  //         };
+  //       case 1:
+  //         return {
+  //           x: _cornerTRX,
+  //           y: _cornerTRY
+  //         };
+  //       case 2:
+  //         return {
+  //           x: _cornerBRX,
+  //           y: _cornerBRY
+  //         };
+  //       case 3:
+  //         return {
+  //           x: _cornerBLX,
+  //           y: _cornerBLY
+  //         };
+  //     }
+  //   },
+  //   [
+  //     _cornerTLX,
+  //     _cornerTLY,
+  //     _cornerTRX,
+  //     _cornerTRY,
+  //     _cornerBRX,
+  //     _cornerBRY,
+  //     _cornerBLX,
+  //     _cornerBLY
+  //   ]
+  // );
+  const indexToFrame = useCallback((index: number): FrameSide => {
     switch (index) {
       case 0:
-        return {
-          x: _cornerTLX,
-          y: _cornerTLY
-        };
+        return "top";
+      // return {
+      //   x: 0,
+      //   y: _frameT
+      // };
       case 1:
-        return {
-          x: _cornerTRX,
-          y: _cornerTRY
-        };
+        return "right";
+      // return { x: _frameR, y: 0 };
       case 2:
-        return {
-          x: _cornerBRX,
-          y: _cornerBRY
-        };
+        return "bottom";
+      // return { x: 0, y: _frameB };
       case 3:
-        return {
-          x: _cornerBLX,
-          y: _cornerBLY
-        };
+        return "left";
+      // return { x: _frameL, y: 0 };
+      default:
+        throw new Error("Invalid index");
     }
   }, []);
-  const indexToFrame = useCallback((index: number) => {
-    switch (index) {
-      case 0:
-        return {
-          x: 0,
-          y: _frameT
-        };
-      case 1:
-        return { x: _frameR, y: 0 };
-      case 2:
-        return { x: 0, y: _frameB };
-      case 3:
-        return { x: _frameL, y: 0 };
-    }
-  }, []);
-  return (
-    <TransitionRouter
-      leave={(next: () => void, from?: string, to?: string) => {
-        if (navIsOpen || transitionOutType !== null || hasRun.current) {
-          // console.log("transitioning out, not wipe");
+  const leaver = useCallback(
+    (next: () => void, from?: string, to?: string) => {
+      const shouldRunWipe =
+        tro.current === "CURTAIN" && !navisopref.current && !hasRun.current;
+      if (shouldRunWipe) {
+        hasRun.current = true;
+        exit().then(() => {
           completeExfil();
+          hasRun.current = false;
           next();
-        } else {
-          // console.log("transitioning out, wipe");
-          exit(next);
-        }
-      }}
-      enter={(next: () => void, from?: string, to?: string) => {
-        entry(next);
+        });
+      } else {
+        completeExfil();
+        next();
+      }
+    },
+    [exit, completeExfil]
+  );
+  const enterer = useCallback(
+    (next: () => void, from?: string, to?: string) => {
+      entry().then(() => {
+        next();
+        completeEntry();
         setIsTransitioningWipe(false);
         setTransitionOutType(null);
-      }}
-    >
+      });
+    },
+    [entry, completeEntry]
+  );
+  return (
+    <TransitionRouter leave={leaver} enter={enterer}>
       <m.div
         className="rp-container"
         ref={rpContainerRef}
@@ -592,54 +647,178 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
       </m.div>
       <div ref={portalRef} className="pt_container">
         {frameDir.map((v, index) => (
-          <m.div
-            data-themed="background-color"
-            className={`pt_mask pt_${v}`}
-            key={v + "pt"}
-            ref={(el) => {
-              el && (frameRefs.current[index] = el);
-            }}
-            style={{
-              ...indexToFrame(index)
-            }}
-          ></m.div>
+          <Frame side={v} moveProgress={_frameMoves} key={v + "frame"} />
+          // <m.div
+          //   data-themed="background-color"
+          //   className={`pt_mask pt_${v}`}
+          //   key={v + "pt"}
+          //   ref={(el) => {
+          //     el && (frameRefs.current[index] = el);
+          //   }}
+          //   style={{
+          //     ...indexToFrame(index)
+          //   }}
+          // />
         ))}
-        {cc.map(([key, value], index) => (
-          <m.div
-            className={`pt_cornerstones pt_${key}`}
+        {/*{cc.map(([key, value], index) => (*/}
+        {cc.map((key, index) => (
+          <Corner
+            side={key}
             key={key + "corner"}
-            ref={(el) => {
-              el && (cornerRefs.current[index] = el);
-            }}
-            style={{
-              ...indexToI(index)
-            }}
-          >
-            <m.div
-              className="pt_cs_svg"
-              ref={(el) => {
-                el && (svgRefs.current[index] = el);
-              }}
-              style={{
-                scale: _svgScale
-              }}
-            >
-              <m.svg viewBox="0 0 500 500" fill="none">
-                <m.path
-                  d={value}
-                  {...{
-                    fillRule: "evenodd",
-                    clipRule: "evenodd",
-                    fill: "currentColor",
-                    "data-themed": "fill,color"
-                  }}
-                />
-              </m.svg>
-            </m.div>
-          </m.div>
+            cornerX={_cornerX}
+            cornerY={_cornerY}
+            svScale={_svgScale}
+          />
+          // <m.div
+          //   className={`pt_cornerstones pt_${key}`}
+          //   key={key + "corner"}
+          //   ref={(el) => {
+          //     el && (cornerRefs.current[index] = el);
+          //   }}
+          //   style={{
+          //     ...indexToI(index)
+          //   }}
+          // >
+          //   <m.div
+          //     className="pt_cs_svg"
+          //     ref={(el) => {
+          //       el && (svgRefs.current[index] = el);
+          //     }}
+          //     style={{
+          //       scale: _svgScale
+          //     }}
+          //   >
+          //     <m.svg viewBox="0 0 500 500" fill="none">
+          //       <m.path
+          //         d={value}
+          //         {...{
+          //           fillRule: "evenodd",
+          //           clipRule: "evenodd",
+          //           fill: "currentColor",
+          //           "data-themed": "fill,color"
+          //         }}
+          //       />
+          //     </m.svg>
+          //   </m.div>
+          // </m.div>
         ))}
       </div>
     </TransitionRouter>
+  );
+};
+const Corner = (
+  props: HTMLMotionProps<"div"> & {
+    cornerX: MotionValue<number>;
+    cornerY: MotionValue<number>;
+
+    svScale: MotionValue<number>;
+    side: CornerSide;
+  }
+) => {
+  const { cornerX, cornerY, svScale: scale, side, style, ...rest } = props;
+  const pathDef = useMotionValue(
+    side === "topleft"
+      ? "M500 0H0V500C0 223.858 223.858 0 500 0Z"
+      : side === "topright"
+        ? "M500 500L500 4.19617e-05L1.90735e-05 -2.18557e-05C276.142 0.000249614 500 223.858 500 500Z"
+        : side === "bottomright"
+          ? "M0 500L500 500L500 0C500 276.142 276.142 500 0 500Z"
+          : "M-2.18557e-05 0L0 500L500 500C223.858 500 -9.78513e-06 276.142 -2.18557e-05 0Z"
+  );
+  const _x = useTransform(() => {
+    switch (side) {
+      case "topleft":
+      case "bottomleft":
+        return cornerX.get();
+      case "topright":
+      case "bottomright":
+        return -1 * cornerX.get();
+    }
+  });
+  const _y = useTransform(() => {
+    switch (side) {
+      case "topleft":
+      case "topright":
+        return cornerY.get();
+      case "bottomleft":
+      case "bottomright":
+        return -1 * cornerY.get();
+    }
+  });
+  const x = useMotionTemplate`${_x}%`;
+  const y = useMotionTemplate`${_y}%`;
+  return (
+    <m.div
+      className={`pt_cornerstones pt_${side}`}
+      style={{
+        ...style,
+        x,
+        y
+      }}
+      {...rest}
+    >
+      <m.div
+        className="pt_cs_svg"
+        style={{
+          scale
+        }}
+      >
+        <m.svg viewBox="0 0 500 500" fill="none">
+          <m.path
+            d={pathDef}
+            fillRule={"evenodd"}
+            clipRule={"evenodd"}
+            fill={"currentColor"}
+            data-themed={"fill,color"}
+          />
+        </m.svg>
+      </m.div>
+    </m.div>
+  );
+};
+const Frame = (
+  props: HTMLMotionProps<"div"> & {
+    side: FrameSide;
+    moveProgress: MotionValue<number>;
+  }
+) => {
+  const { side, style, moveProgress, ...rest } = props;
+  const _x = useTransform(() => {
+    switch (side) {
+      case "top":
+      case "bottom":
+        return 0;
+      case "left":
+        return -1 * moveProgress.get();
+      case "right":
+        return moveProgress.get();
+    }
+  });
+  const _y = useTransform(() => {
+    switch (side) {
+      case "top":
+        return -1 * moveProgress.get();
+      case "bottom":
+        return moveProgress.get();
+      case "left":
+      case "right":
+        return 0;
+    }
+  });
+  const x = useMotionTemplate`${_x}%`;
+  const y = useMotionTemplate`${_y}%`;
+
+  return (
+    <m.div
+      data-themed="background-color"
+      className={`pt_mask pt_${side}`}
+      style={{
+        ...style,
+        x,
+        y
+      }}
+      {...rest}
+    />
   );
 };
 const TransContextProvider = ({ children }: { children: ReactNode }) => {

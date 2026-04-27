@@ -431,6 +431,9 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     }
     if (typeof transitionOutType.get() === "string") {
       haltScrollAnimation();
+      // Destination page starts at scroll 0; clear the cached scroll so the
+      // follow-up `animate-to-previous` lerps to 0 instead of a stale target.
+      tweenNumber.current = 0;
       setHeaderState("animate-to-full");
       setTimeout(() => {
         enableScrollAnimation();

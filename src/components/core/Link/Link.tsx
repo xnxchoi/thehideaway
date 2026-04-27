@@ -72,7 +72,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
         e.preventDefault();
         lenis && lenis.scrollTo(href);
       } else {
-        setGenericPageTransition();
+        setGenericPageTransition(href);
       }
     },
     [onClick, isAnchor, lenis, href, setGenericPageTransition]

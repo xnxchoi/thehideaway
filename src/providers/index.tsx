@@ -23,6 +23,13 @@ const TransitionProvider = dynamic(
   () => import("./TransitionProvider").then((r) => r.TransitionProvider),
   { ssr: false }
 );
+const TransitionDevOverlay = dynamic(
+  () =>
+    import("@/components/UX/Transition/TransitionDevOverlay").then(
+      (r) => r.TransitionDevOverlay
+    ),
+  { ssr: false }
+);
 
 const motion = () => import("./Motion").then((r) => r.default);
 const MiddleMan = dynamic(
@@ -53,6 +60,7 @@ export const Providers: React.FC<{
                                   <CMDKeyManager />
                                   <TourProvider>
                                     <TourOrchestrator />
+                                    <TransitionDevOverlay />
                                     <HeaderThemeProvider>
                                       {children}
                                     </HeaderThemeProvider>

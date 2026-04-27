@@ -1,7 +1,7 @@
 "use client";
 
 import { usePlayState } from "@/providers/HideawayFM/hooks";
-import { PerspectiveCamera } from "@react-three/drei";
+import { OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { AmbientGradientMesh } from "./AmbientGradientMesh";
 
@@ -33,14 +33,8 @@ export function AmbientBackground({}: AmbientBackgroundProps) {
           alpha: true
         }}
         frameloop="always"
+        camera={{ position: [0, 0, 1], fov: 45 }}
       >
-        <PerspectiveCamera
-          makeDefault
-          near={0.1}
-          far={1}
-          fov={35}
-          position={[0, 0, 1]}
-        />
         <AmbientGradientMesh />
       </Canvas>
     </div>

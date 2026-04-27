@@ -36,7 +36,7 @@ export function ContentMask(l: { children: ReactNode }) {
       (l) => l.setIsAnimatingOutPreloader
     ),
     enablePreloaderAnimation = useRPStore((l) => l.enablePreloaderAnimation),
-    timelineRef = useRef<GSAPTimeline>(null),
+    // timelineRef = useRef<GSAPTimeline>(null),
     preloaderAnimationType = useRPStore(
       useShallow((l) => l.preloaderAnimationType)
     );

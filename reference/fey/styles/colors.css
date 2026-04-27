@@ -1,0 +1,2368 @@
+/* Colors */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 56px;
+gap: 56px;
+
+position: relative;
+width: 856px;
+height: 1006px;
+
+background: rgba(255, 255, 255, 0.03);
+border-radius: 16px;
+
+
+/* Frame 441 */
+
+
+gap: 20px;
+
+width: 736px;
+height: 153px;
+
+
+
+
+
+/* Frame 452 */
+
+
+
+width: 736px;
+height: 39px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* GREYS */
+
+width: 33px;
+height: 19px;
+
+font-family: 'Manrope';
+font-style: normal;
+font-weight: 500;
+font-size: 10px;
+line-height: 190%;
+/* identical to box height, or 19px */
+letter-spacing: 0.4px;
+text-transform: uppercase;
+
+/* Accent/Bright blue */
+color: #489FFA;
+
+
+
+
+
+/* Use case: Text, Strokes */
+
+width: 736px;
+height: 20px;
+
+
+
+
+
+
+
+/* Frame 445 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 20px;
+
+width: 736px;
+height: 94px;
+
+
+
+
+
+/* Frame 443 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* #EEF0F1 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/100 */
+background: #EEF0F1;
+
+
+
+
+/* 100 */
+
+width: 17px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 444 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* #D0D0D0 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/200 */
+background: #D0D0D0;
+
+
+
+
+/* 200 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 445 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* #B6BEC4 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/300 */
+background: #B6BEC4;
+
+
+
+
+/* 300 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 446 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* #9AA4AD */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/400 */
+background: #9AA4AD;
+
+
+
+
+/* 400 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 447 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* #7D8B96 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/500 */
+background: #7D8B96;
+
+
+
+
+/* 500 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 448 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 5;
+flex-grow: 0;
+
+
+/* #64727C */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/600 */
+background: #64727C;
+
+
+
+
+/* 600 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 449 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 6;
+flex-grow: 0;
+
+
+/* #4E5860 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/700 */
+background: #4E5860;
+
+
+
+
+/* 700 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 450 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 7;
+flex-grow: 0;
+
+
+/* #373E44 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/800 */
+background: #373E44;
+
+
+
+
+/* 800 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 451 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 8;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Greys/900 */
+background: #202427;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 442 */
+
+
+gap: 20px;
+
+width: 484px;
+height: 153px;
+
+
+
+
+
+/* Frame 452 */
+
+
+
+width: 484px;
+height: 39px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* BG */
+
+width: 14px;
+height: 19px;
+
+font-family: 'Manrope';
+font-style: normal;
+font-weight: 500;
+font-size: 10px;
+line-height: 190%;
+/* identical to box height, or 19px */
+letter-spacing: 0.4px;
+text-transform: uppercase;
+
+/* Accent/Bright blue */
+color: #489FFA;
+
+
+
+
+
+/* Use case: Background */
+
+width: 484px;
+height: 20px;
+
+
+
+
+
+
+
+/* Frame 445 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 20px;
+
+width: 484px;
+height: 94px;
+
+
+
+
+
+/* Frame 443 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* #070709 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* BG/100 */
+background: #070709;
+
+
+
+
+/* 100 */
+
+width: 17px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 444 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* #101116 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* BG/200 */
+background: #101116;
+
+
+
+
+/* 200 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 445 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* #131419 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* BG/300 */
+background: #131419;
+
+
+
+
+/* 300 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 446 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* #16181C */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* BG/400 */
+background: #16181C;
+
+
+
+
+/* 400 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 447 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* #1A1B20 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* BG/500 */
+background: #1A1B20;
+
+
+
+
+/* 500 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 448 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 5;
+flex-grow: 0;
+
+
+/* #131419 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* BG/600 */
+background: #131419;
+
+
+
+
+/* 600 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 444 */
+
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 452 */
+
+
+
+width: 744px;
+height: 39px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Accent */
+
+width: 42px;
+height: 19px;
+
+font-family: 'Manrope';
+font-style: normal;
+font-weight: 500;
+font-size: 10px;
+line-height: 190%;
+/* identical to box height, or 19px */
+letter-spacing: 0.4px;
+text-transform: uppercase;
+
+/* Accent/Bright blue */
+color: #489FFA;
+
+
+
+
+
+/* Use case: Background, Highlight text, Strokes */
+
+width: 744px;
+height: 20px;
+
+
+
+
+
+
+
+/* Frame 453 */
+
+
+
+width: 744px;
+height: 208px;
+
+
+
+
+
+/* Frame 443 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* #EEF0F1 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Alert red */
+background: #D84F68;
+
+
+
+
+/* 100 */
+
+width: 17px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 444 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* #D0D0D0 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Neutral grey */
+background: #868F97;
+
+
+
+
+/* 200 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 445 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* #B6BEC4 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Soft beige */
+background: rgba(238, 170, 153, 0.784314);
+
+
+
+
+/* 300 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 446 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* #9AA4AD */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Pastel purple */
+background: #C88FCF;
+
+
+
+
+/* 400 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 447 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* #7D8B96 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Salte grey */
+background: #A7A7A9;
+
+
+
+
+/* 500 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 448 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 5;
+flex-grow: 0;
+
+
+/* #64727C */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Bright blue */
+background: #489FFA;
+
+
+
+
+/* 600 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 449 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 6;
+flex-grow: 0;
+
+
+/* #4E5860 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Sky blue */
+background: #54BBF7;
+
+
+
+
+/* 700 */
+
+width: 18px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 450 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 7;
+flex-grow: 0;
+
+
+/* #373E44 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Royal blue */
+background: #6166DC;
+
+
+
+
+/* 800 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 451 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 8;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Light violet */
+background: #8085FF;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 452 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 9;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Teal */
+background: #4DBE95;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 453 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 10;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Light yellow */
+background: #E9EC89;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 454 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 11;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Gold */
+background: #F6C86A;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 455 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 12;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Earth brown */
+background: #C27C58;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 456 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 13;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/Warm brown */
+background: #9B5B38;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 457 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 14;
+flex-grow: 0;
+
+
+/* #202427 */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Accent/blue grey */
+background: #7489B5;
+
+
+
+
+/* 900 */
+
+width: 19px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 445 */
+
+
+gap: 20px;
+
+width: 232px;
+height: 153px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* Frame 452 */
+
+
+
+width: 232px;
+height: 39px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Gradient */
+
+width: 51px;
+height: 19px;
+
+font-family: 'Manrope';
+font-style: normal;
+font-weight: 500;
+font-size: 10px;
+line-height: 190%;
+/* identical to box height, or 19px */
+letter-spacing: 0.4px;
+text-transform: uppercase;
+
+/* Accent/Bright blue */
+color: #489FFA;
+
+
+
+
+
+/* Use case: Background, Strokes */
+
+width: 232px;
+height: 20px;
+
+
+
+
+
+
+
+/* Frame 445 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 20px;
+
+width: 232px;
+height: 94px;
+
+
+
+
+
+/* Frame 443 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* # */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Gradients/Stroke/1 */
+background: linear-gradient(74.08deg, #A86EE2 36.3%, #FFC3A2 99.02%);
+
+
+
+
+/* 1 */
+
+width: 4px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 444 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+
+
+
+/* # */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Gradients/Stroke/2 */
+background: linear-gradient(74.08deg, #3AAA82 36.3%, #3FC6D8 99.02%);
+
+
+
+
+/* 2 */
+
+width: 6px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 445 */
+
+
+gap: 8px;
+
+width: 64px;
+height: 94px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* # */
+
+width: 64px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* Rectangle 1069 */
+
+width: 64px;
+height: 64px;
+
+/* Gradients/Stroke/3 */
+background: linear-gradient(145.76deg, rgba(198, 198, 198, 0.19) -4.25%, rgba(27, 27, 27, 0.17) 20.75%), linear-gradient(167.5deg, rgba(27, 27, 27, 0.034) 58.18%, rgba(198, 198, 198, 0.178) 92.77%);
+
+
+
+
+/* 3 */
+
+width: 6px;
+height: 7px;
+
+
+leading-trim: both;
+text-edge: cap;
+
+color: rgba(255, 255, 255, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;

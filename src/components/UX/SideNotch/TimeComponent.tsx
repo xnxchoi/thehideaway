@@ -1,15 +1,11 @@
+import { EASING } from "@/constants/animations";
+import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
-import { delay } from "@/utilities/rp_utils";
-import { useWindowResize } from "@/utilities/use_window_resize";
 import { ComponentProps, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { gsap } from "gsap";
-import { cn } from "@/lib/utils";
-import { useGSAP } from "@gsap/react";
 import { TextLoop } from "../TextLoop/TextLoop";
-import { EASING } from "@/constants/animations";
 
 export const TimeComponent = (props: ComponentProps<"div">) => {
   const { className: c } = props;

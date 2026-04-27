@@ -1,6 +1,8 @@
 "use client";
-
-import { useState } from "react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { Link } from "@/components/core/Link/Link";
+import { useCallback, useState } from "react";
 import {
   ComingSoonCard,
   ComingSoonDialog,
@@ -200,13 +202,24 @@ function MockEssayRows() {
       date: "Mar 30"
     }
   ];
+  const [hovered, setHovered] = useState<boolean>(false);
+  const onMousdEnter = useCallback(() => setHovered(true), [setHovered]);
+  const onMousdLeave = useCallback(() => setHovered(false), [setHovered]);
   return (
-    <div className="divide-y divide-border/20">
+
+    <div className="relative divide-y divide-border/20">
       {rows.map((row) => (
-        <div
+        <m.div
+          onMouseEnter={onMousdEnter}
+          onMouseLeave={onMousdLeave}
           key={row.title}
-          className="flex items-center justify-between py-3.5"
+          data-active={hovered}
+          whileHover={{
+            backgroundColor: "oklch(from var(--faded-foreground) r g b / 0.4)"
+          }}
+          className="background-transparent data-color flex items-center justify-between py-3.5"
         >
+          <Link href="/home" className="absolute inset-0 z-1 block" />
           <p className="text-sm font-light tracking-tight text-foreground/80">
             {row.title}
           </p>
@@ -218,7 +231,7 @@ function MockEssayRows() {
               {row.status}
             </span>
           </div>
-        </div>
+        </m.div>
       ))}
     </div>
   );
@@ -275,18 +288,20 @@ function MockPageBody() {
 function MockProse({ heading, lines }: { heading: string; lines: number }) {
   return (
     <div className="py-8">
-      <h2 className="mb-4 text-lg font-light tracking-tight text-foreground/80">
+      <m.h2 className="mb-4 text-lg font-light tracking-tight text-foreground/80">
         {heading}
-      </h2>
-      <div className="space-y-2">
-        {Array.from({ length: lines }).map((_, i) => (
-          <div
-            key={i}
-            className="h-3 rounded-sm bg-foreground/[0.06]"
-            style={{ width: `${75 + Math.sin(i * 2.1) * 20}%` }}
-          />
-        ))}
-      </div>
+      </m.h2>
+      <m.div className="space-y-2">
+        <AnimatePresence>
+          {Array.from({ length: lines }).map((_, i) => (
+            <div
+              key={i}
+              className="h-3 rounded-sm bg-foreground/[0.06]"
+              style={{ width: `${75 + Math.sin(i * 2.1) * 20}%` }}
+            />
+          ))}
+        </AnimatePresence>
+      </m.div>
     </div>
   );
 }

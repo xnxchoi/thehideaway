@@ -1,4 +1,5 @@
 "use client";
+import { TE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
@@ -10,11 +11,8 @@ import {
   useVoyageur
 } from "@/stores/Routing/RP_Voyageur";
 import { useIsMobile } from "@/utilities/getBreakpoints";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
-import { HTMLMotionProps } from "motion/react";
+import { HTMLMotionProps, useAnimate, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
 import { useTransitionRouter } from "next-transition-router";
 import {
@@ -238,7 +236,6 @@ export const portalFrameTransitions: Map<
   ["left", { x: "-100% ", y: "0" }]
 ]);
 
-gsap.registerPlugin(ScrollTrigger);
 export const PageRedirect = ({
   pageType,
   slug,
@@ -308,14 +305,13 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   const { children, headerVisibility = true, theme, ref: pageRef } = props;
 
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
-  const ref = useRef<HTMLDivElement>(null!);
   const setPageTheme = useTheme((r) => r.setPageTheme);
   const transitionOutType = useRPStore(useShallow((l) => l.transitionOutType));
   const setCurrentStep = useRPTransition((l) => l.setCurrentStep);
   const pageIsTransitioning = useRPStore(
     useShallow((l) => l.pageIsTransitioning)
   );
-  const scroll = useLenis(),
+  const lenis = useLenis(),
     { isMobile } = useIsMobile();
   useEffect(() => {
     Array.from(
@@ -360,7 +356,9 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   const transitionArray = useRef(
     Object.keys(transitionMap) as PageTransitionType[]
   );
-  const [currentVariants, setCurrentVariants] = useState(transitionMap["FADE"]);
+  const [currentVariants, setCurrentVariants] = useState(
+    transitionMap[transitionOutType || "FADE"]
+  );
   useEffect(() => {
     if (navOpeningElement) {
       setScaled(1.1 * (navOpeningElement.offsetHeight / window.innerHeight));
@@ -369,55 +367,103 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
   useEffect(() => {
     setCurrentVariants(
-      transitionOutType &&
-        transitionArray.current.some((r) => r === transitionOutType)
-        ? transitionMap[transitionOutType as PageTransitionType]
-        : transitionMap["FADE"]
+      (!!transitionOutType &&
+        transitionMap[transitionOutType as PageTransitionType]) ||
+        transitionMap["FADE"]
     );
   }, [transitionMap, transitionOutType]);
-  useGSAP(
-    () => {
-      if (typeof ref !== "object" || !ref || !scroll || !ref.current) return;
-      gsap.killTweensOf(ref.current);
-      ref.current.style.removeProperty("transform");
-      let scaleDown = scaled * 0.95;
-      let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
-      isMobile && ((scaledScrollY = 0), (scaleDown = 1));
-      gsap.to(ref.current, {
-        y: isSidebarOpen ? scaledScrollY : 0,
-        scale: isSidebarOpen ? scaleDown : 1,
-        ease: "power3.in",
-        duration: 0.6,
-        onComplete: () => {
-          !isSidebarOpen &&
-            !navIsOpen &&
-            gsap.to(ref.current, { delay: 0.4, clearProps: "transform" });
-        }
-      });
-    },
-    { dependencies: [] }
+  // useGSAP(
+  //   () => {
+  //     if (typeof ref !== "object" || !ref || !lenis || !ref.current) return;
+  //     gsap.killTweensOf(ref.current);
+  //     ref.current.style.removeProperty("transform");
+  //     let scaleDown = scaled * 0.95;
+  //     let scaledScrollY = (1 - scaleDown) * (lenis.scroll - lenis.limit / 2);
+  //     isMobile && ((scaledScrollY = 0), (scaleDown = 1));
+  //     gsap.to(ref.current, {
+  //       y: isSidebarOpen ? scaledScrollY : 0,
+  //       scale: isSidebarOpen ? scaleDown : 1,
+  //       ease: "power3.in",
+  //       duration: 0.6,
+  //       onComplete: () => {
+  //         !isSidebarOpen &&
+  //           !navIsOpen &&
+  //           gsap.to(ref.current, { delay: 0.4, clearProps: "transform" });
+  //       }
+  //     });
+  //   },
+  //   { dependencies: [] }
+  // );
+
+  const nsH = useMotionValue(1.1);
+  useEffect(() => {
+    navOpeningElement &&
+      nsH.set(navOpeningElement.offsetHeight / window.innerHeight);
+  }, [navOpeningElement, nsH]);
+  const y = useMotionValue(0);
+  const scale = useMotionValue(1);
+  const baseConfig = useMemo(
+    () => ({
+      type: "tween" as const,
+      ease: TE.power3.inOut
+    }),
+    []
   );
-  useGSAP(
-    () => {
-      if (typeof ref !== "object" || !ref || !scroll || !ref.current) return;
-      gsap.killTweensOf(ref.current);
-      ref.current.style.removeProperty("transform");
-      let scaleDown = scaled;
-      let scaledScrollY = (1 - scaleDown) * (scroll.scroll - scroll.limit / 2);
-      isMobile && ((scaledScrollY = 0), (scaleDown = 1));
-      gsap.to(ref.current, {
-        y: navIsOpen ? scaledScrollY : 0,
-        scale: navIsOpen ? scaleDown : 1,
-        ease: "power3.inOut",
-        duration: 1.2,
-        onComplete: () => {
-          !navIsOpen &&
-            gsap.to(ref.current, { delay: 0.4, clearProps: "transform" });
-        }
-      });
-    },
-    { dependencies: [navIsOpen] }
-  );
+  const [ref, animate] = useAnimate<HTMLDivElement>();
+  const lastSideBar = useRef(isSidebarOpen);
+  useEffect(() => {
+    if (!lenis || !ref.current) return;
+    const scaleVal = isMobile
+      ? 1
+      : navIsOpen
+        ? 1.1 * nsH.get()
+        : isSidebarOpen
+          ? 0.9
+          : 1;
+    const yval =
+      isMobile || navIsOpen
+        ? 0
+        : (1 - scaleVal) * (lenis.scroll - lenis.limit / 2);
+
+    animate(
+      ref.current,
+      {
+        y: yval,
+        scale: scaleVal
+      },
+      {
+        ...baseConfig,
+        duration:
+          lastSideBar.current !== isSidebarOpen
+            ? isSidebarOpen
+              ? 0.8
+              : 0.4
+            : 1.2
+      }
+    );
+    lastSideBar.current = isSidebarOpen;
+  }, [baseConfig, isMobile, isSidebarOpen, lenis, nsH, navIsOpen]);
+  // useGSAP(
+  //   () => {
+  //     if (typeof ref !== "object" || !ref || !lenis || !ref.current) return;
+  //     gsap.killTweensOf(ref.current);
+  //     ref.current.style.removeProperty("transform");
+  //     let scaleDown = scaled;
+  //     let scaledScrollY = (1 - scaleDown) * (lenis.scroll - lenis.limit / 2);
+  //     isMobile && ((scaledScrollY = 0), (scaleDown = 1));
+  //     gsap.to(ref.current, {
+  //       y: navIsOpen ? scaledScrollY : 0,
+  //       scale: navIsOpen ? scaleDown : 1,
+  //       ease: "power3.inOut",
+  //       duration: 1.2,
+  //       onComplete: () => {
+  //         !navIsOpen &&
+  //           gsap.to(ref.current, { delay: 0.4, clearProps: "transform" });
+  //       }
+  //     });
+  //   },
+  //   { dependencies: [navIsOpen] }
+  // );
   const setHeaderVisibility = useRPStore((l) => l.setHeaderVisibility);
   const onComplete = useCallback(
     (headerVisible: boolean = true, theme?: Theme) => {
@@ -450,9 +496,7 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
         }
       }}
     >
-      <div className={"contents"} ref={ref}>
-        {children}
-      </div>
+      <m.div ref={ref}>{children}</m.div>
     </m.div>
   );
 };
