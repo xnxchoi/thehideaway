@@ -14,11 +14,25 @@ export type PaywallTeaser = {
 };
 
 export type PaywallProps = {
-  gate: GateResult;
-  postTitle: string;
-  postEyebrow?: string;
+  gate?: GateResult;
+  /** Numeric authority required by the post; used to derive tier copy when no
+   *  GateResult is provided (e.g. when rendered inside Narrateur's body slot). */
+  requiredAuthority?: number;
+  /** True when the viewer is signed out (gate.reason === "auth-required"). */
+  needsAuth?: boolean;
   teaser?: PaywallTeaser | null;
   currentPath?: string;
+};
+
+const tierFromAuthority = (
+  authority: number | undefined
+): "member" | "patron" | "author" | "editor" | "admin" => {
+  const a = typeof authority === "number" ? authority : 2;
+  if (a >= 1000) return "admin";
+  if (a >= 5) return "editor";
+  if (a >= 4) return "author";
+  if (a >= 3) return "patron";
+  return "member";
 };
 
 const tierCopy: Record<
@@ -56,80 +70,68 @@ const tierCopy: Record<
 
 export function Paywall({
   gate,
-  postTitle,
-  postEyebrow,
+  requiredAuthority,
+  needsAuth: needsAuthProp,
   teaser,
   currentPath
 }: PaywallProps) {
   const requiredKey =
-    gate.requiredRole &&
+    gate?.requiredRole &&
     gate.requiredRole !== "guest" &&
     gate.requiredRole !== "user"
       ? gate.requiredRole
-      : "member";
+      : tierFromAuthority(requiredAuthority);
   const copy = tierCopy[requiredKey as keyof typeof tierCopy];
-  const needsAuth = gate.reason === "auth-required";
+  const needsAuth =
+    typeof needsAuthProp === "boolean"
+      ? needsAuthProp
+      : gate?.reason === "auth-required";
   const loginHref = currentPath
     ? `/login?redirect=${encodeURIComponent(currentPath)}`
     : "/login";
 
   const hasTeaser =
-    teaser &&
-    teaser.root &&
+    !!teaser &&
+    !!teaser.root &&
     Array.isArray(teaser.root.children) &&
     teaser.root.children.length > 0;
 
   return (
-    <article className="relative mx-auto max-w-2xl px-6 pb-32 pt-20 xl:px-0">
-      {/* Eyebrow + headline */}
-      <header className="mb-10">
-        {postEyebrow ? (
-          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-            {postEyebrow}
-          </p>
-        ) : null}
-        <h1 className="text-3xl font-light leading-[1.15] tracking-tight text-foreground sm:text-4xl xl:text-5xl">
-          {postTitle}
-        </h1>
-      </header>
-
-      {/* Teaser content with fade-to-background mask at the bottom */}
+    <>
+      {/* Teaser body — rendered exactly like the regular RichText would be,
+          but with a fade-to-background mask softening the cut. */}
       {hasTeaser ? (
-        <div className="relative mb-2">
-          <div className="prose prose-neutral dark:prose-invert max-w-none font-mono text-[12px] leading-[1.85] text-foreground/85 [&_h1]:font-light [&_h2]:font-light [&_h3]:font-light [&_p]:my-5">
-            {/* RichText accepts the lexical state object. Cast to satisfy its
-                stricter signature; the renderer tolerates partial trees. */}
-            <RichText
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              data={teaser as any}
-              enableGutter={false}
-            />
-          </div>
-          {/* Fade mask from transparent to background — disguises the cut */}
+        <div className="relative">
+          <RichText
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            data={teaser as any}
+            enableGutter={false}
+          />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 -bottom-1 h-24 bg-gradient-to-b from-transparent to-background"
+            className="pointer-events-none absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-b from-transparent to-faded-white dark:to-faded-black"
           />
         </div>
       ) : null}
 
-      {/* Gate */}
-      <section
+      {/* Gate — sits inside the .rp-content column flow, so editorial
+          typography + container width come from Narrateur. */}
+      <aside
         role="region"
         aria-label="Continue reading"
-        className="relative mt-12 border-t border-border/30 pt-12"
+        className="relative mt-16 border-t border-muted-faded-foreground/30 pt-12"
       >
-        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-faded-foreground/70">
           ◌ {copy.label} only · the rest is reserved
         </p>
 
-        <h2 className="mb-5 text-2xl font-light leading-tight tracking-tight text-foreground xl:text-3xl">
+        <h2 className="mb-5 text-2xl font-light leading-tight tracking-tight xl:text-3xl">
           {needsAuth
             ? "Sign in to keep reading"
             : `Continue reading as a ${copy.label.replace(/s$/, "")}`}
         </h2>
 
-        <p className="mb-10 max-w-prose font-mono text-[12px] leading-relaxed text-muted-foreground">
+        <p className="mb-10 max-w-prose font-mono text-[12px] leading-relaxed text-muted-faded-foreground">
           {copy.pitch}
         </p>
 
@@ -138,7 +140,7 @@ export function Paywall({
             <Link
               href={loginHref}
               prefetch={false}
-              className="inline-flex h-11 items-center border border-border/50 px-5 font-mono text-[11px] uppercase tracking-widest text-foreground/85 transition-colors hover:border-border hover:text-foreground"
+              className="inline-flex h-11 items-center border border-muted-faded-foreground/50 px-5 font-mono text-[11px] uppercase tracking-widest transition-colors hover:border-foreground hover:text-foreground"
             >
               Sign in
             </Link>
@@ -146,23 +148,23 @@ export function Paywall({
           <Link
             href="/plans"
             prefetch={false}
-            className="inline-flex h-11 items-center border border-foreground/80 bg-foreground px-5 font-mono text-[11px] uppercase tracking-widest text-background transition-colors hover:bg-foreground/90"
+            className="inline-flex h-11 items-center border border-foreground bg-foreground px-5 font-mono text-[11px] uppercase tracking-widest text-background transition-colors hover:bg-foreground/90"
           >
             {needsAuth ? "View plans" : copy.cta}
           </Link>
           <Link
             href="/plans"
             prefetch={false}
-            className="ml-1 font-mono text-[11px] uppercase tracking-widest text-muted-foreground/70 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            className="ml-1 font-mono text-[11px] uppercase tracking-widest text-muted-faded-foreground/70 underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
             What's included
           </Link>
         </div>
 
-        <p className="mt-12 max-w-prose font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40">
+        <p className="mt-12 max-w-prose font-mono text-[10px] uppercase tracking-[0.2em] text-muted-faded-foreground/40">
           The Hideaway · Seoul
         </p>
-      </section>
-    </article>
+      </aside>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { FeaturedCard } from "@/blocks/heros/ArtHero/FeatureHero";
 import { Link } from "@/components/core/Link/Link";
 import { ArticleBookmarkButton } from "@/components/UX/Bookmark";
 import LockedGate from "@/components/UX/Highlightr/Gated";
+import { Paywall, type PaywallTeaser } from "@/components/UX/Paywall/Paywall";
 import { MiniMap } from "@/components/UX/Highlightr/MiniMap";
 import {
   fetchUserHighlights,
@@ -982,7 +983,19 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                       />
                     ))}
                   </Aside>
-                  {locked ? (
+                  {d ? (
+                    <Paywall
+                      requiredAuthority={post.authority ?? 2}
+                      needsAuth={!user}
+                      teaser={
+                        (post.teaser as PaywallTeaser | null | undefined) ??
+                        null
+                      }
+                      currentPath={
+                        typeof slug === "string" ? `/essays/${slug}` : undefined
+                      }
+                    />
+                  ) : locked ? (
                     <LockedGate id={postId} collection={collection} />
                   ) : (
                     <RichText data={postContent} enableGutter={false} />

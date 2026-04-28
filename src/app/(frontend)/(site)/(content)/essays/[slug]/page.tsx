@@ -1,6 +1,5 @@
 import { Narrateur } from "@/components/UX/Highlightr";
 import { PrevNext } from "@/components/UX/Highlightr/prevNext";
-import { Paywall } from "@/components/UX/Paywall/Paywall";
 import { RPage } from "@/components/UX/Transition";
 import { queryPostBySlug } from "@/payload/collections/Posts/api/queryPostBySlug";
 import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
@@ -23,39 +22,16 @@ export default async function Post({ params: paramsPromise }: Args) {
   if (!p) return <PayloadRedirects url={"/home"} />;
   const { post, prev, next, gate } = p;
 
-  if (!gate.readable) {
-    const eyebrow =
-      post.category && typeof post.category === "object" && "title" in post.category
-        ? (post.category as { title?: string }).title
-        : undefined;
-    return (
-      <RPage type={"posts"} slug={[slug]} key={slug}>
-        <Paywall
-          gate={gate}
-          postTitle={post.title || "Locked essay"}
-          postEyebrow={eyebrow}
-          teaser={p.teaser}
-          currentPath={`/essays/${slug}`}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 -z-10 h-svh w-svw bg-faded-white dark:bg-faded-black"
-        ></div>
-      </RPage>
-    );
-  }
-
   return (
     <RPage type={"posts"} slug={[slug]} key={slug}>
       <PageClient post={post}>
         <Narrateur post={post} />
       </PageClient>
       <div
-        className={
-          "fixed inset-0 z-0 h-svh w-svw bg-faded-white dark:bg-faded-black"
-        }
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 h-svh w-svw bg-faded-white dark:bg-faded-black"
       ></div>
-      {<PrevNext prev={prev} next={next} />}
+      {gate.readable ? <PrevNext prev={prev} next={next} /> : null}
     </RPage>
   );
 }

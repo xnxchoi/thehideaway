@@ -62,4 +62,10 @@ export type SingleArticle = Omit<FocusedArticle, "author" | "relatedPosts"> & {
 	queuedIDs: string[];
 	prev?: PostOverview;
 	next?: PostOverview;
+	/**
+	 * Populated by queryPostBySlug when the viewer fails the audience gate:
+	 * the first ~20% of the post body, sent so the Paywall surface can lure
+	 * the reader without exposing the full essay.
+	 */
+	teaser?: FocusedArticle["content"] | null;
 };

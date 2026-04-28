@@ -251,10 +251,7 @@ const EMPTY_RICH_TEXT: RichRoot = {
   }
 };
 
-const extractTeaser = (
-  content: unknown,
-  fraction = 0.2
-): RichRoot | null => {
+const extractTeaser = (content: unknown, fraction = 0.2): RichRoot | null => {
   const rt = content as RichRoot | null | undefined;
   const children = rt?.root?.children;
   if (!Array.isArray(children) || children.length === 0) return null;
@@ -369,6 +366,7 @@ export const queryPostBySlug = async ({
   if (!gate.readable) {
     const teaser = extractTeaser(finalPost.content);
     finalPost.content = EMPTY_RICH_TEXT as unknown as typeof finalPost.content;
+    finalPost.teaser = (teaser as unknown as typeof finalPost.content) ?? null;
     finalPost.disabled = true;
     finalPost.queuedIDs = [];
     finalPost.relatedPosts = [];
