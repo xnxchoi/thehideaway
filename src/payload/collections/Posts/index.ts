@@ -33,6 +33,7 @@ import {
 import { getPostHandler } from "./api/getPostHandler";
 import { postBookmarksHandler } from "./api/postBookmarksHandler";
 import { revalidateDelete, revalidatePost } from "./hooks/revalidatePost";
+import { promoteAuthorAfterPostChange } from "@/payload/collections/Users/hooks/promoteToAuthor";
 import { RichContent } from "./richContent";
 import { RichTitle } from "./richTitle";
 
@@ -322,6 +323,51 @@ export const Posts: CollectionConfig<"posts"> = {
           hasMany: true,
           relationTo: "posts",
           maxDepth: 1
+        },
+        {
+          name: "approved_by_editor",
+          type: "checkbox",
+          defaultValue: false,
+          index: true,
+          admin: {
+            description:
+              "Editor approval — required for frontend display (frontpage list, /latest). Authors+ get true on create; member/user posts default false until an editor flips it."
+          },
+          access: {
+            update: ({ req }) => {
+              const role = req.user?.role;
+              return role === "admin" || role === "editor";
+            }
+          }
+        },
+        {
+          name: "featured",
+          type: "checkbox",
+          defaultValue: false,
+          index: true,
+          admin: {
+            description:
+              "Editor-only. Promote into the hand-curated 'featured' slots (HomeSquare top, /latest hero). Appears in regular lists with a 'featured' badge if not slotted."
+          },
+          access: {
+            update: ({ req }) => {
+              const role = req.user?.role;
+              return role === "admin" || role === "editor";
+            }
+          }
+        },
+        {
+          name: "front_eligible",
+          type: "checkbox",
+          defaultValue: false,
+          index: true,
+          admin: {
+            description:
+              "Computed: did this post pass the publishing scorecard (account age, ban status, prior approvals, etc)? Set by a hook; do not edit manually. (Phase 5 — implementation pending.)"
+          },
+          access: {
+            update: ({ req }) => req.user?.role === "admin"
+          }
         }
       ]
     },
@@ -386,9 +432,21 @@ export const Posts: CollectionConfig<"posts"> = {
 
         return data;
       },
+      // Role-based default for `approved_by_editor`:
+      // author+ → true on create (their work surfaces immediately).
+      // member/user → false on create (waits for editor approval / scorecard).
+      ({ data, operation, req }) => {
+        if (operation !== "create") return data;
+        if (data?.approved_by_editor !== undefined) return data;
+        const role = req.user?.role;
+        const isAuthorPlus =
+          role === "author" || role === "editor" || role === "admin";
+        data.approved_by_editor = isAuthorPlus;
+        return data;
+      },
       populatePublishedAt
     ],
-    afterChange: [revalidatePost],
+    afterChange: [revalidatePost, promoteAuthorAfterPostChange],
 
     afterDelete: [revalidateDelete, updateCategoryAfterDelete]
   },
