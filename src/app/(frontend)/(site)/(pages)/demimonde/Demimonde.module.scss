@@ -1,0 +1,472 @@
+.shell {
+	background: oklch(0.07 0.005 30);
+	color: oklch(0.96 0.04 80);
+	min-height: 100vh;
+	overflow-x: hidden;
+	isolation: isolate;
+}
+
+/* ─── Hero ───────────────────────────────────────────────────────────── */
+
+.hero {
+	position: relative;
+	min-height: 60vh;
+	padding: 96px 32px 40px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	gap: 22px;
+	overflow: hidden;
+	max-width: 1280px;
+	margin: 0 auto;
+}
+
+.heroGrain {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	mix-blend-mode: overlay;
+}
+
+.heroEyebrow {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: oklch(0.78 0.005 240);
+	margin: 0;
+}
+
+.heroTitle {
+	font-weight: 200;
+	font-size: clamp(72px, 12vw, 200px);
+	line-height: 0.92;
+	letter-spacing: -0.05em;
+	text-transform: lowercase;
+	margin: 0;
+	width: fit-content;
+	padding-right: 0.04em;
+	background-image: linear-gradient(
+		95deg,
+		oklch(0.62 0.18 30) 0%,
+		oklch(0.85 0.13 60) 35%,
+		oklch(0.96 0.04 80) 70%,
+		oklch(0.78 0.12 230) 100%
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+	.heroTitle {
+		color: oklch(0.96 0.02 80);
+		background-image: none;
+	}
+}
+
+.heroSub {
+	font-size: clamp(15px, 1.4vw, 18px);
+	line-height: 1.55;
+	color: oklch(0.72 0.005 240);
+	max-width: 44ch;
+	margin: 0;
+}
+
+/* ─── Archive section (long parallax stage) ──────────────────────────── */
+
+.archive {
+	position: relative;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	/* `clip` (not `hidden`) — clips overflowing photos at section edges
+	   without creating a scroll container that would break sticky/fixed
+	   descendants.
+	   No `isolation: isolate` here: the fixed backdrop uses `z-index: -1`
+	   to sit behind the hero, which only works if the archive shares a
+	   stacking context with the hero (i.e. inherits `.shell`'s context). */
+	overflow: clip;
+}
+
+.archiveStage {
+	position: relative;
+	width: 100%;
+	height: 600vh;
+}
+
+/* ─── Backdrop (Hero-Collective vibe — noise, dust, light leaks) ─────── */
+
+/* Fixed to the viewport so a single 100vh atmospheric layer stays put
+   while photos parallax through it. Opacity is driven by the section's
+   scroll progress so it only shows while the archive is on screen.
+   `position: fixed` (not `sticky`) because `.shell`'s `overflow-x: hidden`
+   creates an implicit scroll container that breaks sticky descendants. */
+.backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.bdBase {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		180deg,
+		oklch(0.09 0.005 30) 0%,
+		oklch(0.07 0.005 250) 45%,
+		oklch(0.08 0.012 30) 100%
+	);
+}
+
+.bdLeakA,
+.bdLeakB {
+	position: absolute;
+	pointer-events: none;
+	filter: blur(80px);
+	mix-blend-mode: screen;
+	will-change: transform;
+}
+
+.bdLeakA {
+	width: 70vw;
+	height: 60vh;
+	top: 8%;
+	left: -10%;
+	background: radial-gradient(
+		ellipse at center,
+		oklch(0.55 0.18 40 / 0.35) 0%,
+		transparent 65%
+	);
+}
+
+.bdLeakB {
+	width: 80vw;
+	height: 70vh;
+	top: 55%;
+	right: -15%;
+	background: radial-gradient(
+		ellipse at center,
+		oklch(0.45 0.22 25 / 0.28) 0%,
+		transparent 65%
+	);
+}
+
+.bdDustNear {
+	position: absolute;
+	inset: -10%;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='1' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.95  0 0 0 0 0.85  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	background-size: 800px 800px;
+	mix-blend-mode: screen;
+	opacity: 0.75;
+}
+
+.bdDustFar {
+	position: absolute;
+	inset: -10%;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='1' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.96  0 0 0 0 0.92  0 0 0 0 0.78  0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	background-size: 480px 480px;
+	mix-blend-mode: screen;
+	opacity: 0.6;
+}
+
+.bdNoise {
+	position: absolute;
+	inset: 0;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	mix-blend-mode: overlay;
+	opacity: 0.7;
+}
+
+.bdVignette {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: radial-gradient(
+		ellipse at center,
+		transparent 40%,
+		oklch(0.04 0 0 / 0.55) 100%
+	);
+}
+
+/* ─── Photos ─────────────────────────────────────────────────────────── */
+
+.photo {
+	margin: 0;
+	transform-origin: center;
+	will-change: transform;
+}
+
+/* Photo body — wraps image area + caption, takes the parallax y so the
+   whole photo (not just the gradient inside an overflow:hidden box)
+   translates as you scroll. */
+.photoBody {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	will-change: transform;
+}
+
+/* Image area — carries the aspect ratio + depth-tier scale/opacity/blur. */
+.photoImage {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	transform-origin: center;
+	will-change: transform, filter, opacity;
+}
+
+.photoFrame {
+	position: absolute;
+	inset: 0;
+	background-color: oklch(0.18 0.012 240);
+	background-size: cover;
+	background-position: center;
+	box-shadow:
+		0 1px 2px oklch(0 0 0 / 0.4),
+		0 24px 48px -16px oklch(0 0 0 / 0.7);
+}
+
+.photoGrain {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	mix-blend-mode: overlay;
+	opacity: 0.85;
+}
+
+/* Tonal placeholder gradients per event volume. */
+.toneA .photoFrame {
+	background-image: linear-gradient(
+		135deg,
+		oklch(0.18 0.012 240) 0%,
+		oklch(0.26 0.025 230) 55%,
+		oklch(0.1 0.005 240) 100%
+	);
+}
+.toneB .photoFrame {
+	background-image: linear-gradient(
+		145deg,
+		oklch(0.22 0.06 50) 0%,
+		oklch(0.18 0.04 30) 55%,
+		oklch(0.1 0.005 240) 100%
+	);
+}
+.toneC .photoFrame {
+	background-image: linear-gradient(
+		160deg,
+		oklch(0.28 0.05 20) 0%,
+		oklch(0.18 0.04 350) 55%,
+		oklch(0.1 0.005 240) 100%
+	);
+}
+.toneD .photoFrame {
+	background-image: linear-gradient(
+		120deg,
+		oklch(0.22 0.04 200) 0%,
+		oklch(0.16 0.03 240) 55%,
+		oklch(0.1 0.005 240) 100%
+	);
+}
+.toneE .photoFrame {
+	background-image: linear-gradient(
+		150deg,
+		oklch(0.24 0.04 80) 0%,
+		oklch(0.2 0.05 40) 55%,
+		oklch(0.12 0.005 30) 100%
+	);
+}
+
+/* Depth tier overrides (sharpening, color saturation). */
+
+.depth_close .photoFrame {
+	filter: contrast(1.06) saturate(0.86);
+}
+
+.depth_mid .photoFrame {
+	filter: contrast(1.0) saturate(0.7);
+}
+
+.depth_far .photoFrame {
+	filter: contrast(0.94) saturate(0.55);
+}
+
+.depth_background .photoFrame {
+	filter: contrast(0.88) saturate(0.4);
+}
+
+/* ─── Caption (modernist photo-portfolio) ────────────────────────────── */
+
+.caption {
+	margin: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 16px;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 9px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: oklch(0.62 0.005 240);
+}
+
+.captionTitle {
+	color: oklch(0.85 0.02 80);
+	letter-spacing: 0.18em;
+	text-transform: none;
+	font-style: italic;
+	font-size: 10px;
+}
+
+.captionMeta {
+	color: oklch(0.5 0.005 240);
+	text-align: right;
+	flex: 1;
+}
+
+/* In parallax mode only, background and far-tier photos drop their captions
+   — they should read as atmospheric depth, not a labeled image. In grid
+   mode every photo gets its caption since the depth illusion is gone. */
+.archiveStage .depth_background .caption,
+.archiveStage .depth_far .caption {
+	display: none;
+}
+
+/* ─── Grid mode ──────────────────────────────────────────────────────── */
+
+.gridStage {
+	position: relative;
+	z-index: 1;
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 60px 32px 60px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 32px 24px;
+	align-items: start;
+}
+
+@media (min-width: 720px) {
+	.gridStage {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+@media (min-width: 1100px) {
+	.gridStage {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+
+/* ─── View toggle ────────────────────────────────────────────────────── */
+
+.viewToggle {
+	position: fixed;
+	top: 50%;
+	right: 18px;
+	transform: translateY(-50%);
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 6px;
+	border: 1px solid oklch(0.32 0.005 240 / 0.7);
+	border-radius: 999px;
+	background: oklch(0.08 0.005 30 / 0.6);
+	backdrop-filter: blur(10px);
+}
+
+.viewToggleBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	color: oklch(0.6 0.005 240);
+	cursor: pointer;
+	border-radius: 999px;
+	transition:
+		color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+		background 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.viewToggleBtn:hover {
+	color: oklch(0.92 0.04 80);
+}
+
+.viewToggleBtn[data-active="true"] {
+	color: oklch(0.96 0.04 80);
+	background: oklch(0.85 0.13 60 / 0.16);
+}
+
+.viewToggleBtn:focus-visible {
+	outline: 2px solid oklch(0.85 0.13 60);
+	outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+	.viewToggle {
+		top: auto;
+		bottom: 18px;
+		right: 18px;
+		transform: none;
+		flex-direction: row;
+	}
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────── */
+
+.archiveFoot {
+	position: relative;
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 60px 32px 120px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	z-index: 1;
+}
+
+.archiveFootLabel {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: oklch(0.85 0.13 60);
+}
+
+.archiveFootLine {
+	font-size: 14px;
+	color: oklch(0.7 0.005 240);
+	line-height: 1.55;
+	max-width: 44ch;
+}
+
+@media (max-width: 720px) {
+	.archiveStage {
+		height: 800vh;
+	}
+	.photo {
+		width: auto !important;
+		max-width: 70vw;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.photo {
+		will-change: auto;
+	}
+	.bdLeakA,
+	.bdLeakB {
+		will-change: auto;
+	}
+}
