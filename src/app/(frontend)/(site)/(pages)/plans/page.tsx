@@ -1,80 +1,67 @@
-import PageClient from "./page.client";
-import { RPage } from "@/components/UX/Transition";
-import {
-  FounderCard,
-  PriceCard
-} from "@/components/sections/PriceCard/PriceCard";
-import { Justification } from "@/components/UX/Justification/Justification";
-import { getTranslations } from "next-intl/server";
+import { headers as nextHeaders } from "next/headers";
+import { getPayload } from "payload";
+import config from "@payload-config";
+import { getPlansData } from "./getPlansData";
+import { PricingHero } from "@/components/sections/Pricing/PricingHero";
+import { TierGrid } from "@/components/sections/Pricing/TierGrid";
+import { FeatureMatrix } from "@/components/sections/Pricing/FeatureMatrix";
+import { DropTeaser } from "@/components/sections/Pricing/DropTeaser";
+import { FAQAccordion } from "@/components/sections/Pricing/FAQAccordion";
+import { DemimondeTease } from "@/components/sections/Pricing/DemimondeTease";
+import { FounderRibbonIsland } from "@/components/sections/Pricing/FounderRibbonIsland";
+import s from "@/components/sections/Pricing/Pricing.module.scss";
+import PlansPageClient from "./page.client";
+
+export const dynamic = "force-dynamic";
 
 export default async function PlansPage() {
-  const t = await getTranslations("Plans");
+  const [plans, registered] = await Promise.all([
+    getPlansData(),
+    (async (): Promise<boolean> => {
+      try {
+        const payload = await getPayload({ config });
+        const headersList = await nextHeaders();
+        const auth = await payload.auth({ headers: headersList });
+        return Boolean(auth.user);
+      } catch {
+        return false;
+      }
+    })()
+  ]);
+
+  const founderPlan = plans.find((p) => p.presentation === "founder");
+
   return (
-    <RPage type="pages" slug={["plans"]}>
-      <div className="relative mx-auto w-full px-[1.25em] pt-[10em] sm:px-[2em] sm:pt-[15em]">
-        <div className="mb-[4.5em] text-center">
-          <div className="mx-auto w-full max-w-[44em]">
-            <div className="flex flex-col items-center justify-start gap-[1.25em]">
-              <div>
-                <div className="mb-[.75em]">
-                  <div
-                    className="leading-[1] font-normal uppercase"
-                    style={{ fontSize: ".75em" }}
-                  >
-                    <div className="mb-[-.1em] overflow-hidden pb-[.1em]">
-                      <div className="single-line">Membership</div>
-                    </div>
-                  </div>
-                </div>
-                <h1 className="my-0 leading-[1]">
-                  <div className="mb-[-.1em] overflow-hidden pb-[.1em]">
-                    {t("title")}
-                  </div>
-                </h1>
-              </div>
-              <div className="w-full max-w-[35em] items-center">
-                <p
-                  aria-hidden="true"
-                  data-split="lines"
-                  data-reveal="load"
-                  className="leading-[1.4] font-medium opacity-70"
-                  style={{ fontSize: "1em" }}
-                >
-                  {t("subtitle")}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto w-full max-w-[72em] lg:max-w-[75vw]">
-          <div
-            className="relative flex"
-            style={{ flexFlow: "wrap", gridRowGap: "3em" }}
-          >
-            <PriceCard type="standard" />
-            <PriceCard type="pro" />
-          </div>
-          <div className="px-[.8rem] pt-[1.6rem]" data-theme="dark">
-            <FounderCard />
-          </div>
-          <div className="price-bottom">
-            <Justification
-              posterEnabled={false}
-              controls={false}
-              loop={true}
-              playsInline={true}
-              muted={false}
-              autoPlay={true}
-              restartOnEnter={true}
-              objectFit="cover"
-              backgroundColor=""
-              volume={25}
-              startTime={0}
-            />
-          </div>
-        </div>
-      </div>
-      <PageClient />
-    </RPage>
+    <main className={s.pricingShell} data-theme="dark">
+      <PlansPageClient />
+      <PricingHero
+        eyebrow="Membership"
+        title="Find your way in."
+        subtitle="The Hideaway is a small, opinionated editorial. One-time payment, no recurring charges. Two ways in — find yours."
+      />
+      <TierGrid
+        plans={plans}
+        registered={registered}
+        cta="Request access"
+        guestCta={registered ? "You're in" : "Register as guest"}
+      />
+      {founderPlan ? (
+        <FounderRibbonIsland
+          planId={founderPlan.id}
+          priceDisplay={founderPlan.price.display}
+          validityLabel={
+            founderPlan.validity === "lifetime" ? "lifetime · once" : "per year"
+          }
+          features={founderPlan.features}
+          seatsRemaining={founderPlan.seats_remaining ?? 0}
+          seatsTotal={founderPlan.seat_limit ?? 0}
+          soldOut={founderPlan.sold_out}
+        />
+      ) : null}
+      <FeatureMatrix />
+      <DemimondeTease />
+      <DropTeaser />
+      <FAQAccordion />
+    </main>
   );
 }

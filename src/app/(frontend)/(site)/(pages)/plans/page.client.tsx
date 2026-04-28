@@ -1,19 +1,23 @@
 "use client";
-import "./__plans.scss";
-import dynamic from "next/dynamic";
 
-const Polaroid = dynamic(
-  () => import("@/components/UX/Polaroid/index").then((m) => m.RP_POLAROID),
-  { ssr: false }
-);
-const PageClient = () => {
-  /* Force the header to be dark mode while we have an image behind it */
+import { useEffect } from "react";
+import { useShallow } from "zustand/shallow";
+import { useTheme } from "@/providers/Theme";
 
-  return (
-    <>
-      <Polaroid />
-    </>
-  );
-};
+/**
+ * Locks the page to dark theme via the project's setPageTheme contract.
+ * Restores the previous theme when the route unmounts.
+ */
+export default function PlansPageClient() {
+  const setPageTheme = useTheme(useShallow((r) => r.setPageTheme));
+  const clearPageTheme = useTheme(useShallow((r) => r.clearPageTheme));
 
-export default PageClient;
+  useEffect(() => {
+    setPageTheme("dark", true);
+    return () => {
+      clearPageTheme();
+    };
+  }, [setPageTheme, clearPageTheme]);
+
+  return null;
+}
