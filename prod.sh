@@ -38,7 +38,7 @@ backup_db() {
   local file="backup-$(date +%Y%m%d-%H%M%S).dump"
   echo "→ Backing up database to ${file}..."
   docker compose -f compose.prod.yaml exec -T postgres \
-    pg_dump -U postgres -Fc "${POSTGRES_DB:-theestate}" > "${file}"
+    pg_dump -U "${POSTGRES_USER:-postgres}" -Fc "${POSTGRES_DB:-theestate}" > "${file}"
   echo "  Backup saved: ${file}"
 }
 
