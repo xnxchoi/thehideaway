@@ -290,6 +290,41 @@
   top: -25px;
 }
 
+/* ─── StarlinerMotion additions ───────────────────────────────────────── */
+
+@keyframes starliner-twinkle {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 0.55; }
+}
+
+.starliner-twinkle {
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+  background-image: url("/assets/starliner-backdrop.svg");
+  background-repeat: repeat;
+  background-size: 51% 90%;
+  background-position: center;
+  mix-blend-mode: screen;
+  animation: starliner-twinkle 5.6s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* Warm-tint overrides used on the Patron founder card. */
+.starliner[data-tint="warm"] .starline-backdrop {
+  filter: hue-rotate(-12deg) saturate(1.1) brightness(1.05);
+}
+.starliner[data-tint="warm"] .starliner-twinkle {
+  filter: hue-rotate(-15deg) saturate(1.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starliner-twinkle {
+    animation: none;
+    opacity: 0.25;
+  }
+}
+
 .starline-backdrop {
   flex: 0 0 auto;
   height: 100%;

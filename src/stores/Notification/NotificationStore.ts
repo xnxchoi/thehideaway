@@ -1,11 +1,17 @@
 "use client";
-import {authClient} from "@/lib/auth/client";
-import type {User, UserMedia} from "@/payload-types";
-import {SyncedNotification} from "@/payload/collections/Notifications/hooks/types";
-import {DateTime} from "luxon";
-import {createStore} from "zustand/vanilla";
+import { authClient } from "@/lib/auth/client";
+import type { User, UserMedia } from "@/payload-types";
+import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import { DateTime } from "luxon";
+import { createStore } from "zustand/vanilla";
 
-export type RP_Roles = "user" | "admin" | "author" | "editor" | "patron";
+export type RP_Roles =
+  | "user"
+  | "member"
+  | "admin"
+  | "author"
+  | "editor"
+  | "patron";
 
 export type SortByDateProps = { order?: "ASC" | "DESC" };
 export const sortByDate =

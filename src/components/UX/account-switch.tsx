@@ -18,15 +18,21 @@ import { useBetterAuth } from "@/lib/auth/context";
 import { User } from "@payload-types";
 import { ChevronDown, PlusCircle } from "lucide-react";
 import { useTransitionRouter } from "next-transition-router";
-import { use, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { Button } from "../core/Button";
 
 export default function AccountSwitcher() {
   const { currentUserPromise, deviceSessionsPromise } = useBetterAuth();
-  const currentUser = use(currentUserPromise) as
-    | (User & { collection: "users" })
-    | null;
-  const deviceSessions = use(deviceSessionsPromise);
+  // Combine into one Promise.all so React only sees a single suspending
+  // `use()` call. Multiple sequential `use()` calls cause "Rendered more
+  // hooks than during the previous render" when their backing promises
+  // resolve at different times across re-renders.
+  const combinedPromise = useMemo(
+    () => Promise.all([currentUserPromise, deviceSessionsPromise]),
+    [currentUserPromise, deviceSessionsPromise]
+  );
+  const [currentUserRaw, deviceSessions] = use(combinedPromise);
+  const currentUser = currentUserRaw as (User & { collection: "users" }) | null;
   const [open, setOpen] = useState(false);
   const router = useTransitionRouter();
 

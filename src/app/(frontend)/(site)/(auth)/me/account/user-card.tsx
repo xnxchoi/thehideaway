@@ -45,6 +45,7 @@ import {
   use,
   useCallback,
   useEffect,
+  useMemo,
   useState
 } from "react";
 import QRCode from "react-qr-code";
@@ -64,10 +65,28 @@ export function UserCard() {
     deviceSessionsPromise,
     currentUserPromise
   } = useBetterAuth();
-  const session = use(sessionPromise);
-  const accounts = use(userAccountsPromise);
-  const sessions = use(deviceSessionsPromise);
-  const currentUser = use(currentUserPromise) as
+  // Combine all four promises into a single Promise.all so React's hook
+  // counter sees exactly one `use()` call. With four independent `use()`
+  // calls in a row, sequential resolutions cause React to record different
+  // hook counts across re-renders ("Rendered more hooks than during the
+  // previous render").
+  const combinedPromise = useMemo(
+    () =>
+      Promise.all([
+        sessionPromise,
+        userAccountsPromise,
+        deviceSessionsPromise,
+        currentUserPromise
+      ]),
+    [
+      sessionPromise,
+      userAccountsPromise,
+      deviceSessionsPromise,
+      currentUserPromise
+    ]
+  );
+  const [session, accounts, sessions, currentUserRaw] = use(combinedPromise);
+  const currentUser = currentUserRaw as
     | (User & {
         collection: "users";
       })
@@ -112,7 +131,7 @@ export function UserCard() {
             </p>
           </div>
         </div>
-        <EditUserDialog />
+        <EditUserDialog currentUser={currentUser} />
       </header>
       <div className="grid grid-cols-1 gap-10 text-foreground">
         {currentUser?.emailVerified ? null : (
@@ -695,9 +714,15 @@ function ChangePassword() {
   );
 }
 
-function EditUserDialog() {
-  const { currentUserPromise } = useBetterAuth();
-  const currentUser = use(currentUserPromise);
+function EditUserDialog({
+  currentUser
+}: {
+  currentUser:
+    | (User & {
+        collection: "users";
+      })
+    | null;
+}) {
   const [name, setName] = useState<string>();
   const [firstName, setFirstName] = useState<string>();
   const [lastName, setLastName] = useState<string>();
@@ -710,7 +735,6 @@ function EditUserDialog() {
   const [hover, setHover] = useState<boolean>(false);
   const [removeImage, setRemoveImage] = useState(false);
   const clientUrl = getClientSideURL();
-  const user = use(currentUserPromise);
   const setPortrait = useRPSession((r) => r.setPortrait);
   useEffect(() => {
     if (firstName && lastName) {
@@ -1091,13 +1115,13 @@ function EditUserDialog() {
               let imageURL: string | null = null;
               let portraitURL: string | null = null;
               if (
-                user &&
+                currentUser &&
                 isUploadedImage &&
                 removeImage &&
-                (user as User).portrait
+                (currentUser as User).portrait
               ) {
                 await fetch(
-                  `${clientUrl}/api/userMedia/${(user as User).portrait}`,
+                  `${clientUrl}/api/userMedia/${(currentUser as User).portrait}`,
                   {
                     method: "DELETE",
                     credentials: "include"

@@ -9,6 +9,7 @@ uniform vec3 u_color3;        // lit ridge – vivid rosso / teal
 uniform vec3 u_color4;        // secondary lit
 uniform float u_audioLevel;
 uniform float u_audioBeat;       // smooth peak-envelope (~280ms decay)
+uniform float u_audioGain;       // slow play-state ramp (~700ms) — gates audio response
 uniform float u_fogProgress;
 uniform float u_opacity;
 uniform float u_blobIntensity;
@@ -46,14 +47,14 @@ void main() {
     float aspect = u_resolution.x / u_resolution.y;
     vec2 nUv = (vUv - 0.5) * vec2(aspect, 1.0);
 
-    // Audio is intentionally NOT coupled to anything in the fragment shader.
-    // The only audio response lives in the postprocess blur radius (JS side),
-    // so colors literally "blur more/less" with the music. The fold field
-    // itself moves at a constant pace independent of playback.
-
+    // Audio coupling: every audio-driven term is gated by u_audioGain (a
+    // slow ~700ms ramp tied to play state) so transitions in/out of playing
+    // fade in matched timing and never snap. Beat & aud just provide the
+    // texture *within* that gate.
     float beat = u_audioBeat;
+    float aud  = u_audioLevel;
+    float gain = u_audioGain;          // 0 paused, 1 playing, smoothly ramped
     float t = u_time * 1.6;
-    float aud  = u_audioLevel * 0.06;
     float scrollOffset = u_scrollPhase * 2.0;
 
     // ── Single broad warp octave — leeroy uses two opposing-flow noise samples
@@ -61,18 +62,22 @@ void main() {
     // frequency keeps folds BROAD (no fine subdivision), and the self-reference
     // step (foldBase fed back into a noise lookup) creates the "sticky silk"
     // quality without stacking high-frequency detail.
-    // Noise frequency held constant — no audio modulation on shape, only bloom.
-    float beatFreq = .22+0.4*clamp(0.,1.5,beat);
+    // Frequency held mostly constant — audio coupling on noise frequency
+    // creates "zebra lines" on beats. Trace audio influence through color
+    // and bloom downstream instead of through the fold geometry.
+    float beatFreq = 0.22 + 0.03 * clamp(beat, 0.0, 1.5) * gain;
     vec2 qOrbit = vec2(cos(t * 0.10), sin(t * 0.12)) * 1.2;
     vec2 q = vec2(
         snoise(nUv * beatFreq + qOrbit),
         snoise(nUv * beatFreq - qOrbit + vec2(5.2, 1.3))
     );
 
-    // ── No audio displacement on the fold plane — all audio response now
-    //    lives in halation (specular bloom intensity) downstream.
-    float audPunch = 0.0;
-    float audioSwell = q[0];
+    // No fold-plane displacement from audio. All audio dynamism is funnelled
+    // into bloom expansion + color contrast/saturation pumps below — those
+    // produce the "dynamic" visual response without the jankiness of literal
+    // position shift on every beat.
+    float audPunch = beat * gain;
+    float audioSwell = 0.0;
 
     // ── Primary fold plane — broad strokes only ──────────────────────────────
     // Fewer / lower-amplitude warp terms = larger fold cells. Reference leeroy
@@ -90,7 +95,9 @@ void main() {
     // a finer pass (mid freq, smaller amplitude) adds variation along the
     // folds without breaking them into eddies. Both orbit so they evolve.
     vec2 selfOrbitA = vec2(sin(t * 0.14), cos(t * 0.13)) * 1.0;
-    float selfRefA = snoise(nUv * 0.40 + foldBase * 0.20 + selfOrbitA) * 0.55*u_audioLevel;
+    // Static self-reference — no audio coupling. Folds stay anchored even on
+    // beats; movement perception comes from bloom & color modulation later.
+    float selfRefA = snoise(nUv * 0.40 + foldBase * 0.20 + selfOrbitA) * 0.55;
     foldBase += selfRefA;
 
     vec2 selfOrbitB = vec2(cos(t * 0.11), sin(t * 0.16)) * 0.8;
@@ -125,7 +132,12 @@ void main() {
     float foldShaded = fold + weave * 0.45;
     float litFace  = smoothstep(-1.30, 1.10, foldShaded);
     float litFace2 = smoothstep(-1.10, 1.00, fold2);
-    float specular = smoothstep(0.55, 1.15, foldShaded);
+    // Specular range LOWERS its threshold on beats — what was a tight bright
+    // ridge becomes a wider glow region. This is the visible "bloom expand"
+    // that replaces displacement: bright areas physically grow on each kick.
+    float specEdge0 = 0.55 - audPunch * 0.40;
+    float specEdge1 = 1.15 - audPunch * 0.20;
+    float specular = smoothstep(specEdge0, specEdge1, foldShaded);
 
     // ── Silk-gradient ramp ───────────────────────────────────────────────────
     // Two changes from straight quartile-linear mix:
@@ -140,16 +152,21 @@ void main() {
     // Bias toward extremes — silk = strong dark + strong bright, soft mids.
     ramp = smoothstep(0.05, 0.95, ramp);
 
-    vec3 foldSurface;
-    if (ramp < 0.25) {
-        foldSurface = mix(u_color1, u_color2, smoothstep(0.0, 1.0, ramp / 0.25));
-    } else if (ramp < 0.50) {
-        foldSurface = mix(u_color2, u_color3, smoothstep(0.0, 1.0, (ramp - 0.25) / 0.25));
-    } else if (ramp < 0.75) {
-        foldSurface = mix(u_color3, u_color4, smoothstep(0.0, 1.0, (ramp - 0.50) / 0.25));
-    } else {
-        foldSurface = u_color4;
-    }
+    // ── Overlapping-smoothstep ramp with AUDIO-MODULATED edge widths ─────────
+    // Per-pixel band-softening = colors blend across a wider range on beats,
+    // a narrower range between. Reads as "edges blur into each other" on
+    // hits — exactly the antialias-style smoothstep widening you described.
+    // Baseline 0.11 makes adjacent colors bleed continuously even at rest
+    // (silk gradient, no posterized bands). Audio adds extra ~0.05 on hits
+    // for the subtle "softer on the beat" feel.
+    float bandSoften = 0.11 + (beat * 0.6 + aud * 0.20) * gain * 0.08;
+    vec3 foldSurface = u_color1;
+    foldSurface = mix(foldSurface, u_color2,
+        smoothstep(0.25 - bandSoften, 0.25 + bandSoften, ramp));
+    foldSurface = mix(foldSurface, u_color3,
+        smoothstep(0.50 - bandSoften, 0.50 + bandSoften, ramp));
+    foldSurface = mix(foldSurface, u_color4,
+        smoothstep(0.75 - bandSoften, 0.75 + bandSoften, ramp));
 
     // Secondary fold layer mix lowered — was pushing mid-tone presence too
     // high and muddying the high-contrast silk feel.
@@ -160,10 +177,32 @@ void main() {
     // ── Fine silk shimmer: micro-tonal variation across entire surface ───────
     foldSurface *= (1.0 + weave * 0.12);
 
-    // ── Halation: static specular bloom (no audio coupling). The audio
-    //    response is handled exclusively by the postprocess blur radius —
-    //    the same colors get smeared more or less depending on the music.
-    foldSurface = mix(foldSurface, u_color4 * 1.20, specular * 0.40);
+    // ── Halation + audio-pumped color dynamism (replaces displacement) ───────
+    // Multiple stacked effects, each subtle on its own, together creating the
+    // "dynamic" per-beat reaction without literal field movement:
+    //
+    //   1. Specular bloom region EXPANDS on beats (specEdge0 lower above)
+    //   2. Halation intensity lifts on beats — bright stop pushes brighter
+    //   3. Saturation pump on lit ridges — colors get more vivid
+    //   4. Contrast pump — extremes pull apart slightly
+    //
+    // Single-channel modulation gets averaged out by the eye; multiple
+    // correlated channels firing together read as a coordinated "pulse".
+
+    // 2. Halation intensity pump — bright stop brightens on beats
+    float halationGain = 1.0 + audPunch * 0.55 + aud * gain * 0.15;
+    float halationMix = 0.40 + audPunch * 0.20;
+    foldSurface = mix(foldSurface, u_color4 * 1.20 * halationGain, specular * halationMix);
+
+    // 3. Saturation pump on lit ridges — push toward vivid color3 on beats.
+    //    Localized to litFace so dark valleys aren't disturbed.
+    vec3 saturated = mix(foldSurface, u_color3, audPunch * 0.45);
+    foldSurface = mix(foldSurface, saturated, litFace * 0.55);
+
+    // 4. Contrast pump — extra s-curve weight on beats pulls darks darker
+    //    and brights brighter, intensifying the silk depth on hits.
+    vec3 contrasted = foldSurface * foldSurface * (3.0 - 2.0 * foldSurface);
+    foldSurface = mix(foldSurface, contrasted, audPunch * 0.30);
 
     // ── Compose ──────────────────────────────────────────────────────────────
     vec3 color = mix(u_bgColor, foldSurface, envelope * u_blobIntensity);

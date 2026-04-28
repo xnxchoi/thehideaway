@@ -3,6 +3,7 @@
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { lazy, Suspense } from "react";
+import { BeatDetectorControls } from "@/providers/HideawayFM/BeatDetectorControls";
 import { RadioModeProvider, useRadioMode } from "./RadioModeContext";
 import { StationMode } from "./Station/StationMode";
 
@@ -58,6 +59,10 @@ export function RadioPage() {
   return (
     <RadioModeProvider>
       <RadioModeSwitch />
+      {/* Dev-only live tuning panel for the beat detector. Hidden in
+          production builds via the NODE_ENV check; in dev it shows a Leva
+          panel (toggle visibility with the `h` keybind). */}
+      {process.env.NODE_ENV !== "production" && <BeatDetectorControls />}
     </RadioModeProvider>
   );
 }

@@ -57,6 +57,7 @@ import {
   setNowPlayingMetadata,
   wireActionHandlers
 } from "./mediaSession";
+import { beatDetectorParams } from "./beatDetectorParams";
 import { RP_Studio } from "./RP_Studio";
 import { createHideawayFMStore, type HideawayFMStore } from "./store";
 import type { HideawayFMControls, RP_Track } from "./types";
@@ -174,6 +175,12 @@ export function HideawayFMProvider({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const analyserBufferRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const analyserAttachedRef = useRef(false);
+  // Slow-tracking baseline of beat-band energy. Used as an adaptive threshold:
+  // sustained content (basslines, pads, sustained vocals) gets baked into the
+  // baseline and suppressed; only TRANSIENTS (rising sharply above baseline)
+  // survive — these correspond to whatever the band is tuned for (kick, snare,
+  // clap, etc., depending on the Hz cutoffs in beatDetectorParams).
+  const beatBaselineRef = useRef(0);
   // HTML5-mode <audio> elements bypass Web Audio by default, so the analyser
   // sees silence. We bridge each element via createMediaElementSource() the
   // first time we encounter it, then route through masterGain so the analyser
@@ -724,9 +731,8 @@ export function HideawayFMProvider({
       try {
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
-        // Lower smoothing → beats punch through instead of being averaged out.
-        // Visualiser needs to track rhythm, not produce a flat DC level.
-        analyser.smoothingTimeConstant = 0.55;
+        // Initial smoothing from params; updated each tick if Leva changes it.
+        analyser.smoothingTimeConstant = beatDetectorParams.analyserSmoothing;
         master.connect(analyser);
         analyserRef.current = analyser;
         analyserBufferRef.current = new Uint8Array(analyser.frequencyBinCount);
@@ -839,19 +845,60 @@ export function HideawayFMProvider({
       const buffer = analyserBufferRef.current;
       if (analyser && buffer) {
         analyser.getByteFrequencyData(buffer);
-        // Bass-weighted RMS: rhythm energy lives in the bottom ~25% of bins.
-        // A flat mean across all 128 bins drowns the signal in silent highs.
-        // Using bass + RMS + curve lifts a "0.04 mean" track to "0.4 RMS".
-        const bassEnd = Math.max(1, Math.floor(buffer.length * 0.25));
+        // ── Beat-band transient detector ─────────────────────────────────
+        // All thresholds/weights live in `beatDetectorParams` so they can
+        // be tuned live via the Leva panel. See ./beatDetectorParams.ts and
+        // ./BeatDetectorControls.tsx for the control surface.
+        // Defaults target the snare/clap/upper-mid range (~550-1226 Hz)
+        // which carries the perceptual groove for most modern music.
+        const params = beatDetectorParams;
+
+        // Live-update analyser smoothing if it changed via the panel.
+        if (analyser.smoothingTimeConstant !== params.analyserSmoothing) {
+          analyser.smoothingTimeConstant = params.analyserSmoothing;
+        }
+
+        // Convert Hz cutoffs → bin indices using the analyser's actual sample
+        // rate. binWidth = sampleRate / fftSize. Clamped to valid bin range.
+        const binWidth = analyser.context.sampleRate / analyser.fftSize;
+        const lowBin = Math.max(
+          0,
+          Math.min(buffer.length - 1, Math.floor(params.lowCutHz / binWidth))
+        );
+        const highBin = Math.max(
+          lowBin + 1,
+          Math.min(buffer.length, Math.ceil(params.highCutHz / binWidth))
+        );
+
         let sumSq = 0;
-        for (let i = 0; i < bassEnd; i++) {
+        for (let i = lowBin; i < highBin; i++) {
           const v = buffer[i] / 255;
           sumSq += v * v;
         }
-        const rms = Math.sqrt(sumSq / bassEnd);
-        // Curve to expand low-mid signal into a perceptible visual range.
-        // pow(x, 0.55) lifts 0.1 → 0.29, 0.2 → 0.42, 0.5 → 0.69 — stays in [0,1].
-        const level = Math.min(1, Math.pow(rms, 0.55) * 1.4);
+        const rms = Math.sqrt(sumSq / (highBin - lowBin));
+
+        // Adaptive baseline — slow rise (absorbs sustained content),
+        // configurable fall (re-arms detector after silence).
+        const prevBaseline = beatBaselineRef.current;
+        const baselineAlpha =
+          rms > prevBaseline
+            ? params.baselineRiseAlpha
+            : params.baselineFallAlpha;
+        const baseline = prevBaseline + (rms - prevBaseline) * baselineAlpha;
+        beatBaselineRef.current = baseline;
+
+        // Absolute floor — anything quieter than this is silence regardless
+        // of how it compares to the baseline.
+        const aboveFloor = Math.max(0, rms - params.absoluteFloor);
+        // Transient = current EXCEEDS both the floor AND the baseline.
+        const transient = Math.max(
+          0,
+          aboveFloor - Math.max(0, baseline - params.absoluteFloor)
+        );
+        // Hard gate on the surviving transient (filter low-level noise).
+        const gated = Math.max(0, transient - params.gate);
+        // Amplify surviving signal into the visual range.
+        const level = Math.min(1, gated * params.amplify);
         s.audioLevelMV.set(level);
       }
 

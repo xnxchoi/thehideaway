@@ -7,6 +7,7 @@ import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import {
   createContext,
   type ReactNode,
+  Suspense,
   use,
   useContext,
   useEffect,
@@ -365,11 +366,14 @@ export const RP_SessionProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SessionContext.Provider value={sessionRef.current}>
-      <InternalHandler>{children}</InternalHandler>
+      <Suspense fallback={null}>
+        <SessionSyncer />
+      </Suspense>
+      {children}
     </SessionContext.Provider>
   );
 };
-const InternalHandler = ({ children }: { children: ReactNode }) => {
+const SessionSyncer = () => {
   const { currentUserPromise } = useBetterAuth();
   const currentUser = use(currentUserPromise) as (User & {}) | null;
   const setSession = useRPSession((r) => r.setSession);
@@ -381,7 +385,7 @@ const InternalHandler = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!stale) return;
     refetch().then(() => {
-      // Reset stale flag — InternalHandler will re-sync via the main useEffect
+      // Reset stale flag — SessionSyncer will re-sync via the main useEffect
       // because freshSession reference changes after refetch
       const ctx = sessionCtxRef.current;
       if (ctx) ctx.setState({ stale: false });
@@ -515,7 +519,7 @@ const InternalHandler = ({ children }: { children: ReactNode }) => {
     }
   }, [currentUser, setSession]);
 
-  return <>{children}</>;
+  return null;
 };
 export const useRPSession = <T,>(
   selector: (store: RP_LocalSession) => T

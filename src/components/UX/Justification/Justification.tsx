@@ -51,7 +51,7 @@ export const Justification = (props: {
     } else {
       videoRef.current.volume = 0.15;
     }
-  }, []);
+  }, [volume]);
   const bgRE = useRef<HTMLDivElement>(null!);
   const bgTL = useRef<GSAPTimeline>(null!);
   const setTheme = useTheme((store) => store.setTheme);

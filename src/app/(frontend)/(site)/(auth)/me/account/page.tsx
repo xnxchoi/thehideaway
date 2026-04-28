@@ -1,6 +1,7 @@
 import { RPage } from "@/components/UX/Transition";
 import AccountSwitcher from "@/components/UX/account-switch";
 import { UserCard } from "@/app/(frontend)/(site)/(auth)/me/account/user-card";
+import { Suspense } from "react";
 import { PageClient } from "./page.client";
 
 export default async function Page() {
@@ -24,8 +25,12 @@ export default async function Page() {
         </header>
         <div className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
           <div className="flex flex-col gap-8">
-            <AccountSwitcher />
-            <UserCard />
+            <Suspense fallback={null}>
+              <AccountSwitcher />
+            </Suspense>
+            <Suspense fallback={null}>
+              <UserCard />
+            </Suspense>
           </div>
         </div>
       </div>

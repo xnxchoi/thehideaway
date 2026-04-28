@@ -1,61 +1,77 @@
 "use client";
 
-import { SPRING_EASE } from "@/constants/animations";
+import { useEffect, useRef, useState } from "react";
+
+import { TickIndicator } from "@/components/ui/tick-indicator";
 import { cn } from "@/lib/utils";
 import { useNowPlaying } from "@/providers/HideawayFM/hooks";
-import {
-  useMotionTemplate,
-  useMotionValue,
-  useSpring,
-  useTransform
-} from "motion/react";
-import * as m from "motion/react-m";
-import { useEffect } from "react";
+import { SPRING_EASE } from "@/constants/animations";
 
 type ProgressRailProps = {
   thin?: boolean;
   className?: string;
 };
 
+const MIN_TICKS = 20;
+
 /**
- * Passive progress display — shows tape travel as a filled bar.
+ * Passive progress display — shows tape travel as a discrete tick rail.
  * Non-interactive: seeking is handled by SeekKnob.
+ *
+ * Uses a ResizeObserver to derive the tick count from container width,
+ * so the rail spans edge-to-edge regardless of layout. Internal springs
+ * inside TickIndicator handle per-tick motion, so we feed raw progress.
  */
 export const ProgressRail = ({
   thin = false,
   className
 }: ProgressRailProps) => {
-  const nowPlaying = useNowPlaying();
-  const progress = useMotionValue(nowPlaying.progress);
+  const { progress } = useNowPlaying();
+  const railRef = useRef<HTMLDivElement>(null);
+
+  const tickSpacing = thin ? 2 : 3;
+  const tickHeight = thin ? 4 : 6;
+  const focalHeight = thin ? 8 : 12;
+  const railHeight = thin ? 10 : 16;
+
+  const [ticks, setTicks] = useState(60);
+
   useEffect(() => {
-    progress.set(nowPlaying.progress);
-  }, [nowPlaying.progress, progress]);
-  // Spring the progress for smooth visual updates
-  const smoothProgress = useSpring(progress, SPRING_EASE.power4.inOut);
-  const widthd = useTransform(smoothProgress, [0, 1], [0, 100]);
-  const width = useMotionTemplate`${widthd}%`;
-  const baseHeight = useMotionValue(thin ? 4 : 6);
-  const height = useMotionValue(thin ? 10 : 16);
+    const el = railRef.current;
+    if (!el) return;
+
+    const compute = (width: number) => {
+      const next = Math.max(MIN_TICKS, Math.floor(width / tickSpacing));
+      setTicks((prev) => (prev === next ? prev : next));
+    };
+
+    compute(el.getBoundingClientRect().width);
+
+    const ro = new ResizeObserver(([entry]) => {
+      compute(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [tickSpacing]);
 
   return (
-    <m.div
+    <div
+      ref={railRef}
       className={cn(
-        "relative flex w-full cursor-default items-center",
+        "relative flex w-full cursor-default items-center justify-center",
         className
       )}
-      style={{ height }}
+      style={{ height: railHeight }}
     >
-      {/* Track (background) */}
-      <m.div
-        className="bg-faded-fg/15 relative w-full overflow-hidden rounded-full"
-        style={{ height: baseHeight }}
-      >
-        {/* Fill — spring-animated width */}
-        <m.div
-          className="absolute inset-y-0 left-0 rounded-full bg-bleu-400"
-          style={{ width }}
-        />
-      </m.div>
-    </m.div>
+      <TickIndicator
+        mode="fill"
+        value={progress}
+        springConfig={SPRING_EASE.power4.inOut}
+        ticks={ticks}
+        tickSpacing={tickSpacing}
+        tickHeight={tickHeight}
+        focalHeight={focalHeight}
+      />
+    </div>
   );
 };

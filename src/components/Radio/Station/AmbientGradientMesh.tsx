@@ -119,6 +119,7 @@ const _shaderUniforms = {
   u_color4: new ThreeColor(),
   u_audioLevel: 0.0,
   u_audioBeat: 0.0, // Peak-envelope (~280ms decay) — drives subtle halation breathing
+  u_audioGain: 0.0, // Slow play-state ramp (~700ms) — gates ALL audio coupling so pause↔play transitions fade instead of snap
   u_fogProgress: 0.0,
   u_opacity: 0.1,
   u_speed: 0.02,
@@ -425,6 +426,11 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   // Single smooth peak-envelope (~200ms half-life). Drives only the halation
   // bloom downstream — no displacement, no flashes, no color swaps.
   const beatEnvelopeRef = useRef(0);
+  // Slow play-state envelope. Audio level snaps from 0 → ~0.5 instantly when
+  // play starts (gesture-unlock fires audio at full volume); without this
+  // ramp the visual snaps too. Symmetric ~700ms ramp on both pause→play and
+  // play→pause for matched smoothness in both directions.
+  const audioGainRef = useRef(0);
 
   useFrame((_state, delta) => {
     if (!materialRef.current || !composerRef.current || !meshRef.current)
@@ -440,6 +446,16 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     const beat = aud > decayedBeat ? aud : decayedBeat;
     beatEnvelopeRef.current = beat;
     m.uniforms.u_audioBeat.value = beat;
+
+    // Slow audio gain envelope — ramps to 1 when playing, 0 when paused.
+    // Decay constant 1.0/s gives ~700ms half-life — soft fade in/out so
+    // pause→play visual doesn't snap from inert to fully-modulated.
+    const gainTarget = playing ? 1 : 0;
+    const gainPrev = audioGainRef.current;
+    const gainAlpha = 1 - Math.exp(-delta * 1.0);
+    const gain = gainPrev + (gainTarget - gainPrev) * gainAlpha;
+    audioGainRef.current = gain;
+    m.uniforms.u_audioGain.value = gain;
     // Blur radius oscillates with the beat. The trick: subtract a portion
     // of the smooth `aud` baseline from the peak-follower `beat` so we get
     // ONLY the supra-baseline pulse (what's above sustained level). Without

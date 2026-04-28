@@ -254,8 +254,23 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     setCursorState(null);
     to.current && clearTimeout(to.current);
     to.current = null!;
+    // Navigation always resets scroll to 0, so reset the reference and animate
+    // back to the expanded state. Without this, scrubPosition stays at the old
+    // compacted value and jumps when the first scroll event fires.
+    tweenNumber.current = 0;
     setHeaderTransition(null);
     setHeaderVisibility(true);
+    haltScrollAnimation();
+    runningAnimation.current?.stop();
+    runningAnimation.current = animate(scrubPosition, 0, {
+      duration: 0.96,
+      type: "tween",
+      ease: TWEEN_EASE.power3.inOut,
+      onComplete: () => {
+        runningAnimation.current = null;
+        enableScrollAnimation();
+      }
+    });
   });
   useEffect(() => {
     if (stage === "leaving") {

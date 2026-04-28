@@ -57,7 +57,7 @@ function TickIndicator({
   tickWidth = 1,
   tickHeight: tickHeightProp = 6,
   focalHeight: focalHeightProp = 12,
-  magnify: magnifyProp,
+  magnify: magnifyProp = true,
   magnifyRadius: magnifyRadiusProp = 4,
   magnifyStrength: magnifyStrengthProp = 0.55,
   magnifyAtEnds = false,
@@ -271,8 +271,7 @@ function TickBar({
     accentWeight,
     (v) => `${Math.round(v * accentIntensity * 1000) / 10}%`
   );
-  const accentedBg = useMotionTemplate`color-mix(in oklch, ${accent ?? "transparent"} ${accentPctString}, currentColor)`;
-  const background = accent ? accentedBg : undefined;
+  const background = useMotionTemplate`color-mix(in oklch, ${accent ?? "transparent"} ${accentPctString}, var(--n-s-fg))`;
 
   return (
     <m.span
@@ -280,8 +279,8 @@ function TickBar({
       aria-hidden
       data-tick={index}
       className={cn(
-        "block shrink-0 rounded-[0.5px]",
-        !accent && "bg-foreground"
+        "block shrink-0 rounded-[0.5px] text-nav-foreground",
+        !accent && "bg-nav-foreground"
       )}
       style={{
         width: tickWidth,
