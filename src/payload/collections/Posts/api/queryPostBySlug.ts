@@ -251,18 +251,101 @@ const EMPTY_RICH_TEXT: RichRoot = {
   }
 };
 
+type LexicalNode = {
+  type?: string;
+  text?: string;
+  children?: LexicalNode[];
+  [k: string]: unknown;
+};
+
+/** Recursively count plain-text characters under a node. */
+const countText = (node: LexicalNode): number => {
+  if (typeof node.text === "string") return node.text.length;
+  const kids = node.children;
+  if (!Array.isArray(kids)) return 0;
+  let total = 0;
+  for (const k of kids) total += countText(k);
+  return total;
+};
+
+/** Take the first N text characters from a list-or-block node, clipping its
+ *  descendants in place so partial nodes survive. Returns the (possibly cloned)
+ *  node and the number of chars actually consumed. */
+const sliceNode = (
+  node: LexicalNode,
+  budget: number
+): { node: LexicalNode; consumed: number } => {
+  if (budget <= 0) return { node: { ...node, children: [] }, consumed: 0 };
+  if (typeof node.text === "string") {
+    if (node.text.length <= budget) {
+      return { node: { ...node }, consumed: node.text.length };
+    }
+    // Try to cut on a word boundary if there's one within the budget.
+    let cut = budget;
+    const space = node.text.lastIndexOf(" ", budget);
+    if (space > budget * 0.5) cut = space;
+    return {
+      node: { ...node, text: node.text.slice(0, cut).trimEnd() + "…" },
+      consumed: cut
+    };
+  }
+  const kids = node.children;
+  if (!Array.isArray(kids)) return { node: { ...node }, consumed: 0 };
+  const out: LexicalNode[] = [];
+  let used = 0;
+  for (const child of kids) {
+    if (used >= budget) break;
+    const { node: clipped, consumed } = sliceNode(child, budget - used);
+    if (consumed > 0 || (clipped.children && clipped.children.length > 0)) {
+      out.push(clipped);
+      used += consumed;
+    }
+  }
+  return { node: { ...node, children: out }, consumed: used };
+};
+
 const extractTeaser = (content: unknown, fraction = 0.2): RichRoot | null => {
   const rt = content as RichRoot | null | undefined;
-  const children = rt?.root?.children;
+  const root = rt?.root;
+  const children = root?.children as LexicalNode[] | undefined;
   if (!Array.isArray(children) || children.length === 0) return null;
-  // 20% of the post body, clamped to [1, 4] block-level nodes so very long
-  // essays don't reveal too much and very short posts still tease at least one.
-  const count = Math.max(1, Math.min(4, Math.ceil(children.length * fraction)));
+
+  const totalChars = children.reduce((acc, n) => acc + countText(n), 0);
+  if (totalChars === 0) return null;
+
+  // Clamp the teaser to ~20% of the post body, with hard floor/ceiling so
+  // a one-paragraph essay still teases something readable and a 30k-char
+  // long-read doesn't reveal 6k chars.
+  const targetChars = Math.max(
+    240,
+    Math.min(900, Math.ceil(totalChars * fraction))
+  );
+
+  const out: LexicalNode[] = [];
+  let used = 0;
+  for (const child of children) {
+    if (used >= targetChars) break;
+    const childTextLen = countText(child);
+    if (childTextLen === 0) {
+      // Decorative / image / divider node — keep verbatim, doesn't count.
+      out.push(child);
+      continue;
+    }
+    if (used + childTextLen <= targetChars) {
+      out.push(child);
+      used += childTextLen;
+    } else {
+      const { node: clipped } = sliceNode(child, targetChars - used);
+      out.push(clipped);
+      used = targetChars;
+    }
+  }
+
   return {
     ...rt,
     root: {
-      ...rt!.root,
-      children: children.slice(0, count)
+      ...root!,
+      children: out as unknown[]
     }
   };
 };

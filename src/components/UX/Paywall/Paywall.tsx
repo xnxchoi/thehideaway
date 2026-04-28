@@ -115,17 +115,19 @@ export function Paywall({
       ) : null}
 
       {/* Gate — sits inside the .rp-content column flow, so editorial
-          typography + container width come from Narrateur. */}
-      <aside
+          typography + container width come from Narrateur. NOTE: not <aside>:
+          .rp-content has `[&>aside]:col-3` which would punt this to the side
+          rail. We want the gate in the main column. */}
+      <section
         role="region"
         aria-label="Continue reading"
         className="relative mt-16 border-t border-muted-faded-foreground/30 pt-12"
       >
-        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-faded-foreground/70">
+        <p className="mb-4 font-mono text-[10px] tracking-[0.2em] text-muted-faded-foreground/70 uppercase">
           ◌ {copy.label} only · the rest is reserved
         </p>
 
-        <h2 className="mb-5 text-2xl font-light leading-tight tracking-tight xl:text-3xl">
+        <h2 className="mb-5 text-2xl leading-tight font-light tracking-tight xl:text-3xl">
           {needsAuth
             ? "Sign in to keep reading"
             : `Continue reading as a ${copy.label.replace(/s$/, "")}`}
@@ -140,7 +142,7 @@ export function Paywall({
             <Link
               href={loginHref}
               prefetch={false}
-              className="inline-flex h-11 items-center border border-muted-faded-foreground/50 px-5 font-mono text-[11px] uppercase tracking-widest transition-colors hover:border-foreground hover:text-foreground"
+              className="inline-flex h-11 items-center border border-muted-faded-foreground/50 px-5 font-mono text-[11px] tracking-widest uppercase transition-colors hover:border-foreground hover:text-foreground"
             >
               Sign in
             </Link>
@@ -148,23 +150,23 @@ export function Paywall({
           <Link
             href="/plans"
             prefetch={false}
-            className="inline-flex h-11 items-center border border-foreground bg-foreground px-5 font-mono text-[11px] uppercase tracking-widest text-background transition-colors hover:bg-foreground/90"
+            className="inline-flex h-11 items-center border border-foreground bg-foreground px-5 font-mono text-[11px] tracking-widest text-background uppercase transition-colors hover:bg-foreground/90"
           >
             {needsAuth ? "View plans" : copy.cta}
           </Link>
           <Link
             href="/plans"
             prefetch={false}
-            className="ml-1 font-mono text-[11px] uppercase tracking-widest text-muted-faded-foreground/70 underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            className="ml-1 font-mono text-[11px] tracking-widest text-muted-faded-foreground/70 uppercase underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
             What's included
           </Link>
         </div>
 
-        <p className="mt-12 max-w-prose font-mono text-[10px] uppercase tracking-[0.2em] text-muted-faded-foreground/40">
+        <p className="mt-12 max-w-prose font-mono text-[10px] tracking-[0.2em] text-muted-faded-foreground/40 uppercase">
           The Hideaway · Seoul
         </p>
-      </aside>
+      </section>
     </>
   );
 }
