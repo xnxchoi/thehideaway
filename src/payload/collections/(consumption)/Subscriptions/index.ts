@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { syncRoleAfterSubscriptionChange } from "./hooks/syncRole";
+import { issueInvoiceOnPaid } from "./hooks/issueInvoiceOnPaid";
 
 const subscriptionAccess = {
   create: isAdmin,
@@ -125,6 +126,6 @@ export const Subscriptions: CollectionConfig = {
     }
   ],
   hooks: {
-    afterChange: [syncRoleAfterSubscriptionChange]
+    afterChange: [syncRoleAfterSubscriptionChange, issueInvoiceOnPaid]
   }
 };
