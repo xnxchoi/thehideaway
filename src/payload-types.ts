@@ -2559,8 +2559,51 @@ export interface Currency {
  */
 export interface Invoice {
   id: string;
-  invoice_number?: number | null;
+  /**
+   * Auto-incremented at issue time.
+   */
+  invoice_number: number;
   client: string | User;
+  /**
+   * The subscription this invoice receipts.
+   */
+  subscription: string | Subscription;
+  plan: string | Plan;
+  /**
+   * Total invoice amount in the chosen currency's primary unit (won, dollars, euros).
+   */
+  amount: number;
+  currency: 'krw' | 'usd' | 'eur';
+  status: 'paid' | 'pending' | 'void';
+  /**
+   * Set when admin marks the related Subscription as paid. Mirrors the bank-receipt date.
+   */
+  paid_at?: string | null;
+  /**
+   * Snapshot of subscription.start_date at issue time.
+   */
+  cycle_start?: string | null;
+  /**
+   * Snapshot of subscription.expires_at at issue time (null = lifetime plan).
+   */
+  cycle_end?: string | null;
+  /**
+   * Admin's free-text note: bank transaction id, last-4 digits, or 'cash receipt' tag.
+   */
+  bank_reference?: string | null;
+  /**
+   * Single entry for cash-flow at launch; array shape preserved for future split-payment / multi-currency cases.
+   */
+  payment_method?:
+    | {
+        method: 'bank_transfer' | 'cash';
+        amount: number;
+        currency: 'krw' | 'usd' | 'eur';
+        payment_date: string;
+        reference?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4171,6 +4214,25 @@ export interface PlansSelect<T extends boolean = true> {
 export interface InvoicesSelect<T extends boolean = true> {
   invoice_number?: T;
   client?: T;
+  subscription?: T;
+  plan?: T;
+  amount?: T;
+  currency?: T;
+  status?: T;
+  paid_at?: T;
+  cycle_start?: T;
+  cycle_end?: T;
+  bank_reference?: T;
+  payment_method?:
+    | T
+    | {
+        method?: T;
+        amount?: T;
+        currency?: T;
+        payment_date?: T;
+        reference?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
