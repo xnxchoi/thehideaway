@@ -2,7 +2,6 @@
 import { FeaturedCard } from "@/blocks/heros/ArtHero/FeatureHero";
 import { Link } from "@/components/core/Link/Link";
 import { ArticleBookmarkButton } from "@/components/UX/Bookmark";
-import LockedGate from "@/components/UX/Highlightr/Gated";
 import { Paywall, type PaywallTeaser } from "@/components/UX/Paywall/Paywall";
 import { MiniMap } from "@/components/UX/Highlightr/MiniMap";
 import {
@@ -995,9 +994,12 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                         typeof slug === "string" ? `/essays/${slug}` : undefined
                       }
                     />
-                  ) : locked ? (
-                    <LockedGate id={postId} collection={collection} />
                   ) : (
+                    // d:false here means the server already verified access
+                    // and put the full body on `postContent` — render directly.
+                    // (The old `locked ? <LockedGate /> : <RichText />` branch
+                    // round-tripped to /api/gated, which is currently a dead
+                    // route AND would re-leak the access check to the client.)
                     <RichText data={postContent} enableGutter={false} />
                   )}
                 </div>

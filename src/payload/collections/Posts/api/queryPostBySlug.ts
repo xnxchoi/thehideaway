@@ -447,13 +447,21 @@ export const queryPostBySlug = async ({
   );
 
   if (!gate.readable) {
+    // SECURITY: redact server-side. The full post body never crosses the wire
+    // for an unauthorized reader — we strip content, replace it with an empty
+    // rich-text root, and attach only the truncated teaser. constructArticle
+    // is React-cache()'d, so mutating finalPost would corrupt other callers
+    // inside the same request; we return a fresh object instead.
     const teaser = extractTeaser(finalPost.content);
-    finalPost.content = EMPTY_RICH_TEXT as unknown as typeof finalPost.content;
-    finalPost.teaser = (teaser as unknown as typeof finalPost.content) ?? null;
-    finalPost.disabled = true;
-    finalPost.queuedIDs = [];
-    finalPost.relatedPosts = [];
-    return { post: finalPost, prev: null, next: null, gate, teaser };
+    const redactedPost: SingleArticle = {
+      ...finalPost,
+      content: EMPTY_RICH_TEXT as unknown as typeof finalPost.content,
+      teaser: (teaser as unknown as typeof finalPost.content) ?? null,
+      disabled: true,
+      queuedIDs: [],
+      relatedPosts: []
+    };
+    return { post: redactedPost, prev: null, next: null, gate, teaser };
   }
 
   // 3) Get the related posts (only for readable posts)
