@@ -1,3 +1,6 @@
+// Side-effect import: validates required env vars on app boot. Throws in
+// production when something is missing/malformed; warns in dev.
+import "@/lib/env";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";

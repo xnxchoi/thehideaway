@@ -47,6 +47,37 @@ const nextConfig: NextConfig = {
   // sharp: native binary, cannot be bundled — must be external.
   // pdfmake: uses dynamic requires internally that break bundling.
   serverExternalPackages: ["pdfmake", "sharp"],
+  async headers() {
+    // Static security headers applied to every response. Tightening to a
+    // nonce-based CSP is deferred — the editorial reading surface uses inline
+    // styles + dynamic imports + WebGL shaders that need careful per-page
+    // policy work. Track in TYPE_DEBT.md as a post-launch item.
+    const securityHeaders = [
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=31536000; includeSubDomains; preload"
+      },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "Permissions-Policy",
+        value:
+          "camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()"
+      },
+      { key: "X-DNS-Prefetch-Control", value: "on" }
+    ];
+    return [
+      {
+        // Apply to everything — including /api routes and /vault.
+        source: "/:path*",
+        headers: securityHeaders
+      }
+    ];
+  },
   typescript: {
     // Intentional ship switch. See readmes/TYPE_DEBT.md for the backlog of
     // ~700 errors being paid down post-launch. tsc still runs in CI for the
@@ -174,6 +205,9 @@ const nextConfig: NextConfig = {
       {
         source: "/@:user/:path*",
         destination: "/users/:user/:path*"
+      },{
+      source:"/me",
+        destination:"/me/account"
       }
     ];
   },
