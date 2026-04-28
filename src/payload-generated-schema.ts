@@ -58,6 +58,13 @@ export const enum_admin_invitations_role = pgEnum(
   "enum_admin_invitations_role",
   ["admin", "editor", "author", "patron", "member", "user"]
 );
+export const enum_assets_audience = pgEnum("enum_assets_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_categories_identity_accent = pgEnum(
   "enum_categories_identity_accent",
   ["none", "red", "amber", "citrus", "moss", "cobalt", "violet", "blush", "ink"]
@@ -66,6 +73,13 @@ export const enum_categories_identity_layout = pgEnum(
   "enum_categories_identity_layout",
   ["left", "right"]
 );
+export const enum_media_audience = pgEnum("enum_media_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_notifications_type = pgEnum("enum_notifications_type", [
   "comment",
   "follow",
@@ -153,6 +167,13 @@ export const enum_pages_page_layout_footer_type = pgEnum(
   "enum_pages_page_layout_footer_type",
   ["standard", "linksOnly", "hidden"]
 );
+export const enum_pages_audience = pgEnum("enum_pages_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_pages_status = pgEnum("enum_pages_status", [
   "draft",
   "published"
@@ -217,6 +238,10 @@ export const enum__pages_v_version_page_layout_footer_type = pgEnum(
   "enum__pages_v_version_page_layout_footer_type",
   ["standard", "linksOnly", "hidden"]
 );
+export const enum__pages_v_version_audience = pgEnum(
+  "enum__pages_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
+);
 export const enum__pages_v_version_status = pgEnum(
   "enum__pages_v_version_status",
   ["draft", "published"]
@@ -225,10 +250,21 @@ export const enum__pages_v_published_locale = pgEnum(
   "enum__pages_v_published_locale",
   ["en", "ko"]
 );
+export const enum_posts_audience = pgEnum("enum_posts_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_posts_status = pgEnum("enum_posts_status", [
   "draft",
   "published"
 ]);
+export const enum__posts_v_version_audience = pgEnum(
+  "enum__posts_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
+);
 export const enum__posts_v_version_status = pgEnum(
   "enum__posts_v_version_status",
   ["draft", "published"]
@@ -237,10 +273,28 @@ export const enum__posts_v_published_locale = pgEnum(
   "enum__posts_v_published_locale",
   ["en", "ko"]
 );
+export const enum_user_media_audience = pgEnum("enum_user_media_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
+export const enum_profile_audience = pgEnum("enum_profile_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_profile_status = pgEnum("enum_profile_status", [
   "draft",
   "published"
 ]);
+export const enum__profile_v_version_audience = pgEnum(
+  "enum__profile_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
+);
 export const enum__profile_v_version_status = pgEnum(
   "enum__profile_v_version_status",
   ["draft", "published"]
@@ -253,6 +307,13 @@ export const enum_albums_visibility = pgEnum("enum_albums_visibility", [
   "public",
   "private"
 ]);
+export const enum_albums_audience = pgEnum("enum_albums_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_albums_status = pgEnum("enum_albums_status", [
   "draft",
   "published"
@@ -260,6 +321,10 @@ export const enum_albums_status = pgEnum("enum_albums_status", [
 export const enum__albums_v_version_visibility = pgEnum(
   "enum__albums_v_version_visibility",
   ["public", "private"]
+);
+export const enum__albums_v_version_audience = pgEnum(
+  "enum__albums_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
 );
 export const enum__albums_v_version_status = pgEnum(
   "enum__albums_v_version_status",
@@ -273,6 +338,13 @@ export const enum_tracks_visibility = pgEnum("enum_tracks_visibility", [
   "public",
   "private"
 ]);
+export const enum_tracks_audience = pgEnum("enum_tracks_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_tracks_status = pgEnum("enum_tracks_status", [
   "draft",
   "published"
@@ -280,6 +352,10 @@ export const enum_tracks_status = pgEnum("enum_tracks_status", [
 export const enum__tracks_v_version_visibility = pgEnum(
   "enum__tracks_v_version_visibility",
   ["public", "private"]
+);
+export const enum__tracks_v_version_audience = pgEnum(
+  "enum__tracks_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
 );
 export const enum__tracks_v_version_status = pgEnum(
   "enum__tracks_v_version_status",
@@ -293,6 +369,13 @@ export const enum_playlists_visibility = pgEnum("enum_playlists_visibility", [
   "public",
   "private"
 ]);
+export const enum_playlists_audience = pgEnum("enum_playlists_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_playlists_status = pgEnum("enum_playlists_status", [
   "draft",
   "published"
@@ -300,6 +383,10 @@ export const enum_playlists_status = pgEnum("enum_playlists_status", [
 export const enum__playlists_v_version_visibility = pgEnum(
   "enum__playlists_v_version_visibility",
   ["public", "private"]
+);
+export const enum__playlists_v_version_audience = pgEnum(
+  "enum__playlists_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
 );
 export const enum__playlists_v_version_status = pgEnum(
   "enum__playlists_v_version_status",
@@ -318,6 +405,13 @@ export const enum_surf_source = pgEnum("enum_surf_source", [
   "external",
   "medium"
 ]);
+export const enum_surf_audience = pgEnum("enum_surf_audience", [
+  "public",
+  "any_user",
+  "members",
+  "patrons",
+  "curated"
+]);
 export const enum_surf_status = pgEnum("enum_surf_status", [
   "draft",
   "published"
@@ -325,6 +419,10 @@ export const enum_surf_status = pgEnum("enum_surf_status", [
 export const enum__surf_v_version_source = pgEnum(
   "enum__surf_v_version_source",
   ["x", "twitter", "substack", "instagram", "youtube", "external", "medium"]
+);
+export const enum__surf_v_version_audience = pgEnum(
+  "enum__surf_v_version_audience",
+  ["public", "any_user", "members", "patrons", "curated"]
 );
 export const enum__surf_v_version_status = pgEnum(
   "enum__surf_v_version_status",
@@ -1158,6 +1256,7 @@ export const assets = pgTable(
     caption: varchar("caption"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_assets_audience("audience").default("public"),
     darkmode: boolean("darkmode").notNull().default(false),
     blurDataUrl: varchar("blur_data_url"),
     updatedAt: timestamp("updated_at", {
@@ -1360,6 +1459,7 @@ export const media = pgTable(
       }),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_media_audience("audience").default("public"),
     alt: varchar("alt").notNull().default("an image"),
     darkmode: boolean("darkmode").notNull().default(false),
     caption: varchar("caption"),
@@ -1983,6 +2083,7 @@ export const pages = pgTable(
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_pages_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -2458,6 +2559,8 @@ export const _pages_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__pages_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -2692,6 +2795,7 @@ export const posts = pgTable(
     front_eligible: boolean("front_eligible").default(false),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_posts_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -2854,6 +2958,8 @@ export const _posts_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__posts_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3023,6 +3129,7 @@ export const user_media = pgTable(
       }),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_user_media_audience("audience").default("public"),
     alt: varchar("alt").notNull().default("an image"),
     darkmode: boolean("darkmode").notNull().default(false),
     caption: varchar("caption"),
@@ -3197,6 +3304,7 @@ export const profile = pgTable(
     hero_gradient2: varchar("hero_gradient2").default("#F3FAFCFF"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_profile_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3309,6 +3417,8 @@ export const _profile_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__profile_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3434,6 +3544,7 @@ export const albums = pgTable(
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_albums_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3532,6 +3643,8 @@ export const _albums_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__albums_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3650,6 +3763,7 @@ export const tracks = pgTable(
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_tracks_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3758,6 +3872,8 @@ export const _tracks_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__tracks_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3885,6 +4001,7 @@ export const playlists = pgTable(
     slug: varchar("slug"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_playlists_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -3982,6 +4099,8 @@ export const _playlists_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__playlists_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -4355,6 +4474,7 @@ export const surf = pgTable(
     }),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
+    audience: enum_surf_audience("audience").default("public"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -4494,6 +4614,8 @@ export const _surf_v = pgTable(
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
     ),
+    version_audience:
+      enum__surf_v_version_audience("version_audience").default("public"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -9541,8 +9663,10 @@ type DatabaseSchema = {
   enum__users_v_version_status: typeof enum__users_v_version_status;
   enum__users_v_published_locale: typeof enum__users_v_published_locale;
   enum_admin_invitations_role: typeof enum_admin_invitations_role;
+  enum_assets_audience: typeof enum_assets_audience;
   enum_categories_identity_accent: typeof enum_categories_identity_accent;
   enum_categories_identity_layout: typeof enum_categories_identity_layout;
+  enum_media_audience: typeof enum_media_audience;
   enum_notifications_type: typeof enum_notifications_type;
   enum_notifications_status: typeof enum_notifications_status;
   enum_notifications_action_link_type: typeof enum_notifications_action_link_type;
@@ -9562,6 +9686,7 @@ type DatabaseSchema = {
   enum_pages_blocks_hero_square_relation_to: typeof enum_pages_blocks_hero_square_relation_to;
   enum_pages_hero_type: typeof enum_pages_hero_type;
   enum_pages_page_layout_footer_type: typeof enum_pages_page_layout_footer_type;
+  enum_pages_audience: typeof enum_pages_audience;
   enum_pages_status: typeof enum_pages_status;
   enum__pages_v_version_hero_links_link_type: typeof enum__pages_v_version_hero_links_link_type;
   enum__pages_v_version_hero_links_link_appearance: typeof enum__pages_v_version_hero_links_link_appearance;
@@ -9578,32 +9703,46 @@ type DatabaseSchema = {
   enum__pages_v_blocks_hero_square_relation_to: typeof enum__pages_v_blocks_hero_square_relation_to;
   enum__pages_v_version_hero_type: typeof enum__pages_v_version_hero_type;
   enum__pages_v_version_page_layout_footer_type: typeof enum__pages_v_version_page_layout_footer_type;
+  enum__pages_v_version_audience: typeof enum__pages_v_version_audience;
   enum__pages_v_version_status: typeof enum__pages_v_version_status;
   enum__pages_v_published_locale: typeof enum__pages_v_published_locale;
+  enum_posts_audience: typeof enum_posts_audience;
   enum_posts_status: typeof enum_posts_status;
+  enum__posts_v_version_audience: typeof enum__posts_v_version_audience;
   enum__posts_v_version_status: typeof enum__posts_v_version_status;
   enum__posts_v_published_locale: typeof enum__posts_v_published_locale;
+  enum_user_media_audience: typeof enum_user_media_audience;
+  enum_profile_audience: typeof enum_profile_audience;
   enum_profile_status: typeof enum_profile_status;
+  enum__profile_v_version_audience: typeof enum__profile_v_version_audience;
   enum__profile_v_version_status: typeof enum__profile_v_version_status;
   enum__profile_v_published_locale: typeof enum__profile_v_published_locale;
   enum_albums_visibility: typeof enum_albums_visibility;
+  enum_albums_audience: typeof enum_albums_audience;
   enum_albums_status: typeof enum_albums_status;
   enum__albums_v_version_visibility: typeof enum__albums_v_version_visibility;
+  enum__albums_v_version_audience: typeof enum__albums_v_version_audience;
   enum__albums_v_version_status: typeof enum__albums_v_version_status;
   enum__albums_v_published_locale: typeof enum__albums_v_published_locale;
   enum_tracks_visibility: typeof enum_tracks_visibility;
+  enum_tracks_audience: typeof enum_tracks_audience;
   enum_tracks_status: typeof enum_tracks_status;
   enum__tracks_v_version_visibility: typeof enum__tracks_v_version_visibility;
+  enum__tracks_v_version_audience: typeof enum__tracks_v_version_audience;
   enum__tracks_v_version_status: typeof enum__tracks_v_version_status;
   enum__tracks_v_published_locale: typeof enum__tracks_v_published_locale;
   enum_playlists_visibility: typeof enum_playlists_visibility;
+  enum_playlists_audience: typeof enum_playlists_audience;
   enum_playlists_status: typeof enum_playlists_status;
   enum__playlists_v_version_visibility: typeof enum__playlists_v_version_visibility;
+  enum__playlists_v_version_audience: typeof enum__playlists_v_version_audience;
   enum__playlists_v_version_status: typeof enum__playlists_v_version_status;
   enum__playlists_v_published_locale: typeof enum__playlists_v_published_locale;
   enum_surf_source: typeof enum_surf_source;
+  enum_surf_audience: typeof enum_surf_audience;
   enum_surf_status: typeof enum_surf_status;
   enum__surf_v_version_source: typeof enum__surf_v_version_source;
+  enum__surf_v_version_audience: typeof enum__surf_v_version_audience;
   enum__surf_v_version_status: typeof enum__surf_v_version_status;
   enum__surf_v_published_locale: typeof enum__surf_v_published_locale;
   enum_responses_status: typeof enum_responses_status;

@@ -686,6 +686,13 @@ export const lockCollections = (
         DataFromCollectionSlug<typeof collectionSlug>
       > = async ({ doc, req }) => {
         const user = req.user;
+        // Read-side caller can opt out of redaction (e.g. so a Paywall surface
+        // can extract a teaser snippet from the full doc before stripping it
+        // for the client). The caller is responsible for performing the gate
+        // check + redaction itself.
+        if ((req.context as Record<string, unknown>)?.disableLockerRedact) {
+          return doc;
+        }
         if (doc.locked) {
           //We consider the default value to be 1, representing an authenticated user; otherwise locked is usesless as a property
           const auth = doc.authority ?? 1;

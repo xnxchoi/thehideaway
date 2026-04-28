@@ -229,6 +229,47 @@ export const queryAuthorsPost = cache(
  * such as author, image, bookmarks, and related posts, while considering configurations for draft mode and payload access.
  * It also determines the "prev" and "next" posts for easier navigation between posts.
  */
+type RichRoot = {
+  root: {
+    type?: string;
+    children: unknown[];
+    direction?: string | null;
+    format?: string;
+    indent?: number;
+    version?: number;
+  };
+};
+
+const EMPTY_RICH_TEXT: RichRoot = {
+  root: {
+    type: "root",
+    children: [],
+    direction: "ltr",
+    format: "left",
+    indent: 0,
+    version: 0
+  }
+};
+
+const extractTeaser = (
+  content: unknown,
+  fraction = 0.2
+): RichRoot | null => {
+  const rt = content as RichRoot | null | undefined;
+  const children = rt?.root?.children;
+  if (!Array.isArray(children) || children.length === 0) return null;
+  // 20% of the post body, clamped to [1, 4] block-level nodes so very long
+  // essays don't reveal too much and very short posts still tease at least one.
+  const count = Math.max(1, Math.min(4, Math.ceil(children.length * fraction)));
+  return {
+    ...rt,
+    root: {
+      ...rt!.root,
+      children: children.slice(0, count)
+    }
+  };
+};
+
 export const queryPostBySlug = async ({
   slug: sl
 }: {
@@ -238,6 +279,7 @@ export const queryPostBySlug = async ({
   prev: null | PostOverview;
   next: null | PostOverview;
   gate: GateResult;
+  teaser: RichRoot | null;
 } | null> => {
   // "use cache";
 
@@ -251,11 +293,34 @@ export const queryPostBySlug = async ({
   const sessionResp = await authClient.getSession().catch(() => null);
   const sessionUser = sessionResp?.data?.user ?? null;
 
+  // Bypass better-auth's session cookie cache by reading the role straight
+  // from the DB. Without this, a freshly-promoted Member sees stale
+  // role:"user" in their session for up to 5 minutes (cookieCache.maxAge),
+  // and the gate locks them out of content they should now access.
+  let freshRole: RP_Roles = "guest" as RP_Roles;
+  let freshUserId: string | null = null;
+  if (sessionUser?.id) {
+    freshUserId = String(sessionUser.id);
+    const u = await payload
+      .findByID({
+        collection: "users",
+        id: freshUserId,
+        depth: 0,
+        overrideAccess: true,
+        select: { role: true }
+      })
+      .catch(() => null);
+    if (u && (u as { role?: string }).role) {
+      freshRole = (u as { role: string }).role as RP_Roles;
+    } else if (sessionUser.role) {
+      freshRole = sessionUser.role as RP_Roles;
+    }
+  }
+
   const select = singlePostSelect();
-  // overrideAccess + raw fetch so paywalled posts are returned to logged-in
-  // and logged-out users alike. The Paywall surface needs the title/image to
-  // display the gate; the redactRead afterRead hook on the locker plugin
-  // strips the body content for unauthorized readers.
+  // overrideAccess + disableLockerRedact context: we want the FULL post
+  // (including content) so the Paywall surface can extract a teaser snippet.
+  // We then run gatePostForUser ourselves and strip / send teaser as needed.
   const post: FetchedPost | null = await payload
     .find({
       collection: "posts",
@@ -269,7 +334,8 @@ export const queryPostBySlug = async ({
       draft,
       overrideAccess: true,
       select,
-      user: sessionUser ?? null
+      user: sessionUser ?? null,
+      context: { disableLockerRedact: true }
     })
     .then((r) => r.docs[0] || null)
     .catch((e) => {
@@ -297,16 +363,16 @@ export const queryPostBySlug = async ({
       allowList: finalPost.allowList,
       author: finalPost.author?.id ?? null
     },
-    sessionUser
-      ? { id: String(sessionUser.id), role: sessionUser.role as RP_Roles }
-      : null
+    freshUserId ? { id: freshUserId, role: freshRole } : null
   );
 
   if (!gate.readable) {
+    const teaser = extractTeaser(finalPost.content);
+    finalPost.content = EMPTY_RICH_TEXT as unknown as typeof finalPost.content;
     finalPost.disabled = true;
     finalPost.queuedIDs = [];
     finalPost.relatedPosts = [];
-    return { post: finalPost, prev: null, next: null, gate };
+    return { post: finalPost, prev: null, next: null, gate, teaser };
   }
 
   // 3) Get the related posts (only for readable posts)
@@ -323,7 +389,8 @@ export const queryPostBySlug = async ({
     post: finalPost,
     prev,
     next,
-    gate
+    gate,
+    teaser: null
   };
 };
 

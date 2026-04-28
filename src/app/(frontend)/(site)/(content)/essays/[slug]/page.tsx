@@ -24,13 +24,22 @@ export default async function Post({ params: paramsPromise }: Args) {
   const { post, prev, next, gate } = p;
 
   if (!gate.readable) {
+    const eyebrow =
+      post.category && typeof post.category === "object" && "title" in post.category
+        ? (post.category as { title?: string }).title
+        : undefined;
     return (
       <RPage type={"posts"} slug={[slug]} key={slug}>
-        <Paywall gate={gate} postTitle={post.title || "Locked essay"} />
+        <Paywall
+          gate={gate}
+          postTitle={post.title || "Locked essay"}
+          postEyebrow={eyebrow}
+          teaser={p.teaser}
+          currentPath={`/essays/${slug}`}
+        />
         <div
-          className={
-            "fixed inset-0 z-0 h-svh w-svw bg-faded-white dark:bg-faded-black"
-          }
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 -z-10 h-svh w-svw bg-faded-white dark:bg-faded-black"
         ></div>
       </RPage>
     );

@@ -467,11 +467,18 @@ export interface Profile {
   };
   tagged?: (string | Tag)[] | null;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -489,11 +496,18 @@ export interface UserMedia {
     totalDocs?: number;
   };
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   alt: string;
   darkmode: boolean;
   src?: string | null;
@@ -693,11 +707,18 @@ export interface Post {
     totalDocs?: number;
   };
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -711,11 +732,18 @@ export interface Asset {
   alt: string;
   caption?: string | null;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   darkmode: boolean;
   src?: string | null;
   blurDataUrl?: string | null;
@@ -789,11 +817,18 @@ export interface Media {
   id: string;
   author: string | User;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   alt: string;
   darkmode: boolean;
   src?: string | null;
@@ -969,11 +1004,18 @@ export interface Surf {
     totalDocs?: number;
   };
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1052,11 +1094,18 @@ export interface Playlist {
   slugLock: boolean;
   slug: string;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1088,11 +1137,18 @@ export interface Track {
   slugLock: boolean;
   slug: string;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1131,11 +1187,18 @@ export interface Album {
   slugLock: boolean;
   slug: string;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   /**
    * Limit access to users of this role or higher
    */
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1239,8 +1302,15 @@ export interface Page {
   slugLock: boolean;
   slug: string;
   locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
   allowList?: (string | User)[] | null;
   authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -3211,6 +3281,7 @@ export interface AssetsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   darkmode?: T;
   src?: T;
   blurDataUrl?: T;
@@ -3321,6 +3392,7 @@ export interface MediaSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   alt?: T;
   darkmode?: T;
   src?: T;
@@ -3512,6 +3584,7 @@ export interface PagesSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3655,6 +3728,7 @@ export interface PostsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3670,6 +3744,7 @@ export interface UserMediaSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   alt?: T;
   darkmode?: T;
   src?: T;
@@ -3781,6 +3856,7 @@ export interface ProfileSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3807,6 +3883,7 @@ export interface AlbumsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3835,6 +3912,7 @@ export interface TracksSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3869,6 +3947,7 @@ export interface PlaylistsSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3939,6 +4018,7 @@ export interface SurfSelect<T extends boolean = true> {
   locked?: T;
   allowList?: T;
   authority?: T;
+  audience?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
