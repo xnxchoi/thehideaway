@@ -55,33 +55,31 @@ It is not a feed. It is not a dashboard. It is a room someone built.
 
 ### Aesthetic pillars
 
-| Pillar | What it means | What it rules out |
-|---|---|---|
-| **Editorial, not productized** | Surfaces read like a magazine, not a SaaS dashboard. Whitespace is generous. Hierarchy is typographic, not chromatic. | Generic card grids, "dashboardy" KPIs, filled-chip density. |
-| **Typographic-first** | Type is the primary design element. Color and ornament are consequences. A page with nothing but text should still feel designed. | Decorative iconography filling the role of hierarchy. Emoji as meaning. |
-| **Monochrome with one charge** | Foreground + background, modulated by opacity. The brand's single saturated moment is **Rouge** (piercing orange), used sparingly for selection, emphasis, and critical accents. | Multi-color palettes. Gradient-first visual logic. |
-| **Opacity as tone** | There are no gray tokens. Tonal steps are `/70`, `/60`, `/40`, `/30`, `/20`. This keeps theme switches coherent and prevents palette drift. | Inventing new grays, using Tailwind's default `text-gray-500`, etc. |
-| **Quiet interaction** | Hovers are border/opacity shifts, not fill swaps. Motion clarifies, it doesn't announce. Buttons are bordered, not solid. | Filled CTAs in primary brand color, loud hover glows, bouncy microinteractions. |
-| **Discovered, not advertised** | Features feel stumbled-upon: the cassette deck, the tour, the command palette. Labels are monospaced; nothing yells. | Modal tutorials, confetti, toast explosions. |
-| **Bilingual by design** | English and Korean coexist. Type scale, line heights, and monospace labels must tolerate both. | Latin-only spacing assumptions. Hardcoded letter-spacing that breaks Hangul. |
+| Pillar                         | What it means | What it rules out                                                                 |
+|--------------------------------|---|-----------------------------------------------------------------------------------|
+| **Editorial, not productized** | Surfaces read like a magazine, not a SaaS dashboard. Whitespace is generous. Hierarchy is typographic, not chromatic. | Generic card grids, "dashboardy" KPIs.                                            |
+| **Typographic-first**          | Type is the primary design element. Color and ornament are consequences. A page with nothing but text should still feel designed. | Decorative iconography filling the role of hierarchy. Emoji as meaning.           |
+| **Monochrome with one charge** | Foreground + background, modulated by opacity. The brand's single saturated moment is **Rouge** (piercing orange), used sparingly for selection, emphasis, and critical accents. | Using colors not in the brand stylsheet without review                            |
+| **Opacity as tone**            | There are no gray tokens. Tonal steps are `/70`, `/60`, `/40`, `/30`, `/20`. This keeps theme switches coherent and prevents palette drift. | Inventing new grays, using Tailwind's default `text-gray-500`, etc.               |
+| **Quiet interaction**          | Hovers are border/opacity shifts, not fill swaps. Motion clarifies, it doesn't announce. Buttons are bordered, not solid. | bouncy microinteractions.                                                         |
+| **Discovered, but guided**     | Features feel stumbled-upon: the cassette deck, the tour, the command palette. Labels are monospaced; nothing yells. | Generic modals that pop up in the first three minutes to scream for subcriptions. |
+| **Bilingual by design**        | English and Korean coexist. Type scale, line heights, and monospace labels must tolerate both. | Latin-only spacing assumptions. Hardcoded letter-spacing that breaks Hangul.      |
 
 ### What Hideaway is NOT
 
-- A Medium clone. (Medium is generous; Hideaway is *deliberate*.)
-- A Substack. (Substack is a newsletter funnel; Hideaway is a room.)
-- A brutalist or neo-brutalist site. (No intentional ugliness, no clashing colors, no chunky borders.)
-- A luxury "dark UI" product dashboard. (Dark mode is an alternate key, not the default tone.)
-- A design-portfolio site. (No scroll-jacked showcases. Content is the show.)
+- a platform marketing with generic kanban board layouts 
+- a generic blog / sns wannabe
+- a web3 site trying to be edgy
 
 ### The single sentence
 
-> **Hideaway is a room someone built: text is the interface, silence is the default, and every deliberate touch of color means something.**
+> **Hideaway is a sanctuary, a luxurious, dark, sleek, yet subtly warm to its visitors - as Chateau Marmont is to Hollywood dilettantes, Hideaway provides its guests and residence a safe space - to socialize, express and debate. The platform's aesthetics reflect this cooled, relaxed ambiance in every aspect - crafting a place where text is the interface, silence is the default, and every deliberate touch of color means something.**
 
 ### Promises we keep
 
 These are the commitments this system makes to every page we ship. If a screen violates one, it fails review — regardless of how beautiful it is.
 
-1. **Type earns hierarchy before color does.** A grayscale screenshot of the page should still read clearly.
+1. **Type before color.** A grayscale screenshot of the page should still read clearly.
 2. **The accent is never decorative.** If rouge appears, it is carrying meaning (selection, status, emphasis) — never styling.
 3. **Motion tells the truth.** Every transition reflects a spatial or state fact, and every animation survives `prefers-reduced-motion`.
 4. **The chrome is quiet.** Borders over fills, opacity over grays, typography over ornament. Nothing yells.
