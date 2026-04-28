@@ -26,7 +26,7 @@ if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
 
 const options: BetterAuthOptionsType = {
   appName: "hideaway-validator",
-  baseURL: appURL,
+  baseURL: "http://localhost:3000",
   trustedOrigins,
   emailAndPassword: {
     enabled: true,
@@ -195,7 +195,7 @@ export const betterAuthPlugins = [
     }
   }),
   passkey({
-    rpID: new URL(appURL).hostname,
+    rpID: new URL('http://localhost:3000').hostname,
     rpName: "The Hideaway",
     origin: appURL
   }),

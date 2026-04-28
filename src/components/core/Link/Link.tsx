@@ -56,7 +56,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     onEnter: doME,
     onLeave: doML,
     enterCondition: () =>
-      disabledRef.current || isActivePathRef.current ? null : "FOCUS"
+      disabledRef.current ? null : isActivePathRef.current ? "#here" : "FOCUS"
   });
 
   const [isAnchor, setIsAnchor] = useState(false);

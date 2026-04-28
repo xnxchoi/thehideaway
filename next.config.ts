@@ -205,9 +205,10 @@ const nextConfig: NextConfig = {
       {
         source: "/@:user/:path*",
         destination: "/users/:user/:path*"
-      },{
-      source:"/me",
-        destination:"/me/account"
+      },
+      {
+        source: "/me",
+        destination: "/me/account"
       }
     ];
   },

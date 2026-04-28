@@ -1022,10 +1022,9 @@ Colors
         @apply bg-background text-foreground;
     }
 }
-
 .prose {
-    --tw-prose-quotes: var(--n-s-fg) !important;
-    --tw-prose-bold: var(--n-s-fg) !important;
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-quotes: var(--foreground);
 }
 
 @utility container {

@@ -83,9 +83,7 @@ try {
     "  Required vars present, secrets non-placeholder, URLs well-formed."
   );
 } catch (err) {
-  console.error(
-    err instanceof Error ? err.message : String(err)
-  );
+  console.error(err instanceof Error ? err.message : String(err));
   exitCode = 1;
 } finally {
   // Restore process.env to avoid polluting any subsequent imports if this
