@@ -1,6 +1,10 @@
 "use server";
 import { authClient } from "@/lib/auth/client";
 import { Post } from "@/payload-types";
+import {
+  gatePostForUser,
+  type GateResult
+} from "@/components/UX/Paywall/gatePost";
 import { getImageMedia } from "@/payload/collections/Posts/api/getImageMedia";
 import {
   postOverviewSelect,
@@ -233,6 +237,7 @@ export const queryPostBySlug = async ({
   post: SingleArticle;
   prev: null | PostOverview;
   next: null | PostOverview;
+  gate: GateResult;
 } | null> => {
   // "use cache";
 
@@ -243,8 +248,14 @@ export const queryPostBySlug = async ({
     ss && (slug = ss);
   }
   const payload = await getPayload({ config: configPromise });
+  const sessionResp = await authClient.getSession().catch(() => null);
+  const sessionUser = sessionResp?.data?.user ?? null;
 
   const select = singlePostSelect();
+  // overrideAccess + raw fetch so paywalled posts are returned to logged-in
+  // and logged-out users alike. The Paywall surface needs the title/image to
+  // display the gate; the redactRead afterRead hook on the locker plugin
+  // strips the body content for unauthorized readers.
   const post: FetchedPost | null = await payload
     .find({
       collection: "posts",
@@ -256,9 +267,9 @@ export const queryPostBySlug = async ({
         }
       },
       draft,
-      overrideAccess: false,
+      overrideAccess: true,
       select,
-      user: null
+      user: sessionUser ?? null
     })
     .then((r) => r.docs[0] || null)
     .catch((e) => {
@@ -277,8 +288,28 @@ export const queryPostBySlug = async ({
   if (!finalPost) {
     return null;
   }
-  // 3) Get the related posts
 
+  const gate = gatePostForUser(
+    {
+      id: String(finalPost.id),
+      authority: finalPost.authority,
+      locked: finalPost.locked,
+      allowList: finalPost.allowList,
+      author: finalPost.author?.id ?? null
+    },
+    sessionUser
+      ? { id: String(sessionUser.id), role: sessionUser.role as RP_Roles }
+      : null
+  );
+
+  if (!gate.readable) {
+    finalPost.disabled = true;
+    finalPost.queuedIDs = [];
+    finalPost.relatedPosts = [];
+    return { post: finalPost, prev: null, next: null, gate };
+  }
+
+  // 3) Get the related posts (only for readable posts)
   const { queuedIDs, relatedPosts, prev, next } = await queryRelatedPosts({
     post: finalPost,
     limit: 5,
@@ -291,7 +322,8 @@ export const queryPostBySlug = async ({
   return {
     post: finalPost,
     prev,
-    next
+    next,
+    gate
   };
 };
 

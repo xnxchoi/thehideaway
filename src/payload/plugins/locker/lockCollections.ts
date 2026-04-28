@@ -446,9 +446,11 @@ const disallowRead = (collection: LockedCollections) => {
   switch (collection) {
     case "surf":
     case "posts":
+      // Strip the body but keep title visible — title is the "lure" that the
+      // Paywall component displays so the user knows what they're being asked
+      // to subscribe for.
       return {
-        content: surrogateMap.richText satisfies SerializedEditorState,
-        title: surrogateMap.text
+        content: surrogateMap.richText satisfies SerializedEditorState
       };
     case "media":
     case "assets":
