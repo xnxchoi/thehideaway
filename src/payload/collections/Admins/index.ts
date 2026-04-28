@@ -1,8 +1,8 @@
-import {Media} from "@/payload-types";
-import {isAdmin} from "@/payload/plugins/locker/access/accessCheckers";
-import {CollectionConfig, FilterOptionsProps, Where} from "payload";
-import {hideIfNotAdmin} from "../helpers";
-import {uuidv7} from "uuidv7";
+import { Media } from "@/payload-types";
+import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
+import { CollectionConfig, FilterOptionsProps, Where } from "payload";
+import { hideIfNotAdmin } from "../helpers";
+import { uuidv7 } from "uuidv7";
 
 export const Admins: CollectionConfig = {
   slug: "admins",
@@ -29,21 +29,21 @@ export const Admins: CollectionConfig = {
   },
   fields: [
     {
-	    name: "id",
-	    type: "text",
-	    admin: {
-		    readOnly: true
-	    },
-	    defaultValue: uuidv7,
-	    required: true,
+      name: "id",
+      type: "text",
+      admin: {
+        readOnly: true
+      },
+      defaultValue: uuidv7,
+      required: true
     },
-	  {
+    {
       name: "name",
       type: "text",
-		  defaultValue: "Admin",
-		  index: true,
-		  required: true,
-		  virtual: true,
+      defaultValue: "Admin",
+      index: true,
+      required: true,
+      virtual: true
     },
     {
       name: "email",
@@ -55,10 +55,10 @@ export const Admins: CollectionConfig = {
     {
       name: "role",
       type: "select",
-      options: ["admin", "user", "patron", "editor", "author"],
+      options: ["admin", "user", "member", "patron", "editor", "author"],
       defaultValue: "admin",
-	    required: true,
-	    virtual: true,
+      required: true,
+      virtual: true
     },
     {
       name: "foto",
@@ -105,15 +105,15 @@ export const Admins: CollectionConfig = {
           label: "First Name",
           index: true,
           defaultValue: "R",
-	        virtual: true,
-
+          virtual: true
         },
         {
           name: "lastName",
           type: "text",
           label: "Last Name",
           index: true,
-	        defaultValue: "P", virtual: true,
+          defaultValue: "P",
+          virtual: true
         }
       ]
     },

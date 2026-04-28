@@ -1,54 +1,163 @@
-// import { Plan } from "@/payload-types";
-import {CollectionConfig} from "payload"
+import type { CollectionConfig } from "payload";
 
 const Plans: CollectionConfig = {
-	slug: "plans", admin: {useAsTitle: "name"}, fields: [{
-		name: "role", type: "select", required: true, options: ["patron", "author"],
-	},
+  slug: "plans",
+  admin: {
+    useAsTitle: "name",
+    defaultColumns: [
+      "name",
+      "tier",
+      "validity",
+      "seat_limit",
+      "featured",
+      "state"
+    ]
+  },
+  access: {
+    read: () => true
+  },
+  fields: [
+    {
+      name: "name",
+      type: "text",
+      required: true,
+      unique: true,
+      admin: {
+        description:
+          "Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users."
+      }
+    },
+    {
+      name: "tier",
+      type: "select",
+      required: true,
+      options: ["member", "patron"],
+      admin: {
+        description: "The subscriber role this plan grants while active."
+      }
+    },
+    {
+      name: "tier_label",
+      type: "text",
+      required: true,
+      defaultValue: "",
+      admin: {
+        description: "User-facing display label (e.g. 'Member', 'Patron')."
+      }
+    },
+    {
+      name: "validity",
+      type: "select",
+      required: true,
+      defaultValue: "yearly",
+      options: ["yearly", "lifetime"],
+      admin: {
+        description:
+          "Yearly: expires 1 year after start unless waiver criteria met. Lifetime: never expires."
+      }
+    },
+    {
+      name: "type",
+      type: "select",
+      required: true,
+      defaultValue: "one_time",
+      options: ["one_time"],
+      admin: {
+        description:
+          "All Hideaway plans are one-time payments at launch (manual bank transfer)."
+      }
+    },
+    {
+      name: "price",
+      type: "relationship",
+      relationTo: "prices",
+      hasMany: true,
+      required: true,
+      minRows: 1
+    },
+    {
+      name: "payment_methods",
+      type: "select",
+      hasMany: true,
+      required: true,
+      defaultValue: ["bank_transfer"],
+      options: ["bank_transfer", "cash"],
+      admin: {
+        description:
+          "Online card / KakaoPay / Toss disabled at launch. Manual flow only."
+      }
+    },
+    {
+      name: "description",
+      type: "textarea",
+      admin: {
+        description: "Short marketing line under the price."
+      }
+    },
+    {
+      name: "features",
+      type: "array",
+      labels: { singular: "Feature", plural: "Features" },
+      fields: [
+        { name: "label", type: "text", required: true },
+        {
+          name: "included",
+          type: "checkbox",
+          defaultValue: true
+        }
+      ]
+    },
+    {
+      name: "featured",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        description: "Highlight this plan on the pricing page."
+      }
+    },
+    {
+      name: "seat_limit",
+      type: "number",
+      min: 0,
+      admin: {
+        description:
+          "Max active subscriptions for this plan (0 / blank = unlimited). When reached, the plan card shows 'Closed' and the CTA is disabled."
+      }
+    },
+    {
+      name: "discount_label",
+      type: "text",
+      admin: {
+        description:
+          "Pill text shown on the card when a deal applies (e.g. 'LIMITED 5')."
+      }
+    },
+    {
+      name: "presentation",
+      type: "select",
+      required: true,
+      defaultValue: "standard",
+      options: ["standard", "founder"],
+      admin: {
+        description:
+          "'standard' = baseline tier card. 'founder' = Starliner stars + striped-out display when sold out (Patron uses this)."
+      }
+    },
+    {
+      name: "sort",
+      type: "number",
+      defaultValue: 0,
+      index: true,
+      admin: { position: "sidebar" }
+    },
+    {
+      name: "state",
+      type: "select",
+      required: true,
+      defaultValue: "active",
+      options: ["active", "ended"]
+    }
+  ]
+};
 
-		{
-			name: "payment_methods",
-			type: "select",
-			hasMany: true,
-			required: true,
-			options: ["bank_transfer", "cash", "crypto"], // you can add more here
-		}, {
-			name: "name", type: "text", required: true, unique: true,
-		}, {
-			name: "type", type: "select", required: true, options: ["one_time", "recurring"],
-		}, {
-			name: "price",
-			type: "relationship",
-			relationTo: "prices",
-			hasMany: true,
-			required: true,
-			minRows: 1,
-		}, {
-			name: "recurring", type: "group", admin: {
-				condition: (data, siblingData) => siblingData.type === "recurring",
-			}, fields: [{
-				name: "interval", type: "number", required: true, min: 1,
-			}, {
-				name: "unit",
-				type: "select",
-				required: true,
-				options: ["month", "year", "week", "day"], // add more units here if needed
-			}, {
-				name: "trial_days", type: "number", required: true, min: 0,
-			}, // Add more recurring-related fields if needed
-			],
-		}, {
-			name: "state", type: "select", required: true, options: ["active", "ended"], // you can add 'paused' etc. later
-		},],
-}
-
-export default Plans
-
-// export type RecurringPlan = Plan & {
-//   type: "recurring";
-//   recurring: {
-//     interval: number;
-//     unit: "month" | "year" | "week" | "day";
-//     trial_days: number;
-//   };
-// };
+export default Plans;

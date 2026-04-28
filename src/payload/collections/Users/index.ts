@@ -13,7 +13,6 @@ import {
   revalidateUser
 } from "@/payload/collections/Users/hooks/revalidateUser";
 import { userHandleField } from "@/payload/fields/handle";
-import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import type { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { enforceUserFields } from "@/types/collections/users";
 import { generatePreviewPath } from "@/utilities/generatePreviewPath";
@@ -341,26 +340,7 @@ export const Users: CollectionConfig = {
           context.createProfile = true;
         }
         if (operation === "update") {
-          const ogUser = originalDoc as User;
           context.overrideAccess = true;
-          const emailVerified = finalData?.emailVerified;
-          const onBoarded = finalData?.onboarded;
-          const notBanned = !finalData?.banned;
-          let anythingChanged = false;
-          anythingChanged =
-            emailVerified !== ogUser?.emailVerified ||
-            onBoarded !== ogUser?.onboarded ||
-            notBanned !== !ogUser?.banned;
-          if (anythingChanged) {
-            const roleAsIs: RP_Roles = data.role || "user";
-            const authorityAsIs = roleToAuthority(roleAsIs);
-            if (Boolean(emailVerified && onBoarded && notBanned)) {
-              const isBetterAsAuthor =
-                roleToAuthority("author") > authorityAsIs;
-
-              finalData.role = isBetterAsAuthor ? "author" : roleAsIs;
-            }
-          }
         }
         return finalData;
       }

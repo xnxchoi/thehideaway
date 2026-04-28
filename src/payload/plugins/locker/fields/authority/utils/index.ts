@@ -1,42 +1,61 @@
-export const roleToAuthority = (role: 'user' | 'patron' | "author" | 'editor' | 'admin' | 'guest',
-): number => {
-	switch (role) {
-		case 'user':
-			return 1
-		case "patron":
-			return 2
-		case "author":
-			return 3
-		case 'editor':
-			return 4
-		case 'admin':
-			//Ensuring admin supersedes all cases
-			return 1000
-		case "guest":
-			return 0
-		default:
-			return 0
-	}
-}
-export const authorityToRole = (authority: number): Role => {
-	switch (authority) {
-		case 1:
-			return "user";
-		case 2:
-			return "patron";
-		case 3:
-			return "author";
-		case 4:
-			return "editor";
-		case 1000:
-			return "admin";
-		default:
-			return "guest";
-	}
+export type Role =
+  | "guest"
+  | "user"
+  | "member"
+  | "patron"
+  | "author"
+  | "editor"
+  | "admin";
+
+export const roleToAuthority = (role: Role): number => {
+  switch (role) {
+    case "guest":
+      return 0;
+    case "user":
+      return 1;
+    case "member":
+      return 2;
+    case "patron":
+      return 3;
+    case "author":
+      return 4;
+    case "editor":
+      return 5;
+    case "admin":
+      return 1000;
+    default:
+      return 0;
+  }
 };
-export type Role = "user" | "patron" | "author" | "editor" | "admin" | "guest";
+
+export const authorityToRole = (authority: number): Role => {
+  switch (authority) {
+    case 1:
+      return "user";
+    case 2:
+      return "member";
+    case 3:
+      return "patron";
+    case 4:
+      return "author";
+    case 5:
+      return "editor";
+    case 1000:
+      return "admin";
+    default:
+      return "guest";
+  }
+};
+
 export const rolesToAuthority = (roles: Role[]): number => {
-	return roles.reduce((acc, role) => {
-		return Math.max(acc, roleToAuthority(role))
-	}, 0)
-}
+  return roles.reduce((acc, role) => {
+    return Math.max(acc, roleToAuthority(role));
+  }, 0);
+};
+
+export const PAID_ROLES: Role[] = ["member", "patron"];
+export const STAFF_ROLES: Role[] = ["editor", "admin"];
+export const isPaidRole = (role: Role | null | undefined): boolean =>
+  !!role && PAID_ROLES.includes(role);
+export const isStaffRole = (role: Role | null | undefined): boolean =>
+  !!role && STAFF_ROLES.includes(role);

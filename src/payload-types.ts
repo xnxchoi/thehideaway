@@ -106,6 +106,13 @@ export interface Config {
     imports: Import;
     redirects: Redirect;
     search: Search;
+    plans: Plan;
+    invoices: Invoice;
+    prices: Price;
+    subscriptions: Subscription;
+    'exchange-rate': ExchangeRate;
+    currency: Currency;
+    holidays: Holiday;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -198,6 +205,13 @@ export interface Config {
     imports: ImportsSelect<false> | ImportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
+    plans: PlansSelect<false> | PlansSelect<true>;
+    invoices: InvoicesSelect<false> | InvoicesSelect<true>;
+    prices: PricesSelect<false> | PricesSelect<true>;
+    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
+    'exchange-rate': ExchangeRateSelect<false> | ExchangeRateSelect<true>;
+    currency: CurrencySelect<false> | CurrencySelect<true>;
+    holidays: HolidaysSelect<false> | HolidaysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -320,7 +334,7 @@ export interface User {
   /**
    * The role/ roles of the user
    */
-  role: 'admin' | 'author' | 'editor' | 'user' | 'patron';
+  role: 'admin' | 'editor' | 'author' | 'patron' | 'member' | 'user';
   onboarded: boolean;
   /**
    * Whether the user is banned from the platform
@@ -653,6 +667,18 @@ export interface Post {
   author: string | User;
   tagged?: (string | Tag)[] | null;
   relatedPosts?: (string | Post)[] | null;
+  /**
+   * Editor approval — required for frontend display (frontpage list, /latest). Authors+ get true on create; member/user posts default false until an editor flips it.
+   */
+  approved_by_editor?: boolean | null;
+  /**
+   * Editor-only. Promote into the hand-curated 'featured' slots (HomeSquare top, /latest hero). Appears in regular lists with a 'featured' badge if not slotted.
+   */
+  featured?: boolean | null;
+  /**
+   * Computed: did this post pass the publishing scorecard (account age, ban status, prior approvals, etc)? Set by a hook; do not edit manually. (Phase 5 — implementation pending.)
+   */
+  front_eligible?: boolean | null;
   meta?: {
     title?: string | null;
     /**
@@ -2064,7 +2090,7 @@ export interface TeamMember {
  */
 export interface AdminInvitation {
   id: string;
-  role: 'admin' | 'author' | 'editor' | 'user' | 'patron';
+  role: 'admin' | 'editor' | 'author' | 'patron' | 'member' | 'user';
   token: string;
   url?: string | null;
   updatedAt: string;
@@ -2176,7 +2202,7 @@ export interface Admin {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'patron' | 'editor' | 'author';
+  role: 'admin' | 'user' | 'member' | 'patron' | 'editor' | 'author';
   /**
    * Upload your profile picture here.
    */
@@ -2434,6 +2460,180 @@ export interface Search {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: string;
+  /**
+   * Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users.
+   */
+  name: string;
+  /**
+   * The subscriber role this plan grants while active.
+   */
+  tier: 'member' | 'patron';
+  /**
+   * User-facing display label (e.g. 'Member', 'Patron').
+   */
+  tier_label: string;
+  /**
+   * Yearly: expires 1 year after start unless waiver criteria met. Lifetime: never expires.
+   */
+  validity: 'yearly' | 'lifetime';
+  /**
+   * All Hideaway plans are one-time payments at launch (manual bank transfer).
+   */
+  type: 'one_time';
+  price: (string | Price)[];
+  /**
+   * Online card / KakaoPay / Toss disabled at launch. Manual flow only.
+   */
+  payment_methods: ('bank_transfer' | 'cash')[];
+  /**
+   * Short marketing line under the price.
+   */
+  description?: string | null;
+  features?:
+    | {
+        label: string;
+        included?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Highlight this plan on the pricing page.
+   */
+  featured?: boolean | null;
+  /**
+   * Max active subscriptions for this plan (0 / blank = unlimited). When reached, the plan card shows 'Closed' and the CTA is disabled.
+   */
+  seat_limit?: number | null;
+  /**
+   * Pill text shown on the card when a deal applies (e.g. 'LIMITED 5').
+   */
+  discount_label?: string | null;
+  /**
+   * 'standard' = baseline tier card. 'founder' = Starliner stars + striped-out display when sold out (Patron uses this).
+   */
+  presentation: 'standard' | 'founder';
+  sort?: number | null;
+  state: 'active' | 'ended';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "prices".
+ */
+export interface Price {
+  id: string;
+  currencies?:
+    | {
+        amount: number;
+        currency: string | Currency;
+        display_amount?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currency".
+ */
+export interface Currency {
+  id: string;
+  name: string;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  kr_nm: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices".
+ */
+export interface Invoice {
+  id: string;
+  invoice_number?: number | null;
+  client: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+  id: string;
+  user: string | User;
+  plan: string | Plan;
+  start_date: string;
+  /**
+   * Date the subscription expires (null = lifetime). Set on activation; extended quarterly when waiver criteria are met.
+   */
+  expires_at?: string | null;
+  subscription_status: 'pending' | 'active' | 'expired' | 'canceled';
+  /**
+   * Set true once admin confirms bank-transfer / cash receipt. Activating triggers role sync.
+   */
+  paid?: boolean | null;
+  /**
+   * Editor flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver).
+   */
+  validity_waived?: boolean | null;
+  /**
+   * System: most recent quarterly waiver evaluation timestamp.
+   */
+  last_waiver_check?: string | null;
+  /**
+   * Method the user requested at checkout. Admin uses this to confirm the matching receipt.
+   */
+  request_method: 'bank_transfer' | 'cash';
+  /**
+   * Free-text note attached at checkout.
+   */
+  request_note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exchange-rate".
+ */
+export interface ExchangeRate {
+  id: string;
+  date: string;
+  rates: {
+    currency: string | Currency;
+    rate: string;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "holidays".
+ */
+export interface Holiday {
+  id: string;
+  dates: {
+    date: string;
+    name: string;
+    id?: string | null;
+  }[];
+  period: number;
+  country: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -2681,6 +2881,34 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'search';
         value: string | Search;
+      } | null)
+    | ({
+        relationTo: 'plans';
+        value: string | Plan;
+      } | null)
+    | ({
+        relationTo: 'invoices';
+        value: string | Invoice;
+      } | null)
+    | ({
+        relationTo: 'prices';
+        value: string | Price;
+      } | null)
+    | ({
+        relationTo: 'subscriptions';
+        value: string | Subscription;
+      } | null)
+    | ({
+        relationTo: 'exchange-rate';
+        value: string | ExchangeRate;
+      } | null)
+    | ({
+        relationTo: 'currency';
+        value: string | Currency;
+      } | null)
+    | ({
+        relationTo: 'holidays';
+        value: string | Holiday;
       } | null)
     | ({
         relationTo: 'payload-folders';
@@ -3370,6 +3598,9 @@ export interface PostsSelect<T extends boolean = true> {
   author?: T;
   tagged?: T;
   relatedPosts?: T;
+  approved_by_editor?: T;
+  featured?: T;
+  front_eligible?: T;
   meta?:
     | T
     | {
@@ -3901,6 +4132,126 @@ export interface SearchSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  name?: T;
+  tier?: T;
+  tier_label?: T;
+  validity?: T;
+  type?: T;
+  price?: T;
+  payment_methods?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        label?: T;
+        included?: T;
+        id?: T;
+      };
+  featured?: T;
+  seat_limit?: T;
+  discount_label?: T;
+  presentation?: T;
+  sort?: T;
+  state?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices_select".
+ */
+export interface InvoicesSelect<T extends boolean = true> {
+  invoice_number?: T;
+  client?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "prices_select".
+ */
+export interface PricesSelect<T extends boolean = true> {
+  currencies?:
+    | T
+    | {
+        amount?: T;
+        currency?: T;
+        display_amount?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+  user?: T;
+  plan?: T;
+  start_date?: T;
+  expires_at?: T;
+  subscription_status?: T;
+  paid?: T;
+  validity_waived?: T;
+  last_waiver_check?: T;
+  request_method?: T;
+  request_note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exchange-rate_select".
+ */
+export interface ExchangeRateSelect<T extends boolean = true> {
+  date?: T;
+  rates?:
+    | T
+    | {
+        currency?: T;
+        rate?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currency_select".
+ */
+export interface CurrencySelect<T extends boolean = true> {
+  name?: T;
+  slugKey?: T;
+  hashId?: T;
+  slugLock?: T;
+  slug?: T;
+  kr_nm?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "holidays_select".
+ */
+export interface HolidaysSelect<T extends boolean = true> {
+  dates?:
+    | T
+    | {
+        date?: T;
+        name?: T;
+        id?: T;
+      };
+  period?: T;
+  country?: T;
   updatedAt?: T;
   createdAt?: T;
 }

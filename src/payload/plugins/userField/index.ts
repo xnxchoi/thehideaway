@@ -185,7 +185,7 @@ export const userFieldOrganizerPlugin =
         ...role,
         hasMany: false,
         required: true,
-        defaultValue: "author",
+        defaultValue: "user",
         index: true,
         access: {
           ...role.access,

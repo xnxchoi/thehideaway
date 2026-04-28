@@ -36,6 +36,7 @@ import { UserMedia } from "../collections/UserMedia";
 import { imageSearchPlugin } from "./image-search";
 import { LikesPlugin } from "./Likes";
 import { userFieldOrganizerPlugin } from "./userField";
+import { MembershipPlugin } from "./membership/plugin";
 //"tracks"|"albums"|"playlists"|
 export type EOCollectionSlug = Extract<
   CollectionSlug,
@@ -387,5 +388,6 @@ export const plugins: Plugin[] = [
       "responses",
       "citations"
     ]
-  })
+  }),
+  MembershipPlugin({ enabled: true })
 ];
