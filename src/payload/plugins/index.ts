@@ -203,7 +203,9 @@ export type LockedCollections =
   | "albums"
   | "tracks"
   | "playlists"
-  | "surf";
+  | "surf"
+  | "series"
+  | "series-item";
 //   Exclude<
 //   KeysOfValue<CollectionMap, { locked?: boolean | null }>,
 //   "search"
@@ -230,7 +232,9 @@ export const plugins: Plugin[] = [
       "tracks",
       "userMedia",
       "assets",
-      "profile"
+      "profile",
+      "series",
+      "series-item"
     ]
   }),
   redirectsPlugin({

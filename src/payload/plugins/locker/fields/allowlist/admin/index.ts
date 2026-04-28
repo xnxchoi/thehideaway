@@ -31,8 +31,11 @@ export const allowListFieldAdmin = (props: {
 	overrides?: Partial<SingleRelationshipField["admin"]>
 }): SingleRelationshipField["admin"] => {
 	const {collection, overrides = {}} = props
+	const condition: Condition = collection === "pages" ? pagesCondition : defaultCondition
 	return {
-		hidden: true,
+		position: "sidebar",
+		condition,
+		description: "Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.",
 		...overrides,
 	}
 }

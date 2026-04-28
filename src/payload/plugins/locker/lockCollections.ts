@@ -1,6 +1,7 @@
 import { Admin, Profile, User } from "@/payload-types";
 import { LockedCollections } from "@/payload/plugins";
 import { allowListField } from "@/payload/plugins/locker/fields/allowlist";
+import { audienceField } from "@/payload/plugins/locker/fields/audience";
 import { authorityField } from "@/payload/plugins/locker/fields/authority";
 import { lockBoxField } from "@/payload/plugins/locker/fields/lockbox";
 import { LockerPluginConfig } from "@/payload/plugins/locker/plugin";
@@ -478,6 +479,15 @@ const disallowRead = (collection: LockedCollections) => {
       return {
         slides: surrogateMap.array
       };
+    case "series":
+      return {
+        description: surrogateMap.richText satisfies SerializedEditorState,
+        tagline: surrogateMap.text
+      };
+    case "series-item":
+      return {
+        item: surrogateMap.text
+      };
     default:
       return {};
   }
@@ -645,7 +655,8 @@ export const lockCollections = (
         ...collection.forceSelect,
         locked: true,
         allowList: true,
-        authority: true
+        authority: true,
+        audience: true
       };
       const { mergedFields, restFields } = mergeFields({
         path: collection.slug,
@@ -657,6 +668,9 @@ export const lockCollections = (
             collection: collection.slug as CollectionSlug
           }),
           authorityField({
+            collection: collection.slug as CollectionSlug
+          }),
+          audienceField({
             collection: collection.slug as CollectionSlug
           })
         ],
