@@ -1,40 +1,51 @@
 "use client";
 
-import { PerspectiveCamera, View } from "@react-three/drei";
-import { type ComponentProps, useRef } from "react";
-import { type Mesh } from "three";
+import {
+  ContactShadows,
+  Environment,
+  PerspectiveCamera,
+  View
+} from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { type ComponentProps, Suspense, useRef } from "react";
+import { type DirectionalLight, MathUtils, type Mesh, Vector3 } from "three";
 import { PaperContent3D } from "./PaperContent3D";
 import { PaperPlane } from "./PaperPlane";
 import { Sleeve3D } from "./Sleeve3D";
 import type { InvoiceDisplay } from "../types";
 
-// Paper aspect 1:1.55 — picked these world dimensions so the paper roughly
-// fills the camera frustum at the chosen FOV / distance.
 const PAPER_WIDTH = 2.0;
 const PAPER_HEIGHT = PAPER_WIDTH * 1.55;
 
+// Camera distance per phase. Constrained so the paper (3.1 world units tall)
+// always fits the camera frustum at fov=36° — that requires z >= ~4.77.
+//   - presenting: z=5, paper sits comfortably with breathing room
+//   - focused:    z=4.6, slight push-in for drama; pair with a larger
+//                 viewport so paper appears much bigger on screen.
+const CAM_PRESENTING = new Vector3(0, 0, 5);
+const CAM_FOCUSED = new Vector3(0, -0.04, 4.6);
+
+type Phase = "sealed" | "revealing" | "presenting" | "focused";
+
 type InvoiceSceneProps = {
   invoice: InvoiceDisplay;
-  /** True once the sleeve should descend off the paper. */
-  revealed: boolean;
-  /** Standard div props for the View container (positioning, sizing). */
+  phase: Phase;
   containerProps?: ComponentProps<"div">;
 };
 
 /**
- * R3F scene rendered into the shared <View.Port />. Everything is real 3D
- * geometry:
- *   - PaperPlane: cream mesh that receives the sleeve's cast shadow
- *   - PaperContent3D: text rendered via @react-three/uikit (SDF text)
- *   - Sleeve3D: leather mesh, casts shadow, animates on the spring
- *
- * Because the text is real geometry (not Drei <Html>), the sleeve mesh in
- * front of it is occluded automatically by the depth buffer — no manual
- * opacity gating, no DOM stacking conflicts.
+ * Pure 3D scene — every visible piece is real geometry.
+ *   - PaperPlane: cream cotton mesh, receives the sleeve's cast shadow
+ *   - PaperContent3D: each text element is a Drei <Text> SDF mesh sitting
+ *     just in front of the paper surface; lit by the scene's lights, occluded
+ *     by the sleeve mesh via the depth buffer
+ *   - Sleeve3D: leather mesh that descends with spring physics
+ *   - CameraRig: lerps between presenting (back) and focused (close-up)
+ *   - CursorLight: directional light steered by mouse position
  */
 export function InvoiceScene({
   invoice,
-  revealed,
+  phase,
   containerProps
 }: InvoiceSceneProps) {
   const sleeveRef = useRef<Mesh>(null);
@@ -43,45 +54,116 @@ export function InvoiceScene({
     <View visible {...containerProps}>
       <PerspectiveCamera
         makeDefault
-        position={[0, 0, 1]}
+        position={[0, 0, 5]}
         fov={36}
         near={0.1}
-        far={1}
+        far={50}
       />
+      <CameraRig phase={phase} />
 
-      {/* Soft fill so the leather doesn't go pure-black in shadow */}
-      <ambientLight intensity={0.45} />
+      {/* Image-based lighting — gives sheen + clearcoat something to reflect */}
+      <Suspense fallback={null}>
+        <Environment preset="apartment" environmentIntensity={0.55} />
+      </Suspense>
 
-      {/* Key light from upper-left, slightly forward. Casts the sleeve's
-          shadow onto the paper plane below it. */}
-      <directionalLight
-        position={[-2.6, 3.2, 3.5]}
-        intensity={1.4}
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-near={0.5}
-        shadow-camera-far={12}
-        shadow-camera-left={-3}
-        shadow-camera-right={3}
-        shadow-camera-top={3}
-        shadow-camera-bottom={-3}
-        shadow-bias={-0.0005}
-      />
+      <ambientLight intensity={0.18} />
+
+      <CursorLight phase={phase} />
 
       {/* Subtle warm rim from the right to keep the leather from going flat */}
-      <directionalLight position={[3, 1, 2]} intensity={0.25} color="#f4d8b8" />
+      <directionalLight position={[3, 1, 2]} intensity={0.2} color="#f4d8b8" />
 
-      <PaperPlane width={PAPER_WIDTH} invoice={invoice} height={PAPER_HEIGHT} />
+      {/* Paper grounding shadow */}
+      <ContactShadows
+        position={[0, -PAPER_HEIGHT / 2 - 0.01, -0.02]}
+        rotation={[Math.PI / 2, 0, 0]}
+        opacity={0.35}
+        scale={PAPER_WIDTH * 1.4}
+        blur={2.4}
+        far={0.6}
+        resolution={512}
+      />
 
-      {/* Text content as real 3D geometry, just in front of the paper plane.
-          The sleeve mesh in front of it occludes naturally via depth buffer. */}
+      {/* Suspense on PaperPlane because useTexture("papier.png") suspends */}
+      <Suspense fallback={null}>
+        <PaperPlane width={PAPER_WIDTH} height={PAPER_HEIGHT} />
+      </Suspense>
+
+      {/* Real 3D printed text — Drei <Text> SDF meshes positioned on the
+          paper surface. Sleeve mesh in front occludes via depth buffer. */}
+      <Suspense fallback={null}>
+        <PaperContent3D invoice={invoice} />
+      </Suspense>
 
       <Sleeve3D
         ref={sleeveRef}
         width={PAPER_WIDTH}
         height={PAPER_HEIGHT}
-        revealed={revealed}
+        revealed={phase !== "sealed"}
       />
     </View>
+  );
+}
+
+/**
+ * Lerps the camera between presenting (back) and focused (close-up) positions
+ * on phase change.
+ */
+function CameraRig({ phase }: { phase: Phase }) {
+  const target = useRef(new Vector3());
+  useFrame((state) => {
+    target.current.copy(phase === "focused" ? CAM_FOCUSED : CAM_PRESENTING);
+    state.camera.position.lerp(target.current, 0.06);
+    state.camera.lookAt(0, 0, 0);
+  });
+  return null;
+}
+
+/**
+ * Directional light steered by mouse position. Subtle in presenting mode,
+ * widened in focused mode for more drama on the close-up.
+ */
+function CursorLight({ phase }: { phase: Phase }) {
+  const lightRef = useRef<DirectionalLight>(null);
+  const baseX = -2.6;
+  const baseY = 3.2;
+  const baseZ = 3.5;
+
+  useFrame((state) => {
+    if (!lightRef.current) return;
+    const isFocused = phase === "focused";
+    const range = isFocused ? 1.6 : 0.8;
+    const targetX = baseX + state.pointer.x * range;
+    const targetY = baseY + state.pointer.y * range * 0.6;
+    lightRef.current.position.x = MathUtils.lerp(
+      lightRef.current.position.x,
+      targetX,
+      0.05
+    );
+    lightRef.current.position.y = MathUtils.lerp(
+      lightRef.current.position.y,
+      targetY,
+      0.05
+    );
+    lightRef.current.position.z = baseZ;
+    lightRef.current.target.position.set(0, 0, 0);
+    lightRef.current.target.updateMatrixWorld();
+  });
+
+  return (
+    <directionalLight
+      ref={lightRef}
+      position={[baseX, baseY, baseZ]}
+      intensity={1.1}
+      castShadow
+      shadow-mapSize={[1024, 1024]}
+      shadow-camera-near={0.5}
+      shadow-camera-far={12}
+      shadow-camera-left={-3}
+      shadow-camera-right={3}
+      shadow-camera-top={3}
+      shadow-camera-bottom={-3}
+      shadow-bias={-0.0005}
+    />
   );
 }
