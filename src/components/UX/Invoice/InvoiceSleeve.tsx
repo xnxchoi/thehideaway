@@ -91,13 +91,25 @@ export function InvoiceSleeve({ label = "RECEIPT" }: InvoiceSleeveProps) {
         </div>
       </div>
 
-      {/* Top opening lip — a thin highlight where the paper protrudes */}
+      {/* Top edge — physical "lifted cover" detail. A thin warm highlight at
+          the very top (key light catching the lifted edge) above a dark
+          shadow groove (where leather curves down behind the lip). When the
+          sleeve descends, this becomes the visible top-edge cutting across
+          the paper — and it reads as a 3D leather edge, not a hard rectangle. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[3px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(255,255,255,0.04))"
+            "linear-gradient(to bottom, rgba(255,210,170,0.55), rgba(180,90,70,0.4))"
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[2px] h-[5px]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.15) 70%, transparent)"
         }}
       />
     </div>

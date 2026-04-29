@@ -16,6 +16,10 @@ export function MainInternal({
     <Canvas
       performance={{ min: 0.2 }}
       style={style}
+      // PCF soft shadows enabled at the renderer level so views (e.g. the
+      // invoice scene) can opt in via castShadow / receiveShadow on lights
+      // and meshes. Other views are unaffected unless they opt in.
+      shadows="soft"
       gl={{
         ...gl,
         premultipliedAlpha: false,

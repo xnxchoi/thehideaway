@@ -6,7 +6,7 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { instrumentSerif } from "./fonts";
 import { InvoiceMeta } from "./InvoiceMeta";
 import { InvoicePaper } from "./InvoicePaper";
-import { InvoiceSleeve } from "./InvoiceSleeve";
+import { InvoiceScene } from "./r3f/InvoiceScene";
 import type { InvoiceCertificateProps } from "./types";
 
 type Phase = "sealed" | "revealing" | "presenting" | "focused";
@@ -31,14 +31,16 @@ export function InvoiceCertificate({
   );
   const [phase, setPhase] = useState<Phase>("sealed");
 
-  // The composition holds as a still life, then dissolves slowly.
+  // Hold sealed briefly, then trigger the sleeve descent. Spring physics in
+  // the R3F scene takes over from here — the timing below just kicks the
+  // animation off and marks when the meta card should resolve.
   useEffect(() => {
     if (reduce) {
       setPhase("presenting");
       return;
     }
     const t1 = setTimeout(() => setPhase("revealing"), 450);
-    const t2 = setTimeout(() => setPhase("presenting"), 2100);
+    const t2 = setTimeout(() => setPhase("presenting"), 2400);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -59,65 +61,34 @@ export function InvoiceCertificate({
   };
 
   return (
-    <div className={cn(instrumentSerif.variable, "relative w-full", className)}>
+    <div
+      className={cn(instrumentSerif.className, "relative w-full", className)}
+    >
       <div className="relative grid w-full grid-cols-1 gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-16">
-        {/* Left: photographed still life */}
-        <div className="relative mx-auto w-full max-w-[480px]">
-          <PhotoStage>
-            {/* Composition — slight rotational offset, like a styled flat-lay.
-                overflow-hidden clips the sleeve as it slides behind the bottom
-                edge so it never appears as a stranded panel below the paper. */}
-            <div
-              className="relative aspect-[1/1.414] w-full overflow-hidden"
-              style={{ transform: "rotate(-1.2deg)" }}
-            >
-              {/* Paper — barely-perceptible parallax during reveal */}
-              <m.div
-                className="absolute inset-0"
-                initial={{ y: 0, opacity: reduce ? 1 : 0.92 }}
-                animate={{
-                  y: sleeveCleared ? -2 : 0,
-                  opacity: 1
-                }}
-                transition={{ duration: 1.8, ease: FILMIC }}
-              >
-                <InvoicePaper invoice={invoice} textureId={textureId} />
-              </m.div>
-
-              {/* Sleeve — slides down and behind the paper's bottom edge.
-                  Opacity holds at 1 until the last third, so we never see a
-                  pink crossfade tint over the cream paper. */}
-              <m.div
-                className="absolute inset-0"
-                style={{ transformOrigin: "50% 100%" }}
-                initial={{ y: 0, opacity: 1 }}
-                animate={{
-                  y: sleeveCleared ? "100%" : 0,
-                  opacity: sleeveCleared ? [1, 1, 0] : 1
-                }}
-                transition={{
-                  y: { duration: 1.8, ease: FILMIC },
-                  opacity: {
-                    duration: 1.8,
-                    times: [0, 0.7, 1],
-                    ease: "linear"
-                  }
-                }}
-              >
-                <InvoiceSleeve />
-              </m.div>
-            </div>
-          </PhotoStage>
-
-          {/* Tap-to-focus surface */}
-          {phase === "presenting" ? (
-            <button
-              type="button"
-              aria-label="Inspect invoice"
-              onClick={() => setPhase("focused")}
-              className="absolute inset-0 cursor-zoom-in"
+        {/* Left: R3F scene rendered into the shared <View.Port />. The scene
+            holds everything — cream paper plane mesh, leather sleeve mesh,
+            and the paper text content as <Html transform> living inside the
+            3D space. The sleeve mesh occludes the text via Drei's `occlude`
+            prop, so as the sleeve descends the text is naturally revealed
+            without any manual opacity gating. */}
+        <div className="relative mx-auto w-full max-w-[440px]">
+          <div className="relative aspect-1/1.5 w-full">
+            <InvoiceScene
+              invoice={invoice}
+              revealed={sleeveCleared}
+              containerProps={{ className: "absolute inset-0" }}
             />
-          ) : null}
+
+            {/* Tap-to-focus surface */}
+            {phase === "presenting" ? (
+              <button
+                type="button"
+                aria-label="Inspect invoice"
+                onClick={() => setPhase("focused")}
+                className="absolute inset-0 z-[60] cursor-zoom-in"
+              />
+            ) : null}
+          </div>
         </div>
 
         {/* Right: meta card */}
@@ -139,7 +110,8 @@ export function InvoiceCertificate({
         </div>
       </div>
 
-      {/* Focus mode overlay */}
+      {/* Focus mode overlay — kept as a CSS-only enlarged paper for crisp
+          text and easy print/save. The R3F scene is for entrance choreography. */}
       <AnimatePresence>
         {isFocused ? (
           <m.div
@@ -189,59 +161,6 @@ export function InvoiceCertificate({
           </m.div>
         ) : null}
       </AnimatePresence>
-    </div>
-  );
-}
-
-/**
- * The "photo set" — a dim, vignetted surface with a single warm key light
- * baked in. Composition sits inside this; the still-life conceit lives here.
- */
-function PhotoStage({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="relative isolate w-full px-[8%] py-[10%]"
-      style={{
-        background:
-          // Warm key light upper-left, deep cool shadow lower-right
-          "radial-gradient(120% 90% at 18% 12%, rgba(190,160,120,0.10), transparent 55%), radial-gradient(140% 100% at 100% 100%, rgba(0,0,0,0.45), transparent 60%), linear-gradient(160deg, #1a1815 0%, #0d0c0a 100%)"
-      }}
-    >
-      {/* Vignette */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.55) 100%)"
-        }}
-      />
-      {/* Subtle grain across the whole stage */}
-      <svg
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.08]"
-      >
-        <defs>
-          <filter id="stage-grain">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="2.4"
-              numOctaves={2}
-              stitchTiles="stitch"
-            />
-            <feColorMatrix
-              type="matrix"
-              values="0 0 0 0 0
-                      0 0 0 0 0
-                      0 0 0 0 0
-                      0 0 0 1 0"
-            />
-          </filter>
-        </defs>
-        <rect width="100%" height="100%" filter="url(#stage-grain)" />
-      </svg>
-
-      <div className="relative">{children}</div>
     </div>
   );
 }
