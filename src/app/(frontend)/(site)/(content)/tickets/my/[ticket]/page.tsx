@@ -69,34 +69,58 @@ export default async function TicketDetailPage(props: { params: Params }) {
     ? `${baseUrl}/tickets/check-in/${ticket.check_in_code}`
     : "";
 
+  const u = auth.user as {
+    name?: string | null;
+    username?: string | null;
+    email?: string | null;
+  };
+  const holderName = u.name?.trim()
+    ? u.name
+    : u.username?.trim()
+      ? `@${u.username}`
+      : (u.email ?? null);
+
   return (
-    <main className="mx-auto max-w-xl px-6 py-24" data-theme="dark">
-      <Link
-        href="/tickets/my"
-        className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
-      >
-        ← All tickets
-      </Link>
+    <main
+      className="relative min-h-screen px-5 pb-24 pt-12"
+      data-theme="dark"
+      style={
+        // Match the perforation notches against the actual page bg
+        { ["--ticket-page-bg" as string]: "var(--background)" } as React.CSSProperties
+      }
+    >
+      <div className="mx-auto max-w-md">
+        <Link
+          href="/tickets/my"
+          className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+        >
+          ← All tickets
+        </Link>
+      </div>
 
-      <p className="mt-8 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        Ticket · #{ticket.ticket_number ?? "—"}
-      </p>
-      <h1 className="mt-3 text-2xl font-light tracking-tight xl:text-3xl">
-        {ev?.name ?? "Event"}
-      </h1>
-
-      <TicketDetailClient
-        ticketId={ticket.id}
-        status={ticket.status ?? "pending"}
-        paid={Boolean(ticket.paid)}
-        checkedIn={Boolean(ticket.checked_in)}
-        checkInUrl={checkInUrl}
-        eventSlug={ev?.slug ?? ""}
-        eventDate={ev?.date ?? null}
-        eventLocation={ev?.location ?? null}
-        ticketPrice={ev?.ticket_price ?? 0}
-        tossId={ev?.toss_payment_id ?? null}
-      />
+      <div className="mt-10">
+        <TicketDetailClient
+          ticketId={ticket.id}
+          ticketNumber={ticket.ticket_number ?? null}
+          status={
+            (ticket.status ?? "pending") as
+              | "pending"
+              | "active"
+              | "used"
+              | "canceled"
+          }
+          paid={Boolean(ticket.paid)}
+          checkedIn={Boolean(ticket.checked_in)}
+          checkInUrl={checkInUrl}
+          eventName={ev?.name ?? "Event"}
+          eventSlug={ev?.slug ?? ""}
+          eventDate={ev?.date ?? null}
+          eventLocation={ev?.location ?? null}
+          ticketPrice={ev?.ticket_price ?? 0}
+          tossId={ev?.toss_payment_id ?? null}
+          holderName={holderName}
+        />
+      </div>
     </main>
   );
 }
