@@ -1,0 +1,114 @@
+import { headers as nextHeaders } from "next/headers";
+import { redirect } from "next/navigation";
+import { getPayload } from "payload";
+import config from "@payload-config";
+import { CheckInClient } from "./page.client";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+type Params = Promise<{ code: string }>;
+
+export default async function CheckInPage(props: { params: Params }) {
+  const { code } = await props.params;
+  const payload = await getPayload({ config });
+  const headersList = await nextHeaders();
+  const auth = await payload.auth({ headers: headersList });
+
+  if (!auth.user) {
+    redirect(`/login?redirect=/tickets/check-in/${encodeURIComponent(code)}`);
+  }
+
+  const role = auth.user.role;
+  const isStaff = role === "admin" || role === "editor";
+
+  if (!isStaff) {
+    return (
+      <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
+          Forbidden
+        </p>
+        <h1 className="mt-3 text-2xl font-light tracking-tight">
+          Only staff can check in attendees.
+        </h1>
+        <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
+          If you're trying to use your own ticket, scroll down to the QR code on
+          your ticket page — staff will scan it from there.
+        </p>
+      </main>
+    );
+  }
+
+  const found = await payload.find({
+    collection: "tickets",
+    where: { check_in_code: { equals: code } },
+    limit: 1,
+    depth: 1,
+    overrideAccess: true
+  });
+  const ticket = found?.docs?.[0] as
+    | {
+        id: string;
+        ticket_number?: number | null;
+        status?: string | null;
+        checked_in?: boolean | null;
+        user?: unknown;
+        event?: { name?: string; slug?: string } | string;
+      }
+    | undefined;
+
+  if (!ticket) {
+    return (
+      <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
+          Not found
+        </p>
+        <h1 className="mt-3 text-2xl font-light tracking-tight">
+          No ticket matches this code.
+        </h1>
+      </main>
+    );
+  }
+
+  const eventName =
+    typeof ticket.event === "object" && ticket.event
+      ? ((ticket.event as { name?: string }).name ?? "Event")
+      : "Event";
+
+  let userName = "—";
+  if (
+    typeof ticket.user === "string" ||
+    (ticket.user && typeof ticket.user === "object")
+  ) {
+    const userId =
+      typeof ticket.user === "string"
+        ? ticket.user
+        : (ticket.user as { id?: string } | null)?.id;
+    if (userId) {
+      const u = (await payload
+        .findByID({
+          collection: "users",
+          id: userId,
+          depth: 0,
+          overrideAccess: true
+        })
+        .catch(() => null)) as {
+        name?: string;
+        username?: string;
+        email?: string;
+      } | null;
+      userName = u?.name ?? u?.username ?? u?.email ?? "—";
+    }
+  }
+
+  return (
+    <CheckInClient
+      code={code}
+      ticketNumber={ticket.ticket_number ?? null}
+      eventName={eventName}
+      userName={userName}
+      status={ticket.status ?? "pending"}
+      alreadyCheckedIn={Boolean(ticket.checked_in)}
+    />
+  );
+}

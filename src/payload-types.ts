@@ -113,6 +113,8 @@ export interface Config {
     'exchange-rate': ExchangeRate;
     currency: Currency;
     holidays: Holiday;
+    events: Event;
+    tickets: Ticket;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -212,6 +214,8 @@ export interface Config {
     'exchange-rate': ExchangeRateSelect<false> | ExchangeRateSelect<true>;
     currency: CurrencySelect<false> | CurrencySelect<true>;
     holidays: HolidaysSelect<false> | HolidaysSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    tickets: TicketsSelect<false> | TicketsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -2747,6 +2751,160 @@ export interface Holiday {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: string;
+  /**
+   * Event name (e.g. 'Hideaway Spring Salon · 2026').
+   */
+  name: string;
+  /**
+   * URL-safe identifier used in /tickets/{slug}. Lowercase, hyphens only.
+   */
+  slug: string;
+  /**
+   * Short marketing line shown on the event page.
+   */
+  description?: string | null;
+  /**
+   * Event start date and time.
+   */
+  date: string;
+  /**
+   * Optional event end date/time.
+   */
+  end_date?: string | null;
+  /**
+   * Venue name and/or address.
+   */
+  location?: string | null;
+  /**
+   * Password required to access the purchase page. Share privately with the intended audience.
+   */
+  gate_password: string;
+  /**
+   * Total tickets available across all users (0 = unlimited). When reached, the page shows 'Sold out'.
+   */
+  capacity?: number | null;
+  /**
+   * Maximum tickets a single user can purchase for this event.
+   */
+  max_per_user: number;
+  /**
+   * Price per ticket in KRW (whole numbers only).
+   */
+  ticket_price: number;
+  /**
+   * Toss ID for the payment link (overrides NEXT_PUBLIC_TOSS_ID). Format: 'hideawayseoul' for toss.me/hideawayseoul/{amount}.
+   */
+  toss_payment_id?: string | null;
+  /**
+   * draft = hidden; open = accepting purchases; closed = no new purchases; ended = past, exclusive content live.
+   */
+  state: 'draft' | 'open' | 'closed' | 'ended';
+  /**
+   * Event cover image.
+   */
+  image?: (string | null) | Media;
+  /**
+   * Post-event content shown only to checked-in attendees on /tickets/{slug}/exclusive.
+   */
+  exclusive_content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Links shown on the exclusive content page.
+   */
+  exclusive_links?:
+    | {
+        label: string;
+        url: string;
+        type: 'link' | 'form';
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Show a delivery address form on the exclusive content page (for free-goods drops).
+   */
+  goods_drop_enabled?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tickets".
+ */
+export interface Ticket {
+  id: string;
+  /**
+   * System: auto-incremented ticket number. Set on creation by the purchase API.
+   */
+  ticket_number?: number | null;
+  event: string | Event;
+  /**
+   * Account this ticket is bound to. Null for unclaimed gift tickets.
+   */
+  user?: (string | null) | User;
+  /**
+   * User who paid for this ticket.
+   */
+  purchaser: string | User;
+  status: 'pending' | 'active' | 'used' | 'canceled';
+  /**
+   * Set true once admin confirms Toss receipt. Activating the ticket runs onTicketPaid hook.
+   */
+  paid?: boolean | null;
+  paid_at?: string | null;
+  /**
+   * Single-use nanoid for gift ticket claim URLs. Null after claim or for the purchaser's own ticket.
+   */
+  claim_token?: string | null;
+  /**
+   * Optional: restrict claim to this email. If set, only the matching account can claim the ticket.
+   */
+  claim_email?: string | null;
+  claimed_at?: string | null;
+  /**
+   * System: nanoid encoded into the QR code for check-in.
+   */
+  check_in_code?: string | null;
+  checked_in?: boolean | null;
+  checked_in_at?: string | null;
+  /**
+   * Admin/editor who performed the check-in.
+   */
+  checked_in_by?: (string | null) | User;
+  /**
+   * Optional: passkey credential ID bound to this ticket for device verification.
+   */
+  passkey_credential_id?: string | null;
+  /**
+   * Submitted by attendee on the exclusive content page.
+   */
+  delivery_address?: {
+    recipient_name?: string | null;
+    address?: string | null;
+    phone?: string | null;
+    submitted_at?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -3022,6 +3180,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'holidays';
         value: string | Holiday;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: string | Event;
+      } | null)
+    | ({
+        relationTo: 'tickets';
+        value: string | Ticket;
       } | null)
     | ({
         relationTo: 'payload-folders';
@@ -4394,6 +4560,68 @@ export interface HolidaysSelect<T extends boolean = true> {
       };
   period?: T;
   country?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  date?: T;
+  end_date?: T;
+  location?: T;
+  gate_password?: T;
+  capacity?: T;
+  max_per_user?: T;
+  ticket_price?: T;
+  toss_payment_id?: T;
+  state?: T;
+  image?: T;
+  exclusive_content?: T;
+  exclusive_links?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        type?: T;
+        id?: T;
+      };
+  goods_drop_enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tickets_select".
+ */
+export interface TicketsSelect<T extends boolean = true> {
+  ticket_number?: T;
+  event?: T;
+  user?: T;
+  purchaser?: T;
+  status?: T;
+  paid?: T;
+  paid_at?: T;
+  claim_token?: T;
+  claim_email?: T;
+  claimed_at?: T;
+  check_in_code?: T;
+  checked_in?: T;
+  checked_in_at?: T;
+  checked_in_by?: T;
+  passkey_credential_id?: T;
+  delivery_address?:
+    | T
+    | {
+        recipient_name?: T;
+        address?: T;
+        phone?: T;
+        submitted_at?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

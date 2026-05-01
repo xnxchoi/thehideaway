@@ -37,6 +37,7 @@ import { imageSearchPlugin } from "./image-search";
 import { LikesPlugin } from "./Likes";
 import { userFieldOrganizerPlugin } from "./userField";
 import { MembershipPlugin } from "./membership/plugin";
+import { TicketingPlugin } from "./ticketing/plugin";
 //"tracks"|"albums"|"playlists"|
 export type EOCollectionSlug = Extract<
   CollectionSlug,
@@ -393,5 +394,6 @@ export const plugins: Plugin[] = [
       "citations"
     ]
   }),
-  MembershipPlugin({ enabled: true })
+  MembershipPlugin({ enabled: true }),
+  TicketingPlugin({ enabled: true })
 ];
