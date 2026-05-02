@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import s from "./Pricing.module.scss";
 import type { ResolvedPlan } from "@/app/(frontend)/(site)/(pages)/plans/getPlansData";
 

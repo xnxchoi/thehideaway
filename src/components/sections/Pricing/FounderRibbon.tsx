@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import * as m from "motion/react-m";
 import { useScroll, useTransform, useReducedMotion } from "motion/react";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { StarlinerMotion } from "@/components/sections/Starliner/StarlinerMotion";
 import s from "./FounderRibbon.module.scss";
 

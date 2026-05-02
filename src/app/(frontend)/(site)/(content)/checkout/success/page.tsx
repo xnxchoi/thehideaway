@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 
 export const dynamic = "force-dynamic";

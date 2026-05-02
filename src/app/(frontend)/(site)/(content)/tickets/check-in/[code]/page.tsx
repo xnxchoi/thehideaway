@@ -1,6 +1,6 @@
 import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { CheckInClient } from "./page.client";

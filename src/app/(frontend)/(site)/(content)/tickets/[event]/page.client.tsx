@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { useRouter } from "next/navigation";
 import { TossPayButton } from "@/components/UX/Ticket/TossPayButton";
 
@@ -176,7 +176,10 @@ export function TicketEventClient({
 
   if (!gateOpen) {
     return (
-      <div className="mx-auto px-6 py-32 sm:px-10 lg:px-16 2xl:px-20" style={PAGE_CONTAINER}>
+      <div
+        className="mx-auto px-6 py-32 sm:px-10 lg:px-16 2xl:px-20"
+        style={PAGE_CONTAINER}
+      >
         <Link
           href="/"
           className="mb-10 inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
@@ -230,7 +233,10 @@ export function TicketEventClient({
   }
 
   return (
-    <div className="mx-auto px-6 py-20 sm:px-10 lg:px-16 2xl:px-20" style={PAGE_CONTAINER}>
+    <div
+      className="mx-auto px-6 py-20 sm:px-10 lg:px-16 2xl:px-20"
+      style={PAGE_CONTAINER}
+    >
       <div className="mb-10 flex items-center justify-between">
         <Link
           href="/"
@@ -254,7 +260,7 @@ export function TicketEventClient({
           <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Tickets
           </p>
-          <h1 className="mt-3 text-4xl font-light leading-[1.05] tracking-tight xl:text-6xl">
+          <h1 className="mt-3 text-4xl leading-[1.05] font-light tracking-tight xl:text-6xl">
             {event.name}
           </h1>
           {dateDisplay ? (
@@ -302,8 +308,7 @@ export function TicketEventClient({
                     currency: "KRW",
                     maximumFractionDigits: 0
                   }).format(purchased.total_amount)}{" "}
-                  via Toss. Your tickets activate the moment we confirm
-                  receipt.
+                  via Toss. Your tickets activate the moment we confirm receipt.
                 </p>
 
                 <div className="mt-6">

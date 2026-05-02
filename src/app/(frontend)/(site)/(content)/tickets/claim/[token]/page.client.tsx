@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 
 interface Props {
   token: string;
@@ -101,10 +101,7 @@ export function ClaimClient({
         ) : null}
       </header>
 
-      <div
-        className="mt-12"
-        style={{ width: "min(40rem, 100%)" }}
-      >
+      <div className="mt-12" style={{ width: "min(40rem, 100%)" }}>
         {alreadyMine ? (
           <div>
             <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import s from "./Pricing.module.scss";
 
 export type GuestTierCardProps = {

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { useState } from "react";
 import { MarkerStroke, type MarkerStrokeVariant } from "./MarkerStroke";
 import s from "./MarkerLink.module.scss";

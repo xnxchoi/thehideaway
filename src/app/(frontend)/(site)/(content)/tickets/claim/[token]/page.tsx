@@ -1,5 +1,5 @@
 import { headers as nextHeaders } from "next/headers";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ClaimClient } from "./page.client";

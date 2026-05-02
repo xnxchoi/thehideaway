@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 
 interface ExclusiveLink {
   label: string;
@@ -155,7 +155,7 @@ export function ExclusiveContentClient({
         ) : null}
       </header>
 
-      <div className="grid gap-12 lg:grid-cols-[3fr_2fr] lg:gap-16 xl:gap-20 mt-12">
+      <div className="mt-12 grid gap-12 lg:grid-cols-[3fr_2fr] lg:gap-16 xl:gap-20">
         <section>
           {exclusiveLinks.length > 0 ? (
             <>

@@ -23,7 +23,7 @@ import {
   RichText as ConvertRichText
 } from "@payloadcms/richtext-lexical/react";
 import * as m from "motion/react-m";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { CollectionSlug } from "payload";
 import React, { ComponentPropsWithoutRef } from "react";
 import {

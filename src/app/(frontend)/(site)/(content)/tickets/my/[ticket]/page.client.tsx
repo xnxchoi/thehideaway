@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import {
   TicketCard,
   type TicketStatus

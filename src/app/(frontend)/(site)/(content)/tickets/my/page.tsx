@@ -1,6 +1,6 @@
 import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketStub } from "@/components/UX/Ticket/TicketStub";
@@ -59,13 +59,13 @@ export default async function MyTicketsPage() {
       >
         <Link
           href="/"
-          className="inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          className="inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
         >
           ← Hideaway
         </Link>
 
         <header className="mt-10 flex flex-col gap-1 border-b border-border/20 pb-8">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Tickets
           </p>
           <h1 className="text-3xl font-light tracking-tight xl:text-4xl">
@@ -89,7 +89,7 @@ export default async function MyTicketsPage() {
               </p>
               <Link
                 href="/"
-                className="mt-7 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground"
+                className="mt-7 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
               >
                 Back to the Hideaway
               </Link>
