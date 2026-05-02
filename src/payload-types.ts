@@ -2796,9 +2796,9 @@ export interface Event {
    */
   ticket_price: number;
   /**
-   * Toss ID for the payment link (overrides NEXT_PUBLIC_TOSS_ID). Format: 'hideawayseoul' for toss.me/hideawayseoul/{amount}.
+   * Free-form instructions shown to the buyer after they reserve. e.g. 'Send {amount} to KEB Hana 123-456-789012, account holder Sean Choi. Include your name in the memo.'
    */
-  toss_payment_id?: string | null;
+  payment_instructions?: string | null;
   /**
    * draft = hidden; open = accepting purchases; closed = no new purchases; ended = past, exclusive content live.
    */
@@ -4578,7 +4578,7 @@ export interface EventsSelect<T extends boolean = true> {
   capacity?: T;
   max_per_user?: T;
   ticket_price?: T;
-  toss_payment_id?: T;
+  payment_instructions?: T;
   state?: T;
   image?: T;
   exclusive_content?: T;

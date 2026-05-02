@@ -59,9 +59,6 @@ const schema = z.object({
   // ── Manual checkout — optional banner string ────────────────────────────
   NEXT_PUBLIC_BANK_ACCOUNT: z.string().optional(),
 
-  // ── Tickets — optional Toss ID for toss.me/{id}/{amount} links ─────────
-  NEXT_PUBLIC_TOSS_ID: z.string().optional(),
-
   // ── Auth misc ───────────────────────────────────────────────────────────
   COOKIE_DOMAIN: z.string().optional(),
 

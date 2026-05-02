@@ -110,11 +110,11 @@ export const Events: CollectionConfig = {
       }
     },
     {
-      name: "toss_payment_id",
-      type: "text",
+      name: "payment_instructions",
+      type: "textarea",
       admin: {
         description:
-          "Toss ID for the payment link (overrides NEXT_PUBLIC_TOSS_ID). Format: 'hideawayseoul' for toss.me/hideawayseoul/{amount}."
+          "Free-form instructions shown to the buyer after they reserve. e.g. 'Send {amount} to KEB Hana 123-456-789012, account holder Sean Choi. Include your name in the memo.'"
       }
     },
     {

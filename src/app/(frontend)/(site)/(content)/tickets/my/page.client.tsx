@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { RP_Btn } from "@/components/core/Button";
+import { Ticket3D } from "@/components/UX/Ticket/Ticket3D";
 import {
-  TicketCard,
+  StatusChip,
   type TicketStatus
-} from "@/components/UX/Ticket/TicketCard";
+} from "@/components/UX/Ticket/StatusChip";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 
@@ -17,7 +18,6 @@ export type MyTicketDoc = {
   status?: string | null;
   paid?: boolean | null;
   checked_in?: boolean | null;
-  check_in_code?: string | null;
   event?:
     | {
         id?: string;
@@ -25,29 +25,42 @@ export type MyTicketDoc = {
         slug?: string;
         date?: string | null;
         location?: string | null;
-        ticket_price?: number | null;
-        toss_payment_id?: string | null;
       }
     | string;
 };
 
 interface Props {
   tickets: MyTicketDoc[];
-  holderName: string | null;
-  baseUrl: string;
 }
 
 const padIndex = (n: number): string => String(n).padStart(2, "0");
 
-export default function MyTicketsPageClient({
-  tickets,
-  holderName,
-  baseUrl
-}: Props) {
+const formatShortDate = (d: string | null): string | null => {
+  if (!d) return null;
+  try {
+    return new Date(d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+  } catch {
+    return d;
+  }
+};
+
+const formatDow = (d: string | null): string | null => {
+  if (!d) return null;
+  try {
+    return new Date(d).toLocaleDateString("en-US", { weekday: "long" });
+  } catch {
+    return null;
+  }
+};
+
+export default function MyTicketsPageClient({ tickets }: Props) {
   const total = tickets.length;
   const [index, setIndex] = useState(0);
 
-  // Clamp if data shrinks underneath us.
   useEffect(() => {
     if (index >= total && total > 0) setIndex(0);
   }, [total, index]);
@@ -61,7 +74,6 @@ export default function MyTicketsPageClient({
     [total]
   );
 
-  // Arrow-key navigation.
   useEffect(() => {
     if (total <= 1) return;
     const onKey = (e: KeyboardEvent) => {
@@ -74,7 +86,6 @@ export default function MyTicketsPageClient({
 
   return (
     <RPage type="me" slug={["tickets"]}>
-      {/* ── Header ──────────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
@@ -101,24 +112,13 @@ export default function MyTicketsPageClient({
         </div>
       </header>
 
-      {/* ── Content ─────────────────────────────────────────────── */}
       <section className="mx-auto w-full max-w-7xl px-6 py-12 xl:px-10 xl:py-20">
         <AnimatePresence mode="wait">
           {total === 0 ? (
             <EmptyState key="empty" />
           ) : (
-            <div
-              key="pager"
-              className="flex flex-col items-center"
-              style={{ ["--ticket-page-bg" as string]: "var(--background)" }}
-            >
-              <Pager
-                tickets={tickets}
-                index={index}
-                holderName={holderName}
-                baseUrl={baseUrl}
-              />
-
+            <div key="pager" className="flex flex-col items-center gap-12">
+              <PagerCard ticket={tickets[index]} />
               {total > 1 ? (
                 <PagerControls
                   total={total}
@@ -138,61 +138,55 @@ export default function MyTicketsPageClient({
 
 // ── Pager card ─────────────────────────────────────────────────────────────
 
-function Pager({
-  tickets,
-  index,
-  holderName,
-  baseUrl
-}: {
-  tickets: MyTicketDoc[];
-  index: number;
-  holderName: string | null;
-  baseUrl: string;
-}) {
-  const ticket = tickets[index];
-  if (!ticket) return null;
-
+function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
   const ev =
     typeof ticket.event === "object" && ticket.event ? ticket.event : null;
   const status = (ticket.status ?? "pending") as TicketStatus;
-  const checkInUrl = ticket.check_in_code
-    ? `${baseUrl}/tickets/check-in/${ticket.check_in_code}`
-    : "";
+  const dateShort = formatShortDate(ev?.date ?? null);
+  const dow = formatDow(ev?.date ?? null);
 
   return (
     <AnimatePresence mode="wait">
       <m.div
         key={ticket.id}
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -12 }}
-        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-        className="flex w-full flex-col items-center gap-5"
-        style={{ width: "min(28rem, 100%)" }}
+        exit={{ opacity: 0, y: -16 }}
+        transition={{ type: "spring", bounce: 0.15, duration: 0.45 }}
+        className="flex w-full flex-col items-center gap-8"
+        style={{ width: "min(38rem, 100%)" }}
       >
-        {/* The TicketCard contains its own interactive elements (Toss pay
-            button, QR), so it can't be wrapped in another Link — that would
-            nest anchors. */}
-        <TicketCard
-          ticketNumber={ticket.ticket_number ?? null}
-          status={status}
-          paid={Boolean(ticket.paid)}
-          checkedIn={Boolean(ticket.checked_in)}
+        {/* The 3D artifact — visual presence only. */}
+        <Ticket3D
           eventName={ev?.name ?? "Event"}
-          eventDate={ev?.date ?? null}
-          eventLocation={ev?.location ?? null}
-          holderName={holderName}
-          checkInUrl={checkInUrl}
-          ticketPrice={ev?.ticket_price ?? 0}
-          tossId={ev?.toss_payment_id ?? null}
+          ticketNumber={ticket.ticket_number ?? null}
+          date={dateShort}
+          location={ev?.location ?? null}
         />
-        <Link
-          href={`/tickets/my/${ticket.id}`}
-          aria-label={`Open ticket #${ticket.ticket_number ?? ""} for ${ev?.name ?? "Event"}`}
-          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-        >
-          View details →
-        </Link>
+
+        {/* Information block — typography-driven, lives outside the card. */}
+        <div className="flex w-full flex-col items-center gap-5 text-center">
+          <StatusChip status={status} checkedIn={Boolean(ticket.checked_in)} />
+
+          <h2 className="text-3xl leading-[1.05] font-light tracking-tight text-balance xl:text-5xl">
+            {ev?.name ?? "Event"}
+          </h2>
+
+          {dateShort ? (
+            <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+              {dow ? `${dow} · ` : ""}
+              {dateShort}
+              {ev?.location ? ` · ${ev.location}` : ""}
+            </p>
+          ) : null}
+
+          <Link
+            href={`/tickets/my/${ticket.id}`}
+            className="mt-2 font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+          >
+            View details →
+          </Link>
+        </div>
       </m.div>
     </AnimatePresence>
   );
@@ -214,7 +208,7 @@ function PagerControls({
   onJump: (i: number) => void;
 }) {
   return (
-    <div className="mt-12 flex flex-col items-center gap-5">
+    <div className="flex flex-col items-center gap-5">
       <div className="flex items-center gap-8">
         <RP_Btn
           onClick={onPrev}

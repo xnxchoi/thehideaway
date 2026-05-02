@@ -51,7 +51,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
           date?: string | null;
           location?: string | null;
           ticket_price?: number | null;
-          toss_payment_id?: string | null;
+          payment_instructions?: string | null;
         }
       | string;
   } | null;
@@ -93,7 +93,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
       eventDate={ev?.date ?? null}
       eventLocation={ev?.location ?? null}
       ticketPrice={ev?.ticket_price ?? 0}
-      tossId={ev?.toss_payment_id ?? null}
+      paymentInstructions={ev?.payment_instructions ?? null}
       holderName={holderName}
     />
   );

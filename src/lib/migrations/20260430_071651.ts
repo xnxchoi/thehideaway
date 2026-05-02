@@ -26,7 +26,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"capacity" numeric DEFAULT 0,
   	"max_per_user" numeric DEFAULT 3 NOT NULL,
   	"ticket_price" numeric NOT NULL,
-  	"toss_payment_id" uuid,
+  	"payment_instructions" varchar,
   	"state" "enum_events_state" DEFAULT 'draft' NOT NULL,
   	"image_id" uuid,
   	"exclusive_content" jsonb,
