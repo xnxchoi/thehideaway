@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres";
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
@@ -26,7 +26,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"capacity" numeric DEFAULT 0,
   	"max_per_user" numeric DEFAULT 3 NOT NULL,
   	"ticket_price" numeric NOT NULL,
-  	"payment_instructions" varchar,
+  	"toss_payment_id" uuid,
   	"state" "enum_events_state" DEFAULT 'draft' NOT NULL,
   	"image_id" uuid,
   	"exclusive_content" jsonb,
@@ -89,10 +89,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_events_fk" FOREIGN KEY ("events_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_tickets_fk" FOREIGN KEY ("tickets_id") REFERENCES "public"."tickets"("id") ON DELETE cascade ON UPDATE no action;
   CREATE INDEX "payload_locked_documents_rels_events_id_idx" ON "payload_locked_documents_rels" USING btree ("events_id");
-  CREATE INDEX "payload_locked_documents_rels_tickets_id_idx" ON "payload_locked_documents_rels" USING btree ("tickets_id");`)
+  CREATE INDEX "payload_locked_documents_rels_tickets_id_idx" ON "payload_locked_documents_rels" USING btree ("tickets_id");`);
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({
+  db,
+  payload,
+  req
+}: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "events_exclusive_links" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "events" DISABLE ROW LEVEL SECURITY;
@@ -110,5 +114,5 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "tickets_id";
   DROP TYPE "public"."enum_events_exclusive_links_type";
   DROP TYPE "public"."enum_events_state";
-  DROP TYPE "public"."enum_tickets_status";`)
+  DROP TYPE "public"."enum_tickets_status";`);
 }

@@ -194,21 +194,13 @@ export function TicketDetailClient({
             {/* Always-visible metadata */}
             <dl className="grid grid-cols-1 gap-x-8 gap-y-5 border-t border-border/20 pt-8 sm:grid-cols-2">
               <Field label="Number" value={`#${num}`} mono />
-              <Field
-                label="Holder"
-                value={holderName ?? "—"}
-                fallback="—"
-              />
+              <Field label="Holder" value={holderName ?? "—"} fallback="—" />
               <Field
                 label="Price"
                 value={ticketPrice > 0 ? formatKRW(ticketPrice) : "Free"}
                 mono
               />
-              <Field
-                label="Paid"
-                value={paid ? "Confirmed" : "Pending"}
-                mono
-              />
+              <Field label="Paid" value={paid ? "Confirmed" : "Pending"} mono />
             </dl>
 
             {checkedIn && eventSlug ? (
