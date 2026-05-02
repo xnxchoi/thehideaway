@@ -136,7 +136,7 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
         exit={{ opacity: 0, y: -16 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.45 }}
         className="flex w-full flex-col items-center gap-8"
-        style={{ width: "min(38rem, 100%)" }}
+        style={{ width: "min(52rem, 100%)" }}
       >
         {/* The 3D artifact — purely decorative in the pager. Interaction
             (hover-tilt, click-to-flip) is reserved for the single-ticket
