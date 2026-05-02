@@ -161,7 +161,12 @@ export function TicketMesh({
     // of the wobble + tilt so the card still breathes after flipping.
     const flipBase = flipped ? Math.PI : 0;
 
-    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, wobbleX + tiltX, 6, delta);
+    g.rotation.x = THREE.MathUtils.damp(
+      g.rotation.x,
+      wobbleX + tiltX,
+      6,
+      delta
+    );
     // Slightly slower damp on Y so the flip animation reads as deliberate.
     g.rotation.y = THREE.MathUtils.damp(
       g.rotation.y,
