@@ -7,21 +7,32 @@ export interface TicketTextureInput {
   location: string | null;
 }
 
-const W = 1024;
-const H = 640;
-const PAD = 64;
+// Texture proportions match the geometry's 2:1 silhouette (see TicketMesh).
+// 0.70 corresponds to the geometric perforation x-position so the printed
+// dots line up with the notches cut into the mesh outline.
+const W = 1600;
+const H = 800;
+const STUB_RATIO = 0.7;
+const STUB_X = Math.round(W * STUB_RATIO);
+const PAD = 80;
 
-const PAPER_INK = "rgba(28, 22, 18, 0.92)";
-const PAPER_INK_SOFT = "rgba(28, 22, 18, 0.62)";
-const PAPER_INK_GHOST = "rgba(28, 22, 18, 0.32)";
+const INK = "rgba(22, 17, 14, 0.96)";
+const INK_SOFT = "rgba(22, 17, 14, 0.62)";
+const INK_GHOST = "rgba(22, 17, 14, 0.16)";
+
+const FONT_SANS =
+  "Helvetica Neue, Helvetica, Arial, system-ui, -apple-system, sans-serif";
+const FONT_MONO =
+  "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+const FONT_SERIF = "Georgia, 'Times New Roman', serif";
 
 /**
- * Generate the canvas texture used as the colour map on the ticket front.
- * Designed with a single ticket aesthetic in mind — typographic, high
- * contrast, leaves room for the holographic shift to dominate the surface.
+ * Generate the canvas texture for the ticket front. Designed at 2:1 aspect
+ * to match the extruded silhouette in TicketMesh, with a clear two-section
+ * layout — body on the left, tear-off stub on the right — and typography
+ * bold enough to survive being downsampled onto the geometry.
  */
 export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
-  // SSR safety — texture is created lazily on the client.
   if (typeof document === "undefined") {
     return new THREE.Texture();
   }
@@ -32,78 +43,130 @@ export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
   const ctx = c.getContext("2d");
   if (!ctx) return new THREE.Texture();
 
-  // Pearl-white paper base with a faint vignette so edges feel hand-laid.
-  // Kept neutral on purpose — the iridescent layer is what should colour the
-  // surface; if the base is warm-cream, you get yellow-on-yellow.
+  // ── Paper base ──────────────────────────────────────────────────────────
+  // Pearl-white with a faint vignette so edges feel hand-laid. Kept neutral
+  // on purpose — the iridescent material layer is what colours the surface;
+  // a warm cream base would just produce yellow-on-yellow.
   const bg = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H);
   bg.addColorStop(0, "#fbf8f1");
   bg.addColorStop(1, "#ece7dc");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle paper grain (cheap white-noise dots).
-  ctx.fillStyle = "rgba(28,22,18,0.04)";
-  for (let i = 0; i < 1400; i++) {
+  // Subtle paper grain — cheap white-noise dots.
+  ctx.fillStyle = "rgba(22,17,14,0.05)";
+  for (let i = 0; i < 2400; i++) {
     ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
   }
 
-  // Outer hairline frame.
-  ctx.strokeStyle = "rgba(28,22,18,0.32)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(28, 28, W - 56, H - 56);
+  // Slightly different tint on the stub so the two sections read distinctly.
+  ctx.fillStyle = "rgba(22,17,14,0.04)";
+  ctx.fillRect(STUB_X, 0, W - STUB_X, H);
 
-  // Top-left eyebrow.
-  ctx.fillStyle = PAPER_INK_SOFT;
-  ctx.font = "600 18px ui-monospace, 'SF Mono', Menlo, monospace";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillText("ADMIT  ONE", PAD, PAD + 30);
+  // ── Outer hairline frame ───────────────────────────────────────────────
+  ctx.strokeStyle = "rgba(22,17,14,0.34)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(36, 36, W - 72, H - 72);
 
-  // Brand monogram — top-right corner.
-  ctx.fillStyle = PAPER_INK_GHOST;
-  ctx.font = "300 96px Georgia, 'Times New Roman', serif";
-  ctx.textAlign = "right";
-  ctx.fillText("H", W - PAD, PAD + 90);
-  ctx.textAlign = "left";
+  // ── Perforation line at stub boundary ──────────────────────────────────
+  // Dashed line + dots, running top to bottom.
+  ctx.strokeStyle = "rgba(22,17,14,0.4)";
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([6, 8]);
+  ctx.beginPath();
+  ctx.moveTo(STUB_X, 36);
+  ctx.lineTo(STUB_X, H - 36);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  // Event name — wrapped, large, light weight.
-  ctx.fillStyle = PAPER_INK;
-  ctx.font =
-    "300 64px ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', sans-serif";
-  wrapText(ctx, input.eventName, PAD, 220, W - PAD * 2 - 200, 72, 3);
-
-  // Date · location strip — mono caps.
-  ctx.fillStyle = PAPER_INK_SOFT;
-  ctx.font = "500 18px ui-monospace, 'SF Mono', Menlo, monospace";
-  ctx.letterSpacing = "0.18em";
-  const meta =
-    [input.date, input.location].filter(Boolean).join("   ·   ") ||
-    "DATE   ·   PLACE";
-  ctx.fillText(meta.toUpperCase(), PAD, H - PAD - 40);
-
-  // Ticket number block — bottom-right, big mono.
-  const num = String(input.ticketNumber ?? 0).padStart(4, "0");
-  ctx.fillStyle = PAPER_INK;
-  ctx.font = "300 96px ui-monospace, 'SF Mono', Menlo, monospace";
-  ctx.textAlign = "right";
-  ctx.fillText(num, W - PAD, H - PAD - 16);
-  ctx.fillStyle = PAPER_INK_SOFT;
-  ctx.font = "600 14px ui-monospace, 'SF Mono', Menlo, monospace";
-  ctx.fillText("NO.", W - PAD, H - PAD - 96);
-  ctx.textAlign = "left";
-
-  // Perforation-style row of dots near the bottom edge for ticket-feel.
-  ctx.fillStyle = "rgba(28,22,18,0.28)";
-  for (let x = PAD + 8; x < W - PAD; x += 14) {
+  // Heavier perforation dots layered on top for that real ticket feel.
+  ctx.fillStyle = "rgba(22,17,14,0.55)";
+  for (let y = 60; y < H - 60; y += 22) {
     ctx.beginPath();
-    ctx.arc(x, H - 28 - 0.5, 1.2, 0, Math.PI * 2);
+    ctx.arc(STUB_X, y, 1.6, 0, Math.PI * 2);
     ctx.fill();
   }
 
+  // ── Body section (left) ────────────────────────────────────────────────
+  drawBody(ctx, input);
+
+  // ── Stub section (right) ───────────────────────────────────────────────
+  drawStub(ctx, input.ticketNumber);
+
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
+  tex.anisotropy = 16;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipMapLinearFilter;
   tex.needsUpdate = true;
   return tex;
+}
+
+function drawBody(
+  ctx: CanvasRenderingContext2D,
+  input: TicketTextureInput
+): void {
+  const innerR = STUB_X - 36;
+
+  // Eyebrow — top-left.
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `700 30px ${FONT_MONO}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText("ADMIT ONE", PAD, PAD + 36);
+
+  // Faint brand monogram in the upper-right of the body.
+  ctx.fillStyle = INK_GHOST;
+  ctx.font = `300 320px ${FONT_SERIF}`;
+  ctx.textAlign = "right";
+  ctx.fillText("H", innerR - 24, 280);
+
+  // Event name — large, light weight, wrapped to up to two lines.
+  ctx.fillStyle = INK;
+  ctx.font = `300 96px ${FONT_SANS}`;
+  ctx.textAlign = "left";
+  wrapText(ctx, input.eventName, PAD, 360, innerR - PAD - 48, 104, 2);
+
+  // Date · location strip — mono caps along the bottom of the body.
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `600 26px ${FONT_MONO}`;
+  const meta =
+    [input.date, input.location].filter(Boolean).join("   ·   ") ||
+    "DATE   ·   PLACE";
+  // Apply caps + a touch of letter-spacing manually. canvas2D's
+  // letter-spacing support is unreliable across browsers, so we draw the
+  // string directly and accept default tracking.
+  ctx.fillText(meta.toUpperCase(), PAD, H - PAD - 16);
+}
+
+function drawStub(
+  ctx: CanvasRenderingContext2D,
+  ticketNumber: number | null
+): void {
+  const stubW = W - STUB_X;
+  const cx = STUB_X + stubW / 2;
+  const num = String(ticketNumber ?? 0).padStart(4, "0");
+
+  // "NO." label — top of stub, centred.
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `700 26px ${FONT_MONO}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText("NO.", cx, PAD + 36);
+
+  // Big ticket number — the visual anchor of the stub.
+  ctx.fillStyle = INK;
+  ctx.font = `300 180px ${FONT_MONO}`;
+  ctx.fillText(num, cx, H / 2 + 60);
+
+  // "ADMIT ONE" repeated as a vertical accent at the bottom of the stub.
+  ctx.save();
+  ctx.translate(cx, H - PAD - 16);
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `700 22px ${FONT_MONO}`;
+  ctx.textAlign = "center";
+  ctx.fillText("ADMIT ONE", 0, 0);
+  ctx.restore();
 }
 
 function wrapText(
@@ -131,7 +194,7 @@ function wrapText(
   }
   if (line && lines.length < maxLines) lines.push(line);
 
-  // Truncate the final line with an ellipsis if we ran out.
+  // Truncate the final line with an ellipsis if we ran out of room.
   if (lines.length === maxLines) {
     let last = lines[maxLines - 1];
     while (ctx.measureText(`${last}…`).width > maxWidth && last.length > 0) {
@@ -140,5 +203,6 @@ function wrapText(
     lines[maxLines - 1] = `${last}…`;
   }
 
+  ctx.textAlign = "left";
   lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
 }
