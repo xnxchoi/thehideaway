@@ -71,8 +71,7 @@ export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
 
   // Date · location strip — mono caps.
   ctx.fillStyle = PAPER_INK_SOFT;
-  ctx.font =
-    "500 18px ui-monospace, 'SF Mono', Menlo, monospace";
+  ctx.font = "500 18px ui-monospace, 'SF Mono', Menlo, monospace";
   ctx.letterSpacing = "0.18em";
   const meta =
     [input.date, input.location].filter(Boolean).join("   ·   ") ||
@@ -133,10 +132,7 @@ function wrapText(
   // Truncate the final line with an ellipsis if we ran out.
   if (lines.length === maxLines) {
     let last = lines[maxLines - 1];
-    while (
-      ctx.measureText(`${last}…`).width > maxWidth &&
-      last.length > 0
-    ) {
+    while (ctx.measureText(`${last}…`).width > maxWidth && last.length > 0) {
       last = last.slice(0, -1);
     }
     lines[maxLines - 1] = `${last}…`;

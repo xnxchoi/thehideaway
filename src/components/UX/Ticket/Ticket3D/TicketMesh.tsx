@@ -4,7 +4,10 @@ import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { makeTicketTexture, type TicketTextureInput } from "./makeTicketTexture";
+import {
+  makeTicketTexture,
+  type TicketTextureInput
+} from "./makeTicketTexture";
 
 export interface TicketMeshProps extends TicketTextureInput {
   /**

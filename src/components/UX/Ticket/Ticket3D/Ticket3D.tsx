@@ -29,11 +29,7 @@ export interface Ticket3DProps extends TicketTextureInput {
  * sibling info layout in the ticket pages. This component is intentionally
  * just visual presence.
  */
-export function Ticket3D({
-  className,
-  style,
-  ...textureInput
-}: Ticket3DProps) {
+export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
@@ -119,7 +115,11 @@ export function Ticket3D({
     <div
       ref={containerRef}
       className={cn("relative aspect-[16/9] w-full select-none", className)}
-      style={{ touchAction: "none", cursor: dragging ? "grabbing" : "grab", ...style }}
+      style={{
+        touchAction: "none",
+        cursor: dragging ? "grabbing" : "grab",
+        ...style
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMoveDrag}
       onPointerUp={releaseDrag}
