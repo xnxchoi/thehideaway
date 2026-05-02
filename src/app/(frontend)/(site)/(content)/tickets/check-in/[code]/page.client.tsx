@@ -49,7 +49,10 @@ export function CheckInClient({
   };
 
   return (
-    <main className="mx-auto max-w-md px-6 py-24" data-theme="dark">
+    <main
+      className="px-6 py-24 sm:px-10 lg:px-16 2xl:px-24"
+      data-theme="dark"
+    >
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
         Check in
       </p>
@@ -88,13 +91,13 @@ export function CheckInClient({
             <div className="mt-6 flex flex-col gap-3">
               <Link
                 href="/vault/collections/tickets"
-                className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:text-foreground"
+                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
               >
                 Open Vault → Tickets
               </Link>
               <Link
                 href="/tickets/my"
-                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
               >
                 ← My tickets
               </Link>

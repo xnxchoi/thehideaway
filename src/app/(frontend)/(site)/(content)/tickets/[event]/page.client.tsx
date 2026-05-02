@@ -176,10 +176,13 @@ export function TicketEventClient({
 
   if (!gateOpen) {
     return (
-      <main className="mx-auto max-w-xl px-6 py-32" data-theme="dark">
+      <main
+        className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
+        data-theme="dark"
+      >
         <Link
           href="/"
-          className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          className="mb-10 inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
         >
           ← Hideaway
         </Link>
@@ -194,6 +197,7 @@ export function TicketEventClient({
         </p>
         <form
           className="mt-10 flex flex-col gap-4"
+          style={{ width: "min(36rem, 100%)" }}
           onSubmit={(e) => {
             e.preventDefault();
             submitGate();
@@ -229,18 +233,21 @@ export function TicketEventClient({
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-24" data-theme="dark">
+    <main
+      className="px-6 py-24 sm:px-10 lg:px-16 2xl:px-24"
+      data-theme="dark"
+    >
       <div className="mb-10 flex items-center justify-between">
         <Link
           href="/"
-          className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
         >
           ← Hideaway
         </Link>
         {isAuthenticated ? (
           <Link
             href="/tickets/my"
-            className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+            className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
           >
             My tickets →
           </Link>
@@ -260,7 +267,10 @@ export function TicketEventClient({
         </p>
       ) : null}
       {event.description ? (
-        <p className="mt-6 max-w-prose text-sm leading-relaxed text-foreground/80 xl:text-base">
+        <p
+          className="mt-6 text-sm leading-relaxed text-foreground/80 xl:text-base"
+          style={{ width: "min(60ch, 100%)" }}
+        >
           {event.description}
         </p>
       ) : null}

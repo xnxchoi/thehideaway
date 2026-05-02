@@ -83,16 +83,14 @@ export default async function TicketDetailPage(props: { params: Params }) {
         { ["--ticket-page-bg" as string]: "var(--background)" } as React.CSSProperties
       }
     >
-      <div className="mx-auto max-w-md">
-        <Link
-          href="/tickets/my"
-          className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
-        >
-          ← All tickets
-        </Link>
-      </div>
+      <Link
+        href="/tickets/my"
+        className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+      >
+        ← All tickets
+      </Link>
 
-      <div className="mt-10">
+      <div className="mt-10 flex justify-center">
         <TicketDetailClient
           ticketId={ticket.id}
           ticketNumber={ticket.ticket_number ?? null}

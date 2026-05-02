@@ -53,7 +53,7 @@ export function TicketDetailClient({
       />
 
       {checkedIn && eventSlug ? (
-        <div className="mx-auto mt-10 max-w-md text-center">
+        <div className="mt-10 flex justify-center">
           <Link
             href={`/tickets/${eventSlug}/exclusive`}
             className="inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"

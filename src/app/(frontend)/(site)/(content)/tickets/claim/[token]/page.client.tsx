@@ -77,7 +77,10 @@ export function ClaimClient({
   };
 
   return (
-    <main className="mx-auto max-w-xl px-6 py-32" data-theme="dark">
+    <main
+      className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
+      data-theme="dark"
+    >
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
         Gift ticket
       </p>
@@ -119,13 +122,13 @@ export function ClaimClient({
             <div className="mt-6 flex flex-col gap-3">
               <Link
                 href={`/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`}
-                className="inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground"
+                className="inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
               >
                 Sign in with another account
               </Link>
               <Link
                 href="/tickets/my"
-                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
               >
                 ← My tickets
               </Link>

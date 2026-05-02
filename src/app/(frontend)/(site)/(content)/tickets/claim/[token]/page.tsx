@@ -53,7 +53,10 @@ export default async function ClaimPage(props: { params: Params }) {
 
   if (!ticket) {
     return (
-      <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+      <main
+        className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
+        data-theme="dark"
+      >
         <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           Gift ticket
         </p>
@@ -67,14 +70,14 @@ export default async function ClaimPage(props: { params: Params }) {
           {session ? (
             <Link
               href="/tickets/my"
-              className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:text-foreground"
+              className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
             >
               ← My tickets
             </Link>
           ) : null}
           <Link
             href="/"
-            className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+            className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
           >
             Hideaway home
           </Link>
