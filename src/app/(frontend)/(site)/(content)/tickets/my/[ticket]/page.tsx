@@ -5,6 +5,13 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketDetailClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { RPage } from "@/components/UX/Transition";
+
+const PAGE_CONTAINER: React.CSSProperties = {
+  width: "100%",
+  maxWidth: "var(--maxContainerWidth, 1440px)",
+  ["--ticket-page-bg" as string]: "var(--background)"
+};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,46 +83,42 @@ export default async function TicketDetailPage(props: { params: Params }) {
       : (u.email ?? null);
 
   return (
-    <main
-      className="relative min-h-screen px-6 pt-12 pb-24 sm:px-10 lg:px-16 2xl:px-24"
-      data-theme="dark"
-      style={
-        // Match the perforation notches against the actual page bg
-        {
-          ["--ticket-page-bg" as string]: "var(--background)"
-        } as React.CSSProperties
-      }
-    >
-      <Link
-        href="/tickets/my"
-        className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+    <RPage type="pages" slug={["tickets", "my", ticket.id]} theme="dark">
+      <div
+        className="mx-auto px-6 pt-12 pb-24 sm:px-10 lg:px-16 2xl:px-20"
+        style={PAGE_CONTAINER}
       >
-        ← All tickets
-      </Link>
+        <Link
+          href="/tickets/my"
+          className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+        >
+          ← All tickets
+        </Link>
 
-      <div className="mt-10 flex justify-center">
-        <TicketDetailClient
-          ticketId={ticket.id}
-          ticketNumber={ticket.ticket_number ?? null}
-          status={
-            (ticket.status ?? "pending") as
-              | "pending"
-              | "active"
-              | "used"
-              | "canceled"
-          }
-          paid={Boolean(ticket.paid)}
-          checkedIn={Boolean(ticket.checked_in)}
-          checkInUrl={checkInUrl}
-          eventName={ev?.name ?? "Event"}
-          eventSlug={ev?.slug ?? ""}
-          eventDate={ev?.date ?? null}
-          eventLocation={ev?.location ?? null}
-          ticketPrice={ev?.ticket_price ?? 0}
-          tossId={ev?.toss_payment_id ?? null}
-          holderName={holderName}
-        />
+        <div className="mt-12 flex justify-center">
+          <TicketDetailClient
+            ticketId={ticket.id}
+            ticketNumber={ticket.ticket_number ?? null}
+            status={
+              (ticket.status ?? "pending") as
+                | "pending"
+                | "active"
+                | "used"
+                | "canceled"
+            }
+            paid={Boolean(ticket.paid)}
+            checkedIn={Boolean(ticket.checked_in)}
+            checkInUrl={checkInUrl}
+            eventName={ev?.name ?? "Event"}
+            eventSlug={ev?.slug ?? ""}
+            eventDate={ev?.date ?? null}
+            eventLocation={ev?.location ?? null}
+            ticketPrice={ev?.ticket_price ?? 0}
+            tossId={ev?.toss_payment_id ?? null}
+            holderName={holderName}
+          />
+        </div>
       </div>
-    </main>
+    </RPage>
   );
 }

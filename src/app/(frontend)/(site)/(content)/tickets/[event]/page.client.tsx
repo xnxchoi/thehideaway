@@ -176,10 +176,7 @@ export function TicketEventClient({
 
   if (!gateOpen) {
     return (
-      <main
-        className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
-        data-theme="dark"
-      >
+      <div className="mx-auto px-6 py-32 sm:px-10 lg:px-16 2xl:px-20" style={PAGE_CONTAINER}>
         <Link
           href="/"
           className="mb-10 inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
@@ -197,7 +194,7 @@ export function TicketEventClient({
         </p>
         <form
           className="mt-10 flex flex-col gap-4"
-          style={{ width: "min(36rem, 100%)" }}
+          style={{ width: "min(32rem, 100%)" }}
           onSubmit={(e) => {
             e.preventDefault();
             submitGate();
@@ -228,15 +225,12 @@ export function TicketEventClient({
             {gateBusy ? "Checking…" : "Enter"}
           </button>
         </form>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main
-      className="px-6 py-24 sm:px-10 lg:px-16 2xl:px-24"
-      data-theme="dark"
-    >
+    <div className="mx-auto px-6 py-20 sm:px-10 lg:px-16 2xl:px-20" style={PAGE_CONTAINER}>
       <div className="mb-10 flex items-center justify-between">
         <Link
           href="/"
@@ -254,166 +248,180 @@ export function TicketEventClient({
         ) : null}
       </div>
 
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        Tickets
-      </p>
-      <h1 className="mt-3 text-3xl font-light tracking-tight xl:text-5xl">
-        {event.name}
-      </h1>
-      {dateDisplay ? (
-        <p className="mt-4 font-mono text-[11px] tracking-widest text-foreground/70 uppercase">
-          {dateDisplay}
-          {event.location ? ` · ${event.location}` : ""}
-        </p>
-      ) : null}
-      {event.description ? (
-        <p
-          className="mt-6 text-sm leading-relaxed text-foreground/80 xl:text-base"
-          style={{ width: "min(60ch, 100%)" }}
-        >
-          {event.description}
-        </p>
-      ) : null}
-
-      <div className="mt-12 border-t border-border/20 pt-8">
-        {!isOpen ? (
-          <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
-            {event.state === "ended"
-              ? "This event has ended."
-              : "Tickets are not currently on sale."}
+      <div className="grid gap-12 lg:grid-cols-[3fr_2fr] lg:gap-16 xl:gap-20">
+        {/* Event hero */}
+        <section>
+          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            Tickets
           </p>
-        ) : soldOut ? (
-          <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
-            Sold out
-          </p>
-        ) : purchased ? (
-          <div>
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-              Pending payment
+          <h1 className="mt-3 text-4xl font-light leading-[1.05] tracking-tight xl:text-6xl">
+            {event.name}
+          </h1>
+          {dateDisplay ? (
+            <p className="mt-5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase">
+              {dateDisplay}
+              {event.location ? ` · ${event.location}` : ""}
             </p>
-            <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
-              {purchased.tickets.length} ticket
-              {purchased.tickets.length > 1 ? "s" : ""} reserved.
-            </h2>
-            <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-              Send{" "}
-              {new Intl.NumberFormat("ko-KR", {
-                style: "currency",
-                currency: "KRW",
-                maximumFractionDigits: 0
-              }).format(purchased.total_amount)}{" "}
-              via Toss. Your tickets activate the moment we confirm receipt.
-            </p>
-
-            <div className="mt-6">
-              <TossPayButton
-                amount={purchased.total_amount}
-                tossId={event.toss_payment_id ?? undefined}
-              />
-            </div>
-
-            {purchased.tickets.some((t) => t.claim_url) ? (
-              <div className="mt-10 border-t border-border/20 pt-6">
-                <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-                  Gift links
-                </p>
-                <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
-                  Share these privately. Each link can be claimed once.
-                </p>
-                <ul className="mt-4 space-y-2">
-                  {purchased.tickets
-                    .filter((t) => t.claim_url)
-                    .map((t) => (
-                      <li
-                        key={t.id}
-                        className="flex items-center justify-between gap-3 border border-border/20 px-4 py-3 text-sm"
-                      >
-                        <span className="font-mono text-[11px] text-foreground/70">
-                          Ticket #{t.ticket_number}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => copyClaim(t.claim_url!)}
-                          className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
-                        >
-                          {copied === t.claim_url ? "Copied" : "Copy link"}
-                        </button>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            ) : null}
-
-            <div className="mt-10">
-              <Link
-                href="/tickets/my"
-                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
-              >
-                View my tickets →
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-              Reserve · {totalDisplay}
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <span className="font-mono text-[11px] text-muted-foreground/60">
-                Quantity
-              </span>
-              <div className="flex gap-2">
-                {Array.from({ length: maxAllowed }).map((_, i) => {
-                  const n = i + 1;
-                  return (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setQuantity(n)}
-                      aria-pressed={quantity === n}
-                      className={`border px-3 py-1.5 font-mono text-[11px] transition-colors ${
-                        quantity === n
-                          ? "border-foreground text-foreground"
-                          : "border-border/30 text-foreground/60 hover:border-border/60"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {purchaseError ? (
-              <p
-                role="alert"
-                className="mt-6 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
-              >
-                {purchaseError}
-              </p>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={submitPurchase}
-              disabled={purchaseBusy || !isAuthenticated}
-              className="mt-8 border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+          ) : null}
+          {event.description ? (
+            <p
+              className="mt-7 text-sm leading-relaxed text-foreground/80 xl:text-base"
+              style={{ width: "min(60ch, 100%)" }}
             >
-              {purchaseBusy
-                ? "Reserving…"
-                : !isAuthenticated
-                  ? "Sign in to continue"
-                  : `Request ${quantity} ticket${quantity > 1 ? "s" : ""} · ${totalDisplay}`}
-            </button>
+              {event.description}
+            </p>
+          ) : null}
+        </section>
 
-            {!isAuthenticated ? (
-              <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-                You'll be redirected to sign in.
+        {/* Purchase / status panel */}
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="border-t border-border/20 pt-8 lg:border-t-0 lg:pt-0">
+            {!isOpen ? (
+              <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+                {event.state === "ended"
+                  ? "This event has ended."
+                  : "Tickets are not currently on sale."}
               </p>
-            ) : null}
+            ) : soldOut ? (
+              <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+                Sold out
+              </p>
+            ) : purchased ? (
+              <div>
+                <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                  Pending payment
+                </p>
+                <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
+                  {purchased.tickets.length} ticket
+                  {purchased.tickets.length > 1 ? "s" : ""} reserved.
+                </h2>
+                <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
+                  Send{" "}
+                  {new Intl.NumberFormat("ko-KR", {
+                    style: "currency",
+                    currency: "KRW",
+                    maximumFractionDigits: 0
+                  }).format(purchased.total_amount)}{" "}
+                  via Toss. Your tickets activate the moment we confirm
+                  receipt.
+                </p>
+
+                <div className="mt-6">
+                  <TossPayButton
+                    amount={purchased.total_amount}
+                    tossId={event.toss_payment_id ?? undefined}
+                  />
+                </div>
+
+                {purchased.tickets.some((t) => t.claim_url) ? (
+                  <div className="mt-10 border-t border-border/20 pt-6">
+                    <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                      Gift links
+                    </p>
+                    <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+                      Share these privately. Each link can be claimed once.
+                    </p>
+                    <ul className="mt-4 space-y-2">
+                      {purchased.tickets
+                        .filter((t) => t.claim_url)
+                        .map((t) => (
+                          <li
+                            key={t.id}
+                            className="flex items-center justify-between gap-3 border border-border/20 px-4 py-3 text-sm"
+                          >
+                            <span className="font-mono text-[11px] text-foreground/70">
+                              Ticket #{t.ticket_number}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyClaim(t.claim_url!)}
+                              className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
+                            >
+                              {copied === t.claim_url ? "Copied" : "Copy link"}
+                            </button>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                <div className="mt-10">
+                  <Link
+                    href="/tickets/my"
+                    className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
+                  >
+                    View my tickets →
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                  Reserve · {totalDisplay}
+                </p>
+                <div className="mt-4 flex items-center gap-3">
+                  <span className="font-mono text-[11px] text-muted-foreground/60">
+                    Quantity
+                  </span>
+                  <div className="flex gap-2">
+                    {Array.from({ length: maxAllowed }).map((_, i) => {
+                      const n = i + 1;
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setQuantity(n)}
+                          aria-pressed={quantity === n}
+                          className={`border px-3 py-1.5 font-mono text-[11px] transition-colors ${
+                            quantity === n
+                              ? "border-foreground text-foreground"
+                              : "border-border/30 text-foreground/60 hover:border-border/60"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {purchaseError ? (
+                  <p
+                    role="alert"
+                    className="mt-6 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+                  >
+                    {purchaseError}
+                  </p>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={submitPurchase}
+                  disabled={purchaseBusy || !isAuthenticated}
+                  className="mt-8 w-full border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40 sm:w-auto"
+                >
+                  {purchaseBusy
+                    ? "Reserving…"
+                    : !isAuthenticated
+                      ? "Sign in to continue"
+                      : `Request ${quantity} · ${totalDisplay}`}
+                </button>
+
+                {!isAuthenticated ? (
+                  <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
+                    You&apos;ll be redirected to sign in.
+                  </p>
+                ) : null}
+              </div>
+            )}
           </div>
-        )}
+        </aside>
       </div>
-    </main>
+    </div>
   );
 }
+
+const PAGE_CONTAINER: React.CSSProperties = {
+  width: "100%",
+  maxWidth: "var(--maxContainerWidth, 1440px)"
+};

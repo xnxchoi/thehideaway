@@ -4,6 +4,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketEventClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { RPage } from "@/components/UX/Transition";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -70,23 +71,25 @@ export default async function TicketEventPage(props: { params: Params }) {
   }
 
   return (
-    <TicketEventClient
-      event={{
-        id: event.id,
-        name: event.name,
-        slug: event.slug,
-        description: event.description ?? null,
-        date: event.date ?? null,
-        end_date: event.end_date ?? null,
-        location: event.location ?? null,
-        capacity: event.capacity ?? 0,
-        max_per_user: event.max_per_user ?? 3,
-        ticket_price: event.ticket_price ?? 0,
-        toss_payment_id: event.toss_payment_id ?? null,
-        state: event.state ?? "draft"
-      }}
-      remaining={remaining}
-      isAuthenticated={Boolean(session)}
-    />
+    <RPage type="pages" slug={["tickets", event.slug]} theme="dark">
+      <TicketEventClient
+        event={{
+          id: event.id,
+          name: event.name,
+          slug: event.slug,
+          description: event.description ?? null,
+          date: event.date ?? null,
+          end_date: event.end_date ?? null,
+          location: event.location ?? null,
+          capacity: event.capacity ?? 0,
+          max_per_user: event.max_per_user ?? 3,
+          ticket_price: event.ticket_price ?? 0,
+          toss_payment_id: event.toss_payment_id ?? null,
+          state: event.state ?? "draft"
+        }}
+        remaining={remaining}
+        isAuthenticated={Boolean(session)}
+      />
+    </RPage>
   );
 }
