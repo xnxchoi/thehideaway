@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { Ticket3D } from "@/components/UX/Ticket/Ticket3D";
@@ -8,6 +9,9 @@ import {
   type TicketStatus
 } from "@/components/UX/Ticket/StatusChip";
 import { TicketQR } from "@/components/UX/Ticket/TicketQR";
+import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
+import { TicketSpotlight } from "@/components/UX/Ticket/TicketSpotlight";
+import { RP_Btn } from "@/components/core/Button";
 
 interface Props {
   ticketId: string;
@@ -78,42 +82,39 @@ export function TicketDetailClient({
   const dateLong = formatLongDate(eventDate);
   const dateShort = formatShortDate(eventDate);
 
+  const [flipped, setFlipped] = useState(false);
+  const toggleFlip = useCallback(() => setFlipped((v) => !v), []);
+
+  const [focused, setFocused] = useState(false);
+
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Ticket · No. {num}
-              </p>
-              <h1 className="mt-0.5 line-clamp-1 text-2xl font-light tracking-tight xl:text-3xl">
-                {eventName}
-              </h1>
-            </div>
-            <Link
-              href="/tickets/my"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-            >
-              ← All tickets
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto w-full max-w-7xl px-6 py-12 xl:px-10 xl:py-16">
+      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
           {/* ── Visual artifact ─────────────────────────────────────── */}
-          <div className="lg:sticky lg:top-32 lg:self-start">
+          <div className="relative lg:sticky lg:top-12 lg:self-start">
             <Ticket3D
               eventName={eventName}
               ticketNumber={ticketNumber}
               date={dateShort}
               location={eventLocation}
+              flipped={flipped}
+              onFlip={toggleFlip}
             />
-            <p className="mt-4 text-center font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
-              Hover or drag to rotate
-            </p>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <p className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
+                Tap to flip
+              </p>
+              <RP_Btn
+                onClick={() => setFocused(true)}
+                aria-label="Open spotlight view"
+                className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase transition-colors hover:text-foreground xl:text-[11px]"
+              >
+                <span aria-hidden>⤢</span>
+                Spotlight
+              </RP_Btn>
+            </div>
           </div>
 
           {/* ── Information ────────────────────────────────────────── */}
@@ -131,7 +132,6 @@ export function TicketDetailClient({
               ) : null}
             </header>
 
-            {/* Active → QR for staff to scan */}
             {status === "active" && checkInUrl ? (
               <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
@@ -146,7 +146,6 @@ export function TicketDetailClient({
               </div>
             ) : null}
 
-            {/* Pending → manual payment instructions */}
             {status === "pending" && !paid ? (
               <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
@@ -168,7 +167,6 @@ export function TicketDetailClient({
               </div>
             ) : null}
 
-            {/* Used / canceled → terminal note */}
             {status === "used" ? (
               <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
@@ -191,7 +189,6 @@ export function TicketDetailClient({
               </div>
             ) : null}
 
-            {/* Always-visible metadata */}
             <dl className="grid grid-cols-1 gap-x-8 gap-y-5 border-t border-border/20 pt-8 sm:grid-cols-2">
               <Field label="Number" value={`#${num}`} mono />
               <Field label="Holder" value={holderName ?? "—"} fallback="—" />
@@ -214,6 +211,30 @@ export function TicketDetailClient({
           </div>
         </div>
       </section>
+
+      <TicketBottomBar
+        eyebrow={`Ticket · No. ${num}`}
+        title={eventName}
+        rightAction={{ label: "← All tickets", href: "/tickets/my" }}
+      />
+
+      <TicketSpotlight
+        open={focused}
+        onClose={() => setFocused(false)}
+        ticket={{
+          eventName,
+          ticketNumber,
+          dateShort,
+          dateLong,
+          location: eventLocation,
+          status,
+          checkedIn,
+          checkInUrl,
+          ticketPrice,
+          flipped,
+          onFlip: toggleFlip
+        }}
+      />
     </RPage>
   );
 }

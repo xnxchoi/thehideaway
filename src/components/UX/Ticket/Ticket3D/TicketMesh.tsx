@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Environment,
-  Lightformer,
-  PerspectiveCamera
-} from "@react-three/drei";
+import { Environment, Lightformer, PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -17,8 +13,16 @@ import {
 export interface TicketMeshProps extends TicketTextureInput {
   pointer: { x: number; y: number };
   pointerActive: boolean;
-  dragRotation: { rx: number; ry: number };
-  dragging: boolean;
+  /**
+   * When false, all input-driven motion is suppressed and the mesh
+   * just idles. Used for list/pager views.
+   */
+  interactive: boolean;
+  /**
+   * Tap-driven flip state. true → ticket rotates 180° around Y to
+   * present the back face.
+   */
+  flipped: boolean;
   cameraActive: boolean;
 }
 
@@ -103,8 +107,8 @@ export function TicketMesh({
   location,
   pointer,
   pointerActive,
-  dragRotation,
-  dragging,
+  interactive,
+  flipped,
   cameraActive
 }: TicketMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
@@ -141,22 +145,30 @@ export function TicketMesh({
     if (!g) return;
     const t = state.clock.elapsedTime;
 
-    let targetRx: number;
-    let targetRy: number;
+    // Idle wobble — always present but quieter when non-interactive so
+    // multi-instance views don't draw the eye.
+    const idleScale = interactive ? 1 : 0.4;
+    const wobbleX = Math.sin(t * 0.45) * 0.04 * idleScale;
+    const wobbleY = Math.sin(t * 0.6) * 0.07 * idleScale;
 
-    if (dragging) {
-      targetRx = THREE.MathUtils.clamp(dragRotation.rx, -Math.PI, Math.PI);
-      targetRy = dragRotation.ry;
-    } else {
-      const wobbleX = Math.sin(t * 0.45) * 0.04;
-      const wobbleY = Math.sin(t * 0.6) * 0.07;
-      const intensity = pointerActive ? 1 : 0.3;
-      targetRx = wobbleX + -pointer.y * 0.3 * intensity;
-      targetRy = wobbleY + pointer.x * 0.55 * intensity;
-    }
+    // Hover tilt layered on top, only when interactive AND the cursor is
+    // currently over a hover-capable container.
+    const tiltScale = interactive && pointerActive ? 1 : 0;
+    const tiltX = -pointer.y * 0.3 * tiltScale;
+    const tiltY = pointer.x * 0.55 * tiltScale;
 
-    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, targetRx, 6, delta);
-    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, targetRy, 6, delta);
+    // Flip — single tap rotates the ticket 180° around Y. Stacks on top
+    // of the wobble + tilt so the card still breathes after flipping.
+    const flipBase = flipped ? Math.PI : 0;
+
+    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, wobbleX + tiltX, 6, delta);
+    // Slightly slower damp on Y so the flip animation reads as deliberate.
+    g.rotation.y = THREE.MathUtils.damp(
+      g.rotation.y,
+      wobbleY + tiltY + flipBase,
+      4.8,
+      delta
+    );
   });
 
   return (
