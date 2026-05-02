@@ -9,6 +9,7 @@ import {
   StatusChip,
   type TicketStatus
 } from "@/components/UX/Ticket/StatusChip";
+import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 
@@ -86,33 +87,7 @@ export default function MyTicketsPageClient({ tickets }: Props) {
 
   return (
     <RPage type="me" slug={["tickets"]}>
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Tickets
-              </p>
-              <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
-                My tickets
-                {total > 0 && (
-                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50 tabular-nums">
-                    {total}
-                  </span>
-                )}
-              </h1>
-            </div>
-            <Link
-              href="/me/library/saved"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-            >
-              Library →
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto w-full max-w-7xl px-6 py-12 xl:px-10 xl:py-20">
+      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
         <AnimatePresence mode="wait">
           {total === 0 ? (
             <EmptyState key="empty" />
@@ -132,6 +107,13 @@ export default function MyTicketsPageClient({ tickets }: Props) {
           )}
         </AnimatePresence>
       </section>
+
+      <TicketBottomBar
+        eyebrow="Tickets"
+        title="My tickets"
+        count={total}
+        rightAction={{ label: "Library →", href: "/me/library/saved" }}
+      />
     </RPage>
   );
 }
@@ -156,8 +138,12 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
         className="flex w-full flex-col items-center gap-8"
         style={{ width: "min(38rem, 100%)" }}
       >
-        {/* The 3D artifact — visual presence only. */}
+        {/* The 3D artifact — purely decorative in the pager. Interaction
+            (hover-tilt, click-to-flip) is reserved for the single-ticket
+            spotlight on the detail page; in a multi-instance view it would
+            be distracting on PC and hostile on mobile. */}
         <Ticket3D
+          interactive={false}
           eventName={ev?.name ?? "Event"}
           ticketNumber={ticket.ticket_number ?? null}
           date={dateShort}

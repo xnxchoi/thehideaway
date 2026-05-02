@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
 import { RPage } from "@/components/UX/Transition";
+import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
 
 interface Props {
   token: string;
@@ -82,39 +83,7 @@ export function ClaimClient({
 
   return (
     <RPage type="pages" slug={["tickets", "claim", token]}>
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Gift ticket
-              </p>
-              <h1 className="mt-0.5 line-clamp-1 text-2xl font-light tracking-tight xl:text-3xl">
-                {invalid ? "Invalid link" : event.name}
-              </h1>
-            </div>
-            {isAuthenticated ? (
-              <Link
-                href="/tickets/my"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-              >
-                My tickets →
-              </Link>
-            ) : (
-              <Link
-                href="/"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-              >
-                ← Hideaway
-              </Link>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ── Content ─────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
         {invalid ? (
           <InvalidView />
         ) : (
@@ -146,6 +115,16 @@ export function ClaimClient({
           </div>
         )}
       </section>
+
+      <TicketBottomBar
+        eyebrow="Gift ticket"
+        title={invalid ? "Invalid link" : event.name}
+        rightAction={
+          isAuthenticated
+            ? { label: "My tickets →", href: "/tickets/my" }
+            : { label: "← Hideaway", href: "/" }
+        }
+      />
     </RPage>
   );
 }

@@ -3,7 +3,6 @@
 import { View } from "@react-three/drei";
 import {
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
   Suspense,
   useCallback,
   useEffect,
@@ -16,21 +15,63 @@ import { TicketMesh } from "./TicketMesh";
 import type { TicketTextureInput } from "./makeTicketTexture";
 
 export interface Ticket3DProps extends TicketTextureInput {
+  /**
+   * When false, the ticket is purely visual — no hover tilt, no flip,
+   * just an idle wobble. Use for list/pager views where multiple flashy
+   * tickets would be distracting (and on mobile, downright hostile).
+   * Default true.
+   */
+  interactive?: boolean;
+  /**
+   * Optional controlled flipped state (lifted by the parent). When omitted
+   * the component manages its own internal state.
+   */
+  flipped?: boolean;
+  /**
+   * Called when the user taps the ticket (only fires when interactive).
+   * Use this to lift the flipped state or trigger focused mode.
+   */
+  onFlip?: () => void;
   className?: string;
   style?: CSSProperties;
 }
 
 /**
- * The 3D ticket — a holographic, iridescent paper-card object that responds
- * to hover (PC) and drag (any pointer). Rendered into the project's shared
- * canvas via drei's <View>, so it composites cleanly alongside other 3D
- * content on the page.
- *
- * Information *about* the ticket lives outside this component — see the
- * sibling info layout in the ticket pages. This component is intentionally
- * just visual presence.
+ * Detect hover-capable input (i.e. a mouse). Touch-only devices return
+ * false so we don't pin a hover-tilt that depends on a hover state which
+ * never resolves.
  */
-export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
+function useHoverCapable(): boolean {
+  const [canHover, setCanHover] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setCanHover(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return canHover;
+}
+
+/**
+ * The 3D ticket — a holographic, iridescent paper-card object rendered
+ * into the project's shared canvas via drei's <View>.
+ *
+ * Interaction model:
+ *   - Hover-capable devices: the cursor tilts the ticket; tapping flips it.
+ *   - Touch devices: tapping flips it. No continuous tilt (touch users
+ *     don't have a persistent hover state, so the tilt would feel broken).
+ *   - When `interactive=false`: neither — the ticket just idles.
+ */
+export function Ticket3D({
+  className,
+  style,
+  interactive = true,
+  flipped: flippedProp,
+  onFlip,
+  ...textureInput
+}: Ticket3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { ref: inViewRef, inView } = useInView({ threshold: 0.1 });
 
@@ -42,34 +83,46 @@ export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
     [inViewRef]
   );
 
+  const canHover = useHoverCapable();
+  const hoverTiltActive = interactive && canHover;
+
+  // Internal flip state used when the parent doesn't provide one.
+  const [internalFlipped, setInternalFlipped] = useState(false);
+  const flipped = flippedProp ?? internalFlipped;
+
+  const handleClick = useCallback(() => {
+    if (!interactive) return;
+    if (onFlip) {
+      onFlip();
+    } else {
+      setInternalFlipped((f) => !f);
+    }
+  }, [interactive, onFlip]);
+
+  // ── Pointer move (hover tilt) — only on hover-capable inputs ────────────
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [pointerActive, setPointerActive] = useState(false);
-  const [dragRotation, setDragRotation] = useState({ rx: 0, ry: 0 });
-  const [dragging, setDragging] = useState(false);
-
-  const dragStateRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    baseRx: number;
-    baseRy: number;
-  } | null>(null);
-
-  // ── Pointer move (hover tilt) ────────────────────────────────────────────
-  const updatePointerFromEvent = useCallback((e: PointerEvent) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-    setPointer({ x, y });
-  }, []);
 
   useEffect(() => {
+    if (!hoverTiltActive) {
+      setPointer({ x: 0, y: 0 });
+      setPointerActive(false);
+      return;
+    }
     const el = containerRef.current;
     if (!el) return;
-    const onMove = (e: PointerEvent) => updatePointerFromEvent(e);
-    const onEnter = () => setPointerActive(true);
+    const onMove = (e: PointerEvent) => {
+      // Ignore touch/pen — pointer-tilt is mouse-only.
+      if (e.pointerType !== "mouse") return;
+      const rect = el.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      setPointer({ x, y });
+    };
+    const onEnter = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      setPointerActive(true);
+    };
     const onLeave = () => {
       setPointerActive(false);
       setPointer({ x: 0, y: 0 });
@@ -82,73 +135,42 @@ export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
       el.removeEventListener("pointerenter", onEnter);
       el.removeEventListener("pointerleave", onLeave);
     };
-  }, [updatePointerFromEvent]);
-
-  // ── Pointer drag (free rotate) ───────────────────────────────────────────
-  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.setPointerCapture(e.pointerId);
-    dragStateRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-      baseRx: dragRotation.rx,
-      baseRy: dragRotation.ry
-    };
-    setDragging(true);
-  };
-
-  const onPointerMoveDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragStateRef.current;
-    if (!drag || drag.pointerId !== e.pointerId) return;
-    const dx = e.clientX - drag.startX;
-    const dy = e.clientY - drag.startY;
-    setDragRotation({
-      ry: drag.baseRy + dx * 0.006,
-      rx: drag.baseRx - dy * 0.006
-    });
-  };
-
-  const releaseDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragStateRef.current;
-    if (!drag || drag.pointerId !== e.pointerId) return;
-    const el = containerRef.current;
-    if (el?.hasPointerCapture(e.pointerId)) {
-      el.releasePointerCapture(e.pointerId);
-    }
-    dragStateRef.current = null;
-    setDragging(false);
-  };
+  }, [hoverTiltActive]);
 
   return (
     <div
       ref={setRefs}
       className={cn("relative aspect-[2/1] w-full select-none", className)}
       style={{
-        touchAction: "none",
-        cursor: dragging ? "grabbing" : "grab",
+        touchAction: "manipulation",
+        cursor: interactive ? "pointer" : "default",
         // CSS drop-shadow follows the rendered alpha of the View, so the
-        // shadow tilts and stretches naturally with the ticket's rotation
-        // — much better than a flat orthogonal contact shadow on the
-        // ground plane.
+        // shadow stretches and tilts with the card — much better than a
+        // flat orthogonal contact shadow on a ground plane.
         filter:
           "drop-shadow(0 28px 36px rgba(20, 14, 8, 0.18)) drop-shadow(0 8px 14px rgba(20, 14, 8, 0.10))",
         ...style
       }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMoveDrag}
-      onPointerUp={releaseDrag}
-      onPointerCancel={releaseDrag}
+      onClick={handleClick}
+      // a11y: a flippable ticket is effectively a button.
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : -1}
+      onKeyDown={(e) => {
+        if (!interactive) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
     >
       <View className="absolute inset-0">
         <Suspense fallback={null}>
           <TicketMesh
             {...textureInput}
             pointer={pointer}
-            pointerActive={pointerActive}
-            dragRotation={dragRotation}
-            dragging={dragging}
+            pointerActive={pointerActive && hoverTiltActive}
+            interactive={interactive}
+            flipped={flipped}
             cameraActive={inView}
           />
         </Suspense>

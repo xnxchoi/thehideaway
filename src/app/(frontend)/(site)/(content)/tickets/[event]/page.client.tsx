@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
 import { RPage } from "@/components/UX/Transition";
+import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
 
 interface EventLite {
   id: string;
@@ -179,40 +180,7 @@ export function TicketEventClient({
 
   return (
     <RPage type="pages" slug={["tickets", event.slug]}>
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div
-        className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Tickets {gateOpen ? "" : "· Private"}
-              </p>
-              <h1 className="mt-0.5 line-clamp-1 text-2xl font-light tracking-tight xl:text-3xl">
-                {event.name}
-              </h1>
-            </div>
-            {isAuthenticated ? (
-              <Link
-                href="/tickets/my"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-              >
-                My tickets →
-              </Link>
-            ) : (
-              <Link
-                href="/"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-              >
-                ← Hideaway
-              </Link>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ── Content ─────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
         {!gateOpen ? (
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
             <div>
@@ -315,6 +283,16 @@ export function TicketEventClient({
           </div>
         )}
       </section>
+
+      <TicketBottomBar
+        eyebrow={`Tickets${gateOpen ? "" : " · Private"}`}
+        title={event.name}
+        rightAction={
+          isAuthenticated
+            ? { label: "My tickets →", href: "/tickets/my" }
+            : { label: "← Hideaway", href: "/" }
+        }
+      />
     </RPage>
   );
 }

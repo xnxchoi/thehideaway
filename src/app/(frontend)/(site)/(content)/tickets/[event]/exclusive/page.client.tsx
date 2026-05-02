@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
+import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
 
 interface ExclusiveLink {
   label: string;
@@ -42,30 +43,7 @@ export function ExclusiveContentClient({
 }: Props) {
   return (
     <RPage type="me" slug={["tickets", eventSlug, "exclusive"]}>
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                {isAttendee ? "You were there" : "Exclusive"}
-              </p>
-              <h1 className="mt-0.5 line-clamp-1 text-2xl font-light tracking-tight xl:text-3xl">
-                {eventName}
-              </h1>
-            </div>
-            <Link
-              href="/tickets/my"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-            >
-              ← My tickets
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Content ─────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
         {!isAttendee ? (
           <NotAttendeeView eventName={eventName} />
         ) : (
@@ -80,6 +58,12 @@ export function ExclusiveContentClient({
           />
         )}
       </section>
+
+      <TicketBottomBar
+        eyebrow={isAttendee ? "You were there" : "Exclusive"}
+        title={eventName}
+        rightAction={{ label: "← My tickets", href: "/tickets/my" }}
+      />
     </RPage>
   );
 }
