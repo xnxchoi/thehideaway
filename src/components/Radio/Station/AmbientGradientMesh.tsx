@@ -136,8 +136,8 @@ const AmbientShaderMaterial = shaderMaterial(
 extend({ AmbientShaderMaterial });
 
 type AmbientGradientMeshProps = {};
-const OPACITY_PLAYING = 0.8;
-const OPACITY_STOPPED = 0.9;
+const OPACITY_PLAYING = 0.99;
+const OPACITY_STOPPED = 0.5;
 
 export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   useTexture.preload("/assets/seamless.png");
@@ -181,12 +181,12 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     targets.c3.copy(dark ? DARK_COLOR3 : LIGHT_COLOR3);
     targets.c4.copy(dark ? DARK_COLOR4 : LIGHT_COLOR4);
   }, [theme]);
-  const opacit = useTransform(() =>
-    playState.get() ? OPACITY_PLAYING : OPACITY_STOPPED + 0.01
+  const opacit = useTransform(
+    () => (playState.get() ? OPACITY_PLAYING : OPACITY_STOPPED) + 0.01
   );
   const opacity = useSpring(opacit, {
-    ...SPRING_EASE.power3.out,
-    duration: 1.2
+    ...SPRING_EASE.power3.inOut,
+    duration: 1.6
   });
   // Single instances of hooks — passed to both desktop and mobile backgrounds
   const { fogProgress } = useIdleDetection({
@@ -285,7 +285,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
 
     // Silk folds need blur that smooths crisp noise transitions without flattening contrast.
     // kernelSize 3 + scale 2: wide enough for velvet look, preserves fold ridge/valley separation.
-    const blurPass = new KawaseBlurPass({ kernelSize: 2 });
+    const blurPass = new KawaseBlurPass({ kernelSize: 3 });
     blurPass.scale = 2;
     blurPassRef.current = blurPass;
 
@@ -352,7 +352,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       unmountCallback.current?.();
       unmountCallback.current = null;
     };
-  }, []);
+  }, [noiseTexture]);
   //
   // // ── Pointer tracking → mouseUv / prevMouseUv / uMouseFactor ───────────
   // useEffect(() => {
@@ -437,7 +437,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       return;
     const m = materialRef.current;
     // Accumulate time (delta is in seconds at ~60fps → ~0.016)
-    m.uniforms.u_time.value += delta * 0.35;
+    m.uniforms.u_time.value += delta * 0.22;
     const aud = radioAudio.get();
     m.uniforms.u_audioLevel.value = aud;
 
@@ -470,11 +470,11 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       // "more blurred" plateau during playback rather than oscillation.
       // Faster lerp (0.45) tracks the beat envelope shape closely so each
       // pulse reads as a discrete inhale/exhale instead of a smear.
-      const targetScale = 1.5 + aud * 0.4 + pulse * 22.0;
+      const targetScale = 2.5 + aud * 0.4 + pulse * 20.0;
       blurPassRef.current.scale = rp_lerp(
         blurPassRef.current.scale,
         targetScale,
-        0.45
+        0.23
       );
     }
     // Smoothly lerp blob intensity
@@ -520,7 +520,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   return (
     <ScreenQuad ref={meshRef} frustumCulled={false}>
       {/** @ts-expect-error custom drei shaderMaterial element **/}
-      <ambientShaderMaterial ref={materialRef} side={DoubleSide} />
+      <ambientShaderMaterial ref={materialRef} side={FrontSide} />
     </ScreenQuad>
   );
 };

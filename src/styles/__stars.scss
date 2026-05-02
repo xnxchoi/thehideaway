@@ -328,11 +328,12 @@
 .starline-backdrop {
   flex: 0 0 auto;
   height: 100%;
-  opacity: 0.5;
-  left: 5%;
+  //opacity: 0.5;
+  inset: 0;
   position: absolute;
-  top: 15%;
+  //top: 15%;
   width: 100%;
+  opacity: 1;
 }
 
 .tier-price {

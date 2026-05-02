@@ -1,15 +1,15 @@
-import { CallToActionBlock } from "@/blocks/CallToAction/Component";
+import { CallToActionBlock } from "src/blocks/CallToAction/Component";
 
-import { CodeBlock } from "@/blocks/Code/Component";
-import { PostedImage } from "@/blocks/ImageBlock/Component";
-import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
-import { AnchorMarkers } from "@/components/UX/AmbientAudio/AnchorMarkers";
+import { CodeBlock } from "src/blocks/Code/Component";
+import { PostedImage } from "src/blocks/ImageBlock/Component";
+import { ReferencedLink } from "src/components/core/Link/ReferencedLink";
+import { AnchorMarkers } from "src/components/UX/AmbientAudio/AnchorMarkers";
 import type {
   AmbientAudioAnchorBlock,
   CallToActionBlock as CTABlockProps,
   CodeBlock as CodeBlockProps,
   Image as MediaBlockProps
-} from "@/payload-types";
+} from "src/payload-types";
 import type {
   DefaultNodeTypes,
   SerializedBlockNode,

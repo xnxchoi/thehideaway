@@ -13,7 +13,7 @@ import { TWEEN_EASE } from "@/constants/animations";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { User } from "@/payload-types";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";
 import type { SingleArticle } from "@/types/collections/posts";
@@ -109,7 +109,7 @@ const Article = ({
       data-themed="background-color,color"
     >
       <div
-        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-0 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground/20 bg-faded-white dark:bg-faded-black"
+        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-0 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground/20 bg-faded-white max-md:hidden dark:bg-faded-black"
         style={{
           borderImage: "initial"
         }}
@@ -957,13 +957,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         <div className="z-3 h-full w-full">
           <div className={"w-full"} ref={wrapperRef}>
             <article
-              className="rp-article relative w-full"
+              className="rp-article relative mx-auto w-full max-w-(--maxContainerWidth)"
               data-id={postId}
               data-themed="background-color,color"
             >
               <FeaturedCard post={post} />
               <div
-                className="mx-auto my-[28px] w-full max-w-(--maxContainerWidth) px-0 py-[32px]"
+                className="mx-auto my-[28px] w-full px-0 py-[32px]"
                 ref={containerRef}
               >
                 <div
@@ -1006,7 +1006,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
               </div>
               <div
                 className={
-                  "mx-auto my-0 min-h-10 w-full max-w-(--maxContainerWidth) px-16 py-0 max-lg:px-8"
+                  "mx-auto my-0 min-h-10 w-full px-16 py-0 max-lg:px-8"
                 }
               >
                 {post.tagged.length > 0 && (
@@ -1144,7 +1144,13 @@ const Aside = ({ children }: { children: ReactNode }) => {
 			}
 			`}
       </style>
-      <aside className={"top-0"}>{children}</aside>
+      <aside
+        className={
+          "top-0 [&>div]:absolute [&>div]:mt-1 [&>div]:flex [&>div]:w-full [&>div]:max-w-full [&>div]:gap-3.5 [&>div]:whitespace-nowrap"
+        }
+      >
+        {children}
+      </aside>
     </>
   );
 };

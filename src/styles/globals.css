@@ -96,7 +96,7 @@ color utility to any element that depends on these defaults.
     --breakpoint-md: 768px;
     --breakpoint-lg: 1024px;
     --breakpoint-xl: 1280px;
-    --breakpoint-2xl: 1536px;
+    --breakpoint-2xl: 1440px;
     --breakpoint-3xl: 1920px;
 }
 
@@ -237,9 +237,9 @@ html.lenis body {
 ** Base variables
 **/
 :root {
-    --maxContainerWidth: 1440px;
     --vw100: calc(100vw - calc(100vw - 100%));
     --site-width: calc(calc(var(--vw100) / 100) * 99);
+    --maxContainerWidth: min(99vw, 1440px);
     --mobile-width: calc(calc(var(--vw100) / 100) * 95);
     --wide-width: min(var(--site-width), 1022px);
     --headerHeight: 50px;

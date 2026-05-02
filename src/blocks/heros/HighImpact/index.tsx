@@ -6,7 +6,7 @@ import React, { useEffect } from "react";
 import type { Page } from "@/payload-types";
 
 import { Media } from "@/components/core/Media";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../../../components/UX/RichText";
 
 export const HighImpactHero: React.FC<Page["hero"]> = ({
   links,

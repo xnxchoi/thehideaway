@@ -2,7 +2,7 @@ import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import React from "react";
 
 import { Media } from "@/components/core/Media";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../../../components/UX/RichText";
 import type { Page } from "@/payload-types";
 
 export const MediumImpactHero: React.FC<Page["hero"]> = ({

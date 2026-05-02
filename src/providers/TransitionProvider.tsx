@@ -4,12 +4,10 @@ import { TE } from "@/constants/animations";
 import { NavEventsProvider } from "@/providers/Navigation/_client-nav-events";
 import { HAStoreContext, useCursor, useRPStore } from "@/providers/RP_Pro";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
-import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { createTransStore, type RPT } from "@/stores/RP_Ui";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "lenis/react";
-import { AnimationSequence } from "motion";
 import {
   animate,
   HTMLMotionProps,
@@ -31,8 +29,6 @@ import {
 } from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/shallow";
-import { useIsMobile } from "./MiddleMan";
-import { useTheme } from "./Theme";
 
 export type TransAPI = ReturnType<typeof createTransStore>;
 export const TransContext = createContext<TransAPI | undefined>(undefined);
@@ -630,7 +626,7 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
         setTransitionOutType(null);
       });
     },
-    [entry, completeEntry]
+    [entry, completeEntry, setIsTransitioningWipe, setTransitionOutType]
   );
   return (
     <TransitionRouter leave={leaver} enter={enterer}>

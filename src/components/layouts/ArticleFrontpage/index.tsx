@@ -15,7 +15,7 @@ export const ArticleHero = (props: {
   const { posts, className } = props;
 
   return (
-    <div className="mx-2.5 my-0 min-h-[85vh] max-w-[600px] sm:mx-auto lg:max-w-[98vw]">
+    <div className="mx-2.5 my-0 min-h-[85vh] max-w-240 sm:mx-auto lg:max-w-[98vw]">
       <div
         className={cn(
           `mb-[48px] justify-center gap-x-[20px] rounded-4xl bg-linear-to-b from-faded-background/95 to-transparent p-5 bg-blend-darken md:block md:p-8 lg:mr-8 lg:ml-8 xl:mb-[100px] xl:flex xl:gap-x-[90px] dark:from-off-black/95`
@@ -27,11 +27,11 @@ export const ArticleHero = (props: {
             {posts[1] && (
               <Link
                 href={"/essays/" + `${posts[1].slug}`}
-                className="grid gap-y-[20px] border-t border-r border-solid border-foreground/50 bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] md:border-b lg:col-[1/3] lg:row-2 lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+                className="grid gap-y-4 border-t border-r border-solid border-foreground/50 bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] md:border-b lg:col-[1/3] lg:row-2 lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px] lg:gap-y-8"
               >
                 <div
                   className={cn(
-                    "relative aspect-square min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3]"
+                    "relative aspect-4/3 min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3] lg:aspect-square"
                   )}
                 >
                   {(posts[1].image && (
@@ -62,9 +62,9 @@ export const ArticleHero = (props: {
             {posts[2] && (
               <Link
                 href={"/essays/" + `${posts[2].slug}`}
-                className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+                className="grid gap-y-4 border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-2 lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px] lg:gap-y-8"
               >
-                <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3] lg:aspect-square">
+                <div className="relative aspect-4/3 min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] lg:row-[1/3] lg:aspect-square">
                   {(posts[2].image && (
                     <FrontImage
                       aspectRatio={1}

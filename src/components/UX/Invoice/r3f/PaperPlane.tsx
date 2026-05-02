@@ -22,30 +22,43 @@ type PaperPlaneProps = {
   width: number;
   height: number;
 };
-
+const ASSET_BASE = "/assets/three/materials/paper";
 export function PaperPlane({ width, height }: PaperPlaneProps) {
-  const papier = useTexture("/assets/papier.png") as Texture;
+  const rough = useTexture(ASSET_BASE + "/paper_r.png", (texture: Texture) => {
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    texture.repeat.set(3, 4.5); // tiles to cover paper aspect with fine grain
+    texture.colorSpace = NoColorSpace;
+    texture.anisotropy = 8;
+    texture.needsUpdate = true;
+  });
+  const normal = useTexture(ASSET_BASE + "/paper_n.png", (texture: Texture) => {
+    texture.wrapS = RepeatWrapping;
+    texture.wrapT = RepeatWrapping;
+    texture.repeat.set(3, 4.5); // tiles to cover paper aspect with fine grain
+    texture.colorSpace = NoColorSpace;
+    texture.needsUpdate = true;
+  });
+  const diffuse = useTexture(
+    ASSET_BASE + "/paper_d.png",
+    (texture: Texture) => {
+      texture.wrapS = RepeatWrapping;
+      texture.wrapT = RepeatWrapping;
+      texture.repeat.set(3, 4.5); // tiles to cover paper aspect with fine grain
+      texture.needsUpdate = true;
+    }
+  );
 
-  // Configure the texture once on load: tile across the paper, treat as
-  // linear data (not sRGB) since it's driving bump + roughness, not color.
-  useLayoutEffect(() => {
-    papier.wrapS = RepeatWrapping;
-    papier.wrapT = RepeatWrapping;
-    papier.repeat.set(3, 4.5); // tiles to cover paper aspect with fine grain
-    papier.colorSpace = NoColorSpace;
-    papier.anisotropy = 8;
-    papier.needsUpdate = true;
-  }, [papier]);
 
   return (
     <mesh receiveShadow castShadow position={[0, 0, 0]}>
       <planeGeometry args={[width, height, 32, 48]} />
       <meshPhysicalMaterial
         color="#fbfaf6"
-        bumpMap={papier}
-        bumpScale={0.018}
-        roughnessMap={papier}
-        roughness={0.95}
+        normalMap={normal}
+        map={diffuse}
+        roughnessMap={rough}
+        roughness={1}
         metalness={0}
         sheen={0.22}
         sheenColor="#f3ebd9"

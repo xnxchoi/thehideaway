@@ -5,7 +5,7 @@ import {
   type Post,
   Surf
 } from "@/payload-types";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../../components/UX/RichText";
 import config from "@payload-config";
 import Image from "next/image";
 import { getPayload } from "payload";

@@ -24,9 +24,9 @@ export const Locked = ({ type, content, tier, ...rest }: LockedProps) => {
         : "Access Locked";
   return (
     <div className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center">
-      <div className="relative z-2 flex w-full flex-col flex-wrap items-center justify-center gap-[25px] rounded-[6px] bg-off-foreground/20 py-[100px] backdrop-blur-sm md:w-[calc((100vw-215px)*7/12+90px)]">
+      <div className="relative z-2 flex w-full flex-col flex-wrap items-center justify-center gap-10 rounded-[6px] bg-off-foreground/20 py-[100px] backdrop-blur-sm md:w-[calc((100vw-215px)*7/12+90px)]">
         <div
-          className="grid h-[60px] w-[60px] place-items-center rounded-full border border-solid"
+          className="grid h-24 w-24 place-items-center rounded-full border border-solid"
           style={{ background: "0 0" }}
         >
           <svg
@@ -47,7 +47,7 @@ export const Locked = ({ type, content, tier, ...rest }: LockedProps) => {
         </div>
         <h2 className="sm-title">{title}</h2>
         <div>{message}</div>
-        <div className="relative">
+        <div className="relative contents">
           <Link
             href="/register"
             className="border-faded-foreground/&.8)] hover:bg-faded-foreground/&.3)] relative flex h-[41px] w-full min-w-[120px] flex-[0_0_auto] flex-row items-center justify-center gap-[12px] overflow-hidden rounded-lg border-[1px] border-solid px-[16px] py-0 uppercase transition-colors duration-300 ease-in-out hover:border-background/10 hover:text-background"

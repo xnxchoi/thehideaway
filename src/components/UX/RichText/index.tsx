@@ -1,15 +1,15 @@
-import { CallToActionBlock } from "@/blocks/CallToAction/Component";
+import { CallToActionBlock } from "src/blocks/CallToAction/Component";
 
-import { CodeBlock, Props as CodeBlockProps } from "@/blocks/Code/Component";
-import { PostedImage } from "@/blocks/ImageBlock/Component";
-import { AnchorMarkers } from "@/components/UX/AmbientAudio/AnchorMarkers";
-import { cn } from "@/lib/utils";
+import { CodeBlock, Props as CodeBlockProps } from "src/blocks/Code/Component";
+import { PostedImage } from "src/blocks/ImageBlock/Component";
+import { AnchorMarkers } from "src/components/UX/AmbientAudio/AnchorMarkers";
+import { cn } from "src/lib/utils";
 
 import type {
   AmbientAudioAnchorBlock,
   CallToActionBlock as CTABlockProps,
   Image as MediaBlockProps
-} from "@/payload-types";
+} from "src/payload-types";
 import { createId } from "@paralleldrive/cuid2";
 import {
   DefaultNodeTypes,

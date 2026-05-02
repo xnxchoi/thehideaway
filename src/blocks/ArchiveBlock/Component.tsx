@@ -1,10 +1,10 @@
 import React from "react";
 
 import { CollectionArchive } from "@/payload/components/CollectionArchive";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../../components/UX/RichText";
 import type { ArchiveBlock as ArchiveBlockProps } from "@/payload-types";
-import {queryPostOverviews} from "@/payload/collections/Posts/api/queryPostOverviews";
-import {PostOverview} from "@/types/collections/posts";
+import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
+import { PostOverview } from "@/types/collections/posts";
 
 export const ArchiveBlock: React.FC<
   ArchiveBlockProps & {
@@ -20,7 +20,7 @@ export const ArchiveBlock: React.FC<
     selectedDocs
   } = props;
   const limit = limitFromProps || 3;
-	let posts: PostOverview[] = [];
+  let posts: PostOverview[] = [];
 
   if (populateBy === "collection") {
     const flattenedCategories = categories?.map((category) => {
@@ -28,7 +28,7 @@ export const ArchiveBlock: React.FC<
       return category;
     });
 
-	  const fetchedPosts = await queryPostOverviews({
+    const fetchedPosts = await queryPostOverviews({
       limit,
       page: 1,
       where: {
@@ -39,7 +39,7 @@ export const ArchiveBlock: React.FC<
     });
     posts = fetchedPosts;
   } else if (selectedDocs?.length) {
-	  const fetchFilteredPosts = await queryPostOverviews({
+    const fetchFilteredPosts = await queryPostOverviews({
       limit,
       page: 1,
       where: {

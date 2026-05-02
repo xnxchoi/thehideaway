@@ -87,7 +87,6 @@ export function StarlinerMotion({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const inView = useInView(wrapperRef, { amount: 0.1 });
-  const reduced = useReducedMotion();
 
   useEffect(() => {
     const el = containerRef.current;
@@ -101,7 +100,7 @@ export function StarlinerMotion({
 
   const { w, h } = size;
   const ready = w > 0 && h > 0;
-  const animationsActive = ready && inView && !reduced;
+  const animationsActive = ready && inView;
 
   const tailGradient =
     tint === "warm"
@@ -115,7 +114,7 @@ export function StarlinerMotion({
       : "rgba(255,255,255,0.6) 0 0 6px 1px";
 
   return (
-    <div
+    <m.div
       ref={wrapperRef}
       aria-hidden
       className={cn("starliner absolute inset-0", className)}
@@ -123,7 +122,7 @@ export function StarlinerMotion({
     >
       <div
         ref={containerRef}
-        className="absolute inset-2.5 z-1 overflow-hidden rounded-[10px]"
+        className="absolute inset-2.5 z-1 overflow-hidden rounded-2xl"
       >
         {ready &&
           STARLINE_BASES.map((base, i) => {
@@ -200,8 +199,8 @@ export function StarlinerMotion({
                 }
               >
                 <div className="contents">
-                  <div
-                    className="relative h-[1px] overflow-visible"
+                  <m.div
+                    className="relative h-px overflow-visible"
                     style={{
                       width: lineWidth,
                       background: tailGradient
@@ -210,34 +209,39 @@ export function StarlinerMotion({
                     <div
                       className="absolute top-0 right-0 overflow-visible"
                       style={{
-                        width: isComet ? 3 : 2,
-                        height: isComet ? 3 : 2,
+                        width: isComet ? 2 : 1,
+                        height: isComet ? 2 : 1,
                         backgroundColor: headColor,
                         borderRadius: 1,
                         boxShadow: headGlow
                       }}
                     />
-                  </div>
+                  </m.div>
                 </div>
               </m.div>
             );
           })}
       </div>
-      <div
+      <m.div
         className="starline-backdrop"
         style={{
           imageRendering: "pixelated",
           flexShrink: 0,
           backgroundImage: `url("/assets/starliner-backdrop.svg")`,
-          opacity: reduced ? 0.3 : 0.6,
+          opacity: 0.8,
           backgroundRepeat: "repeat",
-          backgroundSize: "51% 90%",
-          backgroundPosition: "center",
-          left: "6px",
-          top: "-2px"
+          backgroundSize: "44% 23%",
+          inset: 0,
+          backgroundPosition: "center"
         }}
       />
-      {!reduced && <div className="starliner-twinkle" aria-hidden />}
-    </div>
+      <m.div
+        className="starliner-twinkle"
+        aria-hidden
+        style={{
+          backgroundSize: "44% 23%"
+        }}
+      />
+    </m.div>
   );
 }

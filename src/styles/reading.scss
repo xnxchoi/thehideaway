@@ -110,41 +110,12 @@
 
   --maxBodyWidth: 768px;
   --collectionRadius: 5px;
-  --clipPathSun: polygon(
-                  50% 0%,
-                  54% 40%,
-                  85% 15%,
-                  60% 46%,
-                  100% 50%,
-                  60% 54%,
-                  85% 85%,
-                  54% 60%,
-                  50% 100%,
-                  46% 60%,
-                  15% 85%,
-                  40% 54%,
-                  0% 50%,
-                  40% 46%,
-                  15% 15%,
-                  46% 40%,
-                  50% 0%
-  );
-  --clipPathStar: polygon(
-                  50% 0%,
-                  55% 45%,
-                  100% 50%,
-                  55% 55%,
-                  50% 100%,
-                  45% 55%,
-                  0% 50%,
-                  45% 45%,
-                  50% 0%
-  );
+
   --indent: 28px;
   display: flex;
   flex-direction: column;
   position: relative;
-  padding-top: calc(var(--headerHeight) * 1.4);
+  padding-top: calc(var(--headerHeight) * 1.15);
   box-sizing: border-box;
 }
 
@@ -288,10 +259,10 @@
 .f-divider {
   width: 100%;
   background: linear-gradient(
-                  90deg,
-                  oklch(from var(--muted-faded-fg) l c h/0.15) 10%,
-                  oklch(from var(--muted-faded-fg) l c h/0.8) 50%,
-                  oklch(from var(--muted-faded-fg) l c h/0.15) 90%
+          90deg,
+          oklch(from var(--muted-faded-fg) l c h/0.15) 10%,
+          oklch(from var(--muted-faded-fg) l c h/0.8) 50%,
+          oklch(from var(--muted-faded-fg) l c h/0.15) 90%
   );
   height: 1px;
   margin-bottom: 1rem;
@@ -462,9 +433,9 @@
 
       &:after {
         background: linear-gradient(
-                        to bottom,
-                        var(--highlight, --color-red-200),
-                        transparent
+                to bottom,
+                var(--highlight, --color-red-200),
+                transparent
         );
         -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
@@ -479,9 +450,9 @@
 
         @media (min-width: 768px) {
           background: linear-gradient(
-                          to right,
-                          var(--highlight, --color-red-200),
-                          transparent
+                  to right,
+                  var(--highlight, --color-red-200),
+                  transparent
           );
           top: 0;
           bottom: 0;
@@ -501,9 +472,9 @@
   width: 100%;
   border-radius: var(--cardBorder);
   background: linear-gradient(
-                  0deg,
-                  var(--color-background),
-                  var(--color-background)
+          0deg,
+          var(--color-background),
+          var(--color-background)
   );
   color: var(--color-foreground);
   padding: 16px 12px;
@@ -1248,14 +1219,14 @@ aside.rhF {
 }
 
 .rp-content {
-  --gutter: 2.5rem;
+  --reader: 2.5rem;
   display: grid;
   grid-template-columns:
-    [full-start] var(--gutter) [main-start] minmax(
+    [full-start] var(--reader) [extended-start] 1fr [main-start] minmax(
       calc(63% - 6rem),
-                    var(--maxBodyWidth)
+      var(--content-width)
     )
-    [main-end] var(--gutter) [full-end];
+    [main-end] 1fr [extended-end] var(--reader) [full-end];
 
   margin: 0 auto;
   color: oklch(from var(--off-fg) l c h/1);
@@ -1274,11 +1245,11 @@ aside.rhF {
     letter-spacing: -0.02em;
     text-transform: uppercase;
     background: linear-gradient(
-                    to bottom,
-                    transparent 11%,
-                    oklch(from var(--rouge-50) l c h/0.2) 37%,
-                    oklch(from var(--rouge-200) l c h/0.65) 65%,
-                    oklch(from var(--rouge-300) l c h/0.8) 96%
+            to bottom,
+            transparent 11%,
+            oklch(from var(--rouge-50) l c h/0.2) 37%,
+            oklch(from var(--rouge-200) l c h/0.65) 65%,
+            oklch(from var(--rouge-300) l c h/0.8) 96%
     );
   }
 
@@ -1298,11 +1269,11 @@ aside.rhF {
 
 .dark .rp-content h2 {
   background: linear-gradient(
-                  to bottom,
-                  transparent 11%,
-                  oklch(from var(--rouge-900) l c h/0.2) 37%,
-                  oklch(from var(--rouge-800) l c h/0.65) 65%,
-                  oklch(from var(--rouge-700) l c h/0.8) 96%
+          to bottom,
+          transparent 11%,
+          oklch(from var(--rouge-900) l c h/0.2) 37%,
+          oklch(from var(--rouge-800) l c h/0.65) 65%,
+          oklch(from var(--rouge-700) l c h/0.8) 96%
   );
 }
 
@@ -1394,19 +1365,17 @@ aside.rhF {
 
   .rp-content {
     grid-template-columns:
-      [full-start] var(--gutter) [main-start] minmax(
-        calc(65% - var(--gutter) * 1.5),
-                      var(--maxBodyWidth)
+      [full-start] var(--reader) [extended-start] 1fr [main-start] minmax(
+        calc(65% - var(--reader) * 1.5),
+        var(--maxBodyWidth)
       )
-      [main-end] var(--gutter) minmax(300px, auto) var(--gutter) [full-end];
-    grid-template-columns:
-      [full-start] var(--gutter) [main-start] minmax(
-        calc(63% - var(--gutter) * 1.5),
-                      var(--maxBodyWidth)
-      )
-      [main-end] var(--gutter) [full-end];
-
-    margin: 0;
+      [main-end] 1fr [extended-end] var(--reader) [full-end];
+    //grid-template-columns:
+    //  [full-start] var(--reader) [main-start] minmax(
+    //    calc(63% - var(--reader) * 1.5),
+    //    calc(100% - 2 * var(--reader))
+    //  )
+    //  [main-end] var(--reader) [full-end];
   }
 
   .rp-content h2 {
@@ -1457,12 +1426,12 @@ aside.rhF {
 
   .rp-content {
     font-size: 19px;
-    --bod: calc(65% - var(--gutter) * 1.5);
+    --bod: calc(65% - var(--reader) * 1.5);
     //grid-template-columns: [full-start] var(--gutter) [main-start] minmax(calc(65% - var(--gutter) * 1.5), var(--maxBodyWidth)) [main-end] var(--gutter) minmax(300px, auto) var(--gutter) [full-end];
     grid-template-columns:
-      [full-start] minmax(var(--gutter), auto)
+      [full-start] minmax(var(--reader), auto)
       [main-start] clamp(45%, var(--bod), var(--maxBodyWidth))
-      [main-end] minmax(var(--gutter), auto) [full-end];
+      [main-end] minmax(var(--reader), auto) [full-end];
   }
 
   .rp__sub-t {
@@ -1532,7 +1501,7 @@ aside.rhF {
 
 .cover_card {
   &.featured {
-    height: clamp(550px, calc(100vh - var(--headerHeight)), 1000px);
+
 
     .rp_title-card.title-grid {
       position: relative;
@@ -1681,6 +1650,13 @@ aside.rhF {
         z-index: -1;
       }
     }
+
+
+    height:auto;
+    @media (min-width: 1024px) {
+      height: clamp(550px, calc(100vh - var(--headerHeight)), 1000px);
+    }
+
   }
 }
 

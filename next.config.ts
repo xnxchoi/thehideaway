@@ -2,6 +2,7 @@ import { withPayload } from "@payloadcms/next/withPayload";
 
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next/types";
+import { images } from "next/dist/build/webpack/config/blocks/images";
 
 const withNextIntl = createNextIntlPlugin();
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -9,6 +10,7 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   : process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
+  allowedDevOrigins:['172.30.1.71'],
   images: {
     remotePatterns: [
       ...[
@@ -17,7 +19,6 @@ const nextConfig: NextConfig = {
         "https://images.unsplash.com"
       ].map((item) => {
         const url = new URL(item);
-
         return {
           ...url,
           hostname: url.hostname,

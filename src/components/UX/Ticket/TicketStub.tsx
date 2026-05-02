@@ -1,8 +1,6 @@
 "use client";
-
-import Link from "next/link";
-import { motion } from "motion/react";
-
+import { Link } from "@/components/core/Link/Link";
+import * as motion from "motion/react-m";
 export type TicketStubStatus = "pending" | "active" | "used" | "canceled";
 
 export interface TicketStubProps {

@@ -1,13 +1,11 @@
 import { headers as nextHeaders } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketDetailClient } from "./page.client";
+import { RPage } from "@/components/UX/Transition";
+import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "@/lib/auth/getServerSession";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 type Params = Promise<{ ticket: string }>;
 
@@ -76,14 +74,13 @@ export default async function TicketDetailPage(props: { params: Params }) {
       : (u.email ?? null);
 
   return (
-    <main
-      className="relative min-h-screen px-5 pt-12 pb-24"
+    <RPage
+      type="pages"
+      slug={["ticket-detail"]}
       data-theme="dark"
       style={
         // Match the perforation notches against the actual page bg
-        {
-          ["--ticket-page-bg" as string]: "var(--background)"
-        } as React.CSSProperties
+        { ["--ticket-page-bg" as string]: "var(--background)" } as React.CSSProperties
       }
     >
       <div className="mx-auto max-w-md">
@@ -116,8 +113,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
           ticketPrice={ev?.ticket_price ?? 0}
           tossId={ev?.toss_payment_id ?? null}
           holderName={holderName}
-        />
-      </div>
-    </main>
+        /></div>
+    </RPage>
   );
 }

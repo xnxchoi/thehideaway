@@ -31,7 +31,7 @@ export const CoverCard = (
   return (
     <div
       className={cn(
-        "cover_card relative mx-auto my-0 grid h-[clamp(400px,calc(75vh-var(--headerHeight)),700px)] w-full max-w-[1440px] overflow-hidden rounded-[10px] p-0 md:rounded-[20px]",
+        "cover_card relative mx-auto my-0 grid aspect-3/4 max-h-[clamp(400px,calc(75vh-var(--headerHeight)),700px)] w-full max-w-576 overflow-hidden rounded-2xl p-0 md:aspect-3/5 md:rounded-4xl lg:aspect-auto",
         className
       )}
       {...rest}
@@ -110,10 +110,10 @@ export const CoverTitle = (
   const { className: h1ClassName, ...h1Props } = h1 || {};
 
   return (
-    <div className={cn("rp-title", className)}>
+    <div className={cn("col-span-full row-4", className)}>
       <h1
         className={cn(
-          "pointer-events-none m-0 tracking-tighter text-faded-black uppercase group-dark:text-faded-white",
+          "pointer-events-none m-0 text-h1 font-extrabold tracking-tighter text-faded-black uppercase group-dark:text-faded-white",
           h1ClassName
         )}
         data-themed="color, background-color, border-color"
@@ -133,10 +133,15 @@ export const CoverSubtitle = (
   const { subtitle, className, subtitleClassName } = props;
 
   return (
-    <div className={cn("rp__sub-t", className)}>
+    <div
+      className={cn(
+        "col-span-full row-5 lg:m-[1rem_4rem_0_0] 2xl:col-[1/4]",
+        className
+      )}
+    >
       <p
         className={cn(
-          "m-0 text-[14.4px]! leading-[1.3] md:text-[17.6px]!",
+          "m-0 font-serif text-[14.4px]! leading-[1.3] md:text-[17.6px]!",
           subtitleClassName
         )}
       >

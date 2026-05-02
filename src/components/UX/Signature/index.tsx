@@ -1,9 +1,9 @@
 "use client";
-import {useInView, type Variants} from "motion/react";
+import { useInView, type Variants } from "motion/react";
 import * as m from "motion/react-m";
-import {useMemo, useRef} from "react";
+import { useMemo, useRef } from "react";
 import "./__signature.scss";
-import {paths} from "./paths";
+import { paths } from "./paths";
 
 type Transitionn = typeof paths.transitions;
 type SignatureKeys = keyof Transitionn;
@@ -57,7 +57,7 @@ export const Signature = () => {
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 14248.91 2723.74"
         style={{
-	        color: "oklch(from var(--faded-fg) l c h/.9)"
+          color: "oklch(from var(--faded-fg) l c h/.9)"
         }}
       >
         <defs>
@@ -226,22 +226,19 @@ export const Signature = () => {
 };
 export const SignedFooter = () => {
   return (
-    <section className="w-full py-22 min-md:px-8">
+    <section className="w-full py-22 md:px-8">
       <div
         className={
-          "mx-auto my-0 flex max-w-[var(--content-width)] flex-col items-start justify-center gap-8"
+          "mx-auto my-0 flex max-w-(--content-width) flex-col items-start justify-center gap-8"
         }
       >
         <div className="block w-[45%] font-sans text-sm leading-[175%] font-light">
-          <p>Enjoying your stay so far?</p>
+          <p>{`Like what you're seeing here?`}</p>
           <br />
-	        <p>Have some things you'd want to share about the article - or about anything else?</p>
-	        <br/>
-	        <p>Hit me up at </p>
+          <p>{`Have something you want to share with us, a joint project proposal, somethjign`}</p>
+          <br />
+          <p>{`Just let us know.`}</p>
           <p>Lost with care,</p>
-          <div className={"flex"}>
-            <p>Sean</p>
-          </div>
         </div>
         <Signature />
       </div>

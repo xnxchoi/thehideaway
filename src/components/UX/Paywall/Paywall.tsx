@@ -1,5 +1,5 @@
 import Link from "next/link";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../RichText";
 import type { GateResult } from "./gatePost";
 
 export type PaywallTeaser = {
@@ -90,18 +90,15 @@ export function Paywall({
     ? `/login?redirect=${encodeURIComponent(currentPath)}`
     : "/login";
 
-  const hasTeaser =
-    !!teaser &&
-    !!teaser.root &&
-    Array.isArray(teaser.root.children) &&
-    teaser.root.children.length > 0;
-
   return (
     <>
       {/* Teaser body — rendered exactly like the regular RichText would be,
           but with a fade-to-background mask softening the cut. */}
-      {hasTeaser ? (
-        <div className="relative">
+      {!!teaser &&
+      !!teaser.root &&
+      Array.isArray(teaser.root.children) &&
+      teaser.root.children.length > 0 ? (
+        <>
           <RichText
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data={teaser as any}
@@ -111,7 +108,7 @@ export function Paywall({
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-b from-transparent to-faded-white dark:to-faded-black"
           />
-        </div>
+        </>
       ) : null}
 
       {/* Gate — sits inside the .rp-content column flow, so editorial
@@ -121,7 +118,7 @@ export function Paywall({
       <section
         role="region"
         aria-label="Continue reading"
-        className="relative mt-16 border-t border-muted-faded-foreground/30 pt-12"
+        className="relative mt-16 flex w-full flex-col items-center justify-center border-t border-muted-faded-foreground/30 pt-12"
       >
         <p className="mb-4 font-mono text-[10px] tracking-[0.2em] text-muted-faded-foreground/70 uppercase">
           ◌ {copy.label} only · the rest is reserved
@@ -159,7 +156,7 @@ export function Paywall({
             prefetch={false}
             className="ml-1 font-mono text-[11px] tracking-widest text-muted-faded-foreground/70 uppercase underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
-            What's included
+            What&#39;s included
           </Link>
         </div>
 

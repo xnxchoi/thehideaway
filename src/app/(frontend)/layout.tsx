@@ -98,7 +98,6 @@ export default async function RootLayout({
     </html>
   );
 }
-
 // export const metadata: Metadata = {
 // 	metadataBase: new URL(getServerSideURL()),
 // 	openGraph: mergeOpenGraph(),

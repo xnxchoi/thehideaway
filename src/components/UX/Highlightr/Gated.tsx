@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Locked } from "@/components/UX/Locked/Locked";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../RichText";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { Shaped } from "@/components/core/s";
 import { useShallow } from "zustand/shallow";

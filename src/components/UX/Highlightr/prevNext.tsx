@@ -117,9 +117,9 @@ export const PrevNext = ({
               </div>
             )}
             <h1 className="fixed !top-[55px] m-0 font-serif text-[calc(5px+5.8vmax+5.8vmin)] leading-[0.84] font-light tracking-[-0.05em]">
-              <em> Recommended</em>
+              <em> Previously</em>
               <br />
-              &nbsp;reading &nbsp;
+              &nbsp;on... &nbsp;
             </h1>
             <div className="m-0 flex h-auto w-full justify-between gap-12.5 font-mono text-base leading-[1.4] -tracking-[0.03em] break-words uppercase [&_span]:self-end [&_span]:min-lg:min-w-1/2">
               <span>
@@ -163,7 +163,8 @@ export const PrevNext = ({
                 alignSelf: "flex-end"
               }}
             >
-              Also&nbsp;<em>Worth</em>&nbsp; Trying
+              &nbsp;<em>Next&nbsp;</em>&nbsp;
+              <br /> Piece&nbsp;
             </h1>
           </div>
         </Link>

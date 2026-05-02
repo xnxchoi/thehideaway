@@ -2,7 +2,7 @@
 import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import type { CallToActionBlock as CTABlockProps } from "@/payload-types";
 
-import RichText from "@/payload/fields/RichText";
+import RichText from "../../components/UX/RichText";
 import React from "react";
 
 export const CallToActionBlock: React.FC<

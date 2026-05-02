@@ -6,7 +6,7 @@ import { Link } from "@/components/core/Link/Link";
 import { SPRING_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
 import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";
-import RichText from "@/payload/fields/RichText";
+import RichText from "../../UX/RichText";
 import { useTheme } from "@/providers/Theme";
 import { SurfOverview } from "@/types/collections/surf";
 import { getClientSideURL } from "@/utilities/getURL";

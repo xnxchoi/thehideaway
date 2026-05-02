@@ -442,7 +442,16 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       }
     );
     lastSideBar.current = isSidebarOpen;
-  }, [baseConfig, isMobile, isSidebarOpen, lenis, nsH, navIsOpen]);
+  }, [
+    baseConfig,
+    isMobile,
+    isSidebarOpen,
+    lenis,
+    nsH,
+    navIsOpen,
+    ref,
+    animate
+  ]);
   // useGSAP(
   //   () => {
   //     if (typeof ref !== "object" || !ref || !lenis || !ref.current) return;
@@ -482,7 +491,9 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       data-themed="background-color,color"
       ref={pageRef}
       variants={currentVariants}
-      className={cn("page", { transitioning: pageIsTransitioning })}
+      className={cn("min-h-screen w-screen", {
+        transitioning: pageIsTransitioning
+      })}
       onAnimationComplete={(phase) => {
         setCurrentStep("complete");
 
@@ -496,7 +507,12 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
         }
       }}
     >
-      <m.div ref={ref}>{children}</m.div>
+      <m.div
+        className="relative flex min-h-screen w-screen flex-col justify-center"
+        ref={ref}
+      >
+        {children}
+      </m.div>
     </m.div>
   );
 };
