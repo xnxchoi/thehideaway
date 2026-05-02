@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketDetailClient } from "./page.client";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,13 +23,11 @@ const idOf = (rel: unknown): string | null => {
 export default async function TicketDetailPage(props: { params: Params }) {
   const { ticket: ticketId } = await props.params;
 
-  const payload = await getPayload({ config });
-  const headersList = await nextHeaders();
-  const auth = await payload.auth({ headers: headersList });
-
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     redirect(`/login?redirect=/tickets/my/${ticketId}`);
   }
+  const payload = await getPayload({ config });
 
   const ticket = (await payload
     .findByID({
@@ -59,7 +58,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
   } | null;
 
   if (!ticket) notFound();
-  if (idOf(ticket.user) !== String(auth.user.id)) notFound();
+  if (idOf(ticket.user) !== String(session.user.id)) notFound();
 
   const ev =
     typeof ticket.event === "object" && ticket.event ? ticket.event : null;
@@ -69,11 +68,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
     ? `${baseUrl}/tickets/check-in/${ticket.check_in_code}`
     : "";
 
-  const u = auth.user as {
-    name?: string | null;
-    username?: string | null;
-    email?: string | null;
-  };
+  const u = session.user;
   const holderName = u.name?.trim()
     ? u.name
     : u.username?.trim()
@@ -82,17 +77,19 @@ export default async function TicketDetailPage(props: { params: Params }) {
 
   return (
     <main
-      className="relative min-h-screen px-5 pb-24 pt-12"
+      className="relative min-h-screen px-5 pt-12 pb-24"
       data-theme="dark"
       style={
         // Match the perforation notches against the actual page bg
-        { ["--ticket-page-bg" as string]: "var(--background)" } as React.CSSProperties
+        {
+          ["--ticket-page-bg" as string]: "var(--background)"
+        } as React.CSSProperties
       }
     >
       <div className="mx-auto max-w-md">
         <Link
           href="/tickets/my"
-          className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
         >
           ← All tickets
         </Link>

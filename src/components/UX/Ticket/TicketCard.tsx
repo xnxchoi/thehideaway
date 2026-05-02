@@ -144,7 +144,7 @@ export function TicketCard({
           </div>
 
           <h1
-            className="mt-9 text-[1.9rem] font-light leading-[1.04] tracking-tight"
+            className="mt-9 text-[1.9rem] leading-[1.04] font-light tracking-tight"
             style={{ wordBreak: "break-word" }}
           >
             {eventName}
@@ -153,9 +153,7 @@ export function TicketCard({
           <dl className="mt-7 grid grid-cols-2 gap-x-4 gap-y-1">
             <Field label="When">
               {date ?? "—"}
-              {time ? (
-                <span className="ml-2 opacity-60">· {time}</span>
-              ) : null}
+              {time ? <span className="ml-2 opacity-60">· {time}</span> : null}
             </Field>
             <Field label="Where">{eventLocation ?? "—"}</Field>
           </dl>
@@ -273,7 +271,7 @@ export function TicketCard({
         {/* Decorative serial-number strip */}
         <div
           aria-hidden="true"
-          className="relative px-7 pb-4 pt-0"
+          className="relative px-7 pt-0 pb-4"
           style={{ opacity: 0.5 }}
         >
           <span
@@ -285,7 +283,9 @@ export function TicketCard({
         </div>
 
         {/* Stamps over the whole card */}
-        {checkedIn ? <Stamp label="Checked In" tone="green" rotate={-8} /> : null}
+        {checkedIn ? (
+          <Stamp label="Checked In" tone="green" rotate={-8} />
+        ) : null}
         {status === "canceled" ? (
           <Stamp label="Void" tone="red" rotate={-12} large />
         ) : null}
@@ -331,10 +331,14 @@ interface StatusFlagProps {
 }
 
 function StatusFlag({ status, paid, checkedIn }: StatusFlagProps) {
-  const label = checkedIn ? "On site" : !paid && status === "pending" ? "Hold" : status;
+  const label = checkedIn
+    ? "On site"
+    : !paid && status === "pending"
+      ? "Hold"
+      : status;
   const tint = checkedIn
     ? "oklch(0.45 0.16 150)"
-    : STATUS_TINT[status] ?? PAPER_INK;
+    : (STATUS_TINT[status] ?? PAPER_INK);
   return (
     <div
       className="rounded-full border px-3 py-1"
@@ -402,7 +406,7 @@ function Stamp({ label, tone, rotate, large }: StampProps) {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute left-1/2 top-[42%] z-10 -translate-x-1/2 -translate-y-1/2"
+      className="pointer-events-none absolute top-[42%] left-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
       style={{ transform: `translate(-50%,-50%) rotate(${rotate}deg)` }}
     >
       <div

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketStub } from "@/components/UX/Ticket/TicketStub";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,15 +26,13 @@ type TicketDoc = {
 };
 
 export default async function MyTicketsPage() {
-  const payload = await getPayload({ config });
-  const headersList = await nextHeaders();
-  const auth = await payload.auth({ headers: headersList });
-
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     redirect("/login?redirect=/tickets/my");
   }
 
-  const userId = String(auth.user.id);
+  const payload = await getPayload({ config });
+  const userId = String(session.user.id);
   const found = await payload.find({
     collection: "tickets",
     where: { user: { equals: userId } },
@@ -49,10 +48,12 @@ export default async function MyTicketsPage() {
       className="mx-auto max-w-2xl px-6 py-24"
       data-theme="dark"
       style={
-        { ["--ticket-page-bg" as string]: "var(--background)" } as React.CSSProperties
+        {
+          ["--ticket-page-bg" as string]: "var(--background)"
+        } as React.CSSProperties
       }
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
         Tickets
       </p>
       <h1 className="mt-3 text-3xl font-light tracking-tight xl:text-4xl">

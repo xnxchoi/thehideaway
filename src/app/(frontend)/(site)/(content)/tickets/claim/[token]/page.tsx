@@ -2,6 +2,7 @@ import { headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ClaimClient } from "./page.client";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,9 +20,8 @@ const idOf = (rel: unknown): string | null => {
 
 export default async function ClaimPage(props: { params: Params }) {
   const { token } = await props.params;
+  const session = await getServerSession(await nextHeaders());
   const payload = await getPayload({ config });
-  const headersList = await nextHeaders();
-  const auth = await payload.auth({ headers: headersList });
 
   const found = await payload
     .find({
@@ -76,11 +76,10 @@ export default async function ClaimPage(props: { params: Params }) {
         }
       : { name: "Event", slug: "", date: null, location: null };
 
-  const isAuthenticated = Boolean(auth.user);
-  const userEmail =
-    (auth.user as { email?: string | null } | null)?.email ?? null;
+  const isAuthenticated = Boolean(session);
+  const userEmail = session?.user?.email ?? null;
   const alreadyMine =
-    idOf(ticket.user) === (auth.user?.id ? String(auth.user.id) : null);
+    idOf(ticket.user) === (session?.user?.id ? String(session.user.id) : null);
   const emailMismatch =
     Boolean(ticket.claim_email) &&
     Boolean(userEmail) &&

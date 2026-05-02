@@ -3,6 +3,7 @@ import { headers as nextHeaders } from "next/headers";
 import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 
@@ -51,31 +52,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const payload = await getPayload({ config });
-  let auth: Awaited<ReturnType<typeof payload.auth>>;
-  try {
-    const headers = await nextHeaders();
-    auth = await payload.auth({ headers });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "auth-failed" },
-      { status: 401 }
-    );
-  }
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     return NextResponse.json(
       { ok: false, error: "unauthorized" },
       { status: 401 }
     );
   }
-
-  const role = (auth.user as { role?: string | null } | null)?.role;
+  const role = session.user.role;
   if (role !== "admin" && role !== "editor") {
     return NextResponse.json(
       { ok: false, error: "forbidden" },
       { status: 403 }
     );
   }
+  const payload = await getPayload({ config });
 
   let body: z.infer<typeof BodySchema>;
   try {
@@ -126,7 +117,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const adminId = String(auth.user.id);
+  const adminId = String(session.user.id);
   await payload.update({
     collection: "tickets",
     id: ticket.id,

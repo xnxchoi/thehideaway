@@ -3,6 +3,7 @@ import { headers as nextHeaders } from "next/headers";
 import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 
@@ -51,23 +52,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const payload = await getPayload({ config });
-  let auth: Awaited<ReturnType<typeof payload.auth>>;
-  try {
-    const headers = await nextHeaders();
-    auth = await payload.auth({ headers });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "auth-failed" },
-      { status: 401 }
-    );
-  }
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     return NextResponse.json(
       { ok: false, error: "unauthorized" },
       { status: 401 }
     );
   }
+  const payload = await getPayload({ config });
 
   let body: z.infer<typeof BodySchema>;
   try {
@@ -104,7 +96,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const userId = String(auth.user.id);
+  const userId = String(session.user.id);
   const existingUser = idOf(ticket.user);
 
   // Idempotency: same user re-claiming.
@@ -124,7 +116,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   // Email restriction.
   if (ticket.claim_email) {
-    const userEmail = (auth.user as { email?: string | null } | null)?.email;
+    const userEmail = session.user.email;
     if (
       !userEmail ||
       userEmail.trim().toLowerCase() !== ticket.claim_email.trim().toLowerCase()

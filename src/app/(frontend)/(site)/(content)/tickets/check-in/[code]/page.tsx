@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { CheckInClient } from "./page.client";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,16 +12,15 @@ type Params = Promise<{ code: string }>;
 
 export default async function CheckInPage(props: { params: Params }) {
   const { code } = await props.params;
-  const payload = await getPayload({ config });
-  const headersList = await nextHeaders();
-  const auth = await payload.auth({ headers: headersList });
-
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     redirect(`/login?redirect=/tickets/check-in/${encodeURIComponent(code)}`);
   }
 
-  const role = auth.user.role;
+  const role = session.user.role;
   const isStaff = role === "admin" || role === "editor";
+
+  const payload = await getPayload({ config });
 
   if (!isStaff) {
     return (

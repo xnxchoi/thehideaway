@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { nanoid } from "nanoid";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 
@@ -47,24 +48,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const payload = await getPayload({ config });
-
-  let auth: Awaited<ReturnType<typeof payload.auth>>;
-  try {
-    const headers = await nextHeaders();
-    auth = await payload.auth({ headers });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "auth-failed" },
-      { status: 401 }
-    );
-  }
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     return NextResponse.json(
       { ok: false, error: "unauthorized" },
       { status: 401 }
     );
   }
+
+  const payload = await getPayload({ config });
 
   let body: z.infer<typeof BodySchema>;
   try {
@@ -107,7 +99,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const userId = String(auth.user.id);
+  const userId = String(session.user.id);
 
   // Capacity check: count active+pending tickets across all users.
   if (event.capacity && event.capacity > 0) {

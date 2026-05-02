@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ExclusiveContentClient } from "./page.client";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,13 +28,11 @@ type EventDoc = {
 export default async function ExclusivePage(props: { params: Params }) {
   const { event: slug } = await props.params;
 
-  const payload = await getPayload({ config });
-  const headersList = await nextHeaders();
-  const auth = await payload.auth({ headers: headersList });
-
-  if (!auth.user) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     redirect(`/login?redirect=/tickets/${encodeURIComponent(slug)}/exclusive`);
   }
+  const payload = await getPayload({ config });
 
   const found = await payload
     .find({
@@ -48,7 +47,7 @@ export default async function ExclusivePage(props: { params: Params }) {
   const event = found?.docs?.[0] as EventDoc | undefined;
   if (!event) notFound();
 
-  const userId = String(auth.user.id);
+  const userId = String(session.user.id);
   const ticketFound = await payload.find({
     collection: "tickets",
     where: {

@@ -98,7 +98,7 @@ export function TicketStub({
               </div>
 
               <p
-                className="mt-3 line-clamp-2 text-base font-light leading-snug tracking-tight"
+                className="mt-3 line-clamp-2 text-base leading-snug font-light tracking-tight"
                 style={{ wordBreak: "break-word" }}
               >
                 {eventName}

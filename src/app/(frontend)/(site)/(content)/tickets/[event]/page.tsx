@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketEventClient } from "./page.client";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,9 +28,8 @@ type EventDoc = {
 export default async function TicketEventPage(props: { params: Params }) {
   const { event: slug } = await props.params;
 
+  const session = await getServerSession(await nextHeaders());
   const payload = await getPayload({ config });
-  const headersList = await nextHeaders();
-  const auth = await payload.auth({ headers: headersList });
 
   const found = await payload
     .find({
@@ -45,7 +45,7 @@ export default async function TicketEventPage(props: { params: Params }) {
   if (!event) notFound();
 
   // Don't expose draft events to non-staff.
-  const role = auth.user?.role;
+  const role = session?.user?.role;
   const isStaff = role === "admin" || role === "editor";
   if (event.state === "draft" && !isStaff) notFound();
 
@@ -86,7 +86,7 @@ export default async function TicketEventPage(props: { params: Params }) {
         state: event.state ?? "draft"
       }}
       remaining={remaining}
-      isAuthenticated={Boolean(auth.user)}
+      isAuthenticated={Boolean(session)}
     />
   );
 }
