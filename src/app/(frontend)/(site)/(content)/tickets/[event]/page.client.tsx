@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
 import { RPage } from "@/components/UX/Transition";
-import { TossPayButton } from "@/components/UX/Ticket/TossPayButton";
 
 interface EventLite {
   id: string;
@@ -17,7 +16,7 @@ interface EventLite {
   capacity: number;
   max_per_user: number;
   ticket_price: number;
-  toss_payment_id: string | null;
+  payment_instructions: string | null;
   state: string;
 }
 
@@ -295,7 +294,7 @@ export function TicketEventClient({
                 ) : purchased ? (
                   <PurchasedView
                     purchased={purchased}
-                    tossId={event.toss_payment_id}
+                    paymentInstructions={event.payment_instructions}
                     copied={copied}
                     onCopy={copyClaim}
                   />
@@ -322,35 +321,36 @@ export function TicketEventClient({
 
 function PurchasedView({
   purchased,
-  tossId,
+  paymentInstructions,
   copied,
   onCopy
 }: {
   purchased: PurchaseResult;
-  tossId: string | null;
+  paymentInstructions: string | null;
   copied: string | null;
   onCopy: (url: string) => void;
 }) {
   return (
     <div>
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        Pending payment
+        Awaiting payment
       </p>
       <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
         {purchased.tickets.length} ticket
-        {purchased.tickets.length > 1 ? "s" : ""} reserved.
+        {purchased.tickets.length > 1 ? "s" : ""} reserved ·{" "}
+        {formatKRW(purchased.total_amount)}
       </h2>
-      <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-        Send {formatKRW(purchased.total_amount)} via Toss. Your tickets activate
-        the moment we confirm receipt.
-      </p>
 
-      <div className="mt-6">
-        <TossPayButton
-          amount={purchased.total_amount}
-          tossId={tossId ?? undefined}
-        />
-      </div>
+      {paymentInstructions ? (
+        <p className="mt-5 max-w-prose font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/75 xl:text-xs">
+          {paymentInstructions}
+        </p>
+      ) : (
+        <p className="mt-5 max-w-prose font-mono text-[11px] text-muted-foreground/60">
+          The host will reach out with payment details. Your tickets activate
+          the moment payment is confirmed.
+        </p>
+      )}
 
       {purchased.tickets.some((t) => t.claim_url) ? (
         <div className="mt-10 border-t border-border/20 pt-6">

@@ -21,7 +21,7 @@ type EventDoc = {
   capacity?: number | null;
   max_per_user?: number | null;
   ticket_price?: number | null;
-  toss_payment_id?: string | null;
+  payment_instructions?: string | null;
   state?: string | null;
 };
 
@@ -82,7 +82,7 @@ export default async function TicketEventPage(props: { params: Params }) {
         capacity: event.capacity ?? 0,
         max_per_user: event.max_per_user ?? 3,
         ticket_price: event.ticket_price ?? 0,
-        toss_payment_id: event.toss_payment_id ?? null,
+        payment_instructions: event.payment_instructions ?? null,
         state: event.state ?? "draft"
       }}
       remaining={remaining}
