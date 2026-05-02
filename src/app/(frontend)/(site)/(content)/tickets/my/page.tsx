@@ -26,5 +26,20 @@ export default async function MyTicketsPage() {
   });
   const tickets = (found?.docs ?? []) as MyTicketDoc[];
 
-  return <MyTicketsPageClient tickets={tickets} />;
+  const u = session.user;
+  const holderName = u.name?.trim()
+    ? u.name
+    : u.username?.trim()
+      ? `@${u.username}`
+      : (u.email ?? null);
+
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "";
+
+  return (
+    <MyTicketsPageClient
+      tickets={tickets}
+      holderName={holderName}
+      baseUrl={baseUrl}
+    />
+  );
 }

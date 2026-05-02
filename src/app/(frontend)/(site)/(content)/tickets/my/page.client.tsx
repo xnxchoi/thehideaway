@@ -1,8 +1,13 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
-import { TicketStub } from "@/components/UX/Ticket/TicketStub";
+import { RP_Btn } from "@/components/core/Button";
+import {
+  TicketCard,
+  type TicketStatus
+} from "@/components/UX/Ticket/TicketCard";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 
@@ -12,6 +17,7 @@ export type MyTicketDoc = {
   status?: string | null;
   paid?: boolean | null;
   checked_in?: boolean | null;
+  check_in_code?: string | null;
   event?:
     | {
         id?: string;
@@ -19,15 +25,53 @@ export type MyTicketDoc = {
         slug?: string;
         date?: string | null;
         location?: string | null;
+        ticket_price?: number | null;
+        toss_payment_id?: string | null;
       }
     | string;
 };
 
 interface Props {
   tickets: MyTicketDoc[];
+  holderName: string | null;
+  baseUrl: string;
 }
 
-export default function MyTicketsPageClient({ tickets }: Props) {
+const padIndex = (n: number): string => String(n).padStart(2, "0");
+
+export default function MyTicketsPageClient({
+  tickets,
+  holderName,
+  baseUrl
+}: Props) {
+  const total = tickets.length;
+  const [index, setIndex] = useState(0);
+
+  // Clamp if data shrinks underneath us.
+  useEffect(() => {
+    if (index >= total && total > 0) setIndex(0);
+  }, [total, index]);
+
+  const prev = useCallback(
+    () => setIndex((i) => (i === 0 ? total - 1 : i - 1)),
+    [total]
+  );
+  const next = useCallback(
+    () => setIndex((i) => (i === total - 1 ? 0 : i + 1)),
+    [total]
+  );
+
+  // Arrow-key navigation.
+  useEffect(() => {
+    if (total <= 1) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prev();
+      else if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [total, prev, next]);
+
   return (
     <RPage type="me" slug={["tickets"]}>
       {/* ── Header ──────────────────────────────────────────────── */}
@@ -40,9 +84,9 @@ export default function MyTicketsPageClient({ tickets }: Props) {
               </p>
               <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 My tickets
-                {tickets.length > 0 && (
+                {total > 0 && (
                   <span className="ml-2.5 font-mono text-sm text-muted-foreground/50 tabular-nums">
-                    {tickets.length}
+                    {total}
                   </span>
                 )}
               </h1>
@@ -58,50 +102,156 @@ export default function MyTicketsPageClient({ tickets }: Props) {
       </header>
 
       {/* ── Content ─────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+      <section className="mx-auto w-full max-w-7xl px-6 py-12 xl:px-10 xl:py-20">
         <AnimatePresence mode="wait">
-          {tickets.length === 0 ? (
+          {total === 0 ? (
             <EmptyState key="empty" />
           ) : (
-            <m.ul
-              key="grid"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22 }}
-              className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6"
+            <div
+              key="pager"
+              className="flex flex-col items-center"
+              style={{ ["--ticket-page-bg" as string]: "var(--background)" }}
             >
-              {tickets.map((t, i) => {
-                const ev =
-                  typeof t.event === "object" && t.event
-                    ? t.event
-                    : { name: "Event", slug: "", date: null, location: null };
-                const status = (t.status ?? "pending") as
-                  | "pending"
-                  | "active"
-                  | "used"
-                  | "canceled";
-                return (
-                  <TicketStub
-                    key={t.id}
-                    href={`/tickets/my/${t.id}`}
-                    ticketNumber={t.ticket_number ?? null}
-                    status={status}
-                    checkedIn={Boolean(t.checked_in)}
-                    eventName={ev.name ?? "Event"}
-                    eventDate={ev.date ?? null}
-                    eventLocation={ev.location ?? null}
-                    index={i}
-                  />
-                );
-              })}
-            </m.ul>
+              <Pager
+                tickets={tickets}
+                index={index}
+                holderName={holderName}
+                baseUrl={baseUrl}
+              />
+
+              {total > 1 ? (
+                <PagerControls
+                  total={total}
+                  index={index}
+                  onPrev={prev}
+                  onNext={next}
+                  onJump={setIndex}
+                />
+              ) : null}
+            </div>
           )}
         </AnimatePresence>
       </section>
     </RPage>
   );
 }
+
+// ── Pager card ─────────────────────────────────────────────────────────────
+
+function Pager({
+  tickets,
+  index,
+  holderName,
+  baseUrl
+}: {
+  tickets: MyTicketDoc[];
+  index: number;
+  holderName: string | null;
+  baseUrl: string;
+}) {
+  const ticket = tickets[index];
+  if (!ticket) return null;
+
+  const ev =
+    typeof ticket.event === "object" && ticket.event ? ticket.event : null;
+  const status = (ticket.status ?? "pending") as TicketStatus;
+  const checkInUrl = ticket.check_in_code
+    ? `${baseUrl}/tickets/check-in/${ticket.check_in_code}`
+    : "";
+
+  return (
+    <AnimatePresence mode="wait">
+      <m.div
+        key={ticket.id}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -12 }}
+        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+        className="w-full"
+        style={{ width: "min(28rem, 100%)" }}
+      >
+        <Link
+          href={`/tickets/my/${ticket.id}`}
+          className="block focus:outline-none"
+          aria-label={`Open ticket #${ticket.ticket_number ?? ""} for ${ev?.name ?? "Event"}`}
+        >
+          <TicketCard
+            ticketNumber={ticket.ticket_number ?? null}
+            status={status}
+            paid={Boolean(ticket.paid)}
+            checkedIn={Boolean(ticket.checked_in)}
+            eventName={ev?.name ?? "Event"}
+            eventDate={ev?.date ?? null}
+            eventLocation={ev?.location ?? null}
+            holderName={holderName}
+            checkInUrl={checkInUrl}
+            ticketPrice={ev?.ticket_price ?? 0}
+            tossId={ev?.toss_payment_id ?? null}
+          />
+        </Link>
+      </m.div>
+    </AnimatePresence>
+  );
+}
+
+// ── Pager controls ─────────────────────────────────────────────────────────
+
+function PagerControls({
+  total,
+  index,
+  onPrev,
+  onNext,
+  onJump
+}: {
+  total: number;
+  index: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onJump: (i: number) => void;
+}) {
+  return (
+    <div className="mt-12 flex flex-col items-center gap-5">
+      <div className="flex items-center gap-8">
+        <RP_Btn
+          onClick={onPrev}
+          aria-label="Previous ticket"
+          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+        >
+          ← Prev
+        </RP_Btn>
+        <span className="font-mono text-[11px] tabular-nums text-muted-foreground/70 xl:text-xs">
+          {padIndex(index + 1)}{" "}
+          <span className="text-muted-foreground/30">/</span>{" "}
+          {padIndex(total)}
+        </span>
+        <RP_Btn
+          onClick={onNext}
+          aria-label="Next ticket"
+          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+        >
+          Next →
+        </RP_Btn>
+      </div>
+      <div className="flex items-center gap-2">
+        {Array.from({ length: total }).map((_, i) => (
+          <RP_Btn
+            key={i}
+            onClick={() => onJump(i)}
+            aria-label={`Go to ticket ${i + 1}`}
+            aria-current={i === index ? "true" : undefined}
+            className={
+              i === index
+                ? "h-1.5 w-6 rounded-full bg-foreground/80 transition-all"
+                : "h-1.5 w-1.5 rounded-full bg-foreground/15 transition-all hover:bg-foreground/40"
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Empty state ────────────────────────────────────────────────────────────
 
 function EmptyState() {
   return (
