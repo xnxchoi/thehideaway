@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface Props {
   code: string;
@@ -82,8 +83,22 @@ export function CheckInClient({
               Checked in {alreadyCheckedIn ? "(already)" : ""}
             </p>
             <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-              You can close this page.
+              You can close this page, or scan the next ticket.
             </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <Link
+                href="/vault/collections/tickets"
+                className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:text-foreground"
+              >
+                Open Vault → Tickets
+              </Link>
+              <Link
+                href="/tickets/my"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+              >
+                ← My tickets
+              </Link>
+            </div>
           </div>
         ) : (
           <>

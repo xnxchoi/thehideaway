@@ -177,6 +177,12 @@ export function TicketEventClient({
   if (!gateOpen) {
     return (
       <main className="mx-auto max-w-xl px-6 py-32" data-theme="dark">
+        <Link
+          href="/"
+          className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+        >
+          ← Hideaway
+        </Link>
         <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           Tickets · Private
         </p>
@@ -224,6 +230,23 @@ export function TicketEventClient({
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-24" data-theme="dark">
+      <div className="mb-10 flex items-center justify-between">
+        <Link
+          href="/"
+          className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+        >
+          ← Hideaway
+        </Link>
+        {isAuthenticated ? (
+          <Link
+            href="/tickets/my"
+            className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          >
+            My tickets →
+          </Link>
+        ) : null}
+      </div>
+
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
         Tickets
       </p>

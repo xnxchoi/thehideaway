@@ -1,5 +1,6 @@
 import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketStub } from "@/components/UX/Ticket/TicketStub";
@@ -53,6 +54,12 @@ export default async function MyTicketsPage() {
         } as React.CSSProperties
       }
     >
+      <Link
+        href="/"
+        className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+      >
+        ← Hideaway
+      </Link>
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
         Tickets
       </p>
@@ -68,8 +75,15 @@ export default async function MyTicketsPage() {
               No tickets yet
             </p>
             <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
-              When you purchase or claim a ticket, it&apos;ll show up here.
+              Tickets arrive here once you purchase one through a private
+              event link or claim a gift sent to you.
             </p>
+            <Link
+              href="/"
+              className="mt-7 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground"
+            >
+              Back to the Hideaway
+            </Link>
           </div>
         ) : (
           <ul className="space-y-4">

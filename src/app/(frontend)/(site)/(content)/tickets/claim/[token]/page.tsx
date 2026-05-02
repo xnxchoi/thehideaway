@@ -1,4 +1,5 @@
 import { headers as nextHeaders } from "next/headers";
+import Link from "next/link";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ClaimClient } from "./page.client";
@@ -62,6 +63,22 @@ export default async function ClaimPage(props: { params: Params }) {
         <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
           If you think this is a mistake, ask the sender to resend.
         </p>
+        <div className="mt-8 flex flex-col gap-3">
+          {session ? (
+            <Link
+              href="/tickets/my"
+              className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:text-foreground"
+            >
+              ← My tickets
+            </Link>
+          ) : null}
+          <Link
+            href="/"
+            className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          >
+            Hideaway home
+          </Link>
+        </div>
       </main>
     );
   }

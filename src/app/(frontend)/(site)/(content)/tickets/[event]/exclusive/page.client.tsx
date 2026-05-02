@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface ExclusiveLink {
   label: string;
@@ -97,6 +98,12 @@ export function ExclusiveContentClient({
   if (!isAttendee) {
     return (
       <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+        <Link
+          href="/tickets/my"
+          className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+        >
+          ← My tickets
+        </Link>
         <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           You had to be there
         </p>
@@ -112,6 +119,12 @@ export function ExclusiveContentClient({
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-24" data-theme="dark">
+      <Link
+        href="/tickets/my"
+        className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+      >
+        ← My tickets
+      </Link>
       <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
         You were there
       </p>
