@@ -32,10 +32,12 @@ export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
   const ctx = c.getContext("2d");
   if (!ctx) return new THREE.Texture();
 
-  // Bone paper base with a faint vignette so edges feel hand-laid.
+  // Pearl-white paper base with a faint vignette so edges feel hand-laid.
+  // Kept neutral on purpose — the iridescent layer is what should colour the
+  // surface; if the base is warm-cream, you get yellow-on-yellow.
   const bg = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H);
-  bg.addColorStop(0, "#f5ecdb");
-  bg.addColorStop(1, "#e7dcc6");
+  bg.addColorStop(0, "#fbf8f1");
+  bg.addColorStop(1, "#ece7dc");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
