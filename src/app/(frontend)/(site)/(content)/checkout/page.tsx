@@ -5,6 +5,7 @@ import config from "@payload-config";
 import type { Plan, Price, Currency } from "@/payload-types";
 import { CheckoutClient } from "./CheckoutClient";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
+import { RPage } from "@/components/UX/Transition";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,7 +75,7 @@ export default async function CheckoutPage(props: {
     "기업은행 · 000-000000-00-000 · The Hideaway";
 
   return (
-    <main className={s.pricingShell} data-theme="dark">
+    <RPage type="pages" slug={[]} className={s.pricingShell}>
       <section
         style={{
           maxWidth: 720,
@@ -182,6 +183,6 @@ export default async function CheckoutPage(props: {
 
         <CheckoutClient planId={plan.id} tierLabel={plan.tier_label} />
       </section>
-    </main>
+    </RPage>
   );
 }

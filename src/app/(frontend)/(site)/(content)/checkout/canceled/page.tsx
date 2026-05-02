@@ -1,9 +1,10 @@
 import { Link } from "@/components/core/Link/Link";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
+import { RPage } from "@/components/UX/Transition";
 
 export default function CheckoutCanceled() {
   return (
-    <main className={s.pricingShell} data-theme="dark">
+    <RPage className={s.pricingShell} type="pages" slug={[]}>
       <section
         style={{
           maxWidth: 640,
@@ -23,7 +24,7 @@ export default function CheckoutCanceled() {
             margin: "0 0 22px"
           }}
         >
-          Door's still open.
+          Door&#39;s still open.
         </h1>
         <p
           style={{
@@ -40,6 +41,6 @@ export default function CheckoutCanceled() {
           Back to membership
         </Link>
       </section>
-    </main>
+    </RPage>
   );
 }

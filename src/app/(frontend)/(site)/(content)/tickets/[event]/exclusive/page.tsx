@@ -78,7 +78,7 @@ export default async function ExclusivePage(props: { params: Params }) {
   const isAttendee = Boolean(ticket);
 
   return (
-    <RPage type="pages" slug={["tickets", event.slug, "exclusive"]} theme="dark">
+    <RPage type="pages" slug={["tickets", event.slug, "exclusive"]}>
       <ExclusiveContentClient
         eventName={event.name}
         eventDate={event.date ?? null}

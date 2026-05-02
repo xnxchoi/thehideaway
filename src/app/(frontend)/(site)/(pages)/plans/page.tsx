@@ -11,6 +11,7 @@ import { DemimondeTease } from "@/components/sections/Pricing/DemimondeTease";
 import { FounderRibbonIsland } from "@/components/sections/Pricing/FounderRibbonIsland";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import PlansPageClient from "./page.client";
+import { RPage } from "@/components/UX/Transition";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function PlansPage() {
   const founderPlan = plans.find((p) => p.presentation === "founder");
 
   return (
-    <main className={s.pricingShell} data-theme="dark">
+    <RPage className={s.pricingShell} type="pages" slug={[]}>
       <PlansPageClient />
       <PricingHero
         eyebrow="Membership"
@@ -62,6 +63,6 @@ export default async function PlansPage() {
       <DemimondeTease />
       <DropTeaser />
       <FAQAccordion />
-    </main>
+    </RPage>
   );
 }

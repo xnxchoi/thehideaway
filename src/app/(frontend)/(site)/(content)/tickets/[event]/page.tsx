@@ -71,7 +71,7 @@ export default async function TicketEventPage(props: { params: Params }) {
   }
 
   return (
-    <RPage type="pages" slug={["tickets", event.slug]} theme="dark">
+    <RPage type="pages" slug={["tickets", event.slug]}>
       <TicketEventClient
         event={{
           id: event.id,

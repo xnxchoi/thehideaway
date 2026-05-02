@@ -1,5 +1,6 @@
 import { Link } from "@/components/core/Link/Link";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
+import { RPage } from "@/components/UX/Transition";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function CheckoutSuccess(props: {
   const sp = await props.searchParams;
   const isPending = sp.pending === "1";
   return (
-    <main className={s.pricingShell} data-theme="dark">
+    <RPage className={s.pricingShell} type="pages" slug={[]}>
       <section
         style={{
           maxWidth: 640,
@@ -61,6 +62,6 @@ export default async function CheckoutSuccess(props: {
           </Link>
         </div>
       </section>
-    </main>
+    </RPage>
   );
 }

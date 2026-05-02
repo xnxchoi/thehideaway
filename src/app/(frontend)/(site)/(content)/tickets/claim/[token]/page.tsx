@@ -59,7 +59,7 @@ export default async function ClaimPage(props: { params: Params }) {
 
   if (!ticket) {
     return (
-      <RPage type="pages" slug={["tickets", "claim", token]} theme="dark">
+      <RPage type="pages" slug={["tickets", "claim", token]}>
         <div
           className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
           style={PAGE_CONTAINER}
@@ -115,7 +115,7 @@ export default async function ClaimPage(props: { params: Params }) {
       (userEmail ?? "").trim().toLowerCase();
 
   return (
-    <RPage type="pages" slug={["tickets", "claim", token]} theme="dark">
+    <RPage type="pages" slug={["tickets", "claim", token]}>
       <ClaimClient
         token={token}
         ticketId={ticket.id}

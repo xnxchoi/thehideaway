@@ -31,7 +31,7 @@ export default async function CheckInPage(props: { params: Params }) {
 
   if (!isStaff) {
     return (
-      <RPage type="pages" slug={["tickets", "check-in", code]} theme="dark">
+      <RPage type="pages" slug={["tickets", "check-in", code]}>
         <div
           className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
           style={PAGE_CONTAINER}
@@ -85,7 +85,7 @@ export default async function CheckInPage(props: { params: Params }) {
 
   if (!ticket) {
     return (
-      <RPage type="pages" slug={["tickets", "check-in", code]} theme="dark">
+      <RPage type="pages" slug={["tickets", "check-in", code]}>
         <div
           className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
           style={PAGE_CONTAINER}
@@ -141,7 +141,7 @@ export default async function CheckInPage(props: { params: Params }) {
   }
 
   return (
-    <RPage type="pages" slug={["tickets", "check-in", code]} theme="dark">
+    <RPage type="pages" slug={["tickets", "check-in", code]}>
       <CheckInClient
         code={code}
         ticketNumber={ticket.ticket_number ?? null}
