@@ -22,8 +22,7 @@ const INK_GHOST = "rgba(22, 17, 14, 0.16)";
 
 const FONT_SANS =
   "Helvetica Neue, Helvetica, Arial, system-ui, -apple-system, sans-serif";
-const FONT_MONO =
-  "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+const FONT_MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 const FONT_SERIF = "Georgia, 'Times New Roman', serif";
 
 /**
@@ -44,12 +43,12 @@ export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
   if (!ctx) return new THREE.Texture();
 
   // ── Paper base ──────────────────────────────────────────────────────────
-  // Pearl-white with a faint vignette so edges feel hand-laid. Kept neutral
-  // on purpose — the iridescent material layer is what colours the surface;
-  // a warm cream base would just produce yellow-on-yellow.
+  // Cool pearl with a faint vignette so the edges feel hand-laid. Kept
+  // neutral-cool on purpose — the iridescent material is what colours the
+  // surface, and a warm cream base produces yellow-on-yellow.
   const bg = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H);
-  bg.addColorStop(0, "#fbf8f1");
-  bg.addColorStop(1, "#ece7dc");
+  bg.addColorStop(0, "#f6f4ee");
+  bg.addColorStop(1, "#e2e0d8");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
@@ -167,6 +166,68 @@ function drawStub(
   ctx.textAlign = "center";
   ctx.fillText("ADMIT ONE", 0, 0);
   ctx.restore();
+}
+
+/**
+ * Generate a roughness map paired with the colour texture. White = rough,
+ * black = smooth (three.js convention). The body is left moderately rough
+ * so the printed typography reads cleanly head-on; the borders, stub, and
+ * the perforation strip are smoother so the iridescence shimmer
+ * concentrates there as the card rotates — selective sheen instead of
+ * uniform plastic.
+ */
+export function makeTicketRoughness(): THREE.Texture {
+  if (typeof document === "undefined") {
+    return new THREE.Texture();
+  }
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext("2d");
+  if (!ctx) return new THREE.Texture();
+
+  // Base — moderately rough body.
+  ctx.fillStyle = "#b4b4b4";
+  ctx.fillRect(0, 0, W, H);
+
+  // Stub area — smoother.
+  const stubGrad = ctx.createLinearGradient(STUB_X, 0, W, 0);
+  stubGrad.addColorStop(0, "#7a7a7a");
+  stubGrad.addColorStop(1, "#5a5a5a");
+  ctx.fillStyle = stubGrad;
+  ctx.fillRect(STUB_X, 0, W - STUB_X, H);
+
+  // Outer border ribbon — smooth foil-edge effect.
+  ctx.strokeStyle = "#3a3a3a";
+  ctx.lineWidth = 28;
+  ctx.strokeRect(36, 36, W - 72, H - 72);
+  // Soften the border with a wider faint band so it bleeds into the body.
+  ctx.strokeStyle = "rgba(60,60,60,0.5)";
+  ctx.lineWidth = 60;
+  ctx.strokeRect(36, 36, W - 72, H - 72);
+
+  // Perforation seam — keep it smooth so the seam catches light.
+  const seam = ctx.createLinearGradient(STUB_X - 30, 0, STUB_X + 30, 0);
+  seam.addColorStop(0, "rgba(60,60,60,0)");
+  seam.addColorStop(0.5, "rgba(60,60,60,0.8)");
+  seam.addColorStop(1, "rgba(60,60,60,0)");
+  ctx.fillStyle = seam;
+  ctx.fillRect(STUB_X - 30, 0, 60, H);
+
+  // Light noise so the surface doesn't look perfectly machined.
+  for (let i = 0; i < 4000; i++) {
+    const v = 140 + Math.floor(Math.random() * 30);
+    ctx.fillStyle = `rgba(${v},${v},${v},0.06)`;
+    ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+  }
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.NoColorSpace;
+  tex.anisotropy = 8;
+  tex.minFilter = THREE.LinearMipMapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
 }
 
 function wrapText(
