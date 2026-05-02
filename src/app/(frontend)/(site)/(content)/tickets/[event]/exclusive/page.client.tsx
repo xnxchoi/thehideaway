@@ -97,10 +97,13 @@ export function ExclusiveContentClient({
 
   if (!isAttendee) {
     return (
-      <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+      <main
+        className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
+        data-theme="dark"
+      >
         <Link
           href="/tickets/my"
-          className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+          className="mb-10 inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
         >
           ← My tickets
         </Link>
@@ -110,7 +113,10 @@ export function ExclusiveContentClient({
         <h1 className="mt-3 text-2xl font-light tracking-tight">
           This page is for attendees only.
         </h1>
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
+        <p
+          className="mt-3 font-mono text-[11px] text-muted-foreground/60"
+          style={{ width: "min(60ch, 100%)" }}
+        >
           Only people who were checked in at {eventName} can see this content.
         </p>
       </main>
@@ -118,10 +124,13 @@ export function ExclusiveContentClient({
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-24" data-theme="dark">
+    <main
+      className="px-6 py-24 sm:px-10 lg:px-16 2xl:px-24"
+      data-theme="dark"
+    >
       <Link
         href="/tickets/my"
-        className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+        className="mb-10 inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
       >
         ← My tickets
       </Link>
@@ -143,7 +152,12 @@ export function ExclusiveContentClient({
           <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             From the night
           </p>
-          <ul className="mt-4 space-y-3">
+          <ul
+            className="mt-4 grid gap-3 xl:gap-4"
+            style={{
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))"
+            }}
+          >
             {exclusiveLinks.map((l) => (
               <li key={l.url}>
                 <a
@@ -164,7 +178,10 @@ export function ExclusiveContentClient({
       ) : null}
 
       {goodsDropEnabled && ticketId ? (
-        <section className="mt-12 border-t border-border/20 pt-8">
+        <section
+          className="mt-12 border-t border-border/20 pt-8"
+          style={{ width: "min(36rem, 100%)" }}
+        >
           <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Goods drop
           </p>

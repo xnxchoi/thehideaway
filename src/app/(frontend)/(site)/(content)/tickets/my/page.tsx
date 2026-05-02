@@ -46,7 +46,7 @@ export default async function MyTicketsPage() {
 
   return (
     <main
-      className="mx-auto max-w-2xl px-6 py-24"
+      className="px-6 py-24 sm:px-10 lg:px-16 2xl:px-24"
       data-theme="dark"
       style={
         {
@@ -56,7 +56,7 @@ export default async function MyTicketsPage() {
     >
       <Link
         href="/"
-        className="mb-10 inline-block font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+        className="mb-10 inline-block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
       >
         ← Hideaway
       </Link>
@@ -74,19 +74,28 @@ export default async function MyTicketsPage() {
             <p className="text-base font-light text-foreground/70">
               No tickets yet
             </p>
-            <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
-              Tickets arrive here once you purchase one through a private
-              event link or claim a gift sent to you.
+            <p
+              className="mt-1.5 font-mono text-[11px] text-muted-foreground/50"
+              style={{ width: "min(40ch, 100%)" }}
+            >
+              Tickets arrive here once you purchase one through a private event
+              link or claim a gift sent to you.
             </p>
             <Link
               href="/"
-              className="mt-7 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground"
+              className="mt-7 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
             >
               Back to the Hideaway
             </Link>
           </div>
         ) : (
-          <ul className="space-y-4">
+          <ul
+            className="grid gap-4 xl:gap-5"
+            style={{
+              gridTemplateColumns:
+                "repeat(auto-fill, minmax(320px, 1fr))"
+            }}
+          >
             {tickets.map((t, i) => {
               const ev =
                 typeof t.event === "object" && t.event

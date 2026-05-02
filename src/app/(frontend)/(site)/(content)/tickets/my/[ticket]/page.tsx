@@ -77,7 +77,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
 
   return (
     <main
-      className="relative min-h-screen px-5 pt-12 pb-24"
+      className="relative min-h-screen px-6 pt-12 pb-24 sm:px-10 lg:px-16 2xl:px-24"
       data-theme="dark"
       style={
         // Match the perforation notches against the actual page bg
@@ -86,16 +86,14 @@ export default async function TicketDetailPage(props: { params: Params }) {
         } as React.CSSProperties
       }
     >
-      <div className="mx-auto max-w-md">
-        <Link
-          href="/tickets/my"
-          className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
-        >
-          ← All tickets
-        </Link>
-      </div>
+      <Link
+        href="/tickets/my"
+        className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+      >
+        ← All tickets
+      </Link>
 
-      <div className="mt-10">
+      <div className="mt-10 flex justify-center">
         <TicketDetailClient
           ticketId={ticket.id}
           ticketNumber={ticket.ticket_number ?? null}

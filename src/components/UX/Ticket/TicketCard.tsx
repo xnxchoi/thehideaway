@@ -100,8 +100,8 @@ export function TicketCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", bounce: 0.18, duration: 0.55 }}
       aria-label={`Ticket #${num} for ${eventName}`}
-      className="relative mx-auto w-full max-w-md select-none"
-      style={{ color: PAPER_INK }}
+      className="relative select-none"
+      style={{ color: PAPER_INK, width: "min(28rem, 100%)" }}
     >
       {/* Paper card */}
       <div

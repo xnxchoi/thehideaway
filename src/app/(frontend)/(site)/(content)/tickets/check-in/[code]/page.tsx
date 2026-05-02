@@ -25,7 +25,10 @@ export default async function CheckInPage(props: { params: Params }) {
 
   if (!isStaff) {
     return (
-      <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+      <main
+        className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
+        data-theme="dark"
+      >
         <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
           Forbidden
         </p>
@@ -39,13 +42,13 @@ export default async function CheckInPage(props: { params: Params }) {
         <div className="mt-8 flex flex-col gap-3">
           <Link
             href="/tickets/my"
-            className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:text-foreground"
+            className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
           >
             ← My tickets
           </Link>
           <Link
             href="/"
-            className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+            className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
           >
             Hideaway home
           </Link>
@@ -74,7 +77,10 @@ export default async function CheckInPage(props: { params: Params }) {
 
   if (!ticket) {
     return (
-      <main className="mx-auto max-w-md px-6 py-32" data-theme="dark">
+      <main
+        className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
+        data-theme="dark"
+      >
         <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
           Not found
         </p>
@@ -84,7 +90,7 @@ export default async function CheckInPage(props: { params: Params }) {
         <div className="mt-8">
           <Link
             href="/vault/collections/tickets"
-            className="font-mono text-[11px] uppercase tracking-widest text-foreground/80 hover:text-foreground"
+            className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
           >
             Open Vault → Tickets
           </Link>
