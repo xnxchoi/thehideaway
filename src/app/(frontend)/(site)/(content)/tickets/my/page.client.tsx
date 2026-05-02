@@ -167,27 +167,31 @@ function Pager({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -12 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
-        className="w-full"
+        className="flex w-full flex-col items-center gap-5"
         style={{ width: "min(28rem, 100%)" }}
       >
+        {/* The TicketCard contains its own interactive elements (Toss pay
+            button, QR), so it can't be wrapped in another Link — that would
+            nest anchors. */}
+        <TicketCard
+          ticketNumber={ticket.ticket_number ?? null}
+          status={status}
+          paid={Boolean(ticket.paid)}
+          checkedIn={Boolean(ticket.checked_in)}
+          eventName={ev?.name ?? "Event"}
+          eventDate={ev?.date ?? null}
+          eventLocation={ev?.location ?? null}
+          holderName={holderName}
+          checkInUrl={checkInUrl}
+          ticketPrice={ev?.ticket_price ?? 0}
+          tossId={ev?.toss_payment_id ?? null}
+        />
         <Link
           href={`/tickets/my/${ticket.id}`}
-          className="block focus:outline-none"
           aria-label={`Open ticket #${ticket.ticket_number ?? ""} for ${ev?.name ?? "Event"}`}
+          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
         >
-          <TicketCard
-            ticketNumber={ticket.ticket_number ?? null}
-            status={status}
-            paid={Boolean(ticket.paid)}
-            checkedIn={Boolean(ticket.checked_in)}
-            eventName={ev?.name ?? "Event"}
-            eventDate={ev?.date ?? null}
-            eventLocation={ev?.location ?? null}
-            holderName={holderName}
-            checkInUrl={checkInUrl}
-            ticketPrice={ev?.ticket_price ?? 0}
-            tossId={ev?.toss_payment_id ?? null}
-          />
+          View details →
         </Link>
       </m.div>
     </AnimatePresence>
@@ -219,10 +223,9 @@ function PagerControls({
         >
           ← Prev
         </RP_Btn>
-        <span className="font-mono text-[11px] tabular-nums text-muted-foreground/70 xl:text-xs">
+        <span className="font-mono text-[11px] text-muted-foreground/70 tabular-nums xl:text-xs">
           {padIndex(index + 1)}{" "}
-          <span className="text-muted-foreground/30">/</span>{" "}
-          {padIndex(total)}
+          <span className="text-muted-foreground/30">/</span> {padIndex(total)}
         </span>
         <RP_Btn
           onClick={onNext}
