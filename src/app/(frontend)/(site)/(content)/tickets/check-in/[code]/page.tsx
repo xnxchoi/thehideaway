@@ -1,19 +1,14 @@
 import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
-import { Link } from "@/components/core/Link/Link";
+import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { CheckInClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { RPage } from "@/components/UX/Transition";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const PAGE_CONTAINER: React.CSSProperties = {
-  width: "100%",
-  maxWidth: "var(--maxContainerWidth, 1440px)"
-};
+export const metadata: Metadata = { title: "Check in" };
 
 type Params = Promise<{ code: string }>;
 
@@ -26,43 +21,10 @@ export default async function CheckInPage(props: { params: Params }) {
 
   const role = session.user.role;
   const isStaff = role === "admin" || role === "editor";
-
   const payload = await getPayload({ config });
 
   if (!isStaff) {
-    return (
-      <RPage type="pages" slug={["tickets", "check-in", code]}>
-        <div
-          className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
-          style={PAGE_CONTAINER}
-        >
-          <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
-            Forbidden
-          </p>
-          <h1 className="mt-3 text-2xl font-light tracking-tight xl:text-3xl">
-            Only staff can check in attendees.
-          </h1>
-          <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-            If you&apos;re trying to use your own ticket, scroll down to the QR
-            code on your ticket page — staff will scan it from there.
-          </p>
-          <div className="mt-8 flex flex-col gap-3">
-            <Link
-              href="/tickets/my"
-              className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
-            >
-              ← My tickets
-            </Link>
-            <Link
-              href="/"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
-            >
-              Hideaway home
-            </Link>
-          </div>
-        </div>
-      </RPage>
-    );
+    return <CheckInClient code={code} state="forbidden" />;
   }
 
   const found = await payload.find({
@@ -84,29 +46,7 @@ export default async function CheckInPage(props: { params: Params }) {
     | undefined;
 
   if (!ticket) {
-    return (
-      <RPage type="pages" slug={["tickets", "check-in", code]}>
-        <div
-          className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
-          style={PAGE_CONTAINER}
-        >
-          <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
-            Not found
-          </p>
-          <h1 className="mt-3 text-2xl font-light tracking-tight xl:text-3xl">
-            No ticket matches this code.
-          </h1>
-          <div className="mt-8">
-            <Link
-              href="/vault/collections/tickets"
-              className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
-            >
-              Open Vault → Tickets
-            </Link>
-          </div>
-        </div>
-      </RPage>
-    );
+    return <CheckInClient code={code} state="not_found" />;
   }
 
   const eventName =
@@ -141,15 +81,14 @@ export default async function CheckInPage(props: { params: Params }) {
   }
 
   return (
-    <RPage type="pages" slug={["tickets", "check-in", code]}>
-      <CheckInClient
-        code={code}
-        ticketNumber={ticket.ticket_number ?? null}
-        eventName={eventName}
-        userName={userName}
-        status={ticket.status ?? "pending"}
-        alreadyCheckedIn={Boolean(ticket.checked_in)}
-      />
-    </RPage>
+    <CheckInClient
+      code={code}
+      state="ready"
+      ticketNumber={ticket.ticket_number ?? null}
+      eventName={eventName}
+      userName={userName}
+      status={ticket.status ?? "pending"}
+      alreadyCheckedIn={Boolean(ticket.checked_in)}
+    />
   );
 }

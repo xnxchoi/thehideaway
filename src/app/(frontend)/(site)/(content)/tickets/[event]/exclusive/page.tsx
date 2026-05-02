@@ -1,13 +1,13 @@
 import { headers as nextHeaders } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ExclusiveContentClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { RPage } from "@/components/UX/Transition";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { title: "Exclusive" };
 
 type Params = Promise<{ event: string }>;
 
@@ -75,26 +75,23 @@ export default async function ExclusivePage(props: { params: Params }) {
       }
     | undefined;
 
-  const isAttendee = Boolean(ticket);
-
   return (
-    <RPage type="pages" slug={["tickets", event.slug, "exclusive"]}>
-      <ExclusiveContentClient
-        eventName={event.name}
-        eventDate={event.date ?? null}
-        eventLocation={event.location ?? null}
-        isAttendee={isAttendee}
-        exclusiveLinks={(event.exclusive_links ?? [])
-          .filter((l) => l && l.label && l.url)
-          .map((l) => ({
-            label: l.label!,
-            url: l.url!,
-            type: l.type ?? "link"
-          }))}
-        goodsDropEnabled={Boolean(event.goods_drop_enabled)}
-        ticketId={ticket?.id ?? null}
-        existingDelivery={ticket?.delivery_address ?? null}
-      />
-    </RPage>
+    <ExclusiveContentClient
+      eventName={event.name}
+      eventSlug={event.slug}
+      eventDate={event.date ?? null}
+      eventLocation={event.location ?? null}
+      isAttendee={Boolean(ticket)}
+      exclusiveLinks={(event.exclusive_links ?? [])
+        .filter((l) => l && l.label && l.url)
+        .map((l) => ({
+          label: l.label!,
+          url: l.url!,
+          type: l.type ?? "link"
+        }))}
+      goodsDropEnabled={Boolean(event.goods_drop_enabled)}
+      ticketId={ticket?.id ?? null}
+      existingDelivery={ticket?.delivery_address ?? null}
+    />
   );
 }
