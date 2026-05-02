@@ -116,6 +116,20 @@ export function ClaimClient({
               This gift link is restricted to a different email address. Sign in
               with the intended account to claim it.
             </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <Link
+                href={`/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`}
+                className="inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground"
+              >
+                Sign in with another account
+              </Link>
+              <Link
+                href="/tickets/my"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground"
+              >
+                ← My tickets
+              </Link>
+            </div>
           </div>
         ) : (
           <div>
