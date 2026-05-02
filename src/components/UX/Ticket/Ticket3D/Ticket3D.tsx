@@ -128,6 +128,12 @@ export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
       style={{
         touchAction: "none",
         cursor: dragging ? "grabbing" : "grab",
+        // CSS drop-shadow follows the rendered alpha of the View, so the
+        // shadow tilts and stretches naturally with the ticket's rotation
+        // — much better than a flat orthogonal contact shadow on the
+        // ground plane.
+        filter:
+          "drop-shadow(0 28px 36px rgba(20, 14, 8, 0.18)) drop-shadow(0 8px 14px rgba(20, 14, 8, 0.10))",
         ...style
       }}
       onPointerDown={onPointerDown}

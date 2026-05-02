@@ -102,7 +102,7 @@ export function TicketDetailClient({
       </header>
 
       <section className="mx-auto w-full max-w-7xl px-6 py-12 xl:px-10 xl:py-16">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
           {/* ── Visual artifact ─────────────────────────────────────── */}
           <div className="lg:sticky lg:top-32 lg:self-start">
             <Ticket3D
