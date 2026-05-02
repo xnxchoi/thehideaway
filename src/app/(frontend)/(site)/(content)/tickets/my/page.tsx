@@ -6,8 +6,6 @@ import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
 import MyTicketsPageClient, { type MyTicketDoc } from "./page.client";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = { title: "My Tickets" };
 
 export default async function MyTicketsPage() {

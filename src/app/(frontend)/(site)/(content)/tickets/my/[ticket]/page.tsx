@@ -6,8 +6,6 @@ import config from "@payload-config";
 import { TicketDetailClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = { title: "Ticket" };
 
 type Params = Promise<{ ticket: string }>;

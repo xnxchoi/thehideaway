@@ -92,9 +92,7 @@ export function TicketDetailClient({
           {/* Metadata rail */}
           <aside className="lg:sticky lg:top-32 lg:self-start">
             <dl className="space-y-5 border-t border-border/20 pt-8">
-              {dateLong ? (
-                <Field label="When" value={dateLong} />
-              ) : null}
+              {dateLong ? <Field label="When" value={dateLong} /> : null}
               {eventLocation ? (
                 <Field label="Where" value={eventLocation} />
               ) : null}

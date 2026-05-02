@@ -6,8 +6,6 @@ import config from "@payload-config";
 import { ExclusiveContentClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = { title: "Exclusive" };
 
 type Params = Promise<{ event: string }>;
