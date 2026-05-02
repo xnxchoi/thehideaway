@@ -108,8 +108,8 @@ function ForbiddenView() {
         Only staff can check in attendees.
       </p>
       <p className="mt-1.5 max-w-md font-mono text-[11px] text-muted-foreground/50">
-        If you&apos;re trying to use your own ticket, scroll down to the QR
-        code on your ticket page — staff will scan it from there.
+        If you&apos;re trying to use your own ticket, scroll down to the QR code
+        on your ticket page — staff will scan it from there.
       </p>
       <Link
         href="/tickets/my"

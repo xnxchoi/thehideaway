@@ -1,11 +1,10 @@
 import { headers as nextHeaders } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketDetailClient } from "./page.client";
-import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "@/lib/auth/getServerSession";
-
 
 export const metadata: Metadata = { title: "Ticket" };
 
