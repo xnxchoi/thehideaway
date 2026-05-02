@@ -124,7 +124,7 @@ export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
   return (
     <div
       ref={setRefs}
-      className={cn("relative aspect-[16/9] w-full select-none", className)}
+      className={cn("relative aspect-[2/1] w-full select-none", className)}
       style={{
         touchAction: "none",
         cursor: dragging ? "grabbing" : "grab",
