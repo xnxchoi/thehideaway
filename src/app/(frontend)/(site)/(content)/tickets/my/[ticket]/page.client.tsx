@@ -37,7 +37,10 @@ export function TicketDetailClient({
   holderName
 }: Props) {
   return (
-    <>
+    <div
+      className="flex w-full flex-col items-center gap-10 lg:items-start"
+      style={{ width: "min(34rem, 100%)" }}
+    >
       <TicketCard
         ticketNumber={ticketNumber}
         status={status}
@@ -53,15 +56,13 @@ export function TicketDetailClient({
       />
 
       {checkedIn && eventSlug ? (
-        <div className="mt-10 flex justify-center">
-          <Link
-            href={`/tickets/${eventSlug}/exclusive`}
-            className="inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
-          >
-            View exclusive content →
-          </Link>
-        </div>
+        <Link
+          href={`/tickets/${eventSlug}/exclusive`}
+          className="self-stretch border border-border/40 px-5 py-3 text-center font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+        >
+          View exclusive content →
+        </Link>
       ) : null}
-    </>
+    </div>
   );
 }
