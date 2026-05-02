@@ -12,6 +12,11 @@ interface Props {
   alreadyCheckedIn: boolean;
 }
 
+const PAGE_CONTAINER: React.CSSProperties = {
+  width: "100%",
+  maxWidth: "var(--maxContainerWidth, 1440px)"
+};
+
 export function CheckInClient({
   code,
   ticketNumber,
@@ -49,86 +54,90 @@ export function CheckInClient({
   };
 
   return (
-    <main
-      className="px-6 py-24 sm:px-10 lg:px-16 2xl:px-24"
-      data-theme="dark"
+    <div
+      className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
+      style={PAGE_CONTAINER}
     >
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        Check in
-      </p>
-      <h1 className="mt-3 text-2xl font-light tracking-tight">{eventName}</h1>
+      <div style={{ width: "min(36rem, 100%)" }}>
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          Check in
+        </p>
+        <h1 className="mt-3 text-2xl font-light tracking-tight xl:text-3xl">
+          {eventName}
+        </h1>
 
-      <div className="mt-10 space-y-3 border-t border-border/20 pt-8">
-        <div className="flex items-baseline justify-between">
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
-            Ticket
-          </span>
-          <span className="font-mono text-sm">#{ticketNumber ?? "—"}</span>
-        </div>
-        <div className="flex items-baseline justify-between">
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
-            Holder
-          </span>
-          <span className="text-sm">{userName}</span>
-        </div>
-        <div className="flex items-baseline justify-between">
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
-            Status
-          </span>
-          <span className="font-mono text-sm">{status}</span>
-        </div>
-      </div>
-
-      <div className="mt-10">
-        {done ? (
-          <div>
-            <p className="font-mono text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
-              Checked in {alreadyCheckedIn ? "(already)" : ""}
-            </p>
-            <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-              You can close this page, or scan the next ticket.
-            </p>
-            <div className="mt-6 flex flex-col gap-3">
-              <Link
-                href="/vault/collections/tickets"
-                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
-              >
-                Open Vault → Tickets
-              </Link>
-              <Link
-                href="/tickets/my"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
-              >
-                ← My tickets
-              </Link>
-            </div>
+        <div className="mt-10 space-y-3 border-t border-border/20 pt-8">
+          <div className="flex items-baseline justify-between">
+            <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              Ticket
+            </span>
+            <span className="font-mono text-sm">#{ticketNumber ?? "—"}</span>
           </div>
-        ) : (
-          <>
-            {status !== "active" ? (
-              <p className="mb-4 font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
-                Ticket not active — confirm anyway?
+          <div className="flex items-baseline justify-between">
+            <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              Holder
+            </span>
+            <span className="text-sm">{userName}</span>
+          </div>
+          <div className="flex items-baseline justify-between">
+            <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              Status
+            </span>
+            <span className="font-mono text-sm">{status}</span>
+          </div>
+        </div>
+
+        <div className="mt-10">
+          {done ? (
+            <div>
+              <p className="font-mono text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
+                Checked in {alreadyCheckedIn ? "(already)" : ""}
               </p>
-            ) : null}
-            {err ? (
-              <p
-                role="alert"
-                className="mb-4 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+              <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
+                You can close this page, or scan the next ticket.
+              </p>
+              <div className="mt-6 flex flex-col gap-3">
+                <Link
+                  href="/vault/collections/tickets"
+                  className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
+                >
+                  Open Vault → Tickets
+                </Link>
+                <Link
+                  href="/tickets/my"
+                  className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+                >
+                  ← My tickets
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <>
+              {status !== "active" ? (
+                <p className="mb-4 font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
+                  Ticket not active — confirm anyway?
+                </p>
+              ) : null}
+              {err ? (
+                <p
+                  role="alert"
+                  className="mb-4 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+                >
+                  {err}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={confirm}
+                disabled={busy}
+                className="w-full border border-border/40 px-5 py-4 font-mono text-[12px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
               >
-                {err}
-              </p>
-            ) : null}
-            <button
-              type="button"
-              onClick={confirm}
-              disabled={busy}
-              className="w-full border border-border/40 px-5 py-4 font-mono text-[12px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
-            >
-              {busy ? "Confirming…" : "Confirm check-in"}
-            </button>
-          </>
-        )}
+                {busy ? "Confirming…" : "Confirm check-in"}
+              </button>
+            </>
+          )}
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

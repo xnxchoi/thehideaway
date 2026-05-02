@@ -19,6 +19,11 @@ interface Props {
   emailMismatch: boolean;
 }
 
+const PAGE_CONTAINER: React.CSSProperties = {
+  width: "100%",
+  maxWidth: "var(--maxContainerWidth, 1440px)"
+};
+
 export function ClaimClient({
   token,
   ticketId,
@@ -77,24 +82,29 @@ export function ClaimClient({
   };
 
   return (
-    <main
-      className="px-6 py-32 sm:px-10 lg:px-16 2xl:px-24"
-      data-theme="dark"
+    <div
+      className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
+      style={PAGE_CONTAINER}
     >
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        Gift ticket
-      </p>
-      <h1 className="mt-3 text-3xl font-light tracking-tight xl:text-4xl">
-        {event.name}
-      </h1>
-      {dateDisplay ? (
-        <p className="mt-4 font-mono text-[11px] tracking-widest text-foreground/70 uppercase">
-          {dateDisplay}
-          {event.location ? ` · ${event.location}` : ""}
+      <header className="border-b border-border/20 pb-10">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          Gift ticket
         </p>
-      ) : null}
+        <h1 className="mt-3 text-3xl font-light tracking-tight xl:text-5xl 2xl:text-6xl">
+          {event.name}
+        </h1>
+        {dateDisplay ? (
+          <p className="mt-4 font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+            {dateDisplay}
+            {event.location ? ` · ${event.location}` : ""}
+          </p>
+        ) : null}
+      </header>
 
-      <div className="mt-12 border-t border-border/20 pt-8">
+      <div
+        className="mt-12"
+        style={{ width: "min(40rem, 100%)" }}
+      >
         {alreadyMine ? (
           <div>
             <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
@@ -122,7 +132,7 @@ export function ClaimClient({
             <div className="mt-6 flex flex-col gap-3">
               <Link
                 href={`/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`}
-                className="inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+                className="inline-block self-start border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
               >
                 Sign in with another account
               </Link>
@@ -174,6 +184,6 @@ export function ClaimClient({
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
