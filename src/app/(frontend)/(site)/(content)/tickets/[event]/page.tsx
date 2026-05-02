@@ -1,13 +1,14 @@
 import { headers as nextHeaders } from "next/headers";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketEventClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { RPage } from "@/components/UX/Transition";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { title: "Tickets" };
 
 type Params = Promise<{ event: string }>;
 
@@ -71,25 +72,23 @@ export default async function TicketEventPage(props: { params: Params }) {
   }
 
   return (
-    <RPage type="pages" slug={["tickets", event.slug]} theme="dark">
-      <TicketEventClient
-        event={{
-          id: event.id,
-          name: event.name,
-          slug: event.slug,
-          description: event.description ?? null,
-          date: event.date ?? null,
-          end_date: event.end_date ?? null,
-          location: event.location ?? null,
-          capacity: event.capacity ?? 0,
-          max_per_user: event.max_per_user ?? 3,
-          ticket_price: event.ticket_price ?? 0,
-          toss_payment_id: event.toss_payment_id ?? null,
-          state: event.state ?? "draft"
-        }}
-        remaining={remaining}
-        isAuthenticated={Boolean(session)}
-      />
-    </RPage>
+    <TicketEventClient
+      event={{
+        id: event.id,
+        name: event.name,
+        slug: event.slug,
+        description: event.description ?? null,
+        date: event.date ?? null,
+        end_date: event.end_date ?? null,
+        location: event.location ?? null,
+        capacity: event.capacity ?? 0,
+        max_per_user: event.max_per_user ?? 3,
+        ticket_price: event.ticket_price ?? 0,
+        toss_payment_id: event.toss_payment_id ?? null,
+        state: event.state ?? "draft"
+      }}
+      remaining={remaining}
+      isAuthenticated={Boolean(session)}
+    />
   );
 }

@@ -1,18 +1,13 @@
 import { headers as nextHeaders } from "next/headers";
-import Link from "next/link";
+import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { ClaimClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { RPage } from "@/components/UX/Transition";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const PAGE_CONTAINER: React.CSSProperties = {
-  width: "100%",
-  maxWidth: "var(--maxContainerWidth, 1440px)"
-};
+export const metadata: Metadata = { title: "Claim ticket" };
 
 type Params = Promise<{ token: string }>;
 
@@ -59,38 +54,21 @@ export default async function ClaimPage(props: { params: Params }) {
 
   if (!ticket) {
     return (
-      <RPage type="pages" slug={["tickets", "claim", token]} theme="dark">
-        <div
-          className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
-          style={PAGE_CONTAINER}
-        >
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-            Gift ticket
-          </p>
-          <h1 className="mt-3 text-2xl font-light tracking-tight xl:text-3xl">
-            Link is invalid or already claimed.
-          </h1>
-          <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-            If you think this is a mistake, ask the sender to resend.
-          </p>
-          <div className="mt-8 flex flex-col gap-3">
-            {session ? (
-              <Link
-                href="/tickets/my"
-                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
-              >
-                ← My tickets
-              </Link>
-            ) : null}
-            <Link
-              href="/"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
-            >
-              Hideaway home
-            </Link>
-          </div>
-        </div>
-      </RPage>
+      <ClaimClient
+        token={token}
+        ticketId=""
+        event={{
+          name: "Gift ticket",
+          slug: "",
+          date: null,
+          location: null
+        }}
+        isAuthenticated={Boolean(session)}
+        alreadyMine={false}
+        emailRestricted={false}
+        emailMismatch={false}
+        invalid
+      />
     );
   }
 
@@ -104,7 +82,6 @@ export default async function ClaimPage(props: { params: Params }) {
         }
       : { name: "Event", slug: "", date: null, location: null };
 
-  const isAuthenticated = Boolean(session);
   const userEmail = session?.user?.email ?? null;
   const alreadyMine =
     idOf(ticket.user) === (session?.user?.id ? String(session.user.id) : null);
@@ -115,16 +92,14 @@ export default async function ClaimPage(props: { params: Params }) {
       (userEmail ?? "").trim().toLowerCase();
 
   return (
-    <RPage type="pages" slug={["tickets", "claim", token]} theme="dark">
-      <ClaimClient
-        token={token}
-        ticketId={ticket.id}
-        event={eventInfo}
-        isAuthenticated={isAuthenticated}
-        alreadyMine={alreadyMine}
-        emailRestricted={Boolean(ticket.claim_email)}
-        emailMismatch={emailMismatch}
-      />
-    </RPage>
+    <ClaimClient
+      token={token}
+      ticketId={ticket.id}
+      event={eventInfo}
+      isAuthenticated={Boolean(session)}
+      alreadyMine={alreadyMine}
+      emailRestricted={Boolean(ticket.claim_email)}
+      emailMismatch={emailMismatch}
+    />
   );
 }

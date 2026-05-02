@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/components/core/Link/Link";
+import { useTransitionRouter } from "next-transition-router";
+import { RPage } from "@/components/UX/Transition";
 
 interface Props {
   token: string;
@@ -17,12 +18,9 @@ interface Props {
   alreadyMine: boolean;
   emailRestricted: boolean;
   emailMismatch: boolean;
+  /** When true, the claim token did not resolve to a ticket. */
+  invalid?: boolean;
 }
-
-const PAGE_CONTAINER: React.CSSProperties = {
-  width: "100%",
-  maxWidth: "var(--maxContainerWidth, 1440px)"
-};
 
 export function ClaimClient({
   token,
@@ -31,9 +29,10 @@ export function ClaimClient({
   isAuthenticated,
   alreadyMine,
   emailRestricted,
-  emailMismatch
+  emailMismatch,
+  invalid = false
 }: Props) {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -82,108 +81,180 @@ export function ClaimClient({
   };
 
   return (
-    <div
-      className="mx-auto px-6 pt-16 pb-32 sm:px-10 lg:px-16 2xl:px-20"
-      style={PAGE_CONTAINER}
-    >
-      <header className="border-b border-border/20 pb-10">
-        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-          Gift ticket
-        </p>
-        <h1 className="mt-3 text-3xl font-light tracking-tight xl:text-5xl 2xl:text-6xl">
-          {event.name}
-        </h1>
-        {dateDisplay ? (
-          <p className="mt-4 font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
-            {dateDisplay}
-            {event.location ? ` · ${event.location}` : ""}
-          </p>
-        ) : null}
-      </header>
-
-      <div
-        className="mt-12"
-        style={{ width: "min(40rem, 100%)" }}
-      >
-        {alreadyMine ? (
-          <div>
-            <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
-              Already yours
-            </p>
-            <p className="mt-3 text-sm text-foreground/80">
-              This ticket is already linked to your account.
-            </p>
-            <Link
-              href={`/tickets/my/${ticketId}`}
-              className="mt-6 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:border-border hover:text-foreground"
-            >
-              View ticket →
-            </Link>
-          </div>
-        ) : emailMismatch ? (
-          <div>
-            <p className="font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
-              Wrong account
-            </p>
-            <p className="mt-3 text-sm text-foreground/80">
-              This gift link is restricted to a different email address. Sign in
-              with the intended account to claim it.
-            </p>
-            <div className="mt-6 flex flex-col gap-3">
-              <Link
-                href={`/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`}
-                className="inline-block self-start border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
-              >
-                Sign in with another account
-              </Link>
+    <RPage type="pages" slug={["tickets", "claim", token]}>
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+                Gift ticket
+              </p>
+              <h1 className="mt-0.5 line-clamp-1 text-2xl font-light tracking-tight xl:text-3xl">
+                {invalid ? "Invalid link" : event.name}
+              </h1>
+            </div>
+            {isAuthenticated ? (
               <Link
                 href="/tickets/my"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
               >
-                ← My tickets
+                My tickets →
               </Link>
+            ) : (
+              <Link
+                href="/"
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+              >
+                ← Hideaway
+              </Link>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ── Content ─────────────────────────────────────────────── */}
+      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
+        {invalid ? (
+          <InvalidView />
+        ) : (
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+            <div>
+              {dateDisplay ? (
+                <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+                  {dateDisplay}
+                  {event.location ? ` · ${event.location}` : ""}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="border-t border-border/20 pt-8 lg:border-t-0 lg:pt-0">
+              {alreadyMine ? (
+                <AlreadyMineView ticketId={ticketId} />
+              ) : emailMismatch ? (
+                <EmailMismatchView token={token} />
+              ) : (
+                <ClaimView
+                  emailRestricted={emailRestricted}
+                  err={err}
+                  busy={busy}
+                  isAuthenticated={isAuthenticated}
+                  onClaim={claim}
+                />
+              )}
             </div>
           </div>
-        ) : (
-          <div>
-            <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
-              Claim this ticket
-            </p>
-            <p className="mt-3 text-sm text-foreground/80">
-              Someone shared this with you. Once you claim it, the ticket binds
-              to your account and the link becomes unusable.
-            </p>
-            {emailRestricted ? (
-              <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
-                Email restriction is in effect — only the intended recipient can
-                claim.
-              </p>
-            ) : null}
-
-            {err ? (
-              <p
-                role="alert"
-                className="mt-6 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
-              >
-                {err}
-              </p>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={claim}
-              disabled={busy}
-              className="mt-8 border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
-            >
-              {busy
-                ? "Claiming…"
-                : isAuthenticated
-                  ? "Claim ticket"
-                  : "Sign in to claim"}
-            </button>
-          </div>
         )}
+      </section>
+    </RPage>
+  );
+}
+
+function InvalidView() {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+      <p className="text-base font-light text-foreground/70">
+        Link is invalid or already claimed.
+      </p>
+      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+        If you think this is a mistake, ask the sender to resend.
+      </p>
+    </div>
+  );
+}
+
+function AlreadyMineView({ ticketId }: { ticketId: string }) {
+  return (
+    <div>
+      <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+        Already yours
+      </p>
+      <p className="mt-3 text-sm text-foreground/80">
+        This ticket is already linked to your account.
+      </p>
+      <Link
+        href={`/tickets/my/${ticketId}`}
+        className="mt-6 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:border-border hover:text-foreground"
+      >
+        View ticket →
+      </Link>
+    </div>
+  );
+}
+
+function EmailMismatchView({ token }: { token: string }) {
+  return (
+    <div>
+      <p className="font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
+        Wrong account
+      </p>
+      <p className="mt-3 text-sm text-foreground/80">
+        This gift link is restricted to a different email address. Sign in with
+        the intended account to claim it.
+      </p>
+      <div className="mt-6 flex flex-col items-start gap-3">
+        <Link
+          href={`/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`}
+          className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+        >
+          Sign in with another account
+        </Link>
       </div>
+    </div>
+  );
+}
+
+function ClaimView({
+  emailRestricted,
+  err,
+  busy,
+  isAuthenticated,
+  onClaim
+}: {
+  emailRestricted: boolean;
+  err: string | null;
+  busy: boolean;
+  isAuthenticated: boolean;
+  onClaim: () => void;
+}) {
+  return (
+    <div>
+      <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+        Claim this ticket
+      </p>
+      <p className="mt-3 text-sm text-foreground/80">
+        Someone shared this with you. Once you claim it, the ticket binds to
+        your account and the link becomes unusable.
+      </p>
+      {emailRestricted ? (
+        <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+          Email restriction is in effect — only the intended recipient can
+          claim.
+        </p>
+      ) : null}
+
+      {err ? (
+        <p
+          role="alert"
+          className="mt-6 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+        >
+          {err}
+        </p>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={onClaim}
+        disabled={busy}
+        className="mt-8 border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+      >
+        {busy
+          ? "Claiming…"
+          : isAuthenticated
+            ? "Claim ticket"
+            : "Sign in to claim"}
+      </button>
     </div>
   );
 }
