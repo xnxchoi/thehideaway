@@ -10,6 +10,7 @@ import {
   useRef,
   useState
 } from "react";
+import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
 import { TicketMesh } from "./TicketMesh";
 import type { TicketTextureInput } from "./makeTicketTexture";
@@ -31,6 +32,15 @@ export interface Ticket3DProps extends TicketTextureInput {
  */
 export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: inViewRef, inView } = useInView({ threshold: 0.1 });
+
+  const setRefs = useCallback(
+    (node: HTMLDivElement | null) => {
+      containerRef.current = node;
+      inViewRef(node);
+    },
+    [inViewRef]
+  );
 
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [pointerActive, setPointerActive] = useState(false);
@@ -113,7 +123,7 @@ export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
 
   return (
     <div
-      ref={containerRef}
+      ref={setRefs}
       className={cn("relative aspect-[16/9] w-full select-none", className)}
       style={{
         touchAction: "none",
@@ -133,6 +143,7 @@ export function Ticket3D({ className, style, ...textureInput }: Ticket3DProps) {
             pointerActive={pointerActive}
             dragRotation={dragRotation}
             dragging={dragging}
+            cameraActive={inView}
           />
         </Suspense>
       </View>

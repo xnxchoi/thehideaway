@@ -1,6 +1,6 @@
 "use client";
 
-import { RoundedBox } from "@react-three/drei";
+import { PerspectiveCamera, RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -21,6 +21,10 @@ export interface TicketMeshProps extends TicketTextureInput {
   dragRotation: { rx: number; ry: number };
   /** True while a drag is in progress — pauses the idle/hover behaviour. */
   dragging: boolean;
+  /** Toggle `makeDefault` on the camera — true only while this View is in
+   *  the viewport, so multiple Ticket3D instances don't fight for the
+   *  default camera. */
+  cameraActive: boolean;
 }
 
 const TICKET_W = 3.6;
@@ -35,7 +39,8 @@ export function TicketMesh({
   pointer,
   pointerActive,
   dragRotation,
-  dragging
+  dragging,
+  cameraActive
 }: TicketMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -79,6 +84,17 @@ export function TicketMesh({
 
   return (
     <>
+      {/* This View needs its own camera — the project's shared Canvas uses an
+          OrthographicCamera with the default −1..1 frustum, which would clip
+          the ticket. makeDefault flips on only while in viewport. */}
+      <PerspectiveCamera
+        makeDefault={cameraActive}
+        fov={32}
+        position={[0, 0, 6]}
+        near={0.1}
+        far={50}
+      />
+
       {/* Lights are scoped to this <View>'s scene (drei's View system gives
           each view its own scene graph). They won't affect other 3D content. */}
       <ambientLight intensity={0.55} />
