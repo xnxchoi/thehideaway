@@ -30,6 +30,13 @@ const STATUS_LABEL: Record<TicketStatus, string> = {
   canceled: "Canceled"
 };
 
+const formatKRW = (n: number): string =>
+  new Intl.NumberFormat("ko-KR", {
+    style: "currency",
+    currency: "KRW",
+    maximumFractionDigits: 0
+  }).format(n);
+
 const formatLongDate = (d: string | null): string | null => {
   if (!d) return null;
   try {
@@ -93,8 +100,11 @@ export function TicketDetailClient({
       {/* ── Content ─────────────────────────────────────────────── */}
       <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16 xl:gap-20">
-          {/* Metadata rail */}
-          <aside className="lg:sticky lg:top-32 lg:self-start">
+          {/* Metadata rail.
+              Status, price, payment instructions, and the "used /
+              canceled" status copy all live here — the ticket itself
+              is the ticket. */}
+          <aside className="lg:self-start">
             <dl className="space-y-5 border-t border-border/20 pt-8">
               {dateLong ? <Field label="When" value={dateLong} /> : null}
               {eventLocation ? (
@@ -106,7 +116,41 @@ export function TicketDetailClient({
                 value={`${STATUS_LABEL[status]}${checkedIn ? " · Checked in" : ""}`}
                 mono
               />
+              {status === "pending" ? (
+                <Field label="Price" value={formatKRW(ticketPrice)} mono />
+              ) : null}
             </dl>
+
+            {/* Payment instructions — only when pending + unpaid */}
+            {status === "pending" && !paid ? (
+              <div className="mt-8 border-t border-border/20 pt-8">
+                <p className="font-mono text-[10px] tracking-[0.32em] text-muted-foreground/55 uppercase">
+                  Payment
+                </p>
+                {paymentInstructions ? (
+                  <p className="mt-4 font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/80 xl:text-xs">
+                    {paymentInstructions}
+                  </p>
+                ) : (
+                  <p className="mt-4 font-mono text-[11px] leading-relaxed text-muted-foreground/65 xl:text-xs">
+                    The host will reach out with payment details. Your
+                    ticket activates the moment we confirm receipt.
+                  </p>
+                )}
+              </div>
+            ) : null}
+
+            {/* Terminal-state copy — used / canceled */}
+            {status === "used" ? (
+              <p className="mt-8 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+                This ticket has been used. Thanks for being there.
+              </p>
+            ) : status === "canceled" ? (
+              <p className="mt-8 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+                This ticket was canceled. If you think this is a mistake,
+                reach out to the host.
+              </p>
+            ) : null}
 
             {checkedIn && eventSlug ? (
               <Link

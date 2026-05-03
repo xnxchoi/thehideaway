@@ -58,13 +58,6 @@ const padNumber = (n: number | null): string => {
   return String(n).padStart(4, "0");
 };
 
-const formatKRW = (n: number): string =>
-  new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-    maximumFractionDigits: 0
-  }).format(n);
-
 // Inline SVG noise — gives the paper a faint mechanical-press texture.
 const NOISE_BG =
   'url("data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 240 240%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/></filter><rect width=%22240%22 height=%22240%22 filter=%22url(%23n)%22 opacity=%220.45%22/></svg>")';
@@ -85,15 +78,12 @@ const STATUS_TINT: Record<TicketStatus, string> = {
 export function TicketCard({
   ticketNumber,
   status,
-  paid,
   checkedIn,
   eventName,
   eventDate,
   eventLocation,
   holderName,
-  checkInUrl,
-  ticketPrice,
-  paymentInstructions
+  checkInUrl
 }: TicketCardProps) {
   const date = formatDate(eventDate);
   const time = formatTime(eventDate);
@@ -130,22 +120,19 @@ export function TicketCard({
 
         {/* Header */}
         <header className="relative px-7 pt-9 pb-7">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span
-                className="block font-mono text-[9px] uppercase"
-                style={{ letterSpacing: "0.32em", opacity: 0.5 }}
-              >
-                Admit One
-              </span>
-              <span
-                className="mt-1 block font-mono text-[11px]"
-                style={{ letterSpacing: "0.18em" }}
-              >
-                No. {num}
-              </span>
-            </div>
-            <StatusFlag status={status} paid={paid} checkedIn={checkedIn} />
+          <div>
+            <span
+              className="block font-mono text-[9px] uppercase"
+              style={{ letterSpacing: "0.32em", opacity: 0.5 }}
+            >
+              Admit One
+            </span>
+            <span
+              className="mt-1 block font-mono text-[11px]"
+              style={{ letterSpacing: "0.18em" }}
+            >
+              No. {num}
+            </span>
           </div>
 
           <h1
@@ -164,15 +151,14 @@ export function TicketCard({
           </dl>
         </header>
 
-        <Perforation />
-
-        {/* Body: QR / payment / status copy */}
-        <section
-          className="relative flex flex-col items-center px-7 pt-9 pb-9"
-          style={{ minHeight: 260 }}
-        >
-          {status === "active" && checkInUrl ? (
-            <>
+        {/* Body: QR only — and only when the ticket is active. Status
+            copy ("awaiting payment", "used", "canceled"), the price,
+            and payment instructions all live in the page's metadata
+            column now. The ticket is the ticket regardless of state. */}
+        {status === "active" && checkInUrl ? (
+          <>
+            <Perforation />
+            <section className="relative flex flex-col items-center px-7 pt-9 pb-9">
               <div
                 className="rounded-[2px] p-3"
                 style={{
@@ -190,65 +176,15 @@ export function TicketCard({
                   includeMargin={false}
                 />
               </div>
-              <p
-                className="mt-5 font-mono text-[9px] uppercase"
-                style={{ letterSpacing: "0.32em", opacity: 0.5 }}
-              >
-                Scan at the door
-              </p>
-            </>
-          ) : status === "pending" ? (
-            <>
-              <p
-                className="font-light tracking-tight"
-                style={{ fontSize: "1.6rem", lineHeight: 1.1 }}
-              >
-                {formatKRW(ticketPrice)}
-              </p>
-              <p
-                className="mt-2 font-mono text-[9px] uppercase"
-                style={{ letterSpacing: "0.32em", opacity: 0.5 }}
-              >
-                Awaiting payment
-              </p>
-              {paymentInstructions ? (
-                <p
-                  className="mt-6 text-center font-mono text-[11px] leading-relaxed whitespace-pre-line"
-                  style={{ opacity: 0.78, maxWidth: "32ch" }}
-                >
-                  {paymentInstructions}
-                </p>
-              ) : (
-                <p
-                  className="mt-6 text-center font-mono text-[11px] leading-relaxed"
-                  style={{ opacity: 0.65, maxWidth: "30ch" }}
-                >
-                  The host will reach out with payment details. Your ticket
-                  activates the moment we confirm receipt.
-                </p>
-              )}
-            </>
-          ) : status === "used" ? (
-            <p
-              className="font-mono text-[11px] uppercase"
-              style={{ letterSpacing: "0.18em", opacity: 0.45 }}
-            >
-              This ticket has been used
-            </p>
-          ) : status === "canceled" ? (
-            <p
-              className="font-mono text-[11px] uppercase"
-              style={{ letterSpacing: "0.18em", opacity: 0.45 }}
-            >
-              This ticket is canceled
-            </p>
-          ) : null}
-        </section>
+            </section>
+          </>
+        ) : null}
 
         <Perforation />
 
-        {/* Footer / stub */}
-        <footer className="relative grid grid-cols-2 gap-3 px-7 py-5">
+        {/* Footer / stub — Holder only. Status duplicated the page's
+            metadata column. */}
+        <footer className="relative px-7 py-5">
           <div>
             <span
               className="block font-mono text-[9px] uppercase"
@@ -258,23 +194,6 @@ export function TicketCard({
             </span>
             <span className="mt-1 block text-sm tracking-tight">
               {holderName ?? "—"}
-            </span>
-          </div>
-          <div className="text-right">
-            <span
-              className="block font-mono text-[9px] uppercase"
-              style={{ letterSpacing: "0.32em", opacity: 0.4 }}
-            >
-              Status
-            </span>
-            <span
-              className="mt-1 block font-mono text-[11px] uppercase"
-              style={{
-                letterSpacing: "0.18em",
-                color: STATUS_TINT[status]
-              }}
-            >
-              {status}
             </span>
           </div>
         </footer>
@@ -331,39 +250,6 @@ function Field({ label, children }: FieldProps) {
         {label}
       </dt>
       <dd className="mt-1 font-mono text-[11px]">{children}</dd>
-    </div>
-  );
-}
-
-interface StatusFlagProps {
-  status: TicketStatus;
-  paid: boolean;
-  checkedIn: boolean;
-}
-
-function StatusFlag({ status, paid, checkedIn }: StatusFlagProps) {
-  const label = checkedIn
-    ? "On site"
-    : !paid && status === "pending"
-      ? "Hold"
-      : status;
-  const tint = checkedIn
-    ? "oklch(0.45 0.16 150)"
-    : (STATUS_TINT[status] ?? PAPER_INK);
-  return (
-    <div
-      className="rounded-full border px-3 py-1"
-      style={{
-        borderColor: tint,
-        color: tint
-      }}
-    >
-      <span
-        className="font-mono text-[9px] uppercase"
-        style={{ letterSpacing: "0.22em" }}
-      >
-        {label}
-      </span>
     </div>
   );
 }
