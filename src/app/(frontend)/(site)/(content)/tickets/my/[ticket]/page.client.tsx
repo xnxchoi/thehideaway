@@ -65,7 +65,10 @@ export function TicketDetailClient({
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
       {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
+      {/* Offset to clear the global site header (5.5rem mobile / 8rem
+          desktop) — same convention as me/library/saved. Without the
+          offset the sticky title slides under the global header. */}
+      <header className="sticky top-[5.5rem] z-20 border-b border-border/30 bg-background/90 backdrop-blur-md lg:top-[8rem]">
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
