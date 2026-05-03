@@ -209,108 +209,107 @@ function drawBodyFront(
   ctx: CanvasRenderingContext2D,
   input: TicketTextureInput
 ): void {
-  const innerR = STUB_X - 56;
+  const innerL = PAD + 16;
+  const innerR = STUB_X - 64;
   const meta = parseDate(input.date);
 
   ctx.textBaseline = "alphabetic";
 
-  // ── Top rail: H monogram (foil) + wordmark (left) + ADMIT ONE (right) ──
-  // The H is the body's foil anchor. Bumped to 88px so it carries gravity
-  // matching the seal — the previous 64px was timid corner ornament.
-  ctx.fillStyle = FOIL_GOLD;
-  ctx.font = `400 92px ${FONT_SERIF}`;
+  // ── Top rail ───────────────────────────────────────────────────────────
+  // Wordmark (left) + ADMIT ONE (right). The H foil monogram is gone from
+  // the corner — it was reading as a stray serif glyph at small scale.
+  // The seal carries the brand mark; the wordmark carries the name.
+  ctx.fillStyle = INK;
+  ctx.font = `700 38px ${FONT_MONO}`;
   ctx.textAlign = "left";
-  ctx.fillText("H", PAD, PAD + 78);
-
-  ctx.fillStyle = INK_SOFT;
-  ctx.font = `600 22px ${FONT_MONO}`;
-  drawTracked(ctx, "THE  HIDEAWAY", PAD + 90, PAD + 50, 6);
+  drawTracked(ctx, "THE  HIDEAWAY", innerL, PAD + 56, 8);
 
   ctx.fillStyle = INK_MID;
-  ctx.font = `700 24px ${FONT_MONO}`;
+  ctx.font = `700 38px ${FONT_MONO}`;
   ctx.textAlign = "right";
-  drawTracked(ctx, "ADMIT  ONE", innerR, PAD + 50, 6, "right");
+  drawTracked(ctx, "ADMIT  ONE", innerR, PAD + 56, 8, "right");
 
   // Hairline rule below the top rail.
   ctx.strokeStyle = INK_HAIR;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(PAD, PAD + 108);
-  ctx.lineTo(innerR, PAD + 108);
+  ctx.moveTo(innerL, PAD + 88);
+  ctx.lineTo(innerR, PAD + 88);
   ctx.stroke();
 
-  // ── Editorial date block ───────────────────────────────────────────────
-  // Day numerals in display serif (Playfair Display / Bodoni). The serif
-  // is the romantic moment in an otherwise mono-caps disciplined card.
-  ctx.fillStyle = INK;
-  ctx.font = `300 280px ${FONT_SERIF}`;
+  // ── Date block ────────────────────────────────────────────────────────
+  // Restructured: a stately three-line stack — DAY OF WEEK (mono caps) /
+  // MONTH (large serif) / DAY · YEAR (large serif). Always pad day to
+  // two digits ("07" not "7") so the numerals never look like an error.
+  // The previous 280px solo-digit was visually broken for single-digit
+  // days; this stack always has consistent gravity.
+  ctx.fillStyle = INK_MID;
+  ctx.font = `600 30px ${FONT_MONO}`;
   ctx.textAlign = "left";
-  const dayStr = meta.day || "—";
-  ctx.fillText(dayStr, PAD - 6, 460);
+  drawTracked(ctx, meta.dowCaps || "DAY", innerL, 240, 8);
 
-  // Month / day-of-week / year — mono caps, anchored beside the numerals.
-  const dayWidth = ctx.measureText(dayStr).width;
-  const gridX = PAD - 6 + dayWidth + 36;
+  ctx.fillStyle = INK;
+  ctx.font = `400 156px ${FONT_SERIF}`;
+  ctx.fillText(meta.monthCaps || "MONTH", innerL - 4, 380);
 
-  ctx.fillStyle = INK_MID;
-  ctx.font = `700 36px ${FONT_MONO}`;
-  drawTracked(ctx, meta.monthCaps, gridX, 280, 6);
+  // Day · Year line — day padded to 2 digits, dot in vermilion to anchor
+  // the red against the rest of the body type.
+  const dayPadded = (meta.day || "—").padStart(2, "0");
+  ctx.fillStyle = INK;
+  ctx.font = `400 96px ${FONT_SERIF}`;
+  const dayText = dayPadded;
+  ctx.fillText(dayText, innerL - 4, 480);
+  const dayW = ctx.measureText(dayText).width;
 
-  ctx.fillStyle = INK_SOFT;
-  ctx.font = `500 22px ${FONT_MONO}`;
-  drawTracked(ctx, meta.dowCaps, gridX, 318, 6);
-
-  ctx.fillStyle = INK_MID;
-  ctx.font = `400 48px ${FONT_MONO}`;
-  ctx.fillText(meta.year || "", gridX, 410);
-
-  // Thin vermilion accent rule beneath the date numerals — a second
-  // place for the brand red beyond the stamp. Doubles the chromatic
-  // commitment on the front without becoming a "red ticket".
-  ctx.strokeStyle = STAMP_RED;
-  ctx.lineWidth = 3;
+  // Vermilion separator dot — the brand red appears in the data, not just
+  // in the seal.
+  ctx.fillStyle = STAMP_RED;
   ctx.beginPath();
-  ctx.moveTo(PAD - 4, 478);
-  ctx.lineTo(PAD - 4 + dayWidth, 478);
-  ctx.stroke();
+  ctx.arc(innerL - 4 + dayW + 26, 462, 7, 0, Math.PI * 2);
+  ctx.fill();
 
-  // ── Event name — light display serif italic ───────────────────────────
-  // The single italic line on the whole card. Typographic centrepiece.
+  ctx.fillStyle = INK_MID;
+  ctx.font = `400 96px ${FONT_SERIF}`;
+  ctx.fillText(meta.year || "", innerL - 4 + dayW + 50, 480);
+
+  // ── Event name — italic display serif, the second anchor ──────────────
+  // Bumped to 104px so it competes with the date block as a co-anchor.
+  // 78px italic was timid against 280px serif numerals — the old composition
+  // had no clear hierarchy because both were undersized.
   ctx.fillStyle = INK;
-  ctx.font = `italic 300 78px ${FONT_SERIF}`;
-  wrapText(ctx, input.eventName, PAD, 660, innerR - PAD, 92, 2);
+  ctx.font = `italic 300 104px ${FONT_SERIF}`;
+  wrapText(ctx, input.eventName, innerL, 700, innerR - innerL - 320, 116, 2);
 
-  // Bilingual eyebrow — Korean 입장권 (admission ticket) paired with the
-  // English equivalent in tracked mono caps. The Hideaway is bilingual
-  // by mandate; the body now declares both languages, not just the seal.
-  ctx.fillStyle = INK_SOFT;
-  ctx.font = `500 22px ${FONT_KR}`;
+  // Bilingual eyebrow — bumped from 22/18 → 30/26. At previous scale this
+  // line vanished after texture downsample.
+  ctx.fillStyle = INK_MID;
+  ctx.font = `500 30px ${FONT_KR}`;
   ctx.textAlign = "left";
-  ctx.fillText("입장권", PAD, 818);
+  ctx.fillText("입장권", innerL, 820);
 
   ctx.fillStyle = INK_SOFT;
-  ctx.font = `600 18px ${FONT_MONO}`;
-  drawTracked(ctx, "·   ADMISSION  TICKET", PAD + 76, 816, 4);
+  ctx.font = `600 26px ${FONT_MONO}`;
+  drawTracked(ctx, "·   ADMISSION  TICKET", innerL + 100, 818, 5);
 
-  // ── Foot strip: time · venue ──────────────────────────────────────────
+  // ── Foot strip ────────────────────────────────────────────────────────
   ctx.strokeStyle = INK_HAIR;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(PAD, H - PAD - 60);
-  ctx.lineTo(innerR, H - PAD - 60);
+  ctx.moveTo(innerL, H - PAD - 70);
+  ctx.lineTo(innerR, H - PAD - 70);
   ctx.stroke();
 
-  ctx.fillStyle = INK_MID;
-  ctx.font = `700 28px ${FONT_MONO}`;
+  ctx.fillStyle = INK;
+  ctx.font = `700 36px ${FONT_MONO}`;
   ctx.textAlign = "left";
   const venue = (input.location ?? "VENUE").toUpperCase();
   const footLine = meta.timeCaps ? `${meta.timeCaps}    ·    ${venue}` : venue;
-  drawTracked(ctx, footLine, PAD, H - PAD - 18, 6);
+  drawTracked(ctx, footLine, innerL, H - PAD - 22, 8);
 
   ctx.fillStyle = INK_SOFT;
-  ctx.font = `400 22px ${FONT_MONO}`;
+  ctx.font = `400 28px ${FONT_MONO}`;
   ctx.textAlign = "right";
-  ctx.fillText("hideawayseoul.com", innerR, H - PAD - 18);
+  ctx.fillText("hideawayseoul.com", innerR, H - PAD - 22);
 }
 
 /**
