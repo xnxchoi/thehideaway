@@ -1,18 +1,15 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
-import { Ticket3D } from "@/components/UX/Ticket/Ticket3D";
+import { TicketPaper } from "@/components/UX/Ticket/TicketPaper";
 import {
   StatusChip,
   type TicketStatus
 } from "@/components/UX/Ticket/StatusChip";
 import { TicketQR } from "@/components/UX/Ticket/TicketQR";
 import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
-import { TicketSpotlight } from "@/components/UX/Ticket/TicketSpotlight";
-import { RP_Btn } from "@/components/core/Button";
-import { ticketFontVariables } from "@/components/UX/Ticket/Ticket3D/fonts";
+import { ticketFontVariables } from "@/components/UX/Ticket/fonts";
 
 interface Props {
   ticketId: string;
@@ -44,17 +41,36 @@ const formatLongDate = (d: string | null): string | null => {
   }
 };
 
-const formatShortDate = (d: string | null): string | null => {
+/**
+ * Compact eyebrow for the ticket paper — `"THU · 7 MAY 2026"`.
+ * Suppressed entirely (returns null) when the date doesn't parse so
+ * the ticket doesn't print "INVALID DATE" on its face.
+ */
+const formatTicketEyebrow = (d: string | null): string | null => {
   if (!d) return null;
-  try {
-    return new Date(d).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    });
-  } catch {
-    return d;
-  }
+  const parsed = new Date(d);
+  if (isNaN(parsed.getTime())) return null;
+  const dow = parsed
+    .toLocaleString("en-US", { weekday: "short" })
+    .toUpperCase();
+  const day = parsed.getDate();
+  const month = parsed
+    .toLocaleString("en-US", { month: "short" })
+    .toUpperCase();
+  const year = parsed.getFullYear();
+  return `${dow} · ${day} ${month} ${year}`;
+};
+
+/** "20:00" if the source date carries a real time, otherwise null. */
+const formatTicketTime = (d: string | null): string | null => {
+  if (!d) return null;
+  const parsed = new Date(d);
+  if (isNaN(parsed.getTime())) return null;
+  if (parsed.getHours() === 0 && parsed.getMinutes() === 0) return null;
+  return parsed.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 };
 
 const formatKRW = (n: number): string =>
@@ -64,6 +80,23 @@ const formatKRW = (n: number): string =>
     maximumFractionDigits: 0
   }).format(n);
 
+/**
+ * Ticket detail page.
+ *
+ * **Architectural rule (per the brand owner):**
+ *   The visual artifact (`TicketPaper`) is *purely decorative* — bone
+ *   paper, vermilion seal, brand vocabulary only. No event/date/holder/
+ *   serial data is stamped onto it.
+ *
+ *   The actual information is presented as editorial typography on the
+ *   page proper: the event name as the page h1, date/location as a
+ *   tracked-caps eyebrow, ticket number/holder/price/status as a
+ *   metadata grid, and the QR or payment panel in its own column.
+ *
+ *   This separation keeps the ticket as a brand object that always looks
+ *   the same, while the data lives in the page where editorial typography
+ *   can do its job.
+ */
 export function TicketDetailClient({
   ticketId,
   ticketNumber,
@@ -81,82 +114,32 @@ export function TicketDetailClient({
 }: Props) {
   const num = String(ticketNumber ?? 0).padStart(4, "0");
   const dateLong = formatLongDate(eventDate);
-  const dateShort = formatShortDate(eventDate);
-
-  const [flipped, setFlipped] = useState(false);
-  const toggleFlip = useCallback(() => setFlipped((v) => !v), []);
-
-  const [focused, setFocused] = useState(false);
+  const ticketEyebrow = formatTicketEyebrow(eventDate);
+  const ticketTime = formatTicketTime(eventDate);
 
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
-      {/*
-        Apply the ticket's webfont variables to the whole page subtree.
-        next/font/google injects @font-face rules but the canvas2D draw
-        in makeTicketTexture only sees them once they're requested by a
-        real DOM node. The wrapper guarantees that.
-      */}
+      {/* The font variables wrapper supplies Playfair Display for the
+          ticket paper's editorial type and seal monogram. */}
       <div className={ticketFontVariables}>
-        {/* ── Hero stage ────────────────────────────────────────────── */}
-        {/*
-        Wide enough that the ticket reads as the page's artifact, but not
-        so wide it dominates. min(64rem, 100%) lands at ~50% of a 1920px
-        screen, ~60% of a 16" laptop. Earlier 110rem was overwhelming.
-      */}
-        <section className="px-6 pt-14 pb-10 sm:px-10 xl:px-12 xl:pt-20 xl:pb-14">
-          <div className="mx-auto" style={{ width: "min(76rem, 100%)" }}>
-            <Ticket3D
+        {/* ── Hero stage — the personalised artifact ───────────────────── */}
+        <section className="px-6 pt-14 pb-12 sm:px-10 xl:px-12 xl:pt-20 xl:pb-16">
+          <div className="mx-auto" style={{ width: "min(58rem, 100%)" }}>
+            <TicketPaper
               eventName={eventName}
               ticketNumber={ticketNumber}
-              date={dateShort}
+              dateLabel={ticketEyebrow}
               location={eventLocation}
-              flipped={flipped}
-              onFlip={toggleFlip}
+              time={ticketTime}
+              holderName={holderName}
             />
-
-            {/*
-            One subtle affordance — spotlight only, anchored bottom-right.
-            The "Tap to flip" label was removed: luxe doesn't label its
-            interactions. The flip is rewarded by exploration, not signage.
-          */}
-            <div
-              className="mx-auto mt-5 flex items-center justify-end px-2 xl:mt-6"
-              style={{ width: "100%" }}
-            >
-              <RP_Btn
-                onClick={() => setFocused(true)}
-                aria-label="Open spotlight view"
-                className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:text-foreground xl:text-[11px]"
-              >
-                <span aria-hidden>⤢</span>
-                Spotlight
-              </RP_Btn>
-            </div>
           </div>
         </section>
 
-        {/* ── Info ─────────────────────────────────────────────────── */}
-        {/*
-        12-column editorial grid below the hero.
-          - Title block: cols 1–6 (desktop), full width on mobile.
-          - Status panel (QR / payment / terminal note): cols 7–9.
-          - Metadata + actions: cols 10–12.
-        Each column is its own scannable zone — the eye doesn't have to
-        pinball between sticky and scrolling areas like the old layout.
-      */}
+        {/* ── Information ──────────────────────────────────────────────── */}
         <section className="mx-auto w-full max-w-7xl px-6 pb-32 xl:px-10 xl:pb-40">
-          {/*
-          Asymmetric 12-col editorial grid:
-            cols 1–7  → title block (room for long event names to breathe)
-            cols 9–11 → status panel (offset start at col 9, never col 7,
-                        so there's a true ventilation gap between zones —
-                        symmetric 6/3/3 reads as default-ish)
-            cols 1–4  → metadata + actions (anchored under the title)
-          Field block lives on its own row beneath the title — keeps it
-          out of the status panel's vertical column.
-        */}
           <div className="grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12 lg:gap-x-16 xl:gap-x-20">
-            {/* Title block */}
+            {/* Title block — cols 1–7 */}
             <header className="lg:col-span-7">
               <StatusChip status={status} checkedIn={checkedIn} />
               <h1 className="mt-5 text-3xl leading-[1.02] font-light tracking-tight text-balance xl:text-6xl 2xl:text-7xl">
@@ -170,7 +153,7 @@ export function TicketDetailClient({
               ) : null}
             </header>
 
-            {/* Status panel — offset to start at col 9 for a real gutter */}
+            {/* Status panel — cols 9–11 (real gutter, no symmetric 6/3/3) */}
             <div className="lg:col-span-3 lg:col-start-9">
               {status === "active" && checkInUrl ? (
                 <div>
@@ -225,7 +208,7 @@ export function TicketDetailClient({
               ) : null}
             </div>
 
-            {/* Metadata + actions — anchored under the title block */}
+            {/* Metadata + actions — cols 1–4 under the title */}
             <div className="lg:col-span-4 lg:col-start-1">
               <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <Field label="Number" value={`#${num}`} mono />
@@ -258,24 +241,6 @@ export function TicketDetailClient({
           eyebrow={`Ticket · No. ${num}`}
           title={eventName}
           rightAction={{ label: "← All tickets", href: "/tickets/my" }}
-        />
-
-        <TicketSpotlight
-          open={focused}
-          onClose={() => setFocused(false)}
-          ticket={{
-            eventName,
-            ticketNumber,
-            dateShort,
-            dateLong,
-            location: eventLocation,
-            status,
-            checkedIn,
-            checkInUrl,
-            ticketPrice,
-            flipped,
-            onFlip: toggleFlip
-          }}
         />
       </div>
     </RPage>
