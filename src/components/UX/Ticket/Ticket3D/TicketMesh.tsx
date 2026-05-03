@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Environment,
-  Lightformer,
-  PerspectiveCamera
-} from "@react-three/drei";
+import { Environment, Lightformer, PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -30,9 +26,11 @@ const TICKET_H = 2.3;
 const TICKET_D = 0.06;
 const STUB_OFFSET = 0.6;
 const NOTCH_R = 0.07;
-// Front/back planes sit a hair outside the body's caps so depth wins
-// without z-fighting.
-const PLANE_OFFSET = 0.0008;
+const BEVEL_THICKNESS = 0.008;
+// Front/back planes must clear the body's BEVEL extrusion (which extends
+// the geometry past ±D/2 by bevelThickness). With offset > bevelThickness,
+// the planes sit in front of the bevelled cap and aren't occluded.
+const PLANE_OFFSET = BEVEL_THICKNESS + 0.006;
 
 /**
  * Counter-clockwise outer perimeter for the ticket silhouette: a
@@ -100,7 +98,7 @@ export function TicketMesh({
       bevelEnabled: true,
       bevelSegments: 3,
       bevelSize: 0.012,
-      bevelThickness: 0.008,
+      bevelThickness: BEVEL_THICKNESS,
       curveSegments: 16
     });
     body.translate(0, 0, -TICKET_D / 2);

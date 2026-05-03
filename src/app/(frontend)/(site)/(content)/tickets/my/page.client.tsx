@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { RP_Btn } from "@/components/core/Button";
-import { Ticket3D } from "@/components/UX/Ticket/Ticket3D";
+import { TicketStub } from "@/components/UX/Ticket/TicketStub";
 import {
   StatusChip,
   type TicketStatus
@@ -136,21 +136,32 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
         exit={{ opacity: 0, y: -16 }}
         transition={{ type: "spring", bounce: 0.15, duration: 0.45 }}
         className="flex w-full flex-col items-center gap-8"
-        style={{ width: "min(52rem, 100%)" }}
+        style={{ width: "min(36rem, 100%)" }}
       >
-        {/* The 3D artifact — purely decorative in the pager. Interaction
-            (hover-tilt, click-to-flip) is reserved for the single-ticket
-            spotlight on the detail page; in a multi-instance view it would
-            be distracting on PC and hostile on mobile. */}
-        <Ticket3D
-          interactive={false}
-          eventName={ev?.name ?? "Event"}
-          ticketNumber={ticket.ticket_number ?? null}
-          date={dateShort}
-          location={ev?.location ?? null}
-        />
+        {/* HTML paper-stub visual — quieter, more list-appropriate than
+            the 3D card. Per the user: 3D card is reserved for the
+            single-ticket detail/spotlight view. */}
+        <ul
+          className="w-full"
+          style={
+            {
+              ["--ticket-page-bg" as string]: "var(--background)"
+            } as React.CSSProperties
+          }
+        >
+          <TicketStub
+            href={`/tickets/my/${ticket.id}`}
+            ticketNumber={ticket.ticket_number ?? null}
+            status={status}
+            checkedIn={Boolean(ticket.checked_in)}
+            eventName={ev?.name ?? "Event"}
+            eventDate={ev?.date ?? null}
+            eventLocation={ev?.location ?? null}
+            index={0}
+          />
+        </ul>
 
-        {/* Information block — typography-driven, lives outside the card. */}
+        {/* Information block sits below the paper stub. */}
         <div className="flex w-full flex-col items-center gap-5 text-center">
           <StatusChip status={status} checkedIn={Boolean(ticket.checked_in)} />
 
