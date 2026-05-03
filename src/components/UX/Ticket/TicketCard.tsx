@@ -96,7 +96,7 @@ export function TicketCard({
       transition={{ type: "spring", bounce: 0.18, duration: 0.55 }}
       aria-label={`Ticket #${num} for ${eventName}`}
       className="relative select-none"
-      style={{ color: PAPER_INK, width: "min(28rem, 100%)" }}
+      style={{ color: PAPER_INK, width: "min(24rem, 100%)" }}
     >
       {/* Paper card */}
       <div
@@ -151,34 +151,44 @@ export function TicketCard({
           </dl>
         </header>
 
-        {/* Body: QR only — and only when the ticket is active. Status
-            copy ("awaiting payment", "used", "canceled"), the price,
-            and payment instructions all live in the page's metadata
-            column now. The ticket is the ticket regardless of state. */}
-        {status === "active" && checkInUrl ? (
-          <>
-            <Perforation />
-            <section className="relative flex flex-col items-center px-7 pt-9 pb-9">
-              <div
-                className="rounded-[2px] p-3"
-                style={{
-                  background: "white",
-                  boxShadow:
-                    "inset 0 0 0 1px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.6)"
-                }}
-              >
-                <QRCodeSVG
-                  value={checkInUrl}
-                  size={180}
-                  level="M"
-                  bgColor="#ffffff"
-                  fgColor="#1a1410"
-                  includeMargin={false}
-                />
-              </div>
-            </section>
-          </>
-        ) : null}
+        <Perforation />
+
+        {/* Body — always rendered with consistent height so the card
+            keeps a portrait ticket silhouette regardless of state.
+            Active tickets show the QR; other states show empty paper.
+            Status copy, price, payment instructions live on the page's
+            metadata column. */}
+        <section
+          className="relative flex flex-col items-center justify-center px-7 py-9"
+          style={{ minHeight: 240 }}
+        >
+          {status === "active" && checkInUrl ? (
+            <div
+              className="rounded-[2px] p-3"
+              style={{
+                background: "white",
+                boxShadow:
+                  "inset 0 0 0 1px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.6)"
+              }}
+            >
+              <QRCodeSVG
+                value={checkInUrl}
+                size={180}
+                level="M"
+                bgColor="#ffffff"
+                fgColor="#1a1410"
+                includeMargin={false}
+              />
+            </div>
+          ) : (
+            // Empty paper — keeps the ticket's silhouette without
+            // narrating its state. The page proper handles the why.
+            <div
+              aria-hidden="true"
+              className="h-[180px] w-[180px]"
+            />
+          )}
+        </section>
 
         <Perforation />
 
