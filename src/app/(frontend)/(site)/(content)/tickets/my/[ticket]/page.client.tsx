@@ -104,7 +104,7 @@ export function TicketDetailClient({
         screen, ~60% of a 16" laptop. Earlier 110rem was overwhelming.
       */}
         <section className="px-6 pt-14 pb-10 sm:px-10 xl:px-12 xl:pt-20 xl:pb-14">
-          <div className="mx-auto" style={{ width: "min(64rem, 100%)" }}>
+          <div className="mx-auto" style={{ width: "min(76rem, 100%)" }}>
             <Ticket3D
               eventName={eventName}
               ticketNumber={ticketNumber}
