@@ -434,4 +434,3 @@ function Stamp({ label, tone, rotate, large }: StampProps) {
     </div>
   );
 }
-

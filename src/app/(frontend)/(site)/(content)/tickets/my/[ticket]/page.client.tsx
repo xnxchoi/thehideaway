@@ -65,7 +65,11 @@ export function TicketDetailClient({
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
       {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="sticky top-[5.5rem] z-20 border-b border-border/30 bg-background/90 backdrop-blur-md lg:top-[8rem]">
+      {/* Static, not sticky — sticky covered the scrolled ticket content
+          (the vertical card is taller than the viewport, so the top of
+          the card was disappearing behind the sticky bar). Lets the
+          header scroll away with everything else. */}
+      <header className="border-b border-border/30">
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
