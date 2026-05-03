@@ -1,6 +1,9 @@
 "use client";
 
-import { motion } from "motion/react";
+// LazyMotion wraps the app at the provider level, which means top-level
+// `motion.*` components break tree-shaking. Use the lightweight `m.*`
+// alias from motion/react-m instead.
+import * as m from "motion/react-m";
 import { QRCodeSVG } from "qrcode.react";
 
 export type TicketStatus = "pending" | "active" | "used" | "canceled";
@@ -99,7 +102,7 @@ export function TicketCard({
   const num = padNumber(ticketNumber);
 
   return (
-    <motion.article
+    <m.article
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", bounce: 0.18, duration: 0.55 }}
@@ -314,7 +317,7 @@ export function TicketCard({
           transform: "translateY(18px) scale(0.96)"
         }}
       />
-    </motion.article>
+    </m.article>
   );
 }
 
@@ -436,4 +439,3 @@ function Stamp({ label, tone, rotate, large }: StampProps) {
     </div>
   );
 }
-
