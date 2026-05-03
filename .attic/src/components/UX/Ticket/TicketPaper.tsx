@@ -362,9 +362,7 @@ function Notch({ position }: { position: "top" | "bottom" }) {
         top: position === "top" ? 0 : undefined,
         bottom: position === "bottom" ? 0 : undefined,
         transform:
-          position === "top"
-            ? "translate(-50%, -50%)"
-            : "translate(-50%, 50%)",
+          position === "top" ? "translate(-50%, -50%)" : "translate(-50%, 50%)",
         background: "var(--background, #0a0a0a)",
         boxShadow: "inset 0 0 0 1px rgba(14,10,6,0.22)"
       }}
