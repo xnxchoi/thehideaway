@@ -175,7 +175,7 @@ export function TicketMesh({
       <PerspectiveCamera
         makeDefault={cameraActive}
         fov={30}
-        position={[0, 0, 4.8]}
+        position={[0, 0, 5.6]}
         near={0.1}
         far={50}
       />

@@ -7,7 +7,7 @@ export interface TicketTextureInput {
   location: string | null;
 }
 
-// Texture proportions match the geometry's 2:1 silhouette (see TicketMesh).
+// Texture proportions match the geometry's 2:1 silhouette in TicketMesh.
 // STUB_RATIO corresponds to the geometric perforation x-position so the
 // printed dots line up with the notches cut into the mesh outline.
 const W = 2400;
@@ -16,8 +16,8 @@ const STUB_RATIO = 0.7;
 const STUB_X = Math.round(W * STUB_RATIO);
 const PAD = 96;
 
-const INK = "rgba(20, 16, 12, 0.95)";
-const INK_MID = "rgba(20, 16, 12, 0.7)";
+const INK = "rgba(20, 16, 12, 0.96)";
+const INK_MID = "rgba(20, 16, 12, 0.72)";
 const INK_SOFT = "rgba(20, 16, 12, 0.5)";
 const INK_GHOST = "rgba(20, 16, 12, 0.18)";
 const PAPER_TINT = "rgba(20, 16, 12, 0.04)";
@@ -30,13 +30,27 @@ const FONT_MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 const FONT_SERIF = "Georgia, 'Times New Roman', serif";
 
 /**
- * Generate the canvas texture for the ticket FRONT.
+ * Front of the ticket.
  *
- * Layout — boarding-pass-inspired editorial. Left section is the
- * informational body, right section is the tear-off stub with the
- * ticket number. Hierarchy goes: small brand mark → small eyebrow →
- * BIG date block → time → place → bottom rule with brand wordmark.
- * The big numerals on the stub are the visual anchor.
+ * Layout reference set:
+ *   - Anders Bakken's Munch Museum tickets (display numerals on the stub,
+ *     ink-stamp restraint).
+ *   - Massimo Vignelli's transit tickets (hairline grid, Helvetica caps,
+ *     ruthless letter-spacing).
+ *   - MoMA's typographic restraint (single-ink discipline, generous
+ *     margins, hairline rules between zones).
+ *   - Wayne Nieves' letterpress ADMIT-ONE revival (the cinema-ticket
+ *     vocabulary treated with reverence).
+ *   - Cereal magazine event collateral (light serif italic for the
+ *     event name, paired against mono caps for everything else — gives
+ *     the layout some romance against the mono discipline).
+ *
+ * Body: editorial column. Big day numerals as the visual anchor. Month
+ * caps + day-of-week + year as a tight gridded data block beside it.
+ * Event name in light serif italic (the only italic on the whole card).
+ * Time and venue as a mono-caps strip across the foot.
+ *
+ * Stub: just the serial. Massive numerals. No competition.
  */
 export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
   if (typeof document === "undefined") {
@@ -53,22 +67,12 @@ export function makeTicketTexture(input: TicketTextureInput): THREE.Texture {
   drawBodyFront(ctx, input);
   drawStubFront(ctx, input.ticketNumber);
 
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 16;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipMapLinearFilter;
-  tex.needsUpdate = true;
-  return tex;
+  return finalize(c);
 }
 
 /**
- * Generate the canvas texture for the ticket BACK.
- *
- * Intentionally quieter than the front. Holds the brand mark as the
- * anchor, a few lines of mono-caps boilerplate ("This ticket admits
- * one. Non-transferable once activated."), and a repeating ADMIT ONE
- * strip. The stub side mirrors the front's number for continuity.
+ * Back of the ticket. Quiet, identity-only — the mark + boilerplate.
+ * No data — the back doesn't compete with the front for attention.
  */
 export function makeTicketBackTexture(
   input: TicketTextureInput
@@ -87,6 +91,12 @@ export function makeTicketBackTexture(
   drawBodyBack(ctx, input);
   drawStubBack(ctx, input.ticketNumber);
 
+  return finalize(c);
+}
+
+// ── Shared scaffolding ────────────────────────────────────────────────────
+
+function finalize(c: HTMLCanvasElement): THREE.Texture {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 16;
@@ -96,10 +106,8 @@ export function makeTicketBackTexture(
   return tex;
 }
 
-// ── Shared ────────────────────────────────────────────────────────────────
-
 function drawPaper(ctx: CanvasRenderingContext2D): void {
-  // Cool pearl base with a faint vignette so the edges feel hand-laid.
+  // Cool pearl base with a faint vignette so edges feel hand-laid.
   const bg = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, H);
   bg.addColorStop(0, "#f6f4ee");
   bg.addColorStop(1, "#e2e0d8");
@@ -112,7 +120,7 @@ function drawPaper(ctx: CanvasRenderingContext2D): void {
     ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
   }
 
-  // Stub gets a faintly different tint so the two sections read distinctly.
+  // Stub gets a faintly different tint so the two zones read distinctly.
   ctx.fillStyle = PAPER_TINT;
   ctx.fillRect(STUB_X, 0, W - STUB_X, H);
 
@@ -132,7 +140,6 @@ function drawPerforation(ctx: CanvasRenderingContext2D): void {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Heavier dots layered on top for that real-ticket feel.
   ctx.fillStyle = PERF_INK;
   for (let y = 64; y < H - 64; y += 26) {
     ctx.beginPath();
@@ -148,50 +155,68 @@ function drawBodyFront(
   input: TicketTextureInput
 ): void {
   const innerR = STUB_X - 56;
+  const meta = parseDate(input.date);
 
-  // Brand monogram — top-left corner, small + understated. Identity, not decor.
-  ctx.fillStyle = INK;
-  ctx.font = `300 88px ${FONT_SERIF}`;
-  ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("H", PAD, PAD + 76);
 
-  // Wordmark beside the monogram, tiny mono caps.
+  // ── Top rail: brand on the left, ADMIT ONE on the right ──────────────
+  ctx.fillStyle = INK;
+  ctx.font = `400 64px ${FONT_SERIF}`;
+  ctx.textAlign = "left";
+  ctx.fillText("H", PAD, PAD + 56);
+
   ctx.fillStyle = INK_SOFT;
   ctx.font = `600 22px ${FONT_MONO}`;
-  ctx.fillText("THE  HIDEAWAY", PAD + 78, PAD + 60);
+  // Simulate letter-spacing for the wordmark — canvas2D's letter-spacing
+  // is unreliable across browsers, so we draw character by character with
+  // a fixed step.
+  drawTracked(ctx, "THE  HIDEAWAY", PAD + 60, PAD + 42, 6);
 
-  // Eyebrow — "ADMIT ONE" up top.
   ctx.fillStyle = INK_MID;
   ctx.font = `700 24px ${FONT_MONO}`;
   ctx.textAlign = "right";
-  ctx.fillText("ADMIT  ONE", innerR, PAD + 60);
+  drawTracked(ctx, "ADMIT  ONE", innerR, PAD + 42, 6, "right");
+
+  // Hairline rule below the top rail (Vignelli-grade discipline).
+  ctx.strokeStyle = "rgba(20,16,12,0.22)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(PAD, PAD + 84);
+  ctx.lineTo(innerR, PAD + 84);
+  ctx.stroke();
+
+  // ── Editorial date block ────────────────────────────────────────────
+  // Massive day numerals as the visual anchor (the Bakken move).
+  ctx.fillStyle = INK;
+  ctx.font = `200 320px ${FONT_SANS}`;
   ctx.textAlign = "left";
+  const dayStr = meta.day || "—";
+  ctx.fillText(dayStr, PAD - 8, 480);
 
-  // Big date block — the visual anchor of the body.
-  const { dateLine, timeLine } = splitDate(input.date);
-  ctx.fillStyle = INK;
-  ctx.font = `300 156px ${FONT_SANS}`;
-  ctx.fillText(dateLine, PAD, 380);
+  // Month + year in a tight grid to the right of the day numerals.
+  // Position is anchored to the measured width of the day numerals so it
+  // tracks long days (e.g. "30") cleanly.
+  const dayWidth = ctx.measureText(dayStr).width;
+  const gridX = PAD - 8 + dayWidth + 40;
 
-  // Time — large mono next to the date.
-  if (timeLine) {
-    ctx.fillStyle = INK_MID;
-    ctx.font = `400 56px ${FONT_MONO}`;
-    ctx.fillText(timeLine, PAD, 460);
-  }
-
-  // Event name — smaller, sits below the date as the secondary identifier.
-  ctx.fillStyle = INK;
-  ctx.font = `300 64px ${FONT_SANS}`;
-  wrapText(ctx, input.eventName, PAD, 600, innerR - PAD, 78, 2);
-
-  // Location — caps mono, anchors the bottom of the body.
   ctx.fillStyle = INK_MID;
-  ctx.font = `600 30px ${FONT_MONO}`;
-  ctx.fillText((input.location ?? "—").toUpperCase(), PAD, H - PAD - 16);
+  ctx.font = `700 28px ${FONT_MONO}`;
+  drawTracked(ctx, meta.monthCaps, gridX, 280, 6);
 
-  // Bottom hairline rule above the location.
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `500 22px ${FONT_MONO}`;
+  drawTracked(ctx, meta.dowCaps, gridX, 318, 6);
+
+  ctx.fillStyle = INK_MID;
+  ctx.font = `400 56px ${FONT_MONO}`;
+  ctx.fillText(meta.year || "", gridX, 410);
+
+  // ── Event name — the only italic on the card (Cereal-style romance) ──
+  ctx.fillStyle = INK;
+  ctx.font = `italic 300 58px ${FONT_SERIF}`;
+  wrapText(ctx, input.eventName, PAD, 600, innerR - PAD, 70, 2);
+
+  // ── Foot strip: time · venue, with a hairline rule above ────────────
   ctx.strokeStyle = "rgba(20,16,12,0.22)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -199,12 +224,21 @@ function drawBodyFront(
   ctx.lineTo(innerR, H - PAD - 60);
   ctx.stroke();
 
-  // Tiny meta — sits to the right of the location, balancing weight.
+  ctx.fillStyle = INK_MID;
+  ctx.font = `700 28px ${FONT_MONO}`;
+  ctx.textAlign = "left";
+  drawTracked(
+    ctx,
+    `${meta.timeCaps || "TIME"}    ·    ${(input.location ?? "VENUE").toUpperCase()}`,
+    PAD,
+    H - PAD - 18,
+    6
+  );
+
   ctx.fillStyle = INK_SOFT;
   ctx.font = `400 22px ${FONT_MONO}`;
   ctx.textAlign = "right";
-  ctx.fillText("hideawayseoul.com", innerR, H - PAD - 16);
-  ctx.textAlign = "left";
+  ctx.fillText("hideawayseoul.com", innerR, H - PAD - 18);
 }
 
 function drawStubFront(
@@ -215,30 +249,39 @@ function drawStubFront(
   const cx = STUB_X + stubW / 2;
   const num = String(ticketNumber ?? 0).padStart(4, "0");
 
-  // "NO." label up top, centred.
-  ctx.fillStyle = INK_MID;
-  ctx.font = `700 30px ${FONT_MONO}`;
-  ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("NO.", cx, PAD + 64);
 
-  // Big ticket number — visual anchor of the stub.
-  ctx.fillStyle = INK;
-  ctx.font = `300 280px ${FONT_MONO}`;
-  ctx.fillText(num, cx, H / 2 + 100);
+  // Top label.
+  ctx.fillStyle = INK_MID;
+  ctx.font = `700 26px ${FONT_MONO}`;
+  ctx.textAlign = "center";
+  drawTracked(ctx, "TICKET  No.", cx, PAD + 56, 6, "center");
 
-  // Hairline separator above the foot.
+  // Hairline below the label.
   ctx.strokeStyle = "rgba(20,16,12,0.22)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(STUB_X + 48, H - PAD - 60);
+  ctx.moveTo(STUB_X + 64, PAD + 84);
+  ctx.lineTo(W - PAD, PAD + 84);
+  ctx.stroke();
+
+  // Massive numerals — the Bakken anchor.
+  ctx.fillStyle = INK;
+  ctx.font = `200 320px ${FONT_MONO}`;
+  ctx.fillText(num, cx, H / 2 + 110);
+
+  // Foot rule + ADMIT ONE caps along the bottom.
+  ctx.strokeStyle = "rgba(20,16,12,0.22)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(STUB_X + 64, H - PAD - 60);
   ctx.lineTo(W - PAD, H - PAD - 60);
   ctx.stroke();
 
-  // ADMIT ONE caps along the foot of the stub.
   ctx.fillStyle = INK_MID;
   ctx.font = `700 26px ${FONT_MONO}`;
-  ctx.fillText("ADMIT  ONE", cx, H - PAD - 16);
+  drawTracked(ctx, "ADMIT  ONE", cx, H - PAD - 18, 6, "center");
+
   ctx.textAlign = "left";
 }
 
@@ -249,21 +292,23 @@ function drawBodyBack(
   input: TicketTextureInput
 ): void {
   const innerR = STUB_X - 56;
+  const cx = (PAD + innerR) / 2;
 
-  // Single huge monogram — the back is identity-only.
-  ctx.fillStyle = INK_GHOST;
-  ctx.font = `300 720px ${FONT_SERIF}`;
-  ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("H", (PAD + innerR) / 2, H / 2 + 240);
 
   // Wordmark up top.
   ctx.fillStyle = INK_MID;
   ctx.font = `600 24px ${FONT_MONO}`;
   ctx.textAlign = "left";
-  ctx.fillText("THE  HIDEAWAY", PAD, PAD + 60);
+  drawTracked(ctx, "THE  HIDEAWAY", PAD, PAD + 48, 6);
 
-  // Boilerplate copy at the foot — what the back of a real ticket usually says.
+  // Single huge ghost monogram — identity, no data.
+  ctx.fillStyle = INK_GHOST;
+  ctx.font = `300 720px ${FONT_SERIF}`;
+  ctx.textAlign = "center";
+  ctx.fillText("H", cx, H / 2 + 240);
+
+  // Boilerplate at the foot.
   const lines = [
     "THIS TICKET ADMITS ONE.",
     "NON-TRANSFERABLE ONCE ACTIVATED.",
@@ -271,11 +316,18 @@ function drawBodyBack(
   ];
   ctx.fillStyle = INK_SOFT;
   ctx.font = `500 22px ${FONT_MONO}`;
+  ctx.textAlign = "left";
   lines.forEach((line, i) => {
-    ctx.fillText(line, PAD, H - PAD - 48 + (i - lines.length + 1) * 32);
+    drawTracked(
+      ctx,
+      line,
+      PAD,
+      H - PAD - 48 + (i - lines.length + 1) * 32,
+      4
+    );
   });
 
-  // Hairline rule above the boilerplate.
+  // Hairline above the boilerplate.
   ctx.strokeStyle = "rgba(20,16,12,0.22)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -283,10 +335,16 @@ function drawBodyBack(
   ctx.lineTo(innerR, H - PAD - 144);
   ctx.stroke();
 
-  // Tiny event echo, sits above the boilerplate.
+  // Tiny event echo above the boilerplate.
   ctx.fillStyle = INK_SOFT;
   ctx.font = `400 22px ${FONT_MONO}`;
-  ctx.fillText(input.eventName.toUpperCase(), PAD, H - PAD - 168);
+  drawTracked(
+    ctx,
+    input.eventName.toUpperCase(),
+    PAD,
+    H - PAD - 168,
+    4
+  );
 }
 
 function drawStubBack(
@@ -297,61 +355,149 @@ function drawStubBack(
   const cx = STUB_X + stubW / 2;
   const num = String(ticketNumber ?? 0).padStart(4, "0");
 
-  // Back-of-stub design: a vertical "ADMIT ONE / NO. xxxx / ADMIT ONE" rhythm.
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "center";
+
+  // ADMIT ONE / · / NO. xxxx / · / ADMIT ONE rhythm down the stub.
   ctx.fillStyle = INK_MID;
   ctx.font = `700 24px ${FONT_MONO}`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-
-  ctx.fillText("ADMIT  ONE", cx, PAD + 64);
-  ctx.fillText("·", cx, PAD + 96);
+  drawTracked(ctx, "ADMIT  ONE", cx, PAD + 56, 6, "center");
+  ctx.fillText("·", cx, PAD + 92);
 
   ctx.fillStyle = INK_SOFT;
   ctx.font = `600 28px ${FONT_MONO}`;
-  ctx.fillText("NO.", cx, H / 2 - 60);
+  drawTracked(ctx, "No.", cx, H / 2 - 60, 4, "center");
 
   ctx.fillStyle = INK;
-  ctx.font = `300 110px ${FONT_MONO}`;
-  ctx.fillText(num, cx, H / 2 + 30);
+  ctx.font = `200 130px ${FONT_MONO}`;
+  ctx.fillText(num, cx, H / 2 + 40);
 
   ctx.fillStyle = INK_MID;
   ctx.font = `700 24px ${FONT_MONO}`;
-  ctx.fillText("·", cx, H - PAD - 96);
-  ctx.fillText("ADMIT  ONE", cx, H - PAD - 16);
+  ctx.fillText("·", cx, H - PAD - 92);
+  drawTracked(ctx, "ADMIT  ONE", cx, H - PAD - 18, 6, "center");
+
   ctx.textAlign = "left";
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-/**
- * Take a date string formatted like "Sep 12, 2026" and split it into a
- * display line ("SEP 12") plus a time/year line ("2026"). Falls back
- * gracefully if the input isn't in the expected shape.
- */
-function splitDate(d: string | null): {
-  dateLine: string;
-  timeLine: string;
-} {
-  if (!d) return { dateLine: "—", timeLine: "" };
-  // Most pages format as "Mon Day, Year" — split into a big day line
-  // and a smaller year line.
-  const m = d.match(/^([A-Za-z]+)\s+(\d+),?\s*(\d{4})?/);
-  if (m) {
-    return {
-      dateLine: `${m[1].toUpperCase()} ${m[2]}`,
-      timeLine: m[3] ?? ""
-    };
-  }
-  return { dateLine: d.toUpperCase(), timeLine: "" };
+interface DateMeta {
+  day: string;
+  monthCaps: string;
+  dowCaps: string;
+  year: string;
+  timeCaps: string;
 }
 
 /**
- * Generate a roughness map paired with the colour texture. White = rough,
- * black = smooth (three.js convention). The body is left moderately rough
- * so the printed typography reads cleanly head-on; the borders, stub, and
- * the perforation strip are smoother so the iridescence shimmer
- * concentrates there as the card rotates — selective sheen instead of
- * uniform plastic.
+ * Take a string like "Thursday, May 7, 2026" or "May 7, 2026" and split
+ * it into individually-styleable pieces. Falls back gracefully if the
+ * input doesn't match.
+ */
+function parseDate(d: string | null): DateMeta {
+  if (!d) {
+    return { day: "—", monthCaps: "", dowCaps: "", year: "", timeCaps: "" };
+  }
+  // Try parsing as a real date first so we get reliable dow/month/time.
+  const parsed = new Date(d);
+  if (!isNaN(parsed.getTime())) {
+    const day = String(parsed.getDate());
+    const month = parsed
+      .toLocaleString("en-US", { month: "long" })
+      .toUpperCase();
+    const dow = parsed
+      .toLocaleString("en-US", { weekday: "long" })
+      .toUpperCase();
+    const year = String(parsed.getFullYear());
+    const time = parsed
+      .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      .toUpperCase()
+      .replace(/\s+/g, " ");
+    return { day, monthCaps: month, dowCaps: dow, year, timeCaps: time };
+  }
+  // Last-resort: just hand back the raw string in caps as the day field.
+  return {
+    day: d.toUpperCase(),
+    monthCaps: "",
+    dowCaps: "",
+    year: "",
+    timeCaps: ""
+  };
+}
+
+/**
+ * Draw text with manual letter-spacing. Canvas2D `letterSpacing` is
+ * inconsistently supported across browsers; this draws each character at
+ * a measured offset so spacing is reliable. `align` lets us anchor at
+ * left, right, or centre (for caps that need to feel evenly distributed).
+ */
+function drawTracked(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  spacing: number,
+  align: "left" | "right" | "center" = "left"
+): void {
+  const chars = Array.from(text);
+  const widths = chars.map((ch) => ctx.measureText(ch).width);
+  const total = widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
+
+  let cursor: number;
+  if (align === "right") cursor = x - total;
+  else if (align === "center") cursor = x - total / 2;
+  else cursor = x;
+
+  ctx.textAlign = "left";
+  for (let i = 0; i < chars.length; i++) {
+    ctx.fillText(chars[i], cursor, y);
+    cursor += widths[i] + spacing;
+  }
+}
+
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines: number
+): void {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+
+  for (const w of words) {
+    const probe = line ? `${line} ${w}` : w;
+    if (ctx.measureText(probe).width > maxWidth && line) {
+      lines.push(line);
+      line = w;
+      if (lines.length === maxLines - 1) break;
+    } else {
+      line = probe;
+    }
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+
+  if (lines.length === maxLines) {
+    let last = lines[maxLines - 1];
+    while (ctx.measureText(`${last}…`).width > maxWidth && last.length > 0) {
+      last = last.slice(0, -1);
+    }
+    lines[maxLines - 1] = `${last}…`;
+  }
+
+  ctx.textAlign = "left";
+  lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
+}
+
+/**
+ * Roughness map — paired with the colour texture. White = rough,
+ * black = smooth (three.js convention). Body moderately rough so the
+ * printed type reads cleanly head-on; borders, stub, and the perforation
+ * seam smoother so iridescence concentrates there as the card rotates.
  */
 export function makeTicketRoughness(): THREE.Texture {
   if (typeof document === "undefined") {
@@ -399,41 +545,4 @@ export function makeTicketRoughness(): THREE.Texture {
   tex.magFilter = THREE.LinearFilter;
   tex.needsUpdate = true;
   return tex;
-}
-
-function wrapText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-  maxLines: number
-): void {
-  const words = text.split(/\s+/);
-  const lines: string[] = [];
-  let line = "";
-
-  for (const w of words) {
-    const probe = line ? `${line} ${w}` : w;
-    if (ctx.measureText(probe).width > maxWidth && line) {
-      lines.push(line);
-      line = w;
-      if (lines.length === maxLines - 1) break;
-    } else {
-      line = probe;
-    }
-  }
-  if (line && lines.length < maxLines) lines.push(line);
-
-  if (lines.length === maxLines) {
-    let last = lines[maxLines - 1];
-    while (ctx.measureText(`${last}…`).width > maxWidth && last.length > 0) {
-      last = last.slice(0, -1);
-    }
-    lines[maxLines - 1] = `${last}…`;
-  }
-
-  ctx.textAlign = "left";
-  lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
 }
