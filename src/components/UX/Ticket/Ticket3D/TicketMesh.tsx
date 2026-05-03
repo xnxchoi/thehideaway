@@ -338,51 +338,75 @@ export function TicketMesh({
       />
 
       {/*
-        Lighting — three-point editorial.
-          - Warm key from front-right (Edison incandescent at ~3200K).
-          - Cool fill from camera-left at lower intensity (~5600K daylight).
-          - Hard rim from upper-back (warm) catches the bevelled edge and
-            picks out the foil monogram + serial.
-        Cyan/lavender stage lights were removed — they were tinting the
-        bone paper into "rave flyer" territory and muddying the vermilion
-        stamp. This setup reads as a print-shop / gallery presentation.
+        Lighting — gallery white box.
+        The previous warm-tinted rig was poisoning bone paper into sepia
+        on a dark-mode page. Three rules now:
+          1. Diffuse light is NEUTRAL bright — paper renders as paper.
+          2. Environment has bright sources from many angles so the
+             metallic foil layer has something to reflect (metalness with
+             a dim env reflects darkness).
+          3. One slightly warm rim only, low intensity, to keep the
+             vermilion stamp + foil shimmer alive without tinting paper.
       */}
       <Environment resolution={512} background={false}>
+        {/* Big neutral key — gallery softbox front-right */}
         <Lightformer
-          intensity={2.4}
-          color="#fff1d4"
-          position={[3.5, 2.5, 3]}
+          intensity={3.2}
+          color="#ffffff"
+          position={[3, 2, 4]}
           rotation={[0, -Math.PI / 4, 0]}
+          scale={[7, 7, 1]}
+          form="rect"
+        />
+        {/* Neutral fill from camera-left — keeps the body lit when the
+            ticket tilts away from the key */}
+        <Lightformer
+          intensity={2.0}
+          color="#ffffff"
+          position={[-4, 1, 3]}
+          rotation={[0, Math.PI / 4, 0]}
           scale={[6, 6, 1]}
           form="rect"
         />
+        {/* Top neutral wash — adds environment bounces so metallic foil
+            picks up multi-directional reflection */}
         <Lightformer
-          intensity={1.0}
-          color="#cfd9e6"
-          position={[-4, 0.8, 2.5]}
-          rotation={[0, Math.PI / 4, 0]}
-          scale={[5, 5, 1]}
-          form="rect"
-        />
-        <Lightformer
-          intensity={3.6}
-          color="#ffd9a0"
-          position={[0, 4, -3.5]}
-          rotation={[Math.PI / 2.4, 0, 0]}
-          scale={[8, 1.5, 1]}
-          form="rect"
-        />
-        <Lightformer
-          intensity={0.5}
-          color="#3a2614"
-          position={[0, -3.5, 2]}
+          intensity={1.6}
+          color="#ffffff"
+          position={[0, 5, 2]}
           rotation={[-Math.PI / 2, 0, 0]}
-          scale={[8, 4, 1]}
+          scale={[8, 6, 1]}
+          form="rect"
+        />
+        {/* Slightly warm rim from upper-back — catches the bevelled edge
+            and brushes the foil with a hint of champagne */}
+        <Lightformer
+          intensity={2.2}
+          color="#fff0d4"
+          position={[0, 3.5, -3]}
+          rotation={[Math.PI / 2.6, 0, 0]}
+          scale={[8, 1.4, 1]}
+          form="rect"
+        />
+        {/* Cool kicker from below — gives the foil a subtle dichroic
+            shift when the card tilts forward */}
+        <Lightformer
+          intensity={0.8}
+          color="#dde6f2"
+          position={[0, -3, 2]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          scale={[6, 3, 1]}
           form="rect"
         />
       </Environment>
 
-      <ambientLight intensity={0.12} color="#3a2c1c" />
+      {/* Bright neutral ambient floor — paper needs uniform light to read
+          as the colour it actually is, not the colour the lights tint it. */}
+      <ambientLight intensity={0.45} color="#ffffff" />
+      {/* Direct directional light to lift the diffuse off the env so the
+          paper doesn't depend entirely on env reflection (which the body
+          material reads at envMapIntensity=0.78). */}
+      <directionalLight intensity={0.7} color="#ffffff" position={[2, 3, 4]} />
 
       <group ref={groupRef}>
         {/*
@@ -402,18 +426,12 @@ export function TicketMesh({
         <mesh geometry={bodyGeom}>
           <meshPhysicalMaterial
             roughnessMap={roughnessMap}
-            color="#efe4c8"
-            roughness={0.78}
+            color="#f7eed4"
+            roughness={0.85}
             metalness={0.0}
-            clearcoat={0.18}
-            clearcoatRoughness={0.45}
-            iridescence={0}
-            iridescenceIOR={1.32}
-            iridescenceThicknessRange={[420, 720]}
-            envMapIntensity={0.78}
-            sheen={0.4}
-            sheenRoughness={0.6}
-            sheenColor="#c89a5a"
+            clearcoat={0.1}
+            clearcoatRoughness={0.55}
+            envMapIntensity={1.0}
             onBeforeCompile={onBeforeCompileFront}
           />
         </mesh>
@@ -427,17 +445,11 @@ export function TicketMesh({
             map={frontTexture}
             roughnessMap={roughnessMap}
             color="#ffffff"
-            roughness={0.74}
+            roughness={0.82}
             metalness={0.0}
-            clearcoat={0.18}
-            clearcoatRoughness={0.42}
-            iridescence={0}
-            iridescenceIOR={1.32}
-            iridescenceThicknessRange={[420, 720]}
-            envMapIntensity={0.78}
-            sheen={0.35}
-            sheenRoughness={0.6}
-            sheenColor="#c89a5a"
+            clearcoat={0.1}
+            clearcoatRoughness={0.5}
+            envMapIntensity={1.0}
             side={THREE.FrontSide}
             onBeforeCompile={onBeforeCompileFront}
           />
@@ -464,17 +476,17 @@ export function TicketMesh({
           <meshPhysicalMaterial
             alphaMap={foilAlpha}
             transparent
-            color="#dab575"
-            metalness={0.92}
-            roughness={0.22}
+            color="#f0cf85"
+            metalness={1.0}
+            roughness={0.18}
             anisotropy={0.85}
             anisotropyRotation={Math.PI / 2}
-            clearcoat={0.6}
-            clearcoatRoughness={0.18}
-            iridescence={0.55}
+            clearcoat={0.7}
+            clearcoatRoughness={0.14}
+            iridescence={0.4}
             iridescenceIOR={1.6}
             iridescenceThicknessRange={[300, 900]}
-            envMapIntensity={1.6}
+            envMapIntensity={2.4}
             depthWrite={false}
             side={THREE.FrontSide}
             onBeforeCompile={onBeforeCompileFront}
@@ -494,17 +506,11 @@ export function TicketMesh({
             map={backTexture}
             roughnessMap={roughnessMap}
             color="#ffffff"
-            roughness={0.74}
+            roughness={0.82}
             metalness={0.0}
-            clearcoat={0.18}
-            clearcoatRoughness={0.42}
-            iridescence={0}
-            iridescenceIOR={1.32}
-            iridescenceThicknessRange={[420, 720]}
-            envMapIntensity={0.78}
-            sheen={0.35}
-            sheenRoughness={0.6}
-            sheenColor="#c89a5a"
+            clearcoat={0.1}
+            clearcoatRoughness={0.5}
+            envMapIntensity={1.0}
             side={THREE.FrontSide}
             onBeforeCompile={onBeforeCompileBack}
           />
