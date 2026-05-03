@@ -89,86 +89,65 @@ export function TicketDetailClient({
 
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
-      {/* ── Hero stage ────────────────────────────────────────────── */}
-      {/*
-        Wide stage so the 3D ticket gets at least half the screen on PC.
-        Container max is 110rem (1760px) — comfortably wider than the
-        max-w-7xl (1280px) used by the info grid below, so the ticket
-        feels like an artifact and not a list item.
-      */}
-      <section className="px-6 pt-14 pb-10 sm:px-10 xl:px-12 xl:pt-20 xl:pb-14">
-        <div
-          className="mx-auto"
-          style={{ width: "min(110rem, 100%)" }}
-        >
-          <Ticket3D
-            eventName={eventName}
-            ticketNumber={ticketNumber}
-            date={dateShort}
-            location={eventLocation}
-            flipped={flipped}
-            onFlip={toggleFlip}
-          />
+      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16 xl:gap-24">
+          {/* ── Visual artifact ─────────────────────────────────────── */}
+          <div className="relative lg:sticky lg:top-12 lg:self-start">
+            <Ticket3D
+              eventName={eventName}
+              ticketNumber={ticketNumber}
+              date={dateShort}
+              location={eventLocation}
+              flipped={flipped}
+              onFlip={toggleFlip}
+            />
 
-          <div className="mx-auto mt-5 flex items-center justify-between gap-3 px-2 xl:mt-6"
-            style={{ width: "min(64rem, 100%)" }}
-          >
-            <p className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
-              Tap to flip
-            </p>
-            <RP_Btn
-              onClick={() => setFocused(true)}
-              aria-label="Open spotlight view"
-              className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase transition-colors hover:text-foreground xl:text-[11px]"
-            >
-              <span aria-hidden>⤢</span>
-              Spotlight
-            </RP_Btn>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Info ─────────────────────────────────────────────────── */}
-      {/*
-        12-column editorial grid below the hero.
-          - Title block: cols 1–6 (desktop), full width on mobile.
-          - Status panel (QR / payment / terminal note): cols 7–9.
-          - Metadata + actions: cols 10–12.
-        Each column is its own scannable zone — the eye doesn't have to
-        pinball between sticky and scrolling areas like the old layout.
-      */}
-      <section className="mx-auto w-full max-w-7xl px-6 pb-32 xl:px-10 xl:pb-40">
-        <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-12 lg:gap-x-16 xl:gap-x-20">
-          {/* Title block */}
-          <header className="lg:col-span-6">
-            <StatusChip status={status} checkedIn={checkedIn} />
-            <h1 className="mt-4 text-3xl leading-[1.05] font-light tracking-tight text-balance xl:text-5xl 2xl:text-6xl">
-              {eventName}
-            </h1>
-            {dateLong ? (
-              <p className="mt-5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
-                {dateLong}
-                {eventLocation ? ` · ${eventLocation}` : ""}
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <p className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
+                Tap to flip
               </p>
-            ) : null}
-          </header>
+              <RP_Btn
+                onClick={() => setFocused(true)}
+                aria-label="Open spotlight view"
+                className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase transition-colors hover:text-foreground xl:text-[11px]"
+              >
+                <span aria-hidden>⤢</span>
+                Spotlight
+              </RP_Btn>
+            </div>
+          </div>
 
-          {/* Status panel */}
-          <div className="lg:col-span-3">
+          {/* ── Information ────────────────────────────────────────── */}
+          <div className="flex flex-col gap-12">
+            <header>
+              <StatusChip status={status} checkedIn={checkedIn} />
+              <h2 className="mt-4 text-3xl leading-[1.05] font-light tracking-tight text-balance xl:text-5xl 2xl:text-6xl">
+                {eventName}
+              </h2>
+              {dateLong ? (
+                <p className="mt-5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+                  {dateLong}
+                  {eventLocation ? ` · ${eventLocation}` : ""}
+                </p>
+              ) : null}
+            </header>
+
             {status === "active" && checkInUrl ? (
-              <div>
+              <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   At the door
                 </p>
-                <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+                <p className="mt-2 max-w-prose font-mono text-[11px] text-muted-foreground/60">
                   Show this code to staff at check-in.
                 </p>
                 <div className="mt-6 flex justify-center sm:justify-start">
-                  <TicketQR value={checkInUrl} size={200} />
+                  <TicketQR value={checkInUrl} size={220} />
                 </div>
               </div>
-            ) : status === "pending" && !paid ? (
-              <div>
+            ) : null}
+
+            {status === "pending" && !paid ? (
+              <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   Awaiting payment
                 </p>
@@ -176,63 +155,55 @@ export function TicketDetailClient({
                   {formatKRW(ticketPrice)}
                 </p>
                 {paymentInstructions ? (
-                  <p className="mt-5 font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/75 xl:text-xs">
+                  <p className="mt-5 max-w-prose font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/75 xl:text-xs">
                     {paymentInstructions}
                   </p>
                 ) : (
-                  <p className="mt-5 font-mono text-[11px] text-muted-foreground/60">
+                  <p className="mt-5 max-w-prose font-mono text-[11px] text-muted-foreground/60">
                     The host will reach out with payment details. Your ticket
                     activates the moment we confirm receipt.
                   </p>
                 )}
               </div>
-            ) : status === "used" ? (
-              <div>
+            ) : null}
+
+            {status === "used" ? (
+              <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   Past
                 </p>
-                <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+                <p className="mt-2 max-w-prose font-mono text-[11px] text-muted-foreground/60">
                   This ticket has been used. Thanks for being there.
                 </p>
               </div>
-            ) : status === "canceled" ? (
-              <div>
+            ) : null}
+            {status === "canceled" ? (
+              <div className="border-t border-border/20 pt-8">
                 <p className="font-mono text-[10px] tracking-[0.2em] text-[oklch(0.7_0.18_30)] uppercase">
                   Canceled
                 </p>
-                <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+                <p className="mt-2 max-w-prose font-mono text-[11px] text-muted-foreground/60">
                   This ticket was canceled. If you think this is a mistake,
                   reach out to the host.
                 </p>
               </div>
             ) : null}
-          </div>
 
-          {/* Metadata + actions */}
-          <div className="lg:col-span-3">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
+            <dl className="grid grid-cols-1 gap-x-8 gap-y-5 border-t border-border/20 pt-8 sm:grid-cols-2">
               <Field label="Number" value={`#${num}`} mono />
-              <Field
-                label="Holder"
-                value={holderName ?? "—"}
-                fallback="—"
-              />
+              <Field label="Holder" value={holderName ?? "—"} fallback="—" />
               <Field
                 label="Price"
                 value={ticketPrice > 0 ? formatKRW(ticketPrice) : "Free"}
                 mono
               />
-              <Field
-                label="Paid"
-                value={paid ? "Confirmed" : "Pending"}
-                mono
-              />
+              <Field label="Paid" value={paid ? "Confirmed" : "Pending"} mono />
             </dl>
 
             {checkedIn && eventSlug ? (
               <Link
                 href={`/tickets/${eventSlug}/exclusive`}
-                className="mt-8 inline-block border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+                className="self-start border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
               >
                 View exclusive content →
               </Link>
