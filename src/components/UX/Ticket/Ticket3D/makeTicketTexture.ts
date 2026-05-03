@@ -286,11 +286,7 @@ function drawBodyBack(
   // Tiny event echo, sits above the boilerplate.
   ctx.fillStyle = INK_SOFT;
   ctx.font = `400 22px ${FONT_MONO}`;
-  ctx.fillText(
-    input.eventName.toUpperCase(),
-    PAD,
-    H - PAD - 168
-  );
+  ctx.fillText(input.eventName.toUpperCase(), PAD, H - PAD - 168);
 }
 
 function drawStubBack(

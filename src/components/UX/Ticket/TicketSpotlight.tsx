@@ -5,7 +5,7 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { RP_Btn } from "@/components/core/Button";
 import { cn } from "@/lib/utils";
-import { Ticket3D } from "@/components/UX/Ticket/Ticket3D";
+import { TicketSpotlightStage } from "@/components/UX/Ticket/Ticket3D/TicketSpotlightStage";
 import {
   StatusChip,
   type TicketStatus
@@ -127,12 +127,18 @@ export function TicketSpotlight({
           aria-modal="true"
           role="dialog"
         >
-          {/* Backdrop — clicking it dismisses. */}
+          {/* Backdrop — clicking it dismisses.
+              Solid background, NOT a backdrop-blur. The page's shared
+              canvas (which hosts other 3D content) sits behind this
+              overlay; a backdrop-blur would smear the canvas through the
+              shroud and ghost the page-level ticket into the spotlight.
+              The spotlight stage uses its own dedicated <Canvas> so it
+              renders above this backdrop without being affected by it. */}
           <button
             type="button"
             aria-label="Close spotlight"
             onClick={onClose}
-            className="absolute inset-0 cursor-default bg-background/92 backdrop-blur-2xl"
+            className="absolute inset-0 cursor-default bg-background"
           />
 
           {/* Top bar — close + meta */}
@@ -164,12 +170,11 @@ export function TicketSpotlight({
               className="w-full"
               style={{ maxWidth: "min(56rem, 100%)" }}
             >
-              <Ticket3D
+              <TicketSpotlightStage
                 eventName={ticket.eventName}
                 ticketNumber={ticket.ticketNumber}
                 date={ticket.dateShort}
                 location={ticket.location}
-                interactive
                 flipped={ticket.flipped}
                 onFlip={ticket.onFlip}
               />
