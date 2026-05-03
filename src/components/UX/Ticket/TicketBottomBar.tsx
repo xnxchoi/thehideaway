@@ -21,16 +21,16 @@ interface TicketBottomBarProps {
 /**
  * Bottom-stuck navigation/title chassis used across the ticket pages.
  *
- * - Sits at `bottom-0` so it doesn't collide with the global site header.
- * - `pointer-events: none` on the outer wrapper so the page below can be
- *   clicked through the empty margins; `pointer-events: auto` on the
- *   chassis card itself.
- * - Padded to clear `env(safe-area-inset-bottom)` and the SideDrawer's
- *   collapsed handle peek on mobile (the drawer renders at z-239 and
- *   overlays this bar when expanded — that's fine).
- * - Visually a single chassis: rounded, hairline border, backdrop blur.
- *   Same vocabulary as the rest of the bottom UI (drawer handle,
- *   controlbar) so they read as one surface.
+ * Flat, flush, full-width — sits at the very bottom edge of the viewport
+ * with a top hairline border, backdrop blur, and `env(safe-area-inset-bottom)`
+ * baked into the padding. No rounded chassis card — that read like a
+ * floating tooltip and broke the "singular monochassis" feel. This is a
+ * proper footer rail.
+ *
+ * The SideDrawer (z-239) still overlays this when it's docked at bottom
+ * on mobile and expanded — that's the right order of importance. The
+ * collapsed drawer handle pokes through the safe-area padding without
+ * occluding our content.
  */
 export function TicketBottomBar({
   eyebrow,
@@ -41,50 +41,46 @@ export function TicketBottomBar({
   className
 }: TicketBottomBarProps) {
   return (
-    <div
+    <m.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-0 z-30",
+        "fixed inset-x-0 bottom-0 z-30 border-t border-border/30 bg-background/82 backdrop-blur-xl",
         className
       )}
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom), 0.5rem)"
+        paddingBottom: "env(safe-area-inset-bottom)"
       }}
     >
-      <m.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", bounce: 0.15, duration: 0.45 }}
-        className="pointer-events-auto mx-auto max-w-7xl px-4 pb-2 sm:px-6 md:pb-3 xl:px-10"
-      >
-        <div className="rounded-xl border border-border/30 bg-background/85 px-5 py-3 backdrop-blur-xl xl:px-6 xl:py-3.5">
-          <div className="flex items-end justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                {eyebrow}
-              </p>
-              <h1 className="mt-0.5 truncate text-xl font-light tracking-tight xl:text-2xl">
-                {title}
-                {typeof count === "number" && count > 0 ? (
-                  <span className="ml-2 font-mono text-sm text-muted-foreground/50 tabular-nums">
-                    {count}
-                  </span>
-                ) : null}
-              </h1>
-            </div>
-            <div className="flex shrink-0 items-end gap-3">
-              {rightAction ? (
-                <Link
-                  href={rightAction.href}
-                  className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-                >
-                  {rightAction.label}
-                </Link>
+      <div className="mx-auto max-w-7xl px-6 py-3.5 xl:px-10 xl:py-4">
+        <div className="flex items-end justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+              {eyebrow}
+            </p>
+            <h1 className="mt-0.5 truncate text-lg font-light tracking-tight xl:text-xl">
+              {title}
+              {typeof count === "number" && count > 0 ? (
+                <span className="ml-2 font-mono text-sm text-muted-foreground/50 tabular-nums">
+                  {count}
+                </span>
               ) : null}
-              {rightSlot}
-            </div>
+            </h1>
+          </div>
+          <div className="flex shrink-0 items-end gap-3">
+            {rightAction ? (
+              <Link
+                href={rightAction.href}
+                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+              >
+                {rightAction.label}
+              </Link>
+            ) : null}
+            {rightSlot}
           </div>
         </div>
-      </m.div>
-    </div>
+      </div>
+    </m.div>
   );
 }

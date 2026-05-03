@@ -44,7 +44,11 @@ const FADE = { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const };
  *   tap-to-flip) are intentional and welcome here, distinct from the
  *   subdued list/pager presentation.
  */
-export function TicketSpotlight({ open, onClose, ticket }: TicketSpotlightProps) {
+export function TicketSpotlight({
+  open,
+  onClose,
+  ticket
+}: TicketSpotlightProps) {
   const [qrOpen, setQrOpen] = useState(false);
   const [shareToast, setShareToast] = useState<string | null>(null);
 
@@ -135,8 +139,7 @@ export function TicketSpotlight({ open, onClose, ticket }: TicketSpotlightProps)
           <div className="relative z-[1] flex items-center justify-between px-6 pt-6 xl:px-10 xl:pt-8">
             <div className="min-w-0">
               <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Spotlight ·{" "}
-                {String(ticket.ticketNumber ?? 0).padStart(4, "0")}
+                Spotlight · {String(ticket.ticketNumber ?? 0).padStart(4, "0")}
               </p>
               <p className="mt-0.5 truncate text-base font-light tracking-tight xl:text-lg">
                 {ticket.eventName}
@@ -179,10 +182,7 @@ export function TicketSpotlight({ open, onClose, ticket }: TicketSpotlightProps)
               transition={{ ...FADE, delay: 0.1 }}
               className="flex w-full flex-col items-center gap-3 text-center"
             >
-              <StatusChip
-                status={ticket.status}
-                checkedIn={ticket.checkedIn}
-              />
+              <StatusChip status={ticket.status} checkedIn={ticket.checkedIn} />
               <h2 className="text-2xl font-light tracking-tight xl:text-4xl">
                 {ticket.eventName}
               </h2>
@@ -209,11 +209,7 @@ export function TicketSpotlight({ open, onClose, ticket }: TicketSpotlightProps)
                 onClick={handleSaveImage}
                 glyph="↧"
               />
-              <SpotlightAction
-                label="Share"
-                onClick={handleShare}
-                glyph="↗"
-              />
+              <SpotlightAction label="Share" onClick={handleShare} glyph="↗" />
               <SpotlightAction
                 label="Show QR"
                 onClick={() => setQrOpen((v) => !v)}
@@ -288,7 +284,7 @@ function SpotlightAction({
       className={cn(
         "inline-flex items-center gap-2 rounded-md border border-border/40 px-4 py-2.5 font-mono text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
         disabled
-          ? "cursor-not-allowed text-muted-foreground/30 border-border/20"
+          ? "cursor-not-allowed border-border/20 text-muted-foreground/30"
           : pressed
             ? "border-foreground/60 text-foreground"
             : "text-foreground/75 hover:border-border hover:text-foreground"

@@ -1,10 +1,15 @@
 "use client";
 
-import { Environment, Lightformer, PerspectiveCamera } from "@react-three/drei";
+import {
+  Environment,
+  Lightformer,
+  PerspectiveCamera
+} from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
+  makeTicketBackTexture,
   makeTicketRoughness,
   makeTicketTexture,
   type TicketTextureInput
@@ -13,76 +18,53 @@ import {
 export interface TicketMeshProps extends TicketTextureInput {
   pointer: { x: number; y: number };
   pointerActive: boolean;
-  /**
-   * When false, all input-driven motion is suppressed and the mesh
-   * just idles. Used for list/pager views.
-   */
+  /** When false, all input-driven motion is suppressed and the mesh idles. */
   interactive: boolean;
-  /**
-   * Tap-driven flip state. true → ticket rotates 180° around Y to
-   * present the back face.
-   */
+  /** True → ticket rotates 180° around Y to present the back face. */
   flipped: boolean;
   cameraActive: boolean;
 }
 
-// Geometry constants — keep STUB_OFFSET in sync with the texture's STUB_RATIO
-// in makeTicketTexture.ts so the printed perforation dots line up with the
-// notches cut into the silhouette.
 const TICKET_W = 4.6;
 const TICKET_H = 2.3;
 const TICKET_D = 0.06;
 const STUB_OFFSET = 0.6;
 const NOTCH_R = 0.07;
+// Front/back planes sit a hair outside the body's caps so depth wins
+// without z-fighting.
+const PLANE_OFFSET = 0.0008;
 
 /**
- * Build the ticket silhouette: a rectangle with a tear-off perforation on
- * the right side, with small inward notches at the top and bottom of that
- * perforation line. Extruded for thickness, with a tiny bevel on the edges
- * so light catches them.
- *
- * The perimeter is wound counter-clockwise (which is what THREE.Shape
- * expects for an outer contour); a CW shape inverts the face normals and
- * the front of the ticket appears as a horizontally-mirrored back face.
+ * Counter-clockwise outer perimeter for the ticket silhouette: a
+ * rectangle with two inward semicircular notches at the perforation x.
+ * Used both for the ExtrudeGeometry body and the flat ShapeGeometry
+ * planes that carry the front/back textures.
  */
-function buildTicketGeometry(): THREE.ExtrudeGeometry {
+function buildTicketShape(): THREE.Shape {
   const w2 = TICKET_W / 2;
   const h2 = TICKET_H / 2;
   const px = STUB_OFFSET;
 
   const shape = new THREE.Shape();
-
-  // Counter-clockwise: top-left → bottom-left → bottom-right → top-right → close
   shape.moveTo(-w2, h2);
-  shape.lineTo(-w2, -h2); // down the left edge
-  shape.lineTo(px - NOTCH_R, -h2); // along the bottom edge to the notch
-  // Bottom notch — semi-circle dipping UP into the body.
-  // From WEST point (180°) to EAST point (0°) via NORTH (90°) = clockwise.
+  shape.lineTo(-w2, -h2);
+  shape.lineTo(px - NOTCH_R, -h2);
   shape.absarc(px, -h2, NOTCH_R, Math.PI, 0, true);
-  shape.lineTo(w2, -h2); // continue along the bottom
-  shape.lineTo(w2, h2); // up the right edge
-  shape.lineTo(px + NOTCH_R, h2); // along the top edge to the notch
-  // Top notch — semi-circle dipping DOWN into the body.
-  // From EAST point (0°) to WEST point (180°) via SOUTH (270°) = clockwise.
+  shape.lineTo(w2, -h2);
+  shape.lineTo(w2, h2);
+  shape.lineTo(px + NOTCH_R, h2);
   shape.absarc(px, h2, NOTCH_R, 0, Math.PI, true);
-  shape.lineTo(-w2, h2); // close along the top edge
+  shape.lineTo(-w2, h2);
+  return shape;
+}
 
-  const geom = new THREE.ExtrudeGeometry(shape, {
-    depth: TICKET_D,
-    bevelEnabled: true,
-    bevelSegments: 3,
-    bevelSize: 0.012,
-    bevelThickness: 0.008,
-    curveSegments: 16
-  });
-
-  // Extrude pushes along +Z; centre on the origin instead.
-  geom.translate(0, 0, -TICKET_D / 2);
-
-  // Remap UVs so the texture maps [0, 1] across the front face's bounding
-  // box. v is NOT inverted — for a CanvasTexture (default flipY=true),
-  // sampling at v=1 returns canvas y=0 (top), which is exactly what we want
-  // for vertices at the geometry's top edge.
+/**
+ * Remap a flat ShapeGeometry's UVs so the texture maps [0, 1] across the
+ * shape's bounding box. ShapeGeometry's default UVs use world coordinates
+ * — we want bbox-normalised so the canvas texture lines up regardless of
+ * the shape's actual position.
+ */
+function remapShapeUVs(geom: THREE.ShapeGeometry): void {
   geom.computeBoundingBox();
   const bb = geom.boundingBox!;
   const sx = bb.max.x - bb.min.x;
@@ -95,9 +77,6 @@ function buildTicketGeometry(): THREE.ExtrudeGeometry {
     uv.setXY(i, (x - bb.min.x) / sx, (y - bb.min.y) / sy);
   }
   uv.needsUpdate = true;
-  geom.computeVertexNormals();
-
-  return geom;
 }
 
 export function TicketMesh({
@@ -113,56 +92,74 @@ export function TicketMesh({
 }: TicketMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
 
-  const geometry = useMemo(() => buildTicketGeometry(), []);
+  // ── Geometry ───────────────────────────────────────────────────────────
+  const { bodyGeom, faceGeom } = useMemo(() => {
+    const shape = buildTicketShape();
+    const body = new THREE.ExtrudeGeometry(shape, {
+      depth: TICKET_D,
+      bevelEnabled: true,
+      bevelSegments: 3,
+      bevelSize: 0.012,
+      bevelThickness: 0.008,
+      curveSegments: 16
+    });
+    body.translate(0, 0, -TICKET_D / 2);
+    body.computeVertexNormals();
+
+    const face = new THREE.ShapeGeometry(shape, 16);
+    remapShapeUVs(face);
+    return { bodyGeom: body, faceGeom: face };
+  }, []);
+
   useEffect(() => {
     return () => {
-      geometry.dispose();
+      bodyGeom.dispose();
+      faceGeom.dispose();
     };
-  }, [geometry]);
+  }, [bodyGeom, faceGeom]);
 
-  const texture = useMemo(
+  // ── Textures ───────────────────────────────────────────────────────────
+  const frontTexture = useMemo(
     () => makeTicketTexture({ eventName, ticketNumber, date, location }),
     [eventName, ticketNumber, date, location]
   );
-  useEffect(() => {
-    return () => {
-      texture.dispose();
-    };
-  }, [texture]);
-
-  // Roughness map varies the surface finish across the ticket so the
-  // iridescence doesn't read as one uniform sheen. Stub area + borders are
-  // smoother (more holo); printed body is matter (cleaner readability).
+  const backTexture = useMemo(
+    () => makeTicketBackTexture({ eventName, ticketNumber, date, location }),
+    [eventName, ticketNumber, date, location]
+  );
   const roughnessMap = useMemo(() => makeTicketRoughness(), []);
+
   useEffect(() => {
     return () => {
+      frontTexture.dispose();
+      backTexture.dispose();
       roughnessMap.dispose();
     };
-  }, [roughnessMap]);
+  }, [frontTexture, backTexture, roughnessMap]);
 
+  // ── Animation ──────────────────────────────────────────────────────────
   useFrame((state, delta) => {
     const g = groupRef.current;
     if (!g) return;
     const t = state.clock.elapsedTime;
 
-    // Idle wobble — always present but quieter when non-interactive so
-    // multi-instance views don't draw the eye.
+    // Idle wobble — quieter when not interactive (multi-instance views).
     const idleScale = interactive ? 1 : 0.4;
-    const wobbleX = Math.sin(t * 0.45) * 0.04 * idleScale;
-    const wobbleY = Math.sin(t * 0.6) * 0.07 * idleScale;
+    const wobbleX = Math.sin(t * 0.45) * 0.035 * idleScale;
+    const wobbleY = Math.sin(t * 0.6) * 0.06 * idleScale;
 
-    // Hover tilt layered on top, only when interactive AND the cursor is
-    // currently over a hover-capable container.
     const tiltScale = interactive && pointerActive ? 1 : 0;
-    const tiltX = -pointer.y * 0.3 * tiltScale;
-    const tiltY = pointer.x * 0.55 * tiltScale;
+    const tiltX = -pointer.y * 0.25 * tiltScale;
+    const tiltY = pointer.x * 0.45 * tiltScale;
 
-    // Flip — single tap rotates the ticket 180° around Y. Stacks on top
-    // of the wobble + tilt so the card still breathes after flipping.
     const flipBase = flipped ? Math.PI : 0;
 
-    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, wobbleX + tiltX, 6, delta);
-    // Slightly slower damp on Y so the flip animation reads as deliberate.
+    g.rotation.x = THREE.MathUtils.damp(
+      g.rotation.x,
+      wobbleX + tiltX,
+      6,
+      delta
+    );
     g.rotation.y = THREE.MathUtils.damp(
       g.rotation.y,
       wobbleY + tiltY + flipBase,
@@ -173,20 +170,19 @@ export function TicketMesh({
 
   return (
     <>
-      {/* Each <View> needs its own camera — the project's shared Canvas uses
-          an OrthographicCamera with the default −1..1 frustum, which would
-          clip the ticket entirely. Tightened to z=4.0 so the card fills
-          ~94% of the View. */}
+      {/* Each <View> needs its own camera — the project's shared Canvas
+          uses an OrthographicCamera with the default −1..1 frustum, which
+          would clip the ticket entirely. Pulled back to z=4.8 with fov=30
+          so the wobble + tilt extremes never push the ticket off-screen. */}
       <PerspectiveCamera
         makeDefault={cameraActive}
-        fov={32}
-        position={[0, 0, 4.0]}
+        fov={30}
+        position={[0, 0, 4.8]}
         near={0.1}
         far={50}
       />
 
-      {/* Image-based lighting via Lightformers — drives the iridescent
-          shimmer along the edges without overpowering the printed surface. */}
+      {/* Image-based lighting — drives the iridescent shimmer. */}
       <Environment resolution={512} background={false}>
         <Lightformer
           intensity={2.6}
@@ -221,20 +217,34 @@ export function TicketMesh({
       <ambientLight intensity={0.32} />
 
       <group ref={groupRef}>
-        <mesh geometry={geometry}>
-          {/*
-            Material balance:
-            - meshPhysicalMaterial with the iridescent + clearcoat layers
-              for the holo card feel.
-            - roughnessMap modulates the sheen across the surface so the
-              effect is selective (bright on borders/stub, calmer on the
-              printed body) rather than a uniform plastic shine.
-            - clearcoat dialled to 0.55 / clearcoatRoughness 0.32 so the
-              typography reads head-on; iridescence still kicks in at
-              oblique angles.
-          */}
+        {/*
+          Body — extruded silhouette providing thickness, sides, and the
+          bevelled edges that catch light. No texture map; the front/back
+          planes carry the printed surface. The slight z-offset of those
+          planes prevents z-fighting with this body's caps.
+        */}
+        <mesh geometry={bodyGeom}>
           <meshPhysicalMaterial
-            map={texture}
+            roughnessMap={roughnessMap}
+            color="#f4ece0"
+            roughness={0.55}
+            metalness={0.05}
+            clearcoat={0.55}
+            clearcoatRoughness={0.32}
+            iridescence={0.85}
+            iridescenceIOR={1.45}
+            iridescenceThicknessRange={[200, 1400]}
+            envMapIntensity={0.95}
+          />
+        </mesh>
+
+        {/* Front face — ShapeGeometry plane with the front canvas texture. */}
+        <mesh
+          geometry={faceGeom}
+          position={[0, 0, TICKET_D / 2 + PLANE_OFFSET]}
+        >
+          <meshPhysicalMaterial
+            map={frontTexture}
             roughnessMap={roughnessMap}
             color="#ffffff"
             roughness={0.55}
@@ -245,6 +255,33 @@ export function TicketMesh({
             iridescenceIOR={1.45}
             iridescenceThicknessRange={[200, 1400]}
             envMapIntensity={0.95}
+            side={THREE.FrontSide}
+          />
+        </mesh>
+
+        {/*
+          Back face — same ShapeGeometry, rotated 180° around Y so its
+          normal points -Z. It renders only when the camera is looking at
+          the back (i.e. after the user flips the ticket).
+        */}
+        <mesh
+          geometry={faceGeom}
+          position={[0, 0, -TICKET_D / 2 - PLANE_OFFSET]}
+          rotation={[0, Math.PI, 0]}
+        >
+          <meshPhysicalMaterial
+            map={backTexture}
+            roughnessMap={roughnessMap}
+            color="#ffffff"
+            roughness={0.55}
+            metalness={0.05}
+            clearcoat={0.55}
+            clearcoatRoughness={0.32}
+            iridescence={0.85}
+            iridescenceIOR={1.45}
+            iridescenceThicknessRange={[200, 1400]}
+            envMapIntensity={0.95}
+            side={THREE.FrontSide}
           />
         </mesh>
       </group>
