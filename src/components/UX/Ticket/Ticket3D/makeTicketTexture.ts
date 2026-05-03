@@ -24,9 +24,9 @@ const PAD = 96;
 // Synthesised from research (Korean hanko / cinema ticket / letterpress) and
 // the critic's pivot to a saturated commitment color. The whole card is
 // disciplined ink-on-bone *except* the stamp, which is the iconic moment.
-const PAPER_LIGHT = "#fbf3dc"; // bone, warm — brighter so it reads as paper on dark UI
-const PAPER_DARK = "#eee2c2"; // bone, slightly oxidised at edges
-const STUB_TINT = "rgba(20, 14, 8, 0.04)";
+const PAPER_LIGHT = "#f5ecd6"; // bone, warm
+const PAPER_DARK = "#e6dabd"; // bone, slightly oxidised at edges
+const STUB_TINT = "rgba(20, 14, 8, 0.05)";
 
 // Letterpress bite — pull ink density up so type doesn't read gauzy.
 const INK = "rgba(14, 9, 6, 0.99)";
@@ -36,13 +36,12 @@ const INK_GHOST = "rgba(14, 9, 6, 0.16)";
 const INK_HAIR = "rgba(14, 9, 6, 0.34)";
 const PAPER_GRAIN = "rgba(40, 24, 12, 0.06)";
 
-// Vermilion — Korean inkan / Japanese hanko ink. Bumped saturation so
-// it reads on a dark-mode page; the previous value sank into the body
-// when the canvas downsampled onto the mesh under neutral lighting.
-const STAMP_RED = "rgba(212, 38, 26, 0.99)";
-const STAMP_RED_DEEP = "rgba(178, 22, 14, 1.0)";
-const STAMP_RED_SOFT = "rgba(212, 38, 26, 0.65)";
-const STAMP_RED_BLOOM = "rgba(212, 38, 26, 0.22)";
+// Vermilion — Korean inkan / Japanese hanko ink, oxidised at the rim so
+// it reads as actual stamp impression rather than a vector fill.
+const STAMP_RED = "rgba(196, 48, 32, 0.95)";
+const STAMP_RED_DEEP = "rgba(140, 22, 14, 0.99)";
+const STAMP_RED_SOFT = "rgba(196, 48, 32, 0.6)";
+const STAMP_RED_BLOOM = "rgba(196, 48, 32, 0.18)";
 
 // Champagne foil — H monogram and serial digits. The foil *mesh layer*
 // (separate from this colour bake) lifts these zones into anisotropic
