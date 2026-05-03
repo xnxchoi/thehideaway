@@ -141,16 +141,10 @@ export function TicketSpotlight({
             className="absolute inset-0 cursor-default bg-background"
           />
 
-          {/* Top bar — close + meta */}
-          <div className="relative z-[1] flex items-center justify-between px-6 pt-6 xl:px-10 xl:pt-8">
-            <div className="min-w-0">
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Spotlight · {String(ticket.ticketNumber ?? 0).padStart(4, "0")}
-              </p>
-              <p className="mt-0.5 truncate text-base font-light tracking-tight xl:text-lg">
-                {ticket.eventName}
-              </p>
-            </div>
+          {/* Top bar — close only. The previous "Spotlight · 0042" label
+              labelled the interaction; luxe doesn't. The event name sits
+              under the ticket itself, no need to repeat it up top. */}
+          <div className="relative z-[1] flex items-start justify-end px-6 pt-6 xl:px-10 xl:pt-8">
             <RP_Btn
               onClick={onClose}
               aria-label="Close"
@@ -200,7 +194,13 @@ export function TicketSpotlight({
             </m.div>
           </div>
 
-          {/* Action rail — bottom */}
+          {/*
+            Action rail — bottom.
+            Bordered pill buttons read as shadcn-default. Replace with a
+            single hairline-divided row of glyph + label pairs separated
+            by `·`. No borders, no rounded backgrounds — the typography
+            does all the work.
+          */}
           <m.div
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -208,13 +208,15 @@ export function TicketSpotlight({
             transition={{ ...FADE, delay: 0.15 }}
             className="relative z-[1] flex flex-col items-center gap-3 px-6 pb-8 xl:pb-12"
           >
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-2">
               <SpotlightAction
-                label="Save image"
+                label="Save"
                 onClick={handleSaveImage}
                 glyph="↧"
               />
+              <RailDot />
               <SpotlightAction label="Share" onClick={handleShare} glyph="↗" />
+              <RailDot />
               <SpotlightAction
                 label="Show QR"
                 onClick={() => setQrOpen((v) => !v)}
@@ -222,6 +224,7 @@ export function TicketSpotlight({
                 disabled={!canShowQR}
                 pressed={qrOpen}
               />
+              <RailDot />
               <SpotlightAction
                 label={ticket.flipped ? "Flip back" : "Flip"}
                 onClick={ticket.onFlip}
@@ -287,18 +290,35 @@ function SpotlightAction({
       disabled={disabled}
       aria-pressed={pressed || undefined}
       className={cn(
-        "inline-flex items-center gap-2 rounded-md border border-border/40 px-4 py-2.5 font-mono text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
+        "group inline-flex items-baseline gap-1.5 px-2.5 py-1.5 font-mono text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
         disabled
-          ? "cursor-not-allowed border-border/20 text-muted-foreground/30"
+          ? "cursor-not-allowed text-muted-foreground/25"
           : pressed
-            ? "border-foreground/60 text-foreground"
-            : "text-foreground/75 hover:border-border hover:text-foreground"
+            ? "text-foreground"
+            : "text-muted-foreground/65 hover:text-foreground"
       )}
     >
-      <span aria-hidden className="text-sm leading-none">
+      <span
+        aria-hidden
+        className={cn(
+          "translate-y-px text-sm leading-none transition-transform",
+          !disabled && "group-hover:-translate-y-0.5"
+        )}
+      >
         {glyph}
       </span>
       {label}
     </RP_Btn>
+  );
+}
+
+function RailDot() {
+  return (
+    <span
+      aria-hidden
+      className="px-1 font-mono text-xs text-muted-foreground/25 select-none"
+    >
+      ·
+    </span>
   );
 }
