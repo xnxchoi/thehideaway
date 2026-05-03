@@ -8,11 +8,17 @@ export interface TicketTextureInput {
 }
 
 // Texture proportions match the geometry's 2:1 silhouette in TicketMesh.
-// STUB_RATIO corresponds to the geometric perforation x-position so the
-// printed dots line up with the notches cut into the mesh outline.
+// STUB_RATIO must match the geometry's normalised perforation x:
+//   geometry: TICKET_W = 4.6, STUB_OFFSET = 0.6 (centred shape)
+//   normalised u of perforation = (0.6 - (-2.3)) / 4.6 ≈ 0.63
+// If this drifts from the geometry value, the printed perforation dots
+// stop lining up with the notches AND the stub content (centred around
+// the texture's perforation) gets shifted off the geometry's stub —
+// the visible symptom is "0004" being clipped past the ticket's right
+// edge.
 const W = 2400;
 const H = 1200;
-const STUB_RATIO = 0.7;
+const STUB_RATIO = 0.63;
 const STUB_X = Math.round(W * STUB_RATIO);
 const PAD = 96;
 
@@ -187,9 +193,11 @@ function drawBodyFront(
 
   // ── Editorial date block ────────────────────────────────────────────
   // Day numerals as the body's visual anchor — bold but not so dramatic
-  // it dwarfs the labels beside it.
+  // it dwarfs the labels beside it. Weight 300 (not 200) so the
+  // numerals still read crisp after the texture downsamples onto the
+  // mesh.
   ctx.fillStyle = INK;
-  ctx.font = `200 240px ${FONT_SANS}`;
+  ctx.font = `300 240px ${FONT_SANS}`;
   ctx.textAlign = "left";
   const dayStr = meta.day || "—";
   ctx.fillText(dayStr, PAD - 4, 440);
@@ -233,9 +241,7 @@ function drawBodyFront(
   // Drop the time segment when it's empty (no real time on the event)
   // so we don't print a bare "·" floating in front of the venue.
   const venue = (input.location ?? "VENUE").toUpperCase();
-  const footLine = meta.timeCaps
-    ? `${meta.timeCaps}    ·    ${venue}`
-    : venue;
+  const footLine = meta.timeCaps ? `${meta.timeCaps}    ·    ${venue}` : venue;
   drawTracked(ctx, footLine, PAD, H - PAD - 18, 6);
 
   ctx.fillStyle = INK_SOFT;
@@ -269,15 +275,14 @@ function drawStubFront(
   ctx.stroke();
 
   // Stub serial — sized to fit the stub width with a comfortable margin
-  // on either side. 0004 at 320px mono overflowed the 720px stub; we
-  // measure and scale so any 4-digit number reads as the stub anchor
-  // without colliding with the perforation or outer frame.
-  const maxNumWidth = stubW - 96;
-  let numFontSize = 220;
-  ctx.font = `200 ${numFontSize}px ${FONT_MONO}`;
+  // on either side. Auto-shrink so any 4-6 digit number reads as the
+  // stub anchor without overflowing past the stub's right edge.
+  const maxNumWidth = stubW - 80;
+  let numFontSize = 240;
+  ctx.font = `300 ${numFontSize}px ${FONT_MONO}`;
   while (ctx.measureText(num).width > maxNumWidth && numFontSize > 80) {
     numFontSize -= 8;
-    ctx.font = `200 ${numFontSize}px ${FONT_MONO}`;
+    ctx.font = `300 ${numFontSize}px ${FONT_MONO}`;
   }
   ctx.fillStyle = INK;
   ctx.fillText(num, cx, H / 2 + numFontSize / 2 - 16);
@@ -413,8 +418,7 @@ function parseDate(d: string | null): DateMeta {
       .toLocaleString("en-US", { weekday: "long" })
       .toUpperCase();
     const year = String(parsed.getFullYear());
-    const isMidnight =
-      parsed.getHours() === 0 && parsed.getMinutes() === 0;
+    const isMidnight = parsed.getHours() === 0 && parsed.getMinutes() === 0;
     const time = isMidnight
       ? ""
       : parsed
