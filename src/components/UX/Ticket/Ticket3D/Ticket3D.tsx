@@ -3,7 +3,6 @@
 import { View } from "@react-three/drei";
 import {
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
   Suspense,
   useCallback,
   useEffect,
@@ -91,6 +90,15 @@ export function Ticket3D({
   const [internalFlipped, setInternalFlipped] = useState(false);
   const flipped = flippedProp ?? internalFlipped;
 
+  const handleClick = useCallback(() => {
+    if (!interactive) return;
+    if (onFlip) {
+      onFlip();
+    } else {
+      setInternalFlipped((f) => !f);
+    }
+  }, [interactive, onFlip]);
+
   // ── Pointer move (hover tilt) — only on hover-capable inputs ────────────
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [pointerActive, setPointerActive] = useState(false);
@@ -129,94 +137,6 @@ export function Ticket3D({
     };
   }, [hoverTiltActive]);
 
-  // ── Tug — signature gesture ─────────────────────────────────────────────
-  // Pointer-down → start tracking horizontal drag from the start point.
-  // Drag delta is normalised against half the container width and clamped
-  // to [-1, 1] for the mesh. On pointer-up the tug springs back to 0,
-  // and if drag was minimal we treat it as a tap-to-flip.
-  const [tug, setTug] = useState(0);
-  const dragStateRef = useRef<{
-    startX: number;
-    halfW: number;
-    moved: boolean;
-    /** Latest tug magnitude — crossed-threshold tracker for haptics. */
-    lastTug: number;
-  } | null>(null);
-
-  const handlePointerDown = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!interactive) return;
-      const el = containerRef.current;
-      if (!el) return;
-      // Avoid stealing scroll on touch — if the user starts a vertical
-      // gesture, browser scroll wins.
-      const rect = el.getBoundingClientRect();
-      dragStateRef.current = {
-        startX: e.clientX,
-        halfW: rect.width / 2,
-        moved: false,
-        lastTug: 0
-      };
-      el.setPointerCapture?.(e.pointerId);
-    },
-    [interactive]
-  );
-
-  const handlePointerMove = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const ds = dragStateRef.current;
-      if (!ds) return;
-      const dx = e.clientX - ds.startX;
-      if (Math.abs(dx) > 6) ds.moved = true;
-      // Normalise — full half-width drag = tug 1.0. The mesh applies its
-      // own square-root easing on top so small drags still register.
-      const next = Math.max(-1, Math.min(1, dx / ds.halfW));
-      // Haptic feedback on threshold crossings — the paper "gives" at
-      // 60% pull (would-be tear point). Only fires once per crossing
-      // direction. navigator.vibrate is a no-op on desktop and on iOS,
-      // and silent on permission-denied — safe to call unconditionally.
-      const wasBeyond = Math.abs(ds.lastTug) >= 0.6;
-      const isBeyond = Math.abs(next) >= 0.6;
-      if (
-        !wasBeyond &&
-        isBeyond &&
-        typeof navigator !== "undefined" &&
-        typeof navigator.vibrate === "function"
-      ) {
-        navigator.vibrate(10);
-      }
-      ds.lastTug = next;
-      setTug(next);
-    },
-    []
-  );
-
-  const handlePointerUp = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const ds = dragStateRef.current;
-      dragStateRef.current = null;
-      const el = containerRef.current;
-      el?.releasePointerCapture?.(e.pointerId);
-      setTug(0);
-      // No drag → it was a tap. Trigger flip.
-      if (interactive && ds && !ds.moved) {
-        if (onFlip) onFlip();
-        else setInternalFlipped((f) => !f);
-      }
-    },
-    [interactive, onFlip]
-  );
-
-  const handlePointerCancel = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      dragStateRef.current = null;
-      const el = containerRef.current;
-      el?.releasePointerCapture?.(e.pointerId);
-      setTug(0);
-    },
-    []
-  );
-
   return (
     <div
       ref={setRefs}
@@ -224,21 +144,14 @@ export function Ticket3D({
       style={{
         touchAction: "manipulation",
         cursor: interactive ? "pointer" : "default",
-        // CSS drop-shadow follows the View's rendered alpha. The warm key
-        // light in TicketMesh sits at +3.5,+2.5 (front-right), so the cast
-        // shadow biases left and down. Two terms only:
-        //   - Soft cast — neutral (warm-tinted shadows look Photoshop-y),
-        //     biased to negative-x for the directional key.
-        //   - Tight contact — close, dark, no offset, sells paper-on-
-        //     surface without the Dribbble floating-card look.
+        // CSS drop-shadow follows the rendered alpha of the View, so the
+        // shadow stretches and tilts with the card — much better than a
+        // flat orthogonal contact shadow on a ground plane.
         filter:
-          "drop-shadow(-12px 38px 48px rgba(14, 10, 6, 0.28)) drop-shadow(0 2px 3px rgba(14, 10, 6, 0.34))",
+          "drop-shadow(0 28px 36px rgba(20, 14, 8, 0.18)) drop-shadow(0 8px 14px rgba(20, 14, 8, 0.10))",
         ...style
       }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
+      onClick={handleClick}
       // a11y: a flippable ticket is effectively a button.
       role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : -1}
@@ -246,8 +159,7 @@ export function Ticket3D({
         if (!interactive) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          if (onFlip) onFlip();
-          else setInternalFlipped((f) => !f);
+          handleClick();
         }
       }}
     >
@@ -260,7 +172,6 @@ export function Ticket3D({
             interactive={interactive}
             flipped={flipped}
             cameraActive={inView}
-            tug={interactive ? tug : 0}
           />
         </Suspense>
       </View>

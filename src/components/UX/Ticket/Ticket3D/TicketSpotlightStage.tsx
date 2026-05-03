@@ -45,12 +45,6 @@ export function TicketSpotlightStage({
 
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [pointerActive, setPointerActive] = useState(false);
-  const [tug, setTug] = useState(0);
-  const dragStateRef = useRef<{
-    startX: number;
-    halfW: number;
-    moved: boolean;
-  } | null>(null);
 
   // Hover tilt — mouse-only.
   useEffect(() => {
@@ -81,55 +75,13 @@ export function TicketSpotlightStage({
     };
   }, []);
 
-  // Tug — same gesture as Ticket3D. Pointer-down captures the start;
-  // horizontal drag normalises against half-width into [-1, 1]; release
-  // without drag = flip; release with drag springs the tug back to 0.
-  const handlePointerDown = useCallback(
+  const handleClick = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
-      const el = containerRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      dragStateRef.current = {
-        startX: e.clientX,
-        halfW: rect.width / 2,
-        moved: false
-      };
-      el.setPointerCapture?.(e.pointerId);
-    },
-    []
-  );
-
-  const handlePointerMove = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const ds = dragStateRef.current;
-      if (!ds) return;
-      const dx = e.clientX - ds.startX;
-      if (Math.abs(dx) > 6) ds.moved = true;
-      setTug(Math.max(-1, Math.min(1, dx / ds.halfW)));
-    },
-    []
-  );
-
-  const handlePointerUp = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const ds = dragStateRef.current;
-      dragStateRef.current = null;
-      const el = containerRef.current;
-      el?.releasePointerCapture?.(e.pointerId);
-      setTug(0);
-      if (ds && !ds.moved) onFlip();
+      // Don't fire on text-selection drags.
+      if (e.detail === 0) return;
+      onFlip();
     },
     [onFlip]
-  );
-
-  const handlePointerCancel = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      dragStateRef.current = null;
-      const el = containerRef.current;
-      el?.releasePointerCapture?.(e.pointerId);
-      setTug(0);
-    },
-    []
   );
 
   return (
@@ -140,13 +92,10 @@ export function TicketSpotlightStage({
         touchAction: "manipulation",
         cursor: "pointer",
         filter:
-          "drop-shadow(-18px 56px 72px rgba(14, 10, 6, 0.42)) drop-shadow(0 3px 5px rgba(14, 10, 6, 0.46))",
+          "drop-shadow(0 36px 48px rgba(20, 14, 8, 0.32)) drop-shadow(0 12px 22px rgba(20, 14, 8, 0.18))",
         ...style
       }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
+      onPointerUp={handleClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -174,7 +123,6 @@ export function TicketSpotlightStage({
             interactive
             flipped={flipped}
             cameraActive
-            tug={tug}
           />
         </Suspense>
       </Canvas>
