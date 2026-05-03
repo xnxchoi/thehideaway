@@ -176,8 +176,8 @@ export function TicketDetailClient({
                     </p>
                   ) : (
                     <p className="mt-4 font-mono text-[11px] leading-relaxed text-muted-foreground/65 xl:text-xs">
-                      The host will reach out with payment details. Your
-                      ticket activates the moment we confirm receipt.
+                      The host will reach out with payment details. Your ticket
+                      activates the moment we confirm receipt.
                     </p>
                   )}
                 </div>
