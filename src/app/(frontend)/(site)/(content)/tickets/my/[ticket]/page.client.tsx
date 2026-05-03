@@ -6,6 +6,7 @@ import {
   TicketCard,
   type TicketStatus
 } from "@/components/UX/Ticket/TicketCard";
+import { ticketFontVariables } from "@/components/UX/Ticket/fonts";
 
 interface Props {
   ticketId: string;
@@ -66,104 +67,27 @@ export function TicketDetailClient({
   paymentInstructions,
   holderName
 }: Props) {
-  const num = String(ticketNumber ?? 0).padStart(4, "0");
   const dateLong = formatLongDate(eventDate);
 
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
-      {/* ── Header ──────────────────────────────────────────────── */}
-      {/* Static, not sticky — sticky covered the scrolled ticket content
-          (the vertical card is taller than the viewport, so the top of
-          the card was disappearing behind the sticky bar). Lets the
-          header scroll away with everything else. */}
-      <header className="border-b border-border/30">
-        <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
-                Ticket · No. {num}
-              </p>
-              <h1 className="mt-0.5 line-clamp-1 text-2xl font-light tracking-tight xl:text-3xl">
-                {eventName}
-              </h1>
-            </div>
-            <Link
-              href="/tickets/my"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
-            >
-              ← All tickets
-            </Link>
-          </div>
+      <div className={ticketFontVariables}>
+        {/* Top rail — back link only. The page header used to repeat
+            "Ticket · No. 0004 / Hideaway Test Salon" right above a
+            ticket that already says exactly that. The artifact is the
+            H1; chrome stays out of its way. */}
+        <div className="mx-auto w-full max-w-7xl px-6 pt-6 xl:px-10 xl:pt-10">
+          <Link
+            href="/tickets/my"
+            className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+          >
+            ← All tickets
+          </Link>
         </div>
-      </header>
 
-      {/* ── Content ─────────────────────────────────────────────── */}
-      <section className="mx-auto w-full max-w-7xl px-6 py-8 xl:px-10 xl:py-12">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16 xl:gap-20">
-          {/* Metadata rail.
-              Status, price, payment instructions, and the "used /
-              canceled" status copy all live here — the ticket itself
-              is the ticket. */}
-          <aside className="lg:self-start">
-            <dl className="space-y-5 border-t border-border/20 pt-8">
-              {dateLong ? <Field label="When" value={dateLong} /> : null}
-              {eventLocation ? (
-                <Field label="Where" value={eventLocation} />
-              ) : null}
-              {holderName ? <Field label="Holder" value={holderName} /> : null}
-              <Field
-                label="Status"
-                value={`${STATUS_LABEL[status]}${checkedIn ? " · Checked in" : ""}`}
-                mono
-              />
-              {status === "pending" ? (
-                <Field label="Price" value={formatKRW(ticketPrice)} mono />
-              ) : null}
-            </dl>
-
-            {/* Payment instructions — only when pending + unpaid */}
-            {status === "pending" && !paid ? (
-              <div className="mt-8 border-t border-border/20 pt-8">
-                <p className="font-mono text-[10px] tracking-[0.32em] text-muted-foreground/55 uppercase">
-                  Payment
-                </p>
-                {paymentInstructions ? (
-                  <p className="mt-4 font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/80 xl:text-xs">
-                    {paymentInstructions}
-                  </p>
-                ) : (
-                  <p className="mt-4 font-mono text-[11px] leading-relaxed text-muted-foreground/65 xl:text-xs">
-                    The host will reach out with payment details. Your ticket
-                    activates the moment we confirm receipt.
-                  </p>
-                )}
-              </div>
-            ) : null}
-
-            {/* Terminal-state copy — used / canceled */}
-            {status === "used" ? (
-              <p className="mt-8 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
-                This ticket has been used. Thanks for being there.
-              </p>
-            ) : status === "canceled" ? (
-              <p className="mt-8 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
-                This ticket was canceled. If you think this is a mistake, reach
-                out to the host.
-              </p>
-            ) : null}
-
-            {checkedIn && eventSlug ? (
-              <Link
-                href={`/tickets/${eventSlug}/exclusive`}
-                className="mt-8 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
-              >
-                View exclusive content →
-              </Link>
-            ) : null}
-          </aside>
-
-          {/* Ticket artifact */}
-          <div className="flex justify-center lg:justify-start">
+        {/* ── Hero — landscape ticket centred ────────────────────── */}
+        <section className="mx-auto w-full max-w-7xl px-6 pt-10 pb-16 xl:px-10 xl:pt-16 xl:pb-20">
+          <div className="flex justify-center">
             <TicketCard
               ticketNumber={ticketNumber}
               status={status}
@@ -178,8 +102,66 @@ export function TicketDetailClient({
               paymentInstructions={paymentInstructions}
             />
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* ── Status / payment / actions ─────────────────────────── */}
+        {/* Sub-content under the artifact — long-form metadata that
+            wouldn't fit cleanly on the ticket itself. The ticket above
+            already shows event/date/location/holder/serial. */}
+        <section className="mx-auto w-full max-w-2xl px-6 pb-32 xl:pb-40">
+          <dl className="grid grid-cols-2 gap-x-10 gap-y-5 border-t border-border/20 pt-8 sm:grid-cols-3">
+            <Field
+              label="Status"
+              value={`${STATUS_LABEL[status]}${checkedIn ? " · Checked in" : ""}`}
+              mono
+            />
+            {dateLong ? <Field label="When" value={dateLong} /> : null}
+            {status === "pending" ? (
+              <Field label="Price" value={formatKRW(ticketPrice)} mono />
+            ) : null}
+          </dl>
+
+          {/* Payment instructions — only when pending + unpaid */}
+          {status === "pending" && !paid ? (
+            <div className="mt-10 border-t border-border/20 pt-8">
+              <p className="font-mono text-[10px] tracking-[0.32em] text-muted-foreground/55 uppercase">
+                Payment
+              </p>
+              {paymentInstructions ? (
+                <p className="mt-4 font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/80 xl:text-xs">
+                  {paymentInstructions}
+                </p>
+              ) : (
+                <p className="mt-4 font-mono text-[11px] leading-relaxed text-muted-foreground/65 xl:text-xs">
+                  The host will reach out with payment details. Your ticket
+                  activates the moment we confirm receipt.
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          {/* Terminal-state copy — used / canceled */}
+          {status === "used" ? (
+            <p className="mt-10 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+              This ticket has been used. Thanks for being there.
+            </p>
+          ) : status === "canceled" ? (
+            <p className="mt-10 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+              This ticket was canceled. If you think this is a mistake, reach
+              out to the host.
+            </p>
+          ) : null}
+
+          {checkedIn && eventSlug ? (
+            <Link
+              href={`/tickets/${eventSlug}/exclusive`}
+              className="mt-10 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+            >
+              View exclusive content →
+            </Link>
+          ) : null}
+        </section>
+      </div>
     </RPage>
   );
 }
