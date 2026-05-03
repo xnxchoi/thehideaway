@@ -91,16 +91,12 @@ export function TicketDetailClient({
     <RPage type="me" slug={["tickets", ticketId]}>
       {/* ── Hero stage ────────────────────────────────────────────── */}
       {/*
-        Wide stage so the 3D ticket gets at least half the screen on PC.
-        Container max is 110rem (1760px) — comfortably wider than the
-        max-w-7xl (1280px) used by the info grid below, so the ticket
-        feels like an artifact and not a list item.
+        Wide enough that the ticket reads as the page's artifact, but not
+        so wide it dominates. min(64rem, 100%) lands at ~50% of a 1920px
+        screen, ~60% of a 16" laptop. Earlier 110rem was overwhelming.
       */}
       <section className="px-6 pt-14 pb-10 sm:px-10 xl:px-12 xl:pt-20 xl:pb-14">
-        <div
-          className="mx-auto"
-          style={{ width: "min(110rem, 100%)" }}
-        >
+        <div className="mx-auto" style={{ width: "min(64rem, 100%)" }}>
           <Ticket3D
             eventName={eventName}
             ticketNumber={ticketNumber}
@@ -110,8 +106,9 @@ export function TicketDetailClient({
             onFlip={toggleFlip}
           />
 
-          <div className="mx-auto mt-5 flex items-center justify-between gap-3 px-2 xl:mt-6"
-            style={{ width: "min(64rem, 100%)" }}
+          <div
+            className="mx-auto mt-5 flex items-center justify-between gap-3 px-2 xl:mt-6"
+            style={{ width: "100%" }}
           >
             <p className="font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
               Tap to flip
@@ -212,21 +209,13 @@ export function TicketDetailClient({
           <div className="lg:col-span-3">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
               <Field label="Number" value={`#${num}`} mono />
-              <Field
-                label="Holder"
-                value={holderName ?? "—"}
-                fallback="—"
-              />
+              <Field label="Holder" value={holderName ?? "—"} fallback="—" />
               <Field
                 label="Price"
                 value={ticketPrice > 0 ? formatKRW(ticketPrice) : "Free"}
                 mono
               />
-              <Field
-                label="Paid"
-                value={paid ? "Confirmed" : "Pending"}
-                mono
-              />
+              <Field label="Paid" value={paid ? "Confirmed" : "Pending"} mono />
             </dl>
 
             {checkedIn && eventSlug ? (

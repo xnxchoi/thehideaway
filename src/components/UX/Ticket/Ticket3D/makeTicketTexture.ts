@@ -186,35 +186,38 @@ function drawBodyFront(
   ctx.stroke();
 
   // ── Editorial date block ────────────────────────────────────────────
-  // Massive day numerals as the visual anchor (the Bakken move).
+  // Day numerals as the body's visual anchor — bold but not so dramatic
+  // it dwarfs the labels beside it.
   ctx.fillStyle = INK;
-  ctx.font = `200 320px ${FONT_SANS}`;
+  ctx.font = `200 240px ${FONT_SANS}`;
   ctx.textAlign = "left";
   const dayStr = meta.day || "—";
-  ctx.fillText(dayStr, PAD - 8, 480);
+  ctx.fillText(dayStr, PAD - 4, 440);
 
-  // Month + year in a tight grid to the right of the day numerals.
-  // Position is anchored to the measured width of the day numerals so it
-  // tracks long days (e.g. "30") cleanly.
+  // Month / day-of-week / year in a tight mono-caps grid to the right
+  // of the day numerals, anchored to their measured width.
   const dayWidth = ctx.measureText(dayStr).width;
-  const gridX = PAD - 8 + dayWidth + 40;
+  const gridX = PAD - 4 + dayWidth + 36;
 
   ctx.fillStyle = INK_MID;
-  ctx.font = `700 28px ${FONT_MONO}`;
-  drawTracked(ctx, meta.monthCaps, gridX, 280, 6);
+  ctx.font = `700 36px ${FONT_MONO}`;
+  drawTracked(ctx, meta.monthCaps, gridX, 270, 6);
 
   ctx.fillStyle = INK_SOFT;
   ctx.font = `500 22px ${FONT_MONO}`;
-  drawTracked(ctx, meta.dowCaps, gridX, 318, 6);
+  drawTracked(ctx, meta.dowCaps, gridX, 308, 6);
 
   ctx.fillStyle = INK_MID;
-  ctx.font = `400 56px ${FONT_MONO}`;
-  ctx.fillText(meta.year || "", gridX, 410);
+  ctx.font = `400 48px ${FONT_MONO}`;
+  ctx.fillText(meta.year || "", gridX, 396);
 
-  // ── Event name — the only italic on the card (Cereal-style romance) ──
+  // ── Event name — light sans, the calmest line on the card ───────────
+  // Italic serif looked decorative at full res but fell apart after the
+  // texture downsamples onto the mesh; switching to a light sans keeps
+  // crisp edges at any rendered size.
   ctx.fillStyle = INK;
-  ctx.font = `italic 300 58px ${FONT_SERIF}`;
-  wrapText(ctx, input.eventName, PAD, 600, innerR - PAD, 70, 2);
+  ctx.font = `300 64px ${FONT_SANS}`;
+  wrapText(ctx, input.eventName, PAD, 600, innerR - PAD, 76, 2);
 
   // ── Foot strip: time · venue, with a hairline rule above ────────────
   ctx.strokeStyle = "rgba(20,16,12,0.22)";
@@ -227,13 +230,13 @@ function drawBodyFront(
   ctx.fillStyle = INK_MID;
   ctx.font = `700 28px ${FONT_MONO}`;
   ctx.textAlign = "left";
-  drawTracked(
-    ctx,
-    `${meta.timeCaps || "TIME"}    ·    ${(input.location ?? "VENUE").toUpperCase()}`,
-    PAD,
-    H - PAD - 18,
-    6
-  );
+  // Drop the time segment when it's empty (no real time on the event)
+  // so we don't print a bare "·" floating in front of the venue.
+  const venue = (input.location ?? "VENUE").toUpperCase();
+  const footLine = meta.timeCaps
+    ? `${meta.timeCaps}    ·    ${venue}`
+    : venue;
+  drawTracked(ctx, footLine, PAD, H - PAD - 18, 6);
 
   ctx.fillStyle = INK_SOFT;
   ctx.font = `400 22px ${FONT_MONO}`;
@@ -265,10 +268,19 @@ function drawStubFront(
   ctx.lineTo(W - PAD, PAD + 84);
   ctx.stroke();
 
-  // Massive numerals — the Bakken anchor.
+  // Stub serial — sized to fit the stub width with a comfortable margin
+  // on either side. 0004 at 320px mono overflowed the 720px stub; we
+  // measure and scale so any 4-digit number reads as the stub anchor
+  // without colliding with the perforation or outer frame.
+  const maxNumWidth = stubW - 96;
+  let numFontSize = 220;
+  ctx.font = `200 ${numFontSize}px ${FONT_MONO}`;
+  while (ctx.measureText(num).width > maxNumWidth && numFontSize > 80) {
+    numFontSize -= 8;
+    ctx.font = `200 ${numFontSize}px ${FONT_MONO}`;
+  }
   ctx.fillStyle = INK;
-  ctx.font = `200 320px ${FONT_MONO}`;
-  ctx.fillText(num, cx, H / 2 + 110);
+  ctx.fillText(num, cx, H / 2 + numFontSize / 2 - 16);
 
   // Foot rule + ADMIT ONE caps along the bottom.
   ctx.strokeStyle = "rgba(20,16,12,0.22)";
@@ -318,13 +330,7 @@ function drawBodyBack(
   ctx.font = `500 22px ${FONT_MONO}`;
   ctx.textAlign = "left";
   lines.forEach((line, i) => {
-    drawTracked(
-      ctx,
-      line,
-      PAD,
-      H - PAD - 48 + (i - lines.length + 1) * 32,
-      4
-    );
+    drawTracked(ctx, line, PAD, H - PAD - 48 + (i - lines.length + 1) * 32, 4);
   });
 
   // Hairline above the boilerplate.
@@ -338,13 +344,7 @@ function drawBodyBack(
   // Tiny event echo above the boilerplate.
   ctx.fillStyle = INK_SOFT;
   ctx.font = `400 22px ${FONT_MONO}`;
-  drawTracked(
-    ctx,
-    input.eventName.toUpperCase(),
-    PAD,
-    H - PAD - 168,
-    4
-  );
+  drawTracked(ctx, input.eventName.toUpperCase(), PAD, H - PAD - 168, 4);
 }
 
 function drawStubBack(
@@ -394,12 +394,15 @@ interface DateMeta {
  * Take a string like "Thursday, May 7, 2026" or "May 7, 2026" and split
  * it into individually-styleable pieces. Falls back gracefully if the
  * input doesn't match.
+ *
+ * Time is suppressed when the parsed value lands on midnight (00:00) —
+ * that's the default when an event was configured with a date but no
+ * time, and "12:00 AM" reads like wrong data on a printed ticket.
  */
 function parseDate(d: string | null): DateMeta {
   if (!d) {
     return { day: "—", monthCaps: "", dowCaps: "", year: "", timeCaps: "" };
   }
-  // Try parsing as a real date first so we get reliable dow/month/time.
   const parsed = new Date(d);
   if (!isNaN(parsed.getTime())) {
     const day = String(parsed.getDate());
@@ -410,13 +413,16 @@ function parseDate(d: string | null): DateMeta {
       .toLocaleString("en-US", { weekday: "long" })
       .toUpperCase();
     const year = String(parsed.getFullYear());
-    const time = parsed
-      .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-      .toUpperCase()
-      .replace(/\s+/g, " ");
+    const isMidnight =
+      parsed.getHours() === 0 && parsed.getMinutes() === 0;
+    const time = isMidnight
+      ? ""
+      : parsed
+          .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+          .toUpperCase()
+          .replace(/\s+/g, " ");
     return { day, monthCaps: month, dowCaps: dow, year, timeCaps: time };
   }
-  // Last-resort: just hand back the raw string in caps as the day field.
   return {
     day: d.toUpperCase(),
     monthCaps: "",
@@ -442,7 +448,8 @@ function drawTracked(
 ): void {
   const chars = Array.from(text);
   const widths = chars.map((ch) => ctx.measureText(ch).width);
-  const total = widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
+  const total =
+    widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
 
   let cursor: number;
   if (align === "right") cursor = x - total;
