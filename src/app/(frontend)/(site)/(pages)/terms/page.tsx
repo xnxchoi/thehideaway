@@ -1,159 +1,77 @@
+import { LegalShell } from "@/components/core/LegalShell/LegalShell";
 import { RPage } from "@/components/UX/Transition";
+import { BUSINESS } from "@/constants/business";
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
+import { TermsEn } from "./terms.en";
+import { TermsKo } from "./terms.ko";
 
 export const metadata: Metadata = {
-	title: "Terms of Service — The Hideaway",
-	description: "Terms and conditions for using The Hideaway platform."
+  title: "Terms of Service — The Hideaway",
+  description: "Terms and conditions for using The Hideaway platform."
 };
 
-export default function TermsPage() {
-	return (
-		<RPage type="pages" slug={["terms"]}>
-			<div className="relative mx-auto w-full max-w-[52em] px-[1.25em] pt-[10em] pb-[6em] sm:px-[2em] sm:pt-[15em]">
-				<div className="mb-[3em]">
-					<p className="mb-[.5em] text-[.75em] font-normal uppercase leading-[1] opacity-60">
-						Legal
-					</p>
-					<h1 className="my-0 text-[2.5em] leading-[1.1] font-medium">
-						Terms of Service
-					</h1>
-					<p className="mt-[1em] opacity-60 text-[.9em]">
-						Last updated: 2026-04-15
-					</p>
-				</div>
+export const TERMS_LAST_UPDATED = "2026-04-15";
 
-				<div className="prose prose-neutral dark:prose-invert max-w-none space-y-[2em] leading-[1.7] opacity-90">
+const TOC_KO = [
+  { id: "purpose", label: "목적" },
+  { id: "definitions", label: "정의" },
+  { id: "amendment", label: "약관의 게시·개정" },
+  { id: "formation", label: "이용계약의 성립" },
+  { id: "obligations", label: "회원의 의무" },
+  { id: "content", label: "콘텐츠" },
+  { id: "payment", label: "유료서비스·결제" },
+  { id: "withdrawal", label: "청약철회·환불" },
+  { id: "termination", label: "탈퇴·자격상실" },
+  { id: "service", label: "서비스의 제공·변경" },
+  { id: "liability", label: "면책·책임" },
+  { id: "disputes", label: "분쟁해결" },
+  { id: "business", label: "사업자 정보" }
+];
 
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">1. Acceptance of Terms</h2>
-						<p>
-							By accessing or using The Hideaway platform (&ldquo;Service&rdquo;) operated by{" "}
-							<strong>Restored Projects</strong>, you agree to be bound by these
-							Terms of Service. If you do not agree, do not use the Service.
-						</p>
-					</section>
+const TOC_EN = [
+  { id: "purpose", label: "Purpose" },
+  { id: "definitions", label: "Definitions" },
+  { id: "amendment", label: "Posting and Amendment" },
+  { id: "formation", label: "Formation" },
+  { id: "obligations", label: "Member Obligations" },
+  { id: "content", label: "Content" },
+  { id: "payment", label: "Paid Services and Payment" },
+  { id: "withdrawal", label: "Withdrawal and Refunds" },
+  { id: "termination", label: "Termination" },
+  { id: "service", label: "Service Changes" },
+  { id: "liability", label: "Disclaimer" },
+  { id: "disputes", label: "Governing Law" },
+  { id: "business", label: "Business Information" }
+];
 
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">2. Eligibility</h2>
-						<p>
-							You must be at least <strong>16</strong> years old to use
-							the Service. By using the Service, you represent that you meet this age requirement.
-							If you are accessing the Service on behalf of a company or organization, you represent
-							that you have authority to bind that entity to these Terms.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">3. Your Account</h2>
-						<p>
-							You are responsible for maintaining the confidentiality of your account credentials
-							and for all activity that occurs under your account. You agree to notify us immediately
-							of any unauthorized use of your account. We recommend enabling two-factor authentication
-							for added security.
-						</p>
-						<p className="mt-[.75em]">
-							You may not create accounts using automated means, create multiple accounts for
-							abusive purposes, or impersonate any person or entity.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">4. Acceptable Use</h2>
-						<p>You agree not to use the Service to:</p>
-						<ul className="list-disc pl-[1.5em] space-y-[.4em]">
-							<li>Post or transmit content that is unlawful, harmful, threatening, abusive, harassing, defamatory, or otherwise objectionable.</li>
-							<li>Infringe the intellectual property rights of others.</li>
-							<li>Distribute spam, malware, or other malicious content.</li>
-							<li>Interfere with or disrupt the integrity or performance of the Service.</li>
-							<li>Attempt to gain unauthorized access to the Service or its related systems.</li>
-							<li>Collect or harvest other users&rsquo; personal information without their consent.</li>
-							<li>Use the Service for any commercial purpose without our express written permission.</li>
-						</ul>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">5. Content</h2>
-						<p>
-							You retain ownership of content you submit to the Service. By posting content, you
-							grant us a non-exclusive, worldwide, royalty-free license to display, distribute,
-							and use that content in connection with operating the Service.
-						</p>
-						<p className="mt-[.75em]">
-							We reserve the right to remove any content that violates these Terms or that we
-							deem inappropriate, without prior notice.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">6. Third-Party Sign-In Services</h2>
-						<p>
-							The Service offers sign-in via Google and Naver OAuth. Your use of these services
-							is subject to their respective terms of service and privacy policies. We are not
-							responsible for the practices of these third-party providers.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">7. Account Termination</h2>
-						<p>
-							You may delete your account at any time from your account settings. We reserve the
-							right to suspend or terminate accounts that violate these Terms, with or without
-							notice. Upon termination, your right to use the Service ceases immediately.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">8. Disclaimer of Warranties</h2>
-						<p>
-							THE SERVICE IS PROVIDED &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo; WITHOUT
-							WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES
-							OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO
-							NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF VIRUSES.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">9. Limitation of Liability</h2>
-						<p>
-							TO THE MAXIMUM EXTENT PERMITTED BY LAW, <strong>Restored Projects</strong>{" "}
-							SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE
-							DAMAGES ARISING FROM YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED
-							THE AMOUNT YOU PAID US IN THE TWELVE MONTHS PRECEDING THE CLAIM.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">10. Governing Law</h2>
-						<p>
-							These Terms are governed by the laws of{" "}
-							<strong>the Republic of Korea</strong>, without
-							regard to its conflict of law provisions. Any disputes arising from these Terms
-							shall be resolved in the courts of{" "}
-							<strong>Seoul, Republic of Korea</strong>.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">11. Changes to These Terms</h2>
-						<p>
-							We may update these Terms from time to time. We will notify you of material changes
-							by email or by posting a prominent notice in the Service. Continued use of the Service
-							after changes take effect constitutes acceptance of the revised Terms.
-						</p>
-					</section>
-
-					<section>
-						<h2 className="text-[1.4em] font-medium mb-[.75em]">12. Contact</h2>
-						<p>
-							For questions about these Terms, contact us at:<br />
-							<strong>Restored Projects</strong><br />
-							<strong>Olympic-ro 4-gil 15, Seoul, Republic of Korea</strong><br />
-							Email: <strong>concierge@hideawayseoul.com</strong>
-						</p>
-					</section>
-
-				</div>
-			</div>
-		</RPage>
-	);
+export default async function TermsPage() {
+  const locale = await getLocale();
+  const isKo = locale === "ko";
+  return (
+    <RPage type="pages" slug={["terms"]}>
+      <LegalShell
+        eyebrow={isKo ? "법적 고지" : "Legal"}
+        title={isKo ? "이용약관" : "Terms of Service"}
+        lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
+        lastUpdated={TERMS_LAST_UPDATED}
+        toc={isKo ? TOC_KO : TOC_EN}
+        tocLabel={isKo ? "목차" : "Contents"}
+        relatedLabel={isKo ? "관련 문서" : "Related"}
+        related={[
+          {
+            href: "/privacy",
+            label: isKo ? "개인정보처리방침" : "Privacy Policy"
+          },
+          { href: "/refund", label: isKo ? "취소·환불 정책" : "Refund Policy" }
+        ]}
+      >
+        {isKo ? (
+          <TermsKo business={BUSINESS} />
+        ) : (
+          <TermsEn business={BUSINESS} />
+        )}
+      </LegalShell>
+    </RPage>
+  );
 }

@@ -1,5 +1,6 @@
 "use client";
 import { Link } from "@/components/core/Link/Link";
+import { ConsentGate } from "@/components/UX/Consent/ConsentGate";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { Logo } from "@/components/UX/Logo";
 import { RPage } from "@/components/UX/Transition";
@@ -15,7 +16,7 @@ export default function Page() {
             "absolute inset-[35px] z-[120] flex rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]"
           }
         ></div>
-        <div className="z-[120] flex w-full max-w-[384px] flex-col gap-9">
+        <div className="z-[120] flex w-full max-w-[420px] flex-col gap-9">
           <Link
             href="/"
             className="flex items-center gap-3.5 self-center font-medium"
@@ -25,18 +26,9 @@ export default function Page() {
             </div>
             The Hideaway.
           </Link>
-          <AuthCard view="SIGN_UP" redirectTo="/me" />
-          <p className="text-center text-xs opacity-40">
-            By signing up, you agree to our{" "}
-            <Link href="/terms" className="underline hover:opacity-70">
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="underline hover:opacity-70">
-              Privacy Policy
-            </Link>
-            .
-          </p>
+          <ConsentGate>
+            <AuthCard view="SIGN_UP" redirectTo="/me" />
+          </ConsentGate>
         </div>
         <Suspense>
           <VGradientModule />
