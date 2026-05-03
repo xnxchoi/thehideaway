@@ -41,38 +41,6 @@ const formatLongDate = (d: string | null): string | null => {
   }
 };
 
-/**
- * Compact eyebrow for the ticket paper — `"THU · 7 MAY 2026"`.
- * Suppressed entirely (returns null) when the date doesn't parse so
- * the ticket doesn't print "INVALID DATE" on its face.
- */
-const formatTicketEyebrow = (d: string | null): string | null => {
-  if (!d) return null;
-  const parsed = new Date(d);
-  if (isNaN(parsed.getTime())) return null;
-  const dow = parsed
-    .toLocaleString("en-US", { weekday: "short" })
-    .toUpperCase();
-  const day = parsed.getDate();
-  const month = parsed
-    .toLocaleString("en-US", { month: "short" })
-    .toUpperCase();
-  const year = parsed.getFullYear();
-  return `${dow} · ${day} ${month} ${year}`;
-};
-
-/** "20:00" if the source date carries a real time, otherwise null. */
-const formatTicketTime = (d: string | null): string | null => {
-  if (!d) return null;
-  const parsed = new Date(d);
-  if (isNaN(parsed.getTime())) return null;
-  if (parsed.getHours() === 0 && parsed.getMinutes() === 0) return null;
-  return parsed.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-};
-
 const formatKRW = (n: number): string =>
   new Intl.NumberFormat("ko-KR", {
     style: "currency",
@@ -114,25 +82,16 @@ export function TicketDetailClient({
 }: Props) {
   const num = String(ticketNumber ?? 0).padStart(4, "0");
   const dateLong = formatLongDate(eventDate);
-  const ticketEyebrow = formatTicketEyebrow(eventDate);
-  const ticketTime = formatTicketTime(eventDate);
 
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
       {/* The font variables wrapper supplies Playfair Display for the
-          ticket paper's editorial type and seal monogram. */}
+          seal monogram H inside TicketPaper. */}
       <div className={ticketFontVariables}>
-        {/* ── Hero stage — the personalised artifact ───────────────────── */}
+        {/* ── Hero stage — the brand artifact ──────────────────────────── */}
         <section className="px-6 pt-14 pb-12 sm:px-10 xl:px-12 xl:pt-20 xl:pb-16">
           <div className="mx-auto" style={{ width: "min(58rem, 100%)" }}>
-            <TicketPaper
-              eventName={eventName}
-              ticketNumber={ticketNumber}
-              dateLabel={ticketEyebrow}
-              location={eventLocation}
-              time={ticketTime}
-              holderName={holderName}
-            />
+            <TicketPaper />
           </div>
         </section>
 
@@ -181,8 +140,8 @@ export function TicketDetailClient({
                     </p>
                   ) : (
                     <p className="mt-5 font-mono text-[11px] text-muted-foreground/60">
-                      The host will reach out with payment details. Your ticket
-                      activates the moment we confirm receipt.
+                      The host will reach out with payment details. Your
+                      ticket activates the moment we confirm receipt.
                     </p>
                   )}
                 </div>
