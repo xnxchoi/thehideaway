@@ -160,6 +160,11 @@ export function TicketCard({
             }}
           />
 
+          {/* Dimple bites — anchored to the body's right edge so they
+              stay put when the stub tears off. */}
+          <Dimple side="right" edge="top" />
+          <Dimple side="right" edge="bottom" />
+
           <div className="relative flex min-h-[19rem] flex-col p-7 sm:p-9">
             {/* Holder-initials watermark */}
             <span
@@ -176,29 +181,21 @@ export function TicketCard({
               {initials}
             </span>
 
-            {/* Top rail — brand masthead + date stack */}
+            {/* Top rail — brand masthead + date stack.
+                Single-line wordmark — the "Member · 입장" sub-label was
+                semantically incoherent ("member" / "enter" don't match
+                in tone). Time moved into the date stack. */}
             <header className="relative flex items-start justify-between gap-6">
               <div>
                 <span
                   className="block font-semibold uppercase"
                   style={{
                     fontFamily: FONT_MONO,
-                    fontSize: "clamp(0.78rem, 1.25cqw, 0.95rem)",
+                    fontSize: "clamp(0.85rem, 1.4cqw, 1.05rem)",
                     letterSpacing: "0.36em"
                   }}
                 >
                   The&nbsp;Hideaway
-                </span>
-                <span
-                  className="mt-1.5 block uppercase"
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "clamp(0.65rem, 1cqw, 0.78rem)",
-                    letterSpacing: "0.32em",
-                    opacity: 0.62
-                  }}
-                >
-                  Member · 입장
                 </span>
               </div>
               {dateValid ? (
@@ -207,9 +204,9 @@ export function TicketCard({
                     className="block font-semibold uppercase"
                     style={{
                       fontFamily: FONT_MONO,
-                      fontSize: "clamp(0.65rem, 1cqw, 0.78rem)",
+                      fontSize: "clamp(0.7rem, 1.05cqw, 0.82rem)",
                       letterSpacing: "0.32em",
-                      opacity: 0.62
+                      opacity: 0.6
                     }}
                   >
                     {dayCaps}
@@ -218,7 +215,7 @@ export function TicketCard({
                     className="block leading-none"
                     style={{
                       fontFamily: FONT_SERIF,
-                      fontSize: "clamp(2.8rem, 5.6cqw, 4.2rem)"
+                      fontSize: "clamp(3rem, 6cqw, 4.6rem)"
                     }}
                   >
                     {dayNum}
@@ -227,12 +224,15 @@ export function TicketCard({
                     className="mt-1.5 block uppercase"
                     style={{
                       fontFamily: FONT_MONO,
-                      fontSize: "clamp(0.65rem, 1cqw, 0.78rem)",
+                      fontSize: "clamp(0.7rem, 1.05cqw, 0.82rem)",
                       letterSpacing: "0.32em",
                       opacity: 0.7
                     }}
                   >
                     {monthCaps} · {yearStr}
+                    {timeStr ? (
+                      <span className="ml-2 opacity-80">· {timeStr}</span>
+                    ) : null}
                   </span>
                 </div>
               ) : null}
@@ -261,14 +261,15 @@ export function TicketCard({
               {eventName}
             </h2>
 
-            {/* Foot block — venue + holder, bumped legibility */}
+            {/* Foot block — venue + holder. Time lives in the date
+                stack at top-right; "Where" is just the venue. */}
             <div className="relative mt-auto grid grid-cols-2 gap-x-8 pt-8">
               <div>
                 <span
                   className="block uppercase"
                   style={{
                     fontFamily: FONT_MONO,
-                    fontSize: "clamp(0.65rem, 1cqw, 0.78rem)",
+                    fontSize: "clamp(0.7rem, 1.05cqw, 0.82rem)",
                     letterSpacing: "0.32em",
                     opacity: 0.6
                   }}
@@ -279,19 +280,11 @@ export function TicketCard({
                   className="mt-1.5 block"
                   style={{
                     fontFamily: FONT_SERIF,
-                    fontSize: "clamp(1.15rem, 1.95cqw, 1.4rem)",
+                    fontSize: "clamp(1.4rem, 2.4cqw, 1.7rem)",
                     lineHeight: 1.2
                   }}
                 >
                   {eventLocation ?? "—"}
-                  {timeStr ? (
-                    <span
-                      className="ml-2 italic opacity-60"
-                      style={{ fontSize: "0.78em" }}
-                    >
-                      · {timeStr}
-                    </span>
-                  ) : null}
                 </span>
               </div>
               <div>
@@ -299,7 +292,7 @@ export function TicketCard({
                   className="block uppercase"
                   style={{
                     fontFamily: FONT_MONO,
-                    fontSize: "clamp(0.65rem, 1cqw, 0.78rem)",
+                    fontSize: "clamp(0.7rem, 1.05cqw, 0.82rem)",
                     letterSpacing: "0.32em",
                     opacity: 0.6
                   }}
@@ -310,7 +303,7 @@ export function TicketCard({
                   className="mt-1.5 block italic"
                   style={{
                     fontFamily: FONT_SERIF,
-                    fontSize: "clamp(1.2rem, 2.1cqw, 1.5rem)",
+                    fontSize: "clamp(1.5rem, 2.6cqw, 1.85rem)",
                     lineHeight: 1.2
                   }}
                 >
@@ -337,9 +330,7 @@ export function TicketCard({
             side so the perforation seam looks ripped, not cut. */}
         <m.div
           animate={
-            checkedIn
-              ? { x: 18, rotate: 2.4, y: 4 }
-              : { x: 0, rotate: 0, y: 0 }
+            checkedIn ? { x: 18, rotate: 2.4, y: 4 } : { x: 0, rotate: 0, y: 0 }
           }
           transition={{ type: "spring", bounce: 0.32, duration: 0.7 }}
           className="relative overflow-hidden rounded-r-[3px]"
@@ -363,32 +354,28 @@ export function TicketCard({
             }}
           />
 
-          <div className="relative flex h-full flex-col items-center justify-between p-6 text-center sm:p-7">
-            <div>
-              <span
-                className="block uppercase"
-                style={{
-                  fontFamily: FONT_MONO,
-                  fontSize: "clamp(0.7rem, 1.05cqw, 0.85rem)",
-                  letterSpacing: "0.32em",
-                  opacity: 0.62
-                }}
-              >
-                Ticket
-              </span>
-              <span
-                className="mt-1 block uppercase"
-                style={{
-                  fontFamily: FONT_MONO,
-                  fontSize: "clamp(0.6rem, 0.85cqw, 0.7rem)",
-                  letterSpacing: "0.32em",
-                  opacity: 0.45
-                }}
-              >
-                №
-              </span>
-            </div>
+          {/* Dimple bites — anchored to the stub's left edge so they
+              ride along when the stub tears off. */}
+          <Dimple side="left" edge="top" />
+          <Dimple side="left" edge="bottom" />
 
+          <div className="relative flex h-full flex-col items-center justify-between p-6 text-center sm:p-7">
+            {/* Top — combined "TICKET No." label, readable */}
+            <span
+              className="block uppercase"
+              style={{
+                fontFamily: FONT_MONO,
+                fontSize: "clamp(0.78rem, 1.2cqw, 0.95rem)",
+                letterSpacing: "0.32em",
+                opacity: 0.7
+              }}
+            >
+              Ticket No.
+            </span>
+
+            {/* Middle — QR (active) or modest serial (otherwise).
+                Serial bumped DOWN from clamp(2.8–4.6rem) to (2–3rem)
+                so the number isn't shouting on the stub. */}
             {status === "active" && checkInUrl ? (
               <div
                 className="rounded-[2px] p-2"
@@ -413,7 +400,7 @@ export function TicketCard({
                 className="leading-none"
                 style={{
                   fontFamily: FONT_SERIF,
-                  fontSize: "clamp(2.8rem, 6cqw, 4.6rem)",
+                  fontSize: "clamp(2.2rem, 4.2cqw, 3.2rem)",
                   letterSpacing: "-0.02em"
                 }}
               >
@@ -421,17 +408,22 @@ export function TicketCard({
               </span>
             )}
 
+            {/* Bottom — date stamp in mono caps. Replaces the
+                'HW · 0004' line (the brand isn't abbreviated, and the
+                serial was redundant with the number above). */}
             <span
               className="block"
               style={{
                 fontFamily: FONT_MONO,
-                fontSize: "clamp(0.6rem, 0.9cqw, 0.74rem)",
-                letterSpacing: "0.4em",
+                fontSize: "clamp(0.65rem, 0.95cqw, 0.78rem)",
+                letterSpacing: "0.32em",
                 opacity: 0.55,
                 textTransform: "uppercase"
               }}
             >
-              HW · {num}
+              {dateValid
+                ? `${dayNum} · ${monthCaps} · ${yearStr.slice(-2)}`
+                : `№ ${num}`}
             </span>
           </div>
 
@@ -460,6 +452,13 @@ const TORN_EDGE_LEFT =
  * with two notch divots top + bottom. Post-rip: dots fade out and the
  * notches deepen/expand slightly, reading as a torn seam.
  */
+/**
+ * Vertical perforation column — between body and stub.
+ *
+ * Just the dotted tear line. The dimple-bites at top/bottom of the
+ * perforation are anchored to the body and stub directly (not in this
+ * column), so they ride along when the stub tears off.
+ */
 function VerticalPerforation({ torn }: { torn: boolean }) {
   return (
     <div
@@ -467,26 +466,6 @@ function VerticalPerforation({ torn }: { torn: boolean }) {
       className="relative w-3"
       style={{ minHeight: "100%" }}
     >
-      <span
-        className="absolute -top-[7px] left-1/2 h-3.5 w-3.5 -translate-x-1/2 rounded-full transition-all duration-500"
-        style={{
-          background: "var(--ticket-page-bg, #0a0a0a)",
-          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.12)",
-          transform: torn
-            ? "translate(-50%, -45%) scale(1.15)"
-            : "translate(-50%, -50%) scale(1)"
-        }}
-      />
-      <span
-        className="absolute -bottom-[7px] left-1/2 h-3.5 w-3.5 -translate-x-1/2 rounded-full transition-all duration-500"
-        style={{
-          background: "var(--ticket-page-bg, #0a0a0a)",
-          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.12)",
-          transform: torn
-            ? "translate(-50%, 45%) scale(1.15)"
-            : "translate(-50%, 50%) scale(1)"
-        }}
-      />
       <span
         className="absolute inset-y-4 left-1/2 -translate-x-1/2 transition-opacity duration-500"
         style={{
@@ -500,6 +479,50 @@ function VerticalPerforation({ torn }: { torn: boolean }) {
         }}
       />
     </div>
+  );
+}
+
+/**
+ * Half-circle dimple bite — cut into the inner edge of the body or
+ * stub at the top or bottom. Sits inside the parent (which has
+ * overflow-hidden), filled with the page-bg colour, half-overlapping
+ * the edge so the visible half reads as a punched-out semicircle.
+ *
+ * Positioned `top-0` or `bottom-0` with `translate(-50%, -50%)` (or
+ * `+50%` for bottom) so the dimple's centre lands exactly on the card
+ * edge: half the circle is "inside" (clipped by overflow-hidden, but
+ * filled with page-bg → reads as a cut) and the other half would be
+ * outside the card (not rendered, since it's clipped by overflow).
+ *
+ * The result is a clean half-circle bite from the corner. When the
+ * piece (body or stub) translates, its dimples move with it.
+ */
+function Dimple({
+  side,
+  edge
+}: {
+  /** Which inner side of the piece: "right" (body) or "left" (stub) */
+  side: "right" | "left";
+  /** Which edge of the piece: "top" or "bottom" */
+  edge: "top" | "bottom";
+}) {
+  const horizPos = side === "right" ? { right: 0 } : { left: 0 };
+  const vertPos = edge === "top" ? { top: 0 } : { bottom: 0 };
+  const translate =
+    `${side === "right" ? "translate(50%," : "translate(-50%,"} ${edge === "top" ? "-50%" : "50%"})`;
+  return (
+    <span
+      aria-hidden
+      className="absolute h-3.5 w-3.5 rounded-full"
+      style={{
+        ...horizPos,
+        ...vertPos,
+        background: "var(--ticket-page-bg, #0a0a0a)",
+        transform: translate,
+        boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.12)",
+        zIndex: 11
+      }}
+    />
   );
 }
 
