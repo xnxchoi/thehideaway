@@ -130,11 +130,16 @@ export function TicketCard({
         ["--ticket-page-bg" as string]: "var(--background, #0a0a0a)"
       }}
     >
-      {/* Paper card — landscape, body+perf+stub via CSS grid */}
+      {/* Paper card — landscape, body+stub touch directly. The
+          perforation is drawn INSIDE the body at its right edge (see
+          PerforationLine below) so it inherits the body's elevation
+          and shadow. Earlier the perforation lived in its own grid
+          column with no background/shadow, which made it visually sit
+          on the page floor while the body and stub floated above. */}
       <div
         className="relative grid rounded-[3px]"
         style={{
-          gridTemplateColumns: "minmax(0,1fr) auto minmax(13rem,0.45fr)"
+          gridTemplateColumns: "minmax(0,1fr) minmax(13rem,0.45fr)"
         }}
       >
         {/* ── Body (left column) ───────────────────────────────────── */}
@@ -164,6 +169,11 @@ export function TicketCard({
               stay put when the stub tears off. */}
           <Dimple side="right" edge="top" />
           <Dimple side="right" edge="bottom" />
+
+          {/* Perforation tear-line — drawn INSIDE the body at its right
+              edge so it shares the body's paper substrate and shadow,
+              not floating in a no-shadow gutter on the page. */}
+          <PerforationLine torn={checkedIn} />
 
           <div className="relative flex min-h-[19rem] flex-col p-7 sm:p-9">
             {/* Holder-initials watermark */}
@@ -321,9 +331,6 @@ export function TicketCard({
           ) : null}
         </div>
 
-        {/* ── Vertical perforation column ──────────────────────────── */}
-        <VerticalPerforation torn={checkedIn} />
-
         {/* ── Stub (right column) ──────────────────────────────────── */}
         {/* Wrapped in m.div so it can translate + rotate when checkedIn —
             the rip animation. Also gets a torn-edge clip on its left
@@ -448,37 +455,34 @@ const TORN_EDGE_LEFT =
   "polygon(1% 0%, 100% 0%, 100% 100%, 1% 100%, 2% 96%, 0% 90%, 2% 84%, 0% 78%, 1% 72%, 0% 66%, 2% 61%, 0% 55%, 1% 49%, 0% 43%, 2% 37%, 0% 31%, 1% 26%, 0% 20%, 2% 14%, 0% 9%, 1% 4%)";
 
 /**
- * Vertical perforation column. Pre-rip: a dotted vertical tear line
- * with two notch divots top + bottom. Post-rip: dots fade out and the
- * notches deepen/expand slightly, reading as a torn seam.
- */
-/**
- * Vertical perforation column — between body and stub.
+ * Dotted tear-line drawn INSIDE the body at its right edge — the
+ * perforation that separates body from stub.
  *
- * Just the dotted tear line. The dimple-bites at top/bottom of the
- * perforation are anchored to the body and stub directly (not in this
- * column), so they ride along when the stub tears off.
+ * Lives inside the body (not a separate grid column) so it inherits
+ * the body's paper background and box-shadow elevation. Earlier the
+ * perforation lived in its own gutter column with no shadow, which
+ * made it visually sit on the page floor while the body and stub
+ * floated above with their own shadows.
+ *
+ * Pre-rip: dots visible. Post-rip: fades to 0 and the body's torn
+ * clip-path takes over the visual job of "this edge has been torn".
  */
-function VerticalPerforation({ torn }: { torn: boolean }) {
+function PerforationLine({ torn }: { torn: boolean }) {
   return (
-    <div
+    <span
       aria-hidden="true"
-      className="relative w-3"
-      style={{ minHeight: "100%" }}
-    >
-      <span
-        className="absolute inset-y-4 left-1/2 -translate-x-1/2 transition-opacity duration-500"
-        style={{
-          width: 2,
-          opacity: torn ? 0 : 1,
-          backgroundImage:
-            "radial-gradient(circle, oklch(0.18 0.012 30 / 0.45) 1px, transparent 1.5px)",
-          backgroundSize: "2px 8px",
-          backgroundRepeat: "repeat-y",
-          backgroundPosition: "center"
-        }}
-      />
-    </div>
+      className="absolute top-4 right-1.5 bottom-4 transition-opacity duration-500"
+      style={{
+        width: 2,
+        opacity: torn ? 0 : 1,
+        backgroundImage:
+          "radial-gradient(circle, oklch(0.18 0.012 30 / 0.45) 1px, transparent 1.5px)",
+        backgroundSize: "2px 8px",
+        backgroundRepeat: "repeat-y",
+        backgroundPosition: "center",
+        zIndex: 12
+      }}
+    />
   );
 }
 
@@ -508,8 +512,7 @@ function Dimple({
 }) {
   const horizPos = side === "right" ? { right: 0 } : { left: 0 };
   const vertPos = edge === "top" ? { top: 0 } : { bottom: 0 };
-  const translate =
-    `${side === "right" ? "translate(50%," : "translate(-50%,"} ${edge === "top" ? "-50%" : "50%"})`;
+  const translate = `${side === "right" ? "translate(50%," : "translate(-50%,"} ${edge === "top" ? "-50%" : "50%"})`;
   return (
     <span
       aria-hidden
