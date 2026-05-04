@@ -93,9 +93,10 @@ export function FooterTickerCrownClient({
       ref={wrapperRef}
       role="presentation"
       aria-hidden
-      className="relative z-10 mt-32 w-full overflow-hidden bg-background pt-12 pb-10 xl:pt-16 xl:pb-12"
+      className="relative z-0 w-full overflow-hidden border-t border-border/15 bg-background pt-12 pb-10 xl:pt-16 xl:pb-12"
     >
-      <div className="relative mx-auto max-w-7xl px-6 xl:px-10">
+      {/* Full-width edge-to-edge — no inner max-w container. */}
+      <div className="relative w-full">
         <div className="relative" style={{ height: stackHeightPx }}>
           {/* Seed line — visible from page paint, fades out as the canvas reveals. */}
           <m.div

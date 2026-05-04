@@ -19,8 +19,8 @@ export default async function RootLayout({
   return (
     <>
       <Layout>{children}</Layout>
-      <FooterTickerCrown />
       <LegalFooter />
+      <FooterTickerCrown />
     </>
   );
 }

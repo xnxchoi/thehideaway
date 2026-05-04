@@ -175,15 +175,12 @@ export function TickerCanvas({
       // Map back to the lane state by id (engine has 5 entries always).
       const lane = engine.lanes[cfg.id];
 
-      // Effective alpha = base × tremor; bumped toward 1 by the breath envelope.
-      const baseAlpha = cfg.opacityBand * lane.opacityScale;
-      const breathBoost = engine.breathPulse * (1 - baseAlpha);
-      const alpha = Math.min(1, baseAlpha + breathBoost);
-      ctx.globalAlpha = alpha;
+      // Effective alpha = base × tremor.
+      ctx.globalAlpha = Math.min(1, cfg.opacityBand * lane.opacityScale);
 
-      // offsetPx is a *fractional* progress in [0..1) (signed). Convert to px
-      // along this lane's spacing so the lane visually steps by one hatch per cycle.
-      const offsetFraction = lane.offsetPx;
+      // offsetFraction is accumulated travel in spacing-units (signed).
+      // Wrap modulo spacing for the conveyor-belt effect.
+      const offsetFraction = lane.offsetFraction;
       const offsetPx =
         (((offsetFraction * spacing) % spacing) + spacing) % spacing;
 

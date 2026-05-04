@@ -148,7 +148,7 @@ export async function LegalFooter() {
     <footer
       role="contentinfo"
       data-legal-footer
-      className="relative z-10 border-t border-border/15 bg-background"
+      className="relative z-10 mt-32 border-t border-border/15 bg-background"
     >
       <div className="mx-auto max-w-2xl px-6 py-20 text-center sm:px-10 xl:py-28">
         {/* Nav strip */}

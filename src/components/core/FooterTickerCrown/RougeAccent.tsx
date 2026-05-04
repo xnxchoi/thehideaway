@@ -64,7 +64,7 @@ export function RougeAccent({
           viewBox="0 0 3 6"
           style={{
             position: "absolute",
-            left: 0,
+            left: 24,
             top: seedLaneCenterPx - 3,
             width: 3,
             height: 6,
@@ -84,7 +84,7 @@ export function RougeAccent({
           aria-hidden
           style={{
             position: "absolute",
-            left: 0,
+            left: 24,
             top: seedLaneCenterPx - 2,
             width: 4,
             height: 4,
@@ -129,12 +129,12 @@ function Wrapper({
 }
 
 /**
- * Lane-pip variant — reads the engine's breath envelope every frame to bump
- * its own opacity to 1.0 during the engineered breath, otherwise sits at 0.55.
+ * Lane-pip variant — a single static rouge tick on the seed lane row, sitting
+ * quietly at low opacity. No breath-pulse anymore (engineered breath removed).
  */
 function LanePip({
   seedLaneCenterPx,
-  engineRef,
+  engineRef: _engineRef,
   revealed
 }: {
   seedLaneCenterPx: number;
@@ -149,13 +149,10 @@ function LanePip({
     let cancelled = false;
     const tick = () => {
       if (cancelled) return;
+      // No animation — static at 0.7 once revealed. rAF retained for future
+      // hooks (slow opacity breathing tied to a per-pip oscillator if wanted).
       const el = ref.current;
-      const engine = engineRef.current;
-      if (el && engine) {
-        const breath = engine.breathPulse;
-        const alpha = 0.55 + breath * 0.45;
-        el.style.opacity = String(alpha);
-      }
+      if (el) el.style.opacity = "0.7";
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

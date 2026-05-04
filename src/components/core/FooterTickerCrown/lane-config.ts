@@ -19,27 +19,41 @@ export interface LaneConfig {
   readonly heightPx: number;
   /** Base alpha for this lane. Palindromic, peak at center. */
   readonly opacityBand: number;
-  /** Coprime semi-prime period in ms. The polymeter breath-spacing. */
+  /**
+   * Cycle length in ms. Coprime semi-primes — lanes drift in their own time.
+   * Polymetric: any natural alignment is rare but organic, never engineered.
+   */
   readonly periodMs: number;
-  /** How long the slide phase lasts within one period. ≤10% of period. (D2) */
+  /**
+   * Slide window length in ms. Long and gentle — the lane glides, never steps.
+   * The remaining time in `periodMs - slideMs` is the calm hold.
+   */
   readonly slideMs: number;
+  /**
+   * Fraction of one hatch-spacing traveled per cycle (0..1). Sub-hatch travel
+   * keeps the motion below 14 px/s — meditative, not ticker-ish.
+   * Per-lane variation gives "different density of movement" per the brief.
+   */
+  readonly travelPerCycle: number;
   /** Drift direction. Alternates +/-/+/-/+ across lanes. */
   readonly direction: 1 | -1;
-  /** Coprime opacity-tremor period in seconds. (D4) */
+  /** Coprime opacity-tremor period in seconds. */
   readonly tremorPeriodSec: number;
 }
 
 /**
- * Five lanes, palindromic in height/opacity, coprime semi-prime periods (D2).
- * Slide ≈ 6.5–6.0% of period across all lanes (well under the 10% cap).
+ * Five lanes. Palindromic in height/opacity, coprime semi-prime periods.
+ * Slide windows are LONG (~40-50% of period) for a smooth, gliding motion —
+ * the system breathes, never twitches. No engineered alignment moments.
  */
 export const LANE_CONFIGS: ReadonlyArray<LaneConfig> = [
   {
     id: 0,
     heightPx: 14,
     opacityBand: 0.55,
-    periodMs: 2300,
-    slideMs: 150,
+    periodMs: 5300,
+    slideMs: 2200,
+    travelPerCycle: 0.32,
     direction: 1,
     tremorPeriodSec: 4.7
   },
@@ -47,8 +61,9 @@ export const LANE_CONFIGS: ReadonlyArray<LaneConfig> = [
     id: 1,
     heightPx: 18,
     opacityBand: 0.65,
-    periodMs: 2900,
-    slideMs: 150,
+    periodMs: 6100,
+    slideMs: 2700,
+    travelPerCycle: 0.45,
     direction: -1,
     tremorPeriodSec: 5.3
   },
@@ -56,8 +71,9 @@ export const LANE_CONFIGS: ReadonlyArray<LaneConfig> = [
     id: 2,
     heightPx: 22,
     opacityBand: 0.78,
-    periodMs: 3700,
-    slideMs: 150,
+    periodMs: 7300,
+    slideMs: 3100,
+    travelPerCycle: 0.22,
     direction: 1,
     tremorPeriodSec: 6.1
   },
@@ -65,8 +81,9 @@ export const LANE_CONFIGS: ReadonlyArray<LaneConfig> = [
     id: 3,
     heightPx: 18,
     opacityBand: 0.65,
-    periodMs: 4300,
-    slideMs: 150,
+    periodMs: 5900,
+    slideMs: 2500,
+    travelPerCycle: 0.38,
     direction: -1,
     tremorPeriodSec: 5.7
   },
@@ -74,8 +91,9 @@ export const LANE_CONFIGS: ReadonlyArray<LaneConfig> = [
     id: 4,
     heightPx: 14,
     opacityBand: 0.55,
-    periodMs: 4900,
-    slideMs: 150,
+    periodMs: 6700,
+    slideMs: 2900,
+    travelPerCycle: 0.28,
     direction: 1,
     tremorPeriodSec: 4.9
   }
@@ -90,10 +108,8 @@ export const SEED_LANE_ID = 2 as const;
  */
 export const MOBILE_LANE_IDS: ReadonlyArray<LaneConfig["id"]> = [1, 2, 3];
 
-/** Engineered breath cadence (D3). Every ~18 s, all lanes pause + brighten. */
-export const BREATH_INTERVAL_MS = 18000;
-/** Breath envelope duration. Half-sine 0→1→0 over this window. */
-export const BREATH_DURATION_MS = 220;
+// Engineered breath removed — let the polymeter alone produce alignment.
+// (Coprime periods will occasionally near-align organically; that's the design.)
 
 /** Reveal animation timings (D7). */
 export const REVEAL_DURATION_MS = 480;
