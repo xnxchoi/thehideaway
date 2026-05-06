@@ -17,7 +17,7 @@ import {
 } from "@payloadcms/richtext-lexical/lexical/react/LexicalDecoratorBlockNode";
 
 import ObjectID from "bson-objectid";
-import { $applyNodeReplacement } from "lexical";
+import { $applyNodeReplacement } from "@payloadcms/richtext-lexical/lexical";
 import type { JSX } from "react";
 import { OptionalKeys } from "ts-essentials";
 

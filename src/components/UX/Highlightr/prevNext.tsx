@@ -84,7 +84,7 @@ export const PrevNext = ({
   return (
     <m.div
       className={
-        "boder-t-[1px] sticky top-[0px] z-0 mt-[-10px] flex w-screen flex-col justify-between overflow-hidden border-0 border-solid border-foreground bg-faded-foreground pt-0 pb-[8px] text-background"
+        "sticky top-[0px] z-0 mt-[-10px] flex w-screen flex-col justify-between overflow-hidden border-0 border-t-[1px] border-solid border-foreground bg-faded-foreground pt-0 pb-[8px] text-background"
       }
       style={{ bottom: contBottom, top: cot }}
       ref={containerRef}
@@ -92,7 +92,7 @@ export const PrevNext = ({
       onMouseLeave={resetCursorTheme}
     >
       <div
-        className="relative flex h-[calc(100svh-35px)] min-h-[400px] w-full items-start gap-[31px] bg-faded-foreground pb-[24px] after:absolute after:bottom-0 after:left-0 after:mt-[12px] after:h-px after:w-full after:border-t-[1px] after:border-solid after:border-foreground after:opacity-20 after:content-[''] min-lg:p-[0_27px_24px_26px] [&_h1]:m-0 [&_h1]:leading-[0.84] [&>a]:h-full [&>a]:w-1/2 [&>a]:text-faded-background"
+        className="relative flex h-[calc(100vh-35px)] min-h-[400px] w-full items-start gap-[31px] bg-faded-foreground pb-[24px] after:absolute after:bottom-0 after:left-0 after:mt-[12px] after:h-px after:w-full after:border-t-[1px] after:border-solid after:border-foreground after:opacity-20 after:content-[''] min-lg:p-[0_27px_24px_26px] [&_h1]:m-0 [&_h1]:leading-[0.84] [&>a]:h-full [&>a]:w-1/2 [&>a]:text-faded-background"
         style={{ textDecoration: "none" }}
       >
         <div
@@ -175,7 +175,7 @@ export const PrevNext = ({
         ></div>
       </div>
       <div
-        className="pointer-events-none absolute top-0 left-[28px] z-[30] h-full w-[calc(100%-56px)] border-0 border-x-[1px] border-solid border-x-muted-faded-background opacity-20"
+        className="pointer-events-none absolute top-0 right-[2.4rem] left-[2.4rem] z-[30] h-full w-[calc(100%-4.8rem)] border-0 border-x-[1px] border-solid border-x-muted-faded-background opacity-20 lg:right-[2.8rem] lg:left-[2.8rem] lg:w-[calc(100%-56px)]"
         style={{
           borderImage: "initial"
         }}

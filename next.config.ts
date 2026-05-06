@@ -2,7 +2,6 @@ import { withPayload } from "@payloadcms/next/withPayload";
 
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next/types";
-import { images } from "next/dist/build/webpack/config/blocks/images";
 
 const withNextIntl = createNextIntlPlugin();
 const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -10,8 +9,31 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   : process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  allowedDevOrigins:['172.30.1.71'],
+  allowedDevOrigins: ["172.30.1.71", "172.20.10.4", "seans-mac-mini.local"],
   images: {
+    // Dev-only optimization bypass.
+    //   In dev, Payload populate emits absolute same-origin URLs like
+    //   `http://localhost:3000/api/userMedia/...`. Next 16's optimizer
+    //   refuses to fetch those (loopback IP → SSRF guard), and rewriting them
+    //   to relative paths fails too because `/_next/image` treats relative
+    //   URLs as `/public/` static assets — Payload-served `/api/...` paths
+    //   404. Bandwidth is irrelevant on localhost, so just skip the optimizer
+    //   in dev. Production keeps full AVIF/WebP/srcSet via the standard path.
+    unoptimized: process.env.NODE_ENV !== "production",
+    // AVIF first (best compression), WebP fallback. Browsers without either
+    // get the original — Next.js content-negotiates per request.
+    formats: ["image/avif", "image/webp"],
+    // Tuned to project breakpoints (sm 640, md 768, lg 1024, xl 1280, 2xl 1536,
+    // 3xl 1920) plus 2560 for retina at the editorial column width
+    // (max-w-7xl = 1280px × 2). 750/828/1080 cover common mobile DPRs.
+    deviceSizes: [640, 750, 828, 1080, 1280, 1536, 1920, 2560],
+    // Whitelist qualities used in the codebase. Next 16 enforces this list
+    // when set. 75 is the framework default; 100 is used in some admin
+    // previews (coverClient.tsx, ImageBlockComponent.tsx).
+    qualities: [50, 75, 100],
+    // Cache optimized variants on disk for one year. Originals are
+    // content-addressed (MD5-prefixed filenames), so the cache key is stable.
+    minimumCacheTTL: 60 * 60 * 24 * 365,
     remotePatterns: [
       ...[
         NEXT_PUBLIC_SERVER_URL,

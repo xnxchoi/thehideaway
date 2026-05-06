@@ -1,4 +1,4 @@
-import type { LexicalEditor } from "lexical";
+import type { LexicalEditor } from "@payloadcms/richtext-lexical/lexical";
 import type { RefObject } from "react";
 import { createStore } from "zustand/vanilla";
 

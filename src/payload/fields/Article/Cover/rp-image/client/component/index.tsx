@@ -46,7 +46,7 @@ import {
   DRAGSTART_COMMAND,
   LexicalEditor,
   SELECTION_CHANGE_COMMAND
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 import { MotionNodeDragHandlers } from "motion";
 import { MotionValue, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";

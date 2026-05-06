@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useRef } from "react";
 import * as m from "motion/react-m";
 import { useScroll, useTransform, useReducedMotion } from "motion/react";
@@ -26,7 +27,7 @@ export function FounderRibbon({
   seatsTotal,
   soldOut
 }: FounderRibbonProps) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -62,7 +63,11 @@ export function FounderRibbon({
   );
 
   return (
-    <section ref={ref} className={s.section} aria-labelledby="founder-ribbon">
+    <section
+      className={cn(s.section, "relative")}
+      aria-labelledby="founder-ribbon"
+    >
+      <m.div className="absolute inset-0 -z-10" ref={ref} />
       <m.div
         className={s.warmBg}
         style={reduced ? undefined : { opacity: warmOpacity, scale: warmScale }}

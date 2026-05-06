@@ -1,5 +1,5 @@
 "use client";
-import { $getNodeByKey } from "lexical";
+import { $getNodeByKey } from "@payloadcms/richtext-lexical/lexical";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import {

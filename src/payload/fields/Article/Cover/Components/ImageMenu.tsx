@@ -348,10 +348,10 @@ const ImageInsert = ({
           )}
         >
           <NextImage
-            unoptimized={true}
             src={src}
             alt={alt || ""}
             fill={true}
+            sizes="64px"
             className={
               "position-[center_60%] absolute inset-0 block w-full object-cover"
             }

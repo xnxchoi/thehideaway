@@ -39,7 +39,10 @@ import { OnChangePlugin } from "@payloadcms/richtext-lexical/lexical/react/Lexic
 import { RichTextPlugin } from "@payloadcms/richtext-lexical/lexical/react/LexicalRichTextPlugin";
 import { useLexicalEditable } from "@payloadcms/richtext-lexical/lexical/react/useLexicalEditable";
 import { useTranslation } from "@payloadcms/ui";
-import { createCommand, LexicalCommand } from "lexical";
+import {
+  createCommand,
+  LexicalCommand
+} from "@payloadcms/richtext-lexical/lexical";
 import type { FC, RefObject } from "react";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 

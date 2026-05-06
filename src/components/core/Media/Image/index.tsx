@@ -47,7 +47,6 @@ export const RootImage = ({
       {...rest}
       src={typeof src === "string" ? decodeURIComponent(src) : src}
       fill={fill}
-      unoptimized={true}
       loading={loading}
       alt={alt}
       sizes={sizes}
@@ -152,7 +151,7 @@ export const ImageMedia: FC<
         (aspectRatio ? (
           <ResponsiveFrame
             baseClass={baseclass}
-            className="w-full"
+            className="w-full overflow-hidden"
             pictureClassName={pictureClassName}
             aspectRatio={aspectRatio}
           >
@@ -164,7 +163,6 @@ export const ImageMedia: FC<
               {...rest}
               fill={true}
               priority={priority}
-              unoptimized={true}
               loading={loading}
               sizes={sizes}
               src={typeof src === "string" ? decodeURIComponent(src) : src}
@@ -172,7 +170,14 @@ export const ImageMedia: FC<
             />
           </ResponsiveFrame>
         ) : (
-          <m.div className={cn(baseclass, "h-full", pictureClassName)}>
+          <m.div
+            className={cn(
+              baseclass,
+              "h-full",
+              pictureClassName,
+              "overflow-hidden"
+            )}
+          >
             <NextImage
               className={cn(
                 "absolute h-auto w-full max-w-full border-0 object-cover object-center backface-hidden"
@@ -181,7 +186,6 @@ export const ImageMedia: FC<
               {...rest}
               fill={true}
               priority={priority}
-              unoptimized={true}
               loading={loading}
               sizes={sizes}
               src={typeof src === "string" ? decodeURIComponent(src) : src}
@@ -243,7 +247,13 @@ const ResponsiveFrame = ({
   const { paddingTop } = useAspectRatio(aspectRatio);
   return (
     <m.div
-      className={cn(baseClass, pictureClassName, "w-full", className)}
+      className={cn(
+        baseClass,
+        pictureClassName,
+        "w-full",
+        className,
+        "overflow-hidden"
+      )}
       style={{ ...style, paddingTop }}
       {...rest}
     >
@@ -288,7 +298,7 @@ const ResponsiveFrame = ({
 //           loading={loading}
 //           unoptimized={true}
 //           sizes={size}
-//           src={typeof src === "string" ? decodeURIComponent(src) : src}
+//           src={typeof src === "string" ? toRelativeIfSameOrigin(decodeURIComponent(src)) : src}
 //           {...rest}
 //         />
 //       </picture>
@@ -328,7 +338,7 @@ const ResponsiveFrame = ({
 //           quality={100}
 //           loading={loading}
 //           sizes={size}
-//           src={typeof src === "string" ? decodeURIComponent(src) : src}
+//           src={typeof src === "string" ? toRelativeIfSameOrigin(decodeURIComponent(src)) : src}
 //           {...rest}
 //         />
 //       </picture>

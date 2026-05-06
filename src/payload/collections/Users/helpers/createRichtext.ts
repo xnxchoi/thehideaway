@@ -3,7 +3,7 @@ import {
   SerializedParagraphNode,
   SerializedRootNode,
   SerializedTextNode
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 
 export const createRichtext = (content: string | Array<string>) => {
   const root = {

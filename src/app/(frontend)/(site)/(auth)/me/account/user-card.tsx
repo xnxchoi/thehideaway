@@ -21,7 +21,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { authClient as client, signOut } from "@/lib/auth/client";
 import { useBetterAuth } from "@/lib/auth/context";
 import { User, type UserMedia } from "@payload-types";
-import { getClientSideURL } from "@/utilities/getURL";
+import { getClientSideURL, toRelativeIfSameOrigin } from "@/utilities/getURL";
 import { ChevronRightIcon, MobileIcon } from "@radix-ui/react-icons";
 import {
   Edit,
@@ -1063,7 +1063,7 @@ function EditUserDialog({
                           >
                             <Image
                               className="h-full w-full object-cover"
-                              src={imagePreview || ""}
+                              src={toRelativeIfSameOrigin(imagePreview || "")}
                               height={400}
                               width={400}
                               alt=""

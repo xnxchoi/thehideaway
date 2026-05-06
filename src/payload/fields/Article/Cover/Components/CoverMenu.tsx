@@ -48,7 +48,7 @@ import {
   ValidationError
 } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
-import { NodeKey } from "lexical";
+import { NodeKey } from "@payloadcms/richtext-lexical/lexical";
 import { isEmpty } from "lodash-es";
 import { AlignCenter, AlignLeft, AlignRight, Ellipsis } from "lucide-react";
 import { HTMLMotionProps } from "motion/react";
@@ -686,10 +686,10 @@ const ImageInsert = ({
           )}
         >
           <NextImage
-            unoptimized={true}
             src={src}
             alt={alt || ""}
             fill={true}
+            sizes="64px"
             className={
               "position-[center_60%] absolute inset-0 block w-full object-cover"
             }
@@ -855,10 +855,10 @@ const UnsplashImage = ({
       >
         <picture>
           <NextImage
-            unoptimized={true}
             src={src}
             alt={alt || ""}
             fill={true}
+            sizes="64px"
             className={
               "position-[center_60%] absolute inset-0 block w-full object-cover"
             }

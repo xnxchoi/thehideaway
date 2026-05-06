@@ -13,7 +13,10 @@ import {
   MenuTextMatch,
   useBasicTypeaheadTriggerMatch
 } from "@payloadcms/richtext-lexical/lexical/react/LexicalTypeaheadMenuPlugin";
-import { TextNode, type BaseSelection } from "lexical";
+import {
+  TextNode,
+  type BaseSelection
+} from "@payloadcms/richtext-lexical/lexical";
 import dynamic from "next/dynamic";
 import { JSX, useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";

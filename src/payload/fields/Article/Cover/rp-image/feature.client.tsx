@@ -9,7 +9,7 @@ import {
 } from "@payloadcms/richtext-lexical/client";
 import { INSERT_UPLOAD_WITH_DRAWER_COMMAND } from "node_modules/@payloadcms/richtext-lexical/dist/features/upload/client/drawer/commands";
 import { ExclusiveUploadFeatureProps } from "node_modules/@payloadcms/richtext-lexical/dist/features/upload/server";
-import { $isNodeSelection } from "lexical";
+import { $isNodeSelection } from "@payloadcms/richtext-lexical/lexical";
 import { UploadIcon } from "lucide-react";
 
 export type UploadFeaturePropsClient = {

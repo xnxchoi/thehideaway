@@ -11,6 +11,7 @@ import { AnimatePresence, LayoutGroup, useScroll } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { toRelativeIfSameOrigin } from "@/utilities/getURL";
 import { RP_Btn } from "@/components/core/Button";
 import { useShallow } from "zustand/shallow";
 
@@ -174,7 +175,7 @@ function BookmarkCard({
           )}
         >
           <Image
-            src={item.image.url}
+            src={toRelativeIfSameOrigin(item.image.url)}
             alt={item.image.alt || item.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"

@@ -109,7 +109,7 @@ const Article = ({
       data-themed="background-color,color"
     >
       <div
-        className="pointer-events-none absolute top-0 right-[27px] left-[27px] z-0 h-full w-[calc(100%-54px)] border-0 border-x border-solid border-x-muted-faded-foreground/20 bg-faded-white max-md:hidden dark:bg-faded-black"
+        className="pointer-events-none absolute top-0 right-[24px] left-[24px] z-0 h-full w-[calc(100%-48px)] border-0 border-x border-solid border-x-muted-faded-foreground/20 bg-faded-white lg:right-[27px] lg:left-[27px] lg:w-[calc(100%-54px)] dark:bg-faded-black"
         style={{
           borderImage: "initial"
         }}
@@ -957,13 +957,13 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
         <div className="z-3 h-full w-full">
           <div className={"w-full"} ref={wrapperRef}>
             <article
-              className="rp-article relative mx-auto w-full max-w-(--maxContainerWidth)"
+              className="rp-article relative w-full max-md:mx-auto max-md:w-[calc(100%-4.8rem)]"
               data-id={postId}
               data-themed="background-color,color"
             >
               <FeaturedCard post={post} />
               <div
-                className="mx-auto my-[28px] w-full px-0 py-[32px]"
+                className="mx-auto my-[28px] w-full max-w-(--maxContainerWidth) px-0 py-[32px]"
                 ref={containerRef}
               >
                 <div
@@ -1006,7 +1006,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
               </div>
               <div
                 className={
-                  "mx-auto my-0 min-h-10 w-full px-16 py-0 max-lg:px-8"
+                  "mx-auto my-0 min-h-10 w-full max-w-(--maxContainerWidth) px-16 py-0 max-lg:px-8"
                 }
               >
                 {post.tagged.length > 0 && (

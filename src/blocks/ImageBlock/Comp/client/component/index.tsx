@@ -49,7 +49,7 @@ import type {
   SavedMetadataUnsplash,
   UnsplashCollectionDoc
 } from "@/types/ImageCollections/unsplash";
-import { getClientSideURL } from "@/utilities/getURL";
+import { getClientSideURL, toRelativeIfSameOrigin } from "@/utilities/getURL";
 import { clamp } from "@/utilities/mathUtilities";
 import { delay } from "@/utilities/rp_utils";
 import { ContextMenu, Dialog, Menu, Popover } from "@base-ui/react";
@@ -82,7 +82,7 @@ import {
   createCommand,
   DRAGSTART_COMMAND,
   SELECTION_CHANGE_COMMAND
-} from "lexical";
+} from "@payloadcms/richtext-lexical/lexical";
 import {
   AlignCenter,
   AlignLeft,
@@ -1483,10 +1483,10 @@ const UnsplashImage = ({
       >
         <picture>
           <NextImage
-            unoptimized={true}
-            src={src}
+            src={toRelativeIfSameOrigin(src)}
             alt={alt || ""}
             fill={true}
+            sizes="64px"
             className={
               "position-[center_60%] absolute inset-0 block w-full object-cover"
             }

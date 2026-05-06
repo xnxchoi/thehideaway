@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDeviceInfo } from "@/providers/RP_Pro";
 
 export type resizeListenerProps = {
@@ -16,35 +16,44 @@ export const useWindowResize = ({
   const [currentWidth, setCurrentWidth] = useState<number>(null!);
   const [currentHeight, setCurrentHeight] = useState<number>(null!);
   const [lastTimestamp, setLastTimestamp] = useState<number>(0);
-  const [timeoutID, setTimeoutID] = useState<ReturnType<typeof setTimeout>>(
-    null!
-  );
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const lastWindowWidth = useRef<number>(null);
+  const lastWindowHeight = useRef<number>(null);
+  useEffect(() => {
+    lastWindowWidth.current = currentWidth;
+    return () => {
+      lastWindowWidth.current = null;
+    };
+  }, [currentWidth]);
+  useEffect(() => {
+    lastWindowHeight.current = currentHeight;
+    return () => {
+      lastWindowHeight.current = null;
+    };
+  }, [currentHeight]);
   const devInfo = useDeviceInfo((r) => r.isMobile);
   const browser = useDeviceInfo((r) => r.browser.isChrome);
   useEffect(() => {
     const l = devInfo && browser;
-    if (currentWidth === null) {
+    if (lastWindowWidth.current === null) {
       setCurrentWidth(window.innerWidth);
       return;
     }
-    if (currentHeight === null && detectHeightChange && !l) {
+    if (lastWindowHeight.current === null && detectHeightChange && !l) {
       setCurrentHeight(window.innerHeight);
       return;
     }
 
     function handleResize() {
-      (timeoutID && clearTimeout(timeoutID),
-        setTimeoutID(
-          setTimeout(() => {
-            (window.innerWidth !== currentWidth &&
-              (setCurrentWidth(window.innerWidth),
-              setLastTimestamp(Date.now())),
-              window.innerHeight === currentHeight ||
-                l ||
-                (setCurrentHeight(window.innerHeight),
-                setLastTimestamp(Date.now())));
-          }, debounce)
-        ));
+      (timeoutRef.current && clearTimeout(timeoutRef.current),
+        (timeoutRef.current = setTimeout(() => {
+          (window.innerWidth !== lastWindowWidth.current &&
+            (setCurrentWidth(window.innerWidth), setLastTimestamp(Date.now())),
+            window.innerHeight === lastWindowHeight.current ||
+              l ||
+              (setCurrentHeight(window.innerHeight),
+              setLastTimestamp(Date.now())));
+        }, debounce)));
     }
 
     return (
@@ -54,15 +63,7 @@ export const useWindowResize = ({
         window.removeEventListener("resize", handleResize);
       }
     );
-  }, [
-    currentWidth,
-    currentHeight,
-    debounce,
-    detectHeightChange,
-    devInfo,
-    browser,
-    timeoutID
-  ]);
+  }, [debounce, detectHeightChange, devInfo, browser]);
   useEffect(() => {
     const handleVisibilityChange = () => {
       setTimeout(() => {

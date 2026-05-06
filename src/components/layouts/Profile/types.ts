@@ -7,7 +7,7 @@ import type {
   SerializedQuoteNode,
   SerializedTextNode
 } from "@payloadcms/richtext-lexical";
-import type { SerializedRootNode } from "lexical";
+import type { SerializedRootNode } from "@payloadcms/richtext-lexical/lexical";
 import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
 import type { Profile } from "@/payload-types";
 import {

@@ -3,7 +3,7 @@ import { $createRPImageNode } from "../node/RP_ImageNode";
 import { RP_InternalImageNodeData } from "../../server/node/RP_ImageNode";
 import { ImageCollectionSlug } from "@/types/collections/image-collections";
 import { LexicalEditor } from "@payloadcms/richtext-lexical/lexical";
-import { $getNodeByKey } from "lexical";
+import { $getNodeByKey } from "@payloadcms/richtext-lexical/lexical";
 
 export const insertRPImage = <T extends ImageCollectionSlug>({
   editor,

@@ -832,7 +832,7 @@ export const CoverImageClient = (props: ArticleCoverProps) => {
                       height={(image as FetchedImage)!.height!}
                       priority={false}
                       quality={100}
-                      unoptimized={true}
+                      sizes="(min-width: 1280px) 800px, 100vw"
                       src={(image as FetchedImage).url!}
                       style={{
                         objectPosition: transformPosition

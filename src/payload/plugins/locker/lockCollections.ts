@@ -10,7 +10,7 @@ import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { arraysEqualContents } from "@/utilities/compareArrays";
 import { mergeFields } from "@/utilities/mergeFields";
 import { KeysOfValue } from "@/utilities/typeUtilities";
-import { SerializedEditorState } from "lexical";
+import { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 import { revalidatePath } from "next/cache";
 import {
   Access,

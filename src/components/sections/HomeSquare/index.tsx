@@ -9,12 +9,7 @@ import { useCursor } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
 import { PostOverview } from "@/types/collections/posts";
-import {
-  ComponentPropsWithoutRef,
-  useCallback,
-  useEffect,
-  useState
-} from "react";
+import { ComponentPropsWithoutRef, useCallback } from "react";
 
 export const HomeSquare = (
   props: { article: PostOverview } & ComponentPropsWithoutRef<"div">
@@ -27,12 +22,7 @@ export const HomeSquare = (
   const setCursorTheme = useCursor((r) => r.setCursorTheme);
   const resetCursorTheme = useCursor((r) => r.resetCursorTheme);
   const theme = useTheme((r) => r.theme);
-  const [inverse, setInverse] = useState<Theme>(
-    theme === "dark" ? "light" : "dark"
-  );
-  useEffect(() => {
-    setInverse(theme === "dark" ? "light" : "dark");
-  }, [theme]);
+  const inverse: Theme = theme === "dark" ? "light" : "dark";
   const onEnter = useCallback(
     (r: Theme) => {
       setCursorTheme(r);
@@ -43,17 +33,15 @@ export const HomeSquare = (
     resetCursorTheme();
   }, [resetCursorTheme]);
   return (
-    <Link
-      onMouseEnter={() => onEnter(inverse)}
-      onMouseLeave={() => onLeave()}
-      href={"/essays/" + `${article.slug}`}
-      className="col-span-full flex flex-col items-center gap-y-4 rounded-2xl bg-faded-foreground/95 p-8 text-center text-faded-background lg:col-span-full dark:bg-off-white/95"
+    <article
+      {...rest}
+      className="col-[1/-1] rounded-2xl bg-faded-foreground/95 p-4 text-center text-faded-background sm:gap-y-4 sm:p-6 lg:col-[1/5] lg:gap-y-5 lg:p-8 dark:bg-off-white/95"
     >
-      <div
-        className={cn(
-          "relative min-h-px w-full min-w-px overflow-hidden rounded-[5px]",
-          !!article.image ? "aspect-100/56" : "aspect-square"
-        )}
+      <Link
+        onMouseEnter={() => onEnter(inverse)}
+        onMouseLeave={() => onLeave()}
+        href={"/essays/" + `${article.slug}`}
+        className="flex flex-col items-center gap-y-4 wrap-break-word"
       >
         {article.image ? (
           <FrontImage
@@ -64,26 +52,22 @@ export const HomeSquare = (
         ) : (
           <PlaceHolderImage />
         )}
-      </div>
-      <RP_BadgeTag
-        className="border-background text-background"
-        content={category}
-      />
-      <div className="flex w-full flex-col items-center justify-center pb-8">
-        <span
-          className={cn(
-            "m-0 font-serif text-[2.8rem] leading-[1.75] lg:text-[4rem]"
-          )}
-        >
-          {article.title}
-        </span>
-        <span className="m-0 max-w-[70%] font-sans text-[1.4rem] leading-none lg:-mt-2 lg:text-[1.6rem]">
-          {article.subtitle}
-        </span>
-      </div>
-      <div className="inline-block max-w-[70%] text-[1.1rem] uppercase lg:-mt-4 lg:text-[1.2rem]">
-        {article.author.name}
-      </div>
-    </Link>
+        <RP_BadgeTag
+          className="border-background text-background"
+          content={category}
+        />
+        <p className="m-0 font-serif text-5xl leading-[1.2] text-balance wrap-break-word lg:text-8xl">
+          <span>{article.title}</span>
+        </p>
+        {article.subtitle && (
+          <p className="m-0 font-sans text-base leading-[120%] text-pretty wrap-break-word sm:text-lg lg:text-xl">
+            {article.subtitle}
+          </p>
+        )}
+        <div className="max-w-[36ch] font-mono text-[10px] tracking-widest uppercase sm:text-xs">
+          {article.author.name}
+        </div>
+      </Link>
+    </article>
   );
 };

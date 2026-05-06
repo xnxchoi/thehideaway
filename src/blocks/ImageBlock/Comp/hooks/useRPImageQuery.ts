@@ -30,7 +30,7 @@ import {
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
-import { $getNodeByKey } from "lexical";
+import { $getNodeByKey } from "@payloadcms/richtext-lexical/lexical";
 import { stringify } from "qs-esm";
 import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import { uuidv7 } from "uuidv7";

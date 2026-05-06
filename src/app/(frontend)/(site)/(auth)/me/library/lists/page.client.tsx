@@ -12,6 +12,7 @@ import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
+import { toRelativeIfSameOrigin } from "@/utilities/getURL";
 import {
   useCallback,
   useRef,
@@ -172,7 +173,7 @@ function CompilationCard({
           {c.coverImage?.url ? (
             <>
               <Image
-                src={c.coverImage.url}
+                src={toRelativeIfSameOrigin(c.coverImage.url)}
                 alt={c.coverImage.alt || c.title}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"

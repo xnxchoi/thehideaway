@@ -2,7 +2,10 @@
 
 import { $isTableSelection } from "@lexical/table";
 import { createClientFeature } from "@payloadcms/richtext-lexical/client";
-import { $isRangeSelection, FORMAT_TEXT_COMMAND } from "lexical";
+import {
+  $isRangeSelection,
+  FORMAT_TEXT_COMMAND
+} from "@payloadcms/richtext-lexical/lexical";
 import { StrikethroughIcon } from "lucide-react";
 
 import { toolbarFormatGroupWithItems } from "../shared/toolbarFormatGroup";

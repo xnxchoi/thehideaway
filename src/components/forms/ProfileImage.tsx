@@ -14,7 +14,7 @@ import { AnimatePresence } from "motion/react";
 import { UserMedia } from "@/payload-types";
 import Image from "next/image";
 import { toast } from "sonner";
-import { getClientSideURL } from "@/utilities/getURL";
+import { getClientSideURL, toRelativeIfSameOrigin } from "@/utilities/getURL";
 import * as m from "motion/react-m";
 
 export type ProfileImageProps = {
@@ -162,7 +162,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
     <div className="relative my-10 flex w-full flex-col items-center">
       <div
         className={
-	        "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-faded-background/60 bg-transparent transition-all duration-300"
+          "relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border border-faded-background/60 bg-transparent transition-all duration-300"
         }
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -242,7 +242,7 @@ export default function ProfileImageField(props: ProfileImageProps) {
                   "h-full w-full object-cover transition-[filter] duration-200",
                   hover && "blur-lg brightness-75"
                 )}
-                src={image!}
+                src={toRelativeIfSameOrigin(image!)}
                 height={400}
                 width={400}
                 alt=""

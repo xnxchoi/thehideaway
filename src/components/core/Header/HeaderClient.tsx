@@ -244,7 +244,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const headerTransitionDisabled = useRef(false);
   const lastResize = useWindowResize({
     debounce: 100,
-    detectHeightChange: true
+    detectHeightChange: false
   });
   const animateBye = useEffectEvent(async () => {
     await delay(50);

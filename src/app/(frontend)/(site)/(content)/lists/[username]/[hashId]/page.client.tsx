@@ -8,6 +8,7 @@ import type { Compilation, Media, User } from "@/payload-types";
 import * as m from "motion/react-m";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { toRelativeIfSameOrigin } from "@/utilities/getURL";
 
 const TYPE_LABEL: Record<CompilationItemType, string> = {
   posts: "Essay",
@@ -70,7 +71,7 @@ export default function PublicCompilationClient({
         {cover?.url ? (
           <>
             <Image
-              src={cover.url}
+              src={toRelativeIfSameOrigin(cover.url)}
               alt={compilation.title}
               fill
               priority
@@ -266,7 +267,7 @@ function PublicItemCard({
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted/20">
         {imageUrl ? (
           <Image
-            src={imageUrl}
+            src={toRelativeIfSameOrigin(imageUrl)}
             alt={imageAlt}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
