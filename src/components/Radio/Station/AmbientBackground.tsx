@@ -50,7 +50,10 @@ export function AmbientBackgroundFallback({}: {}) {
   const playing = optimistic === "playing";
 
   return (
-    <div className="pointer-events-none relative z-[1]" aria-hidden="true">
+    <div
+      className="pointer-events-none fixed inset-0 z-[1] min-h-svh"
+      aria-hidden="true"
+    >
       {/* Subtle warm vignette — barely perceptible */}
       <div
         className="absolute inset-0 transition-opacity duration-1000"

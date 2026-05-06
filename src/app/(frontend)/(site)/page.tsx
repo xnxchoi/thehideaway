@@ -1,8 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
-import { StationHideawayHero } from "@/components/sections/StationHideaway/block";
-
 import { RPage } from "@/components/UX/Transition";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
 
