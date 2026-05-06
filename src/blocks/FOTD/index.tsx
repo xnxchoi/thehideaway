@@ -2,7 +2,7 @@ import { ComponentProps, ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
 import { Link } from "@/components/core/Link/Link";
 import { DateTime } from "luxon";
-import { HomeSquare } from "@/components/sections/HomeSquare";
+import { FeaturedHero } from "@/components/sections/FeaturedHero";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { PostOverview } from "@/types/collections/posts";
@@ -20,7 +20,7 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
     >
       <div className="border-foreground/50)] mb-6 border-b-[1px] border-solid md:min-w-1/2 md:flex-[1] md:border-b-0 md:pb-0 lg:min-w-[680px]">
         <div className="grid grid-cols-[1fr_1fr] gap-y-[20px] lg:grid-cols-[repeat(4,1fr)] lg:gap-x-[20px]">
-          {posts[0] && <HomeSquare article={posts[0]} />}
+          {posts[0] && <FeaturedHero article={posts[0]} eager />}
           {posts[1] && (
             <Link
               href={"/essays/" + (posts[1].slug ?? "")}
