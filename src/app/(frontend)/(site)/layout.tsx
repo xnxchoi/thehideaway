@@ -1,7 +1,6 @@
 import "@/styles/globals.css";
 import "@/app/(frontend)/estate.scss";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
-import { FooterTickerCrown } from "@/components/core/FooterTickerCrown/FooterTickerCrown";
 import { LegalFooter } from "@/components/core/LegalFooter/LegalFooter";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
@@ -20,7 +19,6 @@ export default async function RootLayout({
     <>
       <Layout>{children}</Layout>
       <LegalFooter />
-      <FooterTickerCrown />
     </>
   );
 }

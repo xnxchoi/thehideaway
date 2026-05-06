@@ -1,6 +1,7 @@
 import { getLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { FooterTickerCrown } from "@/components/core/FooterTickerCrown/FooterTickerCrown";
 import { Link } from "@/components/core/Link/Link";
 import { BUSINESS } from "@/constants/business";
 import { LocaleSwitch } from "./LocaleSwitch";
@@ -210,6 +211,12 @@ export async function LegalFooter() {
           <span className="h-px w-12 bg-border/40" />
           <span className="text-[10px] leading-none text-foreground/40">◇</span>
           <span className="h-px w-12 bg-border/40" />
+        </div>
+
+        {/* Bezel-strip motif — three lanes of vertical ticks reading as a
+            rotating focus ring viewed edge-on. Crowns the wordmark below. */}
+        <div className="mb-3 flex justify-center">
+          <FooterTickerCrown />
         </div>
 
         {/* Brand sign-off — small, single instance, editorial serif */}

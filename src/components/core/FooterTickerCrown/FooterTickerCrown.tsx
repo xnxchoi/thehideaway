@@ -1,12 +1,9 @@
 import { FooterTickerCrownClient } from "./FooterTickerCrown.client";
-import type { RougeAccentVariant } from "./RougeAccent";
+import type { FieldConfig } from "./field-config";
 
 interface FooterTickerCrownProps {
-  /**
-   * Which rouge accent placement to use. Default "triangle".
-   * Pass "none" while we evaluate alternatives.
-   */
-  rougeVariant?: RougeAccentVariant;
+  /** Override the default field configuration. */
+  config?: Partial<FieldConfig>;
 }
 
 /**
@@ -14,8 +11,6 @@ interface FooterTickerCrownProps {
  * `FooterTickerCrown.client.tsx`. Future v2 may fetch Payload-driven config
  * here without touching call sites.
  */
-export function FooterTickerCrown({
-  rougeVariant = "triangle"
-}: FooterTickerCrownProps) {
-  return <FooterTickerCrownClient rougeVariant={rougeVariant} />;
+export function FooterTickerCrown({ config }: FooterTickerCrownProps = {}) {
+  return <FooterTickerCrownClient config={config} />;
 }
