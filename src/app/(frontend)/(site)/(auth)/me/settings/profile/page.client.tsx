@@ -3,11 +3,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "@/components/core/Link/Link";
 import {
-  EditableText,
-  EditorialButton,
-  GlassPanel,
-  SettingsGroup,
-  SettingsRow
+  EditableField,
+  LockedField,
+  Panel,
+  PanelControls,
+  PanelGrid,
+  PanelHeader
 } from "@/components/UX/Settings";
 import type { User } from "@/payload-types";
 import { ArrowUpRight } from "lucide-react";
@@ -31,10 +32,12 @@ export default function ProfileSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        {/* Identity card — public-facing preview */}
-        <GlassPanel variant="elevated" as="section">
-          <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-start sm:gap-8 sm:p-8 xl:p-10">
-            <Avatar className="h-20 w-20 shrink-0 rounded-sm outline outline-1 -outline-offset-1 outline-border/30 sm:h-24 sm:w-24">
+        {/* Identity card — public-facing preview. Kept on the GlassPanel
+            primitive for v1; the dedicated MembershipPlate (Plaque-driven)
+            ships in Stage 4a. */}
+        <Panel>
+          <div className="relative flex flex-col gap-6 p-7 sm:flex-row sm:items-start sm:gap-8 xl:p-9">
+            <Avatar className="h-24 w-24 shrink-0 rounded-lg outline outline-1 -outline-offset-1 outline-foreground/20 sm:h-28 sm:w-28">
               {user.image ? (
                 <AvatarImage
                   src={user.image}
@@ -42,30 +45,25 @@ export default function ProfileSectionClient({
                   className="object-cover"
                 />
               ) : (
-                <AvatarFallback className="rounded-sm bg-foreground/[0.04] font-mono text-xl font-light text-foreground/60">
+                <AvatarFallback className="rounded-lg bg-foreground/[0.06] text-2xl font-light text-foreground/65">
                   {initial.toUpperCase()}
                 </AvatarFallback>
               )}
             </Avatar>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
-              <p className="font-mono text-[10px] tracking-[0.22em] text-foreground/55 uppercase">
-                Public profile
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <p className="text-xs font-medium tracking-tight text-foreground/55 dark:text-foreground/50">
+                Member
               </p>
-              <h2 className="text-2xl font-light tracking-tight sm:text-3xl">
+              <h2 className="text-3xl font-light tracking-tight sm:text-4xl xl:text-5xl">
                 {displayName}
               </h2>
               {user.slug ? (
-                <p className="font-mono text-[11px] tracking-wider text-foreground/60">
+                <p className="text-sm text-foreground/65 dark:text-foreground/60">
                   @{user.slug}
                 </p>
               ) : null}
-              {user.bio ? (
-                <p className="max-w-prose text-sm leading-relaxed font-light text-foreground/70">
-                  {user.bio}
-                </p>
-              ) : null}
-              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[10px] tracking-[0.18em] text-foreground/65 uppercase dark:text-foreground/60">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-foreground/65 dark:text-foreground/60">
                 {user.location ? <span>{user.location}</span> : null}
                 {user.link ? (
                   <a
@@ -84,129 +82,127 @@ export default function ProfileSectionClient({
             {user.slug ? (
               <Link
                 href={`/@${user.slug}`}
-                className="absolute top-6 right-6 inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase transition-colors hover:text-foreground sm:static sm:self-start"
+                className="absolute top-6 right-6 inline-flex items-center gap-1.5 text-xs text-foreground/55 transition-colors hover:text-foreground sm:static sm:self-start"
               >
                 View public
                 <ArrowUpRight size={11} />
               </Link>
             ) : null}
           </div>
-        </GlassPanel>
+        </Panel>
 
         {/* Identity */}
-        <SettingsGroup
-          title="Identity"
-          description="Your real-world name. Shown on your profile and in bylines."
-        >
-          <SettingsRow label="First name">
-            <EditableText
-              initialValue={user.firstName ?? ""}
-              emptyHint="First name"
-              maxLength={48}
-              onSave={(v) => updateUserField("firstName", v)}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Identity"
+              title="Your real-world name"
+              blurb="Shown on your profile and in bylines. Display name is auto-derived from first and last."
             />
-          </SettingsRow>
-          <SettingsRow label="Last name">
-            <EditableText
-              initialValue={user.lastName ?? ""}
-              emptyHint="Last name"
-              maxLength={48}
-              onSave={(v) => updateUserField("lastName", v)}
-            />
-          </SettingsRow>
-          <SettingsRow
-            label="Display name"
-            description="Shown wherever you're credited."
-          >
-            <EditableText
-              initialValue={user.name ?? ""}
-              emptyHint="Display name"
-              maxLength={64}
-              onSave={(v) => updateUserField("name", v)}
-            />
-          </SettingsRow>
-        </SettingsGroup>
+            <PanelControls>
+              <EditableField
+                label="First name"
+                value={user.firstName ?? ""}
+                emptyHint="First name"
+                maxLength={48}
+                onSave={(v) => updateUserField("firstName", v)}
+              />
+              <EditableField
+                label="Last name"
+                value={user.lastName ?? ""}
+                emptyHint="Last name"
+                maxLength={48}
+                onSave={(v) => updateUserField("lastName", v)}
+              />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
-        {/* About */}
-        <SettingsGroup
-          title="About"
-          description="A short line shown on your public profile. Be specific."
-        >
-          <SettingsRow label="Bio" align="stack">
-            <EditableText
-              multiline
-              rows={3}
-              initialValue={user.bio ?? ""}
-              emptyHint="A member of The Hideaway."
-              maxLength={240}
-              onSave={(v) => updateUserField("bio", v)}
+        {/* Voice (bio) — promoted to its own section per the design audit. */}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Voice"
+              title="A short line about you"
+              blurb="Shown on your public profile. Be specific. 240 characters."
             />
-          </SettingsRow>
-        </SettingsGroup>
+            <PanelControls>
+              <EditableField
+                label="Bio"
+                align="stack"
+                multiline
+                rows={3}
+                value={user.bio ?? ""}
+                emptyHint="A member of The Hideaway."
+                maxLength={240}
+                onSave={(v) => updateUserField("bio", v)}
+              />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
-        {/* Location & link */}
-        <SettingsGroup title="Where to find you">
-          <SettingsRow label="Location">
-            <EditableText
-              initialValue={user.location ?? ""}
-              emptyHint="Seoul"
-              maxLength={64}
-              onSave={(v) => updateUserField("location", v)}
+        {/* Locator */}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Locator"
+              title="Where to find you"
+              blurb="Both fields are public. The link is displayed without the protocol."
             />
-          </SettingsRow>
-          <SettingsRow label="Link">
-            <EditableText
-              type="url"
-              initialValue={user.link ?? ""}
-              emptyHint="https://"
-              maxLength={200}
-              validate={(v) => {
-                if (!v) return null;
-                try {
-                  const u = new URL(v.startsWith("http") ? v : `https://${v}`);
-                  return u.hostname.includes(".") ? null : "Enter a valid URL";
-                } catch {
-                  return "Enter a valid URL";
-                }
-              }}
-              onSave={(v) => updateUserField("link", v)}
-            />
-          </SettingsRow>
-        </SettingsGroup>
+            <PanelControls>
+              <EditableField
+                label="Location"
+                value={user.location ?? ""}
+                emptyHint="Seoul"
+                maxLength={64}
+                onSave={(v) => updateUserField("location", v)}
+              />
+              <EditableField
+                label="Link"
+                value={user.link ?? ""}
+                emptyHint="https://"
+                maxLength={200}
+                validate={(v) => {
+                  if (!v) return null;
+                  try {
+                    const u = new URL(
+                      v.startsWith("http") ? v : `https://${v}`
+                    );
+                    return u.hostname.includes(".") ? null : "Enter a valid URL";
+                  } catch {
+                    return "Enter a valid URL";
+                  }
+                }}
+                onSave={(v) => updateUserField("link", v)}
+              />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
         {/* Visibility */}
-        <SettingsGroup
-          title="Visibility"
-          description="How you appear in search and on others' screens."
-        >
-          <SettingsRow
-            label="Handle"
-            description="Your unique URL. Renaming is in preparation."
-            meta={
-              <span className="text-foreground/60 dark:text-foreground/55">
-                Locked
-              </span>
-            }
-          >
-            <span className="font-mono text-sm tracking-wide text-foreground/70">
-              @{user.slug ?? "—"}
-            </span>
-          </SettingsRow>
-          <SettingsRow label="Public profile">
-            {user.slug ? (
-              <Link href={`/@${user.slug}`}>
-                <EditorialButton
-                  tone="default"
-                  icon={<ArrowUpRight size={12} />}
-                >
-                  View as public
-                </EditorialButton>
-              </Link>
-            ) : (
-              <span className="text-foreground/65">No handle yet</span>
-            )}
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Visibility"
+              title="How you appear in search"
+              blurb="Your handle is the URL you live at. Renaming opens in a later release."
+            />
+            <PanelControls>
+              <LockedField
+                label="Handle"
+                description="Your unique URL."
+                value={`@${user.slug ?? "—"}`}
+                reason="Renaming the handle is in preparation."
+              />
+              <LockedField
+                label="Email"
+                description="Where account-critical messages go."
+                value={user.email}
+                reason="Editing your sign-in email is in preparation."
+              />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
       </div>
     </RPage>
   );

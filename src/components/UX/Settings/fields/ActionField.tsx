@@ -1,0 +1,108 @@
+"use client";
+
+import { Loader2 } from "lucide-react";
+import type { ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
+import { FieldRow } from "./FieldRow";
+
+/**
+ * Tier 4 — Verified action field.
+ *
+ * Triggers a focused destructive / verified flow — usually a modal.
+ * Use for: change password, enable/disable 2FA, add/remove passkey,
+ * sign out other devices, delete account.
+ *
+ * The component itself doesn't own the modal — callers pass any element
+ * (a DialogTrigger, a button) as `children`. We provide the row chrome,
+ * the optional caption, and a loading indicator surface for in-place
+ * actions that don't need a modal.
+ */
+interface ActionFieldProps {
+  label: string;
+  description?: string;
+  icon?: ReactNode;
+  /** The action trigger — typically a `<DialogTrigger>` or a `<button>`. */
+  children: ReactNode;
+  /** Optional ambient meta — small text trailing the label area. */
+  meta?: ReactNode;
+  /** Tone — affects the inset row's background hint. Defaults to neutral. */
+  tone?: "neutral" | "danger";
+  className?: string;
+}
+
+export function ActionField({
+  label,
+  description,
+  icon,
+  children,
+  meta,
+  tone = "neutral",
+  className
+}: ActionFieldProps) {
+  return (
+    <FieldRow
+      label={label}
+      description={description}
+      icon={icon}
+      meta={meta}
+      className={cn(
+        tone === "danger" && "bg-rouge-700/[0.06] dark:bg-rouge-700/[0.08]",
+        className
+      )}
+    >
+      <div className="flex items-center gap-2">{children}</div>
+    </FieldRow>
+  );
+}
+
+/**
+ * The button language used by ActionField triggers. Sans pill, hairline
+ * border, never filled. The single signature button across the admin
+ * surface. Compose any modal trigger over this.
+ */
+interface ActionButtonProps {
+  children: ReactNode;
+  onClick?: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+  tone?: "neutral" | "danger";
+  icon?: ReactNode;
+  className?: string;
+  type?: "button" | "submit";
+}
+
+export function ActionButton({
+  children,
+  onClick,
+  loading = false,
+  disabled = false,
+  tone = "neutral",
+  icon,
+  className,
+  type = "button"
+}: ActionButtonProps) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-tight transition-colors",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        tone === "danger"
+          ? "border-rouge-700/40 text-rouge-700/85 hover:border-rouge-700 hover:text-rouge-700"
+          : "border-foreground/30 text-foreground/85 hover:border-foreground/55 hover:text-foreground",
+        (disabled || loading) && "opacity-50",
+        className
+      )}
+    >
+      {loading ? (
+        <Loader2 size={12} className="animate-spin" />
+      ) : icon ? (
+        <span className="flex size-3 items-center justify-center">{icon}</span>
+      ) : null}
+      {children}
+    </button>
+  );
+}
