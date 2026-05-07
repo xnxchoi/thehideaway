@@ -2,14 +2,14 @@ import { ReactNode } from "react";
 
 import { Link } from "@/components/core/Link/Link";
 import { TableOfContents } from "@/components/UX/TableOfContents";
-import type { TocItem } from "@/components/UX/TableOfContents";
+import type { TocAnchorItem } from "@/components/UX/TableOfContents";
 
 interface LegalShellProps {
   eyebrow: string;
   title: string;
   lastUpdatedLabel: string;
   lastUpdated: string;
-  toc: TocItem[];
+  toc: TocAnchorItem[];
   tocLabel: string;
   relatedLabel: string;
   related: { href: string; label: string }[];

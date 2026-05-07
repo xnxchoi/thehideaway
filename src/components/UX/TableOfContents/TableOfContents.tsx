@@ -9,7 +9,7 @@ import type {
   TableOfContentsProps,
   TableOfContentsRouteProps,
   TableOfContentsAnchorProps,
-  TocItem
+  TocLabelStyle
 } from "./types";
 import { useActiveSection } from "./useActiveSection";
 
@@ -24,7 +24,12 @@ import { useActiveSection } from "./useActiveSection";
  *  - Hairline left border at `border-border/20`
  *  - Active rule: 1px-wide vertical gradient pill that fades in/out
  *  - Active sheen: a wide horizontal gradient fading to the right
- *  - Mono caps label + small tabular-nums marker
+ *
+ * Label face defaults by mode:
+ *  - `mode="route"`  — sans (admin / settings tone, per CLAUDE.md)
+ *  - `mode="anchor"` — mono caps (editorial / document tone)
+ *
+ * Override with `labelStyle` if a surface needs the other face.
  */
 export function TableOfContents(props: TableOfContentsProps) {
   return props.mode === "route" ? (
@@ -38,6 +43,7 @@ function RouteToc({
   items,
   ariaLabel = "Contents",
   className,
+  labelStyle = "sans",
   isActive: customIsActive
 }: TableOfContentsRouteProps) {
   const pathname = usePathname();
@@ -50,16 +56,16 @@ function RouteToc({
   return (
     <TocShell ariaLabel={ariaLabel} className={className}>
       {items.map((item, index) => {
-        const href = item.href ?? "#";
-        const active = checkActive(pathname, href);
+        const active = checkActive(pathname, item.href);
         return (
           <TocItemLink
-            key={href}
-            href={href}
+            key={item.href}
+            href={item.href}
             label={item.label}
             number={item.number ?? formatOrdinal(index)}
             active={active}
             asAnchor={false}
+            labelStyle={labelStyle}
           />
         );
       })}
@@ -71,30 +77,28 @@ function AnchorToc({
   items,
   ariaLabel = "Contents",
   className,
+  labelStyle = "mono",
   scrollOffsetTop = 96
 }: TableOfContentsAnchorProps) {
   // Memoize ids so the effect inside useActiveSection doesn't tear down
   // on every render of the parent.
-  const ids = useMemo(
-    () => items.map((i) => i.id).filter((v): v is string => Boolean(v)),
-    [items]
-  );
+  const ids = useMemo(() => items.map((i) => i.id), [items]);
 
   const activeId = useActiveSection(ids, scrollOffsetTop);
 
   return (
     <TocShell ariaLabel={ariaLabel} className={className}>
       {items.map((item, index) => {
-        const href = item.id ? `#${item.id}` : "#";
-        const active = item.id != null && item.id === activeId;
+        const active = item.id === activeId;
         return (
           <TocItemLink
-            key={item.id ?? `${index}`}
-            href={href}
+            key={item.id}
+            href={`#${item.id}`}
             label={item.label}
             number={item.number ?? formatOrdinal(index)}
             active={active}
             asAnchor={true}
+            labelStyle={labelStyle}
           />
         );
       })}
@@ -131,6 +135,7 @@ interface TocItemLinkProps {
   active: boolean;
   /** Use a plain <a> for in-page anchors so the browser handles the hash scroll. */
   asAnchor: boolean;
+  labelStyle: TocLabelStyle;
 }
 
 function TocItemLink({
@@ -138,7 +143,8 @@ function TocItemLink({
   label,
   number,
   active,
-  asAnchor
+  asAnchor,
+  labelStyle
 }: TocItemLinkProps) {
   const className = cn(
     "group relative flex items-baseline gap-4 py-3.5 pr-4 pl-5 transition-all duration-200",
@@ -149,31 +155,39 @@ function TocItemLink({
       : "before:opacity-0 hover:before:opacity-40",
     // Active sheen: wide horizontal gradient fading right
     "after:pointer-events-none after:absolute after:inset-y-0 after:-left-px after:w-32 after:bg-gradient-to-r after:from-foreground/[0.05] after:to-transparent after:transition-opacity dark:after:from-foreground/[0.07]",
-    active ? "after:opacity-100" : "after:opacity-0"
+    active ? "after:opacity-100" : "after:opacity-0",
+    // Keyboard focus
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
   );
 
-  const content = (
-    <>
-      <span
-        className={cn(
-          "relative z-10 font-mono text-[10px] tracking-widest tabular-nums transition-colors",
-          active
-            ? "text-foreground/85"
-            : "text-foreground/55 dark:text-foreground/50"
-        )}
-      >
-        {number}
-      </span>
-      <span
-        className={cn(
+  const numberClass = cn(
+    "relative z-10 font-mono text-[10px] tracking-widest tabular-nums transition-colors",
+    active
+      ? "text-foreground/85"
+      : "text-foreground/55 dark:text-foreground/50"
+  );
+
+  const labelClass =
+    labelStyle === "mono"
+      ? cn(
           "relative z-10 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors xl:text-xs",
           active
             ? "text-foreground"
             : "text-foreground/60 group-hover:text-foreground/85 dark:text-foreground/55"
-        )}
-      >
-        {label}
+        )
+      : cn(
+          "relative z-10 text-sm tracking-tight transition-colors",
+          active
+            ? "font-medium text-foreground"
+            : "font-normal text-foreground/65 group-hover:text-foreground/90 dark:text-foreground/60"
+        );
+
+  const content = (
+    <>
+      <span aria-hidden="true" className={numberClass}>
+        {number}
       </span>
+      <span className={labelClass}>{label}</span>
     </>
   );
 

@@ -8,7 +8,8 @@ import { useMemo } from "react";
 import type {
   TableOfContentsProps,
   TableOfContentsRouteProps,
-  TableOfContentsAnchorProps
+  TableOfContentsAnchorProps,
+  TocLabelStyle
 } from "./types";
 import { useActiveSection } from "./useActiveSection";
 
@@ -16,8 +17,8 @@ import { useActiveSection } from "./useActiveSection";
  * Horizontal snap-scrolling counterpart of <TableOfContents/>.
  * Used at small viewports where a vertical rail isn't appropriate.
  *
- * Visual signature: the same gradient design language, expressed as a
- * horizontal sheen line under the active item.
+ * Same label-style defaults as the desktop variant: route -> sans,
+ * anchor -> mono caps. Override with `labelStyle`.
  */
 export function TableOfContentsMobile(props: TableOfContentsProps) {
   return props.mode === "route" ? (
@@ -31,6 +32,7 @@ function RouteTocMobile({
   items,
   ariaLabel = "Contents",
   className,
+  labelStyle = "sans",
   isActive: customIsActive
 }: TableOfContentsRouteProps) {
   const pathname = usePathname();
@@ -43,12 +45,11 @@ function RouteTocMobile({
   return (
     <ScrollerShell ariaLabel={ariaLabel} className={className}>
       {items.map((item, index) => {
-        const href = item.href ?? "#";
-        const active = checkActive(pathname, href);
+        const active = checkActive(pathname, item.href);
         return (
           <Link
-            key={href}
-            href={href}
+            key={item.href}
+            href={item.href}
             aria-current={active ? "page" : undefined}
             className={mobileItemClass(active)}
           >
@@ -56,6 +57,7 @@ function RouteTocMobile({
               number={item.number ?? formatOrdinal(index)}
               label={item.label}
               active={active}
+              labelStyle={labelStyle}
             />
           </Link>
         );
@@ -68,24 +70,20 @@ function AnchorTocMobile({
   items,
   ariaLabel = "Contents",
   className,
+  labelStyle = "mono",
   scrollOffsetTop = 96
 }: TableOfContentsAnchorProps) {
-  const ids = useMemo(
-    () => items.map((i) => i.id).filter((v): v is string => Boolean(v)),
-    [items]
-  );
-
+  const ids = useMemo(() => items.map((i) => i.id), [items]);
   const activeId = useActiveSection(ids, scrollOffsetTop);
 
   return (
     <ScrollerShell ariaLabel={ariaLabel} className={className}>
       {items.map((item, index) => {
-        const href = item.id ? `#${item.id}` : "#";
-        const active = item.id != null && item.id === activeId;
+        const active = item.id === activeId;
         return (
           <a
-            key={item.id ?? `${index}`}
-            href={href}
+            key={item.id}
+            href={`#${item.id}`}
             aria-current={active ? "location" : undefined}
             className={mobileItemClass(active)}
           >
@@ -93,6 +91,7 @@ function AnchorTocMobile({
               number={item.number ?? formatOrdinal(index)}
               label={item.label}
               active={active}
+              labelStyle={labelStyle}
             />
           </a>
         );
@@ -127,22 +126,26 @@ function mobileItemClass(active: boolean) {
   return cn(
     "group relative flex shrink-0 snap-start items-baseline gap-2 py-3 pr-5 transition-colors",
     "after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-foreground after:to-transparent after:transition-opacity",
-    active ? "after:opacity-100" : "after:opacity-0"
+    active ? "after:opacity-100" : "after:opacity-0",
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
   );
 }
 
 function ItemContent({
   number,
   label,
-  active
+  active,
+  labelStyle
 }: {
   number: string;
   label: string;
   active: boolean;
+  labelStyle: TocLabelStyle;
 }) {
   return (
     <>
       <span
+        aria-hidden="true"
         className={cn(
           "font-mono text-[9px] tracking-widest tabular-nums",
           active
@@ -153,12 +156,21 @@ function ItemContent({
         {number}
       </span>
       <span
-        className={cn(
-          "font-mono text-[10px] tracking-[0.18em] uppercase transition-colors",
-          active
-            ? "text-foreground"
-            : "text-foreground/60 dark:text-foreground/55"
-        )}
+        className={
+          labelStyle === "mono"
+            ? cn(
+                "font-mono text-[10px] tracking-[0.18em] uppercase transition-colors",
+                active
+                  ? "text-foreground"
+                  : "text-foreground/60 dark:text-foreground/55"
+              )
+            : cn(
+                "text-sm tracking-tight transition-colors",
+                active
+                  ? "font-medium text-foreground"
+                  : "font-normal text-foreground/65 dark:text-foreground/60"
+              )
+        }
       >
         {label}
       </span>

@@ -14,7 +14,10 @@ export { TableOfContentsMobile } from "./TableOfContentsMobile";
 export { useActiveSection } from "./useActiveSection";
 export type {
   TocItem,
+  TocRouteItem,
+  TocAnchorItem,
   TocMode,
+  TocLabelStyle,
   TableOfContentsProps,
   TableOfContentsBaseProps,
   TableOfContentsRouteProps,

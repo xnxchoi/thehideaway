@@ -9,12 +9,20 @@ import { useEffect, useState } from "react";
  *
  * `topOffset` lets you compensate for sticky headers — the section anchor is
  * considered "active" once it has scrolled past that offset.
+ *
+ * Initial state is hash-seeded on the client: arriving at `/page#section-id`
+ * directly (or via browser back-forward with restored scroll) shows the right
+ * item active immediately, before the observer has had a chance to fire.
  */
 export function useActiveSection(
   ids: string[],
   topOffset = 96
 ): string | null {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const hash = window.location.hash.slice(1);
+    return ids.includes(hash) ? hash : null;
+  });
 
   useEffect(() => {
     if (typeof window === "undefined" || ids.length === 0) return;
@@ -25,21 +33,21 @@ export function useActiveSection(
 
     if (elements.length === 0) return;
 
-    // Track which sections are currently intersecting; pick the topmost one.
-    const visible = new Map<string, number>(); // id -> top-of-element y
+    // Track which sections are currently intersecting.
+    const visible = new Set<string>();
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           const id = entry.target.id;
           if (entry.isIntersecting) {
-            visible.set(id, entry.boundingClientRect.top);
+            visible.add(id);
           } else {
             visible.delete(id);
           }
         }
 
-        // First section currently in view, ranked by document order.
+        // Pick the first visible section in document order.
         let nextActive: string | null = null;
         for (const id of ids) {
           if (visible.has(id)) {

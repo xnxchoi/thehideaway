@@ -378,11 +378,14 @@ Rule of thumb: a settings or vault surface is mostly sans, lightly seasoned with
 
 ### Display / hero headings
 
-`text-6xl` is the floor for page-hero scale. Never below — at any breakpoint.
+`text-6xl` is the **desktop floor** for page-hero scale. Mobile may step down one tier (`text-5xl`) only if the headline genuinely overflows or breaks awkwardly at narrow widths — never use mobile downscale to make heroes feel "appropriate" for small screens. Heroes are heroes; they should land big.
 
 ```tsx
-// Page heroes — scales up only, never down
+// Page heroes — preferred ramp
 className="text-6xl md:text-7xl 2xl:text-8xl font-light tracking-tight"
+
+// Page heroes — only when the preferred ramp breaks at < 375px
+className="text-5xl sm:text-6xl md:text-7xl 2xl:text-8xl font-light tracking-tight"
 
 // Page section headings (within a page)
 className="text-3xl xl:text-4xl 2xl:text-5xl font-light tracking-tight"
@@ -622,11 +625,44 @@ Actions are communicated through text weight, underlines, and border visibility 
 
 ### Canvas
 
-A single deep-luminance canvas carrying:
-- One **warm radial bleed** anchored off-screen — atmosphere, not decoration. Subtle in dark; a low-contrast warm wash in light.
-- Subtle grain overlay at very low opacity (`/[0.02]`–`/[0.04]`).
+A near-uniform deep-luminance canvas — almost pure black in dark mode (`oklch(8–10% 0 0)` range), near-paper in light. The expensive feel comes from the **uniformity**, not from atmosphere.
 
-No per-panel atmosphere on top of this. Atmosphere lives at canvas level only.
+Optional, very low-intensity touches:
+- **Warm radial bleed** anchored off-screen — barely registering, never a feature. Use only if the surface needs a hint of life.
+- **Grain overlay** at very low opacity (`/[0.02]`–`/[0.04]`).
+
+If in doubt, leave the canvas uniform. No per-panel atmosphere on top.
+
+### Top-level architecture (settings canvas)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ░ canvas (uniform deep luminance, optional grain) ░                 │
+│                                                                     │
+│  ┌────────────────────────┬──────────────────────────────────────┐  │
+│  │ rail / nav (xl+)       │ main canvas (panel stack)            │  │
+│  │                        │                                      │  │
+│  │  · IDENTITY            │  ┌──── panel ────────────────────┐   │  │
+│  │  · ACCESS              │  │  desc │ controls              │   │  │
+│  │  · DATA                │  └───────────────────────────────┘   │  │
+│  │                        │  ┌──── panel ────────────────────┐   │  │
+│  │  ↑ gradient-led TOC    │  │  desc │ controls              │   │  │
+│  │    (route mode, sans)  │  └───────────────────────────────┘   │  │
+│  │                        │                                      │  │
+│  │                        ├─ optional companion column ──────────┤  │
+│  │                        │  Plaque (xl+ only, lazy)             │  │
+│  └────────────────────────┴──────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+3 columns at `xl:` and above:
+1. **Nav rail** (`~232px`) — `<TableOfContents mode="route" labelStyle="sans">` against the canvas. No panel behind it.
+2. **Main canvas** (`1fr`) — vertical stack of Panels.
+3. **Companion column** (`~360–420px`, optional) — Plaque + status, anchored, lazy-loaded.
+
+Below `lg:`:
+- Rail collapses into the iOS-style index page (`/me/settings` becomes the list of section links; tapping navigates to the dedicated route).
+- Companion column is replaced with a typographic member block.
 
 ### Panels (lifted, not flat)
 
@@ -646,7 +682,9 @@ Panels are **lifted dark pools** in the canvas, distinguished by luminance gradi
 </div>
 ```
 
-Radius: `rounded-2xl` (~16px). No visible borders; rely on luminance + shadow.
+Radius: `rounded-2xl` (~16px) on the **outer panel**. No visible borders; rely on luminance + shadow.
+
+**Radius graduation:** outer panel takes `rounded-2xl`; inset rows / pills inside it step down to `rounded-lg` (~8px). Two-step radius difference between container and contents prevents inner pills from reading as nested cards.
 
 ### Internal panel composition (2-column)
 
@@ -671,7 +709,7 @@ Field rows are **self-contained inset pills**, never divider-separated lines.
 
 ```tsx
 <div className={cn(
-  "relative flex items-center justify-between gap-4 rounded-xl px-4 py-3",
+  "relative flex items-center justify-between gap-4 rounded-lg px-4 py-3",
   "bg-foreground/[0.025] dark:bg-foreground/[0.03]",
   "before:absolute before:inset-x-2 before:top-0 before:h-px",
   "before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent"
@@ -705,8 +743,8 @@ Edit affordance is communicated by component, not by inline `<input>` styling:
 
 | Tier | Component | Visual signal |
 |---|---|---|
-| 1 — Locked | `<LockedField>` | Mono value; dotted underline; trailing 12px lock glyph at `/35`. Cursor: not-allowed. |
-| 2 — Deferred edit | `<EditableField>` | Sans value; on hover: hairline underline appears + trailing pencil glyph rises `/30 → /80`. Click swaps row to inline input + esc/save controls. |
+| 1 — Locked | `<LockedField>` | Sans value at body weight; trailing 12px lock glyph at `/35`. No interactive affordance. Cursor: default. Avoid web-conventional dotted-underline; rely on the lock glyph alone. |
+| 2 — Deferred edit | `<EditableField>` | Sans value at rest; on hover: hairline underline appears + trailing pencil glyph rises `/30 → /80`. Click swaps row to inline input + esc/save controls. |
 | 3 — Soft control | `<ToggleField>` | iOS-style switch or radio set; 1px inset focus ring at `foreground/40`. |
 | 4 — Verified action | `<ActionField>` | Sans pill button → modal (password change, 2FA, passkey, sign-out everywhere). |
 
