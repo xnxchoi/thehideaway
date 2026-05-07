@@ -14,9 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import {
-  EditorialButton,
-  SettingsGroup,
-  SettingsRow
+  ActionButton,
+  ActionField,
+  Panel,
+  PanelControls,
+  PanelGrid,
+  PanelHeader
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient } from "@/lib/auth/client";
@@ -56,44 +59,62 @@ export default function ConnectedSectionClient() {
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsGroup
-          title="Sign-in providers"
-          description="Identity providers connected to your account."
-        >
-          <ProviderRow slug="credential" isLinked={linked.has("credential")} />
-          <ProviderRow slug="google" isLinked={linked.has("google")} />
-          <ProviderRow slug="naver" isLinked={linked.has("naver")} />
-        </SettingsGroup>
+        {/* Sign-in providers */}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Providers"
+              title="Identity providers connected to your account"
+              blurb="Sign in with any of these. The first time you use a provider it links to your account automatically."
+            />
+            <PanelControls>
+              <ProviderRow
+                slug="credential"
+                isLinked={linked.has("credential")}
+              />
+              <ProviderRow slug="google" isLinked={linked.has("google")} />
+              <ProviderRow slug="naver" isLinked={linked.has("naver")} />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
-        <SettingsGroup
-          title="Passkeys"
-          description="Hardware-backed sign-in via Face ID, Touch ID, or a security key."
-          meta={
-            <span className="tabular-nums">
-              {String(passkeys.data?.length ?? 0).padStart(2, "0")}
-            </span>
-          }
-        >
-          {(passkeys.data ?? []).length === 0 ? (
-            <p className="border-t border-border/15 pt-5 font-mono text-[11px] tracking-wide text-foreground/45">
-              No passkeys yet. Add one to skip the password.
-            </p>
-          ) : (
-            <div className="flex flex-col">
-              {passkeys.data?.map((pk) => (
-                <PasskeyRow
-                  key={pk.id}
-                  id={pk.id}
-                  name={pk.name ?? "My Passkey"}
-                  createdAt={pk.createdAt as unknown as string | undefined}
-                />
-              ))}
-            </div>
-          )}
-          <div className="mt-6">
-            <AddPasskeyDialog />
-          </div>
-        </SettingsGroup>
+        {/* Passkeys */}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Passkeys"
+              title="Hardware-backed sign-in"
+              blurb="Use Face ID, Touch ID, Windows Hello, or a security key. No password required."
+              meta={
+                <span className="tabular-nums text-foreground/75">
+                  {String(passkeys.data?.length ?? 0).padStart(2, "0")} added
+                </span>
+              }
+            />
+            <PanelControls>
+              {(passkeys.data ?? []).length === 0 ? (
+                <div className="rounded-lg bg-foreground/[0.025] px-4 py-3 text-sm text-foreground/65 dark:bg-foreground/[0.03] dark:text-foreground/60">
+                  No passkeys yet. Add one to skip the password.
+                </div>
+              ) : (
+                passkeys.data?.map((pk) => (
+                  <PasskeyRow
+                    key={pk.id}
+                    id={pk.id}
+                    name={pk.name ?? "My Passkey"}
+                    createdAt={pk.createdAt as unknown as string | undefined}
+                  />
+                ))
+              )}
+              <ActionField
+                label="Add a passkey"
+                description="Register a new device or security key."
+              >
+                <AddPasskeyDialog />
+              </ActionField>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
       </div>
     </RPage>
   );
@@ -101,23 +122,25 @@ export default function ConnectedSectionClient() {
 
 function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
   return (
-    <SettingsRow
-      label={PROVIDER_LABEL[slug] ?? slug}
-      description={PROVIDER_BLURB[slug] ?? ""}
-      meta={
-        isLinked ? (
-          <span className="text-foreground/85">Linked</span>
-        ) : (
-          <span className="text-foreground/60 dark:text-foreground/55">
-            Available
-          </span>
-        )
-      }
-    >
-      <span className="text-foreground/70">
-        {isLinked ? "Active" : "Sign in with this provider once to link."}
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+      <div className="flex min-w-0 flex-col">
+        <span className="text-sm text-foreground">
+          {PROVIDER_LABEL[slug] ?? slug}
+        </span>
+        <span className="text-xs text-foreground/65 dark:text-foreground/60">
+          {PROVIDER_BLURB[slug] ?? ""}
+        </span>
+      </div>
+      <span
+        className={
+          isLinked
+            ? "text-xs text-foreground/85"
+            : "text-xs text-foreground/55 dark:text-foreground/50"
+        }
+      >
+        {isLinked ? "Linked" : "Available"}
       </span>
-    </SettingsRow>
+    </div>
   );
 }
 
@@ -149,17 +172,24 @@ function PasskeyRow({
       })
     : null;
   return (
-    <div className="grid grid-cols-1 items-center gap-x-8 gap-y-2 border-t border-border/15 py-4 first:border-t-0 md:grid-cols-[auto_minmax(0,1fr)_auto_auto]">
-      <div className="flex h-8 w-8 items-center justify-center text-foreground/55">
-        <Fingerprint size={15} strokeWidth={1.2} />
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex size-4 shrink-0 items-center justify-center text-foreground/55 dark:text-foreground/50">
+          <Fingerprint size={14} strokeWidth={1.4} />
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm text-foreground">{name}</span>
+          {date ? (
+            <span className="text-xs text-foreground/60 dark:text-foreground/55">
+              Added {date}
+            </span>
+          ) : null}
+        </div>
       </div>
-      <span className="truncate text-sm font-light tracking-tight">{name}</span>
-      <span className="font-mono text-[10px] tracking-widest text-foreground/60 uppercase dark:text-foreground/55">
-        {date ?? ""}
-      </span>
       <RP_Btn
         onClick={onDelete}
-        className="text-foreground/65 transition-colors hover:text-rouge-700 dark:text-foreground/60"
+        aria-label={`Remove passkey ${name}`}
+        className="flex size-7 items-center justify-center rounded-md text-foreground/65 transition-colors hover:bg-foreground/[0.06] hover:text-rouge-700 dark:text-foreground/60"
       >
         {pending ? (
           <Loader2 size={14} className="animate-spin" />
@@ -198,16 +228,12 @@ function AddPasskeyDialog() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <EditorialButton icon={<Plus size={12} />}>
-            Add a passkey
-          </EditorialButton>
+          <ActionButton icon={<Plus size={12} />}>Add a passkey</ActionButton>
         )}
       />
-      <DialogContent className="w-11/12 rounded-sm sm:max-w-[440px]">
+      <DialogContent className="w-11/12 rounded-2xl sm:max-w-[440px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.22em] text-foreground/50 uppercase">
-            Security
-          </p>
+          <p className="text-xs text-foreground/55">Security</p>
           <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
             Add a passkey
           </DialogTitle>
@@ -216,10 +242,7 @@ function AddPasskeyDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="mt-4 flex flex-col gap-2">
-          <Label
-            htmlFor="passkey-name"
-            className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase"
-          >
+          <Label htmlFor="passkey-name" className="text-xs text-foreground/65">
             Name
           </Label>
           <Input
@@ -227,17 +250,17 @@ function AddPasskeyDialog() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="MacBook Pro"
-            className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
+            className="border-0 border-b border-foreground/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
           />
         </div>
         <DialogFooter className="mt-6">
-          <EditorialButton
+          <ActionButton
             onClick={onAdd}
             loading={pending}
             icon={<Fingerprint size={12} />}
           >
             Create passkey
-          </EditorialButton>
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>

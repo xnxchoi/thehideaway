@@ -1,8 +1,10 @@
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import {
-  SectionEmpty,
-  SettingsGroup,
-  SettingsRow
+  Panel,
+  PanelControls,
+  PanelGrid,
+  PanelHeader,
+  SectionEmpty
 } from "@/components/UX/Settings";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -24,47 +26,44 @@ export default async function NotificationsSettingsPage() {
           body="You'll be able to choose what arrives by email — new essays, replies, follows, and editor picks — and tune what surfaces in the in-app inbox. For now everything follows the default."
         />
 
-        <SettingsGroup
-          title="Today's defaults"
-          description="What gets sent until you have control."
-        >
-          <SettingsRow
-            label="Email digest"
-            meta={
-              <span className="text-foreground/60 dark:text-foreground/55">
-                Default
-              </span>
-            }
-          >
-            <span className="text-foreground/75">
-              One weekly editor's brief, plus replies to your highlights.
-            </span>
-          </SettingsRow>
-          <SettingsRow
-            label="In-app"
-            meta={
-              <span className="text-foreground/60 dark:text-foreground/55">
-                Default
-              </span>
-            }
-          >
-            <span className="text-foreground/75">
-              Real-time replies, follows, and series updates via the inbox.
-            </span>
-          </SettingsRow>
-          <SettingsRow
-            label="Marketing"
-            meta={
-              <span className="text-foreground/60 dark:text-foreground/55">
-                Off
-              </span>
-            }
-          >
-            <span className="text-foreground/75">
-              We don't send marketing email.
-            </span>
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Defaults"
+              title="What gets sent today"
+              blurb="Until preferences ship, every member receives the defaults below."
+            />
+            <PanelControls>
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-sm text-foreground">Email digest</span>
+                  <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                    One weekly editor's brief, plus replies to your highlights.
+                  </span>
+                </div>
+                <span className="text-xs text-foreground/55">Default</span>
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-sm text-foreground">In-app inbox</span>
+                  <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                    Real-time replies, follows, and series updates.
+                  </span>
+                </div>
+                <span className="text-xs text-foreground/55">Default</span>
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-sm text-foreground">Marketing</span>
+                  <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                    We don't send marketing email.
+                  </span>
+                </div>
+                <span className="text-xs text-foreground/55">Off</span>
+              </div>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
       </div>
     </RPage>
   );

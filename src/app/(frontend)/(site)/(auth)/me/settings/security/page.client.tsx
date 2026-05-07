@@ -16,9 +16,12 @@ import { PasswordInput } from "@/components/ui/password-input";
 import CopyButton from "@/components/ui/copy-button";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import {
-  EditorialButton,
-  SettingsGroup,
-  SettingsRow
+  ActionButton,
+  ActionField,
+  Panel,
+  PanelControls,
+  PanelGrid,
+  PanelHeader
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient, signOut } from "@/lib/auth/client";
@@ -58,98 +61,113 @@ export default function SecuritySectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        {/* Two-Factor */}
-        <SettingsGroup
-          title="Two-factor authentication"
-          description="Require a TOTP code from an authenticator app at sign-in."
-          meta={
-            user.twoFactorEnabled ? (
-              <span className="text-foreground/85">Enabled</span>
-            ) : (
-              <span className="text-foreground/65 dark:text-foreground/60">
-                Off
-              </span>
-            )
-          }
-        >
-          <SettingsRow
-            label="Authenticator"
-            description={
-              user.twoFactorEnabled
-                ? "2FA is active for sign-in."
-                : "Add an extra layer of security."
-            }
-          >
-            <div className="flex flex-wrap items-center gap-3">
-              {user.twoFactorEnabled ? <ShowQrDialog /> : null}
-              <TwoFactorToggleDialog enabled={Boolean(user.twoFactorEnabled)} />
-            </div>
-          </SettingsRow>
-        </SettingsGroup>
+        {/* Two-factor */}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Two-factor"
+              title="Require a TOTP code at sign-in"
+              blurb="An authenticator app generates a 6-digit code that's required after your password."
+              meta={
+                user.twoFactorEnabled ? (
+                  <span className="text-foreground/85">Enabled</span>
+                ) : (
+                  <span className="text-foreground/65 dark:text-foreground/60">
+                    Off
+                  </span>
+                )
+              }
+            />
+            <PanelControls>
+              <ActionField
+                label="Authenticator"
+                description={
+                  user.twoFactorEnabled
+                    ? "2FA is active for sign-in."
+                    : "Add an extra layer of security."
+                }
+              >
+                {user.twoFactorEnabled ? <ShowQrDialog /> : null}
+                <TwoFactorToggleDialog enabled={Boolean(user.twoFactorEnabled)} />
+              </ActionField>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
         {/* Active sessions */}
-        <SettingsGroup
-          title="Active sessions"
-          description="Devices currently signed in to your account."
-          meta={
-            <span className="tabular-nums">
-              {String(activeCount).padStart(2, "0")}
-            </span>
-          }
-        >
-          <div className="flex flex-col">
-            {(sessions ?? [])
-              .filter((s) => s?.userAgent)
-              .map((s) => {
-                const ua = new UAParser(s.userAgent || "");
-                const isMobile = ua.getDevice().type === "mobile";
-                const os = ua.getOS().name ?? "Unknown";
-                const browser = ua.getBrowser().name ?? "Unknown";
-                const isCurrent = session?.session.id === s.id;
-                return (
-                  <SessionRow
-                    key={s.id}
-                    id={s.id}
-                    token={s.token}
-                    isCurrent={isCurrent}
-                    isMobile={isMobile}
-                    os={os}
-                    browser={browser}
-                  />
-                );
-              })}
-          </div>
-          <div className="mt-6">
-            <RevokeOthers />
-          </div>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Sessions"
+              title="Devices currently signed in"
+              blurb="If a device looks unfamiliar, terminate it. The current device is always shown first."
+              meta={
+                <span className="tabular-nums text-foreground/75">
+                  {String(activeCount).padStart(2, "0")} active
+                </span>
+              }
+            />
+            <PanelControls>
+              {(sessions ?? [])
+                .filter((s) => s?.userAgent)
+                .map((s) => {
+                  const ua = new UAParser(s.userAgent || "");
+                  const isMobile = ua.getDevice().type === "mobile";
+                  const os = ua.getOS().name ?? "Unknown";
+                  const browser = ua.getBrowser().name ?? "Unknown";
+                  const isCurrent = session?.session.id === s.id;
+                  return (
+                    <SessionRow
+                      key={s.id}
+                      token={s.token}
+                      isCurrent={isCurrent}
+                      isMobile={isMobile}
+                      os={os}
+                      browser={browser}
+                    />
+                  );
+                })}
+              <ActionField
+                label="Sign out everywhere else"
+                description="Terminate every session except the one you're using right now."
+              >
+                <RevokeOthers />
+              </ActionField>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
         {/* Danger */}
-        <SettingsGroup
-          title="Account closure"
-          description="Permanent. Removes your access to The Hideaway."
-        >
-          <SettingsRow
-            label="Delete account"
-            description="Authored content may be retained per our policy."
-          >
-            <DeleteAccountDialog />
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Account closure"
+              title="Permanently delete your account"
+              blurb="Removes your access to The Hideaway. Authored content may be retained per our policy."
+            />
+            <PanelControls>
+              <ActionField
+                label="Delete account"
+                description="This action is permanent."
+                tone="danger"
+              >
+                <DeleteAccountDialog />
+              </ActionField>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
       </div>
     </RPage>
   );
 }
 
 function SessionRow({
-  id,
   token,
   isCurrent,
   isMobile,
   os,
   browser
 }: {
-  id: string;
   token: string;
   isCurrent: boolean;
   isMobile: boolean;
@@ -169,35 +187,38 @@ function SessionRow({
     }
     setPending(false);
   };
+
   return (
-    <div className="grid grid-cols-1 items-center gap-x-8 gap-y-3 border-t border-border/15 py-4 first:border-t-0 md:grid-cols-[auto_minmax(0,1fr)_auto]">
-      <div className="flex h-8 w-8 items-center justify-center text-foreground/55">
-        {isMobile ? (
-          <MobileIcon className="size-4" />
-        ) : (
-          <MonitorSmartphone size={16} strokeWidth={1.2} />
-        )}
-      </div>
-      <div className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-light tracking-tight">
-          {os}
-          <span className="mx-2 text-foreground/45" aria-hidden="true">
-            ·
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex size-4 shrink-0 items-center justify-center text-foreground/55 dark:text-foreground/50">
+          {isMobile ? (
+            <MobileIcon className="size-4" />
+          ) : (
+            <MonitorSmartphone size={14} strokeWidth={1.4} />
+          )}
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm text-foreground">
+            {os}
+            <span className="mx-2 text-foreground/45" aria-hidden="true">
+              ·
+            </span>
+            {browser}
           </span>
-          {browser}
-        </span>
-        <span className="font-mono text-[10px] tracking-widest text-foreground/65 uppercase dark:text-foreground/60">
-          {isCurrent ? "Current device" : "Signed in"}
-        </span>
+          <span className="text-xs text-foreground/65 dark:text-foreground/60">
+            {isCurrent ? "Current device" : "Signed in"}
+          </span>
+        </div>
       </div>
       {isCurrent ? (
-        <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
+        <span className="text-xs text-foreground/55" aria-hidden="true">
           —
         </span>
       ) : (
-        <EditorialButton tone="ghost" loading={pending} onClick={onTerminate}>
+        <ActionButton tone="danger" loading={pending} onClick={onTerminate}>
           Terminate
-        </EditorialButton>
+        </ActionButton>
       )}
     </div>
   );
@@ -218,9 +239,9 @@ function RevokeOthers() {
     setPending(false);
   };
   return (
-    <EditorialButton onClick={onClick} loading={pending}>
-      Sign out other devices
-    </EditorialButton>
+    <ActionButton onClick={onClick} loading={pending}>
+      Sign out everywhere else
+    </ActionButton>
   );
 }
 
@@ -238,8 +259,7 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
     }
     setPending(true);
     if (enabled) {
-      // Disabling
-      const res = await authClient.twoFactor.disable({
+      await authClient.twoFactor.disable({
         password,
         fetchOptions: {
           onSuccess: () => {
@@ -292,19 +312,17 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <EditorialButton
+          <ActionButton
             icon={enabled ? <ShieldOff size={12} /> : <ShieldCheck size={12} />}
-            tone={enabled ? "danger" : "default"}
+            tone={enabled ? "danger" : "neutral"}
           >
             {enabled ? "Disable 2FA" : "Enable 2FA"}
-          </EditorialButton>
+          </ActionButton>
         )}
       />
-      <DialogContent className="w-11/12 rounded-sm sm:max-w-[440px]">
+      <DialogContent className="w-11/12 rounded-2xl sm:max-w-[440px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.22em] text-foreground/50 uppercase">
-            Security
-          </p>
+          <p className="text-xs text-foreground/55">Security</p>
           <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
             {enabled ? "Disable 2FA" : "Enable 2FA"}
           </DialogTitle>
@@ -318,7 +336,7 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
         </DialogHeader>
         {verifyURI ? (
           <div className="mt-4 flex flex-col items-center gap-4">
-            <div className="rounded-sm border border-border/30 bg-background p-3">
+            <div className="rounded-lg border border-foreground/15 bg-background p-3">
               <QRCode value={verifyURI} size={180} />
             </div>
             <Input
@@ -326,21 +344,16 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="6-digit code"
               autoComplete="one-time-code"
-              className="border-0 border-b border-border/30 bg-transparent px-0 text-center font-mono text-base tracking-[0.4em] focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
+              className="border-0 border-b border-foreground/30 bg-transparent px-0 text-center text-base tracking-[0.4em] focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
             />
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] tracking-widest text-foreground/60 uppercase dark:text-foreground/55">
-                Or copy URI
-              </span>
+              <span className="text-xs text-foreground/65">Or copy URI</span>
               <CopyButton textToCopy={verifyURI} />
             </div>
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-2">
-            <Label
-              htmlFor="twofa-pw"
-              className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase"
-            >
+            <Label htmlFor="twofa-pw" className="text-xs text-foreground/65">
               Password
             </Label>
             <PasswordInput
@@ -349,31 +362,18 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setPassword(e.target.value)
               }
-              className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
+              className="border-0 border-b border-foreground/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
             />
           </div>
         )}
         <DialogFooter className="mt-6">
-          <Button
-            disabled={pending}
+          <ActionButton
             onClick={onSubmit}
-            className={cn(
-              "border px-5 py-2.5 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors disabled:opacity-40",
-              enabled
-                ? "border-rouge-700/40 text-rouge-700/85 hover:border-rouge-700 hover:text-rouge-700"
-                : "border-border/40 text-foreground/80 hover:border-border hover:text-foreground"
-            )}
+            loading={pending}
+            tone={enabled ? "danger" : "neutral"}
           >
-            {pending ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : enabled ? (
-              "Disable 2FA"
-            ) : verifyURI ? (
-              "Verify code"
-            ) : (
-              "Continue"
-            )}
-          </Button>
+            {enabled ? "Disable 2FA" : verifyURI ? "Verify code" : "Continue"}
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>
@@ -389,16 +389,12 @@ function ShowQrDialog() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <EditorialButton tone="ghost" icon={<QrCode size={12} />}>
-            Show QR
-          </EditorialButton>
+          <ActionButton icon={<QrCode size={12} />}>Show QR</ActionButton>
         )}
       />
-      <DialogContent className="w-11/12 rounded-sm sm:max-w-[440px]">
+      <DialogContent className="w-11/12 rounded-2xl sm:max-w-[440px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.22em] text-foreground/50 uppercase">
-            Security
-          </p>
+          <p className="text-xs text-foreground/55">Security</p>
           <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
             Authenticator QR
           </DialogTitle>
@@ -410,9 +406,7 @@ function ShowQrDialog() {
           <div className="mt-4 flex flex-col items-center gap-4">
             <QRCode value={verifyURI} size={180} />
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] tracking-widest text-foreground/60 uppercase dark:text-foreground/55">
-                Copy URI
-              </span>
+              <span className="text-xs text-foreground/65">Copy URI</span>
               <CopyButton textToCopy={verifyURI} />
             </div>
           </div>
@@ -424,9 +418,9 @@ function ShowQrDialog() {
                 setPassword(e.target.value)
               }
               placeholder="Password"
-              className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
+              className="border-0 border-b border-foreground/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
             />
-            <EditorialButton
+            <ActionButton
               onClick={async () => {
                 if (password.length < 8) {
                   errorToast("Password must be at least 8 characters");
@@ -444,7 +438,7 @@ function ShowQrDialog() {
               }}
             >
               Show QR
-            </EditorialButton>
+            </ActionButton>
           </div>
         )}
       </DialogContent>
@@ -480,15 +474,11 @@ function DeleteAccountDialog() {
     <DialogRoot open={open} onOpenChange={setOpen}>
       <DialogTrigger
         nativeButton={true}
-        render={() => (
-          <EditorialButton tone="danger">Delete account</EditorialButton>
-        )}
+        render={() => <ActionButton tone="danger">Delete account</ActionButton>}
       />
-      <DialogContent className="w-11/12 rounded-sm sm:max-w-[440px]">
+      <DialogContent className="w-11/12 rounded-2xl sm:max-w-[440px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.22em] text-rouge-700/70 uppercase">
-            Danger
-          </p>
+          <p className="text-xs text-rouge-700/70">Danger</p>
           <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
             Delete account
           </DialogTitle>
@@ -505,23 +495,26 @@ function DeleteAccountDialog() {
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder="delete my account"
-            className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
+            className="border-0 border-b border-foreground/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
           />
         </div>
         <DialogFooter className="mt-6 flex items-center gap-3">
           <RP_Btn
             onClick={() => setOpen(false)}
-            className="font-mono text-[10px] tracking-[0.18em] text-foreground/60 uppercase hover:text-foreground"
+            className="text-xs text-foreground/60 hover:text-foreground"
           >
             Cancel
           </RP_Btn>
           <Button
             disabled={!canDelete || pending}
             onClick={onConfirm}
-            className="border border-rouge-700/40 px-5 py-2.5 font-mono text-[11px] tracking-[0.18em] text-rouge-700/85 uppercase transition-colors hover:border-rouge-700 hover:text-rouge-700 disabled:opacity-40"
+            className={cn(
+              "rounded-full border border-rouge-700/40 px-4 py-1.5 text-xs font-medium tracking-tight text-rouge-700/85",
+              "hover:border-rouge-700 hover:text-rouge-700 disabled:opacity-40"
+            )}
           >
             {pending ? (
-              <Loader2 size={13} className="animate-spin" />
+              <Loader2 size={12} className="animate-spin" />
             ) : (
               "Permanently delete"
             )}

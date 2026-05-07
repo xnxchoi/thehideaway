@@ -1,9 +1,12 @@
 import { Link } from "@/components/core/Link/Link";
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import {
-  SectionEmpty,
-  SettingsGroup,
-  SettingsRow
+  ActionButton,
+  Panel,
+  PanelControls,
+  PanelGrid,
+  PanelHeader,
+  SectionEmpty
 } from "@/components/UX/Settings";
 import { ArrowUpRight } from "lucide-react";
 import { Metadata } from "next";
@@ -29,25 +32,39 @@ export default async function SubscriptionsSettingsPage() {
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsGroup
-          title="Current tier"
-          description="Your access level today."
-        >
-          <SettingsRow
-            label="Tier"
-            meta={
-              <span className="text-foreground/85 uppercase">
-                {ROLE_LABEL[role] ?? role}
-              </span>
-            }
-          >
-            <span className="text-foreground/75">
-              {role === "user"
-                ? "Open access to public essays and the radio archive."
-                : "Includes patron-tier privileges across the site."}
-            </span>
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Tier"
+              title="Your access today"
+              blurb={
+                role === "user"
+                  ? "Open access to public essays and the radio archive."
+                  : "Includes patron-tier privileges across the site."
+              }
+              meta={
+                <span className="text-foreground/85">
+                  {ROLE_LABEL[role] ?? role}
+                </span>
+              }
+            />
+            <PanelControls>
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-sm text-foreground">Current tier</span>
+                  <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                    {role === "user"
+                      ? "Open membership."
+                      : "Includes patron benefits."}
+                  </span>
+                </div>
+                <span className="text-xs text-foreground/85">
+                  {ROLE_LABEL[role] ?? role}
+                </span>
+              </div>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
         <SectionEmpty
           eyebrow="In preparation"
@@ -55,45 +72,43 @@ export default async function SubscriptionsSettingsPage() {
           symbol="✦"
           body="You'll be able to subscribe, change your tier, and download invoices from this page. Until then, our concierge handles changes manually."
           action={
-            <Link
-              href="/plans"
-              className="inline-flex items-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-[0.18em] text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
-            >
-              See membership plans
-              <ArrowUpRight size={12} />
+            <Link href="/plans">
+              <ActionButton icon={<ArrowUpRight size={12} />}>
+                See membership plans
+              </ActionButton>
             </Link>
           }
         />
 
-        <SettingsGroup
-          title="Billing"
-          description="Invoices and payment method."
-        >
-          <SettingsRow
-            label="Invoices"
-            meta={
-              <span className="text-foreground/60 dark:text-foreground/55">
-                Coming soon
-              </span>
-            }
-          >
-            <span className="text-foreground/70">
-              Past invoices will appear here as PDFs.
-            </span>
-          </SettingsRow>
-          <SettingsRow
-            label="Payment method"
-            meta={
-              <span className="text-foreground/60 dark:text-foreground/55">
-                Coming soon
-              </span>
-            }
-          >
-            <span className="text-foreground/70">
-              Add or update card on file.
-            </span>
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Billing"
+              title="Invoices and payment method"
+              blurb="Self-service billing tools land in a later release."
+            />
+            <PanelControls>
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-sm text-foreground">Invoices</span>
+                  <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                    Past invoices will appear here as PDFs.
+                  </span>
+                </div>
+                <span className="text-xs text-foreground/55">Coming soon</span>
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-sm text-foreground">Payment method</span>
+                  <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                    Add or update card on file.
+                  </span>
+                </div>
+                <span className="text-xs text-foreground/55">Coming soon</span>
+              </div>
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
       </div>
     </RPage>
   );

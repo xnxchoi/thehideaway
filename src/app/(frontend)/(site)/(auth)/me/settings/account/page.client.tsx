@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/core/Button";
 import {
   DialogContent,
   DialogDescription,
@@ -14,16 +13,18 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PasswordInput } from "@/components/ui/password-input";
 import {
-  EditorialButton,
-  SaveStatus,
-  type SaveState,
-  SettingsGroup,
-  SettingsRow
+  ActionButton,
+  ActionField,
+  ChoiceField,
+  LockedField,
+  Panel,
+  PanelControls,
+  PanelGrid,
+  PanelHeader
 } from "@/components/UX/Settings";
 import { authClient } from "@/lib/auth/client";
-import { cn } from "@/lib/utils";
 import type { User } from "@/payload-types";
-import { Loader2, Lock, Mail } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 import { useState, useTransition } from "react";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import { setLocaleAction } from "../_helpers/setLocale";
@@ -41,139 +42,132 @@ export default function AccountSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        {/* Email */}
-        <SettingsGroup
-          title="Sign-in email"
-          description="Where account-critical messages go. Editing email is in preparation."
-          meta={
-            user.emailVerified ? (
-              <span className="text-foreground/65 dark:text-foreground/60">
-                Verified
-              </span>
-            ) : (
-              <span className="text-rouge-500/80">Unverified</span>
-            )
-          }
-        >
-          <SettingsRow label="Email">
-            <span className="font-mono text-sm tracking-wide text-foreground/85">
-              {user.email}
-            </span>
-          </SettingsRow>
-          {!user.emailVerified ? (
-            <SettingsRow
-              label="Verification"
-              description="Re-send the verification message."
-            >
-              <ResendVerification email={user.email} />
-            </SettingsRow>
-          ) : null}
-        </SettingsGroup>
+        {/* Sign-in email */}
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Sign-in"
+              title="The email you use to sign in"
+              blurb="Account-critical messages go here. Editing is in preparation."
+              meta={
+                user.emailVerified ? (
+                  <span className="text-foreground/75">Verified</span>
+                ) : (
+                  <span className="text-rouge-500/85">Unverified</span>
+                )
+              }
+            />
+            <PanelControls>
+              <LockedField
+                label="Email"
+                value={user.email}
+                reason="Editing your sign-in email is in preparation."
+              />
+              {!user.emailVerified ? (
+                <ResendVerificationField email={user.email} />
+              ) : null}
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
         {/* Password */}
-        <SettingsGroup
-          title="Password"
-          description="Change the password used for email sign-in."
-        >
-          <SettingsRow label="Password">
-            <ChangePassword />
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Password"
+              title="Change the password you sign in with"
+              blurb="Used only when you sign in with email and password. Passkeys and OAuth bypass this."
+            />
+            <PanelControls>
+              <ChangePasswordField />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
 
         {/* Language */}
-        <SettingsGroup
-          title="Language"
-          description="Site-wide UI language. Affects only this device until synced."
-        >
-          <SettingsRow label="Language">
-            <LocaleToggle current={locale} />
-          </SettingsRow>
-        </SettingsGroup>
+        <Panel>
+          <PanelGrid>
+            <PanelHeader
+              eyebrow="Language"
+              title="Site-wide UI language"
+              blurb="Affects only this device until your account preference is synced."
+            />
+            <PanelControls>
+              <LocaleField current={locale} />
+            </PanelControls>
+          </PanelGrid>
+        </Panel>
       </div>
     </RPage>
   );
 }
 
-function ResendVerification({ email }: { email: string }) {
+function ResendVerificationField({ email }: { email: string }) {
   const [pending, setPending] = useState(false);
-  const [state, setState] = useState<SaveState>("idle");
+
   const onClick = async () => {
     setPending(true);
-    setState("saving");
     await authClient.sendVerificationEmail(
       { email },
       {
         onError(ctx) {
-          setState("error");
           errorToast(ctx.error.message ?? "Couldn't send verification");
         },
         onSuccess() {
-          setState("saved");
           successToast("Verification email sent");
         }
       }
     );
     setPending(false);
   };
+
   return (
-    <div className="flex items-center gap-4">
-      <EditorialButton
-        loading={pending}
-        onClick={onClick}
-        icon={<Mail size={12} />}
-      >
-        Re-send verification
-      </EditorialButton>
-      <SaveStatus state={state} />
-    </div>
+    <ActionField
+      label="Resend verification"
+      description="Send the verification message to this email again."
+    >
+      <ActionButton onClick={onClick} loading={pending} icon={<Mail size={12} />}>
+        Resend
+      </ActionButton>
+    </ActionField>
   );
 }
 
-function LocaleToggle({ current }: { current: "en" | "ko" }) {
+function LocaleField({ current }: { current: "en" | "ko" }) {
   const [pending, startTransition] = useTransition();
-  const [state, setState] = useState<SaveState>("idle");
+  const [active, setActive] = useState<"en" | "ko">(current);
 
-  const set = (next: "en" | "ko") => {
-    if (next === current) return;
-    setState("saving");
-    startTransition(async () => {
-      try {
-        await setLocaleAction(next);
-        setState("saved");
-      } catch (e) {
-        setState("error");
-      }
+  const onChange = async (next: "en" | "ko") => {
+    if (next === active) return;
+    setActive(next);
+    return new Promise<void>((resolve, reject) => {
+      startTransition(async () => {
+        try {
+          await setLocaleAction(next);
+          resolve();
+        } catch (e) {
+          setActive(current);
+          reject(e);
+        }
+      });
     });
   };
 
-  const Btn = ({ code, label }: { code: "en" | "ko"; label: string }) => (
-    <button
-      type="button"
-      onClick={() => set(code)}
-      disabled={pending}
-      className={cn(
-        "border px-4 py-2 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors disabled:opacity-50",
-        current === code
-          ? "border-foreground text-foreground"
-          : "border-border/30 text-foreground/55 hover:border-border hover:text-foreground"
-      )}
-    >
-      {label}
-    </button>
-  );
-
   return (
-    <div className="flex items-center gap-3">
-      <div className="inline-flex items-center gap-0 [&>*:not(:first-child)]:-ml-px">
-        <Btn code="en" label="EN — English" />
-        <Btn code="ko" label="KO — 한국어" />
-      </div>
-      <SaveStatus state={state} />
-    </div>
+    <ChoiceField<"en" | "ko">
+      label="Language"
+      value={active}
+      onChange={onChange}
+      options={[
+        { value: "en", label: "EN — English" },
+        { value: "ko", label: "KO — 한국어" }
+      ]}
+      disabled={pending}
+    />
   );
 }
 
-function ChangePassword() {
+function ChangePasswordField() {
   const [open, setOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -209,75 +203,70 @@ function ChangePassword() {
   };
 
   return (
-    <DialogRoot open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        nativeButton={true}
-        render={() => (
-          <EditorialButton icon={<Lock size={12} />}>
-            Change password
-          </EditorialButton>
-        )}
-      />
-      <DialogContent className="w-11/12 rounded-sm sm:max-w-[440px]">
-        <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.22em] text-foreground/50 uppercase">
-            Security
-          </p>
-          <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
-            Change password
-          </DialogTitle>
-          <DialogDescription className="mt-1 text-sm font-light text-foreground/65">
-            Update the password you use to sign in.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="mt-4 flex flex-col gap-6">
-          <FieldRow
-            id="current-password"
-            label="Current password"
-            value={currentPassword}
-            setValue={setCurrentPassword}
-          />
-          <FieldRow
-            id="new-password"
-            label="New password"
-            value={newPassword}
-            setValue={setNewPassword}
-          />
-          <FieldRow
-            id="confirm-password"
-            label="Confirm new password"
-            value={confirmPassword}
-            setValue={setConfirmPassword}
-          />
-          <label className="flex cursor-pointer items-center gap-3 pt-1">
-            <Checkbox
-              checked={signOutOthers}
-              onCheckedChange={(c) => setSignOutOthers(Boolean(c))}
+    <ActionField
+      label="Password"
+      description="Update the password used for email sign-in."
+    >
+      <DialogRoot open={open} onOpenChange={setOpen}>
+        <DialogTrigger
+          nativeButton={true}
+          render={() => (
+            <ActionButton icon={<Lock size={12} />}>
+              Change password
+            </ActionButton>
+          )}
+        />
+        <DialogContent className="w-11/12 rounded-2xl sm:max-w-[440px]">
+          <DialogHeader>
+            <p className="text-xs text-foreground/55">Security</p>
+            <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
+              Change password
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-sm font-light text-foreground/65">
+              Update the password you use to sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex flex-col gap-6">
+            <FieldRowDialog
+              id="current-password"
+              label="Current password"
+              value={currentPassword}
+              setValue={setCurrentPassword}
             />
-            <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/70 uppercase">
-              Sign out from other devices
-            </span>
-          </label>
-        </div>
-        <DialogFooter className="mt-6">
-          <Button
-            disabled={loading}
-            onClick={submit}
-            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-[0.18em] text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
-          >
-            {loading ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : (
-              "Change password"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </DialogRoot>
+            <FieldRowDialog
+              id="new-password"
+              label="New password"
+              value={newPassword}
+              setValue={setNewPassword}
+            />
+            <FieldRowDialog
+              id="confirm-password"
+              label="Confirm new password"
+              value={confirmPassword}
+              setValue={setConfirmPassword}
+            />
+            <label className="flex cursor-pointer items-center gap-3 pt-1">
+              <Checkbox
+                checked={signOutOthers}
+                onCheckedChange={(c) => setSignOutOthers(Boolean(c))}
+              />
+              <span className="text-sm text-foreground/75">
+                Sign out from other devices
+              </span>
+            </label>
+          </div>
+          <DialogFooter className="mt-6">
+            <ActionButton onClick={submit} loading={loading} icon={<Lock size={12} />}>
+              Change password
+            </ActionButton>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
+    </ActionField>
   );
 }
 
-function FieldRow({
+function FieldRowDialog({
   id,
   label,
   value,
@@ -290,10 +279,7 @@ function FieldRow({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <Label
-        htmlFor={id}
-        className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase"
-      >
+      <Label htmlFor={id} className="text-xs text-foreground/65">
         {label}
       </Label>
       <PasswordInput
@@ -303,7 +289,7 @@ function FieldRow({
           setValue(e.target.value)
         }
         autoComplete="new-password"
-        className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
+        className="border-0 border-b border-foreground/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
       />
     </div>
   );
