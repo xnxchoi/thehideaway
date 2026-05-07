@@ -1,11 +1,8 @@
 import { ReactNode } from "react";
 
 import { Link } from "@/components/core/Link/Link";
-
-interface TocItem {
-  id: string;
-  label: string;
-}
+import { TableOfContents } from "@/components/UX/TableOfContents";
+import type { TocItem } from "@/components/UX/TableOfContents";
 
 interface LegalShellProps {
   eyebrow: string;
@@ -21,8 +18,9 @@ interface LegalShellProps {
 
 /**
  * Editorial 2-col legal-document layout. Wide column on the left holds the
- * body; sticky right column holds title metadata, table of contents, and
- * related links so the page actually uses the screen on xl+.
+ * body; sticky right column holds title metadata, the gradient-led table of
+ * contents (with scroll-spy), and related links so the page actually uses
+ * the screen on xl+.
  */
 export function LegalShell({
   eyebrow,
@@ -55,31 +53,20 @@ export function LegalShell({
         </article>
 
         <aside className="xl:sticky xl:top-24 xl:self-start">
-          <div className="border-l border-border/20 pl-6 xl:border-l-2 xl:pl-10">
-            <p className="font-mono text-xs tracking-widest text-foreground/40 uppercase xl:text-sm">
+          <div className="pl-1 xl:pl-4">
+            <p className="pl-5 font-mono text-xs tracking-widest text-foreground/55 uppercase xl:text-sm dark:text-foreground/50">
               {tocLabel}
             </p>
-            <nav aria-label={tocLabel} className="mt-6">
-              <ol className="space-y-3 font-mono text-sm leading-relaxed xl:space-y-3.5 xl:text-base">
-                {toc.map((item, index) => (
-                  <li key={item.id} className="flex gap-4">
-                    <span className="w-7 shrink-0 text-foreground/30 tabular-nums">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <a
-                      href={`#${item.id}`}
-                      className="text-foreground/70 transition-colors hover:text-foreground"
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
+            <TableOfContents
+              mode="anchor"
+              items={toc}
+              ariaLabel={tocLabel}
+              className="mt-6"
+            />
 
             {related.length > 0 ? (
-              <div className="mt-12 border-t border-border/15 pt-8">
-                <p className="font-mono text-xs tracking-widest text-foreground/40 uppercase xl:text-sm">
+              <div className="mt-12 border-t border-border/15 pt-8 pl-5">
+                <p className="font-mono text-xs tracking-widest text-foreground/55 uppercase xl:text-sm dark:text-foreground/50">
                   {relatedLabel}
                 </p>
                 <ul className="mt-5 space-y-3 font-mono text-sm xl:text-base">
