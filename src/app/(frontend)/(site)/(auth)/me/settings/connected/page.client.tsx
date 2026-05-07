@@ -16,17 +16,13 @@ import { errorToast, successToast } from "@/components/ui/sonner";
 import {
   EditorialButton,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient } from "@/lib/auth/client";
 import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
 import { use, useMemo, useState } from "react";
 import { RPage } from "@/components/UX/Transition";
-
-const section = getSection("connected");
 
 const PROVIDER_LABEL: Record<string, string> = {
   google: "Google",
@@ -58,10 +54,8 @@ export default function ConnectedSectionClient() {
   }, [accounts]);
 
   return (
-    <RPage slug={[]} type="account">
+    <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         <SettingsGroup
           title="Sign-in providers"
           description="Identity providers connected to your account."

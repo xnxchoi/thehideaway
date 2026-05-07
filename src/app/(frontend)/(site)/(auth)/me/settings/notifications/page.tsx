@@ -2,9 +2,7 @@ import { currentUser } from "@/lib/auth/context/get-context-props";
 import {
   SectionEmpty,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -12,17 +10,13 @@ import { RPage } from "@/components/UX/Transition";
 
 export const metadata: Metadata = { title: "Notifications · Settings" };
 
-const section = getSection("notifications");
-
 export default async function NotificationsSettingsPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in?next=/me/settings/notifications");
 
   return (
-    <RPage slug={[]} type="account">
+    <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         <SectionEmpty
           eyebrow="In preparation"
           title="Notification preferences are coming."

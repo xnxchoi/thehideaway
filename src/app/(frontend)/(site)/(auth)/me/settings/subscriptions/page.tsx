@@ -3,9 +3,7 @@ import { currentUser } from "@/lib/auth/context/get-context-props";
 import {
   SectionEmpty,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import { ArrowUpRight } from "lucide-react";
 import { Metadata } from "next";
@@ -13,8 +11,6 @@ import { redirect } from "next/navigation";
 import { RPage } from "@/components/UX/Transition";
 
 export const metadata: Metadata = { title: "Subscriptions · Settings" };
-
-const section = getSection("subscriptions");
 
 const ROLE_LABEL: Record<string, string> = {
   user: "Standard",
@@ -31,10 +27,8 @@ export default async function SubscriptionsSettingsPage() {
   const role = (user as { role?: string }).role ?? "user";
 
   return (
-    <RPage slug={[]} type="account">
+    <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         <SettingsGroup
           title="Current tier"
           description="Your access level today."

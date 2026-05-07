@@ -7,9 +7,7 @@ import {
   EditorialButton,
   GlassPanel,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import type { User } from "@/payload-types";
 import { ArrowUpRight } from "lucide-react";
@@ -19,8 +17,6 @@ import { RPage } from "@/components/UX/Transition";
 interface ProfileSectionClientProps {
   user: User;
 }
-
-const section = getSection("profile");
 
 export default function ProfileSectionClient({
   user
@@ -35,8 +31,6 @@ export default function ProfileSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         {/* Identity card — public-facing preview */}
         <GlassPanel variant="elevated" as="section">
           <div className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-start sm:gap-8 sm:p-8 xl:p-10">

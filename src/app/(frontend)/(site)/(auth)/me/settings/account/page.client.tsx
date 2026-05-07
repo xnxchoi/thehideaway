@@ -18,9 +18,7 @@ import {
   SaveStatus,
   type SaveState,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import { authClient } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
@@ -30,8 +28,6 @@ import { useState, useTransition } from "react";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import { setLocaleAction } from "../_helpers/setLocale";
 import { RPage } from "@/components/UX/Transition";
-
-const section = getSection("account");
 
 interface AccountSectionClientProps {
   user: User;
@@ -45,8 +41,6 @@ export default function AccountSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         {/* Email */}
         <SettingsGroup
           title="Sign-in email"

@@ -4,9 +4,7 @@ import {
   SaveStatus,
   type SaveState,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/Theme";
@@ -14,8 +12,6 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { setLocaleAction } from "../_helpers/setLocale";
 import { RPage } from "@/components/UX/Transition";
-
-const section = getSection("appearance");
 
 interface AppearanceSectionClientProps {
   locale: "en" | "ko";
@@ -27,8 +23,6 @@ export default function AppearanceSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         <SettingsGroup
           title="Theme"
           description="Light is editorial. Dark is reading by lamplight."

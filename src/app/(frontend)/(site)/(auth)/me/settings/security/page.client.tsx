@@ -18,9 +18,7 @@ import { errorToast, successToast } from "@/components/ui/sonner";
 import {
   EditorialButton,
   SettingsGroup,
-  SettingsHeader,
-  SettingsRow,
-  getSection
+  SettingsRow
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient, signOut } from "@/lib/auth/client";
@@ -40,8 +38,6 @@ import { use, useMemo, useState } from "react";
 import { UAParser } from "ua-parser-js";
 import { RPage } from "@/components/UX/Transition";
 
-const section = getSection("security");
-
 interface SecuritySectionClientProps {
   user: User;
 }
@@ -60,10 +56,8 @@ export default function SecuritySectionClient({
   const activeCount = sessions?.filter((s) => s?.userAgent).length ?? 0;
 
   return (
-    <RPage slug={[]} type="account">
+    <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         {/* Two-Factor */}
         <SettingsGroup
           title="Two-factor authentication"

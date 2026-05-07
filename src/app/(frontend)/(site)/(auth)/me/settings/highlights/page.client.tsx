@@ -5,9 +5,7 @@ import { RP_Btn } from "@/components/core/Button";
 import { errorToast, successToast } from "@/components/ui/sonner";
 import {
   SectionEmpty,
-  SettingsGroup,
-  SettingsHeader,
-  getSection
+  SettingsGroup
 } from "@/components/UX/Settings";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
@@ -15,8 +13,6 @@ import { useState, useTransition } from "react";
 import { deleteCitationAction, setCitationPrivacyAction } from "./actions";
 import type { UserCitation } from "./queryUserCitations";
 import { RPage } from "@/components/UX/Transition";
-
-const section = getSection("highlights");
 
 interface HighlightsSectionClientProps {
   citations: UserCitation[];
@@ -28,8 +24,6 @@ export default function HighlightsSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
-        <SettingsHeader section={section} />
-
         {citations.length === 0 ? (
           <SectionEmpty
             eyebrow="Empty shelf"
