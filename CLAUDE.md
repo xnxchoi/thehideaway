@@ -14,24 +14,24 @@ The platform is bilingual (English / Korean) and supports tiered access via user
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router, Turbopack, React 19) |
-| CMS | Payload CMS (latest) with custom collections, plugins, fields |
-| Database | PostgreSQL via Drizzle ORM (`@payloadcms/db-postgres`) |
-| Auth | Better Auth — email/password, Google, Naver, passkeys, 2FA |
-| Styling | Tailwind CSS 4 + SCSS modules for complex features |
-| State (client) | Zustand stores + React Query (TanStack) |
-| Animations | Motion (Framer Motion) for UI; GSAP for scroll/timeline |
-| 3D | Three.js + React Three Fiber + Drei + Rapier (physics) |
-| Audio | Howler.js + music-metadata for parsing |
-| Rich text | Lexical (Payload's editor) with custom features |
-| i18n | next-intl (locales: `en`, `ko`) |
-| Email | Nodemailer via Brevo SMTP |
-| Images | Sharp for optimization, Blurhash for placeholders |
-| Validation | Zod 4 |
-| UI primitives | Radix UI + shadcn/ui |
-| IDs | UUID v7 (Payload), nanoid (citations/references) |
+| Layer          | Technology                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------ |
+| Framework      | Next.js 16 (App Router, Turbopack, React 19)                                                           |
+| CMS            | Payload CMS (latest) with custom collections, plugins, fields                                          |
+| Database       | PostgreSQL via Drizzle ORM (`@payloadcms/db-postgres`)                                                 |
+| Auth           | Fork of Payload-Auth, a Payload Adapter for Better Auth — email/password, Google, Naver, passkeys, 2FA |
+| Styling        | Tailwind CSS 4; /payload directory additionally uses SCSS modules for complex features                 |
+| State (client) | Zustand stores + React Query (TanStack)                                                                |
+| Animations     | Motion (Framer Motion) for UI; GSAP for scroll/timeline                                                |
+| 3D             | Three.js + React Three Fiber + Drei + Rapier (physics)                                                 |
+| Audio          | Howler.js + music-metadata for parsing                                                                 |
+| Rich text      | Lexical (Payload's editor) with custom features                                                        |
+| i18n           | next-intl (locales: `en`, `ko`)                                                                        |
+| Email          | Nodemailer via Brevo SMTP                                                                              |
+| Images         | Sharp for optimization, Blurhash for placeholders                                                      |
+| Validation     | Zod 4                                                                                                  |
+| UI primitives  | BaseUI + shadcn/ui                                                                                     |
+| IDs            | UUID v7 (Payload), nanoid (citations/references)                                                       |
 
 ---
 
@@ -105,12 +105,10 @@ postgres/                         DB Docker setup + nanoid SQL extension
 - **Notifications** — Real-time (SSE) notifications
 - **UserViews** — Analytics tracking
 - **Citations** — Highlight/annotation system (Highlightr)
-
-### Media
-- **Media** — Core image/file assets
+- **Compilations / CompiledCompilations** — Curated content lists** ### Media
+- **Media** — User uploads + some general use cases
 - **UserMedia** — User uploads
-- **ExternalMedia** — Third-party references
-- **Assets** — Static system files
+- **Assets** — System-level files
 
 ### Audio (Radio)
 - **Albums, Tracks, Playlists** — Full music system with stream endpoint
@@ -121,24 +119,24 @@ postgres/                         DB Docker setup + nanoid SQL extension
 - **Coupons, FXRate, Holidays** — Pricing support
 
 ### System
-- **Admins** — Admin-only users (separate from Users)
+- **Admins** — Admin users (separate from Users, deprecated; left for compatibility)
 - **DeferredEmails, EmailQuota** — Email queue and rate limiting
-- **Sessions** — SSE-integrated session management
-- **Compilations / CompiledCompilations** — Curated content lists
+- **Sessions, Accounts, and other non-Payload collections **  — most are Payload Auth implementations of Better Auth entities
 
 ---
 
 ## Key Subsystems
 
 ### Highlightr (Text Annotation)
-The core content-interaction layer. Users highlight text, add memos (public, 200 char), private notes, and share selections. Full dev reference: `readmes/HIGHLIGHTR.md`.
+Post-exclusive, user-driven content interaction layer.
+Users can highlight text, add memos (public, 200 char), private notes, and share selections. Full dev reference: `readmes/HIGHLIGHTR.md`.
 
 - **Stack:** Rangy (selection) + floating-ui (menus) + Zustand (state) + React Query (data)
 - **Backend:** `Citations` collection with access control
 - **Key pattern:** `reference` (nanoid, used in DOM) vs `id` (DB UUID, used in API)
 - **Location:** `src/components/UX/Highlightr/`
 
-### Real-Time Notifications (SSE)
+### Real-Time Notifications (SSE) * unimplemented*
 Server-Sent Events replace polling. Full reference: `readmes/SSE_NOTIFICATIONS.md`.
 
 - **Endpoint:** `/api/notifications/stream`
@@ -158,10 +156,10 @@ Music playback via Howler.js. Albums, tracks, and playlists with a cassette tape
 
 - **Stream:** Payload custom endpoint at `/Radio/endpoints/stream.ts`
 - **Provider:** `RadioProvider.tsx`
-- **UI:** `src/components/UX/Radio/`, `src/components/UX/TapePlayer/`
+- **UI:** `src/components/content/Radio/`, `src/components/UX/TapePlayer/`
 
 ### Access Control (Locker Plugin)
-Role-based access at collection and field level. Roles: `admin`, `editor`, `author`, `patron`, `user`.
+Role-based access at collection and field level. Roles: `admin`, `editor`, `author`, `patron`,`member`, `user`.
 
 ### Image Search Plugin
 Admin-side image search across Unsplash, Pexels, Pixabay with LRU caching.
@@ -279,7 +277,7 @@ Foreign code ripped in from external projects purely for reading and porting —
 
 ### Type debt
 
-~537 TypeScript errors are deferred post-launch. `typescript.ignoreBuildErrors: true` in `next.config.ts` keeps the production build green. The full backlog with fix order lives in **`readmes/TYPE_DEBT.md`**.
+\~537 TypeScript errors are deferred post-launch. `typescript.ignoreBuildErrors: true` in `next.config.ts` keeps the production build green. The full backlog with fix order lives in **`readmes/TYPE_DEBT.md`**.
 
 ```bash
 pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l   # current error count
@@ -289,17 +287,17 @@ pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l   # current error count
 
 ## State Management Patterns
 
-| What | Where | Tool |
-|---|---|---|
-| UI state (sidebar, viewport, theme) | `stores/RP_Ui.ts` | Zustand |
-| Device detection | `stores/Device/` | Zustand |
-| Custom cursor | `stores/Cursor/` | Zustand |
-| Notification queue | `stores/Notification/` | Zustand |
-| Routing state | `stores/Routing/` | Zustand |
-| Server data (fetching, caching) | Components/hooks | React Query |
-| Auth session | `providers/Session/` | Context |
-| Theme (light/dark) | `providers/Theme/` | next-themes + Context |
-| Highlightr citations | `components/UX/Highlightr/providers/` | Zustand + Context |
+| What                                | Where                                 | Tool                  |
+| ----------------------------------- | ------------------------------------- | --------------------- |
+| UI state (sidebar, viewport, theme) | `stores/RP_Ui.ts`                     | Zustand               |
+| Device detection                    | `stores/Device/`                      | Zustand               |
+| Custom cursor                       | `stores/Cursor/`                      | Zustand               |
+| Notification queue                  | `stores/Notification/`                | Zustand               |
+| Routing state                       | `stores/Routing/`                     | Zustand               |
+| Server data (fetching, caching)     | Components/hooks                      | React Query           |
+| Auth session                        | `providers/Session/`                  | Context               |
+| Theme (light/dark)                  | `providers/Theme/`                    | next-themes + Context |
+| Highlightr citations                | `components/UX/Highlightr/providers/` | Zustand + Context     |
 
 **Pattern:** Use `useShallow` on Zustand selectors when selecting Map/object values to prevent unnecessary re-renders.
 
@@ -307,26 +305,27 @@ pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l   # current error count
 
 ## Aesthetic Direction
 
-The Hideaway is editorial with a quiet, typographic-first aesthetic. Design references: Medium (hierarchy, reading), Longblack.co (content as object), metalab.com (restraint, whitespace), Awwwards (curation UI), jonway.studio (compilation grids).
+The Hideaway is editorial with a quiet, typographic-first aesthetic. Design references: Fey (color, gradient, visual direction), Medium (hierarchy, reading), Longblack.co (content as object), metalab.com (restraint, whitespace), Awwwards (curation UI), jonway.studio (compilation grids).
 
 The governing tone: *sparse, intentional, typographically confident*. Features should feel discovered rather than advertised.
 
 ---
 
 ## Layout Containers
+> The code below is not absolute — not in structure, not in className styling, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
 
 ```tsx
-// Standard container — always use max-w-7xl for primary page layouts
-<div className="mx-auto max-w-7xl px-6 xl:px-10">
+// Standard container — use primary page layouts
+<div className="px-6 xl:px-10">
 
 // Narrow (prose / forms)
-<div className="mx-auto max-w-2xl px-6">
+<div className="mx-auto px-6">
 
 // Full-bleed (heroes, banners)
 <section className="w-full">
 ```
 
-**Never use `max-w-5xl`** for primary page layouts — it creates awkward gutters above ~1100px.
+ 
 
 ---
 
@@ -334,23 +333,23 @@ The governing tone: *sparse, intentional, typographically confident*. Features s
 
 Mobile-first. **Never stop at `lg:`** — every grid and spacing value needs an `xl:` variant.
 
-| Breakpoint | Width | Context |
-|---|---|---|
-| `sm:` | 640px | Large phone / small tablet |
-| `md:` | 768px | Tablet |
-| `lg:` | 1024px | Small laptop |
-| `xl:` | 1280px | MacBook 13–14" |
-| `2xl:` | 1536px | MacBook Pro 16" / large monitors |
+| Breakpoint | Screen Width | Context                          |
+| ---------- | ------------ | -------------------------------- |
+| `sm:`      | 640px        | Large phone / small tablet       |
+| `md:`      | 768px        | Tablet                           |
+| `lg:`      | 1024px       | Small laptop                     |
+| `xl:`      | 1280px       | MacBook 13–14"                   |
+| `2xl:`     | 1536px       | MacBook Pro 16" / large monitors |
 
 ### Grid column targets
 
-| Content type | sm | md | lg | xl | 2xl |
-|---|---|---|---|---|---|
-| Editorial cards (posts, surf, profile) | 1 | 2 | 3 | 4 | 4 |
-| Music / square tiles (albums, tracks, playlists) | 2 | 3 | 4 | 5 | 6 |
-| Compilation cards (premium, 4:3) | 1 | 2 | 3 | 4 | 4 |
-| Compilation cards (free, 16:9) | 1 | 2 | 3 | 3 | 4 |
-| Detail item grid (premium) | 2 | 3 | 4 | 5 | 6 |
+| Content type                                     | sm  | md  | lg  | xl  | 2xl |
+| ------------------------------------------------ | --- | --- | --- | --- | --- |
+| Editorial cards (posts, surf, profile)           | 1   | 2   | 3   | 4   | 4   |
+| Music / square tiles (albums, tracks, playlists) | 2   | 3   | 4   | 5   | 6   |
+| Compilation cards (premium, 4:3)                 | 1   | 2   | 3   | 4   | 4   |
+| Compilation cards (free, 16:9)                   | 1   | 2   | 3   | 3   | 4   |
+| Detail item grid (premium)                       | 2   | 3   | 4   | 5   | 6   |
 
 ### Gap scaling
 
@@ -361,58 +360,84 @@ className="gap-5 xl:gap-6"      // larger card grids
 
 ---
 
-## Typography Scale
+## Typography
+> The code below is a starting reference, not a binding enforcement. Pick the role that fits the surface; never mix all four faces on one screen.
 
-Typography is the primary design element. `font-light` for display headings; `font-medium` only for card titles and UI labels; `font-mono` for metadata, counts, badges, and navigation labels.
+Typography carries hierarchy and tone. The Hideaway uses four text personalities deliberately, never interchangeably.
+
+### Personality roles
+
+| Face | When | Pairing |
+|---|---|---|
+| **Serif** (`font-serif`) | Theatrical surfaces — marketing, hero spotlights, advertising, customer-experience moments. The "selling" voice. | `font-bold` for headlines; `font-medium` for body when serif body is wanted. |
+| **Sans** (`font-sans`) | Focused content and admin — settings, vault, reading interfaces, dashboards, profile editing. The "working" voice. | `font-light` for display; `font-medium` for UI labels and card titles; `font-normal` for body. |
+| **Wide** (`font-wide`) | Editorial weight without serif theatrics — section headers and big ticker labels when a serif feels too soft. | `font-bold` or `font-black`. |
+| **Mono** (`font-mono`) | Sparingly. Reserved for editorial chrome on content surfaces (article eyebrows, byline metadata, caption credits), tabular numerals in counts and badges, and code. **Should not be the default for admin or settings surfaces.** Treat mono as a flavour, not a system. |
+
+Rule of thumb: a settings or vault surface is mostly sans, lightly seasoned with mono. A marketing or hero surface leans serif or wide. Never mix all four faces on one screen.
 
 ### Display / hero headings
 
-```tsx
-// Page heroes
-className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl font-light tracking-tight"
+`text-6xl` is the floor for page-hero scale. Never below — at any breakpoint.
 
-// Page section headings
-className="text-2xl xl:text-3xl font-light tracking-tight"
+```tsx
+// Page heroes — scales up only, never down
+className="text-6xl md:text-7xl 2xl:text-8xl font-light tracking-tight"
+
+// Page section headings (within a page)
+className="text-3xl xl:text-4xl 2xl:text-5xl font-light tracking-tight"
 
 // Sub-section / detail headings
-className="text-xl xl:text-2xl 2xl:text-3xl font-light tracking-tight"
+className="text-2xl xl:text-3xl 2xl:text-4xl font-light tracking-tight"
 ```
 
-### Monospace UI labels
+For serif heroes, keep the same scale ramp but swap face and weight:
 
 ```tsx
-// Primary nav / action labels
-className="font-mono text-[11px] uppercase tracking-widest xl:text-xs"
+className="text-6xl md:text-7xl 2xl:text-8xl font-serif font-bold tracking-tight"
+```
 
-// Eyebrow / category labels
+### UI labels
+
+Sans is the default for admin / settings / vault. Mono is reserved for metadata, counts, and editorial chrome on content surfaces.
+
+```tsx
+// Primary action / nav label (sans, admin surfaces)
+className="text-sm font-medium tracking-tight"
+
+// Secondary / inactive nav label (sans)
+className="text-sm font-normal text-foreground/60"
+
+// Editorial section eyebrow (mono caps — content surfaces only)
 className="font-mono text-[10px] uppercase tracking-[0.2em] xl:text-xs"
 
-// Metadata / counts
-className="font-mono text-[10px] xl:text-[11px]"
-
-// Micro badges
-className="font-mono text-[9px] uppercase tracking-widest xl:text-[10px]"
+// Tabular metadata (mono, tabular-nums)
+className="font-mono text-[10px] tabular-nums xl:text-[11px]"
 ```
 
 ### Body / card copy
 
 ```tsx
-// Card titles
-className="text-sm font-medium leading-snug tracking-tight xl:text-base"
+// Card title
+className="text-base font-medium leading-snug tracking-tight xl:text-lg"
 
-// Card descriptions / subtitles
-className="font-mono text-[10px] xl:text-[11px]"
+// Card description / subtitle (sans on admin, mono on editorial cards)
+className="text-sm font-normal text-foreground/70"
 
-// Prose
-className="font-mono text-[11px] xl:text-xs leading-relaxed"
+// Prose body
+className="text-base font-normal leading-relaxed"
+
+// Editorial article eyebrow (mono, content surface only)
+className="font-mono text-[11px] uppercase tracking-widest text-foreground/65"
 ```
 
 ---
 
 ## Color & Opacity System
+> The code className below are not absolute and should be regarded as a point of reference, not a binding enforcement.
 
-Single foreground/background tokens with **opacity as the primary tonal tool** — no separate grey tokens.
-
+Given  **neutral** colors such as the `foreground` and 
+`background` tokens,  prefer **opacity as the tonal/shade tool** rather than introduce a new color.
 ```tsx
 text-foreground                // Primary text
 text-foreground/70             // Secondary
@@ -430,18 +455,16 @@ bg-background/80               // Overlay backdrop
 bg-background/90               // Sticky header
 ```
 
-Never create new color tokens — use opacity variants of existing tokens.
-
 ### Legibility floor (lower clamp)
 
-Opacity is the tonal tool, but **any text or graphic that informs the user must clear the contrast floor**. Below the floor, an element is decorative-only (watermarks, ghost symbols, atmospheric grain) — never copy a user is meant to read.
+Opacity is the tonal tool, but **text colors must clear the contrast floor**. Below the floor, an element is decorative-only (watermarks, ghost symbols, atmospheric grain) — never copy a user is meant to read.
 
-| Tier | Purpose | Min opacity (dark) | Min opacity (light) |
-|---|---|---|---|
-| **Body** | Sentences, paragraph copy, form values, descriptions | `/65` | `/65` |
-| **UI label / metadata** | Mono-caps labels, row labels, eyebrows, counts | `/55` | `/60` |
-| **Secondary headline / inactive nav** | De-emphasized but still readable headings, faded section labels | `/45` | `/50` |
-| **Decorative only** | Watermarks, ghost symbols, atmospheric overlays, hover-only hints | any | any |
+| Tier                                  | Purpose                                                           | Min opacity (dark) | Min opacity (light) |
+| ------------------------------------- | ----------------------------------------------------------------- | ------------------ | ------------------- |
+| **Body**                              | Sentences, paragraph copy, form values, descriptions              | `/65`              | `/65`               |
+| **UI label / metadata**               | Mono-caps labels, row labels, eyebrows, counts                    | `/55`              | `/60`               |
+| **Secondary headline / inactive nav** | De-emphasized but still readable headings, faded section labels   | `/45`              | `/50`               |
+| **Decorative only**                   | Watermarks, ghost symbols, atmospheric overlays, hover-only hints | any                | any                 |
 
 Rules:
 - The "informative" tiers above (body / label / secondary) target ≥ 4.5:1 contrast (WCAG AA normal text). Decorative tier has no floor.
@@ -453,7 +476,7 @@ Rules:
 ---
 
 ## Card Anatomy
-
+> The designs - layout and style classNames - are not absolute and should be regarded as a point of reference, not binding enforcement.
 ```
 ┌──────────────────────────┐
 │  [image]                 │  aspect-ratio locked, overflow-hidden
@@ -468,15 +491,16 @@ Rules:
 └──────────────────────────┘
 ```
 
-All cards: `rounded-sm` (not `rounded-lg`), `border-border/20`. On hover: `border-border/50`.
+All cards: `rounded-lg`, `border-border/20`. On hover: `border-border/50`.
 
 ---
 
 ## Sticky Headers
+> The code below is not absolute — not in structure, not in className styling, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
 
 ```tsx
 <header className="sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md">
-  <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
+  <div className="mx-auto px-6 py-5 xl:px-10">
     <div className="flex items-end justify-between">
       {/* Left: eyebrow label + h1 */}
       {/* Right: nav links (font-mono text-[11px] uppercase tracking-widest) */}
@@ -488,9 +512,10 @@ All cards: `rounded-sm` (not `rounded-lg`), `border-border/20`. On hover: `borde
 ---
 
 ## Heroes (Full-Bleed)
+> The code below is not absolute — not in structure, not in className styling, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
 
 ```tsx
-<section className="relative h-[55vh] min-h-[340px] w-full overflow-hidden">
+<section className="relative h-[55vh] w-full overflow-hidden">
   {/* Cover image or gradient fallback with large initial letter */}
   {/* Gradient overlay: from-black/30 via-black/40 to-background */}
   {/* Content anchored bottom-left inside max-w-7xl container */}
@@ -503,8 +528,11 @@ Initial-letter fallback: `text-[20vw] font-mono font-light text-foreground/[0.04
 
 ## Animations
 
-Use Motion (`motion/react` / `motion/react-m`):
+Use Motion `motion/react` for hooks, methods and `<AnimatePresence/>`.
 
+**Critical:** 
+when importing for component prefix — `m` for components, e.g.,  `<m.div/>` —**never** import from the path; instead, it should **always** be `import * as m from "motion/react-m";`
+> The code below is not absolute — not in structure, not in styling, not in animation, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
 ```tsx
 // Card entrance
 initial={{ opacity: 0, scale: 0.97 }}
@@ -535,6 +563,7 @@ Use `LayoutGroup` + `layoutId` for tab indicators. Keep `bounce` low (0.05–0.2
 ---
 
 ## Empty States
+> The code below is not absolute — not in structure, not in className styling, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
 
 ```tsx
 <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -565,6 +594,7 @@ Premium: more grid columns, 4:3 overlay cards, denser display. Free: 16:9 standa
 ---
 
 ## Forms & Inputs
+> The code below is not absolute — not in structure, not in className styling, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
 
 Borderless, bottom-border-only:
 
@@ -572,7 +602,7 @@ Borderless, bottom-border-only:
 <input className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none" />
 ```
 
-Submit buttons — never filled/coloured:
+Submit buttons:
 
 ```tsx
 <button className="border border-border/40 px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-foreground/80 transition-colors hover:border-border hover:text-foreground disabled:opacity-40">
@@ -581,3 +611,139 @@ Submit buttons — never filled/coloured:
 ```
 
 Actions are communicated through text weight, underlines, and border visibility — not fill color.
+
+---
+
+## Admin surfaces (Fey direction)
+
+`/me/settings`, `/vault` (custom Hideaway-side admin areas), and any future "operating room" surface follow the **Fey direction** — a synthesis of Fey.com's lifted-dark-panel chrome adapted to The Hideaway's sans-leaning admin tone.
+
+> The code below is a starting reference, not a binding enforcement. The synthesis evolves as we build.
+
+### Canvas
+
+A single deep-luminance canvas carrying:
+- One **warm radial bleed** anchored off-screen — atmosphere, not decoration. Subtle in dark; a low-contrast warm wash in light.
+- Subtle grain overlay at very low opacity (`/[0.02]`–`/[0.04]`).
+
+No per-panel atmosphere on top of this. Atmosphere lives at canvas level only.
+
+### Panels (lifted, not flat)
+
+Panels are **lifted dark pools** in the canvas, distinguished by luminance gradient + shadow rather than borders.
+
+```tsx
+<div className={cn(
+  "relative rounded-2xl",
+  "bg-foreground/[0.04] dark:bg-foreground/[0.05]",
+  // top-edge inner highlight — the lift
+  "before:absolute before:inset-x-0 before:top-0 before:h-px",
+  "before:bg-gradient-to-r before:from-transparent before:via-foreground/20 before:to-transparent",
+  // outer shadow — the float
+  "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
+)}>
+  ...
+</div>
+```
+
+Radius: `rounded-2xl` (~16px). No visible borders; rely on luminance + shadow.
+
+### Internal panel composition (2-column)
+
+Inside a panel, sections use a 2-column grid: left = description; right = controls.
+
+```tsx
+<section className="grid gap-x-12 gap-y-8 p-7 xl:p-9 xl:grid-cols-[minmax(220px,5fr)_minmax(0,7fr)]">
+  <div>
+    {/* eyebrow + title + blurb (left column) */}
+  </div>
+  <div className="flex flex-col gap-1">
+    {/* row pills (right column) */}
+  </div>
+</section>
+```
+
+This composition uses horizontal space without center-narrowing into a prose column.
+
+### Row pills (inset, not divided)
+
+Field rows are **self-contained inset pills**, never divider-separated lines.
+
+```tsx
+<div className={cn(
+  "relative flex items-center justify-between gap-4 rounded-xl px-4 py-3",
+  "bg-foreground/[0.025] dark:bg-foreground/[0.03]",
+  "before:absolute before:inset-x-2 before:top-0 before:h-px",
+  "before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent"
+)}>
+  <span className="flex items-center gap-3">
+    <Icon className="size-4 text-foreground/55" />
+    <span className="text-sm">{label}</span>
+  </span>
+  <span>{control}</span>
+</div>
+```
+
+### Categorical color tiles for sections
+
+Sections may carry a small colored icon tile (~28px rounded square) with a monochrome glyph as identity. Colors are **identity, not decoration**, and use a finite token set:
+
+```css
+/* Hideaway category tokens (admin-only) */
+--cat-account:    oklch(72% 0.10 50);   /* warm orange */
+--cat-options:    oklch(60% 0.12 280);  /* muted purple */
+--cat-support:    oklch(70% 0.14 160);  /* soft green */
+--cat-billing:    oklch(60% 0.18 25);   /* ember red */
+--cat-data:       oklch(75% 0.04 90);   /* bone neutral */
+```
+
+Each color is used once per surface, paired with a section title. Never as decoration on body text or as a fill on buttons.
+
+### Field affordance tiers
+
+Edit affordance is communicated by component, not by inline `<input>` styling:
+
+| Tier | Component | Visual signal |
+|---|---|---|
+| 1 — Locked | `<LockedField>` | Mono value; dotted underline; trailing 12px lock glyph at `/35`. Cursor: not-allowed. |
+| 2 — Deferred edit | `<EditableField>` | Sans value; on hover: hairline underline appears + trailing pencil glyph rises `/30 → /80`. Click swaps row to inline input + esc/save controls. |
+| 3 — Soft control | `<ToggleField>` | iOS-style switch or radio set; 1px inset focus ring at `foreground/40`. |
+| 4 — Verified action | `<ActionField>` | Sans pill button → modal (password change, 2FA, passkey, sign-out everywhere). |
+
+The signature interaction is **deferred edit**: an editable row looks read-only at rest, reveals its editability on hover, and only becomes a true input on click. This avoids the "page full of input boxes" look.
+
+### Status objects (right companion column)
+
+Where Fey uses a photorealistic 3D wallet, The Hideaway uses the **Plaque** (titanium membership plate, hanging from a lanyard, with engraved name) — see `src/components/layouts/Registration/MembershipBadge.tsx`. The same model is reused across registration, profile, and the settings overview, with view-specific behaviour:
+
+| Surface | Variant | Behaviour |
+|---|---|---|
+| Registration | `BADGE` (live form preview) | Full physics + drag interaction; rope joints |
+| Settings overview (xl+) | `PLATE` (stationary) | Slow idle drift; no drag; static name baked in |
+| Mobile / small screens | None | Replaced with typographic member-since/handle/role block |
+
+Loaded behind `useInView` + Suspense + a static-PNG first-paint fallback. Never on mobile; never above-the-fold without lazy gating.
+
+### Layout (iOS × Fey hybrid)
+
+```
+/me/settings              ← overview canvas (Fey 2-pane)
+                            left: stacked panels (non-sensitive groups)
+                            right: Plaque companion column
+
+/me/settings/security     ← dedicated route (sensitive)
+/me/settings/passkeys     ← dedicated route (sensitive)
+/me/settings/connected    ← dedicated route (oauth, sensitive)
+/me/settings/subscriptions ← dedicated route (financial)
+
+mobile (< lg):
+/me/settings              ← iOS-style navigation index
+                            list of section links, no panels
+                            tapping a row navigates to /me/settings/[section]
+```
+
+Sensitive items get their own routes; non-sensitive items share the overview canvas.
+
+### Scope
+
+Anything that lives outside of `(auth)/me/*`, `(payload)/vault/*`, or future operating-room surfaces should NOT use the Fey direction. Editorial / content / marketing surfaces stay in the editorial-mono direction described elsewhere in this doc.
