@@ -57,12 +57,18 @@ export const POPULAR_SITES: PopularSite[] = [
 ];
 
 /**
- * Build a clickable URL prefix from a popular site. The trailing slash
- * is intentional so the combobox can place the caret immediately after
- * it, ready for the user to type their handle.
+ * Build a clickable URL prefix from a popular site. The caret is placed
+ * immediately after the prefix, ready for the user to type their handle.
+ *
+ * Domains that already terminate in a path-marker character ('@') do
+ * NOT get a trailing slash appended — appending one would produce
+ * `https://youtube.com/@/username` instead of the correct
+ * `https://youtube.com/@username`. All other domains get a trailing
+ * slash so the user types straight into the handle position.
  */
 export function urlPrefixFor(site: PopularSite): string {
-  return `https://${site.domain}/`;
+  const trailing = site.domain.endsWith("@") ? "" : "/";
+  return `https://${site.domain}${trailing}`;
 }
 
 /**

@@ -125,12 +125,15 @@ export default function ConnectedSectionClient() {
 }
 
 function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
+  // Linking happens implicitly the first time you sign in with a
+  // provider, so unlinked providers show a "Sign in to link" hint rather
+  // than the previous "Available" label, which read as a dead end.
+  // Audit breakpoint-4 finding.
+  const providerName = PROVIDER_LABEL[slug] ?? slug;
   return (
     <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
       <div className="flex min-w-0 flex-col">
-        <span className="text-sm text-foreground">
-          {PROVIDER_LABEL[slug] ?? slug}
-        </span>
+        <span className="text-sm text-foreground">{providerName}</span>
         <span className="text-xs text-foreground/65 dark:text-foreground/60">
           {PROVIDER_BLURB[slug] ?? ""}
         </span>
@@ -139,10 +142,14 @@ function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
         className={
           isLinked
             ? "text-xs text-foreground/85"
-            : "text-xs text-foreground/55 dark:text-foreground/50"
+            : "text-xs text-foreground/60 dark:text-foreground/55"
         }
       >
-        {isLinked ? "Linked" : "Available"}
+        {isLinked
+          ? "Linked"
+          : slug === "credential"
+            ? "Not set"
+            : `Sign in with ${providerName} to link`}
       </span>
     </div>
   );

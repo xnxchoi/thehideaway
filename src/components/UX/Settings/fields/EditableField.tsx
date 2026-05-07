@@ -13,6 +13,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { FieldRow } from "./FieldRow";
+import { DEFAULT_SAVE_TIMEOUT_MS, type SaveResult } from "./types";
 
 /**
  * Tier 2 — Deferred-edit field.
@@ -28,7 +29,6 @@ import { FieldRow } from "./FieldRow";
  * Use for: firstName, lastName, bio, location (when not behind a map
  * picker), and similar identity / soft fields.
  */
-type SaveResult = void | { ok: false; message?: string } | { ok: true };
 
 interface EditableFieldProps {
   label: string;
@@ -64,8 +64,6 @@ interface EditableFieldProps {
   saveTimeoutMs?: number;
   className?: string;
 }
-
-const DEFAULT_SAVE_TIMEOUT_MS = 12_000;
 
 export function EditableField({
   label,

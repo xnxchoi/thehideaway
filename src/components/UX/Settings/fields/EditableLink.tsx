@@ -20,6 +20,7 @@ import {
 } from "react";
 
 import { FieldRow } from "./FieldRow";
+import { DEFAULT_SAVE_TIMEOUT_MS, type SaveResult } from "./types";
 import {
   POPULAR_SITES,
   matchSite,
@@ -40,7 +41,6 @@ import {
  * On save: validates the URL syntactically (same rule as <EditableField/>
  * for links) and persists via the caller-supplied onSave.
  */
-type SaveResult = void | { ok: false; message?: string } | { ok: true };
 
 interface EditableLinkProps {
   label: string;
@@ -51,8 +51,6 @@ interface EditableLinkProps {
   saveTimeoutMs?: number;
   className?: string;
 }
-
-const DEFAULT_SAVE_TIMEOUT_MS = 12_000;
 
 export function EditableLink({
   label,
@@ -151,11 +149,18 @@ export function EditableLink({
       ]);
       if (result && typeof result === "object" && "ok" in result && !result.ok) {
         setError(result.message ?? "Couldn't save");
+        // Reset the combobox highlight to whatever the upstream value
+        // matches now — the failed-save attempt should not leave a
+        // visually-selected site that wasn't persisted. Audit
+        // breakpoint-4 finding.
+        setSelectedSiteId(matchSite(value)?.id ?? null);
         return;
       }
       setEditing(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't save");
+      // Same reset logic for thrown errors.
+      setSelectedSiteId(matchSite(value)?.id ?? null);
     } finally {
       setPending(false);
     }

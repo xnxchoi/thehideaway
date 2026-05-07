@@ -20,6 +20,10 @@ import {
 } from "react";
 
 import { FieldRow } from "./FieldRow";
+import {
+  DEFAULT_SAVE_TIMEOUT_MS,
+  type SaveResult
+} from "./types";
 
 /**
  * Tier 2 specialization — location field with a place-autocomplete combobox.
@@ -46,7 +50,6 @@ import { FieldRow } from "./FieldRow";
  * The expected response shape is { results: Place[] } where each Place
  * has { label: "Seoul, South Korea", value: "Seoul, South Korea" }.
  */
-type SaveResult = void | { ok: false; message?: string } | { ok: true };
 
 interface Place {
   /** Visible label, e.g. "Seoul, South Korea". */
@@ -75,7 +78,6 @@ interface EditableLocationProps {
   className?: string;
 }
 
-const DEFAULT_SAVE_TIMEOUT_MS = 12_000;
 const DEFAULT_SEARCH_DEBOUNCE_MS = 250;
 
 export function EditableLocation({
