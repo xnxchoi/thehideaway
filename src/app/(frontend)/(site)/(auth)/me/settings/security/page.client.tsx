@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, RP_Btn } from "@/components/core/Button";
+import { RP_Btn } from "@/components/core/Button";
 import {
   DialogContent,
   DialogDescription,
@@ -25,11 +25,9 @@ import {
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient, signOut } from "@/lib/auth/client";
-import { cn } from "@/lib/utils";
 import type { User } from "@/payload-types";
 import { useTransitionRouter } from "next-transition-router";
 import {
-  Loader2,
   MonitorSmartphone,
   QrCode,
   ShieldCheck,
@@ -178,14 +176,19 @@ function SessionRow({
   const [pending, setPending] = useState(false);
   const onTerminate = async () => {
     setPending(true);
-    const res = await authClient.revokeSession({ token });
-    if (res?.error) {
-      errorToast(res.error.message ?? "Couldn't terminate session");
-    } else {
-      successToast("Session terminated");
-      router.refresh();
+    try {
+      const res = await authClient.revokeSession({ token });
+      if (res?.error) {
+        errorToast(res.error.message ?? "Couldn't terminate session");
+      } else {
+        successToast("Session terminated");
+        router.refresh();
+      }
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "Couldn't terminate session");
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
 
   return (
@@ -229,14 +232,21 @@ function RevokeOthers() {
   const router = useTransitionRouter();
   const onClick = async () => {
     setPending(true);
-    const res = await authClient.revokeOtherSessions();
-    if (res?.error) {
-      errorToast(res.error.message ?? "Couldn't sign out other devices");
-    } else {
-      successToast("Other devices signed out");
-      router.refresh();
+    try {
+      const res = await authClient.revokeOtherSessions();
+      if (res?.error) {
+        errorToast(res.error.message ?? "Couldn't sign out other devices");
+      } else {
+        successToast("Other devices signed out");
+        router.refresh();
+      }
+    } catch (e) {
+      errorToast(
+        e instanceof Error ? e.message : "Couldn't sign out other devices"
+      );
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
   return (
     <ActionButton onClick={onClick} loading={pending}>
@@ -258,6 +268,7 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
       return;
     }
     setPending(true);
+    try {
     if (enabled) {
       await authClient.twoFactor.disable({
         password,
@@ -303,8 +314,12 @@ function TwoFactorToggleDialog({ enabled }: { enabled: boolean }) {
         });
       }
     }
-    setPending(false);
-    setPassword("");
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "2FA action failed");
+    } finally {
+      setPending(false);
+      setPassword("");
+    }
   };
 
   return (
@@ -412,7 +427,11 @@ function ShowQrDialog() {
           </div>
         ) : (
           <div className="mt-4 flex flex-col gap-3">
+            <Label htmlFor="show-qr-pw" className="text-xs text-foreground/65">
+              Password
+            </Label>
             <PasswordInput
+              id="show-qr-pw"
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setPassword(e.target.value)
@@ -420,29 +439,56 @@ function ShowQrDialog() {
               placeholder="Password"
               className="border-0 border-b border-foreground/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-foreground/30 focus:border-foreground/60 focus:outline-none focus-visible:ring-0"
             />
-            <ActionButton
-              onClick={async () => {
-                if (password.length < 8) {
-                  errorToast("Password must be at least 8 characters");
-                  return;
-                }
-                await authClient.twoFactor.getTotpUri(
-                  { password },
-                  {
-                    onSuccess(ctx) {
-                      setVerifyURI(ctx.data.totpURI);
-                      setPassword("");
-                    }
-                  }
-                );
+            <ShowQrButton
+              password={password}
+              onSuccess={(uri) => {
+                setVerifyURI(uri);
+                setPassword("");
               }}
-            >
-              Show QR
-            </ActionButton>
+            />
           </div>
         )}
       </DialogContent>
     </DialogRoot>
+  );
+}
+
+function ShowQrButton({
+  password,
+  onSuccess
+}: {
+  password: string;
+  onSuccess: (uri: string) => void;
+}) {
+  const [pending, setPending] = useState(false);
+  const onClick = async () => {
+    if (password.length < 8) {
+      errorToast("Password must be at least 8 characters");
+      return;
+    }
+    setPending(true);
+    try {
+      await authClient.twoFactor.getTotpUri(
+        { password },
+        {
+          onSuccess(ctx) {
+            onSuccess(ctx.data.totpURI);
+          },
+          onError(ctx) {
+            errorToast(ctx.error.message ?? "Couldn't fetch QR");
+          }
+        }
+      );
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "Couldn't fetch QR");
+    } finally {
+      setPending(false);
+    }
+  };
+  return (
+    <ActionButton onClick={onClick} loading={pending}>
+      Show QR
+    </ActionButton>
   );
 }
 
@@ -466,8 +512,9 @@ function DeleteAccountDialog() {
       }
     } catch (e) {
       errorToast(e instanceof Error ? e.message : "Couldn't delete account");
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
 
   return (
@@ -505,20 +552,14 @@ function DeleteAccountDialog() {
           >
             Cancel
           </RP_Btn>
-          <Button
-            disabled={!canDelete || pending}
+          <ActionButton
+            tone="danger"
             onClick={onConfirm}
-            className={cn(
-              "rounded-full border border-rouge-700/40 px-4 py-1.5 text-xs font-medium tracking-tight text-rouge-700/85",
-              "hover:border-rouge-700 hover:text-rouge-700 disabled:opacity-40"
-            )}
+            loading={pending}
+            disabled={!canDelete}
           >
-            {pending ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              "Permanently delete"
-            )}
-          </Button>
+            Permanently delete
+          </ActionButton>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>

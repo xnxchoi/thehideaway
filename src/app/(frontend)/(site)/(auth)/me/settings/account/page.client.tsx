@@ -15,7 +15,6 @@ import { PasswordInput } from "@/components/ui/password-input";
 import {
   ActionButton,
   ActionField,
-  ChoiceField,
   LockedField,
   Panel,
   PanelControls,
@@ -25,9 +24,9 @@ import {
 import { authClient } from "@/lib/auth/client";
 import type { User } from "@/payload-types";
 import { Lock, Mail } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { errorToast, successToast } from "@/components/ui/sonner";
-import { setLocaleAction } from "../_helpers/setLocale";
+import { LocaleField } from "../_helpers/LocaleField";
 import { RPage } from "@/components/UX/Transition";
 
 interface AccountSectionClientProps {
@@ -107,18 +106,23 @@ function ResendVerificationField({ email }: { email: string }) {
 
   const onClick = async () => {
     setPending(true);
-    await authClient.sendVerificationEmail(
-      { email },
-      {
-        onError(ctx) {
-          errorToast(ctx.error.message ?? "Couldn't send verification");
-        },
-        onSuccess() {
-          successToast("Verification email sent");
+    try {
+      await authClient.sendVerificationEmail(
+        { email },
+        {
+          onError(ctx) {
+            errorToast(ctx.error.message ?? "Couldn't send verification");
+          },
+          onSuccess() {
+            successToast("Verification email sent");
+          }
         }
-      }
-    );
-    setPending(false);
+      );
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "Couldn't send verification");
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -130,40 +134,6 @@ function ResendVerificationField({ email }: { email: string }) {
         Resend
       </ActionButton>
     </ActionField>
-  );
-}
-
-function LocaleField({ current }: { current: "en" | "ko" }) {
-  const [pending, startTransition] = useTransition();
-  const [active, setActive] = useState<"en" | "ko">(current);
-
-  const onChange = async (next: "en" | "ko") => {
-    if (next === active) return;
-    setActive(next);
-    return new Promise<void>((resolve, reject) => {
-      startTransition(async () => {
-        try {
-          await setLocaleAction(next);
-          resolve();
-        } catch (e) {
-          setActive(current);
-          reject(e);
-        }
-      });
-    });
-  };
-
-  return (
-    <ChoiceField<"en" | "ko">
-      label="Language"
-      value={active}
-      onChange={onChange}
-      options={[
-        { value: "en", label: "EN — English" },
-        { value: "ko", label: "KO — 한국어" }
-      ]}
-      disabled={pending}
-    />
   );
 }
 
@@ -185,21 +155,26 @@ function ChangePasswordField() {
       return;
     }
     setLoading(true);
-    const res = await authClient.changePassword({
-      newPassword,
-      currentPassword,
-      revokeOtherSessions: signOutOthers
-    });
-    setLoading(false);
-    if (res?.error) {
-      errorToast(res.error.message ?? "Couldn't change password");
-      return;
+    try {
+      const res = await authClient.changePassword({
+        newPassword,
+        currentPassword,
+        revokeOtherSessions: signOutOthers
+      });
+      if (res?.error) {
+        errorToast(res.error.message ?? "Couldn't change password");
+        return;
+      }
+      successToast("Password changed");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setOpen(false);
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "Couldn't change password");
+    } finally {
+      setLoading(false);
     }
-    successToast("Password changed");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setOpen(false);
   };
 
   return (

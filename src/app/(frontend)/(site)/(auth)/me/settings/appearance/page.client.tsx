@@ -9,17 +9,16 @@ import {
 } from "@/components/UX/Settings";
 import { useTheme } from "@/providers/Theme";
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
-import { setLocaleAction } from "../_helpers/setLocale";
+import { useEffect, useState } from "react";
 import { RPage } from "@/components/UX/Transition";
 
-interface AppearanceSectionClientProps {
-  locale: "en" | "ko";
-}
-
-export default function AppearanceSectionClient({
-  locale
-}: AppearanceSectionClientProps) {
+/**
+ * Appearance is intentionally focused: theme + ambient motion status.
+ * Language was previously duplicated here from Account; removed at
+ * breakpoint 3 to eliminate "which one wins" ambiguity. Language now
+ * lives only on the Account section.
+ */
+export default function AppearanceSectionClient() {
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
@@ -28,35 +27,10 @@ export default function AppearanceSectionClient({
             <PanelHeader
               eyebrow="Theme"
               title="Light or dark"
-              blurb="Light is editorial. Dark is reading by lamplight."
+              blurb="Light is editorial. Dark is reading by lamplight. The Hideaway honours your OS reduced-motion preference; there is no in-app override."
             />
             <PanelControls>
               <ThemeField />
-            </PanelControls>
-          </PanelGrid>
-        </Panel>
-
-        <Panel>
-          <PanelGrid>
-            <PanelHeader
-              eyebrow="Language"
-              title="Site-wide UI language"
-              blurb="Affects this device until your account preference is synced."
-            />
-            <PanelControls>
-              <LocaleField current={locale} />
-            </PanelControls>
-          </PanelGrid>
-        </Panel>
-
-        <Panel>
-          <PanelGrid>
-            <PanelHeader
-              eyebrow="Motion"
-              title="Reduced motion"
-              blurb="The Hideaway honours your operating-system reduced-motion preference. There's no in-app override."
-            />
-            <PanelControls>
               <ReducedMotionStatus />
             </PanelControls>
           </PanelGrid>
@@ -84,40 +58,6 @@ function ThemeField() {
       options={[
         { value: "light", label: "Light", icon: <Sun size={12} /> },
         { value: "dark", label: "Dark", icon: <Moon size={12} /> }
-      ]}
-    />
-  );
-}
-
-function LocaleField({ current }: { current: "en" | "ko" }) {
-  const [pending, startTransition] = useTransition();
-  const [active, setActive] = useState<"en" | "ko">(current);
-
-  const onChange = async (next: "en" | "ko") => {
-    if (next === active) return;
-    setActive(next);
-    return new Promise<void>((resolve, reject) => {
-      startTransition(async () => {
-        try {
-          await setLocaleAction(next);
-          resolve();
-        } catch (e) {
-          setActive(current);
-          reject(e);
-        }
-      });
-    });
-  };
-
-  return (
-    <ChoiceField<"en" | "ko">
-      label="Language"
-      value={active}
-      onChange={onChange}
-      disabled={pending}
-      options={[
-        { value: "en", label: "EN — English" },
-        { value: "ko", label: "KO — 한국어" }
       ]}
     />
   );

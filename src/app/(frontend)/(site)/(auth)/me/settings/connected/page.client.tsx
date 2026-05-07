@@ -102,7 +102,11 @@ export default function ConnectedSectionClient() {
                     key={pk.id}
                     id={pk.id}
                     name={pk.name ?? "My Passkey"}
-                    createdAt={pk.createdAt as unknown as string | undefined}
+                    // The Better Auth client types `createdAt` loosely
+                    // (Date | string | number depending on plugin
+                    // version). PasskeyRow accepts the union and lets
+                    // `new Date(...)` handle the coercion.
+                    createdAt={pk.createdAt as Date | string | number | undefined}
                   />
                 ))
               )}
@@ -151,18 +155,23 @@ function PasskeyRow({
 }: {
   id: string;
   name: string;
-  createdAt?: string;
+  createdAt?: string | Date | number;
 }) {
   const [pending, setPending] = useState(false);
   const onDelete = async () => {
     setPending(true);
-    const res = await authClient.passkey.deletePasskey({ id });
-    if (res?.error) {
-      errorToast(res.error.message ?? "Couldn't delete passkey");
-    } else {
-      successToast("Passkey removed");
+    try {
+      const res = await authClient.passkey.deletePasskey({ id });
+      if (res?.error) {
+        errorToast(res.error.message ?? "Couldn't delete passkey");
+      } else {
+        successToast("Passkey removed");
+      }
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "Couldn't delete passkey");
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
   const date = createdAt
     ? new Date(createdAt).toLocaleDateString(undefined, {
@@ -212,15 +221,20 @@ function AddPasskeyDialog() {
       return;
     }
     setPending(true);
-    const res = await authClient.passkey.addPasskey({ name: name.trim() });
-    if (res?.error) {
-      errorToast(res.error.message ?? "Couldn't add passkey");
-    } else {
-      successToast("Passkey added");
-      setName("");
-      setOpen(false);
+    try {
+      const res = await authClient.passkey.addPasskey({ name: name.trim() });
+      if (res?.error) {
+        errorToast(res.error.message ?? "Couldn't add passkey");
+      } else {
+        successToast("Passkey added");
+        setName("");
+        setOpen(false);
+      }
+    } catch (e) {
+      errorToast(e instanceof Error ? e.message : "Couldn't add passkey");
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   };
 
   return (

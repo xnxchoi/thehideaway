@@ -38,7 +38,7 @@ export default async function NotificationsSettingsPage() {
                 <div className="flex min-w-0 flex-col">
                   <span className="text-sm text-foreground">Email digest</span>
                   <span className="text-xs text-foreground/65 dark:text-foreground/60">
-                    One weekly editor's brief, plus replies to your highlights.
+                    {"One weekly editor's brief, plus replies to your highlights."}
                   </span>
                 </div>
                 <span className="text-xs text-foreground/55">Default</span>
@@ -56,7 +56,7 @@ export default async function NotificationsSettingsPage() {
                 <div className="flex min-w-0 flex-col">
                   <span className="text-sm text-foreground">Marketing</span>
                   <span className="text-xs text-foreground/65 dark:text-foreground/60">
-                    We don't send marketing email.
+                    {"We don't send marketing email."}
                   </span>
                 </div>
                 <span className="text-xs text-foreground/55">Off</span>
