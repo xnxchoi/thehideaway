@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -51,7 +51,22 @@ export function ActionField({
         className
       )}
     >
-      <div className="flex items-center gap-2">{children}</div>
+      <div className="flex items-center gap-3">
+        {children}
+        {/* Directional glyph — disambiguates a neutral ActionField from a
+            ToggleField at rest. The chevron implies a forward flow (modal,
+            irreversible action) rather than a flippable state. Only renders
+            when there's no danger-tone background already carrying the
+            differentiation. */}
+        {tone !== "danger" ? (
+          <ChevronRight
+            size={14}
+            strokeWidth={1.4}
+            aria-hidden="true"
+            className="shrink-0 text-foreground/40 transition-colors group-hover:text-foreground/70 dark:text-foreground/35"
+          />
+        ) : null}
+      </div>
     </FieldRow>
   );
 }
@@ -87,6 +102,7 @@ export function ActionButton({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
+      aria-busy={loading}
       className={cn(
         "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-tight transition-colors",
         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",

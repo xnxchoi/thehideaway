@@ -91,12 +91,16 @@ export default function ProfileSectionClient({
           </div>
         </Panel>
 
-        {/* Identity */}
+        {/* Identity — merged: name pair + bio together. Per the
+            breakpoint-2 audit, splitting bio into a solo "Voice" panel
+            read as padding (1:1 panel-to-row ratio). The three fields
+            share a conceptual home — "who you are" — and a single
+            multi-row panel is tighter information architecture. */}
         <Panel>
           <PanelGrid>
             <PanelHeader
               eyebrow="Identity"
-              title="Your real-world name"
+              title="Your real-world name and voice"
               blurb="Shown on your profile and in bylines. Display name is auto-derived from first and last."
             />
             <PanelControls>
@@ -114,21 +118,9 @@ export default function ProfileSectionClient({
                 maxLength={48}
                 onSave={(v) => updateUserField("lastName", v)}
               />
-            </PanelControls>
-          </PanelGrid>
-        </Panel>
-
-        {/* Voice (bio) — promoted to its own section per the design audit. */}
-        <Panel>
-          <PanelGrid>
-            <PanelHeader
-              eyebrow="Voice"
-              title="A short line about you"
-              blurb="Shown on your public profile. Be specific. 240 characters."
-            />
-            <PanelControls>
               <EditableField
                 label="Bio"
+                description="A short line shown on your public profile. 240 characters."
                 align="stack"
                 multiline
                 rows={3}

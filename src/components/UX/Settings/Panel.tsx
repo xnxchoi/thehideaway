@@ -104,9 +104,23 @@ export function PanelHeader({
   className
 }: PanelHeaderProps) {
   return (
-    <header className={cn("flex flex-col gap-2", className)}>
+    <header
+      className={cn(
+        // h-full + flex column lets the meta block (when present) drop to
+        // the bottom alongside the controls column, instead of the header
+        // collapsing tight and leaving dead air to the left of long
+        // controls. Audited at breakpoint 2.
+        "flex h-full flex-col gap-2",
+        className
+      )}
+    >
+      {/* Eyebrow committed to ambient sans (not mono caps, not body weight)
+          per the breakpoint-2 design audit. The voice here is "section
+          marker, quiet" — meeting the legibility floor at /60-65 without
+          competing with the title. Mono caps were ruled out because the
+          typography rewrite reserves them for content surfaces, not admin. */}
       {eyebrow ? (
-        <p className="text-xs font-medium tracking-tight text-foreground/55 dark:text-foreground/50">
+        <p className="text-sm tracking-tight text-foreground/65 dark:text-foreground/60">
           {eyebrow}
         </p>
       ) : null}
@@ -119,7 +133,7 @@ export function PanelHeader({
         </p>
       ) : null}
       {meta ? (
-        <div className="mt-3 text-xs text-foreground/55 dark:text-foreground/50">
+        <div className="mt-auto pt-3 text-xs text-foreground/55 dark:text-foreground/50">
           {meta}
         </div>
       ) : null}

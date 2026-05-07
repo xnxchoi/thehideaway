@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { FieldRow } from "./FieldRow";
@@ -70,6 +70,7 @@ export function ToggleField({
         role="switch"
         aria-checked={value}
         aria-label={label}
+        aria-busy={pending}
         disabled={disabled || pending}
         onClick={onClick}
         className={cn(
@@ -102,6 +103,11 @@ export function ToggleField({
  * Radio-style finite selector. Composes the same FieldRow chrome but
  * exposes a row of inline pill buttons instead of a switch. Keep choice
  * sets small (2–4 options) — anything larger should be a Combobox.
+ *
+ * Implements the WAI-ARIA radiogroup roving-tabindex pattern:
+ * - Only the active radio is in the tab order.
+ * - Arrow keys move focus (and selection) among radios within the group.
+ * - Home/End jump to the first / last option.
  */
 interface ChoiceFieldProps<T extends string> {
   label: string;
@@ -127,6 +133,7 @@ export function ChoiceField<T extends string>({
   className
 }: ChoiceFieldProps<T>) {
   const [pending, setPending] = useState<T | null>(null);
+  const buttonRefs = useRef<Map<T, HTMLButtonElement>>(new Map());
 
   const select = async (next: T) => {
     if (disabled || pending || next === value) return;
@@ -136,6 +143,33 @@ export function ChoiceField<T extends string>({
     } finally {
       setPending(null);
     }
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex: number | null = null;
+    switch (e.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        nextIndex = (index + 1) % options.length;
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        nextIndex = (index - 1 + options.length) % options.length;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = options.length - 1;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    const target = options[nextIndex];
+    if (!target) return;
+    buttonRefs.current.get(target.value)?.focus();
+    void select(target.value);
   };
 
   return (
@@ -151,17 +185,24 @@ export function ChoiceField<T extends string>({
         aria-label={label}
         className="inline-flex items-center gap-0 [&>*:not(:first-child)]:-ml-px"
       >
-        {options.map((opt) => {
+        {options.map((opt, index) => {
           const active = value === opt.value;
           const isPending = pending === opt.value;
           return (
             <button
               key={opt.value}
+              ref={(el) => {
+                if (el) buttonRefs.current.set(opt.value, el);
+                else buttonRefs.current.delete(opt.value);
+              }}
               type="button"
               role="radio"
               aria-checked={active}
+              aria-busy={isPending}
+              tabIndex={active ? 0 : -1}
               disabled={disabled || isPending}
               onClick={() => void select(opt.value)}
+              onKeyDown={(e) => onKeyDown(e, index)}
               className={cn(
                 "inline-flex items-center gap-1.5 border px-3 py-1.5 text-xs tracking-tight transition-colors",
                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",

@@ -1,7 +1,6 @@
 import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
 import { FieldRow } from "./FieldRow";
 
 /**
@@ -47,12 +46,16 @@ export function LockedField({
     >
       <span className="flex items-center gap-2.5">
         <span className="text-sm text-foreground/85">{value}</span>
+        {/* Lock glyph carries the locked state. Opacity meets the project's
+            UI-label legibility floor (`/55` dark, `/60` light) so the cue
+            actually reads, not just decorates. The accompanying sr-only
+            text is what conveys "this is locked" to screen readers — the
+            glyph itself is decorative once the text exists. */}
+        <span className="sr-only">{`Locked. ${reason}`}</span>
         <span
           aria-hidden="true"
           title={reason}
-          className={cn(
-            "inline-flex size-3 shrink-0 items-center justify-center text-foreground/35 dark:text-foreground/30"
-          )}
+          className="inline-flex size-3 shrink-0 items-center justify-center text-foreground/60 dark:text-foreground/55"
         >
           <Lock size={12} strokeWidth={1.5} />
         </span>
