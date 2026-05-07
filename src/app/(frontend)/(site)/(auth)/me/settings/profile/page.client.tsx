@@ -4,6 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "@/components/core/Link/Link";
 import {
   EditableField,
+  EditableLink,
+  EditableLocation,
   LockedField,
   Panel,
   PanelControls,
@@ -142,29 +144,20 @@ export default function ProfileSectionClient({
               blurb="Both fields are public. The link is displayed without the protocol."
             />
             <PanelControls>
-              <EditableField
+              {/* Location uses the autocomplete-aware primitive. Until a
+                  Mapbox/Google-Places token is wired (queued for the
+                  /api/places route), it falls back to a free-text
+                  editor. Wire `searchPlaces` here when the token lands. */}
+              <EditableLocation
                 label="Location"
                 value={user.location ?? ""}
                 emptyHint="Seoul"
-                maxLength={64}
                 onSave={(v) => updateUserField("location", v)}
               />
-              <EditableField
+              <EditableLink
                 label="Link"
                 value={user.link ?? ""}
                 emptyHint="https://"
-                maxLength={200}
-                validate={(v) => {
-                  if (!v) return null;
-                  try {
-                    const u = new URL(
-                      v.startsWith("http") ? v : `https://${v}`
-                    );
-                    return u.hostname.includes(".") ? null : "Enter a valid URL";
-                  } catch {
-                    return "Enter a valid URL";
-                  }
-                }}
                 onSave={(v) => updateUserField("link", v)}
               />
             </PanelControls>

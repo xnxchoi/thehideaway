@@ -18,10 +18,16 @@ export {
   FieldRow,
   LockedField,
   EditableField,
+  EditableLink,
+  EditableLocation,
   ToggleField,
   ChoiceField,
   ActionField,
-  ActionButton
+  ActionButton,
+  POPULAR_SITES,
+  matchSite,
+  urlPrefixFor,
+  type PopularSite
 } from "./fields";
 
 // Legacy (kept while sections are migrated; will be deleted once nothing
