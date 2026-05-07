@@ -179,7 +179,6 @@ export const SideDrawer = () => {
     detectHeightChange: false,
     detectVisibilityChange: false
   });
-  const { isMobile } = useIsMobile();
   const setCursor = useCursor((r) => r.setCursorState);
   const hasRadio = useHasRadio();
   // Drawer docks to bottom below the md breakpoint (768px) to align with
@@ -334,8 +333,16 @@ export const SideDrawer = () => {
               className="absolute inset-0 z-238 bg-transparent"
             />
           )}
+          {/*
+            Inner shell.
+            - Mobile (< md, 768): flex-col, content scrolls in the middle,
+              DrawerPlayer pinned to the bottom. The wide-short bottom-sheet
+              shape makes the desktop 8×14 grid look broken (title cramped,
+              player crushed); flex-col fits the shape natively.
+            - Desktop (≥ md): original 8×14 grid, kept intact.
+          */}
           <m.div
-            className="z-239 grid h-full w-[24vw] grid-cols-8 grid-rows-14 items-center justify-center gap-y-5 bg-nav-background max-md:h-[65vh] max-md:w-full"
+            className="z-239 flex h-[65vh] w-full flex-col bg-nav-background md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
             onMouseEnter={() => {
               setCursor(null);
               setCursorTheme("dark");
@@ -344,15 +351,19 @@ export const SideDrawer = () => {
               resetCursor();
             }}
           >
-            <div className={"col-[2/8] row-[2/3] flex flex-col justify-center"}>
+            {/* Title — top of column on mobile, grid cell row[2/3] on desktop */}
+            <div className="flex flex-col justify-center px-6 pt-10 md:col-[2/8] md:row-[2/3] md:px-0 md:pt-0">
               <Drawer.Title
                 className={"text-h3"}
                 title={"Shortcuts"}
               ></Drawer.Title>
             </div>
+
+            {/* Links — fill the middle on mobile (scrollable if it overflows),
+                grid cell row[3/10] on desktop */}
             <AnimatePresence>
               {open && (
-                <m.div className="col-[2/8] row-[3/10] px-4">
+                <m.div className="flex-1 overflow-y-auto px-6 py-6 md:col-[2/8] md:row-[3/10] md:flex-none md:overflow-visible md:px-4 md:py-0">
                   <m.div className="flex flex-col gap-5 font-sans text-[23px]">
                     {sd.map((link) => (
                       <Link key={link.url} href={link.url}>
@@ -363,9 +374,23 @@ export const SideDrawer = () => {
                 </m.div>
               )}
             </AnimatePresence>
-            <div className={"col-span-full row-[11/14]"}>
-              {hasRadio && <DrawerPlayer />}
-            </div>
+
+            {/* DrawerPlayer — gated on `open` so it doesn't run audio-reactive
+                code or mount the radio session while the drawer is closed.
+                AnimatePresence keeps the close animation tidy. */}
+            <AnimatePresence>
+              {hasRadio && open && (
+                <m.div
+                  className="border-t border-border/10 md:col-span-full md:row-[11/14] md:border-t-0"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <DrawerPlayer />
+                </m.div>
+              )}
+            </AnimatePresence>
           </m.div>
           <AnimatePresence>
             {isNarrow ? (

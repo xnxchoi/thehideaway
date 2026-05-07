@@ -1,16 +1,12 @@
 "use client";
 
 import { TapePlayer } from "@/components/UX/TapePlayer";
-import { useIsMobile } from "@/providers/MiddleMan";
 import type { ReleaseSummary } from "@/payload/collections/Radio/api/queryAllReleases";
 import type { Media } from "@/payload-types";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import {
-  AmbientBackground,
-  AmbientBackgroundFallback
-} from "../Station/AmbientBackground";
+import { AmbientBackgroundAuto } from "../Station/AmbientBackground";
 
 /**
  * /radio — the Broadcast hub.
@@ -30,27 +26,25 @@ interface BroadcastHubProps {
 }
 
 export function BroadcastHub({ releases }: BroadcastHubProps) {
-  const { isMobile } = useIsMobile();
-
   return (
     <div className="relative flex min-h-screen flex-col">
-      {/* Ambient background — R3F on desktop, CSS fallback on mobile.
-          Stays fixed/scroll-linked so it persists across the player + archive. */}
-      {!isMobile ? (
-        <Suspense>
-          <AmbientBackground />
-        </Suspense>
-      ) : (
-        <AmbientBackgroundFallback />
-      )}
+      {/* Ambient background — auto-selects R3F vs CSS fallback based on the
+          device's perf tier (reduced-motion / RAM / cores / WebGL probe),
+          not viewport width. Always present, on every device that can
+          render it sensibly. */}
+      <Suspense>
+        <AmbientBackgroundAuto />
+      </Suspense>
 
       <div className="relative z-[2] flex flex-col">
         {/* ── Zone 1: On Air — full-screen player ──────────────────────────── */}
         <section
           aria-labelledby="on-air"
-          className="relative flex min-h-screen w-full items-center justify-center"
+          className="relative flex min-h-screen w-full items-center justify-center px-6"
         >
-          <div className="absolute top-8 left-1/2 -translate-x-1/2">
+          {/* Eyebrow sits below the floating header chrome (≈ 90px on mobile,
+              ≈ 60px on desktop). top-28/sm:top-12 keeps it clear of MENU/H/moon. */}
+          <div className="absolute top-28 left-1/2 -translate-x-1/2 sm:top-12">
             <p
               id="on-air"
               className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs"
@@ -82,10 +76,10 @@ function BroadcastArchive({ releases }: BroadcastArchiveProps) {
   return (
     <section
       aria-labelledby="archive"
-      className="relative flex min-h-screen w-full flex-col justify-start py-24 xl:py-32"
+      className="relative w-full pt-32 pb-20 sm:pt-24 xl:py-32"
     >
       <div className="mx-auto w-full max-w-7xl px-6 xl:px-10">
-        <header className="mb-16 flex items-end justify-between border-b border-border/20 pb-8 xl:mb-20">
+        <header className="mb-10 flex items-end justify-between border-b border-border/20 pb-6 sm:mb-16 sm:pb-8 xl:mb-20">
           <p
             id="archive"
             className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs"
@@ -128,20 +122,21 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
   const cover = release.cover as Media | null;
   const coverUrl =
     cover && typeof cover === "object" && "url" in cover ? cover.url : null;
+  const catalogNo = `No. ${String(index).padStart(3, "0")}`;
 
   return (
     <li>
       <Link
         href={`/radio/${release.slug}`}
-        className="group grid grid-cols-12 items-center gap-4 py-8 transition-colors hover:bg-muted/5 xl:gap-6 xl:py-10"
+        className="group flex items-center gap-4 py-6 transition-colors hover:bg-muted/5 sm:gap-6 sm:py-8 xl:gap-8 xl:py-10"
       >
-        {/* Catalog no. */}
-        <span className="col-span-2 font-mono text-[10px] text-muted-foreground/40 tabular-nums xl:col-span-1 xl:text-[11px]">
-          No. {String(index).padStart(3, "0")}
+        {/* Catalog no. — desktop only; mobile shows it inline above the title */}
+        <span className="hidden w-12 shrink-0 self-center font-mono text-[11px] text-muted-foreground/40 tabular-nums sm:block xl:w-14">
+          {catalogNo}
         </span>
 
         {/* Cover thumb */}
-        <span className="col-span-2 xl:col-span-1">
+        <span className="block w-14 shrink-0 sm:w-20 xl:w-24">
           <span className="relative block aspect-square w-full overflow-hidden rounded-sm border border-border/20 bg-muted/20">
             {coverUrl ? (
               <Image
@@ -149,7 +144,7 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
                 alt=""
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                sizes="64px"
+                sizes="(max-width: 640px) 56px, (max-width: 1280px) 80px, 96px"
               />
             ) : (
               <span className="flex h-full items-center justify-center font-mono text-2xl text-foreground/[0.15] uppercase">
@@ -159,34 +154,45 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
           </span>
         </span>
 
-        {/* Title + kind */}
-        <span className="col-span-8 flex min-w-0 flex-col gap-1 xl:col-span-7">
-          <span className="truncate text-lg font-light tracking-tight text-foreground/90 transition-colors group-hover:text-foreground xl:text-xl 2xl:text-2xl">
-            {release.title}
-          </span>
-          <span className="truncate font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase xl:text-[11px]">
-            {kindLabel}
-            {release.artist && (
-              <>
-                <Sep />
-                {release.artist}
-              </>
-            )}
-          </span>
-        </span>
+        {/* Content — title, kind/artist eyebrow, meta line */}
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 sm:flex-row sm:items-center sm:gap-6">
+          <div className="flex min-w-0 flex-col gap-0.5 sm:gap-1">
+            {/* Catalog no. inline on mobile only */}
+            <span className="font-mono text-[10px] text-muted-foreground/40 tabular-nums sm:hidden">
+              {catalogNo}
+            </span>
+            <span className="truncate text-base font-light tracking-tight text-foreground/90 transition-colors group-hover:text-foreground sm:text-lg xl:text-xl 2xl:text-2xl">
+              {release.title}
+            </span>
+            <span className="truncate font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase xl:text-[11px]">
+              {kindLabel}
+              {release.artist && (
+                <>
+                  <Sep />
+                  {release.artist}
+                </>
+              )}
+            </span>
+          </div>
 
-        {/* Date · runtime · count */}
-        <span className="col-span-12 flex justify-between font-mono text-[10px] text-muted-foreground/50 tabular-nums xl:col-span-3 xl:justify-end xl:gap-3 xl:text-[11px]">
-          <ReleaseDate date={release.releaseDate} />
-          <span className="hidden sm:inline">
-            <Sep />
-            <Runtime seconds={release.runtimeSec} />
+          {/* Date · runtime · count — wraps gracefully at narrow widths */}
+          <span className="flex shrink-0 flex-wrap items-baseline gap-x-2 font-mono text-[10px] text-muted-foreground/50 tabular-nums sm:flex-col sm:items-end sm:gap-1 xl:flex-row xl:items-baseline xl:gap-3 xl:text-[11px]">
+            <ReleaseDate date={release.releaseDate} />
+            <span className="hidden xl:inline">
+              <Sep />
+            </span>
+            <span>
+              <Runtime seconds={release.runtimeSec} />
+            </span>
+            <span className="hidden xl:inline">
+              <Sep />
+            </span>
+            <span>
+              {release.trackCount}{" "}
+              {release.trackCount === 1 ? "track" : "tracks"}
+            </span>
           </span>
-          <span className="hidden sm:inline">
-            <Sep />
-            {release.trackCount} {release.trackCount === 1 ? "track" : "tracks"}
-          </span>
-        </span>
+        </div>
       </Link>
     </li>
   );

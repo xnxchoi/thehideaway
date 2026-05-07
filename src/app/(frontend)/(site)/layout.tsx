@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import "@/app/(frontend)/estate.scss";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
 import { LegalFooter } from "@/components/core/LegalFooter/LegalFooter";
+import { LegalFooterGate } from "@/components/core/LegalFooter/LegalFooterGate";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import type { Metadata } from "next";
@@ -18,7 +19,12 @@ export default async function RootLayout({
   return (
     <>
       <Layout>{children}</Layout>
-      <LegalFooter />
+      {/* Path-gated: hidden by default on auth, reading, and checkout
+          routes; pages can override via `useFooterVisibility` from
+          `@/components/core/LegalFooter/footer-visibility`. */}
+      <LegalFooterGate>
+        <LegalFooter />
+      </LegalFooterGate>
     </>
   );
 }

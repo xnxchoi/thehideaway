@@ -169,11 +169,10 @@ const nextConfig: NextConfig = {
         permanent: false,
         source: "/:path((?!ie-incompatible.html$).*)" // all pages except the incompatibility page
       },
-      // Dashboard taxonomy consolidation (.claude/PRPs/plans/completed/dashboards-1-taxonomy.plan.md)
-      { source: "/me/settings", destination: "/me/account", permanent: true },
+      // Settings rebuild: /me/account/* now lives under /me/settings/*.
       {
-        source: "/me/settings/:path*",
-        destination: "/me/account/:path*",
+        source: "/me/account",
+        destination: "/me/settings/account",
         permanent: true
       },
       {
@@ -231,7 +230,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/me",
-        destination: "/me/account"
+        destination: "/me/settings/profile"
       }
     ];
   },

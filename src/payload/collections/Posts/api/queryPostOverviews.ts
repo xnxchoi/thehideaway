@@ -130,7 +130,7 @@ export const getPostOverviews = async <
   T extends Omit<QueryOverviewParams, "collection" | "locale" | "select">
 >({
   where,
-  draftsEnabled = false
+  draftsEnabled = false,...rest
 }: T) => {
   const payload = await getPayload({ config: configPromise });
 
@@ -151,7 +151,9 @@ export const getPostOverviews = async <
       draft: draftsEnabled,
       where,
       select: { slug: true },
+    ...rest,
       overrideAccess: true
+
     })
     .then((r) => r as PaginatedDocs<{ id: string; slug: string }>)
     .catch((e) => {

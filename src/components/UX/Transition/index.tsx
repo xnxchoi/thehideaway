@@ -508,7 +508,7 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       }}
     >
       <m.div
-        className="relative flex min-h-screen w-screen flex-col justify-center"
+        className="relative flex min-h-screen w-screen flex-col justify-start"
         ref={ref}
       >
         {children}

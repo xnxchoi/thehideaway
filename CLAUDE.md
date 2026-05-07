@@ -432,6 +432,24 @@ bg-background/90               // Sticky header
 
 Never create new color tokens — use opacity variants of existing tokens.
 
+### Legibility floor (lower clamp)
+
+Opacity is the tonal tool, but **any text or graphic that informs the user must clear the contrast floor**. Below the floor, an element is decorative-only (watermarks, ghost symbols, atmospheric grain) — never copy a user is meant to read.
+
+| Tier | Purpose | Min opacity (dark) | Min opacity (light) |
+|---|---|---|---|
+| **Body** | Sentences, paragraph copy, form values, descriptions | `/65` | `/65` |
+| **UI label / metadata** | Mono-caps labels, row labels, eyebrows, counts | `/55` | `/60` |
+| **Secondary headline / inactive nav** | De-emphasized but still readable headings, faded section labels | `/45` | `/50` |
+| **Decorative only** | Watermarks, ghost symbols, atmospheric overlays, hover-only hints | any | any |
+
+Rules:
+- The "informative" tiers above (body / label / secondary) target ≥ 4.5:1 contrast (WCAG AA normal text). Decorative tier has no floor.
+- If you're tempted to use `/40`, `/35`, `/30` etc. for *readable* text, you're below the floor — bump to the next tier up, or commit to making it decorative (no informative content, role=presentation, or aria-hidden).
+- Light mode and dark mode often need different opacities to hit the same perceived contrast; respect the per-mode column.
+- Borders, dividers, and shadow tints are not text — they're not bound by the floor. `border-border/15` is fine.
+- This applies project-wide, not just to settings or admin surfaces.
+
 ---
 
 ## Card Anatomy

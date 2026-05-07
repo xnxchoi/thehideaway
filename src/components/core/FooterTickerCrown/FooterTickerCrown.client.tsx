@@ -1,7 +1,7 @@
 "use client";
 
 import { View } from "@react-three/drei";
-import { useReducedMotion } from "motion/react";
+import { useInView, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Color as ThreeColor } from "three";
 import { DEFAULT_FIELD_CONFIG, type FieldConfig } from "./field-config";
@@ -74,8 +74,13 @@ export function FooterTickerCrownClient({
     return () => ro.disconnect();
   }, []);
 
-  // Drift is gated only by reduced-motion — start immediately on mount.
-  const driftEnabled = !reduced;
+  // Viewport gate — pause all per-frame work while the bezel is offscreen.
+  // `margin: "200px 0px"` warms the animation up 200px before the strip
+  // actually enters the visual viewport so it's running smoothly by the
+  // time the user can see it (no first-frame snap into place). Combined
+  // with reduced-motion to form the final drift gate.
+  const inView = useInView(wrapperRef, { margin: "200px 0px" });
+  const driftEnabled = !reduced && inView;
 
   // Spin trigger — bezel turns while hovered (desktop) or briefly on tap
   // (touch). pointerenter/leave handle hover; pointerdown explicitly opens

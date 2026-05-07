@@ -219,6 +219,12 @@ export function LineFieldMesh({
   );
 
   useFrame(() => {
+    // Skip uniform sync when the scheduler is paused (offscreen or
+    // reduced-motion). The shader keeps using the last uploaded uniforms,
+    // which is exactly what we want — frozen-in-place when the user
+    // can't see it, picks up cleanly when the gate flips back on.
+    if (!driftEnabled) return;
+
     const m = materialRef.current;
     if (!m) return;
 

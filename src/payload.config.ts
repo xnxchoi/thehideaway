@@ -1,6 +1,7 @@
 // Side-effect import: validates required env vars on app boot. Throws in
 // production when something is missing/malformed; warns in dev.
 import "@/lib/env";
+import { seedButler } from "@/lib/auth/dev/seedButler";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
@@ -107,6 +108,18 @@ export default buildConfig({
   globals: [Header, Footer],
   onInit: async (payload) => {
     payload.logger.info("Initializing Payload...");
+
+    // Dev-only bypass user. Fire-and-forget so we don't block onInit — the
+    // handle field hook calls getPayload() internally, which would deadlock
+    // on a still-initializing instance if we awaited synchronously.
+    setTimeout(() => {
+      void seedButler(payload).catch((err: unknown) => {
+        const msg =
+          err instanceof Error ? err.stack || err.message : String(err);
+        payload.logger.error(`[dev-butler] seed failed: ${msg}`);
+      });
+    }, 0);
+
     const tags: [string, string][] = [
       ["Life", "life"],
       ["Startup", "startup"],

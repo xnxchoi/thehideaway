@@ -4,6 +4,7 @@ import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
 import { DateTime } from "luxon";
+import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 
 type FeaturedHeroProps = {
   article: PostOverview;
@@ -41,7 +42,7 @@ export const FeaturedHero = ({
         aria-label={article.title}
       />
 
-      <div className="relative aspect-video w-full overflow-hidden bg-muted/20">
+      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted/20">
         {article.image ? (
           <FrontImage
             resource={article.image}
@@ -55,32 +56,35 @@ export const FeaturedHero = ({
         )}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[8%] bg-gradient-to-t from-card to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[8%] bg-linear-to-t from-card to-transparent"
         />
       </div>
 
       <div className="flex flex-col gap-y-3 p-5 xl:gap-y-4 xl:p-6">
         {category && (
-          <span className="inline-block self-start rounded-sm border border-border/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-            {category}
-          </span>
+          <RP_BadgeTag
+            content={category}
+            className="border-foreground text-faded-foreground"
+          />
         )}
 
-        <span className="block text-balance font-serif text-3xl font-light leading-[1.05] tracking-tight sm:text-4xl md:text-5xl xl:text-6xl [overflow-wrap:anywhere]">
+        <span className="block font-serif text-6xl leading-[1.05] font-light tracking-tight text-balance [overflow-wrap:anywhere] sm:text-4xl md:text-5xl xl:text-6xl">
           {article.title}
         </span>
 
         {subtitle && (
-          <span className="block max-w-[60ch] text-pretty font-sans text-base leading-snug text-foreground/70 sm:text-lg lg:text-xl [overflow-wrap:anywhere]">
+          <span className="block max-w-[60ch] font-sans text-base leading-snug text-pretty [overflow-wrap:anywhere] text-foreground/70 sm:text-lg lg:text-xl">
             {subtitle}
           </span>
         )}
 
-        <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-[11px]">
+        <div className="mt-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
           {authorName ? `By ${authorName}` : "Hideaway"}
           {relativeDate && (
             <>
-              <span aria-hidden className="mx-2">·</span>
+              <span aria-hidden className="mx-2">
+                ·
+              </span>
               <time dateTime={article.publishedAt}>{relativeDate}</time>
             </>
           )}

@@ -280,6 +280,13 @@ export function useLaneScheduler(
   const lastScrollYRef = useRef<number>(0);
   const spinVelRef = useRef<number>(0);
   const spinActiveRef = useRef<boolean>(false);
+  // Wall-clock timestamp of the moment the loop was paused (i.e. enabled
+  // flipped to false). Null while running. On resume, all wall-clock
+  // anchors (`cycleStartMs`, `snapStartMs`, `lastMotionMs`) are shifted
+  // forward by the elapsed pause so the animation continues from where
+  // it left off instead of "snapping forward" through skipped time —
+  // which would look like a frozen frame followed by a jolt.
+  const pausedAtRef = useRef<number | null>(null);
   // Cached scrollY updated by a passive scroll listener — avoids reading
   // `window.scrollY` inside `useFrame`, which can force a layout flush
   // when other code on the page has dirtied layout between frames.
@@ -318,6 +325,7 @@ export function useLaneScheduler(
     snapPhaseRef.current = "natural";
     snapStartOffsetsRef.current = new Float32Array(MAX_LANES);
     snapTargetOffsetsRef.current = new Float32Array(MAX_LANES);
+    pausedAtRef.current = null;
     if (typeof window !== "undefined") {
       lastScrollYRef.current = window.scrollY;
       currentScrollYRef.current = window.scrollY;
@@ -325,8 +333,29 @@ export function useLaneScheduler(
   }, [numLanes]);
 
   useFrame(() => {
-    if (!enabled) return;
     const now = performance.now();
+
+    if (!enabled) {
+      // First frame of pause — record timestamp. Keep `lastScrollY` in
+      // sync with `currentScrollY` so a resume doesn't see accumulated
+      // out-of-view scroll as a single huge delta in one frame.
+      if (pausedAtRef.current === null) pausedAtRef.current = now;
+      lastScrollYRef.current = currentScrollYRef.current;
+      return;
+    }
+
+    // Resume — shift all wall-clock anchors forward by the pause
+    // duration so cycle / snap / dwell timing carries on as if nothing
+    // happened, rather than fast-forwarding through the skipped window.
+    if (pausedAtRef.current !== null) {
+      const pauseDur = now - pausedAtRef.current;
+      if (stateRef.current) stateRef.current.cycleStartMs += pauseDur;
+      snapStartMsRef.current += pauseDur;
+      lastMotionMsRef.current += pauseDur;
+      lastTickMsRef.current = now;
+      pausedAtRef.current = null;
+    }
+
     const prevTick = lastTickMsRef.current || now;
     const dt = Math.max(0, Math.min(0.1, (now - prevTick) / 1000));
     lastTickMsRef.current = now;

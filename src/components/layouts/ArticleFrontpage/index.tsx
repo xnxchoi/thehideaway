@@ -6,6 +6,7 @@ import { HeadlinersRail } from "@/components/sections/HeadlinersRail";
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
 import { DateTime } from "luxon";
+import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 
 type ArticleHeroProps = {
   posts: PostOverview[];
@@ -23,15 +24,12 @@ export const ArticleHero = ({ posts, className }: ArticleHeroProps) => {
 
   return (
     <section
-      className={cn(
-        "relative w-full min-h-[85vh] py-7 xl:py-8",
-        className
-      )}
+      className={cn("relative min-h-[85vh] w-full py-7 xl:py-8", className)}
     >
-      <div className="mx-auto max-w-7xl px-5 sm:px-6 xl:px-10">
+      <div className="mx-auto px-5 sm:px-6 xl:px-10">
         <div
           className={cn(
-            "grid gap-px overflow-hidden rounded-sm border border-border/20 bg-border/20",
+            "grid gap-px overflow-hidden rounded-3xl border border-border/20 bg-border/20",
             "grid-cols-1 md:grid-cols-2 lg:grid-cols-6"
           )}
         >
@@ -102,7 +100,7 @@ const SecondaryArticleCard = ({
         aria-label={article.title}
       />
 
-      <div className="relative aspect-square overflow-hidden rounded-sm bg-muted/20">
+      <div className="relative aspect-square overflow-hidden rounded-md bg-muted/20">
         {article.image ? (
           <FrontImage
             resource={article.image}
@@ -117,26 +115,25 @@ const SecondaryArticleCard = ({
 
       <div className="flex flex-col gap-y-2 self-center">
         {category && (
-          <span className="inline-block self-start rounded-sm border border-border/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-            {category}
-          </span>
+          <RP_BadgeTag
+            content={category}
+            className="border-foreground/40 px-1.5 py-1 text-faded-foreground"
+          />
         )}
 
-        <span className="block text-balance text-base font-medium leading-snug tracking-tight text-foreground/90 transition-colors duration-150 group-hover:text-foreground xl:text-lg [overflow-wrap:anywhere]">
+        <span className="block text-base leading-snug font-medium tracking-tight text-balance [overflow-wrap:anywhere] text-foreground/90 transition-colors duration-150 group-hover:text-foreground xl:text-lg">
           {article.title}
         </span>
 
         {(authorName || relative) && (
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-[11px]">
+          <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
             {authorName}
             {authorName && relative && (
               <span aria-hidden className="mx-2">
                 ·
               </span>
             )}
-            {relative && (
-              <time dateTime={article.publishedAt}>{relative}</time>
-            )}
+            {relative && <time dateTime={article.publishedAt}>{relative}</time>}
           </div>
         )}
       </div>
