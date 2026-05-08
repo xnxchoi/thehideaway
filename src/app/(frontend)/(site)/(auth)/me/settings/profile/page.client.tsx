@@ -14,6 +14,7 @@ import {
 } from "@/components/UX/Settings";
 import type { User } from "@/payload-types";
 import { ArrowUpRight } from "lucide-react";
+import { searchPlaces } from "../_helpers/searchPlaces";
 import { updateUserField } from "../_helpers/updateProfile";
 import { RPage } from "@/components/UX/Transition";
 
@@ -144,14 +145,15 @@ export default function ProfileSectionClient({
               blurb="Both fields are public. The link is displayed without the protocol."
             />
             <PanelControls>
-              {/* Location uses the autocomplete-aware primitive. Until a
-                  Mapbox/Google-Places token is wired (queued for the
-                  /api/places route), it falls back to a free-text
-                  editor. Wire `searchPlaces` here when the token lands. */}
+              {/* Location uses the autocomplete-aware primitive. The
+                  searchPlaces helper hits our /api/places/search proxy,
+                  which holds the Mapbox secret token and filters to
+                  city-grade results only. */}
               <EditableLocation
                 label="Location"
                 value={user.location ?? ""}
                 emptyHint="Seoul"
+                searchPlaces={searchPlaces}
                 onSave={(v) => updateUserField("location", v)}
               />
               <EditableLink
