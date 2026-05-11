@@ -5,18 +5,30 @@
 
 
 
-# Environment files with secrets (DO NOT COMMIT)
-#.env.local
+# ── Environment files with secrets — NEVER COMMIT ─────────────────────────────
+# The .env*.example variants ARE tracked (placeholders only, no real secrets);
+# they document the shape of each env file. Real values live in the matching
+# non-example file, which stays gitignored and on-disk only.
+#
+# Templates committed:    .env.example, .env.local.example, .env.production.example
+# Real values ignored:    .env, .env.local, .env.production, .env.development.local,
+#                         .env.test.local, .env.production.local
+#
+# If you find yourself wanting to commit a real .env, see readmes/GOING_PUBLIC.md
+# for why the previous attempt at this rule failed and how to clean it up.
+.env
+.env.local
 .env.development.local
 .env.test.local
-.env.production.local
 .env.production
-.env.local
+.env.production.local
+!.env.example
+!.env.local.example
+!.env.production.example
 
 # Ignore node_modules folder
 node_modules/
 tests/
-# .env file can be committed as it contains only example values
 # Ignore MacOS .DS_Store file
 .hintrc
 .filenignore
