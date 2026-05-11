@@ -17,20 +17,35 @@ import {
   SearchResultItem,
   useSearchQuery
 } from "@/components/UX/CommandKey/Commando";
+import {
+  DISCOVER_JUMPS,
+  Jump,
+  SETTINGS_JUMPS,
+  SIGNED_IN_JUMPS,
+  SIGNED_OUT_JUMPS
+} from "@/components/UX/CommandKey/jumps";
+import { useRecentsTracker } from "@/components/UX/CommandKey/useRecents";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useRPStore, useSearchBar } from "@/providers/RP_Pro";
 import "@/styles/__searchBar.scss";
 import { useTheme } from "@/providers/Theme";
+import { setLocaleAction } from "@/app/(frontend)/(site)/(auth)/me/settings/_helpers/setLocale";
 import { Popover } from "@base-ui/react/popover";
 import { Tooltip } from "@base-ui/react/tooltip";
-import {
-  LockOpen2Icon as LockOpen2,
-  ReaderIcon,
-  RocketIcon
-} from "@radix-ui/react-icons";
 import { Command as CommandPrimitive, Command as Commands } from "cmdk";
-import { ArrowRight, CreditCard, Settings, User } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  Compass,
+  Copy,
+  Globe,
+  LogOut,
+  Sparkles,
+  Sun,
+  UserSquare
+} from "lucide-react";
+import { useLocale } from "next-intl";
 import { HTMLMotionProps, useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 import { nanoid } from "nanoid";
@@ -146,6 +161,36 @@ export const SearchBar = ({
   }, [setOpen, router, debouncedValue]);
 
   const onValueChange = useCallback((v: string) => setValue(v), [setValue]);
+
+  // ── Recents + Quick actions ──────────────────────────────────────────────────
+  const recents = useRecentsTracker();
+  const locale = useLocale();
+  const handleSwitchLocale = useCallback(() => {
+    const next = locale === "ko" ? "en" : "ko";
+    setOpen(false);
+    void setLocaleAction(next);
+  }, [locale, setOpen]);
+  const handleSignOut = useCallback(async () => {
+    setOpen(false);
+    await fetch("/api/users/logout", {
+      method: "POST",
+      headers: { "content-type": "application/json" }
+    });
+    location.reload();
+  }, [setOpen]);
+  const handleCopyLink = useCallback(async () => {
+    setOpen(false);
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      // permission denied or unsupported — silent
+    }
+  }, [setOpen]);
+  const handleToggleTheme = useCallback(() => {
+    setOpen(false);
+    toggleTheme();
+  }, [setOpen, toggleTheme]);
 
   // ── Global ⌘K shortcut ───────────────────────────────────────────────────────
   useEffect(() => {}, [toggleOpen]);
@@ -268,57 +313,111 @@ export const SearchBar = ({
           {isInit ? (
             /* ── Default state ── */
             <>
-              <CommandGroup heading="Navigate">
-                <LinkedCommandItem
-                  href="/essays"
-                  title="Essays"
-                  value="nav-essays"
-                >
-                  <ReaderIcon className="shrink-0" />
-                </LinkedCommandItem>
-                <LinkedCommandItem
-                  href="/the-team"
-                  title="The Team"
-                  value="nav-team"
-                >
-                  <RocketIcon className="shrink-0" />
-                </LinkedCommandItem>
+              {recents.length > 0 && (
+                <CommandGroup heading="Recent">
+                  {recents.slice(0, 5).map((r) => (
+                    <LinkedCommandItem
+                      key={r.path}
+                      href={r.path}
+                      title={r.label}
+                      value={`recent-${r.path}`}
+                    >
+                      <Clock className="!size-[1em] shrink-0 opacity-60" />
+                    </LinkedCommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              <CommandGroup heading="Discover">
+                {DISCOVER_JUMPS.map((j) => (
+                  <JumpItem key={j.id} jump={j}>
+                    <Compass className="!size-[1em] shrink-0 opacity-60" />
+                  </JumpItem>
+                ))}
               </CommandGroup>
 
               {user ? (
-                <CommandGroup heading="Account">
-                  <LinkedCommandItem
-                    href={`/@${user.slug}`}
-                    title="Your Profile"
-                    value="nav-profile"
-                  >
-                    <User className="!size-[1em] shrink-0" />
-                  </LinkedCommandItem>
-                  <LinkedCommandItem
-                    href="/vault/account"
-                    title="Settings"
-                    value="nav-settings"
-                  >
-                    <Settings className="!size-[1em] shrink-0" />
-                  </LinkedCommandItem>
-                </CommandGroup>
+                <>
+                  <CommandGroup heading="Yours">
+                    {SIGNED_IN_JUMPS(user.slug ?? "").map((j) => (
+                      <JumpItem key={j.id} jump={j}>
+                        <UserSquare className="!size-[1em] shrink-0 opacity-60" />
+                      </JumpItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandGroup heading="Settings">
+                    {SETTINGS_JUMPS.map((j) => (
+                      <JumpItem key={j.id} jump={j}>
+                        <Sparkles className="!size-[1em] shrink-0 opacity-60" />
+                      </JumpItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandGroup heading="Quick actions">
+                    <CommandItem
+                      value="action-theme"
+                      onSelect={handleToggleTheme}
+                    >
+                      <Sun className="!size-[1em] shrink-0 opacity-60" />
+                      <span className="flex-1 truncate">
+                        Switch to {theme === "light" ? "dark" : "light"} mode
+                      </span>
+                    </CommandItem>
+                    <CommandItem
+                      value="action-locale"
+                      onSelect={handleSwitchLocale}
+                    >
+                      <Globe className="!size-[1em] shrink-0 opacity-60" />
+                      <span className="flex-1 truncate">
+                        {locale === "ko"
+                          ? "Switch to English"
+                          : "한국어로 전환"}
+                      </span>
+                    </CommandItem>
+                    <CommandItem value="action-copy" onSelect={handleCopyLink}>
+                      <Copy className="!size-[1em] shrink-0 opacity-60" />
+                      <span className="flex-1 truncate">Copy current link</span>
+                    </CommandItem>
+                    <CommandItem
+                      value="action-signout"
+                      onSelect={handleSignOut}
+                    >
+                      <LogOut className="!size-[1em] shrink-0 opacity-60" />
+                      <span className="flex-1 truncate">Sign out</span>
+                    </CommandItem>
+                  </CommandGroup>
+                </>
               ) : (
-                <CommandGroup heading="Get Started">
-                  <LinkedCommandItem
-                    href="/register"
-                    title="Create Account"
-                    value="nav-register"
-                  >
-                    <LockOpen2 className="shrink-0" />
-                  </LinkedCommandItem>
-                  <LinkedCommandItem
-                    href="/plans"
-                    title="Membership Plans"
-                    value="nav-plans"
-                  >
-                    <CreditCard className="!size-[1em] shrink-0" />
-                  </LinkedCommandItem>
-                </CommandGroup>
+                <>
+                  <CommandGroup heading="Get started">
+                    {SIGNED_OUT_JUMPS.map((j) => (
+                      <JumpItem key={j.id} jump={j}>
+                        <Sparkles className="!size-[1em] shrink-0 opacity-60" />
+                      </JumpItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandGroup heading="Quick actions">
+                    <CommandItem
+                      value="action-theme"
+                      onSelect={handleToggleTheme}
+                    >
+                      <Sun className="!size-[1em] shrink-0 opacity-60" />
+                      <span className="flex-1 truncate">
+                        Switch to {theme === "light" ? "dark" : "light"} mode
+                      </span>
+                    </CommandItem>
+                    <CommandItem
+                      value="action-locale"
+                      onSelect={handleSwitchLocale}
+                    >
+                      <Globe className="!size-[1em] shrink-0 opacity-60" />
+                      <span className="flex-1 truncate">
+                        {locale === "ko"
+                          ? "Switch to English"
+                          : "한국어로 전환"}
+                      </span>
+                    </CommandItem>
+                  </CommandGroup>
+                </>
               )}
             </>
           ) : isLoading ? (
@@ -382,6 +481,21 @@ export const SearchBar = ({
     </Fragment>
   );
 };
+
+// ─── JumpItem ─────────────────────────────────────────────────────────────────
+
+function JumpItem({ jump, children }: { jump: Jump; children?: ReactNode }) {
+  return (
+    <LinkedCommandItem
+      href={jump.href}
+      title={jump.title}
+      value={jump.id}
+      type={jump.hint}
+    >
+      {children}
+    </LinkedCommandItem>
+  );
+}
 
 // ─── SubCommand ───────────────────────────────────────────────────────────────
 
@@ -485,7 +599,7 @@ function SubCommand({
                       <SubItem link={`/@${user.slug}`} shortcut="⌘ B">
                         My Profile
                       </SubItem>
-                      <SubItem link={`/vault/account`} shortcut="⌘ U">
+                      <SubItem link={`/me/settings`} shortcut="⌘ U">
                         Settings
                       </SubItem>
                     </>

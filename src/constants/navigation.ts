@@ -1,6 +1,9 @@
 import type { PayloadLinkProps } from "@/components/core/Link/types";
 
-export type NavLink = PayloadLinkProps<"custom"> & { url: string; label: string };
+export type NavLink = PayloadLinkProps<"custom"> & {
+  url: string;
+  label: string;
+};
 
 const link = (href: string, label: string): NavLink => ({
   type: "custom",
@@ -23,14 +26,19 @@ export const MENU_LINKS: NavLink[] = [
 ];
 
 /**
- * SideDrawer — sidebar/bottom-sheet shortcuts.
- * Quick access for returning users. Radio player is integrated separately.
+ * SideDrawer — site navigation & ambient utility (⌘B).
+ * "Where to go + what's playing." Site destinations only —
+ * identity (saved, posts, settings) lives in UserDropdown,
+ * search lives in ⌘K. Radio player is integrated separately.
  */
 export const SIDE_DRAWER_LINKS: NavLink[] = [
-  link("/essays", "Latest"),
+  link("/", "Reception"),
+  link("/essays", "Essays"),
+  link("/surf", "Surf"),
+  link("/radio", "Radio"),
   link("/users", "Directory"),
-  link("/search", "Search"),
-  link("/me/library/saved", "Saved")
+  link("/plans", "Membership"),
+  link("/the-team", "The Team")
 ];
 
 /**
