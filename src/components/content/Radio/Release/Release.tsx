@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import type { Release as ReleaseType } from "@/payload/collections/Radio/api/queryReleaseBySlug";
-import type { Media, Track } from "@/payload-types";
+import { cn } from "src/lib/utils";
+import type { Release as ReleaseType } from "src/payload/collections/Radio/api/queryReleaseBySlug";
+import type { Media, Track } from "src/payload-types";
 import Image from "next/image";
 
 /**

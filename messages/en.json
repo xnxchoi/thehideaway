@@ -128,5 +128,82 @@
     },
     "sectionCopy": "Commentary — forthcoming. The margins are still being ruled.",
     "cardCopy": "Something here, eventually."
+  },
+  "Settings": {
+    "navAria": "Settings sections",
+    "back": "Settings",
+    "sections": {
+      "general": {
+        "label": "General",
+        "blurb": "Language, theme, and other interface preferences."
+      },
+      "profile": {
+        "label": "Profile",
+        "blurb": "Your public face — name, bio, location, link."
+      },
+      "account": {
+        "label": "Account",
+        "blurb": "Handle, sign-in email, password, address, subscriptions."
+      },
+      "security": {
+        "label": "Security",
+        "blurb": "Two-factor, sessions, providers, passkeys, account closure."
+      },
+      "notifications": {
+        "label": "Notifications",
+        "blurb": "What you hear from us — and how often."
+      }
+    },
+    "save": {
+      "saving": "Saving…",
+      "saved": "Saved",
+      "error": "Couldn't save"
+    },
+    "empty": {
+      "defaultEyebrow": "In preparation"
+    },
+    "general": {
+      "title": "General",
+      "blurb": "Interface preferences — language, theme, and how the platform reacts to your OS settings.",
+      "interfaceEyebrow": "Interface",
+      "themeLabel": "Theme",
+      "themeOptions": {
+        "light": "Light",
+        "dark": "Dark"
+      },
+      "motionEyebrow": "Motion",
+      "motionBlurb": "No in-app override — we honour your OS accessibility setting. Toggle it there, we'll match.",
+      "reduceMotionLabel": "Reduce motion",
+      "reduceMotionDescription": "Mirrored from your OS accessibility settings.",
+      "reduceMotionDetected": {
+        "loading": "Detecting…",
+        "on": "On — animations minimised",
+        "off": "Off — full motion"
+      }
+    }
+  },
+  "LegalFooter": {
+    "navAria": "Legal",
+    "businessAria": "Business information",
+    "links": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "refund": "Refunds",
+      "plans": "Membership"
+    },
+    "fields": {
+      "tradeName": "Trade name",
+      "representative": "Representative",
+      "registration": "Business Reg. No.",
+      "mailOrder": "Mail-Order Reg.",
+      "address": "Address",
+      "phone": "Phone",
+      "privacyOfficer": "Privacy Officer"
+    },
+    "businessName": "Restored Projects",
+    "representativeName": "TBD",
+    "address": "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea",
+    "serviceHours": "Mon–Fri 10:00–18:00 KST (closed weekends and holidays)",
+    "mailOrderPending": "Pending application"
   }
 }

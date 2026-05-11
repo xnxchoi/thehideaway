@@ -1,12 +1,12 @@
 "use client";
 
-import { useIdleDetection } from "@/components/Radio/hooks/useIdleDetection";
-import { SPRING_EASE, TE } from "@/constants/animations";
-import { useAudioLevel, usePlayState } from "@/providers/HideawayFM/hooks";
-import { useTheme } from "@/providers/Theme";
-import { rp_lerp } from "@/utilities/rp_utils";
-import { useWindowResize } from "@/utilities/use_window_resize";
-import { wait } from "@/utilities/wait";
+import { useIdleDetection } from "src/components/content/Radio/hooks/useIdleDetection";
+import { SPRING_EASE, TE } from "src/constants/animations";
+import { useAudioLevel, usePlayState } from "src/providers/HideawayFM/hooks";
+import { useTheme } from "src/providers/Theme";
+import { rp_lerp } from "src/utilities/rp_utils";
+import { useWindowResize } from "src/utilities/use_window_resize";
+import { wait } from "src/utilities/wait";
 import {
   OrthographicCamera,
   ScreenQuad,
@@ -136,8 +136,8 @@ const AmbientShaderMaterial = shaderMaterial(
 extend({ AmbientShaderMaterial });
 
 type AmbientGradientMeshProps = {};
-const OPACITY_PLAYING = 0.99;
-const OPACITY_STOPPED = 0.5;
+const OPACITY_PLAYING = 0.79;
+const OPACITY_STOPPED = 0.35;
 
 export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
   useTexture.preload("/assets/seamless.png");
@@ -194,8 +194,6 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     maxFogTime: 15000,
     clearDuration: 650
   });
-  const colore = useMemo(() => new ThreeColor("rgb(122,122,122)"), []);
-  const vecc = useMemo(() => new Vector3(0, 0, 0.46), []);
   const radioAudio = useAudioLevel();
 
   const noiseTexture = useTexture("/assets/seamless.png", (texture) => {
@@ -271,7 +269,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     targets.c4.copy(c4);
 
     // Sync path: snap immediately (used on mount so first frame is correct).
-    if (duration <= 0) {
+    if (duration === 0) {
       m.u_bgColor.value.copy(bg);
       m.u_color1.value.copy(c1);
       m.u_color2.value.copy(c2);
@@ -406,11 +404,10 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     const target = playing ? BLOB_INTENSITY_PLAYING : BLOB_INTENSITY_STOPPED;
     _targetBlobIntensity.set(target);
   }, [playing, _targetBlobIntensity]);
-  useMotionValueEvent(opacity, "change", (latestValue) => {
-    const m = materialRef.current;
-    if (!m) return;
-    m.uniforms.u_opacity.value = latestValue;
-  });
+  // useMotionValueEvent(opacity, "change", (latestValue) => {
+  //   const m = materialRef.current;
+  //   if (!m) return;
+  // });
   useMotionValueEvent(fogProgress, "change", (latestValue) => {
     const m = materialRef.current;
     if (!m) return;
@@ -437,7 +434,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       return;
     const m = materialRef.current;
     // Accumulate time (delta is in seconds at ~60fps → ~0.016)
-    m.uniforms.u_time.value += delta * 0.22;
+    m.uniforms.u_time.value += delta * (playState.get() ? 0.22 : 0.05);
     const aud = radioAudio.get();
     m.uniforms.u_audioLevel.value = aud;
 
@@ -446,6 +443,8 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     const beat = aud > decayedBeat ? aud : decayedBeat;
     beatEnvelopeRef.current = beat;
     m.uniforms.u_audioBeat.value = beat;
+    const lastOpacity = m.uniforms.u_opacity.value;
+    m.uniforms.u_opacity.value = rp_lerp(lastOpacity, opacity.get(), 0.12);
 
     // Slow audio gain envelope — ramps to 1 when playing, 0 when paused.
     // Decay constant 1.0/s gives ~700ms half-life — soft fade in/out so

@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 import { useContext, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";

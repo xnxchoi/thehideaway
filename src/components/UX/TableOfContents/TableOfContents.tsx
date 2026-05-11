@@ -147,12 +147,10 @@ function TocItemLink({
   labelStyle
 }: TocItemLinkProps) {
   const className = cn(
-    "group relative flex items-baseline gap-4 py-3.5 pr-4 pl-5 transition-all duration-200",
+    "group relative flex items-baseline gap-4 py-3.5 pr-4 pl-5 transition-all ease-out-power2 duration-200",
     // Active rule: vertical gradient pill on the left edge
-    "before:absolute before:inset-y-1 before:-left-px before:w-px before:bg-gradient-to-b before:from-transparent before:via-foreground/80 before:to-transparent before:transition-opacity dark:before:via-foreground",
-    active
-      ? "before:opacity-100"
-      : "before:opacity-0 hover:before:opacity-40",
+    "before:absolute before:inset-y-1 before:transition-[opacity,border,background] before:ease-out-power2 before:duration-150 before: before:-left-px before:w-px before:bg-gradient-to-b before:from-transparent before:via-foreground/80 before:to-transparent dark:before:via-foreground",
+    active ? "before:opacity-100" : "before:opacity-0 hover:before:opacity-40",
     // Active sheen: wide horizontal gradient fading right
     "after:pointer-events-none after:absolute after:inset-y-0 after:-left-px after:w-32 after:bg-gradient-to-r after:from-foreground/[0.05] after:to-transparent after:transition-opacity dark:after:from-foreground/[0.07]",
     active ? "after:opacity-100" : "after:opacity-0",
@@ -162,21 +160,19 @@ function TocItemLink({
 
   const numberClass = cn(
     "relative z-10 font-mono text-[10px] tracking-widest tabular-nums transition-colors",
-    active
-      ? "text-foreground/85"
-      : "text-foreground/55 dark:text-foreground/50"
+    active ? "text-foreground/85" : "text-foreground/55 dark:text-foreground/50"
   );
 
   const labelClass =
     labelStyle === "mono"
       ? cn(
-          "relative z-10 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors xl:text-xs",
+          "relative z-10 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors xl:text-xs ease-out-power2 duration-150",
           active
             ? "text-foreground"
             : "text-foreground/60 group-hover:text-foreground/85 dark:text-foreground/55"
         )
       : cn(
-          "relative z-10 text-sm tracking-tight transition-colors",
+          "relative z-10 text-sm tracking-tight transition-colors ease-out-power2 duration-150",
           active
             ? "font-medium text-foreground"
             : "font-normal text-foreground/65 group-hover:text-foreground/90 dark:text-foreground/60"

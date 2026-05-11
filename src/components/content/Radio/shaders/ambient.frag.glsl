@@ -212,8 +212,8 @@ void main() {
     // look flat (poles dominate, intermediate stops vanish).
     vec3 sCurve = color * color * (3.0 - 2.0 * color);
     color = mix(color, sCurve, 0.18);
-    color=mix(u_bgColor,color,u_opacity);
-    gl_FragColor = vec4(color, 1.);
+    color=mix(u_bgColor,color, u_opacity);
+    gl_FragColor = vec4(color, u_opacity);
 
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { Organization } from "better-auth/plugins/organization";
-import { Loader2 } from "lucide-react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 import { type ComponentProps, useContext, useMemo, useState } from "react";
 
 import { AuthUIContext } from "../../lib/auth-ui-provider";
@@ -92,7 +92,9 @@ export function LeaveOrganizationDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
+          <DialogTitle
+            className={cn("text-base md:text-xl", classNames?.title)}
+          >
             {localization.LEAVE_ORGANIZATION}
           </DialogTitle>
 

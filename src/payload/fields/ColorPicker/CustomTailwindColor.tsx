@@ -12,7 +12,7 @@ import {
   CommandList
 } from "./components/command";
 import { cn } from "@/lib/utils";
-import { Paintbrush } from "lucide-react";
+import { PaintBrushIcon as Paintbrush } from "@phosphor-icons/react";
 import TailWindColors from "./TailwindColors";
 import { SelectFieldClientProps } from "payload";
 import { useDomCursor } from "@/components/core/cursorWrapper";

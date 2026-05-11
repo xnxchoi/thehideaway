@@ -42,6 +42,8 @@ export const FOOTER_HIDDEN_PATTERNS: ReadonlyArray<RegExp> = [
   /^\/sign-in(\/|$)/,
   /^\/sign-up(\/|$)/,
   /^\/forgot-password(\/|$)/,
+  /^\/radio(\/|$)/,
+  /^\/me(\/|$)/,
   /^\/reset-password(\/|$)/,
   /^\/two-factor(\/|$)/,
   /^\/accept-invitation(\/|$)/,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 import { useContext, useEffect, useRef } from "react";
 
 import { useOnSuccessTransition } from "../../hooks/use-success-transition";

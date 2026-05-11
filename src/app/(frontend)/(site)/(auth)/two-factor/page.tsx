@@ -12,7 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/client";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  WarningCircleIcon as AlertCircle,
+  CheckCircleIcon as CheckCircle2
+} from "@phosphor-icons/react";
 import { Link } from "@/components/core/Link/Link";
 import { useState } from "react";
 import { RPage } from "@/components/UX/Transition";
@@ -85,7 +88,9 @@ export default function Component() {
             ) : (
               <div className="flex flex-col items-center justify-center space-y-2">
                 <CheckCircle2 className="h-12 w-12 text-green-500" />
-                <p className="text-base font-semibold">Verification Successful</p>
+                <p className="text-base font-semibold">
+                  Verification Successful
+                </p>
               </div>
             )}
           </CardContent>

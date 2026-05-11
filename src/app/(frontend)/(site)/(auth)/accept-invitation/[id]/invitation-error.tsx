@@ -7,7 +7,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { WarningCircleIcon as AlertCircle } from "@phosphor-icons/react";
 import { Link } from "@/components/core/Link/Link";
 
 export function InvitationError() {

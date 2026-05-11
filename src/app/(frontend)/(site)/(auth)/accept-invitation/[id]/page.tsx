@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, XIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 

@@ -1,5 +1,6 @@
 import { cleanupBookmarksAfterDelete } from "@/payload/hooks/cleanupBookmarksAfterDelete";
 import { scrubAmbientRefsOnTrackDelete } from "@/payload/Lexical/Features/AmbientAudio/server/scrubOnTrackDelete";
+import { deduplicateTrackUpload } from "@/payload/collections/Radio/hooks/deduplicateTrackUpload";
 import { StreamHandler } from "@/payload/collections/Radio/endpoints/stream";
 import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
 import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
@@ -194,6 +195,7 @@ export const Tracks: CollectionConfig = {
       cleanupBookmarksAfterDelete("tracks"),
       scrubAmbientRefsOnTrackDelete
     ],
-    beforeChange: [sanitizeAuthor(false)]
+    beforeChange: [sanitizeAuthor(false)],
+    beforeOperation: [deduplicateTrackUpload]
   }
 };

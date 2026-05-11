@@ -1,6 +1,9 @@
-import { TapeConnect } from "@/components/Radio/Tapes/TapeConnect";
-import { TapeHero } from "@/components/Radio/Tapes/TapeHero";
-import { TapeStory, type StoryBlock } from "@/components/Radio/Tapes/TapeStory";
+import { TapeConnect } from "../../../../../../../components/content/Radio/Tapes/TapeConnect";
+import { TapeHero } from "../../../../../../../components/content/Radio/Tapes/TapeHero";
+import {
+  TapeStory,
+  type StoryBlock
+} from "../../../../../../../components/content/Radio/Tapes/TapeStory";
 import { StationHideawayHero } from "@/components/sections/StationHideaway/block";
 import { RPage } from "@/components/UX/Transition";
 import type { Metadata } from "next";

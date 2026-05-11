@@ -45,11 +45,12 @@ export default async function Page({ params: paramsPromise }: Args) {
   return (
     <RPage type="tags" slug={[tag.slug]}>
       <PageClient>
-        <div className="flex justify-center">
-          <div className="w-full max-w-[calc(100vw-100px)] min-lg:mx-9.5 min-lg:my-0">
-            <div className="relative mt-9 block min-lg:mt-[40px] min-lg:mb-15">
-              <div className="flex items-start overflow-x-auto overflow-y-hidden">
-                <div className="w-9.5 flex-[0_0_auto] min-lg:hidden"></div>
+        <div className="sticky top-[60px] z-20 border-b border-border/20 bg-background/90 backdrop-blur-md">
+          <div className="flex justify-center">
+            <div className="w-full max-w-[calc(100vw-100px)] min-lg:mx-9.5 min-lg:my-0">
+              <div className="relative block py-[14px] min-lg:py-[18px]">
+                <div className="flex items-start overflow-x-auto overflow-y-hidden">
+                  <div className="w-9.5 flex-[0_0_auto] min-lg:hidden"></div>
 
                 <Link
                   className="flex items-center rounded-[100px] border-[1px] border-solid border-transparent bg-faded-foreground/10 p-2 leading-[20px] whitespace-nowrap transition-colors ease-out-power2 hover:border-faded-foreground hover:bg-transparent data-[current=true]:border-faded-foreground data-[current=true]:bg-transparent min-lg:mr-9.5 min-lg:pr-6.5"
@@ -91,6 +92,7 @@ export default async function Page({ params: paramsPromise }: Args) {
               </div>
             </div>
           </div>
+        </div>
         </div>
         <div className="relative flex w-full flex-col items-center justify-center">
           <CatTitle className={"mt-2 py-4 pb-1 font-serif font-light"}>
@@ -226,57 +228,78 @@ async function getTagPosts({
       page
     })
     .then((r) =>
-      r.docs.map(async (d) => {
-        const categoryID = d.category[0]!.key;
-        const category = await payload.findByID({
-          collection: "categories",
-          id: categoryID,
-          select: {
-            title: true
+      // Defensive filter: search-mirror rows can lose their `doc` reference
+      // when the source row is hard-deleted (the search plugin clears the
+      // join but the mirror persists until next sync). Reading `d.doc.*`
+      // unguarded crashes SSR — and because this page is reached from
+      // popular tag URLs, the crash cascades into the Node Web Streams
+      // transformAlgorithm abort that knocks every concurrent route off
+      // its render. Filter the broken rows out at the source.
+      r.docs
+        .filter(
+          (
+            d
+          ): d is typeof d & {
+            doc: { relationTo: string; value: string | { id: string } };
+          } =>
+            Boolean(
+              d?.doc &&
+              typeof (d.doc as { relationTo?: unknown }).relationTo === "string"
+            )
+        )
+        .map(async (d) => {
+          // category is mirrored as an array but may be empty on legacy rows.
+          const categoryID = d.category?.[0]?.key;
+          const category = categoryID
+            ? await payload.findByID({
+                collection: "categories",
+                id: categoryID,
+                select: { title: true }
+              })
+            : null;
+          let image: RalueAsDataWithRelation | undefined = undefined;
+          if (d.meta?.image) {
+            const imageRel = d.meta.image.relationTo;
+            const imageID =
+              typeof d.meta.image.value === "string"
+                ? d.meta.image.value
+                : d.meta.image.value.id;
+            const res = await getImageOverviewByID({
+              id: imageID,
+              collection: imageRel,
+              payload
+            });
+            image = res || undefined;
           }
-        });
-        let image: RalueAsDataWithRelation | undefined = undefined;
-        if (d.meta?.image) {
-          const imageRel = d.meta.image.relationTo;
-          const imageID =
-            typeof d.meta.image.value === "string"
-              ? d.meta.image.value
-              : d.meta.image.value.id;
-          const res = await getImageOverviewByID({
-            id: imageID,
-            collection: imageRel,
-            payload
-          });
-          image = res || undefined;
-        }
-        return {
-          relationTo: d.doc.relationTo as IndexedCollectionSlug,
+          return {
+            relationTo: d.doc.relationTo as IndexedCollectionSlug,
 
-          value: {
-            id: typeof d.doc.value === "string" ? d.doc.value : d.doc.value.id,
-            url: formatCollectionURL({
-              slug: d.slug,
-              relationTo: d.doc.relationTo as IndexedCollectionSlug
-            }),
-            title: d.title,
-            image,
-            author: (d.author[0] && d.author[0].name) || "Unknown",
-            subtitle: d.meta?.description || "",
-            category: (category && category.title) || "Uncategorized",
-            tagged:
-              (d.tags &&
-                d.tags.map((r) => ({
-                  id: r.key,
-                  title: r.title,
-                  slug: r.slug
-                }))) ||
-              [],
-            authority: d.locked ? d.authority || 2 : 1,
-            allowList:
-              (d.locked && d.allowList && d.allowList.map((r) => r.key)) || []
-          } satisfies OverviewAgnosticItem
-        };
-      })
+            value: {
+              id:
+                typeof d.doc.value === "string" ? d.doc.value : d.doc.value.id,
+              url: formatCollectionURL({
+                slug: d.slug,
+                relationTo: d.doc.relationTo as IndexedCollectionSlug
+              }),
+              title: d.title,
+              image,
+              author: (d.author?.[0] && d.author[0].name) || "Unknown",
+              subtitle: d.meta?.description || "",
+              category: (category && category.title) || "Uncategorized",
+              tagged:
+                (d.tags &&
+                  d.tags.map((r) => ({
+                    id: r.key,
+                    title: r.title,
+                    slug: r.slug
+                  }))) ||
+                [],
+              authority: d.locked ? d.authority || 2 : 1,
+              allowList:
+                (d.locked && d.allowList && d.allowList.map((r) => r.key)) || []
+            } satisfies OverviewAgnosticItem
+          };
+        })
     )
     .then(async (r) => await Promise.all(r));
   return tagged;

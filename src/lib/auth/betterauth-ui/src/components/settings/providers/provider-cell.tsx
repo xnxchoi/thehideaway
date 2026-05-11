@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useIsOverflow } from "@betterauth-ui/hooks/use-is-overflow";
 import { Account } from "better-auth";
 import type { SocialProvider } from "better-auth/social-providers";
-import { Loader2 } from "lucide-react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 import { useContext, useState } from "react";
 
 import { AuthUIContext } from "../../../lib/auth-ui-provider";

@@ -176,7 +176,7 @@ export const SideDrawer = () => {
   const toggleSideDrawer = useRPStore((r) => r.toggleSideDrawer);
   const lastResize = useWindowResize({
     debounce: 50,
-    detectHeightChange: false,
+    detectHeightChange: true,
     detectVisibilityChange: false
   });
   const setCursor = useCursor((r) => r.setCursorState);
@@ -184,16 +184,10 @@ export const SideDrawer = () => {
   // Drawer docks to bottom below the md breakpoint (768px) to align with
   // its CSS (`max-md:` classes). This is distinct from the global `isMobile`
   // (< 640px), which other components depend on.
-  const [isNarrow, setIsNarrow] = useState<boolean>(() =>
-    typeof window !== "undefined" ? window.innerWidth < 768 : false
-  );
-  useEffect(() => {
-    setIsNarrow(window.innerWidth < 768);
-  }, [lastResize]);
+  const { isMobile: isNarrow, isTouch } = useIsMobile();
   const [direction, setDirection] = useState<
     "bottom" | "left" | "top" | "right" | undefined
   >(isNarrow ? "bottom" : "left");
-
   useEffect(() => {
     setDirection(isNarrow ? "bottom" : "left");
   }, [isNarrow]);
@@ -322,9 +316,10 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {isNarrow && <Drawer.Handle className={"absolute!"} />}
+          {isNarrow && isTouch && <Drawer.Handle className={"absolute!"} />}
           {open && (
-            <div
+            <m.div
+              key={"drawer-backdrop"}
               onClick={() => {
                 setSideDrawerOpen(false);
               }}
@@ -343,6 +338,7 @@ export const SideDrawer = () => {
           */}
           <m.div
             className="z-239 flex h-[65vh] w-full flex-col bg-nav-background md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
+            key={"drawer-body"}
             onMouseEnter={() => {
               setCursor(null);
               setCursorTheme("dark");
@@ -358,45 +354,45 @@ export const SideDrawer = () => {
                 title={"Shortcuts"}
               ></Drawer.Title>
             </div>
-
-            {/* Links — fill the middle on mobile (scrollable if it overflows),
-                grid cell row[3/10] on desktop */}
             <AnimatePresence>
+              {/* Links — fill the middle on mobile (scrollable if it overflows),
+                grid cell row[3/10] on desktop */}
               {open && (
-                <m.div className="flex-1 overflow-y-auto px-6 py-6 md:col-[2/8] md:row-[3/10] md:flex-none md:overflow-visible md:px-4 md:py-0">
-                  <m.div className="flex flex-col gap-5 font-sans text-[23px]">
-                    {sd.map((link) => (
-                      <Link key={link.url} href={link.url}>
-                        {link.label}
-                      </Link>
-                    ))}
+                <>
+                  {" "}
+                  <m.div className="flex-1 overflow-y-auto px-6 py-6 md:col-[2/8] md:row-[3/10] md:flex-none md:overflow-visible md:px-4 md:py-0">
+                    <m.div className="flex flex-col gap-5 font-sans text-[23px]">
+                      {sd.map((link) => (
+                        <Link key={link.url} href={link.url}>
+                          {link.label}
+                        </Link>
+                      ))}
+                    </m.div>
                   </m.div>
-                </m.div>
-              )}
-            </AnimatePresence>
-
-            {/* DrawerPlayer — gated on `open` so it doesn't run audio-reactive
+                  {/* DrawerPlayer — gated on `open` so it doesn't run audio-reactive
                 code or mount the radio session while the drawer is closed.
                 AnimatePresence keeps the close animation tidy. */}
-            <AnimatePresence>
-              {hasRadio && open && (
-                <m.div
-                  className="border-t border-border/10 md:col-span-full md:row-[11/14] md:border-t-0"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <DrawerPlayer />
-                </m.div>
+                  {hasRadio && (
+                    <m.div
+                      key={"radio-ui-drawer"}
+                      className="border-t border-border/10 md:col-span-full md:row-[11/14] md:border-t-0"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 12 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <DrawerPlayer />
+                    </m.div>
+                  )}
+                </>
               )}
             </AnimatePresence>
           </m.div>
           <AnimatePresence>
-            {isNarrow ? (
-              (open && <Controlbar />) || <> </>
+            {isNarrow && isTouch ? (
+              <Controlbar key={"ctrlbar-drawer"} />
             ) : (
-              <SideNotch sideDrawer={true} />
+              <SideNotch key={"notch-drawer"} sideDrawer={true} />
             )}
           </AnimatePresence>
         </Mrawer>

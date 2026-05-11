@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Account } from "better-auth";
-import { Loader2 } from "lucide-react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 import { type ComponentProps, useContext } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -139,7 +139,9 @@ export function DeleteAccountDialog({
     <Dialog onOpenChange={onOpenChange} {...props}>
       <DialogContent className={cn("sm:max-w-md", classNames?.dialog?.content)}>
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
+          <DialogTitle
+            className={cn("text-base md:text-xl", classNames?.title)}
+          >
             {localization?.DELETE_ACCOUNT}
           </DialogTitle>
 

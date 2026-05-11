@@ -14,10 +14,7 @@ import { useEffect, useState } from "react";
  * directly (or via browser back-forward with restored scroll) shows the right
  * item active immediately, before the observer has had a chance to fire.
  */
-export function useActiveSection(
-  ids: string[],
-  topOffset = 96
-): string | null {
+export function useActiveSection(ids: string[], topOffset = 96): string | null {
   const [activeId, setActiveId] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     const hash = window.location.hash.slice(1);

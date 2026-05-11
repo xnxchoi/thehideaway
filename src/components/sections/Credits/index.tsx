@@ -6,7 +6,7 @@ import { FrontImage } from "@/components/core/Media/FrontImage";
 import { ImageMedia } from "@/components/core/Media/Image";
 import { cn } from "@/lib/utils";
 import type { User, UserMedia } from "@/payload-types";
-import { useIsMobile } from "@/utilities/getBreakpoints";
+import { useIsMobile } from "@/providers/MiddleMan";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
@@ -58,11 +58,17 @@ export const Credits = ({ people }: { people: MemberList["members"] }) => {
     title: "Patrons",
     members: people.filter((p) => p.position === "patron")
   };
-  const user: MemberList = {
+  const member: MemberList = {
     title: "Members",
+    members: people.filter((p) => p.position === "member")
+  };
+  const user: MemberList = {
+    title: "Guests",
     members: people.filter((p) => p.position === "user")
   };
-  return CreditsInner({ positions: { admin, editor, author, patron, user } });
+  return CreditsInner({
+    positions: { admin, editor, author, patron, member, user }
+  });
 };
 type Team = {
   [x in RP_Roles]: MemberList;

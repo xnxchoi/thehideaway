@@ -52,6 +52,11 @@ export interface TableOfContentsBaseProps {
    * Override the label face. By default `mode="route"` uses sans (admin
    * surfaces; matches CLAUDE.md `Admin surfaces (Fey direction)` rules) and
    * `mode="anchor"` uses mono caps (editorial chrome on content surfaces).
+   *
+   * NB: this primitive is editorial-first — its visual language assumes
+   * ordinal markers + gradient pill. Admin rails (Settings) live on a
+   * dedicated `<SettingsRail/>` instead; do not reuse this component
+   * outside of long-form documents.
    */
   labelStyle?: TocLabelStyle;
 }

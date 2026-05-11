@@ -1,4 +1,4 @@
-import { BroadcastHub } from "@/components/Radio/Broadcast/BroadcastHub";
+import { BroadcastHub } from "../../../../../components/content/Radio/Broadcast/BroadcastHub";
 import { BeatDetectorControls } from "@/providers/HideawayFM/BeatDetectorControls";
 import { RPage } from "@/components/UX/Transition";
 import { queryAllReleases } from "@/payload/collections/Radio/api/queryAllReleases";

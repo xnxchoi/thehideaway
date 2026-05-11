@@ -8,8 +8,7 @@ import { getLocalizedError, getSearchParam } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import { Button } from "../ui/button";
 import type { AuthViewClassNames } from "./auth-view";
-import { Loader2 } from "lucide-react";
-
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 interface ProviderButtonProps {
   className?: string;
   classNames?: AuthViewClassNames;

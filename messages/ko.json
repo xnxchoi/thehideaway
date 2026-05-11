@@ -125,5 +125,82 @@
         },
         "sectionCopy": "논평 — 출간 예정. 여백을 그리는 중입니다.",
         "cardCopy": "무언가, 언젠가."
+    },
+    "Settings": {
+        "navAria": "설정 섹션",
+        "back": "설정",
+        "sections": {
+            "general": {
+                "label": "일반",
+                "blurb": "언어, 테마, 기타 인터페이스 환경설정."
+            },
+            "profile": {
+                "label": "프로필",
+                "blurb": "공개되는 이름, 소개, 위치, 링크."
+            },
+            "account": {
+                "label": "계정",
+                "blurb": "핸들, 로그인 이메일, 비밀번호, 주소, 구독."
+            },
+            "security": {
+                "label": "보안",
+                "blurb": "2단계 인증, 세션, 제공자, 패스키, 계정 폐쇄."
+            },
+            "notifications": {
+                "label": "알림",
+                "blurb": "어떤 알림을 — 얼마나 자주 보낼지."
+            }
+        },
+        "save": {
+            "saving": "저장 중…",
+            "saved": "저장됨",
+            "error": "저장에 실패했어요"
+        },
+        "empty": {
+            "defaultEyebrow": "준비 중"
+        },
+        "general": {
+            "title": "일반",
+            "blurb": "인터페이스 환경설정 — 언어, 테마, OS 설정에 따른 동작.",
+            "interfaceEyebrow": "인터페이스",
+            "themeLabel": "테마",
+            "themeOptions": {
+                "light": "라이트",
+                "dark": "다크"
+            },
+            "motionEyebrow": "모션",
+            "motionBlurb": "앱 내부 설정은 따로 두지 않습니다 — OS 접근성 설정을 그대로 따릅니다. 그쪽에서 켜고 끄시면 그대로 반영됩니다.",
+            "reduceMotionLabel": "모션 줄이기",
+            "reduceMotionDescription": "OS 접근성 설정에서 가져옵니다.",
+            "reduceMotionDetected": {
+                "loading": "감지 중…",
+                "on": "켜짐 — 애니메이션 최소화",
+                "off": "꺼짐 — 모든 모션"
+            }
+        }
+    },
+    "LegalFooter": {
+        "navAria": "법적 고지",
+        "businessAria": "사업자 정보",
+        "links": {
+            "privacy": "개인정보처리방침",
+            "terms": "이용약관",
+            "refund": "취소·환불",
+            "plans": "멤버십"
+        },
+        "fields": {
+            "tradeName": "상호",
+            "representative": "대표자",
+            "registration": "사업자등록번호",
+            "mailOrder": "통신판매업신고",
+            "address": "주소",
+            "phone": "전화",
+            "privacyOfficer": "개인정보보호책임자"
+        },
+        "businessName": "Restored Projects",
+        "representativeName": "TBD",
+        "address": "서울특별시 송파구 올림픽로4길 15",
+        "serviceHours": "평일 10:00–18:00 (주말 및 공휴일 휴무)",
+        "mailOrderPending": "신고 진행 중"
     }
 }

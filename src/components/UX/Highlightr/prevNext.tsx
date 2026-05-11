@@ -2,13 +2,15 @@
 import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
-import { useCursor, useFrameState } from "@/providers/RP_Pro";
+import { useCursor, useFrameState, useRPStore } from "@/providers/RP_Pro";
 import type { PostOverview } from "@/types/collections/posts";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { useLenis } from "lenis/react";
 import { useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/shallow";
+import { cn } from "@/lib/utils";
 
 export const PrevNext = ({
   prev: previousPost,
@@ -51,7 +53,7 @@ export const PrevNext = ({
   }, [lastResize, h1, h2]);
   const lnis = useLenis();
   const cot = useMotionValue("0px");
-
+  const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
   const throttledScroll = useCallback(() => {
     let isThrottled = false;
 
@@ -83,9 +85,10 @@ export const PrevNext = ({
   }, [throttledScroll, lnis]);
   return (
     <m.div
-      className={
-        "sticky top-[0px] z-0 mt-[-10px] flex w-screen flex-col justify-between overflow-hidden border-0 border-t-[1px] border-solid border-foreground bg-faded-foreground pt-0 pb-[8px] text-background"
-      }
+      className={cn(
+        "top-[0px] z-0 mt-[-10px] flex w-screen flex-col justify-between overflow-hidden border-0 border-t-[1px] border-solid border-foreground bg-faded-foreground pt-0 pb-[8px] text-background",
+        isSidebarOpen ? "fixed" : "sticky"
+      )}
       style={{ bottom: contBottom, top: cot }}
       ref={containerRef}
       onMouseEnter={toggleCursorTheme}

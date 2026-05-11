@@ -1,8 +1,8 @@
 "use client";
 
-import { TapePlayer } from "@/components/UX/TapePlayer";
-import type { ReleaseSummary } from "@/payload/collections/Radio/api/queryAllReleases";
-import type { Media } from "@/payload-types";
+import { TapePlayer } from "src/components/UX/TapePlayer";
+import type { ReleaseSummary } from "src/payload/collections/Radio/api/queryAllReleases";
+import type { Media } from "src/payload-types";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";

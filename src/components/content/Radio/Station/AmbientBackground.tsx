@@ -1,6 +1,6 @@
 "use client";
 
-import { usePlayState } from "@/providers/HideawayFM/hooks";
+import { usePlayState } from "src/providers/HideawayFM/hooks";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 import { AmbientGradientMesh } from "./AmbientGradientMesh";

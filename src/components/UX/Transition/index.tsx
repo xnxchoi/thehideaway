@@ -286,6 +286,8 @@ export const PageRedirect = ({
 export type TransitionWrapperProps = {
   type: PageType;
   slug: string[];
+  className?: string;
+  internalClassName?: string;
   children: ReactNode;
   headerVisibility?: boolean;
   theme?: Theme;
@@ -302,7 +304,14 @@ export const RPage = (props: TransitionWrapperProps) => {
   return <TransitionInternal {...props} />;
 };
 const TransitionInternal = (props: TransitionWrapperProps) => {
-  const { children, headerVisibility = true, theme, ref: pageRef } = props;
+  const {
+    children,
+    internalClassName,
+    className,
+    headerVisibility = true,
+    theme,
+    ref: pageRef
+  } = props;
 
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const setPageTheme = useTheme((r) => r.setPageTheme);
@@ -491,9 +500,11 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       data-themed="background-color,color"
       ref={pageRef}
       variants={currentVariants}
-      className={cn("min-h-screen w-screen", {
-        transitioning: pageIsTransitioning
-      })}
+      className={cn(
+        "min-h-screen w-screen",
+
+        className
+      )}
       onAnimationComplete={(phase) => {
         setCurrentStep("complete");
 
@@ -508,7 +519,10 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
       }}
     >
       <m.div
-        className="relative flex min-h-screen w-screen flex-col justify-start"
+        className={cn(
+          "relative flex min-h-screen w-full flex-col justify-start",
+          internalClassName
+        )}
         ref={ref}
       >
         {children}

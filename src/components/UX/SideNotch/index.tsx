@@ -13,7 +13,7 @@ import {
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { SoundBar } from "../Radio/soundBar";
+import { SoundBar } from "../../content/Radio/soundBar";
 import { TimeComponent } from "./TimeComponent";
 
 type SideNotchProps = {

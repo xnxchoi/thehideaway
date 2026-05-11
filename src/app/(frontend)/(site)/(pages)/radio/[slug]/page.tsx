@@ -1,4 +1,4 @@
-import { Release } from "@/components/Radio/Release/Release";
+import { Release } from "../../../../../../components/content/Radio/Release/Release";
 import { RPage } from "@/components/UX/Transition";
 import { queryReleaseBySlug } from "@/payload/collections/Radio/api/queryReleaseBySlug";
 import { Metadata } from "next";

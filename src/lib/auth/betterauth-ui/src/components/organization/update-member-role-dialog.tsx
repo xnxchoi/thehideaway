@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { User } from "better-auth";
 import type { Member } from "better-auth/plugins/organization";
-import { Loader2 } from "lucide-react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
 import { type ComponentProps, useContext, useMemo, useState } from "react";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
 import { getLocalizedError } from "../../lib/utils";
@@ -142,7 +142,9 @@ export function UpdateMemberRoleDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
+          <DialogTitle
+            className={cn("text-base md:text-xl", classNames?.title)}
+          >
             {localization.UPDATE_ROLE}
           </DialogTitle>
 

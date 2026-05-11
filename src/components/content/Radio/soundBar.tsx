@@ -1,10 +1,10 @@
 "use client";
 
-import { useDomCursor } from "@/components/core/cursorWrapper";
-import { cn } from "@/lib/utils";
-import { useHideawayFMControls } from "@/providers/HideawayFM";
-import { usePlayState } from "@/providers/HideawayFM/hooks";
-import { useCursor } from "@/providers/RP_Pro";
+import { useDomCursor } from "src/components/core/cursorWrapper";
+import { cn } from "src/lib/utils";
+import { useHideawayFMControls } from "src/providers/HideawayFM";
+import { usePlayState } from "src/providers/HideawayFM/hooks";
+import { useCursor } from "src/providers/RP_Pro";
 import * as m from "motion/react-m";
 import { useCallback, useEffect, useRef, useState } from "react";
 

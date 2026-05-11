@@ -1,12 +1,10 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
 import { FooterTickerCrown } from "@/components/core/FooterTickerCrown/FooterTickerCrown";
 import { Link } from "@/components/core/Link/Link";
 import { BUSINESS } from "@/constants/business";
 import { LocaleSwitch } from "./LocaleSwitch";
-
-type FooterLocale = "ko" | "en";
 
 interface ColophonField {
   label: string;
@@ -45,63 +43,43 @@ function Colophon({ fields, lang }: { fields: ColophonField[]; lang: string }) {
   );
 }
 
-const KO_FIELD_LABELS = {
-  tradeName: "상호",
-  representative: "대표자",
-  registration: "사업자등록번호",
-  mailOrder: "통신판매업신고",
-  address: "주소",
-  phone: "전화",
-  privacyOfficer: "개인정보보호책임자"
-} as const;
-
-const EN_FIELD_LABELS = {
-  tradeName: "Trade name",
-  representative: "Representative",
-  registration: "Business Reg. No.",
-  mailOrder: "Mail-Order Reg.",
-  address: "Address",
-  phone: "Phone",
-  privacyOfficer: "Privacy Officer"
-} as const;
-
-const KO_PENDING = "신고 진행 중";
-const EN_PENDING = "Pending application";
-
 /**
- * Substitute the Korean default placeholder when the env-driven value is the
- * raw default. Real registration numbers (digits with hyphens) pass through
- * unchanged in either locale.
+ * Single-source-via-next-intl footer.
+ *
+ *   - Every locale-bearing string flows through `t()` from the
+ *     `LegalFooter` namespace in `messages/*.json`. There are no
+ *     `isKo ? ... : ...` ternaries and no reads from `BUSINESS.*Ko` /
+ *     `BUSINESS.addressEn` parallel fields. If a label needs to vary by
+ *     locale, the variation lives in messages — full stop.
+ *   - `getLocale()` is called for one purpose only: to set the HTML
+ *     `lang` attribute on the colophon and the wordmark, so screen
+ *     readers and font selection get a correct hint. Locale never gates
+ *     content choice.
+ *   - `BUSINESS` provides language-agnostic identifiers (registration
+ *     numbers, phone, email, domain). Their env-driven defaults can
+ *     resolve to empty — we fall back to a localized "pending" message
+ *     in that case via `||`.
  */
-function localizeMailOrder(value: string, locale: FooterLocale): string {
-  if (locale === "ko") return value;
-  return value === KO_PENDING ? EN_PENDING : value;
-}
+export async function LegalFooter() {
+  const locale = await getLocale();
+  const t = await getTranslations("LegalFooter");
+  const year = new Date().getFullYear();
 
-function buildColophonFields(locale: FooterLocale): ColophonField[] {
-  const isKo = locale === "ko";
-  const labels = isKo ? KO_FIELD_LABELS : EN_FIELD_LABELS;
-  return [
+  const colophonFields: ColophonField[] = [
+    { label: t("fields.tradeName"), value: t("businessName") },
+    { label: t("fields.representative"), value: t("representativeName") },
     {
-      label: labels.tradeName,
-      value: isKo ? BUSINESS.legalNameKo : BUSINESS.legalName
+      label: t("fields.registration"),
+      value: BUSINESS.registrationNumber || "—"
     },
     {
-      label: labels.representative,
-      value: isKo ? BUSINESS.representativeKo : BUSINESS.representative
+      label: t("fields.mailOrder"),
+      value: BUSINESS.mailOrderRegistrationNumber || t("mailOrderPending")
     },
-    { label: labels.registration, value: BUSINESS.registrationNumber },
+    { label: t("fields.address"), value: t("address") },
+    { label: t("fields.phone"), value: BUSINESS.phone || "—" },
     {
-      label: labels.mailOrder,
-      value: localizeMailOrder(BUSINESS.mailOrderRegistrationNumber, locale)
-    },
-    {
-      label: labels.address,
-      value: isKo ? BUSINESS.addressKo : BUSINESS.addressEn
-    },
-    { label: labels.phone, value: BUSINESS.phone },
-    {
-      label: labels.privacyOfficer,
+      label: t("fields.privacyOfficer"),
       value: (
         <>
           {BUSINESS.privacyOfficerName}
@@ -118,32 +96,13 @@ function buildColophonFields(locale: FooterLocale): ColophonField[] {
       )
     }
   ];
-}
 
-export async function LegalFooter() {
-  const rawLocale = await getLocale();
-  const locale: FooterLocale = rawLocale === "ko" ? "ko" : "en";
-  const isKo = locale === "ko";
-  const year = new Date().getFullYear();
-
-  const labels = {
-    privacy: isKo ? "개인정보처리방침" : "Privacy",
-    terms: isKo ? "이용약관" : "Terms",
-    refund: isKo ? "취소·환불" : "Refunds",
-    plans: isKo ? "멤버십" : "Membership",
-    hours: isKo ? BUSINESS.serviceHoursKo : BUSINESS.serviceHours,
-    businessAria: isKo ? "사업자 정보" : "Business information",
-    legalNav: isKo ? "법적 고지" : "Legal"
-  };
-
-  const colophonFields = buildColophonFields(locale);
   const navLinks = [
-    { href: "/privacy", label: labels.privacy },
-    { href: "/terms", label: labels.terms },
-    { href: "/refund", label: labels.refund },
-    { href: "/plans", label: labels.plans }
+    { href: "/privacy", label: t("links.privacy") },
+    { href: "/terms", label: t("links.terms") },
+    { href: "/refund", label: t("links.refund") },
+    { href: "/plans", label: t("links.plans") }
   ];
-  const businessNameDisplay = isKo ? BUSINESS.legalNameKo : BUSINESS.legalName;
 
   return (
     <footer
@@ -153,7 +112,7 @@ export async function LegalFooter() {
     >
       <div className="mx-auto max-w-2xl px-6 py-20 text-center sm:px-10 xl:py-28">
         {/* Nav strip */}
-        <nav aria-label={labels.legalNav}>
+        <nav aria-label={t("navAria")}>
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[14px] font-light tracking-tight">
             {navLinks.map((item, index) => (
               <li key={item.href} className="flex items-center gap-x-5">
@@ -184,7 +143,7 @@ export async function LegalFooter() {
           <span aria-hidden className="mx-3 text-foreground/30">
             ·
           </span>
-          <span className="text-foreground/70">{labels.hours}</span>
+          <span className="text-foreground/70">{t("serviceHours")}</span>
         </p>
 
         {/* Ornament — classical editorial divider; single glyph between two
@@ -198,8 +157,8 @@ export async function LegalFooter() {
           <span className="h-px w-12 bg-border/40" />
         </div>
 
-        {/* 사업자정보 colophon — centered prose flow */}
-        <section aria-label={labels.businessAria}>
+        {/* Business colophon — centered prose flow */}
+        <section aria-label={t("businessAria")}>
           <Colophon fields={colophonFields} lang={locale} />
         </section>
 
@@ -233,7 +192,7 @@ export async function LegalFooter() {
           <span aria-hidden className="text-foreground/30">
             ·
           </span>
-          <span lang={locale}>{businessNameDisplay}</span>
+          <span lang={locale}>{t("businessName")}</span>
           <span aria-hidden className="text-foreground/30">
             ·
           </span>

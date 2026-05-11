@@ -1,5 +1,6 @@
 "use client";
 
+import { useRPStore } from "@/providers/RP_Pro";
 import { View } from "@react-three/drei";
 import { useInView, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -77,10 +78,21 @@ export function FooterTickerCrownClient({
   // Viewport gate — pause all per-frame work while the bezel is offscreen.
   // `margin: "200px 0px"` warms the animation up 200px before the strip
   // actually enters the visual viewport so it's running smoothly by the
-  // time the user can see it (no first-frame snap into place). Combined
-  // with reduced-motion to form the final drift gate.
+  // time the user can see it (no first-frame snap into place).
   const inView = useInView(wrapperRef, { margin: "200px 0px" });
-  const driftEnabled = !reduced && inView;
+
+  // Page-transition gate — during a navigation, the outgoing page goes
+  // `position: fixed` (see `RPage` / `TransitionProvider`) which removes
+  // it from flow. The LegalFooter (a sibling at layout root) then reflows
+  // up to the top of the document, dragging the bezel's wrapper to mid-
+  // screen. drei's `<View>` would faithfully track to that new position
+  // and render the bezel floating in the middle of the viewport, on top
+  // of the fixed outgoing page. Detecting `transitionOutType !== null`
+  // and unmounting the View for the duration of the transition prevents
+  // the visual artifact entirely.
+  const isTransitioning = useRPStore((s) => s.transitionOutType !== null);
+
+  const driftEnabled = !reduced && inView && !isTransitioning;
 
   // Spin trigger — bezel turns while hovered (desktop) or briefly on tap
   // (touch). pointerenter/leave handle hover; pointerdown explicitly opens
@@ -197,7 +209,7 @@ export function FooterTickerCrownClient({
             touchAction: "manipulation"
           }}
         >
-          {displacementTexture && bandWidth > 0 ? (
+          {displacementTexture && bandWidth > 0 && !isTransitioning ? (
             <View
               // Explicit pixel dimensions — drei's View tracks its element via
               // getBoundingClientRect, and `absolute inset-0` was reading as

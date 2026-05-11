@@ -50,7 +50,15 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { NodeKey } from "@payloadcms/richtext-lexical/lexical";
 import { isEmpty } from "lodash-es";
-import { AlignCenter, AlignLeft, AlignRight, Ellipsis } from "lucide-react";
+import {
+  TextAlignCenterIcon as AlignCenter,
+  TextAlignLeftIcon as AlignLeft,
+  TextAlignRightIcon as AlignRight,
+  // Phosphor doesn't export `Ellipsis` — its three-dot icon is `DotsThree`.
+  // Older code/imports may have used `Ellipsis` from a different lib (lucide
+  // has it under that name). Alias locally so call sites stay readable.
+  DotsThree as Ellipsis
+} from "@phosphor-icons/react";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import NextImage from "next/image";

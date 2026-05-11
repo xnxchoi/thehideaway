@@ -5,14 +5,13 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { PrivacyEn } from "./privacy.en";
 import { PrivacyKo } from "./privacy.ko";
+import { POLICY_LAST_UPDATED } from "../../../../../constants/policies";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — The Hideaway",
   description:
     "How The Hideaway collects, uses, and protects your personal information."
 };
-
-export const POLICY_LAST_UPDATED = "2026-04-15";
 
 const TOC_KO = [
   { id: "purposes", label: "처리목적" },

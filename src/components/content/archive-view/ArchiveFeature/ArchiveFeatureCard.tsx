@@ -123,12 +123,14 @@ function FocusHero({
           "relative col-[1] min-h-px w-full min-w-px self-start overflow-hidden rounded-2xl pt-[100%] lg:row-[1/5]"
         }
       >
-        {image && (
+        {image ? (
           <FrontImage
             pictureClassName="absolute inset-0"
             imgClassName="rounded-[5px] absolute object-cover top-0 block w-auto h-auto max-w-[100%] border-0 transition-opacity duration-400 backface-hidden"
             resource={image}
           />
+        ) : (
+          <CoverPlaceholder />
         )}
       </div>
       {category && (
@@ -255,7 +257,7 @@ function HeroImage({
   }) {
   return (
     <div className={cn("relative", className)} {...rest}>
-      {image && (
+      {image ? (
         <FrontImage
           imgClassName={cn(
             "rounded-[5px] absolute object-cover top-0 block w-full h-full max-w-full border-0 transition-opacity duration-400 backface-hidden",
@@ -264,7 +266,27 @@ function HeroImage({
           resource={image}
           aspectRatio={aspectRatio}
         />
+      ) : (
+        <CoverPlaceholder />
       )}
+    </div>
+  );
+}
+
+/**
+ * Typographic stand-in shown when a post has no cover image.
+ * Mirrors the editorial empty-state pattern in CLAUDE.md (mono symbol over a
+ * tinted panel) — never a random photo, never a colour wash.
+ */
+function CoverPlaceholder({ symbol = "◇" }: { symbol?: string }) {
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[5px] bg-foreground/[0.04]"
+    >
+      <span className="font-mono text-[clamp(56px,9vw,128px)] font-light text-foreground/[0.08] select-none">
+        {symbol}
+      </span>
     </div>
   );
 }
