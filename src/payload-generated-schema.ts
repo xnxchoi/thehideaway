@@ -6258,7 +6258,7 @@ export const events = pgTable(
       .notNull()
       .default(3),
     ticket_price: numeric("ticket_price", { mode: "number" }).notNull(),
-    toss_payment_id: varchar("toss_payment_id"),
+    payment_instructions: varchar("payment_instructions"),
     state: enum_events_state("state").notNull().default("draft"),
     image: varchar("image_id").references(() => media.id, {
       onDelete: "set null"

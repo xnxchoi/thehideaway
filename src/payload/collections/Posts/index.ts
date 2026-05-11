@@ -489,5 +489,19 @@ export const Posts: CollectionConfig<"posts"> = {
       schedulePublish: true
     },
     maxPerDoc: 50
-  }
+  },
+  // Compound index on `(author, _status, updatedAt)` — drives the /me/posts
+  // index page. The query shape there is consistently:
+  //   WHERE author_id = ? [AND _status = ?] ORDER BY updated_at DESC LIMIT n
+  // Leading on `author` is mandatory (every /me/* read filters by author);
+  // `_status` second so the status-tab pills (Published/Drafts) skip the
+  // re-check; `updatedAt` last for the sort. Postgres B-tree handles
+  // DESC traversal in reverse, so we don't need to specify direction here
+  // — Payload's `indexes` config only takes field names. See
+  // https://payloadcms.com/docs/database/indexes#compound-indexes
+  indexes: [
+    {
+      fields: ["author", "_status", "updatedAt"]
+    }
+  ]
 };
