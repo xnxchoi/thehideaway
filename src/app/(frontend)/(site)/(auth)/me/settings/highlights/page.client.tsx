@@ -9,7 +9,8 @@ import {
   PanelControls,
   PanelGrid,
   PanelHeader,
-  SectionEmpty
+  SectionEmpty,
+  SubRouteHeader
 } from "@/components/UX/Settings";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
@@ -28,6 +29,11 @@ export default function HighlightsSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
+        <SubRouteHeader
+          title="Highlights"
+          blurb="Annotations and notes you've made across the site. Toggle visibility, add memos, or remove a highlight."
+        />
+
         {citations.length === 0 ? (
           <SectionEmpty
             eyebrow="Empty shelf"
@@ -50,7 +56,7 @@ export default function HighlightsSectionClient({
                 title="Annotations and notes"
                 blurb="Selections you've saved across The Hideaway. Toggle privacy or remove individual highlights."
                 meta={
-                  <span className="tabular-nums text-foreground/75">
+                  <span className="text-foreground/75 tabular-nums">
                     {String(citations.length).padStart(2, "0")}
                     {citations.length === 50 ? "+" : ""}
                   </span>
@@ -147,7 +153,11 @@ function CitationRow({ citation }: { citation: UserCitation }) {
               </Link>
             ) : null}
             {updated ? <span>{updated}</span> : null}
-            <span className={cn(isPrivate ? "text-foreground/55" : "text-foreground/65")}>
+            <span
+              className={cn(
+                isPrivate ? "text-foreground/55" : "text-foreground/65"
+              )}
+            >
               {isPrivate ? "Private" : "Public"}
             </span>
           </div>

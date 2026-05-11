@@ -1,73 +1,38 @@
+/**
+ * Settings sections — structural source of truth.
+ *
+ * Slugs and ordering live here. **Labels and blurbs do not** — they are
+ * locale text and live in `messages/*.json` under the `Settings.sections`
+ * namespace, fetched via `useTranslations("Settings.sections")` (client)
+ * or `getTranslations("Settings.sections")` (server) keyed by slug.
+ *
+ * This file should never grow back into a static `{ slug, label, blurb }`
+ * object — that pattern is what got us into the i18n hole. If a new
+ * section is added, append its slug below and add the translation entry
+ * to every locale file.
+ *
+ * Section axes (why these five exist):
+ *   - **General**       — interface preferences (language, theme, motion).
+ *   - **Profile**       — public-facing identity (name, bio, location, link).
+ *   - **Account**       — administrative (handle, email, password, address,
+ *                         billing).
+ *   - **Security**      — credential protections (2FA, sessions, OAuth,
+ *                         passkeys, account closure).
+ *   - **Notifications** — what we send and how often.
+ */
+
 export type SettingsSectionSlug =
+  | "general"
   | "profile"
   | "account"
   | "security"
-  | "connected"
-  | "notifications"
-  | "appearance"
-  | "highlights"
-  | "subscriptions";
+  | "notifications";
 
-export interface SettingsSection {
-  slug: SettingsSectionSlug;
-  label: string;
-  number: string;
-  blurb: string;
-}
-
-export const SETTINGS_SECTIONS: SettingsSection[] = [
-  {
-    slug: "profile",
-    label: "Profile",
-    number: "01",
-    blurb: "Your public face — name, handle, bio, location, link."
-  },
-  {
-    slug: "account",
-    label: "Account",
-    number: "02",
-    blurb: "Email, password, language, timezone."
-  },
-  {
-    slug: "security",
-    label: "Security",
-    number: "03",
-    blurb: "Two-factor, active sessions, account closure."
-  },
-  {
-    slug: "connected",
-    label: "Connected",
-    number: "04",
-    blurb: "OAuth providers and passkeys."
-  },
-  {
-    slug: "notifications",
-    label: "Notifications",
-    number: "05",
-    blurb: "What you hear from us — and how often."
-  },
-  {
-    slug: "appearance",
-    label: "Appearance",
-    number: "06",
-    blurb: "Theme, motion, language."
-  },
-  {
-    slug: "highlights",
-    label: "Highlights",
-    number: "07",
-    blurb: "Annotations and notes you've made across the site."
-  },
-  {
-    slug: "subscriptions",
-    label: "Subscriptions",
-    number: "08",
-    blurb: "Membership tier and billing."
-  }
+/** Authoritative ordering for the rail and the hub. */
+export const SETTINGS_SECTION_SLUGS: ReadonlyArray<SettingsSectionSlug> = [
+  "general",
+  "profile",
+  "account",
+  "security",
+  "notifications"
 ];
-
-export const getSection = (slug: SettingsSectionSlug): SettingsSection => {
-  const found = SETTINGS_SECTIONS.find((s) => s.slug === slug);
-  if (!found) throw new Error(`Unknown settings section: ${slug}`);
-  return found;
-};

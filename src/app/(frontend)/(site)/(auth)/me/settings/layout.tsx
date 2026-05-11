@@ -3,41 +3,32 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { SETTINGS_SECTIONS } from "@/components/UX/Settings/sections";
-import {
-  TableOfContents,
-  TableOfContentsMobile
-} from "@/components/UX/TableOfContents";
-import type { TocRouteItem } from "@/components/UX/TableOfContents";
+import { SettingsRail } from "@/components/UX/Settings";
 
 export const metadata: Metadata = {
   title: "Settings",
   description: "Manage your Hideaway account."
 };
 
-const SETTINGS_BASE = "/me/settings";
-
-const TOC_ITEMS: TocRouteItem[] = SETTINGS_SECTIONS.map((s) => ({
-  href: `${SETTINGS_BASE}/${s.slug}`,
-  label: s.label,
-  number: s.number
-}));
-
 /**
- * Settings shell.
+ * Settings shell — macOS × iOS hybrid, two columns at xl+.
  *
- * NOTE on RPage placement: each page.client.tsx wraps its body in <RPage> —
- * not this layout. Hoisting RPage up here puts it inside the outer mask
- * chrome and the motion variants get stuck at opacity:0 because the
- * transition machinery expects RPage at the route-leaf level. Layout-level
- * RPage is a desirable architectural goal, but it requires patching
- * Transition/index.tsx to accept layout-mode mounting; deferred.
+ *   - **xl+ (desktop)**: rail on the left + main pane on the right.
+ *     Inside the main pane, multi-panel pages use `<PanelBento/>` to
+ *     pack panels in a 2-col grid at 2xl, single col below.
+ *   - **< xl (tablet / mobile)**: the rail collapses; navigation lives
+ *     on the hub page; each sub-route shows a `← Settings` back link.
  *
- * What this layout DOES own:
- *   - the canvas (uniform deep luminance + low atmosphere)
- *   - the rail / main grid (no max-width)
- *   - the global "Settings" identity is implicit from the rail + URL;
- *     the inline header band has been retired.
+ * The previous third "companion" column was retired — a sticky identity
+ * card on every settings page added vanity chrome without earning the
+ * width. The Fey direction is dense adjacent panels, not column-stuffing,
+ * so the canvas at wide breakpoints is filled by the bento grid inside
+ * the main pane instead.
+ *
+ * `overflow-x-clip` on the outer wrapper is a localised guardrail for
+ * RPage's inner `w-screen` (Transition/index.tsx renders the page surface
+ * at viewport width, which would otherwise overflow the constrained main
+ * column).
  */
 export default async function SettingsLayout({
   children
@@ -48,7 +39,7 @@ export default async function SettingsLayout({
   if (!user) return redirect("/sign-in?next=/me/settings");
 
   return (
-    <div className="relative isolate min-h-screen bg-background text-foreground">
+    <div className="relative isolate min-h-screen overflow-x-clip bg-background text-foreground">
       {/* Atmosphere — kept very low. The expensive feel comes from canvas
           uniformity, not from a glow. Decorative-only; no informative
           content lives at these opacities. */}
@@ -61,26 +52,9 @@ export default async function SettingsLayout({
         className="pointer-events-none fixed inset-0 -z-10 bg-[url('/assets/noise.png')] bg-[length:45px_45px] opacity-[0.03] mix-blend-overlay dark:opacity-[0.05]"
       />
 
-      {/* Mobile / small screens: the rail collapses to a horizontal snap
-          scroller above the content. */}
-      <div className="px-6 pt-32 xl:hidden">
-        <TableOfContentsMobile
-          mode="route"
-          items={TOC_ITEMS}
-          ariaLabel="Settings sections"
-          labelStyle="sans"
-        />
-      </div>
-
-      {/* xl+: rail / main grid. No max-width — content uses the canvas. */}
-      <div className="mx-auto grid w-full grid-cols-1 gap-x-12 px-6 pt-12 pb-20 xl:grid-cols-[232px_minmax(0,1fr)] xl:gap-x-16 xl:px-10 xl:pt-32 2xl:gap-x-20 2xl:px-16">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-8 px-6 pt-24 pb-20 xl:grid-cols-[224px_minmax(0,1fr)] xl:gap-x-8 xl:px-10 xl:pt-32 2xl:max-w-[1440px] 2xl:gap-x-10 2xl:px-12">
         <aside className="hidden xl:sticky xl:top-32 xl:block xl:self-start">
-          <TableOfContents
-            mode="route"
-            items={TOC_ITEMS}
-            ariaLabel="Settings sections"
-            labelStyle="sans"
-          />
+          <SettingsRail />
         </aside>
 
         <main className="min-w-0">{children}</main>

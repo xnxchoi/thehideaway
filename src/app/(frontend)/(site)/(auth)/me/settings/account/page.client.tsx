@@ -1,5 +1,10 @@
 "use client";
 
+import { ArrowUpRight, Lock, Mail } from "lucide-react";
+import { useState } from "react";
+
+import { Link } from "@/components/core/Link/Link";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DialogContent,
   DialogDescription,
@@ -10,92 +15,203 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { PasswordInput } from "@/components/ui/password-input";
+import { errorToast, successToast } from "@/components/ui/sonner";
 import {
   ActionButton,
   ActionField,
   LockedField,
   Panel,
+  PanelBento,
   PanelControls,
   PanelGrid,
-  PanelHeader
+  PanelHeader,
+  SubRouteHeader
 } from "@/components/UX/Settings";
 import { authClient } from "@/lib/auth/client";
 import type { User } from "@/payload-types";
-import { Lock, Mail } from "lucide-react";
-import { useState } from "react";
-import { errorToast, successToast } from "@/components/ui/sonner";
-import { LocaleField } from "../_helpers/LocaleField";
 import { RPage } from "@/components/UX/Transition";
 
 interface AccountSectionClientProps {
   user: User;
-  locale: "en" | "ko";
 }
 
+const ROLE_LABEL: Record<string, string> = {
+  user: "Standard",
+  member: "Member",
+  patron: "Patron",
+  author: "Author",
+  editor: "Editor",
+  admin: "Steward"
+};
+
+/**
+ * Account — administrative surface.
+ *
+ * Holds the fields that are either administratively impactful (handle =
+ * your URL, mention target) or contractually-bound (sign-in email,
+ * password, billing address, subscription tier). Identity-display fields
+ * live in Profile; protections around the credential live in Security;
+ * interface preferences live in General.
+ *
+ * The address field is a structural placeholder until the Payload schema
+ * adds a `streetAddress` / `addressLines` block to Users — kept in the
+ * panel so the layout reads correctly today.
+ */
 export default function AccountSectionClient({
-  user,
-  locale
+  user
 }: AccountSectionClientProps) {
+  const role = (user.role ?? "user") as keyof typeof ROLE_LABEL;
+
   return (
     <RPage type="account" slug={[]}>
-      <div className="flex w-full flex-col gap-6">
-        {/* Sign-in email */}
-        <Panel>
-          <PanelGrid>
-            <PanelHeader
-              eyebrow="Sign-in"
-              title="The email you use to sign in"
-              blurb="Account-critical messages go here. Editing is in preparation."
-              meta={
-                user.emailVerified ? (
-                  <span className="text-foreground/75">Verified</span>
-                ) : (
-                  <span className="text-rouge-500/85">Unverified</span>
-                )
-              }
-            />
-            <PanelControls>
-              <LockedField
-                label="Email"
-                value={user.email}
-                reason="Editing your sign-in email is in preparation."
+      <div className="flex w-full flex-col gap-8">
+        <SubRouteHeader
+          title="Account"
+          blurb="Handle, sign-in email, password, address, and subscriptions."
+        />
+
+        <PanelBento>
+          {/* Identity (administrative) — handle is administratively
+            impactful and lives here, not on Profile. */}
+          <Panel>
+            <PanelGrid>
+              <PanelHeader eyebrow="Handle" />
+              <PanelControls>
+                <LockedField
+                  label="Handle"
+                  description="@-prefixed identifier used in URLs and mentions. Renaming is in preparation."
+                  value={`@${user.slug ?? "—"}`}
+                  reason="Renaming the handle is in preparation."
+                />
+              </PanelControls>
+            </PanelGrid>
+          </Panel>
+
+          {/* Sign-in email */}
+          <Panel>
+            <PanelGrid>
+              <PanelHeader
+                eyebrow="Sign-in email"
+                meta={
+                  user.emailVerified ? (
+                    <span className="text-foreground/75">Verified</span>
+                  ) : (
+                    <span className="text-rouge-500/85">Unverified</span>
+                  )
+                }
               />
-              {!user.emailVerified ? (
-                <ResendVerificationField email={user.email} />
-              ) : null}
-            </PanelControls>
-          </PanelGrid>
-        </Panel>
+              <PanelControls>
+                <LockedField
+                  label="Email"
+                  value={user.email}
+                  reason="Editing your sign-in email is in preparation."
+                />
+                {!user.emailVerified ? (
+                  <ResendVerificationField email={user.email} />
+                ) : null}
+              </PanelControls>
+            </PanelGrid>
+          </Panel>
 
-        {/* Password */}
-        <Panel>
-          <PanelGrid>
-            <PanelHeader
-              eyebrow="Password"
-              title="Change the password you sign in with"
-              blurb="Used only when you sign in with email and password. Passkeys and OAuth bypass this."
-            />
-            <PanelControls>
-              <ChangePasswordField />
-            </PanelControls>
-          </PanelGrid>
-        </Panel>
+          {/* Password */}
+          <Panel>
+            <PanelGrid>
+              <PanelHeader
+                eyebrow="Password"
+                blurb="Used only when you sign in with email and password. Passkeys and OAuth bypass this."
+              />
+              <PanelControls>
+                <ChangePasswordField />
+              </PanelControls>
+            </PanelGrid>
+          </Panel>
 
-        {/* Language */}
-        <Panel>
-          <PanelGrid>
-            <PanelHeader
-              eyebrow="Language"
-              title="Site-wide UI language"
-              blurb="Affects only this device until your account preference is synced."
-            />
-            <PanelControls>
-              <LocaleField current={locale} />
-            </PanelControls>
-          </PanelGrid>
-        </Panel>
+          {/* Address — placeholder until the Payload schema lands the
+            structured address block. */}
+          <Panel>
+            <PanelGrid>
+              <PanelHeader
+                eyebrow="Address"
+                blurb="For invoicing and country-specific tax handling. Editing opens with the structured-address schema."
+              />
+              <PanelControls>
+                <LockedField
+                  label="Address"
+                  value={<span className="text-foreground/55">Not set</span>}
+                  reason="Address editing is in preparation."
+                />
+              </PanelControls>
+            </PanelGrid>
+          </Panel>
+
+          {/* Subscriptions — folded in from the retired /subscriptions
+            route. Self-service tools land in a later release; this panel
+            shows the current tier and links out to the public plans
+            page. */}
+          <Panel>
+            <PanelGrid>
+              <PanelHeader
+                eyebrow="Subscriptions"
+                blurb="Self-service tools are in preparation; concierge handles changes manually for now."
+                meta={
+                  <span className="text-foreground/85">{ROLE_LABEL[role]}</span>
+                }
+              />
+              <PanelControls>
+                <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-sm text-foreground">
+                      Current tier
+                    </span>
+                    <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                      {role === "user"
+                        ? "Open membership."
+                        : "Includes patron-tier privileges."}
+                    </span>
+                  </div>
+                  <span className="text-xs text-foreground/85">
+                    {ROLE_LABEL[role]}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-sm text-foreground">Invoices</span>
+                    <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                      Past invoices will appear here as PDFs.
+                    </span>
+                  </div>
+                  <span className="text-xs text-foreground/55">
+                    Coming soon
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-sm text-foreground">
+                      Payment method
+                    </span>
+                    <span className="text-xs text-foreground/65 dark:text-foreground/60">
+                      Add or update card on file.
+                    </span>
+                  </div>
+                  <span className="text-xs text-foreground/55">
+                    Coming soon
+                  </span>
+                </div>
+                <ActionField
+                  label="See membership plans"
+                  description="Browse available tiers on the public plans page."
+                >
+                  <Link href="/plans">
+                    <ActionButton icon={<ArrowUpRight size={12} />}>
+                      Plans
+                    </ActionButton>
+                  </Link>
+                </ActionField>
+              </PanelControls>
+            </PanelGrid>
+          </Panel>
+        </PanelBento>
       </div>
     </RPage>
   );
@@ -130,7 +246,11 @@ function ResendVerificationField({ email }: { email: string }) {
       label="Resend verification"
       description="Send the verification message to this email again."
     >
-      <ActionButton onClick={onClick} loading={pending} icon={<Mail size={12} />}>
+      <ActionButton
+        onClick={onClick}
+        loading={pending}
+        icon={<Mail size={12} />}
+      >
         Resend
       </ActionButton>
     </ActionField>
@@ -193,7 +313,7 @@ function ChangePasswordField() {
         />
         <DialogContent className="w-11/12 rounded-2xl sm:max-w-[440px]">
           <DialogHeader>
-            <p className="text-xs text-foreground/55">Security</p>
+            <p className="text-xs text-foreground/55">Account</p>
             <DialogTitle className="mt-1 text-2xl font-light tracking-tight">
               Change password
             </DialogTitle>
@@ -231,7 +351,11 @@ function ChangePasswordField() {
             </label>
           </div>
           <DialogFooter className="mt-6">
-            <ActionButton onClick={submit} loading={loading} icon={<Lock size={12} />}>
+            <ActionButton
+              onClick={submit}
+              loading={loading}
+              icon={<Lock size={12} />}
+            >
               Change password
             </ActionButton>
           </DialogFooter>

@@ -20,10 +20,7 @@ import {
 } from "react";
 
 import { FieldRow } from "./FieldRow";
-import {
-  DEFAULT_SAVE_TIMEOUT_MS,
-  type SaveResult
-} from "./types";
+import { DEFAULT_SAVE_TIMEOUT_MS, type SaveResult } from "./types";
 
 /**
  * Tier 2 specialization — location field with a place-autocomplete combobox.
@@ -237,9 +234,7 @@ export function EditableLocation({
                   ) : (
                     <>
                       <CommandEmpty className="py-3 text-xs text-foreground/55">
-                        {query.trim()
-                          ? "No matching cities"
-                          : "Type to search"}
+                        {query.trim() ? "No matching cities" : "Type to search"}
                       </CommandEmpty>
                       {results.length > 0 ? (
                         <CommandGroup heading="Cities">
@@ -303,7 +298,7 @@ export function EditableLocation({
                 disabled={pending}
                 aria-label="Save"
                 aria-busy={pending}
-                className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition-colors hover:bg-foreground/[0.06] hover:text-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none disabled:opacity-40"
               >
                 {pending ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -315,7 +310,7 @@ export function EditableLocation({
                 type="button"
                 onClick={cancelEdit}
                 aria-label="Cancel"
-                className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/55 transition-colors hover:bg-foreground/[0.06] hover:text-foreground/85 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/55 transition-colors hover:bg-foreground/[0.06] hover:text-foreground/85 focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
               >
                 <X size={14} strokeWidth={1.6} />
               </button>
@@ -335,7 +330,7 @@ export function EditableLocation({
         <button
           type="button"
           onClick={enterEdit}
-          className="group/edit flex items-center gap-2.5 rounded text-left transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="group/edit flex items-center gap-2.5 rounded text-left transition-colors focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
           aria-label={`Edit ${label}`}
         >
           <span

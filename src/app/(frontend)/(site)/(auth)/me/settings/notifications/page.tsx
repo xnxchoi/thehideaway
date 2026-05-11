@@ -4,7 +4,8 @@ import {
   PanelControls,
   PanelGrid,
   PanelHeader,
-  SectionEmpty
+  SectionEmpty,
+  SubRouteHeader
 } from "@/components/UX/Settings";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -19,6 +20,11 @@ export default async function NotificationsSettingsPage() {
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
+        <SubRouteHeader
+          title="Notifications"
+          blurb="What we send you, and how often. Self-service preferences are coming."
+        />
+
         <SectionEmpty
           eyebrow="In preparation"
           title="Notification preferences are coming."
@@ -30,7 +36,6 @@ export default async function NotificationsSettingsPage() {
           <PanelGrid>
             <PanelHeader
               eyebrow="Defaults"
-              title="What gets sent today"
               blurb="Until preferences ship, every member receives the defaults below."
             />
             <PanelControls>
@@ -38,7 +43,9 @@ export default async function NotificationsSettingsPage() {
                 <div className="flex min-w-0 flex-col">
                   <span className="text-sm text-foreground">Email digest</span>
                   <span className="text-xs text-foreground/65 dark:text-foreground/60">
-                    {"One weekly editor's brief, plus replies to your highlights."}
+                    {
+                      "One weekly editor's brief, plus replies to your highlights."
+                    }
                   </span>
                 </div>
                 <span className="text-xs text-foreground/55">Default</span>

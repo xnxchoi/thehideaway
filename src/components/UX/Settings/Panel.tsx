@@ -30,6 +30,12 @@ export function Panel({ children, className, as = "section" }: PanelProps) {
     <Tag
       className={cn(
         "relative overflow-hidden rounded-2xl",
+        // Width is controlled by the parent grid (a `<PanelBento/>` or
+        // a flex stack), not the panel itself. The previous `max-w-2xl`
+        // cap was a band-aid against the 1-col stretch problem; the
+        // proper fix is bento — dense, adjacent panels at wide
+        // breakpoints. See `PanelBento`.
+        "w-full",
         // Surface tint — lighter than the canvas. Slightly stronger in dark
         // mode so the panel reads as a pool of light against near-black.
         "bg-foreground/[0.04] dark:bg-foreground/[0.05]",
@@ -50,13 +56,57 @@ export function Panel({ children, className, as = "section" }: PanelProps) {
 }
 
 /**
- * Standard 2-column composition inside a Panel.
+ * Multi-panel layout container — bento.
  *
- *   ┌─────────────── Panel ───────────────┐
- *   │  description (5fr) │ controls (7fr) │
- *   └─────────────────────────────────────┘
+ *   - Below 2xl: single column, panels stack vertically.
+ *   - 2xl+:      two columns, panels pack adjacent (top-to-bottom,
+ *                left-to-right by source order). Tightens the
+ *                "panels-on-the-left, void-on-the-right" feel that the
+ *                single-column layout had on wide canvases.
  *
- * Stacks below `lg:`. Padding scales with breakpoint.
+ * `auto-rows-min` keeps each panel sized to its own content so a tall
+ * panel in the left column doesn't pad out the row beside a short one
+ * — neighbour panels just sit at their natural height.
+ *
+ * Use this as the outer panel wrapper inside any settings page that
+ * has more than one panel. Single-panel pages can use a plain `<div/>`.
+ */
+interface PanelBentoProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function PanelBento({ children, className }: PanelBentoProps) {
+  return (
+    <div
+      className={cn(
+        "grid w-full grid-cols-1 gap-5 2xl:grid-cols-2 2xl:gap-6",
+        "[grid-auto-rows:min-content]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Vertical composition inside a Panel — header on top, controls below.
+ *
+ *   ┌──────────── Panel ────────────┐
+ *   │  header                       │
+ *   │  controls (vertical row stack)│
+ *   └───────────────────────────────┘
+ *
+ * The previous 2-col `description | controls` layout was retired at
+ * breakpoint-5: on wide screens it stretched the controls column across
+ * 600+px, leaving a single label-left / value-right pair drifting at
+ * each end of the row — Apple Settings doesn't do that, and the user
+ * called it "stretched" / "ugly". Vertical stacking reads as a tighter
+ * Apple-cadence: section heading, then a stack of self-contained rows.
+ *
+ * Padding scales with breakpoint. The Panel itself is responsible for
+ * its outer max-width via the `<Panel/>` component.
  */
 interface PanelGridProps {
   children: ReactNode;
@@ -67,9 +117,7 @@ export function PanelGrid({ children, className }: PanelGridProps) {
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-x-12 gap-y-8 p-7",
-        "lg:grid-cols-[minmax(220px,5fr)_minmax(0,7fr)]",
-        "xl:p-9 2xl:p-10",
+        "flex flex-col gap-6 p-6 xl:gap-7 xl:p-8 2xl:p-9",
         className
       )}
     >
@@ -79,17 +127,39 @@ export function PanelGrid({ children, className }: PanelGridProps) {
 }
 
 /**
- * Left column of a PanelGrid — eyebrow + title + blurb.
+ * Panel section header — minimal Apple-Settings cadence.
  *
- * Sans-only typography per the Fey direction; admin surfaces drop the
- * mono-caps eyebrow used elsewhere on content surfaces.
+ * The previous eyebrow + title + blurb three-tier was breakpoint-5'd: on
+ * most sections the title and blurb were filler ("Your real-world name
+ * and voice", "Both fields are public"), adding chrome without adding
+ * meaning. The new contract is:
+ *
+ *   - `eyebrow` is the heading — required, sans, light weight. This is
+ *     literally just the section name ("Identity", "Sign-in", "Two-factor").
+ *   - `title` is OPTIONAL and only used when the section needs a real
+ *     descriptive line beyond its name. Most sections won't need it.
+ *   - `blurb` is OPTIONAL and only used when there's behaviour the user
+ *     genuinely needs explained (a deferred feature, a security
+ *     warning, a non-obvious side effect). Cut it otherwise.
+ *   - `meta` stays — small status indicator on the right.
+ *
+ * Backward-compat: callers that still pass `eyebrow + title + blurb`
+ * will render with the eyebrow as a small label, then the title, then
+ * the blurb — same as before. The recommended pattern for new code is
+ * eyebrow-only.
  */
 interface PanelHeaderProps {
-  /** Optional small categorical label, e.g. "Identity" / "Voice". */
-  eyebrow?: string;
-  /** Section title — sans, light weight, never mono. */
-  title: string;
-  /** Optional supporting blurb — body weight, foreground/70. */
+  /** Section heading — required. Sans, light weight. */
+  eyebrow: string;
+  /**
+   * Optional descriptive title rendered below the eyebrow at a slightly
+   * heavier weight. Use only when the eyebrow alone would be ambiguous.
+   */
+  title?: string;
+  /**
+   * Optional supporting blurb. Use only when behaviour genuinely needs
+   * explaining; not for filler / restating the obvious.
+   */
   blurb?: string;
   /** Optional ambient meta (a status, a count). */
   meta?: ReactNode;
@@ -103,39 +173,38 @@ export function PanelHeader({
   meta,
   className
 }: PanelHeaderProps) {
+  // No descriptive title → eyebrow IS the heading. Render it at the
+  // heading scale instead of as a small label — that's the dominant
+  // shape now.
+  const headingOnly = !title && !blurb;
+
   return (
-    <header
-      className={cn(
-        // h-full + flex column lets the meta block (when present) drop to
-        // the bottom alongside the controls column, instead of the header
-        // collapsing tight and leaving dead air to the left of long
-        // controls. Audited at breakpoint 2.
-        "flex h-full flex-col gap-2",
-        className
-      )}
-    >
-      {/* Eyebrow committed to ambient sans (not mono caps, not body weight)
-          per the breakpoint-2 design audit. The voice here is "section
-          marker, quiet" — meeting the legibility floor at /60-65 without
-          competing with the title. Mono caps were ruled out because the
-          typography rewrite reserves them for content surfaces, not admin. */}
-      {eyebrow ? (
-        <p className="text-sm tracking-tight text-foreground/65 dark:text-foreground/60">
-          {eyebrow}
-        </p>
+    <header className={cn("flex flex-col gap-1.5", className)}>
+      <div className="flex items-baseline justify-between gap-4">
+        {headingOnly ? (
+          <h2 className="text-base font-medium tracking-tight text-foreground xl:text-lg">
+            {eyebrow}
+          </h2>
+        ) : (
+          <p className="text-sm tracking-tight text-foreground/65 dark:text-foreground/60">
+            {eyebrow}
+          </p>
+        )}
+        {meta ? (
+          <span className="shrink-0 text-xs text-foreground/55 dark:text-foreground/50">
+            {meta}
+          </span>
+        ) : null}
+      </div>
+      {title ? (
+        <h2 className="text-xl font-light tracking-tight text-foreground xl:text-2xl">
+          {title}
+        </h2>
       ) : null}
-      <h2 className="text-xl font-light tracking-tight text-foreground xl:text-2xl">
-        {title}
-      </h2>
       {blurb ? (
         <p className="max-w-prose text-sm leading-relaxed text-foreground/70 dark:text-foreground/65">
           {blurb}
         </p>
-      ) : null}
-      {meta ? (
-        <div className="mt-auto pt-3 text-xs text-foreground/55 dark:text-foreground/50">
-          {meta}
-        </div>
       ) : null}
     </header>
   );

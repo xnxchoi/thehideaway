@@ -147,7 +147,12 @@ export function EditableLink({
         Promise.resolve(onSave(next)),
         timeoutPromise
       ]);
-      if (result && typeof result === "object" && "ok" in result && !result.ok) {
+      if (
+        result &&
+        typeof result === "object" &&
+        "ok" in result &&
+        !result.ok
+      ) {
         setError(result.message ?? "Couldn't save");
         // Reset the combobox highlight to whatever the upstream value
         // matches now — the failed-save attempt should not leave a
@@ -236,10 +241,7 @@ export function EditableLink({
                   ))}
                 </CommandGroup>
                 <CommandGroup heading="Or">
-                  <CommandItem
-                    value="custom-url"
-                    onSelect={onSiteSelectCustom}
-                  >
+                  <CommandItem value="custom-url" onSelect={onSiteSelectCustom}>
                     <Globe size={12} className="mr-2 text-foreground/55" />
                     <span className="text-sm">Custom URL</span>
                   </CommandItem>
@@ -272,7 +274,7 @@ export function EditableLink({
               disabled={pending}
               aria-label="Save"
               aria-busy={pending}
-              className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition-colors hover:bg-foreground/[0.06] hover:text-foreground disabled:opacity-40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none disabled:opacity-40"
             >
               {pending ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -284,13 +286,17 @@ export function EditableLink({
               type="button"
               onClick={cancelEdit}
               aria-label="Cancel"
-              className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/55 transition-colors hover:bg-foreground/[0.06] hover:text-foreground/85 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/55 transition-colors hover:bg-foreground/[0.06] hover:text-foreground/85 focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
             >
               <X size={14} strokeWidth={1.6} />
             </button>
           </div>
           {error ? (
-            <span id={errorId} className="text-xs text-rouge-500/85" role="alert">
+            <span
+              id={errorId}
+              className="text-xs text-rouge-500/85"
+              role="alert"
+            >
               {error}
             </span>
           ) : null}
@@ -299,7 +305,7 @@ export function EditableLink({
         <button
           type="button"
           onClick={enterEdit}
-          className="group/edit flex items-center gap-2.5 rounded text-left transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="group/edit flex items-center gap-2.5 rounded text-left transition-colors focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
           aria-label={`Edit ${label}`}
         >
           <span

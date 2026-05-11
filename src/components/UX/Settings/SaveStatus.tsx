@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
@@ -18,13 +19,14 @@ export const SaveStatus = ({
   errorMessage,
   className
 }: SaveStatusProps) => {
+  const t = useTranslations("Settings.save");
   const [visible, setVisible] = useState(state !== "idle");
 
   useEffect(() => {
     if (state === "saved") {
       setVisible(true);
-      const t = setTimeout(() => setVisible(false), FADE_AFTER_MS);
-      return () => clearTimeout(t);
+      const id = setTimeout(() => setVisible(false), FADE_AFTER_MS);
+      return () => clearTimeout(id);
     }
     if (state === "idle") {
       setVisible(false);
@@ -46,9 +48,9 @@ export const SaveStatus = ({
       )}
       aria-live="polite"
     >
-      {state === "saving" && "Saving…"}
-      {state === "saved" && "Saved"}
-      {state === "error" && (errorMessage ?? "Couldn't save")}
+      {state === "saving" && t("saving")}
+      {state === "saved" && t("saved")}
+      {state === "error" && (errorMessage ?? t("error"))}
     </span>
   );
 };

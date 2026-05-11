@@ -158,7 +158,12 @@ export function EditableField({
         Promise.resolve(onSave(next)),
         timeoutPromise
       ]);
-      if (result && typeof result === "object" && "ok" in result && !result.ok) {
+      if (
+        result &&
+        typeof result === "object" &&
+        "ok" in result &&
+        !result.ok
+      ) {
         setError(result.message ?? "Couldn't save");
         return;
       }
@@ -252,7 +257,7 @@ export function EditableField({
               aria-busy={pending}
               className={cn(
                 "flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/70 transition-colors hover:bg-foreground/[0.06] hover:text-foreground disabled:opacity-40",
-                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
               )}
             >
               {pending ? (
@@ -269,7 +274,7 @@ export function EditableField({
               aria-label="Cancel"
               className={cn(
                 "flex size-7 shrink-0 items-center justify-center rounded-md text-foreground/55 transition-colors hover:bg-foreground/[0.06] hover:text-foreground/85",
-                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
               )}
             >
               <X size={14} strokeWidth={1.6} />
@@ -301,7 +306,7 @@ export function EditableField({
           onClick={enterEdit}
           className={cn(
             "flex items-center gap-2.5 rounded text-left transition-colors",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
           )}
           aria-label={`Edit ${label}`}
         >

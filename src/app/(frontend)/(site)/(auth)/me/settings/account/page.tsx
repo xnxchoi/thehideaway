@@ -1,8 +1,8 @@
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import type { User } from "@/payload-types";
 import { Metadata } from "next";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
 import AccountSectionClient from "./page.client";
 
 export const metadata: Metadata = { title: "Account · Settings" };
@@ -10,7 +10,5 @@ export const metadata: Metadata = { title: "Account · Settings" };
 export default async function AccountSettingsPage() {
   const user = (await currentUser()) as User | null;
   if (!user) return redirect("/sign-in?next=/me/settings/account");
-  const cookieStore = await cookies();
-  const locale = (cookieStore.get("locale")?.value as "en" | "ko") || "en";
-  return <AccountSectionClient user={user} locale={locale} />;
+  return <AccountSectionClient user={user} />;
 }

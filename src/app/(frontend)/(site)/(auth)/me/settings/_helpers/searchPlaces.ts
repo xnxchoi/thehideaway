@@ -14,9 +14,7 @@ interface PlaceSearchResult {
  * failures inside an autocomplete combobox creates noise without
  * helping the user act.
  */
-export async function searchPlaces(
-  query: string
-): Promise<PlaceSearchResult> {
+export async function searchPlaces(query: string): Promise<PlaceSearchResult> {
   if (!query.trim()) return { results: [] };
   try {
     const r = await fetch(

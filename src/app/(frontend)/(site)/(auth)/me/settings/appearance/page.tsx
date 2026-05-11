@@ -1,12 +1,11 @@
-import { currentUser } from "@/lib/auth/context/get-context-props";
-import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import AppearanceSectionClient from "./page.client";
 
-export const metadata: Metadata = { title: "Appearance · Settings" };
-
-export default async function AppearanceSettingsPage() {
-  const user = await currentUser();
-  if (!user) return redirect("/sign-in?next=/me/settings/appearance");
-  return <AppearanceSectionClient />;
+/**
+ * Retired route. Theme + reduced-motion are interface preferences and
+ * live under General now. The standalone "Appearance" page was a single
+ * setting plus a read-only OS mirror — not enough weight for its own
+ * surface.
+ */
+export default function AppearanceRedirectPage() {
+  redirect("/me/settings/general");
 }

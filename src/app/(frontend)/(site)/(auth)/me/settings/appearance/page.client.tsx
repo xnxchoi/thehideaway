@@ -5,7 +5,8 @@ import {
   Panel,
   PanelControls,
   PanelGrid,
-  PanelHeader
+  PanelHeader,
+  SubRouteHeader
 } from "@/components/UX/Settings";
 import { useTheme } from "@/providers/Theme";
 import { Moon, Sun } from "lucide-react";
@@ -22,6 +23,11 @@ export default function AppearanceSectionClient() {
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
+        <SubRouteHeader
+          title="Appearance"
+          blurb="Theme and ambient motion. Language lives in Account."
+        />
+
         <Panel>
           <PanelGrid>
             <PanelHeader

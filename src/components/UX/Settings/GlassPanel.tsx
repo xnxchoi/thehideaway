@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
+  createElement,
   type ElementType,
   type HTMLAttributes,
   type ReactNode,
@@ -75,35 +76,39 @@ export const GlassPanel = forwardRef<HTMLElement, GlassPanelProps>(
     },
     ref
   ) {
-    const Tag = (as ?? "div") as ElementType;
-    return (
-      <Tag
-        ref={ref as never}
-        className={cn(
+    const Tag: ElementType = as ?? "div";
+    return createElement(
+      Tag,
+      {
+        ref,
+        className: cn(
           "relative isolate rounded-sm",
           variantClasses[variant],
           className
-        )}
-        {...rest}
-      >
-        {withSheen ? (
-          <span
-            aria-hidden="true"
-            className={cn(
-              "pointer-events-none absolute inset-0 rounded-[inherit]",
-              "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/30 before:to-transparent dark:before:via-foreground/40",
-              "after:absolute after:inset-0 after:rounded-[inherit] after:bg-gradient-to-b after:from-foreground/[0.06] after:via-transparent after:to-transparent dark:after:from-foreground/[0.08]"
-            )}
-          />
-        ) : null}
-        {withGrain ? (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[url('/assets/noise.png')] bg-[length:45px_45px] opacity-[0.07] mix-blend-overlay dark:opacity-[0.09]"
-          />
-        ) : null}
-        <div className="relative z-10">{children}</div>
-      </Tag>
+        ),
+        ...rest
+      },
+      withSheen ? (
+        <span
+          key="sheen"
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-0 rounded-[inherit]",
+            "before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/30 before:to-transparent dark:before:via-foreground/40",
+            "after:absolute after:inset-0 after:rounded-[inherit] after:bg-gradient-to-b after:from-foreground/[0.06] after:via-transparent after:to-transparent dark:after:from-foreground/[0.08]"
+          )}
+        />
+      ) : null,
+      withGrain ? (
+        <span
+          key="grain"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[url('/assets/noise.png')] bg-[length:45px_45px] opacity-[0.07] mix-blend-overlay dark:opacity-[0.09]"
+        />
+      ) : null,
+      <div key="content" className="relative z-10">
+        {children}
+      </div>
     );
   }
 );

@@ -1,7 +1,13 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
+import {
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode
+} from "react";
 
 import { cn } from "@/lib/utils";
 import { FieldRow } from "./FieldRow";
@@ -75,7 +81,7 @@ export function ToggleField({
         onClick={onClick}
         className={cn(
           "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
           value
             ? // "On" state — the only saturated hue we allow on a row pill.
               "bg-[oklch(72%_0.10_50)]"
@@ -205,7 +211,7 @@ export function ChoiceField<T extends string>({
               onKeyDown={(e) => onKeyDown(e, index)}
               className={cn(
                 "inline-flex items-center gap-1.5 border px-3 py-1.5 text-xs tracking-tight transition-colors",
-                "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
                 active
                   ? "border-foreground text-foreground"
                   : "border-foreground/25 text-foreground/65 hover:border-foreground/45 hover:text-foreground/90",

@@ -19,7 +19,8 @@ import {
   Panel,
   PanelControls,
   PanelGrid,
-  PanelHeader
+  PanelHeader,
+  SubRouteHeader
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient } from "@/lib/auth/client";
@@ -59,6 +60,11 @@ export default function ConnectedSectionClient() {
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-6">
+        <SubRouteHeader
+          title="Connected"
+          blurb="OAuth providers and passkeys linked to your account."
+        />
+
         {/* Sign-in providers */}
         <Panel>
           <PanelGrid>
@@ -86,7 +92,7 @@ export default function ConnectedSectionClient() {
               title="Hardware-backed sign-in"
               blurb="Use Face ID, Touch ID, Windows Hello, or a security key. No password required."
               meta={
-                <span className="tabular-nums text-foreground/75">
+                <span className="text-foreground/75 tabular-nums">
                   {String(passkeys.data?.length ?? 0).padStart(2, "0")} added
                 </span>
               }
@@ -106,7 +112,9 @@ export default function ConnectedSectionClient() {
                     // (Date | string | number depending on plugin
                     // version). PasskeyRow accepts the union and lets
                     // `new Date(...)` handle the coercion.
-                    createdAt={pk.createdAt as Date | string | number | undefined}
+                    createdAt={
+                      pk.createdAt as Date | string | number | undefined
+                    }
                   />
                 ))
               )}
