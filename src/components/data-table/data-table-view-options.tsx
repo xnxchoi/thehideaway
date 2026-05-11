@@ -10,12 +10,12 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
+  CommandList
 } from "@/components/ui/command";
 import {
-	PopoverRoot,
+  PopoverRoot,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ interface DataTableViewOptionsProps<TData> {
 }
 
 export function DataTableViewOptions<TData>({
-  table,
+  table
 }: DataTableViewOptionsProps<TData>) {
   const columns = React.useMemo(
     () =>
@@ -32,26 +32,28 @@ export function DataTableViewOptions<TData>({
         .getAllColumns()
         .filter(
           (column) =>
-            typeof column.accessorFn !== "undefined" && column.getCanHide(),
+            typeof column.accessorFn !== "undefined" && column.getCanHide()
         ),
-    [table],
+    [table]
   );
 
   return (
-	  <PopoverRoot>
-      <PopoverTrigger asChild>
-        <Button
-          aria-label="Toggle columns"
-          role="combobox"
-          variant="outline"
-          size="sm"
-          className="ml-auto hidden h-8 lg:flex"
-        >
-          <Settings2 />
-          View
-          <ChevronsUpDown className="ml-auto opacity-50" />
-        </Button>
-      </PopoverTrigger>
+    <PopoverRoot>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-label="Toggle columns"
+            role="combobox"
+            variant="outline"
+            size="sm"
+            className="ml-auto hidden h-8 lg:flex"
+          >
+            <Settings2 />
+            View
+            <ChevronsUpDown className="ml-auto opacity-50" />
+          </Button>
+        }
+      />
       <PopoverContent align="end" className="w-44 p-0">
         <Command>
           <CommandInput placeholder="Search columns..." />
@@ -71,7 +73,7 @@ export function DataTableViewOptions<TData>({
                   <Check
                     className={cn(
                       "ml-auto size-4 shrink-0",
-                      column.getIsVisible() ? "opacity-100" : "opacity-0",
+                      column.getIsVisible() ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
@@ -80,6 +82,6 @@ export function DataTableViewOptions<TData>({
           </CommandList>
         </Command>
       </PopoverContent>
-	  </PopoverRoot>
+    </PopoverRoot>
   );
 }

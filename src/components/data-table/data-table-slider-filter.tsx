@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-	PopoverRoot,
+  PopoverRoot,
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
@@ -128,36 +128,38 @@ export function DataTableSliderFilter<TData>({
   );
 
   return (
-	  <PopoverRoot>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="border-dashed">
-          {columnFilterValue ? (
-            <div
-              role="button"
-              aria-label={`Clear ${title} filter`}
-              tabIndex={0}
-              className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
-              onClick={onReset}
-            >
-              <XCircle />
-            </div>
-          ) : (
-            <PlusCircle />
-          )}
-          <span>{title}</span>
-          {columnFilterValue ? (
-            <>
-              <Separator
-                orientation="vertical"
-                className="mx-[2px] data-[orientation=vertical]:h-[16px]"
-              />
-              {formatValue(columnFilterValue[0])} -{" "}
-              {formatValue(columnFilterValue[1])}
-              {unit ? ` ${unit}` : ""}
-            </>
-          ) : null}
-        </Button>
-      </PopoverTrigger>
+    <PopoverRoot>
+      <PopoverTrigger
+        render={
+          <Button variant="outline" size="sm" className="border-dashed">
+            {columnFilterValue ? (
+              <div
+                role="button"
+                aria-label={`Clear ${title} filter`}
+                tabIndex={0}
+                className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                onClick={onReset}
+              >
+                <XCircle />
+              </div>
+            ) : (
+              <PlusCircle />
+            )}
+            <span>{title}</span>
+            {columnFilterValue ? (
+              <>
+                <Separator
+                  orientation="vertical"
+                  className="mx-[2px] data-[orientation=vertical]:h-[16px]"
+                />
+                {formatValue(columnFilterValue[0])} -{" "}
+                {formatValue(columnFilterValue[1])}
+                {unit ? ` ${unit}` : ""}
+              </>
+            ) : null}
+          </Button>
+        }
+      />
       <PopoverContent align="start" className="flex w-auto flex-col gap-[16px]">
         <div className="flex flex-col gap-[12px]">
           <p className="leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -234,6 +236,6 @@ export function DataTableSliderFilter<TData>({
           Clear
         </Button>
       </PopoverContent>
-	  </PopoverRoot>
+    </PopoverRoot>
   );
 }
