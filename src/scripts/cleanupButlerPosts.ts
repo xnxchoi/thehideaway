@@ -78,11 +78,15 @@ async function main(): Promise<void> {
 
     // 2) Cascade-by-hand: drop orphan version rows. Two paths:
     //    (a) version_author_id matches butler — direct ownership
-    //    (b) parent_id is now NULL (orphaned by step 1)
+    //    (b) parent_id is now NULL AND version_author_id matches butler
+    //        — orphans created by step 1, scoped to butler so we never
+    //        wipe version history for legitimate authors whose parent post
+    //        was deleted for unrelated reasons (manual admin delete, prior
+    //        migration rollback, etc.).
     const deletedVersions = await payload.db.drizzle.execute(sql`
       DELETE FROM _posts_v
       WHERE version_author_id = ${butlerId}::uuid
-         OR parent_id IS NULL
+         OR (parent_id IS NULL AND version_author_id = ${butlerId}::uuid)
       RETURNING id
     `);
     const versionsDeleted = Array.isArray(deletedVersions)

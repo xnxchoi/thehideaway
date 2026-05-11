@@ -207,13 +207,41 @@ echo "  UFW enabled"
 # container exposing :443. ufw-docker patches DOCKER-USER so UFW rules
 # actually apply to container ports.
 #
-# Reference: https://github.com/chaifeng/ufw-docker
+# SUPPLY-CHAIN HARDENING:
+#   We pin to a specific commit SHA (not `master`) and verify a sha256 hash
+#   before exec'ing the file as root. Without these, a compromised upstream
+#   account or a forced master rewrite would silently run arbitrary code as
+#   root on a fresh provision. To rotate to a newer ufw-docker:
+#     1. Pick a commit SHA from https://github.com/chaifeng/ufw-docker/commits/master
+#     2. Download the raw file, sha256sum it, paste both values below.
+#     3. Re-run server-setup.sh; the new binary will be fetched and verified.
 UFW_DOCKER_BIN="/usr/local/bin/ufw-docker"
+UFW_DOCKER_SHA="2b419bbdde946a4fd1a8651940ad95b6b0b96dfa"
+UFW_DOCKER_SHA256="16bc578c0cd78b7d44c53e5780c0d3d545860e428457a8910a3d2138fb225374"
+UFW_DOCKER_URL="https://raw.githubusercontent.com/chaifeng/ufw-docker/${UFW_DOCKER_SHA}/ufw-docker"
 if [[ ! -x "${UFW_DOCKER_BIN}" ]]; then
-  curl -fsSL -o "${UFW_DOCKER_BIN}" \
-    https://github.com/chaifeng/ufw-docker/raw/master/ufw-docker
-  chmod +x "${UFW_DOCKER_BIN}"
-  echo "  Installed ufw-docker"
+  TMP_BIN="$(mktemp)"
+  if ! curl -fsSL -o "${TMP_BIN}" "${UFW_DOCKER_URL}"; then
+    rm -f "${TMP_BIN}"
+    error "Failed to download ufw-docker from ${UFW_DOCKER_URL}"
+    exit 1
+  fi
+  # sha256sum is `sha256sum` on Linux. On macOS it's `shasum -a 256`. VPS is
+  # Linux so the former is fine; fall back to shasum for local-machine dry-runs.
+  if command -v sha256sum >/dev/null 2>&1; then
+    ACTUAL_HASH=$(sha256sum "${TMP_BIN}" | awk '{print $1}')
+  else
+    ACTUAL_HASH=$(shasum -a 256 "${TMP_BIN}" | awk '{print $1}')
+  fi
+  if [[ "${ACTUAL_HASH}" != "${UFW_DOCKER_SHA256}" ]]; then
+    rm -f "${TMP_BIN}"
+    error "ufw-docker sha256 mismatch (got ${ACTUAL_HASH}, expected ${UFW_DOCKER_SHA256})"
+    error "Refusing to install — investigate before re-running."
+    exit 1
+  fi
+  install -m 0755 -o root -g root "${TMP_BIN}" "${UFW_DOCKER_BIN}"
+  rm -f "${TMP_BIN}"
+  echo "  Installed ufw-docker (pinned to ${UFW_DOCKER_SHA:0:7}, sha256 verified)"
 fi
 
 # Install the DOCKER-USER chain rules (idempotent — safe to re-run).

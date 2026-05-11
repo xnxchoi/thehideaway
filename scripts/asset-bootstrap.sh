@@ -271,16 +271,36 @@ do_init() {
 
 # ── Mode: resolve (interactive) ──────────────────────────────────────────────
 # Mutates the manifest JSON via a temp file + atomic mv.
+#
+# Args: <jq-filter> [extra-jq-args...]
+# Extra args are forwarded to jq verbatim — used for `--arg name value` so
+# user-supplied strings never get string-concatenated into the filter
+# (which would allow jq-injection via quotes / backslashes in input).
 update_manifest() {
   local jq_filter="$1"
+  shift
   local tmp; tmp="$(mktemp)"
-  if jq "${jq_filter}" "${MANIFEST}" > "${tmp}"; then
+  if jq "$@" "${jq_filter}" "${MANIFEST}" > "${tmp}"; then
     mv "${tmp}" "${MANIFEST}"
   else
     rm -f "${tmp}"
     error "Manifest update failed; left untouched."
     return 1
   fi
+}
+
+# Reject paths that try to escape the asset root or look like absolute paths.
+# Manifest paths are always relative segments under asset_root_default.
+is_safe_relative_path() {
+  local p="$1"
+  # Reject empty, leading slash, or any `..` segment
+  [[ -n "${p}" ]] || return 1
+  [[ "${p}" != /* ]] || return 1
+  # Match `..` as a whole path segment, not just the literal characters
+  case "/${p}/" in
+    */../*) return 1 ;;
+  esac
+  return 0
 }
 
 resolve_one() {
@@ -296,14 +316,19 @@ resolve_one() {
     echo "    [p] supply a different path"
     echo "    [a] abort"
     read -r -p "  choice: " choice
+    # bash-3.2 compatible lowercase (macOS dev), bash-4+ on prod VPS
+    choice=$(printf '%s' "${choice}" | tr '[:upper:]' '[:lower:]')
 
-    case "${choice,,}" in
+    case "${choice}" in
       i|ignore)
         info "  → ignored (manifest unchanged)"
         return 0
         ;;
       r|remove)
-        update_manifest "del(.assets[] | select(.id == \"${id}\"))" \
+        # SECURITY: pass id via --arg so quotes/backslashes can't break out of
+        # the jq filter (injection-safe).
+        update_manifest 'del(.assets[] | select(.id == $id))' \
+          --arg id "${id}" \
           && info "  → removed from manifest"
         return 0
         ;;
@@ -313,7 +338,17 @@ resolve_one() {
           warn "  empty path — try again"
           continue
         fi
-        update_manifest "(.assets[] | select(.id == \"${id}\")).path = \"${new_path}\"" \
+        # SECURITY: reject path-traversal segments and absolute paths.
+        # Without this, a `..` could escape the asset root when the manifest
+        # is consumed by `init` or `check`.
+        if ! is_safe_relative_path "${new_path}"; then
+          warn "  path must be relative and must not contain '..' — try again"
+          continue
+        fi
+        # SECURITY: --arg for both id and new_path; user input never reaches
+        # the jq filter as code.
+        update_manifest '(.assets[] | select(.id == $id)).path = $p' \
+          --arg id "${id}" --arg p "${new_path}" \
           && info "  → manifest updated: ${id}.path = ${new_path}"
         return 0
         ;;

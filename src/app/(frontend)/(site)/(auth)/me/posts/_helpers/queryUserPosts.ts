@@ -51,10 +51,33 @@ export type UserPostsQueryArgs = {
 
 const DEFAULT_PER_PAGE = 25;
 
+/**
+ * Whitelist of sort fields accepted from the URL.
+ *
+ * SECURITY: the `id` field on each sort entry traces back to a URL search
+ * param, so we treat it as untrusted input. Payload's ORM ignores unknown
+ * sort fields rather than throwing, so a crafted `?sort=password.asc`
+ * silently no-ops today — but the principle is "never let untrusted input
+ * name a column." This whitelist is the gate.
+ *
+ * To allow a new sort key: add it here AND confirm the column exists on
+ * Posts (Payload will silently drop unknowns, masking typos).
+ */
+const ALLOWED_SORT_FIELDS = new Set<string>([
+  "updatedAt",
+  "publishedAt",
+  "createdAt",
+  "title",
+  "_status"
+]);
+
 /** Map TanStack sort id → Payload sort string (e.g. `-updatedAt`). */
 const sortToPayload = (sort: UserPostsQueryArgs["sort"]): string => {
   if (!sort || sort.length === 0) return "-updatedAt";
-  return sort.map(({ id, desc }) => `${desc ? "-" : ""}${id}`).join(",");
+  const safe = sort
+    .filter(({ id }) => ALLOWED_SORT_FIELDS.has(id))
+    .map(({ id, desc }) => `${desc ? "-" : ""}${id}`);
+  return safe.length > 0 ? safe.join(",") : "-updatedAt";
 };
 
 /**

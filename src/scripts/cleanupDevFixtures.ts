@@ -94,8 +94,15 @@ async function main(): Promise<void> {
         query: sql`DELETE FROM posts WHERE author_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
       },
       {
+        // SECURITY: the `parent_id IS NULL` arm is scoped to fixture
+        // authors. Otherwise running this script with FORCE_PROD=1 could
+        // wipe version history for legitimate authors whose parent post
+        // was previously deleted (manual admin delete, migration
+        // rollback, etc.). Belt-and-suspenders: even though this script
+        // refuses to run in production without FORCE_PROD=1, that escape
+        // hatch makes the over-broad query a real data-loss vector.
         label: "_posts_v (orphan + fixture-authored)",
-        query: sql`DELETE FROM _posts_v WHERE version_author_id = ANY(${fixtureIds}::uuid[]) OR parent_id IS NULL RETURNING id`
+        query: sql`DELETE FROM _posts_v WHERE version_author_id = ANY(${fixtureIds}::uuid[]) OR (parent_id IS NULL AND version_author_id = ANY(${fixtureIds}::uuid[])) RETURNING id`
       },
       {
         label: "profile",
