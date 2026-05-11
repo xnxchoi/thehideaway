@@ -39,6 +39,8 @@ ssh root@<server-ip>
 
 ### Step 2: Run server-setup.sh
 
+> **For what gets hardened, the asset-manifest workflow, and Dockge access — see [`SERVER_HARDENING.md`](./SERVER_HARDENING.md).** That doc is the operational reference; this section just runs the script.
+
 Copy the script to the server and execute it with your deploy user's SSH public key:
 
 ```bash

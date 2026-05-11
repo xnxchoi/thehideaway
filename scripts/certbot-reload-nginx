@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# scripts/certbot-reload-nginx — certbot post-renewal hook.
+#
+# Installed at /usr/local/bin/certbot-reload-nginx by server-setup.sh.
+# Called by certbot's renewal cron after a successful cert renewal.
+#
+# Why this exists as a separate script (instead of inline in cron):
+#   - The compose file path may not exist on a fresh server until the deploy
+#     user clones the repo. Inline cron would fail silently.
+#   - We want graceful behaviour: if nginx isn't running yet, log + exit 0
+#     (success) so cron doesn't spam mails about expected absences.
+#   - Easier to test than a long crontab one-liner.
+#
+# Exit codes:
+#   0 — nginx reloaded successfully OR not yet deployed (both expected states)
+#   1 — nginx is deployed but reload failed (real problem; cron should mail)
+
+set -Eeuo pipefail
+
+COMPOSE_FILE="${COMPOSE_FILE:-/home/deploy/thehideaway/compose.prod.yaml}"
+CONTAINER_NAME="${CONTAINER_NAME:-nginx}"
+LOG_TAG="certbot-reload-nginx"
+
+log() { logger -t "${LOG_TAG}" "$*"; echo "[$(date -Iseconds)] $*"; }
+
+# 1) Compose file present? On a fresh VPS, the deploy user hasn't cloned yet.
+if [[ ! -f "${COMPOSE_FILE}" ]]; then
+  log "compose file not found at ${COMPOSE_FILE} — pre-deploy state, nothing to reload"
+  exit 0
+fi
+
+# 2) Container running? During first deploy, certbot may renew before stack is up.
+if ! docker compose -f "${COMPOSE_FILE}" ps --status running --services 2>/dev/null \
+   | grep -qx "${CONTAINER_NAME}"; then
+  log "nginx container not running — skipping reload (cert is on disk; will be picked up on next start)"
+  exit 0
+fi
+
+# 3) Test the new config inside the running container before reloading.
+if ! docker compose -f "${COMPOSE_FILE}" exec -T "${CONTAINER_NAME}" nginx -t >/dev/null 2>&1; then
+  log "ERROR: nginx -t failed; refusing to reload (cert renewed but old config still serving)"
+  exit 1
+fi
+
+# 4) Reload.
+if docker compose -f "${COMPOSE_FILE}" exec -T "${CONTAINER_NAME}" nginx -s reload >/dev/null 2>&1; then
+  log "nginx reloaded successfully after cert renewal"
+  exit 0
+else
+  log "ERROR: nginx reload failed"
+  exit 1
+fi

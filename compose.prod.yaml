@@ -171,6 +171,49 @@ services:
     networks:
       - hideaway
 
+  # ── Dockge — compose-stack admin GUI ─────────────────────────────────────────
+  # Why Dockge over Portainer: compose-first (reads/writes our existing
+  # compose.prod.yaml directly), MIT-licensed, lightweight (~30 MB RAM vs
+  # Portainer's ~80 MB — meaningful headroom on a 4 GB box).
+  #
+  # SECURITY: bound to 127.0.0.1 only. No public exposure. Access via:
+  #   ssh -N -L 5001:127.0.0.1:5001 deploy@<host>
+  # Then http://localhost:5001 on your laptop.
+  #
+  # Authentication is handled by Dockge itself (set up on first visit). The
+  # SSH tunnel is the network-layer auth; Dockge's username/password is the
+  # app-layer auth. Two layers because Dockge has root-equivalent power on
+  # this host (it can start/stop any container, mutate any compose stack).
+  #
+  # On first deploy, this profile is opt-in. To enable:
+  #   docker compose -f compose.prod.yaml --profile admin up -d dockge
+  dockge:
+    image: louislam/dockge:1
+    container_name: dockge
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5001:5001"
+    environment:
+      # Tell Dockge where to find the compose stacks it manages.
+      # /opt/stacks is its working dir; we mount /home/deploy as the stacks dir
+      # so Dockge can edit our actual compose.prod.yaml in place.
+      DOCKGE_STACKS_DIR: /opt/stacks
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - dockge_data:/app/data
+      # Read-write mount of the deploy dir so Dockge can edit compose.prod.yaml.
+      # Scoped to /home/deploy/ rather than the whole host fs.
+      - /home/deploy:/opt/stacks
+    networks:
+      - hideaway
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: "0.25"
+    profiles:
+      - admin
+
 volumes:
   pgdata:
   # Payload CMS upload volumes — persist user-uploaded content across deploys.
@@ -181,6 +224,9 @@ volumes:
   payload_track_media:
   payload_users:
   payload_assets_media:
+  # Dockge persists user/session/audit data here. Empty on first run; you'll
+  # set up the admin account on first visit.
+  dockge_data:
 
 networks:
   hideaway:

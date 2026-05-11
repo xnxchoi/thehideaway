@@ -12,12 +12,15 @@
 #   2.  Swap (4 GB)
 #   3.  sysctl — network and file-descriptor tuning
 #   4.  sshd hardening (disables root+password login, limits auth)
-#   5.  UFW firewall (SSH 22, HTTP 80, HTTPS 443)
+#   5.  UFW firewall (SSH 22, HTTP 80, HTTPS 443) + ufw-docker (closes the
+#       Docker iptables bypass so UFW rules actually apply to containers)
 #   6.  Docker CE + daemon hardening (log rotation, live-restore)
-#   7.  deploy user (no-password sudo, optional SSH key)
-#   8.  Certbot (for Let's Encrypt TLS)
-#   9.  Working directories (certbot webroot, backups, nginx logs)
-#   10. unattended-upgrades (security patches only)
+#   7.  deploy user (scoped sudoers — docker / compose / certbot only)
+#   8.  fail2ban sshd jail (defense-in-depth on top of pubkey-only)
+#   9.  Certbot (for Let's Encrypt TLS) + reload-hook helper
+#   10. Working directories + asset tree (driven by scripts/asset-manifest.json)
+#   11. journald disk cap (keeps logs from eating the 100 GB HDD)
+#   12. unattended-upgrades (security patches only)
 #
 # After running, complete TLS setup:
 #   certbot certonly --standalone -d hideawayseoul.com  # before nginx starts
@@ -26,7 +29,10 @@
 #
 # Then: copy .env.production to /home/deploy/thehideaway/ and run prod.sh.
 
-set -euo pipefail
+set -Eeuo pipefail
+
+# Print the failed line on unexpected error — easier to debug over SSH.
+trap 'echo -e "\033[0;31m✗ failed at line $LINENO:\033[0m $BASH_COMMAND" >&2' ERR
 
 # ── Colour helpers ────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -36,6 +42,10 @@ NC='\033[0m'
 info()  { echo -e "${GREEN}→${NC} $*"; }
 warn()  { echo -e "${YELLOW}⚠${NC}  $*"; }
 error() { echo -e "${RED}✗${NC}  $*" >&2; }
+
+# Resolve script + repo dirs so we can call sibling helpers (asset-bootstrap.sh)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # ── Parse args ────────────────────────────────────────────────────────────────
 DEPLOY_KEY=""
@@ -60,7 +70,7 @@ echo ""
 # ────────────────────────────────────────────────────────────────────────────
 # 1. System updates + essential packages
 # ────────────────────────────────────────────────────────────────────────────
-info "[1/10] Updating system packages..."
+info "[1/12] Updating system packages..."
 apt-get update -q
 DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq
 DEBIAN_FRONTEND=noninteractive apt-get install -yq \
@@ -74,7 +84,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -yq \
 # ────────────────────────────────────────────────────────────────────────────
 # 2. Swap (4 GB — same as RAM, good for a 4 GB server)
 # ────────────────────────────────────────────────────────────────────────────
-info "[2/10] Configuring swap..."
+info "[2/12] Configuring swap..."
 SWAP_FILE="/swapfile"
 if [[ ! -f "${SWAP_FILE}" ]]; then
   fallocate -l 4G "${SWAP_FILE}"
@@ -90,7 +100,7 @@ fi
 # ────────────────────────────────────────────────────────────────────────────
 # 3. sysctl — network + file-descriptor tuning
 # ────────────────────────────────────────────────────────────────────────────
-info "[3/10] Applying sysctl tuning..."
+info "[3/12] Applying sysctl tuning..."
 cat > /etc/sysctl.d/99-hideaway.conf << 'SYSCTL'
 # ── TCP connection tuning ────────────────────────────────────────────────────
 # Increase listen backlog for nginx (default 128 is too low)
@@ -134,7 +144,7 @@ grep -qxF '* hard nofile 65536' /etc/security/limits.conf || \
 # ────────────────────────────────────────────────────────────────────────────
 # 4. sshd hardening
 # ────────────────────────────────────────────────────────────────────────────
-info "[4/10] Hardening sshd..."
+info "[4/12] Hardening sshd..."
 SSHD_CONF="/etc/ssh/sshd_config.d/99-hideaway-hardening.conf"
 cat > "${SSHD_CONF}" << 'SSHD'
 # hideawayseoul.com — sshd hardening
@@ -170,12 +180,15 @@ else
 fi
 
 # ────────────────────────────────────────────────────────────────────────────
-# 5. UFW firewall
+# 5. UFW firewall + Docker bypass closure (ufw-docker)
 # ────────────────────────────────────────────────────────────────────────────
-info "[5/10] Configuring UFW firewall..."
+info "[5/12] Configuring UFW firewall..."
 
-# Default deny in/out, then poke required holes.
-# IMPORTANT: Allow SSH first to avoid locking ourselves out.
+# CRITICAL ORDERING: allow SSH BEFORE reset. If anything between reset and
+# enable errors out (network blip, set -e exit, Ctrl+C), we want the SSH allow
+# rule already in place so we don't lock ourselves out of a fresh provision.
+ufw allow 22/tcp comment "SSH" >/dev/null 2>&1 || true
+
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
@@ -188,10 +201,35 @@ ufw --force enable
 ufw status verbose
 echo "  UFW enabled"
 
+# ── Docker iptables bypass closure ───────────────────────────────────────────
+# By default Docker writes its own iptables rules in DOCKER-USER, which run
+# BEFORE ufw's chains. Result: `ufw deny 443` would NOT block traffic to a
+# container exposing :443. ufw-docker patches DOCKER-USER so UFW rules
+# actually apply to container ports.
+#
+# Reference: https://github.com/chaifeng/ufw-docker
+UFW_DOCKER_BIN="/usr/local/bin/ufw-docker"
+if [[ ! -x "${UFW_DOCKER_BIN}" ]]; then
+  curl -fsSL -o "${UFW_DOCKER_BIN}" \
+    https://github.com/chaifeng/ufw-docker/raw/master/ufw-docker
+  chmod +x "${UFW_DOCKER_BIN}"
+  echo "  Installed ufw-docker"
+fi
+
+# Install the DOCKER-USER chain rules (idempotent — safe to re-run).
+# Only needed once Docker is installed; gate accordingly.
+if command -v docker &> /dev/null && [[ -d /etc/ufw ]]; then
+  "${UFW_DOCKER_BIN}" install >/dev/null
+  systemctl restart ufw
+  echo "  ufw-docker rules installed (Docker bypass closed)"
+else
+  warn "  Docker not yet installed — ufw-docker rules will be applied after section 6"
+fi
+
 # ────────────────────────────────────────────────────────────────────────────
 # 6. Docker CE
 # ────────────────────────────────────────────────────────────────────────────
-info "[6/10] Installing / configuring Docker..."
+info "[6/12] Installing / configuring Docker..."
 if ! command -v docker &> /dev/null; then
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
@@ -230,10 +268,18 @@ else
   echo "  Docker daemon already configured — skipping"
 fi
 
+# Apply ufw-docker rules now that Docker is installed (handles the case where
+# section 5 ran before Docker existed on the box).
+if [[ -x "${UFW_DOCKER_BIN}" ]] && command -v docker &> /dev/null; then
+  "${UFW_DOCKER_BIN}" install >/dev/null
+  systemctl restart ufw
+  echo "  ufw-docker rules re-applied (Docker bypass confirmed closed)"
+fi
+
 # ────────────────────────────────────────────────────────────────────────────
 # 7. Deploy user
 # ────────────────────────────────────────────────────────────────────────────
-info "[7/10] Configuring deploy user..."
+info "[7/12] Configuring deploy user..."
 if ! id -u deploy &> /dev/null; then
   useradd -m -s /bin/bash -G docker deploy
   echo "  Created user: deploy"
@@ -243,10 +289,42 @@ else
   echo "  User deploy already exists — ensured docker group membership"
 fi
 
-# No-password sudo for deploy (allows ./prod.sh, docker commands, etc.)
+# Scoped sudo for deploy — *only* the commands prod.sh / backup.sh / certbot
+# need. If the deploy SSH key is ever compromised, the attacker is contained
+# to docker/compose/certbot operations; they can't read /etc/shadow, install
+# rootkits, modify sshd, or run arbitrary commands as root.
+#
+# To extend: add the absolute path of any new command the deploy user must run
+# with privileges. Never widen this to ALL=(ALL) NOPASSWD: ALL — that erases
+# the value of pubkey-only SSH.
 SUDOERS_FILE="/etc/sudoers.d/99-deploy"
-echo "deploy ALL=(ALL) NOPASSWD: ALL" > "${SUDOERS_FILE}"
+cat > "${SUDOERS_FILE}" << 'SUDOERS'
+# hideawayseoul.com — scoped privilege grants for the deploy user.
+# Managed by scripts/server-setup.sh. Do not edit by hand.
+
+# Cmnd_Alias makes the grant readable + auditable.
+Cmnd_Alias DEPLOY_DOCKER  = /usr/bin/docker, /usr/bin/docker compose
+Cmnd_Alias DEPLOY_COMPOSE = /usr/bin/docker-compose
+Cmnd_Alias DEPLOY_TLS     = /usr/bin/certbot renew, \
+                            /usr/bin/certbot renew --dry-run, \
+                            /usr/local/bin/certbot-reload-nginx
+Cmnd_Alias DEPLOY_SVC     = /bin/systemctl reload nginx, \
+                            /bin/systemctl restart nginx, \
+                            /bin/systemctl status docker, \
+                            /bin/systemctl status nginx
+
+deploy ALL=(root) NOPASSWD: DEPLOY_DOCKER, DEPLOY_COMPOSE, DEPLOY_TLS, DEPLOY_SVC
+SUDOERS
 chmod 440 "${SUDOERS_FILE}"
+
+# Validate the sudoers file BEFORE leaving the script — a syntax error here
+# would lock out sudo for everyone on next login.
+if ! visudo -cf "${SUDOERS_FILE}" >/dev/null; then
+  error "sudoers validation failed for ${SUDOERS_FILE} — removing"
+  rm -f "${SUDOERS_FILE}"
+  exit 1
+fi
+echo "  sudoers configured (scoped: docker, compose, certbot, nginx reload)"
 
 # SSH key for the deploy user
 if [[ -n "${DEPLOY_KEY}" ]]; then
@@ -262,9 +340,39 @@ else
 fi
 
 # ────────────────────────────────────────────────────────────────────────────
-# 8. Certbot
+# 8. fail2ban — sshd jail
 # ────────────────────────────────────────────────────────────────────────────
-info "[8/10] Installing Certbot..."
+# fail2ban is installed in section 1 but ships with no enabled jails by default.
+# Without an explicit jail definition, the daemon runs idle and provides zero
+# protection. Even with PasswordAuthentication=no, this is useful defense in
+# depth: it bans IPs that hammer pubkey auth (e.g. trying old/leaked keys),
+# which keeps logs cleaner and reduces background noise.
+info "[8/12] Configuring fail2ban..."
+
+F2B_JAIL="/etc/fail2ban/jail.d/sshd.local"
+cat > "${F2B_JAIL}" << 'F2B'
+# hideawayseoul.com — fail2ban sshd jail
+[sshd]
+enabled  = true
+port     = 22
+logpath  = %(sshd_log)s
+backend  = %(sshd_backend)s
+maxretry = 3
+findtime = 10m
+bantime  = 1h
+# Persistent ban list survives fail2ban restarts (avoids "ban roulette" on reload)
+bantime.increment = true
+bantime.maxtime   = 24h
+F2B
+
+systemctl enable --now fail2ban
+systemctl restart fail2ban
+echo "  fail2ban sshd jail active"
+
+# ────────────────────────────────────────────────────────────────────────────
+# 9. Certbot
+# ────────────────────────────────────────────────────────────────────────────
+info "[9/12] Installing Certbot..."
 if ! command -v certbot &> /dev/null; then
   DEBIAN_FRONTEND=noninteractive apt-get install -yq certbot
   echo "  Certbot installed"
@@ -272,16 +380,31 @@ else
   echo "  Certbot already installed: $(certbot --version)"
 fi
 
-# Install renewal cron if not present
+# Install the post-renewal hook helper at /usr/local/bin/certbot-reload-nginx.
+# Versioned source lives in scripts/certbot-reload-nginx (this repo). The helper
+# handles the "compose not yet cloned" and "nginx not yet running" states
+# gracefully so cron doesn't spam errors on a fresh server.
+HOOK_SRC="${SCRIPT_DIR}/certbot-reload-nginx"
+HOOK_DST="/usr/local/bin/certbot-reload-nginx"
+if [[ -f "${HOOK_SRC}" ]]; then
+  install -m 0755 -o root -g root "${HOOK_SRC}" "${HOOK_DST}"
+  echo "  Installed cert-reload helper → ${HOOK_DST}"
+else
+  warn "Cert-reload helper source not found at ${HOOK_SRC}"
+  warn "Cron will be installed but post-hook will not exist until you copy it manually."
+fi
+
+# Install renewal cron if not present.
+# 03:00 UTC daily, webroot mode, post-hook delegates to the helper script.
 if ! crontab -l 2>/dev/null | grep -q 'certbot renew'; then
-  (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --webroot -w /var/www/certbot --post-hook 'docker compose -f /home/deploy/thehideaway/compose.prod.yaml exec nginx nginx -s reload'") | crontab -
-  echo "  Certbot renewal cron installed (daily at 03:00)"
+  (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --webroot -w /var/www/certbot --post-hook ${HOOK_DST}") | crontab -
+  echo "  Certbot renewal cron installed (daily at 03:00 UTC)"
 fi
 
 # ────────────────────────────────────────────────────────────────────────────
-# 9. Working directories
+# 10. Working directories + asset tree
 # ────────────────────────────────────────────────────────────────────────────
-info "[9/10] Creating working directories..."
+info "[10/12] Creating working directories..."
 
 # Certbot ACME webroot (nginx serves /.well-known/acme-challenge/ from here)
 install -o www-data -g www-data -m 0755 -d /var/www/certbot
@@ -295,12 +418,52 @@ install -o deploy -g deploy -m 0700 -d /home/deploy/backups
 # App repo directory (deploy user clones here)
 install -o deploy -g deploy -m 0755 -d /home/deploy/thehideaway
 
-echo "  Directories created"
+echo "  Base directories created"
+
+# ── Asset tree (driven by manifest, not hardcoded) ───────────────────────────
+# Source of truth: scripts/asset-manifest.json. Edit that file (or use
+# `scripts/asset-bootstrap.sh resolve` interactively) to add/remove entries.
+# This block is intentionally a thin call into the helper — keeps the asset
+# list in one place as it changes during active development.
+ASSET_BOOTSTRAP="${SCRIPT_DIR}/asset-bootstrap.sh"
+ASSET_MANIFEST="${SCRIPT_DIR}/asset-manifest.json"
+
+if [[ -x "${ASSET_BOOTSTRAP}" && -f "${ASSET_MANIFEST}" ]]; then
+  info "  Bootstrapping asset tree from manifest..."
+  "${ASSET_BOOTSTRAP}" init --quiet || warn "  asset-bootstrap init reported a problem"
+  echo "    (verify with: ${ASSET_BOOTSTRAP} check)"
+else
+  warn "  asset-bootstrap.sh or asset-manifest.json missing — skipping asset tree."
+  warn "  Expected: ${ASSET_BOOTSTRAP} and ${ASSET_MANIFEST}"
+fi
 
 # ────────────────────────────────────────────────────────────────────────────
-# 10. unattended-upgrades (security patches only — never auto-restarts services)
+# 11. journald disk cap
 # ────────────────────────────────────────────────────────────────────────────
-info "[10/10] Enabling unattended-upgrades..."
+# Without limits, /var/log/journal can grow into multi-GB territory on a
+# verbose host (containerized postgres + payload + nginx all log through the
+# Docker daemon, which forwards to journald via syslog). On a 100 GB HDD with
+# pgdata sharing the same disk, that's a real risk.
+info "[11/12] Capping journald disk usage..."
+
+mkdir -p /etc/systemd/journald.conf.d
+cat > /etc/systemd/journald.conf.d/99-hideaway.conf << 'JOURNAL'
+# hideawayseoul.com — journald disk cap.
+# Total journal usage capped at 500 MB; rotation kicks in well before disk
+# pressure becomes a problem. Adjust upward if you need more retention.
+[Journal]
+SystemMaxUse=500M
+SystemKeepFree=2G
+SystemMaxFileSize=50M
+JOURNAL
+
+systemctl restart systemd-journald
+echo "  journald capped at 500 MB"
+
+# ────────────────────────────────────────────────────────────────────────────
+# 12. unattended-upgrades (security patches only — never auto-restarts services)
+# ────────────────────────────────────────────────────────────────────────────
+info "[12/12] Enabling unattended-upgrades..."
 DEBIAN_FRONTEND=noninteractive apt-get install -yq unattended-upgrades
 
 cat > /etc/apt/apt.conf.d/50unattended-upgrades-hideaway << 'UNATTENDED'
@@ -329,16 +492,27 @@ AUTOUPGRADE
 systemctl enable --now unattended-upgrades
 echo "  unattended-upgrades enabled"
 
+# ── Self-test ─────────────────────────────────────────────────────────────────
+echo ""
+info "Running self-test..."
+docker run --rm hello-world >/dev/null 2>&1 && echo "  ✓ docker runtime OK" \
+  || warn "  ✗ docker hello-world failed — investigate"
+systemctl is-active --quiet sshd      && echo "  ✓ sshd active"     || warn "  ✗ sshd not active"
+systemctl is-active --quiet fail2ban  && echo "  ✓ fail2ban active" || warn "  ✗ fail2ban not active"
+ufw status | grep -q "Status: active" && echo "  ✓ ufw active"      || warn "  ✗ ufw not active"
+[[ -x /usr/local/bin/certbot-reload-nginx ]] && echo "  ✓ certbot-reload helper installed" \
+  || warn "  ✗ certbot-reload-nginx missing"
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "  ✓ Server setup complete"
 echo ""
 echo "  Next steps:"
 echo ""
-echo "  1. Verify SSH access as deploy user before closing this session:"
+echo "  1. Verify SSH access as deploy user BEFORE closing this session:"
 echo "       ssh deploy@<server-ip>"
 echo ""
-echo "  2. Get the TLS certificate (run as root or deploy):"
+echo "  2. Get the TLS certificate (run as root or via sudo):"
 echo "       # Option A — standalone (while nginx is NOT running):"
 echo "       certbot certonly --standalone -d hideawayseoul.com -d www.hideawayseoul.com"
 echo ""
@@ -346,10 +520,30 @@ echo "       # Option B — webroot (while nginx IS running on port 80):"
 echo "       certbot certonly --webroot -w /var/www/certbot \\"
 echo "         -d hideawayseoul.com -d www.hideawayseoul.com"
 echo ""
-echo "  3. Clone the repo and deploy:"
+echo "       # Then dry-run the renewal hook to confirm wiring:"
+echo "       certbot renew --dry-run"
+echo ""
+echo "  3. Populate the asset tree from your dev machine:"
+echo "       # On the dev machine, rsync the actual artifacts:"
+echo "       rsync -av --delete public/assets/ deploy@<host>:/opt/thehideaway/assets/"
+echo "       # Confirm on the server:"
+echo "       /home/deploy/thehideaway/scripts/asset-bootstrap.sh check"
+echo ""
+echo "  4. Clone the repo and deploy:"
 echo "       su - deploy"
 echo "       cd thehideaway"
 echo "       cp .env.production.example .env.production  # fill in secrets"
 echo "       docker network create --ipv6=true hideaway"
 echo "       IMAGE_TAG=<sha> ./prod.sh"
+echo ""
+echo "  5. (Optional) Tunnel into Dockge for GUI compose admin:"
+echo "       # On your laptop:"
+echo "       ssh -N -L 5001:127.0.0.1:5001 deploy@<host>"
+echo "       # Then visit http://localhost:5001 — Dockge is bound to localhost only."
+echo ""
+echo "  Operational reminders:"
+echo "    • Backups + pgdata share one HDD. Add an offsite push (rclone → S3"
+echo "      / R2) before going live — disk failure currently loses both."
+echo "    • UFW now governs Docker too via ufw-docker; verify with:"
+echo "        sudo iptables -L DOCKER-USER -n"
 echo ""

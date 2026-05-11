@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "comment": "Source of truth for static asset directories that get bind-mounted into the payload container in production. Each entry corresponds to a directory under asset_root_default. Mutated by scripts/asset-bootstrap.sh in resolve mode.",
+  "asset_root_default": "/opt/thehideaway/assets",
+  "owner": "deploy",
+  "group": "deploy",
+  "mode": "0755",
+  "assets": [
+    {
+      "id": "plate",
+      "path": "plate",
+      "required": true,
+      "description": "3D titanium membership plate (settings overview, profile)"
+    },
+    {
+      "id": "rp_plaque",
+      "path": "rp_plaque",
+      "required": true,
+      "description": "Registration plaque physics + textures (sign-up form preview)"
+    },
+    {
+      "id": "three",
+      "path": "three",
+      "required": true,
+      "description": "Three.js loader artifacts (Draco, KTX2, basis transcoders)"
+    }
+  ]
+}
