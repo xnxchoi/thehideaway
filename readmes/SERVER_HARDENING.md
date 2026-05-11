@@ -182,6 +182,42 @@ The `dockge_data` volume persists user/session state — `down -v` removes it.
 
 ---
 
+## One-shot first deploy
+
+For the very first deployment on a fresh VPS, `scripts/first-deploy.sh` wraps
+the seven post-provision steps (server-setup → DNS poll → certbot → repo
+clone → pre-flight → first deploy → health check) into a single command.
+
+```bash
+# On the VPS as root, from the cloned repo:
+bash scripts/first-deploy.sh \
+    --deploy-key "ssh-ed25519 AAAA... your-pubkey" \
+    --image-tag <git-sha-or-tag>
+```
+
+The wrapper is fully idempotent — safe to re-run after partial failures. It
+exits with a specific code per failure class:
+
+| Code | Meaning                                                            |
+|------|--------------------------------------------------------------------|
+| 0    | Success                                                            |
+| 2    | Misuse (missing or invalid flags)                                  |
+| 3    | Pre-flight failure (.env.production placeholders, empty asset tree) |
+| 4    | DNS never converged (timeout after ~10 min, or unreachable)         |
+| 5    | Certbot failed (rate-limited, DNS, port 80 in use)                  |
+| 6    | Deploy or post-deploy health check failed                          |
+
+Useful flags for re-runs:
+- `--skip-setup` — server-setup.sh already ran; just do the deploy phases
+- `--skip-dns` — you've staged DNS another way
+- `--skip-cert` — cert already at `/etc/letsencrypt/live/$DOMAIN/`
+- `--domain` — override (defaults to `hideawayseoul.com`)
+
+For all subsequent deploys (after the first), use `prod.sh` directly — it's
+the smaller surface, no DNS / cert / pre-flight overhead.
+
+---
+
 ## Verifying after a run
 
 The script's self-test checks docker, sshd, fail2ban, ufw, and the cert helper.
