@@ -30,6 +30,9 @@
 #                            slow and you've staged the cert another way).
 #     --skip-cert            Bypass certbot (useful if cert already exists
 #                            at /etc/letsencrypt/live/$DOMAIN/).
+#     --skip-gh-key          Bypass the GitHub deploy key step (useful if
+#                            the deploy user already has a working ssh
+#                            identity for github.com).
 #     --skip-setup           Bypass scripts/server-setup.sh (re-run only the
 #                            deploy bits on an already-provisioned box).
 #     -h | --help            Show this.
@@ -39,11 +42,15 @@
 #   2. server-setup.sh — OS hardening, Docker, certbot, deploy user.
 #   3. DNS check — poll until $DOMAIN resolves to this machine's public IP.
 #   4. TLS — certbot certonly --standalone for $DOMAIN.
-#   5. Repo sync — clone or fast-forward into /home/deploy/thehideaway as
-#      the deploy user. Source: this repo's `origin` remote.
-#   6. Pre-flight — validate .env.production has no placeholders, and the
+#   5. GitHub deploy key — generate ed25519, print pubkey, pause for you to
+#      paste it into the repo's Settings → Deploy keys, verify SSH auth.
+#      Skipped automatically when origin URL isn't on github.com.
+#   6. Repo sync — clone or fast-forward into /home/deploy/thehideaway as
+#      the deploy user. Source: this repo's `origin` remote (rewritten to
+#      SSH form so the deploy key is used).
+#   7. Pre-flight — validate .env.production has no placeholders, and the
 #      asset tree under /opt/thehideaway/assets is populated.
-#   7. First deploy — ensure docker network, `prod.sh --full` (deploy +
+#   8. First deploy — ensure docker network, `prod.sh --full` (deploy +
 #      migrate). Then health-check by hitting the local nginx.
 #
 # ── Exit codes ───────────────────────────────────────────────────────────────
@@ -54,6 +61,7 @@
 #   4   DNS never converged within the polling window
 #   5   Cert issuance failed
 #   6   Deploy or post-deploy health check failed
+#   7   GitHub SSH auth failed after deploy key was added
 
 set -Eeuo pipefail
 trap 'echo -e "\033[0;31m✗ failed at line $LINENO:\033[0m $BASH_COMMAND" >&2' ERR
@@ -78,18 +86,20 @@ IMAGE_TAG=""
 DOMAIN="hideawayseoul.com"
 SKIP_DNS=false
 SKIP_CERT=false
+SKIP_GH_KEY=false
 SKIP_SETUP=false
 
 usage() { sed -n '2,/^set -Eeuo/p' "$0" | sed -n '2,/^$/p' | sed 's/^# \{0,1\}//'; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --deploy-key)  DEPLOY_KEY="$2"; shift 2 ;;
-    --image-tag)   IMAGE_TAG="$2";  shift 2 ;;
-    --domain)      DOMAIN="$2";     shift 2 ;;
-    --skip-dns)    SKIP_DNS=true;   shift ;;
-    --skip-cert)   SKIP_CERT=true;  shift ;;
-    --skip-setup)  SKIP_SETUP=true; shift ;;
+    --deploy-key)  DEPLOY_KEY="$2";   shift 2 ;;
+    --image-tag)   IMAGE_TAG="$2";    shift 2 ;;
+    --domain)      DOMAIN="$2";       shift 2 ;;
+    --skip-dns)    SKIP_DNS=true;     shift ;;
+    --skip-cert)   SKIP_CERT=true;    shift ;;
+    --skip-gh-key) SKIP_GH_KEY=true;  shift ;;
+    --skip-setup)  SKIP_SETUP=true;   shift ;;
     -h|--help)     usage; exit 0 ;;
     *)             error "Unknown argument: $1 (try --help)"; exit 2 ;;
   esac
@@ -99,7 +109,7 @@ done
 [[ -z "${IMAGE_TAG}"  ]] && { error "--image-tag is required (see --help)"; exit 2; }
 
 # ── Phase 1: Sanity ──────────────────────────────────────────────────────────
-heading "Phase 1/7: Sanity checks"
+heading "Phase 1/8: Sanity checks"
 if [[ "$(id -u)" -ne 0 ]]; then
   error "first-deploy.sh must run as root."
   exit 1
@@ -119,7 +129,7 @@ info "Domain: ${BOLD}${DOMAIN}${NC}"
 info "Image tag: ${BOLD}${IMAGE_TAG}${NC}"
 
 # ── Phase 2: server-setup.sh ─────────────────────────────────────────────────
-heading "Phase 2/7: server-setup.sh (OS hardening, Docker, certbot)"
+heading "Phase 2/8: server-setup.sh (OS hardening, Docker, certbot)"
 if [[ "${SKIP_SETUP}" == true ]]; then
   warn "Skipping server-setup.sh (--skip-setup). Assuming the box is provisioned."
 else
@@ -128,7 +138,7 @@ else
 fi
 
 # ── Phase 3: DNS verification ────────────────────────────────────────────────
-heading "Phase 3/7: DNS resolves to this machine"
+heading "Phase 3/8: DNS resolves to this machine"
 if [[ "${SKIP_DNS}" == true ]]; then
   warn "Skipping DNS check (--skip-dns)."
 else
@@ -166,7 +176,7 @@ else
 fi
 
 # ── Phase 4: TLS cert ────────────────────────────────────────────────────────
-heading "Phase 4/7: Let's Encrypt certificate"
+heading "Phase 4/8: Let's Encrypt certificate"
 CERT_PATH="/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"
 if [[ "${SKIP_CERT}" == true ]]; then
   warn "Skipping certbot (--skip-cert)."
@@ -190,30 +200,143 @@ else
   info "Certificate issued for ${DOMAIN}."
 fi
 
-# ── Phase 5: Repo sync ───────────────────────────────────────────────────────
-heading "Phase 5/7: Sync repo into ${DEPLOY_REPO}"
-# Resolve the origin URL of the repo this script came from so the VPS clones
-# from the same source (we can't hardcode it — open-source vs private may
-# differ). Falls back to a hardcoded default if we somehow got here from a
-# detached file.
+# ── Phase 5: GitHub deploy key ───────────────────────────────────────────────
+# Generate (or reuse) an ed25519 keypair owned by the deploy user, print the
+# public half, pause for the operator to add it to the repo's Deploy Keys,
+# then configure ssh_config so subsequent git operations use it. This
+# unblocks the clone in phase 6 when origin is a private GitHub repo.
+heading "Phase 5/8: GitHub deploy key (private-repo clone unblock)"
+
+# Resolve origin URL early — we'll need it for the GitHub URL hint and for
+# the actual clone in phase 6.
 ORIGIN_URL=$(cd "${REPO_DIR}" && git config --get remote.origin.url 2>/dev/null || echo "")
 if [[ -z "${ORIGIN_URL}" ]]; then
   ORIGIN_URL="https://github.com/xnxchoi/thehideaway.git"
   warn "Could not detect repo origin; defaulting to ${ORIGIN_URL}"
 fi
 
+# Extract owner/repo slug from either https or ssh form.
+REPO_SLUG=""
+if [[ "${ORIGIN_URL}" =~ ^https?://github\.com/([^/]+/[^/]+?)(\.git)?/?$ ]]; then
+  REPO_SLUG="${BASH_REMATCH[1]}"
+elif [[ "${ORIGIN_URL}" =~ ^git@github\.com:([^/]+/[^/]+?)(\.git)?$ ]]; then
+  REPO_SLUG="${BASH_REMATCH[1]}"
+fi
+
+# Skip phase 5 if origin isn't on github.com or if explicitly skipped.
+if [[ "${SKIP_GH_KEY}" == true ]]; then
+  warn "Skipping GitHub deploy key step (--skip-gh-key)."
+elif [[ -z "${REPO_SLUG}" ]]; then
+  warn "Origin '${ORIGIN_URL}' isn't a github.com URL — skipping deploy-key phase."
+  warn "If the source needs auth, configure ${DEPLOY_HOME}/.ssh/config manually."
+else
+  DEPLOY_SSH_DIR="${DEPLOY_HOME}/.ssh"
+  DEPLOY_GH_KEY="${DEPLOY_SSH_DIR}/github"
+  DEPLOY_SSH_CONFIG="${DEPLOY_SSH_DIR}/config"
+
+  # Ensure ~/.ssh exists with deploy ownership + 0700 (server-setup.sh
+  # created it for authorized_keys but be defensive on re-run).
+  install -o deploy -g deploy -m 0700 -d "${DEPLOY_SSH_DIR}"
+
+  # Generate (or reuse) the key. Reuse means rotation is opt-in (delete the
+  # files manually to force regeneration).
+  if [[ -f "${DEPLOY_GH_KEY}" && -f "${DEPLOY_GH_KEY}.pub" ]]; then
+    info "GitHub deploy key already present at ${DEPLOY_GH_KEY} — reusing."
+  else
+    info "Generating ed25519 deploy key for github.com..."
+    sudo -u deploy ssh-keygen -t ed25519 -N "" \
+      -f "${DEPLOY_GH_KEY}" \
+      -C "deploy@$(hostname -f 2>/dev/null || hostname) — ${DOMAIN}" \
+      >/dev/null
+
+    # Print the public half + paste instructions inside a hard-to-miss box.
+    PUBKEY_CONTENT="$(cat "${DEPLOY_GH_KEY}.pub")"
+    echo
+    echo -e "${YELLOW}${BOLD}══════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${YELLOW}${BOLD}  ACTION REQUIRED — add this deploy key to GitHub before continuing${NC}"
+    echo -e "${YELLOW}${BOLD}══════════════════════════════════════════════════════════════════${NC}"
+    echo
+    echo "  ${PUBKEY_CONTENT}"
+    echo
+    echo "  Paste it at:  https://github.com/${REPO_SLUG}/settings/keys/new"
+    echo "  Title:        $(hostname) — deploy"
+    echo "  Access:       ${BOLD}Leave 'Allow write access' UNCHECKED${NC} (read-only is enough)"
+    echo
+    echo -e "${YELLOW}${BOLD}══════════════════════════════════════════════════════════════════${NC}"
+    echo
+    read -r -p "Press Enter once the deploy key is added on GitHub... " _
+  fi
+
+  # Configure ssh_config so `git@github.com:...` uses this key. Idempotent.
+  if ! sudo -u deploy grep -q "^Host github.com$" "${DEPLOY_SSH_CONFIG}" 2>/dev/null; then
+    info "Writing ${DEPLOY_SSH_CONFIG} (github.com → ${DEPLOY_GH_KEY})..."
+    sudo -u deploy tee -a "${DEPLOY_SSH_CONFIG}" >/dev/null <<EOF
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ${DEPLOY_GH_KEY}
+  IdentitiesOnly yes
+  StrictHostKeyChecking accept-new
+EOF
+    sudo -u deploy chmod 600 "${DEPLOY_SSH_CONFIG}"
+  fi
+
+  # Pre-populate known_hosts so the accept-new doesn't prompt on first
+  # connection (we're non-interactive here).
+  if ! sudo -u deploy ssh-keygen -F github.com -f "${DEPLOY_SSH_DIR}/known_hosts" >/dev/null 2>&1; then
+    info "Pre-populating known_hosts with GitHub's host keys..."
+    sudo -u deploy bash -c "ssh-keyscan -H github.com >> '${DEPLOY_SSH_DIR}/known_hosts' 2>/dev/null"
+    sudo -u deploy chmod 600 "${DEPLOY_SSH_DIR}/known_hosts"
+  fi
+
+  # Verify auth. `ssh -T git@github.com` always exits non-zero even on
+  # success (GitHub doesn't grant a shell), so we grep the message instead.
+  info "Verifying GitHub SSH auth..."
+  auth_output="$(sudo -u deploy ssh -T -o BatchMode=yes git@github.com 2>&1 || true)"
+  if echo "${auth_output}" | grep -qE "successfully authenticated"; then
+    info "GitHub SSH auth verified."
+  else
+    error "GitHub SSH auth test failed. Output was:"
+    echo "${auth_output}" | sed 's/^/    /' >&2
+    error "Make sure the deploy key was pasted correctly at:"
+    error "  https://github.com/${REPO_SLUG}/settings/keys"
+    error "Then re-run with --skip-setup --skip-dns --skip-cert to retry just this phase."
+    exit 7
+  fi
+fi
+
+# ── Phase 6: Repo sync ───────────────────────────────────────────────────────
+heading "Phase 6/8: Sync repo into ${DEPLOY_REPO}"
+
+# Rewrite https://github.com/owner/repo[.git] → git@github.com:owner/repo.git
+# so the clone uses the deploy key configured above. Leaves non-GitHub URLs
+# untouched.
+if [[ -n "${REPO_SLUG}" && "${ORIGIN_URL}" =~ ^https?:// ]]; then
+  CLONE_URL="git@github.com:${REPO_SLUG}.git"
+  info "Using SSH clone URL: ${CLONE_URL}"
+else
+  CLONE_URL="${ORIGIN_URL}"
+fi
+
 # Clone or pull as the deploy user (Docker group membership matters for prod.sh).
 if [[ ! -d "${DEPLOY_REPO}/.git" ]]; then
-  info "Cloning ${ORIGIN_URL} into ${DEPLOY_REPO}..."
-  sudo -u deploy git clone "${ORIGIN_URL}" "${DEPLOY_REPO}"
+  info "Cloning ${CLONE_URL} into ${DEPLOY_REPO}..."
+  sudo -u deploy git clone "${CLONE_URL}" "${DEPLOY_REPO}"
 else
   info "Repo already cloned at ${DEPLOY_REPO} — fetching latest..."
+  # Make sure the remote URL matches CLONE_URL on re-run (in case origin
+  # was first cloned via https and we've now configured the deploy key).
+  current_origin=$(sudo -u deploy git -C "${DEPLOY_REPO}" config --get remote.origin.url || echo "")
+  if [[ "${current_origin}" != "${CLONE_URL}" ]]; then
+    info "Updating remote.origin.url: ${current_origin} → ${CLONE_URL}"
+    sudo -u deploy git -C "${DEPLOY_REPO}" remote set-url origin "${CLONE_URL}"
+  fi
   sudo -u deploy git -C "${DEPLOY_REPO}" fetch --all --prune
   sudo -u deploy git -C "${DEPLOY_REPO}" pull --ff-only
 fi
 
 # ── Phase 6: Pre-flight ──────────────────────────────────────────────────────
-heading "Phase 6/7: Pre-flight (.env.production + asset tree)"
+heading "Phase 7/8: Pre-flight (.env.production + asset tree)"
 
 ENV_FILE="${DEPLOY_REPO}/.env.production"
 if [[ ! -f "${ENV_FILE}" ]]; then
@@ -266,7 +389,7 @@ else
 fi
 
 # ── Phase 7: First deploy ────────────────────────────────────────────────────
-heading "Phase 7/7: First deploy (network, migrate, up, health)"
+heading "Phase 8/8: First deploy (network, migrate, up, health)"
 
 # Docker network — prod.sh creates it via ensure_network, but creating it
 # here surfaces permission/IPv6 issues before the larger up call.

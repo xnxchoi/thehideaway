@@ -206,11 +206,38 @@ exits with a specific code per failure class:
 | 4    | DNS never converged (timeout after ~10 min, or unreachable)         |
 | 5    | Certbot failed (rate-limited, DNS, port 80 in use)                  |
 | 6    | Deploy or post-deploy health check failed                          |
+| 7    | GitHub SSH auth failed after deploy key was added                  |
 
-Useful flags for re-runs:
+### Phase 5 — GitHub deploy key (the one interactive pause)
+
+Phase 5 generates an ed25519 keypair at `/home/deploy/.ssh/github`, prints
+the public half, and pauses for you to paste it into the repo's GitHub
+**Settings → Deploy keys → Add deploy key** (read-only is enough). Once you
+press Enter, the wrapper:
+
+1. Writes `~deploy/.ssh/config` so `github.com` uses the new key.
+2. Pre-populates `~deploy/.ssh/known_hosts` with GitHub's host keys (no
+   accept-prompt on first clone).
+3. Runs `ssh -T git@github.com` and greps for "successfully authenticated".
+
+If auth fails, the script exits **7** and tells you exactly where to verify
+the deploy key on GitHub. To retry just phase 5 onward:
+
+```bash
+bash scripts/first-deploy.sh \
+    --deploy-key "..." --image-tag <sha> \
+    --skip-setup --skip-dns --skip-cert
+```
+
+After the first successful run, the keypair is reused on subsequent
+deploys — the pause is one-time.
+
+### Skip flags for re-runs
+
 - `--skip-setup` — server-setup.sh already ran; just do the deploy phases
-- `--skip-dns` — you've staged DNS another way
+- `--skip-dns` — you've staged DNS another way (e.g. DNS-01, manual upload)
 - `--skip-cert` — cert already at `/etc/letsencrypt/live/$DOMAIN/`
+- `--skip-gh-key` — deploy user already has a working SSH identity for GitHub
 - `--domain` — override (defaults to `hideawayseoul.com`)
 
 For all subsequent deploys (after the first), use `prod.sh` directly — it's
