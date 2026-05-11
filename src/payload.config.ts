@@ -2,6 +2,10 @@
 // production when something is missing/malformed; warns in dev.
 import "@/lib/env";
 import { seedButler } from "@/lib/auth/dev/seedButler";
+import {
+  seedReaders,
+  warnIfFixtureUsersInProd
+} from "@/lib/auth/dev/seedReaders";
 import { collections } from "@/payload/collections";
 import { Admins } from "@/payload/collections/Admins";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
@@ -117,6 +121,20 @@ export default buildConfig({
         const msg =
           err instanceof Error ? err.stack || err.message : String(err);
         payload.logger.error(`[dev-butler] seed failed: ${msg}`);
+      });
+      void seedReaders(payload).catch((err: unknown) => {
+        const msg =
+          err instanceof Error ? err.stack || err.message : String(err);
+        payload.logger.error(`[dev-readers] seed failed: ${msg}`);
+      });
+      // Defence-in-depth: if a prod boot ever finds dev fixture users in
+      // the DB, log loudly so ops can manually audit. Both seed functions
+      // refuse to run in prod, so finding these users means someone
+      // restored a dev dump or env got misconfigured.
+      void warnIfFixtureUsersInProd(payload).catch((err: unknown) => {
+        const msg =
+          err instanceof Error ? err.stack || err.message : String(err);
+        payload.logger.error(`[prod-sanity] check failed: ${msg}`);
       });
     }, 0);
 

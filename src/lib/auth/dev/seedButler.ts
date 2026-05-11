@@ -120,12 +120,19 @@ export async function seedButler(
   payload.logger.info(
     "[dev-butler] step 4: upserting credential account via SQL"
   );
+  // `accounts` has no unique index on (user_id, provider_id), so a naive
+  // INSERT with ON CONFLICT DO NOTHING doesn't actually dedup against
+  // racing inserts. Guard the insert with NOT EXISTS so concurrent
+  // seed-time calls (or repeated dev-server restarts in flight) can't
+  // accumulate duplicate credential rows.
   await payload.db.drizzle.execute(sql`
     INSERT INTO accounts (account_id, provider_id, user_id, password)
-    VALUES (${userId}, 'credential', ${userId}::uuid, ${hashed})
-    ON CONFLICT DO NOTHING
+    SELECT ${userId}, 'credential', ${userId}::uuid, ${hashed}
+    WHERE NOT EXISTS (
+      SELECT 1 FROM accounts
+      WHERE user_id = ${userId}::uuid AND provider_id = 'credential'
+    )
   `);
-  // ON CONFLICT DO NOTHING is a no-op only if the row exists with same key.
   // Always rotate the password to whatever DEV_BUTLER_PASSWORD is now.
   await payload.db.drizzle.execute(sql`
     UPDATE accounts
