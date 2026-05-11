@@ -1,8 +1,8 @@
 import "@/styles/globals.css";
 import "@/app/(frontend)/estate.scss";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
-import { LegalFooter } from "@/components/core/LegalFooter/LegalFooter";
-import { LegalFooterGate } from "@/components/core/LegalFooter/LegalFooterGate";
+import { Footer } from "../../../components/core/Footer/Footer";
+import { LegalFooterGate } from "../../../components/core/Footer/LegalFooterGate";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import type { Metadata } from "next";
@@ -23,7 +23,7 @@ export default async function RootLayout({
           routes; pages can override via `useFooterVisibility` from
           `@/components/core/LegalFooter/footer-visibility`. */}
       <LegalFooterGate>
-        <LegalFooter />
+        <Footer />
       </LegalFooterGate>
     </>
   );

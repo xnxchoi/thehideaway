@@ -9,7 +9,7 @@ import { DEFAULT_FIELD_CONFIG, type FieldConfig } from "./field-config";
 import { LineFieldMesh } from "./LineFieldMesh";
 import { useBezelDisplacementTexture } from "./useBezelDisplacementTexture";
 
-interface FooterTickerCrownClientProps {
+interface TickerCrownClientProps {
   /** Override the default field configuration. */
   config?: Partial<FieldConfig>;
 }
@@ -26,9 +26,9 @@ interface FooterTickerCrownClientProps {
  * while lines flow past — creating the counterflow perception (lines one way,
  * H stationary / appearing to drift the other).
  */
-export function FooterTickerCrownClient({
+export function TickerCrownClient({
   config: configOverrides
-}: FooterTickerCrownClientProps) {
+}: TickerCrownClientProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 

@@ -82,6 +82,7 @@ import { ImportPreview as ImportPreview_cdf7e044479f899a31f804427d568b36 } from 
 import { ImportSaveButton as ImportSaveButton_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { LinkToDoc as LinkToDoc_5a428ee7a0cd28377f19123b74baab92 } from '@/payload/plugins/plugin-search/Search/ui/LinkToDoc/index'
 import { ReindexButton as ReindexButton_4f4fa227fe49d0313e6fa90dfd314724 } from '@/payload/plugins/plugin-search/Search/ui/ReindexButton/index'
+import { default as default_eeff621e84949b27a2928fa5fbd73b58 } from '@/payload/collections/(consumption)/Tickets/components/RefundAction'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { LogoutButton as LogoutButton_98163d55ae591a15d446d874780a3951 } from '@payload-auth/better-auth/plugin/client'
 import { Icon as Icon_537d74cd4b75d6c420c521af18c7f707 } from '@/graphics/Icon/index.tsx'
@@ -185,6 +186,7 @@ export const importMap = {
   "@payloadcms/plugin-import-export/rsc#ImportSaveButton": ImportSaveButton_cdf7e044479f899a31f804427d568b36,
   "@/payload/plugins/plugin-search/Search/ui/LinkToDoc/index#LinkToDoc": LinkToDoc_5a428ee7a0cd28377f19123b74baab92,
   "@/payload/plugins/plugin-search/Search/ui/ReindexButton/index#ReindexButton": ReindexButton_4f4fa227fe49d0313e6fa90dfd314724,
+  "@/payload/collections/(consumption)/Tickets/components/RefundAction#default": default_eeff621e84949b27a2928fa5fbd73b58,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@payload-auth/better-auth/plugin/client#LogoutButton": LogoutButton_98163d55ae591a15d446d874780a3951,
   "@/graphics/Icon/index.tsx#Icon": Icon_537d74cd4b75d6c420c521af18c7f707,

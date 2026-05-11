@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
 
 export const runtime = "nodejs";
 
@@ -37,11 +38,21 @@ const idOf = (rel: unknown): string | null => {
 
 type TicketDoc = {
   id: string;
+  ticket_number?: number | null;
   user?: unknown;
   event?: unknown;
   status?: string | null;
+  paid?: boolean | null;
   claim_token?: string | null;
   claim_email?: string | null;
+};
+
+type EventLite = {
+  name?: string;
+  date?: string | null;
+  location?: string | null;
+  ticket_price?: number | null;
+  max_per_user?: number | null;
 };
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -81,8 +92,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const ticket = found?.docs?.[0] as TicketDoc | undefined;
 
   if (!ticket) {
-    // Maybe already claimed: search by user + null token won't help since we
-    // don't have the original token. Just return claimed-or-invalid.
     return NextResponse.json(
       { ok: false, error: "invalid-or-claimed" },
       { status: 404 }
@@ -99,7 +108,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const userId = String(session.user.id);
   const existingUser = idOf(ticket.user);
 
-  // Idempotency: same user re-claiming.
   if (existingUser === userId) {
     return NextResponse.json(
       { ok: true, ticket_id: ticket.id, already_claimed: true },
@@ -114,7 +122,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Email restriction.
   if (ticket.claim_email) {
     const userEmail = session.user.email;
     if (
@@ -128,18 +135,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // Per-user cap dedup: ensure claiming user doesn't already exceed event cap.
   const eventId = idOf(ticket.event);
+  let event: EventLite | null = null;
   if (eventId) {
-    const event = (await payload
+    event = (await payload
       .findByID({
         collection: "events",
         id: eventId,
         depth: 0,
         overrideAccess: true
       })
-      .catch(() => null)) as { max_per_user?: number } | null;
-    const cap = event?.max_per_user ?? 3;
+      .catch(() => null)) as EventLite | null;
+    const capLimit = event?.max_per_user ?? 3;
     const existingForUser = await payload.count({
       collection: "tickets",
       overrideAccess: true,
@@ -151,9 +158,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         ]
       }
     });
-    if ((existingForUser.totalDocs ?? 0) >= cap) {
+    if ((existingForUser.totalDocs ?? 0) >= capLimit) {
       return NextResponse.json(
-        { ok: false, error: "user-cap-reached", cap },
+        { ok: false, error: "user-cap-reached", cap: capLimit },
         { status: 409 }
       );
     }
@@ -169,6 +176,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       claimed_at: new Date().toISOString()
     } as never
   });
+
+  // If the gift ticket was already paid (purchaser settled before the
+  // recipient claimed), onTicketPaid skipped its activation email — there
+  // was no bound user at the time. Send the activation now.
+  if (ticket.paid === true && session.user.email) {
+    const mailer = new TicketMailer(payload);
+    await mailer.sendActivation({
+      ticketId: ticket.id,
+      ticketNumber: ticket.ticket_number ?? null,
+      eventName: event?.name ?? "Hideaway event",
+      eventDate: event?.date ?? null,
+      eventLocation: event?.location ?? null,
+      ticketPrice: event?.ticket_price ?? null,
+      recipientEmail: session.user.email,
+      recipientName: session.user.name ?? null,
+      qrUrl: `${siteUrl}/tickets/my/${ticket.id}`
+    });
+  }
 
   return NextResponse.json({ ok: true, ticket_id: ticket.id }, { status: 200 });
 }

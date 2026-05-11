@@ -1,5 +1,6 @@
-import { FooterTickerCrownClient } from "./FooterTickerCrown.client";
+import { TickerCrownClient } from "./TickerCrown.client";
 import type { FieldConfig } from "./field-config";
+import { Suspense } from "react";
 
 interface FooterTickerCrownProps {
   /** Override the default field configuration. */
@@ -11,6 +12,10 @@ interface FooterTickerCrownProps {
  * `FooterTickerCrown.client.tsx`. Future v2 may fetch Payload-driven config
  * here without touching call sites.
  */
-export function FooterTickerCrown({ config }: FooterTickerCrownProps = {}) {
-  return <FooterTickerCrownClient config={config} />;
+export function TickerCrown({ config }: FooterTickerCrownProps = {}) {
+  return (
+    <Suspense fallback={null}>
+      <TickerCrownClient config={config} />
+    </Suspense>
+  );
 }

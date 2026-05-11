@@ -52,47 +52,47 @@ export default async function Page({ params: paramsPromise }: Args) {
                 <div className="flex items-start overflow-x-auto overflow-y-hidden">
                   <div className="w-9.5 flex-[0_0_auto] min-lg:hidden"></div>
 
-                <Link
-                  className="flex items-center rounded-[100px] border-[1px] border-solid border-transparent bg-faded-foreground/10 p-2 leading-[20px] whitespace-nowrap transition-colors ease-out-power2 hover:border-faded-foreground hover:bg-transparent data-[current=true]:border-faded-foreground data-[current=true]:bg-transparent min-lg:mr-9.5 min-lg:pr-6.5"
-                  href={`/tagged`}
-                  rel={"noopener follow"}
-                  data-current={false}
-                  data-active={false}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    height="24"
-                    width="24"
+                  <Link
+                    className="flex items-center rounded-[100px] border-[1px] border-solid border-transparent bg-faded-foreground/10 p-2 leading-[20px] whitespace-nowrap transition-colors ease-out-power2 hover:border-faded-foreground hover:bg-transparent data-[current=true]:border-faded-foreground data-[current=true]:bg-transparent min-lg:mr-9.5 min-lg:pr-6.5"
+                    href={`/tagged`}
+                    rel={"noopener follow"}
+                    data-current={false}
+                    data-active={false}
                   >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                    ></circle>
-                    <path
-                      fill="currentColor"
-                      fillRule="evenodd"
-                      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.478 2 12s4.477 10 10 10m3.936-14.844.147-.99-.88.477-5.898 3.194-.22.12-.037.246-.984 6.636-.146.99.879-.477 5.899-3.194.22-.119.036-.247zM9.2 15.996l.719-4.846 3.59 2.514zm1.292-5.665 3.59 2.514.718-4.846z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                  <span className="ml-3.5 text-sm">Explore topics</span>
-                </Link>
-                <TagButton tag={tag} key={tag.slug} selected={true} />
-                {topTags.map((tagger) => (
-                  <TagButton
-                    tag={tagger}
-                    key={tagger.slug}
-                    selected={slug === tagger.slug}
-                  />
-                ))}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      height="24"
+                      width="24"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                      ></circle>
+                      <path
+                        fill="currentColor"
+                        fillRule="evenodd"
+                        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.478 2 12s4.477 10 10 10m3.936-14.844.147-.99-.88.477-5.898 3.194-.22.12-.037.246-.984 6.636-.146.99.879-.477 5.899-3.194.22-.119.036-.247zM9.2 15.996l.719-4.846 3.59 2.514zm1.292-5.665 3.59 2.514.718-4.846z"
+                        clipRule="evenodd"
+                      ></path>
+                    </svg>
+                    <span className="ml-3.5 text-sm">Explore topics</span>
+                  </Link>
+                  <TagButton tag={tag} key={tag.slug} selected={true} />
+                  {topTags.map((tagger) => (
+                    <TagButton
+                      tag={tagger}
+                      key={tagger.slug}
+                      selected={slug === tagger.slug}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
         <div className="relative flex w-full flex-col items-center justify-center">
           <CatTitle className={"mt-2 py-4 pb-1 font-serif font-light"}>

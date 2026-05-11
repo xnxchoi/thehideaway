@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 
-import { FooterTickerCrown } from "@/components/core/FooterTickerCrown/FooterTickerCrown";
+import { TickerCrown } from "../TickerCrownAnimated/TickerCrown";
 import { Link } from "@/components/core/Link/Link";
 import { BUSINESS } from "@/constants/business";
 import { LocaleSwitch } from "./LocaleSwitch";
@@ -60,7 +60,7 @@ function Colophon({ fields, lang }: { fields: ColophonField[]; lang: string }) {
  *     resolve to empty — we fall back to a localized "pending" message
  *     in that case via `||`.
  */
-export async function LegalFooter() {
+export async function Footer() {
   const locale = await getLocale();
   const t = await getTranslations("LegalFooter");
   const year = new Date().getFullYear();
@@ -168,14 +168,14 @@ export async function LegalFooter() {
           className="mx-auto mt-12 mb-10 flex items-center justify-center gap-4 xl:mt-16 xl:mb-12"
         >
           <span className="h-px w-12 bg-border/40" />
-          <span className="text-[10px] leading-none text-foreground/40">◇</span>
+          <span className="text-small leading-none text-foreground/40">◇</span>
           <span className="h-px w-12 bg-border/40" />
         </div>
 
         {/* Bezel-strip motif — three lanes of vertical ticks reading as a
             rotating focus ring viewed edge-on. Crowns the wordmark below. */}
         <div className="mb-3 flex justify-center">
-          <FooterTickerCrown />
+          <TickerCrown />
         </div>
 
         {/* Brand sign-off — small, single instance, editorial serif */}

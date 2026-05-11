@@ -322,10 +322,10 @@ function SideHero({
     >
       <ItemLink url={url} />
       <HeroImage
-        className="z-1 col-span-full row-[1/8] self-start rounded-2xl lg:h-full"
+        className="z-1 col-span-full row-[1/2] self-start rounded-2xl lg:row-[1/8] lg:h-full"
         image={image}
         aspectRatio={{
-          base: 0,
+          base: 4 / 5,
           lg: 100 / 177
         }}
       />

@@ -5,13 +5,26 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { nanoid } from "nanoid";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
 
 export const runtime = "nodejs";
+
+const GiftSchema = z.object({
+  email: z.string().email().optional(),
+  name: z.string().min(1).max(120).optional()
+});
 
 const BodySchema = z.object({
   event_slug: z.string().min(1),
   quantity: z.number().int().min(1).max(10),
-  password: z.string().min(1)
+  password: z.string().min(1),
+  /**
+   * Optional per-extra-ticket recipient details. Index 0 corresponds to
+   * the first gift ticket (i.e. the second ticket overall — index 0 is
+   * always the purchaser's own). If shorter than (quantity - 1), the
+   * remaining gift tickets are minted without a bound recipient email.
+   */
+  gifts: z.array(GiftSchema).max(9).optional()
 });
 
 const isSameOrigin = (req: NextRequest): boolean => {
@@ -37,6 +50,9 @@ type EventDoc = {
   capacity?: number | null;
   max_per_user?: number | null;
   ticket_price?: number | null;
+  payment_instructions?: string | null;
+  date?: string | null;
+  location?: string | null;
   state?: string | null;
 };
 
@@ -165,6 +181,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     ticket_number: number;
     claim_token: string | null;
     claim_url: string | null;
+    recipient_email: string | null;
   }> = [];
 
   for (let i = 0; i < body.quantity; i++) {
@@ -172,6 +189,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const claimToken = isPurchaserOwn ? null : nanoid(24);
     const checkInCode = nanoid(16);
     const ticketNumber = lastNumber + 1 + i;
+    const giftIndex = isPurchaserOwn ? -1 : i - 1;
+    const giftDetail = giftIndex >= 0 ? body.gifts?.[giftIndex] : undefined;
+    const claimEmail = giftDetail?.email ?? null;
 
     const doc = await payload.create({
       collection: "tickets",
@@ -184,45 +204,68 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         status: "pending",
         paid: false,
         claim_token: claimToken,
+        claim_email: claimEmail,
         check_in_code: checkInCode
       } as never
     });
 
-    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "";
     const claimUrl = claimToken
-      ? `${baseUrl}/tickets/claim/${claimToken}`
+      ? `${siteUrl}/tickets/claim/${claimToken}`
       : null;
 
     created.push({
       id: String(doc.id),
       ticket_number: ticketNumber,
       claim_token: claimToken,
-      claim_url: claimUrl
+      claim_url: claimUrl,
+      recipient_email: claimEmail
     });
   }
 
-  // Best-effort admin notification.
-  try {
-    await payload.create({
-      collection: "deferred-emails" as never,
-      overrideAccess: true,
-      data: {
-        to: process.env.ADMIN_EMAIL ?? "concierge@hideawayseoul.com",
-        subject: `[Hideaway] ${body.quantity} ticket(s) pending — ${event.name ?? event.slug}`,
-        body: `User ${userId} requested ${body.quantity} ticket(s) for "${event.name}".\n\nTicket IDs: ${created.map((t) => t.id).join(", ")}\n\nMark each ticket as paid in /vault once Toss receipt is confirmed.`
-      } as never
+  // Customer-facing emails. All best-effort: a mail failure must not roll
+  // back the reservation, since the purchaser already has a record in DB.
+  const mailer = new TicketMailer(payload);
+  const totalAmount = (event.ticket_price ?? 0) * body.quantity;
+  const purchaserEmail = session.user.email ?? null;
+  const purchaserName = session.user.name ?? null;
+
+  if (purchaserEmail) {
+    await mailer.sendPurchaseReceipt({
+      ticketId: created[0]?.id ?? "",
+      ticketNumber: created[0]?.ticket_number ?? null,
+      eventName: event.name ?? "Hideaway event",
+      eventDate: event.date ?? null,
+      eventLocation: event.location ?? null,
+      ticketPrice: event.ticket_price ?? null,
+      recipientEmail: purchaserEmail,
+      recipientName: purchaserName,
+      quantity: body.quantity,
+      totalAmount,
+      paymentInstructions: event.payment_instructions ?? null
     });
-  } catch (err) {
-    payload.logger.warn?.(
-      `[tickets/purchase] failed to enqueue admin email: ${(err as Error).message}`
-    );
+  }
+
+  for (const t of created) {
+    if (!t.claim_url || !t.recipient_email) continue;
+    await mailer.sendGiftInvite({
+      ticketId: t.id,
+      ticketNumber: t.ticket_number,
+      eventName: event.name ?? "Hideaway event",
+      eventDate: event.date ?? null,
+      eventLocation: event.location ?? null,
+      ticketPrice: event.ticket_price ?? null,
+      recipientEmail: t.recipient_email,
+      recipientName: null,
+      claimUrl: t.claim_url,
+      fromName: purchaserName
+    });
   }
 
   return NextResponse.json(
     {
       ok: true,
       tickets: created,
-      total_amount: (event.ticket_price ?? 0) * body.quantity
+      total_amount: totalAmount
     },
     { status: 200 }
   );

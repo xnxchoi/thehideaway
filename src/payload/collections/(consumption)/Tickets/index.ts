@@ -196,6 +196,16 @@ export const Tickets: CollectionConfig = {
           admin: { readOnly: true }
         }
       ]
+    },
+    {
+      name: "refundAction",
+      type: "ui",
+      admin: {
+        components: {
+          Field:
+            "@/payload/collections/(consumption)/Tickets/components/RefundAction"
+        }
+      }
     }
   ],
   hooks: {
