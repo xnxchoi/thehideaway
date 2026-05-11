@@ -105,7 +105,7 @@ postgres/                         DB Docker setup + nanoid SQL extension
 - **Notifications** — Real-time (SSE) notifications
 - **UserViews** — Analytics tracking
 - **Citations** — Highlight/annotation system (Highlightr)
-- **Compilations / CompiledCompilations** — Curated content lists** ### Media
+- **Compilations / CompiledCompilations** — Curated content lists\*\* ### Media
 - **Media** — User uploads + some general use cases
 - **UserMedia** — User uploads
 - **Assets** — System-level files
@@ -247,6 +247,96 @@ Cross-session continuity documents for complex subsystems live in `readmes/`:
 
 ---
 
+## Localization (next-intl)
+
+**next-intl is the single source of locale and of every user-facing
+string. No parallel stores. No exceptions.**
+
+This means three things, all enforced:
+
+1. **Every user-facing string lives in `messages/*.json`.** No
+   `KO_FIELD_LABELS` / `EN_FIELD_LABELS` in component files, no
+   `{ slug, label, blurb }` constants alongside structural data, no
+   inline `isKo ? "한글" : "English"` ternaries.
+2. **No parallel locale stores anywhere.** That includes constants
+   files like `src/constants/business.ts` — if a value varies by
+   locale, it goes in `messages/`. The `*Ko` / `*En` parallel fields
+   currently in `BUSINESS` are deprecated and slated for removal once
+   their non-LegalFooter callers (privacy/terms/refund pages) finish
+   migrating. **Do not add new locale-pair fields anywhere outside
+   `messages/`.**
+3. **Locale detection (`useLocale` / `getLocale`) is for HTML
+   attributes only.** Setting `lang={locale}` on a paragraph for screen
+   readers and font selection is fine. Branching content choice on
+   locale (`isKo ? a : b`) is not — that's what `t()` is for.
+
+The pattern that got us into the hole was the second store, dressed up
+as "convenience": a Korean string sitting next to an English string in a
+constants file, with a `if (locale === 'ko')` switch picking between
+them at the call site. The result: every label tweak meant editing two
+places, every new locale meant a third parallel field, and every
+component shipped its own locale logic instead of asking next-intl.
+**That pattern does not return.**
+
+### Where things live
+
+```
+messages/
+├── en.json        Authoritative English copy. Group by area: `Settings`,
+├── ko.json        `LegalFooter`, `Highlights`, etc.
+└── ...
+
+src/i18n/
+├── locales.ts     Active locales (en, ko)
+└── request.ts     Cookie-driven locale resolver for next-intl/server
+```
+
+### How to read translations
+
+| Context                | API                                                 |
+|------------------------|-----------------------------------------------------|
+| Client component       | `const t = useTranslations("Namespace");`           |
+| Server component       | `const t = await getTranslations("Namespace");`     |
+| Server action          | `const t = await getTranslations("Namespace");`     |
+
+Then `t("key")` or `t(\`subkey.${variable}\`)` for dynamic subkeys.
+Always scope `useTranslations` / `getTranslations` to the **deepest
+namespace the call site reads from** — keeps the keys short and the
+locality of reference high.
+
+### Conventions
+
+- **Structural data files (`sections.ts`, route configs, etc.) hold
+  slugs and ordering only.** Labels and blurbs live in `messages/`,
+  fetched per-call by translating against the slug. See
+  `src/components/UX/Settings/sections.ts` for the canonical shape.
+- **No locale-conditional ternaries in component files.** If you find
+  yourself typing `isKo ? ... : ...`, the strings belong in
+  `messages/*.json` instead.
+- **Static defaults in shared primitives are i18n keys, not English
+  fallbacks.** A primitive that defaults a label to `"Settings"` is
+  doing it wrong; use `useTranslations` and pull the default from
+  `messages/`. See `SubRouteHeader.tsx` and `SectionEmpty.tsx` for the
+  pattern.
+- **A presentational primitive that needs translations is a client
+  component.** Add `"use client"` and `useTranslations` rather than
+  threading translated strings through every caller.
+- **Adding a new key:** add it to **every locale file in lockstep** —
+  `en.json` and `ko.json` together in the same diff. Missing keys fail
+  loudly at runtime via `MISSING_MESSAGE`.
+
+### Canonical examples in-tree
+
+- `src/components/core/LegalFooter/LegalFooter.tsx` — server component
+  using `getTranslations` for nested namespaces (`fields.*`, `links.*`).
+- `src/components/UX/Settings/SettingsRail.tsx` — client component
+  iterating over a structural slug list and reading translated labels by
+  slug.
+- `src/app/(frontend)/(site)/(auth)/me/settings/general/page.client.tsx`
+  — full-page i18n shape (page-level + sub-component scoped translations).
+
+---
+
 ## Code Archaeology
 
 Two special directories sit outside `src/` and are excluded from the production build.
@@ -311,8 +401,7 @@ The governing tone: *sparse, intentional, typographically confident*. Features s
 
 ---
 
-## Layout Containers
-> The code below is not absolute — not in structure, not in className styling, not in design direction — and should be regarded as a point of reference, not a binding enforcement.
+## Layout Container t.
 
 ```tsx
 // Standard container — use primary page layouts
@@ -367,12 +456,12 @@ Typography carries hierarchy and tone. The Hideaway uses four text personalities
 
 ### Personality roles
 
-| Face | When | Pairing |
-|---|---|---|
-| **Serif** (`font-serif`) | Theatrical surfaces — marketing, hero spotlights, advertising, customer-experience moments. The "selling" voice. | `font-bold` for headlines; `font-medium` for body when serif body is wanted. |
-| **Sans** (`font-sans`) | Focused content and admin — settings, vault, reading interfaces, dashboards, profile editing. The "working" voice. | `font-light` for display; `font-medium` for UI labels and card titles; `font-normal` for body. |
-| **Wide** (`font-wide`) | Editorial weight without serif theatrics — section headers and big ticker labels when a serif feels too soft. | `font-bold` or `font-black`. |
-| **Mono** (`font-mono`) | Sparingly. Reserved for editorial chrome on content surfaces (article eyebrows, byline metadata, caption credits), tabular numerals in counts and badges, and code. **Should not be the default for admin or settings surfaces.** Treat mono as a flavour, not a system. |
+| Face                     | When                                                                                                                                                                                                                                                                     | Pairing                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| **Serif** (`font-serif`) | Theatrical surfaces — marketing, hero spotlights, advertising, customer-experience moments. The "selling" voice.                                                                                                                                                         | `font-bold` for headlines; `font-medium` for body when serif body is wanted.                   |
+| **Sans** (`font-sans`)   | Focused content and admin — settings, vault, reading interfaces, dashboards, profile editing. The "working" voice.                                                                                                                                                       | `font-light` for display; `font-medium` for UI labels and card titles; `font-normal` for body. |
+| **Wide** (`font-wide`)   | Editorial weight without serif theatrics — section headers and big ticker labels when a serif feels too soft.                                                                                                                                                            | `font-bold` or `font-black`.                                                                   |
+| **Mono** (`font-mono`)   | Sparingly. Reserved for editorial chrome on content surfaces (article eyebrows, byline metadata, caption credits), tabular numerals in counts and badges, and code. **Should not be the default for admin or settings surfaces.** Treat mono as a flavour, not a system. |                                                                                                |
 
 Rule of thumb: a settings or vault surface is mostly sans, lightly seasoned with mono. A marketing or hero surface leans serif or wide. Never mix all four faces on one screen.
 
@@ -682,9 +771,9 @@ Panels are **lifted dark pools** in the canvas, distinguished by luminance gradi
 </div>
 ```
 
-Radius: `rounded-2xl` (~16px) on the **outer panel**. No visible borders; rely on luminance + shadow.
+Radius: `rounded-2xl` (\~16px) on the **outer panel**. No visible borders; rely on luminance + shadow.
 
-**Radius graduation:** outer panel takes `rounded-2xl`; inset rows / pills inside it step down to `rounded-lg` (~8px). Two-step radius difference between container and contents prevents inner pills from reading as nested cards.
+**Radius graduation:** outer panel takes `rounded-2xl`; inset rows / pills inside it step down to `rounded-lg` (\~8px). Two-step radius difference between container and contents prevents inner pills from reading as nested cards.
 
 ### Internal panel composition (2-column)
 
@@ -724,7 +813,7 @@ Field rows are **self-contained inset pills**, never divider-separated lines.
 
 ### Categorical color tiles for sections
 
-Sections may carry a small colored icon tile (~28px rounded square) with a monochrome glyph as identity. Colors are **identity, not decoration**, and use a finite token set:
+Sections may carry a small colored icon tile (\~28px rounded square) with a monochrome glyph as identity. Colors are **identity, not decoration**, and use a finite token set:
 
 ```css
 /* Hideaway category tokens (admin-only) */
@@ -741,12 +830,12 @@ Each color is used once per surface, paired with a section title. Never as decor
 
 Edit affordance is communicated by component, not by inline `<input>` styling:
 
-| Tier | Component | Visual signal |
-|---|---|---|
-| 1 — Locked | `<LockedField>` | Sans value at body weight; trailing 12px lock glyph at `/35`. No interactive affordance. Cursor: default. Avoid web-conventional dotted-underline; rely on the lock glyph alone. |
-| 2 — Deferred edit | `<EditableField>` | Sans value at rest; on hover: hairline underline appears + trailing pencil glyph rises `/30 → /80`. Click swaps row to inline input + esc/save controls. |
-| 3 — Soft control | `<ToggleField>` | iOS-style switch or radio set; 1px inset focus ring at `foreground/40`. |
-| 4 — Verified action | `<ActionField>` | Sans pill button → modal (password change, 2FA, passkey, sign-out everywhere). |
+| Tier                | Component         | Visual signal                                                                                                                                                                    |
+| ------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 — Locked          | `<LockedField>`   | Sans value at body weight; trailing 12px lock glyph at `/35`. No interactive affordance. Cursor: default. Avoid web-conventional dotted-underline; rely on the lock glyph alone. |
+| 2 — Deferred edit   | `<EditableField>` | Sans value at rest; on hover: hairline underline appears + trailing pencil glyph rises `/30 → /80`. Click swaps row to inline input + esc/save controls.                         |
+| 3 — Soft control    | `<ToggleField>`   | iOS-style switch or radio set; 1px inset focus ring at `foreground/40`.                                                                                                          |
+| 4 — Verified action | `<ActionField>`   | Sans pill button → modal (password change, 2FA, passkey, sign-out everywhere).                                                                                                   |
 
 The signature interaction is **deferred edit**: an editable row looks read-only at rest, reveals its editability on hover, and only becomes a true input on click. This avoids the "page full of input boxes" look.
 
@@ -754,11 +843,11 @@ The signature interaction is **deferred edit**: an editable row looks read-only 
 
 Where Fey uses a photorealistic 3D wallet, The Hideaway uses the **Plaque** (titanium membership plate, hanging from a lanyard, with engraved name) — see `src/components/layouts/Registration/MembershipBadge.tsx`. The same model is reused across registration, profile, and the settings overview, with view-specific behaviour:
 
-| Surface | Variant | Behaviour |
-|---|---|---|
-| Registration | `BADGE` (live form preview) | Full physics + drag interaction; rope joints |
-| Settings overview (xl+) | `PLATE` (stationary) | Slow idle drift; no drag; static name baked in |
-| Mobile / small screens | None | Replaced with typographic member-since/handle/role block |
+| Surface                 | Variant                     | Behaviour                                                |
+| ----------------------- | --------------------------- | -------------------------------------------------------- |
+| Registration            | `BADGE` (live form preview) | Full physics + drag interaction; rope joints             |
+| Settings overview (xl+) | `PLATE` (stationary)        | Slow idle drift; no drag; static name baked in           |
+| Mobile / small screens  | None                        | Replaced with typographic member-since/handle/role block |
 
 Loaded behind `useInView` + Suspense + a static-PNG first-paint fallback. Never on mobile; never above-the-fold without lazy gating.
 
