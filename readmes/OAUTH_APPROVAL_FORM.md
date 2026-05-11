@@ -1,5 +1,19 @@
 # OAuth Approval — Fill-in Form
 
+> **Status:** Filled-in (2026-05-08). The active operational packet now lives at
+> [`oauth-approval/`](./oauth-approval/) — go there to actually submit:
+>
+> - [`oauth-approval/README.md`](./oauth-approval/README.md) — folder index
+> - [`oauth-approval/form-filled.md`](./oauth-approval/form-filled.md) — final values (source of truth)
+> - [`oauth-approval/01-google-console.md`](./oauth-approval/01-google-console.md) — Google submission walkthrough
+> - [`oauth-approval/02-naver-console.md`](./oauth-approval/02-naver-console.md) — Naver submission walkthrough
+> - [`oauth-approval/03-pre-flight.md`](./oauth-approval/03-pre-flight.md) — pre-submit checklist
+> - [`oauth-approval/screenshots/`](./oauth-approval/screenshots/) — sign-in / privacy / terms captures
+>
+> This file is kept as the historical fill-in record only.
+
+---
+
 Fill in the `[ ]` brackets below. Notes in _italics_ explain what each field should be.
 Once complete, hand back to Claude and the legal pages + OAuth consoles will be updated.
 
