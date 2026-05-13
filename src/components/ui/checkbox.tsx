@@ -4,7 +4,7 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { useDomCursor } from "../core/cursorWrapper";
+import { useDomCursor } from "@/components/core/cursorWrapper";
 
 function Checkbox({
   className,

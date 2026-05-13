@@ -1,7 +1,7 @@
 import {
   ArchiveFeatureCard,
   OverviewAgnosticItem
-} from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
+} from "../../../../../../../components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 import { PageRange } from "@/components/UX/PageRange";
 import { RPage } from "@/components/UX/Transition";

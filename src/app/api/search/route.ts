@@ -2,6 +2,7 @@ import type {
   SearchAPIResponse,
   SearchAPIResult
 } from "@/components/UX/CommandKey/Commando";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import config from "@/payload.config";
 import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import type { IndexedCollections } from "@/payload/search/beforeSync";
@@ -32,6 +33,9 @@ function collectionToUrl(collection: CollectionSlug, slug: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const rl = await rateLimitOr429(request, "search");
+  if (rl) return rl;
+
   const payload = await getPayload({ config });
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q")?.trim();

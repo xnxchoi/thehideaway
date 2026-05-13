@@ -1,8 +1,8 @@
 import "@/styles/globals.css";
 import "@/app/(frontend)/estate.scss";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
-import { Footer } from "../../../components/core/Footer/Footer";
-import { LegalFooterGate } from "../../../components/core/Footer/LegalFooterGate";
+import { Footer } from "../../../components/Shells/Footer/Footer";
+import { LegalFooterGate } from "../../../components/Shells/Footer/LegalFooterGate";
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import type { Metadata } from "next";

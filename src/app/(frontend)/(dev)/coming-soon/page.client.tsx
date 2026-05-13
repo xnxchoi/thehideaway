@@ -206,7 +206,6 @@ function MockEssayRows() {
   const onMousdEnter = useCallback(() => setHovered(true), [setHovered]);
   const onMousdLeave = useCallback(() => setHovered(false), [setHovered]);
   return (
-
     <div className="relative divide-y divide-border/20">
       {rows.map((row) => (
         <m.div

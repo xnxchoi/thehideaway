@@ -611,4 +611,4 @@ declare global {
   }
 }
 
-export { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
+export { PlaceHolderImage } from "./src/components/core/Media/Image/PlaceHolderImage";

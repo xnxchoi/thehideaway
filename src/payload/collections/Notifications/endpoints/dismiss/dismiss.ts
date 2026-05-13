@@ -14,10 +14,16 @@ export const DismissNotification: PayloadHandler = async (request) => {
     if (!user?.id) {
       return new Response("Unauthorized", { status: 401 });
     }
-    const notification = await payload
-      .findByID({
+    // Ownership-filtered read: previously this handler used findByID (no
+    // ownership check) and only filtered on the subsequent update, leaking
+    // other users' notification bodies in the response.
+    const found = await payload
+      .find({
         collection: "notifications",
-        id,
+        where: {
+          and: [{ id: { equals: id } }, { recipient: { equals: user.id } }]
+        },
+        limit: 1,
         select: {
           status: true,
           recipient: true,
@@ -37,18 +43,21 @@ export const DismissNotification: PayloadHandler = async (request) => {
           id: true
         }
       })
-      .then((r) => convertToSyncedNotification(r))
       .catch((e) => {
         console.error("Error dismissing notification:", e);
         return null;
       });
+
+    const notification = found?.docs?.[0]
+      ? convertToSyncedNotification(found.docs[0])
+      : null;
 
     if (!notification) {
       return new Response("Not Found", { status: 404 });
     }
     const r: Notification = {
       ...notification,
-      thumbnail: notification.thumbnail?.id || null,
+      thumbnail: notification.thumbnail?.value?.id || null,
       dismissed: true,
       actionLink: {
         ...notification.actionLink,

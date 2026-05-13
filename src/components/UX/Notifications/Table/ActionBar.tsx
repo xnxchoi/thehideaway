@@ -4,7 +4,7 @@ import {
   DataTableActionBar,
   DataTableActionBarAction,
   DataTableActionBarSelection
-} from "@/components/data-table/data-table-action-bar";
+} from "@/components/ui/data-table/data-table-action-bar";
 import { Separator } from "@/components/ui/separator";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";

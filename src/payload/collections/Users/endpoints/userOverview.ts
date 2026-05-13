@@ -1,8 +1,18 @@
-"use server";
-import {getUserOverview} from "@/payload/collections/Posts/api/queryPostOverviews";
-import {PayloadHandler} from "payload";
+// NOTE: This file intentionally does NOT use `"use server"`. It exports a
+// PayloadHandler mounted as a Payload endpoint — not a Next.js server action.
+// The `"use server"` directive previously here was meaningless and only
+// widened the POST-invokable surface.
+import { getUserOverview } from "@/payload/collections/Posts/api/queryPostOverviews";
+import { PayloadHandler } from "payload";
 
 export const userOverviewHandler: PayloadHandler = async (req) => {
+  // Require an authenticated session before answering with profile data.
+  // The response is low-sensitivity (public profile summary), but the
+  // previous unauthenticated path made it trivial to enumerate users.
+  if (!req.user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const para = req.routeParams;
   if (!para) {
     return Response.json(

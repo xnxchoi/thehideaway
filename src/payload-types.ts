@@ -2575,10 +2575,6 @@ export interface Plan {
       }[]
     | null;
   /**
-   * Highlight this plan on the pricing page.
-   */
-  featured?: boolean | null;
-  /**
    * Max active subscriptions for this plan (0 / blank = unlimited). When reached, the plan card shows 'Closed' and the CTA is disabled.
    */
   seat_limit?: number | null;
@@ -2586,10 +2582,6 @@ export interface Plan {
    * Pill text shown on the card when a deal applies (e.g. 'LIMITED 5').
    */
   discount_label?: string | null;
-  /**
-   * 'standard' = baseline tier card. 'founder' = Starliner stars + striped-out display when sold out (Patron uses this).
-   */
-  presentation: 'standard' | 'founder';
   sort?: number | null;
   state: 'active' | 'ended';
   updatedAt: string;
@@ -2601,14 +2593,12 @@ export interface Plan {
  */
 export interface Price {
   id: string;
-  currencies?:
-    | {
-        amount: number;
-        currency: string | Currency;
-        display_amount?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  currencies: {
+    amount: number;
+    currency: string | Currency;
+    display_amount?: string | null;
+    id?: string | null;
+  }[];
   updatedAt: string;
   createdAt: string;
 }
@@ -2891,6 +2881,10 @@ export interface Ticket {
    * Optional: passkey credential ID bound to this ticket for device verification.
    */
   passkey_credential_id?: string | null;
+  /**
+   * System: timestamp the pre-event reminder cron last sent for this ticket. Guards against double-sends when the cron is re-run inside the 23–25h window.
+   */
+  reminder_sent_at?: string | null;
   /**
    * Submitted by attendee on the exclusive content page.
    */
@@ -4444,10 +4438,8 @@ export interface PlansSelect<T extends boolean = true> {
         included?: T;
         id?: T;
       };
-  featured?: T;
   seat_limit?: T;
   discount_label?: T;
-  presentation?: T;
   sort?: T;
   state?: T;
   updatedAt?: T;
@@ -4614,6 +4606,7 @@ export interface TicketsSelect<T extends boolean = true> {
   checked_in_at?: T;
   checked_in_by?: T;
   passkey_credential_id?: T;
+  reminder_sent_at?: T;
   delivery_address?:
     | T
     | {

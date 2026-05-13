@@ -3,6 +3,7 @@ import { User } from "@payload-types";
 import { NextResponse } from "next/server";
 import { addDataAndFileToRequest, PayloadHandler } from "payload";
 import { z } from "zod";
+import { httpUrl } from "@/lib/api/httpUrlSchema";
 
 export type OnboardingBody = z.infer<typeof reqSchema>;
 export type StepAndParams<T extends RegistrationStep = RegistrationStep> = {
@@ -16,7 +17,7 @@ const reqSchema = z.discriminatedUnion("step", [
         firstName: z.string().optional(),
         lastName: z.string().optional(),
         bio: z.string().max(500).optional(),
-        link: z.url().optional(),
+        link: httpUrl.optional(),
         location: z.string().optional()
       })
       .optional(),
@@ -27,7 +28,7 @@ const reqSchema = z.discriminatedUnion("step", [
     fields: z.object({
       firstName: z.string().optional(),
       lastName: z.string().optional(),
-      link: z.url().optional(),
+      link: httpUrl.optional(),
       location: z.string().optional(),
       bio: z.string().max(500).nullish()
     }),
@@ -39,7 +40,7 @@ const reqSchema = z.discriminatedUnion("step", [
       firstName: z.string().optional(),
       lastName: z.string().optional(),
       bio: z.string().max(500).nullish(),
-      link: z.url().nullish(),
+      link: httpUrl.nullish(),
       location: z.string().nullish()
     }),
     complete: z.boolean().optional()
@@ -50,7 +51,7 @@ const reqSchema = z.discriminatedUnion("step", [
       firstName: z.string().optional(),
       lastName: z.string().optional(),
       bio: z.string().max(500).nullish(),
-      link: z.url().nullish(),
+      link: httpUrl.nullish(),
       location: z.string().nullish()
     }),
     complete: z.boolean().optional()

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input, InputFile } from "@/components/ui/input";
 import { Link } from "@/components/core/Link/Link";
-import { Logo } from "@/components/UX/Logo";
+import { Logo } from "@/components/core/Logo";
 import "@/styles/__inputs.scss";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import * as m from "motion/react-m";

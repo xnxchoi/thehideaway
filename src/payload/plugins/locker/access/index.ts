@@ -7,9 +7,9 @@ import {
   standardReadAccess,
   standardUpdateAccess
 } from "@/payload/plugins/locker/access/accessCheckers";
-import {RP_Roles} from "@/stores/Notification/NotificationStore";
-import {CollectionConfig, CollectionSlug, Where} from "payload";
-import {roleToAuthority} from "../fields/authority/utils";
+import { RP_Roles } from "@/stores/Notification/NotificationStore";
+import { CollectionConfig, CollectionSlug, Where } from "payload";
+import { roleToAuthority } from "../fields/authority/utils";
 
 export const pagesAccess: CollectionConfig["access"] = {
   create: isAdmin,
@@ -85,7 +85,7 @@ export const mediaAccess: CollectionConfig["access"] = {
         },
         {
           author: {
-            like: user?.id
+            equals: user?.id
           }
         }
       ]
@@ -112,9 +112,9 @@ export type LockedAccessCollection = Extract<
   | "surf"
   | "media"
   | "userMedia"
-	| "profile"
+  | "profile"
   | "assets"
-	| "tracks"
+  | "tracks"
 >;
 export type CollectionAccessMap<T extends LockedAccessCollection> = {
   [key in T]: CollectionConfig<T>["access"];

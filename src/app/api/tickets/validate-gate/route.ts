@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { timingSafeEqual } from "crypto";
+import { isSameOrigin } from "@/lib/api/isSameOrigin";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { safeEqual } from "@/lib/api/safeEqual";
 
 export const runtime = "nodejs";
 
@@ -10,30 +12,6 @@ const BodySchema = z.object({
   event_slug: z.string().min(1).max(200),
   password: z.string().min(1).max(200)
 });
-
-const isSameOrigin = (req: NextRequest): boolean => {
-  const allowed = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!allowed) return true;
-  const candidate =
-    req.headers.get("origin") ?? req.headers.get("referer") ?? "";
-  if (!candidate) return false;
-  try {
-    const u = new URL(candidate);
-    const a = new URL(allowed);
-    return u.host === a.host && u.protocol === a.protocol;
-  } catch {
-    return false;
-  }
-};
-
-const safeEqual = (a: string, b: string): boolean => {
-  const max = Math.max(a.length, b.length, 1);
-  const aBuf = Buffer.alloc(max);
-  const bBuf = Buffer.alloc(max);
-  aBuf.write(a);
-  bBuf.write(b);
-  return a.length === b.length && timingSafeEqual(aBuf, bBuf);
-};
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!isSameOrigin(req)) {
@@ -43,12 +21,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Brute-force defense: gate passwords are short shared secrets.
+  const rl = await rateLimitOr429(req, "auth");
+  if (rl) return rl;
+
   let body: z.infer<typeof BodySchema>;
   try {
     body = BodySchema.parse(await req.json());
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: "bad-request", detail: String(err) },
+      { ok: false, error: "bad-request" },
       { status: 400 }
     );
   }

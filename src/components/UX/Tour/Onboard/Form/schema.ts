@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { httpUrl } from "@/lib/api/httpUrlSchema";
 
 // ─── Per-step schemas (used by parseValuesWithSchema in validators) ──────────
 
@@ -23,7 +24,7 @@ export const profileSchema = z.object({
 export const detailsSchema = z.object({
   details: z.object({
     location: z.string().optional(),
-    link: z.url({ message: "Link must be a valid URL." }).optional()
+    link: httpUrl.optional()
   })
 });
 

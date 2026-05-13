@@ -14,7 +14,7 @@ import {
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { MotionBtn } from "../../core/Button";
+import { MotionBtn } from "@/components/core/Button";
 
 export type BookmarkButtonProps = {
   collectionSlug: Bookmark["target"]["relationTo"];

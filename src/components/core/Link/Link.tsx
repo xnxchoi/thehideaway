@@ -1,7 +1,7 @@
 "use client";
 
-import { useDomCursor } from "@/components/core/cursorWrapper";
-import { RPLinkProps, RPLinkPropsWithRef } from "@/components/core/Link/types";
+import { useDomCursor } from "../cursorWrapper";
+import { RPLinkProps, RPLinkPropsWithRef } from "../Link/types";
 import { cn } from "@/lib/utils";
 import { isInternalLink } from "@/utilities/isInternalLink";
 import { useLenis } from "lenis/react";

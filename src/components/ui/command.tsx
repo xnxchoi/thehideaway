@@ -14,7 +14,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { useSearchBar } from "@/providers/RP_Pro";
-import { useDomCursor } from "../core/cursorWrapper";
+import { useDomCursor } from "@/components/core/cursorWrapper";
 const KommandPrimitive = m.create(CommandPrimitive);
 function Kommand({
   children,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useIdleDetection } from "src/components/content/Radio/hooks/useIdleDetection";
+import { useIdleDetection } from "../../Radio/hooks/useIdleDetection";
 import { SPRING_EASE, TE } from "src/constants/animations";
 import { useAudioLevel, usePlayState } from "src/providers/HideawayFM/hooks";
 import { useTheme } from "src/providers/Theme";

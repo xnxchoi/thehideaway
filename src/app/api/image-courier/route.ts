@@ -1,53 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { safeFetch } from "@/lib/api/safeFetch";
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 const TIMEOUT_MS = 10_000;
 const ALLOWED_CONTENT_TYPE_PREFIX = "image/";
 
-function isBlockedHost(hostname: string): boolean {
-  const host = hostname.toLowerCase();
-
-  if (
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    host === "::1" ||
-    host === "0.0.0.0" ||
-    host === "[::1]" ||
-    host === "[::]"
-  ) {
-    return true;
-  }
-
-  // Strip brackets from IPv6 literals
-  const bare = host.replace(/^\[|\]$/g, "");
-
-  // IPv4 literal
-  const ipv4 = bare.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
-  if (ipv4) {
-    const [, aStr, bStr] = ipv4;
-    const a = Number(aStr);
-    const b = Number(bStr);
-    if (a === 10) return true; // 10.0.0.0/8
-    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
-    if (a === 192 && b === 168) return true; // 192.168.0.0/16
-    if (a === 127) return true; // 127.0.0.0/8 (loopback)
-    if (a === 169 && b === 254) return true; // 169.254.0.0/16 (link-local, AWS metadata)
-    if (a === 0) return true; // 0.0.0.0/8
-    if (a >= 224) return true; // multicast + reserved
-    if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10 (CGNAT)
-  }
-
-  // IPv6: reject any literal containing a colon that isn't a well-known public form.
-  // Simplest safe policy: block all raw IPv6 literals.
-  if (bare.includes(":")) return true;
-
-  // Block .local / .internal / .localhost / .intranet TLDs
-  if (/\.(local|internal|localhost|intranet)$/.test(host)) return true;
-
-  return false;
-}
-
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const rl = await rateLimitOr429(request, "expensive");
+  if (rl) return rl;
+
   const url = request.nextUrl.searchParams.get("url");
 
   if (!url) {
@@ -61,31 +23,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return new NextResponse("Invalid URL", { status: 400 });
   }
 
-  if (!["http:", "https:"].includes(parsed.protocol)) {
-    return new NextResponse("Only http/https allowed", { status: 400 });
-  }
-
-  if (isBlockedHost(parsed.hostname)) {
-    return new NextResponse("Blocked host", { status: 400 });
-  }
-
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const response = await fetch(parsed.toString(), {
+    const response = await safeFetch(parsed, {
       method: "GET",
       headers: {
         Accept: "image/*",
         "User-Agent":
-          "Mozilla/5.0 (compatible; HideawayBot/1.0; +https://hideawayseoul.com)",
+          "Mozilla/5.0 (compatible; HideawayBot/1.0; +https://hideawayseoul.com)"
       },
       signal: controller.signal,
-      redirect: "follow",
       cache: "force-cache",
       next: {
-        revalidate: 24 * 7 * 3600,
-      },
+        revalidate: 24 * 7 * 3600
+      }
     });
 
     if (!response.ok) {
@@ -137,12 +90,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=86400",
-        "X-Content-Type-Options": "nosniff",
-      },
+        "X-Content-Type-Options": "nosniff"
+      }
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       return new NextResponse("Request timed out", { status: 504 });
+    }
+    if (
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === "blocked-host"
+    ) {
+      return new NextResponse("Blocked host", { status: 400 });
     }
     console.error("Image proxy error:", error);
     return new NextResponse("Failed to fetch image", { status: 500 });

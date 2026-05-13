@@ -3,8 +3,8 @@
 import { Link } from "@/components/core/Link/Link";
 import { RP_Btn } from "@/components/core/Button";
 import { RPage } from "@/components/UX/Transition";
-import { DataTablePagination } from "@/components/data-table/data-table-pagination";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { DataTablePagination } from "../../../../../../components/ui/data-table/data-table-pagination";
+import { DataTableToolbar } from "../../../../../../components/ui/data-table/data-table-toolbar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,

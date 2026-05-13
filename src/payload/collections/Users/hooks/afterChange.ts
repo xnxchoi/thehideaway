@@ -1,14 +1,19 @@
 "use server";
-import {User} from "@/payload-types";
-import {createNotification} from "@/payload/collections/Notifications/hooks/createNotification";
-import {RequireKeysAndRestOptional} from "@/utilities/typeUtilities";
+import { User } from "@/payload-types";
+import { createNotification } from "@/payload/collections/Notifications/hooks/createNotification";
+import { RequireKeysAndRestOptional } from "@/utilities/typeUtilities";
 import config from "@payload-config";
-import {DateTime} from "luxon";
-import pload, {CollectionAfterChangeHook, CollectionSlug, PayloadRequest} from "payload";
-import {cache} from "react";
+import { DateTime } from "luxon";
+import pload, {
+  CollectionAfterChangeHook,
+  CollectionSlug,
+  PayloadRequest
+} from "payload";
+import { cache } from "react";
 
 export const afterChangeUsers: CollectionAfterChangeHook<User> = async ({
-                                                                          doc, data,
+  doc,
+  data,
   req,
   operation
 }) => {
@@ -33,57 +38,43 @@ export const onboardUser = async (args: {
     payload.logger.error("No user ID provided");
     return;
   }
-  const serverUrl =
-    process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
+
   try {
-    // Queue the job using the Local API (this still works for queuing)
+    // Queue the welcome task. The job is durable — it survives restarts
+    // because Payload persists it before queue() returns.
     const job = await payload.jobs.queue({
       task: "welcomeUser",
-      input: {
-        userId
-      },
-      ...((req && { req }) || {}),
-      waitUntil: new Date(Date.now() + 2000) // Wait 2 seconds
+      input: { userId },
+      ...((req && { req }) || {})
     });
 
     payload.logger.info(`Queued welcomeUser task ${job.id} for User ${userId}`);
 
-    // Trigger job execution via HTTP endpoint
-    setTimeout(async () => {
-      try {
-        const jobResponse = await fetch(`${serverUrl}/api/payload-jobs/run`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(process.env.CRON_SECRET && {
-              Authorization: `Bearer ${process.env.CRON_SECRET}`
-            })
-          },
-          credentials: "include"
-        });
-
-        if (jobResponse.ok) {
-          const result = await jobResponse.json();
-          payload.logger.info(
-            `Successfully triggered job execution for user ${userId}: ${JSON.stringify(
-              result
-            )}`
-          );
-        } else {
-          const errorText = await jobResponse.text();
-          payload.logger.warn(
-            `Failed to trigger job execution for user ${userId}: ${jobResponse.status} ${errorText}`
-          );
-        }
-      } catch (jobError) {
-        payload.logger.warn(
-          `Error triggering job execution for user ${userId}: ${(jobError as Error).message}`
+    // Run the queue in-process via the local API. The previous implementation
+    // self-HTTP'd `/api/payload-jobs/run` with the CRON_SECRET as a Bearer
+    // token, which (a) exposed the secret to any reverse proxy or APM tool
+    // sitting between the server and itself, (b) used `setTimeout` so a
+    // restart mid-flight dropped the trigger silently, and (c) added a
+    // pointless network round-trip for an operation that runs in the same
+    // process. The local API call is durable, synchronous-ish (awaited),
+    // and never touches the network.
+    payload.jobs
+      .run({ allQueues: false })
+      .then((result) => {
+        payload.logger.info(
+          `Ran welcomeUser queue for user ${userId}: ${JSON.stringify(result)}`
         );
-      }
-    }, 2000); // Wait 2 seconds for job execution
+      })
+      .catch((runErr) => {
+        payload.logger.warn(
+          `Error running welcomeUser job for user ${userId}: ${
+            (runErr as Error).message
+          }`
+        );
+      });
   } catch (queueError) {
     payload.logger.error(
-      `Failed to queue gallery sync task for user ${userId}: ${(queueError as Error).message}`
+      `Failed to queue welcomeUser task for user ${userId}: ${(queueError as Error).message}`
     );
   }
 };

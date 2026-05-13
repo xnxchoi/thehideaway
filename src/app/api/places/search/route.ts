@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { currentUser } from "@/lib/auth/context/get-context-props";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
 
 /**
  * Mapbox-backed city autocomplete for the settings location field.
@@ -11,9 +12,9 @@ import { currentUser } from "@/lib/auth/context/get-context-props";
  *
  * Auth: session-required. Anonymous calls 401. Discourages key-scraping.
  *
- * Rate limit: light per-session (in-process, best-effort) — 30 reqs / 60s
- * per session id. The component already debounces 250ms client-side, so
- * a real user won't hit this.
+ * Rate limit: shared `search` preset via `src/lib/api/rateLimit.ts`
+ * (in-memory now, Redis-swappable later). The component already debounces
+ * 250ms client-side, so a real user won't hit this.
  *
  * Token: server-side only. `MAPBOX_API_KEY` (no `NEXT_PUBLIC_` prefix).
  */
@@ -34,26 +35,6 @@ interface PlaceResult {
   label: string;
   /** Stored value — same as label for v1. */
   value: string;
-}
-
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 30;
-
-// In-process rate limit map. Best-effort; resets on dev reload. For
-// production we'd back this with Redis or the existing rate limit
-// infrastructure if there is one.
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function rateLimitOk(key: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  if (!entry || entry.resetAt < now) {
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return false;
-  entry.count += 1;
-  return true;
 }
 
 function extractCountry(feature: MapboxFeature): string | null {
@@ -80,12 +61,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  if (!rateLimitOk(user.id)) {
-    return NextResponse.json(
-      { error: "Too many requests. Please slow down." },
-      { status: 429 }
-    );
-  }
+  const rl = await rateLimitOr429(request, "search", user.id);
+  if (rl) return rl;
 
   // Mapbox Geocoding v5 endpoint. `place` covers cities and large
   // settlements; `locality` covers smaller towns. Together they give

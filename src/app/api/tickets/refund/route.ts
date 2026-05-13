@@ -5,6 +5,9 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { isSameOrigin } from "@/lib/api/isSameOrigin";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { beginIdempotent } from "@/lib/api/idempotency";
 import { TicketMailer } from "@/lib/email/ticket-mailer";
 import { quoteRefund } from "@/lib/tickets/refund-schedule";
 
@@ -35,21 +38,6 @@ const BodySchema = z.object({
   /** Optional admin note, surfaced in logs but not in the email. */
   note: z.string().max(500).optional()
 });
-
-const isSameOrigin = (req: NextRequest): boolean => {
-  const allowed = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!allowed) return true;
-  const candidate =
-    req.headers.get("origin") ?? req.headers.get("referer") ?? "";
-  if (!candidate) return false;
-  try {
-    const u = new URL(candidate);
-    const a = new URL(allowed);
-    return u.host === a.host && u.protocol === a.protocol;
-  } catch {
-    return false;
-  }
-};
 
 const idOf = (rel: unknown): string | null => {
   if (typeof rel === "string") return rel;
@@ -103,6 +91,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Mutation rate limit + idempotent replay protection — double-click on
+  // the Refund button returns the original result instead of issuing a
+  // second email + notification (and, post-PortOne, a second PG refund).
+  const rl = await rateLimitOr429(req, "mutation", String(session.user.id));
+  if (rl) return rl;
+  const idem = beginIdempotent(req, "tickets/refund", String(session.user.id));
+  const replay = idem.get();
+  if (replay) return replay as NextResponse;
+
   const payload = await getPayload({ config });
 
   let body: z.infer<typeof BodySchema>;
@@ -110,7 +107,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     body = BodySchema.parse(await req.json());
   } catch (err) {
     return NextResponse.json(
-      { ok: false, error: "bad-request", detail: String(err) },
+      { ok: false, error: "bad-request" },
       { status: 400 }
     );
   }
@@ -165,14 +162,33 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ? Math.round((ticketPrice * body.override_percent) / 100)
       : quote.refundAmount;
 
-  await payload.update({
+  // Conditional update — guards against two concurrent refund clicks
+  // (without an idempotency key) both passing the `status` check above
+  // and both running the side effects. The `where` predicate ensures
+  // only one of the racing requests transitions the row; the other
+  // sees `affected: 0` and reports `already-canceled`.
+  const updateResult = await payload.update({
     collection: "tickets",
-    id: ticket.id,
     overrideAccess: true,
+    where: {
+      and: [
+        { id: { equals: ticket.id } },
+        { status: { in: ["pending", "active"] } }
+      ]
+    },
     data: {
       status: "canceled"
     } as never
   });
+  const affected =
+    (updateResult as { docs?: unknown[] } | undefined)?.docs?.length ?? 0;
+  if (affected === 0) {
+    // Lost the race — another request just canceled this ticket.
+    return NextResponse.json(
+      { ok: false, error: "already-canceled" },
+      { status: 409 }
+    );
+  }
 
   payload.logger.info?.(
     `[tickets/refund] ticket ${ticket.id} canceled by ${session.user.id}; refund ${refundPercent}% = ₩${refundAmount}${body.note ? ` (note: ${body.note})` : ""}`
@@ -226,7 +242,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       ok: true,
       ticket_id: ticket.id,
@@ -236,4 +252,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     },
     { status: 200 }
   );
+  await idem.put(response);
+  return response;
 }

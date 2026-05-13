@@ -28,7 +28,7 @@ import {
 } from "react";
 import { Drawer } from "vaul";
 import { useShallow } from "zustand/shallow";
-import { Button } from "../../../core/Button";
+import { Button } from "@/components/core/Button";
 import { isValidAuthor, SignInTriggerButton, UserBar } from "./author-ui";
 import { useCitations } from "./CitationProvider";
 import { useHighlighter } from "./HighlighterProvider";
@@ -356,15 +356,15 @@ const MemoInputField = () => {
                             } else if (mamu.length < 1) {
                               throw new HighlightCreateError("memo", "empty");
                             }
-                              const y = await creater({
+                            const y = await creater({
                               params: { memo: memoVal.current, private: false },
-                                container: targetContainer.current
-                              });
-                              if (!y)
-                                throw new HighlightCreateError(
-                                  "unknown",
-                                  "unknown"
-                                );
+                              container: targetContainer.current
+                            });
+                            if (!y)
+                              throw new HighlightCreateError(
+                                "unknown",
+                                "unknown"
+                              );
                             setSaving(false);
                             setValue("");
                             setCursorState(null);

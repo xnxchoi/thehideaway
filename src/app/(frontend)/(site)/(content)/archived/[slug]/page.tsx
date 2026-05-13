@@ -1,7 +1,7 @@
 import {
   ArchiveFeatureCard,
   OverviewAgnosticItem
-} from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
+} from "../../../../../../components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { CategoryAccent } from "@/components/identity/accent/CategoryAccent";
 import { getCategoryAccent } from "@/components/identity/accent/getCategoryAccent";
 import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";

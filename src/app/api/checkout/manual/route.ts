@@ -4,6 +4,9 @@ import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import type { Plan } from "@/payload-types";
+import { isSameOrigin } from "@/lib/api/isSameOrigin";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { beginIdempotent } from "@/lib/api/idempotency";
 
 export const runtime = "nodejs";
 
@@ -12,21 +15,6 @@ const BodySchema = z.object({
   method: z.enum(["bank_transfer", "cash"]),
   note: z.string().max(500).optional()
 });
-
-const isSameOrigin = (req: NextRequest): boolean => {
-  const allowed = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!allowed) return true;
-  const candidate =
-    req.headers.get("origin") ?? req.headers.get("referer") ?? "";
-  if (!candidate) return false;
-  try {
-    const u = new URL(candidate);
-    const a = new URL(allowed);
-    return u.host === a.host && u.protocol === a.protocol;
-  } catch {
-    return false;
-  }
-};
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!isSameOrigin(req)) {
@@ -53,12 +41,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const rl = await rateLimitOr429(req, "mutation", String(auth.user.id));
+  if (rl) return rl;
+
+  // Idempotent replay protection — double-click on the checkout button
+  // returns the same pending subscription instead of minting a duplicate.
+  const idem = beginIdempotent(req, "checkout/manual", String(auth.user.id));
+  const replay = idem.get();
+  if (replay) return replay as NextResponse;
+
   let body: z.infer<typeof BodySchema>;
   try {
     body = BodySchema.parse(await req.json());
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: "bad-request", detail: String(err) },
+      { ok: false, error: "bad-request" },
       { status: 400 }
     );
   }
@@ -78,19 +75,122 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const created = await payload.create({
-    collection: "subscriptions",
-    overrideAccess: true,
-    data: {
-      user: String(auth.user.id),
-      plan: plan.id,
-      start_date: new Date().toISOString(),
-      subscription_status: "pending",
-      paid: false,
-      request_method: body.method,
-      ...(body.note ? { request_note: body.note } : {})
+  // Pre-create dedup — without a unique partial index on
+  // (user, plan, subscription_status='pending'), two clicks from two
+  // tabs (no shared idempotency-key) would each create a new pending
+  // row. Returning the existing pending sub here keeps the admin
+  // inbox uncluttered and avoids ambiguous "which pending do I
+  // confirm?" reconciliation.
+  //
+  // Caveat: this read-then-create still has a sub-second TOCTOU
+  // window. Two genuinely-simultaneous requests can both miss the
+  // existing row. Sprint 1 closes this with a partial unique index
+  // (requires migration).
+  const userId = String(auth.user.id);
+  const existing = await payload
+    .find({
+      collection: "subscriptions",
+      overrideAccess: true,
+      depth: 0,
+      limit: 1,
+      where: {
+        and: [
+          { user: { equals: userId } },
+          { plan: { equals: plan.id } },
+          { subscription_status: { equals: "pending" } }
+        ]
+      }
+    })
+    .catch(() => null);
+  const existingPending = existing?.docs?.[0] as { id: string } | undefined;
+  if (existingPending) {
+    const replayResponse = NextResponse.json(
+      {
+        ok: true,
+        subscriptionId: existingPending.id,
+        status: "pending",
+        method: body.method,
+        deduped: true
+      },
+      { status: 200 }
+    );
+    await idem.put(replayResponse);
+    return replayResponse;
+  }
+
+  // Backstop for the sub-second TOCTOU window: the partial unique index
+  // `subscriptions_pending_user_plan_uniq` rejects a second pending row
+  // for the same (user, plan). If we race past the pre-check above, we
+  // catch the unique-violation and re-fetch the row the winner created.
+  let created: { id: string };
+  try {
+    created = (await payload.create({
+      collection: "subscriptions",
+      overrideAccess: true,
+      data: {
+        user: userId,
+        plan: plan.id,
+        start_date: new Date().toISOString(),
+        subscription_status: "pending",
+        paid: false,
+        request_method: body.method,
+        ...(body.note ? { request_note: body.note } : {})
+      }
+    })) as { id: string };
+  } catch (err) {
+    const msg = (err as Error).message ?? "";
+    // pg unique-violation surfaces with code 23505; Drizzle bubbles the
+    // index name in the message. Detect either signal.
+    const isUniqueViolation =
+      msg.includes("subscriptions_pending_user_plan_uniq") ||
+      msg.includes("duplicate key") ||
+      (err as { code?: string }).code === "23505";
+    if (!isUniqueViolation) {
+      payload.logger.error?.(
+        `[manual checkout] subscription create failed: ${msg}`
+      );
+      return NextResponse.json(
+        { ok: false, error: "create-failed" },
+        { status: 500 }
+      );
     }
-  });
+    const race = await payload.find({
+      collection: "subscriptions",
+      overrideAccess: true,
+      depth: 0,
+      limit: 1,
+      where: {
+        and: [
+          { user: { equals: userId } },
+          { plan: { equals: plan.id } },
+          { subscription_status: { equals: "pending" } }
+        ]
+      }
+    });
+    const winner = race.docs?.[0] as { id: string } | undefined;
+    if (!winner) {
+      // The unique violation said "exists", but a follow-up read shows
+      // nothing — the winning row must have been canceled between the
+      // collision and our re-read. Fall through to a 409 rather than
+      // creating a fresh row that re-races.
+      return NextResponse.json(
+        { ok: false, error: "race-no-winner" },
+        { status: 409 }
+      );
+    }
+    const replayResponse = NextResponse.json(
+      {
+        ok: true,
+        subscriptionId: winner.id,
+        status: "pending",
+        method: body.method,
+        deduped: true
+      },
+      { status: 200 }
+    );
+    await idem.put(replayResponse);
+    return replayResponse;
+  }
 
   // Best-effort admin notification — failure here must not block the response.
   try {
@@ -100,7 +200,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       data: {
         to: process.env.ADMIN_EMAIL ?? "concierge@hideawayseoul.com",
         subject: `[Hideaway] Manual subscription pending — ${plan.tier_label}`,
-        body: `User ${String(auth.user.id)} requested a ${
+        body: `User ${userId} requested a ${
           body.method
         } subscription to "${plan.name}".\n\nNote: ${body.note ?? "—"}\n\nMark Subscription ${created.id} as paid in /vault to activate.`
       } as never
@@ -111,7 +211,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       ok: true,
       subscriptionId: created.id,
@@ -120,4 +220,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     },
     { status: 200 }
   );
+  await idem.put(response);
+  return response;
 }

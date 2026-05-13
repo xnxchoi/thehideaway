@@ -1,4 +1,4 @@
-import { LegalShell } from "@/components/core/LegalShell/LegalShell";
+import { DocsShell } from "@/components/core/Docs/DocsShell";
 import { RPage } from "@/components/UX/Transition";
 import { BUSINESS } from "@/constants/business";
 import type { Metadata } from "next";
@@ -34,7 +34,7 @@ export default async function RefundPage() {
 
   return (
     <RPage type="pages" slug={["refund"]}>
-      <LegalShell
+      <DocsShell
         eyebrow={isKo ? "법적 고지" : "Legal"}
         title={isKo ? "취소·환불 정책" : "Refund Policy"}
         lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
@@ -51,7 +51,7 @@ export default async function RefundPage() {
         ]}
       >
         {isKo ? <RefundKo /> : <RefundEn />}
-      </LegalShell>
+      </DocsShell>
     </RPage>
   );
 }

@@ -1,33 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { safeFetch } from "@/lib/api/safeFetch";
 
 const MAX_BYTES = 50 * 1024; // 50 KB
 const TIMEOUT_MS = 8000;
-
-function isBlockedHost(hostname: string): boolean {
-  if (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname === "::1" ||
-    hostname === "0.0.0.0"
-  )
-    return true;
-
-  const ipv4 = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
-  if (ipv4) {
-    const [, a, b] = ipv4.map(Number);
-    if (a === 10) return true; // 10.x.x.x
-    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16–31.x.x
-    if (a === 192 && b === 168) return true; // 192.168.x.x
-    if (a === 127) return true; // 127.x.x.x
-    if (a === 169 && b === 254) return true; // 169.254.x.x (link-local)
-    if (a === 0) return true; // 0.x.x.x
-  }
-
-  // Block .local / .internal / .localhost TLDs
-  if (/\.(local|internal|localhost|intranet)$/.test(hostname)) return true;
-
-  return false;
-}
 
 function extractMeta(html: string, property: string): string | null {
   // Match both attribute orderings
@@ -67,11 +43,17 @@ function extractMetaName(html: string, name: string): string | null {
 }
 
 export async function GET(request: NextRequest) {
+  const rl = await rateLimitOr429(request, "expensive");
+  if (rl) return rl;
+
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url")?.trim();
 
   if (!url) {
-    return NextResponse.json({ error: "url parameter required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "url parameter required" },
+      { status: 400 }
+    );
   }
 
   let parsed: URL;
@@ -79,14 +61,6 @@ export async function GET(request: NextRequest) {
     parsed = new URL(url);
   } catch {
     return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
-  }
-
-  if (!["http:", "https:"].includes(parsed.protocol)) {
-    return NextResponse.json({ error: "Only http/https allowed" }, { status: 400 });
-  }
-
-  if (isBlockedHost(parsed.hostname)) {
-    return NextResponse.json({ error: "Blocked host" }, { status: 400 });
   }
 
   const empty = {
@@ -101,14 +75,14 @@ export async function GET(request: NextRequest) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    const response = await fetch(url, {
+    const response = await safeFetch(parsed, {
       signal: controller.signal,
       headers: {
         "User-Agent":
           "Mozilla/5.0 (compatible; HideawayBot/1.0; +https://hideawayseoul.com)",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-      },
-      redirect: "follow"
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      }
     });
 
     clearTimeout(timeout);
@@ -188,6 +162,12 @@ export async function GET(request: NextRequest) {
   } catch (error: unknown) {
     if (error instanceof Error && error.name === "AbortError") {
       return NextResponse.json({ error: "Request timed out" }, { status: 504 });
+    }
+    if (
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === "blocked-host"
+    ) {
+      return NextResponse.json({ error: "Blocked host" }, { status: 400 });
     }
     return NextResponse.json(empty, {
       headers: { "Cache-Control": "public, max-age=60" }

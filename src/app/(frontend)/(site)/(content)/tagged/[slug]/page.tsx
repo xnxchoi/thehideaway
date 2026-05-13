@@ -1,7 +1,7 @@
 import {
   ArchiveFeatureCard,
   OverviewAgnosticItem
-} from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
+} from "../../../../../../components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { Link } from "@/components/core/Link/Link";
 import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
 import { TagButton } from "@/components/UX/TagButton";

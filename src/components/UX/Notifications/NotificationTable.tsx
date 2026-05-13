@@ -1,7 +1,7 @@
 "use client";
 
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { DataTableColumnHeader } from "../../ui/data-table/data-table-column-header";
+import { DataTableToolbar } from "../../ui/data-table/data-table-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";
@@ -23,10 +23,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { DataTable } from "../../ui/data-table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "../../core/Button";
+import { Button } from "@/components/core/Button";
 import { useHumanDate } from "@/hooks/useLocaleDate";
 import type { DataTableRowAction } from "@/types/data-table";
 import { NAction } from "./Table/ActionBar";

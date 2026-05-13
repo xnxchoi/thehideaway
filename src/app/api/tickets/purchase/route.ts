@@ -5,6 +5,11 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { nanoid } from "nanoid";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { isSameOrigin } from "@/lib/api/isSameOrigin";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { safeEqual } from "@/lib/api/safeEqual";
+import { beginIdempotent } from "@/lib/api/idempotency";
+import { eventPurchaseLock, nextTicketNumber } from "@/lib/db/sequences";
 import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
 
 export const runtime = "nodejs";
@@ -26,21 +31,6 @@ const BodySchema = z.object({
    */
   gifts: z.array(GiftSchema).max(9).optional()
 });
-
-const isSameOrigin = (req: NextRequest): boolean => {
-  const allowed = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!allowed) return true;
-  const candidate =
-    req.headers.get("origin") ?? req.headers.get("referer") ?? "";
-  if (!candidate) return false;
-  try {
-    const u = new URL(candidate);
-    const a = new URL(allowed);
-    return u.host === a.host && u.protocol === a.protocol;
-  } catch {
-    return false;
-  }
-};
 
 type EventDoc = {
   id: string;
@@ -72,14 +62,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Brute-force defense on gate password compare + general transactional throttle.
+  const rl = await rateLimitOr429(req, "auth", String(session.user.id));
+  if (rl) return rl;
+
+  // Idempotent replay protection — clients pass `Idempotency-Key` (a UUID
+  // they persist across retries). A double-submit replays the original
+  // response instead of minting a second batch of tickets.
+  const idem = beginIdempotent(
+    req,
+    "tickets/purchase",
+    String(session.user.id)
+  );
+  const replay = idem.get();
+  if (replay) return replay as NextResponse;
+
   const payload = await getPayload({ config });
 
   let body: z.infer<typeof BodySchema>;
   try {
     body = BodySchema.parse(await req.json());
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: "bad-request", detail: String(err) },
+      { ok: false, error: "bad-request" },
       { status: 400 }
     );
   }
@@ -96,9 +101,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const event = found?.docs?.[0] as EventDoc | undefined;
   if (!event) {
+    // Compare against a placeholder so an attacker can't distinguish
+    // "event missing" from "event present, wrong password" via timing.
+    safeEqual(body.password, "_no_event_password_placeholder_");
     return NextResponse.json(
-      { ok: false, error: "event-not-found" },
-      { status: 404 }
+      { ok: false, error: "invalid-password" },
+      { status: 401 }
     );
   }
   if (event.state !== "open") {
@@ -108,7 +116,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if ((event.gate_password ?? "") !== body.password) {
+  if (!safeEqual(body.password, event.gate_password ?? "")) {
     return NextResponse.json(
       { ok: false, error: "invalid-password" },
       { status: 401 }
@@ -116,110 +124,151 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const userId = String(session.user.id);
-
-  // Capacity check: count active+pending tickets across all users.
-  if (event.capacity && event.capacity > 0) {
-    const total = await payload.count({
-      collection: "tickets",
-      overrideAccess: true,
-      where: {
-        and: [
-          { event: { equals: event.id } },
-          { status: { in: ["pending", "active", "used"] } }
-        ]
-      }
-    });
-    const remaining = event.capacity - (total.totalDocs ?? 0);
-    if (remaining < body.quantity) {
-      return NextResponse.json(
-        { ok: false, error: "sold-out", remaining: Math.max(0, remaining) },
-        { status: 409 }
-      );
-    }
-  }
-
-  // Per-user cap: count purchaser's existing tickets for this event.
   const cap = event.max_per_user ?? 3;
-  const existingForUser = await payload.count({
-    collection: "tickets",
-    overrideAccess: true,
-    where: {
-      and: [
-        { event: { equals: event.id } },
-        { purchaser: { equals: userId } },
-        { status: { in: ["pending", "active", "used"] } }
-      ]
-    }
-  });
-  const userRemaining = cap - (existingForUser.totalDocs ?? 0);
-  if (userRemaining < body.quantity) {
+
+  // ── Money-resilient ticket mint ──────────────────────────────────────
+  // The capacity + per-user cap + creation steps run inside a single
+  // Postgres transaction. A per-event advisory lock serializes concurrent
+  // purchases for the SAME event so two requests can't both pass the
+  // count check and over-sell. Different events get different lock keys
+  // and don't contend with each other.
+  //
+  // `ticket_number` comes from a real Postgres sequence (atomic; never
+  // duplicates even under unbounded concurrency), so we don't need the
+  // `max() + 1` pattern that used to race on the unique index.
+  const transactionID = await payload.db.beginTransaction();
+  if (!transactionID) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: "user-cap-reached",
-        cap,
-        remaining: Math.max(0, userRemaining)
-      },
-      { status: 409 }
+      { ok: false, error: "transaction-failed" },
+      { status: 500 }
     );
   }
+  // `req` stub passed through every transactional Payload op below.
+  // It needs `payload` (the `enforceTicketCap` beforeValidate hook
+  // reads `req.payload.findByID`) and `transactionID` (Payload's
+  // Drizzle adapter routes ops through `sessions[transactionID].db`
+  // when set; without it the ops run on the default pool, outside
+  // the lock).
+  const txReq = {
+    payload,
+    transactionID,
+    context: {}
+  } as Parameters<typeof payload.count>[0]["req"];
 
-  // Auto-increment ticket_number — same pattern as invoice_number.
-  const last = await payload.find({
-    collection: "tickets",
-    limit: 1,
-    sort: "-ticket_number",
-    overrideAccess: true,
-    depth: 0
-  });
-  const lastNumber =
-    (last.docs?.[0] as { ticket_number?: number } | undefined)?.ticket_number ??
-    0;
-
-  const created: Array<{
+  type CreatedTicket = {
     id: string;
     ticket_number: number;
     claim_token: string | null;
     claim_url: string | null;
     recipient_email: string | null;
-  }> = [];
+  };
 
-  for (let i = 0; i < body.quantity; i++) {
-    const isPurchaserOwn = i === 0;
-    const claimToken = isPurchaserOwn ? null : nanoid(24);
-    const checkInCode = nanoid(16);
-    const ticketNumber = lastNumber + 1 + i;
-    const giftIndex = isPurchaserOwn ? -1 : i - 1;
-    const giftDetail = giftIndex >= 0 ? body.gifts?.[giftIndex] : undefined;
-    const claimEmail = giftDetail?.email ?? null;
+  let created: CreatedTicket[];
+  try {
+    // Serialize same-event purchases. Held until commit/rollback.
+    await eventPurchaseLock(payload, transactionID, event.id);
 
-    const doc = await payload.create({
+    // Capacity check (now race-free: only one purchaser per event runs
+    // through here at a time).
+    if (event.capacity && event.capacity > 0) {
+      const total = await payload.count({
+        collection: "tickets",
+        overrideAccess: true,
+        req: txReq,
+        where: {
+          and: [
+            { event: { equals: event.id } },
+            { status: { in: ["pending", "active", "used"] } }
+          ]
+        }
+      });
+      const remaining = event.capacity - (total.totalDocs ?? 0);
+      if (remaining < body.quantity) {
+        await payload.db.rollbackTransaction(transactionID);
+        return NextResponse.json(
+          { ok: false, error: "sold-out", remaining: Math.max(0, remaining) },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Per-user cap.
+    const existingForUser = await payload.count({
       collection: "tickets",
       overrideAccess: true,
-      data: {
+      req: txReq,
+      where: {
+        and: [
+          { event: { equals: event.id } },
+          { purchaser: { equals: userId } },
+          { status: { in: ["pending", "active", "used"] } }
+        ]
+      }
+    });
+    const userRemaining = cap - (existingForUser.totalDocs ?? 0);
+    if (userRemaining < body.quantity) {
+      await payload.db.rollbackTransaction(transactionID);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "user-cap-reached",
+          cap,
+          remaining: Math.max(0, userRemaining)
+        },
+        { status: 409 }
+      );
+    }
+
+    created = [];
+    for (let i = 0; i < body.quantity; i++) {
+      const isPurchaserOwn = i === 0;
+      const claimToken = isPurchaserOwn ? null : nanoid(24);
+      const checkInCode = nanoid(16);
+      const ticketNumber = await nextTicketNumber(payload);
+      const giftIndex = isPurchaserOwn ? -1 : i - 1;
+      const giftDetail = giftIndex >= 0 ? body.gifts?.[giftIndex] : undefined;
+      const claimEmail = giftDetail?.email ?? null;
+
+      const doc = await payload.create({
+        collection: "tickets",
+        overrideAccess: true,
+        req: txReq,
+        data: {
+          ticket_number: ticketNumber,
+          event: event.id,
+          user: isPurchaserOwn ? userId : null,
+          purchaser: userId,
+          status: "pending",
+          paid: false,
+          claim_token: claimToken,
+          claim_email: claimEmail,
+          check_in_code: checkInCode
+        } as never
+      });
+
+      const claimUrl = claimToken
+        ? `${siteUrl}/tickets/claim/${claimToken}`
+        : null;
+
+      created.push({
+        id: String(doc.id),
         ticket_number: ticketNumber,
-        event: event.id,
-        user: isPurchaserOwn ? userId : null,
-        purchaser: userId,
-        status: "pending",
-        paid: false,
         claim_token: claimToken,
-        claim_email: claimEmail,
-        check_in_code: checkInCode
-      } as never
-    });
+        claim_url: claimUrl,
+        recipient_email: claimEmail
+      });
+    }
 
-    const claimUrl = claimToken
-      ? `${siteUrl}/tickets/claim/${claimToken}`
-      : null;
-
-    created.push({
-      id: String(doc.id),
-      ticket_number: ticketNumber,
-      claim_token: claimToken,
-      claim_url: claimUrl,
-      recipient_email: claimEmail
-    });
+    await payload.db.commitTransaction(transactionID);
+  } catch (err) {
+    await payload.db.rollbackTransaction(transactionID).catch(() => undefined);
+    payload.logger.error?.(
+      `[tickets/purchase] transaction failed: ${(err as Error).message}`
+    );
+    return NextResponse.json(
+      { ok: false, error: "purchase-failed" },
+      { status: 500 }
+    );
   }
 
   // Customer-facing emails. All best-effort: a mail failure must not roll
@@ -261,7 +310,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
   }
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       ok: true,
       tickets: created,
@@ -269,4 +318,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     },
     { status: 200 }
   );
+  await idem.put(response);
+  return response;
 }

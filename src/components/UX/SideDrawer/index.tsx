@@ -23,7 +23,7 @@ import {
   useMemo
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { Controlbar } from "../Controlbar";
+import { Controlbar } from "../../Shells/Controlbar";
 import { Link } from "@/components/core/Link/Link";
 import { SIDE_DRAWER_LINKS } from "@/constants/navigation";
 import { DrawerPlayer } from "@/components/UX/TapePlayer";

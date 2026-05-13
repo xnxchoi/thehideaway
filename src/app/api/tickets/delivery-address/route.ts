@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { isSameOrigin } from "@/lib/api/isSameOrigin";
 
 export const runtime = "nodejs";
 
@@ -13,21 +14,6 @@ const BodySchema = z.object({
   address: z.string().min(1).max(500),
   phone: z.string().min(1).max(40)
 });
-
-const isSameOrigin = (req: NextRequest): boolean => {
-  const allowed = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!allowed) return true;
-  const candidate =
-    req.headers.get("origin") ?? req.headers.get("referer") ?? "";
-  if (!candidate) return false;
-  try {
-    const u = new URL(candidate);
-    const a = new URL(allowed);
-    return u.host === a.host && u.protocol === a.protocol;
-  } catch {
-    return false;
-  }
-};
 
 const idOf = (rel: unknown): string | null => {
   if (typeof rel === "string") return rel;
@@ -60,7 +46,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     body = BodySchema.parse(await req.json());
   } catch (err) {
     return NextResponse.json(
-      { ok: false, error: "bad-request", detail: String(err) },
+      { ok: false, error: "bad-request" },
       { status: 400 }
     );
   }

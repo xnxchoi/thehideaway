@@ -1,7 +1,7 @@
 "use client";
 
-import { ImageMedia } from "@/components/core/Media/Image";
-import type { MediaResource, MediaProps } from "@/components/core/Media/types";
+import { ImageMedia } from "../Media/Image";
+import type { MediaResource, MediaProps } from "../Media/types";
 import { cn } from "@/lib/utils";
 import { processFetchedImage } from "@/blocks/ImageBlock/Comp/hooks/image-processors";
 import { useCursor } from "@/providers/RP_Pro";

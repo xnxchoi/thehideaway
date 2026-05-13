@@ -19,7 +19,7 @@ export const HeadlinersRail = ({ items, className }: HeadlinersRailProps) => {
       aria-label="Headliners"
     >
       <header className="border-b border-border/30 px-5 py-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+        <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           Headliners
         </span>
       </header>
@@ -50,13 +50,13 @@ export const HeadlinersRail = ({ items, className }: HeadlinersRailProps) => {
                 <span className="font-mono text-[10px] text-muted-foreground/40 tabular-nums">
                   {formatRank(i)}
                 </span>
-                <span className="block flex-1 text-balance text-base font-medium leading-snug tracking-tight text-foreground/70 transition-colors duration-150 group-hover:text-foreground xl:text-lg [overflow-wrap:anywhere]">
+                <span className="block flex-1 text-base leading-snug font-medium tracking-tight text-balance [overflow-wrap:anywhere] text-foreground/70 transition-colors duration-150 group-hover:text-foreground xl:text-lg">
                   {item.title}
                 </span>
               </div>
 
               {(authorName || relative) && (
-                <div className="mt-1.5 pl-[calc(2.5ch+0.625rem)] font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-[11px]">
+                <div className="mt-1.5 pl-[calc(2.5ch+0.625rem)] font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
                   {authorName}
                   {authorName && relative && (
                     <span aria-hidden className="mx-2">

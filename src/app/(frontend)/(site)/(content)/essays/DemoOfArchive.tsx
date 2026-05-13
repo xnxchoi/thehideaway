@@ -1,4 +1,4 @@
-import { ArchiveFeatureCard } from "@/components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
+import { ArchiveFeatureCard } from "../../../../../components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 
 const DemoLayout = () => {

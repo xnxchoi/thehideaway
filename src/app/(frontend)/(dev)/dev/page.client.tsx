@@ -1,13 +1,13 @@
 "use client";
 
-import {Surf} from "@/components/content/surf/surf";
+import { Surf } from "../../../../components/content/surf/surf";
 
 export default function PageClient({}: {}) {
-	return (
-		<div className="flex h-screen w-screen flex-col items-center justify-center">
-			<Surf/>
-		</div>
-	);
+  return (
+    <div className="flex h-screen w-screen flex-col items-center justify-center">
+      <Surf />
+    </div>
+  );
 }
 /**<AnimatePresence mode={"sync"}>
 

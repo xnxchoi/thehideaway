@@ -1,5 +1,5 @@
 "use client";
-import { MainInternal } from "@/components/core/MainInternal";
+import { MainInternal } from "./MainInternal";
 import { Linus } from "@/components/UX/Scroll";
 import { useTourStore } from "@/components/UX/Tour/TourProvider";
 import { useRPStore } from "@/providers/RP_Pro";

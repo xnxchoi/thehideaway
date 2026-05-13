@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 
 const Plans: CollectionConfig = {
   slug: "plans",
@@ -13,8 +14,14 @@ const Plans: CollectionConfig = {
       "state"
     ]
   },
+  // Public catalog: anyone can read the pricing table. Writes are admin-only
+  // — without these guards Payload's default ("logged-in user can mutate")
+  // applied, and any member could rewrite tier/seat_limit/price.
   access: {
-    read: () => true
+    read: () => true,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin
   },
   fields: [
     {
@@ -31,7 +38,15 @@ const Plans: CollectionConfig = {
       name: "tier",
       type: "select",
       required: true,
-      options: ["member", "patron"],
+      hasMany:false,
+      defaultValue: "member",
+      options: [{
+        label: "Member",
+        value: "member"
+      }, {
+        label: "Patron",
+        value: "patron"
+      }],
       admin: {
         description: "The subscriber role this plan grants while active."
       }
@@ -108,17 +123,10 @@ const Plans: CollectionConfig = {
       ]
     },
     {
-      name: "featured",
-      type: "checkbox",
-      defaultValue: false,
-      admin: {
-        description: "Highlight this plan on the pricing page."
-      }
-    },
-    {
       name: "seat_limit",
       type: "number",
       min: 0,
+
       admin: {
         description:
           "Max active subscriptions for this plan (0 / blank = unlimited). When reached, the plan card shows 'Closed' and the CTA is disabled."
@@ -130,17 +138,6 @@ const Plans: CollectionConfig = {
       admin: {
         description:
           "Pill text shown on the card when a deal applies (e.g. 'LIMITED 5')."
-      }
-    },
-    {
-      name: "presentation",
-      type: "select",
-      required: true,
-      defaultValue: "standard",
-      options: ["standard", "founder"],
-      admin: {
-        description:
-          "'standard' = baseline tier card. 'founder' = Starliner stars + striped-out display when sold out (Patron uses this)."
       }
     },
     {

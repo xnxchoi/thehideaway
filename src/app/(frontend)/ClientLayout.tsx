@@ -1,6 +1,6 @@
 "use client";
 
-import { FXFrame } from "@/components/UX/FXFrame/FXFrame";
+import { FXFrame } from "@/components/Shells/FXFrame";
 import dynamic from "next/dynamic";
 import { ReactNode } from "react";
 

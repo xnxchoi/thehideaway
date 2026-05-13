@@ -1,4 +1,4 @@
-import { LegalShell } from "@/components/core/LegalShell/LegalShell";
+import { DocsShell } from "@/components/core/Docs/DocsShell";
 import { RPage } from "@/components/UX/Transition";
 import { BUSINESS } from "@/constants/business";
 import type { Metadata } from "next";
@@ -51,7 +51,7 @@ export default async function PrivacyPage() {
   const isKo = locale === "ko";
   return (
     <RPage type="pages" slug={["privacy"]}>
-      <LegalShell
+      <DocsShell
         eyebrow={isKo ? "법적 고지" : "Legal"}
         title={isKo ? "개인정보처리방침" : "Privacy Policy"}
         lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
@@ -69,7 +69,7 @@ export default async function PrivacyPage() {
         ) : (
           <PrivacyEn business={BUSINESS} />
         )}
-      </LegalShell>
+      </DocsShell>
     </RPage>
   );
 }

@@ -344,57 +344,75 @@
 
 //         },
 //  */
-import {CollectionConfig} from "payload";
+import { CollectionConfig } from "payload";
+import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 
 export const Prices: CollectionConfig = {
-	slug: "prices",
-	admin: {useAsTitle: "id"}, // Or use another field as title if you add one
-	fields: [
-		{
-			name: "currencies",
-			type: "array",
-			fields: [
-				{name: "amount", type: "number", required: true},
-				{
-					name: "currency",
-					type: "relationship",
-					relationTo: "currency",
-					required: true,
-					hasMany: false,
-					index: true,
-				},
-				{
-					name: "display_amount",
-					type: "text",
-					virtual: true,
-					hooks: {
-						beforeChange: [
-							({req, data, siblingData}) => {
-								delete siblingData["display_amount"];
-							},
-						],
-						afterRead: [
-							({data, req, siblingData}) => {
-								const currency = siblingData["currency"]?.name;
-								const numb = siblingData["amount"];
-								if (!currency || !numb) return;
-								const locale =
-									currency === "EUR"
-										? "fr-FR"
-										: currency === "KRW"
-											? "ko-KR"
-											: currency === "USD"
-												? "en-US"
-												: "en-IN";
-								return new Intl.NumberFormat(locale, {
-									style: "currency",
-									currency: currency,
-								}).format(numb);
-							},
-						],
-					},
-				},
-			],
-		},
-	],
+  slug: "prices",
+  admin: { useAsTitle: "id" }, // Or use another field as title if you add one
+  // Prices are referenced by Plans (which are public-readable), so reads
+  // must stay open. Writes are admin-only — without this block, Payload's
+  // default lets any authenticated user mutate the price table, which is
+  // catalog tampering as a money-flow attack.
+  access: {
+    read: () => true,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin
+  },
+  fields: [
+    {
+      name: "currencies",
+      type: "array",
+      required: true,
+      defaultValue: [
+        {
+          currency: "KRW",
+          amount: 0 ,
+        }
+      ],
+      fields: [
+        { name: "amount", type: "number", required: true,min: 0 },
+        {
+          name: "currency",
+          type: "relationship",
+          relationTo: "currency",
+          required: true,
+          hasMany: false,
+          index: true
+        },
+        {
+          name: "display_amount",
+          type: "text",
+          virtual: true,
+          hooks: {
+            beforeChange: [
+              ({ req, data, siblingData }) => {
+                delete siblingData["display_amount"];
+              }
+            ],
+            afterRead: [
+              ({ data, req, siblingData }) => {
+                const currency = siblingData["currency"]?.name;
+                const numb = siblingData["amount"];
+                if (!currency || !numb) return;
+                const locale =
+                  currency === "EUR"
+                    ? "fr-FR"
+                    : currency === "KRW"
+                      ? "ko-KR"
+                      : currency === "USD"
+                        ? "en-US"
+                        : "en-IN";
+                return new Intl.NumberFormat(locale, {
+                  style: "currency",
+                  currency: currency
+                }).format(numb);
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
 };

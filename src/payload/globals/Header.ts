@@ -1,4 +1,4 @@
-import { revalidateHeader } from "@/components/core/Header/hooks/revalidateHeader";
+import { revalidateHeader } from "../../components/Shells/Header/hooks/revalidateHeader";
 
 import { link } from "@/payload/fields/link";
 import type { GlobalConfig } from "payload";

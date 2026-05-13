@@ -1,5 +1,5 @@
 "use server";
-import { LinkedCollectionSlug } from "@/components/core/Link/types";
+import { LinkedCollectionSlug } from "../../Link/types";
 import { collectionTypeToFrontEnd } from "@/payload/collections/Posts/hooks/collectionTypeToFrontEnd";
 import config from "@payload-config";
 import { getPayload } from "payload";

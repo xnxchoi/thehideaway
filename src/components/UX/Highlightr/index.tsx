@@ -59,7 +59,7 @@ import {
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { Button } from "../../core/Button";
+import { Button } from "@/components/core/Button";
 import { SignedFooter } from "../Signature";
 import { AmbientAudioProvider } from "@/components/UX/AmbientAudio/AmbientAudioProvider";
 import { AmbientAudioWidget } from "@/components/UX/AmbientAudio/AmbientAudioWidget";

@@ -17,7 +17,7 @@ import {
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { signOut } from "../../../lib/auth/client";
-import { Button, MotionPillButton } from "../../core/Button";
+import { Button, MotionPillButton } from "@/components/core/Button";
 
 interface SlitProps extends HTMLAttributes<HTMLDivElement> {
   style: HTMLAttributes<HTMLDivElement>["style"] & {

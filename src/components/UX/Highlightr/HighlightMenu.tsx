@@ -32,7 +32,7 @@ import React, {
 import { toast } from "sonner";
 import { useShallow } from "zustand/shallow";
 import { HighlightMenuButton, HighlightMenuProps, MenuButtonCaption } from ".";
-import { MotionPill } from "../../core/Button";
+import { MotionPill } from "@/components/core/Button";
 import { HighlightCreateError, HighlightError } from "./HighlightErrors";
 import { usePrivateNote } from "./PrivateHighlights";
 import { useArticle } from "./providers/ArticleProvider";

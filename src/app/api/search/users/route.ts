@@ -1,5 +1,7 @@
 import config from "@/payload.config";
+import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { sql } from "@payloadcms/db-postgres";
+import { headers as nextHeaders } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getPayload } from "payload";
 
@@ -19,6 +21,18 @@ const MAX_QUERY_LENGTH = 100;
 
 export async function GET(request: NextRequest) {
   const payload = await getPayload({ config });
+
+  // Require an authenticated session. The previous unauthenticated behaviour
+  // let any external actor enumerate the entire user directory (handle, bio,
+  // location) via a trigram-similarity scan over the alphabet.
+  const { user } = await payload.auth({ headers: await nextHeaders() });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rl = await rateLimitOr429(request, "search", String(user.id));
+  if (rl) return rl;
+
   const { searchParams } = new URL(request.url);
   const rawQuery = searchParams.get("q");
   const query = rawQuery?.trim().slice(0, MAX_QUERY_LENGTH) ?? "";

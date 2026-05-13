@@ -1,7 +1,14 @@
-import type { CollectionConfig, Where } from "payload";
+import type { CollectionConfig, FieldAccess, Where } from "payload";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { enforceTicketCap } from "./hooks/enforceTicketCap";
 import { onTicketPaid } from "./hooks/onTicketPaid";
+
+// Field-level admin lock. The collection-level `update` rule permits a user to
+// PATCH their own ticket; `onTicketPaid` then runs with `overrideAccess: true`
+// once `paid` flips. Without this guard, a user can self-activate a pending
+// ticket and trigger the activation email + QR code without paying.
+const adminOnlyField: FieldAccess = ({ req }) =>
+  isAdmin({ req } as Parameters<typeof isAdmin>[0]);
 
 const ticketAccess = {
   create: ({ req }: { req: { user?: { id?: string } | null } }) => {
@@ -69,6 +76,7 @@ export const Tickets: CollectionConfig = {
       index: true,
       hasMany: false,
       maxDepth: 0,
+      access: { update: adminOnlyField },
       admin: {
         description:
           "Account this ticket is bound to. Null for unclaimed gift tickets."
@@ -82,6 +90,7 @@ export const Tickets: CollectionConfig = {
       index: true,
       hasMany: false,
       maxDepth: 0,
+      access: { update: adminOnlyField },
       admin: {
         description: "User who paid for this ticket."
       }
@@ -92,12 +101,14 @@ export const Tickets: CollectionConfig = {
       required: true,
       defaultValue: "pending",
       options: ["pending", "active", "used", "canceled"],
-      index: true
+      index: true,
+      access: { update: adminOnlyField }
     },
     {
       name: "paid",
       type: "checkbox",
       defaultValue: false,
+      access: { update: adminOnlyField },
       admin: {
         description:
           "Set true once admin confirms Toss receipt. Activating the ticket runs onTicketPaid hook."
@@ -178,6 +189,16 @@ export const Tickets: CollectionConfig = {
       admin: {
         description:
           "Optional: passkey credential ID bound to this ticket for device verification."
+      }
+    },
+    {
+      name: "reminder_sent_at",
+      type: "date",
+      index: true,
+      admin: {
+        readOnly: true,
+        description:
+          "System: timestamp the pre-event reminder cron last sent for this ticket. Guards against double-sends when the cron is re-run inside the 23–25h window."
       }
     },
     {

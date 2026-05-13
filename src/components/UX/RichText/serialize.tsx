@@ -2,7 +2,7 @@ import { CallToActionBlock } from "src/blocks/CallToAction/Component";
 
 import { CodeBlock } from "src/blocks/Code/Component";
 import { PostedImage } from "src/blocks/ImageBlock/Component";
-import { ReferencedLink } from "src/components/core/Link/ReferencedLink";
+import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { AnchorMarkers } from "src/components/UX/AmbientAudio/AnchorMarkers";
 import type {
   AmbientAudioAnchorBlock,

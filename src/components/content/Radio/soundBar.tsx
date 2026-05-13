@@ -1,6 +1,6 @@
 "use client";
 
-import { useDomCursor } from "src/components/core/cursorWrapper";
+import { useDomCursor } from "@/components/core/cursorWrapper";
 import { cn } from "src/lib/utils";
 import { useHideawayFMControls } from "src/providers/HideawayFM";
 import { usePlayState } from "src/providers/HideawayFM/hooks";

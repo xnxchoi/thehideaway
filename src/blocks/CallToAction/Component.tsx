@@ -4,6 +4,7 @@ import type { CallToActionBlock as CTABlockProps } from "@/payload-types";
 
 import RichText from "../../components/UX/RichText";
 import React from "react";
+import { getUrlFromReference } from "@/components/core/Link/ReferencedLink/getUrlFromReference";
 
 export const CallToActionBlock: React.FC<
   {
@@ -20,7 +21,11 @@ export const CallToActionBlock: React.FC<
         </div>
         <div className="flex flex-col gap-8">
           {(links || []).map(({ link }, i) => {
-            return <ReferencedLink key={i} link={link} />;
+            return (
+              !!link.url && (
+                <ReferencedLink href={link.url} key={i} link={link} />
+              )
+            );
           })}
         </div>
       </div>

@@ -31,8 +31,8 @@ import {
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { useDomCursor } from "../../core/cursorWrapper";
-import { Button, MotionBtn, MotionPillButton } from "../../core/Button";
+import { useDomCursor } from "@/components/core/cursorWrapper";
+import { Button, MotionBtn, MotionPillButton } from "@/components/core/Button";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { ImageMedia } from "@/components/core/Media/Image";
 

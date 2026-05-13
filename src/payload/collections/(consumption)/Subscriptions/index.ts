@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionConfig, FieldAccess } from "payload";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { syncRoleAfterSubscriptionChange } from "./hooks/syncRole";
 import { issueInvoiceOnPaid } from "./hooks/issueInvoiceOnPaid";
@@ -19,6 +19,13 @@ const subscriptionAccess = {
   },
   delete: isAdmin
 };
+
+// Field-level admin lock. Required because the collection-level `update` rule
+// permits a user to PATCH their own row, and the role-sync + invoice-issuance
+// hooks act on `overrideAccess: true` once the field flips — without this
+// guard, a member can self-promote and self-issue an invoice.
+const adminOnlyField: FieldAccess = ({ req }) =>
+  isAdmin({ req } as Parameters<typeof isAdmin>[0]);
 
 export const Subscriptions: CollectionConfig = {
   slug: "subscriptions",
@@ -54,12 +61,14 @@ export const Subscriptions: CollectionConfig = {
     {
       name: "start_date",
       type: "date",
-      required: true
+      required: true,
+      access: { update: adminOnlyField }
     },
     {
       name: "expires_at",
       type: "date",
       index: true,
+      access: { update: adminOnlyField },
       admin: {
         description:
           "Date the subscription expires (null = lifetime). Set on activation; extended quarterly when waiver criteria are met."
@@ -71,12 +80,14 @@ export const Subscriptions: CollectionConfig = {
       required: true,
       defaultValue: "pending",
       options: ["pending", "active", "expired", "canceled"],
-      index: true
+      index: true,
+      access: { update: adminOnlyField }
     },
     {
       name: "paid",
       type: "checkbox",
       defaultValue: false,
+      access: { update: adminOnlyField },
       admin: {
         description:
           "Set true once admin confirms bank-transfer / cash receipt. Activating triggers role sync."

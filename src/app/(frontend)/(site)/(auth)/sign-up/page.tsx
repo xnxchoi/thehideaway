@@ -2,7 +2,7 @@
 import { Link } from "@/components/core/Link/Link";
 import { ConsentGate } from "@/components/UX/Consent/ConsentGate";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
-import { Logo } from "@/components/UX/Logo";
+import { Logo } from "@/components/core/Logo";
 import { RPage } from "@/components/UX/Transition";
 import { AuthView as AuthCard } from "@/lib/auth/betterauth-ui/src";
 import { Suspense } from "react";

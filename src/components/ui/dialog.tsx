@@ -7,7 +7,7 @@ import { useTheme } from "@/providers/Theme";
 import { Dialog as DialogPrimitive } from "@base-ui/react";
 import { ComponentType } from "react";
 import * as React from "react";
-import { useDomCursor } from "../core/cursorWrapper";
+import { useDomCursor } from "@/components/core/cursorWrapper";
 
 function DialogRoot({
   ...props

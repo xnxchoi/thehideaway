@@ -1,5 +1,5 @@
 "use client";
-import { CommentBubble } from "@/components/content/CommentBubble";
+import { CommentBubble } from "../CommentBubble";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { CopyLinkButton } from "@/components/ui/copy-button";
 import { Link } from "@/components/core/Link/Link";

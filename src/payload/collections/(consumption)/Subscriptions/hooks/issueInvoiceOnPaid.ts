@@ -1,5 +1,7 @@
 import type { CollectionAfterChangeHook } from "payload";
 
+import { nextInvoiceNumber } from "@/lib/db/sequences";
+
 const idOf = (rel: unknown): string | null => {
   if (typeof rel === "string") return rel;
   if (rel && typeof rel === "object" && "id" in rel) {
@@ -85,17 +87,10 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
       planId
     );
 
-    const last = await req.payload.find({
-      collection: "invoices",
-      limit: 1,
-      sort: "-invoice_number",
-      overrideAccess: true,
-      depth: 0
-    });
-    const lastNumber =
-      (last.docs?.[0] as { invoice_number?: number } | undefined)
-        ?.invoice_number ?? 0;
-    const nextNumber = lastNumber + 1;
+    // Race-free invoice number — sequence is atomic. Replaces the prior
+    // `max() + 1` pattern that silently failed on the unique index when
+    // two activations landed near-simultaneously.
+    const nextNumber = await nextInvoiceNumber(req.payload);
 
     const nowIso = new Date().toISOString();
     const requestMethod =

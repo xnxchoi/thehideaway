@@ -204,6 +204,17 @@ Admin-side image search across Unsplash, Pexels, Pixabay with LRU caching.
 - **Schema push disabled** (`push: false`) — always use migrations
 - **Scripts:** `pnpm migrate`, `pnpm migrate:fresh`, `pnpm micreate`, `pnpm generate:types`
 
+### Migration policy (load-bearing)
+
+Two rules govern every migration in this project:
+
+1. **Backward compatibility is not a factor.** The DB is wipeable; migrations may be applied liberally.
+2. **Every migration must be re-runnable.** Wrap every `CREATE` / `DROP` / `ALTER` / `UPDATE` with the appropriate existence safeguard (`IF EXISTS`, `IF NOT EXISTS`, or a `DO $$` block for entities that don't accept those clauses — constraints, enums, column-type changes). This applies at every level: tables, columns, indices, sequences, enums, constraints, FKs, triggers, types.
+
+**Mirror Payload's schema shape.** When designing tables, columns, indices, or CRUD semantics, replicate PayloadCMS's own approach exactly — including its quirks. Override only when the site is inoperable otherwise. Payload bugs get fixed upstream for free; proprietary divergence becomes load-bearing local code forever.
+
+Full procedure, templates, and FK-drop ordering: **`readmes/MIGRATIONS.md`**.
+
 ---
 
 ## Development

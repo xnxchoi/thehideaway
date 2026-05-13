@@ -97,7 +97,7 @@ export function ClaimClient({
               ) : null}
             </div>
 
-      <div className="border-t border-border/20 pt-8 lg:border-t-0 lg:pt-0">
+            <div className="border-t border-border/20 pt-8 lg:border-t-0 lg:pt-0">
               {alreadyMine ? (
                 <AlreadyMineView ticketId={ticketId} />
               ) : emailMismatch ? (

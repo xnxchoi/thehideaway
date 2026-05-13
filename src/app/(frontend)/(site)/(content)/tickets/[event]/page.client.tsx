@@ -229,8 +229,7 @@ export function TicketEventClient({
             </form>
           </div>
         ) : (
-    <div
-      className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16 xl:gap-20">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16 xl:gap-20">
             {/* Event hero */}
             <div>
               {dateDisplay ? (

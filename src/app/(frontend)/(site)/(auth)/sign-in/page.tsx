@@ -1,7 +1,7 @@
 import { RPage } from "@/components/UX/Transition";
 import { AuthView as AuthCard } from "@/lib/auth/betterauth-ui/src";
 import { Link } from "@/components/core/Link/Link";
-import { Logo } from "@/components/UX/Logo";
+import { Logo } from "@/components/core/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { Suspense } from "react";
 import { DevButlerButton } from "./DevButlerButton";
