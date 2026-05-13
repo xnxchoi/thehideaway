@@ -19,16 +19,14 @@ const INK_FAINT = "#6e6760";
 const RULE = "#c0bbb2";
 const RULE_LIGHT = "#dcd7ce";
 
-// Paper plane is 2 wide × 3.1 tall, centered. All positions are in those
-// world units. z=0.005 puts text just in front of the paper so the depth
-// buffer correctly orders it (and the sleeve mesh in front occludes it).
-const Z = 0.005;
+// Designed to be rendered inside a RenderTexture sub-scene with an ortho
+// camera that maps the paper's bounds (2 wide × 3.1 tall, centered at origin)
+// 1:1 to the texture. So positions are paper-local world units.
 const PAPER_W = 2.0;
 const PAPER_H = 3.1;
 const HALF_W = PAPER_W / 2;
 const HALF_H = PAPER_H / 2;
 
-// Internal margin (matching CSS px-[11%] py-[8%])
 const PAD_X = PAPER_W * 0.11;
 const TEXT_LEFT = -HALF_W + PAD_X;
 const TEXT_RIGHT = HALF_W - PAD_X;
@@ -39,313 +37,262 @@ type PaperContent3DProps = {
 };
 
 /**
- * Invoice content as real 3D text geometry on the paper plane.
+ * Invoice content as Drei <Text> SDF meshes — designed to live inside a
+ * RenderTexture sub-scene so the output is baked into the paper material's
+ * diffuse map. That way the paper's normalMap + roughnessMap then apply
+ * uniformly to the text too: ink absorbs into the fiber, paper grain shows
+ * through the printing.
  *
- * Each text element is a Drei <Text> SDF mesh — gets lit by the scene's
- * directional light, casts micro-shadows, gets occluded by the sleeve mesh
- * naturally via the depth buffer. Layout positions are tuned to mirror the
- * CSS popup proportions but in 3D space.
- *
- * Serif (Instrument Serif) for editorial text; mono (Geist Mono) for ledger
- * codes, dates, reference numbers — same duality as the CSS version.
+ * Sizes are ~35% smaller than the first pass; the previous version printed
+ * the invoice in chunky type, which read as a UI mock rather than a
+ * Cartier-style certificate.
  */
 export function PaperContent3D({ invoice }: PaperContent3DProps) {
   const issuedAt = invoice.issued_at ?? invoice.paid_at;
   const code = currencyCode(invoice.currency);
-  const tax = 0;
   const subtotal = invoice.amount;
-  const total = subtotal + tax;
+  const total = subtotal;
 
   return (
     <group>
-      {/* ═══ Crests row — center top ═══ */}
+      {/* Crests row — center top */}
       {Array.from({ length: 6 }).map((_, i) => (
         <Text
           key={i}
           font={SERIF}
-          fontSize={0.05}
+          fontSize={0.03}
           color={INK_FAINT}
           anchorX="center"
           anchorY="middle"
-          position={[-0.4 + i * 0.16, HALF_H - 0.22, Z]}
+          position={[-0.24 + i * 0.096, HALF_H - 0.14, 0]}
         >
           ✦
         </Text>
       ))}
 
-      {/* ═══ Hideaway header ═══ */}
+      {/* Hideaway header */}
       <Text
         font={SERIF}
-        fontSize={0.22}
+        fontSize={0.12}
         color={INK}
         anchorX="center"
         anchorY="middle"
-        position={[0, HALF_H - 0.5, Z]}
+        position={[0, HALF_H - 0.28, 0]}
       >
         The Hideaway
       </Text>
       <Text
         font={SERIF}
-        fontSize={0.04}
+        fontSize={0.018}
         color={INK_SOFT}
         letterSpacing={0.4}
         anchorX="center"
         anchorY="middle"
-        position={[0, HALF_H - 0.66, Z]}
+        position={[0, HALF_H - 0.38, 0]}
       >
         S E O U L
       </Text>
 
-      {/* ═══ Date — right aligned ═══ */}
+      {/* Date — right aligned */}
       <Text
         font={MONO}
-        fontSize={0.045}
+        fontSize={0.028}
         color={INK_SOFT}
         anchorX="right"
         anchorY="middle"
-        position={[TEXT_RIGHT, HALF_H - 0.92, Z]}
+        position={[TEXT_RIGHT, HALF_H - 0.6, 0]}
       >
         {formatDate(issuedAt)}
       </Text>
 
-      {/* ═══ Purchased by ═══ */}
+      {/* Purchased by */}
       <Text
-        font={SERIF}
-        fontSize={0.058}
-        color={INK_SOFT}
+        font={MONO}
+        fontSize={0.022}
+        color={INK_FAINT}
+        letterSpacing={0.2}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_LEFT, HALF_H - 1.18, Z]}
+        position={[TEXT_LEFT, HALF_H - 0.6, 0]}
       >
-        Purchased by
+        PURCHASED BY
       </Text>
       <Text
         font={SERIF}
-        fontSize={0.082}
+        fontSize={0.05}
         color={INK}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_LEFT, HALF_H - 1.3, Z]}
+        position={[TEXT_LEFT, HALF_H - 0.7, 0]}
       >
         {invoice.client.name ?? invoice.client.email ?? "—"}
       </Text>
       {invoice.client.handle ? (
         <Text
           font={MONO}
-          fontSize={0.04}
-          color={INK_SOFT}
+          fontSize={0.024}
+          color={INK_FAINT}
           anchorX="left"
           anchorY="middle"
-          position={[TEXT_LEFT, HALF_H - 1.4, Z]}
+          position={[TEXT_LEFT, HALF_H - 0.78, 0]}
         >
           @{invoice.client.handle}
         </Text>
       ) : null}
 
-      {/* ═══ Invoice metadata block ═══ */}
+      {/* Invoice metadata block */}
       <MetadataRow
         label="Invoice number"
         value={`: ${formatInvoiceNumber(invoice.invoice_number)}`}
-        y={HALF_H - 1.62}
+        y={HALF_H - 0.96}
       />
       <MetadataRow
         label="Plan"
         value={`: ${invoice.plan.title ?? "Membership"}`}
-        y={HALF_H - 1.7}
+        y={HALF_H - 1.02}
       />
       {invoice.bank_reference ? (
         <MetadataRow
           label="Reference"
           value={`: ${invoice.bank_reference}`}
-          y={HALF_H - 1.78}
+          y={HALF_H - 1.08}
         />
       ) : null}
 
-      {/* ═══ Client copy ═══ */}
-      <Text
-        font={SERIF}
-        fontSize={0.052}
-        color={INK_SOFT}
-        anchorX="left"
-        anchorY="middle"
-        position={[TEXT_LEFT, HALF_H - 1.95, Z]}
-      >
-        Client copy
-      </Text>
-      <mesh position={[0, HALF_H - 2.0, Z]}>
-        <planeGeometry args={[INNER_W, 0.003]} />
+      {/* Line item header */}
+      <mesh position={[0, HALF_H - 1.26, 0]}>
+        <planeGeometry args={[INNER_W, 0.0025]} />
         <meshBasicMaterial color={RULE} />
       </mesh>
-
-      {/* ═══ Line item header — mono labels right side ═══ */}
       <Text
         font={MONO}
-        fontSize={0.034}
+        fontSize={0.022}
+        color={INK_FAINT}
+        letterSpacing={0.2}
+        anchorX="left"
+        anchorY="middle"
+        position={[TEXT_LEFT, HALF_H - 1.34, 0]}
+      >
+        ITEM
+      </Text>
+      <Text
+        font={MONO}
+        fontSize={0.022}
         color={INK_FAINT}
         letterSpacing={0.2}
         anchorX="right"
         anchorY="middle"
-        position={[TEXT_RIGHT - 0.4, HALF_H - 2.13, Z]}
+        position={[TEXT_RIGHT - 0.34, HALF_H - 1.34, 0]}
       >
-        QUANTITY
+        QTY
       </Text>
       <Text
         font={MONO}
-        fontSize={0.034}
+        fontSize={0.022}
         color={INK_FAINT}
         letterSpacing={0.2}
         anchorX="right"
         anchorY="middle"
-        position={[TEXT_RIGHT, HALF_H - 2.13, Z]}
+        position={[TEXT_RIGHT, HALF_H - 1.34, 0]}
       >
-        TOTAL AMOUNT
+        AMOUNT
       </Text>
 
-      {/* ═══ Line item row ═══ */}
+      {/* Line item row */}
       <Text
         font={SERIF}
-        fontSize={0.072}
+        fontSize={0.045}
         color={INK}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_LEFT, HALF_H - 2.25, Z]}
+        position={[TEXT_LEFT, HALF_H - 1.46, 0]}
       >
         {invoice.plan.title ?? "Membership"}
       </Text>
       {invoice.plan.description ? (
         <Text
           font={MONO}
-          fontSize={0.036}
+          fontSize={0.022}
           color={INK_FAINT}
-          maxWidth={1.0}
+          maxWidth={0.95}
           lineHeight={1.4}
           anchorX="left"
           anchorY="top"
-          position={[TEXT_LEFT, HALF_H - 2.32, Z]}
+          position={[TEXT_LEFT, HALF_H - 1.5, 0]}
         >
           {invoice.plan.description}
         </Text>
       ) : null}
       <Text
         font={MONO}
-        fontSize={0.046}
+        fontSize={0.028}
         color={INK_SOFT}
         anchorX="right"
         anchorY="middle"
-        position={[TEXT_RIGHT - 0.4, HALF_H - 2.25, Z]}
+        position={[TEXT_RIGHT - 0.34, HALF_H - 1.46, 0]}
       >
         1
       </Text>
       <Text
         font={SERIF}
-        fontSize={0.072}
+        fontSize={0.045}
         color={INK}
         anchorX="right"
         anchorY="middle"
-        position={[TEXT_RIGHT, HALF_H - 2.25, Z]}
+        position={[TEXT_RIGHT, HALF_H - 1.46, 0]}
       >
         {formatAmount(subtotal, invoice.currency)}
       </Text>
-      <mesh position={[0, HALF_H - 2.45, Z]}>
-        <planeGeometry args={[INNER_W, 0.002]} />
+
+      {/* Total — single grand total, no redundant subtotal/tax when tax is 0 */}
+      <mesh position={[0, HALF_H - 1.72, 0]}>
+        <planeGeometry args={[INNER_W, 0.0015]} />
         <meshBasicMaterial color={RULE_LIGHT} />
       </mesh>
-
-      {/* ═══ Subtotal ═══ */}
       <Text
         font={MONO}
-        fontSize={0.038}
-        color={INK_FAINT}
-        letterSpacing={0.2}
-        anchorX="right"
-        anchorY="middle"
-        position={[TEXT_RIGHT - 0.36, HALF_H - 2.6, Z]}
-      >
-        SUBTOTAL
-      </Text>
-      <Text
-        font={SERIF}
-        fontSize={0.062}
-        color={INK_SOFT}
-        anchorX="right"
-        anchorY="middle"
-        position={[TEXT_RIGHT, HALF_H - 2.6, Z]}
-      >
-        {formatAmount(subtotal, invoice.currency)}
-      </Text>
-
-      {/* ═══ Tax ═══ */}
-      <Text
-        font={MONO}
-        fontSize={0.038}
-        color={INK_FAINT}
-        letterSpacing={0.2}
-        anchorX="right"
-        anchorY="middle"
-        position={[TEXT_RIGHT - 0.36, HALF_H - 2.7, Z]}
-      >
-        TAX
-      </Text>
-      <Text
-        font={SERIF}
-        fontSize={0.062}
-        color={INK_SOFT}
-        anchorX="right"
-        anchorY="middle"
-        position={[TEXT_RIGHT, HALF_H - 2.7, Z]}
-      >
-        {formatAmount(tax, invoice.currency)}
-      </Text>
-      <mesh position={[TEXT_RIGHT - 0.23, HALF_H - 2.78, Z]}>
-        <planeGeometry args={[0.46, 0.002]} />
-        <meshBasicMaterial color={RULE} />
-      </mesh>
-
-      {/* ═══ Total ═══ */}
-      <Text
-        font={MONO}
-        fontSize={0.04}
+        fontSize={0.024}
         color={INK_SOFT}
         letterSpacing={0.2}
-        anchorX="right"
+        anchorX="left"
         anchorY="middle"
-        position={[TEXT_RIGHT - 0.36, HALF_H - 2.9, Z]}
+        position={[TEXT_LEFT, HALF_H - 1.86, 0]}
       >
         TOTAL
       </Text>
       <Text
         font={SERIF}
-        fontSize={0.115}
+        fontSize={0.07}
         color={INK}
         anchorX="right"
         anchorY="middle"
-        position={[TEXT_RIGHT - 0.05, HALF_H - 2.9, Z]}
+        position={[TEXT_RIGHT - 0.05, HALF_H - 1.86, 0]}
       >
         {formatAmount(total, invoice.currency)}
       </Text>
       <Text
         font={MONO}
-        fontSize={0.034}
+        fontSize={0.022}
         color={INK_SOFT}
         letterSpacing={0.2}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_RIGHT - 0.04, HALF_H - 2.88, Z]}
+        position={[TEXT_RIGHT - 0.04, HALF_H - 1.84, 0]}
       >
         {code}
       </Text>
 
-      {/* ═══ Footer ═══ */}
+      {/* Footer */}
       <Text
         font={SERIF}
-        fontSize={0.038}
+        fontSize={0.024}
         color={INK_FAINT}
         maxWidth={1.55}
         lineHeight={1.55}
         textAlign="center"
         anchorX="center"
         anchorY="middle"
-        position={[0, -HALF_H + 0.25, Z]}
+        position={[0, -HALF_H + 0.22, 0]}
       >
         Membership is non-transferable. Refunds within thirty days of purchase,
         subject to the terms of the Hideaway membership agreement.
@@ -365,21 +312,21 @@ function MetadataRow({ label, value, y }: MetadataRowProps) {
     <>
       <Text
         font={MONO}
-        fontSize={0.042}
+        fontSize={0.028}
         color={INK_SOFT}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_LEFT, y, Z]}
+        position={[TEXT_LEFT, y, 0]}
       >
         {label}
       </Text>
       <Text
         font={MONO}
-        fontSize={0.042}
+        fontSize={0.028}
         color={INK_SOFT}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_LEFT + 0.46, y, Z]}
+        position={[TEXT_LEFT + 0.34, y, 0]}
       >
         {value}
       </Text>

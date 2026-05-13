@@ -33,11 +33,20 @@ const Row = ({ label, value, mono = true }: RowProps) => (
 
 type InvoiceMetaProps = {
   invoice: InvoiceDisplay;
+  onInspect?: () => void;
+  onPrint?: () => void;
+  onDownload?: () => void;
 };
 
-export function InvoiceMeta({ invoice }: InvoiceMetaProps) {
+export function InvoiceMeta({
+  invoice,
+  onInspect,
+  onPrint,
+  onDownload
+}: InvoiceMetaProps) {
   const code = currencyCode(invoice.currency);
   const method = invoice.payment_method?.[0];
+  const clientPrimary = invoice.client.name ?? invoice.client.email ?? "Member";
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -63,7 +72,7 @@ export function InvoiceMeta({ invoice }: InvoiceMetaProps) {
       </div>
 
       {/* Hero amount */}
-      <div className="mt-10">
+      <div className="mt-8">
         <p className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
           Total
         </p>
@@ -77,8 +86,25 @@ export function InvoiceMeta({ invoice }: InvoiceMetaProps) {
         </p>
       </div>
 
+      {/* Issued to */}
+      <div className="mt-8 border-t border-border/15 pt-6">
+        <p className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+          Issued to
+        </p>
+        <p
+          className={`${instrumentSerif.className} mt-1 text-2xl tracking-tight text-foreground`}
+        >
+          {clientPrimary}
+        </p>
+        {invoice.client.handle ? (
+          <p className="mt-0.5 font-mono text-[11px] text-muted-foreground/70">
+            @{invoice.client.handle}
+          </p>
+        ) : null}
+      </div>
+
       {/* Ledger */}
-      <div className="mt-10 flex flex-col">
+      <div className="mt-6 flex flex-col">
         <Row
           label="Invoice"
           value={`№ ${String(invoice.invoice_number).padStart(7, "0")}`}
@@ -109,12 +135,40 @@ export function InvoiceMeta({ invoice }: InvoiceMetaProps) {
         ) : null}
       </div>
 
-      {/* Footnote */}
-      <p
-        className={`${instrumentSerif.className} mt-auto pt-10 text-[13px] leading-relaxed text-muted-foreground/70 italic`}
-      >
-        Tap the certificate to inspect.
-      </p>
+      {/* Action rail */}
+      <div className="mt-auto flex flex-wrap items-center gap-2 pt-10">
+        {onInspect ? (
+          <ActionButton onClick={onInspect} label="Inspect" />
+        ) : null}
+        {onPrint ? (
+          <ActionButton onClick={onPrint} label="Print" muted />
+        ) : null}
+        {onDownload ? (
+          <ActionButton onClick={onDownload} label="Save PDF" muted />
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+type ActionButtonProps = {
+  label: string;
+  onClick: () => void;
+  muted?: boolean;
+};
+
+function ActionButton({ label, onClick, muted }: ActionButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        muted
+          ? "border border-border/30 px-5 py-2.5 font-mono text-[11px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border/60 hover:text-foreground"
+          : "border border-border/50 bg-foreground/[0.04] px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground uppercase transition-colors hover:border-border hover:bg-foreground/[0.07]"
+      }
+    >
+      {label}
+    </button>
   );
 }

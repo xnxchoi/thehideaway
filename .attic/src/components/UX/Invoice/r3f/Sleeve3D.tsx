@@ -23,11 +23,12 @@ export const Sleeve3D = forwardRef<Mesh, Sleeve3DProps>(function Sleeve3D(
   ref
 ) {
   // Sleeve at y=0 covers the paper. When revealed, it descends past the bottom
-  // edge (-height for a clean exit). Heavy mass + low tension reads as gravity.
+  // edge for a clean exit. Tuned for a confident, weighty fall (~1s) — not the
+  // slow drift the heavier spring produced before. No initial delay; the
+  // descent starts immediately on phase change.
   const { y } = useSpring({
-    y: revealed ? -height * 1.05 : 0,
-    config: { mass: 3.2, tension: 55, friction: 28 },
-    delay: revealed ? 350 : 0
+    y: revealed ? -height * 1.1 : 0,
+    config: { mass: 1.4, tension: 140, friction: 26 }
   });
 
   return (

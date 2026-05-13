@@ -9,7 +9,6 @@ import {
 import { useFrame } from "@react-three/fiber";
 import { type ComponentProps, Suspense, useRef } from "react";
 import { type DirectionalLight, MathUtils, type Mesh, Vector3 } from "three";
-import { PaperContent3D } from "./PaperContent3D";
 import { PaperPlane } from "./PaperPlane";
 import { Sleeve3D } from "./Sleeve3D";
 import type { InvoiceDisplay } from "../types";
@@ -84,15 +83,15 @@ export function InvoiceScene({
         resolution={512}
       />
 
-      {/* Suspense on PaperPlane because useTexture("papier.png") suspends */}
+      {/* Paper plane — text content is baked into its diffuse map via
+          <RenderTexture>, so the paper's normal+roughness apply uniformly
+          to the printed text too (ink absorbs into the fiber). */}
       <Suspense fallback={null}>
-        <PaperPlane width={PAPER_WIDTH} height={PAPER_HEIGHT} />
-      </Suspense>
-
-      {/* Real 3D printed text — Drei <Text> SDF meshes positioned on the
-          paper surface. Sleeve mesh in front occludes via depth buffer. */}
-      <Suspense fallback={null}>
-        <PaperContent3D invoice={invoice} />
+        <PaperPlane
+          invoice={invoice}
+          width={PAPER_WIDTH}
+          height={PAPER_HEIGHT}
+        />
       </Suspense>
 
       <Sleeve3D

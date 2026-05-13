@@ -205,5 +205,75 @@
     "address": "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea",
     "serviceHours": "Mon–Fri 10:00–18:00 KST (closed weekends and holidays)",
     "mailOrderPending": "Pending application"
+  },
+  "Invoice": {
+    "subWordmark": "SEOUL · PARIS",
+    "tagline": "a restored project",
+    "purchasedBy": "Purchased by",
+    "memberSince": "Member Since {year}",
+    "fields": {
+      "invoiceNumber": "Invoice number",
+      "orderNo": "Order no"
+    },
+    "clientCopy": "Client copy",
+    "table": {
+      "quantity": "Quantity",
+      "totalAmount": "Total Amount",
+      "taxAmount": "Tax Amount"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total"
+    },
+    "methods": {
+      "label": "Means of Payment",
+      "amt": "Amt.",
+      "bank_transfer": "Bank transfer",
+      "cash": "Cash"
+    },
+    "footer": {
+      "tagline": "\"Bridging the gap between the social and the private\"",
+      "thanks": "Thank You for Your Patronage",
+      "brand": "The Hideaway, a Restored Project™"
+    },
+    "terms": "Physical products purchased from The Hideaway may be exchanged or returned for a refund within 7 days of receiving the goods. Returns of products past the initial week of reception will not be guaranteed. Refunds are only issued to the original purchaser via original method of payment. Product must be presented in its original packaging and accompanied by the appropriate sales documentation and International Limited Warranty. Non ready-made products which include, but are not limited to, items from: personalized orders; custom-ordered; airdropped and/or gifted, are void from any guarantee of refund or exchange. Items that show signs of wear also do not qualify for a return or an exchange. Before accepting any return or exchange, The Hideaway reserves its right to verify the product and proceed with necessary evaluations to confirm authenticity. Any services, products or other goods non-physical in form will not be eligible for refund.",
+    "planFallback": "Membership",
+    "panel": {
+      "heading": "Invoice",
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "void": "Void"
+      },
+      "issuedLabel": "Issued",
+      "cycleLabel": "Service period",
+      "lineItemHeading": "Item",
+      "lineQuantityShort": "× {n}",
+      "summaryHeading": "Summary",
+      "paymentHeading": "Payment",
+      "printedLabel": "Printed copy",
+      "digitalLabel": "Reading copy",
+      "termsHeading": "Refund policy & terms"
+    },
+    "actions": {
+      "print": {
+        "idle": "Print",
+        "loading": "Preparing…",
+        "error": "Try again"
+      },
+      "save": {
+        "idle": "Save as PDF",
+        "saving": "Saving…",
+        "done": "Saved",
+        "error": "Try again"
+      },
+      "share": {
+        "idle": "Share",
+        "shared": "Shared",
+        "copied": "Copied",
+        "error": "Try again"
+      }
+    }
   }
 }

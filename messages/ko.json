@@ -202,5 +202,75 @@
         "address": "서울특별시 송파구 올림픽로4길 15",
         "serviceHours": "평일 10:00–18:00 (주말 및 공휴일 휴무)",
         "mailOrderPending": "신고 진행 중"
+    },
+    "Invoice": {
+        "subWordmark": "SEOUL · PARIS",
+        "tagline": "a restored project",
+        "purchasedBy": "구매자",
+        "memberSince": "{year}년부터 함께한 회원",
+        "fields": {
+            "invoiceNumber": "청구서 번호",
+            "orderNo": "주문 번호"
+        },
+        "clientCopy": "고객 보관용",
+        "table": {
+            "quantity": "수량",
+            "totalAmount": "공급가액",
+            "taxAmount": "부가세"
+        },
+        "totals": {
+            "subtotal": "소계",
+            "tax": "부가세",
+            "total": "합계"
+        },
+        "methods": {
+            "label": "결제 수단",
+            "amt": "금액",
+            "bank_transfer": "계좌이체",
+            "cash": "현금"
+        },
+        "footer": {
+            "tagline": "\"Bridging the gap between the social and the private\"",
+            "thanks": "Thank You for Your Patronage",
+            "brand": "The Hideaway, a Restored Project™"
+        },
+        "terms": "The Hideaway에서 구매하신 실물 상품은 수령일로부터 7일 이내에 한해 교환 또는 환불이 가능합니다. 수령일로부터 7일을 초과하여 접수되는 반품은 보장되지 않습니다. 환불은 원 구매자에 한해 최초 결제 수단으로만 진행됩니다. 상품은 원 포장 상태에서 판매 증빙 서류 및 국제 한정 보증서와 함께 제시되어야 합니다. 개인화 주문, 맞춤 주문, 에어드롭 또는 선물 증정 등 기성 상품이 아닌 품목은 환불 및 교환의 보장 대상에서 제외됩니다. 사용 흔적이 있는 상품 역시 반품 또는 교환 대상에서 제외됩니다. The Hideaway는 반품 또는 교환을 승인하기 전에 상품을 확인하고 정품 여부에 대한 필요한 검증을 진행할 권리를 보유합니다. 무형의 서비스, 상품, 기타 비물질적 재화는 환불 대상에서 제외됩니다.",
+        "planFallback": "멤버십",
+        "panel": {
+            "heading": "청구서",
+            "status": {
+                "paid": "결제 완료",
+                "pending": "결제 대기",
+                "void": "취소"
+            },
+            "issuedLabel": "발행일",
+            "cycleLabel": "이용 기간",
+            "lineItemHeading": "구매 항목",
+            "lineQuantityShort": "× {n}",
+            "summaryHeading": "결제 내역",
+            "paymentHeading": "결제 정보",
+            "printedLabel": "인쇄본",
+            "digitalLabel": "조회용",
+            "termsHeading": "환불 및 약관"
+        },
+        "actions": {
+            "print": {
+                "idle": "인쇄",
+                "loading": "준비 중…",
+                "error": "다시 시도"
+            },
+            "save": {
+                "idle": "PDF로 저장",
+                "saving": "저장 중…",
+                "done": "저장됨",
+                "error": "다시 시도"
+            },
+            "share": {
+                "idle": "공유",
+                "shared": "공유됨",
+                "copied": "복사됨",
+                "error": "다시 시도"
+            }
+        }
     }
 }

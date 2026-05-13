@@ -35,19 +35,18 @@ const fixture: InvoiceDisplay = {
 export default function InvoicePreviewPage() {
   return (
     <RPage type="pages" slug={["invoice"]}>
-      <header className="mb-16">
-        <p className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground/60 uppercase">
-          Preview
-        </p>
-        <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">
-          Invoice certificate
-        </h1>
-        <p className="mt-2 max-w-prose font-mono text-[11px] text-muted-foreground/70">
-          Presentational only. Tap the certificate to inspect.
-        </p>
-      </header>
+      <div className="mx-auto w-full max-w-512 px-6 py-16 xl:px-10 xl:py-24">
+        <div className="mb-16">
+          <p className="font-mono text-small tracking-[0.3em] text-muted-foreground/60 uppercase">
+            Details
+          </p>
+          <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">
+            Invoice
+          </h1>
+        </div>
 
-      <InvoiceClient fixture={fixture} />
+        <InvoiceClient fixture={fixture} />
+      </div>
     </RPage>
   );
 }
