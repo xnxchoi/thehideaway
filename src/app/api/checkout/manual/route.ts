@@ -113,10 +113,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         limit: 1,
         overrideAccess: true,
         where: {
-          and: [
-            { plan: { equals: plan.id } },
-            { active: { equals: true } }
-          ]
+          and: [{ plan: { equals: plan.id } }, { active: { equals: true } }]
         }
       })
       .catch(() => null);

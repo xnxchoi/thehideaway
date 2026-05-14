@@ -180,7 +180,14 @@ const findFirst = async <
     limit: 1,
     pagination: false,
     overrideAccess: true,
-    depth: 0
+    depth: 0,
+    // Restrict the outer SELECT to scalar fields only. For Tags this
+    // sidesteps the polymorphic-join `taggedItems` virtual-field SQL
+    // generator (Payload 3.84 + Drizzle 0.45.2), which emits a
+    // malformed UNION subquery — `select "id",  as "tagged"` with an
+    // empty column expression — triggering "syntax error at or near
+    // as". Related open upstream issues: #12913, #13089, #13777.
+    select: { id: true } as never
   });
   const doc = res.docs[0] as { id: string } | undefined;
   return doc ? { id: doc.id } : null;
@@ -356,18 +363,8 @@ export async function runInitialSeed(payload: Payload): Promise<void> {
   const uncategorizedId = await ensureUncategorized(payload);
   payload.logger.info(`[seed] uncategorized ok: ${uncategorizedId}`);
 
-  // Tag seeding is temporarily disabled. Any `payload.find({collection:
-  // "tags"})` crashes with "syntax error at or near as" because Payload
-  // generates a malformed polymorphic subquery for the `taggedItems`
-  // virtual field (Drizzle 0.45.2 + db-postgres 3.84.1). See
-  // `readmes/MIGRATIONS.md` § "Seeding mechanics — known blockers".
-  // Re-enable this once upstream lands a fix (or once we bypass
-  // payload.find with a raw Drizzle SELECT for the existence check).
-  // await ensureTags(payload, conciergeId);
-  // payload.logger.info(`[seed] tags ok (${DEFAULT_TAGS.length} entries)`);
-  payload.logger.warn(
-    "[seed] SKIPPING tags — see seed/initial.ts comment block (Payload tag virtual-field SQL bug)"
-  );
+  await ensureTags(payload, conciergeId);
+  payload.logger.info(`[seed] tags ok (${DEFAULT_TAGS.length} entries)`);
 
   const krwId = await ensureKrwCurrency(payload);
   payload.logger.info(`[seed] currency KRW ok: ${krwId}`);

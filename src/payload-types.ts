@@ -2621,7 +2621,7 @@ export interface Invoice {
   /**
    * Stripe-style FSM: draft → open → paid | void. The issuance hook writes 'paid' directly on bank-confirmed flow; hand-authored invoices may start as 'draft'.
    */
-  status: 'draft' | 'open' | 'paid' | 'void';
+  status: 'draft' | 'open' | 'paid' | 'void' | 'pending';
   /**
    * Set when admin marks the related Subscription as paid. Mirrors the bank-receipt date.
    */

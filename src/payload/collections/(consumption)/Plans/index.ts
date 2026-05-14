@@ -5,13 +5,7 @@ const Plans: CollectionConfig = {
   slug: "plans",
   admin: {
     useAsTitle: "name",
-    defaultColumns: [
-      "name",
-      "tier",
-      "validity",
-      "seat_limit",
-      "state"
-    ]
+    defaultColumns: ["name", "tier", "validity", "seat_limit", "state"]
   },
   // Public catalog: anyone can read the pricing table. Writes are admin-only
   // — without these guards Payload's default ("logged-in user can mutate")
@@ -37,15 +31,18 @@ const Plans: CollectionConfig = {
       name: "tier",
       type: "select",
       required: true,
-      hasMany:false,
+      hasMany: false,
       defaultValue: "member",
-      options: [{
-        label: "Member",
-        value: "member"
-      }, {
-        label: "Patron",
-        value: "patron"
-      }],
+      options: [
+        {
+          label: "Member",
+          value: "member"
+        },
+        {
+          label: "Patron",
+          value: "patron"
+        }
+      ],
       admin: {
         description: "The subscriber role this plan grants while active."
       }

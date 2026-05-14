@@ -66,10 +66,7 @@ const resolvePriceForPlan = async (
     .find({
       collection: "prices",
       where: {
-        and: [
-          { plan: { equals: planId } },
-          { active: { equals: true } }
-        ]
+        and: [{ plan: { equals: planId } }, { active: { equals: true } }]
       },
       depth: 1,
       limit: 50,
