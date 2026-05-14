@@ -32,7 +32,7 @@ export const FXRate: CollectionConfig = {
 					hasMany: false,
 					required: true,
 				},
-				{name: "rate", type: "text", required: true, index: true},
+				{name: "rate", type: "number", required: true, min: 0, index: true},
 			],
 			required: true,
 			index: true,

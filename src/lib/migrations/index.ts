@@ -18,6 +18,7 @@ import * as migration_20260503_020008 from "./20260503_020008";
 import * as migration_20260507_165256 from "./20260507_165256";
 import * as migration_20260511_085557_posts_author_status_updated_idx from "./20260511_085557_posts_author_status_updated_idx";
 import * as migration_20260512_120000_ticketing_money_resilience from "./20260512_120000_ticketing_money_resilience";
+import * as migration_20260514_100000_commerce_shape_v2 from "./20260514_100000_commerce_shape_v2";
 
 export const migrations = [
   {
@@ -119,5 +120,10 @@ export const migrations = [
     up: migration_20260512_120000_ticketing_money_resilience.up,
     down: migration_20260512_120000_ticketing_money_resilience.down,
     name: "20260512_120000_ticketing_money_resilience"
+  },
+  {
+    up: migration_20260514_100000_commerce_shape_v2.up,
+    down: migration_20260514_100000_commerce_shape_v2.down,
+    name: "20260514_100000_commerce_shape_v2"
   }
 ];

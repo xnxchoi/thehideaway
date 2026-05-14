@@ -10,7 +10,6 @@ const Plans: CollectionConfig = {
       "tier",
       "validity",
       "seat_limit",
-      "featured",
       "state"
     ]
   },
@@ -81,14 +80,6 @@ const Plans: CollectionConfig = {
         description:
           "All Hideaway plans are one-time payments at launch (manual bank transfer)."
       }
-    },
-    {
-      name: "price",
-      type: "relationship",
-      relationTo: "prices",
-      hasMany: true,
-      required: true,
-      minRows: 1
     },
     {
       name: "payment_methods",

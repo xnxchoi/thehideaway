@@ -59,6 +59,19 @@ export const Subscriptions: CollectionConfig = {
       hasMany: false
     },
     {
+      name: "price",
+      type: "relationship",
+      relationTo: "prices",
+      required: true,
+      index: true,
+      hasMany: false,
+      access: { update: adminOnlyField },
+      admin: {
+        description:
+          "The specific Price (currency × amount × cadence) the subscriber transacted. Captured at checkout; never rewritten."
+      }
+    },
+    {
       name: "start_date",
       type: "date",
       required: true,

@@ -3,7 +3,7 @@ import { headers as nextHeaders } from "next/headers";
 import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import type { Plan } from "@/payload-types";
+import type { Plan, Price } from "@/payload-types";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { beginIdempotent } from "@/lib/api/idempotency";
@@ -12,6 +12,14 @@ export const runtime = "nodejs";
 
 const BodySchema = z.object({
   plan_id: z.string().min(1),
+  /**
+   * Optional explicit Price selection (Stripe-style). If omitted, the
+   * server picks the first active Price for the plan — which is the
+   * common case at launch (one KRW one-time Price per Plan). Clients
+   * that surface multi-currency / multi-cadence pickers should send
+   * this explicitly to avoid silent default drift.
+   */
+  price_id: z.string().min(1).optional(),
   method: z.enum(["bank_transfer", "cash"]),
   note: z.string().max(500).optional()
 });
@@ -75,6 +83,55 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Resolve Price. Either the client picked one explicitly (validate it
+  // belongs to this Plan and is active) or we pick the first active Price
+  // for the Plan. The Subscription pins to this Price so post-checkout
+  // catalog edits cannot retroactively rewrite the transacted amount.
+  let price: Price | null;
+  if (body.price_id) {
+    price = (await payload
+      .findByID({
+        collection: "prices",
+        id: body.price_id,
+        depth: 0,
+        overrideAccess: true
+      })
+      .catch(() => null)) as Price | null;
+    const pricePlanId =
+      typeof price?.plan === "string" ? price.plan : price?.plan?.id;
+    if (!price || !price.active || pricePlanId !== plan.id) {
+      return NextResponse.json(
+        { ok: false, error: "price-mismatch" },
+        { status: 400 }
+      );
+    }
+  } else {
+    const priceList = await payload
+      .find({
+        collection: "prices",
+        depth: 0,
+        limit: 1,
+        overrideAccess: true,
+        where: {
+          and: [
+            { plan: { equals: plan.id } },
+            { active: { equals: true } }
+          ]
+        }
+      })
+      .catch(() => null);
+    price = (priceList?.docs?.[0] ?? null) as Price | null;
+    if (!price) {
+      payload.logger.error?.(
+        `[manual checkout] no active Price for plan ${plan.id}`
+      );
+      return NextResponse.json(
+        { ok: false, error: "no-price" },
+        { status: 404 }
+      );
+    }
+  }
+
   // Pre-create dedup — without a unique partial index on
   // (user, plan, subscription_status='pending'), two clicks from two
   // tabs (no shared idempotency-key) would each create a new pending
@@ -130,6 +187,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       data: {
         user: userId,
         plan: plan.id,
+        price: price.id,
         start_date: new Date().toISOString(),
         subscription_status: "pending",
         paid: false,

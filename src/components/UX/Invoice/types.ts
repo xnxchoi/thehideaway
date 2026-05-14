@@ -1,5 +1,12 @@
 export type InvoiceCurrency = "krw" | "usd" | "eur";
 
+/**
+ * Sprint 2 expanded the Invoice FSM from `paid | pending | void` to
+ * Stripe-style `draft → open → paid | void`. `pending` remains as a
+ * legacy alias for `open` to mirror the DB enum.
+ */
+export type InvoiceStatus = "draft" | "open" | "paid" | "pending" | "void";
+
 export type InvoicePaymentMethod = {
   method: "bank_transfer" | "cash";
   amount: number;
@@ -21,7 +28,7 @@ export type InvoicePlan = {
 
 export type InvoiceDisplay = {
   invoice_number: number;
-  status: "paid" | "pending" | "void";
+  status: InvoiceStatus;
   amount: number;
   currency: InvoiceCurrency;
   paid_at?: string | null;

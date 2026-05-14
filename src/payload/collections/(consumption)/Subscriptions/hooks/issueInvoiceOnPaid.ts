@@ -1,6 +1,18 @@
 import type { CollectionAfterChangeHook } from "payload";
+import type { Price } from "@/payload-types";
 
 import { nextInvoiceNumber } from "@/lib/db/sequences";
+
+/**
+ * Issue an Invoice when a Subscription flips to paid + active.
+ *
+ * Sprint 2: now reads `subscription.price` directly (the immutable
+ * snapshot of which Price the customer transacted) instead of digging
+ * through the old `plan.price[0].currencies[0]` shape. Invoice currency
+ * is written as the Currency relationship id; `fx_rate_used` stays null
+ * at launch because everything is KRW-domestic. The forward-looking
+ * `price` ref on the Invoice points back at the Price for traceability.
+ */
 
 const idOf = (rel: unknown): string | null => {
   if (typeof rel === "string") return rel;
@@ -11,44 +23,18 @@ const idOf = (rel: unknown): string | null => {
   return null;
 };
 
-type PlanWithPrice = {
-  id: string;
-  price?: Array<{
-    currencies?: Array<{
-      amount?: number | null;
-      currency?: { name?: string } | string | null;
-    }> | null;
-  }> | null;
-};
-
-const resolveAmountAndCurrency = async (
+const resolvePrice = async (
   payload: Parameters<CollectionAfterChangeHook>[0]["req"]["payload"],
-  planId: string
-): Promise<{ amount: number; currency: "krw" | "usd" | "eur" }> => {
-  const plan = (await payload
+  priceId: string
+): Promise<Price | null> =>
+  (await payload
     .findByID({
-      collection: "plans",
-      id: planId,
-      depth: 2,
+      collection: "prices",
+      id: priceId,
+      depth: 0,
       overrideAccess: true
     })
-    .catch(() => null)) as PlanWithPrice | null;
-
-  const first = plan?.price?.[0]?.currencies?.[0];
-  const amount =
-    typeof first?.amount === "number" && first.amount > 0 ? first.amount : 0;
-
-  const currencyName =
-    typeof first?.currency === "object" && first?.currency
-      ? first.currency.name?.toLowerCase()
-      : typeof first?.currency === "string"
-        ? first.currency.toLowerCase()
-        : "krw";
-  const currency: "krw" | "usd" | "eur" =
-    currencyName === "usd" || currencyName === "eur" ? currencyName : "krw";
-
-  return { amount, currency };
-};
+    .catch(() => null)) as Price | null;
 
 export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
   doc,
@@ -66,7 +52,8 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
 
     const userId = idOf(doc.user);
     const planId = idOf(doc.plan);
-    if (!userId || !planId) return doc;
+    const priceId = idOf(doc.price);
+    if (!userId || !planId || !priceId) return doc;
 
     const existing = await req.payload.find({
       collection: "invoices",
@@ -82,10 +69,21 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
     });
     if (existing.totalDocs > 0) return doc;
 
-    const { amount, currency } = await resolveAmountAndCurrency(
-      req.payload,
-      planId
-    );
+    const price = await resolvePrice(req.payload, priceId);
+    if (!price) {
+      req.payload.logger.error?.(
+        `[issueInvoice] subscription ${doc.id} references missing price ${priceId}`
+      );
+      return doc;
+    }
+    const amount = price.unit_amount;
+    const currencyId = idOf(price.currency);
+    if (!currencyId) {
+      req.payload.logger.error?.(
+        `[issueInvoice] price ${priceId} has no currency id`
+      );
+      return doc;
+    }
 
     // Race-free invoice number — sequence is atomic. Replaces the prior
     // `max() + 1` pattern that silently failed on the unique index when
@@ -104,8 +102,12 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
         client: userId,
         subscription: String(doc.id),
         plan: planId,
+        price: priceId,
         amount,
-        currency,
+        currency: currencyId,
+        // fx_rate_used null at launch — invoice currency equals Plan's
+        // base currency. Populate this once non-base invoices are issued.
+        fx_rate_used: null,
         status: "paid",
         paid_at: nowIso,
         cycle_start: doc.start_date ?? nowIso,
@@ -114,7 +116,7 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
           {
             method: requestMethod,
             amount,
-            currency,
+            currency: currencyId,
             payment_date: nowIso
           }
         ]
@@ -122,7 +124,7 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
     });
 
     req.payload.logger.info?.(
-      `[issueInvoice] HW-${nextNumber} issued for subscription ${doc.id} (user ${userId}, ${currency.toUpperCase()} ${amount})`
+      `[issueInvoice] HW-${nextNumber} issued for subscription ${doc.id} (user ${userId}, amount ${amount}, currency ${currencyId})`
     );
     return doc;
   } catch (err) {

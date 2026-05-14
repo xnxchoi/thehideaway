@@ -18,6 +18,7 @@ export const Invoices: CollectionConfig = {
     client: true,
     subscription: true,
     plan: true,
+    price: true,
     payment_method: true,
     paid_at: true,
     status: true,
@@ -26,6 +27,7 @@ export const Invoices: CollectionConfig = {
     cycle_start: true,
     cycle_end: true,
     amount: true,
+    fx_rate_used: true,
     bank_reference: true,
     createdAt: true,
     updatedAt: true
@@ -81,6 +83,17 @@ export const Invoices: CollectionConfig = {
       maxDepth: 0
     },
     {
+      name: "price",
+      type: "relationship",
+      relationTo: "prices",
+      hasMany: false,
+      maxDepth: 0,
+      admin: {
+        description:
+          "The Price doc the customer transacted. Nullable for legacy / hand-issued invoices that predate the Product/Price split."
+      }
+    },
+    {
       name: "amount",
       type: "number",
       required: true,
@@ -91,26 +104,47 @@ export const Invoices: CollectionConfig = {
     },
     {
       name: "currency",
-      type: "select",
+      type: "relationship",
+      relationTo: "currency",
+      hasMany: false,
       required: true,
-      defaultValue: "krw",
-      options: [
-        { label: "KRW", value: "krw" },
-        { label: "USD", value: "usd" },
-        { label: "EUR", value: "eur" }
-      ]
+      index: true,
+      admin: {
+        description:
+          "The currency this invoice is denominated in. Points at the canonical `currency` collection (was an enum pre-Sprint 2)."
+      }
+    },
+    {
+      name: "fx_rate_used",
+      type: "number",
+      min: 0,
+      admin: {
+        description:
+          "Forward-looking: rate applied when the invoice currency differs from the Plan's base currency. Null at launch (KRW-only)."
+      }
     },
     {
       name: "status",
       type: "select",
       required: true,
-      defaultValue: "paid",
+      defaultValue: "draft",
       options: [
+        { label: "Draft", value: "draft" },
+        { label: "Open", value: "open" },
         { label: "Paid", value: "paid" },
-        { label: "Pending", value: "pending" },
-        { label: "Void", value: "void" }
+        { label: "Void", value: "void" },
+        // 'pending' is a legacy value from the pre-Sprint-2 3-state FSM.
+        // Kept here to mirror the DB enum (which still carries the value
+        // because Postgres won't let us DROP a single enum value without
+        // a full type-recreate). No new code path writes 'pending';
+        // semantically equivalent to 'open' going forward.
+        { label: "Pending (legacy)", value: "pending" }
       ],
-      index: true
+      index: true,
+      admin: {
+        description:
+          "Stripe-style FSM: draft → open → paid | void. The issuance hook writes 'paid' directly on bank-confirmed flow; hand-authored invoices may start as 'draft'."
+      }
     },
     {
       name: "paid_at",
@@ -163,14 +197,10 @@ export const Invoices: CollectionConfig = {
         { name: "amount", type: "number", required: true },
         {
           name: "currency",
-          type: "select",
-          required: true,
-          defaultValue: "krw",
-          options: [
-            { label: "KRW", value: "krw" },
-            { label: "USD", value: "usd" },
-            { label: "EUR", value: "eur" }
-          ]
+          type: "relationship",
+          relationTo: "currency",
+          hasMany: false,
+          required: true
         },
         {
           name: "payment_date",

@@ -2558,7 +2558,6 @@ export interface Plan {
    * All Hideaway plans are one-time payments at launch (manual bank transfer).
    */
   type: 'one_time';
-  price: (string | Price)[];
   /**
    * Online card / KakaoPay / Toss disabled at launch. Manual flow only.
    */
@@ -2589,36 +2588,6 @@ export interface Plan {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "prices".
- */
-export interface Price {
-  id: string;
-  currencies: {
-    amount: number;
-    currency: string | Currency;
-    display_amount?: string | null;
-    id?: string | null;
-  }[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "currency".
- */
-export interface Currency {
-  id: string;
-  name: string;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  kr_nm: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "invoices".
  */
 export interface Invoice {
@@ -2634,11 +2603,25 @@ export interface Invoice {
   subscription: string | Subscription;
   plan: string | Plan;
   /**
+   * The Price doc the customer transacted. Nullable for legacy / hand-issued invoices that predate the Product/Price split.
+   */
+  price?: (string | null) | Price;
+  /**
    * Total invoice amount in the chosen currency's primary unit (won, dollars, euros).
    */
   amount: number;
-  currency: 'krw' | 'usd' | 'eur';
-  status: 'paid' | 'pending' | 'void';
+  /**
+   * The currency this invoice is denominated in. Points at the canonical `currency` collection (was an enum pre-Sprint 2).
+   */
+  currency: string | Currency;
+  /**
+   * Forward-looking: rate applied when the invoice currency differs from the Plan's base currency. Null at launch (KRW-only).
+   */
+  fx_rate_used?: number | null;
+  /**
+   * Stripe-style FSM: draft → open → paid | void. The issuance hook writes 'paid' directly on bank-confirmed flow; hand-authored invoices may start as 'draft'.
+   */
+  status: 'draft' | 'open' | 'paid' | 'void';
   /**
    * Set when admin marks the related Subscription as paid. Mirrors the bank-receipt date.
    */
@@ -2662,7 +2645,7 @@ export interface Invoice {
     | {
         method: 'bank_transfer' | 'cash';
         amount: number;
-        currency: 'krw' | 'usd' | 'eur';
+        currency: string | Currency;
         payment_date: string;
         reference?: string | null;
         id?: string | null;
@@ -2679,6 +2662,10 @@ export interface Subscription {
   id: string;
   user: string | User;
   plan: string | Plan;
+  /**
+   * The specific Price (currency × amount × cadence) the subscriber transacted. Captured at checkout; never rewritten.
+   */
+  price: string | Price;
   start_date: string;
   /**
    * Date the subscription expires (null = lifetime). Set on activation; extended quarterly when waiver criteria are met.
@@ -2710,6 +2697,59 @@ export interface Subscription {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "prices".
+ */
+export interface Price {
+  id: string;
+  /**
+   * Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users.
+   */
+  nickname: string;
+  /**
+   * The Plan this Price is attached to.
+   */
+  plan: string | Plan;
+  currency: string | Currency;
+  /**
+   * Amount in the currency's primary unit (won, dollars, euros).
+   */
+  unit_amount: number;
+  /**
+   * All Hideaway prices are one-time at launch. 'recurring' reserved for future cadenced billing.
+   */
+  type: 'one_time' | 'recurring';
+  /**
+   * Populated only when type='recurring'. Leave blank for one-time prices.
+   */
+  recurring?: {
+    interval?: ('day' | 'week' | 'month' | 'year') | null;
+    interval_count?: number | null;
+    trial_period_days?: number | null;
+  };
+  /**
+   * When false, this Price is hidden from public reads but kept for invoice history.
+   */
+  active: boolean;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currency".
+ */
+export interface Currency {
+  id: string;
+  name: string;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  kr_nm: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "exchange-rate".
  */
 export interface ExchangeRate {
@@ -2717,7 +2757,7 @@ export interface ExchangeRate {
   date: string;
   rates: {
     currency: string | Currency;
-    rate: string;
+    rate: number;
     id?: string | null;
   }[];
   updatedAt: string;
@@ -4428,7 +4468,6 @@ export interface PlansSelect<T extends boolean = true> {
   tier_label?: T;
   validity?: T;
   type?: T;
-  price?: T;
   payment_methods?: T;
   description?: T;
   features?:
@@ -4454,8 +4493,10 @@ export interface InvoicesSelect<T extends boolean = true> {
   client?: T;
   subscription?: T;
   plan?: T;
+  price?: T;
   amount?: T;
   currency?: T;
+  fx_rate_used?: T;
   status?: T;
   paid_at?: T;
   cycle_start?: T;
@@ -4479,14 +4520,19 @@ export interface InvoicesSelect<T extends boolean = true> {
  * via the `definition` "prices_select".
  */
 export interface PricesSelect<T extends boolean = true> {
-  currencies?:
+  nickname?: T;
+  plan?: T;
+  currency?: T;
+  unit_amount?: T;
+  type?: T;
+  recurring?:
     | T
     | {
-        amount?: T;
-        currency?: T;
-        display_amount?: T;
-        id?: T;
+        interval?: T;
+        interval_count?: T;
+        trial_period_days?: T;
       };
+  active?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4497,6 +4543,7 @@ export interface PricesSelect<T extends boolean = true> {
 export interface SubscriptionsSelect<T extends boolean = true> {
   user?: T;
   plan?: T;
+  price?: T;
   start_date?: T;
   expires_at?: T;
   subscription_status?: T;

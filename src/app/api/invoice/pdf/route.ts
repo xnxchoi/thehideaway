@@ -21,7 +21,8 @@ import {
 } from "@/components/UX/Invoice/format";
 import type {
   InvoiceCurrency,
-  InvoiceDisplay
+  InvoiceDisplay,
+  InvoiceStatus
 } from "@/components/UX/Invoice/types";
 
 export const runtime = "nodejs";
@@ -44,12 +45,14 @@ const BodySchema = z.object({
   invoice_id: z.string().min(1)
 });
 
+type CurrencyRel = string | { name?: string | null } | null | undefined;
+
 type InvoiceRow = {
   id: string;
   invoice_number: number;
-  status: "paid" | "pending" | "void";
+  status: InvoiceStatus;
   amount: number;
-  currency: "krw" | "usd" | "eur";
+  currency: CurrencyRel;
   paid_at?: string | null;
   cycle_start?: string | null;
   cycle_end?: string | null;
@@ -60,7 +63,7 @@ type InvoiceRow = {
   payment_method?: Array<{
     method: "bank_transfer" | "cash";
     amount: number;
-    currency: "krw" | "usd" | "eur";
+    currency: CurrencyRel;
     payment_date?: string | null;
     reference?: string | null;
   }> | null;
@@ -90,6 +93,26 @@ const idOf = (rel: unknown): string | null => {
 
 const objOf = <T>(rel: unknown): T | null =>
   rel && typeof rel === "object" ? (rel as T) : null;
+
+/**
+ * Sprint 2: Invoice.currency is now a relationship to the `currency`
+ * collection. The PDF route fetches with `depth: 1` so the Currency
+ * doc is populated. This helper extracts the lowercase code that the
+ * downstream template / formatter pipeline expects.
+ *
+ * Defaults to "krw" — KRW-only at launch, and the formatter falls
+ * back gracefully on unknown codes.
+ */
+const currencyCode = (rel: CurrencyRel): InvoiceCurrency => {
+  const raw =
+    rel && typeof rel === "object" && rel.name
+      ? rel.name
+      : typeof rel === "string"
+        ? rel
+        : "";
+  const lower = raw.toLowerCase();
+  return lower === "usd" || lower === "eur" ? lower : "krw";
+};
 
 /* ---------------------------------------------------------------- *
  *  pdfmake fonts + table layouts (unchanged from prior version).
@@ -147,7 +170,7 @@ function projectInvoice(row: InvoiceRow): InvoiceDisplay {
     invoice_number: row.invoice_number,
     status: row.status,
     amount: row.amount,
-    currency: row.currency as InvoiceCurrency,
+    currency: currencyCode(row.currency),
     paid_at: row.paid_at ?? null,
     cycle_start: row.cycle_start ?? null,
     cycle_end: row.cycle_end ?? null,
@@ -155,7 +178,7 @@ function projectInvoice(row: InvoiceRow): InvoiceDisplay {
     payment_method: (row.payment_method ?? []).map((m) => ({
       method: m.method,
       amount: m.amount,
-      currency: m.currency as InvoiceCurrency,
+      currency: currencyCode(m.currency),
       payment_date: m.payment_date ?? new Date().toISOString(),
       reference: m.reference ?? null
     })),
