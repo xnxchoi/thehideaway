@@ -998,8 +998,7 @@ const ReadInternal = ({ post }: { post: SingleArticle }) => {
                     // d:false here means the server already verified access
                     // and put the full body on `postContent` — render directly.
                     // (The old `locked ? <LockedGate /> : <RichText />` branch
-                    // round-tripped to /api/gated, which is currently a dead
-                    // route AND would re-leak the access check to the client.)
+                    // re-leaked the access check to the client.)
                     <RichText data={postContent} enableGutter={false} />
                   )}
                 </div>

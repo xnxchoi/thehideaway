@@ -347,9 +347,6 @@ importers:
       howler:
         specifier: ^2.2.4
         version: 2.2.4
-      html-to-image:
-        specifier: ^1.11.13
-        version: 1.11.13
       http-status:
         specifier: ^2.1.0
         version: 2.1.0
@@ -5800,9 +5797,6 @@ packages:
     resolution: {integrity: sha512-YXxSlJBZTP7RS3tWnQw74ooKa6L9b9i9QYXY21eUEvhZ3u9XLfv6OnFsQq6RxkhHygsaUMvYsZRV5rU/OVNZxw==}
     engines: {node: '>=12'}
     hasBin: true
-
-  html-to-image@1.11.13:
-    resolution: {integrity: sha512-cuOPoI7WApyhBElTTb9oqsawRvZ0rHhaHwghRLlTuffoD1B2aDemlCruLeZrUIIdvG7gs9xeELEPm6PhuASqrg==}
 
   html-to-text@9.0.5:
     resolution: {integrity: sha512-qY60FjREgVZL03vJU6IfMV4GDjGBIoOyvuFdpBDIX9yTlDw0TjxVBQp+P8NvpdIXNJvfWBTNul7fsAQJq2FNpg==}
@@ -13912,8 +13906,6 @@ snapshots:
       param-case: 3.0.4
       relateurl: 0.2.7
       terser: 5.46.2
-
-  html-to-image@1.11.13: {}
 
   html-to-text@9.0.5:
     dependencies:
