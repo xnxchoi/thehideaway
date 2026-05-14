@@ -26,7 +26,13 @@ if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
 
 const options: BetterAuthOptionsType = {
   appName: "hideaway-validator",
-  baseURL: "http://localhost:3000",
+  // Drives whether Better Auth issues the `__Secure-` prefixed cookie
+  // (only when baseURL is https). Hardcoding localhost shipped the
+  // production session cookie without the `Secure` flag, meaning the
+  // browser would transmit it over plain HTTP — defence-in-depth
+  // failure even if all upstream traffic is TLS-terminated. Read from
+  // the same env var the trusted-origins list uses.
+  baseURL: appURL,
   trustedOrigins,
   emailAndPassword: {
     enabled: true,
@@ -208,7 +214,10 @@ export const betterAuthPlugins = [
     },
     async sendInvitationEmail(data) {
       const inviteLink = `${appURL}/accept-invitation/${data.id}`;
-      console.log("Send invite for org: ", data, inviteLink);
+      // TODO(orgs): wire to BetterAuthEmailService when organization
+      // invites ship. Logging the invite link to stdout would leak a
+      // join token — silently no-op for now.
+      void inviteLink;
     }
   }),
   multiSession(),
@@ -394,7 +403,11 @@ export const betterAuthPluginOptions = {
   },
   adminInvitations: {
     sendInviteEmail: async ({ payload, email, url }) => {
-      console.log("Send admin invite: ", email, url);
+      // TODO(admin-invites): plumb through emailService. Don't log
+      // the invite URL — it's a single-use join token.
+      void email;
+      void url;
+      void payload;
       return {
         success: true
       };

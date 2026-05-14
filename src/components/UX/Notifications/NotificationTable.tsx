@@ -175,7 +175,15 @@ export const NotificationTable = () => {
         cell: ({ cell }) => {
           const timestamp = cell.getValue<SyncedNotification["createdAt"]>();
           const rt = getRelativeTime({ timestamp });
-          return <span>{rt}</span>;
+          // Mono + tabular-nums per CLAUDE.md typography rules — timestamps
+          // are metadata, not body copy. Muted to /60 (within the legibility
+          // floor for UI labels) so they sit behind the title without
+          // disappearing.
+          return (
+            <span className="font-mono text-[11px] tabular-nums text-muted-foreground/65">
+              {rt}
+            </span>
+          );
         },
         enableSorting: true
       },
@@ -232,7 +240,7 @@ export const NotificationTable = () => {
     getRowId: (row) => row.id
   });
   return (
-    <div className="relative h-full">
+    <div className="relative h-full px-6 xl:px-10">
       <div className="h-full max-w-[var(--site-width)] flex-1">
         <div className="data-table-container container flex h-full w-full flex-col items-center justify-center gap-3.5 pt-9 pb-13 md:py-13">
           <DataTable actionBar={<NAction table={table} />} table={table}>

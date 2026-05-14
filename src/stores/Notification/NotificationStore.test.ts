@@ -11,9 +11,7 @@ import { createNotificationStore } from "./NotificationStore";
 
 const makeNotif = (
   id: string,
-  flags: Partial<
-    Pick<SyncedNotification, "read" | "dismissed" | "status">
-  > = {}
+  flags: Partial<Pick<SyncedNotification, "read" | "dismissed" | "status">> = {}
 ): SyncedNotification =>
   ({
     id,
@@ -38,30 +36,36 @@ const makeNotif = (
 describe("NotificationStore — count semantics", () => {
   it("count is 0 when all notifications are read", () => {
     const store = createNotificationStore({ user: "u1" });
-    store.getState().setNotifications([
-      makeNotif("1", { read: true, status: "read" }),
-      makeNotif("2", { read: true, status: "read" })
-    ]);
+    store
+      .getState()
+      .setNotifications([
+        makeNotif("1", { read: true, status: "read" }),
+        makeNotif("2", { read: true, status: "read" })
+      ]);
     expect(store.getState().count).toBe(0);
     expect(store.getState().notifications.size).toBe(2);
   });
 
   it("count includes unread items only", () => {
     const store = createNotificationStore({ user: "u1" });
-    store.getState().setNotifications([
-      makeNotif("1"),
-      makeNotif("2"),
-      makeNotif("3", { read: true, status: "read" })
-    ]);
+    store
+      .getState()
+      .setNotifications([
+        makeNotif("1"),
+        makeNotif("2"),
+        makeNotif("3", { read: true, status: "read" })
+      ]);
     expect(store.getState().count).toBe(2);
   });
 
   it("count excludes dismissed items even if unread", () => {
     const store = createNotificationStore({ user: "u1" });
-    store.getState().setNotifications([
-      makeNotif("1"),
-      makeNotif("2", { dismissed: true, status: "dismissed" })
-    ]);
+    store
+      .getState()
+      .setNotifications([
+        makeNotif("1"),
+        makeNotif("2", { dismissed: true, status: "dismissed" })
+      ]);
     expect(store.getState().count).toBe(1);
   });
 

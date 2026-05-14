@@ -33,9 +33,7 @@ import {
 
 const makeNotif = (
   id: string,
-  flags: Partial<
-    Pick<SyncedNotification, "read" | "dismissed" | "status">
-  > = {}
+  flags: Partial<Pick<SyncedNotification, "read" | "dismissed" | "status">> = {}
 ): SyncedNotification =>
   ({
     id,
@@ -219,20 +217,12 @@ describe("snapshot + restore round-trip", () => {
 
     expect(
       (
-        qc.getQueryData([
-          "NOTIFY",
-          { user: "u1" },
-          ""
-        ]) as SyncedNotification[]
+        qc.getQueryData(["NOTIFY", { user: "u1" }, ""]) as SyncedNotification[]
       )[0].dismissed
     ).toBe(true);
     expect(
       (
-        qc.getQueryData([
-          "NOTIFY",
-          { user: "u2" },
-          ""
-        ]) as SyncedNotification[]
+        qc.getQueryData(["NOTIFY", { user: "u2" }, ""]) as SyncedNotification[]
       )[0].dismissed
     ).toBe(false);
   });
@@ -277,11 +267,7 @@ describe("sequential-mutation rollback (scope-protected order)", () => {
 
     // Read first.
     updateAllUserLists(qc, user, markReadOptimistic(["1"], NOW));
-    let cur = qc.getQueryData([
-      "NOTIFY",
-      { user },
-      ""
-    ]) as SyncedNotification[];
+    let cur = qc.getQueryData(["NOTIFY", { user }, ""]) as SyncedNotification[];
     expect(cur[0].read).toBe(true);
     expect(cur[0].dismissed).toBe(false);
 
