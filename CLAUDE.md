@@ -692,7 +692,15 @@ const isPremium = (role: string) =>
   ["patron", "author", "editor", "admin"].includes(role);
 ```
 
-Premium: more grid columns, 4:3 overlay cards, denser display. Free: 16:9 standard cards, title below image. Subscription assignment is not yet wired — role is set directly on the user.
+Premium: more grid columns, 4:3 overlay cards, denser display. Free: 16:9 standard cards, title below image.
+
+Role is driven by Subscription state. The Subscriptions collection has three coordinated hooks:
+
+- `autoActivateOnPaid` (beforeChange) — when admin checks `paid` on a `pending` row, promotes `subscription_status` to `active` and stamps `expires_at` from plan validity (yearly → start + 1y; lifetime → null).
+- `syncRoleAfterSubscriptionChange` (afterChange) — on the `pending→active` edge, promotes `user.role` to the plan's tier (`member` | `patron`). On `active→inactive`, re-derives role from the user's remaining active subscriptions (highest tier wins; falls back to `user`). Staff roles (`admin`, `editor`) are never touched.
+- `issueInvoiceOnPaid` (afterChange) — issues an Invoice exactly once per subscription via the `invoice_number_seq` atomic counter.
+
+Admin overrides survive: explicit `expires_at` writes are not overwritten; manual `subscription_status` writes (e.g. to `canceled`) bypass auto-activation.
 
 ---
 

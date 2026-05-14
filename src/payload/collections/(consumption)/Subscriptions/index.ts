@@ -2,6 +2,7 @@ import type { CollectionConfig, FieldAccess } from "payload";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { syncRoleAfterSubscriptionChange } from "./hooks/syncRole";
 import { issueInvoiceOnPaid } from "./hooks/issueInvoiceOnPaid";
+import { autoActivateOnPaid } from "./hooks/autoActivateOnPaid";
 
 const subscriptionAccess = {
   create: isAdmin,
@@ -150,6 +151,11 @@ export const Subscriptions: CollectionConfig = {
     }
   ],
   hooks: {
+    // beforeChange must run first: it promotes status pending→active on
+    // the paid edge so the afterChange hooks see a clean transition and
+    // fire their main paths (role sync + invoice issuance) in a single
+    // admin click.
+    beforeChange: [autoActivateOnPaid],
     afterChange: [syncRoleAfterSubscriptionChange, issueInvoiceOnPaid]
   }
 };
