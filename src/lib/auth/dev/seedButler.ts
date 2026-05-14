@@ -42,6 +42,15 @@ export async function seedButler(
     payload.logger.info("[dev-butler] production — skipping.");
     return null;
   }
+  // SEED_CAPTURE=1 means we're inside `pnpm seed:rebuild`. The
+  // generator captures every INSERT and bakes them into the production
+  // seed migration; butler is dev-only and must not ship to prod.
+  if (process.env.SEED_CAPTURE === "1") {
+    payload.logger.info(
+      "[dev-butler] SEED_CAPTURE=1 — skipping (dev fixture, not for migration)."
+    );
+    return null;
+  }
   const password = process.env.DEV_BUTLER_PASSWORD;
   if (!password) {
     payload.logger.info(

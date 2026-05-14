@@ -20,6 +20,7 @@ import * as migration_20260511_085557_posts_author_status_updated_idx from "./20
 import * as migration_20260512_120000_ticketing_money_resilience from "./20260512_120000_ticketing_money_resilience";
 import * as migration_20260514_100000_commerce_shape_v2 from "./20260514_100000_commerce_shape_v2";
 import * as migration_20260514_100100_invoice_status_default_draft from "./20260514_100100_invoice_status_default_draft";
+import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
   {
@@ -131,5 +132,10 @@ export const migrations = [
     up: migration_20260514_100100_invoice_status_default_draft.up,
     down: migration_20260514_100100_invoice_status_default_draft.down,
     name: "20260514_100100_invoice_status_default_draft"
+  },
+  {
+    up: migration_99999999_000000_initial_seed.up,
+    down: migration_99999999_000000_initial_seed.down,
+    name: "99999999_000000_initial_seed"
   }
 ];

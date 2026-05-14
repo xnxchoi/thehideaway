@@ -20,7 +20,10 @@ import { calculateSearchScore } from "@/payload/search/calculateScore";
 import { afterSchemaInit } from "@/scripts/afterSchemaInit";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { timingSafeEqual } from "crypto";
-import { nanoid } from "nanoid";
+// nanoid was used by the inline tag-seed block that lived in onInit;
+// the seed now lives in `src/seed/initial.ts`. The commented-out
+// legacy snippet below still references `nanoid` — left as historical
+// context only; safe to remove once that block is deleted.
 import path from "path";
 import { buildConfig, PayloadRequest } from "payload";
 import sharp from "sharp";
@@ -104,8 +107,35 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI
     },
     idType: "uuid",
-    allowIDOnCreate: false,
-    afterSchemaInit: [afterSchemaInit]
+    // Normally id-on-create is rejected — clients shouldn't pick their
+    // own UUIDs. The seed-rebuild generator needs to pre-generate UUIDs
+    // so parent-child relationships in the captured INSERTs reference
+    // resolvable IDs (otherwise the regenerated migration uses
+    // `id=default` for the parent and a stale captured UUID for the
+    // FK, which collapses on the next migrate:fresh).
+    allowIDOnCreate: process.env.SEED_CAPTURE === "1",
+    afterSchemaInit: [afterSchemaInit],
+    // When SEED_CAPTURE=1, install a Drizzle logger that pushes every
+    // INSERT into a process-global buffer. The `pnpm seed:rebuild`
+    // generator reads that buffer after running `runInitialSeed` and
+    // emits the captured SQL into a migration file. Off in every other
+    // context. See `src/scripts/seedToMigration.ts`.
+    logger:
+      process.env.SEED_CAPTURE === "1"
+        ? {
+            logQuery: (query: string, params: unknown[]) => {
+              const buf = (
+                globalThis as unknown as {
+                  __SEED_CAPTURE__?: Array<{
+                    query: string;
+                    params: unknown[];
+                  }>;
+                }
+              ).__SEED_CAPTURE__;
+              if (buf) buf.push({ query, params });
+            }
+          }
+        : false
   }),
   collections: [...collections, Admins, EmailQuota, DeferredEmails],
   cors: [getServerSideURL()].filter(Boolean),
@@ -113,9 +143,24 @@ export default buildConfig({
   onInit: async (payload) => {
     payload.logger.info("Initializing Payload...");
 
-    // Dev-only bypass user. Fire-and-forget so we don't block onInit — the
-    // handle field hook calls getPayload() internally, which would deadlock
-    // on a still-initializing instance if we awaited synchronously.
+    // Boot-time seeds (concierge admin, "uncategorized" category, default
+    // tags, KRW currency, launch Plans/Prices) used to live here as
+    // awaited `payload.create()` calls. That pattern deadlocks: Payload
+    // is mid-initialization, the slug/handle field hooks call
+    // `getPayload()` to validate uniqueness, the call returns the
+    // still-initializing instance, and the await never resolves.
+    //
+    // Seeds now live in `src/seed/initial.ts` (Payload-native source of
+    // truth) and ship as a generated SQL migration
+    // (`src/lib/migrations/99999999_000000_initial_seed.ts`) regenerated
+    // via `pnpm seed:rebuild`. See `readmes/MIGRATIONS.md` § "Seeding
+    // mechanics" for the full workflow.
+    //
+    // Dev-only fixture users (butler, readers) still fire here because
+    // they depend on env vars that don't belong in a migration. The
+    // `setTimeout(0, …)` shim breaks them out of onInit's call stack so
+    // the slug/handle hook receives a fully-initialized payload by the
+    // time it fires.
     setTimeout(() => {
       void seedButler(payload).catch((err: unknown) => {
         const msg =
@@ -137,156 +182,6 @@ export default buildConfig({
         payload.logger.error(`[prod-sanity] check failed: ${msg}`);
       });
     }, 0);
-
-    const tags: [string, string][] = [
-      ["Life", "life"],
-      ["Startup", "startup"],
-      ["Blockchain", "blockchain"],
-      ["Poetry", "poetry"],
-      ["Life Lessons", "lifeLessons"],
-      ["Politics", "politics"],
-      ["Health", "health"],
-      ["Love", "love"],
-      ["Travel", "travel"],
-      ["Technology", "technology"],
-      ["Entrepreneurship", "entrepreneurship"],
-      ["Self Improvement", "selfImprovement"],
-      ["Education", "education"],
-      ["Writing", "writing"],
-      ["Business", "business"],
-      ["Cryptocurrency", "cryptocurrency"],
-      ["Bitcoin", "bitcoin"],
-      ["Design", "design"],
-      ["Social Media", "socialMedia"],
-      ["Music", "music"],
-      ["Relationships", "relationships"],
-      ["Sports", "sports"]
-    ];
-    const uid = await payload
-      .find({
-        collection: "users",
-        where: {
-          and: [
-            {
-              role: {
-                equals: "admin"
-              }
-            },
-            {
-              username: {
-                equals: "concierge"
-              }
-            }
-          ]
-        },
-        overrideAccess: true,
-        select: {
-          slug: true
-        },
-        pagination: false,
-        limit: 1
-      })
-      .then(({ docs }) => docs[0]?.id || null)
-      .then(
-        async (d) =>
-          d ||
-          (await payload
-            .create({
-              collection: "users",
-              draft: false,
-              data: {
-                name: "The Concierge",
-                role: "admin",
-                slug: "concierge",
-                email: "sean.sungyoon.choi@gmail.com",
-                username: "concierge",
-                emailVerified: true,
-                verified: true,
-                firstName: "The",
-                lastName: "Concierge",
-                onboarded: true,
-                banned: false,
-                twoFactorEnabled: false
-              }
-            })
-            .then(({ id }) => id))
-      );
-
-    payload
-      .find({
-        collection: "categories",
-        overrideAccess: true,
-        where: {
-          slug: { like: "uncategorized" }
-        },
-        limit: 1,
-        pagination: false,
-        select: {
-          slug: true
-        }
-      })
-      .then(
-        ({ docs }) =>
-          docs[0]?.id ||
-          payload
-            .create({
-              collection: "categories",
-              draft: false,
-              overrideAccess: true,
-              data: {
-                popularity: 0,
-                title: "Uncategorized",
-                slug: "uncategorized",
-                description:
-                  "Default bucket for all reflections without a category.",
-                relatedCategories: []
-              },
-              select: {
-                slug: true
-              }
-            })
-            .then(({ id }) => id)
-      );
-    await Promise.allSettled(
-      tags.map(([title, slug]) =>
-        payload
-          .count({
-            collection: "tags",
-            overrideAccess: true,
-            where: {
-              title: {
-                equals: title
-              }
-            }
-          })
-          .then((r) =>
-            r.totalDocs < 1
-              ? ([title, slug] as [string, string])
-              : payload
-                  .create({
-                    collection: "tags",
-                    draft: false,
-                    overrideAccess: true,
-                    data: {
-                      title,
-                      slug,
-                      hashId: nanoid(11),
-                      slugLock: true,
-                      tagCount: 0,
-                      author: uid
-                    },
-                    select: {
-                      title: true,
-                      slug: true
-                    }
-                  })
-                  .then(({ title, slug }) => [title, slug] as [string, string])
-          )
-          .catch((r) => {
-            return [title, slug] as [string, string];
-          })
-      )
-    );
   },
   // if (typeof uid === "string") {
 

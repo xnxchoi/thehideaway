@@ -35,6 +35,7 @@
     "cleanup:dev-fixtures": "tsx --env-file=.env --env-file=.env.local src/scripts/cleanupDevFixtures.ts",
     "seed:butler-posts": "tsx --env-file=.env --env-file=.env.local src/scripts/seedButlerPosts.ts",
     "seed:membership": "tsx --env-file=.env --env-file=.env.local src/scripts/seedMembership.ts",
+    "seed:rebuild": "tsx --env-file=.env --env-file=.env.local src/scripts/seedToMigration.ts",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "upgrade": "cross-env NODE_OPTIONS=--no-deprecation pnpm upgrade",
     "verify:env": "node --no-warnings --experimental-strip-types scripts/verify-env.ts"

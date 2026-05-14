@@ -2,7 +2,7 @@ import { User } from "@/payload-types";
 import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";
 import { randomNumber } from "@/utilities/randomNumber";
 import { DateTime } from "luxon";
-import { CollectionAfterChangeHook } from "payload";
+import type { CollectionAfterChangeHook } from "payload";
 import { uuidv7 } from "uuidv7";
 
 type AfterChangeArgs = Parameters<CollectionAfterChangeHook<User>>[0];
@@ -96,6 +96,12 @@ export const createProfile = async ({ req, doc }: Rest & ReqArgs) => {
     draft: false,
     overrideAccess: true,
     data: {
+      // Explicit uuidv7 so captured INSERTs in the seed-rebuild pipeline
+      // have a literal id (matching the profile_slides._parent_id FK
+      // captured alongside). When `allowIDOnCreate` is false at runtime
+      // (prod), Payload silently strips this and lets the DB column
+      // default fire — behavior is identical to the prior pattern.
+      id: uuidv7(),
       author: doc.id,
       slug: doc.slug,
       title: `@${doc.username}#${curProfileCount + 1}`,

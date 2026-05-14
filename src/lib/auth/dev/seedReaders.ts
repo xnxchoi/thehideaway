@@ -86,6 +86,15 @@ export async function seedReaders(
     payload.logger.info("[dev-readers] production — skipping.");
     return { readers: null };
   }
+  // SEED_CAPTURE=1 means we're inside `pnpm seed:rebuild`. The
+  // generator captures every INSERT and bakes them into the production
+  // seed migration; reader fixtures are dev-only and must not ship to prod.
+  if (process.env.SEED_CAPTURE === "1") {
+    payload.logger.info(
+      "[dev-readers] SEED_CAPTURE=1 — skipping (dev fixture, not for migration)."
+    );
+    return { readers: null };
+  }
   // Falls back to DEV_BUTLER_PASSWORD so a single dev secret enables every
   // fixture. Keep them independent in `.env.local` if you want different
   // passwords per role.

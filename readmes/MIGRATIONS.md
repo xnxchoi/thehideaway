@@ -192,6 +192,54 @@ Always prefer the Payload field config. If the generator is later re-run, the re
 
 ---
 
+## Seeding mechanics
+
+Boot-time data (the concierge admin, the "uncategorized" Category, default tags, the KRW Currency, the launch Plans + Prices, etc.) does **not** live in `payload.config.ts:onInit`. That pattern deadlocks: while Payload is initializing, slug / handle field hooks call `getPayload()` for uniqueness checks, get the still-initializing instance back, and the await never resolves. See [payload#8852](https://github.com/payloadcms/payload/issues/8852) — Payload closed it as "not planned." The local codebase comment that explains why `seedButler` is wrapped in `setTimeout(0, …)` flags the same hazard.
+
+The seeding pipeline:
+
+```
+src/seed/initial.ts                       ← Source of truth. Payload-native.
+        │                                   You read + edit this.
+        │
+        ▼  pnpm seed:rebuild
+src/scripts/seedToMigration.ts            ← Generator.
+        │                                   - Deletes the prior seed migration file.
+        │                                   - Runs `payload migrate:fresh`.
+        │                                   - Boots Payload with SEED_CAPTURE=1.
+        │                                   - Runs runInitialSeed; the Drizzle
+        │                                     logger records every issued INSERT.
+        │                                   - Inlines bound params, strips
+        │                                     RETURNING clauses, appends
+        │                                     `ON CONFLICT DO NOTHING`.
+        │                                   - Writes the compiled SQL to:
+        ▼
+src/lib/migrations/99999999_000000_initial_seed.ts
+                                          ← Build artifact. Regenerated wholesale
+                                            on every `pnpm seed:rebuild`. Header
+                                            says DO NOT EDIT.
+```
+
+**Why two artifacts.** The Payload-native source stays editable and human-legible. The generated SQL is the canonical execution path: fast, deadlock-free, idempotent, and runnable from any context (prod boot, CI, ad-hoc migrate). Editing the SQL migration directly is wrong — regenerate from the source.
+
+**When to run `pnpm seed:rebuild`:**
+
+- After editing `src/seed/initial.ts` (adding a tag, changing a Plan, etc.).
+- After a Payload upgrade (Payload's internal write shape may shift; regenerating picks up the new shape).
+- After a schema migration that affects a seeded collection.
+
+**Filename / ordering:** the seed migration is pinned to `99999999_000000_initial_seed` so it always runs last — every other schema migration must be applied before seed rows reference them.
+
+**Idempotency:** every INSERT in the generated migration carries `ON CONFLICT DO NOTHING`. Re-applying the migration against an already-seeded DB is a no-op data-wise.
+
+**When NOT to use this for seeding:**
+
+- Per-user / per-tenant fixtures — use a runtime hook or a one-off script, not the boot seed.
+- Dev-only fixtures that depend on env vars (`DEV_BUTLER_PASSWORD` etc.) — keep them in `src/lib/auth/dev/seed*` and let `payload.config.ts:onInit` fire them via the `setTimeout(0, …)` shim. They're env-conditional and have no place in a production-bound migration.
+- Anything that mutates rows across re-runs — `ON CONFLICT DO NOTHING` only handles "create if missing," not upsert semantics.
+
+---
+
 ## Checklist Before Committing a Migration
 
 - [ ] File name matches `YYYYMMDD_HHMMSS_label.ts` and is included in `src/lib/migrations/index.ts`.
