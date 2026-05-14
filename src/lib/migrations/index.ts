@@ -19,6 +19,7 @@ import * as migration_20260507_165256 from "./20260507_165256";
 import * as migration_20260511_085557_posts_author_status_updated_idx from "./20260511_085557_posts_author_status_updated_idx";
 import * as migration_20260512_120000_ticketing_money_resilience from "./20260512_120000_ticketing_money_resilience";
 import * as migration_20260514_100000_commerce_shape_v2 from "./20260514_100000_commerce_shape_v2";
+import * as migration_20260514_100100_invoice_status_default_draft from "./20260514_100100_invoice_status_default_draft";
 
 export const migrations = [
   {
@@ -125,5 +126,10 @@ export const migrations = [
     up: migration_20260514_100000_commerce_shape_v2.up,
     down: migration_20260514_100000_commerce_shape_v2.down,
     name: "20260514_100000_commerce_shape_v2"
+  },
+  {
+    up: migration_20260514_100100_invoice_status_default_draft.up,
+    down: migration_20260514_100100_invoice_status_default_draft.down,
+    name: "20260514_100100_invoice_status_default_draft"
   }
 ];

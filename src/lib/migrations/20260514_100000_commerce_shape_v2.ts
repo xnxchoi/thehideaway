@@ -178,12 +178,13 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     -- ── Phase 6: Invoice status FSM expansion ────────────────────────
     -- Add 'draft' and 'open' to the existing status enum. Postgres 12+
     -- supports IF NOT EXISTS on ALTER TYPE ADD VALUE.
+    --
+    -- Postgres rejects "unsafe use of new value" if we ALTER COLUMN ...
+    -- SET DEFAULT 'draft' in the *same* transaction as ADD VALUE. The
+    -- default flip therefore lives in a follow-up migration
+    -- (20260514_100100_invoice_status_default_draft).
     ALTER TYPE "enum_invoices_status" ADD VALUE IF NOT EXISTS 'draft' BEFORE 'paid';
     ALTER TYPE "enum_invoices_status" ADD VALUE IF NOT EXISTS 'open' BEFORE 'paid';
-
-    -- Flip default. New manual entries start as 'draft'. The hook still
-    -- writes 'paid' explicitly on bank-confirmed flow.
-    ALTER TABLE "invoices" ALTER COLUMN "status" SET DEFAULT 'draft';
 
     -- ── Phase 7: invoices_payment_method.currency_id ─────────────────
     ALTER TABLE "invoices_payment_method"
@@ -226,8 +227,9 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
 
     -- invoices.status default + enum (we cannot DROP VALUE from an enum
     -- in vanilla Postgres without recreating the type; leave the
-    -- 'draft' and 'open' values present and just restore the default).
-    ALTER TABLE "invoices" ALTER COLUMN "status" SET DEFAULT 'paid';
+    -- 'draft' and 'open' values present. The companion
+    -- 20260514_100100 migration restores the 'paid' default in its own
+    -- down().)
 
     -- invoices currency_id / fx_rate_used / price_id → enum
     DROP INDEX IF EXISTS "invoices_currency_idx";

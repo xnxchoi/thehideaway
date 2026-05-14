@@ -50,12 +50,16 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     -- Advance the sequence past any existing rows so new tickets keep
     -- monotonic continuity. coalesce + setval(_, false) means the next
     -- nextval() call returns (max + 1) exactly.
+    -- Explicit ::bigint cast: GREATEST(numeric, integer) resolves to
+    -- numeric, but Postgres only exposes setval(regclass, bigint[, bool]).
+    -- Without the cast we get "function setval(unknown, numeric, boolean)
+    -- does not exist" on first apply.
     SELECT setval(
       'tickets_number_seq',
       GREATEST(
         coalesce((SELECT MAX("ticket_number") FROM "tickets"), 0) + 1,
         1
-      ),
+      )::bigint,
       false
     );
 
@@ -66,7 +70,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       GREATEST(
         coalesce((SELECT MAX("invoice_number") FROM "invoices"), 0) + 1,
         1
-      ),
+      )::bigint,
       false
     );
 
