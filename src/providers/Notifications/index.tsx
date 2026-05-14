@@ -1,56 +1,75 @@
 "use client";
+
+/**
+ * Notifications: provider + public hook.
+ *
+ * Architecture:
+ *   1. NotificationStoreContext     — internal Zustand store (one map of
+ *                                     SyncedNotification by id, kept in
+ *                                     sync with React Query results).
+ *   2. NotificationContext           — public surface consumed via
+ *                                     `useNotifications()`.
+ *
+ * Data flow:
+ *   - Initial: useQuery hits GET /api/notifications/me.
+ *   - Polling: refetchInterval keeps the cache fresh while the tab is
+ *     focused. We do NOT poll in the background — that's a battery /
+ *     bandwidth tax that no notification surface justifies.
+ *   - User actions: mutations.ts holds the three PATCH flows. Each one
+ *     applies an optimistic update to every cached
+ *     `["NOTIFY", { user }, ...]` entry and rolls back on error.
+ *   - Cross-tab freshness: when the user re-focuses the tab, React
+ *     Query refetches; that's our "real-time-enough" for this phase.
+ *
+ * Migration path to Server-Sent Events lives in
+ * `readmes/NOTIFICATIONS.md` § "Phase B". The public hook surface here
+ * is the contract that SSE-driven cache updates must preserve so the
+ * swap is call-site-free.
+ */
+
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
-import { Notification } from "@/payload-types";
-import { convertToSyncedNotification } from "@/payload/collections/Notifications/hooks/convertToSyncedNotification";
-import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
+import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import {
   createNotificationStore,
-  NotificationStore
+  type NotificationStore
 } from "@/stores/Notification/NotificationStore";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DateTime } from "luxon";
+import { useQuery } from "@tanstack/react-query";
 import {
   createContext,
-  ReactNode,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
-  useRef,
-  useState
+  useRef
 } from "react";
-import { StoreApi, useStore } from "zustand";
+import { type StoreApi, useStore } from "zustand";
 import { useNotificationFn } from "./notificationFn";
+import {
+  useDismissMutation,
+  useReadAllMutation,
+  useReadMutation
+} from "./mutations";
 
-type NotificationAPI = StoreApi<NotificationStore>;
-const NotificationContext = createContext<NotificationAPI | undefined>(
-  undefined
-);
+/** Cadence of the foreground refetch. 30s is the lower bound that still
+ * feels effortless without flooding the API. */
+const POLL_INTERVAL_MS = 30_000;
 
-export const NotificationProvider = ({
-  children,
-  user
-}: {
-  children: ReactNode;
-  user: string;
-}) => {
-  return (
-    <NotificationInternal user={user || ""}>
-      <NotifyProxy>{children}</NotifyProxy>
-    </NotificationInternal>
-  );
-};
+type NotificationStoreApi = StoreApi<NotificationStore>;
+const NotificationStoreContext = createContext<
+  NotificationStoreApi | undefined
+>(undefined);
 
-const NotifyContext = createContext<{
+interface NotificationContextValue {
   notifications: SyncedNotification[];
   count: number;
   lastFetched: number;
   isLoading: boolean;
-  setRead: ({ ids }: { ids: string[] }) => void;
-  setDismissed: ({ ids }: { ids: string[] }) => void;
+  setRead: (args: { ids: string[] }) => void;
+  setDismissed: (args: { ids: string[] }) => void;
   setAllRead: () => void;
+}
 
-  // isSSEConnected: boolean;
-}>({
+const NotificationContext = createContext<NotificationContextValue>({
   notifications: [],
   count: 0,
   lastFetched: 0,
@@ -60,409 +79,139 @@ const NotifyContext = createContext<{
   setAllRead: () => {}
 });
 
-const NotifyProxy = ({
+/* ── Public Provider ────────────────────────────────────────────── */
+
+export const NotificationProvider = ({
   children,
-  isMe = false
+  user
 }: {
   children: ReactNode;
-  isMe?: boolean;
-}) => {
-  const lastFetched = useNore((s) => s.lastFetched);
-  const updateNo = useNore((s) => s.setNotifications);
-  // const handleSSEUpdate = useNore((s) => s.handleSSEUpdate);
-  const updateU = useNore((r) => r.updateUser);
-  const user = useRPSession((r) => r.id);
-  const notifications = useNore((s) => s.notifications);
-  const count = useNore((r) => r.count);
+  user: string;
+}) => (
+  <NotificationStoreShell user={user || ""}>
+    <NotificationOrchestrator>{children}</NotificationOrchestrator>
+  </NotificationStoreShell>
+);
 
-  const qc = useQueryClient();
-  // Initial fetch and fallback for when SSE is not connected
-  const [isLoading, setIsLoading] = useState(false);
-  const { fn, queryString } = useNotificationFn({});
-  const {
-    isLoading: isLoadingNotifications,
-    data,
-    isLoadingError,
-    isPending: isPendingNotifications,
-    isError: isErrorNotifications
-  } = useQuery({
-    placeholderData: Array.from(notifications.values()),
-    queryKey: ["NOTIFY", { user: user }, queryString],
-    queryFn: fn,
-    enabled: isMe || !!user,
-    // Increase stale time since we have real-time updates via SSE
-    staleTime: isMe ? 30 * 1000 : 90 * 1000, // 5 minutes if SSE connected, 90 seconds otherwise
-    // Reduce refetch interval when SSE is connected
+/* ── Store shell ────────────────────────────────────────────────── */
 
-    networkMode: "online",
-    gcTime: isMe ? 60 * 1000 : 10 * 1000
-  });
-  useEffect(() => {
-    if (data) {
-      updateNo(data);
-    }
-  }, [data, updateNo]);
-
-  // const { mutateAsync: mutateNotification } = useMutation({
-  //   scope: { id: "NOTIFY" + user },
-  //   mutationFn: async ({
-  //     params,
-  //     user,
-  //     now
-  //   }: {
-  //     params: {
-  //       doc: Partial<SyncedNotification> & Pick<SyncedNotification, "id">;
-  //       action?: "read" | "dismiss";
-  //     }[];
-  //     now: number;
-  //     user: string;
-  //   }) => {
-  //     const responses = await Promise.allSettled(
-  //       params
-  //         .filter((o) => !!o.doc?.id)
-  //         .map(async (p) =>
-  //           fetch(
-  //             `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notifications/${p.doc.id}${p.action ? `/${p.action}` : ""}`,
-  //             {
-  //               method: "PATCH",
-  //               headers: {
-  //                 "Content-Type": "application/json"
-  //               },
-  //               credentials: "include",
-  //               body: JSON.stringify(p.action ? { id: p.doc.id } : { ...p.doc })
-  //             }
-  //           )
-  //             .then(async (response) => {
-  //               if (!response.ok) {
-  //                 throw new Error("Failed to update notification", {
-  //                   cause: {
-  //                     doc: p.doc,
-  //                     action: p.action
-  //                   }
-  //                 });
-  //               }
-  //               return (await response.json()) as {
-  //                 doc: Notification;
-  //                 message: string;
-  //               };
-  //             })
-  //             .then((r) => {
-  //               return { ...r, action: p.action };
-  //             })
-  //             .catch((e) => {
-  //               console.error(e);
-  //               return {
-  //                 doc: p.doc,
-  //                 action: p.action,
-  //                 error: e
-  //               };
-  //             })
-  //         )
-  //     );
-  //     const docs = responses
-  //       .filter((r) => r.status === "fulfilled")
-  //       .map((r) => r.value.doc as Notification);
-  //     if (docs.length === 0) {
-  //       throw new Error("Failed to update notification", {
-  //         cause: {
-  //           docs: responses,
-  //           params
-  //         }
-  //       });
-  //     }
-  //     return {
-  //       docs: docs.map((r) => convertToSyncedNotification(r)),
-  //       user,
-  //       timestamp: now
-  //     };
-  //   },
-  //   onMutate: async (variables, context) => {
-  //     const { user, params, now } = variables;
-  //     const nowD = DateTime.fromMillis(now);
-  //     const nowISO = nowD.toISO()!;
-
-  //     await context.client.cancelQueries({
-  //       queryKey: ["NOTIFY", { user: user }]
-  //     });
-  //     const previousNotifications =
-  //       context.client.getQueryData(["NOTIFY", { user: variables.user }]) ||
-  //       ([] as SyncedNotification[]);
-  //     const docs = [...(previousNotifications as SyncedNotification[])];
-  //     params.forEach((p) => {
-  //       const r = docs.find((r) => r.id === p.doc.id);
-  //       if (r) {
-  //         switch (p.action) {
-  //           case "read":
-  //             r.read = true;
-  //             if (!r.readAt) {
-  //               r.readAt = nowISO;
-  //               r.updatedAt = nowISO;
-  //             }
-  //             break;
-  //           case "dismiss":
-  //             r.read = true;
-  //             r.dismissed = true;
-  //             r.readAt = r.readAt || nowISO;
-  //             r.updatedAt = nowISO;
-  //             break;
-  //         }
-  //       }
-  //     });
-  //     context.client.setQueryData(
-  //       ["NOTIFY", { user: variables.user }],
-  //       [
-  //         ...docs.map((r) =>
-  //           DateTime.fromISO(r.updatedAt) <= nowD && (!r.dismissed || !r.read)
-  //             ? {
-  //                 ...r
-  //               }
-  //             : r
-  //         )
-  //       ]
-  //     );
-  //     return { previousNotifications };
-  //   },
-  //   onSuccess: (res) => {
-  //     const { docs, user } = res;
-  //     // Only update locally if SSE is not connected (to avoid double updates)
-  //     // if (!isSSEConnected) {
-  //     updateNo(docs);
-
-  //     qc.invalidateQueries({
-  //       queryKey: ["NOTIFY", { user: user }]
-  //     });
-  //     // }
-  //   }
-  // });
-
-  const { mutate: dismiss } = useMutation({
-    scope: { id: "NOTIFY" + user },
-    mutationFn: async ({ user, ids }: { user: string; ids: string[] }) => {
-      const response = await Promise.allSettled(
-        ids.map(async (id) => {
-          const fv = await fetch(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notifications/${id}/dismiss`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "include"
-            }
-          );
-          if (!fv.ok) {
-            throw new Error("Failed to dismiss notification");
-          }
-          return (await fv.json()) as {
-            success: true;
-            notification: Notification;
-          };
-        })
-      );
-      const re = response
-        .filter((r) => r.status === "fulfilled")
-        .map((r) => r.value.notification);
-
-      return { docs: re.map((r) => convertToSyncedNotification(r)), user };
-    },
-    onMutate: async (variables, context) => {
-      const { user, ids } = variables;
-      await context.client.cancelQueries({
-        queryKey: ["NOTIFY", { user: user }]
-      });
-      const previousNotifications =
-        (context.client.getQueryData(["NOTIFY", { user: user }]) as
-          | SyncedNotification[]
-          | undefined) || ([] as SyncedNotification[]);
-      const nowD = DateTime.now();
-      context.client.setQueryData(
-        ["NOTIFY", { user: user }],
-        [
-          ...previousNotifications.map((r) =>
-            DateTime.fromISO(r.updatedAt) <= nowD && (!r.dismissed || !r.read)
-              ? {
-                  ...r
-                }
-              : r
-          )
-        ]
-      );
-      return { previousNotifications };
-    },
-    onSettled: (res, error, variables, onMutateResult, context) => {
-      const { user } = variables;
-      context.client.invalidateQueries({
-        queryKey: ["NOTIFY", { user: user }]
-      });
-    },
-
-    onError: (err, variables, onMutateResult, context) => {
-      const { user } = variables;
-      context.client.setQueryData(
-        ["NOTIFY", { user: user }],
-        onMutateResult?.previousNotifications
-      );
-    }
-  });
-  const {
-    mutateAsync: readAllMutate,
-    isError: isErrorReadAll,
-    isPending: isPendingReadAll
-  } = useMutation({
-    scope: { id: "NOTIFY" + user },
-    mutationFn: async ({ user, now }: { user: string; now: number }) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notifications/read-all`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          credentials: "include"
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to read all notifications");
-      }
-      const re = await response.json().then(
-        (r) =>
-          r as {
-            message: string;
-            docs: Notification[];
-            updatedCount: number;
-          }
-      );
-      return { docs: re.docs.map((r) => convertToSyncedNotification(r)), user };
-    },
-    onMutate: async (variables: { user: string; now: number }, context) => {
-      const { user, now } = variables;
-
-      // Cancel any outgoing refetches
-      // (so they don't overwrite our optimistic update)
-      await context.client.cancelQueries({
-        queryKey: ["NOTIFY", { user: user }]
-      });
-
-      // Snapshot the previous value
-      const docs = context.client.getQueryData(["NOTIFY", { user: user }]);
-      const previousNotifications = [...(docs as SyncedNotification[])];
-      const nowD = DateTime.fromMillis(now);
-      const nowISO = nowD.toISO();
-      // Optimistically update to the new value
-      context.client.setQueryData(
-        ["NOTIFY", { user: user }],
-        [
-          ...previousNotifications.map((r) =>
-            DateTime.fromISO(r.updatedAt) <= nowD && (!r.dismissed || !r.read)
-              ? {
-                  ...r,
-                  read: true,
-                  readAt: nowISO,
-                  status: r.status === "unread" ? "read" : r.status
-                }
-              : r
-          )
-        ]
-      );
-
-      // Return a result with the snapshotted value
-      return { previousNotifications };
-    },
-    // onSuccess: (res, variables, onMutateResult, context) => {
-    //   const { docs, user, timestamp } = res;
-    //   updateNotification(docs.map((d) => convertToSyncedNotification(d)));
-    //   setChanged((s) => s.filter((s) => s.timestamp < timestamp));
-    //   qc.invalidateQueries({
-    //     queryKey: ["NOTIFY", { user: user }]
-    //   });
-    // },
-    onSettled: (res, error, variables, onMutateResult, context) => {
-      const { user } = variables;
-      context.client.invalidateQueries({
-        queryKey: ["NOTIFY", { user: user }]
-      });
-    },
-
-    onError: (err, variables, onMutateResult, context) => {
-      const { user } = variables;
-      context.client.setQueryData(
-        ["NOTIFY", { user: user }],
-        onMutateResult?.previousNotifications
-      );
-    }
-  });
-
-  const updateAllRead = useCallback(
-    ({ user }: { user: string }) => {
-      readAllMutate({ user, now: Date.now() });
-    },
-    [readAllMutate]
-  );
-  useEffect(() => {
-    user && updateU(user);
-  }, [user, updateU]);
-
-  const setRead = useCallback(({ ids }: { ids: string[] }) => {}, []);
-  const setDismissed = useCallback(
-    ({ ids }: { ids: string[] }) => {
-      dismiss({ user, ids });
-    },
-    [dismiss, user]
-  );
-  const setAllRead = useCallback(() => {
-    updateAllRead({ user });
-  }, [updateAllRead, user]);
-
-  return (
-    <NotifyContext.Provider
-      value={{
-        lastFetched,
-        notifications: Array.from(notifications.values()),
-        count,
-        isLoading: isLoading || isLoadingNotifications || isPendingReadAll,
-        setRead,
-        setDismissed,
-        setAllRead
-        // isSSEConnected
-      }}
-    >
-      {children}
-    </NotifyContext.Provider>
-  );
-};
-
-const NotificationInternal = ({
+const NotificationStoreShell = ({
   user,
   children
 }: {
   user: string;
   children: ReactNode;
 }) => {
-  const notific = useRef<NotificationAPI>(undefined!);
-  if (!notific.current) {
-    notific.current = createNotificationStore({ user });
+  // Lazy-init the store exactly once per provider mount.
+  const storeRef = useRef<NotificationStoreApi>(undefined!);
+  if (!storeRef.current) {
+    storeRef.current = createNotificationStore({ user });
   }
   return (
-    <NotificationContext.Provider value={notific.current}>
+    <NotificationStoreContext.Provider value={storeRef.current}>
+      {children}
+    </NotificationStoreContext.Provider>
+  );
+};
+
+const useStoreSelector = <T,>(selector: (s: NotificationStore) => T): T => {
+  const store = useContext(NotificationStoreContext);
+  if (!store) {
+    throw new Error(
+      "useNotificationStore must be used within a NotificationProvider"
+    );
+  }
+  return useStore(store, selector);
+};
+
+/* ── Orchestrator: query + mutations + context ──────────────────── */
+
+const NotificationOrchestrator = ({ children }: { children: ReactNode }) => {
+  const sessionUser = useRPSession((r) => r.id);
+  const setStoreUser = useStoreSelector((s) => s.updateUser);
+  const setStoreNotifications = useStoreSelector((s) => s.setNotifications);
+  const storeNotifications = useStoreSelector((s) => s.notifications);
+  const lastFetched = useStoreSelector((s) => s.lastFetched);
+  const count = useStoreSelector((s) => s.count);
+
+  // Keep the store's user in sync with the session. Clears the local
+  // cache when the user changes — guards against a previous user's
+  // notifications surviving a quick session swap.
+  useEffect(() => {
+    if (sessionUser) setStoreUser(sessionUser);
+  }, [sessionUser, setStoreUser]);
+
+  const { fn, queryString } = useNotificationFn({});
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["NOTIFY", { user: sessionUser }, queryString] as const,
+    queryFn: fn,
+    enabled: Boolean(sessionUser),
+    staleTime: POLL_INTERVAL_MS,
+    refetchInterval: POLL_INTERVAL_MS,
+    // Don't burn bandwidth on background tabs. Refocus refetch is
+    // enough to bring a sleeping tab current.
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    placeholderData: Array.from(storeNotifications.values()),
+    networkMode: "online"
+  });
+
+  // Mirror server results into the Zustand store so non-React Query
+  // consumers (and the optimistic-cache path) see consistent state.
+  useEffect(() => {
+    if (data) setStoreNotifications(data);
+  }, [data, setStoreNotifications]);
+
+  const readMutation = useReadMutation();
+  const dismissMutation = useDismissMutation();
+  const readAllMutation = useReadAllMutation();
+
+  const setRead = useCallback(
+    ({ ids }: { ids: string[] }) => {
+      if (!sessionUser || ids.length === 0) return;
+      readMutation.mutate({ user: sessionUser, ids });
+    },
+    [readMutation, sessionUser]
+  );
+
+  const setDismissed = useCallback(
+    ({ ids }: { ids: string[] }) => {
+      if (!sessionUser || ids.length === 0) return;
+      dismissMutation.mutate({ user: sessionUser, ids });
+    },
+    [dismissMutation, sessionUser]
+  );
+
+  const setAllRead = useCallback(() => {
+    if (!sessionUser) return;
+    readAllMutation.mutate({ user: sessionUser });
+  }, [readAllMutation, sessionUser]);
+
+  const value: NotificationContextValue = {
+    notifications: Array.from(storeNotifications.values()),
+    count,
+    lastFetched,
+    isLoading: isLoading || isFetching || readAllMutation.isPending,
+    setRead,
+    setDismissed,
+    setAllRead
+  };
+
+  return (
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );
 };
 
-const useNore = <T,>(selector: (store: NotificationStore) => T) => {
-  const not = useContext(NotificationContext);
-  if (!not)
-    throw new Error(
-      "useNotificationStore must be used within a NotificationProvider"
-    );
-  return useStore(not, selector);
-};
+/* ── Public hook ────────────────────────────────────────────────── */
 
-export const useNotifications = () => {
-  const not = useContext(NotifyContext);
-  if (!not)
+export const useNotifications = (): NotificationContextValue => {
+  const ctx = useContext(NotificationContext);
+  if (!ctx) {
     throw new Error(
-      "useNotificationStore must be used within a NotificationProvider"
+      "useNotifications must be used within a NotificationProvider"
     );
-  return not;
+  }
+  return ctx;
 };

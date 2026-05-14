@@ -134,10 +134,6 @@ export type NotificationActions = {
   ) => void;
   addNotification: (item: SyncedNotification) => void;
   removeNotification: (id: string) => void;
-  // handleSSEUpdate: (
-  //   notification: SyncedNotification,
-  //   action: "created" | "updated" | "deleted"
-  // ) => void;
 };
 export type NotificationStore = NotificationItems & NotificationActions;
 const sortNotifications = (notifications: Map<string, SyncedNotification>) => {
@@ -211,34 +207,6 @@ export const createNotificationStore = (props?: { user?: string }) => {
           lastFetched: performance.now()
         };
       }),
-    // handleSSEUpdate: (notification, action) =>
-    //   set((state) => {
-    //     const notific = new Map(state.notifications);
-
-    //     switch (action) {
-    //       case "created":
-    //         notific.set(notification.id, notification);
-    //         break;
-    //       case "updated":
-    //         const existing = notific.get(notification.id);
-    //         if (existing) {
-    //           notific.set(notification.id, { ...existing, ...notification });
-    //         } else {
-    //           notific.set(notification.id, notification);
-    //         }
-    //         break;
-    //       case "deleted":
-    //         notific.delete(notification.id);
-    //         break;
-    //     }
-
-    //     return {
-    //       ...state,
-    //       notifications: sortNotifications(notific),
-    //       count: notific.size,
-    //       lastFetched: performance.now()
-    //     };
-    //   }),
     updateUser: (nextState) =>
       set(
         (state) => ({

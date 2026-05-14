@@ -40,9 +40,7 @@ const computeExpiresAt = (
   // Default to yearly — Plans currently only ship with yearly | lifetime,
   // but treat any unrecognized value as yearly rather than null so we
   // never leak an unbounded-expiry row through this hook by accident.
-  const start = startIso
-    ? DateTime.fromISO(startIso)
-    : DateTime.now();
+  const start = startIso ? DateTime.fromISO(startIso) : DateTime.now();
   if (!start.isValid) return DateTime.now().plus({ years: 1 }).toISO();
   return start.plus({ years: 1 }).toISO();
 };
@@ -75,8 +73,7 @@ export const autoActivateOnPaid: CollectionBeforeChangeHook = async ({
       (originalDoc?.subscription_status as string | undefined) ??
       "pending";
 
-    const becamePaid =
-      operation === "create" ? nextPaid : nextPaid && !wasPaid;
+    const becamePaid = operation === "create" ? nextPaid : nextPaid && !wasPaid;
 
     if (!becamePaid) return data;
     if (nextStatus !== "pending") return data;
@@ -85,8 +82,7 @@ export const autoActivateOnPaid: CollectionBeforeChangeHook = async ({
     data.subscription_status = "active";
 
     // Stamp expires_at if not already set (admin-set values win).
-    const explicitExpires =
-      data?.expires_at ?? originalDoc?.expires_at ?? null;
+    const explicitExpires = data?.expires_at ?? originalDoc?.expires_at ?? null;
     if (!explicitExpires) {
       const planId = idOf(data?.plan ?? originalDoc?.plan);
       if (planId) {

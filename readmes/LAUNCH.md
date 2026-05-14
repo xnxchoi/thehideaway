@@ -267,7 +267,7 @@ All of the above should pass on a healthy launch.
 | What to do *before* flipping repo visibility public | `readmes/GOING_PUBLIC.md` |
 | Docker build + compose details | `readmes/DEPLOYMENT.md` |
 | Brevo SMTP setup | `readmes/BREVO_SETUP.md` |
-| Subsystem-specific docs (Highlightr, SSE, tour) | `readmes/HIGHLIGHTR.md`, `SSE_NOTIFICATIONS.md`, etc. |
+| Subsystem-specific docs (Highlightr, Notifications, tour) | `readmes/HIGHLIGHTR.md`, `NOTIFICATIONS.md`, etc. |
 
 ---
 

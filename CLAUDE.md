@@ -80,7 +80,7 @@ src/
 └── access/                       Access control helpers
 
 messages/                         i18n JSON files (en.json, ko.json)
-readmes/                          Feature dev docs (HIGHLIGHTR.md, SSE_NOTIFICATIONS.md, etc.)
+readmes/                          Feature dev docs (HIGHLIGHTR.md, NOTIFICATIONS.md, etc.)
 nginx/                            Reverse proxy config
 postgres/                         DB Docker setup + nanoid SQL extension
 ```
@@ -136,13 +136,14 @@ Users can highlight text, add memos (public, 200 char), private notes, and share
 - **Key pattern:** `reference` (nanoid, used in DOM) vs `id` (DB UUID, used in API)
 - **Location:** `src/components/UX/Highlightr/`
 
-### Real-Time Notifications (SSE) * unimplemented*
-Server-Sent Events replace polling. Full reference: `readmes/SSE_NOTIFICATIONS.md`.
+### Notifications
+React Query polling (30s foreground, off in background, refresh on focus) over Payload `notifications` endpoints. Full reference: `readmes/NOTIFICATIONS.md`.
 
-- **Endpoint:** `/api/notifications/stream`
-- **Hook:** `useNotificationSSE.ts`
-- **Fallback:** HTTP polling when SSE unavailable
-- **Hooks:** Payload collection hooks trigger SSE broadcasts on CRUD
+- **List endpoint:** `GET /api/notifications/me`
+- **Mutations:** `PATCH /api/notifications/{:id/read, :id/dismiss, read-all}`
+- **Provider:** `src/providers/Notifications/` (provider + mutations split)
+- **Public hook:** `useNotifications()` — load-bearing contract preserved across phases
+- **Phase B (SSE) queued:** see `NOTIFICATIONS.md` § "Phase B — SSE" for the `better-sse`-backed upgrade path. Not active today.
 
 ### Search
 Payload's search plugin with custom composite relevance scoring (priority + recency + richness).
@@ -237,8 +238,7 @@ Docker-based (dev.Dockerfile, prod.Dockerfile) behind Nginx reverse proxy. Full 
 ### Feature Dev Docs
 Cross-session continuity documents for complex subsystems live in `readmes/`:
 - `HIGHLIGHTR.md` — Text annotation system (architecture, iteration log, known issues)
-- `SSE_NOTIFICATIONS.md` — Real-time notification architecture
-- `SSE_SECURITY_GUIDE.md` — SSE security considerations
+- `NOTIFICATIONS.md` — Notification system (polling today, SSE upgrade path documented)
 - `DEPLOYMENT.md` — Docker deployment guide
 - `BREVO_SETUP.md` — Email service setup
 - `tour-flow/` — Onboarding tour development docs
