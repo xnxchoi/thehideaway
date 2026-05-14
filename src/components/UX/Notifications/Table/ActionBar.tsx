@@ -8,12 +8,25 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { useNotifications } from "@/providers/Notifications";
-import { Cross2Icon, EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import { Cross2Icon, EyeOpenIcon } from "@radix-ui/react-icons";
 import type { Table } from "@tanstack/react-table";
-import { useCallback, useTransition, useState } from "react";
+import { useCallback, useState } from "react";
 
-const actions = ["mark-as-unread", "mark-as-read", "dismiss"] as const;
+/**
+ * Notification table action bar.
+ *
+ * Two operations: mark selected rows read, or dismiss them. There is no
+ * "Set as Unread" because the server-side beforeChange hook on the
+ * `notifications` collection treats `read` as monotonic — writing
+ * `read: false` is silently reverted. Re-introducing reversibility
+ * would require either a dedicated endpoint or a hook adjustment; for
+ * now the action is omitted to keep affordance in lock-step with
+ * behavior. (The previous version of this file rendered an "Eye
+ * Closed" button that silently called `setRead` under the hood — a
+ * confusing no-op for the user.)
+ */
 
+const actions = ["mark-as-read", "dismiss"] as const;
 type Action = (typeof actions)[number];
 
 interface NorTableActionBarProps {
@@ -26,31 +39,18 @@ export function NAction({ table }: NorTableActionBarProps) {
   const [currentAction, setCurrentAction] = useState<Action | null>(null);
   const { setDismissed, setRead, isLoading } = useNotifications();
 
-  const onNotificationUpdate = useCallback(
-    ({
-      field,
-      value
-    }: {
-      field: "status";
-      value: Extract<SyncedNotification["status"], "read" | "unread">;
-    }) => {
-      const rows = table.getFilteredSelectedRowModel().rows;
-      setCurrentAction(`mark-as-${value}`);
-      switch (value) {
-        case "read":
-          setRead({ ids: rows.map((row) => row.original.id) });
-          break;
-        case "unread":
-          setRead({ ids: rows.map((row) => row.original.id) });
-          break;
-      }
-    },
-    [setRead, table]
-  );
+  const onMarkRead = useCallback(() => {
+    const ids = rows.map((row) => row.original.id);
+    if (ids.length === 0) return;
+    setCurrentAction("mark-as-read");
+    setRead({ ids });
+  }, [rows, setRead]);
 
-  const onNotificationDismiss = useCallback(() => {
+  const onDismiss = useCallback(() => {
+    const ids = rows.map((row) => row.original.id);
+    if (ids.length === 0) return;
     setCurrentAction("dismiss");
-    setDismissed({ ids: rows.map((row) => row.original.id) });
+    setDismissed({ ids });
     table.toggleAllRowsSelected(false);
   }, [rows, table, setDismissed]);
 
@@ -64,35 +64,17 @@ export function NAction({ table }: NorTableActionBarProps) {
       <div className="flex items-center gap-1.5">
         <DataTableActionBarAction
           size="icon"
-          tooltip="Set as Read"
+          tooltip="Mark as read"
           isPending={currentAction === "mark-as-read" && isLoading}
-          onClick={() =>
-            onNotificationUpdate({
-              field: "status",
-              value: "read"
-            })
-          }
+          onClick={onMarkRead}
         >
           <EyeOpenIcon />
         </DataTableActionBarAction>
         <DataTableActionBarAction
           size="icon"
-          tooltip="Set as Unread"
-          isPending={currentAction === "mark-as-unread" && isLoading}
-          onClick={() =>
-            onNotificationUpdate({
-              field: "status",
-              value: "unread"
-            })
-          }
-        >
-          <EyeClosedIcon />
-        </DataTableActionBarAction>
-        <DataTableActionBarAction
-          size="icon"
           tooltip="Dismiss"
           isPending={currentAction === "dismiss" && isLoading}
-          onClick={onNotificationDismiss}
+          onClick={onDismiss}
         >
           <Cross2Icon />
         </DataTableActionBarAction>

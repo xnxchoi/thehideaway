@@ -69,8 +69,19 @@ export const NotificationButton = (props: HTMLMotionProps<"button">) => {
     },
     [setRead]
   );
-  const [nItems, setNItems] = useState(notifications);
-  const [empty, setEmpty] = useState(false);
+  // Display set is derived from the provider's notifications. Drop
+  // dismissed items, sort newest-first. No local shadow state — the
+  // optimistic cache update flows through the store mirror in the
+  // provider and lands here in the same render cycle.
+  const nItems = useMemo(
+    () =>
+      notifications
+        .filter((n) => !n.dismissed)
+        .sort((a, b) =>
+          sortByDate({ order: "DESC" })(a.updatedAt, b.updatedAt)
+        ),
+    [notifications]
+  );
   const closer = useCallback(() => {
     setOpen(false);
   }, []);
@@ -102,30 +113,6 @@ export const NotificationButton = (props: HTMLMotionProps<"button">) => {
     }
   }, [expanded]);
   const { onMouseEnter, onMouseLeave } = useDomCursor({});
-  useEffect(() => {
-    setNItems((r) => {
-      const rxx = [...r];
-      notifications.forEach((i) => {
-        const idx = r.findIndex((vss) => vss.id === i.id);
-        if (idx > -1) {
-          if (i.dismissed) {
-            rxx.splice(idx, 1);
-          } else {
-            rxx.splice(idx, 1, i);
-          }
-        } else {
-          rxx.push(i);
-        }
-      });
-
-      return [...rxx].sort((a, b) =>
-        sortByDate({ order: "DESC" })(a.updatedAt, b.updatedAt)
-      );
-    });
-  }, [notifications]);
-  useEffect(() => {
-    setEmpty(nItems.length === 0);
-  }, [nItems]);
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
@@ -311,9 +298,8 @@ const NotificationScroll = (props: {
     if (lenisRef.current) return;
     const content = scrollRef.current;
     const wrapper = wrapperRef.current;
-    const container = wrapper.parentElement;
-    if (!content || !wrapper || !container)
-      return console.log("No content or wrapper");
+    const container = wrapper?.parentElement;
+    if (!content || !wrapper || !container) return;
     const lenny = new Lenis({
       wrapper,
       content,
@@ -579,8 +565,8 @@ function UserNotification({
 }) {
   const { id: itemId, title, content, actionLink, createdAt } = item;
   const onDismiss = useCallback(() => {
-    oD({ ids: [] });
-  }, [oD]);
+    oD({ ids: [itemId] });
+  }, [itemId, oD]);
   const onRead = useCallback(() => {
     oR({ ids: [itemId] });
   }, [itemId, oR]);

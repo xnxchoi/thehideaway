@@ -6,7 +6,6 @@ import type { SyncedNotification } from "./types";
 export function convertToSyncedNotification(
   doc: Notification
 ): SyncedNotification {
-  console.log("convertToSyncedNotification", doc);
   return {
     ...doc,
     recipient:

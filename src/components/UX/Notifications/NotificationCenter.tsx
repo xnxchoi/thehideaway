@@ -209,22 +209,27 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
     <div
       className={`mx-auto my-[40px] mt-[10rem] flex h-full max-w-[90vw] flex-col font-sans ${className}`}
     >
-      {/* Header */}
-      <div className="sticky top-0 z-10 flex flex-col gap-[16px] border-b bg-background/50 p-[24px] backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-[12px]">
-            <Bell className="h-[24px] w-[24px] text-foreground" />
+      {/* Header — design-system sticky formula */}
+      <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-border/30 bg-background/90 px-6 py-5 backdrop-blur-md xl:px-10">
+        <div className="flex items-end justify-between">
+          <div className="flex items-center gap-3">
+            <Bell className="size-5 text-foreground/70" />
             <div>
-              <h1 className="text-3xl font-bold">Notifications</h1>
-              <p className="text-base text-muted-foreground">
-                {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 xl:text-xs">
+                Inbox
+              </p>
+              <h1 className="text-3xl font-light tracking-tight xl:text-4xl">
+                Notifications
+              </h1>
+              <p className="mt-1 font-mono text-[11px] tabular-nums text-muted-foreground/65 xl:text-xs">
+                {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
               </p>
             </div>
           </div>
 
           {unreadCount > 0 && (
             <PillButton onClick={() => setAllRead()} disabled={isLoading}>
-              Clear
+              Mark all read
             </PillButton>
           )}
         </div>
@@ -307,7 +312,7 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
             </motion.div>
           )}
         </div>
-      </div>
+      </header>
 
       {/* Content */}
       <ScrollArea className="max-h-[75vh] flex-1">
@@ -550,36 +555,45 @@ const NotificationCard = ({
   );
 };
 
-// Empty State Component
+// Empty State — follows the CLAUDE.md empty-state template:
+// monogram symbol at low opacity, light sans headline, mono-caps sub,
+// no CTA needed here (the inbox is reached, not navigated-from).
 const EmptyState = ({
   searchQuery,
   filterType
 }: {
   searchQuery: string;
   filterType: FilterType;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="flex flex-col items-center justify-center py-[48px] text-center"
-  >
-    <BellOff className="mb-[16px] h-[64px] w-[64px] text-muted-foreground/50" />
-    <h3 className="mb-[8px] text-base font-semibold">
-      {searchQuery
-        ? "No notifications found"
-        : filterType === "unread"
-          ? "No unread notifications"
-          : "No notifications"}
-    </h3>
-    <p className="max-w-sm text-muted-foreground">
-      {searchQuery
-        ? `No notifications match "${searchQuery}". Try adjusting your search.`
-        : filterType === "unread"
-          ? "You're all caught up! No unread notifications."
-          : "You don't have any notifications yet."}
-    </p>
-  </motion.div>
-);
+}) => {
+  const headline = searchQuery
+    ? "Nothing matches that search"
+    : filterType === "unread"
+      ? "All caught up"
+      : "Nothing here yet";
+  const sub = searchQuery
+    ? `No notifications match “${searchQuery}”`
+    : filterType === "unread"
+      ? "Anything new will land here"
+      : "Inbox is empty until something happens";
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-24 text-center"
+    >
+      <span
+        aria-hidden
+        className="mb-4 font-mono text-5xl text-foreground/[0.10]"
+      >
+        ○
+      </span>
+      <p className="text-base font-light text-foreground/70">{headline}</p>
+      <p className="mt-1.5 max-w-xs font-mono text-[11px] tracking-wide text-muted-foreground/55">
+        {sub}
+      </p>
+    </motion.div>
+  );
+};
 
 // Loading Skeleton
 const NotificationSkeleton = () => (

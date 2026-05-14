@@ -143,6 +143,19 @@ const sortNotifications = (notifications: Map<string, SyncedNotification>) => {
     )
   );
 };
+
+/**
+ * `count` represents the **unread inbox count** — the value shown on the
+ * header bell badge. Dismissed and already-read items don't count, since
+ * the badge is conceptually "things you should look at." Total cache
+ * size is `notifications.size`, available via the store directly when
+ * needed.
+ */
+const computeUnreadCount = (notifications: Map<string, SyncedNotification>) =>
+  [...notifications.values()].reduce(
+    (total, n) => (n.read || n.dismissed ? total : total + 1),
+    0
+  );
 export const createNotificationStore = (props?: { user?: string }) => {
   const user = props?.user || "guest";
   return createStore<NotificationStore>()((set, get) => ({
@@ -159,7 +172,7 @@ export const createNotificationStore = (props?: { user?: string }) => {
         return {
           ...state,
           notifications: sortNotifications(notific),
-          count: notific.size,
+          count: computeUnreadCount(notific),
           lastFetched: performance.now()
         };
       }),
@@ -181,7 +194,7 @@ export const createNotificationStore = (props?: { user?: string }) => {
         return {
           ...state,
           notifications: sortNotifications(notific),
-          count: notific.size,
+          count: computeUnreadCount(notific),
           lastFetched: performance.now()
         };
       }),
@@ -192,7 +205,7 @@ export const createNotificationStore = (props?: { user?: string }) => {
         return {
           ...state,
           notifications: sortNotifications(notific),
-          count: notific.size,
+          count: computeUnreadCount(notific),
           lastFetched: performance.now()
         };
       }),
@@ -203,7 +216,7 @@ export const createNotificationStore = (props?: { user?: string }) => {
         return {
           ...state,
           notifications: sortNotifications(notific),
-          count: notific.size,
+          count: computeUnreadCount(notific),
           lastFetched: performance.now()
         };
       }),

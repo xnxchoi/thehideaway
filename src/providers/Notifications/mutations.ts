@@ -27,12 +27,17 @@ import type { SyncedNotification } from "@/payload/collections/Notifications/hoo
 import { useMutation, type QueryClient } from "@tanstack/react-query";
 import { DateTime } from "luxon";
 
-type NotifyKey = readonly [string, { user: string }, ...unknown[]];
+/**
+ * Cache surgery primitives. Exported (rather than module-private) so
+ * the unit-test suite in `mutations.test.ts` can exercise them against
+ * a real `QueryClient` without needing to mount React.
+ */
+export type NotifyKey = readonly [string, { user: string }, ...unknown[]];
 
-const buildKey = (user: string): NotifyKey =>
+export const buildNotifyKey = (user: string): NotifyKey =>
   ["NOTIFY", { user }] as const;
 
-const matchesUserKey = (key: readonly unknown[], user: string) =>
+export const matchesUserKey = (key: readonly unknown[], user: string) =>
   key[0] === "NOTIFY" &&
   typeof key[1] === "object" &&
   key[1] !== null &&
@@ -43,7 +48,7 @@ const matchesUserKey = (key: readonly unknown[], user: string) =>
  * The list ships under multiple query-string permutations (one per
  * filter combination), so we touch each rather than a single fixed key.
  */
-const updateAllUserLists = (
+export const updateAllUserLists = (
   qc: QueryClient,
   user: string,
   mutator: (prev: SyncedNotification[]) => SyncedNotification[]
@@ -54,7 +59,7 @@ const updateAllUserLists = (
   );
 };
 
-const snapshotAllUserLists = (
+export const snapshotAllUserLists = (
   qc: QueryClient,
   user: string
 ): Array<[readonly unknown[], SyncedNotification[] | undefined]> =>
@@ -64,13 +69,56 @@ const snapshotAllUserLists = (
     })
     .map(([key, data]) => [key, data]);
 
-const restoreSnapshot = (
+export const restoreSnapshot = (
   qc: QueryClient,
   snapshot: Array<[readonly unknown[], SyncedNotification[] | undefined]>
 ) => {
   snapshot.forEach(([key, data]) => {
     qc.setQueryData(key as NotifyKey, data);
   });
+};
+
+/* ── Pure optimistic mutators (exported for testability) ─────────── */
+
+export const markReadOptimistic = (
+  ids: ReadonlyArray<string>,
+  nowIso: string
+) => {
+  const targets = new Set(ids);
+  return (prev: SyncedNotification[]): SyncedNotification[] =>
+    prev.map((n) =>
+      targets.has(n.id) && !n.read
+        ? { ...n, read: true, readAt: nowIso, status: "read" as const }
+        : n
+    );
+};
+
+export const dismissOptimistic = (
+  ids: ReadonlyArray<string>,
+  nowIso: string
+) => {
+  const targets = new Set(ids);
+  return (prev: SyncedNotification[]): SyncedNotification[] =>
+    prev.map((n) =>
+      targets.has(n.id)
+        ? {
+            ...n,
+            read: true,
+            dismissed: true,
+            readAt: n.readAt ?? nowIso,
+            status: "dismissed" as const
+          }
+        : n
+    );
+};
+
+export const readAllOptimistic = (nowIso: string) => {
+  return (prev: SyncedNotification[]): SyncedNotification[] =>
+    prev.map((n) =>
+      !n.read
+        ? { ...n, read: true, readAt: nowIso, status: "read" as const }
+        : n
+    );
 };
 
 /* ── Read single ─────────────────────────────────────────────────── */
@@ -83,6 +131,14 @@ interface ReadVars {
 export const useReadMutation = () =>
   useMutation({
     mutationKey: ["NOTIFY", "read"],
+    // Serialize all notification mutations per user. Without this, a
+    // user double-clicking dismiss (or chaining read + dismiss on the
+    // same row) can race the onMutate snapshot/restore pattern: B
+    // snapshots A's optimistic state, A errors and restores S0, then B
+    // errors and restores S1 — leaving the cache in an optimistic
+    // state that never happened. Scope-by-user funnels them through
+    // TanStack Query's mutation queue, eliminating the interleave.
+    scope: { id: "notifications" },
     mutationFn: async ({ ids }: ReadVars) => {
       const settled = await Promise.allSettled(
         ids.map(async (id) => {
@@ -111,14 +167,10 @@ export const useReadMutation = () =>
         predicate: ({ queryKey }) => matchesUserKey(queryKey, user)
       });
       const snapshot = snapshotAllUserLists(context.client, user);
-      const targets = new Set(ids);
-      const nowIso = DateTime.now().toISO();
-      updateAllUserLists(context.client, user, (prev) =>
-        prev.map((n) =>
-          targets.has(n.id) && !n.read
-            ? { ...n, read: true, readAt: nowIso, status: "read" as const }
-            : n
-        )
+      updateAllUserLists(
+        context.client,
+        user,
+        markReadOptimistic(ids, DateTime.now().toISO())
       );
       return { snapshot };
     },
@@ -144,6 +196,9 @@ interface DismissVars {
 export const useDismissMutation = () =>
   useMutation({
     mutationKey: ["NOTIFY", "dismiss"],
+    // See useReadMutation note — same scope so dismiss/read/readAll
+    // serialize against each other on the same user.
+    scope: { id: "notifications" },
     mutationFn: async ({ ids }: DismissVars) => {
       const settled = await Promise.allSettled(
         ids.map(async (id) => {
@@ -172,24 +227,14 @@ export const useDismissMutation = () =>
         predicate: ({ queryKey }) => matchesUserKey(queryKey, user)
       });
       const snapshot = snapshotAllUserLists(context.client, user);
-      const targets = new Set(ids);
-      const nowIso = DateTime.now().toISO();
       // Optimistic: flip dismissed + read in-place. We keep the rows in
       // the cache rather than splicing them — NotificationCenter filters
       // on `dismissed`/`status` to decide what to show, so removing here
       // would break the "Dismissed" tab.
-      updateAllUserLists(context.client, user, (prev) =>
-        prev.map((n) =>
-          targets.has(n.id)
-            ? {
-                ...n,
-                read: true,
-                dismissed: true,
-                readAt: n.readAt ?? nowIso,
-                status: "dismissed" as const
-              }
-            : n
-        )
+      updateAllUserLists(
+        context.client,
+        user,
+        dismissOptimistic(ids, DateTime.now().toISO())
       );
       return { snapshot };
     },
@@ -214,6 +259,7 @@ interface ReadAllVars {
 export const useReadAllMutation = () =>
   useMutation({
     mutationKey: ["NOTIFY", "read-all"],
+    scope: { id: "notifications" },
     mutationFn: async (_vars: ReadAllVars) => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notifications/read-all`,
@@ -235,13 +281,10 @@ export const useReadAllMutation = () =>
         predicate: ({ queryKey }) => matchesUserKey(queryKey, user)
       });
       const snapshot = snapshotAllUserLists(context.client, user);
-      const nowIso = DateTime.now().toISO();
-      updateAllUserLists(context.client, user, (prev) =>
-        prev.map((n) =>
-          !n.read
-            ? { ...n, read: true, readAt: nowIso, status: "read" as const }
-            : n
-        )
+      updateAllUserLists(
+        context.client,
+        user,
+        readAllOptimistic(DateTime.now().toISO())
       );
       return { snapshot };
     },
@@ -257,4 +300,3 @@ export const useReadAllMutation = () =>
     }
   });
 
-export { buildKey as buildNotifyKey };

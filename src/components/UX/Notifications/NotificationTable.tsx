@@ -60,23 +60,26 @@ export const NotificationTable = () => {
     },
     [sd]
   );
+  // Clear the row action immediately after dispatching. The previous
+  // version watched the shared `isLoading` flag (which includes the
+  // 30s background poll's `isFetching`) — that flipped `rowAction` to
+  // null in the middle of any background-poll window, racing the
+  // action-dispatch effect below. The mutation's own optimistic update
+  // is sufficient feedback; the action signal is single-shot.
   useEffect(() => {
-    if (!isLoading) {
-      setIsActing(false);
-      setRowAction(null);
+    if (!rowAction) return;
+    switch (rowAction.variant) {
+      case "update":
+        setRead([rowAction.row.original.id]);
+        break;
+      case "delete":
+        setDismissed([rowAction.row.original.id]);
+        break;
     }
-  }, [isLoading]);
-  useEffect(() => {
-    if (rowAction) {
-      switch (rowAction.variant) {
-        case "update":
-          setRead([rowAction.row.original.id]);
-          break;
-        case "delete":
-          setDismissed([rowAction.row.original.id]);
-          break;
-      }
-    }
+    // Consume the action and reset acting flag in the same tick so the
+    // next click is immediately responsive.
+    setRowAction(null);
+    setIsActing(false);
   }, [rowAction, setDismissed, setRead]);
   const columns = useMemo<ColumnDef<SyncedNotification>[]>(
     () => [
