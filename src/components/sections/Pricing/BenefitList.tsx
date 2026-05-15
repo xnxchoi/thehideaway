@@ -50,8 +50,13 @@ export function BenefitList({ benefits, showLegend }: BenefitListProps) {
         </li>
       ))}
       {legendVisible ? (
-        <li className={s.benefitLegend} aria-hidden>
-          <span>◐</span>
+        // The legend explains the ◐ glyph used on patron-exclusive rows
+        // above. It MUST stay in the accessibility tree — without it, AT
+        // users have no signal that ◐ means anything. The inner glyph
+        // span is aria-hidden so it doesn't read as "U+25D0"; "Patron
+        // tier" is the announceable text.
+        <li className={s.benefitLegend}>
+          <span aria-hidden>◐</span>
           <span>Patron tier</span>
         </li>
       ) : null}

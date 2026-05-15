@@ -594,6 +594,19 @@
 		animation: none;
 		transition: none;
 	}
+
+	/* GSAP-driven elements need !important because GSAP writes inline
+	   styles which beat external CSS without it. matchMedia in MarkHero
+	   already gates the perpetual + scrub layers, but this is the
+	   belt-and-suspenders fallback for any direct .from()/initial offset
+	   that lingers after revert. */
+	.markStarburst,
+	.markWordmark,
+	.markLabel,
+	.cofounderCta {
+		animation: none !important;
+		transition: none !important;
+	}
 }
 
 /* ── Track B (aaa24 redesign) — appended ─────────────────────────────── */
@@ -863,12 +876,16 @@
 	transform-origin: 50% 50%;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.markStarburst,
-	.markWordmark,
-	.markLabel,
-	.cofounderCta {
-		animation: none !important;
-		transition: none !important;
-	}
+/* Lifted from FAQAccordion.tsx inline `style={{ marginBottom: 8 }}` —
+   keeps spacing values in the stylesheet so theme sweeps see them. */
+.faqEyebrow {
+	margin-bottom: 8px;
+}
+
+/* The animated wrapper carries the height transition; the inner div carries
+   the bottom padding so collapse/expand transitions cleanly between 0 and
+   auto without padding-collapse jitter. See FAQAccordion's component-level
+   GOTCHA comment. */
+.faqAnswerInner {
+	padding: 0 0 22px;
 }

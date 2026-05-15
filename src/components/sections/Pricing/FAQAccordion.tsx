@@ -68,9 +68,7 @@ export function FAQAccordion() {
   return (
     <section ref={ref} aria-labelledby="faq" className={s.faqShell}>
       <header className={s.faqHeader}>
-        <p className={s.eyebrow} style={{ marginBottom: 8 }}>
-          Questions
-        </p>
+        <p className={`${s.eyebrow} ${s.faqEyebrow}`}>Questions</p>
         <h2 id="faq" className={s.faqTitle}>
           Things people ask
         </h2>
@@ -130,7 +128,7 @@ export function FAQAccordion() {
                     }}
                     style={{ overflow: "hidden" }}
                   >
-                    <div style={{ paddingBottom: 22 }}>{f.a}</div>
+                    <div className={s.faqAnswerInner}>{f.a}</div>
                   </m.div>
                 ) : null}
               </AnimatePresence>
