@@ -180,7 +180,7 @@ export const NotificationTable = () => {
           // floor for UI labels) so they sit behind the title without
           // disappearing.
           return (
-            <span className="font-mono text-[11px] tabular-nums text-muted-foreground/65">
+            <span className="font-mono text-[11px] text-muted-foreground/65 tabular-nums">
               {rt}
             </span>
           );

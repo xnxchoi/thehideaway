@@ -201,7 +201,7 @@ export const betterAuthPlugins = [
     }
   }),
   passkey({
-    rpID: new URL('http://localhost:3000').hostname,
+    rpID: new URL("http://localhost:3000").hostname,
     rpName: "The Hideaway",
     origin: appURL
   }),

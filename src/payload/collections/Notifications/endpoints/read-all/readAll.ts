@@ -20,11 +20,7 @@ export const ReadAllNotifications: PayloadHandler = async (request) => {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const limit = userRateLimit(
-      READ_ALL_BUCKET,
-      user.id,
-      READ_ALL_INTERVAL_MS
-    );
+    const limit = userRateLimit(READ_ALL_BUCKET, user.id, READ_ALL_INTERVAL_MS);
     if (!limit.allowed) {
       return new Response("Too Many Requests", {
         status: 429,
