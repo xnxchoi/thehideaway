@@ -24,42 +24,54 @@ export type PaywallProps = {
   currentPath?: string;
 };
 
-const tierFromAuthority = (
-  authority: number | undefined
-): "member" | "patron" | "author" | "editor" | "admin" => {
+type PaywallTier =
+  | "resident"
+  | "patron"
+  | "author"
+  | "editor"
+  | "cofounder"
+  | "admin";
+
+const tierFromAuthority = (authority: number | undefined): PaywallTier => {
   const a = typeof authority === "number" ? authority : 2;
   if (a >= 1000) return "admin";
+  if (a >= 6) return "cofounder";
   if (a >= 5) return "editor";
   if (a >= 4) return "author";
   if (a >= 3) return "patron";
-  return "member";
+  return "resident";
 };
 
 const tierCopy: Record<
-  "member" | "patron" | "author" | "editor" | "admin",
+  PaywallTier,
   { label: string; cta: string; pitch: string }
 > = {
-  member: {
-    label: "Members",
-    cta: "Become a Member",
+  resident: {
+    label: "Residents",
+    cta: "Become a Resident",
     pitch:
-      "The rest of this essay is for Members. Highlight, annotate, and follow the writers you love. ₩9,000 / mo · ₩90,000 / yr."
+      "The rest of this essay is for Residents. Highlight, annotate, and follow the writers you love. ₩9,000 / mo · ₩90,000 / yr."
   },
   patron: {
     label: "Patrons",
     cta: "Become a Patron",
     pitch:
-      "This essay is reserved for Patrons. Includes everything a Member gets, plus drops, events, and the quarterly print. ₩29,000 / mo."
+      "This essay is reserved for Patrons. Includes everything a Resident gets, plus drops, events, and the quarterly print. ₩29,000 / mo."
   },
   author: {
     label: "Authors",
-    cta: "Become a Member",
-    pitch: "Author access is granted to active Members with editor approval."
+    cta: "Become a Resident",
+    pitch: "Author access is granted to active Residents with editor approval."
   },
   editor: {
     label: "Editors",
     cta: "Contact us",
     pitch: "Editor access is staff-only."
+  },
+  cofounder: {
+    label: "Cofounders",
+    cta: "By invitation",
+    pitch: "Cofounder access is invite-only."
   },
   admin: {
     label: "Admins",

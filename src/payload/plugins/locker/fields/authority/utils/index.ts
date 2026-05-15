@@ -1,10 +1,11 @@
 export type Role =
   | "guest"
   | "user"
-  | "member"
+  | "resident"
   | "patron"
   | "author"
   | "editor"
+  | "cofounder"
   | "admin";
 
 export const roleToAuthority = (role: Role): number => {
@@ -13,7 +14,7 @@ export const roleToAuthority = (role: Role): number => {
       return 0;
     case "user":
       return 1;
-    case "member":
+    case "resident":
       return 2;
     case "patron":
       return 3;
@@ -21,6 +22,8 @@ export const roleToAuthority = (role: Role): number => {
       return 4;
     case "editor":
       return 5;
+    case "cofounder":
+      return 6;
     case "admin":
       return 1000;
     default:
@@ -33,13 +36,15 @@ export const authorityToRole = (authority: number): Role => {
     case 1:
       return "user";
     case 2:
-      return "member";
+      return "resident";
     case 3:
       return "patron";
     case 4:
       return "author";
     case 5:
       return "editor";
+    case 6:
+      return "cofounder";
     case 1000:
       return "admin";
     default:
@@ -53,8 +58,8 @@ export const rolesToAuthority = (roles: Role[]): number => {
   }, 0);
 };
 
-export const PAID_ROLES: Role[] = ["member", "patron"];
-export const STAFF_ROLES: Role[] = ["editor", "admin"];
+export const PAID_ROLES: Role[] = ["resident", "patron", "cofounder"];
+export const STAFF_ROLES: Role[] = ["editor", "cofounder", "admin"];
 export const isPaidRole = (role: Role | null | undefined): boolean =>
   !!role && PAID_ROLES.includes(role);
 export const isStaffRole = (role: Role | null | undefined): boolean =>

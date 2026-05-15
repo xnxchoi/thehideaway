@@ -1,16 +1,14 @@
 import type { CollectionAfterChangeHook } from "payload";
 import {
+  isStaffRole,
   roleToAuthority,
   type Role
 } from "@/payload/plugins/locker/fields/authority/utils";
 
 type PlanLike = {
   id: string;
-  tier?: "member" | "patron" | null;
+  tier?: "resident" | "patron" | "cofounder" | null;
 };
-
-const isStaffRole = (role: Role): boolean =>
-  role === "editor" || role === "admin";
 
 export const syncRoleAfterSubscriptionChange: CollectionAfterChangeHook =
   async ({ doc, previousDoc, req, operation }) => {
@@ -41,7 +39,8 @@ export const syncRoleAfterSubscriptionChange: CollectionAfterChangeHook =
       })) as PlanLike | null;
 
       const tier = plan?.tier;
-      if (tier !== "member" && tier !== "patron") return doc;
+      if (tier !== "resident" && tier !== "patron" && tier !== "cofounder")
+        return doc;
 
       const status = doc.subscription_status as
         | "active"
@@ -77,8 +76,9 @@ export const syncRoleAfterSubscriptionChange: CollectionAfterChangeHook =
         }
       } else if (
         currentRole === tier ||
-        currentRole === "member" ||
-        currentRole === "patron"
+        currentRole === "resident" ||
+        currentRole === "patron" ||
+        currentRole === "cofounder"
       ) {
         // Demoting: don't blindly drop to "user". Re-derive role from
         // the user's remaining ACTIVE subscriptions, taking the
@@ -103,7 +103,11 @@ export const syncRoleAfterSubscriptionChange: CollectionAfterChangeHook =
           const otherPlan = otherSub.plan as PlanLike | string;
           const otherTier =
             typeof otherPlan === "object" && otherPlan ? otherPlan.tier : null;
-          if (otherTier === "member" || otherTier === "patron") {
+          if (
+            otherTier === "resident" ||
+            otherTier === "patron" ||
+            otherTier === "cofounder"
+          ) {
             const a = roleToAuthority(otherTier);
             if (a > highestAuth) {
               highestAuth = a;

@@ -338,7 +338,7 @@ export interface User {
   /**
    * The role/ roles of the user
    */
-  role: 'admin' | 'editor' | 'author' | 'patron' | 'member' | 'user';
+  role: 'admin' | 'cofounder' | 'editor' | 'author' | 'patron' | 'resident' | 'user';
   onboarded: boolean;
   /**
    * Whether the user is banned from the platform
@@ -2164,7 +2164,7 @@ export interface TeamMember {
  */
 export interface AdminInvitation {
   id: string;
-  role: 'admin' | 'editor' | 'author' | 'patron' | 'member' | 'user';
+  role: 'admin' | 'cofounder' | 'editor' | 'author' | 'patron' | 'resident' | 'user';
   token: string;
   url?: string | null;
   updatedAt: string;
@@ -2276,7 +2276,7 @@ export interface Admin {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'member' | 'patron' | 'editor' | 'author';
+  role: 'admin' | 'cofounder' | 'editor' | 'author' | 'patron' | 'resident' | 'user';
   /**
    * Upload your profile picture here.
    */
@@ -2539,13 +2539,13 @@ export interface Search {
 export interface Plan {
   id: string;
   /**
-   * Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users.
+   * Internal admin label (e.g. 'Resident · Yearly · KRW'). Not shown to users.
    */
   name: string;
   /**
-   * The subscriber role this plan grants while active.
+   * The subscriber role this plan grants while active. Cofounder plans are admin-created only — they are filtered out of the public /plans surface by getPlansData().
    */
-  tier: 'member' | 'patron';
+  tier: 'resident' | 'patron' | 'cofounder';
   /**
    * User-facing display label (e.g. 'Member', 'Patron').
    */

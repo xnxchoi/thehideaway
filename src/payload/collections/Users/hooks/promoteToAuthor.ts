@@ -6,13 +6,17 @@ import {
 
 const APPROVED_POSTS_THRESHOLD = 3;
 
-// Auto-promotion only applies to `member`. A Patron contributor must be
+// Auto-promotion only applies to `resident`. A Patron contributor must be
 // promoted manually by an editor — auto-promoting Patron → Author would
 // silently strip their Patron tier label (single-role enum) and leave them
 // stuck as Author after they cancel their Patron subscription, since the
 // syncRole demotion path only fires when currentRole === canceled-tier.
 // Editors retain full control over Patron → Author transitions in /vault.
-const eligibleBaseRoles: Role[] = ["member"];
+// Cofounder is intentionally excluded too: cofounder authority (6) already
+// exceeds author (4), so the guard at line ~34 short-circuits anyway, and
+// auto-stripping the cofounder label on a single article milestone would
+// be wrong by intent.
+const eligibleBaseRoles: Role[] = ["resident"];
 
 export const maybePromoteToAuthor = async ({
   userId,

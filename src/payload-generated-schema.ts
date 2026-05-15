@@ -28,10 +28,11 @@ import { sql, relations } from "@payloadcms/db-postgres/drizzle";
 export const enum__locales = pgEnum("enum__locales", ["en", "ko"]);
 export const enum_users_role = pgEnum("enum_users_role", [
   "admin",
+  "cofounder",
   "editor",
   "author",
   "patron",
-  "member",
+  "resident",
   "user"
 ]);
 export const enum_users_status = pgEnum("enum_users_status", [
@@ -40,10 +41,11 @@ export const enum_users_status = pgEnum("enum_users_status", [
 ]);
 export const enum__users_v_version_role = pgEnum("enum__users_v_version_role", [
   "admin",
+  "cofounder",
   "editor",
   "author",
   "patron",
-  "member",
+  "resident",
   "user"
 ]);
 export const enum__users_v_version_status = pgEnum(
@@ -56,7 +58,7 @@ export const enum__users_v_published_locale = pgEnum(
 );
 export const enum_admin_invitations_role = pgEnum(
   "enum_admin_invitations_role",
-  ["admin", "editor", "author", "patron", "member", "user"]
+  ["admin", "cofounder", "editor", "author", "patron", "resident", "user"]
 );
 export const enum_assets_audience = pgEnum("enum_assets_audience", [
   "public",
@@ -489,35 +491,36 @@ export const enum_plans_payment_methods = pgEnum("enum_plans_payment_methods", [
   "bank_transfer",
   "cash"
 ]);
-export const enum_plans_tier = pgEnum("enum_plans_tier", ["member", "patron"]);
+export const enum_plans_tier = pgEnum("enum_plans_tier", [
+  "resident",
+  "patron",
+  "cofounder"
+]);
 export const enum_plans_validity = pgEnum("enum_plans_validity", [
   "yearly",
   "lifetime"
 ]);
 export const enum_plans_type = pgEnum("enum_plans_type", ["one_time"]);
-export const enum_plans_presentation = pgEnum("enum_plans_presentation", [
-  "standard",
-  "founder"
-]);
 export const enum_plans_state = pgEnum("enum_plans_state", ["active", "ended"]);
 export const enum_invoices_payment_method_method = pgEnum(
   "enum_invoices_payment_method_method",
   ["bank_transfer", "cash"]
 );
-export const enum_invoices_payment_method_currency = pgEnum(
-  "enum_invoices_payment_method_currency",
-  ["krw", "usd", "eur"]
-);
-export const enum_invoices_currency = pgEnum("enum_invoices_currency", [
-  "krw",
-  "usd",
-  "eur"
-]);
 export const enum_invoices_status = pgEnum("enum_invoices_status", [
+  "draft",
+  "open",
   "paid",
-  "pending",
-  "void"
+  "void",
+  "pending"
 ]);
+export const enum_prices_type = pgEnum("enum_prices_type", [
+  "one_time",
+  "recurring"
+]);
+export const enum_prices_recurring_interval = pgEnum(
+  "enum_prices_recurring_interval",
+  ["day", "week", "month", "year"]
+);
 export const enum_subscriptions_subscription_status = pgEnum(
   "enum_subscriptions_subscription_status",
   ["pending", "active", "expired", "canceled"]
@@ -2840,7 +2843,12 @@ export const posts = pgTable(
     index("posts_authority_idx").on(columns.authority),
     index("posts_updated_at_idx").on(columns.updatedAt),
     index("posts_created_at_idx").on(columns.createdAt),
-    index("posts__status_idx").on(columns._status)
+    index("posts__status_idx").on(columns._status),
+    index("author__status_updatedAt_idx").on(
+      columns.author,
+      columns._status,
+      columns.updatedAt
+    )
   ]
 );
 
@@ -3036,7 +3044,12 @@ export const _posts_v = pgTable(
     index("_posts_v_updated_at_idx").on(columns.updatedAt),
     index("_posts_v_snapshot_idx").on(columns.snapshot),
     index("_posts_v_published_locale_idx").on(columns.publishedLocale),
-    index("_posts_v_latest_idx").on(columns.latest)
+    index("_posts_v_latest_idx").on(columns.latest),
+    index("version_author_version__status_version_updatedAt_idx").on(
+      columns.version_author,
+      columns.version__status,
+      columns.version_updatedAt
+    )
   ]
 );
 
@@ -5792,17 +5805,13 @@ export const plans = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     name: varchar("name").notNull(),
-    tier: enum_plans_tier("tier").notNull(),
+    tier: enum_plans_tier("tier").notNull().default("resident"),
     tier_label: varchar("tier_label").notNull().default(""),
     validity: enum_plans_validity("validity").notNull().default("yearly"),
     type: enum_plans_type("type").notNull().default("one_time"),
     description: varchar("description"),
-    featured: boolean("featured").default(false),
     seat_limit: numeric("seat_limit", { mode: "number" }),
     discount_label: varchar("discount_label"),
-    presentation: enum_plans_presentation("presentation")
-      .notNull()
-      .default("standard"),
     sort: numeric("sort", { mode: "number" }).default(0),
     state: enum_plans_state("state").notNull().default("active"),
     updatedAt: timestamp("updated_at", {
@@ -5828,33 +5837,6 @@ export const plans = pgTable(
   ]
 );
 
-export const plans_rels = pgTable(
-  "plans_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    pricesID: uuid("prices_id")
-  },
-  (columns) => [
-    index("plans_rels_order_idx").on(columns.order),
-    index("plans_rels_parent_idx").on(columns.parent),
-    index("plans_rels_path_idx").on(columns.path),
-    index("plans_rels_prices_id_idx").on(columns.pricesID),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [plans.id],
-      name: "plans_rels_parent_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["pricesID"]],
-      foreignColumns: [prices.id],
-      name: "plans_rels_prices_fk"
-    }).onDelete("cascade")
-  ]
-);
-
 export const invoices_payment_method = pgTable(
   "invoices_payment_method",
   {
@@ -5863,9 +5845,11 @@ export const invoices_payment_method = pgTable(
     id: varchar("id").primaryKey(),
     method: enum_invoices_payment_method_method("method").notNull(),
     amount: numeric("amount", { mode: "number" }).notNull(),
-    currency: enum_invoices_payment_method_currency("currency")
+    currency: uuid("currency_id")
       .notNull()
-      .default("krw"),
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
     payment_date: timestamp("payment_date", {
       mode: "string",
       withTimezone: true,
@@ -5876,6 +5860,7 @@ export const invoices_payment_method = pgTable(
   (columns) => [
     index("invoices_payment_method_order_idx").on(columns._order),
     index("invoices_payment_method_parent_id_idx").on(columns._parentID),
+    index("invoices_payment_method_currency_idx").on(columns.currency),
     foreignKey({
       columns: [columns["_parentID"]],
       foreignColumns: [invoices.id],
@@ -5904,9 +5889,17 @@ export const invoices = pgTable(
       .references(() => plans.id, {
         onDelete: "set null"
       }),
+    price: uuid("price_id").references(() => prices.id, {
+      onDelete: "set null"
+    }),
     amount: numeric("amount", { mode: "number" }).notNull(),
-    currency: enum_invoices_currency("currency").notNull().default("krw"),
-    status: enum_invoices_status("status").notNull().default("paid"),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    fx_rate_used: numeric("fx_rate_used", { mode: "number" }),
+    status: enum_invoices_status("status").notNull().default("draft"),
     paid_at: timestamp("paid_at", {
       mode: "string",
       withTimezone: true,
@@ -5943,34 +5936,11 @@ export const invoices = pgTable(
     index("invoices_client_idx").on(columns.client),
     index("invoices_subscription_idx").on(columns.subscription),
     index("invoices_plan_idx").on(columns.plan),
+    index("invoices_price_idx").on(columns.price),
+    index("invoices_currency_idx").on(columns.currency),
     index("invoices_status_idx").on(columns.status),
     index("invoices_updated_at_idx").on(columns.updatedAt),
     index("invoices_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const prices_currencies = pgTable(
-  "prices_currencies",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    amount: numeric("amount", { mode: "number" }).notNull(),
-    currency: uuid("currency_id")
-      .notNull()
-      .references(() => currency.id, {
-        onDelete: "set null"
-      })
-  },
-  (columns) => [
-    index("prices_currencies_order_idx").on(columns._order),
-    index("prices_currencies_parent_id_idx").on(columns._parentID),
-    index("prices_currencies_currency_idx").on(columns.currency),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [prices.id],
-      name: "prices_currencies_parent_id_fk"
-    }).onDelete("cascade")
   ]
 );
 
@@ -5978,6 +5948,28 @@ export const prices = pgTable(
   "prices",
   {
     id: uuid("id").defaultRandom().primaryKey(),
+    nickname: varchar("nickname").notNull(),
+    plan: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, {
+        onDelete: "set null"
+      }),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    unit_amount: numeric("unit_amount", { mode: "number" }).notNull(),
+    type: enum_prices_type("type").notNull().default("one_time"),
+    recurring_interval:
+      enum_prices_recurring_interval("recurring_interval").default("month"),
+    recurring_interval_count: numeric("recurring_interval_count", {
+      mode: "number"
+    }).default(1),
+    recurring_trial_period_days: numeric("recurring_trial_period_days", {
+      mode: "number"
+    }).default(0),
+    active: boolean("active").notNull().default(true),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -5994,6 +5986,9 @@ export const prices = pgTable(
       .notNull()
   },
   (columns) => [
+    index("prices_plan_idx").on(columns.plan),
+    index("prices_currency_idx").on(columns.currency),
+    index("prices_active_idx").on(columns.active),
     index("prices_updated_at_idx").on(columns.updatedAt),
     index("prices_created_at_idx").on(columns.createdAt)
   ]
@@ -6011,6 +6006,11 @@ export const subscriptions = pgTable(
     plan: uuid("plan_id")
       .notNull()
       .references(() => plans.id, {
+        onDelete: "set null"
+      }),
+    price: uuid("price_id")
+      .notNull()
+      .references(() => prices.id, {
         onDelete: "set null"
       }),
     start_date: timestamp("start_date", {
@@ -6057,6 +6057,7 @@ export const subscriptions = pgTable(
   (columns) => [
     index("subscriptions_user_idx").on(columns.user),
     index("subscriptions_plan_idx").on(columns.plan),
+    index("subscriptions_price_idx").on(columns.price),
     index("subscriptions_expires_at_idx").on(columns.expires_at),
     index("subscriptions_subscription_status_idx").on(
       columns.subscription_status
@@ -6077,7 +6078,7 @@ export const exchange_rate_rates = pgTable(
       .references(() => currency.id, {
         onDelete: "set null"
       }),
-    rate: varchar("rate").notNull()
+    rate: numeric("rate", { mode: "number" }).notNull()
   },
   (columns) => [
     index("exchange_rate_rates_order_idx").on(columns._order),
@@ -6332,6 +6333,11 @@ export const tickets = pgTable(
       onDelete: "set null"
     }),
     passkey_credential_id: varchar("passkey_credential_id"),
+    reminder_sent_at: timestamp("reminder_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
     delivery_address_recipient_name: varchar("delivery_address_recipient_name"),
     delivery_address_address: varchar("delivery_address_address"),
     delivery_address_phone: varchar("delivery_address_phone"),
@@ -6365,6 +6371,7 @@ export const tickets = pgTable(
     uniqueIndex("tickets_check_in_code_idx").on(columns.check_in_code),
     index("tickets_checked_in_idx").on(columns.checked_in),
     index("tickets_checked_in_by_idx").on(columns.checked_in_by),
+    index("tickets_reminder_sent_at_idx").on(columns.reminder_sent_at),
     index("tickets_updated_at_idx").on(columns.updatedAt),
     index("tickets_created_at_idx").on(columns.createdAt)
   ]
@@ -9237,27 +9244,12 @@ export const relations_plans_features = relations(
     })
   })
 );
-export const relations_plans_rels = relations(plans_rels, ({ one }) => ({
-  parent: one(plans, {
-    fields: [plans_rels.parent],
-    references: [plans.id],
-    relationName: "_rels"
-  }),
-  pricesID: one(prices, {
-    fields: [plans_rels.pricesID],
-    references: [prices.id],
-    relationName: "prices"
-  })
-}));
 export const relations_plans = relations(plans, ({ many }) => ({
   payment_methods: many(plans_payment_methods, {
     relationName: "payment_methods"
   }),
   features: many(plans_features, {
     relationName: "features"
-  }),
-  _rels: many(plans_rels, {
-    relationName: "_rels"
   })
 }));
 export const relations_invoices_payment_method = relations(
@@ -9267,6 +9259,11 @@ export const relations_invoices_payment_method = relations(
       fields: [invoices_payment_method._parentID],
       references: [invoices.id],
       relationName: "payment_method"
+    }),
+    currency: one(currency, {
+      fields: [invoices_payment_method.currency],
+      references: [currency.id],
+      relationName: "currency"
     })
   })
 );
@@ -9286,28 +9283,30 @@ export const relations_invoices = relations(invoices, ({ one, many }) => ({
     references: [plans.id],
     relationName: "plan"
   }),
+  price: one(prices, {
+    fields: [invoices.price],
+    references: [prices.id],
+    relationName: "price"
+  }),
+  currency: one(currency, {
+    fields: [invoices.currency],
+    references: [currency.id],
+    relationName: "currency"
+  }),
   payment_method: many(invoices_payment_method, {
     relationName: "payment_method"
   })
 }));
-export const relations_prices_currencies = relations(
-  prices_currencies,
-  ({ one }) => ({
-    _parentID: one(prices, {
-      fields: [prices_currencies._parentID],
-      references: [prices.id],
-      relationName: "currencies"
-    }),
-    currency: one(currency, {
-      fields: [prices_currencies.currency],
-      references: [currency.id],
-      relationName: "currency"
-    })
-  })
-);
-export const relations_prices = relations(prices, ({ many }) => ({
-  currencies: many(prices_currencies, {
-    relationName: "currencies"
+export const relations_prices = relations(prices, ({ one }) => ({
+  plan: one(plans, {
+    fields: [prices.plan],
+    references: [plans.id],
+    relationName: "plan"
+  }),
+  currency: one(currency, {
+    fields: [prices.currency],
+    references: [currency.id],
+    relationName: "currency"
   })
 }));
 export const relations_subscriptions = relations(subscriptions, ({ one }) => ({
@@ -9320,6 +9319,11 @@ export const relations_subscriptions = relations(subscriptions, ({ one }) => ({
     fields: [subscriptions.plan],
     references: [plans.id],
     relationName: "plan"
+  }),
+  price: one(prices, {
+    fields: [subscriptions.price],
+    references: [prices.id],
+    relationName: "price"
   })
 }));
 export const relations_exchange_rate_rates = relations(
@@ -10001,12 +10005,11 @@ type DatabaseSchema = {
   enum_plans_tier: typeof enum_plans_tier;
   enum_plans_validity: typeof enum_plans_validity;
   enum_plans_type: typeof enum_plans_type;
-  enum_plans_presentation: typeof enum_plans_presentation;
   enum_plans_state: typeof enum_plans_state;
   enum_invoices_payment_method_method: typeof enum_invoices_payment_method_method;
-  enum_invoices_payment_method_currency: typeof enum_invoices_payment_method_currency;
-  enum_invoices_currency: typeof enum_invoices_currency;
   enum_invoices_status: typeof enum_invoices_status;
+  enum_prices_type: typeof enum_prices_type;
+  enum_prices_recurring_interval: typeof enum_prices_recurring_interval;
   enum_subscriptions_subscription_status: typeof enum_subscriptions_subscription_status;
   enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
@@ -10137,10 +10140,8 @@ type DatabaseSchema = {
   plans_payment_methods: typeof plans_payment_methods;
   plans_features: typeof plans_features;
   plans: typeof plans;
-  plans_rels: typeof plans_rels;
   invoices_payment_method: typeof invoices_payment_method;
   invoices: typeof invoices;
-  prices_currencies: typeof prices_currencies;
   prices: typeof prices;
   subscriptions: typeof subscriptions;
   exchange_rate_rates: typeof exchange_rate_rates;
@@ -10283,11 +10284,9 @@ type DatabaseSchema = {
   relations_search: typeof relations_search;
   relations_plans_payment_methods: typeof relations_plans_payment_methods;
   relations_plans_features: typeof relations_plans_features;
-  relations_plans_rels: typeof relations_plans_rels;
   relations_plans: typeof relations_plans;
   relations_invoices_payment_method: typeof relations_invoices_payment_method;
   relations_invoices: typeof relations_invoices;
-  relations_prices_currencies: typeof relations_prices_currencies;
   relations_prices: typeof relations_prices;
   relations_subscriptions: typeof relations_subscriptions;
   relations_exchange_rate_rates: typeof relations_exchange_rate_rates;

@@ -274,7 +274,7 @@ export const betterAuthPluginOptions = {
   users: {
     slug: "users", // not required, this is the default anyways
     hidden: false,
-    roles: ["admin", "editor", "author", "patron", "member", "user"],
+    roles: ["admin", "cofounder", "editor", "author", "patron", "resident", "user"],
     defaultRole: "user",
 
     adminRoles: ["admin"],

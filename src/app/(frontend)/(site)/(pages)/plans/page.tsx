@@ -8,7 +8,6 @@ import { FeatureMatrix } from "@/components/sections/Pricing/FeatureMatrix";
 import { DropTeaser } from "@/components/sections/Pricing/DropTeaser";
 import { FAQAccordion } from "@/components/sections/Pricing/FAQAccordion";
 import { DemimondeTease } from "@/components/sections/Pricing/DemimondeTease";
-import { FounderRibbonIsland } from "@/components/sections/Pricing/FounderRibbonIsland";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import PlansPageClient from "./page.client";
 import { RPage } from "@/components/UX/Transition";
@@ -30,8 +29,6 @@ export default async function PlansPage() {
     })()
   ]);
 
-  const founderPlan = plans.find((p) => p.presentation === "founder");
-
   return (
     <RPage className={s.pricingShell} type="pages" slug={[]}>
       <PlansPageClient />
@@ -46,19 +43,6 @@ export default async function PlansPage() {
         cta="Request access"
         guestCta={registered ? "You're in" : "Register as guest"}
       />
-      {founderPlan ? (
-        <FounderRibbonIsland
-          planId={founderPlan.id}
-          priceDisplay={founderPlan.price.display}
-          validityLabel={
-            founderPlan.validity === "lifetime" ? "lifetime · once" : "per year"
-          }
-          features={founderPlan.features}
-          seatsRemaining={founderPlan.seats_remaining ?? 0}
-          seatsTotal={founderPlan.seat_limit ?? 0}
-          soldOut={founderPlan.sold_out}
-        />
-      ) : null}
       <FeatureMatrix />
       <DemimondeTease />
       <DropTeaser />

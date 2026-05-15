@@ -46,6 +46,10 @@ export const Credits = ({ people }: { people: MemberList["members"] }) => {
     title: "Founders",
     members: people.filter((p) => p.position === "admin")
   };
+  const cofounder: MemberList = {
+    title: "Cofounders",
+    members: people.filter((p) => p.position === "cofounder")
+  };
   const editor: MemberList = {
     title: "Editors",
     members: people.filter((p) => p.position === "editor")
@@ -58,16 +62,16 @@ export const Credits = ({ people }: { people: MemberList["members"] }) => {
     title: "Patrons",
     members: people.filter((p) => p.position === "patron")
   };
-  const member: MemberList = {
-    title: "Members",
-    members: people.filter((p) => p.position === "member")
+  const resident: MemberList = {
+    title: "Residents",
+    members: people.filter((p) => p.position === "resident")
   };
   const user: MemberList = {
     title: "Guests",
     members: people.filter((p) => p.position === "user")
   };
   return CreditsInner({
-    positions: { admin, editor, author, patron, member, user }
+    positions: { admin, cofounder, editor, author, patron, resident, user }
   });
 };
 type Team = {

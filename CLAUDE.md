@@ -160,7 +160,7 @@ Music playback via Howler.js. Albums, tracks, and playlists with a cassette tape
 - **UI:** `src/components/content/Radio/`, `src/components/UX/TapePlayer/`
 
 ### Access Control (Locker Plugin)
-Role-based access at collection and field level. Roles: `admin`, `editor`, `author`, `patron`,`member`, `user`.
+Role-based access at collection and field level. Roles, in descending authority: `admin`, `cofounder`, `editor`, `author`, `patron`, `resident`, `user` (and `guest` as the unauthenticated sentinel). `cofounder` is the seam between paid (`PAID_ROLES = ["resident", "patron", "cofounder"]`) and trusted-staff (`STAFF_ROLES = ["editor", "cofounder", "admin"]`) — it sits in both buckets by design (paid + invite-only operator).
 
 ### Image Search Plugin
 Admin-side image search across Unsplash, Pexels, Pixabay with LRU caching.
@@ -697,7 +697,7 @@ Premium: more grid columns, 4:3 overlay cards, denser display. Free: 16:9 standa
 Role is driven by Subscription state. The Subscriptions collection has three coordinated hooks:
 
 - `autoActivateOnPaid` (beforeChange) — when admin checks `paid` on a `pending` row, promotes `subscription_status` to `active` and stamps `expires_at` from plan validity (yearly → start + 1y; lifetime → null).
-- `syncRoleAfterSubscriptionChange` (afterChange) — on the `pending→active` edge, promotes `user.role` to the plan's tier (`member` | `patron`). On `active→inactive`, re-derives role from the user's remaining active subscriptions (highest tier wins; falls back to `user`). Staff roles (`admin`, `editor`) are never touched.
+- `syncRoleAfterSubscriptionChange` (afterChange) — on the `pending→active` edge, promotes `user.role` to the plan's tier (`resident` | `patron` | `cofounder`). On `active→inactive`, re-derives role from the user's remaining active subscriptions (highest tier wins; falls back to `user`). Staff roles (`editor`, `cofounder`, `admin` — see `STAFF_ROLES`) are never touched, so a cofounder's role is not demoted by sub-state changes alone.
 - `issueInvoiceOnPaid` (afterChange) — issues an Invoice exactly once per subscription via the `invoice_number_seq` atomic counter.
 
 Admin overrides survive: explicit `expires_at` writes are not overwritten; manual `subscription_status` writes (e.g. to `canceled`) bypass auto-activation.

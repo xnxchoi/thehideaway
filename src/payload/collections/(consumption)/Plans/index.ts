@@ -24,7 +24,7 @@ const Plans: CollectionConfig = {
       unique: true,
       admin: {
         description:
-          "Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users."
+          "Internal admin label (e.g. 'Resident · Yearly · KRW'). Not shown to users."
       }
     },
     {
@@ -32,19 +32,24 @@ const Plans: CollectionConfig = {
       type: "select",
       required: true,
       hasMany: false,
-      defaultValue: "member",
+      defaultValue: "resident",
       options: [
         {
-          label: "Member",
-          value: "member"
+          label: "Resident",
+          value: "resident"
         },
         {
           label: "Patron",
           value: "patron"
+        },
+        {
+          label: "Cofounder",
+          value: "cofounder"
         }
       ],
       admin: {
-        description: "The subscriber role this plan grants while active."
+        description:
+          "The subscriber role this plan grants while active. Cofounder plans are admin-created only — they are filtered out of the public /plans surface by getPlansData()."
       }
     },
     {

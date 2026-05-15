@@ -36,20 +36,15 @@ const validitySuffix = (v: ResolvedPlan["validity"]): string =>
   v === "lifetime" ? " · lifetime" : " / year";
 
 export function TierCard({ plan, cta }: TierCardProps) {
-  const isFounder = plan.presentation === "founder";
   const soldOut = plan.sold_out;
 
   return (
     <article
       className={`${s.tierCard} ${s.fadeIn}`}
-      data-featured={plan.featured}
-      data-presentation={plan.presentation}
       data-sold-out={soldOut}
     >
       <div className={s.tierBadgeRow}>
-        <span className={s.tierLabel}>
-          {isFounder ? "Patron · Founder" : plan.tier_label}
-        </span>
+        <span className={s.tierLabel}>{plan.tier_label}</span>
         {plan.discount_label ? (
           <span className={s.savePill}>{plan.discount_label}</span>
         ) : null}
@@ -107,15 +102,6 @@ export function TierCard({ plan, cta }: TierCardProps) {
         >
           Closed
         </button>
-      ) : isFounder ? (
-        <Link
-          href="#founder-ribbon"
-          className={s.cta}
-          prefetch={false}
-          aria-label={`Learn more — ${plan.tier_label}`}
-        >
-          Learn more
-        </Link>
       ) : (
         <Link
           href={`/checkout?plan=${encodeURIComponent(plan.id)}`}

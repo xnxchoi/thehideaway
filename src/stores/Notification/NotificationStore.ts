@@ -7,11 +7,12 @@ import { createStore } from "zustand/vanilla";
 
 export type RP_Roles =
   | "user"
-  | "member"
+  | "resident"
   | "admin"
   | "author"
   | "editor"
-  | "patron";
+  | "patron"
+  | "cofounder";
 
 export type SortByDateProps = { order?: "ASC" | "DESC" };
 export const sortByDate =

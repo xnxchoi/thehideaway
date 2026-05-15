@@ -11,9 +11,7 @@ export type TierGridProps = {
 };
 
 export function TierGrid({ plans, registered, cta, guestCta }: TierGridProps) {
-  const inGrid = [...plans]
-    .filter((p) => p.presentation !== "founder")
-    .sort((a, b) => a.sort - b.sort);
+  const inGrid = [...plans].sort((a, b) => a.sort - b.sort);
 
   return (
     <section aria-label="Membership tiers" className={s.tierGridSection}>

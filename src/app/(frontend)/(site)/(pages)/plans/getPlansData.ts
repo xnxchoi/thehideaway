@@ -22,7 +22,7 @@ export type ResolvedPrice = {
 export type ResolvedPlan = {
   id: string;
   name: string;
-  tier: "member" | "patron";
+  tier: "resident" | "patron" | "cofounder";
   tier_label: string;
   validity: "yearly" | "lifetime";
   description: string;
@@ -100,7 +100,12 @@ export async function getPlansData(): Promise<ResolvedPlan[]> {
   const payload = await getPayload({ config });
   const res = await payload.find({
     collection: "plans",
-    where: { state: { equals: "active" } },
+    where: {
+      and: [
+        { state: { equals: "active" } },
+        { tier: { not_equals: "cofounder" } }
+      ]
+    },
     depth: 1,
     limit: 100,
     overrideAccess: true

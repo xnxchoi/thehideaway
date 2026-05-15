@@ -19,7 +19,7 @@ type SeedPrice = { currencyName: "KRW"; amount: number };
 
 type SeedPlan = {
   name: string;
-  tier: "member" | "patron";
+  tier: "resident" | "patron" | "cofounder";
   tier_label: string;
   validity: "yearly" | "lifetime";
   prices: SeedPrice[];
@@ -33,15 +33,15 @@ type SeedPlan = {
 
 const PLANS: SeedPlan[] = [
   {
-    name: "Member · Yearly · KRW",
-    tier: "member",
-    tier_label: "Member",
+    name: "Resident · Yearly · KRW",
+    tier: "resident",
+    tier_label: "Resident",
     validity: "yearly",
     prices: [{ currencyName: "KRW", amount: 33_000 }],
     description:
-      "Pay once. Read everything Member-locked for a year. Stay in for free if your work earns it.",
+      "Pay once. Read everything Resident-locked for a year. Stay in for free if your work earns it.",
     features: [
-      { label: "Read all Member-locked essays", included: true },
+      { label: "Read all Resident-locked essays", included: true },
       { label: "Highlight + memo", included: true },
       { label: "Comment + bookmark", included: true },
       { label: "Renews free if your work earns it", included: true },
@@ -61,7 +61,7 @@ const PLANS: SeedPlan[] = [
     description:
       "Pay once. The door stays open. Founders get drop priority and quarterly print, no expiry.",
     features: [
-      { label: "Everything in Member, forever", included: true },
+      { label: "Everything in Resident, forever", included: true },
       { label: "Read all Patron-locked essays", included: true },
       { label: "Priority access to drops", included: true },
       { label: "Exclusive event invites", included: true },

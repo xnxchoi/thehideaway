@@ -148,14 +148,16 @@ function formatRoleLabel(role: User["role"]): string | undefined {
   switch (role) {
     case "admin":
       return "Concierge";
+    case "cofounder":
+      return "Cofounder";
     case "editor":
       return "Editor";
     case "author":
       return "Author";
     case "patron":
       return "Patron";
-    case "member":
-      return "Member";
+    case "resident":
+      return "Resident";
     case "user":
       return "Reader";
     default:
