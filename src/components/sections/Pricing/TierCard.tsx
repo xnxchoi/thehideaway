@@ -39,10 +39,7 @@ export function TierCard({ plan, cta }: TierCardProps) {
   const soldOut = plan.sold_out;
 
   return (
-    <article
-      className={`${s.tierCard} ${s.fadeIn}`}
-      data-sold-out={soldOut}
-    >
+    <article className={`${s.tierCard} ${s.fadeIn}`} data-sold-out={soldOut}>
       <div className={s.tierBadgeRow}>
         <span className={s.tierLabel}>{plan.tier_label}</span>
         {plan.discount_label ? (
