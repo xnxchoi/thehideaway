@@ -1,18 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence } from "motion/react";
+import * as m from "motion/react-m";
+import { useInView } from "react-intersection-observer";
 import s from "./Pricing.module.scss";
 
 type FAQ = { q: string; a: string };
 
 const FAQS: FAQ[] = [
   {
-    q: "Which cards do you accept?",
-    a: "All Korean domestic cards, plus international Visa, Mastercard, and Amex. KakaoPay, Toss Pay, and bank transfer are also supported."
+    q: "How do I pay?",
+    a: "Bank transfer is the primary method — pick it at checkout and we'll send instructions; your subscription activates once we confirm receipt. Cash is supported on request. Cards are not yet wired."
   },
   {
     q: "Can I cancel anytime?",
-    a: "Yes. Cancel from your account; access continues until the end of the current billing cycle. No retention calls, no friction."
+    a: "Patron is a one-time purchase — there is nothing to cancel. Resident is yearly; cancel from your account before renewal. No retention calls, no friction."
   },
   {
     q: "Refunds?",
@@ -20,38 +23,55 @@ const FAQS: FAQ[] = [
   },
   {
     q: "Korean tax invoice (세금계산서)?",
-    a: "Available on request for Patron annual plans. Email concierge@hideawayseoul.com after subscribing."
+    a: "Available on request for Patron memberships. Email concierge@hideawayseoul.com after subscribing."
   },
   {
-    q: "Pay in cash or by bank transfer?",
-    a: "Yes — pick the bank-transfer option at checkout and we'll send instructions. Your subscription activates once we confirm receipt."
+    q: "What is Cofounder?",
+    a: "By application. Don't ask about it on this page."
   }
 ];
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.4,
+      ease: [0.16, 1, 0.3, 1] as const
+    }
+  })
+};
+
+/**
+ * FAQAccordion — motion-enhanced rewrite.
+ *
+ * - Items stagger-fade-in once the section enters the viewport (useInView,
+ *   triggerOnce so the stagger plays exactly once).
+ * - Expand/collapse: AnimatePresence around the answer wrapper, animating
+ *   `height: 0 ↔ "auto"` with `overflow: hidden`. The answer text sits in
+ *   an inner div that carries the bottom padding, so the animated wrapper
+ *   has clean 0/auto transitions without padding-collapse jitter.
+ * - The `+ → ×` icon rotates via Motion (smooth interpolation) instead of
+ *   a CSS-transform-on-class swap.
+ * - `initial={false}` on AnimatePresence prevents the default-open first
+ *   item from playing the exit animation on mount.
+ *
+ * Motion respects `prefers-reduced-motion` automatically — reduced-motion
+ * users see instant transitions.
+ */
 export function FAQAccordion() {
   const [open, setOpen] = useState<number | null>(0);
+  const { ref, inView } = useInView({ triggerOnce: true, rootMargin: "-10%" });
+
   return (
-    <section
-      aria-labelledby="faq"
-      style={{
-        padding: "60px 24px 100px",
-        maxWidth: "780px",
-        margin: "0 auto"
-      }}
-    >
-      <header style={{ marginBottom: 24 }}>
+    <section ref={ref} aria-labelledby="faq" className={s.faqShell}>
+      <header className={s.faqHeader}>
         <p className={s.eyebrow} style={{ marginBottom: 8 }}>
           Questions
         </p>
-        <h2
-          id="faq"
-          style={{
-            fontSize: "clamp(28px, 3vw, 36px)",
-            fontWeight: 300,
-            letterSpacing: "-0.02em",
-            margin: 0
-          }}
-        >
+        <h2 id="faq" className={s.faqTitle}>
           Things people ask
         </h2>
       </header>
@@ -60,7 +80,14 @@ export function FAQAccordion() {
           const expanded = open === i;
           const answerId = `faq-answer-${i}`;
           return (
-            <div key={i} className={s.faqItem}>
+            <m.div
+              key={i}
+              className={s.faqItem}
+              initial="hidden"
+              animate={inView ? "visible" : "hidden"}
+              custom={i}
+              variants={itemVariants}
+            >
               <button
                 type="button"
                 className={s.faqQuestion}
@@ -69,28 +96,41 @@ export function FAQAccordion() {
                 onClick={() => setOpen(expanded ? null : i)}
               >
                 <span>{f.q}</span>
-                <span
+                <m.span
+                  className={s.faqIcon}
                   aria-hidden
-                  style={{
-                    fontFamily: "var(--font-mono, ui-monospace, monospace)",
-                    fontSize: 18,
-                    transform: expanded ? "rotate(45deg)" : "rotate(0)",
-                    transition: "transform 220ms",
-                    display: "inline-block"
+                  animate={{ rotate: expanded ? 45 : 0 }}
+                  transition={{
+                    duration: 0.22,
+                    ease: [0.16, 1, 0.3, 1] as const
                   }}
                 >
                   +
-                </span>
+                </m.span>
               </button>
-              <div
-                id={answerId}
-                role="region"
-                className={s.faqAnswer}
-                hidden={!expanded}
-              >
-                {f.a}
-              </div>
-            </div>
+              <AnimatePresence initial={false}>
+                {expanded ? (
+                  <m.div
+                    id={answerId}
+                    role="region"
+                    className={s.faqAnswer}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{
+                      height: {
+                        duration: 0.32,
+                        ease: [0.16, 1, 0.3, 1] as const
+                      },
+                      opacity: { duration: 0.24, delay: 0.06 }
+                    }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ paddingBottom: 22 }}>{f.a}</div>
+                  </m.div>
+                ) : null}
+              </AnimatePresence>
+            </m.div>
           );
         })}
       </div>
