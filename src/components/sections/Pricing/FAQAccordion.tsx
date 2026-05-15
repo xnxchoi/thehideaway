@@ -81,7 +81,7 @@ export function FAQAccordion() {
           const answerId = `faq-answer-${i}`;
           return (
             <m.div
-              key={i}
+              key={f.q}
               className={s.faqItem}
               initial="hidden"
               animate={inView ? "visible" : "hidden"}

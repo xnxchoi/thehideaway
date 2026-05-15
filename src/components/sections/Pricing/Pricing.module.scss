@@ -669,6 +669,20 @@
 }
 
 .membershipBand[data-variant="inline"] {
+	/* When embedded outside .pricingShell (e.g. on a future product detail
+	   page), the band must carry its own --pricing-* tokens. The "page"
+	   variant continues to inherit from the .pricingShell ancestor. */
+	--pricing-bg: oklch(0.135 0.005 240);
+	--pricing-fg: oklch(0.96 0.01 80);
+	--pricing-fg-mute: oklch(0.7 0.005 240);
+	--pricing-fg-faint: oklch(0.5 0.005 240);
+	--pricing-line: oklch(0.28 0.005 240);
+	--pricing-card: oklch(0.18 0.005 240);
+	--pricing-accent: oklch(0.78 0.16 60);
+	--pricing-mint: oklch(0.85 0.13 160);
+	--pricing-crimson: oklch(0.42 0.16 22);
+
+	color: var(--pricing-fg);
 	padding: 28px 0;
 	gap: 18px;
 }

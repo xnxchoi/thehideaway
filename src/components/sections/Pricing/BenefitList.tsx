@@ -31,7 +31,10 @@ export function BenefitList({ benefits, showLegend }: BenefitListProps) {
     <ul className={s.benefitList} aria-label="What's included">
       {benefits.map((b, i) => (
         <li
-          key={i}
+          // Label is the natural identity; index is a tiebreaker for the
+          // unlikely case of two features sharing a label in a poorly
+          // edited admin Plan.
+          key={`${b.label}-${i}`}
           className={s.benefitRow}
           data-tier={b.patronOnly ? "patron" : "all"}
         >

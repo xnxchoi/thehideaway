@@ -1,4 +1,3 @@
-import { Link } from "@/components/core/Link/Link";
 import s from "./Pricing.module.scss";
 
 const MAILTO =
@@ -23,9 +22,19 @@ export function CofounderApply() {
       <h2 id="cofounder-apply" className={s.cofounderTitle}>
         You really wanna know?
       </h2>
-      <Link href={MAILTO} className={s.cofounderCta} prefetch={false}>
+      {/* Plain <a>, not the project's <Link>: the custom Link runs through
+          next-transition-router's click handler, which fires page-transition
+          state (setIsTransitioningWipe) for non-anchor hrefs regardless of
+          scheme. For mailto: that state never resets because no navigation
+          actually happens, leaving the page in a wipe state. The plain anchor
+          bypasses the handler entirely. */}
+      <a
+        href={MAILTO}
+        className={s.cofounderCta}
+        rel="noopener noreferrer"
+      >
         Write to us
-      </Link>
+      </a>
     </section>
   );
 }

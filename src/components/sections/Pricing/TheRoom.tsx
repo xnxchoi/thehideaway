@@ -14,14 +14,23 @@ export type TheRoomProps = {
  * getPlansData() at the data layer (Track A), so this component never sees
  * one even if a cofounder Plan exists in the admin.
  *
- * INTERIM heuristic — patron-exclusivity is derived from feature label text.
- * A single regex captures "patron", "quarterly", "demimonde", "drop", or
- * "address" (the words that show up in patron-exclusive copy in the seed).
- * The right long-term fix is a `patronOnly: boolean` field on Plan features
- * in Payload; it's a Track A-style schema change and out of scope here. See
- * the Track B plan's Task 4 GOTCHA for the rationale.
+ * INTERIM heuristic — patron-exclusivity is derived from feature label text
+ * with word-boundary anchors. Each keyword targets a specific seed feature
+ * label so an admin editor can predict the match:
+ *
+ *   patron       → "Patron-only quarterly print"
+ *   quarterly    → "Patron-only quarterly print"
+ *   demimonde    → "Demimonde — the address two days before"
+ *   drop         → "Priority access to drops"
+ *   address      → "Demimonde — the address two days before"
+ *
+ * Word boundaries (\b) prevent over-match on substrings like "Drop shipping",
+ * "Address book", "Patronage". The right long-term fix is a
+ * `patronOnly: boolean` field on Plan features in Payload — that's a
+ * schema change with migration overhead and is out of scope here.
  */
-const PATRON_KEYWORDS = /patron|quarterly|demimonde|drop|address/i;
+const PATRON_KEYWORDS =
+  /\bpatron\b|\bquarterly\b|\bdemimonde\b|\bdrop\b|\baddress\b/i;
 
 export function TheRoom({ plans }: TheRoomProps) {
   const patron = plans.find((p) => p.tier === "patron");
@@ -37,7 +46,7 @@ export function TheRoom({ plans }: TheRoomProps) {
     }));
 
   return (
-    <section aria-label="Membership" className={s.theRoom}>
+    <section aria-label="Patron membership" className={s.theRoom}>
       <MembershipBand
         variant="page"
         tierLabel={patron.tier_label}
