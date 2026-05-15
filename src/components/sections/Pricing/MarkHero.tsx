@@ -93,9 +93,22 @@ export function MarkHero() {
               anticipatePin: 1
             }
           })
-          .to(wordmark.current, { scale: 0.78, transformOrigin: "50% 50%" }, 0)
-          .to(starburst.current, { scale: 0.78, transformOrigin: "50% 50%" }, 0)
-          .to(label.current, { opacity: 0, y: -12 }, 0);
+          // overwrite: "auto" — the perpetual scale-pulse on the starburst
+          // (and any latent transform tween) targets the same property; without
+          // explicit overwrite, GSAP stacks them additively and the scrub fights
+          // the perpetual frame-by-frame at mid-scroll. "auto" lets the scrub
+          // assert priority while it's active.
+          .to(
+            wordmark.current,
+            { scale: 0.78, transformOrigin: "50% 50%", overwrite: "auto" },
+            0
+          )
+          .to(
+            starburst.current,
+            { scale: 0.78, transformOrigin: "50% 50%", overwrite: "auto" },
+            0
+          )
+          .to(label.current, { opacity: 0, y: -12, overwrite: "auto" }, 0);
       });
 
       return () => {

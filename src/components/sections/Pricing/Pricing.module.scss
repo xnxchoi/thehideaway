@@ -15,7 +15,10 @@
 	min-height: 100dvh;
 	position: relative;
 	isolation: isolate;
-	overflow: hidden;
+	/* `clip` (not `hidden`) so we don't create a scroll container — that
+	   would clip GSAP ScrollTrigger's pin spacer on Safari/WebKit and
+	   collapse the MarkHero scroll segment. */
+	overflow: clip;
 }
 
 .pricingShell::before {
@@ -561,7 +564,10 @@
 	color: var(--pricing-fg-mute);
 	font-size: 14px;
 	line-height: 1.6;
-	padding: 0 0 22px;
+	/* The Motion-rewritten FAQAccordion (Track B) puts the bottom padding on
+	   an inner div so the animated wrapper has clean 0/auto height transitions
+	   without padding-collapse jitter. Outer padding stays at 0. */
+	padding: 0;
 	max-width: 56ch;
 }
 
@@ -610,7 +616,8 @@
 	justify-content: center;
 	gap: 36px;
 	padding: 24px;
-	overflow: hidden;
+	/* `clip` (not `hidden`) — same Safari pin-spacer reason as .pricingShell. */
+	overflow: clip;
 }
 
 .markStage {

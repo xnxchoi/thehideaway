@@ -92,7 +92,11 @@ export function FAQAccordion() {
                 type="button"
                 className={s.faqQuestion}
                 aria-expanded={expanded}
-                aria-controls={answerId}
+                // The answer region only mounts while expanded (AnimatePresence
+                // unmounts on collapse). Reference the id only when it's in the
+                // DOM — collapsed buttons drop the attribute entirely so AT
+                // never resolves a missing id.
+                aria-controls={expanded ? answerId : undefined}
                 onClick={() => setOpen(expanded ? null : i)}
               >
                 <span>{f.q}</span>
