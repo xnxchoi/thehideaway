@@ -24,6 +24,11 @@ import {
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { Controlbar } from "../../Shells/Controlbar";
+import {
+  AccountView,
+  NotificationsView,
+  SearchView
+} from "../../Shells/Controlbar/views";
 import { Link } from "@/components/core/Link/Link";
 import { SIDE_DRAWER_LINKS } from "@/constants/navigation";
 import { DrawerPlayer } from "@/components/UX/TapePlayer";
@@ -248,6 +253,15 @@ export const SideDrawer = () => {
     }
   });
   const sd = useMemo(() => SIDE_DRAWER_LINKS, []);
+  const controlbarView = useRPStore(useShallow((r) => r.controlbarView));
+  const setControlbarView = useRPStore((r) => r.setControlbarView);
+  // When the drawer closes, reset the view so reopening from outside
+  // (or from a different surface) starts at the default nav links.
+  useEffect(() => {
+    if (!open && controlbarView !== "default") {
+      setControlbarView("default");
+    }
+  }, [open, controlbarView, setControlbarView]);
   const borderTopRadius = useSpring(borderTopRad, {
     ...SPRING_EASE.power2.out,
     stiffness: 1000,
@@ -316,7 +330,13 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {isNarrow && isTouch && <Drawer.Handle className={"absolute!"} />}
+          {isNarrow && isTouch && (
+            <Drawer.Handle
+              className={
+                "absolute! top-3 left-1/2 my-0! -translate-x-1/2 bg-foreground/25!"
+              }
+            />
+          )}
           {open && (
             <m.div
               key={"drawer-backdrop"}
@@ -337,7 +357,7 @@ export const SideDrawer = () => {
             - Desktop (≥ md): original 8×14 grid, kept intact.
           */}
           <m.div
-            className="z-239 flex h-[65vh] w-full flex-col bg-nav-background md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
+            className="z-239 flex h-[65vh] w-full flex-col bg-nav-background max-md:pt-7 md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
             key={"drawer-body"}
             onMouseEnter={() => {
               setCursor(null);
@@ -347,27 +367,45 @@ export const SideDrawer = () => {
               resetCursor();
             }}
           >
-            {/* Title — top of column on mobile, grid cell row[2/3] on desktop */}
-            <div className="flex flex-col justify-center px-6 pt-10 md:col-[2/8] md:row-[2/3] md:px-0 md:pt-0">
+            {/* Title — only on desktop (mobile views provide their own headers) */}
+            <div className="hidden flex-col justify-center px-6 pt-10 md:col-[2/8] md:row-[2/3] md:flex md:px-0 md:pt-0">
               <Drawer.Title
                 className={"text-h3"}
                 title={"Shortcuts"}
               ></Drawer.Title>
             </div>
+            {/* On mobile we need an a11y title even when visually hidden */}
+            <Drawer.Title className="sr-only md:hidden">Menu</Drawer.Title>
             <AnimatePresence>
-              {/* Links — fill the middle on mobile (scrollable if it overflows),
-                grid cell row[3/10] on desktop */}
               {open && (
                 <>
-                  {" "}
-                  <m.div className="flex-1 overflow-y-auto px-6 py-6 md:col-[2/8] md:row-[3/10] md:flex-none md:overflow-visible md:px-4 md:py-0">
-                    <m.div className="flex flex-col gap-5 font-sans text-[23px]">
-                      {sd.map((link) => (
-                        <Link key={link.url} href={link.url}>
-                          {link.label}
-                        </Link>
-                      ))}
-                    </m.div>
+                  {/* Middle slot — view-driven on mobile, links on desktop.
+                      Default mobile view = nav links (parity with desktop). */}
+                  <m.div
+                    className="flex-1 overflow-hidden md:col-[2/8] md:row-[3/10] md:flex-none md:overflow-visible md:px-4 md:py-0"
+                    key="drawer-middle"
+                  >
+                    {isNarrow && isTouch ? (
+                      <AnimatePresence mode="wait" initial={false}>
+                        {controlbarView === "notifications" ? (
+                          <NotificationsView key="v-notif" />
+                        ) : controlbarView === "search" ? (
+                          <SearchView key="v-search" />
+                        ) : controlbarView === "account" ? (
+                          <AccountView key="v-account" />
+                        ) : (
+                          <DefaultLinks key="v-default" links={sd} />
+                        )}
+                      </AnimatePresence>
+                    ) : (
+                      <m.div className="flex flex-col gap-5 px-8 py-6 font-sans text-[23px] md:px-0 md:py-0">
+                        {sd.map((link) => (
+                          <Link key={link.url} href={link.url}>
+                            {link.label}
+                          </Link>
+                        ))}
+                      </m.div>
+                    )}
                   </m.div>
                   {/* DrawerPlayer — gated on `open` so it doesn't run audio-reactive
                 code or mount the radio session while the drawer is closed.
@@ -387,16 +425,53 @@ export const SideDrawer = () => {
                 </>
               )}
             </AnimatePresence>
+            {/* Controlbar — bottom strip of the drawer on touch-mobile.
+                In-flow (no fixed positioning) so drawer content stays above. */}
+            {isNarrow && isTouch && <Controlbar key={"ctrlbar-drawer"} />}
           </m.div>
-          <AnimatePresence>
-            {isNarrow && isTouch ? (
-              <Controlbar key={"ctrlbar-drawer"} />
-            ) : (
+          {!(isNarrow && isTouch) && (
+            <AnimatePresence>
               <SideNotch key={"notch-drawer"} sideDrawer={true} />
-            )}
-          </AnimatePresence>
+            </AnimatePresence>
+          )}
         </Mrawer>
       </Drawer.Portal>
     </Drawer.Root>
   ) : null;
 };
+
+const defaultLinksContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.045, delayChildren: 0.08 }
+  }
+};
+const defaultLinksItem = {
+  hidden: { opacity: 0, y: 10 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", bounce: 0.18, duration: 0.5 }
+  }
+};
+
+const DefaultLinks = ({
+  links
+}: {
+  links: { url: string; label: string }[];
+}) => (
+  <m.div
+    variants={defaultLinksContainer}
+    initial="hidden"
+    animate="show"
+    exit={{ opacity: 0 }}
+    className="flex h-full flex-col gap-5 overflow-y-auto px-8 pt-4 pb-8 font-sans text-[23px]"
+  >
+    {links.map((link) => (
+      <m.div key={link.url} variants={defaultLinksItem}>
+        <Link href={link.url}>{link.label}</Link>
+      </m.div>
+    ))}
+  </m.div>
+);

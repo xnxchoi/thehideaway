@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { TransportBar } from "../controls/TransportBar";
 import { ProgressRail } from "../visuals/ProgressRail";
 import { TapeCounter } from "../visuals/TapeCounter";
 import { TapeReels } from "../visuals/TapeReels";
@@ -13,34 +12,37 @@ type DrawerPlayerProps = {
 };
 
 /**
- * Mobile drawer variant — touch-optimized with small reels.
+ * Mobile drawer variant — touch-optimized, info-and-state only.
  *
- * Layout (horizontal feel):
- *   Left: mini TapeReels
+ * Layout:
+ *   Left: mini TapeReels (visual indicator)
  *   Right:
  *     TrackInfo (two lines)
  *     ProgressRail
- *     TapeCounter + TransportBar
+ *     TapeCounter
+ *
+ * Play/pause lives in the Controlbar's left zone. Skip/rewind, when
+ * available to premium roles, are surfaced on the dedicated Radio page —
+ * not duplicated here so the narrow viewport stays uncrowded.
  */
 export const DrawerPlayer = ({ className }: DrawerPlayerProps) => {
   const sizes = SIZES.drawer;
 
   return (
-    <div className={cn("flex w-full items-start gap-3 px-3 py-3", className)}>
+    <div className={cn("flex w-full items-center gap-3 px-4 py-3", className)}>
       {/* Mini reels on the left */}
-      <div className="flex shrink-0 items-center justify-center pt-1">
-        <TapeReels diameter={sizes.reelDiameter} className="w-[120px]" />
+      <div className="flex shrink-0 items-center justify-center">
+        <TapeReels diameter={sizes.reelDiameter} className="w-[96px]" />
       </div>
 
-      {/* Info + controls on the right */}
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      {/* Info + progress on the right */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <TrackInfo size="compact" />
         <ProgressRail thin className="w-full" />
         <TapeCounter
           height={sizes.counterHeight}
           className="w-full text-[0.6rem]"
         />
-        <TransportBar compact />
       </div>
     </div>
   );

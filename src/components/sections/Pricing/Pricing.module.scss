@@ -15,7 +15,10 @@
 	min-height: 100dvh;
 	position: relative;
 	isolation: isolate;
-	overflow: hidden;
+	/* `clip` (not `hidden`) so we don't create a scroll container — that
+	   would clip GSAP ScrollTrigger's pin spacer on Safari/WebKit and
+	   collapse the MarkHero scroll segment. */
+	overflow: clip;
 }
 
 .pricingShell::before {
@@ -561,7 +564,10 @@
 	color: var(--pricing-fg-mute);
 	font-size: 14px;
 	line-height: 1.6;
-	padding: 0 0 22px;
+	/* The Motion-rewritten FAQAccordion (Track B) puts the bottom padding on
+	   an inner div so the animated wrapper has clean 0/auto height transitions
+	   without padding-collapse jitter. Outer padding stays at 0. */
+	padding: 0;
 	max-width: 56ch;
 }
 
@@ -588,4 +594,298 @@
 		animation: none;
 		transition: none;
 	}
+
+	/* GSAP-driven elements need !important because GSAP writes inline
+	   styles which beat external CSS without it. matchMedia in MarkHero
+	   already gates the perpetual + scrub layers, but this is the
+	   belt-and-suspenders fallback for any direct .from()/initial offset
+	   that lingers after revert. */
+	.markStarburst,
+	.markWordmark,
+	.markLabel,
+	.cofounderCta {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+/* ── Track B (aaa24 redesign) — appended ─────────────────────────────── */
+
+/* New token: brand crimson (oklch equivalent of favicon #a4031f). Used by
+   the MarkHero starburst and by the BenefitList ◐ patron-exclusive glyph
+   so the marker visually echoes the mark itself. */
+.pricingShell {
+	--pricing-crimson: oklch(0.42 0.16 22);
+}
+
+/* MarkHero ──────────────────────────────────────────────────────────── */
+
+.markHero {
+	position: relative;
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 36px;
+	padding: 24px;
+	/* `clip` (not `hidden`) — same Safari pin-spacer reason as .pricingShell. */
+	overflow: clip;
+}
+
+.markStage {
+	width: min(72vw, 880px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.markSvg {
+	width: 100%;
+	height: auto;
+	display: block;
+	color: var(--pricing-fg); /* used by .markWordmark via currentColor */
+	overflow: visible;
+}
+
+.markWordmark {
+	fill: currentColor;
+}
+
+.markStarburst {
+	fill: var(--pricing-crimson);
+	filter: drop-shadow(0 0 18px oklch(0.42 0.16 22 / 0.3));
+}
+
+.markLabel {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 12px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: var(--pricing-fg-mute);
+	margin: 0;
+}
+
+/* TheRoom + MembershipBand + BenefitList ────────────────────────────── */
+
+.theRoom {
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 60px 24px 80px;
+}
+
+.membershipBand {
+	display: flex;
+	flex-direction: column;
+	gap: 28px;
+	padding: 48px 0;
+}
+
+.membershipBand[data-variant="inline"] {
+	/* When embedded outside .pricingShell (e.g. on a future product detail
+	   page), the band must carry its own --pricing-* tokens. The "page"
+	   variant continues to inherit from the .pricingShell ancestor. */
+	--pricing-bg: oklch(0.135 0.005 240);
+	--pricing-fg: oklch(0.96 0.01 80);
+	--pricing-fg-mute: oklch(0.7 0.005 240);
+	--pricing-fg-faint: oklch(0.5 0.005 240);
+	--pricing-line: oklch(0.28 0.005 240);
+	--pricing-card: oklch(0.18 0.005 240);
+	--pricing-accent: oklch(0.78 0.16 60);
+	--pricing-mint: oklch(0.85 0.13 160);
+	--pricing-crimson: oklch(0.42 0.16 22);
+
+	color: var(--pricing-fg);
+	padding: 28px 0;
+	gap: 18px;
+}
+
+.membershipHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.membershipPrice {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	margin: 0;
+}
+
+.membershipPriceMain {
+	font-size: clamp(40px, 5.6vw, 64px);
+	font-weight: 300;
+	letter-spacing: -0.045em;
+	line-height: 0.95;
+	color: var(--pricing-fg);
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: "tnum" 1;
+}
+
+.membershipBand[data-variant="inline"] .membershipPriceMain {
+	font-size: clamp(28px, 3.4vw, 40px);
+}
+
+.membershipValidity {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 13px;
+	color: var(--pricing-fg-mute);
+}
+
+.membershipDescription {
+	font-size: 16px;
+	line-height: 1.55;
+	color: var(--pricing-fg-mute);
+	max-width: 56ch;
+	margin: 0;
+}
+
+.benefitList {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.benefitRow {
+	display: grid;
+	grid-template-columns: 18px 1fr auto;
+	align-items: baseline;
+	gap: 12px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--pricing-fg);
+}
+
+.benefitGlyph {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 14px;
+	color: var(--pricing-fg-mute);
+	line-height: 1;
+}
+
+.benefitRow[data-tier="patron"] .benefitGlyph {
+	color: var(--pricing-crimson);
+}
+
+.benefitLabel {
+	/* default body color; opacity-floor compliant */
+}
+
+.benefitTier {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--pricing-fg-mute);
+}
+
+.benefitLegend {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid var(--pricing-line);
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--pricing-fg-faint);
+	list-style: none;
+}
+
+.residentOnRamp {
+	margin: 32px 0 0;
+	font-size: 14px;
+	line-height: 1.55;
+	color: var(--pricing-fg);
+}
+
+.residentMuted {
+	color: var(--pricing-fg-mute);
+}
+
+/* CofounderApply ────────────────────────────────────────────────────── */
+
+.cofounderApply {
+	min-height: 100svh;
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 36px;
+	text-align: center;
+}
+
+.cofounderTitle {
+	font-size: clamp(40px, 6vw, 80px);
+	font-weight: 300;
+	line-height: 1.05;
+	letter-spacing: -0.025em;
+	color: var(--pricing-fg);
+	margin: 0;
+}
+
+.cofounderCta {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--pricing-fg);
+	text-decoration: underline;
+	text-underline-offset: 6px;
+	text-decoration-thickness: 1px;
+	text-decoration-color: var(--pricing-line);
+	transition: text-decoration-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cofounderCta:hover {
+	text-decoration-color: var(--pricing-fg);
+}
+
+/* FAQ — additive classes for the motion-enhanced rewrite ─────────────── */
+
+.faqShell {
+	padding: 60px 24px 100px;
+	max-width: 780px;
+	margin: 0 auto;
+}
+
+.faqHeader {
+	margin-bottom: 24px;
+}
+
+.faqTitle {
+	font-size: clamp(28px, 3vw, 36px);
+	font-weight: 300;
+	letter-spacing: -0.02em;
+	margin: 0;
+}
+
+.faqIcon {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 18px;
+	display: inline-block;
+	transform-origin: 50% 50%;
+}
+
+/* Lifted from FAQAccordion.tsx inline `style={{ marginBottom: 8 }}` —
+   keeps spacing values in the stylesheet so theme sweeps see them. */
+.faqEyebrow {
+	margin-bottom: 8px;
+}
+
+/* The animated wrapper carries the height transition; the inner div carries
+   the bottom padding so collapse/expand transitions cleanly between 0 and
+   auto without padding-collapse jitter. See FAQAccordion's component-level
+   GOTCHA comment. */
+.faqAnswerInner {
+	padding: 0 0 22px;
 }

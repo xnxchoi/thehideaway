@@ -275,5 +275,16 @@
         "error": "Try again"
       }
     }
+  },
+  "Controlbar": {
+    "search": "Search",
+    "signIn": "Check in",
+    "account": "Account",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "notifications": "Notifications",
+    "theme": "Theme",
+    "highlights": "Highlights"
   }
 }

@@ -55,8 +55,7 @@ export const CheckInButton = ({
 
     let running: Animation[] = [];
 
-    const enter = () => {
-      // cancel any in-flight animations
+    const scan = () => {
       running.forEach((a) => a.cancel());
       running = [];
 
@@ -83,7 +82,7 @@ export const CheckInButton = ({
       });
     };
 
-    const leave = () => {
+    const reset = () => {
       running.forEach((a) => a.cancel());
       running = [];
       paths.forEach((el) => {
@@ -97,12 +96,26 @@ export const CheckInButton = ({
       });
     };
 
-    btn.addEventListener("mouseenter", enter);
-    btn.addEventListener("mouseleave", leave);
+    // Hover-capable pointer (mouse, pen): scan on enter, reset on leave.
+    // Coarse pointer (touch): no hover state, so play the scan once on mount —
+    // discovered, not advertised. Tapping navigates before a second cycle would matter.
+    const hoverCapable =
+      typeof window !== "undefined" &&
+      window.matchMedia("(hover: hover)").matches;
+
+    if (hoverCapable) {
+      btn.addEventListener("pointerenter", scan);
+      btn.addEventListener("pointerleave", reset);
+    } else {
+      scan();
+    }
+
     return () => {
       running.forEach((a) => a.cancel());
-      btn.removeEventListener("mouseenter", enter);
-      btn.removeEventListener("mouseleave", leave);
+      if (hoverCapable) {
+        btn.removeEventListener("pointerenter", scan);
+        btn.removeEventListener("pointerleave", reset);
+      }
     };
   }, []);
 
@@ -110,14 +123,18 @@ export const CheckInButton = ({
     !isCheckInPage && (
       <MotionLink
         id="checker"
+        aria-label="Check-In"
         data-state={navIsOpen}
         key="checker"
         className={cn(
-          "group relative flex items-center hover:border-current! hover:bg-transparent! data-[state=true]:border-current!",
+          "group relative inline-flex min-h-[40px] touch-manipulation items-center justify-center data-[state=true]:border-current!",
+          "max-sm:size-[40px] max-sm:rounded-full sm:gap-2",
+          "[@media(hover:hover)]:hover:border-current! [@media(hover:hover)]:hover:bg-transparent!",
           className
         )}
         href="/sign-in"
         {...rest}
+        //deliberate; parent styling currently messes up the styles
         style={{}}
       >
         <svg
@@ -125,7 +142,7 @@ export const CheckInButton = ({
           width={18}
           height={18}
           viewBox="0 0 24 24"
-          className="m-[1px_8px_0px_0px]"
+          aria-hidden="true"
         >
           {ARC_PATHS.map((d, i) => (
             <path
@@ -133,13 +150,13 @@ export const CheckInButton = ({
               data-arc={i}
               d={d}
               strokeWidth="1.5"
-              className="fill-none stroke-white"
+              className="fill-none stroke-current"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           ))}
         </svg>
-        Check-In
+        <span className="max-sm:sr-only">Check-In</span>
       </MotionLink>
     )
   );
