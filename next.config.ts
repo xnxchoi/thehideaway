@@ -9,7 +9,7 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   : process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["172.30.1.71", "172.20.10.4", "seans-mac-mini.local"],
+  allowedDevOrigins: ["172.30.1.71", "172.20.10.4","sean-mbp.local", "seans-mac-mini.local"],
   images: {
     // Dev-only optimization bypass.
     //   In dev, Payload populate emits absolute same-origin URLs like

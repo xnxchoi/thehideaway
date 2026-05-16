@@ -39,7 +39,7 @@ import s from "./Demimonde.module.scss";
  *   • Standalone keeps the file self-contained — drop into another page
  *     without wiring through the View registry.
  *
- * The HDR (`urban_alley_01_1k.hdr`) is reused from /assets/three/tape/;
+ * The HDR (`urban_alley_01_1k.hdr`) is reused from /assets/three/environments/urban_alley/;
  * already in /public and used by the TapePlayer. No new asset cost.
  *
  * Frozen vs. animated: pattern is static (no u_time in the noise), but
@@ -52,7 +52,7 @@ import s from "./Demimonde.module.scss";
  * remounts the material every frame and breaks materialRef.
  */
 
-const HDR_URL = "/assets/three/tape/urban_alley_01_1k.hdr";
+const HDR_URL = "/assets/three/environments/urban_alley/urban_alley_01_1k.hdr";
 const GRAIN_URL = "/assets/papier.png";
 
 const _marbleUniforms = {

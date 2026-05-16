@@ -89,7 +89,7 @@ useTexture.preload("/assets/three/materials/brushed_metal/normal.jpg");
 // Update these paths once the actual model/env/video files are in place.
 
 const MODEL_URL = "/assets/three/tape/player.gltf";
-const HDR_URL = "/assets/three/tape/urban_alley_01_1k.hdr";
+const HDR_URL = "/assets/three/environments/urban_alley/urban_alley_01_1k.hdr";
 const VIDEO_URL = "/assets/three/tape/Display.mp4";
 
 // ─── Constants ────────────────────────────────────────────────────────────────

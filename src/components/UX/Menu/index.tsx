@@ -3,6 +3,7 @@
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { useLinkPaths } from "@/components/core/Link/Link";
 import { RPLinkPropsWithRef } from "@/components/core/Link/types";
+import { MenuExtras } from "@/components/UX/Menu/MenuExtras";
 import { useTransitionSetter } from "@/components/UX/Transition/useTransitionSetter";
 import { EASING, TWEEN_EASE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
@@ -508,10 +509,7 @@ export const RP_Menu = () => {
           </AnimatePresence>
         </nav>
         <div className="menu__noti-scroller">
-          <div
-            className="notifications__list"
-            style={{ opacity: 0, visibility: "hidden" }}
-          />
+          <MenuExtras />
         </div>
         <p ref={er} className="menu__year" data-themed="color">
           {`\xa9${lastAdjustRealTime}`}

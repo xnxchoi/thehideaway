@@ -30,11 +30,7 @@ export const SideNotch = (props: SideNotchProps) => {
     }
     lastMobile.current = isMobile;
   }, [isMobile]);
-  return wantMobile ? (
-    <MobileNotch sideDrawer={sideDrawer} />
-  ) : (
-    <DeskNotch sideDrawer={sideDrawer} />
-  );
+  return wantMobile ? null : <DeskNotch sideDrawer={sideDrawer} />;
 };
 const DeskNotch = (props: SideNotchProps) => {
   const { sideDrawer = false } = props;
