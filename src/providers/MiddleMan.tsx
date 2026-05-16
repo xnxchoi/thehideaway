@@ -134,6 +134,11 @@ export const MobileProvider = ({ children }: { children: ReactNode }) => {
     const onTouchChange = () => {
       setIsTouch(touchQ.matches);
     };
+    // BUG FIX: the listeners below only fire on CHANGE, never on mount.
+    // Without this initial read, `isTouch` stayed false on every real iPhone
+    // (which matches `(hover: none)` from the start, so the listener never
+    // fires) and the touch-mobile Controlbar / Drawer.Handle never rendered.
+    setIsTouch(touchQ.matches);
     mql.addEventListener("change", onChange);
     touchQ.addEventListener("change", onTouchChange);
 

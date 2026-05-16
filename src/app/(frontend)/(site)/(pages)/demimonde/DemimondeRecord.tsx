@@ -47,7 +47,7 @@ import { cn } from "@/lib/utils";
  * with one material.
  */
 
-const HDR_URL = "/assets/three/tape/urban_alley_01_1k.hdr";
+const HDR_URL = "/assets/three/environments/urban_alley/urban_alley_01_1k.hdr";
 
 const LP_BASE_URL = "/assets/textures/lp/lp_grooves@2x.png";
 const LP_BUMP_URL = "/assets/textures/lp/lp_effects@2x.png";
@@ -194,7 +194,7 @@ interface DemimondeRecordProps {
 
 export function DemimondeRecord({ spinning, className }: DemimondeRecordProps) {
   return (
-    <div className={cn("inset-0 absolute",className )} aria-hidden>
+    <div className={cn("absolute inset-0", className)} aria-hidden>
       <Canvas
         dpr={[1, 2]}
         gl={{

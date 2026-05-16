@@ -86,7 +86,7 @@ function Registerer(
         )) || <></>}
         <Environment
           files={["env_hdr1.webp", "env_hdr1-gainmap.webp", "env_hdr1.json"]}
-          path={"/assets/"}
+          path={"/assets/three/envrionments/hdr1/"}
         ></Environment>
       </View>
     </div>
