@@ -1,15 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef } from "react";
-import {
-  Canvas,
-  extend,
-  useFrame,
-  useLoader,
-  useThree
-} from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import { extend, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { ScreenQuad, shaderMaterial, useTexture } from "@react-three/drei";
-import { useReducedMotion } from "motion/react";
 import {
   EquirectangularReflectionMapping,
   FrontSide,
@@ -18,7 +11,6 @@ import {
   NoColorSpace,
   RepeatWrapping,
   type IUniform,
-  type Mesh,
   type ShaderMaterial,
   type Texture,
   Vector2
@@ -26,30 +18,16 @@ import {
 import { RGBELoader } from "three-stdlib";
 import fragmentShader from "./shaders/marble.frag.glsl";
 import vertexShader from "./shaders/marble.vert.glsl";
-import s from "./Demimonde.module.scss";
 
 /**
- * Demimonde marble — frozen, lit, and metallic. Domain-warped fBM stone
- * pattern with analytical lighting and a HDR envMap reflection on the
- * veins. Renders a Drei <ScreenQuad> inside a standalone R3F <Canvas>.
+ * Marble scene contents — domain-warped fBM stone pattern with analytical
+ * lighting and an HDR envMap reflection on the veins.
  *
- * Why standalone Canvas, not the shared MainInternal canvas via <View>:
- *   • This is a single isolated decorative element inside one page.
- *   • The marble doesn't need to coexist with other 3D scenes here.
- *   • Standalone keeps the file self-contained — drop into another page
- *     without wiring through the View registry.
- *
- * The HDR (`urban_alley_01_1k.hdr`) is reused from /assets/three/tape/;
- * already in /public and used by the TapePlayer. No new asset cost.
- *
- * Frozen vs. animated: pattern is static (no u_time in the noise), but
- * the shader still updates per frame so the cursor highlight + envMap
- * reflection follow your pointer. Reduced-motion users get demand-mode
- * rendering — pattern is computed once, redrawn only on cursor move.
- *
- * Module-scope shaderMaterial registration is critical (matches
- * AmbientGradientMesh): redefining the class per-render unmounts and
- * remounts the material every frame and breaks materialRef.
+ * This module exports the SCENE only (no <Canvas>); the host turntable
+ * mounts a single shared <Canvas> with Drei <View>s so the marble and
+ * the vinyl record share one WebGL context. Putting the Canvas here
+ * (as we used to) means two contexts, two render loops, and two sets
+ * of DPR-rounding quirks to coordinate.
  */
 
 const HDR_URL = "/assets/three/tape/urban_alley_01_1k.hdr";
@@ -84,48 +62,33 @@ type MarbleMaterialRef =
   | null;
 
 interface MarbleSceneProps {
-  reduced: boolean;
-  scale: number;
-  envIntensity: number;
-  grainTile: number;
+  /** Base feature scale. Smaller = larger blotches, bigger = finer veining. */
+  scale?: number;
+  /** HDR envMap reflection strength on metallic veins. */
+  envIntensity?: number;
+  /** Tile multiplier for the paper-grain micro-texture. */
+  grainTile?: number;
 }
 
-/**
- * Inner scene component. Lives inside <Canvas> so it can use R3F hooks.
- * Owns: HDR load, cursor listener, resize sync, useFrame tick.
- */
-function MarbleScene({
-  reduced,
-  scale,
-  envIntensity,
-  grainTile
+export function MarbleScene({
+  scale = 2.0,
+  envIntensity = 0.55,
+  grainTile = 6.0
 }: MarbleSceneProps) {
   const matRef = useRef<MarbleMaterialRef>(null);
-  const meshRef = useRef<Mesh>(null);
-  const { gl, size, invalidate } = useThree();
-  const cursor = useRef(new Vector2(0.5, 0.5));
-  const intensityTarget = useRef(0.4);
-  const intensity = useRef(0.4);
+  const { size, pointer, invalidate } = useThree();
 
-  // Load + configure the HDR equirectangular map. useLoader caches by
-  // URL so multiple <DemimondeMarble> instances share one texture.
+  // HDR for the metallic-vein reflection (loaded once, shared by all uses).
   const envMap = useLoader(RGBELoader, HDR_URL);
   useMemo(() => {
     if (!envMap) return;
     envMap.mapping = EquirectangularReflectionMapping;
-    // Linear filtering keeps the metallic reflection smooth across the
-    // vein crests. Default nearest sampling causes a sparkly aliased
-    // look on low-resolution HDRs.
     envMap.minFilter = LinearFilter;
     envMap.magFilter = LinearFilter;
     envMap.generateMipmaps = false;
     envMap.needsUpdate = true;
   }, [envMap]);
 
-  // Paper-grain micro-texture. Repeat-wrap so tiling factors > 1 give
-  // continuous coverage. NoColorSpace — we sample the .r channel as a
-  // luminance perturbation, not a viewable color, so sRGB→linear
-  // conversion would distort the math.
   const grainMap = useTexture(GRAIN_URL, (t) => {
     t.wrapS = RepeatWrapping;
     t.wrapT = RepeatWrapping;
@@ -136,7 +99,6 @@ function MarbleScene({
     t.needsUpdate = true;
   }) as Texture;
 
-  // Sync resolution + scale + envMap + grain uniforms.
   useEffect(() => {
     const m = matRef.current;
     if (!m) return;
@@ -158,113 +120,34 @@ function MarbleScene({
     invalidate
   ]);
 
-  // Cursor: pointermove on window, mapped to canvas-local (0..1).
-  // Listening on window (not canvas) lets the bloom drift off-disc.
-  useEffect(() => {
-    const canvas = gl.domElement;
-    if (typeof window === "undefined") return;
-    const isCoarse = window.matchMedia?.("(pointer: coarse)").matches;
-    if (isCoarse) {
-      intensityTarget.current = 0.55;
-      return;
-    }
-
-    const onMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const w = Math.max(rect.width, 1);
-      const h = Math.max(rect.height, 1);
-      const x = (e.clientX - rect.left) / w;
-      // ScreenQuad uvs are bottom-left origin; flip y from screen coords.
-      const y = 1.0 - (e.clientY - rect.top) / h;
-      // Soft margin so the bloom continues to drift outside the disc.
-      cursor.current.x = Math.max(-0.2, Math.min(1.2, x));
-      cursor.current.y = Math.max(-0.2, Math.min(1.2, y));
-      const inside = x >= 0 && x <= 1 && y >= 0 && y <= 1;
-      intensityTarget.current = inside ? 1.0 : 0.45;
-      if (reduced) invalidate();
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
-  }, [gl, invalidate, reduced]);
-
   useFrame((_state, delta) => {
     const m = matRef.current;
     if (!m) return;
-
-    // No time advancement — pattern is frozen by design. We still tick
-    // each frame so cursor + intensity uniforms can lerp toward their
-    // targets, which keeps the bloom responsive without animating the
-    // marble itself.
+    // Drei <View> normalizes pointer to [-1, 1] over the view's region;
+    // remap to [0, 1] for the shader and lerp toward the target so the
+    // highlight glides instead of snapping.
+    const targetX = (pointer.x + 1) * 0.5;
+    const targetY = (pointer.y + 1) * 0.5;
     const c = m.uniforms.u_cursor.value;
-    if (reduced) {
-      // demand-mode rendering: lerp can never converge. Snap instead.
-      c.x = cursor.current.x;
-      c.y = cursor.current.y;
-      intensity.current = intensityTarget.current;
-    } else {
-      const alpha = 1 - Math.exp(-delta * 9);
-      c.x = c.x + (cursor.current.x - c.x) * alpha;
-      c.y = c.y + (cursor.current.y - c.y) * alpha;
-      intensity.current =
-        intensity.current +
-        (intensityTarget.current - intensity.current) * alpha;
-    }
-    m.uniforms.u_intensity.value = intensity.current;
+    const alpha = 1 - Math.exp(-delta * 9);
+    c.x = c.x + (targetX - c.x) * alpha;
+    c.y = c.y + (targetY - c.y) * alpha;
+    // A steady intensity reads as "lit object on a table" without the
+    // hover-toggle that previously bounced this value around.
+    m.uniforms.u_intensity.value = 0.75;
   });
 
   return (
-    <ScreenQuad ref={meshRef} frustumCulled={false}>
+    // renderOrder=-1 + depthWrite=false makes the marble paint first,
+    // without claiming any depth. The vinyl disc (and anything else in
+    // the same View's scene) then renders on top via normal depth test.
+    // Without this, the ScreenQuad's clip-space z=0 wins the depth test
+    // against the disc's projected depth (~0.92), and the marble would
+    // occlude the disc — which is exactly the bug we hit with two
+    // separate Views sharing the canvas's depth buffer.
+    <ScreenQuad frustumCulled={false} renderOrder={-1}>
       {/** @ts-expect-error Drei shaderMaterial JSX intrinsic from extend() **/}
-      <marbleShaderMaterial ref={matRef} side={FrontSide} />
+      <marbleShaderMaterial ref={matRef} side={FrontSide} depthWrite={false} />
     </ScreenQuad>
-  );
-}
-
-interface DemimondeMarbleProps {
-  /** Base feature scale. Smaller = larger blotches, bigger = finer veining. */
-  scale?: number;
-  /** HDR envMap reflection strength on metallic veins. 0 = off, ~1 = present, 3 = very showy. */
-  envIntensity?: number;
-  /** Tile multiplier for the paper-grain micro-texture. Lower = larger grain, higher = finer. */
-  grainTile?: number;
-  /** Optional className for the wrapping div (defaults to absolute fill). */
-  className?: string;
-}
-
-export function DemimondeMarble({
-  scale = 2.0,
-  envIntensity = 0.55,
-  grainTile = 6.0,
-  className
-}: DemimondeMarbleProps) {
-  const reduced = useReducedMotion() ?? false;
-
-  return (
-    <div className={className ?? s.marbleHost} aria-hidden>
-      <Canvas
-        dpr={[1, 2]}
-        gl={{
-          antialias: false,
-          alpha: false,
-          powerPreference: "high-performance",
-          preserveDrawingBuffer: false
-        }}
-        // Always-tick even when frozen — cursor lerp needs continuous
-        // frames. Reduced-motion drops to demand mode (cursor snaps so
-        // single frames still produce a correct picture).
-        frameloop={reduced ? "demand" : "always"}
-        flat
-      >
-        <Suspense fallback={null}>
-          <MarbleScene
-            reduced={reduced}
-            scale={scale}
-            envIntensity={envIntensity}
-            grainTile={grainTile}
-          />
-        </Suspense>
-      </Canvas>
-    </div>
   );
 }

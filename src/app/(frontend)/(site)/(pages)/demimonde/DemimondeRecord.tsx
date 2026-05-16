@@ -1,8 +1,13 @@
 "use client";
 
-import { Suspense, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Text, useTexture } from "@react-three/drei";
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import {
+  Environment,
+  PerspectiveCamera,
+  Text,
+  useTexture
+} from "@react-three/drei";
 import {
   type Group,
   LinearFilter,
@@ -11,40 +16,26 @@ import {
   RepeatWrapping,
   SRGBColorSpace
 } from "three";
-import s from "./Demimonde.module.scss";
-import { cn } from "@/lib/utils";
 
 /**
- * DemimondeRecord — the YM.FM vinyl record, rendered as a real PBR
- * mesh in R3F instead of stacked CSS PNG layers.
+ * RecordScene — the YM.FM vinyl record as a real PBR mesh.
  *
- * The LP texture set under /public/assets/textures/lp/ — originally
- * authored as a Photoshop layer stack — becomes a proper Three.js
- * material:
+ * Exports the SCENE only (no <Canvas>) so the host turntable can
+ * share one Canvas with the marble via Drei <View>. The LP texture
+ * set under /public/assets/textures/lp/ becomes the PBR material:
  *
- *   base@2x.png         → map           (albedo: dark vinyl + center area)
- *   lp_grooves@2x.png   → bumpMap       (grayscale → derived normal,
- *                                        so real specular highlights
- *                                        sweep across actual ridges as
- *                                        the record spins under the HDR
- *                                        lighting from urban_alley)
- *   lp_grooves_op75@2x  → roughnessMap  (grooves are rougher than
- *                                        smooth vinyl gaps — lighter
- *                                        in this map = matte, darker =
- *                                        more reflective)
+ *   lp_grooves@2x.png      → map           (albedo)
+ *   lp_effects@2x.png      → bumpMap       (surface relief for the
+ *                                           sweeping highlight)
+ *   lp_grooves_op75@2x.png → roughnessMap
  *
- * Lit by the same urban_alley HDR the marble uses, plus a soft
- * directional fill so the disc has a clear "top-right is brighter"
- * cue regardless of cursor.
+ * Lit by the urban_alley HDR (reused from /assets/three/tape/), with
+ * a soft directional fill so the disc has a clear top-right brighter
+ * cue regardless of cursor position.
  *
- * Center label, text, and spindle live inside the same rotating group,
- * so they spin with the disc — the visually correct behavior (real
- * vinyl labels are glued to the record).
- *
- * Performance: own Canvas (separate from DemimondeMarble) so the two
- * concerns stay isolated. Both are small (~380px), DPR-capped at 2,
- * and the LP one barely costs anything because there's only one mesh
- * with one material.
+ * The center label, text, and spindle live inside the same rotating
+ * group, so they spin with the disc — real vinyl labels are glued to
+ * the record, not floating in front of it.
  */
 
 const HDR_URL = "/assets/three/tape/urban_alley_01_1k.hdr";
@@ -54,19 +45,29 @@ const LP_BUMP_URL = "/assets/textures/lp/lp_effects@2x.png";
 const LP_ROUGH_URL = "/assets/textures/lp/lp_grooves_op75@2x.png";
 
 interface RecordSceneProps {
+  /** Whether the disc is currently rotating. */
   spinning: boolean;
+  /**
+   * Rotation rate in revolutions per second. Defaults to a slow
+   * ambient drift — a real 33⅓ RPM record is 0.555 rps; this is
+   * deliberately calmer than that for a non-distracting idle.
+   */
+  rps?: number;
 }
 
-function RecordScene({ spinning }: RecordSceneProps) {
+export function RecordScene({ spinning, rps = 1 / 16 }: RecordSceneProps) {
   const groupRef = useRef<Group>(null);
   const angle = useRef(0);
 
   // useTexture supports an array → returns parallel array of Textures.
-  // useTexture suspends until ALL load, so the Suspense fallback below
-  // shows nothing until the record is fully ready (no half-loaded look).
+  // useTexture suspends until ALL load, so the Suspense fallback shows
+  // nothing until the record is fully ready (no half-loaded look).
   const [baseMap, bumpMap, roughnessMap] = useTexture(
     [LP_BASE_URL, LP_BUMP_URL, LP_ROUGH_URL],
     () => {
+      // colorSpace matters: the base map is the visible color (sRGB),
+      // the bump and roughness maps are data (NoColorSpace) — applying
+      // sRGB→linear to them would skew the normals and roughness curves.
       baseMap.colorSpace = SRGBColorSpace;
       bumpMap.colorSpace = NoColorSpace;
       roughnessMap.colorSpace = NoColorSpace;
@@ -80,32 +81,27 @@ function RecordScene({ spinning }: RecordSceneProps) {
     }
   );
 
-  // Configure once after textures land. colorSpace matters: the base
-  // map is the visible color (sRGB), the bump and roughness maps are
-  // data (NoColorSpace) — applying sRGB→linear to them would skew the
-  // normals and roughness curves.
-
   useFrame((_state, delta) => {
     const g = groupRef.current;
     if (!g) return;
-    // 4-second period when spinning, exact zero when not. Doing it as
-    // a delta-multiplied integration keeps the angle smooth across
-    // frame-rate variance.
     if (spinning) {
-      angle.current -= ((2 * Math.PI) / 4) * delta;
+      angle.current -= 2 * Math.PI * rps * delta;
       g.rotation.z = angle.current;
     }
   });
 
   return (
     <>
+      {/* Drei <View> defaults to the parent Canvas's camera, which is
+          R3F's default (position z=5, fov 75). That places the disc
+          far enough back that a 0.92-radius circle is barely visible.
+          Anchor a per-view camera at the same position/fov the legacy
+          standalone canvas used so the disc fills the view properly. */}
+      <PerspectiveCamera makeDefault position={[0, 0, 2.5]} fov={35} />
+
       {/* HDR-based image-based lighting. background=false keeps the env
           for reflections only (no skybox showing through the alpha). */}
       <Environment files={HDR_URL} background={false} />
-      {/* Soft ambient + a directional key + a small point sun for a
-          tighter clearcoat glint than the env reflection alone gives.
-          Two-light setup reads as "lit object on a table" rather than
-          "object floating in a uniform room." */}
       <ambientLight intensity={0.4} />
       <directionalLight position={[2.5, 3.5, 4]} intensity={1.6} />
       <pointLight
@@ -116,14 +112,9 @@ function RecordScene({ spinning }: RecordSceneProps) {
       />
 
       <group ref={groupRef}>
-        {/* The vinyl disc.
-            MeshPhysicalMaterial (not Standard) for clearcoat — real
-            pressed vinyl has a glossy plastic shell over the dark base
-            that gives it the rotating sheen. Without clearcoat the
-            surface reads as matte black acrylic, not vinyl.
-            bumpScale 0.03 (not 0.004) because lp_grooves was painted
-            for visual stacking, not as a tight grayscale heightfield —
-            needs more amplitude to register as real surface relief. */}
+        {/* The vinyl disc. MeshPhysicalMaterial (not Standard) for the
+            clearcoat — real pressed vinyl has a glossy plastic shell
+            over the dark base that produces the rotating sheen. */}
         <mesh>
           <circleGeometry args={[0.92, 128]} />
           <meshPhysicalMaterial
@@ -140,10 +131,10 @@ function RecordScene({ spinning }: RecordSceneProps) {
           />
         </mesh>
 
-        {/* Center label — slightly lifted in Z. Tomato-red with mild
-            clearcoat so the print surface picks up a subtle glossy
-            highlight (real labels are slightly glossier than the
-            surrounding vinyl). */}
+        {/* Center label — slightly lifted in Z so it doesn't z-fight the
+            disc. Tomato-red with a mild clearcoat so the print picks up
+            a subtle glossy highlight (real labels are slightly glossier
+            than the surrounding vinyl). */}
         <mesh position={[0, 0, 0.001]}>
           <circleGeometry args={[0.3, 64]} />
           <meshPhysicalMaterial
@@ -153,13 +144,11 @@ function RecordScene({ spinning }: RecordSceneProps) {
             envMapIntensity={0.7}
             clearcoat={0.6}
             clearcoatRoughness={0.3}
-          ></meshPhysicalMaterial>
+          />
         </mesh>
 
-        {/* YM / FM text — Drei's Text is Troika under the hood. No
-            font specified → uses Troika's default sans (Roboto). Italic
-            via custom font would be nicer but adds a font fetch; the
-            default reads well enough at this scale. */}
+        {/* YM / FM text — Drei's <Text> uses Troika under the hood.
+            No font specified → Troika's default sans (Roboto). */}
         <Text
           position={[0, 0, 0.002]}
           fontSize={0.11}
@@ -184,31 +173,5 @@ function RecordScene({ spinning }: RecordSceneProps) {
         </mesh>
       </group>
     </>
-  );
-}
-
-interface DemimondeRecordProps {
-  spinning: boolean;
-  className?: string;
-}
-
-export function DemimondeRecord({ spinning, className }: DemimondeRecordProps) {
-  return (
-    <div className={cn("inset-0 absolute",className )} aria-hidden>
-      <Canvas
-        dpr={[1, 2]}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: "high-performance"
-        }}
-        camera={{ position: [0, 0, 2.5], fov: 35 }}
-        flat
-      >
-        <Suspense fallback={null}>
-          <RecordScene spinning={spinning} />
-        </Suspense>
-      </Canvas>
-    </div>
   );
 }

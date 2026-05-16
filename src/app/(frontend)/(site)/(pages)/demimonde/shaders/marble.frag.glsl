@@ -139,6 +139,17 @@ vec3 sampleEnv(vec3 dir) {
 
 void main() {
   vec2 uv = vUv;
+
+  // Discard pixels outside the inscribed circle so the marble shows as a
+  // disc rather than a rectangle — the host turntable's button is
+  // rounded-full, but the WebGL output lives in the global canvas
+  // overlay (not inside the button's overflow-hidden), so the rounded
+  // clip has to happen here in the shader instead.
+  // Small smoothstep alpha edge avoids a hard aliased rim.
+  vec2 fromCenter = uv - 0.5;
+  float distFromCenter = length(fromCenter);
+  if (distFromCenter > 0.5) discard;
+
   float aspect = max(u_resolution.x, 1.0) / max(u_resolution.y, 1.0);
 
   // Center height + forward differences for normal. eps is two pixels in
