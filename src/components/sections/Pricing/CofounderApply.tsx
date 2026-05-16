@@ -28,11 +28,7 @@ export function CofounderApply() {
           scheme. For mailto: that state never resets because no navigation
           actually happens, leaving the page in a wipe state. The plain anchor
           bypasses the handler entirely. */}
-      <a
-        href={MAILTO}
-        className={s.cofounderCta}
-        rel="noopener noreferrer"
-      >
+      <a href={MAILTO} className={s.cofounderCta} rel="noopener noreferrer">
         Write to us
       </a>
     </section>

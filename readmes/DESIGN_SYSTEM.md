@@ -429,7 +429,6 @@ Applied through the `<Container />` primitive (Iter 3). Never reimplement inline
 ### 5.6 Forbidden
 
 - `px-7` / `py-7` outside the reading-rhythm context — breaks 4-based cadence at small sizes.
-- Any fractional non-standard value (`px-[17px]`, `gap-[22px]`) in app code.
 
 ---
 
@@ -452,7 +451,7 @@ Radius in Hideaway is **small, deliberate, and nearly imperceptible**. The brand
 ### 6.2 Rules
 
 - **All content cards use `--radius-sm`.** Never `rounded-md`, never `rounded-xl`.
-- **Buttons use `--radius-sm`.** Never `rounded-full` unless it is an icon-only play/control button.
+- **Buttons by default have no radius**, unless it is intended to be a pill button; pill buttons must follow the current style closely, and if in the future pill buttons migrate away from scss styling and move fully into tailwind, the existing styling must be recreated exactly how it is configured now.
 - **Images inside cards use the card's radius.** Nested radii feel soft; a card with sharp edges must contain a sharp-edged image.
 - **Avatars are `rounded-full`.** No other element on the page is allowed `rounded-full` unless it is a play control or the Radio "rec" light.
 
@@ -534,7 +533,7 @@ Reduced from thirteen ad-hoc curves to **five canonical easings**:
 | Token | value | Role |
 |---|---|---|
 | `--ease-linear` | `linear` | Progress bars, audio scrubber |
-| `--ease-standard` | `cubic-bezier(0.4, 0, 0.2, 1)` | **Default — 90% of interactions** |
+| `--ease-standard` | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` | **Default — 90% of interactions** |
 | `--ease-decelerate` | `cubic-bezier(0.16, 1, 0.3, 1)` | Entrances (appear, slide-in, grow-in) |
 | `--ease-accelerate` | `cubic-bezier(0.4, 0, 1, 1)` | Exits (disappear, slide-out) |
 | `--ease-emphasized` | `cubic-bezier(0.2, 0, 0, 1)` | Editorial moments (hero, masthead reveals) |

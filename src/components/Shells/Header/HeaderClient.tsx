@@ -85,11 +85,15 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     visibleness.set(visible);
   }, [visible, visibleness]);
 
-  const { isMobile } = useIsMobile();
+  const { isMobile, isTouch } = useIsMobile();
   const mobileState = useMotionValue(isMobile);
   useEffect(() => {
     mobileState.set(isMobile);
   }, [mobileState, isMobile]);
+  // Right-side cluster moves to the bottom Controlbar on touch-mobile.
+  // Desktop-narrow (DevTools, keyboard-only) keeps the header actions —
+  // hot-keys aren't taken away just because the viewport is small.
+  const controlbarOwnsActions = isMobile && isTouch;
   const [toogled, setToogled] = useState(false);
 
   const docInnerRef = useRef<HTMLElement>(null!);
@@ -632,37 +636,38 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
               }}
             >
               <AnimatePresence mode="popLayout" propagate={true}>
-                <SignedIn key="signed-in">
-                  {!isMobile && (
-                    <NotificationProvider user={user!}>
-                      <NotificationButton
-                        style={{
-                          color: themeColour,
-                          backgroundColor: btBackground,
-                          backdropFilter: btBlur
-                        }}
-                      />
-                    </NotificationProvider>
-                  )}
-                  <UserDropdown
-                    style={{
-                      color: themeColour,
-                      backgroundColor: btBackground,
-                      backdropFilter: btBlur
-                    }}
-                  />
-                </SignedIn>
-                <SignedOut key="signed-out">
-                  {!isMobile && (
-                    <CheckInButton
+                {!controlbarOwnsActions && (
+                  <SignedIn key="signed-in">
+                    {!isMobile && (
+                      <NotificationProvider user={user!}>
+                        <NotificationButton
+                          style={{
+                            color: themeColour,
+                            backgroundColor: btBackground,
+                            backdropFilter: btBlur
+                          }}
+                        />
+                      </NotificationProvider>
+                    )}
+                    <UserDropdown
                       style={{
                         color: themeColour,
                         backgroundColor: btBackground,
                         backdropFilter: btBlur
                       }}
                     />
-                  )}
-                </SignedOut>
+                  </SignedIn>
+                )}
+                {!user && !controlbarOwnsActions && (
+                  <CheckInButton
+                    key="signed-out"
+                    style={{
+                      color: themeColour,
+                      backgroundColor: btBackground,
+                      backdropFilter: btBlur
+                    }}
+                  />
+                )}
                 {!isMobile && (
                   <SearchBar
                     key={"search-component"}
@@ -674,14 +679,16 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
                     }}
                   />
                 )}
-                <DarkmodeButton
-                  key={"darkmode-component"}
-                  style={{
-                    color: themeColour,
-                    backgroundColor: btBackground,
-                    backdropFilter: btBlur
-                  }}
-                />
+                {!controlbarOwnsActions && (
+                  <DarkmodeButton
+                    key={"darkmode-component"}
+                    style={{
+                      color: themeColour,
+                      backgroundColor: btBackground,
+                      backdropFilter: btBlur
+                    }}
+                  />
+                )}
               </AnimatePresence>
             </m.div>
           </m.div>

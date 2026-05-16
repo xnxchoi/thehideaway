@@ -62,7 +62,9 @@ export type HA_UI = {
   theme: Theme | string;
   showScrollIndicator: boolean;
   dropdownOpen: boolean;
+  controlbarView: ControlbarView;
 };
+export type ControlbarView = "default" | "notifications" | "search" | "account";
 export type HA_UI_ACT = {
   setSideDrawerRendered: (c: boolean) => void;
   toggleSideDrawerRendered: () => void;
@@ -90,6 +92,8 @@ export type HA_UI_ACT = {
   setDropdownOpen: (nextState: HA_UI["dropdownOpen"]) => void;
   setSnapPoints: (c: Array<number | string>) => void;
   setActiveSnapPoint: (c: number | string | null) => void;
+  setControlbarView: (c: ControlbarView) => void;
+  toggleControlbarView: (c: ControlbarView) => void;
 };
 
 export type HA_MENU = {
@@ -564,7 +568,8 @@ const uiInitState: HA_UI = {
   showFXFrame: true,
   showScrollIndicator: true,
   viewportWidth: 0,
-  viewportHeight: 0
+  viewportHeight: 0,
+  controlbarView: "default"
 };
 
 const navIn: HA_MENU = {
@@ -748,6 +753,14 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
         set({
           navigationPageIsTransitioning: c
         }),
+
+      setControlbarView: (controlbarView) => set({ controlbarView }),
+      toggleControlbarView: (view) =>
+        set((state) => ({
+          ...state,
+          // Tapping the active view a second time returns to default.
+          controlbarView: state.controlbarView === view ? "default" : view
+        })),
 
       setSideDrawerOpen: (openMenu: boolean) =>
         set((state) => {
