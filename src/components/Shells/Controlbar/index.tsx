@@ -3,7 +3,6 @@
 import { UserAvatar } from "@/lib/auth/betterauth-ui/src";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
 import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { useRPStore } from "@/providers/RP_Pro";
@@ -12,12 +11,10 @@ import type { ControlbarView } from "@/stores/RP_Ui";
 import { Bell, Moon, Search, Sun, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import * as m from "motion/react-m";
-import { AnimatePresence } from "motion/react";
 import { useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { CheckInButton } from "../Header/CheckInButton";
 import { PlayPauseButton } from "@/components/UX/TapePlayer";
-import { Button } from "@/components/core/Button";
 
 /**
  * Bottom strip of the Vaul drawer on touch-mobile.
@@ -43,9 +40,6 @@ const ZONE_BTN_ACTIVE = "text-foreground bg-foreground/[0.06]";
 
 export const Controlbar = () => {
   const t = useTranslations("Controlbar");
-  // Self-gate: this surface only exists for touch-mobile. Desktop and
-  // non-touch narrow viewports use the header + keyboard shortcuts.
-  const { isMobile, isTouch } = useIsMobile();
   const userId = useRPSession(useShallow((r) => r.id));
   const isSignedIn = Boolean(userId);
   const hasRadio = useHasRadio();
@@ -54,6 +48,8 @@ export const Controlbar = () => {
   const toggleView = useRPStore((s) => s.toggleControlbarView);
   const setSideDrawerOpen = useRPStore((s) => s.setSideDrawerOpen);
   const sidebarOpen = useRPStore(useShallow((s) => s.sidebarOpen));
+  const searchSheetOpen = useRPStore(useShallow((s) => s.searchSheetOpen));
+  const toggleSearchSheetOpen = useRPStore((s) => s.toggleSearchSheetOpen);
 
   const select = useCallback(
     (next: ControlbarView) => {
@@ -66,83 +62,73 @@ export const Controlbar = () => {
     [toggleView, setSideDrawerOpen, sidebarOpen]
   );
 
-  // Touch-mobile gate: render an empty AnimatePresence on other viewports so
-  // we still get the exit animation when crossing the breakpoint or losing
-  // touch capability. Returning null at the top of the function defeats this.
-  const isTouchMobile = isMobile && isTouch;
+  // Search has its own full-screen overlay (`SearchSheet`) — the legacy
+  // in-drawer "search" controlbar view stays in the type union for
+  // back-compat but is no longer triggered from here.
+  const onSearch = useCallback(
+    () => toggleSearchSheetOpen(),
+    [toggleSearchSheetOpen]
+  );
 
   return (
-    <AnimatePresence>
-      {isTouchMobile && (
-        <m.nav
-          key="cb"
-          data-tour="controlbar"
-          role="navigation"
-          aria-label={t("account")}
-          initial={{ y: 16, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 16, opacity: 0 }}
-          transition={{ type: "spring", bounce: 0.1, duration: 0.35 }}
+    <m.nav
+      data-tour="controlbar"
+      role="navigation"
+      aria-label={t("account")}
+      initial={{ y: 16, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 16, opacity: 0 }}
+      transition={{ type: "spring", bounce: 0.1, duration: 0.35 }}
+      className={cn(
+        "relative w-full flex-none",
+        "border-t border-border/20",
+        "bg-nav-background/95 backdrop-blur-xl",
+        "pb-[calc(env(safe-area-inset-bottom)+12px)]"
+      )}
+    >
+      <div className="mx-auto grid h-16 max-w-[640px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3">
+        <LeftZone hasRadio={hasRadio} themeLabel={t("theme")} />
+
+        <button
+          type="button"
+          aria-label={t("search")}
+          aria-pressed={searchSheetOpen}
+          onClick={onSearch}
           className={cn(
-            // Fixed-bottom global surface. z-[248] sits above the drawer
-            // (z-239) so the bar remains visible when the drawer slides up;
-            // below modals / tour overlays (z-[300]+).
-            "pointer-events-auto fixed inset-x-0 bottom-0 z-[248] w-full",
-            "border-t border-border/20",
-            "bg-nav-background/95 backdrop-blur-xl",
-            // Bottom padding accounts for iOS home indicator (env safe-area)
-            // plus 12px of visual clearance so taps don't graze the swipe
-            // zone.
-            "pb-[calc(env(safe-area-inset-bottom)+12px)]"
+            "group inline-flex h-12 items-center gap-3 rounded-full px-5",
+            "border border-border/30",
+            "touch-manipulation transition-colors",
+            searchSheetOpen
+              ? "bg-foreground/[0.09] text-foreground"
+              : "bg-foreground/[0.04] text-foreground/65 active:bg-foreground/[0.08]"
           )}
         >
-          <div className="mx-auto grid h-16 max-w-[640px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3">
-            <LeftZone hasRadio={hasRadio} themeLabel={t("theme")} />
+          <Search
+            aria-hidden="true"
+            className="size-[18px]"
+            strokeWidth={1.5}
+          />
+          <span className="font-sans text-sm font-normal">{t("search")}</span>
+        </button>
 
-            <button
-              type="button"
-              aria-label={t("search")}
-              aria-pressed={view === "search"}
-              onClick={() => select("search")}
-              className={cn(
-                "group inline-flex h-12 items-center gap-3 rounded-full px-5",
-                "border border-border/30",
-                "touch-manipulation transition-colors",
-                view === "search"
-                  ? "bg-foreground/[0.09] text-foreground"
-                  : "bg-foreground/[0.04] text-foreground/65 active:bg-foreground/[0.08]"
-              )}
-            >
-              <Search
-                aria-hidden="true"
-                className="size-[18px]"
-                strokeWidth={1.5}
-              />
-              <span className="font-sans text-sm font-normal">
-                {t("search")}
-              </span>
-            </button>
-
-            {isSignedIn ? (
-              <div className="flex items-center gap-1">
-                <NotificationsTrigger
-                  active={view === "notifications"}
-                  onClick={() => select("notifications")}
-                  label={t("notifications")}
-                />
-                <AccountTrigger
-                  active={view === "account"}
-                  onClick={() => select("account")}
-                  label={t("account")}
-                />
-              </div>
-            ) : (
-              <CheckInButton className="size-12 rounded-full" />
-            )}
+        {isSignedIn ? (
+          <div className="flex items-center gap-1">
+            <NotificationsTrigger
+              active={view === "notifications"}
+              onClick={() => select("notifications")}
+              label={t("notifications")}
+            />
+            <AccountTrigger
+              active={view === "account"}
+              onClick={() => select("account")}
+              label={t("account")}
+            />
           </div>
-        </m.nav>
-      )}
-    </AnimatePresence>
+        ) : (
+          <CheckInButton className="size-12 rounded-full" />
+        )}
+      </div>
+    </m.nav>
   );
 };
 
@@ -170,7 +156,7 @@ const ThemeButton = ({ label }: { label: string }) => {
   const theme = useTheme((s) => s.theme);
   const isDark = theme === "dark";
   return (
-    <Button
+    <button
       type="button"
       aria-label={label}
       onClick={toggleTheme}
@@ -181,7 +167,7 @@ const ThemeButton = ({ label }: { label: string }) => {
       ) : (
         <Moon aria-hidden="true" className="size-5" strokeWidth={1.5} />
       )}
-    </Button>
+    </button>
   );
 };
 
@@ -244,7 +230,7 @@ const AccountTrigger = ({
   );
   const hasAvatar = Boolean(sessionUser.image);
   return (
-    <Button
+    <button
       type="button"
       aria-label={label}
       aria-pressed={active}
@@ -272,6 +258,6 @@ const AccountTrigger = ({
           strokeWidth={1.5}
         />
       )}
-    </Button>
+    </button>
   );
 };

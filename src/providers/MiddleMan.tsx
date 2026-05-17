@@ -43,7 +43,11 @@ export const MobileContext = createContext<{
 });
 
 export const MobileProvider = ({ children }: { children: ReactNode }) => {
-  const [isTouch, setIsTouch] = useState<boolean>(false);
+  const [isTouch, setIsTouch] = useState<boolean>(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(hover:none)").matches
+      : false
+  );
   const [isMobile, setIsMobile] = useState<boolean>(
     getIsMobile(window.innerWidth)
   );
@@ -128,6 +132,9 @@ export const MobileProvider = ({ children }: { children: ReactNode }) => {
       };
     });
     const touchQ = window.matchMedia("(hover:none)");
+    // Sync once on mount — coarse-pointer devices already match,
+    // so the `change` listener would otherwise never fire.
+    setIsTouch(touchQ.matches);
     const onChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
@@ -151,6 +158,36 @@ export const MobileProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
   }, [resize]);
+
+  // iOS Safari ignores `maximum-scale=1` for accessibility, so the viewport
+  // meta alone does not stop pinch-zoom or double-tap-zoom. Block them
+  // explicitly at the document level on touch surfaces. Desktop is left
+  // alone (browser zoom is a legitimate user need there).
+  useEffect(() => {
+    if (!isTouch) return;
+    const preventGesture = (e: Event) => e.preventDefault();
+    // `gesture*` events are Safari-only; harmless no-op listeners elsewhere.
+    document.addEventListener("gesturestart", preventGesture, {
+      passive: false
+    });
+    document.addEventListener("gesturechange", preventGesture, {
+      passive: false
+    });
+    document.addEventListener("gestureend", preventGesture, {
+      passive: false
+    });
+
+    // Double-tap-to-zoom is handled by `touch-action: manipulation` on
+    // `html` in globals.css — adding a JS `touchend` swallow on top
+    // breaks legitimate fast taps (form-input refocus, repeated button
+    // taps), so we deliberately keep this to gesture-events only.
+
+    return () => {
+      document.removeEventListener("gesturestart", preventGesture);
+      document.removeEventListener("gesturechange", preventGesture);
+      document.removeEventListener("gestureend", preventGesture);
+    };
+  }, [isTouch]);
 
   return (
     <MobileContext.Provider value={{ isTouch, isMobile }}>

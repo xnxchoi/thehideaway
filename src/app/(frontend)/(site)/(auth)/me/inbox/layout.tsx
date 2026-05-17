@@ -1,8 +1,12 @@
-import {currentUser} from "@/lib/auth/context/get-context-props";
-import { NotificationProvider } from "@/providers/Notifications";
+import { currentUser } from "@/lib/auth/context/get-context-props";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+/**
+ * Auth gate only. `NotificationProvider` is mounted globally in
+ * `src/providers/index.tsx`, so the inbox tree can call
+ * `useNotifications()` without an additional wrapper here.
+ */
 export default async function NotificationsLayout({
   children
 }: {
@@ -10,5 +14,5 @@ export default async function NotificationsLayout({
 }) {
   const user = await currentUser();
   if (!user) return redirect("/");
-  return <NotificationProvider user={user.id}>{children}</NotificationProvider>;
+  return <>{children}</>;
 }

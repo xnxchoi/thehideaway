@@ -1,5 +1,3 @@
-"use server";
-import type { Viewport } from "next";
 import { Header } from "../../components/Shells/Header/Component";
 import { Main } from "@/components/core/Main";
 import { Toaster } from "@/components/ui/sonner";
@@ -11,8 +9,9 @@ import { RP_Menu } from "@/components/UX/Menu";
 
 // Client Components (imported dynamically to create islands)
 import { ScrollIndicator } from "@/components/UX/ScrollIndicator";
+import { SearchSheet } from "@/components/UX/SearchSheet";
 import { SideDrawer } from "@/components/UX/SideDrawer";
-import { Controlbar } from "@/components/Shells/Controlbar";
+import { SideDrawerPullTab } from "@/components/UX/SideDrawer/PullTab";
 
 import { BetterAuthProvider } from "@/lib/auth/context";
 import { getContextProps } from "@/lib/auth/context/get-context-props";
@@ -25,6 +24,7 @@ import { InitTheme } from "@/providers/Theme/InitTheme";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "lenis/dist/lenis.css";
+import type { Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import React, { ReactNode, Suspense } from "react";
 import "../../styles/globals.css";
@@ -39,6 +39,18 @@ import {
 } from "../../../fonts";
 import { ClientLayout } from "./ClientLayout";
 import { ClientProviders } from "./ClientProviders";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Allow user-initiated zoom (WCAG 1.4.4 / iOS Safari ignores
+  // `maximum-scale=1` for accessibility anyway). The JS-side gesture
+  // block in `MobileProvider` is what suppresses accidental pinch-zoom
+  // during interaction; this leaves the explicit accessibility lever
+  // intact.
+  maximumScale: 5,
+  viewportFit: "cover"
+};
 
 export default async function RootLayout({
   children
@@ -78,16 +90,6 @@ export default async function RootLayout({
                   <Header />
                   <RP_Menu />
                   <ScrollIndicator />
-                  {/*
-                    Controlbar lives OUTSIDE <Main> alongside Header / Menu /
-                    ScrollIndicator. Inside Main, ContentMask + Lenis wrap
-                    children in transformed containers, which break
-                    `position: fixed` (it becomes fixed relative to the
-                    transformed ancestor, not the viewport — that's why
-                    earlier real-iOS tests showed the bar half-visible /
-                    hidden on scroll).
-                  */}
-                  <Controlbar />
                   <Main>
                     <ClientLayout>
                       <Suspense>
@@ -97,6 +99,8 @@ export default async function RootLayout({
                         <ContentMask>
                           {children}
                           <SideDrawer />
+                          <SideDrawerPullTab />
+                          <SearchSheet />
                         </ContentMask>
                       </Suspense>
                     </ClientLayout>
@@ -110,24 +114,6 @@ export default async function RootLayout({
     </html>
   );
 }
-/**
- * Viewport policy:
- * - Lock to device-width; no pinch-zoom on touch devices. The user-reported
- *   "everything zoomed in / now it's gone" bug came from accidental
- *   pinch-zoom on mobile Safari breaking the layout — disabling user-scale
- *   is the standard fix for an app-shell-shaped experience like this.
- * - `viewportFit: "cover"` lets the page paint into the iOS notch / home
- *   indicator area so our `env(safe-area-inset-bottom)` paddings in the
- *   Controlbar / drawer-body actually have a non-zero value to consume.
- */
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover"
-};
-
 // export const metadata: Metadata = {
 // 	metadataBase: new URL(getServerSideURL()),
 // 	openGraph: mergeOpenGraph(),

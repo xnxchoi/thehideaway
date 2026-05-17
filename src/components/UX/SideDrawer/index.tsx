@@ -2,7 +2,6 @@
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { Drawer } from "@/components/ui/vaul";
 import { SPRING_EASE } from "@/constants/animations";
-import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/providers/MiddleMan";
 import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { useCursor, useRPStore } from "@/providers/RP_Pro";
@@ -24,6 +23,7 @@ import {
   useMemo
 } from "react";
 import { useShallow } from "zustand/shallow";
+import { Controlbar } from "../../Shells/Controlbar";
 import {
   AccountView,
   NotificationsView,
@@ -330,27 +330,10 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {isNarrow && isTouch && (
-            // z-[240] forces the handle above the drawer body's z-239 inner
-            // shell (which paints its own bg-nav-background and would
-            // otherwise cover the handle).
-            //
-            // SIZING NOTE: the project resolves 1rem = 10px (see CLAUDE.md
-            // "10px rem"). Vaul's default `!w-12 !h-1.5` uses Tailwind 3
-            // prefix-! syntax that's a no-op in Tailwind 4, so the handle
-            // ships at 0 / 3.75px. We force exact pixel sizes via arbitrary
-            // values to bypass the rem-scale gotcha entirely.
-            //
-            // Color at /70 sits above the legibility floor for an interactive
-            // affordance — under /55 the pill disappears against the dark
-            // nav-background and the user can't find the drag handle.
-            <Drawer.Handle
-              className={cn(
-                "absolute! top-[10px] left-1/2 z-[240] my-0! -translate-x-1/2",
-                "h-[6px]! w-[44px]! rounded-full bg-foreground/70!"
-              )}
-            />
-          )}
+          {/* Closed-state handle lives outside the drawer as
+              `SideDrawerPullTab`. When the drawer is open, users drag down
+              on the body to dismiss — no in-drawer handle needed.
+              Keeping both visible produced a "two handles" issue on iOS. */}
           {open && (
             <m.div
               key={"drawer-backdrop"}
@@ -371,14 +354,7 @@ export const SideDrawer = () => {
             - Desktop (≥ md): original 8×14 grid, kept intact.
           */}
           <m.div
-            className={cn(
-              "z-239 flex h-[65dvh] w-full flex-col bg-nav-background",
-              // Mobile: top room for the drag handle (28px) plus bottom room
-              // for the globally-mounted Controlbar (4rem zone + safe-area +
-              // 12px), so drawer content never disappears behind either.
-              "max-md:pt-7 max-md:pb-[calc(4rem+env(safe-area-inset-bottom)+12px)]",
-              "md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
-            )}
+            className="z-239 flex h-[65dvh] w-full flex-col bg-nav-background max-md:pt-7 md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
             key={"drawer-body"}
             onMouseEnter={() => {
               setCursor(null);
@@ -415,7 +391,7 @@ export const SideDrawer = () => {
                         ) : controlbarView === "account" ? (
                           <AccountView key="v-account" />
                         ) : (
-                          <></>
+                          <DefaultLinks key="v-default" links={sd} />
                         )}
                       </AnimatePresence>
                     ) : (
@@ -446,13 +422,11 @@ export const SideDrawer = () => {
                 </>
               )}
             </AnimatePresence>
-            {/* Controlbar is mounted globally (see layout.tsx). It overlays the
-                drawer's bottom edge on touch-mobile via z-index, so we don't
-                render it here. The drawer body adds bottom padding (below) to
-                clear the Controlbar's visible height so its contents stay
-                readable when the drawer is open. */}
+            {/* Controlbar — bottom strip of the drawer on touch-mobile.
+                In-flow (no fixed positioning) so drawer content stays above. */}
+            {isNarrow && isTouch && <Controlbar key={"ctrlbar-drawer"} />}
           </m.div>
-          {(!isNarrow || !isTouch) && (
+          {!(isNarrow && isTouch) && (
             <AnimatePresence>
               <SideNotch key={"notch-drawer"} sideDrawer={true} />
             </AnimatePresence>
