@@ -278,6 +278,7 @@
   },
   "Controlbar": {
     "search": "Search",
+    "closeSearch": "Close search",
     "signIn": "Check in",
     "account": "Account",
     "profile": "Profile",

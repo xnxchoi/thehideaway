@@ -186,6 +186,9 @@ html {
     font-family: var(--font-sans), sans-serif;
     font-size: 62.5%;
     background: oklch(from var(--bg) l c h / 0);
+    /* Suppress iOS double-tap-zoom and Android tap-delay. The JS gesture
+       guard in MobileProvider handles pinch-zoom; this handles the rest. */
+    touch-action: manipulation;
 }
 
 html::-webkit-scrollbar,

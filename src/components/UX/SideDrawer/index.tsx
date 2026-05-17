@@ -322,7 +322,7 @@ export const SideDrawer = () => {
         )}
         <Mrawer
           data-tour="side-drawer"
-          className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-nav-foreground outline-none max-md:h-[65vh] max-md:w-screen md:top-0"
+          className="fixed bottom-0 z-239 flex w-[calc(24vw+40px)] items-end gap-0 text-nav-foreground outline-none max-md:h-[65dvh] max-md:w-screen md:top-0"
           style={{
             borderTopRightRadius: borderTopRadius,
             borderTopLeftRadius: borderTopRadius,
@@ -330,13 +330,10 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {isNarrow && isTouch && (
-            <Drawer.Handle
-              className={
-                "absolute! top-3 left-1/2 my-0! -translate-x-1/2 bg-foreground/25!"
-              }
-            />
-          )}
+          {/* Closed-state handle lives outside the drawer as
+              `SideDrawerPullTab`. When the drawer is open, users drag down
+              on the body to dismiss — no in-drawer handle needed.
+              Keeping both visible produced a "two handles" issue on iOS. */}
           {open && (
             <m.div
               key={"drawer-backdrop"}
@@ -357,7 +354,7 @@ export const SideDrawer = () => {
             - Desktop (≥ md): original 8×14 grid, kept intact.
           */}
           <m.div
-            className="z-239 flex h-[65vh] w-full flex-col bg-nav-background max-md:pt-7 md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
+            className="z-239 flex h-[65dvh] w-full flex-col bg-nav-background max-md:pt-7 md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
             key={"drawer-body"}
             onMouseEnter={() => {
               setCursor(null);
