@@ -13,28 +13,32 @@
 #   As root on the VPS, from the cloned repo:
 #     bash scripts/first-deploy.sh \
 #         --deploy-key "ssh-ed25519 AAAA... your-pubkey" \
-#         --image-tag <git-sha-or-tag>
+#         --ghcr-user xnxchoi \
+#         --ghcr-pat  ghp_xxxxxxxxxxxxxxxxxxxx
 #
 #   Options:
 #     --deploy-key KEY       (required) The deploy user's SSH pubkey, passed
 #                            through to server-setup.sh. Anything that
 #                            authorized_keys accepts is fine.
-#     --image-tag TAG        (required) Docker image tag prod.sh will deploy.
-#                            Usually a git SHA. Image must be loadable on the
-#                            VPS (docker images | grep <tag>) before this
-#                            script reaches phase 7, otherwise prod.sh will
-#                            fail at the pull step.
+#     --ghcr-user USER       (required unless --skip-ghcr) GitHub username
+#                            that owns the PAT used to pull from ghcr.io.
+#     --ghcr-pat  TOKEN      (required unless --skip-ghcr) Fine-grained PAT
+#                            with `read:packages`. Stored in the deploy user's
+#                            ~/.docker/config.json so subsequent pulls work.
+#     --image-tag TAG        (default: latest) Image tag prod.sh will deploy.
+#                            CI publishes both <short-sha> and `latest` on
+#                            every push to the `deploy` branch — usually you
+#                            leave this unset.
+#     --registry REG         (default: ghcr.io/xnxchoi/hideaway) Image base
+#                            without the :tag suffix.
 #     --domain DOMAIN        (default: hideawayseoul.com) Domain to verify
 #                            DNS for and request a TLS cert for.
-#     --skip-dns             Bypass the DNS poll (useful if you know DNS is
-#                            slow and you've staged the cert another way).
-#     --skip-cert            Bypass certbot (useful if cert already exists
-#                            at /etc/letsencrypt/live/$DOMAIN/).
-#     --skip-gh-key          Bypass the GitHub deploy key step (useful if
-#                            the deploy user already has a working ssh
-#                            identity for github.com).
-#     --skip-setup           Bypass scripts/server-setup.sh (re-run only the
-#                            deploy bits on an already-provisioned box).
+#     --skip-dns             Bypass the DNS poll.
+#     --skip-cert            Bypass certbot.
+#     --skip-gh-key          Bypass the GitHub deploy key step.
+#     --skip-ghcr            Bypass the ghcr.io login step (useful if auth
+#                            is already configured for the deploy user).
+#     --skip-setup           Bypass scripts/server-setup.sh.
 #     -h | --help            Show this.
 #
 # ── What it does (each phase is idempotent) ──────────────────────────────────
@@ -42,14 +46,14 @@
 #   2. server-setup.sh — OS hardening, Docker, certbot, deploy user.
 #   3. DNS check — poll until $DOMAIN resolves to this machine's public IP.
 #   4. TLS — certbot certonly --standalone for $DOMAIN.
-#   5. GitHub deploy key — generate ed25519, print pubkey, pause for you to
-#      paste it into the repo's Settings → Deploy keys, verify SSH auth.
-#      Skipped automatically when origin URL isn't on github.com.
-#   6. Repo sync — clone or fast-forward into /home/deploy/thehideaway as
-#      the deploy user. Source: this repo's `origin` remote (rewritten to
-#      SSH form so the deploy key is used).
-#   7. Pre-flight — validate .env.production has no placeholders, and the
-#      asset tree under /opt/thehideaway/assets is populated.
+#   5. GitHub auth — (a) generate ed25519 deploy key, print pubkey, pause for
+#      you to paste it into the repo's Settings → Deploy keys; (b) docker
+#      login ghcr.io with the supplied PAT so prod.sh can pull the image.
+#   6. Repo sync — clone or fast-forward `deploy` branch into
+#      /home/deploy/thehideaway as the deploy user.
+#   7. Pre-flight — validate .env.production has no placeholders, asset tree
+#      under /opt/thehideaway/assets is populated, and the image tag is
+#      reachable on ghcr.io.
 #   8. First deploy — ensure docker network, `prod.sh --full` (deploy +
 #      migrate). Then health-check by hitting the local nginx.
 #
@@ -82,11 +86,16 @@ DEPLOY_REPO="${DEPLOY_HOME}/thehideaway"
 
 # ── Defaults / args ──────────────────────────────────────────────────────────
 DEPLOY_KEY=""
-IMAGE_TAG=""
+GHCR_USER=""
+GHCR_PAT=""
+IMAGE_TAG="latest"
+REGISTRY="ghcr.io/xnxchoi/hideaway"
+DEPLOY_BRANCH="deploy"
 DOMAIN="hideawayseoul.com"
 SKIP_DNS=false
 SKIP_CERT=false
 SKIP_GH_KEY=false
+SKIP_GHCR=false
 SKIP_SETUP=false
 
 usage() { sed -n '2,/^set -Eeuo/p' "$0" | sed -n '2,/^$/p' | sed 's/^# \{0,1\}//'; }
@@ -94,11 +103,16 @@ usage() { sed -n '2,/^set -Eeuo/p' "$0" | sed -n '2,/^$/p' | sed 's/^# \{0,1\}//
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --deploy-key)  DEPLOY_KEY="$2";   shift 2 ;;
+    --ghcr-user)   GHCR_USER="$2";    shift 2 ;;
+    --ghcr-pat)    GHCR_PAT="$2";     shift 2 ;;
     --image-tag)   IMAGE_TAG="$2";    shift 2 ;;
+    --registry)    REGISTRY="$2";     shift 2 ;;
+    --branch)      DEPLOY_BRANCH="$2"; shift 2 ;;
     --domain)      DOMAIN="$2";       shift 2 ;;
     --skip-dns)    SKIP_DNS=true;     shift ;;
     --skip-cert)   SKIP_CERT=true;    shift ;;
     --skip-gh-key) SKIP_GH_KEY=true;  shift ;;
+    --skip-ghcr)   SKIP_GHCR=true;    shift ;;
     --skip-setup)  SKIP_SETUP=true;   shift ;;
     -h|--help)     usage; exit 0 ;;
     *)             error "Unknown argument: $1 (try --help)"; exit 2 ;;
@@ -106,7 +120,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -z "${DEPLOY_KEY}" ]] && { error "--deploy-key is required (see --help)"; exit 2; }
-[[ -z "${IMAGE_TAG}"  ]] && { error "--image-tag is required (see --help)"; exit 2; }
+if [[ "${SKIP_GHCR}" != true ]]; then
+  [[ -z "${GHCR_USER}" ]] && { error "--ghcr-user is required (or pass --skip-ghcr)"; exit 2; }
+  [[ -z "${GHCR_PAT}"  ]] && { error "--ghcr-pat is required (or pass --skip-ghcr)";  exit 2; }
+fi
 
 # ── Phase 1: Sanity ──────────────────────────────────────────────────────────
 heading "Phase 1/8: Sanity checks"
@@ -125,8 +142,10 @@ if [[ ! -x "${SCRIPT_DIR}/server-setup.sh" ]]; then
   exit 1
 fi
 info "Running as root on $(lsb_release -sd 2>/dev/null || uname -sr)"
-info "Domain: ${BOLD}${DOMAIN}${NC}"
-info "Image tag: ${BOLD}${IMAGE_TAG}${NC}"
+info "Domain:     ${BOLD}${DOMAIN}${NC}"
+info "Registry:   ${BOLD}${REGISTRY}${NC}"
+info "Image tag:  ${BOLD}${IMAGE_TAG}${NC}"
+info "Branch:     ${BOLD}${DEPLOY_BRANCH}${NC}"
 
 # ── Phase 2: server-setup.sh ─────────────────────────────────────────────────
 heading "Phase 2/8: server-setup.sh (OS hardening, Docker, certbot)"
@@ -305,8 +324,26 @@ EOF
   fi
 fi
 
+# ── Phase 5b: ghcr.io login (so prod.sh can pull the image) ──────────────────
+# `docker login` writes ~/.docker/config.json for the user that ran it.
+# We run it as the deploy user so subsequent `docker pull` (via prod.sh) works
+# from the same identity.
+if [[ "${SKIP_GHCR}" == true ]]; then
+  warn "Skipping ghcr.io login (--skip-ghcr). prod.sh pull will fail if not already configured."
+else
+  info "Logging in to ghcr.io as ${GHCR_USER} (deploy user)..."
+  # --password-stdin keeps the PAT out of process listings / shell history.
+  if ! printf '%s' "${GHCR_PAT}" | sudo -u deploy docker login ghcr.io \
+        --username "${GHCR_USER}" --password-stdin >/dev/null; then
+    error "ghcr.io login failed. Check that the PAT has 'read:packages' scope"
+    error "and that the user '${GHCR_USER}' has pull access to ${REGISTRY}."
+    exit 7
+  fi
+  info "ghcr.io login persisted to /home/deploy/.docker/config.json"
+fi
+
 # ── Phase 6: Repo sync ───────────────────────────────────────────────────────
-heading "Phase 6/8: Sync repo into ${DEPLOY_REPO}"
+heading "Phase 6/8: Sync repo into ${DEPLOY_REPO} (branch: ${DEPLOY_BRANCH})"
 
 # Rewrite https://github.com/owner/repo[.git] → git@github.com:owner/repo.git
 # so the clone uses the deploy key configured above. Leaves non-GitHub URLs
@@ -319,24 +356,54 @@ else
 fi
 
 # Clone or pull as the deploy user (Docker group membership matters for prod.sh).
+# Branch: ${DEPLOY_BRANCH} — the lean, ghcr.io-buildable branch (typically `deploy`).
 if [[ ! -d "${DEPLOY_REPO}/.git" ]]; then
-  info "Cloning ${CLONE_URL} into ${DEPLOY_REPO}..."
-  sudo -u deploy git clone "${CLONE_URL}" "${DEPLOY_REPO}"
+  info "Cloning ${CLONE_URL} (branch: ${DEPLOY_BRANCH}) into ${DEPLOY_REPO}..."
+
+  # If the operator pre-staged .env.production in the target dir (per
+  # LAUNCH.md Step 3), `git clone` will refuse a non-empty target. Move
+  # the env file aside, clone, move it back.
+  STAGED_ENV=""
+  if [[ -f "${DEPLOY_REPO}/.env.production" ]]; then
+    STAGED_ENV="$(mktemp)"
+    info "Pre-staged .env.production found — preserving across clone."
+    mv "${DEPLOY_REPO}/.env.production" "${STAGED_ENV}"
+  fi
+
+  # Clone needs an empty dir; on a fresh box server-setup.sh created the dir
+  # empty, but on re-runs it may contain stray files — fail loudly rather
+  # than silently nuking unrecognized content.
+  if [[ -d "${DEPLOY_REPO}" ]] && [[ -n "$(ls -A "${DEPLOY_REPO}" 2>/dev/null || true)" ]]; then
+    error "${DEPLOY_REPO} exists and is not empty. Inspect and clear it before re-running."
+    [[ -n "${STAGED_ENV}" ]] && error "Pre-staged env saved to ${STAGED_ENV}."
+    exit 1
+  fi
+
+  sudo -u deploy git clone --branch "${DEPLOY_BRANCH}" "${CLONE_URL}" "${DEPLOY_REPO}"
+
+  if [[ -n "${STAGED_ENV}" ]]; then
+    info "Restoring pre-staged .env.production into the clone."
+    install -o deploy -g deploy -m 600 "${STAGED_ENV}" "${DEPLOY_REPO}/.env.production"
+    rm -f "${STAGED_ENV}"
+  fi
 else
   info "Repo already cloned at ${DEPLOY_REPO} — fetching latest..."
-  # Make sure the remote URL matches CLONE_URL on re-run (in case origin
-  # was first cloned via https and we've now configured the deploy key).
   current_origin=$(sudo -u deploy git -C "${DEPLOY_REPO}" config --get remote.origin.url || echo "")
   if [[ "${current_origin}" != "${CLONE_URL}" ]]; then
     info "Updating remote.origin.url: ${current_origin} → ${CLONE_URL}"
     sudo -u deploy git -C "${DEPLOY_REPO}" remote set-url origin "${CLONE_URL}"
   fi
   sudo -u deploy git -C "${DEPLOY_REPO}" fetch --all --prune
+  current_branch=$(sudo -u deploy git -C "${DEPLOY_REPO}" rev-parse --abbrev-ref HEAD)
+  if [[ "${current_branch}" != "${DEPLOY_BRANCH}" ]]; then
+    info "Switching from ${current_branch} to ${DEPLOY_BRANCH}..."
+    sudo -u deploy git -C "${DEPLOY_REPO}" checkout "${DEPLOY_BRANCH}"
+  fi
   sudo -u deploy git -C "${DEPLOY_REPO}" pull --ff-only
 fi
 
-# ── Phase 6: Pre-flight ──────────────────────────────────────────────────────
-heading "Phase 7/8: Pre-flight (.env.production + asset tree)"
+# ── Phase 7: Pre-flight ──────────────────────────────────────────────────────
+heading "Phase 7/8: Pre-flight (.env.production + asset tree + image manifests)"
 
 ENV_FILE="${DEPLOY_REPO}/.env.production"
 if [[ ! -f "${ENV_FILE}" ]]; then
@@ -375,20 +442,38 @@ else
   warn "asset-bootstrap.sh not found — skipping asset check."
 fi
 
-# Confirm the image is loadable BEFORE prod.sh tries to pull (which would
-# otherwise fail at a less helpful stage).
-REGISTRY="${REGISTRY:-hideaway}"
-if ! docker image inspect "${REGISTRY}:${IMAGE_TAG}" >/dev/null 2>&1; then
-  warn "Image ${REGISTRY}:${IMAGE_TAG} not present locally."
-  warn "prod.sh will attempt to pull. If that fails:"
-  warn "  • From your dev machine: docker save ${REGISTRY}:${IMAGE_TAG} | ssh root@<host> 'docker load'"
-  warn "  • Or push to a registry the VPS can pull from."
-  warn "Continuing — prod.sh will surface the real error if pull fails."
-else
-  info "Image ${REGISTRY}:${IMAGE_TAG} is loadable locally."
-fi
+# Confirm BOTH images (runtime + migrate) are reachable on ghcr.io BEFORE
+# prod.sh tries to pull. `docker manifest inspect` hits the registry HEAD
+# without downloading layers, so it surfaces auth + missing-tag failures
+# cheaply. We keep stderr so 401 (auth) is distinguishable from 404 (missing).
+check_manifest() {
+  local image="$1"
+  local out
+  if out=$(sudo -u deploy docker manifest inspect "${image}" 2>&1 >/dev/null); then
+    info "  ✓ ${image}"
+    return 0
+  fi
+  error "Could not fetch manifest for ${image}."
+  echo "${out}" | sed 's/^/    /' >&2
+  if echo "${out}" | grep -qiE "unauthorized|denied|forbidden"; then
+    error "Looks like an AUTH failure. Verify the PAT:"
+    error "  sudo -u deploy docker login ghcr.io   # should succeed"
+    error "  PAT needs 'read:packages' AND access granted to this specific package."
+    error "  At https://github.com/users/${GHCR_USER:-xnxchoi}/packages/container/${image##*/}/settings"
+    error "  ensure visibility is correct (private packages need explicit PAT access)."
+  elif echo "${out}" | grep -qiE "manifest unknown|not found"; then
+    error "Tag does not exist on the registry."
+    error "  Check Actions: https://github.com/${REPO_SLUG:-xnxchoi/thehideaway}/actions"
+    error "  If using --image-tag <sha>, make sure that SHA was built and published."
+  fi
+  return 1
+}
 
-# ── Phase 7: First deploy ────────────────────────────────────────────────────
+info "Checking image manifests on the registry..."
+check_manifest "${REGISTRY}:${IMAGE_TAG}"          || exit 3
+check_manifest "${REGISTRY}-migrate:${IMAGE_TAG}"  || exit 3
+
+# ── Phase 8: First deploy ────────────────────────────────────────────────────
 heading "Phase 8/8: First deploy (network, migrate, up, health)"
 
 # Docker network — prod.sh creates it via ensure_network, but creating it

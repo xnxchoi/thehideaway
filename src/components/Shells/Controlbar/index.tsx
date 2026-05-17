@@ -3,6 +3,7 @@
 import { UserAvatar } from "@/lib/auth/betterauth-ui/src";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
 import { useHasRadio } from "@/providers/HideawayFM/hooks";
 import { useRPStore } from "@/providers/RP_Pro";
@@ -11,35 +12,51 @@ import type { ControlbarView } from "@/stores/RP_Ui";
 import { Bell, Moon, Search, Sun, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import * as m from "motion/react-m";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useShallow } from "zustand/shallow";
 import { CheckInButton } from "../Header/CheckInButton";
 import { PlayPauseButton } from "@/components/UX/TapePlayer";
 
 /**
- * Bottom strip of the Vaul drawer on touch-mobile.
+ * Persistent bottom strip on touch-mobile.
+ *
+ * Mounted once at the layout level (sibling of `<SideDrawer/>` and
+ * `<SearchSheet/>`) so it stays visible regardless of Drawer / Menu
+ * state. Self-gates on `isMobile && isTouch`, and hides while the
+ * full-screen `SearchSheet` is up (the sheet has its own dismissal UI).
  *
  * Zones — left | center | right:
  *   Left:   PlayPauseButton (when a radio session is loaded) → falls back
  *           to ThemeButton when no radio. Toggles audio in place; never
  *           changes the controlbar view or opens the drawer.
- *   Center: Search pill — flips to the "search" view.
+ *   Center: Search pill — opens the SearchSheet.
  *   Right:  Signed-in → NotificationsTrigger (bell + unread badge) +
- *           AccountTrigger (avatar). Notifications flips to the "notifications"
- *           view, account to the "account" view.
+ *           AccountTrigger (avatar). Notifications flips the drawer to
+ *           the "notifications" view, account to "account".
  *           Signed-out → CheckInButton (auth entry).
  *
- * The drawer's middle slot is view-driven via `controlbarView` in RP_Ui.
- * Tapping a view-trigger flips the view and opens the drawer; tapping the
- * active trigger collapses back to the default (nav links) view.
+ * Stacking:
+ *   z-[265]  Controlbar (this)              ← top-most persistent surface
+ *   z-[260/261]  SearchSheet                ← Controlbar floats over it
+ *   z-[248]  Menu (`menu__body`)
+ *   z-[239]  SideDrawer
+ *   z-[238]  SideDrawerPullTab
+ *
+ * Portaled to <body> so that transformed ancestors in the layout tree
+ * (Lenis wrappers, ContentMask's motion.divs, the LazyMotion subtree)
+ * don't turn `position: fixed` into ancestor-relative positioning. The
+ * same issue that pushed the PullTab off-center clipped the bar
+ * vertically here.
  */
 
 const ZONE_BTN =
-  "inline-flex size-12 items-center justify-center rounded-full touch-manipulation text-foreground/75 active:bg-foreground/[0.06] active:text-foreground transition-colors";
-const ZONE_BTN_ACTIVE = "text-foreground bg-foreground/[0.06]";
+  "inline-flex size-12 items-center justify-center rounded-full touch-manipulation text-nav-foreground/75 active:bg-nav-foreground/[0.06] active:text-nav-foreground transition-colors";
+const ZONE_BTN_ACTIVE = "text-nav-foreground bg-nav-foreground/[0.06]";
 
 export const Controlbar = () => {
   const t = useTranslations("Controlbar");
+  const { isMobile, isTouch } = useIsMobile();
   const userId = useRPSession(useShallow((r) => r.id));
   const isSignedIn = Boolean(userId);
   const hasRadio = useHasRadio();
@@ -50,27 +67,50 @@ export const Controlbar = () => {
   const sidebarOpen = useRPStore(useShallow((s) => s.sidebarOpen));
   const searchSheetOpen = useRPStore(useShallow((s) => s.searchSheetOpen));
   const toggleSearchSheetOpen = useRPStore((s) => s.toggleSearchSheetOpen);
+  const navIsOpen = useRPStore(useShallow((s) => s.navIsOpen));
+  const setNavIsOpen = useRPStore((s) => s.setNavIsOpen);
 
   const select = useCallback(
     (next: ControlbarView) => {
-      // If we're closed, opening to the requested view.
-      // If we're open, tapping the active button collapses to default
-      // (and stays open at default), tapping a different button swaps view.
+      // Tapping a view-trigger flips the drawer to that view. If the
+      // Menu is up, close it first so the user actually sees the drawer
+      // (the Menu paints over the drawer at z-248).
       toggleView(next);
       if (!sidebarOpen) setSideDrawerOpen(true);
+      if (navIsOpen) setNavIsOpen(false);
     },
-    [toggleView, setSideDrawerOpen, sidebarOpen]
+    [toggleView, setSideDrawerOpen, sidebarOpen, navIsOpen, setNavIsOpen]
   );
 
-  // Search has its own full-screen overlay (`SearchSheet`) — the legacy
-  // in-drawer "search" controlbar view stays in the type union for
-  // back-compat but is no longer triggered from here.
-  const onSearch = useCallback(
-    () => toggleSearchSheetOpen(),
-    [toggleSearchSheetOpen]
-  );
+  // iOS Safari only summons the soft keyboard from `input.focus()` calls
+  // made INSIDE a user-gesture handler. Calling focus from a useEffect
+  // after the sheet animates in falls outside that window — the input
+  // gets focused programmatically but no keyboard appears. The fix is
+  // a "focus keeper" decoy: synchronously focus this offscreen input
+  // from the click handler (still in gesture context, so iOS opens the
+  // keyboard); the SearchSheet then transfers focus to the real input
+  // on mount via `useLayoutEffect`, and the keyboard slides over to the
+  // new target without ever closing.
+  const focusKeeperRef = useRef<HTMLInputElement>(null);
+  const onSearch = useCallback(() => {
+    if (!searchSheetOpen) focusKeeperRef.current?.focus();
+    toggleSearchSheetOpen();
+  }, [searchSheetOpen, toggleSearchSheetOpen]);
 
-  return (
+  // Portal target resolved client-side; null on SSR (correct — touch-only UI).
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
+
+  // Touch-mobile-only. We deliberately keep rendering the bar while the
+  // SearchSheet is open (the sheet sits below the bar's z-index) so the
+  // iOS keyboard-keeper input stays mounted across the open transition.
+  // Unmounting it would defocus the decoy before the real sheet input
+  // takes focus, and iOS would drop the keyboard.
+  if (!(isMobile && isTouch) || !portalTarget) return null;
+
+  return createPortal(
     <m.nav
       data-tour="controlbar"
       role="navigation"
@@ -80,13 +120,25 @@ export const Controlbar = () => {
       exit={{ y: 16, opacity: 0 }}
       transition={{ type: "spring", bounce: 0.1, duration: 0.35 }}
       className={cn(
-        "relative w-full flex-none",
-        "border-t border-border/20",
-        "bg-nav-background/95 backdrop-blur-xl",
+        // Fixed bottom strip — see stacking notes in the component
+        // docblock. Above SearchSheet (z-260/261) so it stays accessible
+        // while the sheet is open.
+        "fixed inset-x-0 bottom-0 z-[265]",
+        // `touch-none` blocks pan/scroll gestures started on the bar
+        // from propagating to body. Tap-clicks on the inner buttons
+        // still synthesize normally. Without this, a drag on the bar
+        // (which sits above the SearchSheet) scrolled the page behind.
+        "touch-none",
+        "border-t border-nav-foreground/20",
+        "bg-nav-background/95 text-nav-foreground backdrop-blur-xl",
         "pb-[calc(env(safe-area-inset-bottom)+12px)]"
       )}
     >
-      <div className="mx-auto grid h-16 max-w-[640px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3">
+      {/* Inner grid: horizontal padding bumped to match the FXFrame's
+          lateral inset (~10px) plus a small breathing margin, so the
+          login / play-pause / account buttons don't crowd the viewport
+          edges. Inner gap stays the same. */}
+      <div className="mx-auto grid h-16 max-w-[640px] grid-cols-[auto_1fr_auto] items-center gap-2 px-[18px]">
         <LeftZone hasRadio={hasRadio} themeLabel={t("theme")} />
 
         <button
@@ -96,11 +148,11 @@ export const Controlbar = () => {
           onClick={onSearch}
           className={cn(
             "group inline-flex h-12 items-center gap-3 rounded-full px-5",
-            "border border-border/30",
+            "border border-nav-foreground/30",
             "touch-manipulation transition-colors",
             searchSheetOpen
-              ? "bg-foreground/[0.09] text-foreground"
-              : "bg-foreground/[0.04] text-foreground/65 active:bg-foreground/[0.08]"
+              ? "bg-nav-foreground/[0.09] text-nav-foreground"
+              : "bg-nav-foreground/[0.04] text-nav-foreground/65 active:bg-nav-foreground/[0.08]"
           )}
         >
           <Search
@@ -128,7 +180,33 @@ export const Controlbar = () => {
           <CheckInButton className="size-12 rounded-full" />
         )}
       </div>
-    </m.nav>
+      {/* iOS keyboard focus-keeper. See `onSearch` above for the
+          rationale. Must be a real, focusable, off-page (not
+          display:none) input with font-size >= 16px so iOS doesn't
+          zoom the viewport when it receives focus. Hidden from
+          assistive tech because it's purely a focus-transport device. */}
+      <input
+        ref={focusKeeperRef}
+        type="search"
+        readOnly
+        aria-hidden="true"
+        tabIndex={-1}
+        // Tailwind utilities don't reliably hit the 16px iOS threshold
+        // here (the project's 10px rem makes `text-base` = 10px), so
+        // an explicit px font-size guards against the focus-zoom rule.
+        style={{
+          position: "fixed",
+          top: "-9999px",
+          left: "-9999px",
+          width: "1px",
+          height: "1px",
+          opacity: 0,
+          fontSize: "16px",
+          pointerEvents: "none"
+        }}
+      />
+    </m.nav>,
+    portalTarget
   );
 };
 
@@ -199,8 +277,8 @@ const NotificationsTrigger = ({
           aria-hidden="true"
           className={cn(
             "absolute top-2 right-2 inline-flex min-w-[18px] items-center justify-center",
-            "rounded-full bg-foreground px-1 py-0.5",
-            "font-mono text-[10px] leading-none text-background tabular-nums"
+            "rounded-full bg-nav-foreground px-1 py-0.5",
+            "font-mono text-[10px] leading-none text-nav-background tabular-nums"
           )}
         >
           {unread > 99 ? "99+" : unread}
@@ -238,7 +316,9 @@ const AccountTrigger = ({
       className={cn(
         "inline-flex size-12 items-center justify-center rounded-full",
         "touch-manipulation transition-all active:scale-[0.96]",
-        active ? "ring-2 ring-foreground/60" : "ring-1 ring-border/40"
+        active
+          ? "ring-2 ring-nav-foreground/60"
+          : "ring-1 ring-nav-foreground/40"
       )}
     >
       {hasAvatar ? (
@@ -254,7 +334,7 @@ const AccountTrigger = ({
       ) : (
         <UserRound
           aria-hidden="true"
-          className="size-5 text-foreground/75"
+          className="size-5 text-nav-foreground/75"
           strokeWidth={1.5}
         />
       )}

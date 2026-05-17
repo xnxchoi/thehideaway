@@ -18,7 +18,10 @@
 set -euo pipefail
 
 IMAGE_TAG="${IMAGE_TAG:-latest}"
-REGISTRY="${REGISTRY:-hideaway}"
+# Default to ghcr.io so direct `./prod.sh --migrate` calls work without the
+# caller having to remember to export REGISTRY. Override for local-only builds:
+# REGISTRY=hideaway ./prod.sh
+REGISTRY="${REGISTRY:-ghcr.io/xnxchoi/hideaway}"
 # --env-file feeds compose variable interpolation (${VAR} in compose.prod.yaml).
 # The service-level env_file: directive does NOT feed this — they are separate.
 COMPOSE="docker compose -f compose.prod.yaml --env-file .env.production"
@@ -43,8 +46,14 @@ backup_db() {
 }
 
 run_migrations() {
+  echo "→ Pulling migrate image (tag: ${IMAGE_TAG})..."
+  # Explicit pull surfaces auth/tag errors here instead of inside `run --rm`.
+  IMAGE_TAG="${IMAGE_TAG}" REGISTRY="${REGISTRY}" \
+    ${COMPOSE} --profile migrate pull migrate
+
   echo "→ Running migrations..."
-  ${COMPOSE} --profile migrate run --rm migrate
+  IMAGE_TAG="${IMAGE_TAG}" REGISTRY="${REGISTRY}" \
+    ${COMPOSE} --profile migrate run --rm migrate
   echo "  Migrations complete."
 }
 

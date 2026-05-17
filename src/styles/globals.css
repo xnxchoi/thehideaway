@@ -206,6 +206,21 @@ html::-webkit-scrollbar,
     }
 }
 
+/* iOS Safari zooms the viewport when a focusable input has a computed
+   font-size below 16px. The rule is evaluated on the input itself, not
+   on `html` — bumping html's font-size does nothing because inputs
+   re-inherit through the Tailwind `text-*` utilities at 10px / rem.
+   Floor the font-size of focusable inputs on touch devices so any
+   smaller `text-sm` / `text-base` styling cannot trigger the zoom.
+   `max(16px, 1em)` preserves intentionally-larger inputs. */
+@media (hover: none) and (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="reset"]):not([type="button"]),
+    select,
+    textarea {
+        font-size: max(16px, 1em);
+    }
+}
+
 html[data-theme="dark"],
 html[data-theme="light"] {
     opacity: initial;

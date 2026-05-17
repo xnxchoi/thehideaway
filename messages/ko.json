@@ -276,6 +276,7 @@
     "Controlbar": {
         "search": "검색",
         "closeSearch": "검색 닫기",
+        "close": "닫기",
         "signIn": "체크인",
         "account": "계정",
         "profile": "프로필",

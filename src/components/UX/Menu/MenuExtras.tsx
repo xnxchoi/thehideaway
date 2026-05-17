@@ -93,17 +93,17 @@ const SearchRow = ({ onClose }: { onClose: () => void }) => {
       aria-label={t("search")}
       className={cn(
         "group flex h-12 w-full items-center gap-3 rounded-full px-4",
-        "border border-border/30 bg-foreground/[0.04]",
+        "border border-nav-foreground/30 bg-nav-foreground/[0.04]",
         "touch-manipulation transition-colors",
-        "active:bg-foreground/[0.08]"
+        "active:bg-nav-foreground/[0.08]"
       )}
     >
       <SearchIcon
         aria-hidden="true"
-        className="size-[18px] text-foreground/65"
+        className="size-[18px] text-nav-foreground/65"
         strokeWidth={1.5}
       />
-      <span className="flex-1 text-left font-sans text-sm font-normal text-foreground/65">
+      <span className="flex-1 text-left font-sans text-sm font-normal text-nav-foreground/65">
         {t("search")}
       </span>
     </button>
@@ -126,7 +126,7 @@ const NowPlayingRow = ({ onClose }: { onClose: () => void }) => {
     <div
       className={cn(
         "flex h-14 w-full items-center gap-3 rounded-2xl px-3",
-        "border border-border/20 bg-foreground/[0.03]"
+        "border border-nav-foreground/20 bg-nav-foreground/[0.03]"
       )}
     >
       <Link
@@ -135,11 +135,11 @@ const NowPlayingRow = ({ onClose }: { onClose: () => void }) => {
         className="flex min-w-0 flex-1 flex-col gap-0.5"
         aria-label={`Now playing: ${title}${artist ? ` by ${artist}` : ""}`}
       >
-        <span className="truncate font-sans text-sm font-medium tracking-tight text-foreground">
+        <span className="truncate font-sans text-sm font-medium tracking-tight text-nav-foreground">
           {title}
         </span>
         {artist && (
-          <span className="truncate font-mono text-[10px] tracking-wider text-foreground/55 uppercase">
+          <span className="truncate font-mono text-[10px] tracking-wider text-nav-foreground/55 uppercase">
             {artist}
           </span>
         )}
@@ -182,16 +182,16 @@ const NotificationsRow = ({ onClose }: { onClose: () => void }) => {
       }
       className={cn(
         "group flex h-14 w-full items-center gap-3 rounded-2xl px-3",
-        "border border-border/20 bg-foreground/[0.03]",
+        "border border-nav-foreground/20 bg-nav-foreground/[0.03]",
         "touch-manipulation transition-colors",
-        "active:bg-foreground/[0.05]"
+        "active:bg-nav-foreground/[0.05]"
       )}
     >
       <span
         aria-hidden="true"
         className={cn(
           "relative inline-flex size-9 flex-none items-center justify-center rounded-full",
-          "bg-foreground/[0.05] text-foreground/75"
+          "bg-nav-foreground/[0.05] text-nav-foreground/75"
         )}
       >
         <Bell className="size-[18px]" strokeWidth={1.5} />
@@ -199,8 +199,8 @@ const NotificationsRow = ({ onClose }: { onClose: () => void }) => {
           <span
             className={cn(
               "absolute -top-0.5 -right-0.5 inline-flex min-w-[18px] items-center justify-center",
-              "rounded-full bg-foreground px-1 py-0.5",
-              "font-mono text-[10px] leading-none text-background tabular-nums"
+              "rounded-full bg-nav-foreground px-1 py-0.5",
+              "font-mono text-[10px] leading-none text-nav-background tabular-nums"
             )}
           >
             {unread > 99 ? "99+" : unread}
@@ -208,10 +208,10 @@ const NotificationsRow = ({ onClose }: { onClose: () => void }) => {
         )}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate font-sans text-sm font-medium tracking-tight text-foreground">
+        <span className="truncate font-sans text-sm font-medium tracking-tight text-nav-foreground">
           {t("notifications")}
         </span>
-        <span className="truncate font-sans text-[12px] text-foreground/55">
+        <span className="truncate font-sans text-[12px] text-nav-foreground/55">
           {preview?.title || preview?.content || "Up to date"}
         </span>
       </span>
@@ -254,32 +254,32 @@ const AccountBlock = ({ onClose }: { onClose: () => void }) => {
     <div
       className={cn(
         "flex w-full flex-col gap-2 rounded-2xl p-3",
-        "border border-border/20 bg-foreground/[0.03]"
+        "border border-nav-foreground/20 bg-nav-foreground/[0.03]"
       )}
     >
       <div className="flex items-center gap-3">
         {sessionUser.image ? (
           <UserAvatar
             user={avatarUser}
-            className="size-10 flex-none rounded-full ring-1 ring-border/30"
+            className="size-10 flex-none rounded-full ring-1 ring-nav-foreground/30"
           />
         ) : (
           <span
             aria-hidden="true"
-            className="inline-flex size-10 flex-none items-center justify-center rounded-full bg-foreground/[0.06] ring-1 ring-border/30"
+            className="inline-flex size-10 flex-none items-center justify-center rounded-full bg-nav-foreground/[0.06] ring-1 ring-nav-foreground/30"
           >
             <UserRound
-              className="size-[18px] text-foreground/65"
+              className="size-[18px] text-nav-foreground/65"
               strokeWidth={1.5}
             />
           </span>
         )}
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate font-sans text-sm font-medium tracking-tight text-foreground">
+          <span className="truncate font-sans text-sm font-medium tracking-tight text-nav-foreground">
             {displayName || "Hideaway member"}
           </span>
           {sessionUser.email && (
-            <span className="truncate font-mono text-[11px] text-foreground/55">
+            <span className="truncate font-mono text-[11px] text-nav-foreground/55">
               {sessionUser.email}
             </span>
           )}
@@ -303,18 +303,18 @@ const AccountBlock = ({ onClose }: { onClose: () => void }) => {
           onClick={onSignOut}
           className={cn(
             "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2",
-            "border border-border/30 bg-transparent",
+            "border border-nav-foreground/30 bg-transparent",
             "touch-manipulation transition-colors",
-            "active:bg-foreground/[0.05]"
+            "active:bg-nav-foreground/[0.05]"
           )}
           aria-label={t("signOut")}
         >
           <LogOut
             aria-hidden="true"
-            className="size-[14px] text-foreground/65"
+            className="size-[14px] text-nav-foreground/65"
             strokeWidth={1.5}
           />
-          <span className="font-sans text-[11px] font-medium tracking-tight text-foreground/85">
+          <span className="font-sans text-[11px] font-medium tracking-tight text-nav-foreground/85">
             {t("signOut")}
           </span>
         </button>
@@ -340,15 +340,15 @@ const AccountAction = ({
     aria-label={label}
     className={cn(
       "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2",
-      "border border-border/30 bg-transparent",
+      "border border-nav-foreground/30 bg-transparent",
       "touch-manipulation transition-colors",
-      "active:bg-foreground/[0.05]"
+      "active:bg-nav-foreground/[0.05]"
     )}
   >
-    <span aria-hidden="true" className="text-foreground/65">
+    <span aria-hidden="true" className="text-nav-foreground/65">
       {icon}
     </span>
-    <span className="font-sans text-[11px] font-medium tracking-tight text-foreground/85">
+    <span className="font-sans text-[11px] font-medium tracking-tight text-nav-foreground/85">
       {label}
     </span>
   </Link>

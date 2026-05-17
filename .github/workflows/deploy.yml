@@ -1,0 +1,166 @@
+name: Build & publish production images
+
+# Fires on every push to the `deploy` branch.
+#
+# Flow:
+#   1. Checkout deploy branch
+#   2. pnpm install
+#   3. Materialize .env.production from the ENV_PRODUCTION_B64 repo secret
+#      (NEXT_PUBLIC_* are baked into the client bundle at build time)
+#   4. pnpm build  -> .next/standalone
+#   5. docker build  -> hideaway runtime image + hideaway-migrate image
+#   6. push both to ghcr.io/<owner>/hideaway[-migrate]:<sha> + :latest
+#
+# Required repo secret:
+#   ENV_PRODUCTION_B64 — base64-encoded .env.production. Generate with:
+#     base64 -i .env.production | pbcopy   (macOS)
+#     base64 -w0 .env.production           (Linux)
+#   Store at: Settings -> Secrets and variables -> Actions -> New repository secret
+#
+# Local fallback: scripts/build.sh still works for emergency local builds when
+# CI is unavailable.
+
+on:
+  push:
+    branches: [deploy]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Extra tag to publish in addition to <sha> and `latest`
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+# Two rapid pushes to `deploy` should not race the `:latest` tag. Queue them
+# instead of cancelling — every published SHA stays uniquely tagged.
+concurrency:
+  group: deploy-build
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: ${{ github.repository_owner }}
+  RUNTIME_NAME: hideaway
+  MIGRATE_NAME: hideaway-migrate
+
+jobs:
+  build:
+    name: Build & push
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout deploy branch
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Materialize .env.production
+        env:
+          ENV_B64: ${{ secrets.ENV_PRODUCTION_B64 }}
+        run: |
+          if [ -z "${ENV_B64}" ]; then
+            echo "::error::ENV_PRODUCTION_B64 secret is empty. See workflow header for setup."
+            exit 1
+          fi
+          echo "${ENV_B64}" | base64 -d > .env.production
+          # Sanity check — fail loudly if placeholders survived. We only echo
+          # the matching variable NAMES, not their values, to keep the Actions
+          # log free of anything that might still be a partial real secret.
+          placeholders=$(grep -nE '^[A-Z_]+=(CHANGE_ME|your_|GOCSPX-your|pk\.your_)' .env.production | cut -d= -f1)
+          if [ -n "${placeholders}" ]; then
+            echo "::error::.env.production contains placeholder values. Update ENV_PRODUCTION_B64."
+            echo "Placeholder variables (values redacted):"
+            echo "${placeholders}"
+            exit 1
+          fi
+
+      - name: Build Next.js
+        run: pnpm build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tags
+        id: tags
+        run: |
+          short_sha="${GITHUB_SHA:0:7}"
+          runtime="${REGISTRY}/${IMAGE_OWNER}/${RUNTIME_NAME}"
+          migrate="${REGISTRY}/${IMAGE_OWNER}/${MIGRATE_NAME}"
+          runtime_tags="${runtime}:${short_sha},${runtime}:latest"
+          migrate_tags="${migrate}:${short_sha},${migrate}:latest"
+          override="${{ inputs.tag }}"
+          if [ -n "${override}" ]; then
+            runtime_tags="${runtime_tags},${runtime}:${override}"
+            migrate_tags="${migrate_tags},${migrate}:${override}"
+          fi
+          {
+            echo "short_sha=${short_sha}"
+            echo "runtime=${runtime}"
+            echo "migrate=${migrate}"
+            echo "runtime_tags=${runtime_tags}"
+            echo "migrate_tags=${migrate_tags}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build & push runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: pack.Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.runtime_tags }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=runtime
+          cache-to: type=gha,mode=max,scope=runtime
+          provenance: false
+
+      - name: Build & push migrate image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: migrate.Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.migrate_tags }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=migrate
+          cache-to: type=gha,mode=max,scope=migrate
+          provenance: false
+
+      - name: Job summary
+        run: |
+          {
+            echo "### Images published"
+            echo
+            echo "| Image | Tag |"
+            echo "|-------|-----|"
+            echo "| \`${{ steps.tags.outputs.runtime }}\` | \`${{ steps.tags.outputs.short_sha }}\`, \`latest\` |"
+            echo "| \`${{ steps.tags.outputs.migrate }}\` | \`${{ steps.tags.outputs.short_sha }}\`, \`latest\` |"
+            echo
+            echo "**Deploy on VPS:**"
+            echo
+            echo '```bash'
+            echo "ssh deploy@hideawayseoul.com"
+            echo "cd thehideaway && ./scripts/redeploy.sh ${{ steps.tags.outputs.short_sha }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -36,12 +36,15 @@ error() { echo -e "[$(date +%H:%M:%S)] ${RED}✗${NC}  $*" >&2; }
 
 info "Starting backup: ${DB_NAME} → ${BACKUP_FILE}"
 
-# ── Guard: backup directory must exist ───────────────────────────────────────
+# ── Guard: backup directory must exist + be private ──────────────────────────
 if [[ ! -d "${BACKUP_DIR}" ]]; then
   error "Backup directory not found: ${BACKUP_DIR}"
   error "Run scripts/server-setup.sh first, or pass a custom path."
   exit 1
 fi
+# Defense in depth — even if server-setup.sh missed it, lock the dir down.
+# pg dumps contain all user data, hashed passwords, OAuth tokens, PII.
+chmod 700 "${BACKUP_DIR}" 2>/dev/null || true
 
 # ── Guard: postgres container must be running ─────────────────────────────────
 if ! docker compose -f "${COMPOSE_FILE}" ps postgres 2>/dev/null | grep -q 'running'; then
@@ -50,8 +53,12 @@ if ! docker compose -f "${COMPOSE_FILE}" ps postgres 2>/dev/null | grep -q 'runn
 fi
 
 # ── Dump ──────────────────────────────────────────────────────────────────────
+# Pre-create the file with 600 perms so the dump can never exist on disk in a
+# world-readable state, even transiently.
+(umask 077 && : > "${BACKUP_FILE}")
 docker compose -f "${COMPOSE_FILE}" exec -T postgres \
   pg_dump -U "${DB_USER}" -Fc "${DB_NAME}" > "${BACKUP_FILE}"
+chmod 600 "${BACKUP_FILE}"
 
 DUMP_SIZE="$(du -sh "${BACKUP_FILE}" | cut -f1)"
 info "Backup complete — ${DUMP_SIZE} written to ${BACKUP_FILE}"

@@ -2,11 +2,22 @@
 
 ## Architecture
 
-The Next.js app is built locally (or in CI), and `pack.Dockerfile` packages the pre-built
-`.next/standalone` output into a slim runtime image. NEXT_PUBLIC_* vars are baked into the
-client bundle at `pnpm build` time, so `.env.production` must exist on the build machine.
-The production stack runs three containers — `payload` (Node 24), `nginx`, and `postgres:18-alpine`
-— all on the `hideaway` Docker network, managed by `compose.prod.yaml` via `prod.sh` on the VPS.
+The Next.js app is built by **GitHub Actions** on every push to the `deploy` branch and
+published to **ghcr.io** as `ghcr.io/xnxchoi/hideaway:<sha>` and `:latest`. `pack.Dockerfile`
+packages the pre-built `.next/standalone` output into a slim runtime image. NEXT_PUBLIC_*
+vars are baked into the client bundle at `pnpm build` time inside the workflow — they're
+sourced from repo secrets, not from a local `.env.production`. The production stack runs
+three containers — `payload` (Node 24), `nginx`, and `postgres:18-alpine` — all on the
+`hideaway` Docker network, managed by `compose.prod.yaml` via `prod.sh` on the VPS. The VPS
+pulls from ghcr.io; it never builds.
+
+The two-branch model:
+
+- **`main`** — active development, full codebase
+- **`deploy`** — same code, leaner `.dockerignore`; push triggers the build workflow
+
+To move work from `main` into a deploy, run [`scripts/sync-from-main.sh`](../scripts/sync-from-main.sh).
+The build workflow lives in [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml).
 
 ---
 
@@ -15,9 +26,21 @@ The production stack runs three containers — `payload` (Node 24), `nginx`, and
 ### Local machine
 
 - Node.js 20+
-- pnpm 10.33.0 (`corepack prepare pnpm@10.33.0 --activate`)
-- Docker Desktop (running)
+- pnpm 10.33.0 (`corepack prepare pnpm@10.33.0 --activate`) — for local dev only,
+  not required for deploys
+- `git` with both `main` and `deploy` branches fetched
 - `.env.production` filled with real production values (see [Part 2, Step 1](#step-1-fill-envproduction))
+  — needed only on the VPS, not locally
+
+Docker Desktop is **not** required. CI builds the image; you only need to push to `deploy`.
+
+### GitHub
+
+- `deploy` branch exists on `xnxchoi/thehideaway`
+- Repo secrets: the workflow uses the auto-provided `GITHUB_TOKEN` for ghcr.io
+  publishing — no extra secrets needed for the build itself
+- Fine-grained PAT with `read:packages`, generated at
+  <https://github.com/settings/tokens?type=beta> — the VPS uses this to pull images
 
 ### VPS
 
@@ -150,65 +173,84 @@ Variables that require real production values:
 `DATABASE_URI` is constructed dynamically in `compose.prod.yaml` from `POSTGRES_PASSWORD`,
 `POSTGRES_USER`, and `POSTGRES_DB` — do not set it manually in `.env.production`.
 
-### Step 2: Build images
+### Step 2: Publish .env.production to repo secrets
 
-From the repo root (with `.env.production` present):
-
-```bash
-./build.sh
-```
-
-This runs `pnpm build`, then packages two images tagged with the current git short SHA:
-- `hideaway:<sha>` and `hideaway:latest` — slim runtime (~300 MB)
-- `hideaway-migrate:<sha>` and `hideaway-migrate:latest` — migration runner
-
-Note the SHA printed in the output — you need it for deployment.
-
-To build and push directly to a registry:
+CI needs `.env.production` at `pnpm build` time to bake NEXT_PUBLIC_* into the
+client bundle. We pass it as a base64-encoded repo secret:
 
 ```bash
-REGISTRY=ghcr.io/xnxchoi/hideaway ./build.sh
+# From your laptop, in the repo root:
+base64 -w0 .env.production | pbcopy        # Linux: drop -w0 if unsupported
+                                            # macOS: base64 -i .env.production | pbcopy
 ```
 
-### Step 3: Transfer images to VPS
+Then paste the value at:
 
-**Option A — registry pull** (if you used a remote REGISTRY in Step 2):
+```
+https://github.com/xnxchoi/thehideaway/settings/secrets/actions
+  Name:  ENV_PRODUCTION_B64
+  Value: <paste>
+```
+
+Rotate the secret whenever `.env.production` changes (new OAuth secret, new SMTP
+password, etc.). The workflow refuses to build if the decoded file contains
+placeholder values (`CHANGE_ME`, `your_`, etc.).
+
+### Step 3: Publish images via CI
 
 ```bash
-# On the VPS as deploy:
-IMAGE_TAG=<sha> REGISTRY=ghcr.io/xnxchoi/hideaway ./prod.sh
+# From your laptop, in the repo root:
+git checkout deploy
+bash scripts/sync-from-main.sh    # merges main -> deploy, pushes
+                                   # if deploy is already current, just:
+                                   #   git push origin deploy
 ```
 
-`prod.sh` calls `docker compose pull` which pulls from the registry automatically.
+The workflow at `.github/workflows/deploy.yml` triggers on the push. Watch it at
+<https://github.com/xnxchoi/thehideaway/actions>. ~5–8 minutes cold cache,
+~2–3 minutes thereafter. On success, two images are published:
 
-**Option B — direct transfer** (no registry required, default local build):
+- `ghcr.io/xnxchoi/hideaway:<sha>` + `:latest` — runtime
+- `ghcr.io/xnxchoi/hideaway-migrate:<sha>` + `:latest` — migration runner
 
-```bash
-# On your local machine:
-SHA=$(git rev-parse --short HEAD)
+Verify at <https://github.com/xnxchoi?tab=packages>.
 
-docker save hideaway:${SHA} hideaway-migrate:${SHA} | gzip \
-  | rsync -e ssh --progress - deploy@<server-ip>:/tmp/hideaway-${SHA}.tar.gz
+**Local fallback.** If CI is down and you need to ship anything urgently, the
+old `./build.sh` path still works: builds locally, then `docker save | ssh |
+docker load` to the VPS. Treat it as a break-glass; the steady-state path is CI.
 
-# On the VPS as deploy:
-docker load < /tmp/hideaway-${SHA}.tar.gz
-rm /tmp/hideaway-${SHA}.tar.gz
-```
+### Step 4: Clone repo (deploy branch) and copy .env.production to VPS
 
-### Step 4: Clone repo and copy .env.production to VPS
+The VPS clones the `deploy` branch, not `main` — that's the branch CI builds
+from, and the only one whose compose / scripts / `.dockerignore` are
+production-aligned.
 
 ```bash
 # SSH as deploy:
 ssh deploy@<server-ip>
 
-# Clone the repo:
-git clone https://github.com/xnxchoi/thehideaway.git ~/thehideaway
+git clone --branch deploy https://github.com/xnxchoi/thehideaway.git ~/thehideaway
 ```
 
 ```bash
 # From your local machine — copy .env.production:
 scp .env.production deploy@<server-ip>:~/thehideaway/.env.production
+ssh deploy@<server-ip> chmod 600 ~/thehideaway/.env.production
 ```
+
+### Step 4b: Authenticate the deploy user to ghcr.io
+
+The VPS needs a fine-grained PAT with `read:packages` so `docker pull` works.
+Generate one at <https://github.com/settings/tokens?type=beta>, then:
+
+```bash
+# On the VPS as deploy:
+echo "ghp_xxxxxxxxxxxxxxxxxxxx" | docker login ghcr.io \
+  --username xnxchoi --password-stdin
+```
+
+Credentials persist in `~/.docker/config.json`. Rotate the PAT before expiry —
+see Part 7 for the recovery snippet if pulls start failing.
 
 ### Step 5: Bootstrap 3D assets (one time only, before first deploy)
 
@@ -239,16 +281,35 @@ instead of `/opt/thehideaway/assets`.
 
 ### Step 6: First deploy
 
+For a fresh VPS, the canonical path is the wrapper script — it bundles all of
+Part 1 (server setup) and Part 2 (env / assets / first deploy) into one
+command:
+
+```bash
+# On the VPS as root:
+cd /root/thehideaway   # or wherever you rsync'd the repo
+bash scripts/first-deploy.sh \
+    --deploy-key "$(cat /your/laptop/~.ssh/hideaway_deploy.pub)" \
+    --ghcr-user xnxchoi \
+    --ghcr-pat  ghp_xxxxxxxxxxxxxxxxxxxx
+```
+
+See [LAUNCH.md](./LAUNCH.md) for the full end-to-end runbook including DNS,
+TLS, and OAuth-console capture.
+
+**Manual path** (skip the wrapper):
+
 ```bash
 # On the VPS as deploy:
 cd ~/thehideaway
-IMAGE_TAG=<sha> ./prod.sh
+REGISTRY=ghcr.io/xnxchoi/hideaway ./scripts/redeploy.sh latest
 ```
 
-`prod.sh` will:
-1. Verify or create the `hideaway` network
-2. Pull the image (or use the locally-loaded one if no registry)
-3. Run `docker compose up -d --wait` — starts postgres, waits for its healthcheck, then starts payload and nginx
+`redeploy.sh` calls `prod.sh`, which:
+1. Verifies or creates the `hideaway` Docker network
+2. Pulls the image from ghcr.io
+3. Runs `docker compose up -d --wait` — starts postgres, waits for its
+   healthcheck, then starts payload and nginx
 
 Verify the deploy:
 
@@ -261,39 +322,45 @@ curl -s https://hideawayseoul.com/api/health
 
 ## Part 3 — Every subsequent deploy
 
+Two commands, no image transfer.
+
 ### Local machine
 
 ```bash
-# 1. Build new images
-./build.sh
-SHA=$(git rev-parse --short HEAD)
-
-# 2a. If using a registry:
-REGISTRY=ghcr.io/xnxchoi/hideaway ./build.sh
-# (build.sh pushes automatically when REGISTRY contains a /)
-
-# 2b. If transferring directly:
-docker save hideaway:${SHA} hideaway-migrate:${SHA} | gzip \
-  | rsync -e ssh --progress - deploy@<server-ip>:/tmp/hideaway-${SHA}.tar.gz
+cd /local/path/to/thehideaway
+bash scripts/sync-from-main.sh
 ```
+
+This merges `main` into `deploy` and pushes. The push triggers
+`.github/workflows/deploy.yml`, which builds + publishes new image tags to
+ghcr.io. The script refuses dirty trees and prompts before pushing — use
+`--yes` for non-interactive (CI / cron) flows. If no changes are pending it
+exits cleanly with nothing to do.
+
+Watch the build at <https://github.com/xnxchoi/thehideaway/actions>. The job
+summary at the end prints the exact `redeploy.sh` command, including the SHA.
 
 ### VPS
 
 ```bash
 ssh deploy@<server-ip>
 cd ~/thehideaway
-git pull origin main         # pull updated compose.prod.yaml and scripts
-
-# If using direct transfer (Option B):
-docker load < /tmp/hideaway-${SHA}.tar.gz
-rm /tmp/hideaway-${SHA}.tar.gz
-
-# Deploy:
-IMAGE_TAG=<sha> ./prod.sh
+git pull origin deploy          # pull any updated compose/scripts changes
+./scripts/redeploy.sh           # pulls :latest, recreates the stack
+                                 # or: ./scripts/redeploy.sh <sha>
 ```
 
-The running containers are replaced with zero-downtime (`--wait` keeps the old container
-alive until the new one passes its healthcheck).
+`redeploy.sh` is a thin wrapper over `prod.sh`. Containers are replaced with
+zero-downtime — `--wait` keeps the old container alive until the new one passes
+its healthcheck.
+
+If the deploy includes a DB schema change, run with `--migrate`:
+
+```bash
+./scripts/redeploy.sh <sha> --migrate
+```
+
+That maps to `prod.sh --full`: deploy + backup + run migrations.
 
 ---
 
@@ -324,10 +391,12 @@ Then run migrations:
 To deploy a new image and run migrations in one step:
 
 ```bash
-IMAGE_TAG=<sha> ./prod.sh --full
+./scripts/redeploy.sh <sha> --migrate
+# Equivalent to: IMAGE_TAG=<sha> ./prod.sh --full
 ```
 
-`--full` = deploy + backup + migrate in sequence.
+`--migrate` (on redeploy) → `--full` (on prod.sh) = deploy + backup + migrate
+in sequence.
 
 **PostgreSQL major version upgrades** (e.g. 18 → 19) cannot be done by swapping the image
 tag — the on-disk data format changes. Use `scripts/pg-upgrade.sh`, which performs a
@@ -452,7 +521,11 @@ Common causes:
 - Missing or malformed `.env.production` — check that all required vars are present
 - Postgres healthcheck not yet passing — `payload` depends on postgres being healthy;
   watch `docker compose -f compose.prod.yaml logs postgres`
-- Wrong IMAGE_TAG — verify the tag exists with `docker images hideaway`
+- Wrong IMAGE_TAG — verify the tag exists on ghcr.io:
+  `docker manifest inspect ghcr.io/xnxchoi/hideaway:<sha>`. If that fails with
+  "manifest unknown", the workflow hasn't published it yet — check
+  <https://github.com/xnxchoi/thehideaway/actions>. If it fails with
+  "unauthorized", the deploy user's PAT expired — re-run `docker login ghcr.io`
 - 3D asset bind mount path missing — verify `/opt/thehideaway/assets/{plate,rp_plaque,three}` exist
 
 ### DB connection refused

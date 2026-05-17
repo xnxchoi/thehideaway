@@ -676,16 +676,18 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
                     }}
                   />
                 )}
-                {!controlbarOwnsActions && (
-                  <DarkmodeButton
-                    key={"darkmode-component"}
-                    style={{
-                      color: themeColour,
-                      backgroundColor: btBackground,
-                      backdropFilter: btBlur
-                    }}
-                  />
-                )}
+                {/* Always visible — the Controlbar's left zone swaps to
+                    PlayPauseButton whenever a radio session is loaded,
+                    so the bar is not a reliable theme toggle. The header
+                    button stays put on every viewport. */}
+                <DarkmodeButton
+                  key={"darkmode-component"}
+                  style={{
+                    color: themeColour,
+                    backgroundColor: btBackground,
+                    backdropFilter: btBlur
+                  }}
+                />
               </AnimatePresence>
             </m.div>
           </m.div>

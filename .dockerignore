@@ -1,6 +1,46 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .dockerignore — the canonical "what doesn't ship to production" list.
+#
+# This file is read by `docker build` to determine the build context. Paths
+# listed here are NOT copied into the image. That makes it the single
+# GUI-editable source of truth for excluding files from the deploy build.
+#
+# Two layers of exclusions live here:
+#
+#   1. UNIVERSAL — always excluded from any production build (this list is
+#      identical between `main` and `deploy`):
+#        • .git, node_modules
+#        • .attic/ (archived dormant code)
+#        • Payload runtime upload dirs (mounted as volumes on the VPS)
+#        • Large 3D static assets (rsync'd to /opt/thehideaway/assets/ once)
+#
+#   2. DEPLOY-ONLY — excluded from the production build on the `deploy`
+#      branch but kept on `main` for dev. Add files/dirs here when you want
+#      them present during development but not in the shipped image:
+#        • reference/ (foreign code kept for study)
+#        • Internal feature dev notes you don't want public
+#        • src/app/(frontend)/(dev)/ if you decide to gate dev-only routes
+#        • Individual not-prod-ready files under src/ or public/
+#
+# When syncing `main → deploy` via scripts/sync-from-main.sh, the only
+# expected merge conflict is in this file (and only if the deploy-only
+# section was edited on both branches). Resolve by taking the deploy
+# side's exclusion list as authoritative.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Universal exclusions ────────────────────────────────────────────────────
 .git
 node_modules/
 .attic/
+reference/
+
+# Secret files. The workflow materializes .env.production INTO the build
+# context for `pnpm build` (to bake NEXT_PUBLIC_*), but the file itself must
+# never land in any image layer. No Dockerfile currently does `COPY . .`, so
+# this is defense in depth — keeps a stray future COPY from leaking all secrets.
+.env
+.env.*
+!.env.*.example
 /src/lib/auth/auth-payload/
 !/src/payload/collections/Users/c/dd.js
 
@@ -36,3 +76,17 @@ public/assets/media/
 public/assets/plate/
 public/assets/rp_plaque/
 public/assets/three/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ── Deploy-only exclusions (edit freely on the `deploy` branch) ─────────────
+# Add files/dirs below this line that you want to keep in dev but exclude
+# from the production image. Examples:
+#
+#   readmes/HIGHLIGHTR.md
+#   readmes/NOTIFICATIONS.md
+#   readmes/tour-flow/
+#   src/app/(frontend)/(dev)/
+#   public/assets/textures/photographj/
+#
+# Leaving this section empty on `main` keeps the merge into `deploy` clean.
+# ─────────────────────────────────────────────────────────────────────────────
