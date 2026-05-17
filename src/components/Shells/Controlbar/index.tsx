@@ -48,6 +48,8 @@ export const Controlbar = () => {
   const toggleView = useRPStore((s) => s.toggleControlbarView);
   const setSideDrawerOpen = useRPStore((s) => s.setSideDrawerOpen);
   const sidebarOpen = useRPStore(useShallow((s) => s.sidebarOpen));
+  const searchSheetOpen = useRPStore(useShallow((s) => s.searchSheetOpen));
+  const toggleSearchSheetOpen = useRPStore((s) => s.toggleSearchSheetOpen);
 
   const select = useCallback(
     (next: ControlbarView) => {
@@ -58,6 +60,14 @@ export const Controlbar = () => {
       if (!sidebarOpen) setSideDrawerOpen(true);
     },
     [toggleView, setSideDrawerOpen, sidebarOpen]
+  );
+
+  // Search has its own full-screen overlay (`SearchSheet`) — the legacy
+  // in-drawer "search" controlbar view stays in the type union for
+  // back-compat but is no longer triggered from here.
+  const onSearch = useCallback(
+    () => toggleSearchSheetOpen(),
+    [toggleSearchSheetOpen]
   );
 
   return (
@@ -82,13 +92,13 @@ export const Controlbar = () => {
         <button
           type="button"
           aria-label={t("search")}
-          aria-pressed={view === "search"}
-          onClick={() => select("search")}
+          aria-pressed={searchSheetOpen}
+          onClick={onSearch}
           className={cn(
             "group inline-flex h-12 items-center gap-3 rounded-full px-5",
             "border border-border/30",
             "touch-manipulation transition-colors",
-            view === "search"
+            searchSheetOpen
               ? "bg-foreground/[0.09] text-foreground"
               : "bg-foreground/[0.04] text-foreground/65 active:bg-foreground/[0.08]"
           )}

@@ -1,4 +1,3 @@
-"use server";
 import { Header } from "../../components/Shells/Header/Component";
 import { Main } from "@/components/core/Main";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,7 +9,9 @@ import { RP_Menu } from "@/components/UX/Menu";
 
 // Client Components (imported dynamically to create islands)
 import { ScrollIndicator } from "@/components/UX/ScrollIndicator";
+import { SearchSheet } from "@/components/UX/SearchSheet";
 import { SideDrawer } from "@/components/UX/SideDrawer";
+import { SideDrawerPullTab } from "@/components/UX/SideDrawer/PullTab";
 
 import { BetterAuthProvider } from "@/lib/auth/context";
 import { getContextProps } from "@/lib/auth/context/get-context-props";
@@ -23,6 +24,7 @@ import { InitTheme } from "@/providers/Theme/InitTheme";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "lenis/dist/lenis.css";
+import type { Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import React, { ReactNode, Suspense } from "react";
 import "../../styles/globals.css";
@@ -37,6 +39,18 @@ import {
 } from "../../../fonts";
 import { ClientLayout } from "./ClientLayout";
 import { ClientProviders } from "./ClientProviders";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Allow user-initiated zoom (WCAG 1.4.4 / iOS Safari ignores
+  // `maximum-scale=1` for accessibility anyway). The JS-side gesture
+  // block in `MobileProvider` is what suppresses accidental pinch-zoom
+  // during interaction; this leaves the explicit accessibility lever
+  // intact.
+  maximumScale: 5,
+  viewportFit: "cover"
+};
 
 export default async function RootLayout({
   children
@@ -85,6 +99,8 @@ export default async function RootLayout({
                         <ContentMask>
                           {children}
                           <SideDrawer />
+                          <SideDrawerPullTab />
+                          <SearchSheet />
                         </ContentMask>
                       </Suspense>
                     </ClientLayout>

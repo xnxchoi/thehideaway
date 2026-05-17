@@ -44,7 +44,6 @@ import React, {
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { NotificationProvider } from "../../../providers/Notifications";
 
 type VerticalDirection = "up" | "down";
 type TransitionType =
@@ -639,15 +638,13 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
                 {!controlbarOwnsActions && (
                   <SignedIn key="signed-in">
                     {!isMobile && (
-                      <NotificationProvider user={user!}>
-                        <NotificationButton
-                          style={{
-                            color: themeColour,
-                            backgroundColor: btBackground,
-                            backdropFilter: btBlur
-                          }}
-                        />
-                      </NotificationProvider>
+                      <NotificationButton
+                        style={{
+                          color: themeColour,
+                          backgroundColor: btBackground,
+                          backdropFilter: btBlur
+                        }}
+                      />
                     )}
                     <UserDropdown
                       style={{

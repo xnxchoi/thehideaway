@@ -63,6 +63,13 @@ export type HA_UI = {
   showScrollIndicator: boolean;
   dropdownOpen: boolean;
   controlbarView: ControlbarView;
+  /**
+   * Whether the full-screen mobile SearchSheet is open. Independent of
+   * `sidebarOpen` and `controlbarView` — the sheet is a sibling overlay,
+   * not a drawer view. Always read alongside `setSearchSheetOpen` /
+   * `toggleSearchSheetOpen`.
+   */
+  searchSheetOpen: boolean;
 };
 export type ControlbarView = "default" | "notifications" | "search" | "account";
 export type HA_UI_ACT = {
@@ -94,6 +101,8 @@ export type HA_UI_ACT = {
   setActiveSnapPoint: (c: number | string | null) => void;
   setControlbarView: (c: ControlbarView) => void;
   toggleControlbarView: (c: ControlbarView) => void;
+  setSearchSheetOpen: (c: boolean) => void;
+  toggleSearchSheetOpen: () => void;
 };
 
 export type HA_MENU = {
@@ -569,7 +578,8 @@ const uiInitState: HA_UI = {
   showScrollIndicator: true,
   viewportWidth: 0,
   viewportHeight: 0,
-  controlbarView: "default"
+  controlbarView: "default",
+  searchSheetOpen: false
 };
 
 const navIn: HA_MENU = {
@@ -761,6 +771,10 @@ export const createHAStore = (initState: HA_VLT = HA_INIT) => {
           // Tapping the active view a second time returns to default.
           controlbarView: state.controlbarView === view ? "default" : view
         })),
+
+      setSearchSheetOpen: (searchSheetOpen) => set({ searchSheetOpen }),
+      toggleSearchSheetOpen: () =>
+        set((state) => ({ searchSheetOpen: !state.searchSheetOpen })),
 
       setSideDrawerOpen: (openMenu: boolean) =>
         set((state) => {
