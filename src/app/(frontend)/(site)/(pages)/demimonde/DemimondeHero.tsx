@@ -5,6 +5,7 @@ import * as m from "motion/react-m";
 import { useScroll, useTransform } from "motion/react";
 import { HERO } from "./content";
 import { HERO_IMAGES, stockImage } from "./images";
+import { FrontImage } from "@/components/core/Media/FrontImage";
 
 /**
  * Hero — text-first per Athens-26 reference, with one summer-tone
@@ -67,11 +68,11 @@ export function DemimondeHero() {
           style={{ y: bannerY }}
           aria-hidden
         >
-          <img
+          <FrontImage
             src={stockImage(banner.seed, 900, 1200)}
-            alt=""
             loading="eager"
-            className="block aspect-[3/4] w-full bg-[var(--paper-deep)] object-cover"
+            imgClassName="block w-full bg-[var(--paper-deep)] object-cover"
+            aspectRatio={3 / 4}
           />
           <figcaption className="absolute right-3.5 bottom-3.5 left-3.5 text-center font-mono text-[10px] tracking-[0.22em] text-[var(--ink-muted)] uppercase">
             {banner.tag}

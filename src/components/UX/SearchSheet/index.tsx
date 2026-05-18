@@ -12,7 +12,6 @@ import { useIsMobile } from "@/providers/MiddleMan";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useDebounce } from "@/utilities/useDebounce";
 import { useQuery } from "@tanstack/react-query";
-import { useLenis } from "lenis/react";
 import { ArrowRight, Clock, Search as SearchIcon, X } from "lucide-react";
 import * as m from "motion/react-m";
 import { useTransitionRouter } from "next-transition-router";
@@ -53,59 +52,18 @@ export const SearchSheet = () => {
   const { isMobile, isTouch } = useIsMobile();
   const open = useRPStore(useShallow((s) => s.searchSheetOpen));
   const setOpen = useRPStore((s) => s.setSearchSheetOpen);
+  const setSideDrawerOpen = useRPStore((s) => s.setSideDrawerOpen);
+  const setControlbarView = useRPStore((s) => s.setControlbarView);
 
-  // The sheet is now an independent layer on top of any existing
-  // SideDrawer / controlbar view (z-[260/261] above the drawer's
-  // z-[239]). Dismissing search returns the user to whatever state
-  // they were in before — not a forced reset. This matches the iOS
-  // pattern where Spotlight overlays the previous screen.
-
-  // Hard scroll lock while the sheet is open.
-  //
-  // We disabled Vaul's `disablePreventScroll` to fix the iOS keyboard
-  // layout collision, and `<html>.style.overflow = "hidden"` proved
-  // insufficient on iOS Safari (rubber-band gestures still chained
-  // through). The reliable substitute is a non-passive document-level
-  // `touchmove` listener that `preventDefault`s every gesture EXCEPT
-  // ones explicitly opted-in via `data-allow-scroll` (the results
-  // list, the keyboard's own input). The walk-up is cheap — just
-  // attribute checks, no `getComputedStyle`.
-  const lenis = useLenis();
+  // When the sheet opens, dismiss the SideDrawer + reset its view so the
+  // user returns to a clean default state on close. The sheet is its own
+  // surface; the drawer should not coexist behind it.
   useEffect(() => {
-    if (!open) return;
-    lenis?.stop();
-    // Document-level `touchmove` guard. We do NOT also hook touchstart
-    // — `preventDefault` on touchstart suppresses the synthetic mouse
-    // chain on iOS, which kills tap-clicks on the sheet's Close
-    // button and result rows. touch-action: none on Drawer.Content
-    // (via Vaul's CSS) blocks the gesture from being interpreted as
-    // a scroll in the first place; this listener catches anything
-    // that slips past (e.g. drags starting on an allowlisted child
-    // that then leave the allow zone).
-    const isAllowed = (target: EventTarget | null) => {
-      let el = target as HTMLElement | null;
-      while (el && el !== document.body) {
-        if (el.hasAttribute("data-allow-scroll")) return true;
-        const tag = el.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")
-          return true;
-        el = el.parentElement;
-      }
-      return false;
-    };
-    const block = (e: TouchEvent) => {
-      if (isAllowed(e.target)) return;
-      // Unconditional preventDefault — iOS sometimes flags the event
-      // non-cancelable mid-gesture, but the call is a harmless no-op
-      // in that case and required for the cancelable ones.
-      e.preventDefault();
-    };
-    document.addEventListener("touchmove", block, { passive: false });
-    return () => {
-      document.removeEventListener("touchmove", block);
-      lenis?.start();
-    };
-  }, [open, lenis]);
+    if (open) {
+      setSideDrawerOpen(false);
+      setControlbarView("default");
+    }
+  }, [open, setSideDrawerOpen, setControlbarView]);
 
   // Gate entirely on touch-mobile. On desktop / coarse-window resizes the
   // CommandKey/SearchBar handles search via CMDK.
@@ -118,34 +76,20 @@ export const SearchSheet = () => {
       direction="bottom"
       // Modal so the body locks behind the sheet — no double-scrolling.
       modal={true}
-      // Disable drag-to-dismiss. The sheet has its own X button, so the
-      // user always has a close path; swiping down would otherwise
-      // compete with iOS scroll physics over the results list.
+      // Disable drag-to-dismiss. The sheet has its own X button (and the
+      // input has an "enter to /search" route), so the user always has a
+      // close path; swiping down would otherwise compete with iOS scroll
+      // physics over the results list and feel broken.
       dismissible={false}
-      // Vaul's built-in scroll prevention sets `position: fixed` on body
-      // and freezes its scroll. Combined with iOS's soft-keyboard layout
-      // shifts, this caused the sheet content to render offscreen until
-      // the input blurred. We already stop Lenis and apply
-      // `overscroll-none` ourselves below, so Vaul's lock is redundant.
-      disablePreventScroll={true}
       // No snap points — full-screen overlay only.
     >
       <Drawer.Portal>
-        {/* `touch-none` blocks any pan/scroll gesture started on the
-            overlay from propagating to the page. With Vaul's own
-            scroll-lock disabled (`disablePreventScroll`), nothing else
-            stops a drag on the dimmed backdrop from scrolling body. */}
-        <Drawer.Overlay className="fixed inset-0 z-[260] touch-none bg-background/40 backdrop-blur-md" />
+        <Drawer.Overlay className="fixed inset-0 z-[260] bg-background/40 backdrop-blur-md" />
         <Drawer.Content
           aria-describedby={undefined}
           className={cn(
             "fixed inset-x-0 bottom-0 z-[261] flex h-[100dvh] w-full",
-            "flex-col bg-nav-background text-nav-foreground outline-none",
-            // Block touch-pan on the Content as a whole (Header row,
-            // padding, empty areas around the scroll list). The inner
-            // results list re-enables vertical pan via `touch-pan-y`
-            // so the user can still scroll search results.
-            "touch-none overscroll-none",
+            "flex-col bg-nav-background outline-none",
             // Vaul transitions handle the slide-up
             "data-[vaul-drawer-direction=bottom]:!translate-y-0"
           )}
@@ -166,30 +110,12 @@ const SheetBody = ({ onClose }: { onClose: () => void }) => {
   const [value, setValue] = useState("");
   const debounced = useDebounce(value, 280);
 
-  // Transfer focus from Controlbar's iOS keyboard-keeper to the real
-  // input. Timing matters on iOS: focusing synchronously on mount makes
-  // the input take focus BEFORE the visual viewport has shrunk to
-  // accommodate the keyboard, leaving the sheet content laid out
-  // against the wrong height and rendering as an empty background
-  // until blur. The reliable signal is `visualViewport.resize` — that
-  // fires AFTER iOS has settled the new viewport, so focusing then
-  // lands in a correctly-sized sheet. A 220ms fallback covers cases
-  // where the keyboard is already up (decoy raised it before mount)
-  // and no resize will fire.
+  // Focus the input once the sheet finishes its enter animation. A 60ms
+  // delay sidesteps iOS Safari's quirk where focusing mid-translate fails
+  // to summon the keyboard.
   useEffect(() => {
-    let done = false;
-    const transferFocus = () => {
-      if (done) return;
-      done = true;
-      inputRef.current?.focus({ preventScroll: true });
-    };
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", transferFocus, { once: true });
-    const fallback = window.setTimeout(transferFocus, 220);
-    return () => {
-      vv?.removeEventListener("resize", transferFocus);
-      window.clearTimeout(fallback);
-    };
+    const id = window.setTimeout(() => inputRef.current?.focus(), 60);
+    return () => window.clearTimeout(id);
   }, []);
 
   const router = useTransitionRouter();
@@ -248,14 +174,7 @@ const SheetBody = ({ onClose }: { onClose: () => void }) => {
       />
 
       <m.div
-        // `overscroll-none` (not just `contain`) so iOS rubber-band at
-        // the list edge does not propagate into the page behind.
-        // `touch-pan-y` re-enables vertical scrolling on the results
-        // list — Drawer.Content above sets `touch-none` so this child
-        // must opt back in. `data-allow-scroll` opts this subtree out
-        // of the document-level touchmove guard (see SearchSheet root).
-        data-allow-scroll
-        className="flex-1 touch-pan-y overflow-y-auto overscroll-none"
+        className="flex-1 overflow-y-auto overscroll-contain"
         style={{
           // Respect the iOS keyboard inset — keeps the scroll list above the
           // floating keyboard when results overflow.
@@ -299,13 +218,13 @@ const Header = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 border-b border-nav-foreground/20 px-4",
+        "flex items-center gap-3 border-b border-border/20 px-4",
         "pt-[calc(env(safe-area-inset-top)+14px)] pb-3"
       )}
     >
       <SearchIcon
         aria-hidden="true"
-        className="size-[18px] flex-none text-nav-foreground/55"
+        className="size-[18px] flex-none text-foreground/55"
         strokeWidth={1.5}
       />
       <input
@@ -321,29 +240,22 @@ const Header = ({
         placeholder={t("search")}
         aria-label={t("search")}
         className={cn(
-          "flex-1 bg-transparent text-base font-light tracking-tight text-nav-foreground",
-          "placeholder:text-nav-foreground/40",
+          "flex-1 bg-transparent text-base font-light tracking-tight text-foreground",
+          "placeholder:text-muted-foreground/40",
           "focus:outline-none"
         )}
       />
-      {/* iOS-style "Cancel" — a labelled affordance reads as obviously
-          dismissive at a glance, where a bare icon left users hunting
-          for the close. The X glyph stays for symbology + a11y. */}
       <button
         type="button"
         onClick={onClose}
         aria-label={t("closeSearch")}
         className={cn(
-          "inline-flex h-10 flex-none items-center gap-1.5 rounded-full",
-          "border border-nav-foreground/30 bg-nav-foreground/[0.04] px-3.5",
-          "touch-manipulation text-nav-foreground",
-          "transition-colors active:bg-nav-foreground/[0.10]"
+          "inline-flex size-9 flex-none items-center justify-center rounded-full",
+          "touch-manipulation text-foreground/70",
+          "transition-colors active:bg-foreground/[0.06]"
         )}
       >
-        <X aria-hidden="true" className="size-4" strokeWidth={1.5} />
-        <span className="font-mono text-[11px] tracking-widest whitespace-nowrap uppercase">
-          {t("close")}
-        </span>
+        <X aria-hidden="true" className="size-5" strokeWidth={1.5} />
       </button>
     </div>
   );
@@ -372,7 +284,7 @@ const DefaultState = ({
               onSelect={() => onPick(r.path)}
               leading={
                 <Clock
-                  className="size-[16px] text-nav-foreground/55"
+                  className="size-[16px] text-foreground/55"
                   strokeWidth={1.5}
                 />
               }
@@ -382,10 +294,10 @@ const DefaultState = ({
         </Section>
       )}
       <div className="flex flex-col items-center px-8 py-16 text-center">
-        <p className="font-sans text-sm font-light text-nav-foreground/65">
+        <p className="font-sans text-sm font-light text-foreground/65">
           {t("search")} essays, surf, music, members
         </p>
-        <p className="mt-1 font-mono text-[11px] tracking-widest text-nav-foreground/55 uppercase">
+        <p className="mt-1 font-mono text-[11px] tracking-widest text-muted-foreground/55 uppercase">
           Type to begin
         </p>
       </div>
@@ -400,9 +312,9 @@ const LoadingState = () => (
         key={width}
         className="flex min-h-[3.25rem] items-center gap-3 rounded-xl px-3 py-3"
       >
-        <div className="size-4 animate-pulse rounded-full bg-nav-foreground/10" />
+        <div className="size-4 animate-pulse rounded-full bg-foreground/10" />
         <div
-          className="h-2 animate-pulse rounded-full bg-nav-foreground/10"
+          className="h-2 animate-pulse rounded-full bg-foreground/10"
           style={{ width: `${width}%` }}
         />
       </div>
@@ -434,7 +346,7 @@ const ResultsList = ({
           trailing={
             <ArrowRight
               aria-hidden="true"
-              className="size-4 text-nav-foreground/40"
+              className="size-4 text-foreground/40"
               strokeWidth={1.5}
             />
           }
@@ -446,9 +358,9 @@ const ResultsList = ({
         type="button"
         onClick={onViewAll}
         className={cn(
-          "flex w-full items-center justify-between rounded-xl border border-nav-foreground/30 px-4 py-3",
-          "font-mono text-[11px] tracking-widest text-nav-foreground/75 uppercase",
-          "touch-manipulation transition-colors active:bg-nav-foreground/[0.05]"
+          "flex w-full items-center justify-between rounded-xl border border-border/30 px-4 py-3",
+          "font-mono text-[11px] tracking-widest text-foreground/75 uppercase",
+          "touch-manipulation transition-colors active:bg-foreground/[0.05]"
         )}
       >
         {total > results.length
@@ -469,7 +381,7 @@ const EmptyState = ({
 }) => (
   <div className="flex flex-col items-center px-8 py-16 text-center">
     <span className="mb-4 font-mono text-5xl opacity-10">○</span>
-    <p className="font-sans text-base font-light text-nav-foreground/70">
+    <p className="font-sans text-base font-light text-foreground/70">
       Nothing matched &ldquo;{value}&rdquo;
     </p>
     <button
@@ -477,8 +389,8 @@ const EmptyState = ({
       onClick={onViewAll}
       className={cn(
         "mt-6 font-mono text-[11px] tracking-widest uppercase",
-        "text-nav-foreground/55 underline underline-offset-4",
-        "transition-colors active:text-nav-foreground/85"
+        "text-foreground/55 underline underline-offset-4",
+        "transition-colors active:text-foreground/85"
       )}
     >
       Try the full archive →
@@ -496,7 +408,7 @@ const Section = ({
   children: ReactNode;
 }) => (
   <div className="pt-3">
-    <div className="px-5 pb-2 font-mono text-[10px] tracking-[0.2em] text-nav-foreground/55 uppercase">
+    <div className="px-5 pb-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
       {label}
     </div>
     <ul className="flex flex-col px-2">{children}</ul>
@@ -522,16 +434,16 @@ const Row = ({
       onClick={onSelect}
       className={cn(
         "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left",
-        "touch-manipulation transition-colors active:bg-nav-foreground/[0.05]"
+        "touch-manipulation transition-colors active:bg-foreground/[0.05]"
       )}
     >
       {leading && <span className="flex-none">{leading}</span>}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-sm font-medium tracking-tight text-nav-foreground">
+        <span className="truncate text-sm font-medium tracking-tight text-foreground">
           {title}
         </span>
         {subtitle && (
-          <span className="font-mono text-[10px] tracking-widest text-nav-foreground/55 uppercase">
+          <span className="font-mono text-[10px] tracking-widest text-muted-foreground/55 uppercase">
             {subtitle}
           </span>
         )}

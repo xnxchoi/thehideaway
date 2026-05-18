@@ -23,6 +23,7 @@ import {
   useMemo
 } from "react";
 import { useShallow } from "zustand/shallow";
+import { Controlbar } from "../../Shells/Controlbar";
 import {
   AccountView,
   NotificationsView,
@@ -289,33 +290,6 @@ export const SideDrawer = () => {
   useEffect(() => {
     !open && (setCursor(null), resetCursor());
   }, [open, setCursor, resetCursor]);
-
-  // Hard scroll lock while the drawer is open on touch-mobile.
-  // touchmove-only — `preventDefault` on touchstart on iOS suppresses
-  // the synthetic click chain (kills tap handlers). Vaul's own
-  // `[data-vaul-drawer] { touch-action: none }` is the primary scroll
-  // suppressor; this listener catches gestures that begin inside an
-  // allowlisted region and then drift outside it.
-  useEffect(() => {
-    if (!open || !isNarrow || !isTouch) return;
-    const isAllowed = (target: EventTarget | null) => {
-      let el = target as HTMLElement | null;
-      while (el && el !== document.body) {
-        if (el.hasAttribute("data-allow-scroll")) return true;
-        const tag = el.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")
-          return true;
-        el = el.parentElement;
-      }
-      return false;
-    };
-    const block = (e: TouchEvent) => {
-      if (isAllowed(e.target)) return;
-      e.preventDefault();
-    };
-    document.addEventListener("touchmove", block, { passive: false });
-    return () => document.removeEventListener("touchmove", block);
-  }, [open, isNarrow, isTouch]);
   return doo ? (
     <Drawer.Root
       snapPoints={snapPoints}
@@ -356,18 +330,10 @@ export const SideDrawer = () => {
             borderBottomLeftRadius: borderBottomRadius
           }}
         >
-          {/* Designated drag-to-close zone on touch-mobile. The Drawer
-              body is marked `data-vaul-no-drag` below so Vaul ignores
-              drags started anywhere except here — without this, any
-              swipe-down on the drawer (including over a scrollable
-              list) closed the drawer unintentionally. */}
-          {isNarrow && isTouch && (
-            <Drawer.Handle
-              className={
-                "absolute! top-[10px] left-1/2 z-[240] my-0! h-[5px]! w-[44px]! -translate-x-1/2 rounded-full bg-nav-foreground/70!"
-              }
-            />
-          )}
+          {/* Closed-state handle lives outside the drawer as
+              `SideDrawerPullTab`. When the drawer is open, users drag down
+              on the body to dismiss — no in-drawer handle needed.
+              Keeping both visible produced a "two handles" issue on iOS. */}
           {open && (
             <m.div
               key={"drawer-backdrop"}
@@ -388,13 +354,7 @@ export const SideDrawer = () => {
             - Desktop (≥ md): original 8×14 grid, kept intact.
           */}
           <m.div
-            // `data-vaul-no-drag` opts the inner shell out of Vaul's
-            // drag-to-dismiss tracking. Only the top `Drawer.Handle`
-            // above remains draggable, so a touch on a list item or
-            // an idle region of the drawer body can't accidentally
-            // close it. Native list scrolling is unaffected.
-            data-vaul-no-drag
-            className="z-239 flex h-[65dvh] w-full flex-col bg-nav-background max-md:pt-7 max-md:pb-[calc(env(safe-area-inset-bottom)+88px)] md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
+            className="z-239 flex h-[65dvh] w-full flex-col bg-nav-background max-md:pt-7 md:grid md:h-full md:w-[24vw] md:grid-cols-8 md:grid-rows-14 md:items-center md:justify-center md:gap-y-5"
             key={"drawer-body"}
             onMouseEnter={() => {
               setCursor(null);
@@ -419,11 +379,6 @@ export const SideDrawer = () => {
                   {/* Middle slot — view-driven on mobile, links on desktop.
                       Default mobile view = nav links (parity with desktop). */}
                   <m.div
-                    // `data-allow-scroll` opts this subtree out of the
-                    // document-level touchmove guard above, so the
-                    // notifications / links lists inside can still
-                    // scroll natively on touch.
-                    data-allow-scroll
                     className="flex-1 overflow-hidden md:col-[2/8] md:row-[3/10] md:flex-none md:overflow-visible md:px-4 md:py-0"
                     key="drawer-middle"
                   >
@@ -467,10 +422,9 @@ export const SideDrawer = () => {
                 </>
               )}
             </AnimatePresence>
-            {/* Controlbar is mounted at the layout root (see
-                `(frontend)/layout.tsx`) and floats over the drawer at
-                z-[249] so it stays visible regardless of drawer / menu
-                state. Nothing to render here. */}
+            {/* Controlbar — bottom strip of the drawer on touch-mobile.
+                In-flow (no fixed positioning) so drawer content stays above. */}
+            {isNarrow && isTouch && <Controlbar key={"ctrlbar-drawer"} />}
           </m.div>
           {!(isNarrow && isTouch) && (
             <AnimatePresence>

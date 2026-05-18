@@ -12,7 +12,6 @@ import { ScrollIndicator } from "@/components/UX/ScrollIndicator";
 import { SearchSheet } from "@/components/UX/SearchSheet";
 import { SideDrawer } from "@/components/UX/SideDrawer";
 import { SideDrawerPullTab } from "@/components/UX/SideDrawer/PullTab";
-import { Controlbar } from "@/components/Shells/Controlbar";
 
 import { BetterAuthProvider } from "@/lib/auth/context";
 import { getContextProps } from "@/lib/auth/context/get-context-props";
@@ -51,9 +50,6 @@ export const viewport: Viewport = {
   // intact.
   maximumScale: 5,
   viewportFit: "cover"
-  // NOTE: `interactiveWidget: "resizes-content"` was tried for the
-  // keyboard / empty-sheet issue but caused unexpected zoom behaviour
-  // on real iOS. Revisit when the SearchSheet layout is settled.
 };
 
 export default async function RootLayout({
@@ -104,7 +100,6 @@ export default async function RootLayout({
                           {children}
                           <SideDrawer />
                           <SideDrawerPullTab />
-                          <Controlbar />
                           <SearchSheet />
                         </ContentMask>
                       </Suspense>

@@ -1,0 +1,54 @@
+# .deployignore — paths excluded from the rsync that bootstraps /root/thehideaway
+# on the VPS for first deploy. Used by scripts/sync-repo-to-vps.sh.
+#
+# This is RSYNC exclude-file syntax — similar to .gitignore but with rsync's
+# anchoring rules. Patterns without a leading slash match anywhere; patterns
+# starting with / are anchored to the rsync source root.
+#
+# This is NOT .dockerignore. They overlap in spirit but have different goals:
+#   .dockerignore  — what doesn't go into the docker build context
+#   .deployignore  — what doesn't get rsync'd onto the VPS for bootstrap
+# A path can legitimately appear in one and not the other.
+
+# ── Version control / CI ─────────────────────────────────────────────────────
+.git
+.github
+
+# ── IDE / editor / OS ────────────────────────────────────────────────────────
+.claude
+.idea
+.vscode
+.DS_Store
+
+# ── Build artifacts ──────────────────────────────────────────────────────────
+node_modules
+.next
+.turbo
+dist
+coverage
+
+# ── Code archaeology (kept in repo for reference, not for prod) ──────────────
+.attic
+reference
+
+# ── Internal docs (you have these on your laptop already) ────────────────────
+# Comment this out if you want LAUNCH.md / DEPLOYMENT.md available on the VPS
+# for grep-during-incident purposes.
+readmes
+
+# ── Secrets ──────────────────────────────────────────────────────────────────
+# .env.production gets scp'd directly to /home/deploy/thehideaway/ in Step 6
+# with chmod 600 — never into /root/.
+.env
+.env.*
+
+# ── Runtime / volume-mounted ─────────────────────────────────────────────────
+# Bind-mounted on the VPS from /opt/thehideaway/assets/ (3D assets) or
+# named volumes (uploads). No need to ship them via rsync.
+public/assets
+public/media
+public/track_media
+public/users
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log

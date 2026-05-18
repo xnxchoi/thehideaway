@@ -1,0 +1,844 @@
+// Day n Night — page shell + immersive timeline styles.
+//
+// Two view modes share the same shell. The immersive view drives a custom
+// palette through CSS variables; the simplified view inherits the site theme.
+//
+// `overflow: clip` (not `hidden`) preserves GSAP ScrollTrigger pin spacers on
+// WebKit — same caveat as Pricing.module.scss.
+
+.shell {
+	--dn-bg: oklch(8% 0.02 280);
+	--dn-fg: oklch(96% 0.005 80);
+	--dn-fg-mute: oklch(72% 0.012 80);
+	--dn-fg-faint: oklch(56% 0.012 80);
+	--dn-line: oklch(28% 0.012 280);
+	--dn-accent-day: oklch(78% 0.18 60);
+	--dn-accent-night: oklch(74% 0.14 280);
+	--dn-progress: 0;
+
+	position: relative;
+	min-height: 100dvh;
+	background: var(--dn-bg);
+	color: var(--dn-fg);
+	isolation: isolate;
+	overflow: clip;
+}
+
+.shell[data-view="simplified"] {
+	--dn-bg: var(--background);
+	--dn-fg: var(--foreground);
+	--dn-fg-mute: oklch(from var(--foreground) l c h / 0.7);
+	--dn-fg-faint: oklch(from var(--foreground) l c h / 0.45);
+	--dn-line: oklch(from var(--foreground) l c h / 0.18);
+}
+
+// View toggle — minimal pill, top-right, always reachable.
+
+.toggle {
+	position: fixed;
+	top: 16px;
+	right: 16px;
+	z-index: 45; // sit above the site's global Canvas (z-index 40)
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	border-radius: 999px;
+	border: 1px solid var(--dn-line);
+	background: color-mix(in oklch, var(--dn-bg) 80%, transparent);
+	backdrop-filter: blur(10px);
+
+	@media (min-width: 768px) {
+		top: 24px;
+		right: 24px;
+	}
+}
+
+.toggleLabel {
+	display: none;
+	align-items: center;
+	padding: 0 10px 0 12px;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--dn-fg-mute);
+
+	@media (min-width: 768px) {
+		display: inline-flex;
+	}
+}
+
+.toggleBtn {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	color: var(--dn-fg-mute);
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	padding: 7px 13px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition:
+		background 0.25s ease,
+		color 0.25s ease;
+
+	&[data-active="true"] {
+		background: var(--dn-fg);
+		color: var(--dn-bg);
+	}
+
+	&:hover:not([data-active="true"]) {
+		color: var(--dn-fg);
+	}
+}
+
+// Simplified view — week.wild.plus-grade minimal card.
+
+.simplified {
+	min-height: 100dvh;
+	display: grid;
+	grid-template-rows: 1fr auto 1fr;
+	padding: 24px;
+	gap: 32px;
+
+	@media (min-width: 768px) {
+		padding: 40px;
+	}
+}
+
+.simplifiedTop,
+.simplifiedBottom {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--dn-fg-faint);
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.simplifiedBottom {
+	align-items: flex-end;
+}
+
+.simplifiedCenter {
+	display: grid;
+	gap: 14px;
+	max-width: 720px;
+
+	@media (min-width: 768px) {
+		gap: 18px;
+		max-width: 880px;
+	}
+}
+
+.simplifiedEyebrow {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--dn-fg-mute);
+}
+
+.simplifiedTitle {
+	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-size: clamp(3.2rem, 9vw, 8rem);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 0.92;
+	color: var(--dn-fg);
+}
+
+.simplifiedSubtitle {
+	font-size: clamp(1.4rem, 2vw, 1.9rem);
+	font-weight: 300;
+	letter-spacing: -0.01em;
+	color: var(--dn-fg-mute);
+	line-height: 1.35;
+	max-width: 50ch;
+}
+
+.simplifiedMeta {
+	margin-top: 12px;
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4px;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 12px;
+	color: var(--dn-fg-mute);
+	line-height: 1.6;
+
+	@media (min-width: 768px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		max-width: 540px;
+		gap: 6px 24px;
+	}
+}
+
+.simplifiedMetaRow {
+	display: grid;
+	grid-template-columns: 60px 1fr;
+	gap: 12px;
+	align-items: baseline;
+}
+
+.simplifiedMetaLabel {
+	color: var(--dn-fg-faint);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	font-size: 10px;
+}
+
+.simplifiedMetaValue {
+	color: var(--dn-fg);
+	letter-spacing: 0;
+	font-size: 13px;
+}
+
+.simplifiedCta {
+	margin-top: 24px;
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	align-self: flex-start;
+}
+
+.ctaPrimary {
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+	padding: 14px 26px;
+	border: 1px solid var(--dn-fg);
+	background: var(--dn-fg);
+	color: var(--dn-bg);
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition:
+		background 0.25s ease,
+		color 0.25s ease;
+	text-decoration: none;
+
+	&:hover {
+		background: transparent;
+		color: var(--dn-fg);
+	}
+}
+
+.ctaSecondary {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--dn-fg-faint);
+}
+
+// Immersive view.
+
+.immersive {
+	position: relative;
+	width: 100%;
+	min-height: 100dvh;
+}
+
+// Scene wrap — owns the scoped CSS vars (--reveal-x/y) that the loader
+// spotlight reads, and contains sky + sun + moon as positioned children.
+.sceneWrap {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	--reveal-x: 50%;
+	--reveal-y: 50%;
+}
+
+// Sky — fills the pinned timelineWrap (desktop) or stretches across the
+// stacked-act column (mobile). Position absolute so it stays in scope of the
+// GSAP-pinned ancestor instead of fighting the site's smooth-scroll
+// position:fixed-on-html setup.
+.sky {
+	--sky-top: oklch(8% 0.02 280);
+	--sky-mid: oklch(15% 0.04 290);
+	--sky-bottom: oklch(28% 0.08 320);
+
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background:
+		linear-gradient(
+			to bottom,
+			var(--sky-top) 0%,
+			var(--sky-mid) 55%,
+			var(--sky-bottom) 100%
+		);
+	transition: background 0.4s ease;
+	will-change: background;
+
+	// Soft horizon warmth band — bottom 20% glow.
+	&::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			ellipse 90% 30% at 50% 82%,
+			color-mix(in srgb, var(--sky-bottom) 60%, transparent) 0%,
+			transparent 70%
+		);
+		mix-blend-mode: screen;
+		pointer-events: none;
+	}
+}
+
+// Sun / moon — absolutely positioned glow disks inside the pinned wrap.
+// Hidden on mobile where the wrap unwinds into a tall stack and viewport-
+// relative % math doesn't apply cleanly.
+//
+// The `left/bottom/transform` transitions are the load-bearing piece of
+// the seamless preloader→scene handoff: when the phase flips to "playing",
+// SceneView writes new left/bottom values and the sun migrates smoothly
+// from its loader-centered spot to the scene-arc start, in lockstep with
+// the loader backdrop fade.
+.body {
+	--body-color: oklch(80% 0.15 60);
+	--body-scale: 1;
+
+	position: absolute;
+	left: 50%;
+	bottom: 50%;
+	width: 64px;
+	height: 64px;
+	margin-left: -32px;
+	margin-bottom: -32px;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at center,
+		var(--body-color) 0%,
+		color-mix(in srgb, var(--body-color) 60%, transparent) 55%,
+		transparent 75%
+	);
+	transform: scale(var(--body-scale));
+	z-index: 1;
+	pointer-events: none;
+	filter: blur(0.5px);
+	box-shadow:
+		0 0 80px 12px color-mix(in srgb, var(--body-color) 35%, transparent),
+		0 0 200px 40px color-mix(in srgb, var(--body-color) 15%, transparent);
+	transition:
+		left 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+		bottom 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+		opacity 0.4s ease;
+	will-change: left, bottom, opacity, transform;
+
+	@media (max-width: 1023px) {
+		display: none;
+	}
+}
+
+.body[data-kind="moon"] {
+	width: 48px;
+	height: 48px;
+	margin-left: -24px;
+	margin-bottom: -24px;
+	box-shadow:
+		0 0 60px 6px color-mix(in srgb, var(--body-color) 18%, transparent),
+		0 0 140px 24px color-mix(in srgb, var(--body-color) 8%, transparent);
+}
+
+// Horizontal timeline — pinned, scrubbed by vertical scroll.
+
+.timelineWrap {
+	position: relative;
+	width: 100%;
+	height: 100dvh;
+	overflow: hidden;
+	z-index: 3; // sit above sky (0), bodies (1), grain (2)
+}
+
+.timelineTrack {
+	display: flex;
+	height: 100%;
+	will-change: transform;
+}
+
+.act {
+	flex: 0 0 100vw;
+	height: 100%;
+	padding: 64px 24px;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	gap: 24px;
+	position: relative;
+
+	@media (min-width: 768px) {
+		padding: 88px 48px;
+	}
+
+	@media (min-width: 1280px) {
+		padding: 104px 80px;
+	}
+}
+
+.actHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 24px;
+}
+
+.actLabel {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: var(--dn-fg-mute);
+}
+
+.actLabelStrong {
+	font-family: var(--font-wide, var(--font-sans));
+	font-weight: 900;
+	font-size: clamp(1.4rem, 2vw, 1.8rem);
+	letter-spacing: 0.18em;
+	color: var(--dn-fg);
+}
+
+.actTime {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 12px;
+	letter-spacing: 0.16em;
+	color: var(--dn-fg-mute);
+}
+
+.actBody {
+	display: grid;
+	align-content: end;
+	gap: 20px;
+	max-width: 640px;
+}
+
+.actHeading {
+	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-weight: 700;
+	font-size: clamp(3rem, 6vw, 5.4rem);
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--dn-fg);
+}
+
+.actLede {
+	font-size: clamp(1.4rem, 1.6vw, 1.7rem);
+	line-height: 1.5;
+	font-weight: 300;
+	letter-spacing: -0.005em;
+	color: var(--dn-fg-mute);
+	max-width: 56ch;
+}
+
+.actFooter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px 32px;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--dn-fg-faint);
+}
+
+.actFooterItem {
+	display: inline-flex;
+	gap: 8px;
+	align-items: baseline;
+}
+
+.actFooterItemKey {
+	color: var(--dn-fg-faint);
+}
+
+.actFooterItemVal {
+	color: var(--dn-fg-mute);
+}
+
+// Dress code — paired columns.
+
+.dressCols {
+	display: grid;
+	gap: 32px;
+	max-width: 760px;
+
+	@media (min-width: 1024px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 48px;
+	}
+}
+
+.dressCol {
+	display: grid;
+	gap: 10px;
+}
+
+.dressColLabel {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--dn-fg-faint);
+}
+
+.dressColHeading {
+	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-weight: 700;
+	font-size: clamp(1.8rem, 2.4vw, 2.4rem);
+	line-height: 1.1;
+	color: var(--dn-fg);
+}
+
+.dressColBody {
+	font-size: 1.4rem;
+	line-height: 1.55;
+	color: var(--dn-fg-mute);
+	max-width: 42ch;
+	font-weight: 300;
+}
+
+// Closing act — RSVP final.
+
+.closingStack {
+	display: grid;
+	gap: 16px;
+	justify-items: start;
+	align-content: center;
+	max-width: 720px;
+}
+
+.closingEyebrow {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--dn-fg-mute);
+}
+
+.closingTitle {
+	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-weight: 700;
+	font-size: clamp(4rem, 9vw, 8.4rem);
+	line-height: 0.94;
+	letter-spacing: -0.02em;
+	color: var(--dn-fg);
+}
+
+.closingFee {
+	margin-top: 8px;
+	display: grid;
+	gap: 6px;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 12px;
+	color: var(--dn-fg-mute);
+}
+
+.closingFeeAmount {
+	font-family: var(--font-wide, var(--font-sans));
+	font-weight: 900;
+	font-size: 2.4rem;
+	letter-spacing: 0.04em;
+	color: var(--dn-fg);
+}
+
+// Loader — spotlight backdrop + chrome.
+//
+// The backdrop is a radial gradient with a transparent center at the sun's
+// position (CSS vars set by SceneView's rAF) and an opaque dark exterior.
+// As the sun rises, the spotlight follows. When the loader hands off, the
+// whole element fades to opacity 0 while the sun migrates to its scene
+// position via its own left/bottom transition.
+
+.loader {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	color: oklch(96% 0.005 80);
+	transition: opacity 0.7s ease;
+}
+
+.loader[data-hiding="true"] {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.loaderSpotlight {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(
+			circle 280px at var(--reveal-x, 50%) var(--reveal-y, 60%),
+			transparent 0%,
+			color-mix(in oklch, oklch(8% 0.02 280) 18%, transparent) 28%,
+			color-mix(in oklch, oklch(8% 0.02 280) 88%, transparent) 64%,
+			oklch(8% 0.02 280) 95%
+		);
+	pointer-events: none;
+}
+
+.loaderChrome {
+	position: absolute;
+	left: 50%;
+	bottom: 18%;
+	transform: translateX(-50%);
+	display: grid;
+	gap: 14px;
+	justify-items: center;
+	width: min(80vw, 320px);
+	text-align: center;
+}
+
+.loaderLabel {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: oklch(96% 0.005 80 / 0.55);
+}
+
+.loaderTitle {
+	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-size: 2.4rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: oklch(96% 0.005 80);
+}
+
+.loaderBar {
+	width: 100%;
+	height: 1px;
+	background: oklch(96% 0.005 80 / 0.12);
+	overflow: hidden;
+	position: relative;
+}
+
+.loaderBarFill {
+	position: absolute;
+	inset: 0;
+	background: oklch(96% 0.005 80 / 0.6);
+	transform-origin: left center;
+	transform: scaleX(0);
+	transition: transform 0.3s ease;
+}
+
+// Bottom timeline scrubber — fixed ruler with 5 act labels + position
+// indicator. Modeled on the bottom timeline in `compsych.konpo.co`.
+
+.scrubber {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 45;
+	padding: 18px 32px 22px;
+	display: grid;
+	gap: 10px;
+	pointer-events: none;
+	background: linear-gradient(
+		to top,
+		color-mix(in srgb, var(--dn-bg) 55%, transparent) 0%,
+		color-mix(in srgb, var(--dn-bg) 25%, transparent) 60%,
+		transparent 100%
+	);
+
+	@media (max-width: 1023px) {
+		display: none;
+	}
+}
+
+.scrubberTrack {
+	position: relative;
+	height: 18px;
+	pointer-events: none;
+}
+
+.scrubberTicks {
+	position: absolute;
+	inset: 0;
+	background-image: repeating-linear-gradient(
+		to right,
+		transparent 0,
+		transparent 11px,
+		color-mix(in srgb, var(--dn-fg) 22%, transparent) 11px,
+		color-mix(in srgb, var(--dn-fg) 22%, transparent) 12px
+	);
+	background-size: 12px 100%;
+	mask-image: linear-gradient(
+		to bottom,
+		transparent 0%,
+		black 50%,
+		black 80%,
+		transparent 100%
+	);
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		transparent 0%,
+		black 50%,
+		black 80%,
+		transparent 100%
+	);
+}
+
+.scrubberIndicator {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 28px;
+	height: 100%;
+	margin-left: -14px;
+	background:
+		linear-gradient(
+			to bottom,
+			transparent 0%,
+			var(--dn-accent-day) 35%,
+			var(--dn-accent-day) 65%,
+			transparent 100%
+		);
+	border-radius: 1px;
+	will-change: transform;
+	transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 0 14px 2px
+		color-mix(in srgb, var(--dn-accent-day) 35%, transparent);
+}
+
+.scrubberLabels {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	pointer-events: auto;
+}
+
+.scrubberLabel {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--dn-fg-mute);
+	padding: 6px 4px;
+	cursor: pointer;
+	text-align: left;
+	transition: color 0.25s ease;
+
+	&:hover {
+		color: var(--dn-fg);
+	}
+
+	&:nth-child(1) {
+		text-align: left;
+	}
+	&:nth-child(2),
+	&:nth-child(3),
+	&:nth-child(4) {
+		text-align: center;
+	}
+	&:nth-child(5) {
+		text-align: right;
+	}
+}
+
+// Scroll hint at viewport bottom on first immersive view.
+
+.scrollHint {
+	position: fixed;
+	left: 50%;
+	bottom: 80px; // sit above the scrubber
+	transform: translateX(-50%);
+	z-index: 45;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	color: var(--dn-fg-mute);
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	pointer-events: none;
+	transition: opacity 0.5s ease;
+}
+
+.scrollHint[data-hidden="true"] {
+	opacity: 0;
+}
+
+.scrollHintLine {
+	display: inline-block;
+	width: 28px;
+	height: 1px;
+	background: currentColor;
+	animation: scrollHintPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollHintPulse {
+	0%,
+	100% {
+		opacity: 0.4;
+		transform: translateX(-6px);
+	}
+	50% {
+		opacity: 1;
+		transform: translateX(6px);
+	}
+}
+
+// Mobile vertical fallback — at < lg, the horizontal timeline becomes stacked.
+
+@media (max-width: 1023px) {
+	.timelineWrap {
+		height: auto;
+		overflow: visible;
+	}
+
+	.timelineTrack {
+		flex-direction: column;
+		height: auto;
+		transform: none !important;
+	}
+
+	.act {
+		flex: 0 0 auto;
+		min-height: 100dvh;
+	}
+
+	.scrollHint {
+		display: none;
+	}
+}
+
+// Reduced-motion: loader skips animation; scroll hint hides.
+
+@media (prefers-reduced-motion: reduce) {
+	.loaderRing {
+		animation: none;
+		transform: none;
+	}
+
+	.scrollHintLine {
+		animation: none;
+	}
+}
+
+// Atmospheric grain overlay — sits above sky + bodies, below content. Lives
+// inside the pinned timelineWrap, so it inherits its positioning.
+
+.grain {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+	mix-blend-mode: overlay;
+	opacity: 0.45;
+}
