@@ -371,7 +371,7 @@ The reading layout container moves into a React `<ReadingContainer />` primitive
 
 **Problem:** Button labels, empty-state sub-copy, notification text, error messages — all drift in tone. Some formal, some terse, some cute.
 
-**Fix:** Iter 5 — one-page voice guide: verbs over nouns, no exclamation points, no "oops", uppercase mono labels in the UK-English "Quiet, specific, literary" register.
+**Fix:** Resolved. See **`readmes/VOICE.md`** — the canonical voice and translation guide. It covers English register, the verb set (hospitality vs technical), Korean porting rules, the three-register suffix system, the glossary, and the working procedure for adding new strings. All new copy must pass against §5 of that doc.
 
 ---
 

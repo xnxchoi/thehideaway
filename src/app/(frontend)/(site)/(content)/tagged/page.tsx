@@ -7,8 +7,6 @@ import { getPayload } from "payload";
 
 import PageClient from "./page.client";
 
-export const dynamic = "force-dynamic";
-
 type TagItem = {
   id: string;
   slug: string;

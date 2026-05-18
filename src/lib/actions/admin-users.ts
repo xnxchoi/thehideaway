@@ -25,15 +25,21 @@ const listUsersInput = z
     offset: z.number().int().min(0).default(0),
     sortBy: z.string().default("createdAt"),
     sortDirection: z.enum(["asc", "desc"]).default("desc"),
-    searchField: z.enum(["email", "name", "username"]).optional(),
+    searchField: z.enum(["email", "name"]).optional(),
     searchValue: z.string().optional()
   })
-  .default({});
+  .default({
+    limit: 12,
+    offset: 0,
+    sortBy: "createdAt",
+    sortDirection: "desc"
+  });
 
 const createUserInput = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().min(1),
+  username: z.string().min(1),
   role: z.enum(["admin", "user"]).default("user")
 });
 
@@ -48,7 +54,12 @@ const banUserInput = z.object({
 // ── Actions ────────────────────────────────────────────────────────────────
 
 export async function listUsersAction(raw?: z.input<typeof listUsersInput>) {
-  const input = listUsersInput.parse(raw ?? {});
+  const input = listUsersInput.parse(
+    raw ?? {
+      limit: 14,
+      sortBy: "createdAt"
+    }
+  );
   const { payload, headers } = await assertAdmin();
   return payload.betterAuth.api.listUsers({
     query: input,

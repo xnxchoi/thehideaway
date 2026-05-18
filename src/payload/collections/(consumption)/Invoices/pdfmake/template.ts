@@ -5,9 +5,29 @@ import {
   ContentTable,
   Margins,
   PageSize,
+  TableCell,
   TDocumentDefinitions,
   Content
 } from "pdfmake/interfaces";
+
+type RecurringPlan = {
+  id: string;
+  name: string;
+  price: string;
+};
+
+type InvoiceCurrencyCode = "usd" | "krw" | "eur";
+
+const toCurrencyCode = (value: unknown): InvoiceCurrencyCode => {
+  const raw =
+    typeof value === "string"
+      ? value
+      : value && typeof value === "object" && "name" in value
+        ? String((value as { name?: string }).name ?? "")
+        : "";
+  const lower = raw.toLowerCase();
+  return lower === "usd" || lower === "eur" ? lower : "krw";
+};
 import { DateTime } from "luxon";
 import { Invoice, Subscription, User } from "@/payload-types";
 import {
@@ -488,11 +508,16 @@ const totalTable = (
   strings: InvoiceStrings
 ): ContentTable => {
   const taxValue = info.tax ?? "0";
-  const row = (label: string, value: string, bold = false) => [
+  const row = (label: string, value: string, bold = false): TableCell[] => [
     {
       text: label,
       bold,
-      border: [false, false, false, false]
+      border: [false, false, false, false] as [
+        boolean,
+        boolean,
+        boolean,
+        boolean
+      ]
     },
     {
       text: value,
@@ -501,7 +526,12 @@ const totalTable = (
       font: "Joly",
       alignment: "right" as const,
       bold,
-      border: [false, false, false, false]
+      border: [false, false, false, false] as [
+        boolean,
+        boolean,
+        boolean,
+        boolean
+      ]
     }
   ];
   return {
@@ -561,7 +591,10 @@ export const invoiceTemplate = (
       [method: string]: { amount: number; currency: "usd" | "krw" | "eur" };
     } = {};
     info.payment_method?.forEach((m) => {
-      methods[m.method] = { amount: m.amount, currency: m.currency };
+      methods[m.method] = {
+        amount: m.amount,
+        currency: toCurrencyCode(m.currency)
+      };
     });
     template.content.push(
       methodField(

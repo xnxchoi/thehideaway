@@ -55,8 +55,8 @@ function Registerer(
   const form = useTypedAppFormContext({
     ...defaultOptions
   });
-  const name1 = useStore(form.store, (r) => r.values.identity.firstName);
-  const name2 = useStore(form.store, (r) => r.values.identity.lastName);
+  const name1 = useStore(form.store, (r) => r.values.profile.firstName);
+  const name2 = useStore(form.store, (r) => r.values.profile.lastName);
   return (
     <div ref={ref} className="relative z-5 h-full flex-1">
       <View

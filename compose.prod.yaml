@@ -5,12 +5,14 @@
 #
 # ── DEPLOY FLOW ──────────────────────────────────────────────────────────────
 #
-#  LOCAL (or CI):
-#    ./build.sh [git-sha]          — builds + tags both images, pushes to registry
+#  LAPTOP:
+#    pnpm release:cut 1.2.3        — gates + tag + push; CI builds and pushes
+#                                    pack + migrate images to ghcr.io.
 #
 #  VPS:
-#    IMAGE_TAG=<sha> ./prod.sh     — pulls + starts services
-#    ./prod.sh --migrate           — runs migrations (include before/after flag)
+#    ./scripts/deploy.sh v1.2.3    — pull from ghcr.io + rotate + smoke test
+#    ./scripts/deploy.sh v1.2.3 --migrate
+#                                  — same + pg_dump backup + migrations
 #
 # ── MIGRATION NOTES ──────────────────────────────────────────────────────────
 #
@@ -72,7 +74,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2g
+          # 4 GB VPS budget: payload 1.5g + postgres 1g + nginx 128m = 2.6 GB
+          # committed, leaving ~1.4 GB for OS + Docker overhead + page cache.
+          # Next.js standalone + Payload typically sits at 700–900 MB RSS, so
+          # 1.5 GB is roughly 2× steady-state headroom.
+          memory: 1500m
           cpus: "1.5"
     networks:
       - hideaway
@@ -123,7 +129,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          # nginx as a reverse-proxy + static-file server is overprovisioned
+          # at 256m on this stack. 128m is comfortable for the traffic ranges
+          # a 4 GB / 2-vCPU VPS can serve.
+          memory: 128m
           cpus: "0.5"
     networks:
       - hideaway
@@ -132,12 +141,26 @@ services:
   # PG 18 required: native uuidv7() function used throughout the schema.
   # DO NOT downgrade — UUID v7 generation would break.
   #
-  # Tuned for 4 GB RAM / HDD (random_page_cost=4 reflects spinning disk IOPS):
-  #   shared_buffers     = 1 GB   (25% of RAM)
-  #   effective_cache    = 2 GB   (50% of RAM)
-  #   work_mem           = 16 MB  (conservative; many concurrent sorts possible)
+  # Tuned for the budget Postgres actually gets (1 GB container cap below).
+  # Headroom = container_limit − shared_buffers − worst_case_work_mem_pool.
+  #   shared_buffers       = 384 MB  (~37% of container; conventional 25% rule
+  #                                   from bare-metal docs doesn't apply when
+  #                                   OS page cache shares the same limit)
+  #   effective_cache_size = 512 MB  (planner hint; honest about what page cache
+  #                                   is available INSIDE the 1 GB container.
+  #                                   1 GB would mislead the planner toward
+  #                                   warm-cache index plans on cold HDD data)
+  #   work_mem             = 12 MB   (per-sort/hash; max_connections × work_mem
+  #                                   = 360 MB worst case + shared_buffers
+  #                                   = 744 MB, leaves ~280 MB for backends +
+  #                                   WAL + OS overhead inside the 1 GB limit)
   #   maintenance_work_mem = 128 MB
-  #   max_connections    = 50     (app pool capped at 15 in payload.config.ts)
+  #   max_connections      = 30      (app pool capped at 15 in payload.config.ts;
+  #                                   PG reserves 3 for superusers, so the
+  #                                   effective non-super limit is 27. Headroom
+  #                                   = 12 for migrate/backup/psql/Dockge)
+  #   random_page_cost     = 4       (HDD; for SSD use 1.1–1.5 for NVMe, 2.0
+  #                                   for network-attached SSD. Never set to 1.0)
   postgres:
     container_name: postgres
     image: postgres:18-alpine
@@ -150,23 +173,30 @@ services:
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB}"]
+      # Authenticated probe: pg_isready only confirms the socket is open; this
+      # also verifies pg_hba.conf accepts the credentials AND the target DB
+      # exists. Catches the (rare) case where the cluster is up but auth or
+      # initdb left things in a bad state. PGPASSWORD lives in argv inside the
+      # container only — same trust boundary as POSTGRES_PASSWORD itself.
+      test:
+        - "CMD-SHELL"
+        - "PGPASSWORD=$$POSTGRES_PASSWORD psql -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB} -tAc 'SELECT 1' >/dev/null"
       interval: 5s
       timeout: 5s
       retries: 5
     command: >
       postgres
-      -c shared_buffers=1GB
-      -c effective_cache_size=2GB
-      -c work_mem=16MB
+      -c shared_buffers=384MB
+      -c effective_cache_size=512MB
+      -c work_mem=12MB
       -c maintenance_work_mem=128MB
       -c random_page_cost=4
-      -c max_connections=50
+      -c max_connections=30
       -c log_min_duration_statement=1000
     deploy:
       resources:
         limits:
-          memory: 1500m
+          memory: 1024m
           cpus: "1"
     networks:
       - hideaway

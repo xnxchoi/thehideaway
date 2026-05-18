@@ -37,7 +37,7 @@ export const ArchiveBlock: React.FC<
         }
       }
     });
-    posts = fetchedPosts;
+    posts = fetchedPosts.docs;
   } else if (selectedDocs?.length) {
     const fetchFilteredPosts = await queryPostOverviews({
       limit,
@@ -48,7 +48,7 @@ export const ArchiveBlock: React.FC<
         }
       }
     });
-    posts = fetchFilteredPosts;
+    posts = fetchFilteredPosts.docs;
   }
   return (
     <div className="my-16" id={`block-${id}`}>

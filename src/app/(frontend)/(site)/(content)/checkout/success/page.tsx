@@ -2,8 +2,6 @@ import { Link } from "@/components/core/Link/Link";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import { RPage } from "@/components/UX/Transition";
 
-export const dynamic = "force-dynamic";
-
 type SearchParams = Promise<{ sub?: string; pending?: string }>;
 
 export default async function CheckoutSuccess(props: {

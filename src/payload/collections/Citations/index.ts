@@ -3,18 +3,18 @@ import type {
   ReturnedCitationData,
   UpdateCitationData
 } from "@/components/UX/Highlightr/types";
-import {Citation} from "@/payload-types";
-import {citationHandler} from "@/payload/collections/Citations/endpoints";
-import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
-import {hashContent} from "@/payload/fields/slug/HashId/hasher";
+import { Citation } from "@/payload-types";
+import { citationHandler } from "@/payload/collections/Citations/endpoints";
+import { authorFields } from "@/payload/fields/AuthorField/AuthorField";
+import { hashContent } from "@/payload/fields/slug/HashId/hasher";
 import {
   type CollectionAfterReadHook,
   type CollectionBeforeValidateHook,
   CollectionConfig,
   Where
 } from "payload";
-import {filterByCurrentUser} from "../helpers";
-import {getUserOverview} from "../Posts/api/queryPostOverviews";
+import { filterByCurrentUser } from "../helpers";
+import { getUserOverview } from "../Posts/api/queryPostOverviews";
 
 const beforeValidateCitation: CollectionBeforeValidateHook<Citation> = async (
   args
@@ -177,7 +177,7 @@ export const Citations: CollectionConfig = {
       if (!user) {
         return false;
       }
-      if (user.banned) {
+      if ("banned" in user && user.banned) {
         return false;
       }
       return true;
@@ -189,7 +189,7 @@ export const Citations: CollectionConfig = {
         return true;
       }
       const user = req.user;
-      if (!user || user.banned) {
+      if (!user || ("banned" in user && user.banned)) {
         return false;
       }
       if (["editor", "admin"].some((role) => role === user.role)) {
@@ -208,7 +208,7 @@ export const Citations: CollectionConfig = {
         return true;
       }
       const user = req.user;
-      if (!user || user.banned) {
+      if (!user || ("banned" in user && user.banned)) {
         return false;
       }
       if (["editor", "admin"].some((role) => role === user.role)) {
@@ -306,7 +306,7 @@ export const Citations: CollectionConfig = {
         readOnly: true
       }
     },
-	  ...authorFields(false),
+    ...authorFields(false),
     {
       access: {
         read: () => true,

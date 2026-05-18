@@ -1,0 +1,193 @@
+# .github/workflows/release.yml
+#
+# Triggered by pushing a semver tag (e.g. `git push origin v1.2.3`).
+# Builds the runtime + migration images and publishes them to ghcr.io.
+#
+# Flow:
+#   1. Decrypt .env.production.enc (sops + age) so `pnpm build` can bake
+#      NEXT_PUBLIC_* values into the client bundle.
+#   2. Run validation gates: env schema, deploy-manifest drift, template drift.
+#   3. pnpm install + pnpm build.
+#   4. Verify .next/standalone exists (host-side preflight from build.sh).
+#   5. Build + push runtime image (pack.Dockerfile) and migration image
+#      (migrate.Dockerfile) to ghcr.io.
+#
+# Secrets required at <https://github.com/xnxchoi/thehideaway/settings/secrets/actions>:
+#   SOPS_AGE_KEY   — contents of ~/.config/sops/age/keys.txt on the laptop.
+#                    Set ONCE; never needs rotation unless you rotate the age
+#                    keypair itself.
+#
+# Note: GITHUB_TOKEN with packages:write is provided automatically; no extra
+# PAT setup needed for the push side. (The VPS still needs its own PAT/token
+# for `docker pull`.)
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*" # pre-releases: v1.2.3-rc.1, v1.2.3-beta
+
+# Only one release run per tag at a time. If you push the same tag twice
+# (force-push to a tag, etc.), the older run cancels.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # reserved for future OIDC-to-registry auth
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_RUNTIME: ghcr.io/${{ github.repository_owner }}/hideaway
+  IMAGE_MIGRATE: ghcr.io/${{ github.repository_owner }}/hideaway-migrate
+  # Docker buildx layer cache. `gha` mode stores layers in the GitHub Actions
+  # cache (shared across runs of this workflow); first build is slow, every
+  # subsequent build picks up where the last left off.
+  BUILDX_CACHE_MODE: max
+
+jobs:
+  build-and-push:
+    name: build & push ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history isn't needed, but tag annotation requires depth >= 2
+          # so the tag commit is reachable.
+          fetch-depth: 1
+
+      - name: Setup Node + pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          # pnpm comes from the `packageManager` field in package.json via corepack.
+          cache: pnpm
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+          pnpm --version
+
+      - name: Install sops + age
+        run: |
+          # age comes from apt (Ubuntu 24.04 runners ship with it).
+          # sops we fetch the official release binary (single static Go binary)
+          # AND verify its sha256 against the official checksum. Bump both
+          # values here AND in scripts/server-setup.sh in lockstep.
+          sudo apt-get update -qq
+          sudo apt-get install -yq age
+
+          SOPS_VERSION=v3.13.1
+          SOPS_SHA256=620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a
+          curl -fsSL -o /tmp/sops \
+            "https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64"
+          echo "${SOPS_SHA256}  /tmp/sops" | sha256sum -c -
+          sudo install -m 0755 /tmp/sops /usr/local/bin/sops
+          sops --version --disable-version-check
+
+      - name: Decrypt .env.production
+        run: |
+          umask 077
+          echo "${SOPS_AGE_KEY}" > /tmp/age.key
+          chmod 600 /tmp/age.key
+          SOPS_AGE_KEY_FILE=/tmp/age.key \
+            sops --decrypt --input-type dotenv --output-type dotenv \
+              .env.production.enc > .env.production
+          chmod 600 .env.production
+          echo "✓ .env.production materialized ($(wc -l < .env.production) lines)"
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+      - name: Validation gates
+        run: |
+          set -euo pipefail
+          # Each of these exits non-zero on drift / schema failure.
+          # Same gates a dev runs locally via `pnpm release:cut`.
+          pnpm verify:env .env.production
+          pnpm verify:deploy-rules
+          pnpm env:template:verify
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Next.js (standalone)
+        run: pnpm build
+        env:
+          # Next.js loads .env.production automatically when NODE_ENV=production
+          # OR when invoked as `next build`. Set explicitly for clarity.
+          NODE_ENV: production
+
+      - name: Standalone preflight
+        run: |
+          if [[ ! -f .next/standalone/server.js || ! -d .next/static ]]; then
+            echo "✗ .next/standalone/server.js or .next/static is missing." >&2
+            echo "  pack.Dockerfile requires next.config.ts to set output: \"standalone\"." >&2
+            exit 1
+          fi
+          echo "✓ standalone output present"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          VERSION="${GITHUB_REF_NAME}" # e.g. v1.2.3
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          # `:latest` only follows non-pre-release tags (no `-` in the tag).
+          if [[ "${VERSION}" == *-* ]]; then
+            echo "is_prerelease=1" >> "${GITHUB_OUTPUT}"
+          else
+            echo "is_prerelease=" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Build & push runtime image (pack.Dockerfile)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: pack.Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_RUNTIME }}:${{ steps.tags.outputs.version }}
+            ${{ steps.tags.outputs.is_prerelease == '' && format('{0}:latest', env.IMAGE_RUNTIME) || '' }}
+          cache-from: type=gha,scope=runtime
+          cache-to: type=gha,scope=runtime,mode=${{ env.BUILDX_CACHE_MODE }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.tags.outputs.version }}
+
+      - name: Build & push migration image (migrate.Dockerfile)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: migrate.Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_MIGRATE }}:${{ steps.tags.outputs.version }}
+            ${{ steps.tags.outputs.is_prerelease == '' && format('{0}:latest', env.IMAGE_MIGRATE) || '' }}
+          cache-from: type=gha,scope=migrate
+          cache-to: type=gha,scope=migrate,mode=${{ env.BUILDX_CACHE_MODE }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.tags.outputs.version }}
+
+      - name: Always — shred decrypted env
+        if: always()
+        run: |
+          rm -f /tmp/age.key .env.production
+          echo "✓ decrypt artifacts removed"

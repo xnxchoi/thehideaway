@@ -1,54 +1,55 @@
-# .deployignore — paths excluded from the rsync that bootstraps /root/thehideaway
-# on the VPS for first deploy. Used by scripts/sync-repo-to-vps.sh.
-#
-# This is RSYNC exclude-file syntax — similar to .gitignore but with rsync's
-# anchoring rules. Patterns without a leading slash match anywhere; patterns
-# starting with / are anchored to the rsync source root.
-#
-# This is NOT .dockerignore. They overlap in spirit but have different goals:
-#   .dockerignore  — what doesn't go into the docker build context
-#   .deployignore  — what doesn't get rsync'd onto the VPS for bootstrap
-# A path can legitimately appear in one and not the other.
+# .deployignore - GENERATED FROM deploy-manifest.json. DO NOT EDIT BY HAND.
+# Edit deploy-manifest.json, then run `pnpm sync:deploy-rules`.
+# CI runs `pnpm verify:deploy-rules` to catch drift.
 
-# ── Version control / CI ─────────────────────────────────────────────────────
+# ── Version control ────────────────────────────────────────
 .git
+#   CI workflows belong on GitHub, not on the VPS
 .github
 
-# ── IDE / editor / OS ────────────────────────────────────────────────────────
+# ── IDE / editor / OS ────────────────────────────────────────
 .claude
 .idea
 .vscode
 .DS_Store
 
-# ── Build artifacts ──────────────────────────────────────────────────────────
+# ── Build artifacts ────────────────────────────────────────
+#   Docker builder stage installs fresh; rsync never benefits from shipping
+#   these.
 node_modules
+#   Must NOT be in .dockerignore - pack.Dockerfile explicitly COPYs
+#   .next/standalone and .next/static.
 .next
 .turbo
 dist
 coverage
 
-# ── Code archaeology (kept in repo for reference, not for prod) ──────────────
+# ── Code archaeology ────────────────────────────────────────
 .attic
+#   Was previously rsync-only - extending to docker keeps the image consistent
+#   with the dev exclusion intent.
 reference
 
-# ── Internal docs (you have these on your laptop already) ────────────────────
-# Comment this out if you want LAUNCH.md / DEPLOYMENT.md available on the VPS
-# for grep-during-incident purposes.
-
-
-# ── Secrets ──────────────────────────────────────────────────────────────────
-# .env.production gets scp'd directly to /home/deploy/thehideaway/ in Step 6
-# with chmod 600 — never into /root/.
+# ── Secrets ────────────────────────────────────────
 .env
+#   .env.production gets scp'd directly to /home/deploy/thehideaway/ with chmod
+#   600 - never via rsync.
 .env.*
 
-# ── Runtime / volume-mounted ─────────────────────────────────────────────────
-# Bind-mounted on the VPS from /opt/thehideaway/assets/ (3D assets) or
-# named volumes (uploads). No need to ship them via rsync.
-public/assets
-public/media
-public/track_media
-public/users
+# ── Runtime-managed upload directories (named volumes) ────────────────────────────────────────
+#   compose.prod.yaml mounts payload_media at /app/public/media.
+public/media/
+#   Named volume payload_track_media.
+public/track_media/
+#   Named volume payload_users.
+public/users/
 
-# ── Logs ─────────────────────────────────────────────────────────────────────
+# ── Large 3D static assets (bind-mounted at runtime) ────────────────────────────────────────
+#   Rsync excludes the whole assets/ tree on first-deploy bootstrap; the VPS
+#   gets these via a separate rsync to /opt/thehideaway/assets/. Smaller items
+#   under public/assets/ (SVGs, fonts) are restored later by the deploy user's
+#   git clone, which overlays the rsync'd repo dir.
+public/assets
+
+# ── Logs ────────────────────────────────────────
 *.log

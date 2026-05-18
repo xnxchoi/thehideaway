@@ -7,8 +7,6 @@ import { generateMeta } from "@/utilities/generateMeta";
 import type { Metadata } from "next";
 import PageClient from "./page.client";
 
-export const dynamic = "force-dynamic";
-
 type Args = {
   params: Promise<{
     slug?: string;

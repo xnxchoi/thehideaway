@@ -4,9 +4,9 @@ import { FieldLabel, RenderCustomComponent } from "@payloadcms/ui";
 import { CheckIcon, DividerVerticalIcon } from "@radix-ui/react-icons";
 import type { StaticLabel } from "payload";
 
-import React from "react";
+import React, { ChangeEvent } from "react";
 
-export type CheckboxInputProps = {
+export interface CheckboxInputProps {
   readonly AfterInput?: React.ReactNode;
   readonly BeforeInput?: React.ReactNode;
   readonly checked?: boolean;
@@ -17,11 +17,11 @@ export type CheckboxInputProps = {
   readonly label?: StaticLabel;
   readonly localized?: boolean;
   readonly name?: string;
-  readonly onToggle: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  readonly onToggle: (event: ChangeEvent<HTMLInputElement>) => void;
   readonly partialChecked?: boolean;
   readonly readOnly?: boolean;
   readonly required?: boolean;
-};
+}
 
 export const inputBaseClass = "checkbox-input";
 

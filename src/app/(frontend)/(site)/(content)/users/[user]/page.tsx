@@ -11,8 +11,6 @@ import { redirect } from "next/navigation";
 import { getPayload, PaginatedDocs } from "payload";
 import React from "react";
 
-export const dynamic = "force-dynamic";
-
 type Args = {
   params: Promise<{
     user?: string;

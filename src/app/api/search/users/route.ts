@@ -5,7 +5,7 @@ import { headers as nextHeaders } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getPayload } from "payload";
 
-interface UserSearchResult {
+type UserSearchResult = {
   id: string;
   username: string;
   slug: string;
@@ -15,7 +15,8 @@ interface UserSearchResult {
   location?: string;
   rank?: number;
   similarity_score?: number;
-}
+  [key: string]: unknown;
+};
 
 const MAX_QUERY_LENGTH = 100;
 
@@ -43,13 +44,13 @@ export async function GET(request: NextRequest) {
 
   try {
     // Use PostgreSQL full-text search with ranking
-    const ftsResults = await payload.db.drizzle.execute<UserSearchResult[]>(
+    const ftsQuery = await payload.db.drizzle.execute<UserSearchResult>(
       sql`
-      SELECT 
+      SELECT
         id, username, slug, name, image, bio, location,
         ts_rank(search_vector, plainto_tsquery('simple', ${query})) as rank
-      FROM users 
-      WHERE 
+      FROM users
+      WHERE
         search_vector @@ plainto_tsquery('simple', ${query})
         AND _status = 'published'
         AND banned = false
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
       LIMIT 10
     `
     );
+    const ftsResults = ftsQuery.rows;
 
     // Fallback to trigram similarity for partial matches.
     // Build the NOT IN clause with parameterized values (no sql.raw) so
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest) {
           )})`
         : sql``;
 
-    const similarResults = await payload.db.drizzle.execute<UserSearchResult[]>(
+    const similarQuery = await payload.db.drizzle.execute<UserSearchResult>(
       sql`
       SELECT DISTINCT
         id, username, slug, name, image, bio, location,
@@ -92,6 +94,7 @@ export async function GET(request: NextRequest) {
       LIMIT ${Math.max(0, 10 - ftsResults.length)}
     `
     );
+    const similarResults = similarQuery.rows;
 
     const allResults = [...ftsResults, ...similarResults]
       .slice(0, 10)

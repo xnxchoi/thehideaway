@@ -27,7 +27,8 @@
 #   OR (after nginx is running on port 80):
 #   certbot certonly --webroot -w /var/www/certbot -d hideawayseoul.com
 #
-# Then: copy .env.production to /home/deploy/thehideaway/ and run prod.sh.
+# Then: scp the age key (`scp ~/.config/sops/age/keys.txt root@<host>:/etc/age/keys.txt`),
+# clone the repo into /home/deploy/thehideaway/, and run scripts/deploy.sh <tag>.
 
 set -Eeuo pipefail
 
@@ -317,10 +318,10 @@ else
   echo "  User deploy already exists — ensured docker group membership"
 fi
 
-# Scoped sudo for deploy — *only* the commands prod.sh / backup.sh / certbot
-# need. If the deploy SSH key is ever compromised, the attacker is contained
-# to docker/compose/certbot operations; they can't read /etc/shadow, install
-# rootkits, modify sshd, or run arbitrary commands as root.
+# Scoped sudo for deploy — *only* the commands scripts/deploy.sh / backup.sh /
+# certbot need. If the deploy SSH key is ever compromised, the attacker is
+# contained to docker/compose/certbot operations; they can't read /etc/shadow,
+# install rootkits, modify sshd, or run arbitrary commands as root.
 #
 # To extend: add the absolute path of any new command the deploy user must run
 # with privileges. Never widen this to ALL=(ALL) NOPASSWD: ALL — that erases
@@ -446,6 +447,47 @@ install -o deploy -g deploy -m 0700 -d /home/deploy/backups
 # App repo directory (deploy user clones here)
 install -o deploy -g deploy -m 0755 -d /home/deploy/thehideaway
 
+# sops + age — directory only. The keys.txt private key file is sensitive and
+# is NOT created here; the operator scp's it from the laptop after this script
+# finishes. Directory perms: root:deploy 0750 — only members of `deploy` group
+# can traverse, so the deploy user can read its own files inside but no other
+# local user can. The key file itself goes in as root:deploy 0640.
+install -o root -g deploy -m 0750 -d /etc/age
+if [[ ! -f /etc/age/keys.txt ]]; then
+  warn "  /etc/age/keys.txt not yet present."
+  warn "  After this script finishes, scp it from your laptop and adjust perms:"
+  warn "    scp ~/.config/sops/age/keys.txt root@<host>:/etc/age/keys.txt"
+  warn "    ssh root@<host> 'chown root:deploy /etc/age/keys.txt && chmod 640 /etc/age/keys.txt'"
+fi
+
+# Deploy state (current-tag, previous-tag markers used by scripts/deploy.sh).
+# 0750 — readable by the deploy user only (no leaks of deployed version
+# strings to other local users on a multi-tenant host).
+install -o deploy -g deploy -m 0750 -d /var/lib/hideaway
+
+# sops binary — fetch the official release if not already present. Pinned
+# version + sha256 must match what CI uses (.github/workflows/release.yml).
+# Update both files in lockstep on version bumps. Official checksums are at
+# https://github.com/getsops/sops/releases/download/<version>/<version>.checksums.txt
+if ! command -v sops >/dev/null 2>&1; then
+  SOPS_VERSION=v3.13.1
+  SOPS_SHA256=620a9d7e3352ababeca6908cea24a6e8b14ce89a448ddbd3f94f1ef3398f470a
+  info "  Installing sops ${SOPS_VERSION}..."
+  curl -fsSL -o /tmp/sops \
+    "https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64"
+  echo "${SOPS_SHA256}  /tmp/sops" | sha256sum -c - \
+    || { rm -f /tmp/sops; error "  sops sha256 mismatch — refusing to install."; exit 1; }
+  install -m 0755 /tmp/sops /usr/local/bin/sops
+  rm -f /tmp/sops
+  echo "    sops $(sops --version --disable-version-check 2>/dev/null || echo unknown)"
+fi
+
+# age binary — comes from apt on Ubuntu 22.04+.
+if ! command -v age >/dev/null 2>&1; then
+  info "  Installing age..."
+  DEBIAN_FRONTEND=noninteractive apt-get install -yq age
+fi
+
 echo "  Base directories created"
 
 # ── Asset tree (driven by manifest, not hardcoded) ───────────────────────────
@@ -505,7 +547,7 @@ Unattended-Upgrade::Allowed-Origins {
 Unattended-Upgrade::Package-Blacklist {};
 Unattended-Upgrade::AutoFixInterruptedDpkg "true";
 Unattended-Upgrade::MinimalSteps "true";
-// Do NOT reboot automatically — coordinate with prod.sh deploy window
+// Do NOT reboot automatically — coordinate with scripts/deploy.sh windows
 Unattended-Upgrade::Automatic-Reboot "false";
 Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
@@ -560,9 +602,10 @@ echo ""
 echo "  4. Clone the repo and deploy:"
 echo "       su - deploy"
 echo "       cd thehideaway"
-echo "       cp .env.production.example .env.production  # fill in secrets"
+echo "       # Encrypted env (.env.production.enc) is already in the repo;"
+echo "       # ensure the age key is at /etc/age/keys.txt (root:root 600)."
 echo "       docker network create --ipv6=true hideaway"
-echo "       IMAGE_TAG=<sha> ./prod.sh"
+echo "       ./scripts/deploy.sh v1.2.3 --migrate    # initial release"
 echo ""
 echo "  5. (Optional) Tunnel into Dockge for GUI compose admin:"
 echo "       # On your laptop:"

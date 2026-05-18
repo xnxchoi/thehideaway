@@ -1,7 +1,5 @@
 import type { Metadata } from "next/types";
 
-export const dynamic = "force-dynamic";
-
 import { Pagination } from "@/payload/components/Pagination";
 
 import PageClient from "./page.client";

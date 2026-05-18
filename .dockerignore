@@ -1,38 +1,46 @@
-.git
-node_modules/
-.attic/
-/src/lib/auth/auth-payload/
-!/src/payload/collections/Users/c/dd.js
+# .dockerignore - GENERATED FROM deploy-manifest.json. DO NOT EDIT BY HAND.
+# Edit deploy-manifest.json, then run `pnpm sync:deploy-rules`.
+# CI runs `pnpm verify:deploy-rules` to catch drift.
 
+# ── Version control ────────────────────────────────────────
+.git
+
+# ── Build artifacts ────────────────────────────────────────
+#   Docker builder stage installs fresh; rsync never benefits from shipping
+#   these.
+node_modules
+
+# ── Code archaeology ────────────────────────────────────────
+.attic
+#   Was previously rsync-only - extending to docker keeps the image consistent
+#   with the dev exclusion intent.
+reference
+
+# ── Dormant source (Docker image only) ────────────────────────────────────────
+#   Legacy auth code superseded by src/lib/auth/payload-auth/.
+/src/lib/auth/auth-payload/
+#   Negation preserved verbatim from the original .dockerignore. Path does not
+#   overlap the rule above, so this is effectively a no-op - kept to avoid
+#   behavior drift in this phase.
+!/src/payload/collections/Users/c/dd.js
+#   Demo/archive page not shipped to prod.
 /src/app/(frontend)/(site)/(content)/essays/DemoOfArchive.tsx
 
-# Payload runtime upload directories — managed via Docker named volumes.
-# These are written by Payload CMS at runtime (media uploads, user avatars,
-# audio tracks). They must NOT be baked into the image:
-#   1. Dev content would be shipped to production.
-#   2. Files uploaded in production would vanish on container restart
-#      unless mounted as a persistent volume.
-# compose.prod.yaml mounts these as named volumes on the VPS.
+# ── Runtime-managed upload directories (named volumes) ────────────────────────────────────────
+#   compose.prod.yaml mounts payload_media at /app/public/media.
 public/media/
+#   Named volume payload_track_media.
 public/track_media/
+#   Named volume payload_users.
 public/users/
-# assets/media is the Assets collection upload dir (small, same principle)
+#   Assets collection upload dir (named volume payload_assets_media).
 public/assets/media/
 
-# ── Large 3D static assets (~432 MB combined) ────────────────────────────────
-# These binary/texture files are committed to git for local dev but must NOT
-# be baked into the production Docker image — they're served as plain static
-# files and have no build-time role.
-#
-# compose.prod.yaml mounts them from the VPS filesystem at runtime.
-#
-# BOOTSTRAP (run once before first prod deploy):
-#   rsync -av --progress ./public/assets/plate/     <vps>:/opt/thehideaway/assets/plate/
-#   rsync -av --progress ./public/assets/rp_plaque/ <vps>:/opt/thehideaway/assets/rp_plaque/
-#   rsync -av --progress ./public/assets/three/     <vps>:/opt/thehideaway/assets/three/
-#
-# After that, deploys are fast — the VPS host dirs persist across container
-# restarts because bind mounts are never rebuilt like named volumes.
+# ── Large 3D static assets (bind-mounted at runtime) ────────────────────────────────────────
+#   Bind-mounted from /opt/thehideaway/assets/plate on the VPS. ~432 MB combined
+#   across plate/rp_plaque/three.
 public/assets/plate/
+#   Bind-mounted from /opt/thehideaway/assets/rp_plaque.
 public/assets/rp_plaque/
+#   Bind-mounted from /opt/thehideaway/assets/three.
 public/assets/three/

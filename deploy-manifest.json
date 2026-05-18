@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "comment": "Source of truth for paths excluded from prod deployment surfaces. One rule per row; `exclude_from` lists which generated ignore files the rule appears in (`docker` -> .dockerignore, `rsync` -> .deployignore). Edit this file, then run `pnpm sync:deploy-rules` to regenerate both files. Both .dockerignore and .deployignore stay tracked in git so a fresh clone deploys without needing the regen step. CI runs `pnpm verify:deploy-rules` to catch drift.",
+  "generated_files": {
+    "docker": ".dockerignore",
+    "rsync": ".deployignore"
+  },
+  "sections": [
+    {
+      "title": "Version control",
+      "rules": [
+        { "id": "git",       "pattern": ".git",    "exclude_from": ["docker", "rsync"] },
+        { "id": "github-ci", "pattern": ".github", "exclude_from": ["rsync"], "note": "CI workflows belong on GitHub, not on the VPS" }
+      ]
+    },
+    {
+      "title": "IDE / editor / OS",
+      "rules": [
+        { "id": "claude-cfg", "pattern": ".claude",   "exclude_from": ["rsync"] },
+        { "id": "jetbrains",  "pattern": ".idea",     "exclude_from": ["rsync"] },
+        { "id": "vscode",     "pattern": ".vscode",   "exclude_from": ["rsync"] },
+        { "id": "ds-store",   "pattern": ".DS_Store", "exclude_from": ["rsync"] }
+      ]
+    },
+    {
+      "title": "Build artifacts",
+      "rules": [
+        { "id": "node-modules", "pattern": "node_modules", "exclude_from": ["docker", "rsync"], "note": "Docker builder stage installs fresh; rsync never benefits from shipping these." },
+        { "id": "next",         "pattern": ".next",        "exclude_from": ["rsync"], "note": "Must NOT be in .dockerignore - pack.Dockerfile explicitly COPYs .next/standalone and .next/static." },
+        { "id": "turbo",        "pattern": ".turbo",       "exclude_from": ["rsync"] },
+        { "id": "dist",         "pattern": "dist",         "exclude_from": ["rsync"] },
+        { "id": "coverage",     "pattern": "coverage",     "exclude_from": ["rsync"] }
+      ]
+    },
+    {
+      "title": "Code archaeology",
+      "rules": [
+        { "id": "attic",     "pattern": ".attic",    "exclude_from": ["docker", "rsync"] },
+        { "id": "reference", "pattern": "reference", "exclude_from": ["docker", "rsync"], "note": "Was previously rsync-only - extending to docker keeps the image consistent with the dev exclusion intent." }
+      ]
+    },
+    {
+      "title": "Secrets",
+      "rules": [
+        { "id": "env-base",  "pattern": ".env",   "exclude_from": ["rsync"] },
+        { "id": "env-globs", "pattern": ".env.*", "exclude_from": ["rsync"], "note": ".env.production gets scp'd directly to /home/deploy/thehideaway/ with chmod 600 - never via rsync." }
+      ]
+    },
+    {
+      "title": "Dormant source (Docker image only)",
+      "rules": [
+        { "id": "auth-payload-legacy", "pattern": "/src/lib/auth/auth-payload/", "exclude_from": ["docker"], "note": "Legacy auth code superseded by src/lib/auth/payload-auth/." },
+        { "id": "auth-payload-keep",   "pattern": "!/src/payload/collections/Users/c/dd.js", "exclude_from": ["docker"], "note": "Negation preserved verbatim from the original .dockerignore. Path does not overlap the rule above, so this is effectively a no-op - kept to avoid behavior drift in this phase." },
+        { "id": "essay-demo",          "pattern": "/src/app/(frontend)/(site)/(content)/essays/DemoOfArchive.tsx", "exclude_from": ["docker"], "note": "Demo/archive page not shipped to prod." }
+      ]
+    },
+    {
+      "title": "Runtime-managed upload directories (named volumes)",
+      "rules": [
+        { "id": "uploads-media",        "pattern": "public/media/",        "exclude_from": ["docker", "rsync"], "note": "compose.prod.yaml mounts payload_media at /app/public/media." },
+        { "id": "uploads-track-media",  "pattern": "public/track_media/",  "exclude_from": ["docker", "rsync"], "note": "Named volume payload_track_media." },
+        { "id": "uploads-users",        "pattern": "public/users/",        "exclude_from": ["docker", "rsync"], "note": "Named volume payload_users." },
+        { "id": "uploads-assets-media", "pattern": "public/assets/media/", "exclude_from": ["docker"],          "note": "Assets collection upload dir (named volume payload_assets_media)." }
+      ]
+    },
+    {
+      "title": "Large 3D static assets (bind-mounted at runtime)",
+      "rules": [
+        { "id": "asset-plate",        "pattern": "public/assets/plate/",     "exclude_from": ["docker"], "note": "Bind-mounted from /opt/thehideaway/assets/plate on the VPS. ~432 MB combined across plate/rp_plaque/three." },
+        { "id": "asset-rp-plaque",    "pattern": "public/assets/rp_plaque/", "exclude_from": ["docker"], "note": "Bind-mounted from /opt/thehideaway/assets/rp_plaque." },
+        { "id": "asset-three",        "pattern": "public/assets/three/",     "exclude_from": ["docker"], "note": "Bind-mounted from /opt/thehideaway/assets/three." },
+        { "id": "asset-public-rsync", "pattern": "public/assets",            "exclude_from": ["rsync"],  "note": "Rsync excludes the whole assets/ tree on first-deploy bootstrap; the VPS gets these via a separate rsync to /opt/thehideaway/assets/. Smaller items under public/assets/ (SVGs, fonts) are restored later by the deploy user's git clone, which overlays the rsync'd repo dir." }
+      ]
+    },
+    {
+      "title": "Logs",
+      "rules": [
+        { "id": "logs", "pattern": "*.log", "exclude_from": ["rsync"] }
+      ]
+    }
+  ]
+}

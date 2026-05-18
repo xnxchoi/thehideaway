@@ -14,8 +14,6 @@ import { getPayload, TypedCollectionSelect } from "payload";
 
 import PageClient from "./page.client";
 
-export const dynamic = "force-dynamic";
-
 type Args = {
   params: Promise<{
     slug: string;

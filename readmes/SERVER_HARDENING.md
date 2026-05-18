@@ -61,8 +61,8 @@ SSH key = instant root.
 /bin/systemctl status docker|nginx
 ```
 
-Anything else (apt, useradd, edits to /etc) requires password, and `prod.sh`
-doesn't need them.
+Anything else (apt, useradd, edits to /etc) requires password, and
+`scripts/deploy.sh` doesn't need them.
 
 ### Closed: fail2ban installed but unconfigured (CRITICAL)
 
@@ -240,8 +240,9 @@ deploys — the pause is one-time.
 - `--skip-gh-key` — deploy user already has a working SSH identity for GitHub
 - `--domain` — override (defaults to `hideawayseoul.com`)
 
-For all subsequent deploys (after the first), use `prod.sh` directly — it's
-the smaller surface, no DNS / cert / pre-flight overhead.
+For all subsequent deploys (after the first), use `scripts/deploy.sh` directly
+— smaller surface, no DNS / cert / pre-flight overhead. Roll back with
+`./scripts/deploy.sh --rollback`.
 
 ---
 

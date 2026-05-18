@@ -148,14 +148,16 @@ const tableLayouts: { [k: string]: CustomTableLayout } = {
     hLineWidth: (row) => (row === 1 ? 0.5 : 0),
     vLineWidth: () => 0,
     paddingLeft: (i) => (i === 0 ? 0 : 4),
-    paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4)
+    paddingRight: (i, node) =>
+      i === (node.table.widths?.length ?? 0) - 1 ? 0 : 4
   },
   totalSum: {
     vLineWidth: () => 0,
     hLineWidth: (rowIndex, node) =>
       rowIndex === node.table.body.length - 1 ? 0.5 : 0,
     paddingLeft: (i) => (i === 0 ? 0 : 4),
-    paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4)
+    paddingRight: (i, node) =>
+      i === (node.table.widths?.length ?? 0) - 1 ? 0 : 4
   }
 };
 

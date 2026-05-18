@@ -7,12 +7,51 @@ import { useTranslations } from "next-intl";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useDayNNightScene } from "../store";
+import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { SceneView } from "./SceneView";
 import s from "../styles.module.scss";
 
-if (typeof window !== "undefined" && !gsap.plugins?.ScrollTrigger) {
-  gsap.registerPlugin(ScrollTrigger);
+// ScrollTrigger is registered globally in TransitionProvider — see
+// readmes/DAY_N_NIGHT.md § 9 ("No new gsap.registerPlugin at module scope
+// without a guard"). The import here keeps the symbol available for the
+// matchMedia callbacks below; registration is owned upstream.
+
+/**
+ * Measure the first set of acts in the track and write the layout to
+ * the scene store. The track contains two duplicate ActSets (10 acts
+ * total) for the seamless modulo loop — we measure the first 5 only.
+ *
+ * SCSS owns the widths (each `.actOpening/.actCookout/...` declares its
+ * own `--act-w` multiplier on `100vw`); this function reads the rendered
+ * widths and derives starts / centers / setWidth / fractions. Called on
+ * mount and on every ResizeObserver tick so the layout stays current
+ * as the viewport changes.
+ */
+function measureActLayout(trackEl: HTMLElement): ActLayout | null {
+  const acts = Array.from(trackEl.children) as HTMLElement[];
+  if (acts.length < SECTION_KEYS.length) return null;
+  const firstSet = acts.slice(0, SECTION_KEYS.length);
+  const widths = firstSet.map((a) => a.getBoundingClientRect().width);
+  const setWidth = widths.reduce((sum, w) => sum + w, 0);
+  if (setWidth <= 0) return null;
+  const starts: number[] = [];
+  let cum = 0;
+  for (const w of widths) {
+    starts.push(cum);
+    cum += w;
+  }
+  const centers = starts.map((start, i) => start + widths[i] / 2);
+  const viewportFrac = window.innerWidth / setWidth;
+  return {
+    keys: SECTION_KEYS,
+    widths,
+    starts,
+    centers,
+    setWidth,
+    viewportFrac,
+    startsFrac: starts.map((startPx) => startPx / setWidth),
+    centersFrac: centers.map((centerPx) => centerPx / setWidth)
+  };
 }
 
 type Translator = ReturnType<typeof UseTranslationsType>;
@@ -58,26 +97,41 @@ export function Timeline() {
           if (!track.current || !wrap.current) return;
 
           const trackEl = track.current;
-          const setWidth = () => trackEl.scrollWidth / 2;
-          const LOOPS = 14; // how many cycles before the user hits the page bottom
-          // 0.2 == start of the Cookout act. Reload lands the user there
-          // with the sun at the horizon (matched in the celestial sampler
-          // and in SunLoader's final setProgress call).
-          const INITIAL_LOOP_POSITION = 0.2;
+          const setLayout = useDayNNightScene.getState().setLayout;
+          const LOOPS = 14; // how many cycles before user hits page bottom
+
+          // Measure once up front so the store has layout before
+          // ScrollTrigger seeds — otherwise `initialLoopPosition` is the
+          // fallback 0.2 and the loader hand-off lands off the horizon.
+          const initialLayout = measureActLayout(trackEl);
+          if (initialLayout) setLayout(initialLayout);
+
+          // Read setWidth + initialLoopPosition live from the store on
+          // every tick so resize events that update the layout
+          // (ResizeObserver below) propagate without needing closures
+          // to be re-bound.
+          const readLayout = () => useDayNNightScene.getState().layout;
+          const setWidth = () =>
+            readLayout()?.setWidth ?? trackEl.scrollWidth / 2;
+          const initialLoopPos = () =>
+            useDayNNightScene.getState().initialLoopPosition;
           const pinDistance = () => setWidth() * LOOPS;
 
-          // Shared updater — same math for initial paint and every scroll
-          // tick. Pulling it out so we can seed the initial state on
+          // Shared updater — same math for initial paint and every
+          // scroll tick. Pulled out so we can seed initial state on
           // ScrollTrigger creation; otherwise the loader's progress=0.05
           // would leak into the scene math and render the sun below the
           // viewport instead of at the horizon hand-off position.
           const update = (selfProgress: number) => {
             const sw = setWidth();
+            const init = initialLoopPos();
             const totalScrolled = selfProgress * pinDistance();
-            const loopPos = (INITIAL_LOOP_POSITION * sw + totalScrolled) % sw;
+            const loopPos = (init * sw + totalScrolled) % sw;
             const loopProgress = loopPos / sw;
             gsap.set(trackEl, { x: -loopProgress * sw });
-            setProgress(0.05 + loopProgress * 0.95);
+            // scene-progress IS loopProgress now — sky stops at 0.0 and
+            // 1.0 are identical so the wrap is seamless.
+            setProgress(loopProgress);
           };
 
           const st = ScrollTrigger.create({
@@ -94,7 +148,22 @@ export function Timeline() {
           // horizon as soon as the loader hands off.
           update(0);
 
-          return () => st.kill();
+          // Re-measure on size changes — viewport resize, devtools
+          // toggle, etc. — and refresh ScrollTrigger so the pin
+          // distance recomputes against the new set width.
+          const ro = new ResizeObserver(() => {
+            const next = measureActLayout(trackEl);
+            if (next) {
+              setLayout(next);
+              st.refresh();
+            }
+          });
+          ro.observe(trackEl);
+
+          return () => {
+            ro.disconnect();
+            st.kill();
+          };
         }
       );
 
@@ -102,20 +171,27 @@ export function Timeline() {
       mm.add("(min-width: 1024px) and (prefers-reduced-motion: reduce)", () => {
         if (!track.current) return;
         gsap.set(track.current, { x: 0 });
-        // Advance the sky to mid-day so the scene reads correctly.
+        // Advance the sky to mid-day so the scene reads correctly. Also
+        // force `playing` so SunLoader unmounts even if its own reduced-
+        // motion early-return failed to fire (e.g. SSR ordering).
         setProgress(0.5);
+        useDayNNightScene.getState().setPhase("playing");
       });
 
       // Mobile/tablet — vertical scroll, progress driven by document scroll.
       mm.add("(max-width: 1023px)", () => {
         if (!wrap.current) return;
+        // Below `lg` we never enter the immersive loader pin; ensure the
+        // phase is `playing` so SunLoader's overlay never blocks the stack.
+        useDayNNightScene.getState().setPhase("playing");
         const st = ScrollTrigger.create({
           trigger: wrap.current,
           start: "top bottom",
           end: "bottom top",
           scrub: 0.4,
           onUpdate: (self) => {
-            setProgress(0.05 + self.progress * 0.95);
+            // scene-progress IS loopProgress in [0, 1] now.
+            setProgress(self.progress);
           }
         });
         return () => st.kill();
@@ -152,93 +228,120 @@ interface ActSetProps {
 
 function ActSet({ t, ariaHidden = false }: ActSetProps) {
   // The 5 acts are wrapped in a Fragment so the parent track gets them as
-  // direct flex children — important because GSAP measures scrollWidth.
+  // direct flex children — GSAP measures scrollWidth across them. Each
+  // act keeps the same outer `.act` flex-item width but gets its own
+  // internal layout class so it doesn't read as another stamp of the same
+  // header/body/footer template (see compsych.konpo.co for the
+  // methodology — every section there is a bespoke composition).
   return (
     <>
-      {/* Act 1 — Daybreak / opening */}
+      {/* Act 1 — Opening / Daybreak.
+          Centered hero. Eyebrow above, serif title below, tagline below
+          that, with a thin date+location strip anchored at the bottom. */}
       <section
-        className={s.act}
+        className={`${s.act} ${s.actOpening}`}
         aria-label={t("act.day.label")}
         aria-hidden={ariaHidden || undefined}
       >
-        <header className={s.actHeader}>
-          <span className={s.actLabelStrong}>{t("act.day.label")}</span>
-          <span className={s.actTime}>{t("act.day.time")}</span>
-        </header>
-        <div className={s.actBody}>
-          <p className={s.actLabel}>{t("subtitle")}</p>
-          <h2 className={s.actHeading}>{t("title")}</h2>
-          <p className={s.actLede}>{t("tagline")}</p>
-        </div>
-        <footer className={s.actFooter}>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemKey}>{t("date.weekday")}</span>
-            <span className={s.actFooterItemVal}>{t("date.full")}</span>
-          </span>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemKey}>{t("location.label")}</span>
-            <span className={s.actFooterItemVal}>
-              {t("location.neighborhood")}
+        <div className={s.actInner}>
+          <span className={s.actEyebrow}>
+            <span className={s.actEyebrowRoman}>I</span>
+            <span>{t("act.day.label")}</span>
+            <span className={s.actEyebrowDot} aria-hidden>
+              ·
             </span>
+            <span>{t("act.day.time")}</span>
           </span>
-        </footer>
+          <div className={s.openingStack}>
+            <p className={s.openingKicker}>{t("subtitle")}</p>
+            <h2 className={s.openingTitle}>{t("title")}</h2>
+            <p className={s.openingLede}>{t("tagline")}</p>
+          </div>
+          <div className={s.openingFoot}>
+            <span className={s.openingFootItem}>
+              <span className={s.actFooterItemKey}>{t("date.weekday")}</span>
+              <span className={s.actFooterItemVal}>{t("date.full")}</span>
+            </span>
+            <span className={s.openingFootItem}>
+              <span className={s.actFooterItemKey}>{t("location.label")}</span>
+              <span className={s.actFooterItemVal}>
+                {t("location.neighborhood")}
+              </span>
+            </span>
+          </div>
+        </div>
       </section>
 
-      {/* Act 2 — Cookout */}
+      {/* Act 2 — Cookout.
+          Asymmetric. Heading anchored top-left, lede in a narrow column
+          beneath. Food / Drinks lists anchored bottom-right as a stack
+          of label + comma-separated items. The empty space mid-frame is
+          intentional — the sun is doing the work there. */}
       <section
-        className={s.act}
+        className={`${s.act} ${s.actCookout}`}
         aria-label={t("act.day.heading")}
         aria-hidden={ariaHidden || undefined}
       >
-        <header className={s.actHeader}>
-          <span className={s.actLabel}>{t("included.heading")}</span>
-          <span className={s.actTime}>{t("act.day.time")}</span>
-        </header>
-        <div className={s.actBody}>
-          <h2 className={s.actHeading}>{t("act.day.heading")}</h2>
-          <p className={s.actLede}>{t("act.day.body")}</p>
+        <div className={s.actInner}>
+          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
+            <span className={s.actEyebrowRoman}>II</span>
+            <span>{t("included.heading")}</span>
+            <span className={s.actEyebrowDot} aria-hidden>
+              ·
+            </span>
+            <span>{t("act.day.time")}</span>
+          </span>
+          <div className={s.cookoutHead}>
+            <h2 className={s.actHeading}>{t("act.day.heading")}</h2>
+            <p className={s.cookoutLede}>{t("act.day.body")}</p>
+          </div>
+          <ul className={s.cookoutList} aria-label={t("included.heading")}>
+            <li className={s.cookoutListItem}>
+              <span className={s.cookoutListLabel}>
+                {t("included.food.label")}
+              </span>
+              <span className={s.cookoutListValue}>
+                {t("included.food.items")}
+              </span>
+            </li>
+            <li className={s.cookoutListItem}>
+              <span className={s.cookoutListLabel}>
+                {t("included.drinks.label")}
+              </span>
+              <span className={s.cookoutListValue}>
+                {t("included.drinks.items")}
+              </span>
+            </li>
+          </ul>
         </div>
-        <footer className={s.actFooter}>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemKey}>
-              {t("included.food.label")}
-            </span>
-            <span className={s.actFooterItemVal}>
-              {t("included.food.items")}
-            </span>
-          </span>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemKey}>
-              {t("included.drinks.label")}
-            </span>
-            <span className={s.actFooterItemVal}>
-              {t("included.drinks.items")}
-            </span>
-          </span>
-        </footer>
       </section>
 
-      {/* Act 3 — Dress code */}
+      {/* Act 3 — Dress code.
+          The two options are the content; the heading is chrome. Caps
+          mono eyebrow up top, the two columns as a split-screen with a
+          thin vertical rule between them, and the secret line in italic
+          serif as a quiet aside anchored bottom-left. */}
       <section
-        className={s.act}
+        className={`${s.act} ${s.actDress}`}
         aria-label={t("dressCode.heading")}
         aria-hidden={ariaHidden || undefined}
       >
-        <header className={s.actHeader}>
-          <span className={s.actLabel}>{t("dressCode.heading")}</span>
-          <span className={s.actTime}>{t("dressCode.intro")}</span>
-        </header>
-        <div className={s.actBody}>
-          <h2 className={s.actHeading}>{t("dressCode.heading")}</h2>
-          <div className={s.dressCols}>
-            <div className={s.dressCol}>
+        <div className={s.actInner}>
+          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
+            <span className={s.actEyebrowRoman}>III</span>
+            <span>{t("dressCode.heading")}</span>
+          </span>
+          <p className={s.dressIntro}>{t("dressCode.intro")}</p>
+          <div className={s.dressColsBespoke}>
+            <div className={s.dressColBespoke}>
               <span className={s.dressColLabel}>01</span>
               <h3 className={s.dressColHeading}>
                 {t("dressCode.option1.label")}
               </h3>
               <p className={s.dressColBody}>{t("dressCode.option1.body")}</p>
             </div>
-            <div className={s.dressCol}>
+            <div className={s.dressDivider} aria-hidden />
+            <div className={s.dressColBespoke}>
               <span className={s.dressColLabel}>02</span>
               <h3 className={s.dressColHeading}>
                 {t("dressCode.option2.label")}
@@ -246,76 +349,91 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               <p className={s.dressColBody}>{t("dressCode.option2.body")}</p>
             </div>
           </div>
+          <span className={s.actSecret}>{t("secret")}</span>
         </div>
-        <footer className={s.actFooter}>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemVal}>{t("secret")}</span>
-          </span>
-        </footer>
       </section>
 
-      {/* Act 4 — Night / Music */}
+      {/* Act 4 — Night.
+          Heading takes the upper-left quadrant in a wide serif scale.
+          Lede sits beneath. YM.FM credit is anchored bottom-right as a
+          small "stamp" — caps label above a body line, with a thin
+          rule overhead. The asymmetry is the point: the night side of
+          the loop weighs differently than the cookout side. */}
       <section
-        className={s.act}
+        className={`${s.act} ${s.actNight}`}
         aria-label={t("act.night.label")}
         aria-hidden={ariaHidden || undefined}
       >
-        <header className={s.actHeader}>
-          <span className={s.actLabelStrong}>{t("act.night.label")}</span>
-          <span className={s.actTime}>{t("act.night.time")}</span>
-        </header>
-        <div className={s.actBody}>
-          <h2 className={s.actHeading}>{t("act.night.heading")}</h2>
-          <p className={s.actLede}>{t("act.night.body")}</p>
-        </div>
-        <footer className={s.actFooter}>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemKey}>{t("ymfm.heading")}</span>
-            <span className={s.actFooterItemVal}>{t("ymfm.body")}</span>
+        <div className={s.actInner}>
+          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
+            <span className={s.actEyebrowRoman}>IV</span>
+            <span>{t("act.night.label")}</span>
+            <span className={s.actEyebrowDot} aria-hidden>
+              ·
+            </span>
+            <span>{t("act.night.time")}</span>
           </span>
-        </footer>
+          <div className={s.nightHead}>
+            <h2 className={s.actHeading}>{t("act.night.heading")}</h2>
+            <p className={s.nightLede}>{t("act.night.body")}</p>
+          </div>
+          <div className={s.nightStamp}>
+            <span className={s.nightStampRule} aria-hidden />
+            <span className={s.nightStampKey}>{t("ymfm.heading")}</span>
+            <span className={s.nightStampVal}>{t("ymfm.body")}</span>
+          </div>
+        </div>
       </section>
 
-      {/* Act 5 — Closing / RSVP */}
+      {/* Act 5 — Closing / RSVP.
+          Climax of the loop. Heading scale matches the opening so the
+          loop reads bookended. Eyebrow + serif title + lede + fee
+          block + CTA stack at center-left; hosts + closing line
+          anchored bottom-right as the final word. */}
       <section
-        className={s.act}
+        className={`${s.act} ${s.actClosing}`}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
       >
-        <header className={s.actHeader}>
-          <span className={s.actLabel}>{t("entry.heading")}</span>
-          <span className={s.actTime}>{t("date.short")}</span>
-        </header>
-        <div className={s.closingStack}>
-          <p className={s.closingEyebrow}>{t("rsvpCta.secondary")}</p>
-          <h2 className={s.closingTitle}>{t("title")}</h2>
-          <p className={s.actLede}>{t("subtitle")}</p>
-          <div className={s.closingFee}>
-            <span className={s.closingFeeAmount}>{t("entry.amount")}</span>
-            <span>{t("entry.method")}</span>
-            <span>
-              {t("entry.bank")} · {t("entry.accountHolder")}
+        <div className={s.actInner}>
+          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
+            <span className={s.actEyebrowRoman}>V</span>
+            <span>{t("entry.heading")}</span>
+            <span className={s.actEyebrowDot} aria-hidden>
+              ·
             </span>
-          </div>
-          <Link
-            href="/tickets/day-n-night"
-            className={s.ctaPrimary}
-            tabIndex={ariaHidden ? -1 : undefined}
-          >
-            <span>{t("rsvpCta.primary")}</span>
-            <span aria-hidden>→</span>
-          </Link>
-        </div>
-        <footer className={s.actFooter}>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemVal}>{t("footer.hosts")}</span>
+            <span>{t("date.short")}</span>
           </span>
-          <span className={s.actFooterItem}>
-            <span className={s.actFooterItemVal}>
+          <div className={s.closingStack}>
+            <p className={s.closingEyebrow}>{t("rsvpCta.secondary")}</p>
+            <h2 className={s.closingTitle}>{t("title")}</h2>
+            <p className={s.closingLede}>{t("subtitle")}</p>
+            <div className={s.closingFee}>
+              <span className={s.closingFeeAmount}>{t("entry.amount")}</span>
+              <span>{t("entry.method")}</span>
+              <span>
+                {t("entry.bank")} · {t("entry.accountHolder")}
+              </span>
+            </div>
+            <Link
+              href="/tickets/day-n-night"
+              className={s.ctaImmersive}
+              tabIndex={ariaHidden ? -1 : undefined}
+            >
+              <span>{t("rsvpCta.primary")}</span>
+              <span aria-hidden className={s.ctaImmersiveArrow}>
+                →
+              </span>
+            </Link>
+          </div>
+          <div className={s.closingFoot}>
+            <span className={s.closingFootRule} aria-hidden />
+            <span className={s.closingFootLine}>{t("footer.hosts")}</span>
+            <span className={s.closingFootLine}>
               {t("footer.rsvpClosesAt")}
             </span>
-          </span>
-        </footer>
+          </div>
+        </div>
       </section>
     </>
   );

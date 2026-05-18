@@ -364,11 +364,12 @@
       "scrollHint": "Scroll",
       "secret": "Something small, unrevealed, will be there.",
       "scrubber": {
+        "navLabel": "Timeline",
         "opening": "Opening",
         "cookout": "Cookout",
         "dress": "Dress",
         "night": "Night",
-        "reserve": "Reserve"
+        "closing": "Reserve"
       }
     },
     "Guests": {

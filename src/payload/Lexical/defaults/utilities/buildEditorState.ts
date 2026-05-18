@@ -1,9 +1,9 @@
 import type {
-	DefaultNodeTypes,
-	DefaultTypedEditorState,
-	TypedEditorState
+  DefaultNodeTypes,
+  DefaultTypedEditorState,
+  TypedEditorState
 } from "@payloadcms/richtext-lexical";
-import type {SerializedLexicalNode} from "lexical";
+import type { SerializedLexicalNode } from "@payloadcms/richtext-lexical/lexical";
 
 /**
  * Helper to build lexical editor state JSON from text and/or nodes.
@@ -43,52 +43,52 @@ import type {SerializedLexicalNode} from "lexical";
  * ```
  */
 export function buildEditorState<T extends SerializedLexicalNode>({
-	                                                                  nodes,
-	                                                                  text
-                                                                  }: {
-	nodes?: TypedEditorState<T>["root"]["children"];
-	text?: string;
+  nodes,
+  text
+}: {
+  nodes?: TypedEditorState<T>["root"]["children"];
+  text?: string;
 }): TypedEditorState<T> {
-	const editorJSON: DefaultTypedEditorState = {
-		root: {
-			type: "root",
-			children: [],
-			direction: "ltr",
-			format: "",
-			indent: 0,
-			version: 1
-		}
-	};
+  const editorJSON: DefaultTypedEditorState = {
+    root: {
+      type: "root",
+      children: [],
+      direction: "ltr",
+      format: "",
+      indent: 0,
+      version: 1
+    }
+  };
 
-	if (text) {
-		editorJSON.root.children.push({
-			type: "paragraph",
-			children: [
-				{
-					type: "text",
-					detail: 0,
-					format: 0,
-					mode: "normal",
-					style: "",
-					text,
-					version: 1
-				}
-			],
-			direction: "ltr",
-			format: "",
-			indent: 0,
-			textFormat: 0,
-			textStyle: "",
-			version: 1
-		});
-	}
+  if (text) {
+    editorJSON.root.children.push({
+      type: "paragraph",
+      children: [
+        {
+          type: "text",
+          detail: 0,
+          format: 0,
+          mode: "normal",
+          style: "",
+          text,
+          version: 1
+        }
+      ],
+      direction: "ltr",
+      format: "",
+      indent: 0,
+      textFormat: 0,
+      textStyle: "",
+      version: 1
+    });
+  }
 
-	if (nodes?.length) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		editorJSON.root.children.push(...(nodes as any));
-	}
+  if (nodes?.length) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    editorJSON.root.children.push(...(nodes as any));
+  }
 
-	return editorJSON as TypedEditorState<T>;
+  return editorJSON as TypedEditorState<T>;
 }
 
 /**
@@ -99,4 +99,4 @@ export function buildEditorState<T extends SerializedLexicalNode>({
  * @internal
  */
 export const buildDefaultEditorState: typeof buildEditorState<DefaultNodeTypes> =
-	buildEditorState<DefaultNodeTypes>;
+  buildEditorState<DefaultNodeTypes>;

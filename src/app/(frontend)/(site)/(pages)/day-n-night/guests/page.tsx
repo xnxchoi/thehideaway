@@ -11,8 +11,6 @@ import type {
 } from "@/components/sections/DayNNightGuests/types";
 import type { Profile, User, UserMedia } from "@/payload-types";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Day n Night — Guests",
   description:

@@ -481,15 +481,6 @@ const disallowRead = (collection: LockedCollections) => {
       return {
         slides: surrogateMap.array
       };
-    case "series":
-      return {
-        description: surrogateMap.richText satisfies SerializedEditorState,
-        tagline: surrogateMap.text
-      };
-    case "series-item":
-      return {
-        item: surrogateMap.text
-      };
     default:
       return {};
   }

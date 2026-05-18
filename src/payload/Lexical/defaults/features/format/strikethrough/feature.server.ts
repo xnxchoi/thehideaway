@@ -1,11 +1,12 @@
-import {createServerFeature} from "../../../utilities/createServerFeature.js"
-import {STRIKETHROUGH} from "./markdownTransformers.js"
+import { createServerFeature } from "@payloadcms/richtext-lexical";
+import { STRIKETHROUGH } from "./markdownTransformers";
 
 export const StrikethroughFeature = createServerFeature({
-	feature: {
-		ClientFeature: "@payloadcms/richtext-lexical/client#StrikethroughFeatureClient",
+  feature: {
+    ClientFeature:
+      "@/payload/Lexical/defaults/features/format/strikethrough/feature.client.tsx#StrikethroughFeatureClient",
 
-		markdownTransformers: [STRIKETHROUGH],
-	},
-	key: "strikethrough",
-})
+    markdownTransformers: [STRIKETHROUGH]
+  },
+  key: "strikethrough"
+});

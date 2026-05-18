@@ -34,8 +34,10 @@ RUN mkdir .next && chown nextjs:nodejs .next
 USER nextjs
 
 # Pre-built artefacts from `pnpm build` on the host.
-# next.config output: standalone puts everything needed to run in .next/standalone;
-# static assets are kept separate and served via nginx in prod.
+# next.config.ts must set `output: "standalone"` or these COPYs fail with a
+# cryptic "stat ... no such file" error. build.sh runs a preflight check
+# (.next/standalone/server.js + .next/static) before reaching this step so
+# the failure surfaces with an actionable hint instead.
 COPY public ./public
 COPY --chown=nextjs:nodejs .next/standalone ./
 COPY --chown=nextjs:nodejs .next/static ./.next/static

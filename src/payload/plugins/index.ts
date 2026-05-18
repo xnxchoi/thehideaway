@@ -197,16 +197,13 @@ const generateURL: GenerateURL<SiteMapCollection> = ({
 export type LockedCollections =
   | "assets"
   | "media"
-  | "pages"
   | "posts"
   | "userMedia"
   | "profile"
   | "albums"
   | "tracks"
   | "playlists"
-  | "surf"
-  | "series"
-  | "series-item";
+  | "surf";
 //   Exclude<
 //   KeysOfValue<CollectionMap, { locked?: boolean | null }>,
 //   "search"
@@ -233,9 +230,7 @@ export const plugins: Plugin[] = [
       "tracks",
       "userMedia",
       "assets",
-      "profile",
-      "series",
-      "series-item"
+      "profile"
     ]
   }),
   redirectsPlugin({

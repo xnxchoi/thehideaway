@@ -167,20 +167,26 @@ The page tells a single story across two acts, tied to one continuous scroll:
 
 ### 6.3 R3F scene
 
-Mount via existing shared `<Canvas>` ([MainInternal.tsx](src/components/core/MainInternal.tsx)) using a `<View>` portal — never a second Canvas.
+Mount via existing shared `<Canvas>` ([MainInternal.tsx](src/components/core/MainInternal.tsx)) using a `<View>` 
+portal. A second Canvas is to be used when it is the clearly (runtime resource, weighted 0.7 & dev resource, 
+weighted 0.3) 
+efficient approach.
 
 - **Sun** — sphere with shader-driven emissive intensity. Position driven by ScrollTrigger progress (parametric arc).
 - **Moon** — same sphere geometry, swapped material at threshold via opacity crossfade.
 - **Sky** — full-screen gradient quad behind the sun, color uniforms driven by scroll progress through a color stop list (pre-dawn → midday → sunset → night).
-- **Optional grain overlay** — at low opacity for atmospheric depth (matches the project's Fey-direction grain texture).
+- **grain overlay** — at low opacity for atmospheric depth (matches the project's Fey-direction grain texture).
 
 ### 6.4 Page loader
 
 Net-new sun loader (existing `Hideaway_Preloader` is typographic grid, not suitable here):
 
-- Initial state: sun small, near bottom of viewport, sky pre-dawn.
+- Initial state: sun below the "horizon": the horizon is placed slightly below vertical center of viewport; sky 
+  pre-dawn.
 - Loader progress 0→100% drives sun rise from `y = -0.6vh` to `y = 0.3vh` (matches the first hero scroll position).
-- At 100%, **hands off to the scroll-driven scene without snap** — the sun keeps the same position, the loader chrome fades out, and the user is now in the immersive scene at scroll=0.
+- At 100%, **hands off to the scroll-driven scene without snap** — the sun and the horizon "zoom out", the horizon 
+  being pushed downwards and the sun towards the first hero scroll position at matched pace. The horizon  
+  fades out as it nears the bottom viewport, and the user is now in the immersive scene at scroll=0.
 
 Location: new component at `src/components/UX/Preloader/SunLoader.tsx` next to the existing typographic loader. Route-scoped (only mounts on `/day-n-night` immersive view).
 
@@ -191,12 +197,7 @@ Per global rules ([performance.md](.../web/performance.md)):
 - Bundle: < 150kb gzipped JS for landing page. R3F + drei is heavy — load via `dynamic(() => import(...), { ssr: false })` and only on immersive view.
 - Motion stays on compositor-friendly properties (transform, opacity, filter).
 
-### 6.6 Reduced-motion
-
-Respect `prefers-reduced-motion`:
-- Disable the looping scroll repeat (one-way only).
-- Replace continuous sun animation with discrete keyframes at section boundaries.
-- Loader: skip directly to handoff state.
+ 
 
 ---
 
@@ -351,11 +352,16 @@ Pulled from project rules and CLAUDE.md:
 
 ## 11. Brand voice anchor
 
-Per CLAUDE.md aesthetic direction — "sparse, intentional, typographically confident." Tone: editorial, quiet, references aging youth without nostalgia.
+Voice and copy rules for this page live in **`readmes/VOICE.md`** — the canonical voice and translation guide. Read it before writing any user-facing string for `/day-n-night` (English or Korean).
 
-Reference voices to mine before drafting final copy: existing surfaces at `/plans`, `/radio`. Do not import generic event-page tropes ("Join us for an unforgettable night!" — banned).
+For this surface specifically:
 
-A separate voice pass should run before Phase 5.
+- Tone: editorial, quiet, references aging youth without nostalgia.
+- Reference surfaces to study before drafting: `/plans`, `/radio`.
+- Banned: generic event-page tropes ("Join us for an unforgettable night!", emoji, exclamation marks, `~세요` endings in Korean).
+- Dress-code copy (§10 Q2) is a brand-voice exercise — class B (atmospheric) in VOICE.md §3.1.1 terms; allow tone, but run it past §3.4's three checks.
+
+A dedicated voice pass against `VOICE.md` should run before Phase 5 ships.
 
 ---
 

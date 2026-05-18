@@ -34,22 +34,47 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
   const setPhase = useDayNNightScene((r) => r.setPhase);
 
   useEffect(() => {
+    // Where the loop "lands" after handoff: scene-progress IS the
+    // loopProgress now, so the handoff target equals initialLoopPosition
+    // (the anchor-act center derived from the live act layout).
+    // Pulled at tick-time because Timeline writes it asynchronously
+    // after measuring the act track; the store's fallback (0.2) covers
+    // the first paint / SSR window.
+    const handoffProgress = (): number =>
+      useDayNNightScene.getState().initialLoopPosition;
+
+    // Reduced motion: skip the staged rise entirely. Seed scene progress
+    // at the post-handoff value and promote phase to playing immediately.
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setProgress(handoffProgress());
+      setPhase("playing");
+      return;
+    }
+
     let raf: number;
     const start = performance.now();
 
     const tick = (now: number) => {
       const elapsed = now - start;
       const u = Math.min(1, elapsed / durationMs);
-      // Map loader-time u into staged scene progress:
-      //   u 0 → 0.4  -> progress 0 → 0.02 (horizon glow, no sun)
-      //   u 0.4 → 1  -> progress 0.02 → 0.05 (sun rises to horizon)
+      // Map loader-time u into staged scene progress. The loader covers
+      // scene-progress [0, horizonLoop] (pre-dawn → sun-at-horizon, the
+      // anchor-act center). horizonLoop is pulled per-tick because
+      // Timeline writes it asynchronously after measuring the act track.
+      //   u 0 → 0.4  -> progress 0 → 0.4·horizonLoop (horizon glow, no sun)
+      //   u 0.4 → 1  -> progress 0.4·horizonLoop → horizonLoop (sun rises)
+      const horizonLoop = useDayNNightScene.getState().horizonLoop;
+      const stage1End = 0.4 * horizonLoop;
       let progress: number;
       if (u < 0.4) {
-        progress = (u / 0.4) * 0.02;
+        progress = (u / 0.4) * stage1End;
       } else {
         const stage2 = (u - 0.4) / 0.6;
         const eased = 1 - Math.pow(1 - stage2, 2.5);
-        progress = 0.02 + eased * 0.03;
+        progress = stage1End + eased * (horizonLoop - stage1End);
       }
       setProgress(progress);
       if (fillRef.current) {
@@ -63,13 +88,14 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
           setHiding(true);
           // Match the CSS opacity transition (700ms) before flipping to
           // playing — during this window the sun stays at its loader-end
-          // position (HORIZON_Y) and the chrome + backdrop fade out around it.
+          // position (HORIZON_Y) and the chrome + backdrop fade out
+          // around it.
           setTimeout(() => {
-            // Seed the scene at loopProgress 0.2 (start of the Cookout
-            // act). The celestial sampler is calibrated so that this exact
-            // loop position puts the sun at the horizon — matching the
-            // loader's end-of-rise position. No handoff jump.
-            setProgress(0.05 + 0.2 * 0.95);
+            // Seed the scene at the measured anchor-act center. The
+            // celestial sampler shares the same store-derived
+            // initialLoopPosition so the sun is at the horizon at this
+            // exact loop position — no handoff jump.
+            setProgress(handoffProgress());
             setPhase("playing");
           }, 700);
         }, 240);

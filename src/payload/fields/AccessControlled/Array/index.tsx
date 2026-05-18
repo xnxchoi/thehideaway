@@ -9,36 +9,7 @@ import {
 } from "@/AccessControlled/types";
 import { ArrayField } from "@payloadcms/ui";
 import type { ArrayFieldServerProps } from "payload";
-const resolveAccess = <
-  T extends AccessControlledFieldTypes = AccessControlledFieldTypes
->(
-  type: T,
-  props: FieldServerPropsMap[T] & AccessControlSchema<T>
-): ACResolvedAccess<T> => {
-  const { accessControlled, ...fieldProps } = props;
-  const {
-    user,
-    payload,
-    id: idDoc,
-    collectionSlug
-  } = fieldProps as AccessControlledFieldProps<T>;
-  const id = (!!idDoc && `${idDoc}`) || undefined;
-  let selff: ACResolvedAccess<T> | boolean = false;
-  if ("self" in accessControlled) {
-    if (collectionSlug === "users" && id === user.id) {
-      const res =
-        typeof accessControlled.self === "function"
-          ? accessControlled.self({ ...fieldProps, id })
-          : accessControlled.self;
-      if (res instanceof Promise) {
-        res.then((re) => {
-          selff = re;
-        });
-      }
-    } else if ("author" in accessControlled) {
-    }
-  }
-};
+
 const AccessControlledArrayField = (
   props: ArrayFieldServerProps & AccessControlSchema<"array">
 ) => {

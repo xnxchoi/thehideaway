@@ -2,54 +2,79 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { useDayNNightScene } from "../store";
+import {
+  useDayNNightScene,
+  SECTION_KEYS,
+  sectionAtLoop,
+  type SectionKey
+} from "../store";
 import s from "../styles.module.scss";
 
 /**
- * Bottom timeline scrubber — flat, compsych-style.
+ * Bottom timeline scrubber.
  *
- * A single continuous tick row across the full width with one short
- * indicator bar floating above. The indicator slides horizontally to
- * track loop progress. Labels sit below the ruler — the active label
- * takes the foreground weight; clicking any label scrolls forward to
- * the next occurrence of that section in the loop (forward-only).
+ * Construction (after the compsych methodology, not its design):
  *
- * No backdrop blur, no per-section fills, no gradients. Flat on the sky.
+ *   - A continuous fine sub-tick row across the full width (1px ticks
+ *     every 9px) at low alpha — the "body".
+ *   - Five tall section-start ticks at each act's measured START
+ *     position sit on top of the row at higher alpha — the "head". The
+ *     eye finds section boundaries without reading the labels.
+ *   - One short solid indicator bar floats above the ticks, anchored to
+ *     the current loop position (continuous slide, not snap).
+ *   - Labels sit BELOW the ticks at each act's measured CENTER position.
+ *     Active label is full color; surrounding labels fade by ring
+ *     distance from the active one, clamped at a legibility floor.
+ *
+ * Positions come from the live-measured ActLayout in the scene store —
+ * Timeline writes it on mount and on resize. With variable-width acts,
+ * head ticks and labels naturally bunch / spread per the editorial
+ * pacing declared in SCSS (--act-w on .actOpening / .actCookout / ...).
  */
-const SECTIONS = [
-  { key: "opening", at: 0.0 },
-  { key: "cookout", at: 0.2 },
-  { key: "dress", at: 0.4 },
-  { key: "night", at: 0.6 },
-  { key: "reserve", at: 0.8 }
-] as const;
 
-const SECTION_SIZE = 1 / SECTIONS.length;
+// Opacity ramp by ring distance from the active label, in label slots:
+//   0 (active)         → 1.0
+//   1 (adjacent)       → 0.55
+//   2 (two away)       → 0.32
+//   ≥3 (max wraps to 2 in a 5-section loop, so this is the floor)
+//                      → 0.22 — legibility clamp
+const RING_OPACITY = [1.0, 0.55, 0.32, 0.22] as const;
+
+function ringDistance(i: number, active: number, length: number): number {
+  const d = Math.abs(i - active);
+  // Loop wraps — shortest path around the ring is min(d, length - d).
+  return Math.min(d, length - d);
+}
 
 export function Scrubber() {
   const t = useTranslations("Event.DayNNight.scrubber");
   const phase = useDayNNightScene((r) => r.phase);
+  // Subscribing to `layout` re-renders the Scrubber when Timeline writes
+  // a fresh measurement — so the head-tick / label CSS `left:` props
+  // recompute on resize without manual ResizeObservers here.
+  const layout = useDayNNightScene((r) => r.layout);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
-  const labelRefs = useRef<Array<HTMLButtonElement | null>>([
-    null,
-    null,
-    null,
-    null,
-    null
-  ]);
+  const labelRefs = useRef<Array<HTMLButtonElement | null>>(
+    SECTION_KEYS.map(() => null)
+  );
 
   useEffect(() => {
     if (phase !== "playing") return;
     let raf = 0;
+    let lastActive = -1;
 
     const apply = () => {
-      const progress = useDayNNightScene.getState().progress;
-      const loopProgress = Math.max(
-        0,
-        Math.min(0.99999, (progress - 0.05) / 0.95)
-      );
-      const currentSection = Math.floor(loopProgress / SECTION_SIZE);
+      const state = useDayNNightScene.getState();
+      const progress = state.progress;
+      const currentLayout = state.layout;
+      // scene-progress IS loopProgress now — see store.ts JSDoc.
+      const loopProgress = Math.max(0, Math.min(0.99999, progress));
+
+      // Active section: which act contains the viewport center (mod 1).
+      // sectionAtLoop falls back to 0 when layout isn't measured yet —
+      // the initial paint before Timeline writes layout to the store.
+      const currentSection = sectionAtLoop(loopProgress, currentLayout);
 
       if (indicatorRef.current && trackRef.current) {
         const trackWidth = trackRef.current.clientWidth;
@@ -57,10 +82,18 @@ export function Scrubber() {
         indicatorRef.current.style.transform = `translateX(${x}px)`;
       }
 
-      labelRefs.current.forEach((label, i) => {
-        if (!label) return;
-        label.setAttribute("data-active", String(i === currentSection));
-      });
+      // Re-apply label opacity only when the active section changes —
+      // per-frame mutation would defeat the CSS transition on opacity.
+      if (currentSection !== lastActive) {
+        lastActive = currentSection;
+        labelRefs.current.forEach((label, i) => {
+          if (!label) return;
+          const dist = ringDistance(i, currentSection, SECTION_KEYS.length);
+          const clamped = Math.min(dist, RING_OPACITY.length - 1);
+          label.style.opacity = String(RING_OPACITY[clamped]);
+          label.setAttribute("data-active", String(i === currentSection));
+        });
+      }
 
       raf = requestAnimationFrame(apply);
     };
@@ -69,28 +102,40 @@ export function Scrubber() {
     return () => cancelAnimationFrame(raf);
   }, [phase]);
 
-  const handleJump = (targetLoopPos: number) => {
+  // Section-start positions, as fractions of the scrubber-track width.
+  // Both head ticks AND labels anchor to these same starts: labels
+  // left-align at their section's head tick directly below them (the
+  // compsych pattern), so each section reads as a horizontal band
+  // anchored at its boundary. Falls back to uniform spacing if the
+  // store hasn't been hydrated yet (pre-measurement SSR / first paint).
+  const fallbackStarts = SECTION_KEYS.map((_, i) => i / SECTION_KEYS.length);
+  const headPositions = layout?.startsFrac ?? fallbackStarts;
+  const labelPositions = headPositions;
+
+  const handleJump = (targetLoopPos: number): void => {
     const wrap = document.querySelector('[class*="timelineWrap"]');
-    const track = document.querySelector('[class*="timelineTrack"]');
-    if (!wrap || !track) return;
+    const trackEl = document.querySelector('[class*="timelineTrack"]');
+    if (!wrap || !trackEl) return;
     const wrapRect = wrap.getBoundingClientRect();
     const pinStart = window.scrollY + wrapRect.top;
-    const setWidth = (track as HTMLElement).scrollWidth / 2;
-    const INITIAL_LOOP_POSITION = 0.5;
+    const state = useDayNNightScene.getState();
+    const setWidth =
+      state.layout?.setWidth ?? (trackEl as HTMLElement).scrollWidth / 2;
+    const initialLoopPosition = state.initialLoopPosition;
     const totalScrolled = window.scrollY - pinStart;
     if (totalScrolled < 0) {
       window.scrollTo({
-        top: pinStart + (targetLoopPos - INITIAL_LOOP_POSITION) * setWidth,
+        top: pinStart + (targetLoopPos - initialLoopPosition) * setWidth,
         behavior: "smooth"
       });
       return;
     }
     const currentLoopPos =
-      (INITIAL_LOOP_POSITION * setWidth + totalScrolled) % setWidth;
+      (initialLoopPosition * setWidth + totalScrolled) % setWidth;
     const targetPx = targetLoopPos * setWidth;
     const delta = (targetPx - currentLoopPos + setWidth) % setWidth;
     // If the target is the current section, advance a full loop so the
-    // click still moves — keeps the user's forward-only rule.
+    // click still moves — keeps the forward-only rule.
     const forwardDelta = delta < 1 ? setWidth : delta;
     window.scrollTo({
       top: window.scrollY + forwardDelta,
@@ -101,25 +146,37 @@ export function Scrubber() {
   if (phase !== "playing") return null;
 
   return (
-    <div className={s.scrubber} aria-hidden>
-      <div ref={trackRef} className={s.scrubberTrack}>
+    <nav className={s.scrubber} aria-label={t("navLabel")}>
+      <div ref={trackRef} className={s.scrubberTrack} aria-hidden>
+        {/* Section-start tall ticks — one per act, at each act's measured
+            START position. With variable widths, ticks bunch / spread to
+            reflect editorial pacing. */}
+        {SECTION_KEYS.map((key, i) => (
+          <span
+            key={`head-${key}`}
+            className={s.scrubberHead}
+            style={{ left: `${headPositions[i] * 100}%` }}
+            aria-hidden
+          />
+        ))}
         <div ref={indicatorRef} className={s.scrubberIndicator} aria-hidden />
       </div>
       <div className={s.scrubberLabels}>
-        {SECTIONS.map((sec, i) => (
+        {SECTION_KEYS.map((key: SectionKey, i) => (
           <button
-            key={sec.key}
+            key={key}
             ref={(el) => {
               labelRefs.current[i] = el;
             }}
             type="button"
             className={s.scrubberLabel}
-            onClick={() => handleJump(sec.at)}
+            style={{ left: `${labelPositions[i] * 100}%` }}
+            onClick={() => handleJump(headPositions[i])}
           >
-            {t(sec.key)}
+            {t(key)}
           </button>
         ))}
       </div>
-    </div>
+    </nav>
   );
 }

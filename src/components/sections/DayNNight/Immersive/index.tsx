@@ -11,13 +11,18 @@ import s from "../styles.module.scss";
 /**
  * Immersive view orchestrator.
  *
- * Layers (back → front):
+ * Layers (back → front), all nested inside Timeline's pinned wrap so the
+ * site's smooth-scroll wrapper doesn't break their fixed-positioning:
  *
- *   1. SceneView (R3F portal)   — sky shader + sun/moon meshes (fixed)
- *   2. .grain                   — atmospheric noise overlay
- *   3. Timeline                 — HTML content, horizontally scrolled
- *   4. ScrollHint               — fades out on first scroll
- *   5. SunLoader                — covers everything during load
+ *   1. SceneView   — pure CSS sky gradient + horizon glow + sun disk,
+ *                    driven by a single per-frame rAF reading the shared
+ *                    progress in store.ts.
+ *   2. .grain      — atmospheric noise overlay (mix-blend overlay).
+ *   3. Track       — 5 acts × 2 copies, horizontally translated by GSAP
+ *                    ScrollTrigger for a seamless modulo loop.
+ *   4. ScrollHint  — fades out on first scroll.
+ *   5. Scrubber    — bottom timeline with section jump labels.
+ *   6. SunLoader   — covers everything during load, hands off seamlessly.
  */
 export function ImmersiveView() {
   const t = useTranslations("Event.DayNNight");

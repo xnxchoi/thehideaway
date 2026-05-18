@@ -361,11 +361,12 @@
             "scrollHint": "스크롤",
             "secret": "이름 모를 작은 것 하나가, 거기 있을 거예요.",
             "scrubber": {
+                "navLabel": "타임라인",
                 "opening": "오프닝",
                 "cookout": "쿡아웃",
                 "dress": "드레스코드",
                 "night": "밤",
-                "reserve": "예약"
+                "closing": "예약"
             }
         },
         "Guests": {

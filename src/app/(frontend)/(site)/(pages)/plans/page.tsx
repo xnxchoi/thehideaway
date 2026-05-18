@@ -7,8 +7,6 @@ import s from "@/components/sections/Pricing/Pricing.module.scss";
 import PlansPageClient from "./page.client";
 import { RPage } from "@/components/UX/Transition";
 
-export const dynamic = "force-dynamic";
-
 export default async function PlansPage() {
   const plans = await getPlansData();
 

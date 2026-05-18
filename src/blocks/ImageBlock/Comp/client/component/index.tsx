@@ -837,7 +837,10 @@ const FrameImageContextWrap = ({
       }),
     [editor, isSelected, nodeKey]
   );
-  const setSpan = useRPImageNode((r) => r.setSpan);
+  const [_spa, setSpan] = useState({
+    width: spanValue.get(),
+    naturalWidth: 600
+  });
   const onResizeEnd = useCallback(
     (event: PointerEvent) => {
       // Delay hiding the resize bars for click case
@@ -1373,7 +1376,7 @@ const UnsplashImage = ({
   figureClassName?: string;
 }) => {
   const [hovered, setHovered] = useState(false);
-  const uuid = useRPImageNode((r) => r.uuid);
+  const uuid = useRPImageNode((r) => r.nodeKey);
 
   const { alt, caption, darkmode, src } = image;
   const formRef = useRef({

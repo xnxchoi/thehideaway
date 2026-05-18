@@ -10,20 +10,32 @@
 #   systemctl, etc. Run on the VPS.
 #
 # ── Usage ────────────────────────────────────────────────────────────────────
-#   As root on the VPS, from the cloned repo:
-#     bash scripts/first-deploy.sh \
+#   As root on the VPS, from the cloned repo. The ghcr.io PAT is read from
+#   the GHCR_TOKEN environment variable — NEVER passed as a CLI flag, because
+#   CLI args are visible in `ps aux` for the duration of the script.
+#
+#     GHCR_TOKEN="$(cat ~/.ghcr-token)" \
+#       bash scripts/first-deploy.sh \
 #         --deploy-key "ssh-ed25519 AAAA... your-pubkey" \
-#         --image-tag <git-sha-or-tag>
+#         --image-tag v1.2.3 \
+#         --ghcr-user xnxchoi
 #
 #   Options:
 #     --deploy-key KEY       (required) The deploy user's SSH pubkey, passed
 #                            through to server-setup.sh. Anything that
 #                            authorized_keys accepts is fine.
-#     --image-tag TAG        (required) Docker image tag prod.sh will deploy.
-#                            Usually a git SHA. Image must be loadable on the
-#                            VPS (docker images | grep <tag>) before this
-#                            script reaches phase 7, otherwise prod.sh will
-#                            fail at the pull step.
+#     --image-tag TAG        (required) Semver tag published to ghcr.io by the
+#                            release workflow (e.g. v1.2.3). Or the literal
+#                            "latest". scripts/deploy.sh validates the manifest
+#                            exists on ghcr.io BEFORE touching the running stack.
+#     --ghcr-user USER       (required) GitHub username/org that owns the
+#                            ghcr.io packages. Used for `docker login ghcr.io`
+#                            as the deploy user.
+#
+#   Environment variables:
+#     GHCR_TOKEN             (required) Fine-grained PAT with `read:packages`
+#                            scope and explicit access to the hideaway +
+#                            hideaway-migrate packages. See readmes/DEPLOY.md.
 #     --domain DOMAIN        (default: hideawayseoul.com) Domain to verify
 #                            DNS for and request a TLS cert for.
 #     --skip-dns             Bypass the DNS poll (useful if you know DNS is
@@ -39,19 +51,20 @@
 #
 # ── What it does (each phase is idempotent) ──────────────────────────────────
 #   1. Sanity — refuse to run anywhere that isn't a clean Ubuntu root shell.
-#   2. server-setup.sh — OS hardening, Docker, certbot, deploy user.
+#   2. server-setup.sh — OS hardening, Docker, certbot, deploy user,
+#      /etc/age/, sops + age binaries.
 #   3. DNS check — poll until $DOMAIN resolves to this machine's public IP.
 #   4. TLS — certbot certonly --standalone for $DOMAIN.
-#   5. GitHub deploy key — generate ed25519, print pubkey, pause for you to
-#      paste it into the repo's Settings → Deploy keys, verify SSH auth.
-#      Skipped automatically when origin URL isn't on github.com.
+#   5a. GitHub deploy key — generate ed25519, print pubkey, pause for you to
+#       paste it into the repo's Settings → Deploy keys, verify SSH auth.
+#   5b. ghcr.io login — `docker login ghcr.io` as the deploy user.
 #   6. Repo sync — clone or fast-forward into /home/deploy/thehideaway as
-#      the deploy user. Source: this repo's `origin` remote (rewritten to
-#      SSH form so the deploy key is used).
-#   7. Pre-flight — validate .env.production has no placeholders, and the
-#      asset tree under /opt/thehideaway/assets is populated.
-#   8. First deploy — ensure docker network, `prod.sh --full` (deploy +
-#      migrate). Then health-check by hitting the local nginx.
+#      the deploy user.
+#   7. Pre-flight — validate /etc/age/keys.txt exists, .env.production.enc
+#      decrypts cleanly, the asset tree is populated, and the requested
+#      image tag exists on ghcr.io.
+#   8. First deploy — ensure docker network, `scripts/deploy.sh <tag>
+#      --migrate`. Then health-check by hitting the local nginx.
 #
 # ── Exit codes ───────────────────────────────────────────────────────────────
 #   0   Success
@@ -83,6 +96,10 @@ DEPLOY_REPO="${DEPLOY_HOME}/thehideaway"
 # ── Defaults / args ──────────────────────────────────────────────────────────
 DEPLOY_KEY=""
 IMAGE_TAG=""
+GHCR_USER=""
+# GHCR_TOKEN comes from the environment, NOT from argv. Read it now before
+# anything else so we can fail fast with a clear hint.
+GHCR_TOKEN="${GHCR_TOKEN:-}"
 DOMAIN="hideawayseoul.com"
 SKIP_DNS=false
 SKIP_CERT=false
@@ -95,6 +112,13 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --deploy-key)  DEPLOY_KEY="$2";   shift 2 ;;
     --image-tag)   IMAGE_TAG="$2";    shift 2 ;;
+    --ghcr-user)   GHCR_USER="$2";    shift 2 ;;
+    --ghcr-token)
+      error "--ghcr-token is no longer accepted as a CLI flag (it would leak via 'ps aux')."
+      error "Pass it via the GHCR_TOKEN environment variable instead:"
+      error "  GHCR_TOKEN=\"\$(cat ~/.ghcr-token)\" bash scripts/first-deploy.sh ..."
+      exit 2
+      ;;
     --domain)      DOMAIN="$2";       shift 2 ;;
     --skip-dns)    SKIP_DNS=true;     shift ;;
     --skip-cert)   SKIP_CERT=true;    shift ;;
@@ -107,6 +131,21 @@ done
 
 [[ -z "${DEPLOY_KEY}" ]] && { error "--deploy-key is required (see --help)"; exit 2; }
 [[ -z "${IMAGE_TAG}"  ]] && { error "--image-tag is required (see --help)"; exit 2; }
+[[ -z "${GHCR_USER}"  ]] && { error "--ghcr-user is required (see --help)"; exit 2; }
+if [[ -z "${GHCR_TOKEN}" ]]; then
+  error "GHCR_TOKEN env var is required."
+  error "  GHCR_TOKEN=\"\$(cat ~/.ghcr-token)\" bash scripts/first-deploy.sh ..."
+  exit 2
+fi
+
+# Tag format: semver (vMAJOR.MINOR.PATCH[-pre]) or the literal "latest".
+if [[ "${IMAGE_TAG}" != "latest" && ! "${IMAGE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+  error "--image-tag must be semver (vMAJOR.MINOR.PATCH) or 'latest', got: ${IMAGE_TAG}"
+  exit 2
+fi
+
+# Image refs — driven by GHCR_USER. scripts/deploy.sh respects ${REGISTRY}.
+REGISTRY="${REGISTRY:-ghcr.io/${GHCR_USER}/hideaway}"
 
 # ── Phase 1: Sanity ──────────────────────────────────────────────────────────
 heading "Phase 1/8: Sanity checks"
@@ -305,6 +344,27 @@ EOF
   fi
 fi
 
+# ── Phase 5b: ghcr.io login (deploy user) ────────────────────────────────────
+heading "Phase 5b/8: ghcr.io docker login (deploy user)"
+
+# Login as the deploy user — that's the account scripts/deploy.sh runs under.
+# --password-stdin avoids the token landing in shell history.
+# Capture stderr so the operator sees docker's actual failure reason (401 vs
+# network vs malformed username) instead of just our hint.
+docker_login_err=""
+if ! docker_login_err="$(echo "${GHCR_TOKEN}" | sudo -u deploy docker login ghcr.io \
+     --username "${GHCR_USER}" --password-stdin 2>&1 >/dev/null)"; then
+  error "docker login ghcr.io failed for ${GHCR_USER}:"
+  echo "${docker_login_err}" | sed 's/^/    /' >&2
+  error ""
+  error "Most common cause: the PAT lacks explicit per-package access. Visit:"
+  error "  https://github.com/users/${GHCR_USER}/packages/container/hideaway/settings"
+  error "  https://github.com/users/${GHCR_USER}/packages/container/hideaway-migrate/settings"
+  error "and add your PAT under 'Manage installed' with Read access."
+  exit 7
+fi
+info "deploy user authenticated to ghcr.io as ${GHCR_USER}"
+
 # ── Phase 6: Repo sync ───────────────────────────────────────────────────────
 heading "Phase 6/8: Sync repo into ${DEPLOY_REPO}"
 
@@ -318,7 +378,8 @@ else
   CLONE_URL="${ORIGIN_URL}"
 fi
 
-# Clone or pull as the deploy user (Docker group membership matters for prod.sh).
+# Clone or pull as the deploy user (Docker group membership matters because
+# scripts/deploy.sh later runs as deploy and needs to talk to the Docker socket).
 if [[ ! -d "${DEPLOY_REPO}/.git" ]]; then
   info "Cloning ${CLONE_URL} into ${DEPLOY_REPO}..."
   sudo -u deploy git clone "${CLONE_URL}" "${DEPLOY_REPO}"
@@ -335,39 +396,72 @@ else
   sudo -u deploy git -C "${DEPLOY_REPO}" pull --ff-only
 fi
 
-# ── Phase 6: Pre-flight ──────────────────────────────────────────────────────
-heading "Phase 7/8: Pre-flight (.env.production + asset tree)"
+# ── Phase 7: Pre-flight ──────────────────────────────────────────────────────
+heading "Phase 7/8: Pre-flight (age key, encrypted env, assets, image manifest)"
 
-ENV_FILE="${DEPLOY_REPO}/.env.production"
-if [[ ! -f "${ENV_FILE}" ]]; then
-  error ".env.production missing at ${ENV_FILE}."
-  error "Copy it from your secure store (1Password / vault / scp from laptop)"
-  error "and re-run. Template lives at ${DEPLOY_REPO}/.env.production.example."
+# 7.1 — age private key is present and readable.
+AGE_KEY_FILE="/etc/age/keys.txt"
+if [[ ! -f "${AGE_KEY_FILE}" ]]; then
+  error "${AGE_KEY_FILE} not found."
+  error "scp ~/.config/sops/age/keys.txt from your laptop, then chmod 600."
+  error "  scp ~/.config/sops/age/keys.txt root@${DOMAIN}:${AGE_KEY_FILE}"
   exit 3
 fi
-# Refuse to deploy with placeholder values still in the file.
-if grep -E '^[A-Z_]+=(CHANGE_ME|your_|GOCSPX-your|pk\.your_)' "${ENV_FILE}" >/dev/null; then
-  error ".env.production contains placeholder values:"
-  grep -nE '^[A-Z_]+=(CHANGE_ME|your_|GOCSPX-your|pk\.your_)' "${ENV_FILE}" >&2
-  error "Replace these with real values, then re-run."
+if [[ "$(stat -c %a "${AGE_KEY_FILE}")" != "600" ]]; then
+  warn "${AGE_KEY_FILE} permissions are not 600 — fixing."
+  chmod 600 "${AGE_KEY_FILE}"
+fi
+info "age key present at ${AGE_KEY_FILE} (mode 600)"
+
+# 7.2 — encrypted env file exists in the cloned repo.
+ENV_ENC="${DEPLOY_REPO}/.env.production.enc"
+if [[ ! -f "${ENV_ENC}" ]]; then
+  error ".env.production.enc missing at ${ENV_ENC}."
+  error "Has the repo been cloned with the latest commit? Phase 6 should have done that."
   exit 3
 fi
-# Refuse if no PAYLOAD_SECRET / BETTER_AUTH_SECRET (catches an empty file).
-for required_key in PAYLOAD_SECRET BETTER_AUTH_SECRET DATABASE_URI POSTGRES_PASSWORD; do
-  if ! grep -qE "^${required_key}=." "${ENV_FILE}"; then
-    error ".env.production missing required key: ${required_key}"
-    exit 3
+
+# 7.3 — decrypt to a temp file and validate against the Zod schema.
+ENV_CHECK="$(mktemp /tmp/hideaway-env-check.XXXXXX)"
+chmod 600 "${ENV_CHECK}"
+cleanup_env_check() {
+  if command -v shred >/dev/null 2>&1; then
+    shred -u "${ENV_CHECK}" 2>/dev/null || rm -f "${ENV_CHECK}"
+  else
+    rm -f "${ENV_CHECK}"
   fi
-done
-info ".env.production looks complete."
+}
+trap cleanup_env_check EXIT
 
-# Asset tree — fast and strict via asset-bootstrap.sh check.
+if ! SOPS_AGE_KEY_FILE="${AGE_KEY_FILE}" \
+     sops --decrypt --input-type dotenv --output-type dotenv "${ENV_ENC}" \
+       > "${ENV_CHECK}" 2>/tmp/hideaway-sops-err.log; then
+  error "sops failed to decrypt ${ENV_ENC}:"
+  sed 's/^/    /' /tmp/hideaway-sops-err.log >&2
+  rm -f /tmp/hideaway-sops-err.log
+  exit 3
+fi
+info ".env.production.enc decrypted ($(wc -l < "${ENV_CHECK}") lines)"
+
+# 7.4 — schema gate. Uses the repo's own verify-env script so failure messages
+# match what the operator sees in `pnpm release:check`. Runs as root (the
+# script is in a root phase) so it can read the root-owned ENV_CHECK temp
+# file. The decrypted env never reaches the deploy user.
+if ! (cd "${DEPLOY_REPO}" && node \
+      --no-warnings --experimental-strip-types \
+      scripts/verify-env.ts "${ENV_CHECK}"); then
+  error "Env schema validation failed. Edit on the laptop:"
+  error "  pnpm env:edit  →  fix the reported keys  →  commit  →  pnpm release:cut"
+  exit 3
+fi
+
+# 7.5 — Asset tree — fast and strict via asset-bootstrap.sh check.
 if [[ -x "${DEPLOY_REPO}/scripts/asset-bootstrap.sh" ]]; then
   if ! "${DEPLOY_REPO}/scripts/asset-bootstrap.sh" check --quiet; then
     error "Asset tree under /opt/thehideaway/assets is incomplete."
     error "Run from your dev machine:"
     error "  rsync -av --progress ./public/assets/  deploy@<this-host>:/opt/thehideaway/assets/"
-    error "Then re-run this script (or just re-run prod.sh)."
+    error "Then re-run this script with --skip-setup --skip-dns --skip-cert --skip-gh-key."
     exit 3
   fi
   info "Asset tree present."
@@ -375,36 +469,43 @@ else
   warn "asset-bootstrap.sh not found — skipping asset check."
 fi
 
-# Confirm the image is loadable BEFORE prod.sh tries to pull (which would
-# otherwise fail at a less helpful stage).
-REGISTRY="${REGISTRY:-hideaway}"
-if ! docker image inspect "${REGISTRY}:${IMAGE_TAG}" >/dev/null 2>&1; then
-  warn "Image ${REGISTRY}:${IMAGE_TAG} not present locally."
-  warn "prod.sh will attempt to pull. If that fails:"
-  warn "  • From your dev machine: docker save ${REGISTRY}:${IMAGE_TAG} | ssh root@<host> 'docker load'"
-  warn "  • Or push to a registry the VPS can pull from."
-  warn "Continuing — prod.sh will surface the real error if pull fails."
+# 7.6 — Image manifest on ghcr.io. Catches the wrong tag / unbuilt-yet case
+# before scripts/deploy.sh tears down the (non-existent) running stack.
+# Capture stderr so a 401 (token has no package access) doesn't masquerade
+# as a 404 (tag doesn't exist).
+manifest_err=""
+if manifest_err="$(sudo -u deploy docker manifest inspect \
+     "${REGISTRY}:${IMAGE_TAG}" 2>&1 >/dev/null)"; then
+  info "image manifest found: ${REGISTRY}:${IMAGE_TAG}"
 else
-  info "Image ${REGISTRY}:${IMAGE_TAG} is loadable locally."
+  error "${REGISTRY}:${IMAGE_TAG} not accessible on ghcr.io:"
+  echo "${manifest_err}" | sed 's/^/    /' >&2
+  error ""
+  error "Check that the release workflow finished green:"
+  error "  https://github.com/${REPO_SLUG:-<owner>/<repo>}/actions"
+  error "If the tag exists, the deploy user's PAT may lack package access."
+  exit 3
 fi
 
-# ── Phase 7: First deploy ────────────────────────────────────────────────────
-heading "Phase 8/8: First deploy (network, migrate, up, health)"
+# ── Phase 8: First deploy ────────────────────────────────────────────────────
+heading "Phase 8/8: First deploy (network, pull, up, migrate, health)"
 
-# Docker network — prod.sh creates it via ensure_network, but creating it
-# here surfaces permission/IPv6 issues before the larger up call.
+# Docker network — compose.prod.yaml declares it as `external: true`, so it
+# must exist before the first up. scripts/deploy.sh doesn't create it
+# (intentionally — it's a once-per-VPS setup concern).
 if ! docker network ls --format '{{.Name}}' | grep -q '^hideaway$'; then
   info "Creating 'hideaway' Docker network (IPv6 enabled)..."
   docker network create --ipv6=true hideaway >/dev/null
 fi
 
-# Run prod.sh as deploy. --full = pull + deploy + migrate. First deploy is
-# the canonical case for --full because the DB is fresh.
-info "Running prod.sh --full as deploy user..."
+# Hand off to scripts/deploy.sh as the deploy user. --migrate runs the
+# (always-empty) initial migration set, with pg_dump-before pattern.
+info "Running scripts/deploy.sh ${IMAGE_TAG} --migrate as deploy user..."
 (
   cd "${DEPLOY_REPO}"
-  sudo -u deploy IMAGE_TAG="${IMAGE_TAG}" REGISTRY="${REGISTRY}" ./prod.sh --full
-) || { error "prod.sh failed. Check logs above and 'docker compose logs'."; exit 6; }
+  sudo -u deploy REGISTRY="${REGISTRY}" DOMAIN="${DOMAIN}" \
+    ./scripts/deploy.sh "${IMAGE_TAG}" --migrate
+) || { error "scripts/deploy.sh failed. Check logs above and 'docker compose logs'."; exit 6; }
 
 # Health check — give nginx 30s to settle, then hit /privacy (a static
 # server-rendered page that doesn't depend on the DB).
@@ -430,8 +531,9 @@ echo
 echo "Useful next steps:"
 echo "  • Verify the running stack:  docker compose -f compose.prod.yaml ps"
 echo "  • Tail logs:                 docker compose -f compose.prod.yaml logs -f payload"
-echo "  • Open Dockge (optional):    ssh -L 5001:127.0.0.1:5001 deploy@${DOMAIN}"
-echo "                               then: ${DEPLOY_REPO}/prod.sh dockge-up   (TODO if you want a wrapper)"
+echo "  • Subsequent deploys:        ./scripts/deploy.sh <tag> [--migrate]"
+echo "  • Check current tag:         ./scripts/deploy.sh --status"
+echo "  • Roll back if needed:       ./scripts/deploy.sh --rollback"
+echo "  • Edit env later:            (on laptop) pnpm env:edit"
 echo "  • Submit OAuth consoles:     see ${DEPLOY_REPO}/readmes/oauth-approval/"
-echo "  • Capture prod screenshots:  see ${DEPLOY_REPO}/readmes/oauth-approval/03-pre-flight.md"
 echo

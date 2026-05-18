@@ -23,6 +23,7 @@ import {
   UserRound
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { type ChangeEvent, useCallback, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
@@ -37,7 +38,7 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 8 },
   show: {
     opacity: 1,
@@ -124,7 +125,7 @@ export const NotificationsView = () => {
               <NotificationRow
                 title={n.title || "Notification"}
                 content={n.content || ""}
-                href={n.actionLink || "/me/notifications"}
+                href={n.actionLink?.url || "/me/notifications"}
                 read={!!n.read}
                 createdAt={n.createdAt as unknown as string}
                 onSelect={closeOnSelect}

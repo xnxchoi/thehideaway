@@ -52,6 +52,26 @@ echo "→ [1/4] Building Next.js (pnpm build)..."
 pnpm build
 echo ""
 
+# ── 1.5 Standalone preflight ──────────────────────────────────────────────────
+# pack.Dockerfile COPYs .next/standalone and .next/static directly. If
+# next.config.ts loses `output: "standalone"`, pnpm build silently produces a
+# normal .next/ tree and Docker fails later with a cryptic
+# "COPY failed: stat /var/lib/docker/.../.next/standalone: no such file".
+# Fail loudly here with an actionable hint instead.
+if [[ ! -f ".next/standalone/server.js" || ! -d ".next/static" ]]; then
+  echo ""
+  echo "✗ .next/standalone/server.js or .next/static is missing after pnpm build."
+  echo ""
+  echo "  pack.Dockerfile expects the standalone output. Check next.config.ts:"
+  echo "    output: \"standalone\""
+  echo ""
+  echo "  If output is set and this still fails, the build aborted earlier —"
+  echo "  re-run \`pnpm build\` and read the Next.js output."
+  exit 1
+fi
+echo "  ✓ standalone output present (.next/standalone/server.js, .next/static)"
+echo ""
+
 # ── 2. Runtime image ──────────────────────────────────────────────────────────
 echo "→ [2/4] Packaging runtime image: ${RUNTIME_IMAGE}"
 docker build \

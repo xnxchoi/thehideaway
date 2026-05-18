@@ -8,7 +8,6 @@ import s from "@/components/sections/Pricing/Pricing.module.scss";
 import { RPage } from "@/components/UX/Transition";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<{ plan?: string }>;
 

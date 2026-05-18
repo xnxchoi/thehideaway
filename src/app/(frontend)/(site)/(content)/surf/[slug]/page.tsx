@@ -3,8 +3,6 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 
-export const dynamic = "force-dynamic";
-
 type Args = {
   params: Promise<{
     slug: string;

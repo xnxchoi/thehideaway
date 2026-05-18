@@ -14,8 +14,6 @@ import { DemimondePhrases } from "./DemimondePhrases";
 import { DemimondeFAQ } from "./DemimondeFAQ";
 import { DemimondeClosing } from "./DemimondeClosing";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Demimonde · Garden cookout — The Hideaway",
   description:
