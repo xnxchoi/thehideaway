@@ -1,34 +1,85 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { type Variants } from "motion/react";
 import * as m from "motion/react-m";
 
 /**
- * Page-local reveal: titles and lead text blur + float in as they enter
- * the viewport, blur + float out as they leave. Driven by Motion's
- * `whileInView` (IntersectionObserver under the hood) — re-triggers on
- * every entry, so each pass of the horizontal scroll loop feels fresh
- * without manual progress wiring.
+ * Reveal — slow, soft, choreographed text reveal for the immersive
+ * Day n Night scene.
  *
- * Polymorphic via the `as` prop so callers can wrap the right semantic
- * element (h2 / p / span / ...) directly — no extra wrapper div that
- * would change the document outline.
+ * Design direction
+ * ────────────────
+ * Calibrated against `src/components/UX/Tour/RegistrationTour.tsx`'s
+ * blur-in feel (the closest tonal cousin already in the codebase):
  *
- * `viewport.amount: 0.35` means at least 35% of the element must be
- * inside the viewport before "in view" fires; this keeps headings from
- * popping while they're still half-clipped at the edge of the act.
+ *   - y offset: 6px (was 16 — too far)
+ *   - blur:     6px (was 12 — too strong)
+ *   - duration: 0.85s (longer, smoother)
+ *   - ease:     [0.25, 0.46, 0.45, 0.94] — cubic ease-out, gentler than the
+ *               prior expo-out [0.16, 1, 0.3, 1] that felt "jerky"
+ *
+ * Trigger semantics
+ * ─────────────────
+ *   - `once: true` — fires the FIRST time the element enters viewport,
+ *     then stays in place. Avoids the 8×-re-trigger problem caused by
+ *     the loop's duplicate ActSet pattern + viewport re-entries.
+ *   - `amount: 0.55` — the element must be ~55% visible before firing,
+ *     not the prior 0.35 which fired at the viewport edge.
+ *
+ * Choreography
+ * ────────────
+ * Use the two-component pattern for a coordinated section reveal:
+ *
+ *   <RevealStage>
+ *     <RevealItem as="p"  className={s.kicker}>kicker</RevealItem>
+ *     <RevealItem as="h2" className={s.title}>title</RevealItem>
+ *     <RevealItem as="p"  className={s.lede}>lede</RevealItem>
+ *   </RevealStage>
+ *
+ * The Stage observes the viewport ONCE; on the trigger it dispatches its
+ * `visible` variant down the tree. The Stage's `staggerChildren` paces
+ * the Items so they cascade — kicker → title → lede — instead of all
+ * popping at once. Result: each section reads as a single composed
+ * gesture, not a pile of independently-triggered elements.
+ *
+ * The legacy `<Reveal>` helper is kept as a single-shot wrapper for
+ * callers that need a one-element reveal without a Stage; it uses the
+ * same easing + offset values.
  */
-const REVEAL_INITIAL = { opacity: 0, filter: "blur(12px)", y: 16 };
-const REVEAL_VISIBLE = { opacity: 1, filter: "blur(0px)", y: 0 };
-const REVEAL_TRANSITION = {
-  duration: 0.85,
-  ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
-};
-const REVEAL_VIEWPORT = { amount: 0.35, once: false } as const;
 
-// Map the allow-list of semantic tags to their motion-component
-// counterparts. Keeping this explicit gives TS the right element type
-// at each call site without any `as any`.
+// ─── Animation primitives ────────────────────────────────────────────────────
+
+const EASE_SOFT: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+
+const ITEM_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 6, filter: "blur(6px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.85, ease: EASE_SOFT }
+  }
+};
+
+/**
+ * Choreography defaults — picked to feel like a calm exhale rather
+ * than a fast pop. The Stage waits a beat (`delayChildren: 0.15`)
+ * after the trigger fires, then cascades children at `0.18s` intervals.
+ * For sections with many items, this stretches the reveal into a
+ * coherent ~1.0s gesture before the last child settles.
+ */
+const STAGE_VARIANTS: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.18, delayChildren: 0.15 }
+  }
+};
+
+const STAGE_VIEWPORT = { once: true, amount: 0.55 } as const;
+
+// ─── Tag mapping (polymorphic without `as any`) ──────────────────────────────
+
 const MOTION_MAP = {
   div: m.div,
   section: m.section,
@@ -42,10 +93,80 @@ const MOTION_MAP = {
 
 type RevealTag = keyof typeof MOTION_MAP;
 
+// ─── RevealStage — the choreographer ─────────────────────────────────────────
+
+interface RevealStageProps {
+  as?: RevealTag;
+  className?: string;
+  /** Override the viewport intersection threshold (0–1). Default 0.55. */
+  amount?: number;
+  /** Override the stagger interval between children. Default 0.18s. */
+  stagger?: number;
+  /** Override the initial delay before the first child fires. Default 0.15s. */
+  delay?: number;
+  children: ReactNode;
+}
+
+export function RevealStage({
+  as = "div",
+  className,
+  amount,
+  stagger,
+  delay,
+  children
+}: RevealStageProps) {
+  const Tag = MOTION_MAP[as];
+  const viewport =
+    amount === undefined ? STAGE_VIEWPORT : { once: true, amount };
+  const variants =
+    stagger === undefined && delay === undefined
+      ? STAGE_VARIANTS
+      : {
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: stagger ?? 0.18,
+              delayChildren: delay ?? 0.15
+            }
+          }
+        };
+  return (
+    <Tag
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={viewport}
+      variants={variants}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+// ─── RevealItem — animates as part of the parent Stage's stagger ─────────────
+
+interface RevealItemProps {
+  as?: RevealTag;
+  className?: string;
+  children: ReactNode;
+}
+
+export function RevealItem({ as = "div", className, children }: RevealItemProps) {
+  const Tag = MOTION_MAP[as];
+  return (
+    <Tag className={className} variants={ITEM_VARIANTS}>
+      {children}
+    </Tag>
+  );
+}
+
+// ─── Reveal — legacy single-shot helper ─────────────────────────────────────
+
 interface RevealProps {
   as?: RevealTag;
+  /** Extra delay before this item's reveal fires (seconds). */
   delay?: number;
-  /** Override the in-view intersection threshold (0–1). */
+  /** Override the in-view intersection threshold (0–1). Default 0.55. */
   amount?: number;
   className?: string;
   children: ReactNode;
@@ -60,14 +181,18 @@ export function Reveal({
 }: RevealProps) {
   const Tag = MOTION_MAP[as];
   const viewport =
-    amount === undefined ? REVEAL_VIEWPORT : { amount, once: false };
+    amount === undefined ? STAGE_VIEWPORT : { once: true, amount };
   return (
     <Tag
       className={className}
-      initial={REVEAL_INITIAL}
-      whileInView={REVEAL_VISIBLE}
+      initial={{ opacity: 0, y: 6, filter: "blur(6px)" }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: { duration: 0.85, ease: EASE_SOFT, delay }
+      }}
       viewport={viewport}
-      transition={{ ...REVEAL_TRANSITION, delay }}
     >
       {children}
     </Tag>

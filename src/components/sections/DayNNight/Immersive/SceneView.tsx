@@ -80,14 +80,20 @@ export function SceneView() {
           0.21 * c[0] + 0.72 * c[1] + 0.07 * c[2];
         const skyLum =
           (lum(sky.top) + lum(sky.mid) * 1.5 + lum(sky.bottom)) / 3.5;
-        // smoothstep(0.32 → 0.62) — below the band the sky is reliably
-        // dark (cream is fine); above it the sky is reliably bright
-        // (ink is fine); inside the band, blend smoothly.
-        const x = Math.max(0, Math.min(1, (skyLum - 0.32) / 0.3));
+        // smoothstep(0.22 → 0.40) — bias toward INK earlier in the
+        // luminance range. The prior range [0.32, 0.62] left text at
+        // mid-gray during sunset / golden hour, which sat on warm sky
+        // with poor contrast. Pulling the upper bound down to 0.40
+        // means Cookout (≈0.76), Dress (≈0.46) and Closing all land in
+        // full ink; only true night / pre-dawn pick cream. Lower bound
+        // 0.22 keeps the transition smooth instead of snapping.
+        const x = Math.max(0, Math.min(1, (skyLum - 0.22) / 0.18));
         const inkT = x * x * (3 - 2 * x);
+        // Tighter ink — oklch 16% reads as deep editorial navy-black on
+        // any sky bright enough to call for ink. Cream stays at 96%.
         const fg = `color-mix(in oklch, oklch(96% 0.005 80) ${Math.round(
           (1 - inkT) * 100
-        )}%, oklch(22% 0.02 280) ${Math.round(inkT * 100)}%)`;
+        )}%, oklch(16% 0.02 280) ${Math.round(inkT * 100)}%)`;
         shellRef.current.style.setProperty("--dn-fg", fg);
       }
 

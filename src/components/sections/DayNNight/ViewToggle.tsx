@@ -12,11 +12,12 @@ interface ViewToggleProps {
 export function ViewToggle({ value, onChange }: ViewToggleProps) {
   const t = useTranslations("Event.DayNNight.viewToggle");
 
+  // Visible markup is a binary toggle — two buttons only. The "View"
+  // label is announced via aria-label on the radiogroup so screen
+  // readers still hear the control's purpose; rendering it visually
+  // made the pill read as a tri-state switch (label / Story / Card).
   return (
     <div className={s.toggle} role="radiogroup" aria-label={t("label")}>
-      <span aria-hidden className={s.toggleLabel}>
-        {t("label")}
-      </span>
       <button
         type="button"
         role="radio"

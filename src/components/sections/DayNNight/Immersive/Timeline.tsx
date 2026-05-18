@@ -8,9 +8,19 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
-import { Reveal } from "./Reveal";
+import { Polaroid, PolaroidGroup } from "./Polaroid";
+import { RevealItem, RevealStage } from "./Reveal";
 import { SceneView } from "./SceneView";
 import s from "../styles.module.scss";
+
+/**
+ * Anchors that polaroid clusters use for their parallax windows. These
+ * match the SKY_STOPS section centers in store.ts so each cluster
+ * appears to slide through frame as the user passes the section center.
+ */
+const ANCHOR_COOKOUT = 0.279;
+const ANCHOR_DRESS = 0.478;
+const ANCHOR_NIGHT = 0.664;
 
 // ScrollTrigger is registered globally in TransitionProvider — see
 // readmes/DAY_N_NIGHT.md § 9 ("No new gsap.registerPlugin at module scope
@@ -253,17 +263,17 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("opening.time")}</span>
           </span>
-          <div className={s.openingStack}>
-            <Reveal as="p" className={s.openingKicker} delay={0.05}>
+          <RevealStage as="div" className={s.openingStack}>
+            <RevealItem as="p" className={s.openingKicker}>
               {t("opening.kicker")}
-            </Reveal>
-            <Reveal as="h2" className={s.openingTitle} delay={0.15}>
+            </RevealItem>
+            <RevealItem as="h2" className={s.openingTitle}>
               {t("title")}
-            </Reveal>
-            <Reveal as="p" className={s.openingLede} delay={0.3}>
+            </RevealItem>
+            <RevealItem as="p" className={s.openingLede}>
               {t("opening.lede")}
-            </Reveal>
-          </div>
+            </RevealItem>
+          </RevealStage>
           <div className={s.openingFoot}>
             <span className={s.openingFootItem}>
               <span className={s.actFooterItemKey}>{t("date.weekday")}</span>
@@ -298,14 +308,14 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("act.day.time")}</span>
           </span>
-          <div className={s.cookoutHead}>
-            <Reveal as="h2" className={s.actHeading} delay={0.05}>
+          <RevealStage as="div" className={s.cookoutHead}>
+            <RevealItem as="h2" className={s.actHeading}>
               {t("act.day.heading")}
-            </Reveal>
-            <Reveal as="p" className={s.cookoutLede} delay={0.2}>
+            </RevealItem>
+            <RevealItem as="p" className={s.cookoutLede}>
               {t("act.day.body")}
-            </Reveal>
-          </div>
+            </RevealItem>
+          </RevealStage>
           <ul className={s.cookoutList} aria-label={t("included.heading")}>
             <li className={s.cookoutListItem}>
               <span className={s.cookoutListLabel}>
@@ -324,6 +334,42 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               </span>
             </li>
           </ul>
+          {/* Cookout moodboard — smash burgers + ambient food vibes.
+              The polaroid cluster lives in the right portion of the
+              act, parallaxed around the Cookout anchor (0.279). */}
+          <PolaroidGroup className={s.cookoutMoodboard}>
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage.png"
+              alt="Smash burgers off the grill"
+              caption="smash, off the grill"
+              captionStyle="serif"
+              width={240}
+              aspect={1.05}
+              angle={-4}
+              depth={0.7}
+              anchor={ANCHOR_COOKOUT}
+            />
+            <Polaroid
+              src="/assets/day-n-night/IMG_8543.png"
+              alt="Cookout vibes"
+              caption="rooftop, late sun"
+              captionStyle="marker"
+              width={210}
+              aspect={1.2}
+              angle={5}
+              depth={-0.4}
+              anchor={ANCHOR_COOKOUT}
+            />
+            <Polaroid
+              src="/assets/day-n-night/IMG_9520.png"
+              alt="Cookout vibes"
+              width={200}
+              aspect={1}
+              angle={-2}
+              depth={1.0}
+              anchor={ANCHOR_COOKOUT}
+            />
+          </PolaroidGroup>
         </div>
       </section>
 
@@ -342,30 +388,97 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <span className={s.actEyebrowRoman}>III</span>
             <span>{t("dressCode.heading")}</span>
           </span>
-          <Reveal as="p" className={s.dressIntro} delay={0.05}>
-            {t("dressCode.intro")}
-          </Reveal>
-          <div className={s.dressColsBespoke}>
+          {/* Two staged reveals: intro fires first (as the user enters Dress),
+              then the two columns share a second stage so they cascade in
+              together. Splitting the stage means the intro doesn't have to
+              wait for the columns to be 55%-visible before triggering. */}
+          <RevealStage as="div" className={s.dressIntroWrap}>
+            <RevealItem as="p" className={s.dressIntro}>
+              {t("dressCode.intro")}
+            </RevealItem>
+          </RevealStage>
+          <RevealStage as="div" className={s.dressColsBespoke}>
             <div className={s.dressColBespoke}>
               <span className={s.dressColLabel}>01</span>
-              <Reveal as="h3" className={s.dressColHeading} delay={0.15}>
+              <RevealItem as="h3" className={s.dressColHeading}>
                 {t("dressCode.option1.label")}
-              </Reveal>
-              <Reveal as="p" className={s.dressColBody} delay={0.28}>
+              </RevealItem>
+              <RevealItem as="p" className={s.dressColBody}>
                 {t("dressCode.option1.body")}
-              </Reveal>
+              </RevealItem>
             </div>
             <div className={s.dressDivider} aria-hidden />
             <div className={s.dressColBespoke}>
               <span className={s.dressColLabel}>02</span>
-              <Reveal as="h3" className={s.dressColHeading} delay={0.2}>
+              <RevealItem as="h3" className={s.dressColHeading}>
                 {t("dressCode.option2.label")}
-              </Reveal>
-              <Reveal as="p" className={s.dressColBody} delay={0.33}>
+              </RevealItem>
+              <RevealItem as="p" className={s.dressColBody}>
                 {t("dressCode.option2.body")}
-              </Reveal>
+              </RevealItem>
             </div>
-          </div>
+          </RevealStage>
+          {/* Dress moodboard — outfit references pulled straight from the
+              dev doc's pop-culture stills. Mixed serif + marker captions
+              so the cluster feels like a film-club mood wall instead of
+              a polished catalog. Parallaxed around the Dress anchor. */}
+          <PolaroidGroup className={s.dressMoodboard}>
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-1.png"
+              alt="Romeo and Juliet — period costume reference"
+              caption="still love. soon too old."
+              captionStyle="serif"
+              width={220}
+              aspect={0.78}
+              angle={-6}
+              depth={0.5}
+              anchor={ANCHOR_DRESS}
+            />
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-2.png"
+              alt="All the pink — the next emo girl"
+              caption="all the pink"
+              captionStyle="marker"
+              width={200}
+              aspect={1.1}
+              angle={4}
+              depth={-0.7}
+              anchor={ANCHOR_DRESS}
+            />
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-3.png"
+              alt="Steve Carrell, Crazy Stupid Love — dad fit"
+              caption="the dad. unbothered."
+              captionStyle="serif"
+              width={210}
+              aspect={1.15}
+              angle={-3}
+              depth={0.9}
+              anchor={ANCHOR_DRESS}
+            />
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-4.png"
+              alt="Pulp Fiction — they're not dads"
+              caption="(they're not dads)"
+              captionStyle="marker"
+              width={200}
+              aspect={1.4}
+              angle={6}
+              depth={-0.3}
+              anchor={ANCHOR_DRESS}
+            />
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-5.png"
+              alt="The Dude — Big Lebowski"
+              caption="the dude."
+              captionStyle="serif"
+              width={190}
+              aspect={1}
+              angle={-7}
+              depth={0.6}
+              anchor={ANCHOR_DRESS}
+            />
+          </PolaroidGroup>
           <span className={s.actSecret}>{t("secret")}</span>
         </div>
       </section>
@@ -390,19 +503,44 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("act.night.time")}</span>
           </span>
-          <div className={s.nightHead}>
-            <Reveal as="h2" className={s.actHeading} delay={0.05}>
+          <RevealStage as="div" className={s.nightHead}>
+            <RevealItem as="h2" className={s.actHeading}>
               {t("act.night.heading")}
-            </Reveal>
-            <Reveal as="p" className={s.nightLede} delay={0.2}>
+            </RevealItem>
+            <RevealItem as="p" className={s.nightLede}>
               {t("act.night.body")}
-            </Reveal>
-          </div>
+            </RevealItem>
+          </RevealStage>
           <div className={s.nightStamp}>
             <span className={s.nightStampRule} aria-hidden />
             <span className={s.nightStampKey}>{t("tribute.heading")}</span>
             <span className={s.nightStampVal}>{t("tribute.body")}</span>
           </div>
+          {/* Night moodboard — the cocktail/suit/jacket references. */}
+          <PolaroidGroup className={s.nightMoodboard}>
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-6.png"
+              alt="Pulp Fiction — suit, dressed up"
+              caption="won't stop you"
+              captionStyle="serif"
+              width={220}
+              aspect={1.35}
+              angle={-5}
+              depth={0.6}
+              anchor={ANCHOR_NIGHT}
+            />
+            <Polaroid
+              src="/assets/day-n-night/DraggedImage-7.png"
+              alt="Jackets that walk into a quiet bar"
+              caption="a layer helps."
+              captionStyle="marker"
+              width={200}
+              aspect={1.1}
+              angle={4}
+              depth={-0.5}
+              anchor={ANCHOR_NIGHT}
+            />
+          </PolaroidGroup>
         </div>
       </section>
 
@@ -425,34 +563,36 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("date.short")}</span>
           </span>
-          <div className={s.closingStack}>
-            <Reveal as="p" className={s.closingEyebrow} delay={0.05}>
+          <RevealStage as="div" className={s.closingStack}>
+            <RevealItem as="p" className={s.closingEyebrow}>
               {t("closing.kicker")}
-            </Reveal>
-            <Reveal as="h2" className={s.closingTitle} delay={0.15}>
+            </RevealItem>
+            <RevealItem as="h2" className={s.closingTitle}>
               {t("title")}
-            </Reveal>
-            <Reveal as="p" className={s.closingLede} delay={0.3}>
+            </RevealItem>
+            <RevealItem as="p" className={s.closingLede}>
               {t("closing.lede")}
-            </Reveal>
-            <div className={s.closingFee}>
+            </RevealItem>
+            <RevealItem as="div" className={s.closingFee}>
               <span className={s.closingFeeAmount}>{t("entry.amount")}</span>
               <span>{t("entry.method")}</span>
               <span>
                 {t("entry.bank")} · {t("entry.accountHolder")}
               </span>
-            </div>
-            <Link
-              href="/tickets/day-n-night"
-              className={s.ctaImmersive}
-              tabIndex={ariaHidden ? -1 : undefined}
-            >
-              <span>{t("rsvpCta.primary")}</span>
-              <span aria-hidden className={s.ctaImmersiveArrow}>
-                →
-              </span>
-            </Link>
-          </div>
+            </RevealItem>
+            <RevealItem as="div">
+              <Link
+                href="/tickets/day-n-night"
+                className={s.ctaImmersive}
+                tabIndex={ariaHidden ? -1 : undefined}
+              >
+                <span>{t("rsvpCta.primary")}</span>
+                <span aria-hidden className={s.ctaImmersiveArrow}>
+                  →
+                </span>
+              </Link>
+            </RevealItem>
+          </RevealStage>
           <div className={s.closingFoot}>
             <span className={s.closingFootRule} aria-hidden />
             <span className={s.closingFootLine}>{t("footer.hosts")}</span>
