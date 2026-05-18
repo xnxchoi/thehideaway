@@ -43,17 +43,6 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
     const handoffProgress = (): number =>
       useDayNNightScene.getState().initialLoopPosition;
 
-    // Reduced motion: skip the staged rise entirely. Seed scene progress
-    // at the post-handoff value and promote phase to playing immediately.
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      setProgress(handoffProgress());
-      setPhase("playing");
-      return;
-    }
-
     let raf: number;
     const start = performance.now();
 

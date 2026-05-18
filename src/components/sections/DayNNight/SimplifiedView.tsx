@@ -24,9 +24,9 @@ export function SimplifiedView() {
       </header>
 
       <div className={s.simplifiedCenter}>
-        <p className={s.simplifiedEyebrow}>{t("subtitle")}</p>
+        <p className={s.simplifiedEyebrow}>{t("opening.kicker")}</p>
         <h1 className={s.simplifiedTitle}>{t("title")}</h1>
-        <p className={s.simplifiedSubtitle}>{t("tagline")}</p>
+        <p className={s.simplifiedSubtitle}>{t("opening.lede")}</p>
 
         <dl className={s.simplifiedMeta}>
           <div className={s.simplifiedMetaRow}>

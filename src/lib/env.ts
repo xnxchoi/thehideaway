@@ -422,14 +422,17 @@ const schema = z.object({
     // host portion). Reject them at validation time rather than discovering
     // a misparsed connection string under load. Allowed sub-delims (`!`, `$`,
     // `*`, etc.) stay legal per RFC 3986.
-    .refine(
-      (v) => v === undefined || !/[@:/?#[\]]/.test(v),
-      {
-        message:
-          "must not contain @ : / ? # [ ] — these have meaning in postgresql:// URIs and would silently break DATABASE_URI interpolation. Use letters, digits, sub-delims (! $ & ' ( ) * + , ; =) or pct-encode in advance."
-      }
-    )
-    .describe(d("deployment", "db", "Password for the postgres container. Must contain no URI-reserved characters (@ : / ? # [ ])." )),
+    .refine((v) => v === undefined || !/[@:/?#[\]]/.test(v), {
+      message:
+        "must not contain @ : / ? # [ ] — these have meaning in postgresql:// URIs and would silently break DATABASE_URI interpolation. Use letters, digits, sub-delims (! $ & ' ( ) * + , ; =) or pct-encode in advance."
+    })
+    .describe(
+      d(
+        "deployment",
+        "db",
+        "Password for the postgres container. Must contain no URI-reserved characters (@ : / ? # [ ])."
+      )
+    ),
   POSTGRES_DB: z
     .string()
     .optional()

@@ -8,6 +8,7 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
+import { Reveal } from "./Reveal";
 import { SceneView } from "./SceneView";
 import s from "../styles.module.scss";
 
@@ -240,22 +241,28 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           that, with a thin date+location strip anchored at the bottom. */}
       <section
         className={`${s.act} ${s.actOpening}`}
-        aria-label={t("act.day.label")}
+        aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
       >
         <div className={s.actInner}>
           <span className={s.actEyebrow}>
             <span className={s.actEyebrowRoman}>I</span>
-            <span>{t("act.day.label")}</span>
+            <span>{t("opening.label")}</span>
             <span className={s.actEyebrowDot} aria-hidden>
               ·
             </span>
-            <span>{t("act.day.time")}</span>
+            <span>{t("opening.time")}</span>
           </span>
           <div className={s.openingStack}>
-            <p className={s.openingKicker}>{t("subtitle")}</p>
-            <h2 className={s.openingTitle}>{t("title")}</h2>
-            <p className={s.openingLede}>{t("tagline")}</p>
+            <Reveal as="p" className={s.openingKicker} delay={0.05}>
+              {t("opening.kicker")}
+            </Reveal>
+            <Reveal as="h2" className={s.openingTitle} delay={0.15}>
+              {t("title")}
+            </Reveal>
+            <Reveal as="p" className={s.openingLede} delay={0.3}>
+              {t("opening.lede")}
+            </Reveal>
           </div>
           <div className={s.openingFoot}>
             <span className={s.openingFootItem}>
@@ -292,8 +299,12 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <span>{t("act.day.time")}</span>
           </span>
           <div className={s.cookoutHead}>
-            <h2 className={s.actHeading}>{t("act.day.heading")}</h2>
-            <p className={s.cookoutLede}>{t("act.day.body")}</p>
+            <Reveal as="h2" className={s.actHeading} delay={0.05}>
+              {t("act.day.heading")}
+            </Reveal>
+            <Reveal as="p" className={s.cookoutLede} delay={0.2}>
+              {t("act.day.body")}
+            </Reveal>
           </div>
           <ul className={s.cookoutList} aria-label={t("included.heading")}>
             <li className={s.cookoutListItem}>
@@ -331,22 +342,28 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <span className={s.actEyebrowRoman}>III</span>
             <span>{t("dressCode.heading")}</span>
           </span>
-          <p className={s.dressIntro}>{t("dressCode.intro")}</p>
+          <Reveal as="p" className={s.dressIntro} delay={0.05}>
+            {t("dressCode.intro")}
+          </Reveal>
           <div className={s.dressColsBespoke}>
             <div className={s.dressColBespoke}>
               <span className={s.dressColLabel}>01</span>
-              <h3 className={s.dressColHeading}>
+              <Reveal as="h3" className={s.dressColHeading} delay={0.15}>
                 {t("dressCode.option1.label")}
-              </h3>
-              <p className={s.dressColBody}>{t("dressCode.option1.body")}</p>
+              </Reveal>
+              <Reveal as="p" className={s.dressColBody} delay={0.28}>
+                {t("dressCode.option1.body")}
+              </Reveal>
             </div>
             <div className={s.dressDivider} aria-hidden />
             <div className={s.dressColBespoke}>
               <span className={s.dressColLabel}>02</span>
-              <h3 className={s.dressColHeading}>
+              <Reveal as="h3" className={s.dressColHeading} delay={0.2}>
                 {t("dressCode.option2.label")}
-              </h3>
-              <p className={s.dressColBody}>{t("dressCode.option2.body")}</p>
+              </Reveal>
+              <Reveal as="p" className={s.dressColBody} delay={0.33}>
+                {t("dressCode.option2.body")}
+              </Reveal>
             </div>
           </div>
           <span className={s.actSecret}>{t("secret")}</span>
@@ -379,8 +396,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           </div>
           <div className={s.nightStamp}>
             <span className={s.nightStampRule} aria-hidden />
-            <span className={s.nightStampKey}>{t("ymfm.heading")}</span>
-            <span className={s.nightStampVal}>{t("ymfm.body")}</span>
+            <span className={s.nightStampKey}>{t("tribute.heading")}</span>
+            <span className={s.nightStampVal}>{t("tribute.body")}</span>
           </div>
         </div>
       </section>
@@ -405,9 +422,9 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <span>{t("date.short")}</span>
           </span>
           <div className={s.closingStack}>
-            <p className={s.closingEyebrow}>{t("rsvpCta.secondary")}</p>
+            <p className={s.closingEyebrow}>{t("closing.kicker")}</p>
             <h2 className={s.closingTitle}>{t("title")}</h2>
-            <p className={s.closingLede}>{t("subtitle")}</p>
+            <p className={s.closingLede}>{t("closing.lede")}</p>
             <div className={s.closingFee}>
               <span className={s.closingFeeAmount}>{t("entry.amount")}</span>
               <span>{t("entry.method")}</span>

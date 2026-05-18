@@ -291,8 +291,6 @@
   "Event": {
     "DayNNight": {
       "title": "Day n Night",
-      "subtitle": "An evening that turns the night",
-      "tagline": "Cookout at sundown. Cocktails after the burn-down.",
       "date": {
         "weekday": "Sunday",
         "full": "Sunday, May 24, 2026",
@@ -300,69 +298,84 @@
       },
       "location": {
         "label": "Location",
-        "neighborhood": "Haebangchon · Itaewon",
-        "city": "Seoul"
+        "neighborhood": "Haebangchon · Yongsan",
+        "city": "Seoul",
+        "address": "Sowol-ro 20-gil 64, 3F"
+      },
+      "opening": {
+        "label": "DAY",
+        "time": "18:30 →",
+        "kicker": "30 & Smokin'",
+        "lede": "Fire doesn't ask permission to burn. Neither did we."
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 20:00",
-          "heading": "Cookout at golden hour",
-          "body": "Smash burgers, seafood and pork off the grill, the last hour of sunlight on a rooftop in Haebangchon. Wear what you wore all summer."
+          "heading": "Backyard cookouts are good. Rooftop barbecues are better.",
+          "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up — beer and wine after. Gin if you ask nice."
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → late",
-          "heading": "The room cools down",
-          "body": "Same place, different mood. Cocktails come up, the light comes down, and the playlist makes room for an hour of YM.FM live."
+          "heading": "Sharp. Chic. Dressed to impress.",
+          "body": "Same room, different mood. Cocktails come up. Lights come down. You don't have to bring a suit. Won't stop you, though."
         }
       },
       "dressCode": {
-        "heading": "Dress code",
-        "intro": "Two ways to read the theme. Pick one, or do both.",
+        "heading": "Dress for your age. Direction goes both ways.",
+        "intro": "Standing at the edge of a chapter — much to look forward to, as much to cherish. Two reads on the brief. Pick one. Or do both.",
         "option1": {
-          "label": "An outfit you'll soon be too old for",
-          "body": "The jacket you keep wearing past its time. The fit you'll quietly retire next year. Wear it while it still feels like yours."
+          "label": "An outfit you still love — but will be too old for soon",
+          "body": "Last call. Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
         },
         "option2": {
-          "label": "Polar extremes",
-          "body": "Show up like you've been on vacation for a month. Then add a jacket, a layer, an accessory — anything that lets you walk into a quiet bar after dark and not look out of place."
+          "label": "Daytime unshaven. Nighttime shaken — not stirred.",
+          "body": "One outfit for both. By day: dad jeans, Malibu retiree, unbothered, uncaring. By night: a layer that walks into a quiet bar after dark without looking out of place."
         }
       },
       "included": {
         "heading": "Included",
-        "food": { "label": "Food", "items": "Smash burgers · Seafood · Pork" },
-        "drinks": { "label": "Drinks", "items": "Beer · Cocktails · Spirits" },
-        "music": { "label": "Music", "items": "Playlist + YM.FM live, one hour" }
+        "food": { "label": "Food", "items": "Smash burgers · Pork · Potatoes" },
+        "drinks": { "label": "Drinks", "items": "Beer · Wine · Gin if you ask" }
       },
-      "ymfm": {
-        "heading": "On the music",
-        "body": "YM.FM is our resident — the voice behind the soundtrack on this site. One live hour, no warning when it starts."
+      "tribute": {
+        "heading": "Charred, Scarred & Thriving",
+        "body": "The friendships that forged us. The losses that left room for something better. The nights we won't talk about — and the ones we'll never stop telling."
       },
       "entry": {
         "heading": "Entry",
-        "amount": "60,000 KRW",
-        "perGuest": "per guest",
-        "method": "Cash only · pay on arrival or by transfer",
+        "amount": "65,000 KRW",
+        "perGuest": "all-inclusive · per guest",
+        "method": "Cash on arrival, or transfer",
         "bank": "Toss Bank · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
+      "closing": {
+        "kicker": "More to come — we won't disappoint.",
+        "lede": "Pull up a chair. The fire's been waiting."
+      },
       "rsvpCta": {
         "primary": "Reserve",
-        "secondary": "Quiet room. Small list."
+        "secondary": "Small list. Quiet room."
       },
       "viewToggle": {
         "label": "View",
         "immersive": "Story",
         "simplified": "Card"
       },
-      "loader": { "rising": "Rising" },
+      "loader": { "rising": "Loading" },
       "footer": {
         "hosts": "Hosted by Sean & friend",
-        "rsvpClosesAt": "RSVP closes when the room fills"
+        "rsvpClosesAt": "RSVPs close when the room fills."
       },
       "scrollHint": "Scroll",
-      "secret": "Something small, unrevealed, will be there.",
+      "secret": "Something quiet, unannounced, will be there.",
+      "audio": {
+        "label": "Sound",
+        "on": "Sound on",
+        "off": "Sound off"
+      },
       "scrubber": {
         "navLabel": "Timeline",
         "opening": "Opening",
