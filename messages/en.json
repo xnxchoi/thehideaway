@@ -287,5 +287,89 @@
     "notifications": "Notifications",
     "theme": "Theme",
     "highlights": "Highlights"
+  },
+  "Event": {
+    "DayNNight": {
+      "title": "Day n Night",
+      "subtitle": "An evening that turns the night",
+      "tagline": "Cookout at sundown. Cocktails after the burn-down.",
+      "date": {
+        "weekday": "Sunday",
+        "full": "Sunday, May 24, 2026",
+        "short": "May 24"
+      },
+      "location": {
+        "label": "Location",
+        "neighborhood": "Haebangchon · Itaewon",
+        "city": "Seoul"
+      },
+      "act": {
+        "day": {
+          "label": "DAY",
+          "time": "18:30 → 20:00",
+          "heading": "Cookout at golden hour",
+          "body": "Smash burgers, seafood and pork off the grill, the last hour of sunlight on a rooftop in Haebangchon. Wear what you wore all summer."
+        },
+        "night": {
+          "label": "NIGHT",
+          "time": "20:00 → late",
+          "heading": "The room cools down",
+          "body": "Same place, different mood. Cocktails come up, the light comes down, and the playlist makes room for an hour of YM.FM live."
+        }
+      },
+      "dressCode": {
+        "heading": "Dress code",
+        "intro": "Two ways to read the theme. Pick one, or do both.",
+        "option1": {
+          "label": "An outfit you'll soon be too old for",
+          "body": "The jacket you keep wearing past its time. The fit you'll quietly retire next year. Wear it while it still feels like yours."
+        },
+        "option2": {
+          "label": "Polar extremes",
+          "body": "Show up like you've been on vacation for a month. Then add a jacket, a layer, an accessory — anything that lets you walk into a quiet bar after dark and not look out of place."
+        }
+      },
+      "included": {
+        "heading": "Included",
+        "food": { "label": "Food", "items": "Smash burgers · Seafood · Pork" },
+        "drinks": { "label": "Drinks", "items": "Beer · Cocktails · Spirits" },
+        "music": { "label": "Music", "items": "Playlist + YM.FM live, one hour" }
+      },
+      "ymfm": {
+        "heading": "On the music",
+        "body": "YM.FM is our resident — the voice behind the soundtrack on this site. One live hour, no warning when it starts."
+      },
+      "entry": {
+        "heading": "Entry",
+        "amount": "60,000 KRW",
+        "perGuest": "per guest",
+        "method": "Cash only · pay on arrival or by transfer",
+        "bank": "Toss Bank · 1002-5436-0906",
+        "accountHolder": "리스토어드프로젝트"
+      },
+      "rsvpCta": {
+        "primary": "Reserve",
+        "secondary": "Quiet room. Small list."
+      },
+      "viewToggle": {
+        "label": "View",
+        "immersive": "Story",
+        "simplified": "Card"
+      },
+      "loader": { "rising": "Rising" },
+      "footer": {
+        "hosts": "Hosted by Sean & friend",
+        "rsvpClosesAt": "RSVP closes when the room fills"
+      },
+      "scrollHint": "Scroll",
+      "secret": "Something small, unrevealed, will be there.",
+      "scrubber": {
+        "opening": "Opening",
+        "cookout": "Cookout",
+        "dress": "Dress",
+        "night": "Night",
+        "reserve": "Reserve"
+      }
+    }
   }
 }

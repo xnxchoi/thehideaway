@@ -284,5 +284,89 @@
         "notifications": "알림",
         "theme": "테마",
         "highlights": "하이라이트"
+    },
+    "Event": {
+        "DayNNight": {
+            "title": "Day n Night",
+            "subtitle": "낮과 밤이 한 번 뒤집히는 저녁",
+            "tagline": "해 질 무렵의 바비큐, 그 뒤의 칵테일.",
+            "date": {
+                "weekday": "일요일",
+                "full": "2026년 5월 24일 일요일",
+                "short": "5월 24일"
+            },
+            "location": {
+                "label": "장소",
+                "neighborhood": "해방촌 · 이태원",
+                "city": "서울"
+            },
+            "act": {
+                "day": {
+                    "label": "DAY",
+                    "time": "18:30 → 20:00",
+                    "heading": "해 질 무렵의 쿡아웃",
+                    "body": "스매시 버거, 그릴 위의 해산물과 포크, 그리고 해방촌 옥상에 마지막 햇살이 머무는 한 시간. 여름 내내 입던 그 옷 그대로 와 주세요."
+                },
+                "night": {
+                    "label": "NIGHT",
+                    "time": "20:00 → 늦은 밤",
+                    "heading": "같은 자리, 다른 공기",
+                    "body": "장소는 그대로, 공기는 바뀝니다. 칵테일이 올라오고, 조명은 가라앉고, 플레이리스트 중간 어딘가에 YM.FM의 한 시간 라이브가 들어옵니다."
+                }
+            },
+            "dressCode": {
+                "heading": "드레스코드",
+                "intro": "주제를 읽는 방식은 두 가지. 하나만 골라도, 둘 다 해도 좋아요.",
+                "option1": {
+                    "label": "곧 너무 늙어 못 입을 옷",
+                    "body": "유통기한이 가까운 재킷. 내년쯤 조용히 정리할 핏. 아직 당신의 것일 때 한 번 더 입어 주세요."
+                },
+                "option2": {
+                    "label": "정반대의 두 모드",
+                    "body": "한 달 휴가에서 막 돌아온 사람처럼 도착해서, 밤이 되면 재킷이든 액세서리든 한 겹만 덧대 — 조용한 바에 들어가도 어색하지 않은 모습으로 변할 수 있게."
+                }
+            },
+            "included": {
+                "heading": "포함된 것",
+                "food": { "label": "음식", "items": "스매시 버거 · 해산물 · 포크" },
+                "drinks": { "label": "음료", "items": "맥주 · 칵테일 · 스피릿" },
+                "music": { "label": "음악", "items": "플레이리스트 + YM.FM 라이브 한 시간" }
+            },
+            "ymfm": {
+                "heading": "오늘의 음악에 대해",
+                "body": "YM.FM은 이 사이트의 사운드트랙을 만드는 우리의 레지던트 뮤지션입니다. 라이브 한 시간, 시작 시간은 알리지 않습니다."
+            },
+            "entry": {
+                "heading": "입장",
+                "amount": "60,000 KRW",
+                "perGuest": "1인 기준",
+                "method": "현금 또는 계좌이체 · 도착 후 확인",
+                "bank": "토스뱅크 · 1002-5436-0906",
+                "accountHolder": "리스토어드프로젝트"
+            },
+            "rsvpCta": {
+                "primary": "예약하기",
+                "secondary": "작은 방, 짧은 명단."
+            },
+            "viewToggle": {
+                "label": "보기",
+                "immersive": "스토리",
+                "simplified": "카드"
+            },
+            "loader": { "rising": "떠오르는 중" },
+            "footer": {
+                "hosts": "Sean과 동료가 함께 엽니다",
+                "rsvpClosesAt": "자리가 차면 RSVP는 닫힙니다"
+            },
+            "scrollHint": "스크롤",
+            "secret": "이름 모를 작은 것 하나가, 거기 있을 거예요.",
+            "scrubber": {
+                "opening": "오프닝",
+                "cookout": "쿡아웃",
+                "dress": "드레스코드",
+                "night": "밤",
+                "reserve": "예약"
+            }
+        }
     }
 }
