@@ -159,7 +159,11 @@ interface RevealItemProps {
   children: ReactNode;
 }
 
-export function RevealItem({ as = "div", className, children }: RevealItemProps) {
+export function RevealItem({
+  as = "div",
+  className,
+  children
+}: RevealItemProps) {
   const Tag = MOTION_MAP[as];
   return (
     <Tag className={className} variants={ITEM_VARIANTS}>
