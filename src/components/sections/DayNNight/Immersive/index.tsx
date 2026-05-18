@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useDayNNightScene } from "../store";
+import { DayNightAudio } from "./DayNightAudio";
 import { Scrubber } from "./Scrubber";
 import { SunLoader } from "./SunLoader";
 import { Timeline } from "./Timeline";
@@ -59,6 +60,11 @@ export function ImmersiveView() {
         <span>{t("scrollHint")}</span>
       </div>
       <Scrubber />
+      {/* Background audio bed — independent of the main site's Radio.
+          Renders its own chrome toggle (top-right, below the view toggle);
+          stays inert until the user opts in, then crossfades country/
+          hiphop by scene progress. See DayNightAudio.tsx. */}
+      <DayNightAudio />
       {phase !== "playing" ? <SunLoader /> : null}
     </div>
   );

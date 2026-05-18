@@ -385,9 +385,13 @@
 // GSAP-pinned ancestor instead of fighting the site's smooth-scroll
 // position:fixed-on-html setup.
 .sky {
-	--sky-top: oklch(8% 0.02 280);
-	--sky-mid: oklch(15% 0.04 290);
-	--sky-bottom: oklch(28% 0.08 320);
+	// SSR / pre-hydration defaults — must match SKY_STOPS[0] in store.ts
+	// so the first paint reads as daytime (anchor=0 / Opening). SceneView's
+	// rAF overwrites these inline as soon as it hydrates; this CSS fallback
+	// only matters during the initial paint window.
+	--sky-top: rgb(102 158 217);
+	--sky-mid: rgb(166 204 240);
+	--sky-bottom: rgb(242 235 217);
 
 	position: absolute;
 	inset: 0;
@@ -1146,7 +1150,10 @@
 	position: fixed;
 	inset: 0;
 	z-index: 60;
-	color: oklch(96% 0.005 80);
+	// Use the adaptive sky-driven token so chrome stays legible whether
+	// the loader plays against a daytime sky (dark ink wins) or a
+	// pre-dawn one (cream wins). SceneView writes --dn-fg per-frame.
+	color: var(--dn-fg);
 	transition: opacity 0.7s ease;
 }
 
@@ -1155,16 +1162,22 @@
 	pointer-events: none;
 }
 
+// Soft atmospheric halo around the chrome center. Previously a near-
+// black radial vignette designed for the prior pre-dawn opening — that
+// rendered as a hard black box covering the daytime sun on the new
+// anchor=0 (Opening) start. Now this halo just dims the periphery
+// slightly using the adaptive fg color, never the deep ink, so the
+// scene reads through.
 .loaderSpotlight {
 	position: absolute;
 	inset: 0;
 	background:
 		radial-gradient(
-			circle 280px at var(--reveal-x, 50%) var(--reveal-y, 60%),
+			circle 360px at var(--reveal-x, 50%) var(--reveal-y, 62%),
 			transparent 0%,
-			color-mix(in oklch, oklch(8% 0.02 280) 18%, transparent) 28%,
-			color-mix(in oklch, oklch(8% 0.02 280) 88%, transparent) 64%,
-			oklch(8% 0.02 280) 95%
+			color-mix(in oklch, var(--dn-fg) 0%, transparent) 32%,
+			color-mix(in oklch, var(--dn-fg) 4%, transparent) 70%,
+			color-mix(in oklch, var(--dn-fg) 10%, transparent) 100%
 		);
 	pointer-events: none;
 }
@@ -1186,7 +1199,7 @@
 	font-size: 10px;
 	letter-spacing: 0.32em;
 	text-transform: uppercase;
-	color: oklch(96% 0.005 80 / 0.55);
+	color: var(--dn-fg-mute);
 }
 
 .loaderTitle {
@@ -1194,13 +1207,13 @@
 	font-size: 2.4rem;
 	font-weight: 700;
 	letter-spacing: -0.01em;
-	color: oklch(96% 0.005 80);
+	color: var(--dn-fg);
 }
 
 .loaderBar {
 	width: 100%;
 	height: 1px;
-	background: oklch(96% 0.005 80 / 0.12);
+	background: oklch(from var(--dn-fg) l c h / 0.18);
 	overflow: hidden;
 	position: relative;
 }
@@ -1208,10 +1221,93 @@
 .loaderBarFill {
 	position: absolute;
 	inset: 0;
-	background: oklch(96% 0.005 80 / 0.6);
+	background: oklch(from var(--dn-fg) l c h / 0.7);
 	transform-origin: left center;
 	transform: scaleX(0);
 	transition: transform 0.3s ease;
+}
+
+// Page-local audio toggle — sits in the top-right chrome stack, one row
+// below the view toggle. Same pill geometry + chrome tokens as the
+// other chrome elements (exit, view toggle) so the trio reads as a
+// matched chrome family. Stays cream regardless of sky brightness
+// because the dark-translucent backdrop already gives contrast.
+
+.audioToggle {
+	position: fixed;
+	top: 64px;
+	right: 20px;
+	z-index: 46; // same tier as .toggle / .exit
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 14px;
+	border-radius: 999px;
+	border: 1px solid var(--dn-chrome-line);
+	background: color-mix(in oklch, var(--dn-bg) 80%, transparent);
+	backdrop-filter: blur(10px);
+	color: var(--dn-chrome-fg-mute);
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	cursor: pointer;
+	appearance: none;
+	transition:
+		color 0.25s ease,
+		border-color 0.25s ease;
+
+	&:hover {
+		color: var(--dn-chrome-fg);
+	}
+
+	&[data-on] {
+		color: var(--dn-chrome-fg);
+		border-color: oklch(from var(--dn-chrome-fg) l c h / 0.4);
+	}
+
+	@media (min-width: 768px) {
+		top: 84px;
+		right: 32px;
+	}
+
+	@media (min-width: 1280px) {
+		top: 96px;
+		right: 48px;
+	}
+}
+
+.audioToggleIcon {
+	font-size: 13px;
+	line-height: 1;
+	transform: translateY(-1px);
+	transition: opacity 0.25s ease;
+	// When sound is off, dim the note so the chrome reads as "muted".
+	opacity: 0.45;
+
+	.audioToggle[data-on] & {
+		opacity: 1;
+	}
+}
+
+.audioToggleText {
+	// Strike-through when off; clean text when on. A small editorial
+	// affordance — no separate icon required; the typography carries
+	// the state.
+	text-decoration: line-through;
+	text-decoration-color: oklch(from var(--dn-chrome-fg) l c h / 0.55);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
+	transition: text-decoration-color 0.3s ease;
+
+	.audioToggle[data-on] & {
+		text-decoration-color: transparent;
+	}
+
+	@media (max-width: 480px) {
+		// Symbol-only on the smallest screens to keep the chrome row tidy.
+		display: none;
+	}
 }
 
 // Bottom timeline scrubber — flat, compsych-style.

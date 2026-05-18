@@ -391,8 +391,12 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <span>{t("act.night.time")}</span>
           </span>
           <div className={s.nightHead}>
-            <h2 className={s.actHeading}>{t("act.night.heading")}</h2>
-            <p className={s.nightLede}>{t("act.night.body")}</p>
+            <Reveal as="h2" className={s.actHeading} delay={0.05}>
+              {t("act.night.heading")}
+            </Reveal>
+            <Reveal as="p" className={s.nightLede} delay={0.2}>
+              {t("act.night.body")}
+            </Reveal>
           </div>
           <div className={s.nightStamp}>
             <span className={s.nightStampRule} aria-hidden />
@@ -422,9 +426,15 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <span>{t("date.short")}</span>
           </span>
           <div className={s.closingStack}>
-            <p className={s.closingEyebrow}>{t("closing.kicker")}</p>
-            <h2 className={s.closingTitle}>{t("title")}</h2>
-            <p className={s.closingLede}>{t("closing.lede")}</p>
+            <Reveal as="p" className={s.closingEyebrow} delay={0.05}>
+              {t("closing.kicker")}
+            </Reveal>
+            <Reveal as="h2" className={s.closingTitle} delay={0.15}>
+              {t("title")}
+            </Reveal>
+            <Reveal as="p" className={s.closingLede} delay={0.3}>
+              {t("closing.lede")}
+            </Reveal>
             <div className={s.closingFee}>
               <span className={s.closingFeeAmount}>{t("entry.amount")}</span>
               <span>{t("entry.method")}</span>
