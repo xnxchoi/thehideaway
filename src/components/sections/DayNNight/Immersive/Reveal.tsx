@@ -69,9 +69,16 @@ const ITEM_VARIANTS: Variants = {
  * For sections with many items, this stretches the reveal into a
  * coherent ~1.0s gesture before the last child settles.
  */
+// Stage variants intentionally carry a no-op `opacity: 1` on both
+// states. Motion's `whileInView` short-circuits when the target variant
+// has no animatable properties, which would prevent the variant label
+// from propagating to children and break the choreography. The opacity
+// is benign (always 1) but its presence ensures Motion processes the
+// hidden → visible swap and dispatches `staggerChildren` to descendants.
 const STAGE_VARIANTS: Variants = {
-  hidden: {},
+  hidden: { opacity: 1 },
   visible: {
+    opacity: 1,
     transition: { staggerChildren: 0.18, delayChildren: 0.15 }
   }
 };
@@ -122,8 +129,9 @@ export function RevealStage({
     stagger === undefined && delay === undefined
       ? STAGE_VARIANTS
       : {
-          hidden: {},
+          hidden: { opacity: 1 },
           visible: {
+            opacity: 1,
             transition: {
               staggerChildren: stagger ?? 0.18,
               delayChildren: delay ?? 0.15

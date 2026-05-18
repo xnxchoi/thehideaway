@@ -5,11 +5,17 @@ import { useTranslations } from "next-intl";
 import s from "./styles.module.scss";
 
 /**
- * Simplified view — week.wild.plus / athens-26 grade minimal card.
+ * Simplified view — editorial card mode.
  *
- * One screen. Date, location, the two acts, dress-code synopsis, fee, RSVP.
- * Designed to be the "as the event approaches" view: zero friction, all the
- * load-bearing information without the immersive theatre.
+ * One screen. Date, location + address, the two windows (day → grill /
+ * night → cocktails), entry block, RSVP. Designed for the "I just want
+ * the facts" reader and for screens too small for the horizontal scene.
+ *
+ * Composition shift from the immersive view: where the scene is sprawl
+ * and theatrics, the card is tight typography on a single column. Every
+ * line earns its place — no decorative chrome, no parallax. The brand
+ * voice still carries via the kicker ("30 & Smokin'") and the closing
+ * line, but the visual register is restrained.
  */
 export function SimplifiedView() {
   const t = useTranslations("Event.DayNNight");
@@ -40,13 +46,19 @@ export function SimplifiedView() {
           <div className={s.simplifiedMetaRow}>
             <dt className={s.simplifiedMetaLabel}>{t("location.label")}</dt>
             <dd className={s.simplifiedMetaValue}>
-              {t("location.neighborhood")}
+              <span>{t("location.neighborhood")}</span>
+              <span className={s.simplifiedMetaValueSub}>
+                {t("location.address")}
+              </span>
             </dd>
           </div>
           <div className={s.simplifiedMetaRow}>
             <dt className={s.simplifiedMetaLabel}>{t("entry.heading")}</dt>
             <dd className={s.simplifiedMetaValue}>
-              {t("entry.amount")} · {t("entry.method")}
+              <span>{t("entry.amount")}</span>
+              <span className={s.simplifiedMetaValueSub}>
+                {t("entry.perGuest")} · {t("entry.method")}
+              </span>
             </dd>
           </div>
         </dl>
@@ -58,6 +70,8 @@ export function SimplifiedView() {
           </Link>
           <span className={s.ctaSecondary}>{t("rsvpCta.secondary")}</span>
         </div>
+
+        <p className={s.simplifiedClosing}>{t("closing.lede")}</p>
       </div>
 
       <footer className={s.simplifiedBottom}>
