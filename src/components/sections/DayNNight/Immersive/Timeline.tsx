@@ -41,74 +41,60 @@ export function Timeline() {
     () => {
       const mm = gsap.matchMedia();
 
-      // Desktop — horizontal scroll pin with seamless loop.
+      // Desktop — modulo-based horizontal loop. The pin extends across N
+      // virtual loops worth of scroll distance. Track position is computed
+      // by modulo against one set-width — the user only ever moves forward
+      // (no rewind, no scroll-bar snap-back). When the scroll value crosses
+      // a set-width boundary, the track wraps from `-setWidth + ε` to `0`
+      // instantly. Since the duplicate set rendered at `x = -setWidth` is
+      // visually identical to the original at `x = 0`, the wrap is invisible.
+      //
+      // The initial offset (`INITIAL_LOOP_POSITION`) places the user at
+      // mid-loop on first paint so the loader hand-off (sun at horizon) is
+      // continuous with the scene's mid-loop sun-at-horizon position.
       mm.add(
         "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
         () => {
           if (!track.current || !wrap.current) return;
 
           const trackEl = track.current;
-          // The track contains TWO consecutive copies of the acts. We pin and
-          // scrub for the distance of ONE copy; at the end of that distance
-          // the track has translated by `-setWidth`, which puts the start of
-          // the second copy under the viewport — visually identical to the
-          // start of the first copy. We snap scroll back to the pin start
-          // and the user continues forward seamlessly.
           const setWidth = () => trackEl.scrollWidth / 2;
+          const LOOPS = 14; // how many cycles before the user hits the page bottom
+          // 0.2 == start of the Cookout act. Reload lands the user there
+          // with the sun at the horizon (matched in the celestial sampler
+          // and in SunLoader's final setProgress call).
+          const INITIAL_LOOP_POSITION = 0.2;
+          const pinDistance = () => setWidth() * LOOPS;
 
-          // Guards re-entry while we snap-jump scroll.
-          let snapping = false;
-          const snap = (toScroll: number) => {
-            if (snapping) return;
-            snapping = true;
-            // Native scroll, not smoothed — instant jump so the user doesn't
-            // see Lenis interpolate across the boundary.
-            window.scrollTo({ top: toScroll, behavior: "auto" });
-            // Release the guard after the next animation frame so subsequent
-            // wheel events drive the new scroll position cleanly.
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                snapping = false;
-              });
-            });
+          // Shared updater — same math for initial paint and every scroll
+          // tick. Pulling it out so we can seed the initial state on
+          // ScrollTrigger creation; otherwise the loader's progress=0.05
+          // would leak into the scene math and render the sun below the
+          // viewport instead of at the horizon hand-off position.
+          const update = (selfProgress: number) => {
+            const sw = setWidth();
+            const totalScrolled = selfProgress * pinDistance();
+            const loopPos = (INITIAL_LOOP_POSITION * sw + totalScrolled) % sw;
+            const loopProgress = loopPos / sw;
+            gsap.set(trackEl, { x: -loopProgress * sw });
+            setProgress(0.05 + loopProgress * 0.95);
           };
 
-          const ctx = gsap
-            .timeline({
-              scrollTrigger: {
-                trigger: wrap.current,
-                start: "top top",
-                end: () => `+=${setWidth()}`,
-                pin: true,
-                scrub: 0.4,
-                anticipatePin: 1,
-                invalidateOnRefresh: true,
-                onUpdate: (self) => {
-                  // Map pin progress (0..1) into scene progress (0.05 → 1.0).
-                  const p = 0.05 + self.progress * 0.95;
-                  setProgress(p);
-                },
-                onLeave: (self) => {
-                  // User scrolled past the end — second copy of act 1 is in
-                  // view. Snap back to pin start where the original act 1
-                  // sits. Same pixels → invisible loop.
-                  snap(self.start);
-                },
-                onLeaveBack: (self) => {
-                  // Scrolling backward past the start — jump to just before
-                  // the pin end. The track position at end matches the
-                  // position at start (modulo the duplicate set), so the
-                  // visual stays continuous in the reverse direction too.
-                  snap(self.end - 1);
-                }
-              }
-            })
-            .to(trackEl, {
-              x: () => `-${setWidth()}`,
-              ease: "none"
-            });
+          const st = ScrollTrigger.create({
+            trigger: wrap.current,
+            start: "top top",
+            end: () => `+=${pinDistance()}`,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => update(self.progress)
+          });
 
-          return () => ctx.kill();
+          // Seed the initial state at scroll=0 so the sun lands on the
+          // horizon as soon as the loader hands off.
+          update(0);
+
+          return () => st.kill();
         }
       );
 

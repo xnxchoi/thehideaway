@@ -370,6 +370,35 @@
         "night": "Night",
         "reserve": "Reserve"
       }
+    },
+    "Guests": {
+      "eyebrow": "RSVP'd",
+      "title": "Who's coming",
+      "subtitle": "The small list, in no particular order.",
+      "empty": {
+        "headline": "No guests yet.",
+        "body": "RSVPs will appear here as they come in. Check back closer to the date."
+      },
+      "intro": {
+        "label": "Intro"
+      },
+      "instagram": {
+        "label": "Instagram",
+        "view": "View on Instagram"
+      },
+      "gallery": {
+        "label": "Gallery",
+        "empty": "No photos yet."
+      },
+      "actions": {
+        "close": "Close",
+        "expand": "Tap to expand",
+        "back": "Back to all"
+      },
+      "you": "That's you",
+      "navigation": {
+        "back": "Back to event"
+      }
     }
   }
 }

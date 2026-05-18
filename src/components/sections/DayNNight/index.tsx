@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTheme } from "@/providers/Theme";
 import { useFooterVisibility } from "@/components/Shells/Footer/footer-visibility";
+import { useRPStore } from "@/providers/RP_Pro";
 import { SimplifiedView } from "./SimplifiedView";
 import { ImmersiveView } from "./Immersive";
 import { ViewToggle } from "./ViewToggle";
@@ -27,6 +28,8 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   const { view, setView } = useViewPref({ initial: initialView });
   const setPageTheme = useTheme(useShallow((r) => r.setPageTheme));
   const clearPageTheme = useTheme(useShallow((r) => r.clearPageTheme));
+  const setHeaderVisibility = useRPStore((r) => r.setHeaderVisibility);
+  const setFXFrameVisibility = useRPStore((r) => r.setFXFrameVisibility);
 
   // Hide the site's legal footer for both views — the landing owns its own
   // bottom-of-page treatment and the global colophon competes with it.
@@ -45,11 +48,50 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
     };
   }, [view, setPageTheme, clearPageTheme]);
 
+  // Immersive owns the full viewport: hide the site header and bottom FXFrame
+  // so they don't overlap the ViewToggle (top) or the Scrubber (bottom).
+  // We also stamp `data-dn-immersive` on <body> so a :global SCSS rule can
+  // hide the persistent #rp-header bar — `setHeaderVisibility` alone only
+  // dims the FX layer, the bar itself remains visible.
+  useEffect(() => {
+    if (view === "immersive") {
+      setHeaderVisibility(false);
+      setFXFrameVisibility(false);
+      document.body.setAttribute("data-dn-immersive", "true");
+      return () => {
+        setHeaderVisibility(true);
+        setFXFrameVisibility(true);
+        document.body.removeAttribute("data-dn-immersive");
+      };
+    }
+    setHeaderVisibility(true);
+    setFXFrameVisibility(true);
+    document.body.removeAttribute("data-dn-immersive");
+  }, [view, setHeaderVisibility, setFXFrameVisibility]);
+
   return (
     <div className={s.shell} data-view={view}>
+      {view === "immersive" && <ExitAffordance />}
       <ViewToggle value={view} onChange={setView} />
       {view === "immersive" ? <ImmersiveView /> : <SimplifiedView />}
     </div>
+  );
+}
+
+/**
+ * Exit affordance — the only persistent "way out" once the site header is
+ * hidden under immersive. Discreet wordmark in the top-left that routes
+ * back to the site index. Mirrors the visual weight of ViewToggle (small,
+ * mono, on a translucent pill) so the two read as a matched pair.
+ */
+function ExitAffordance() {
+  return (
+    <a href="/" className={s.exit} aria-label="Back to The Hideaway">
+      <span aria-hidden className={s.exitArrow}>
+        ←
+      </span>
+      <span className={s.exitLabel}>The Hideaway</span>
+    </a>
   );
 }
 

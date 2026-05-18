@@ -464,6 +464,28 @@ export interface Profile {
         } | null;
       }[]
     | null;
+  /**
+   * Public-facing intro shown on /day-n-night/guests.
+   */
+  rsvp?: {
+    /**
+     * Up to 200 characters. Shown when this guest is the active card.
+     */
+    intro?: string | null;
+    /**
+     * Without the leading @. Only shown in focus state.
+     */
+    igHandle?: string | null;
+    /**
+     * Up to 5 photos. Shown in focus state — swipeable on mobile, 5-up grid on desktop.
+     */
+    gallery?:
+      | {
+          id?: string | null;
+          media: string | UserMedia;
+        }[]
+      | null;
+  };
   bookmarks?: {
     docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
@@ -4050,6 +4072,18 @@ export interface ProfileSelect<T extends boolean = true> {
         title?: T;
         visuals?: T;
         content?: T;
+      };
+  rsvp?:
+    | T
+    | {
+        intro?: T;
+        igHandle?: T;
+        gallery?:
+          | T
+          | {
+              id?: T;
+              media?: T;
+            };
       };
   bookmarks?: T;
   tagged?: T;

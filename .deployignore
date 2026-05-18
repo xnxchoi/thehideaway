@@ -34,7 +34,7 @@ reference
 # ── Internal docs (you have these on your laptop already) ────────────────────
 # Comment this out if you want LAUNCH.md / DEPLOYMENT.md available on the VPS
 # for grep-during-incident purposes.
-readmes
+
 
 # ── Secrets ──────────────────────────────────────────────────────────────────
 # .env.production gets scp'd directly to /home/deploy/thehideaway/ in Step 6

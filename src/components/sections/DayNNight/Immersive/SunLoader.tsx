@@ -11,17 +11,22 @@ interface SunLoaderProps {
 }
 
 /**
- * Sun preloader — backdrop + chrome only.
+ * Sun preloader — two-stage backdrop + chrome.
  *
- * The actual sun visual is owned by `SceneView`; this loader is a dark
- * spotlight backdrop with a transparent cutout at the sun's current
- * position, plus the title + label + progress chrome. The backdrop reveals
- * the sun through its cutout as the sun rises (via store `progress`
- * 0 → 0.05). When the loader completes, the backdrop and chrome fade out
- * together while the sun smoothly migrates to its scene-arc start position
- * — one continuous element, no swap.
+ * Stage 1 (first 40% of duration) — a wide horizontal stream of light
+ *   appears at the horizon line (vertical center of viewport). The sun
+ *   itself is still hidden below the horizon. Progress 0 → 0.02.
+ *
+ * Stage 2 (remaining 60%) — the sun rises out from below the horizon and
+ *   ends at exactly the horizon line, then hands off to the scene where it
+ *   continues rising further up. Progress 0.02 → 0.05.
+ *
+ * SceneView reads `progress` and `phase` to render the sun and horizon
+ * glow consistently across both stages and into the playing phase — no
+ * swap, no flash. This component is just the chrome (title + label +
+ * progress bar) and the dark spotlight backdrop.
  */
-export function SunLoader({ durationMs = 1700 }: SunLoaderProps) {
+export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
   const t = useTranslations("Event.DayNNight");
   const [hiding, setHiding] = useState(false);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -34,24 +39,39 @@ export function SunLoader({ durationMs = 1700 }: SunLoaderProps) {
 
     const tick = (now: number) => {
       const elapsed = now - start;
-      const t = Math.min(1, elapsed / durationMs);
-      // Ease-out for the rise.
-      const eased = 1 - Math.pow(1 - t, 2.5);
-      setProgress(eased * 0.05);
-      if (fillRef.current) {
-        fillRef.current.style.transform = `scaleX(${eased})`;
+      const u = Math.min(1, elapsed / durationMs);
+      // Map loader-time u into staged scene progress:
+      //   u 0 → 0.4  -> progress 0 → 0.02 (horizon glow, no sun)
+      //   u 0.4 → 1  -> progress 0.02 → 0.05 (sun rises to horizon)
+      let progress: number;
+      if (u < 0.4) {
+        progress = (u / 0.4) * 0.02;
+      } else {
+        const stage2 = (u - 0.4) / 0.6;
+        const eased = 1 - Math.pow(1 - stage2, 2.5);
+        progress = 0.02 + eased * 0.03;
       }
-      if (t < 1) {
+      setProgress(progress);
+      if (fillRef.current) {
+        fillRef.current.style.transform = `scaleX(${u})`;
+      }
+      if (u < 1) {
         raf = requestAnimationFrame(tick);
       } else {
         setPhase("loaded");
-        // Brief beat so the user registers the completed rise.
         setTimeout(() => {
           setHiding(true);
           // Match the CSS opacity transition (700ms) before flipping to
-          // playing — that's the window during which the sun migrates
-          // from loader-center to its scene-arc start.
-          setTimeout(() => setPhase("playing"), 700);
+          // playing — during this window the sun stays at its loader-end
+          // position (HORIZON_Y) and the chrome + backdrop fade out around it.
+          setTimeout(() => {
+            // Seed the scene at loopProgress 0.2 (start of the Cookout
+            // act). The celestial sampler is calibrated so that this exact
+            // loop position puts the sun at the horizon — matching the
+            // loader's end-of-rise position. No handoff jump.
+            setProgress(0.05 + 0.2 * 0.95);
+            setPhase("playing");
+          }, 700);
         }, 240);
       }
     };
@@ -62,8 +82,6 @@ export function SunLoader({ durationMs = 1700 }: SunLoaderProps) {
 
   return (
     <div className={s.loader} data-hiding={hiding} aria-hidden={hiding}>
-      {/* Spotlight cutout — radial gradient with transparent center at the
-          sun's screen position (CSS vars set by SceneView). */}
       <div className={s.loaderSpotlight} aria-hidden />
       <div className={s.loaderChrome}>
         <p className={s.loaderTitle}>{t("title")}</p>

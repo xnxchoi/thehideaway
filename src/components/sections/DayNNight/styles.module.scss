@@ -32,13 +32,79 @@
 	--dn-line: oklch(from var(--foreground) l c h / 0.18);
 }
 
+// While the immersive view owns the viewport, hide the site's persistent
+// header bar entirely. `setHeaderVisibility(false)` only dims the FX layer
+// — the rp-header element itself stays in the tree at z-[240] and its
+// translucent pill is visible behind the ViewToggle. Hide the whole bar so
+// the immersive surface reads clean.
+:global(body[data-dn-immersive="true"]) {
+	:global(#rp-header) {
+		display: none !important;
+	}
+}
+
+// Exit affordance — discreet wordmark linking back to the site root.
+// Sits in the top-left, mirroring the ViewToggle's visual weight so the
+// two read as a matched pair across the top edge.
+
+.exit {
+	position: fixed;
+	top: 20px;
+	left: 20px;
+	z-index: 46; // same tier as ViewToggle
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px 14px 7px 12px;
+	border-radius: 999px;
+	border: 1px solid var(--dn-line);
+	background: color-mix(in oklch, var(--dn-bg) 80%, transparent);
+	backdrop-filter: blur(10px);
+	color: var(--dn-fg-mute);
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 10px;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	text-decoration: none;
+	transition: color 0.25s ease;
+
+	&:hover {
+		color: var(--dn-fg);
+	}
+
+	@media (min-width: 768px) {
+		top: 32px;
+		left: 32px;
+	}
+
+	@media (min-width: 1280px) {
+		top: 40px;
+		left: 48px;
+	}
+}
+
+.exitArrow {
+	font-size: 14px;
+	line-height: 1;
+	transform: translateY(-1px);
+	transition: transform 0.25s ease;
+
+	.exit:hover & {
+		transform: translate(-3px, -1px);
+	}
+}
+
+.exitLabel {
+	display: inline-block;
+}
+
 // View toggle — minimal pill, top-right, always reachable.
 
 .toggle {
 	position: fixed;
-	top: 16px;
-	right: 16px;
-	z-index: 45; // sit above the site's global Canvas (z-index 40)
+	top: 20px;
+	right: 20px;
+	z-index: 46; // above scrubber (45) and site Canvas (40)
 	display: inline-flex;
 	gap: 2px;
 	padding: 3px;
@@ -48,8 +114,13 @@
 	backdrop-filter: blur(10px);
 
 	@media (min-width: 768px) {
-		top: 24px;
-		right: 24px;
+		top: 32px;
+		right: 32px;
+	}
+
+	@media (min-width: 1280px) {
+		top: 40px;
+		right: 48px;
 	}
 }
 
@@ -258,6 +329,31 @@
 	--reveal-y: 50%;
 }
 
+// Horizon glow — a wide horizontal band of light at the horizon line. The
+// loader's hero moment in stage 1 (no sun visible yet). Sticks around at
+// low opacity during the scene as atmospheric warmth.
+.horizonGlow {
+	--horizon-brightness: 1;
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 50%;
+	height: 10%;
+	margin-bottom: -5%;
+	pointer-events: none;
+	z-index: 0;
+	background:
+		radial-gradient(
+			ellipse 45% 100% at 50% 50%,
+			oklch(86% 0.18 75 / calc(0.95 * var(--horizon-brightness))) 0%,
+			oklch(80% 0.18 65 / calc(0.7 * var(--horizon-brightness))) 25%,
+			oklch(70% 0.2 50 / calc(0.35 * var(--horizon-brightness))) 50%,
+			transparent 78%
+		);
+	filter: blur(6px);
+	transition: opacity 0.6s ease;
+}
+
 // Sky — fills the pinned timelineWrap (desktop) or stretches across the
 // stacked-act column (mobile). Position absolute so it stays in scope of the
 // GSAP-pinned ancestor instead of fighting the site's smooth-scroll
@@ -330,11 +426,12 @@
 	box-shadow:
 		0 0 80px 12px color-mix(in srgb, var(--body-color) 35%, transparent),
 		0 0 200px 40px color-mix(in srgb, var(--body-color) 15%, transparent);
-	transition:
-		left 0.9s cubic-bezier(0.4, 0, 0.2, 1),
-		bottom 0.9s cubic-bezier(0.4, 0, 0.2, 1),
-		transform 0.9s cubic-bezier(0.4, 0, 0.2, 1),
-		opacity 0.4s ease;
+	// Driven by a per-frame rAF in SceneView, so the position is already
+	// continuous. Keep transitions off on left/bottom/transform — any
+	// duration here just adds lag between scroll input and the sun's
+	// reactive motion. Opacity stays smoothed because it flips in chunks
+	// at off-screen entry/exit.
+	transition: opacity 0.25s ease;
 	will-change: left, bottom, opacity, transform;
 
 	@media (max-width: 1023px) {
@@ -632,87 +729,70 @@
 	transition: transform 0.3s ease;
 }
 
-// Bottom timeline scrubber — fixed ruler with 5 act labels + position
-// indicator. Modeled on the bottom timeline in `compsych.konpo.co`.
+// Bottom timeline scrubber — flat, compsych-style.
+//
+// One continuous tick row across the full width with a single short
+// indicator bar floating above it. Labels sit below the ruler. No
+// backdrop blur, no per-section fills, no glass — the scrubber is
+// just a tick row, an indicator, and labels on the open sky.
 
 .scrubber {
 	position: fixed;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	bottom: 28px;
 	z-index: 45;
-	padding: 18px 32px 22px;
-	display: grid;
-	gap: 10px;
+	padding: 0 56px;
 	pointer-events: none;
-	background: linear-gradient(
-		to top,
-		color-mix(in srgb, var(--dn-bg) 55%, transparent) 0%,
-		color-mix(in srgb, var(--dn-bg) 25%, transparent) 60%,
-		transparent 100%
-	);
+
+	@media (min-width: 1280px) {
+		bottom: 36px;
+		padding: 0 80px;
+	}
+
+	@media (min-width: 1536px) {
+		padding: 0 112px;
+	}
 
 	@media (max-width: 1023px) {
 		display: none;
 	}
 }
 
+// Tick row — continuous repeating verticals across the full scrubber width.
 .scrubberTrack {
 	position: relative;
-	height: 18px;
-	pointer-events: none;
-}
-
-.scrubberTicks {
-	position: absolute;
-	inset: 0;
+	height: 16px;
 	background-image: repeating-linear-gradient(
 		to right,
 		transparent 0,
-		transparent 11px,
-		color-mix(in srgb, var(--dn-fg) 22%, transparent) 11px,
-		color-mix(in srgb, var(--dn-fg) 22%, transparent) 12px
+		transparent 5px,
+		color-mix(in srgb, var(--dn-fg) 38%, transparent) 5px,
+		color-mix(in srgb, var(--dn-fg) 38%, transparent) 6px
 	);
-	background-size: 12px 100%;
-	mask-image: linear-gradient(
-		to bottom,
-		transparent 0%,
-		black 50%,
-		black 80%,
-		transparent 100%
-	);
-	-webkit-mask-image: linear-gradient(
-		to bottom,
-		transparent 0%,
-		black 50%,
-		black 80%,
-		transparent 100%
-	);
+	background-size: 6px 100%;
+	background-position: center;
 }
 
+// The indicator — short solid bar sitting just above the tick row.
+// `left: 0` is the anchor; translateX(Npx) is applied in JS, where N is
+// `loopProgress * track.clientWidth`.
 .scrubberIndicator {
 	position: absolute;
+	top: -3px;
 	left: 0;
-	top: 0;
-	width: 28px;
-	height: 100%;
-	margin-left: -14px;
-	background:
-		linear-gradient(
-			to bottom,
-			transparent 0%,
-			var(--dn-accent-day) 35%,
-			var(--dn-accent-day) 65%,
-			transparent 100%
-		);
-	border-radius: 1px;
+	width: 56px;
+	height: 3px;
+	margin-left: -28px;
+	background: var(--dn-fg);
 	will-change: transform;
-	transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-	box-shadow: 0 0 14px 2px
-		color-mix(in srgb, var(--dn-accent-day) 35%, transparent);
+	// No transition — the rAF loop in Scrubber.tsx writes a fresh transform
+	// every frame from scroll position. Any duration here just adds lag
+	// between scroll input and indicator motion.
 }
 
 .scrubberLabels {
+	margin-top: 14px;
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
 	pointer-events: auto;
@@ -722,30 +802,31 @@
 	appearance: none;
 	border: 0;
 	background: transparent;
-	font-family: var(--font-mono, ui-monospace, monospace);
-	font-size: 10px;
-	letter-spacing: 0.22em;
-	text-transform: uppercase;
-	color: var(--dn-fg-mute);
-	padding: 6px 4px;
+	color: color-mix(in srgb, var(--dn-fg) 55%, transparent);
+	font-family: var(--font-sans, system-ui, sans-serif);
+	font-size: 13px;
+	font-weight: 400;
+	letter-spacing: 0.005em;
+	padding: 2px 0;
 	cursor: pointer;
-	text-align: left;
 	transition: color 0.25s ease;
+	text-align: center;
+
+	&:first-child {
+		text-align: left;
+	}
+
+	&:last-child {
+		text-align: right;
+	}
 
 	&:hover {
 		color: var(--dn-fg);
 	}
 
-	&:nth-child(1) {
-		text-align: left;
-	}
-	&:nth-child(2),
-	&:nth-child(3),
-	&:nth-child(4) {
-		text-align: center;
-	}
-	&:nth-child(5) {
-		text-align: right;
+	&[data-active="true"] {
+		color: var(--dn-fg);
+		font-weight: 600;
 	}
 }
 

@@ -6,17 +6,17 @@ import { useDayNNightScene } from "../store";
 import s from "../styles.module.scss";
 
 /**
- * Bottom timeline scrubber.
+ * Bottom timeline scrubber — flat, compsych-style.
  *
- * A ruler-style marker across the foot of the immersive view, modeled on
- * `compsych.konpo.co`. Five labels (one per act) and a position indicator
- * that tracks scroll progress. Clicking a label scrolls the page to that
- * act's offset within the pinned scroll segment.
+ * A single continuous tick row across the full width with one short
+ * indicator bar floating above. The indicator slides horizontally to
+ * track loop progress. Labels sit below the ruler — the active label
+ * takes the foreground weight; clicking any label scrolls forward to
+ * the next occurrence of that section in the loop (forward-only).
  *
- * Hidden during loader and on mobile (where the layout stacks vertically
- * and the scrubber's horizontal grammar doesn't apply).
+ * No backdrop blur, no per-section fills, no gradients. Flat on the sky.
  */
-const ACTS = [
+const SECTIONS = [
   { key: "opening", at: 0.0 },
   { key: "cookout", at: 0.2 },
   { key: "dress", at: 0.4 },
@@ -24,51 +24,78 @@ const ACTS = [
   { key: "reserve", at: 0.8 }
 ] as const;
 
+const SECTION_SIZE = 1 / SECTIONS.length;
+
 export function Scrubber() {
   const t = useTranslations("Event.DayNNight.scrubber");
-  const trackRef = useRef<HTMLDivElement>(null);
-  const indicatorRef = useRef<HTMLDivElement>(null);
   const phase = useDayNNightScene((r) => r.phase);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const indicatorRef = useRef<HTMLDivElement | null>(null);
+  const labelRefs = useRef<Array<HTMLButtonElement | null>>([
+    null,
+    null,
+    null,
+    null,
+    null
+  ]);
 
-  // Drive the indicator via rAF reading the same store the scene reads.
-  // The scrubber represents the loop progress (scene 0.05 → 1.0 mapped to
-  // 0 → 1 on the ruler) so 100% on the scrubber is end-of-loop, not the
-  // sky's full night state.
   useEffect(() => {
     if (phase !== "playing") return;
     let raf = 0;
+
     const apply = () => {
       const progress = useDayNNightScene.getState().progress;
-      // Map scene progress [0.05, 1.0] → scrubber progress [0, 1].
-      const pinPct = Math.max(0, Math.min(1, (progress - 0.05) / 0.95));
-      if (indicatorRef.current) {
-        indicatorRef.current.style.transform = `translateX(${pinPct * 100}%)`;
+      const loopProgress = Math.max(
+        0,
+        Math.min(0.99999, (progress - 0.05) / 0.95)
+      );
+      const currentSection = Math.floor(loopProgress / SECTION_SIZE);
+
+      if (indicatorRef.current && trackRef.current) {
+        const trackWidth = trackRef.current.clientWidth;
+        const x = loopProgress * trackWidth;
+        indicatorRef.current.style.transform = `translateX(${x}px)`;
       }
-      if (trackRef.current) {
-        trackRef.current.style.setProperty(
-          "--scrubber-progress",
-          String(pinPct)
-        );
-      }
+
+      labelRefs.current.forEach((label, i) => {
+        if (!label) return;
+        label.setAttribute("data-active", String(i === currentSection));
+      });
+
       raf = requestAnimationFrame(apply);
     };
+
     raf = requestAnimationFrame(apply);
     return () => cancelAnimationFrame(raf);
   }, [phase]);
 
-  const handleJump = (at: number) => {
-    // Compute scroll target — pin starts at top of timelineWrap. The pin
-    // distance equals one set width (track.scrollWidth / 2). Acts are at
-    // 0, 0.2, 0.4, 0.6, 0.8 across that distance.
+  const handleJump = (targetLoopPos: number) => {
     const wrap = document.querySelector('[class*="timelineWrap"]');
-    if (!wrap) return;
+    const track = document.querySelector('[class*="timelineTrack"]');
+    if (!wrap || !track) return;
     const wrapRect = wrap.getBoundingClientRect();
     const pinStart = window.scrollY + wrapRect.top;
-    const track = document.querySelector('[class*="timelineTrack"]');
-    if (!track) return;
     const setWidth = (track as HTMLElement).scrollWidth / 2;
-    const targetScroll = pinStart + at * setWidth;
-    window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    const INITIAL_LOOP_POSITION = 0.5;
+    const totalScrolled = window.scrollY - pinStart;
+    if (totalScrolled < 0) {
+      window.scrollTo({
+        top: pinStart + (targetLoopPos - INITIAL_LOOP_POSITION) * setWidth,
+        behavior: "smooth"
+      });
+      return;
+    }
+    const currentLoopPos =
+      (INITIAL_LOOP_POSITION * setWidth + totalScrolled) % setWidth;
+    const targetPx = targetLoopPos * setWidth;
+    const delta = (targetPx - currentLoopPos + setWidth) % setWidth;
+    // If the target is the current section, advance a full loop so the
+    // click still moves — keeps the user's forward-only rule.
+    const forwardDelta = delta < 1 ? setWidth : delta;
+    window.scrollTo({
+      top: window.scrollY + forwardDelta,
+      behavior: "smooth"
+    });
   };
 
   if (phase !== "playing") return null;
@@ -76,19 +103,20 @@ export function Scrubber() {
   return (
     <div className={s.scrubber} aria-hidden>
       <div ref={trackRef} className={s.scrubberTrack}>
-        <div className={s.scrubberTicks} />
-        <div ref={indicatorRef} className={s.scrubberIndicator} />
+        <div ref={indicatorRef} className={s.scrubberIndicator} aria-hidden />
       </div>
       <div className={s.scrubberLabels}>
-        {ACTS.map((act) => (
+        {SECTIONS.map((sec, i) => (
           <button
-            key={act.key}
+            key={sec.key}
+            ref={(el) => {
+              labelRefs.current[i] = el;
+            }}
             type="button"
             className={s.scrubberLabel}
-            onClick={() => handleJump(act.at)}
-            style={{ ["--act-at" as string]: act.at }}
+            onClick={() => handleJump(sec.at)}
           >
-            {t(act.key)}
+            {t(sec.key)}
           </button>
         ))}
       </div>

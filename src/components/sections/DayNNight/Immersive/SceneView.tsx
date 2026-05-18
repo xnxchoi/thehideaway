@@ -1,28 +1,39 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useDayNNightScene, sampleSky, sampleCelestial } from "../store";
+import {
+  useDayNNightScene,
+  sampleSky,
+  sampleCelestial,
+  HORIZON_Y
+} from "../store";
 import s from "../styles.module.scss";
 
 /**
  * Day n Night scene — pure CSS/HTML implementation.
  *
- * The site's global R3F Canvas is `position: fixed; z-index: 40` and clears
- * to its scene contents (sky shader would render opaque sky-fills over all
- * page content). To keep the celestial scene compatible with the site's
- * stacking architecture, we render sky + sun + moon as DOM elements behind
- * the timeline content (z-index < 40), driven by the same `progress` store
- * we'd have used for the R3F version.
+ * Three layers:
+ *   1. Sky gradient (full-bleed)
+ *   2. Horizon glow band at the horizon line — visible during the loader
+ *      as a wide horizontal stream of light before the sun appears, and
+ *      held at low opacity during the scene as atmospheric warmth.
+ *   3. The sun — a glowing disk whose position is driven by:
+ *        - `phase === "loading" | "loaded"`: loader-stage math. Stage 1
+ *          (progress 0 → 0.02) keeps the sun below the horizon while the
+ *          glow band fades in. Stage 2 (progress 0.02 → 0.05) rises the
+ *          sun up to exactly the horizon (HORIZON_Y).
+ *        - `phase === "playing"`: the celestial sampler. The sun continues
+ *          rising vertically through the viewport. At loop boundaries it's
+ *          off-screen on both sides, so the modulo wrap is invisible.
  *
- * The sun is also the loader's centerpiece: during the `loading` / `loaded`
- * phases it's pinned to a centered, slightly enlarged "preloader" position;
- * once the loader hands off (phase = `playing`), it smoothly migrates to
- * its scroll-driven scene position via a CSS transition on `left/bottom`.
- * One element, one continuous motion — no swap, no flash.
+ * The sun is one DOM element across phases — only its position values
+ * change. Combined with a CSS transition on `left/bottom`, this gives a
+ * single continuous motion through the loader and into the scene.
  */
 export function SceneView() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const skyRef = useRef<HTMLDivElement>(null);
+  const horizonRef = useRef<HTMLDivElement>(null);
   const sunRef = useRef<HTMLDivElement>(null);
   const moonRef = useRef<HTMLDivElement>(null);
 
@@ -42,16 +53,8 @@ export function SceneView() {
         skyRef.current.style.setProperty("--sky-bottom", rgb(sky.bottom));
       }
 
-      // Sun positioning — phase-aware.
-      //
-      //   loading / loaded: the sun rises into a centered "preloader" spot
-      //   from below the viewport. The CSS `loaderBackdrop` is opaque dark
-      //   over the rest of the screen, so the sun is the only thing the
-      //   user sees emerging.
-      //
-      //   playing: the sun follows the celestial sampler. A CSS transition
-      //   on left/bottom carries it smoothly from the loader spot to its
-      //   scene-arc start as the loader backdrop fades out.
+      // Sun: phase-aware position. The loader owns progress 0 → 0.05; the
+      // scene takes over from 0.05 onward.
       if (sunRef.current) {
         let leftPct: number;
         let bottomPct: number;
@@ -60,19 +63,27 @@ export function SceneView() {
         let scale: number;
 
         if (phase === "loading" || phase === "loaded") {
-          // Loader rise: progress 0 → 0.05 drives the sun from below the
-          // viewport (bottom: -10%) up to the preloader spot at bottom: 52%.
-          const riseT = Math.min(1, progress / 0.05);
-          const eased = 1 - Math.pow(1 - riseT, 2.5);
+          // Stage 1 (progress < 0.02): sun is kept well below the horizon
+          // while the glow band fades in above it.
+          // Stage 2 (progress 0.02 → 0.05): sun rises through the horizon
+          // band, ending at exactly HORIZON_Y for the seamless handoff.
+          let sunY: number;
+          if (progress < 0.02) {
+            sunY = -0.25; // tucked well below the horizon, invisible
+          } else {
+            const stage2T = Math.min(1, (progress - 0.02) / 0.03);
+            const eased = 1 - Math.pow(1 - stage2T, 2.5);
+            sunY = -0.2 + eased * (HORIZON_Y + 0.2); // -0.2 → 0.5
+          }
           leftPct = 50;
-          bottomPct = -10 + eased * 62;
-          opacity = eased;
-          sunColor = [1, 0.92, 0.65];
-          scale = 1.3;
+          bottomPct = sunY * 100;
+          opacity = Math.max(0, Math.min(1, (sunY + 0.05) / 0.2));
+          sunColor = [1, 0.85, 0.55];
+          scale = 1.15;
         } else {
           const c = sampleCelestial(progress);
           leftPct = 50 + c.sun.x * 40;
-          bottomPct = 22 + c.sun.y * 56;
+          bottomPct = c.sun.y * 100;
           opacity = c.sun.opacity;
           sunColor = c.sun.color;
           scale = c.sun.size / 0.085;
@@ -83,34 +94,37 @@ export function SceneView() {
         sunRef.current.style.opacity = String(opacity);
         sunRef.current.style.setProperty("--body-color", rgb(sunColor));
         sunRef.current.style.setProperty("--body-scale", String(scale));
-
-        // Mirror the sun's screen position onto the wrap so the loader
-        // backdrop's spotlight reveal can follow it without a second
-        // subscription.
-        if (wrapRef.current) {
-          wrapRef.current.style.setProperty("--reveal-x", `${leftPct}%`);
-          wrapRef.current.style.setProperty(
-            "--reveal-y",
-            `${100 - bottomPct}%`
-          );
-        }
       }
 
-      if (moonRef.current) {
-        const c = sampleCelestial(progress);
-        const leftPct = 50 + c.moon.x * 40;
-        const bottomPct = 22 + c.moon.y * 56;
-        // Hide the moon entirely until the scene takes over — keeps the
-        // loader visually about the sun alone.
-        const showMoon = phase === "playing";
-        moonRef.current.style.left = `${leftPct}%`;
-        moonRef.current.style.bottom = `${bottomPct}%`;
-        moonRef.current.style.opacity = String(showMoon ? c.moon.opacity : 0);
-        moonRef.current.style.setProperty("--body-color", rgb(c.moon.color));
-        moonRef.current.style.setProperty(
-          "--body-scale",
-          String(c.moon.size / 0.075)
+      // Horizon glow band — bright during the loader, dim during the scene.
+      if (horizonRef.current) {
+        let horizonOpacity: number;
+        let horizonBrightness: number;
+        if (phase === "loading" || phase === "loaded") {
+          // Stage 1: fade in to full. Stage 2: stay at full while sun rises.
+          if (progress < 0.02) {
+            horizonOpacity = progress / 0.02;
+            horizonBrightness = 1;
+          } else {
+            horizonOpacity = 1;
+            horizonBrightness = 1;
+          }
+        } else {
+          // Subtle atmospheric trace as the sun continues rising.
+          horizonOpacity = 0.35;
+          horizonBrightness = 0.65;
+        }
+        horizonRef.current.style.opacity = String(horizonOpacity);
+        horizonRef.current.style.setProperty(
+          "--horizon-brightness",
+          String(horizonBrightness)
         );
+      }
+
+      // Moon — currently hidden by the single-direction rule. Kept in the
+      // DOM so the celestial sampler stays uniform.
+      if (moonRef.current) {
+        moonRef.current.style.opacity = "0";
       }
 
       raf = requestAnimationFrame(apply);
@@ -123,6 +137,7 @@ export function SceneView() {
   return (
     <div ref={wrapRef} className={s.sceneWrap} aria-hidden>
       <div ref={skyRef} className={s.sky} />
+      <div ref={horizonRef} className={s.horizonGlow} />
       <div ref={sunRef} className={s.body} data-kind="sun" />
       <div ref={moonRef} className={s.body} data-kind="moon" />
     </div>

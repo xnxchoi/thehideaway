@@ -3318,6 +3318,28 @@ export const profile_slides = pgTable(
   ]
 );
 
+export const profile_rsvp_gallery = pgTable(
+  "profile_rsvp_gallery",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    media: varchar("media_id").references(() => user_media.id, {
+      onDelete: "set null"
+    })
+  },
+  (columns) => [
+    index("profile_rsvp_gallery_order_idx").on(columns._order),
+    index("profile_rsvp_gallery_parent_id_idx").on(columns._parentID),
+    index("profile_rsvp_gallery_media_idx").on(columns.media),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [profile.id],
+      name: "profile_rsvp_gallery_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
 export const profile = pgTable(
   "profile",
   {
@@ -3331,6 +3353,8 @@ export const profile = pgTable(
     hero_subtitle: varchar("hero_subtitle").default(""),
     hero_gradient1: varchar("hero_gradient1").default("#FC8D8DFF"),
     hero_gradient2: varchar("hero_gradient2").default("#F3FAFCFF"),
+    rsvp_intro: varchar("rsvp_intro"),
+    rsvp_igHandle: varchar("rsvp_ig_handle"),
     locked: boolean("locked").default(false),
     authority: numeric("authority", { mode: "number" }).default(0),
     audience: enum_profile_audience("audience").default("public"),
@@ -3422,6 +3446,31 @@ export const _profile_v_version_slides = pgTable(
   ]
 );
 
+export const _profile_v_version_rsvp_gallery = pgTable(
+  "_profile_v_version_rsvp_gallery",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: uuid("id").defaultRandom().primaryKey(),
+    _uuid: varchar("_uuid"),
+    media: varchar("media_id").references(() => user_media.id, {
+      onDelete: "set null"
+    })
+  },
+  (columns) => [
+    index("_profile_v_version_rsvp_gallery_order_idx").on(columns._order),
+    index("_profile_v_version_rsvp_gallery_parent_id_idx").on(
+      columns._parentID
+    ),
+    index("_profile_v_version_rsvp_gallery_media_idx").on(columns.media),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [_profile_v.id],
+      name: "_profile_v_version_rsvp_gallery_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
 export const _profile_v = pgTable(
   "_profile_v",
   {
@@ -3442,6 +3491,8 @@ export const _profile_v = pgTable(
     version_hero_gradient2: varchar("version_hero_gradient2").default(
       "#F3FAFCFF"
     ),
+    version_rsvp_intro: varchar("version_rsvp_intro"),
+    version_rsvp_igHandle: varchar("version_rsvp_ig_handle"),
     version_locked: boolean("version_locked").default(false),
     version_authority: numeric("version_authority", { mode: "number" }).default(
       0
@@ -8299,6 +8350,21 @@ export const relations_profile_slides = relations(
     })
   })
 );
+export const relations_profile_rsvp_gallery = relations(
+  profile_rsvp_gallery,
+  ({ one }) => ({
+    _parentID: one(profile, {
+      fields: [profile_rsvp_gallery._parentID],
+      references: [profile.id],
+      relationName: "rsvp_gallery"
+    }),
+    media: one(user_media, {
+      fields: [profile_rsvp_gallery.media],
+      references: [user_media.id],
+      relationName: "media"
+    })
+  })
+);
 export const relations_profile_rels = relations(profile_rels, ({ one }) => ({
   parent: one(profile, {
     fields: [profile_rels.parent],
@@ -8325,6 +8391,9 @@ export const relations_profile = relations(profile, ({ one, many }) => ({
   slides: many(profile_slides, {
     relationName: "slides"
   }),
+  rsvp_gallery: many(profile_rsvp_gallery, {
+    relationName: "rsvp_gallery"
+  }),
   _rels: many(profile_rels, {
     relationName: "_rels"
   })
@@ -8341,6 +8410,21 @@ export const relations__profile_v_version_slides = relations(
       fields: [_profile_v_version_slides.visuals],
       references: [user_media.id],
       relationName: "visuals"
+    })
+  })
+);
+export const relations__profile_v_version_rsvp_gallery = relations(
+  _profile_v_version_rsvp_gallery,
+  ({ one }) => ({
+    _parentID: one(_profile_v, {
+      fields: [_profile_v_version_rsvp_gallery._parentID],
+      references: [_profile_v.id],
+      relationName: "version_rsvp_gallery"
+    }),
+    media: one(user_media, {
+      fields: [_profile_v_version_rsvp_gallery.media],
+      references: [user_media.id],
+      relationName: "media"
     })
   })
 );
@@ -8377,6 +8461,9 @@ export const relations__profile_v = relations(_profile_v, ({ one, many }) => ({
   }),
   version_slides: many(_profile_v_version_slides, {
     relationName: "version_slides"
+  }),
+  version_rsvp_gallery: many(_profile_v_version_rsvp_gallery, {
+    relationName: "version_rsvp_gallery"
   }),
   _rels: many(_profile_v_rels, {
     relationName: "_rels"
@@ -10085,9 +10172,11 @@ type DatabaseSchema = {
   user_media: typeof user_media;
   user_media_rels: typeof user_media_rels;
   profile_slides: typeof profile_slides;
+  profile_rsvp_gallery: typeof profile_rsvp_gallery;
   profile: typeof profile;
   profile_rels: typeof profile_rels;
   _profile_v_version_slides: typeof _profile_v_version_slides;
+  _profile_v_version_rsvp_gallery: typeof _profile_v_version_rsvp_gallery;
   _profile_v: typeof _profile_v;
   _profile_v_rels: typeof _profile_v_rels;
   albums: typeof albums;
@@ -10230,9 +10319,11 @@ type DatabaseSchema = {
   relations_user_media_rels: typeof relations_user_media_rels;
   relations_user_media: typeof relations_user_media;
   relations_profile_slides: typeof relations_profile_slides;
+  relations_profile_rsvp_gallery: typeof relations_profile_rsvp_gallery;
   relations_profile_rels: typeof relations_profile_rels;
   relations_profile: typeof relations_profile;
   relations__profile_v_version_slides: typeof relations__profile_v_version_slides;
+  relations__profile_v_version_rsvp_gallery: typeof relations__profile_v_version_rsvp_gallery;
   relations__profile_v_rels: typeof relations__profile_v_rels;
   relations__profile_v: typeof relations__profile_v;
   relations_albums_rels: typeof relations_albums_rels;
