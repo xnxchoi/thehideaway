@@ -1,6 +1,6 @@
 # Design System — Drift Audit & Remediation Backlog
 
-> Companion to [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md).
+> Companion to [`DESIGN_SYSTEM.md`](../../readmes/DESIGN_SYSTEM.md).
 > Catalogs where the shipped code drifts from the canonical design system, organized by severity and remediation effort.
 >
 > **How to read this doc:** each finding has a **F-id** (so agents can cite them in commits and PRs), a **severity**, a **scope** (how many files are affected), a **fix** (proposed resolution), and **evidence** (file:line citations where possible).

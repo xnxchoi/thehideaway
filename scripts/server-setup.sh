@@ -80,7 +80,12 @@ DEBIAN_FRONTEND=noninteractive apt-get install -yq \
   ufw \
   ca-certificates gnupg lsb-release \
   logrotate \
-  jq
+  jq \
+  cron
+
+# cron is sometimes not enabled by default on minimal cloud images even after
+# install (it's installed but unit is masked or just not started).
+systemctl enable --now cron 2>/dev/null || true
 
 # ────────────────────────────────────────────────────────────────────────────
 # 2. Swap (4 GB — same as RAM, good for a 4 GB server)
@@ -119,9 +124,11 @@ net.ipv4.tcp_keepalive_intvl  = 30
 net.ipv4.tcp_fastopen         = 3
 
 # ── File descriptor limits ───────────────────────────────────────────────────
-# Required for nginx 2048 worker_connections × auto worker_processes
-fs.file-max   = 200000
-fs.nr_open    = 200000
+# These must be AT LEAST the Ubuntu kernel defaults (file-max ~9M, nr_open
+# ~1M); lowering them below the systemd unit LimitNOFILE values causes
+# service start to fail with 205/LIMITS. We set generous floors here.
+fs.file-max   = 2097152
+fs.nr_open    = 1048576
 
 # ── Memory / VM ─────────────────────────────────────────────────────────────
 # Low swappiness: prefer keeping app data in RAM (Node.js heap is large)
@@ -171,10 +178,21 @@ ClientAliveInterval      60
 ClientAliveCountMax      10
 SSHD
 
-# Validate sshd config before reloading
+# Validate sshd config before reloading. Service unit name differs across
+# distros — Ubuntu/Debian use `ssh.service`, RHEL/CentOS use `sshd.service`.
+# On Ubuntu 24.04+ with socket-activated SSH, `systemctl reload` sometimes
+# fails with code 205/LIMITS even though the config is valid; fall back to
+# sending SIGHUP directly, which is what `reload` does internally anyway.
 if sshd -t; then
-  systemctl reload sshd
-  echo "  sshd hardening applied"
+  if systemctl reload ssh 2>/dev/null \
+     || systemctl reload sshd 2>/dev/null \
+     || systemctl kill -s HUP ssh.service 2>/dev/null \
+     || systemctl kill -s HUP sshd.service 2>/dev/null; then
+    echo "  sshd hardening applied"
+  else
+    error "could not signal ssh/sshd service — check 'systemctl status ssh sshd'"
+    exit 1
+  fi
 else
   error "sshd config validation failed — check ${SSHD_CONF}"
   exit 1
@@ -259,7 +277,24 @@ fi
 # 6. Docker CE
 # ────────────────────────────────────────────────────────────────────────────
 info "[6/12] Installing / configuring Docker..."
-if ! command -v docker &> /dev/null; then
+
+# Refuse to proceed if snap docker is present — it's a poor fit for this
+# stack (AppArmor confinement breaks bind mounts, different paths, ufw-docker
+# incompatibility). Cloud Ubuntu images (iteasy, some Hetzner) sometimes
+# pre-install it. Tell the operator how to remove it cleanly.
+if snap list docker 2>/dev/null | grep -q '^docker '; then
+  error "Snap docker detected. This stack requires docker-ce via apt, not snap."
+  error "Remove snap docker first:"
+  error "  snap stop docker && snap remove --purge docker"
+  error "  rm -rf /var/snap/docker /etc/systemd/system/snap.docker.*.service"
+  error "  systemctl daemon-reload"
+  error "Then re-run server-setup.sh."
+  exit 1
+fi
+
+# Gate: docker-ce specifically (not just any 'docker' binary on PATH — snap
+# would satisfy `command -v docker` even though it's the wrong runtime).
+if ! dpkg -l docker-ce 2>/dev/null | grep -q '^ii'; then
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
     | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -279,6 +314,9 @@ fi
 
 # Daemon hardening: log rotation + live-restore (containers survive daemon restart)
 DOCKER_DAEMON="/etc/docker/daemon.json"
+# Ubuntu 24.04 sometimes doesn't create /etc/docker until the daemon first
+# starts. Ensure the parent dir exists before the heredoc redirect.
+install -d -m 0755 /etc/docker
 if [[ ! -f "${DOCKER_DAEMON}" ]] || ! grep -q '"live-restore"' "${DOCKER_DAEMON}"; then
   cat > "${DOCKER_DAEMON}" << 'DOCKERD'
 {
@@ -567,7 +605,8 @@ echo ""
 info "Running self-test..."
 docker run --rm hello-world >/dev/null 2>&1 && echo "  ✓ docker runtime OK" \
   || warn "  ✗ docker hello-world failed — investigate"
-systemctl is-active --quiet sshd      && echo "  ✓ sshd active"     || warn "  ✗ sshd not active"
+{ systemctl is-active --quiet ssh || systemctl is-active --quiet sshd; } \
+  && echo "  ✓ sshd active"     || warn "  ✗ sshd not active"
 systemctl is-active --quiet fail2ban  && echo "  ✓ fail2ban active" || warn "  ✗ fail2ban not active"
 ufw status | grep -q "Status: active" && echo "  ✓ ufw active"      || warn "  ✗ ufw not active"
 [[ -x /usr/local/bin/certbot-reload-nginx ]] && echo "  ✓ certbot-reload helper installed" \
