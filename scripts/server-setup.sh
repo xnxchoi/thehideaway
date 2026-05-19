@@ -81,7 +81,8 @@ DEBIAN_FRONTEND=noninteractive apt-get install -yq \
   ca-certificates gnupg lsb-release \
   logrotate \
   jq \
-  cron
+  cron \
+  rclone
 
 # cron is sometimes not enabled by default on minimal cloud images even after
 # install (it's installed but unit is masked or just not started).
