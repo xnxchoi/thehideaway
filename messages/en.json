@@ -383,6 +383,54 @@
         "dress": "Dress",
         "night": "Night",
         "closing": "Reserve"
+      },
+      "moodboard": {
+        "cookout": {
+          "burger": {
+            "alt": "Smash burgers off the grill",
+            "caption": "smash, off the grill"
+          },
+          "rooftop": {
+            "alt": "Cookout vibes — rooftop, late sun",
+            "caption": "rooftop, late sun"
+          },
+          "vibe": {
+            "alt": "Cookout vibes",
+            "caption": ""
+          }
+        },
+        "dress": {
+          "romeo": {
+            "alt": "Romeo and Juliet — period costume reference",
+            "caption": "still love. soon too old."
+          },
+          "pink": {
+            "alt": "All the pink — the next emo girl",
+            "caption": "all the pink"
+          },
+          "dad": {
+            "alt": "Steve Carrell, Crazy Stupid Love — dad fit",
+            "caption": "the dad. unbothered."
+          },
+          "notDads": {
+            "alt": "Pulp Fiction — they're not dads",
+            "caption": "(they're not dads)"
+          },
+          "dude": {
+            "alt": "The Dude — Big Lebowski",
+            "caption": "the dude."
+          }
+        },
+        "night": {
+          "suit": {
+            "alt": "Pulp Fiction — suit, dressed up",
+            "caption": "won't stop you"
+          },
+          "jacket": {
+            "alt": "Jackets that walk into a quiet bar",
+            "caption": "a layer helps."
+          }
+        }
       }
     },
     "Guests": {

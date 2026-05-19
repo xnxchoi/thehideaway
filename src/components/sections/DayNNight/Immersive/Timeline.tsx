@@ -253,6 +253,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         className={`${s.act} ${s.actOpening}`}
         aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
       >
         <div className={s.actInner}>
           <span className={s.actEyebrow}>
@@ -298,6 +299,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         className={`${s.act} ${s.actCookout}`}
         aria-label={t("act.day.heading")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
       >
         <div className={s.actInner}>
           <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
@@ -340,8 +342,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           <PolaroidGroup className={s.cookoutMoodboard}>
             <Polaroid
               src="/assets/day-n-night/DraggedImage.png"
-              alt="Smash burgers off the grill"
-              caption="smash, off the grill"
+              alt={t("moodboard.cookout.burger.alt")}
+              caption={t("moodboard.cookout.burger.caption")}
               captionStyle="serif"
               width={240}
               aspect={1.05}
@@ -351,8 +353,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/IMG_8543.png"
-              alt="Cookout vibes"
-              caption="rooftop, late sun"
+              alt={t("moodboard.cookout.rooftop.alt")}
+              caption={t("moodboard.cookout.rooftop.caption")}
               captionStyle="marker"
               width={210}
               aspect={1.2}
@@ -362,7 +364,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/IMG_9520.png"
-              alt="Cookout vibes"
+              alt={t("moodboard.cookout.vibe.alt")}
               width={200}
               aspect={1}
               angle={-2}
@@ -382,6 +384,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         className={`${s.act} ${s.actDress}`}
         aria-label={t("dressCode.heading")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
       >
         <div className={s.actInner}>
           <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
@@ -425,8 +428,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           <PolaroidGroup className={s.dressMoodboard}>
             <Polaroid
               src="/assets/day-n-night/DraggedImage-1.png"
-              alt="Romeo and Juliet — period costume reference"
-              caption="still love. soon too old."
+              alt={t("moodboard.dress.romeo.alt")}
+              caption={t("moodboard.dress.romeo.caption")}
               captionStyle="serif"
               width={220}
               aspect={0.78}
@@ -436,8 +439,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/DraggedImage-2.png"
-              alt="All the pink — the next emo girl"
-              caption="all the pink"
+              alt={t("moodboard.dress.pink.alt")}
+              caption={t("moodboard.dress.pink.caption")}
               captionStyle="marker"
               width={200}
               aspect={1.1}
@@ -447,8 +450,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/DraggedImage-3.png"
-              alt="Steve Carrell, Crazy Stupid Love — dad fit"
-              caption="the dad. unbothered."
+              alt={t("moodboard.dress.dad.alt")}
+              caption={t("moodboard.dress.dad.caption")}
               captionStyle="serif"
               width={210}
               aspect={1.15}
@@ -458,8 +461,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/DraggedImage-4.png"
-              alt="Pulp Fiction — they're not dads"
-              caption="(they're not dads)"
+              alt={t("moodboard.dress.notDads.alt")}
+              caption={t("moodboard.dress.notDads.caption")}
               captionStyle="marker"
               width={200}
               aspect={1.4}
@@ -469,8 +472,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/DraggedImage-5.png"
-              alt="The Dude — Big Lebowski"
-              caption="the dude."
+              alt={t("moodboard.dress.dude.alt")}
+              caption={t("moodboard.dress.dude.caption")}
               captionStyle="serif"
               width={190}
               aspect={1}
@@ -493,6 +496,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         className={`${s.act} ${s.actNight}`}
         aria-label={t("act.night.label")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
       >
         <div className={s.actInner}>
           <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
@@ -520,8 +524,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           <PolaroidGroup className={s.nightMoodboard}>
             <Polaroid
               src="/assets/day-n-night/DraggedImage-6.png"
-              alt="Pulp Fiction — suit, dressed up"
-              caption="won't stop you"
+              alt={t("moodboard.night.suit.alt")}
+              caption={t("moodboard.night.suit.caption")}
               captionStyle="serif"
               width={220}
               aspect={1.35}
@@ -531,8 +535,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             />
             <Polaroid
               src="/assets/day-n-night/DraggedImage-7.png"
-              alt="Jackets that walk into a quiet bar"
-              caption="a layer helps."
+              alt={t("moodboard.night.jacket.alt")}
+              caption={t("moodboard.night.jacket.caption")}
               captionStyle="marker"
               width={200}
               aspect={1.1}
@@ -553,6 +557,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         className={`${s.act} ${s.actClosing}`}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
       >
         <div className={s.actInner}>
           <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>

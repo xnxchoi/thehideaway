@@ -44,6 +44,11 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
       useDayNNightScene.getState().initialLoopPosition;
 
     let raf: number;
+    // Timeouts scheduled after the rAF completes must be cleared on
+    // unmount; otherwise they fire on an unmounted component and race
+    // with index.tsx's unmount reset (setProgress(0); setPhase("loading")).
+    let hideTimeout: ReturnType<typeof setTimeout> | undefined;
+    let playTimeout: ReturnType<typeof setTimeout> | undefined;
     const start = performance.now();
 
     const tick = (now: number) => {
@@ -73,13 +78,13 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
         raf = requestAnimationFrame(tick);
       } else {
         setPhase("loaded");
-        setTimeout(() => {
+        hideTimeout = setTimeout(() => {
           setHiding(true);
           // Match the CSS opacity transition (700ms) before flipping to
           // playing — during this window the sun stays at its loader-end
           // position (HORIZON_Y) and the chrome + backdrop fade out
           // around it.
-          setTimeout(() => {
+          playTimeout = setTimeout(() => {
             // Seed the scene at the measured anchor-act center. The
             // celestial sampler shares the same store-derived
             // initialLoopPosition so the sun is at the horizon at this
@@ -92,7 +97,11 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
     };
     raf = requestAnimationFrame(tick);
 
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (hideTimeout !== undefined) clearTimeout(hideTimeout);
+      if (playTimeout !== undefined) clearTimeout(playTimeout);
+    };
   }, [durationMs, setProgress, setPhase]);
 
   return (

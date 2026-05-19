@@ -113,21 +113,12 @@ export function DayNightAudio() {
   const nightRef = useRef<TrackPipeline | null>(null);
 
   // Lifecycle: spin up the AudioContext + pipelines on first enable.
-  // Tear down on disable or unmount.
+  // Tear down on disable AND on unmount — both paths go through the
+  // cleanup function so the AudioContext + audio elements never leak
+  // (a prior version left them attached when the user navigated away
+  // while audio was on).
   useEffect(() => {
-    if (!enabled) {
-      // Disable path — pause + clean up any prior pipeline.
-      dayRef.current?.audio.pause();
-      nightRef.current?.audio.pause();
-      if (ctxRef.current) {
-        void ctxRef.current.close().catch(() => {});
-        ctxRef.current = null;
-      }
-      dayRef.current = null;
-      nightRef.current = null;
-      setReady(false);
-      return;
-    }
+    if (!enabled) return;
 
     const w = window as unknown as {
       AudioContext?: typeof AudioContext;
@@ -182,6 +173,11 @@ export function DayNightAudio() {
         if (cancelled) return;
         if (!day || !night) {
           setFailed(true);
+          // Close the orphaned context so a failed load doesn't leak
+          // a heavyweight AudioContext.
+          if (ctx.state !== "closed") {
+            void ctx.close().catch(() => {});
+          }
           return;
         }
         dayRef.current = day;
@@ -199,6 +195,15 @@ export function DayNightAudio() {
 
     return () => {
       cancelled = true;
+      dayRef.current?.audio.pause();
+      nightRef.current?.audio.pause();
+      if (ctxRef.current && ctxRef.current.state !== "closed") {
+        void ctxRef.current.close().catch(() => {});
+      }
+      ctxRef.current = null;
+      dayRef.current = null;
+      nightRef.current = null;
+      setReady(false);
     };
   }, [enabled]);
 
@@ -218,7 +223,13 @@ export function DayNightAudio() {
       const ctx = ctxRef.current;
       const d = dayRef.current;
       const n = nightRef.current;
-      if (!ctx || !d || !n) {
+      // Guard against a closed AudioContext — when the user toggles off,
+      // the enabled-effect cleanup may close `ctx` before this tick is
+      // cancelled (setReady(false) only cleans up on the next commit).
+      // `setTargetAtTime` on a closed context throws InvalidStateError;
+      // skip the write and let the cancelAnimationFrame in cleanup catch
+      // up on the next frame.
+      if (!ctx || !d || !n || ctx.state === "closed") {
         raf = requestAnimationFrame(tick);
         return;
       }
@@ -229,10 +240,16 @@ export function DayNightAudio() {
       // 18 kHz open → ~600 Hz when fully mixed.
       const filterFreq = 18000 - mix * 17400;
 
-      d.gain.gain.setTargetAtTime(day * BASE_VOL, now, RAMP);
-      n.gain.gain.setTargetAtTime(night * BASE_VOL, now, RAMP);
-      d.filter.frequency.setTargetAtTime(filterFreq, now, RAMP);
-      n.filter.frequency.setTargetAtTime(filterFreq, now, RAMP);
+      try {
+        d.gain.gain.setTargetAtTime(day * BASE_VOL, now, RAMP);
+        n.gain.gain.setTargetAtTime(night * BASE_VOL, now, RAMP);
+        d.filter.frequency.setTargetAtTime(filterFreq, now, RAMP);
+        n.filter.frequency.setTargetAtTime(filterFreq, now, RAMP);
+      } catch {
+        // Context can transition to closed between the check above and
+        // the writes (browser-internal close). Swallow and let cleanup
+        // stop the rAF.
+      }
 
       raf = requestAnimationFrame(tick);
     };

@@ -130,13 +130,19 @@ export function Scrubber() {
       });
       return;
     }
+    if (setWidth <= 0) return;
     const currentLoopPos =
       (initialLoopPosition * setWidth + totalScrolled) % setWidth;
     const targetPx = targetLoopPos * setWidth;
     const delta = (targetPx - currentLoopPos + setWidth) % setWidth;
-    // If the target is the current section, advance a full loop so the
-    // click still moves — keeps the forward-only rule.
-    const forwardDelta = delta < 1 ? setWidth : delta;
+    // If the click lands on (or within a hair of) the current section,
+    // advance a full loop so the click still moves the user — preserves
+    // the forward-only rule. The threshold is a small fraction of the
+    // set width (~0.5% of one loop) rather than a hard pixel value so
+    // it scales with the act track size; the prior `delta < 1` used 1px
+    // which made small forward clicks effectively rewind a full loop.
+    const epsilon = setWidth * 0.005;
+    const forwardDelta = delta < epsilon ? setWidth : delta;
     window.scrollTo({
       top: window.scrollY + forwardDelta,
       behavior: "smooth"
