@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useShallow } from "zustand/shallow";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
 import { RevealItem, RevealStage } from "./Reveal";
@@ -85,7 +86,10 @@ export function Timeline() {
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const setProgress = useDayNNightScene((r) => r.setProgress);
-
+  const setPhase = useDayNNightScene((r) => r.setPhase);
+  const setLayout = useDayNNightScene((r) => r.setLayout);
+  const readLayout = useDayNNightScene(useShallow((r) => r.layout));
+  const initialLoopPos = useDayNNightScene((r) => r.initialLoopPosition);
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -101,91 +105,74 @@ export function Timeline() {
       // The initial offset (`INITIAL_LOOP_POSITION`) places the user at
       // mid-loop on first paint so the loader hand-off (sun at horizon) is
       // continuous with the scene's mid-loop sun-at-horizon position.
-      mm.add(
-        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
-        () => {
-          if (!track.current || !wrap.current) return;
+      mm.add("(min-width: 1024px)", () => {
+        if (!track.current || !wrap.current) return;
 
-          const trackEl = track.current;
-          const setLayout = useDayNNightScene.getState().setLayout;
-          const LOOPS = 14; // how many cycles before user hits page bottom
+        const trackEl = track.current;
 
-          // Measure once up front so the store has layout before
-          // ScrollTrigger seeds — otherwise `initialLoopPosition` is the
-          // fallback 0.2 and the loader hand-off lands off the horizon.
-          const initialLayout = measureActLayout(trackEl);
-          if (initialLayout) setLayout(initialLayout);
+        const LOOPS = 14; // how many cycles before user hits page bottom
 
-          // Read setWidth + initialLoopPosition live from the store on
-          // every tick so resize events that update the layout
-          // (ResizeObserver below) propagate without needing closures
-          // to be re-bound.
-          const readLayout = () => useDayNNightScene.getState().layout;
-          const setWidth = () =>
-            readLayout()?.setWidth ?? trackEl.scrollWidth / 2;
-          const initialLoopPos = () =>
-            useDayNNightScene.getState().initialLoopPosition;
-          const pinDistance = () => setWidth() * LOOPS;
+        // Measure once up front so the store has layout before
+        // ScrollTrigger seeds — otherwise `initialLoopPosition` is the
+        // fallback 0.2 and the loader hand-off lands off the horizon.
+        const initialLayout = measureActLayout(trackEl);
+        if (initialLayout) setLayout(initialLayout);
 
-          // Shared updater — same math for initial paint and every
-          // scroll tick. Pulled out so we can seed initial state on
-          // ScrollTrigger creation; otherwise the loader's progress=0.05
-          // would leak into the scene math and render the sun below the
-          // viewport instead of at the horizon hand-off position.
-          const update = (selfProgress: number) => {
-            const sw = setWidth();
-            const init = initialLoopPos();
-            const totalScrolled = selfProgress * pinDistance();
-            const loopPos = (init * sw + totalScrolled) % sw;
-            const loopProgress = loopPos / sw;
-            gsap.set(trackEl, { x: -loopProgress * sw });
-            // scene-progress IS loopProgress now — sky stops at 0.0 and
-            // 1.0 are identical so the wrap is seamless.
-            setProgress(loopProgress);
-          };
+        // Read setWidth + initialLoopPosition live from the store on
+        // every tick so resize events that update the layout
+        // (ResizeObserver below) propagate without needing closures
+        // to be re-bound.
+        const setWidth = () => readLayout?.setWidth ?? trackEl.scrollWidth / 2;
 
-          const st = ScrollTrigger.create({
-            trigger: wrap.current,
-            start: "top top",
-            end: () => `+=${pinDistance()}`,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => update(self.progress)
-          });
+        const pinDistance = () => setWidth() * LOOPS;
 
-          // Seed the initial state at scroll=0 so the sun lands on the
-          // horizon as soon as the loader hands off.
-          update(0);
+        // Shared updater — same math for initial paint and every
+        // scroll tick. Pulled out so we can seed initial state on
+        // ScrollTrigger creation; otherwise the loader's progress=0.05
+        // would leak into the scene math and render the sun below the
+        // viewport instead of at the horizon hand-off position.
+        const update = (selfProgress: number) => {
+          const sw = setWidth();
+          const init = initialLoopPos;
+          const totalScrolled = selfProgress * pinDistance();
+          const loopPos = (init * sw + totalScrolled) % sw;
+          const loopProgress = loopPos / sw;
+          gsap.set(trackEl, { x: -loopProgress * sw });
+          // scene-progress IS loopProgress now — sky stops at 0.0 and
+          // 1.0 are identical so the wrap is seamless.
+          setProgress(loopProgress);
+        };
 
-          // Re-measure on size changes — viewport resize, devtools
-          // toggle, etc. — and refresh ScrollTrigger so the pin
-          // distance recomputes against the new set width.
-          const ro = new ResizeObserver(() => {
-            const next = measureActLayout(trackEl);
-            if (next) {
-              setLayout(next);
-              st.refresh();
-            }
-          });
-          ro.observe(trackEl);
+        const st = ScrollTrigger.create({
+          trigger: wrap.current,
+          start: "top top",
+          end: () => `+=${pinDistance()}`,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => update(self.progress)
+        });
 
-          return () => {
-            ro.disconnect();
-            st.kill();
-          };
-        }
-      );
+        // Seed the initial state at scroll=0 so the sun lands on the
+        // horizon as soon as the loader hands off.
+        update(0);
 
-      // Reduced-motion desktop — show all acts in a vertical stack, no scrub.
-      mm.add("(min-width: 1024px) and (prefers-reduced-motion: reduce)", () => {
-        if (!track.current) return;
-        gsap.set(track.current, { x: 0 });
-        // Advance the sky to mid-day so the scene reads correctly. Also
-        // force `playing` so SunLoader unmounts even if its own reduced-
-        // motion early-return failed to fire (e.g. SSR ordering).
-        setProgress(0.5);
-        useDayNNightScene.getState().setPhase("playing");
+        // Re-measure on size changes — viewport resize, devtools
+        // toggle, etc. — and refresh ScrollTrigger so the pin
+        // distance recomputes against the new set width.
+        const ro = new ResizeObserver(() => {
+          const next = measureActLayout(trackEl);
+          if (next) {
+            setLayout(next);
+            st.refresh();
+          }
+        });
+        ro.observe(trackEl);
+
+        return () => {
+          ro.disconnect();
+          st.kill();
+        };
       });
 
       // Mobile/tablet — vertical scroll, progress driven by document scroll.
@@ -193,7 +180,7 @@ export function Timeline() {
         if (!wrap.current) return;
         // Below `lg` we never enter the immersive loader pin; ensure the
         // phase is `playing` so SunLoader's overlay never blocks the stack.
-        useDayNNightScene.getState().setPhase("playing");
+        setPhase("playing");
         const st = ScrollTrigger.create({
           trigger: wrap.current,
           start: "top bottom",
@@ -216,15 +203,23 @@ export function Timeline() {
     <div
       ref={wrap}
       data-dn-wrap
-      className="relative w-full h-dvh overflow-hidden z-[3] max-lg:h-auto max-lg:overflow-visible"
+      className="relative z-[3] h-dvh w-full overflow-hidden max-lg:h-auto max-lg:overflow-visible"
     >
       {/* Scene lives inside the pinned wrap so its `position: fixed` pieces
           remain anchored to the viewport throughout the pin. The site's
           smooth-scroll wrapper breaks raw fixed-positioning mid-scroll;
           nesting under the pinned element side-steps that. */}
       <SceneView />
-      <div data-dn-grain aria-hidden className="absolute inset-0 z-[2] pointer-events-none mix-blend-overlay opacity-[0.45]" />
-      <div ref={track} data-dn-track className="flex h-full will-change-transform max-lg:flex-col max-lg:h-auto">
+      <div
+        data-dn-grain
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[2] opacity-[0.45] mix-blend-overlay"
+      />
+      <div
+        ref={track}
+        data-dn-track
+        className="flex h-full will-change-transform max-lg:h-auto max-lg:flex-col"
+      >
         {/* First set — the primary, accessible acts. */}
         <ActSet t={t} />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
@@ -256,11 +251,11 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1 } as React.CSSProperties}
         aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
-        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
+        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] justify-items-center text-center pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap">
-            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-rows-[auto_1fr_auto] justify-items-center px-6 pt-16 pb-[84px] text-center max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
               I
             </span>
             <span>{t("opening.label")}</span>
@@ -269,25 +264,43 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("opening.time")}</span>
           </span>
-          <RevealStage as="div" className="grid gap-4 max-w-[880px] m-auto justify-items-center">
-            <RevealItem as="p" className="font-mono text-[11px] tracking-[0.32em] uppercase text-[var(--dn-fg-mute)]">
+          <RevealStage
+            as="div"
+            className="m-auto grid max-w-[880px] justify-items-center gap-4"
+          >
+            <RevealItem
+              as="p"
+              className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase"
+            >
               {t("opening.kicker")}
             </RevealItem>
-            <RevealItem as="h2" className="font-serif font-bold text-[clamp(4rem,9vw,9rem)] leading-[0.94] tracking-[-0.022em] text-[var(--dn-fg)]">
+            <RevealItem
+              as="h2"
+              className="font-serif text-[clamp(4rem,9vw,9rem)] leading-[0.94] font-bold tracking-[-0.022em] text-[var(--dn-fg)]"
+            >
               {t("title")}
             </RevealItem>
-            <RevealItem as="p" className="max-w-[32ch] text-[clamp(1.4rem,1.7vw,1.8rem)] font-light leading-[1.4] text-[var(--dn-fg-mute)] tracking-[-0.005em]">
+            <RevealItem
+              as="p"
+              className="max-w-[32ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+            >
               {t("opening.lede")}
             </RevealItem>
           </RevealStage>
-          <div className="flex gap-12 font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--dn-fg-faint)]">
-            <span className="inline-flex gap-[10px] items-baseline">
-              <span className="text-[var(--dn-fg-faint)]">{t("date.weekday")}</span>
+          <div className="flex gap-12 font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
+            <span className="inline-flex items-baseline gap-[10px]">
+              <span className="text-[var(--dn-fg-faint)]">
+                {t("date.weekday")}
+              </span>
               <span className="text-[var(--dn-fg-mute)]">{t("date.full")}</span>
             </span>
-            <span className="inline-flex gap-[10px] items-baseline">
-              <span className="text-[var(--dn-fg-faint)]">{t("location.label")}</span>
-              <span className="text-[var(--dn-fg-mute)]">{t("location.neighborhood")}</span>
+            <span className="inline-flex items-baseline gap-[10px]">
+              <span className="text-[var(--dn-fg-faint)]">
+                {t("location.label")}
+              </span>
+              <span className="text-[var(--dn-fg-mute)]">
+                {t("location.neighborhood")}
+              </span>
             </span>
           </div>
         </div>
@@ -303,11 +316,11 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1.15 } as React.CSSProperties}
         aria-label={t("act.day.heading")}
         aria-hidden={ariaHidden || undefined}
-        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
+        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-x-12 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap col-span-full">
-            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,7fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
               II
             </span>
             <span>{t("included.heading")}</span>
@@ -316,31 +329,40 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("act.day.time")}</span>
           </span>
-          <RevealStage as="div" className="col-start-1 col-end-2 row-start-2 row-end-3 self-end grid gap-[22px] max-w-[56ch]">
-            <RevealItem as="h2" className="font-serif font-bold text-[clamp(3rem,6vw,5.4rem)] leading-[1] tracking-[-0.02em] text-[var(--dn-fg)]">
+          <RevealStage
+            as="div"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] gap-[22px] self-end"
+          >
+            <RevealItem
+              as="h2"
+              className="font-serif text-[clamp(3rem,6vw,5.4rem)] leading-[1] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
+            >
               {t("act.day.heading")}
             </RevealItem>
-            <RevealItem as="p" className="text-[clamp(1.4rem,1.6vw,1.7rem)] leading-[1.5] font-light text-[var(--dn-fg-mute)] max-w-[48ch] tracking-[-0.005em]">
+            <RevealItem
+              as="p"
+              className="max-w-[48ch] text-[clamp(1.4rem,1.6vw,1.7rem)] leading-[1.5] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+            >
               {t("act.day.body")}
             </RevealItem>
           </RevealStage>
           <ul
-            className="col-start-2 col-end-3 row-start-3 row-end-4 self-end justify-self-end list-none grid gap-[18px] p-0 m-0 min-w-[280px]"
+            className="col-start-2 col-end-3 row-start-3 row-end-4 m-0 grid min-w-[280px] list-none gap-[18px] self-end justify-self-end p-0"
             aria-label={t("included.heading")}
           >
-            <li className="grid gap-1 pt-[14px] border-t border-[var(--dn-line)]">
-              <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-faint)]">
+            <li className="grid gap-1 border-t border-[var(--dn-line)] pt-[14px]">
+              <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
                 {t("included.food.label")}
               </span>
-              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium text-[var(--dn-fg)] tracking-[-0.01em]">
+              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
                 {t("included.food.items")}
               </span>
             </li>
-            <li className="grid gap-1 pt-[14px] border-t border-[var(--dn-line)]">
-              <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-faint)]">
+            <li className="grid gap-1 border-t border-[var(--dn-line)] pt-[14px]">
+              <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
                 {t("included.drinks.label")}
               </span>
-              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium text-[var(--dn-fg)] tracking-[-0.01em]">
+              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
                 {t("included.drinks.items")}
               </span>
             </li>
@@ -348,7 +370,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           {/* Cookout moodboard — smash burgers + ambient food vibes.
               The polaroid cluster lives in the right portion of the
               act, parallaxed around the Cookout anchor (0.279). */}
-          <PolaroidGroup className="hidden lg:flex lg:gap-7 lg:absolute lg:top-[24%] lg:right-[6vw] lg:z-[4] lg:pointer-events-none">
+          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[24%] lg:right-[6vw] lg:z-[4] lg:flex lg:gap-7">
             <Polaroid
               src="/assets/day-n-night/DraggedImage.png"
               alt="Smash burgers off the grill"
@@ -394,11 +416,11 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1.1 } as React.CSSProperties}
         aria-label={t("dressCode.heading")}
         aria-hidden={ariaHidden || undefined}
-        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
+        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_auto_1fr_auto] gap-5 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap">
-            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-rows-[auto_auto_1fr_auto] gap-5 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
               III
             </span>
             <span>{t("dressCode.heading")}</span>
@@ -408,27 +430,52 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               together. Splitting the stage means the intro doesn't have to
               wait for the columns to be 55%-visible before triggering. */}
           <RevealStage as="div">
-            <RevealItem as="p" className="mt-8 max-w-[50ch] font-serif italic text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)]">
+            <RevealItem
+              as="p"
+              className="mt-8 max-w-[50ch] font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic"
+            >
               {t("dressCode.intro")}
             </RevealItem>
           </RevealStage>
-          <RevealStage as="div" className="grid grid-cols-1 gap-9 content-end max-w-[980px] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-14">
-            <div className="grid gap-[14px] max-w-[38ch]">
-              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--dn-fg-faint)]">01</span>
-              <RevealItem as="h3" className="font-serif font-bold text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] text-[var(--dn-fg)]">
+          <RevealStage
+            as="div"
+            className="grid max-w-[980px] grid-cols-1 content-end gap-9 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-14"
+          >
+            <div className="grid max-w-[38ch] gap-[14px]">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
+                01
+              </span>
+              <RevealItem
+                as="h3"
+                className="font-serif text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] font-bold text-[var(--dn-fg)]"
+              >
                 {t("dressCode.option1.label")}
               </RevealItem>
-              <RevealItem as="p" className="text-[1.4rem] leading-[1.55] text-[var(--dn-fg-mute)] max-w-[42ch] font-light">
+              <RevealItem
+                as="p"
+                className="max-w-[42ch] text-[1.4rem] leading-[1.55] font-light text-[var(--dn-fg-mute)]"
+              >
                 {t("dressCode.option1.body")}
               </RevealItem>
             </div>
-            <div aria-hidden className="hidden lg:block w-px bg-[var(--dn-line)] self-stretch" />
-            <div className="grid gap-[14px] max-w-[38ch]">
-              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--dn-fg-faint)]">02</span>
-              <RevealItem as="h3" className="font-serif font-bold text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] text-[var(--dn-fg)]">
+            <div
+              aria-hidden
+              className="hidden w-px self-stretch bg-[var(--dn-line)] lg:block"
+            />
+            <div className="grid max-w-[38ch] gap-[14px]">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
+                02
+              </span>
+              <RevealItem
+                as="h3"
+                className="font-serif text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] font-bold text-[var(--dn-fg)]"
+              >
                 {t("dressCode.option2.label")}
               </RevealItem>
-              <RevealItem as="p" className="text-[1.4rem] leading-[1.55] text-[var(--dn-fg-mute)] max-w-[42ch] font-light">
+              <RevealItem
+                as="p"
+                className="max-w-[42ch] text-[1.4rem] leading-[1.55] font-light text-[var(--dn-fg-mute)]"
+              >
                 {t("dressCode.option2.body")}
               </RevealItem>
             </div>
@@ -437,7 +484,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               dev doc's pop-culture stills. Mixed serif + marker captions
               so the cluster feels like a film-club mood wall instead of
               a polished catalog. Parallaxed around the Dress anchor. */}
-          <PolaroidGroup className="hidden lg:flex lg:gap-6 lg:absolute lg:top-[8%] lg:right-[4vw] lg:z-[4] lg:pointer-events-none lg:max-w-[46vw] lg:flex-wrap lg:justify-end">
+          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[8%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[46vw] lg:flex-wrap lg:justify-end lg:gap-6">
             <Polaroid
               src="/assets/day-n-night/DraggedImage-1.png"
               alt="Romeo and Juliet — period costume reference"
@@ -494,7 +541,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               anchor={ANCHOR_DRESS}
             />
           </PolaroidGroup>
-          <span className="block font-serif italic text-[clamp(1.1rem,1.3vw,1.3rem)] text-[var(--dn-fg-mute)] max-w-[44ch] leading-[1.45]">
+          <span className="block max-w-[44ch] font-serif text-[clamp(1.1rem,1.3vw,1.3rem)] leading-[1.45] text-[var(--dn-fg-mute)] italic">
             {t("secret")}
           </span>
         </div>
@@ -511,11 +558,11 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1 } as React.CSSProperties}
         aria-label={t("act.night.label")}
         aria-hidden={ariaHidden || undefined}
-        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
+        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,8fr)_minmax(0,4fr)] gap-x-12 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap col-span-full">
-            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,4fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
               IV
             </span>
             <span>{t("act.night.label")}</span>
@@ -524,25 +571,37 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("act.night.time")}</span>
           </span>
-          <RevealStage as="div" className="col-start-1 col-end-2 row-start-2 row-end-3 self-end grid gap-5 max-w-[42ch]">
-            <RevealItem as="h2" className="font-serif font-bold text-[clamp(3rem,6vw,5.4rem)] leading-[1.02] tracking-[-0.02em] text-[var(--dn-fg)] max-w-[11ch]">
+          <RevealStage
+            as="div"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-5 self-end"
+          >
+            <RevealItem
+              as="h2"
+              className="max-w-[11ch] font-serif text-[clamp(3rem,6vw,5.4rem)] leading-[1.02] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
+            >
               {t("act.night.heading")}
             </RevealItem>
-            <RevealItem as="p" className="text-[clamp(1.4rem,1.65vw,1.75rem)] leading-[1.45] font-light text-[var(--dn-fg-mute)] max-w-[38ch] tracking-[-0.005em]">
+            <RevealItem
+              as="p"
+              className="max-w-[38ch] text-[clamp(1.4rem,1.65vw,1.75rem)] leading-[1.45] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+            >
               {t("act.night.body")}
             </RevealItem>
           </RevealStage>
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 self-end justify-self-end grid gap-2 min-w-[240px] max-w-[320px]">
-            <span aria-hidden className="block w-14 h-px bg-[var(--dn-fg)] mb-[10px] opacity-60" />
-            <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-faint)]">
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[320px] min-w-[240px] gap-2 self-end justify-self-end">
+            <span
+              aria-hidden
+              className="mb-[10px] block h-px w-14 bg-[var(--dn-fg)] opacity-60"
+            />
+            <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
               {t("tribute.heading")}
             </span>
-            <span className="font-serif italic text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)]">
+            <span className="font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic">
               {t("tribute.body")}
             </span>
           </div>
           {/* Night moodboard — the cocktail/suit/jacket references. */}
-          <PolaroidGroup className="hidden lg:flex lg:gap-[26px] lg:absolute lg:top-[14%] lg:right-[5vw] lg:z-[4] lg:pointer-events-none lg:max-w-[38vw]">
+          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[14%] lg:right-[5vw] lg:z-[4] lg:flex lg:max-w-[38vw] lg:gap-[26px]">
             <Polaroid
               src="/assets/day-n-night/DraggedImage-6.png"
               alt="Pulp Fiction — suit, dressed up"
@@ -579,11 +638,11 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1.4 } as React.CSSProperties}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
-        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
+        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,8fr)_minmax(0,4fr)] gap-x-12 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap col-span-full">
-            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,4fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
               V
             </span>
             <span>{t("entry.heading")}</span>
@@ -594,19 +653,31 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid gap-4 justify-items-start content-center max-w-[720px]"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[720px] content-center justify-items-start gap-4"
           >
-            <RevealItem as="p" className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--dn-fg-mute)]">
+            <RevealItem
+              as="p"
+              className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase"
+            >
               {t("closing.kicker")}
             </RevealItem>
-            <RevealItem as="h2" className="font-serif font-bold text-[clamp(4rem,9vw,8.4rem)] leading-[0.94] tracking-[-0.02em] text-[var(--dn-fg)]">
+            <RevealItem
+              as="h2"
+              className="font-serif text-[clamp(4rem,9vw,8.4rem)] leading-[0.94] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
+            >
               {t("title")}
             </RevealItem>
-            <RevealItem as="p" className="text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light text-[var(--dn-fg-mute)] max-w-[42ch] tracking-[-0.005em]">
+            <RevealItem
+              as="p"
+              className="max-w-[42ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+            >
               {t("closing.lede")}
             </RevealItem>
-            <RevealItem as="div" className="mt-2 grid gap-1.5 font-mono text-xs text-[var(--dn-fg-mute)]">
-              <span className="font-wide font-black text-[2.4rem] tracking-[0.04em] text-[var(--dn-fg)]">
+            <RevealItem
+              as="div"
+              className="mt-2 grid gap-1.5 font-mono text-xs text-[var(--dn-fg-mute)]"
+            >
+              <span className="font-wide text-[2.4rem] font-black tracking-[0.04em] text-[var(--dn-fg)]">
                 {t("entry.amount")}
               </span>
               <span>{t("entry.method")}</span>
@@ -617,7 +688,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <RevealItem as="div">
               <Link
                 href="/tickets/day-n-night"
-                className="inline-flex items-baseline gap-[18px] py-[18px] pb-4 mt-3 border-0 border-b border-[var(--dn-fg)] bg-transparent text-[var(--dn-fg)] font-mono text-[13px] tracking-[0.32em] uppercase no-underline cursor-pointer transition-[gap,padding] duration-300 ease hover:gap-7 hover:pr-3 md:text-sm"
+                className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3 md:text-sm"
                 tabIndex={ariaHidden ? -1 : undefined}
               >
                 <span>{t("rsvpCta.primary")}</span>
@@ -627,12 +698,15 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               </Link>
             </RevealItem>
           </RevealStage>
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 self-end justify-self-end grid gap-1.5 text-right max-w-[280px]">
-            <span aria-hidden className="block w-14 h-px bg-[var(--dn-fg)] ml-auto mb-2 opacity-60" />
-            <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--dn-fg-mute)] leading-[1.6]">
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[280px] gap-1.5 self-end justify-self-end text-right">
+            <span
+              aria-hidden
+              className="mb-2 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60"
+            />
+            <span className="font-mono text-[11px] leading-[1.6] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
               {t("footer.hosts")}
             </span>
-            <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--dn-fg-mute)] leading-[1.6]">
+            <span className="font-mono text-[11px] leading-[1.6] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
               {t("footer.rsvpClosesAt")}
             </span>
           </div>

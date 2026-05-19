@@ -20,7 +20,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
       data-dn-chrome-pill
       role="radiogroup"
       aria-label={t("label")}
-      className="fixed top-5 right-5 z-[46] inline-flex gap-0.5 p-[3px] rounded-full border border-[var(--dn-chrome-line)] md:top-8 md:right-8 xl:top-10 xl:right-12"
+      className="fixed top-5 right-5 z-[46] inline-flex gap-0.5 rounded-full border border-[var(--dn-chrome-line)] p-[3px] md:top-8 md:right-8 xl:top-10 xl:right-12"
     >
       <button
         type="button"
@@ -28,7 +28,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
         aria-checked={value === "immersive"}
         data-active={value === "immersive"}
         data-dn-toggle-btn
-        className="appearance-none border-0 bg-transparent text-[var(--dn-chrome-fg-mute)] font-mono text-[10px] tracking-[0.16em] uppercase py-[7px] px-[13px] rounded-full cursor-pointer transition-[background,color] duration-[250ms] ease"
+        className="ease cursor-pointer appearance-none rounded-full border-0 bg-transparent px-[13px] py-[7px] font-mono text-[10px] tracking-[0.16em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[background,color] duration-[250ms]"
         onClick={() => onChange("immersive")}
       >
         {t("immersive")}
@@ -39,7 +39,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
         aria-checked={value === "simplified"}
         data-active={value === "simplified"}
         data-dn-toggle-btn
-        className="appearance-none border-0 bg-transparent text-[var(--dn-chrome-fg-mute)] font-mono text-[10px] tracking-[0.16em] uppercase py-[7px] px-[13px] rounded-full cursor-pointer transition-[background,color] duration-[250ms] ease"
+        className="ease cursor-pointer appearance-none rounded-full border-0 bg-transparent px-[13px] py-[7px] font-mono text-[10px] tracking-[0.16em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[background,color] duration-[250ms]"
         onClick={() => onChange("simplified")}
       >
         {t("simplified")}

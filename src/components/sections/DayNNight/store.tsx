@@ -1,6 +1,10 @@
 "use client";
 
-import { create } from "zustand";
+import { clamp } from "@/utilities/mathUtilities";
+import { MotionValue, useMotionValue, useTransform } from "motion/react";
+import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
 
 /**
  * Day n Night — page-local scene store.
@@ -83,8 +87,7 @@ export type SectionKey = (typeof SECTION_KEYS)[number];
  * (sampleCelestial) when horizonLoop is too small for a staged rise.
  */
 export const ANCHOR_SECTION_INDEX = 0;
-
-interface SceneStore {
+type SceneState = {
   progress: number;
   phase: Phase;
   /** Null until Timeline measures the DOM on mount. */
@@ -102,11 +105,13 @@ interface SceneStore {
    * at horizon, scene starts at the same loopProgress).
    */
   horizonLoop: number;
+};
+type SceneAct = {
   setProgress: (p: number) => void;
   setPhase: (p: Phase) => void;
   setLayout: (layout: ActLayout) => void;
-}
-
+};
+type SceneStore = SceneState & SceneAct;
 /**
  * Fallback used before Timeline measures. With anchor=0 (Opening),
  * Opening's center lands at viewport center when loopProgress sits at
@@ -116,36 +121,54 @@ interface SceneStore {
  * pop when Timeline finishes measuring.
  */
 const FALLBACK_HORIZON = 0;
-
-export const useDayNNightScene = create<SceneStore>((set) => ({
-  progress: 0,
-  phase: "loading",
-  layout: null,
-  initialLoopPosition: FALLBACK_HORIZON,
-  horizonLoop: FALLBACK_HORIZON,
-  setProgress: (progress) => set({ progress }),
-  setPhase: (phase) => set({ phase }),
-  setLayout: (layout) => {
-    // Derive the loopProgress where the viewport center sits at the
-    // anchor act's center:
-    //   centerInTrackPx          = anchor.center
-    //   viewportCenterInTrackPx  = loopProgress * setWidth + viewportWidth/2
-    // solving:
-    //   loopProgress = (anchor.center - viewportWidth/2) / setWidth
-    //                = anchor.centerFrac - viewportFrac/2
-    const anchor = Math.min(
-      ANCHOR_SECTION_INDEX,
-      Math.max(0, layout.keys.length - 1)
-    );
-    const initialLoopPosition =
-      layout.centersFrac[anchor] - layout.viewportFrac / 2;
-    set({
-      layout,
-      initialLoopPosition,
-      horizonLoop: initialLoopPosition
-    });
+const createDayCycle = (
+  initial: SceneState = {
+    progress: 0,
+    phase: "loading",
+    layout: null,
+    initialLoopPosition: FALLBACK_HORIZON,
+    horizonLoop: FALLBACK_HORIZON
   }
-}));
+) =>
+  createStore<SceneStore>()((set) => ({
+    ...initial,
+    setProgress: (progress) => set({ progress }),
+    setPhase: (phase) => set({ phase }),
+    setLayout: (layout) => {
+      // Derive the loopProgress where the viewport center sits at the
+      // anchor act's center:
+      //   centerInTrackPx          = anchor.center
+      //   viewportCenterInTrackPx  = loopProgress * setWidth + viewportWidth/2
+      // solving:
+      //   loopProgress = (anchor.center - viewportWidth/2) / setWidth
+      //                = anchor.centerFrac - viewportFrac/2
+      const anchor = Math.min(
+        ANCHOR_SECTION_INDEX,
+        Math.max(0, layout.keys.length - 1)
+      );
+      const initialLoopPosition =
+        layout.centersFrac[anchor] - layout.viewportFrac / 2;
+      set({
+        layout,
+        initialLoopPosition,
+        horizonLoop: initialLoopPosition
+      });
+    }
+  }));
+type DayCycleAPI = ReturnType<typeof createDayCycle>;
+const DayCycleCtx = createContext<DayCycleAPI | null>(null);
+export const DayCycleProvider = ({ children }: { children: ReactNode }) => {
+  const f = useRef<DayCycleAPI>(null);
+  if (!f.current) {
+    f.current = createDayCycle();
+  }
+  return <DayCycleCtx value={f.current}>{children}</DayCycleCtx>;
+};
+export const useDayNNightScene = <T,>(r: (s: SceneStore) => T) => {
+  const f = useContext(DayCycleCtx);
+  if (!f) throw new Error("DayCycleCtx not found");
+  return useStore(f, r);
+};
 
 /**
  * Find which section index currently sits at viewport center, given a
@@ -284,36 +307,10 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-function lerp3(
-  a: [number, number, number],
-  b: [number, number, number],
-  t: number
-): [number, number, number] {
-  return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
-}
-
 export interface SkySample {
   top: [number, number, number];
   mid: [number, number, number];
   bottom: [number, number, number];
-}
-
-export function sampleSky(progress: number): SkySample {
-  const p = Math.min(1, Math.max(0, progress));
-  for (let i = 0; i < SKY_STOPS.length - 1; i++) {
-    const a = SKY_STOPS[i];
-    const b = SKY_STOPS[i + 1];
-    if (p >= a.at && p <= b.at) {
-      const t = b.at === a.at ? 0 : (p - a.at) / (b.at - a.at);
-      return {
-        top: lerp3(a.top, b.top, t),
-        mid: lerp3(a.mid, b.mid, t),
-        bottom: lerp3(a.bottom, b.bottom, t)
-      };
-    }
-  }
-  const last = SKY_STOPS[SKY_STOPS.length - 1];
-  return { top: last.top, mid: last.mid, bottom: last.bottom };
 }
 
 /**
@@ -327,21 +324,25 @@ export function sampleSky(progress: number): SkySample {
  * wrap from y ≈ 1.15 back to y ≈ -0.15 happens entirely outside the
  * visible viewport, so the user never sees the seam.
  */
+export interface CelestialBodyState {
+  x: number;
+  y: MotionValue<number>;
+  opacity: MotionValue<number>;
+  color: MotionValue<[number, number, number]>;
+  size: MotionValue<number>;
+}
+
+export interface CelestialMoonState {
+  x: number;
+  y: number;
+  opacity: number;
+  color: [number, number, number];
+  size: number;
+}
+
 export interface CelestialState {
-  sun: {
-    x: number;
-    y: number;
-    opacity: number;
-    color: [number, number, number];
-    size: number;
-  };
-  moon: {
-    x: number;
-    y: number;
-    opacity: number;
-    color: [number, number, number];
-    size: number;
-  };
+  sun: CelestialBodyState;
+  moon: CelestialMoonState;
 }
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -356,10 +357,7 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
  */
 export const HORIZON_Y = 0.5;
 
-export function sampleCelestial(
-  progress: number,
-  horizonLoop?: number
-): CelestialState {
+export function useSampleCelestial(): CelestialState {
   // progress IS loopProgress in [0, 1]. The sun rises from just below
   // the horizon at progress=0, hits the horizon at progress=HORIZON_LOOP
   // (the anchor-act center == initial-scroll position), then continues
@@ -371,31 +369,42 @@ export function sampleCelestial(
   // HORIZON_LOOP defaults to whatever the store currently holds (Timeline
   // measures the act track on mount and writes the derived value). The
   // fallback (0.2) covers SSR and pre-measurement frames.
-  const HORIZON_LOOP = horizonLoop ?? useDayNNightScene.getState().horizonLoop;
-  const loopProgress = Math.min(1, Math.max(0, progress));
-  const sunY =
-    loopProgress < HORIZON_LOOP
+  const HORIZON_LOOP = useDayNNightScene((r) => r.horizonLoop);
+  const progress_ = useDayNNightScene((r) => r.progress);
+  const progress = useMotionValue(progress_);
+  useEffect(() => progress.set(progress_), [progress_, progress]);
+  const sunY = useTransform(() => {
+    const t = progress.get();
+    const loopProgress = clamp(t, 0, 1);
+    return loopProgress < HORIZON_LOOP
       ? -0.15 + (loopProgress / HORIZON_LOOP) * (HORIZON_Y + 0.15)
       : HORIZON_Y +
-        ((loopProgress - HORIZON_LOOP) / (1 - HORIZON_LOOP)) *
-          (1.15 - HORIZON_Y);
+          ((loopProgress - HORIZON_LOOP) / (1 - HORIZON_LOOP)) *
+            (1.15 - HORIZON_Y);
+  });
 
   // Sun stays horizontally centered. No lateral motion — the user's one
   // direction rule.
   const sunX = 0;
 
   // Visibility envelope — invisible while off-screen so the wrap is clean.
-  const sunFadeIn = smoothstep(-0.08, 0.05, sunY);
-  const sunFadeOut = 1 - smoothstep(0.98, 1.1, sunY);
-  const sunOpacity = Math.min(sunFadeIn, sunFadeOut);
+  const sunFadeIn = useTransform(() => smoothstep(-0.08, 0.05, sunY.get()));
+  const sunFadeOut = useTransform(() => 1 - smoothstep(0.98, 1.1, sunY.get()));
+  const sunOpacity = useTransform(() =>
+    Math.min(sunFadeIn.get(), sunFadeOut.get())
+  );
 
   // Warm at the horizon, paler higher up.
-  const heatT = smoothstep(0.5, 1.0, sunY);
-  const sunColor: [number, number, number] = [
-    1,
-    lerp(0.78, 0.95, heatT),
-    lerp(0.42, 0.85, heatT)
-  ];
+  const heatT = useTransform(() => smoothstep(0.5, 1.0, sunY.get()));
+  const sunColor = useTransform(
+    () =>
+      [1, lerp(0.78, 0.95, heatT.get()), lerp(0.42, 0.85, heatT.get())] as [
+        number,
+        number,
+        number
+      ]
+  );
+  const sunSize = useTransform(() => lerp(0.115, 0.085, heatT.get()));
 
   // Moon removed — single-direction rule means we only show the sun.
   return {
@@ -404,7 +413,7 @@ export function sampleCelestial(
       y: sunY,
       opacity: sunOpacity,
       color: sunColor,
-      size: lerp(0.115, 0.085, heatT)
+      size: sunSize
     },
     moon: {
       x: 0,

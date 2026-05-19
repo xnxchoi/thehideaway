@@ -77,9 +77,9 @@ body[data-dn-immersive="true"] #rp-header {
 /* ─── Sky gradient ────────────────────────────────────────────────────────── */
 
 [data-dn-sky] {
-  --sky-top: rgb(102 158 217);
-  --sky-mid: rgb(166 204 240);
-  --sky-bottom: rgb(242 235 217);
+  --sky-top: oklch(0.685 0.106 250.796);
+  --sky-mid: oklch(0.83 0.065 247.206);
+  --sky-bottom: oklch(0.941 0.025 89.215);
   background: linear-gradient(
     to bottom,
     var(--sky-top) 0%,
@@ -108,7 +108,7 @@ body[data-dn-immersive="true"] #rp-header {
 [data-dn-horizon-glow] {
   --horizon-brightness: 1;
   background: radial-gradient(
-    ellipse 45% 100% at 50% 50%,
+    ellipse 85% 35% at center,
     oklch(86% 0.18 75 / calc(0.95 * var(--horizon-brightness))) 0%,
     oklch(80% 0.18 65 / calc(0.7  * var(--horizon-brightness))) 25%,
     oklch(70% 0.2  50 / calc(0.35 * var(--horizon-brightness))) 50%,

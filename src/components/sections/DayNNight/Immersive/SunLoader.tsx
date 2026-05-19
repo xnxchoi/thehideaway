@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
-
 
 interface SunLoaderProps {
   /** Total ms the loader stays on screen before hand-off. */
@@ -32,7 +32,9 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
   const fillRef = useRef<HTMLDivElement>(null);
   const setProgress = useDayNNightScene((r) => r.setProgress);
   const setPhase = useDayNNightScene((r) => r.setPhase);
+  const initialLoopPosition = useDayNNightScene((r) => r.initialLoopPosition);
 
+  const horizonLoop = useDayNNightScene(useShallow((r) => r.horizonLoop));
   useEffect(() => {
     // Where the loop "lands" after handoff: scene-progress IS the
     // loopProgress now, so the handoff target equals initialLoopPosition
@@ -40,8 +42,7 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
     // Pulled at tick-time because Timeline writes it asynchronously
     // after measuring the act track; the store's fallback (0.2) covers
     // the first paint / SSR window.
-    const handoffProgress = (): number =>
-      useDayNNightScene.getState().initialLoopPosition;
+    const handoffProgress = initialLoopPosition;
 
     let raf: number;
     const start = performance.now();
@@ -55,7 +56,6 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
       // Timeline writes it asynchronously after measuring the act track.
       //   u 0 → 0.4  -> progress 0 → 0.4·horizonLoop (horizon glow, no sun)
       //   u 0.4 → 1  -> progress 0.4·horizonLoop → horizonLoop (sun rises)
-      const horizonLoop = useDayNNightScene.getState().horizonLoop;
       const stage1End = 0.4 * horizonLoop;
       let progress: number;
       if (u < 0.4) {
@@ -84,7 +84,7 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
             // celestial sampler shares the same store-derived
             // initialLoopPosition so the sun is at the horizon at this
             // exact loop position — no handoff jump.
-            setProgress(handoffProgress());
+            setProgress(handoffProgress);
             setPhase("playing");
           }, 700);
         }, 240);
@@ -97,22 +97,26 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] text-[var(--dn-fg)] transition-opacity duration-[700ms] ease data-[hiding=true]:opacity-0 data-[hiding=true]:pointer-events-none"
+      className="ease fixed inset-0 z-[60] text-[var(--dn-fg)] transition-opacity duration-[700ms] data-[hiding=true]:pointer-events-none data-[hiding=true]:opacity-0"
       data-hiding={hiding}
       aria-hidden={hiding}
     >
-      <div data-dn-loader-spotlight aria-hidden className="absolute inset-0 pointer-events-none" />
-      <div className="absolute left-1/2 bottom-[18%] -translate-x-1/2 grid gap-[14px] justify-items-center w-[min(80vw,320px)] text-center">
+      <div
+        data-dn-loader-spotlight
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+      />
+      <div className="absolute bottom-[18%] left-1/2 grid w-[min(80vw,320px)] -translate-x-1/2 justify-items-center gap-[14px] text-center">
         <p className="font-serif text-[2.4rem] font-bold tracking-[-0.01em] text-[var(--dn-fg)]">
           {t("title")}
         </p>
-        <p className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-mute)]">
+        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase">
           {t("loader.rising")}
         </p>
-        <div className="relative w-full h-px bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.18)] overflow-hidden">
+        <div className="relative h-px w-full overflow-hidden bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.18)]">
           <div
             ref={fillRef}
-            className="absolute inset-0 bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.7)] origin-left scale-x-0 transition-transform duration-300 ease"
+            className="ease absolute inset-0 origin-left scale-x-0 bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.7)] transition-transform duration-300"
           />
         </div>
       </div>

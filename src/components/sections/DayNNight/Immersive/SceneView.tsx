@@ -1,13 +1,16 @@
 "use client";
 
+import { rp_lerp } from "@/utilities/rp_utils";
+import { useMotionValue, useTransform } from "motion/react";
+import * as m from "motion/react-m";
 import { useEffect, useRef } from "react";
+import { useShallow } from "zustand/shallow";
 import {
+  HORIZON_Y,
+  SKY_STOPS,
   useDayNNightScene,
-  sampleSky,
-  sampleCelestial,
-  HORIZON_Y
+  useSampleCelestial
 } from "../store";
-
 
 /**
  * Day n Night scene — pure CSS/HTML implementation.
@@ -45,14 +48,59 @@ export function SceneView() {
   // crossfade `--dn-fg` between cream and ink as the sky brightens or
   // darkens, so text floating on the sky stays legible across the loop.
   const shellRef = useRef<HTMLElement | null>(null);
+  const horizonLoop = useDayNNightScene(useShallow((r) => r.horizonLoop));
+  const progress = useDayNNightScene(useShallow((r) => r.progress));
+  const progressValue = useMotionValue(progress);
+  useEffect(() => {
+    progressValue.set(progress);
+  }, [progress, progressValue]);
+  const phase = useDayNNightScene(useShallow((r) => r.phase));
+  const p_ = useTransform(progressValue, [0, 1], [0, 1]);
+  const sky_ = useTransform(() => {
+    const p = p_.get();
+    for (let i = 0; i < SKY_STOPS.length - 1; i++) {
+      const a = SKY_STOPS[i];
+      const b = SKY_STOPS[i + 1];
+      if (p >= a.at && p <= b.at) {
+        const t = b.at === a.at ? 0 : (p - a.at) / (b.at - a.at);
+        return {
+          top: [
+            rp_lerp(a.top[0], b.top[0], t),
+            rp_lerp(a.top[1], b.top[1], t),
+            rp_lerp(a.top[2], b.top[2], t)
+          ],
+          mid: [
+            rp_lerp(a.mid[0], b.mid[0], t),
+            rp_lerp(a.mid[1], b.mid[1], t),
+            rp_lerp(a.mid[2], b.mid[2], t)
+          ],
+          bottom: [
+            rp_lerp(a.bottom[0], b.bottom[0], t),
+            rp_lerp(a.bottom[1], b.bottom[1], t),
+            rp_lerp(a.bottom[2], b.bottom[2], t)
+          ]
+        } as {
+          top: [number, number, number];
+          mid: [number, number, number];
+          bottom: [number, number, number];
+        };
+      }
+    }
+
+    const last = SKY_STOPS[SKY_STOPS.length - 1];
+    return { top: last.top, mid: last.mid, bottom: last.bottom } as {
+      top: [number, number, number];
+      mid: [number, number, number];
+      bottom: [number, number, number];
+    };
+  });
+  const c = useSampleCelestial();
 
   useEffect(() => {
     let raf = 0;
 
     const apply = () => {
-      const { progress, phase } = useDayNNightScene.getState();
-      const sky = sampleSky(progress);
-
+      const sky = sky_.get();
       const rgb = (c: [number, number, number]) =>
         `rgb(${Math.round(c[0] * 255)} ${Math.round(c[1] * 255)} ${Math.round(c[2] * 255)})`;
 
@@ -70,7 +118,7 @@ export function SceneView() {
       // hour and morning when the sky brightens past readable cream).
       if (!shellRef.current && wrapRef.current) {
         shellRef.current = wrapRef.current.closest(
-          '[data-dn-shell]'
+          "[data-dn-shell]"
         ) as HTMLElement | null;
       }
       if (shellRef.current) {
@@ -115,7 +163,6 @@ export function SceneView() {
           // ~0 and we have no rise to stage; fall through to the same
           // sampler the playing phase uses so the sun sits at its
           // scene-resting position throughout the loader.
-          const horizonLoop = useDayNNightScene.getState().horizonLoop;
           if (horizonLoop > 0.005) {
             // Staged rise (preserved for non-zero anchors).
             //   Stage 1 (progress < 0.4·horizonLoop): sun below horizon
@@ -142,20 +189,18 @@ export function SceneView() {
           } else {
             // Anchor at Opening: scene already at its resting state.
             // Drive the sun from sampleCelestial just like in playing.
-            const c = sampleCelestial(progress);
             leftPct = 50 + c.sun.x * 40;
-            bottomPct = c.sun.y * 100;
-            opacity = c.sun.opacity;
-            sunColor = c.sun.color;
-            scale = c.sun.size / 0.085;
+            bottomPct = c.sun.y.get() * 100;
+            opacity = c.sun.opacity.get();
+            sunColor = c.sun.color.get();
+            scale = c.sun.size.get() / 0.085;
           }
         } else {
-          const c = sampleCelestial(progress);
           leftPct = 50 + c.sun.x * 40;
-          bottomPct = c.sun.y * 100;
-          opacity = c.sun.opacity;
-          sunColor = c.sun.color;
-          scale = c.sun.size / 0.085;
+          bottomPct = c.sun.y.get() * 100;
+          opacity = c.sun.opacity.get();
+          sunColor = c.sun.color.get();
+          scale = c.sun.size.get() / 0.085;
         }
 
         sunRef.current.style.left = `${leftPct}%`;
@@ -172,7 +217,6 @@ export function SceneView() {
         if (phase === "loading" || phase === "loaded") {
           // Stage 1 fades in across [0, 0.4·horizonLoop]; stage 2 holds
           // at full while the sun rises.
-          const horizonLoop = useDayNNightScene.getState().horizonLoop;
           const stage1End = 0.4 * horizonLoop;
           if (progress < stage1End && stage1End > 0) {
             horizonOpacity = progress / stage1End;
@@ -211,27 +255,34 @@ export function SceneView() {
       // Without this, the last inline value persists on .shell forever.
       shellRef.current?.style.removeProperty("--dn-fg");
     };
-  }, []);
+  }, [c]);
 
   return (
-    <div ref={wrapRef} className="absolute inset-0 z-0 pointer-events-none" aria-hidden>
-      <div ref={skyRef} data-dn-sky className="absolute inset-0 z-0 pointer-events-none" />
+    <div
+      ref={wrapRef}
+      className="pointer-events-none absolute inset-0 z-0"
+      aria-hidden
+    >
       <div
-        ref={horizonRef}
+        ref={skyRef}
+        data-dn-sky
+        className="pointer-events-none absolute inset-0 z-0"
+      />
+      <m.div
         data-dn-horizon-glow
-        className="absolute left-0 right-0 bottom-1/2 h-[10%] -mb-[5%] pointer-events-none z-0 blur-[6px] transition-opacity duration-[600ms] ease"
+        className="ease pointer-events-none absolute right-0 bottom-1/2 left-0 z-0 -mb-[5%] h-full blur-[10px] transition-all duration-600"
       />
       <div
         ref={sunRef}
         data-dn-body
         data-kind="sun"
-        className="absolute left-1/2 bottom-1/2 w-16 h-16 -ml-8 -mb-8 rounded-full z-[1] pointer-events-none blur-[0.5px] max-lg:hidden"
+        className="pointer-events-none absolute bottom-1/2 left-1/2 z-[1] -mb-8 -ml-8 h-16 w-16 rounded-full blur-[0.5px] max-lg:hidden"
       />
       <div
         ref={moonRef}
         data-dn-body
         data-kind="moon"
-        className="absolute left-1/2 bottom-1/2 w-16 h-16 -ml-8 -mb-8 rounded-full z-[1] pointer-events-none blur-[0.5px] max-lg:hidden"
+        className="pointer-events-none absolute bottom-1/2 left-1/2 z-[1] -mb-8 -ml-8 h-16 w-16 rounded-full blur-[0.5px] max-lg:hidden"
       />
     </div>
   );

@@ -1,12 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { useEffect, type ReactNode, ComponentProps } from "react";
 import { useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
+import Image from "next/image";
+import { ComponentProps, type ReactNode, useEffect } from "react";
 import { useDayNNightScene } from "../store";
-
 
 /**
  * Polaroid + PolaroidGroup — textured moodboard tiles for the immersive
@@ -83,14 +82,14 @@ export function Polaroid({
   // any other transforms on the same element (none, in our case — the
   // inner element owns rotate).
   const paraX = useMotionValue(0);
-
+  const p = useDayNNightScene((r) => r.progress);
   useEffect(() => {
     if (depth === 0) return; // no work; paraX stays at 0
     let raf = 0;
     let active = true;
     const tick = () => {
       if (!active) return;
-      const p = useDayNNightScene.getState().progress;
+
       // Wrap distance from anchor along the shorter direction so
       // parallax doesn't snap at the 1 → 0 loop boundary.
       let d = p - anchor;
@@ -108,7 +107,7 @@ export function Polaroid({
 
   return (
     <m.div
-      className="will-change-transform shrink-0"
+      className="shrink-0 will-change-transform"
       style={{ x: paraX, width }}
       variants={{
         hidden: { opacity: 0, y: 14, filter: "blur(8px)" },
@@ -126,7 +125,7 @@ export function Polaroid({
       <m.div className="origin-[center_60%]" style={{ rotate: angle }}>
         <div
           data-dn-polaroid-frame
-          className="relative pt-3 px-3 pb-9 rounded-[2px]"
+          className="relative rounded-[2px] px-3 pt-3 pb-9"
         >
           <div
             className="relative overflow-hidden bg-[oklch(70%_0.04_80)] shadow-[0_0_0_1px_oklch(0%_0_0_/_0.08)_inset]"
@@ -138,15 +137,15 @@ export function Polaroid({
               alt={alt}
               loading="lazy"
               decoding="async"
-              className="object-cover saturate-[0.92] contrast-[1.02]"
+              className="object-cover contrast-[1.02] saturate-[0.92]"
             />
           </div>
           {caption ? (
             <figcaption
               className={
                 captionStyle === "marker"
-                  ? "mt-2 font-['Permanent_Marker',Caveat,'Comic_Sans_MS',cursive] text-[13px] font-normal leading-[1.2] text-[oklch(36%_0.13_35)] text-center tracking-[0.005em] rotate-[-1.2deg] line-clamp-2"
-                  : "mt-[10px] font-serif italic text-[12px] leading-[1.3] text-[oklch(28%_0.02_60)] text-center tracking-[0.01em] line-clamp-2"
+                  ? "mt-2 line-clamp-2 rotate-[-1.2deg] text-center font-['Permanent_Marker',Caveat,'Comic_Sans_MS',cursive] text-[13px] leading-[1.2] font-normal tracking-[0.005em] text-[oklch(36%_0.13_35)]"
+                  : "mt-[10px] line-clamp-2 text-center font-serif text-[12px] leading-[1.3] tracking-[0.01em] text-[oklch(28%_0.02_60)] italic"
               }
             >
               {caption}

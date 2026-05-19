@@ -9,7 +9,6 @@ import {
   type SectionKey
 } from "../store";
 
-
 /**
  * Bottom timeline scrubber.
  *
@@ -52,7 +51,10 @@ export function Scrubber() {
   // Subscribing to `layout` re-renders the Scrubber when Timeline writes
   // a fresh measurement — so the head-tick / label CSS `left:` props
   // recompute on resize without manual ResizeObservers here.
+  const progress = useDayNNightScene((r) => r.progress);
   const layout = useDayNNightScene((r) => r.layout);
+
+  const initialLoopPosition = useDayNNightScene((r) => r.initialLoopPosition);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const labelRefs = useRef<Array<HTMLButtonElement | null>>(
@@ -65,16 +67,13 @@ export function Scrubber() {
     let lastActive = -1;
 
     const apply = () => {
-      const state = useDayNNightScene.getState();
-      const progress = state.progress;
-      const currentLayout = state.layout;
       // scene-progress IS loopProgress now — see store.ts JSDoc.
       const loopProgress = Math.max(0, Math.min(0.99999, progress));
 
       // Active section: which act contains the viewport center (mod 1).
       // sectionAtLoop falls back to 0 when layout isn't measured yet —
       // the initial paint before Timeline writes layout to the store.
-      const currentSection = sectionAtLoop(loopProgress, currentLayout);
+      const currentSection = sectionAtLoop(loopProgress, layout);
 
       if (indicatorRef.current && trackRef.current) {
         const trackWidth = trackRef.current.clientWidth;
@@ -113,15 +112,13 @@ export function Scrubber() {
   const labelPositions = headPositions;
 
   const handleJump = (targetLoopPos: number): void => {
-    const wrap = document.querySelector('[data-dn-wrap]');
-    const trackEl = document.querySelector('[data-dn-track]');
+    const wrap = document.querySelector("[data-dn-wrap]");
+    const trackEl = document.querySelector("[data-dn-track]");
     if (!wrap || !trackEl) return;
     const wrapRect = wrap.getBoundingClientRect();
     const pinStart = window.scrollY + wrapRect.top;
-    const state = useDayNNightScene.getState();
     const setWidth =
-      state.layout?.setWidth ?? (trackEl as HTMLElement).scrollWidth / 2;
-    const initialLoopPosition = state.initialLoopPosition;
+      layout?.setWidth ?? (trackEl as HTMLElement).scrollWidth / 2;
     const totalScrolled = window.scrollY - pinStart;
     if (totalScrolled < 0) {
       window.scrollTo({
@@ -147,7 +144,7 @@ export function Scrubber() {
 
   return (
     <nav
-      className="fixed left-0 right-0 bottom-7 z-[45] px-14 pointer-events-none xl:bottom-9 xl:px-20 2xl:px-28 max-lg:hidden"
+      className="pointer-events-none fixed right-0 bottom-7 left-0 z-[45] px-14 max-lg:hidden xl:bottom-9 xl:px-20 2xl:px-28"
       aria-label={t("navLabel")}
     >
       <div
@@ -162,18 +159,18 @@ export function Scrubber() {
         {SECTION_KEYS.map((key, i) => (
           <span
             key={`head-${key}`}
-            className="absolute top-0 w-px h-[22px] bg-[color-mix(in_srgb,var(--dn-fg)_60%,transparent)] -translate-x-[0.5px] pointer-events-none"
+            className="pointer-events-none absolute top-0 h-[22px] w-px -translate-x-[0.5px] bg-[color-mix(in_srgb,var(--dn-fg)_60%,transparent)]"
             style={{ left: `${headPositions[i] * 100}%` }}
             aria-hidden
           />
         ))}
         <div
           ref={indicatorRef}
-          className="absolute top-0 left-0 w-14 h-1.5 -ml-7 bg-[var(--dn-fg)] will-change-transform"
+          className="absolute top-0 left-0 -ml-7 h-1.5 w-14 bg-[var(--dn-fg)] will-change-transform"
           aria-hidden
         />
       </div>
-      <div className="relative mt-[14px] h-[18px] pointer-events-auto">
+      <div className="pointer-events-auto relative mt-[14px] h-[18px]">
         {SECTION_KEYS.map((key: SectionKey, i) => (
           <button
             key={key}
@@ -181,7 +178,7 @@ export function Scrubber() {
               labelRefs.current[i] = el;
             }}
             type="button"
-            className="absolute top-0 appearance-none border-0 bg-transparent text-[var(--dn-fg)] font-sans text-[13px] font-normal tracking-[0.005em] py-0.5 pr-1.5 pl-0 cursor-pointer transition-[opacity,font-weight] duration-[320ms] ease text-left whitespace-nowrap translate-x-0 hover:!opacity-100 data-[active=true]:font-semibold"
+            className="ease absolute top-0 translate-x-0 cursor-pointer appearance-none border-0 bg-transparent py-0.5 pr-1.5 pl-0 text-left font-sans text-[13px] font-normal tracking-[0.005em] whitespace-nowrap text-[var(--dn-fg)] transition-[opacity,font-weight] duration-[320ms] hover:!opacity-100 data-[active=true]:font-semibold"
             style={{ left: `${labelPositions[i] * 100}%` }}
             onClick={() => handleJump(headPositions[i])}
           >
