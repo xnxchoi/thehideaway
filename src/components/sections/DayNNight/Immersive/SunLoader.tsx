@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useDayNNightScene } from "../store";
-import s from "../styles.module.scss";
+
 
 interface SunLoaderProps {
   /** Total ms the loader stays on screen before hand-off. */
@@ -96,13 +96,24 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
   }, [durationMs, setProgress, setPhase]);
 
   return (
-    <div className={s.loader} data-hiding={hiding} aria-hidden={hiding}>
-      <div className={s.loaderSpotlight} aria-hidden />
-      <div className={s.loaderChrome}>
-        <p className={s.loaderTitle}>{t("title")}</p>
-        <p className={s.loaderLabel}>{t("loader.rising")}</p>
-        <div className={s.loaderBar}>
-          <div ref={fillRef} className={s.loaderBarFill} />
+    <div
+      className="fixed inset-0 z-[60] text-[var(--dn-fg)] transition-opacity duration-[700ms] ease data-[hiding=true]:opacity-0 data-[hiding=true]:pointer-events-none"
+      data-hiding={hiding}
+      aria-hidden={hiding}
+    >
+      <div data-dn-loader-spotlight aria-hidden className="absolute inset-0 pointer-events-none" />
+      <div className="absolute left-1/2 bottom-[18%] -translate-x-1/2 grid gap-[14px] justify-items-center w-[min(80vw,320px)] text-center">
+        <p className="font-serif text-[2.4rem] font-bold tracking-[-0.01em] text-[var(--dn-fg)]">
+          {t("title")}
+        </p>
+        <p className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-mute)]">
+          {t("loader.rising")}
+        </p>
+        <div className="relative w-full h-px bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.18)] overflow-hidden">
+          <div
+            ref={fillRef}
+            className="absolute inset-0 bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.7)] origin-left scale-x-0 transition-transform duration-300 ease"
+          />
         </div>
       </div>
     </div>

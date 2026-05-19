@@ -9,7 +9,7 @@ import { SimplifiedView } from "./SimplifiedView";
 import { ImmersiveView } from "./Immersive";
 import { ViewToggle } from "./ViewToggle";
 import { useViewPref, type DayNNightView } from "./useViewPref";
-import s from "./styles.module.scss";
+import "./dn.css";
 
 interface DayNNightLandingProps {
   initialView: DayNNightView;
@@ -70,7 +70,11 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   }, [view, setHeaderVisibility, setFXFrameVisibility]);
 
   return (
-    <div className={s.shell} data-view={view}>
+    <div
+      data-dn-shell
+      data-view={view}
+      className="relative min-h-dvh bg-[var(--dn-bg)] text-[var(--dn-fg)] isolate"
+    >
       {view === "immersive" && <ExitAffordance />}
       <ViewToggle value={view} onChange={setView} />
       {view === "immersive" ? <ImmersiveView /> : <SimplifiedView />}
@@ -86,11 +90,19 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
  */
 function ExitAffordance() {
   return (
-    <a href="/" className={s.exit} aria-label="Back to The Hideaway">
-      <span aria-hidden className={s.exitArrow}>
+    <a
+      href="/"
+      data-dn-chrome-pill
+      aria-label="Back to The Hideaway"
+      className="group fixed top-5 left-5 z-[46] inline-flex items-center gap-[10px] py-[7px] pl-3 pr-[14px] rounded-full border border-[var(--dn-chrome-line)] text-[var(--dn-chrome-fg-mute)] font-mono text-[10px] tracking-[0.18em] uppercase no-underline transition-colors hover:text-[var(--dn-chrome-fg)] md:top-8 md:left-8 xl:top-10 xl:left-12"
+    >
+      <span
+        aria-hidden
+        className="text-sm leading-none -translate-y-px transition-transform group-hover:-translate-x-[3px]"
+      >
         ←
       </span>
-      <span className={s.exitLabel}>The Hideaway</span>
+      <span>The Hideaway</span>
     </a>
   );
 }

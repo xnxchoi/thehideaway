@@ -7,7 +7,6 @@ import { DayNightAudio } from "./DayNightAudio";
 import { Scrubber } from "./Scrubber";
 import { SunLoader } from "./SunLoader";
 import { Timeline } from "./Timeline";
-import s from "../styles.module.scss";
 
 /**
  * Immersive view orchestrator.
@@ -47,16 +46,16 @@ export function ImmersiveView() {
   }, []);
 
   return (
-    <div className={s.immersive}>
+    <div className="relative w-full min-h-dvh [--reveal-x:50%] [--reveal-y:50%]">
       {/* Timeline owns the pinned scroll context; SceneView (sky + sun + moon)
           and the grain overlay live inside it so they share the pin. */}
       <Timeline />
       <div
-        className={s.scrollHint}
         data-hidden={hintHidden || phase !== "playing"}
         aria-hidden
+        className="fixed left-1/2 bottom-20 -translate-x-1/2 z-[45] font-mono text-[10px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] hidden lg:inline-flex gap-[10px] items-center pointer-events-none transition-opacity duration-500 ease data-[hidden=true]:opacity-0"
       >
-        <span className={s.scrollHintLine} />
+        <span data-dn-scroll-hint-line className="inline-block w-7 h-px bg-current" />
         <span>{t("scrollHint")}</span>
       </div>
       <Scrubber />

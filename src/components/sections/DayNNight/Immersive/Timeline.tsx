@@ -11,7 +11,6 @@ import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
 import { RevealItem, RevealStage } from "./Reveal";
 import { SceneView } from "./SceneView";
-import s from "../styles.module.scss";
 
 /**
  * Anchors that polaroid clusters use for their parallax windows. These
@@ -214,14 +213,18 @@ export function Timeline() {
   );
 
   return (
-    <div ref={wrap} className={s.timelineWrap}>
+    <div
+      ref={wrap}
+      data-dn-wrap
+      className="relative w-full h-dvh overflow-hidden z-[3] max-lg:h-auto max-lg:overflow-visible"
+    >
       {/* Scene lives inside the pinned wrap so its `position: fixed` pieces
           remain anchored to the viewport throughout the pin. The site's
           smooth-scroll wrapper breaks raw fixed-positioning mid-scroll;
           nesting under the pinned element side-steps that. */}
       <SceneView />
-      <div className={s.grain} aria-hidden />
-      <div ref={track} className={s.timelineTrack}>
+      <div data-dn-grain aria-hidden className="absolute inset-0 z-[2] pointer-events-none mix-blend-overlay opacity-[0.45]" />
+      <div ref={track} data-dn-track className="flex h-full will-change-transform max-lg:flex-col max-lg:h-auto">
         {/* First set — the primary, accessible acts. */}
         <ActSet t={t} />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
@@ -240,50 +243,51 @@ interface ActSetProps {
 function ActSet({ t, ariaHidden = false }: ActSetProps) {
   // The 5 acts are wrapped in a Fragment so the parent track gets them as
   // direct flex children — GSAP measures scrollWidth across them. Each
-  // act keeps the same outer `.act` flex-item width but gets its own
+  // act keeps the same outer flex-item width but gets its own
   // internal layout class so it doesn't read as another stamp of the same
-  // header/body/footer template (see compsych.konpo.co for the
-  // methodology — every section there is a bespoke composition).
+  // header/body/footer template.
   return (
     <>
       {/* Act 1 — Opening / Daybreak.
           Centered hero. Eyebrow above, serif title below, tagline below
           that, with a thin date+location strip anchored at the bottom. */}
       <section
-        className={`${s.act} ${s.actOpening}`}
+        data-dn-act
+        style={{ "--act-w": 1 } as React.CSSProperties}
         aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
+        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
       >
-        <div className={s.actInner}>
-          <span className={s.actEyebrow}>
-            <span className={s.actEyebrowRoman}>I</span>
+        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] justify-items-center text-center pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap">
+            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+              I
+            </span>
             <span>{t("opening.label")}</span>
-            <span className={s.actEyebrowDot} aria-hidden>
+            <span aria-hidden className="opacity-50">
               ·
             </span>
             <span>{t("opening.time")}</span>
           </span>
-          <RevealStage as="div" className={s.openingStack}>
-            <RevealItem as="p" className={s.openingKicker}>
+          <RevealStage as="div" className="grid gap-4 max-w-[880px] m-auto justify-items-center">
+            <RevealItem as="p" className="font-mono text-[11px] tracking-[0.32em] uppercase text-[var(--dn-fg-mute)]">
               {t("opening.kicker")}
             </RevealItem>
-            <RevealItem as="h2" className={s.openingTitle}>
+            <RevealItem as="h2" className="font-serif font-bold text-[clamp(4rem,9vw,9rem)] leading-[0.94] tracking-[-0.022em] text-[var(--dn-fg)]">
               {t("title")}
             </RevealItem>
-            <RevealItem as="p" className={s.openingLede}>
+            <RevealItem as="p" className="max-w-[32ch] text-[clamp(1.4rem,1.7vw,1.8rem)] font-light leading-[1.4] text-[var(--dn-fg-mute)] tracking-[-0.005em]">
               {t("opening.lede")}
             </RevealItem>
           </RevealStage>
-          <div className={s.openingFoot}>
-            <span className={s.openingFootItem}>
-              <span className={s.actFooterItemKey}>{t("date.weekday")}</span>
-              <span className={s.actFooterItemVal}>{t("date.full")}</span>
+          <div className="flex gap-12 font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--dn-fg-faint)]">
+            <span className="inline-flex gap-[10px] items-baseline">
+              <span className="text-[var(--dn-fg-faint)]">{t("date.weekday")}</span>
+              <span className="text-[var(--dn-fg-mute)]">{t("date.full")}</span>
             </span>
-            <span className={s.openingFootItem}>
-              <span className={s.actFooterItemKey}>{t("location.label")}</span>
-              <span className={s.actFooterItemVal}>
-                {t("location.neighborhood")}
-              </span>
+            <span className="inline-flex gap-[10px] items-baseline">
+              <span className="text-[var(--dn-fg-faint)]">{t("location.label")}</span>
+              <span className="text-[var(--dn-fg-mute)]">{t("location.neighborhood")}</span>
             </span>
           </div>
         </div>
@@ -295,41 +299,48 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           of label + comma-separated items. The empty space mid-frame is
           intentional — the sun is doing the work there. */}
       <section
-        className={`${s.act} ${s.actCookout}`}
+        data-dn-act
+        style={{ "--act-w": 1.15 } as React.CSSProperties}
         aria-label={t("act.day.heading")}
         aria-hidden={ariaHidden || undefined}
+        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
       >
-        <div className={s.actInner}>
-          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
-            <span className={s.actEyebrowRoman}>II</span>
+        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-x-12 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap col-span-full">
+            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+              II
+            </span>
             <span>{t("included.heading")}</span>
-            <span className={s.actEyebrowDot} aria-hidden>
+            <span aria-hidden className="opacity-50">
               ·
             </span>
             <span>{t("act.day.time")}</span>
           </span>
-          <RevealStage as="div" className={s.cookoutHead}>
-            <RevealItem as="h2" className={s.actHeading}>
+          <RevealStage as="div" className="col-start-1 col-end-2 row-start-2 row-end-3 self-end grid gap-[22px] max-w-[56ch]">
+            <RevealItem as="h2" className="font-serif font-bold text-[clamp(3rem,6vw,5.4rem)] leading-[1] tracking-[-0.02em] text-[var(--dn-fg)]">
               {t("act.day.heading")}
             </RevealItem>
-            <RevealItem as="p" className={s.cookoutLede}>
+            <RevealItem as="p" className="text-[clamp(1.4rem,1.6vw,1.7rem)] leading-[1.5] font-light text-[var(--dn-fg-mute)] max-w-[48ch] tracking-[-0.005em]">
               {t("act.day.body")}
             </RevealItem>
           </RevealStage>
-          <ul className={s.cookoutList} aria-label={t("included.heading")}>
-            <li className={s.cookoutListItem}>
-              <span className={s.cookoutListLabel}>
+          <ul
+            className="col-start-2 col-end-3 row-start-3 row-end-4 self-end justify-self-end list-none grid gap-[18px] p-0 m-0 min-w-[280px]"
+            aria-label={t("included.heading")}
+          >
+            <li className="grid gap-1 pt-[14px] border-t border-[var(--dn-line)]">
+              <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-faint)]">
                 {t("included.food.label")}
               </span>
-              <span className={s.cookoutListValue}>
+              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium text-[var(--dn-fg)] tracking-[-0.01em]">
                 {t("included.food.items")}
               </span>
             </li>
-            <li className={s.cookoutListItem}>
-              <span className={s.cookoutListLabel}>
+            <li className="grid gap-1 pt-[14px] border-t border-[var(--dn-line)]">
+              <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-faint)]">
                 {t("included.drinks.label")}
               </span>
-              <span className={s.cookoutListValue}>
+              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium text-[var(--dn-fg)] tracking-[-0.01em]">
                 {t("included.drinks.items")}
               </span>
             </li>
@@ -337,7 +348,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           {/* Cookout moodboard — smash burgers + ambient food vibes.
               The polaroid cluster lives in the right portion of the
               act, parallaxed around the Cookout anchor (0.279). */}
-          <PolaroidGroup className={s.cookoutMoodboard}>
+          <PolaroidGroup className="hidden lg:flex lg:gap-7 lg:absolute lg:top-[24%] lg:right-[6vw] lg:z-[4] lg:pointer-events-none">
             <Polaroid
               src="/assets/day-n-night/DraggedImage.png"
               alt="Smash burgers off the grill"
@@ -379,41 +390,45 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           thin vertical rule between them, and the secret line in italic
           serif as a quiet aside anchored bottom-left. */}
       <section
-        className={`${s.act} ${s.actDress}`}
+        data-dn-act
+        style={{ "--act-w": 1.1 } as React.CSSProperties}
         aria-label={t("dressCode.heading")}
         aria-hidden={ariaHidden || undefined}
+        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
       >
-        <div className={s.actInner}>
-          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
-            <span className={s.actEyebrowRoman}>III</span>
+        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_auto_1fr_auto] gap-5 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap">
+            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+              III
+            </span>
             <span>{t("dressCode.heading")}</span>
           </span>
           {/* Two staged reveals: intro fires first (as the user enters Dress),
               then the two columns share a second stage so they cascade in
               together. Splitting the stage means the intro doesn't have to
               wait for the columns to be 55%-visible before triggering. */}
-          <RevealStage as="div" className={s.dressIntroWrap}>
-            <RevealItem as="p" className={s.dressIntro}>
+          <RevealStage as="div">
+            <RevealItem as="p" className="mt-8 max-w-[50ch] font-serif italic text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)]">
               {t("dressCode.intro")}
             </RevealItem>
           </RevealStage>
-          <RevealStage as="div" className={s.dressColsBespoke}>
-            <div className={s.dressColBespoke}>
-              <span className={s.dressColLabel}>01</span>
-              <RevealItem as="h3" className={s.dressColHeading}>
+          <RevealStage as="div" className="grid grid-cols-1 gap-9 content-end max-w-[980px] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-14">
+            <div className="grid gap-[14px] max-w-[38ch]">
+              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--dn-fg-faint)]">01</span>
+              <RevealItem as="h3" className="font-serif font-bold text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] text-[var(--dn-fg)]">
                 {t("dressCode.option1.label")}
               </RevealItem>
-              <RevealItem as="p" className={s.dressColBody}>
+              <RevealItem as="p" className="text-[1.4rem] leading-[1.55] text-[var(--dn-fg-mute)] max-w-[42ch] font-light">
                 {t("dressCode.option1.body")}
               </RevealItem>
             </div>
-            <div className={s.dressDivider} aria-hidden />
-            <div className={s.dressColBespoke}>
-              <span className={s.dressColLabel}>02</span>
-              <RevealItem as="h3" className={s.dressColHeading}>
+            <div aria-hidden className="hidden lg:block w-px bg-[var(--dn-line)] self-stretch" />
+            <div className="grid gap-[14px] max-w-[38ch]">
+              <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--dn-fg-faint)]">02</span>
+              <RevealItem as="h3" className="font-serif font-bold text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] text-[var(--dn-fg)]">
                 {t("dressCode.option2.label")}
               </RevealItem>
-              <RevealItem as="p" className={s.dressColBody}>
+              <RevealItem as="p" className="text-[1.4rem] leading-[1.55] text-[var(--dn-fg-mute)] max-w-[42ch] font-light">
                 {t("dressCode.option2.body")}
               </RevealItem>
             </div>
@@ -422,7 +437,7 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               dev doc's pop-culture stills. Mixed serif + marker captions
               so the cluster feels like a film-club mood wall instead of
               a polished catalog. Parallaxed around the Dress anchor. */}
-          <PolaroidGroup className={s.dressMoodboard}>
+          <PolaroidGroup className="hidden lg:flex lg:gap-6 lg:absolute lg:top-[8%] lg:right-[4vw] lg:z-[4] lg:pointer-events-none lg:max-w-[46vw] lg:flex-wrap lg:justify-end">
             <Polaroid
               src="/assets/day-n-night/DraggedImage-1.png"
               alt="Romeo and Juliet — period costume reference"
@@ -479,7 +494,9 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               anchor={ANCHOR_DRESS}
             />
           </PolaroidGroup>
-          <span className={s.actSecret}>{t("secret")}</span>
+          <span className="block font-serif italic text-[clamp(1.1rem,1.3vw,1.3rem)] text-[var(--dn-fg-mute)] max-w-[44ch] leading-[1.45]">
+            {t("secret")}
+          </span>
         </div>
       </section>
 
@@ -490,34 +507,42 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           rule overhead. The asymmetry is the point: the night side of
           the loop weighs differently than the cookout side. */}
       <section
-        className={`${s.act} ${s.actNight}`}
+        data-dn-act
+        style={{ "--act-w": 1 } as React.CSSProperties}
         aria-label={t("act.night.label")}
         aria-hidden={ariaHidden || undefined}
+        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
       >
-        <div className={s.actInner}>
-          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
-            <span className={s.actEyebrowRoman}>IV</span>
+        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,8fr)_minmax(0,4fr)] gap-x-12 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap col-span-full">
+            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+              IV
+            </span>
             <span>{t("act.night.label")}</span>
-            <span className={s.actEyebrowDot} aria-hidden>
+            <span aria-hidden className="opacity-50">
               ·
             </span>
             <span>{t("act.night.time")}</span>
           </span>
-          <RevealStage as="div" className={s.nightHead}>
-            <RevealItem as="h2" className={s.actHeading}>
+          <RevealStage as="div" className="col-start-1 col-end-2 row-start-2 row-end-3 self-end grid gap-5 max-w-[42ch]">
+            <RevealItem as="h2" className="font-serif font-bold text-[clamp(3rem,6vw,5.4rem)] leading-[1.02] tracking-[-0.02em] text-[var(--dn-fg)] max-w-[11ch]">
               {t("act.night.heading")}
             </RevealItem>
-            <RevealItem as="p" className={s.nightLede}>
+            <RevealItem as="p" className="text-[clamp(1.4rem,1.65vw,1.75rem)] leading-[1.45] font-light text-[var(--dn-fg-mute)] max-w-[38ch] tracking-[-0.005em]">
               {t("act.night.body")}
             </RevealItem>
           </RevealStage>
-          <div className={s.nightStamp}>
-            <span className={s.nightStampRule} aria-hidden />
-            <span className={s.nightStampKey}>{t("tribute.heading")}</span>
-            <span className={s.nightStampVal}>{t("tribute.body")}</span>
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 self-end justify-self-end grid gap-2 min-w-[240px] max-w-[320px]">
+            <span aria-hidden className="block w-14 h-px bg-[var(--dn-fg)] mb-[10px] opacity-60" />
+            <span className="font-mono text-[10px] tracking-[0.32em] uppercase text-[var(--dn-fg-faint)]">
+              {t("tribute.heading")}
+            </span>
+            <span className="font-serif italic text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)]">
+              {t("tribute.body")}
+            </span>
           </div>
           {/* Night moodboard — the cocktail/suit/jacket references. */}
-          <PolaroidGroup className={s.nightMoodboard}>
+          <PolaroidGroup className="hidden lg:flex lg:gap-[26px] lg:absolute lg:top-[14%] lg:right-[5vw] lg:z-[4] lg:pointer-events-none lg:max-w-[38vw]">
             <Polaroid
               src="/assets/day-n-night/DraggedImage-6.png"
               alt="Pulp Fiction — suit, dressed up"
@@ -550,31 +575,40 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
           block + CTA stack at center-left; hosts + closing line
           anchored bottom-right as the final word. */}
       <section
-        className={`${s.act} ${s.actClosing}`}
+        data-dn-act
+        style={{ "--act-w": 1.4 } as React.CSSProperties}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
+        className="flex-none relative overflow-hidden flex justify-center items-stretch h-full max-lg:w-full max-lg:min-h-dvh max-lg:h-auto"
       >
-        <div className={s.actInner}>
-          <span className={`${s.actEyebrow} ${s.actEyebrowTopLeft}`}>
-            <span className={s.actEyebrowRoman}>V</span>
+        <div className="flex-none w-screen max-w-screen h-full relative grid grid-rows-[auto_1fr_auto] grid-cols-[minmax(0,8fr)_minmax(0,4fr)] gap-x-12 pt-16 px-6 pb-[84px] md:pt-[88px] md:px-12 md:pb-24 xl:pt-[104px] xl:px-20 xl:pb-28 max-lg:w-full max-lg:max-w-full">
+          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] xl:text-[11px] tracking-[0.28em] uppercase text-[var(--dn-fg-mute)] whitespace-nowrap col-span-full">
+            <span className="font-serif italic font-medium text-[1.4em] tracking-normal normal-case text-[var(--dn-fg)]">
+              V
+            </span>
             <span>{t("entry.heading")}</span>
-            <span className={s.actEyebrowDot} aria-hidden>
+            <span aria-hidden className="opacity-50">
               ·
             </span>
             <span>{t("date.short")}</span>
           </span>
-          <RevealStage as="div" className={s.closingStack}>
-            <RevealItem as="p" className={s.closingEyebrow}>
+          <RevealStage
+            as="div"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid gap-4 justify-items-start content-center max-w-[720px]"
+          >
+            <RevealItem as="p" className="font-mono text-[11px] tracking-[0.22em] uppercase text-[var(--dn-fg-mute)]">
               {t("closing.kicker")}
             </RevealItem>
-            <RevealItem as="h2" className={s.closingTitle}>
+            <RevealItem as="h2" className="font-serif font-bold text-[clamp(4rem,9vw,8.4rem)] leading-[0.94] tracking-[-0.02em] text-[var(--dn-fg)]">
               {t("title")}
             </RevealItem>
-            <RevealItem as="p" className={s.closingLede}>
+            <RevealItem as="p" className="text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light text-[var(--dn-fg-mute)] max-w-[42ch] tracking-[-0.005em]">
               {t("closing.lede")}
             </RevealItem>
-            <RevealItem as="div" className={s.closingFee}>
-              <span className={s.closingFeeAmount}>{t("entry.amount")}</span>
+            <RevealItem as="div" className="mt-2 grid gap-1.5 font-mono text-xs text-[var(--dn-fg-mute)]">
+              <span className="font-wide font-black text-[2.4rem] tracking-[0.04em] text-[var(--dn-fg)]">
+                {t("entry.amount")}
+              </span>
               <span>{t("entry.method")}</span>
               <span>
                 {t("entry.bank")} · {t("entry.accountHolder")}
@@ -583,20 +617,22 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
             <RevealItem as="div">
               <Link
                 href="/tickets/day-n-night"
-                className={s.ctaImmersive}
+                className="inline-flex items-baseline gap-[18px] py-[18px] pb-4 mt-3 border-0 border-b border-[var(--dn-fg)] bg-transparent text-[var(--dn-fg)] font-mono text-[13px] tracking-[0.32em] uppercase no-underline cursor-pointer transition-[gap,padding] duration-300 ease hover:gap-7 hover:pr-3 md:text-sm"
                 tabIndex={ariaHidden ? -1 : undefined}
               >
                 <span>{t("rsvpCta.primary")}</span>
-                <span aria-hidden className={s.ctaImmersiveArrow}>
+                <span aria-hidden className="text-[1.2em] leading-none">
                   →
                 </span>
               </Link>
             </RevealItem>
           </RevealStage>
-          <div className={s.closingFoot}>
-            <span className={s.closingFootRule} aria-hidden />
-            <span className={s.closingFootLine}>{t("footer.hosts")}</span>
-            <span className={s.closingFootLine}>
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 self-end justify-self-end grid gap-1.5 text-right max-w-[280px]">
+            <span aria-hidden className="block w-14 h-px bg-[var(--dn-fg)] ml-auto mb-2 opacity-60" />
+            <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--dn-fg-mute)] leading-[1.6]">
+              {t("footer.hosts")}
+            </span>
+            <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--dn-fg-mute)] leading-[1.6]">
               {t("footer.rsvpClosesAt")}
             </span>
           </div>

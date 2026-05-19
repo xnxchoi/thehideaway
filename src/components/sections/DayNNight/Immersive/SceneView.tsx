@@ -7,7 +7,7 @@ import {
   sampleCelestial,
   HORIZON_Y
 } from "../store";
-import s from "../styles.module.scss";
+
 
 /**
  * Day n Night scene — pure CSS/HTML implementation.
@@ -70,7 +70,7 @@ export function SceneView() {
       // hour and morning when the sky brightens past readable cream).
       if (!shellRef.current && wrapRef.current) {
         shellRef.current = wrapRef.current.closest(
-          '[class*="shell"]'
+          '[data-dn-shell]'
         ) as HTMLElement | null;
       }
       if (shellRef.current) {
@@ -214,11 +214,25 @@ export function SceneView() {
   }, []);
 
   return (
-    <div ref={wrapRef} className={s.sceneWrap} aria-hidden>
-      <div ref={skyRef} className={s.sky} />
-      <div ref={horizonRef} className={s.horizonGlow} />
-      <div ref={sunRef} className={s.body} data-kind="sun" />
-      <div ref={moonRef} className={s.body} data-kind="moon" />
+    <div ref={wrapRef} className="absolute inset-0 z-0 pointer-events-none" aria-hidden>
+      <div ref={skyRef} data-dn-sky className="absolute inset-0 z-0 pointer-events-none" />
+      <div
+        ref={horizonRef}
+        data-dn-horizon-glow
+        className="absolute left-0 right-0 bottom-1/2 h-[10%] -mb-[5%] pointer-events-none z-0 blur-[6px] transition-opacity duration-[600ms] ease"
+      />
+      <div
+        ref={sunRef}
+        data-dn-body
+        data-kind="sun"
+        className="absolute left-1/2 bottom-1/2 w-16 h-16 -ml-8 -mb-8 rounded-full z-[1] pointer-events-none blur-[0.5px] max-lg:hidden"
+      />
+      <div
+        ref={moonRef}
+        data-dn-body
+        data-kind="moon"
+        className="absolute left-1/2 bottom-1/2 w-16 h-16 -ml-8 -mb-8 rounded-full z-[1] pointer-events-none blur-[0.5px] max-lg:hidden"
+      />
     </div>
   );
 }

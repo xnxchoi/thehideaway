@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useDayNNightScene } from "../store";
-import s from "../styles.module.scss";
+
 
 /**
  * Page-local audio bed for the Day n Night immersive scene.
@@ -249,16 +249,23 @@ export function DayNightAudio() {
   return (
     <button
       type="button"
-      className={s.audioToggle}
+      data-dn-chrome-pill
+      data-dn-audio-toggle
       data-on={enabled || undefined}
+      className="group fixed top-16 right-5 z-[46] inline-flex items-center gap-2 py-[7px] px-[14px] rounded-full border border-[var(--dn-chrome-line)] text-[var(--dn-chrome-fg-mute)] font-mono text-[10px] tracking-[0.18em] uppercase cursor-pointer appearance-none transition-[color,border-color] duration-[250ms] ease hover:text-[var(--dn-chrome-fg)] data-[on]:text-[var(--dn-chrome-fg)] data-[on]:border-[oklch(from_var(--dn-chrome-fg)_l_c_h_/_0.4)] md:top-[84px] md:right-8 xl:top-24 xl:right-12"
       onClick={() => setEnabled((v) => !v)}
       aria-label={enabled ? t("off") : t("on")}
       aria-pressed={enabled}
     >
-      <span className={s.audioToggleIcon} aria-hidden>
+      <span
+        aria-hidden
+        className="text-[13px] leading-none -translate-y-px transition-opacity duration-[250ms] ease opacity-45 group-data-[on]:opacity-100"
+      >
         ♪
       </span>
-      <span className={s.audioToggleText}>{t("label")}</span>
+      <span data-dn-audio-text className="max-[480px]:hidden">
+        {t("label")}
+      </span>
     </button>
   );
 }

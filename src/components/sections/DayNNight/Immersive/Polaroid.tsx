@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { useEffect, type ReactNode, ComponentProps } from "react";
 import { useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
 import { useDayNNightScene } from "../store";
-import s from "../styles.module.scss";
+
 
 /**
  * Polaroid + PolaroidGroup — textured moodboard tiles for the immersive
@@ -106,7 +108,7 @@ export function Polaroid({
 
   return (
     <m.div
-      className={s.polaroidPara}
+      className="will-change-transform shrink-0"
       style={{ x: paraX, width }}
       variants={{
         hidden: { opacity: 0, y: 14, filter: "blur(8px)" },
@@ -121,16 +123,30 @@ export function Polaroid({
         }
       }}
     >
-      <m.div className={s.polaroid} style={{ rotate: angle }}>
-        <div className={s.polaroidFrame}>
-          <div className={s.polaroidPhoto} style={{ aspectRatio: aspect }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={alt} loading="lazy" decoding="async" />
+      <m.div className="origin-[center_60%]" style={{ rotate: angle }}>
+        <div
+          data-dn-polaroid-frame
+          className="relative pt-3 px-3 pb-9 rounded-[2px]"
+        >
+          <div
+            className="relative overflow-hidden bg-[oklch(70%_0.04_80)] shadow-[0_0_0_1px_oklch(0%_0_0_/_0.08)_inset]"
+            style={{ aspectRatio: aspect }}
+          >
+            <Image
+              fill={true}
+              src={src}
+              alt={alt}
+              loading="lazy"
+              decoding="async"
+              className="object-cover saturate-[0.92] contrast-[1.02]"
+            />
           </div>
           {caption ? (
             <figcaption
               className={
-                captionStyle === "marker" ? s.polaroidMarker : s.polaroidSerif
+                captionStyle === "marker"
+                  ? "mt-2 font-['Permanent_Marker',Caveat,'Comic_Sans_MS',cursive] text-[13px] font-normal leading-[1.2] text-[oklch(36%_0.13_35)] text-center tracking-[0.005em] rotate-[-1.2deg] line-clamp-2"
+                  : "mt-[10px] font-serif italic text-[12px] leading-[1.3] text-[oklch(28%_0.02_60)] text-center tracking-[0.01em] line-clamp-2"
               }
             >
               {caption}
@@ -177,4 +193,50 @@ export function PolaroidGroup({
       {children}
     </m.div>
   );
+}
+export function PolaroidTrack({}) {
+  return (
+    <m.div
+      className="relative z-1 block w-full border-t border-black antialiased select-none"
+      style={{
+        height: "800vw",
+        marginTop: "-140vh",
+        willChange: "background",
+        backgroundColor: "rgb(136, 183, 189)"
+      }}
+    >
+      <div className="sticky top-0 h-screen w-full overflow-hidden">
+        <div className="h-full">
+          <PolaroidTrackItem>
+            <div className="relative z-2 flex items-center justify-start gap-8.5 antialiased"></div>
+          </PolaroidTrackItem>
+        </div>
+      </div>
+    </m.div>
+  );
+}
+export function PolaroidTrackItem({
+  className,
+  style,
+  children,
+  ...rest
+}: ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "relative flex h-screen w-[500vw] items-center justify-start pl-64 antialiased select-none",
+        className
+      )}
+      style={{
+        lineHeight: "1.35",
+        ...style
+      }}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}
+function PolaroidCardsWrap({}: ComponentProps<"div">) {
+  return <div className="relative z-2 ml-21 flex w-full"></div>;
 }

@@ -8,7 +8,7 @@ import {
   sectionAtLoop,
   type SectionKey
 } from "../store";
-import s from "../styles.module.scss";
+
 
 /**
  * Bottom timeline scrubber.
@@ -113,8 +113,8 @@ export function Scrubber() {
   const labelPositions = headPositions;
 
   const handleJump = (targetLoopPos: number): void => {
-    const wrap = document.querySelector('[class*="timelineWrap"]');
-    const trackEl = document.querySelector('[class*="timelineTrack"]');
+    const wrap = document.querySelector('[data-dn-wrap]');
+    const trackEl = document.querySelector('[data-dn-track]');
     if (!wrap || !trackEl) return;
     const wrapRect = wrap.getBoundingClientRect();
     const pinStart = window.scrollY + wrapRect.top;
@@ -146,22 +146,34 @@ export function Scrubber() {
   if (phase !== "playing") return null;
 
   return (
-    <nav className={s.scrubber} aria-label={t("navLabel")}>
-      <div ref={trackRef} className={s.scrubberTrack} aria-hidden>
+    <nav
+      className="fixed left-0 right-0 bottom-7 z-[45] px-14 pointer-events-none xl:bottom-9 xl:px-20 2xl:px-28 max-lg:hidden"
+      aria-label={t("navLabel")}
+    >
+      <div
+        ref={trackRef}
+        data-dn-scrubber-track
+        className="relative h-[22px]"
+        aria-hidden
+      >
         {/* Section-start tall ticks — one per act, at each act's measured
             START position. With variable widths, ticks bunch / spread to
             reflect editorial pacing. */}
         {SECTION_KEYS.map((key, i) => (
           <span
             key={`head-${key}`}
-            className={s.scrubberHead}
+            className="absolute top-0 w-px h-[22px] bg-[color-mix(in_srgb,var(--dn-fg)_60%,transparent)] -translate-x-[0.5px] pointer-events-none"
             style={{ left: `${headPositions[i] * 100}%` }}
             aria-hidden
           />
         ))}
-        <div ref={indicatorRef} className={s.scrubberIndicator} aria-hidden />
+        <div
+          ref={indicatorRef}
+          className="absolute top-0 left-0 w-14 h-1.5 -ml-7 bg-[var(--dn-fg)] will-change-transform"
+          aria-hidden
+        />
       </div>
-      <div className={s.scrubberLabels}>
+      <div className="relative mt-[14px] h-[18px] pointer-events-auto">
         {SECTION_KEYS.map((key: SectionKey, i) => (
           <button
             key={key}
@@ -169,7 +181,7 @@ export function Scrubber() {
               labelRefs.current[i] = el;
             }}
             type="button"
-            className={s.scrubberLabel}
+            className="absolute top-0 appearance-none border-0 bg-transparent text-[var(--dn-fg)] font-sans text-[13px] font-normal tracking-[0.005em] py-0.5 pr-1.5 pl-0 cursor-pointer transition-[opacity,font-weight] duration-[320ms] ease text-left whitespace-nowrap translate-x-0 hover:!opacity-100 data-[active=true]:font-semibold"
             style={{ left: `${labelPositions[i] * 100}%` }}
             onClick={() => handleJump(headPositions[i])}
           >
