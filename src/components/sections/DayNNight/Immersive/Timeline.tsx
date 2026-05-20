@@ -388,7 +388,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           longer screen time before scene transitions to Cookout. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1 } as React.CSSProperties}
+        style={{ "--act-w": 1.45 } as React.CSSProperties}
         aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
         inert={ariaHidden ? true : undefined}
@@ -493,7 +493,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           read as visually distinct passes through similar material. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1.15 } as React.CSSProperties}
+        style={{ "--act-w": 1.6 } as React.CSSProperties}
         aria-label={t("act.day.heading")}
         aria-hidden={ariaHidden || undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
@@ -560,12 +560,12 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               and cluster gap bumped (gap-7 → gap-14) so the photos
               hold their territory instead of huddling tiny in vast
               empty zone. */}
-          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[18%] lg:right-[6vw] lg:z-[4] lg:flex lg:gap-14">
+          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[22%] lg:right-[4vw] lg:z-[4] lg:flex lg:gap-10">
             <Polaroid
               src="/assets/day-n-night/DraggedImage.png"
               alt={t("moodboard.cookout.burger.alt")}
               caption={t("moodboard.cookout.burger.caption")}
-              width={280}
+              width={220}
               aspect={0.75}
               angle={-4}
               depth={0.7}
@@ -576,7 +576,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               src="/assets/day-n-night/IMG_8543.png"
               alt={t("moodboard.cookout.rooftop.alt")}
               caption={t("moodboard.cookout.rooftop.caption")}
-              width={340}
+              width={260}
               aspect={1.769}
               angle={5}
               depth={-0.4}
@@ -586,7 +586,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             <Polaroid
               src="/assets/day-n-night/IMG_9520.png"
               alt={t("moodboard.cookout.vibe.alt")}
-              width={300}
+              width={230}
               aspect={1.333}
               angle={-2}
               depth={1.0}
@@ -604,7 +604,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           serif as a quiet aside anchored bottom-left. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1.1 } as React.CSSProperties}
+        style={{ "--act-w": 1.55 } as React.CSSProperties}
         aria-label={t("dressCode.heading")}
         aria-hidden={ariaHidden || undefined}
         inert={ariaHidden ? true : undefined}
@@ -717,7 +717,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           the loop weighs differently than the cookout side. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1 } as React.CSSProperties}
+        style={{ "--act-w": 1.45 } as React.CSSProperties}
         aria-label={t("act.night.label")}
         aria-hidden={ariaHidden || undefined}
         inert={ariaHidden ? true : undefined}
@@ -806,7 +806,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           scroll time on both ends of the loop. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1.2 } as React.CSSProperties}
+        style={{ "--act-w": 1.65 } as React.CSSProperties}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
         inert={ariaHidden ? true : undefined}
