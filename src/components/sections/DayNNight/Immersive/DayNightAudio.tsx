@@ -16,8 +16,8 @@ import { useDayNNightScene } from "../store";
  * Architecture
  * ────────────
  *   AudioContext
- *     ├── <audio daytime.mp3> → MediaElementSource → Lowpass → Gain → dest
- *     └── <audio nighttime.mp3> → MediaElementSource → Lowpass → Gain → dest
+ *     ├── <audio daytime.opus> → MediaElementSource → Lowpass → Gain → dest
+ *     └── <audio nighttime.opus> → MediaElementSource → Lowpass → Gain → dest
  *
  * Both audio elements are `loop` + `preload="auto"`. Playback starts on
  * the first user click of the chrome toggle (browser autoplay policies
@@ -33,16 +33,16 @@ import { useDayNNightScene } from "../store";
  * Files
  * ─────
  * The component looks for:
- *   /public/audio/day-n-night/daytime.mp3
- *   /public/audio/day-n-night/nighttime.mp3
+ *   /public/audio/day-n-night/daytime.opus
+ *   /public/audio/day-n-night/nighttime.opus
  *
  * Either file 404'ing → the toggle quietly disables itself and the rest
  * of the page is unaffected. Drop in the actual tracks at those paths
  * to enable the bed.
  */
 
-const DAY_SRC = "/audio/day-n-night/daytime.mp3";
-const NIGHT_SRC = "/audio/day-n-night/nighttime.mp3";
+const DAY_SRC = "/audio/day-n-night/daytime.opus";
+const NIGHT_SRC = "/audio/day-n-night/nighttime.opus";
 
 interface TrackPipeline {
   audio: HTMLAudioElement;

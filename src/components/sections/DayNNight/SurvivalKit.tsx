@@ -103,12 +103,13 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   // SimplifiedView). `embedded` ships no margin; the host grid owns
   // placement. Width is narrower than the prior dossier so the kit
   // reads as a column of editorial fragments, not a card.
-  // Widths bumped (R1) — the prior 440/480 left the kit floating in
-  // a vast empty zone with tiny-looking type. The kit now holds its
-  // column with proportional presence.
+  // S-series: max-w tuned to the actual host column width on standard
+  // xl viewports. The prior 560/640 caused clipping when the act's
+  // right column was narrower than the kit's max-width on 1440-ish
+  // screens. Embedded now fills its column without max-w.
   const outerClass =
     variant === "embedded"
-      ? "grid w-full max-w-[560px] xl:max-w-[640px]"
+      ? "grid w-full max-w-full"
       : "mt-16 grid max-w-[560px] md:mt-24 md:max-w-[640px]";
 
   // Etiquette rows — the three single-line policy facts. Pulled out

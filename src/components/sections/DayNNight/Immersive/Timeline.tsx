@@ -153,6 +153,16 @@ export function Timeline() {
       const loopPos = (initialLoopPos * sw + totalScrolled) % sw;
       const currentProgress = loopPos / sw;
 
+      // S3: seam guard — when scroll is within ~10% of either edge of
+      // the modulo loop, do NOT snap. The seamless wrap depends on
+      // smooth motion through progress ∈ [0.9, 1.0) → [0.0, 0.1), and
+      // a snap fired in that zone locks scroll mid-seam (user-reported
+      // "this is where the scroll locks lol").
+      const SEAM_GUARD = 0.1;
+      if (currentProgress < SEAM_GUARD || currentProgress > 1 - SEAM_GUARD) {
+        return;
+      }
+
       // Find nearest center in cycle-fraction space.
       let nearest = liveLayout.centersFrac[0];
       let minDist = Math.abs(currentProgress - nearest);
@@ -378,13 +388,13 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           longer screen time before scene transitions to Cookout. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1.5 } as React.CSSProperties}
+        style={{ "--act-w": 1 } as React.CSSProperties}
         aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,7fr)_minmax(0,6fr)] grid-rows-[auto_1fr_auto] gap-x-[21px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
             <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
               I.
@@ -412,7 +422,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={openingActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid content-start gap-[21px] self-start max-lg:col-span-full xl:gap-[34px]"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid content-start gap-[21px] self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start xl:gap-[34px]"
           >
             <RevealItem
               as="p"
@@ -444,7 +454,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               completing the diagonal composition. Embedded variant
               strips the standalone top margin and tightens the
               max-width so it fits the column. */}
-          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-start justify-self-end lg:block">
+          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-start justify-self-start lg:block">
             <SurvivalKit variant="embedded" />
           </div>
           <div className="col-start-1 col-end-2 row-start-3 row-end-4 flex gap-12 self-end font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase max-lg:col-span-full max-lg:flex-wrap max-lg:gap-6">
@@ -788,13 +798,13 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           scroll time on both ends of the loop. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1.6 } as React.CSSProperties}
+        style={{ "--act-w": 1.2 } as React.CSSProperties}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,8fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,6fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-[21px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           {/* Eyebrow — right-aligned to anchor the title-top-right
               orientation. Opening's eyebrow is left-aligned; the
               mirrored alignment is the first signal of the bookend. */}
@@ -815,7 +825,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               there") above the practical-info dossier. Bottom-anchored
               so it pulls the eye downward-left, completing the diagonal
               against the upper-right title block. */}
-          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-start gap-6 self-start max-lg:col-span-full lg:flex">
+          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-start gap-6 self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start lg:flex">
             <p className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic">
               {t("closing.lede")}
             </p>
@@ -832,7 +842,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={closingActive}
-            className="col-start-2 col-end-3 row-start-2 row-end-3 grid content-start gap-[21px] self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start xl:gap-[34px]"
+            className="col-start-2 col-end-3 row-start-2 row-end-3 grid content-start gap-[21px] self-start justify-self-start max-lg:col-span-full max-lg:justify-self-start xl:gap-[34px]"
           >
             <RevealItem
               as="p"
