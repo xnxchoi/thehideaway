@@ -388,7 +388,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={openingActive}
-            className="m-auto grid max-w-[880px] justify-items-center gap-4"
+            className="m-auto grid max-w-[880px] justify-items-center gap-7 xl:gap-8"
           >
             <RevealItem
               as="p"
@@ -461,7 +461,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={cookoutActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] gap-[22px] self-end"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] gap-7 self-end xl:gap-8"
           >
             <RevealItem
               as="h2"
@@ -685,7 +685,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={nightActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-5 self-end"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-7 self-end xl:gap-8"
           >
             <RevealItem
               as="h2"
@@ -764,7 +764,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={closingActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[720px] content-center justify-items-start gap-4"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[720px] content-center justify-items-start gap-6 xl:gap-7"
           >
             <RevealItem
               as="p"
@@ -809,15 +809,15 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               </Link>
             </RevealItem>
           </RevealStage>
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[280px] gap-1.5 self-end justify-self-end text-right">
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right">
             <span
               aria-hidden
-              className="mb-2 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60"
+              className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60"
             />
-            <span className="font-mono text-[11px] leading-[1.6] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+            <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
               {t("footer.hosts")}
             </span>
-            <span className="font-mono text-[11px] leading-[1.6] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+            <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
               {t("footer.rsvpClosesAt")}
             </span>
           </div>

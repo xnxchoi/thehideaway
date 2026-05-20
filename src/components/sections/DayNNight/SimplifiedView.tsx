@@ -30,18 +30,18 @@ export function SimplifiedView() {
         <span>{t("date.weekday")}</span>
       </header>
 
-      <div className="grid max-w-[720px] gap-[14px] md:max-w-[880px] md:gap-[18px]">
+      <div className="grid max-w-[720px] gap-6 md:max-w-[880px] md:gap-8">
         <p className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase">
           {t("opening.kicker")}
         </p>
-        <h1 className="font-serif text-[clamp(3.2rem,9vw,8rem)] leading-[0.92] font-bold tracking-[-0.02em] text-[var(--dn-fg)]">
+        <h1 className="font-serif text-[clamp(3.2rem,9vw,8rem)] leading-[0.95] font-bold tracking-[-0.02em] text-[var(--dn-fg)]">
           {t("title")}
         </h1>
-        <p className="max-w-[50ch] text-[clamp(1.4rem,2vw,1.9rem)] leading-[1.35] font-light tracking-[-0.01em] text-[var(--dn-fg-mute)]">
+        <p className="max-w-[50ch] text-[clamp(1.4rem,2vw,1.9rem)] leading-[1.45] font-light tracking-[-0.01em] text-[var(--dn-fg-mute)]">
           {t("opening.lede")}
         </p>
 
-        <dl className="mt-3 grid grid-cols-1 gap-1 font-mono text-xs leading-[1.6] text-[var(--dn-fg-mute)] md:max-w-[540px] md:grid-cols-2 md:gap-x-6 md:gap-y-1.5">
+        <dl className="mt-6 grid grid-cols-1 gap-4 font-mono text-xs leading-[1.7] text-[var(--dn-fg-mute)] md:mt-8 md:max-w-[600px] md:grid-cols-2 md:gap-x-10 md:gap-y-5">
           <div className="grid grid-cols-[72px_1fr] items-baseline gap-[14px]">
             <dt className="self-start pt-0.5 text-[10px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
               {t("act.day.label")}
@@ -82,7 +82,7 @@ export function SimplifiedView() {
           </div>
         </dl>
 
-        <div className="mt-6 flex flex-col items-start gap-[10px] self-start md:flex-row md:items-center md:gap-4">
+        <div className="mt-10 flex flex-col items-start gap-3 self-start md:mt-12 md:flex-row md:items-center md:gap-5">
           <Link
             href="/tickets/day-n-night"
             className="ease inline-flex items-center gap-[14px] border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-[26px] py-[14px] font-mono text-[11px] tracking-[0.22em] text-[var(--dn-bg)] uppercase no-underline transition-[background,color] duration-[250ms] hover:bg-transparent hover:text-[var(--dn-fg)]"
@@ -95,7 +95,7 @@ export function SimplifiedView() {
           </span>
         </div>
 
-        <p className="mt-7 max-w-[38ch] font-serif text-[clamp(1.05rem,1.2vw,1.25rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic">
+        <p className="mt-10 max-w-[38ch] font-serif text-[clamp(1.05rem,1.2vw,1.25rem)] leading-[1.55] text-[var(--dn-fg-mute)] italic">
           {t("closing.lede")}
         </p>
 
