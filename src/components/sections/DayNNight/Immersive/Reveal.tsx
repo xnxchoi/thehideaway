@@ -119,10 +119,28 @@ interface RevealStageProps {
    * `phase === "playing"` so it animates AFTER the loader has fully
    * transitioned out, not while it's still on screen.
    *
-   * When omitted, the stage falls back to the default whileInView
-   * trigger (used by Cookout, Dress, Night, Closing).
+   * When omitted (and no `progressThreshold` set), the stage falls back
+   * to the default whileInView trigger.
    */
   active?: boolean;
+  /**
+   * Scene-progress threshold in `[0, 1]`. When set, the stage's `active`
+   * derives from `useDayNNightScene.progress >= progressThreshold` —
+   * subscribes via a boolean selector so the stage only re-renders on
+   * the crossing, not every rAF tick that writes progress. Audit ref H9.
+   *
+   * Use this in place of the default `whileInView` for acts that sit
+   * inside the GSAP-pinned horizontal track, where viewport-based
+   * triggers can fire on mount (the act is technically "in viewport"
+   * from the start of the page) instead of when the user actually
+   * scrolls into that act.
+   *
+   * Once the threshold is crossed the boolean stays true for the rest
+   * of the session — Zustand's `getState` floor + scene-progress only
+   * ever advancing monotonically inside a single session means the
+   * reveal won't flicker if the user scrolls back through.
+   */
+  progressThreshold?: number;
   children: ReactNode;
 }
 
@@ -133,9 +151,25 @@ export function RevealStage({
   stagger,
   delay,
   active,
+  progressThreshold,
   children
 }: RevealStageProps) {
   const Tag = MOTION_MAP[as];
+  // Boolean selector: only fires a re-render on the threshold crossing,
+  // not on every rAF write to `progress`. Always invoked (hook order
+  // stability); when no threshold is provided we hand the limiter
+  // `Infinity` so the selector returns `false` and Zustand never
+  // subscribes the component to meaningful changes.
+  const progressActive = useDayNNightScene(
+    (r) => r.progress >= (progressThreshold ?? Number.POSITIVE_INFINITY)
+  );
+  const resolvedActive =
+    active !== undefined
+      ? active
+      : progressThreshold !== undefined
+        ? progressActive
+        : undefined;
+
   const viewport =
     amount === undefined ? STAGE_VIEWPORT : { once: true, amount };
   const variants =
@@ -151,15 +185,16 @@ export function RevealStage({
             }
           }
         };
-  // Two trigger modes: when `active` is provided, the stage's variant is
-  // driven by that boolean (controlled). Otherwise fall back to the
-  // default whileInView behaviour (scroll-position-driven). Both modes
-  // share the same children stagger.
+  // Three trigger modes:
+  //   - `active` (or `progressThreshold` → resolvedActive defined): the
+  //     stage's variant is controlled by the boolean.
+  //   - Otherwise: default whileInView behaviour.
+  // All three modes share the same children stagger.
   const motionProps =
-    active !== undefined
+    resolvedActive !== undefined
       ? ({
           initial: "hidden" as const,
-          animate: active ? ("visible" as const) : ("hidden" as const)
+          animate: resolvedActive ? ("visible" as const) : ("hidden" as const)
         } as const)
       : ({
           initial: "hidden" as const,

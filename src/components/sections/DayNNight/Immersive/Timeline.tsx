@@ -21,6 +21,20 @@ import { SceneView } from "./SceneView";
 const ANCHOR_COOKOUT = 0.279;
 const ANCHOR_DRESS = 0.478;
 const ANCHOR_NIGHT = 0.664;
+// Closing has no polaroid anchor (no parallax cluster) so it's not in
+// the ANCHOR_* group above; this is the reveal threshold for its copy.
+const ANCHOR_CLOSING = 0.88;
+
+/**
+ * Reveal thresholds for the `progressThreshold` prop on `<RevealStage>`.
+ * Each value sits a hair before the act's polaroid anchor so the
+ * blur-in (0.85s) lands by the time the user is looking at the heading,
+ * not after. Audit ref H9: replaces the prior `whileInView` triggers
+ * that misfired on mount inside the GSAP-pinned horizontal track.
+ */
+const REVEAL_COOKOUT = ANCHOR_COOKOUT - 0.06; // 0.219
+const REVEAL_NIGHT = ANCHOR_NIGHT - 0.06; // 0.604
+const REVEAL_CLOSING = ANCHOR_CLOSING - 0.04; // 0.84
 
 // ScrollTrigger is registered globally in TransitionProvider — see
 // readmes/DAY_N_NIGHT.md § 9 ("No new gsap.registerPlugin at module scope
@@ -205,7 +219,7 @@ export function Timeline() {
     <div
       ref={wrap}
       data-dn-wrap
-      className="relative z-[3] h-dvh w-full overflow-hidden max-lg:h-auto max-lg:overflow-visible"
+      className="relative z-[3] h-screen w-full overflow-hidden pb-25 max-lg:h-auto max-lg:overflow-visible lg:h-dvh"
     >
       {/* Scene lives inside the pinned wrap so its `position: fixed` pieces
           remain anchored to the viewport throughout the pin. The site's
@@ -343,6 +357,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
+            progressThreshold={REVEAL_COOKOUT}
             className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] gap-[22px] self-end"
           >
             <RevealItem
@@ -447,7 +462,8 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               as="p"
               className="mt-8 max-w-[50ch] font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic"
             >
-              {t("dressCode.intro")}
+              {/*{t("dressCode.intro")}*/}
+              <></>
             </RevealItem>
           </RevealStage>
           <RevealStage
@@ -533,7 +549,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             />
           </PolaroidGroup>
           <span className="block max-w-[44ch] font-serif text-[clamp(1.1rem,1.3vw,1.3rem)] leading-[1.45] text-[var(--dn-fg-mute)] italic">
-            {t("secret")}
+            {/*{t("secret")}*/}
           </span>
         </div>
       </section>
@@ -564,6 +580,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
+            progressThreshold={REVEAL_NIGHT}
             className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-5 self-end"
           >
             <RevealItem
@@ -642,6 +659,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
+            progressThreshold={REVEAL_CLOSING}
             className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[720px] content-center justify-items-start gap-4"
           >
             <RevealItem

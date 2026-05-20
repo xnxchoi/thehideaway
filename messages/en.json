@@ -377,6 +377,38 @@
         "hosts": "Hosted by Sean & friend",
         "rsvpClosesAt": "RSVPs close when the room fills."
       },
+      "survivalKit": {
+        "heading": "Before you come",
+        "subheading": "Six things, in plain words.",
+        "address": {
+          "label": "Where",
+          "hint": "Tap to copy. Map opens Kakao."
+        },
+        "toss": {
+          "label": "Pay",
+          "hint": "Tap to copy the account number."
+        },
+        "dress": {
+          "label": "Wear",
+          "value": "Dressy. Comfortable. A little brave."
+        },
+        "host": {
+          "label": "Ask",
+          "value": "concierge@hideawayseoul.com",
+          "hint": "Anything not covered here — write us."
+        },
+        "plusOnes": {
+          "label": "+1s",
+          "value": "Reserved guests only. No plus-ones at the door."
+        },
+        "late": {
+          "label": "Late",
+          "value": "Doors stay open until 21:00. After that, knock — we may not hear you over the music."
+        },
+        "copy": "Copy",
+        "copied": "Copied",
+        "openMap": "Open map"
+      },
       "scrollHint": "Scroll",
       "audio": {
         "label": "Sound",

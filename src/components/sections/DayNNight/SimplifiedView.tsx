@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
+import { SurvivalKit } from "./SurvivalKit";
+
 /**
  * Simplified view — editorial card mode.
  *
@@ -96,6 +98,12 @@ export function SimplifiedView() {
         <p className="mt-7 max-w-[38ch] font-serif text-[clamp(1.05rem,1.2vw,1.25rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic">
           {t("closing.lede")}
         </p>
+
+        {/* Survival Kit — Phase 5a P5a-Product-1. Sits below the RSVP
+            CTA + closing line so it reads as the logistics appendix,
+            not part of the editorial header. Absorbs the predictable
+            DM volume the product-lens audit identified. */}
+        <SurvivalKit />
       </div>
 
       <footer className="flex items-end justify-between gap-4 font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">

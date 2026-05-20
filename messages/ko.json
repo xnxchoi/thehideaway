@@ -383,6 +383,38 @@
         "hosts": "Hosted by Sean & friend",
         "rsvpClosesAt": "RSVPs close when the room fills."
       },
+      "survivalKit": {
+        "heading": "오기 전에",
+        "subheading": "여섯 가지, 간단히.",
+        "address": {
+          "label": "장소",
+          "hint": "탭하여 복사. 지도는 카카오맵으로 열려요."
+        },
+        "toss": {
+          "label": "결제",
+          "hint": "탭하여 계좌번호 복사."
+        },
+        "dress": {
+          "label": "드레스",
+          "value": "조금 차려입고, 편안하게, 살짝 과감하게."
+        },
+        "host": {
+          "label": "문의",
+          "value": "concierge@hideawayseoul.com",
+          "hint": "여기에 없는 건 메일로 물어봐 주세요."
+        },
+        "plusOnes": {
+          "label": "+1",
+          "value": "예약자 전용. 동반자는 입장이 어려워요."
+        },
+        "late": {
+          "label": "늦으면",
+          "value": "21:00까지는 문이 열려 있어요. 그 이후엔 노크 — 음악 때문에 못 들을 수도 있어요."
+        },
+        "copy": "복사",
+        "copied": "복사됨",
+        "openMap": "지도 열기"
+      },
       "scrollHint": "Scroll",
       "audio": {
         "label": "Sound",
