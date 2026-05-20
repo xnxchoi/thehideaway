@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { useTranslations as UseTranslationsType } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShallow } from "zustand/shallow";
+import { useLenis } from "lenis/react";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
 import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
@@ -105,6 +106,90 @@ export function Timeline() {
   const initialLoopPos = useDayNNightScene((r) => r.initialLoopPosition);
   const phase = useDayNNightScene(useShallow((r) => r.phase));
   const isPlaying = phase === "playing";
+  // Lenis is captured here (component scope) and read through a ref so
+  // the soft-pin effect below can call `lenis.scrollTo` without
+  // re-running every time Lenis re-mounts. Used by P5b-P1.1.
+  const lenis = useLenis();
+  const lenisRef = useRef(lenis);
+  lenisRef.current = lenis;
+
+  // ── Section-hero soft-pin (P5b-P1.1) ────────────────────────────────
+  // After the user stops scrolling, if their position sits within ~5% of
+  // an act center, gently tween back to that center. If they're further
+  // than 5% (i.e. clearly moving past), leave them alone. Goal: catch
+  // small drift, never fight intentional scroll. Subtle.
+  //
+  // Implementation runs OUTSIDE useGSAP so it can pull live `lenis` and
+  // store reads without scope-binding issues. Desktop only — the mobile
+  // breakpoint flattens to vertical scroll and doesn't need this.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    if (!isPlaying) return;
+
+    const SNAP_THRESHOLD_FRAC = 0.05; // 5% of one cycle's width
+    const SNAP_DELAY_MS = 180; // wait after scroll stops
+    const SNAP_DURATION_S = 0.45; // tween length (subtle)
+    let snapTimer: number | undefined;
+
+    const attemptSnap = () => {
+      // `readLayout` is subscribed at component scope; the effect's
+      // closure has the freshest value because `readLayout` is in the
+      // dep array — any layout update tears down + recreates this
+      // effect with the new closure.
+      const liveLayout = readLayout;
+      if (!liveLayout || liveLayout.setWidth <= 0) return;
+      const wrapEl = wrap.current;
+      if (!wrapEl) return;
+
+      const wrapRect = wrapEl.getBoundingClientRect();
+      const pinStart = window.scrollY + wrapRect.top;
+      const totalScrolled = window.scrollY - pinStart;
+      // Only snap while inside the pinned region.
+      if (totalScrolled < 0) return;
+
+      const sw = liveLayout.setWidth;
+      const loopPos = (initialLoopPos * sw + totalScrolled) % sw;
+      const currentProgress = loopPos / sw;
+
+      // Find nearest center in cycle-fraction space.
+      let nearest = liveLayout.centersFrac[0];
+      let minDist = Math.abs(currentProgress - nearest);
+      for (const c of liveLayout.centersFrac) {
+        const d = Math.abs(currentProgress - c);
+        if (d < minDist) {
+          minDist = d;
+          nearest = c;
+        }
+      }
+      // Sub-5% threshold check — outside this band, don't fight the user.
+      if (minDist >= SNAP_THRESHOLD_FRAC) return;
+
+      // Signed delta in cycle-fraction → pixel delta → target scrollY.
+      const deltaPx = (nearest - currentProgress) * sw;
+      // Avoid the no-op case where we're already centered.
+      if (Math.abs(deltaPx) < 1) return;
+
+      const target = window.scrollY + deltaPx;
+      const liveLenis = lenisRef.current;
+      if (liveLenis) {
+        liveLenis.scrollTo(target, { duration: SNAP_DURATION_S });
+      } else {
+        window.scrollTo({ top: target, behavior: "smooth" });
+      }
+    };
+
+    const onScroll = () => {
+      if (snapTimer !== undefined) window.clearTimeout(snapTimer);
+      snapTimer = window.setTimeout(attemptSnap, SNAP_DELAY_MS);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (snapTimer !== undefined) window.clearTimeout(snapTimer);
+    };
+  }, [isPlaying, readLayout, initialLoopPos]);
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
