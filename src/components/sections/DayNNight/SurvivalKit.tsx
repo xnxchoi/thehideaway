@@ -134,14 +134,14 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       {/* ── Address fragment ──────────────────────────────────────── */}
       {/* R1: type scaled up ~40-50% so the kit holds its column with
           presence instead of floating tiny in whitespace. */}
-      <div className="grid gap-[10px]">
+      <div className="grid gap-2">
         <p className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("address.label")}
         </p>
         <p className="font-serif text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[var(--dn-fg)]">
           {address}
         </p>
-        <div className="mt-[10px] flex flex-wrap items-baseline gap-x-[21px] gap-y-[10px]">
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-2">
           <RowAction href={kakaoMapUrl} external arrow text={t("openMap")} />
           <RowAction
             onClick={() => copyToClipboard(address, "address")}
@@ -152,7 +152,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       </div>
 
       {/* ── Payment fragment ──────────────────────────────────────── */}
-      <div className="mt-[55px] grid gap-[10px]">
+      <div className="mt-16 grid gap-2">
         <p className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("toss.label")}
         </p>
@@ -165,7 +165,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         <p className="font-mono text-[14px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
           {tossAmount}
         </p>
-        <div className="mt-[10px]">
+        <div className="mt-2">
           <RowAction
             onClick={() => copyToClipboard(tossClipboard, "toss")}
             text={copyLabel("toss")}
@@ -179,11 +179,11 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
           etiquette reads as part of the kit's body rather than as
           metadata captions. Label col widened 55→64 to fit "+1s"
           tracking without crowding. */}
-      <dl className="mt-[55px] grid gap-[21px]">
+      <dl className="mt-16 grid gap-6">
         {etiquette.map(({ key, label, value }) => (
           <div
             key={key}
-            className="grid grid-cols-[64px_1fr] items-baseline gap-x-[21px]"
+            className="grid grid-cols-[64px_1fr] items-baseline gap-x-6"
           >
             <dt className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
               {label}
@@ -196,7 +196,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       </dl>
 
       {/* ── Contact fragment — italic serif pull ──────────────────── */}
-      <div className="mt-[55px] grid grid-cols-[64px_1fr] items-baseline gap-x-[21px]">
+      <div className="mt-16 grid grid-cols-[64px_1fr] items-baseline gap-x-6">
         <span className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
           {t("host.label")}
         </span>

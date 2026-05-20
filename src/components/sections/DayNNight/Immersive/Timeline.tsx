@@ -394,7 +394,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,7fr)_minmax(0,6fr)] grid-rows-[auto_1fr_auto] gap-x-[21px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-16 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
             <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
               I.
@@ -419,10 +419,15 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               narrower max-w for prose readability; the title floats
               free of those constraints so it reads as the act's
               structural element. */}
+          {/* Title block — Visual System v1.
+              Natural left alignment (no justify-self override). Top
+              of row 2 baseline shared with the kit on the right.
+              Inner gap = 24px (sm) between kicker/title, 40px (md)
+              between title/lede, 24px between lede/body. */}
           <RevealStage
             as="div"
             active={openingActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid content-start gap-[21px] self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start xl:gap-[34px]"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid content-start gap-6 self-start max-lg:col-span-full"
           >
             <RevealItem
               as="p"
@@ -432,19 +437,19 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="h2"
-              className="font-serif text-[clamp(5rem,12vw,13rem)] leading-[0.9] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
+              className="font-serif text-[clamp(4rem,7vw,8rem)] leading-[0.95] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
             >
               {t("title")}
             </RevealItem>
             <RevealItem
               as="p"
-              className="max-w-[40ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+              className="mt-4 max-w-[40ch] text-[clamp(1.5rem,1.7vw,1.7rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
             >
               {t("opening.lede")}
             </RevealItem>
             <RevealItem
               as="p"
-              className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.25] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
+              className="max-w-[44ch] font-serif text-[clamp(1.6rem,2vw,2rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
             >
               {t("opening.body")}
             </RevealItem>
@@ -454,7 +459,10 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               completing the diagonal composition. Embedded variant
               strips the standalone top margin and tightens the
               max-width so it fits the column. */}
-          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-start justify-self-start lg:block">
+          {/* Kit (col 2) — natural left alignment, top-aligned at row 2.
+              Shares the title block's top baseline so the eye reads
+              title ↔ kit eyebrow as a single horizontal anchor line. */}
+          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-start lg:block">
             <SurvivalKit variant="embedded" />
           </div>
           <div className="col-start-1 col-end-2 row-start-3 row-end-4 flex gap-12 self-end font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase max-lg:col-span-full max-lg:flex-wrap max-lg:gap-6">
@@ -804,7 +812,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,6fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-[21px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,8fr)] grid-rows-[auto_1fr_auto] gap-x-16 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           {/* Eyebrow — right-aligned to anchor the title-top-right
               orientation. Opening's eyebrow is left-aligned; the
               mirrored alignment is the first signal of the bookend. */}
@@ -825,7 +833,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               there") above the practical-info dossier. Bottom-anchored
               so it pulls the eye downward-left, completing the diagonal
               against the upper-right title block. */}
-          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-start gap-6 self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start lg:flex">
+          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-start gap-6 self-start max-lg:col-span-full lg:flex">
             <p className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic">
               {t("closing.lede")}
             </p>
@@ -842,7 +850,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={closingActive}
-            className="col-start-2 col-end-3 row-start-2 row-end-3 grid content-start gap-[21px] self-start justify-self-start max-lg:col-span-full max-lg:justify-self-start xl:gap-[34px]"
+            className="col-start-2 col-end-3 row-start-2 row-end-3 grid content-start gap-6 self-start max-lg:col-span-full"
           >
             <RevealItem
               as="p"
@@ -852,7 +860,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="h2"
-              className="font-serif text-[clamp(5rem,12vw,13rem)] leading-[0.9] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
+              className="font-serif text-[clamp(4rem,7vw,8rem)] leading-[0.95] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
             >
               {t("title")}
             </RevealItem>
