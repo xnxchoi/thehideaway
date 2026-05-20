@@ -557,6 +557,51 @@
           "title": "명단에 등록되었어요.",
           "body": "티켓이 이메일로 발송되었어요. 5월 24일에 만나요."
         }
+      },
+      "gate": {
+        "eyebrow": "비공개",
+        "title": "비밀번호를 입력해 주세요.",
+        "body": "이 페이지는 비공개입니다. 개별적으로 전달받은 코드를 입력해 주세요.",
+        "passcodeLabel": "비밀번호",
+        "submit": "입장",
+        "submitting": "확인 중…",
+        "errors": {
+          "invalid": "코드가 일치하지 않아요.",
+          "network": "네트워크 오류가 발생했어요."
+        }
+      },
+      "status": {
+        "ended": "종료된 이벤트입니다.",
+        "closed": "현재 티켓을 판매하고 있지 않아요.",
+        "soldOut": "매진"
+      },
+      "purchased": {
+        "eyebrow": "결제 대기 중",
+        "reserved": "티켓 {quantity}장 예약 완료 · {total}",
+        "instructionsFallback": "호스트가 결제 안내를 보내드릴 거예요. 결제가 확인되는 즉시 티켓이 활성화됩니다.",
+        "giftLinks": {
+          "eyebrow": "선물 링크",
+          "body": "개별적으로 전달해 주세요. 각 링크는 한 번만 수령할 수 있어요.",
+          "ticketNumber": "티켓 #{number}",
+          "copy": "링크 복사",
+          "copied": "복사됨"
+        },
+        "viewMy": "내 티켓 보기 →"
+      },
+      "reserve": {
+        "eyebrow": "예약 · {total}",
+        "quantityLabel": "수량",
+        "quantityGroupLabel": "티켓 수량",
+        "submit": "{quantity}장 예약 · {total}",
+        "submitting": "예약 중…",
+        "signInRequired": "계속하려면 로그인이 필요해요",
+        "signInRedirectHint": "로그인 페이지로 이동합니다."
+      },
+      "bar": {
+        "eyebrowOpen": "티켓",
+        "eyebrowLocked": "티켓 · 비공개",
+        "myTickets": "내 티켓 →",
+        "backHome": "← Hideaway"
       }
     },
     "Order": {

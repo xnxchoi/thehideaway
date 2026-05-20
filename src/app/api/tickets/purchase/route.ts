@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { headers as nextHeaders } from "next/headers";
+import { headers as nextHeaders, cookies as nextCookies } from "next/headers";
 import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -24,6 +24,14 @@ const BodySchema = z.object({
   quantity: z.number().int().min(1).max(10),
   password: z.string().min(1),
   /**
+   * Display name to stamp on the `ticket-orders` row. Snapshotted from
+   * the 4-step purchase flow's name step. Surfaced to the host (admin)
+   * and on `/day-n-night/my`. Optional — older callers (non-day-n-night
+   * surfaces) don't collect a separate purchaser display name and just
+   * fall back to the session user's name.
+   */
+  purchaser_name: z.string().trim().min(1).max(120).optional(),
+  /**
    * Optional per-extra-ticket recipient details. Index 0 corresponds to
    * the first gift ticket (i.e. the second ticket overall — index 0 is
    * always the purchaser's own). If shorter than (quantity - 1), the
@@ -31,6 +39,23 @@ const BodySchema = z.object({
    */
   gifts: z.array(GiftSchema).max(9).optional()
 });
+
+/**
+ * Resolve the purchaser's session locale from the same `locale` cookie
+ * next-intl reads on the server (see `src/i18n/request.ts`), so the
+ * password mail copy (rendered later by `sendOrderPaidPassword` against
+ * `ticket-orders.locale`) matches what the user sees on the site.
+ *
+ * Defaults to `"ko"` (column default) when the cookie is missing or holds
+ * an unknown value — day-n-night's audience is Korean-leaning, so an
+ * unknown locale is more likely Korean than English. Admins can override
+ * `ticket-orders.locale` from the admin UI if the snapshot is wrong.
+ */
+async function resolveOrderLocale(): Promise<"en" | "ko"> {
+  const store = await nextCookies();
+  const raw = store.get("locale")?.value;
+  return raw === "en" ? "en" : "ko";
+}
 
 type EventDoc = {
   id: string;
@@ -163,7 +188,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     recipient_email: string | null;
   };
 
+  // Locale snapshot: read the next-intl cookie at request time. We persist
+  // it on the order so the password mail (sent later, when admin flips
+  // `paid`) speaks the purchaser's language. The order owns this column;
+  // sibling tickets do not duplicate it.
+  const orderLocale = await resolveOrderLocale();
+
+  // Resolve a display name for the order. Prefer the explicit value
+  // collected in the 4-step flow; fall back to the session user's name so
+  // the legacy single-screen purchase still produces a labeled order.
+  const orderPurchaserName =
+    body.purchaser_name ?? session.user.name?.trim() ?? null;
+
   let created: CreatedTicket[];
+  let orderId: string;
   try {
     // Serialize same-event purchases. Held until commit/rollback.
     await eventPurchaseLock(payload, transactionID, event.id);
@@ -219,6 +257,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Parent order row: created inside the transaction (and the per-event
+    // lock) so a failed mint below rolls the order back too. Sibling
+    // tickets are FK'd to this id via `order` — the lifecycle docstring
+    // in `TicketOrders/index.ts` defines the relationship.
+    const orderDoc = await payload.create({
+      collection: "ticket-orders",
+      overrideAccess: true,
+      req: txReq,
+      data: {
+        purchaser: userId,
+        event: event.id,
+        purchaser_name: orderPurchaserName,
+        locale: orderLocale,
+        paid: false
+      } as never
+    });
+    orderId = String(orderDoc.id);
+
     created = [];
     for (let i = 0; i < body.quantity; i++) {
       const isPurchaserOwn = i === 0;
@@ -236,6 +292,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         data: {
           ticket_number: ticketNumber,
           event: event.id,
+          order: orderId,
           user: isPurchaserOwn ? userId : null,
           purchaser: userId,
           status: "pending",
@@ -313,6 +370,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const response = NextResponse.json(
     {
       ok: true,
+      order_id: orderId,
       tickets: created,
       total_amount: totalAmount
     },

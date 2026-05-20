@@ -87,6 +87,11 @@ export default async function TicketEventPage(props: { params: Params }) {
       }}
       remaining={remaining}
       isAuthenticated={Boolean(session)}
+      // Pre-fill the 4-step flow's OTP + name steps from the session,
+      // so an already-authenticated user just confirms rather than retypes.
+      // Both null on a signed-out hit; the client step machine handles that.
+      sessionEmail={session?.user?.email ?? null}
+      sessionName={session?.user?.name ?? null}
     />
   );
 }

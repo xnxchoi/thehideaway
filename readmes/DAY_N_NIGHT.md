@@ -5,7 +5,7 @@ Cross-session continuity doc for the **Day n Night** event landing, RSVP'd guest
 **Event date:** Sunday, 24 May 2026
 **Location:** Haebangchon / Itaewon, Seoul
 **Event slug:** `day-n-night`
-**Status:** IMPLEMENTED through Phase 4 partial; **BLOCKED on Phase 5 pre-launch must-fix items** (see § 14 audit). 4-step purchase flow + admin-paid notification remain (password mail-out shipped 2026-05-20 as P4C-2). See § 13 iteration log for the chronological trail.
+**Status:** IMPLEMENTED through Phase 4 partial; **BLOCKED on Phase 5 pre-launch must-fix items** (see § 14 audit). Admin-paid notification (P4C-3) remains in P4C; password mail-out shipped 2026-05-20 as P4C-2, 4-step purchase flow shipped 2026-05-20 as P4C-1. See § 13 iteration log for the chronological trail.
 
 > This is the single source of truth for the surface. `DAY_N_NIGHT_AUDIT.md` and `DAY_N_NIGHT_DRESS_REDESIGN.md` have been folded in (§ 14 and § 15 respectively) and archived to `.attic/readmes/`.
 
@@ -481,6 +481,14 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
   - **Code-reviewer pass**: 0 CRITICAL, 1 HIGH (admin re-issue path silently skipped Phase B if `mailed_at` was still set — fixed by moving Phase B's gate from `doc.mailed_at` to local `effectiveMailedAt` state, and clearing it inside Phase A when password regenerates), 1 MEDIUM (existing `formatDateTime` hard-codes `en-GB` for the older 5 mailer methods; out of P4C-2 scope but flagged for Phase 5b/c).
   - **Remaining P4C**: P4C-1 (4-step purchase flow with locale snapshot) and P4C-3 (admin-paid notification row) before the joint launch gate with Phase 5a clears.
 
+- **2026-05-20 (P4C-1)** — 4-step purchase flow shipped + scaffold i18n sweep. 5 files: `tickets/purchase/route.ts` (adds `resolveOrderLocale()` reading the next-intl `locale` cookie; creates the parent `ticket-orders` row INSIDE the existing per-event advisory lock + transaction before any ticket mints; links each minted ticket via `order: orderId`; new optional `purchaser_name` zod field); `tickets/[event]/page.tsx` (forwards `session.user.email` + `session.user.name` to the client so OTP + name steps pre-fill); `tickets/[event]/page.client.tsx` (step state machine `welcome → otp → name → reserve → purchased`, gated behind `event.slug === "day-n-night"` so non-day-n-night events keep legacy single-screen flow); `messages/{en,ko}.json` lockstep additions for `Event.Rsvp.{gate,status,purchased,reserve,bar}` namespaces.
+  - **Authed-user shortcut**: OTP step skipped when `isAuthedNow` is true at welcome → advance time. `authClient.useSession()` provides live session state, so after an OTP sign-in inside the flow the session flips and the rest of the steps see the authenticated identity.
+  - **Locale source-of-truth realized**: the column added in P4C-2 now gets populated from the next-intl cookie at order create time. Default is `"ko"` for unknown cookie values (column default + Korean-leaning audience).
+  - **Order row creation lives in the existing transaction**: same `eventPurchaseLock(payload, transactionID, event.id)` that serializes ticket mints — a failed mint rolls back the order row too. `idem.put(response)` cache now keys an `order_id`-bearing response so a double-submit replays the exact same order.
+  - **Backward compat**: `useStepFlow = event.slug === "day-n-night"`. All other events render the legacy `ReserveView` / `PurchasedView` directly with byte-for-byte identical behavior; `purchaser_name` is omitted from those bodies and the server falls back to `session.user.name`.
+  - **Code-reviewer pass**: 0 CRITICAL, 2 HIGH (1) ~25 inline English strings in the scaffold violated the next-intl single-source-of-truth rule on the Korean-leaning conversion path — fixed by adding `Event.Rsvp.{gate,status,purchased,reserve,bar}` namespaces to both locales and rewiring every string through `useTranslations`; (2) all inputs (email, OTP code, name, gate passcode) and the quantity button group lacked accessible labels — fixed by adding `<label htmlFor>` pairs, `aria-label` mirrors, and `role="group"` + `aria-label` on the quantity container.
+  - **Remaining P4C**: P4C-3 (admin-paid `notifications` row) before the joint launch gate with Phase 5a clears.
+
 ### Carry-overs to next session
 
 | Item | What's missing |
@@ -632,7 +640,7 @@ The above is what reviewers find when reading code. The **product-lens** finds w
 
 These are the three Phase 4 ❌ items from § 8. They're not "audit findings" — they're the spec's required functionality that simply hasn't shipped yet. Without them the ticketing flow has no end-to-end path. **P4C ships with Phase 5a, not after.**
 
-- [ ] **P4C-1** Build the 4-step purchase flow on `/tickets/[event]/page.client.tsx` (welcome → emailOTP → name → existing gated purchase). Must not break the live surface for *other* events — gate behind `event.slug === "day-n-night"` or feature-flag. Must also snapshot the session locale into `ticket-orders.locale` at create time (the source-of-truth column P4C-2 reads to pick mail copy).
+- [x] **P4C-1** ✅ shipped 2026-05-20. 4-step purchase flow on `/tickets/[event]/page.client.tsx` (welcome → emailOTP → name → reserve → purchased). Gated behind `event.slug === "day-n-night"`; non-day-n-night events keep the legacy single-screen flow byte-for-byte. OTP step is skipped when the user already has an authenticated session (the session itself proves email control). Locale snapshot lands via `resolveOrderLocale()` reading the `locale` cookie on the purchase API and persisting into `ticket-orders.locale` inside the existing transaction — same lock, same idempotency-key, same rollback semantics. Order row is created BEFORE any ticket mints, then each ticket is FK'd to it via `order: orderId`.
 - [x] **P4C-2** Password mail-out: ✅ shipped 2026-05-20. `sendOrderPaidPassword` on `TicketMailer` + per-locale copy in `Event.Order.PasswordMail` (en + ko) + `mailed_at` column on `ticket-orders` for idempotency + locale column for per-order language selection. `issueOrderPaidPassword` afterChange now does combined Phase A (password issuance) + Phase B (mail dispatch) in a single persist with bounded re-entry. Self-healing: SMTP failure leaves `mailed_at` null → next admin save retries; admin clearing `password` to force re-issue also clears stale `mailed_at` so the new password gets mailed.
 - [ ] **P4C-3** Admin-paid `notifications` row fires when an admin flips `paid` on a `ticket-orders` row (mirrors the per-ticket `onTicketPaid` notification).
 

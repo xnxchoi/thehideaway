@@ -551,6 +551,51 @@
           "title": "You are on the list.",
           "body": "We have emailed your ticket. See you on May 24."
         }
+      },
+      "gate": {
+        "eyebrow": "Locked",
+        "title": "Enter the passcode to continue.",
+        "body": "This page is gated. Use the code shared with you privately.",
+        "passcodeLabel": "Access code",
+        "submit": "Enter",
+        "submitting": "Checking…",
+        "errors": {
+          "invalid": "That code didn't match.",
+          "network": "Network error."
+        }
+      },
+      "status": {
+        "ended": "This event has ended.",
+        "closed": "Tickets are not currently on sale.",
+        "soldOut": "Sold out"
+      },
+      "purchased": {
+        "eyebrow": "Awaiting payment",
+        "reserved": "{quantity, plural, one {# ticket} other {# tickets}} reserved · {total}",
+        "instructionsFallback": "The host will reach out with payment details. Your tickets activate the moment payment is confirmed.",
+        "giftLinks": {
+          "eyebrow": "Gift links",
+          "body": "Share these privately. Each link can be claimed once.",
+          "ticketNumber": "Ticket #{number}",
+          "copy": "Copy link",
+          "copied": "Copied"
+        },
+        "viewMy": "View my tickets →"
+      },
+      "reserve": {
+        "eyebrow": "Reserve · {total}",
+        "quantityLabel": "Quantity",
+        "quantityGroupLabel": "Number of tickets",
+        "submit": "Request {quantity} · {total}",
+        "submitting": "Reserving…",
+        "signInRequired": "Sign in to continue",
+        "signInRedirectHint": "You'll be redirected to sign in."
+      },
+      "bar": {
+        "eyebrowOpen": "Tickets",
+        "eyebrowLocked": "Tickets · Private",
+        "myTickets": "My tickets →",
+        "backHome": "← Hideaway"
       }
     },
     "Order": {
