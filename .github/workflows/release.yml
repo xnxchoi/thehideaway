@@ -155,9 +155,17 @@ jobs:
           echo "✓ nanoid extension loaded"
 
       - name: Run migrations against CI postgres
-        run: pnpm migrate
-        env:
-          DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
+        # Payload CLI does not auto-load .env.production the way `next build`
+        # does; without sourcing it, env validation fails (PAYLOAD_SECRET,
+        # BETTER_AUTH_SECRET, NEXT_PUBLIC_BETTER_AUTH_URL, etc.). Source the
+        # decrypted env into this step only, then override DATABASE_URI to
+        # point at the CI postgres service.
+        run: |
+          set -a
+          . ./.env.production
+          set +a
+          export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
+          pnpm migrate
 
       - name: Build Next.js (standalone)
         run: pnpm build
