@@ -7,6 +7,7 @@ import {
   getDeviceSessions
 } from "@/lib/auth/context/get-context-props";
 import type { User } from "@/payload-types";
+import { readLocaleCookie } from "@/i18n/cookie";
 
 import SettingsHubClient from "./page.client";
 
@@ -24,8 +25,7 @@ export default async function SettingsHubPage() {
     sessions?.filter((s) => Boolean(s?.userAgent)).length ?? 0;
 
   const cookieStore = await cookies();
-  const initialLocale =
-    (cookieStore.get("locale")?.value as "en" | "ko" | undefined) ?? "en";
+  const initialLocale = readLocaleCookie(cookieStore, "en");
 
   return (
     <SettingsHubClient

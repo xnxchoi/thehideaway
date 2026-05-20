@@ -2,6 +2,7 @@ import type { CollectionConfig, FieldAccess, Where } from "payload";
 
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { issueOrderPaidPassword } from "./hooks/issueOrderPaidPassword";
+import { onOrderPaid } from "./hooks/onOrderPaid";
 
 /**
  * TicketOrders
@@ -171,6 +172,13 @@ export const TicketOrders: CollectionConfig = {
     }
   ],
   hooks: {
-    afterChange: [issueOrderPaidPassword]
+    // Order matters: `onOrderPaid` fires the in-app notification first
+    // (cheap, single insert on `notifications`), then
+    // `issueOrderPaidPassword` does the password issuance + Brevo mail
+    // (network round-trip, slower). The two are independent — neither
+    // depends on the other's success — but firing the notification
+    // first means the user's `/notifications` view updates with minimal
+    // delay even on a slow SMTP path.
+    afterChange: [onOrderPaid, issueOrderPaidPassword]
   }
 };

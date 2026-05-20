@@ -11,6 +11,7 @@ import { safeEqual } from "@/lib/api/safeEqual";
 import { beginIdempotent } from "@/lib/api/idempotency";
 import { eventPurchaseLock, nextTicketNumber } from "@/lib/db/sequences";
 import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
+import { readLocaleCookie } from "@/i18n/cookie";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,7 @@ const BodySchema = z.object({
 });
 
 /**
- * Resolve the purchaser's session locale from the same `locale` cookie
+ * Resolve the purchaser's session locale from the same locale cookie
  * next-intl reads on the server (see `src/i18n/request.ts`), so the
  * password mail copy (rendered later by `sendOrderPaidPassword` against
  * `ticket-orders.locale`) matches what the user sees on the site.
@@ -53,8 +54,7 @@ const BodySchema = z.object({
  */
 async function resolveOrderLocale(): Promise<"en" | "ko"> {
   const store = await nextCookies();
-  const raw = store.get("locale")?.value;
-  return raw === "en" ? "en" : "ko";
+  return readLocaleCookie(store, "ko");
 }
 
 type EventDoc = {

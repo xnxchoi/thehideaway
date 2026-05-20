@@ -5,7 +5,7 @@ Cross-session continuity doc for the **Day n Night** event landing, RSVP'd guest
 **Event date:** Sunday, 24 May 2026
 **Location:** Haebangchon / Itaewon, Seoul
 **Event slug:** `day-n-night`
-**Status:** IMPLEMENTED through Phase 4 partial; **BLOCKED on Phase 5 pre-launch must-fix items** (see § 14 audit). Admin-paid notification (P4C-3) remains in P4C; password mail-out shipped 2026-05-20 as P4C-2, 4-step purchase flow shipped 2026-05-20 as P4C-1. See § 13 iteration log for the chronological trail.
+**Status:** IMPLEMENTED through Phase 4 partial; **BLOCKED on Phase 5 pre-launch must-fix items** (see § 14 audit). **P4C complete (P4C-1 + P4C-2 + P4C-3 all shipped 2026-05-20).** Phase 5a CRITICALs + HIGHs are the remaining launch gate. See § 13 iteration log for the chronological trail.
 
 > This is the single source of truth for the surface. `DAY_N_NIGHT_AUDIT.md` and `DAY_N_NIGHT_DRESS_REDESIGN.md` have been folded in (§ 14 and § 15 respectively) and archived to `.attic/readmes/`.
 
@@ -489,6 +489,15 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
   - **Code-reviewer pass**: 0 CRITICAL, 2 HIGH (1) ~25 inline English strings in the scaffold violated the next-intl single-source-of-truth rule on the Korean-leaning conversion path — fixed by adding `Event.Rsvp.{gate,status,purchased,reserve,bar}` namespaces to both locales and rewiring every string through `useTranslations`; (2) all inputs (email, OTP code, name, gate passcode) and the quantity button group lacked accessible labels — fixed by adding `<label htmlFor>` pairs, `aria-label` mirrors, and `role="group"` + `aria-label` on the quantity container.
   - **Remaining P4C**: P4C-3 (admin-paid `notifications` row) before the joint launch gate with Phase 5a clears.
 
+- **2026-05-20 (sweep — P4C-3 + 4 LOWs)** — Cleanup sweep clearing the residual LOWs from prior code-reviewer passes plus P4C's final missing piece. 9 files changed:
+  - **P4C-3 — Admin-paid notification**: new `TicketOrders/hooks/onOrderPaid.ts` mirrors `Tickets/hooks/onTicketPaid` shape; registered as the first afterChange on `ticket-orders` so the notification lands before the (slower) Brevo mail.
+  - **L1 — Locale cookie constant**: new `src/i18n/cookie.ts` exports `LOCALE_COOKIE_NAME` + `readLocaleCookie(store, fallback)`. Migrated 7 callsites: `i18n/request.ts`, `tickets/purchase/route.ts`, `invoice/pdf/route.ts`, `me/settings/page.tsx`, `me/settings/general/page.tsx`, `me/settings/_helpers/setLocale.ts` (also dedup'd its local `SUPPORTED` → imports `locales` directly), `lib/actions/locale.ts`. Different surfaces pass different fallbacks (next-intl global → "en", day-n-night purchase → "ko") so the contract stays explicit at each site.
+  - **L2 — Step machine dual-render**: collapsed dead `case "purchased": return null` by falling through to `reserve`. The `if (purchased)` early-return above the switch still handles the real terminal state; the switch is now exhaustive over `FlowStep` without a no-op branch.
+  - **L3 — Welcome title typo**: `Event.Rsvp.steps.welcome.title` in en.json: "A short steps before tickets." → "A few short steps before tickets." Korean unchanged (already correct).
+  - **L4 — Name pre-fill staleness**: added `nameTouched` state + a one-way sync effect (`liveSession.user.name → purchaserName`) gated on `!nameTouched`. User input via `setPurchaserName` flips the touched flag so a session change post-typing doesn't clobber input. Effect uses `setPurchaserNameInternal` (the raw setter) to avoid flipping `nameTouched` itself.
+  - **Deferred**: MEDIUM from P4C-2 code-reviewer (older 5 mailer methods hard-code `en-GB`). The bare date-format fix without bilingual body copy would render a Korean date inside an English body — a worse mismatch than the current English-only state. Defer to Phase 5b alongside the full bilingual mailer body copy refactor.
+  - **Code-reviewer pass**: PASS — 0 CRITICAL, 0 HIGH. Two informational LOWs noted: (1) `setLocale.ts` `SUPPORTED` duplication — fixed in-PR by importing `locales`; (2) `onOrderPaid` outer try/catch vs `onTicketPaid` inner try/catch — left as-is since the hook only does one operation today, cosmetic divergence.
+
 ### Carry-overs to next session
 
 | Item | What's missing |
@@ -642,7 +651,7 @@ These are the three Phase 4 ❌ items from § 8. They're not "audit findings" �
 
 - [x] **P4C-1** ✅ shipped 2026-05-20. 4-step purchase flow on `/tickets/[event]/page.client.tsx` (welcome → emailOTP → name → reserve → purchased). Gated behind `event.slug === "day-n-night"`; non-day-n-night events keep the legacy single-screen flow byte-for-byte. OTP step is skipped when the user already has an authenticated session (the session itself proves email control). Locale snapshot lands via `resolveOrderLocale()` reading the `locale` cookie on the purchase API and persisting into `ticket-orders.locale` inside the existing transaction — same lock, same idempotency-key, same rollback semantics. Order row is created BEFORE any ticket mints, then each ticket is FK'd to it via `order: orderId`.
 - [x] **P4C-2** Password mail-out: ✅ shipped 2026-05-20. `sendOrderPaidPassword` on `TicketMailer` + per-locale copy in `Event.Order.PasswordMail` (en + ko) + `mailed_at` column on `ticket-orders` for idempotency + locale column for per-order language selection. `issueOrderPaidPassword` afterChange now does combined Phase A (password issuance) + Phase B (mail dispatch) in a single persist with bounded re-entry. Self-healing: SMTP failure leaves `mailed_at` null → next admin save retries; admin clearing `password` to force re-issue also clears stale `mailed_at` so the new password gets mailed.
-- [ ] **P4C-3** Admin-paid `notifications` row fires when an admin flips `paid` on a `ticket-orders` row (mirrors the per-ticket `onTicketPaid` notification).
+- [x] **P4C-3** ✅ shipped 2026-05-20. New `onOrderPaid` afterChange hook on `ticket-orders` fires the in-app notification when admin flips `paid:false → true`. Mirrors `onTicketPaid` exactly (notifications.type "access", importance 2). Hook order in the collection is `[onOrderPaid, issueOrderPaidPassword]` — notification first (cheap insert, minimal latency for the user's `/notifications` view), Brevo mail second (network-bound). Both hooks are independent best-effort: either can fail without affecting the other. The `becamePaid` guard short-circuits the re-entry caused by `issueOrderPaidPassword`'s internal `payload.update`, so each genuine paid edge produces exactly one notification.
 
 #### Phase 5a — audit must-fix before going live (~6h)
 

@@ -10,6 +10,7 @@ import config from "@payload-config";
 
 import { getServerSession } from "@/lib/auth/getServerSession";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
+import { readLocaleCookie } from "@/i18n/cookie";
 import {
   invoiceTemplate,
   type InvoiceLocale,
@@ -298,12 +299,11 @@ export async function POST(req: NextRequest): Promise<NextResponse | Response> {
   const display = projectInvoice(row);
   const templateInput = toTemplateInput(display);
 
-  // Locale resolution: read the same `locale` cookie next-intl uses for
+  // Locale resolution: read the same locale cookie next-intl uses for
   // server components, so the PDF copy matches whatever the user sees in
   // the rest of the site. Fall back to English on missing/unknown values.
   const cookieStore = await cookies();
-  const localeRaw = cookieStore.get("locale")?.value;
-  const locale: InvoiceLocale = localeRaw === "ko" ? "ko" : "en";
+  const locale: InvoiceLocale = readLocaleCookie(cookieStore, "en");
 
   const t = await getTranslations({ locale, namespace: "Invoice" });
   const strings: InvoiceStrings = {

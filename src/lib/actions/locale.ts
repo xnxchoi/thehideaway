@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 import { locales } from "@/i18n/locales";
+import { LOCALE_COOKIE_NAME } from "@/i18n/cookie";
 
 type Locale = (typeof locales)[number];
 
@@ -18,7 +19,7 @@ export async function setLocale(rawLocale: string): Promise<void> {
     throw new Error(`Unsupported locale: ${rawLocale}`);
   }
   const store = await cookies();
-  store.set("locale", rawLocale, {
+  store.set(LOCALE_COOKIE_NAME, rawLocale, {
     path: "/",
     maxAge: COOKIE_MAX_AGE_DAYS * 24 * 60 * 60,
     sameSite: "lax"

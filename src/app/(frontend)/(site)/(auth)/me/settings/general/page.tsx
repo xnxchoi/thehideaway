@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { currentUser } from "@/lib/auth/context/get-context-props";
+import { readLocaleCookie } from "@/i18n/cookie";
 
 import GeneralSectionClient from "./page.client";
 
@@ -13,8 +14,7 @@ export default async function GeneralSettingsPage() {
   if (!user) return redirect("/sign-in?next=/me/settings/general");
 
   const cookieStore = await cookies();
-  const locale =
-    (cookieStore.get("locale")?.value as "en" | "ko" | undefined) ?? "en";
+  const locale = readLocaleCookie(cookieStore, "en");
 
   return <GeneralSectionClient locale={locale} />;
 }

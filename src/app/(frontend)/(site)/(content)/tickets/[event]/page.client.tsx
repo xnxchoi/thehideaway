@@ -96,7 +96,14 @@ export function TicketEventClient({
   const [otpError, setOtpError] = useState<string | null>(null);
 
   // Purchaser display name (stamped on `ticket-orders.purchaser_name`).
-  const [purchaserName, setPurchaserName] = useState(sessionName ?? "");
+  // `nameTouched` flips on the first user edit so we don't clobber typed
+  // input when the live session arrives mid-flow (see effect below).
+  const [purchaserName, setPurchaserNameInternal] = useState(sessionName ?? "");
+  const [nameTouched, setNameTouched] = useState(false);
+  const setPurchaserName = useCallback((value: string) => {
+    setNameTouched(true);
+    setPurchaserNameInternal(value);
+  }, []);
 
   // Live session — Better Auth flips this after `signIn.emailOtp` succeeds,
   // which lets us treat the OTP step as "done" without a page reload.
@@ -120,6 +127,21 @@ export function TicketEventClient({
       setGateOpen(true);
     }
   }, [event.slug]);
+
+  // Sync purchaser name from the live session when an OTP sign-in lands
+  // mid-flow. We only overwrite when the user hasn't typed yet
+  // (`nameTouched === false`), so a user who edited their name during
+  // the OTP step keeps their input. Idempotent: re-runs are no-ops when
+  // the value is already in sync.
+  const liveSessionName = (
+    liveSession?.user as { name?: string | null } | undefined
+  )?.name;
+  useEffect(() => {
+    if (nameTouched) return;
+    if (!liveSessionName) return;
+    if (liveSessionName === purchaserName) return;
+    setPurchaserNameInternal(liveSessionName);
+  }, [liveSessionName, nameTouched, purchaserName]);
 
   const isOpen = event.state === "open";
   const soldOut = remaining !== null && remaining <= 0;
@@ -299,6 +321,11 @@ export function TicketEventClient({
         </p>
       );
     }
+    // The `purchased` early-return covers BOTH flows: the step machine's
+    // terminal state and the legacy single-screen path converge here, so
+    // we don't need a separate `case "purchased"` branch in the switch
+    // below. `step === "purchased"` exists only to make the state
+    // sequence legible to readers — it never renders.
     if (purchased) {
       return (
         <PurchasedView
@@ -341,6 +368,7 @@ export function TicketEventClient({
             />
           );
         case "reserve":
+        case "purchased":
           return (
             <ReserveView
               quantity={quantity}
@@ -353,9 +381,6 @@ export function TicketEventClient({
               onSubmit={submitPurchase}
             />
           );
-        case "purchased":
-          // Handled above via the `purchased` early-return.
-          return null;
       }
     }
     return (
