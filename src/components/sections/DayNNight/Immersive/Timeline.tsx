@@ -556,19 +556,10 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </span>
             <span>{t("dressCode.heading")}</span>
           </span>
-          {/* Two staged reveals: intro fires first (as the user enters Dress),
-              then the two columns share a second stage so they cascade in
-              together. Splitting the stage means the intro doesn't have to
-              wait for the columns to be 55%-visible before triggering. */}
-          <RevealStage as="div" active={dressActive}>
-            <RevealItem
-              as="p"
-              className="mt-8 max-w-[50ch] font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic"
-            >
-              {/*{t("dressCode.intro")}*/}
-              <></>
-            </RevealItem>
-          </RevealStage>
+          {/* The dressCode.intro RevealStage was removed: it rendered an
+              empty fragment and consumed a grid row + an animation
+              slot. Two-column dress code below is now the only revealed
+              content under the Dress eyebrow. */}
           <RevealStage
             as="div"
             active={dressActive}
@@ -652,9 +643,6 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               anchor={ANCHOR_DRESS}
             />
           </PolaroidGroup>
-          <span className="block max-w-[44ch] font-serif text-[clamp(1.1rem,1.3vw,1.3rem)] leading-[1.45] text-[var(--dn-fg-mute)] italic">
-            {/*{t("secret")}*/}
-          </span>
         </div>
       </section>
 
@@ -786,7 +774,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="div"
-              className="mt-2 grid gap-1.5 font-mono text-xs text-[var(--dn-fg-mute)]"
+              className="mt-2 grid gap-2.5 font-mono text-xs text-[var(--dn-fg-mute)]"
             >
               <span className="font-wide text-[2.4rem] font-black tracking-[0.04em] text-[var(--dn-fg)]">
                 {t("entry.amount")}

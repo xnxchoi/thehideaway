@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useShallow } from "zustand/shallow";
-import { useDayNNightScene } from "../store";
+import { useDayNNightScene, useDayNNightStore } from "../store";
 
 interface SunLoaderProps {
   /** Total ms the loader stays on screen before hand-off. */
@@ -39,19 +38,16 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
   const fillRef = useRef<HTMLDivElement>(null);
   const setProgress = useDayNNightScene((r) => r.setProgress);
   const setPhase = useDayNNightScene((r) => r.setPhase);
-  const initialLoopPosition = useDayNNightScene((r) => r.initialLoopPosition);
   const setLoaderProgress = useDayNNightScene((r) => r.setLoaderProgress);
+  // Imperative store handle so the rAF tick reads fresh
+  // `horizonLoop` + `initialLoopPosition` even when Timeline writes the
+  // measured layout AFTER this effect started. Previously these were
+  // captured by closure at effect creation time — the FALLBACK_HORIZON
+  // value `0` leaked into the entire loader run and collapsed both
+  // stage bounds to 0→0 (sun never visibly rose; santa-loop H1).
+  const store = useDayNNightStore();
 
-  const horizonLoop = useDayNNightScene(useShallow((r) => r.horizonLoop));
   useEffect(() => {
-    // Where the loop "lands" after handoff: scene-progress IS the
-    // loopProgress now, so the handoff target equals initialLoopPosition
-    // (the anchor-act center derived from the live act layout).
-    // Pulled at tick-time because Timeline writes it asynchronously
-    // after measuring the act track; the store's fallback (0.2) covers
-    // the first paint / SSR window.
-    const handoffProgress = initialLoopPosition;
-
     let raf: number;
     // Timeouts scheduled after the rAF completes must be cleared on
     // unmount; otherwise they fire on an unmounted component and race
@@ -65,10 +61,11 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
       const u = Math.min(1, elapsed / durationMs);
       // Map loader-time u into staged scene progress. The loader covers
       // scene-progress [0, horizonLoop] (pre-dawn → sun-at-horizon, the
-      // anchor-act center). horizonLoop is pulled per-tick because
-      // Timeline writes it asynchronously after measuring the act track.
-      //   u 0 → 0.4  -> progress 0 → 0.4·horizonLoop (horizon glow, no sun)
-      //   u 0.4 → 1  -> progress 0.4·horizonLoop → horizonLoop (sun rises)
+      // anchor-act center). horizonLoop is pulled per-tick from the
+      // store because Timeline writes it asynchronously after measuring
+      // the act track — closure-captured values would stale at the
+      // FALLBACK_HORIZON (0) for the entire loader run.
+      const horizonLoop = store.getState().horizonLoop;
       const stage1End = 0.4 * horizonLoop;
       let progress: number;
       if (u < 0.4) {
@@ -123,13 +120,14 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
           // position (HORIZON_Y) and the chrome + backdrop fade out
           // around it.
           playTimeout = setTimeout(() => {
-            // Seed the scene at the measured anchor-act center. The
-            // celestial sampler shares the same store-derived
-            // initialLoopPosition so the sun is at the horizon at this
-            // exact loop position — no handoff jump.
-            setProgress(handoffProgress);
+            // Seed the scene at the measured anchor-act center. Read
+            // fresh from the store so a late layout measurement
+            // doesn't strand us at FALLBACK_HORIZON. Bumped 700ms →
+            // 800ms to give the 700ms backdrop fade a 100ms buffer
+            // before Opening's reveal fires (santa-loop S2).
+            setProgress(store.getState().initialLoopPosition);
             setPhase("playing");
-          }, 700);
+          }, 800);
         }, 240);
       }
     };
@@ -140,7 +138,7 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
       if (hideTimeout !== undefined) clearTimeout(hideTimeout);
       if (playTimeout !== undefined) clearTimeout(playTimeout);
     };
-  }, [durationMs, setProgress, setPhase, setLoaderProgress]);
+  }, [durationMs, setProgress, setPhase, setLoaderProgress, store]);
 
   return (
     <div

@@ -95,7 +95,7 @@ export function SimplifiedView() {
           </span>
         </div>
 
-        <p className="mt-10 max-w-[38ch] font-serif text-[clamp(1.05rem,1.2vw,1.25rem)] leading-[1.55] text-[var(--dn-fg-mute)] italic">
+        <p className="mt-14 max-w-[38ch] font-serif text-[clamp(1.05rem,1.2vw,1.25rem)] leading-[1.55] text-[var(--dn-fg-mute)] italic md:mt-16">
           {t("closing.lede")}
         </p>
 

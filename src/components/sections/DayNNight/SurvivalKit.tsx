@@ -200,7 +200,7 @@ function LogisticsBlock({
             {hint}
           </p>
         ) : null}
-        <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-2">
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-2 md:mt-3">
           {children}
         </div>
       </div>
