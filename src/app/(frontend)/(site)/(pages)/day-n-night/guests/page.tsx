@@ -2,6 +2,7 @@ import configPromise from "@payload-config";
 import { cookies, headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import type { Metadata } from "next/types";
+import { getTranslations } from "next-intl/server";
 
 import { RPage } from "@/components/UX/Transition";
 import { Credits, type Credited } from "@/components/sections/Credits";
@@ -37,12 +38,6 @@ const TIER_TO_POSITION: Record<EventTier, RP_Roles> = {
   guest: "user"
 };
 
-const TIER_TITLES: Partial<Record<RP_Roles, string>> = {
-  admin: "Hosts",
-  cofounder: "Past Attendees",
-  user: "Guests"
-};
-
 function normalizeTier(value: unknown): EventTier {
   return value === "host" || value === "past" ? value : "guest";
 }
@@ -64,6 +59,15 @@ type ProfileWithRsvp = Profile & {
 
 export default async function DayNNightGuestsPage() {
   const payload = await getPayload({ config: configPromise });
+  const tTier = await getTranslations("Event.Guests.tier");
+  // Tier titles read through next-intl so Korean visitors see Korean
+  // section headers. Single source of truth: `messages/{en,ko}.json`
+  // under `Event.Guests.tier`. Audit ref H6.
+  const TIER_TITLES: Partial<Record<RP_Roles, string>> = {
+    admin: tTier("host"),
+    cofounder: tTier("past"),
+    user: tTier("guest")
+  };
 
   // Opt-in marker: any profile with a non-empty `rsvp.intro` is on the
   // public guest list. Per-event scoping (rsvp.events relationship)

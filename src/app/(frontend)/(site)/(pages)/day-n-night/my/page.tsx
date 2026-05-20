@@ -6,9 +6,13 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { RPage } from "@/components/UX/Transition";
+import { PasswordReveal } from "./PasswordReveal";
 
+// noindex,nofollow — this page renders the 48h order password as plain
+// HTML; do not let it land in any search cache. Audit ref H3.
 export const metadata: Metadata = {
-  title: "Day n Night — Your tickets"
+  title: "Day n Night — Your tickets",
+  robots: { index: false, follow: false }
 };
 
 /**
@@ -36,6 +40,11 @@ export default async function DayNNightMyPage() {
     redirect("/login?redirect=%2Fday-n-night%2Fmy");
   }
 
+  // C5: distinguish a DB outage (`orders === null`) from a genuinely
+  // empty list. The previous .catch(() => null) silently degraded both
+  // into the same "empty" view, leading the user to believe their
+  // orders vanished. Now we surface the outage explicitly via the
+  // dedicated `t("outage")` copy below.
   const orders = await payload
     .find({
       collection: "ticket-orders",
@@ -45,7 +54,12 @@ export default async function DayNNightMyPage() {
       where: { purchaser: { equals: viewer.id } },
       sort: "-createdAt"
     })
-    .catch(() => null);
+    .catch((err) => {
+      payload.logger?.error?.(
+        `[day-n-night/my] ticket-orders find failed for viewer ${viewer.id}: ${(err as Error).message}`
+      );
+      return null;
+    });
 
   const orderIds = (orders?.docs ?? []).map((o) => (o as { id: string }).id);
   const tickets = orderIds.length
@@ -76,7 +90,9 @@ export default async function DayNNightMyPage() {
   return (
     <RPage type="pages" slug={["day-n-night", "my"]}>
       <main className="relative min-h-screen w-full bg-off-black text-off-white">
-        <div className="mx-auto max-w-3xl px-6 py-24 xl:px-10 xl:py-28">
+        {/* H13: max-w-2xl (was 3xl) — a list, but related to the
+            max-w-md single-action gate/claim screens. */}
+        <div className="mx-auto max-w-2xl px-6 py-24 xl:px-10 xl:py-28">
           <p className="mb-3 font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
             {t("eyebrow")}
           </p>
@@ -84,7 +100,17 @@ export default async function DayNNightMyPage() {
             {t("title")}
           </h1>
 
-          {!orders || orders.docs.length === 0 ? (
+          {orders === null ? (
+            // C5: explicit outage state. Distinct copy + role=alert so
+            // assistive tech announces the failure instead of confusing
+            // a DB outage with "no orders on this account".
+            <p
+              role="alert"
+              className="mt-12 text-sm font-light text-off-white/75"
+            >
+              {t("outage")}
+            </p>
+          ) : orders.docs.length === 0 ? (
             <p className="mt-12 text-sm font-light text-off-white/70">
               {t("empty")}
             </p>
@@ -105,23 +131,28 @@ export default async function DayNNightMyPage() {
                   >
                     <div className="flex items-center justify-between gap-4">
                       <span className="font-mono text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
-                        {o.paid ? "Confirmed" : "Pending"}
+                        {o.paid ? t("confirmed") : t("pending")}
                       </span>
-                      <span className="font-mono text-[10px] tracking-[0.32em] text-off-white/35 uppercase">
-                        {siblings.length} ticket
-                        {siblings.length === 1 ? "" : "s"}
+                      {/* H14: opacity bumped from /35 to /55 — clears
+                          the legibility floor for informative UI text. */}
+                      <span className="font-mono text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
+                        {t("ticketCount", { count: siblings.length })}
                       </span>
                     </div>
 
                     {o.paid && o.password ? (
                       <div className="mt-5">
                         <p className="font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
-                          Order password
+                          {t("orderPassword")}
                         </p>
-                        <p className="mt-2 font-mono text-2xl tracking-[0.18em] text-off-white">
-                          {o.password}
-                        </p>
-                        <p className="mt-2 max-w-md font-mono text-[10px] leading-relaxed tracking-widest text-off-white/45 uppercase">
+                        {/* H3: tap-to-reveal — the password stays
+                            blurred + non-selectable until the user
+                            clicks the toggle. */}
+                        <PasswordReveal password={o.password} />
+                        {/* H14: opacity bumped from /45 to /65 (and
+                            tracking-widest is unchanged) so the
+                            passwordHint copy clears the floor. */}
+                        <p className="mt-2 max-w-md font-mono text-[10px] leading-relaxed tracking-widest text-off-white/65 uppercase">
                           {t("passwordHint")}
                         </p>
                       </div>
@@ -147,7 +178,7 @@ export default async function DayNNightMyPage() {
                                 `#${ticket.ticket_number ?? "—"}`}
                             </span>
                             <span className="font-mono text-[10px] tracking-widest text-off-white/55 uppercase">
-                              {claimed ? "Claimed" : t("unclaimed")}
+                              {claimed ? t("claimed") : t("unclaimed")}
                             </span>
                           </li>
                         );

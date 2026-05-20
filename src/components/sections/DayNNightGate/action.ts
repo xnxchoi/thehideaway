@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getPayload } from "payload";
 
 import { safeEqual } from "@/lib/api/safeEqual";
+import { enforceServerActionRateLimit } from "@/lib/api/serverActionRateLimit";
 import {
   EVENT_GATE_TTL_MS,
   eventGateCookieName,
@@ -39,6 +40,14 @@ export async function submitEventGate(
   const password = typeof raw === "string" ? raw.trim() : "";
   if (!password) return { ok: false, error: "missing" };
   if (password.length > 200) return { ok: false, error: "invalid" };
+
+  // H1: rate-limit. The 30-day cookie this action issues means one
+  // successful crack is persistent access; the previous unlimited
+  // endpoint made the shared password crackable in minutes. 10 attempts
+  // per 60s, IP-keyed (no user binding on the gate — visitors are
+  // anonymous at this point).
+  const rl = await enforceServerActionRateLimit("auth", null);
+  if (!rl.ok) return { ok: false, error: "throttled" };
 
   const payload = await getPayload({ config: configPromise });
   const found = await payload

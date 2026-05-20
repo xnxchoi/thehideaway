@@ -6,10 +6,17 @@ import { getPayload } from "payload";
 import { revalidatePath } from "next/cache";
 
 import { safeEqual } from "@/lib/api/safeEqual";
+import { enforceServerActionRateLimit } from "@/lib/api/serverActionRateLimit";
 
 export type ClaimActionState = {
   ok: boolean;
-  error?: "invalid" | "expired" | "alreadyClaimed" | "not-found";
+  error?:
+    | "invalid"
+    | "expired"
+    | "alreadyClaimed"
+    | "not-found"
+    | "throttled"
+    | "emailMismatch";
 };
 
 /**
@@ -39,6 +46,19 @@ export async function submitClaim(
 
   const payload = await getPayload({ config: configPromise });
 
+  // Resolve viewer once, up-front. The viewer id (when present) keys the
+  // rate limiter so a signed-in attacker can't bypass the IP bucket by
+  // tunnelling through different addresses; the viewer email is needed
+  // later to enforce `ticket.claim_email`. Audit refs C1, C2.
+  const viewerId = await resolveViewerId(payload);
+  const viewerEmail = await resolveViewerEmail(payload);
+
+  // C2: rate-limit. 10 attempts / 60s shared between IP-anchored and
+  // user-anchored clients. The 48h order password is ~46 bits and was
+  // crackable in minutes against the previous unlimited endpoint.
+  const rl = await enforceServerActionRateLimit("auth", viewerId);
+  if (!rl.ok) return { ok: false, error: "throttled" };
+
   const ticket = (await payload
     .findByID({
       collection: "tickets",
@@ -51,6 +71,7 @@ export async function submitClaim(
     order?: string | null;
     claimed_at?: string | null;
     claim_token?: string | null;
+    claim_email?: string | null;
   } | null;
 
   if (!ticket) return { ok: false, error: "not-found" };
@@ -87,8 +108,18 @@ export async function submitClaim(
     return { ok: false, error: "invalid" };
   }
 
-  // Resolve the viewer (optional). If signed in, bind the ticket to them.
-  const viewerId = await resolveViewerId(payload);
+  // C1: enforce `claim_email` when set. The purchaser used it to scope
+  // a gift to one specific recipient; allowing anyone with URL + password
+  // to claim defeats that scope. We require a signed-in viewer whose
+  // email matches (case-insensitive, trimmed) before binding the ticket.
+  // Null `claim_email` (no scope) still allows anonymous/anyone claim.
+  if (ticket.claim_email) {
+    const expected = ticket.claim_email.trim().toLowerCase();
+    const actual = viewerEmail?.trim().toLowerCase() ?? "";
+    if (!actual || actual !== expected) {
+      return { ok: false, error: "emailMismatch" };
+    }
+  }
 
   await payload.update({
     collection: "tickets",
@@ -118,6 +149,31 @@ async function resolveViewerId(
     }
     const { user } = await payload.auth({ headers: headersForPayload });
     return user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Mirror of `resolveViewerId` that returns the signed-in viewer's email
+ * (or null). Used by the `claim_email` enforcement above. Best-effort:
+ * a Payload outage returns null and the email check falls through to
+ * "emailMismatch" rather than silently accepting.
+ */
+async function resolveViewerEmail(
+  payload: Awaited<ReturnType<typeof getPayload>>
+): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const headerStore = await nextHeaders();
+    const headersForPayload = new Headers(headerStore);
+    const token = cookieStore.get("payload-token")?.value;
+    if (token && !headersForPayload.get("authorization")) {
+      headersForPayload.set("authorization", `JWT ${token}`);
+    }
+    const { user } = await payload.auth({ headers: headersForPayload });
+    const email = (user as { email?: unknown } | null)?.email;
+    return typeof email === "string" ? email : null;
   } catch {
     return null;
   }

@@ -326,12 +326,12 @@
       "dressCode": {
         "heading": "One rule: Don't dress your age.",
         "option1": {
-          "label": "An outfit you still love — but will be too old for soon",
-          "body": "Last call. Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
+          "label": "#throwback: looks you are a little old for... ",
+          "body": "An outfit you still love — but felt like you're past wearing it? Last call.\n Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
         },
         "option2": {
-          "label": "Daytime unshaven. Nighttime shaken — not stirred.",
-          "body": "One outfit for both. By day: dad jeans, Malibu retiree, unbothered, uncaring. By night: a layer that walks into a quiet bar after dark without looking out of place."
+          "label": "...or a tad bit young for.",
+          "body": "Dad jeans, jorts, oversized polos - your pick."
         }
       },
       "included": {
@@ -353,7 +353,7 @@
         "heading": "Entry",
         "amount": "65,000 KRW",
         "perGuest": "all-inclusive · per guest",
-        "method": "Cash on arrival, or transfer",
+        "method": "Transfer",
         "bank": "Toss Bank · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
@@ -409,7 +409,7 @@
         "dress": {
           "romeo": {
             "alt": "Romeo and Juliet",
-            "caption": "(Romeo and Juliet)"
+            "caption": "Yes, it's DiCaprio... But even he couldn't pull this off now. Age is a factor. (Romeo and Juliet, 1997)"
           },
           "pink": {
             "alt": "All the pink",
@@ -477,8 +477,8 @@
     "Gate": {
       "eyebrow": "Private event",
       "title": "Day n Night",
-      "subtitle": "Enter the code shared with you privately.",
-      "placeholder": "Code",
+      "subtitle": "Please provide the passcode.",
+      "placeholder": "Something like...",
       "submit": "Enter",
       "submitting": "Checking…",
       "errors": {
@@ -529,6 +529,14 @@
         "eyebrow": "Your tickets",
         "title": "Your reservation",
         "empty": "No tickets on this account yet.",
+        "outage": "We couldn't load your tickets right now. Refresh in a moment.",
+        "confirmed": "Confirmed",
+        "pending": "Pending",
+        "ticketCount": "{count, plural, one {# ticket} other {# tickets}}",
+        "orderPassword": "Order password",
+        "passwordReveal": "Tap to reveal",
+        "passwordHide": "Tap to hide",
+        "claimed": "Claimed",
         "link": "Send link",
         "linkSent": "Sent",
         "claimedBy": "Claimed by {name}",
@@ -544,12 +552,14 @@
         "submit": "Claim",
         "errors": {
           "expired": "This link has expired. Ask the buyer to resend.",
+          "notActivated": "This ticket has not been activated yet. The host will confirm payment shortly — keep this link, no need to ask the buyer for a new one.",
           "invalid": "That password did not match.",
-          "alreadyClaimed": "This ticket has already been claimed."
+          "alreadyClaimed": "This ticket has already been claimed.",
+          "emailMismatch": "This gift ticket is reserved for a specific email. Sign in with the address the purchaser specified."
         },
         "success": {
           "title": "You are on the list.",
-          "body": "We have emailed your ticket. See you on May 24."
+          "body": "You're set. See you on May 24."
         }
       },
       "gate": {

@@ -18,6 +18,11 @@ export default function robots(): MetadataRoute.Robots {
           '/dev/',
           '/dodo/',
           '/lexy/',
+          // Day n Night surfaces render the 48h order password and
+          // gift-claim tokens — keep them out of search caches even
+          // though each page also carries metadata.robots noindex.
+          '/day-n-night/my',
+          '/day-n-night/claim/',
         ],
       },
     ],

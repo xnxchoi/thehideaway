@@ -43,7 +43,13 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
       ? t("errors.expired")
       : errorKey === "alreadyClaimed"
         ? t("errors.alreadyClaimed")
-        : t("errors.invalid")
+        : errorKey === "emailMismatch"
+          ? t("errors.emailMismatch")
+          : errorKey === "throttled"
+            ? // Throttled re-uses the invalid copy for now — same UX hint
+              // ("try again") with the i18n key already in tree.
+              t("errors.invalid")
+            : t("errors.invalid")
     : null;
 
   return (

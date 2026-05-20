@@ -359,7 +359,7 @@
         "heading": "Entry",
         "amount": "65,000 KRW",
         "perGuest": "all-inclusive · per guest",
-        "method": "Cash on arrival, or transfer",
+        "method": "Transfer",
         "bank": "Toss Bank · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
@@ -423,20 +423,20 @@
           },
           "dad": {
             "alt": "Steve Carrell, Crazy Stupid Love",
-            "caption": "Who's the more in-style of the two? We're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
+            "caption": "Who's the more in-style of the two? No matter, we're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
           },
           "notDads": {
             "alt": "Pulp Fiction",
-            "caption": "No.. They are not dads. (Pulp Fiction, 1999)"
+            "caption": "What a pair of nice looking people - bet they hate violence. (Pulp Fiction, 1999)"
           },
           "dude": {
             "alt": "The Dude — Big Lebowski",
-            "caption": "The Dude. (Big Lebowski, 1998)"
+            "caption": "The Dude. Nuff said. (Big Lebowski, 1998)"
           }
         },
         "night": {
           "suit": {
-            "alt": "Pulp Fiction — suit",
+            "alt": "Pulp Fiction",
             "caption": "No, you don't have to bring a suit. Won't stop you though. (Pulp Fiction)"
           },
           "jacket": {
@@ -448,44 +448,44 @@
     },
     "Guests": {
       "eyebrow": "RSVP",
-      "title": "오시는 분들",
-      "subtitle": "작은 명단, 순서 없이.",
+      "title": "RSVP'd",
+      "subtitle": "Join the list!",
       "tier": {
         "host": "호스트",
         "past": "다시 오는 분들",
         "guest": "처음 오는 분들"
       },
       "empty": {
-        "headline": "아직 등록된 분이 없습니다.",
-        "body": "RSVP가 들어오면 여기에 표시됩니다. 날짜에 가까워질수록 채워질 거예요."
+        "headline": "아직 게스트 목록이 업데이트 되지 않았습니다.",
+        "body": "몇 시간 뒤 다시 방문 바랍니다."
       },
       "intro": {
-        "label": "소개"
+        "label": "Profile"
       },
       "instagram": {
-        "label": "인스타그램",
-        "view": "인스타그램에서 보기"
+        "label": "Instagram",
+        "view": "인스타그램 보기"
       },
       "gallery": {
-        "label": "갤러리",
-        "empty": "사진이 아직 없습니다."
+        "label": "Gallery",
+        "empty": "업로드한 사진이 없습니다."
       },
       "actions": {
-        "close": "닫기",
-        "expand": "탭하여 확장",
-        "back": "전체로 돌아가기"
+        "close": "Close",
+        "expand": "Expanmd",
+        "back": "돌아가기"
       },
-      "you": "당신입니다",
+      "you": "It's you!",
       "navigation": {
         "back": "이벤트로 돌아가기"
       }
     },
     "Gate": {
-      "eyebrow": "비공개 이벤트",
+      "eyebrow": "Passcode?",
       "title": "Day n Night",
-      "subtitle": "개별 전달된 코드를 입력해 주세요.",
-      "placeholder": "코드",
-      "submit": "입장",
+      "subtitle": "패스코드를 입력해 주세요.",
+      "placeholder": "Something like...",
+      "submit": "확인하기",
       "submitting": "확인 중…",
       "errors": {
         "missing": "코드를 입력해 주세요.",
@@ -500,7 +500,7 @@
       "steps": {
         "welcome": {
           "eyebrow": "Day n Night · RSVP",
-          "title": "티켓 전 몇 가지 확인이 있어요.",
+          "title": "우선, 몇 가지 필수 정보.",
           "body": "이메일 인증, 이름, 그리고 티켓 — 약 2분, 계정 가입은 필요 없습니다.",
           "cta": "시작"
         },
@@ -535,6 +535,14 @@
         "eyebrow": "내 티켓",
         "title": "예약 내역",
         "empty": "아직 등록된 티켓이 없어요.",
+        "outage": "지금은 티켓 내역을 불러올 수 없어요. 잠시 후 다시 시도해 주세요.",
+        "confirmed": "확정",
+        "pending": "확인 중",
+        "ticketCount": "티켓 {count}장",
+        "orderPassword": "주문 비밀번호",
+        "passwordReveal": "탭하여 보기",
+        "passwordHide": "탭하여 숨기기",
+        "claimed": "수령 완료",
         "link": "링크 전송",
         "linkSent": "전송됨",
         "claimedBy": "{name} 님이 수령",
@@ -550,12 +558,14 @@
         "submit": "수령",
         "errors": {
           "expired": "링크가 만료되었어요. 구매자에게 재전송을 요청해 주세요.",
+          "notActivated": "아직 티켓이 활성화되지 않았어요. 호스트가 곧 결제를 확인할 예정이니, 이 링크는 그대로 보관하시면 돼요. 구매자에게 새 링크를 요청하실 필요는 없어요.",
           "invalid": "비밀번호가 일치하지 않아요.",
-          "alreadyClaimed": "이미 수령된 티켓이에요."
+          "alreadyClaimed": "이미 수령된 티켓이에요.",
+          "emailMismatch": "이 선물 티켓은 특정 이메일로 지정되어 있어요. 구매자가 지정한 주소로 로그인해 주세요."
         },
         "success": {
           "title": "명단에 등록되었어요.",
-          "body": "티켓이 이메일로 발송되었어요. 5월 24일에 만나요."
+          "body": "예약이 완료되었어요. 5월 24일에 만나요."
         }
       },
       "gate": {

@@ -7,7 +7,8 @@ import { RPage } from "@/components/UX/Transition";
 import { ClaimGate } from "./ClaimGate";
 
 export const metadata: Metadata = {
-  title: "Day n Night — Claim a ticket"
+  title: "Day n Night — Claim a ticket",
+  robots: { index: false, follow: false }
 };
 
 /**
@@ -100,7 +101,7 @@ export default async function DayNNightClaimPage({
                 {state.kind === "not-found"
                   ? t("errors.invalid")
                   : state.kind === "not-activated"
-                    ? t("errors.expired") // surface as "not available yet"
+                    ? t("errors.notActivated")
                     : state.kind === "expired"
                       ? t("errors.expired")
                       : t("errors.alreadyClaimed")}
