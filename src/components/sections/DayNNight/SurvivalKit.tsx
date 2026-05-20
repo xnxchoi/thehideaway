@@ -4,48 +4,52 @@ import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 /**
- * Survival Kit — Phase 5a P5a-Product-1 (v3: variant-aware).
+ * Survival Kit — Phase 5c v4 (editorial fragments).
  *
- * Composition v2: three visual clusters separated by hairline dividers,
- * not a uniform dl table. The audit's user-lens identified this block
- * as needing distinct visual identity (the prior dl-row v1 read as a
- * form). The current layout treats the kit as a private dossier:
+ * v4 dissolves the dossier framing (v2's three-cluster card with
+ * dividers + own header) into a single typographic stack of editorial
+ * fragments. The act's own title carries the section identity; the kit
+ * does not repeat it. Spacing follows a Fibonacci-ish progression
+ * (8 / 13 / 21 / 55 px) so the rhythm feels musical instead of
+ * arbitrary.
  *
  *   ┌──────────────────────────────────────────────────────┐
- *   │  Eyebrow                                             │
- *   │  Heading                                             │
- *   │  ─────────────────────────────────────────────       │
  *   │  WHERE                                               │
  *   │  Sowol-ro 20-gil 64, 3F                              │
- *   │  → Open map · Copy address                           │
+ *   │  → Open map · Copy                                   │
  *   │                                                      │
  *   │  PAY                                                 │
  *   │  Toss Bank · 1002-5436-0906                          │
- *   │  65,000 KRW · Copy account                           │
- *   │  ─────────────────────────────────────────────       │
+ *   │  리스토어드프로젝트                                  │
+ *   │  65,000 KRW                                          │
+ *   │  → Copy                                              │
+ *   │                                                      │
  *   │  WEAR    Dressy. Comfortable. A little brave.        │
  *   │  +1S     Reserved guests only.                       │
- *   │  LATE    Doors open until 21:00.                     │
- *   │  ─────────────────────────────────────────────       │
+ *   │  LATE    Doors stay open until 21:00.                │
+ *   │                                                      │
  *   │  ASK     concierge@hideawayseoul.com →               │
  *   └──────────────────────────────────────────────────────┘
  *
- * Cluster 1 — Logistics (Where, Pay): actions visible, larger values.
- * Cluster 2 — Etiquette (Wear, +1s, Late): single-line policy facts.
- * Cluster 3 — Contact (Ask): standalone, the "everything else" valve.
+ * Geometric harmony:
+ *  - Label column: 55px (Fibonacci) — tight to short labels, no
+ *    over-reserved whitespace like the prior 88px column.
+ *  - Inter-fragment gap: 55px (top-level groups), 13px (within-group
+ *    rows), 8px (line stack).
+ *  - Type ratios: address/account serif ≈ 1.6× lede; lede ≈ 1.5× mono
+ *    metadata. Stays near the golden ratio without enforcing exact
+ *    pixel multiples.
  *
  * Copy lives in `messages/{en,ko}.json` under
  * `Event.DayNNight.survivalKit`. The component itself is locale-blind.
  *
- * ── Variants (P5c) ───────────────────────────────────────────────────
- * `standalone` (default): the SimplifiedView usage. Outer margins live
- * here so the kit sits below the closing italic without callers having
- * to think about spacing.
+ * ── Variants ─────────────────────────────────────────────────────────
+ * `standalone` (default): SimplifiedView usage. Outer top margin
+ * separates the kit from the closing italic above it.
  *
- * `embedded`: the Immersive Opening + Closing reprise usage. No outer
- * margin — the surrounding act grid controls placement. Slightly
- * tighter max-width so it fits inside an act's right (or left) column
- * without crowding.
+ * `embedded`: Immersive Opening + Closing reprise usage. No outer
+ * margin — the host act grid owns placement. Slightly tighter
+ * max-width so it fits inside a column.
  */
 interface SurvivalKitProps {
   variant?: "standalone" | "embedded";
@@ -63,15 +67,10 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   const address = tDn("location.address");
   const tossAccount = tDn("entry.bank");
   const tossAmount = tDn("entry.amount");
-  // Account holder name — required for Korean bank transfers (Toss /
-  // KakaoBank etc. display the registered holder during transfer
-  // confirmation, and users verify the name before sending). Added in
-  // P5c santa-loop round 1 fix after both reviewers flagged its
-  // omission from the Closing reprise as a payment-flow regression.
+  // Account holder name — required for Korean bank transfers.
   const tossHolder = tDn("entry.accountHolder");
   const hostContact = t("host.value");
-  // Kakao Map query URL — works without an API key. The map app
-  // resolves the romanized address on open.
+  // Kakao Map query URL — works without an API key.
   const kakaoMapUrl = `https://map.kakao.com/?q=${encodeURIComponent(address)}`;
   // Toss line copied as "account · holder · amount" so a single paste
   // lands the whole payment instruction.
@@ -101,180 +100,114 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   const copyLabel = (key: string) => (copied === key ? t("copied") : t("copy"));
 
   // Outer container — `standalone` ships its own top margin (used in
-  // SimplifiedView where the surrounding flow needs explicit
-  // separation). `embedded` ships no margin so the host grid in
-  // Immersive's Opening + Closing acts owns placement.
+  // SimplifiedView). `embedded` ships no margin; the host grid owns
+  // placement. Width is narrower than the prior dossier so the kit
+  // reads as a column of editorial fragments, not a card.
   const outerClass =
     variant === "embedded"
-      ? "grid w-full max-w-[520px] xl:max-w-[560px]"
-      : "mt-16 grid max-w-[640px] md:mt-24 md:max-w-[760px]";
+      ? "grid w-full max-w-[440px] xl:max-w-[480px]"
+      : "mt-16 grid max-w-[520px] md:mt-24 md:max-w-[560px]";
+
+  // Etiquette rows — the three single-line policy facts. Pulled out
+  // so the JSX stack reads linearly instead of inlining a map() with
+  // string literals.
+  const etiquette = [
+    { key: "dress", label: t("dress.label"), value: t("dress.value") },
+    { key: "plus", label: t("plusOnes.label"), value: t("plusOnes.value") },
+    { key: "late", label: t("late.label"), value: t("late.value") }
+  ];
 
   return (
-    <section
-      aria-labelledby={headingId}
-      className={outerClass}
-    >
-      {/* Heading — eyebrow + serif title, no divider above (the
-          surrounding closing italic provides the upper visual break). */}
-      <header className="mb-10 grid gap-2 md:mb-12 md:gap-3">
-        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
-          {t("subheading")}
-        </p>
-        <h2
-          id={headingId}
-          className="font-serif text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.1] font-bold tracking-[-0.015em] text-[var(--dn-fg)]"
-        >
-          {t("heading")}
-        </h2>
-      </header>
+    <section aria-labelledby={headingId} className={outerClass}>
+      {/* The kit's own heading is hidden visually because the host
+          act's title already labels the surface. Screen-readers get
+          the label via aria-labelledby pointing here so the section's
+          purpose is named without typographic duplication. */}
+      <h2 id={headingId} className="sr-only">
+        {t("heading")}
+      </h2>
 
-      {/* ── Cluster 1: Logistics (Where, Pay) ────────────────────── */}
-      <div className="grid gap-10 border-t border-[var(--dn-line)] pt-10 md:gap-12 md:pt-12">
-        <LogisticsBlock
-          label={t("address.label")}
-          value={address}
-          hint={t("address.hint")}
-        >
+      {/* ── Address fragment ──────────────────────────────────────── */}
+      <div className="grid gap-[8px]">
+        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+          {t("address.label")}
+        </p>
+        <p className="font-serif text-[clamp(1.4rem,1.8vw,1.8rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
+          {address}
+        </p>
+        <div className="mt-[8px] flex flex-wrap items-baseline gap-x-[21px] gap-y-[8px]">
           <RowAction href={kakaoMapUrl} external arrow text={t("openMap")} />
           <RowAction
             onClick={() => copyToClipboard(address, "address")}
             text={copyLabel("address")}
             ariaLabel={copyLabel("address")}
           />
-        </LogisticsBlock>
+        </div>
+      </div>
 
-        <LogisticsBlock
-          label={t("toss.label")}
-          value={tossAccount}
-          holder={tossHolder}
-          subvalue={tossAmount}
-          hint={t("toss.hint")}
-        >
+      {/* ── Payment fragment ──────────────────────────────────────── */}
+      <div className="mt-[55px] grid gap-[8px]">
+        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+          {t("toss.label")}
+        </p>
+        <p className="font-serif text-[clamp(1.4rem,1.8vw,1.8rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
+          {tossAccount}
+        </p>
+        <p className="font-serif text-[clamp(1rem,1.2vw,1.15rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)]">
+          {tossHolder}
+        </p>
+        <p className="font-mono text-[12px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
+          {tossAmount}
+        </p>
+        <div className="mt-[8px]">
           <RowAction
             onClick={() => copyToClipboard(tossClipboard, "toss")}
             text={copyLabel("toss")}
             ariaLabel={copyLabel("toss")}
           />
-        </LogisticsBlock>
+        </div>
       </div>
 
-      {/* ── Cluster 2: Etiquette (Wear, +1s, Late) ───────────────── */}
-      <dl className="mt-10 grid gap-5 border-t border-[var(--dn-line)] pt-10 md:mt-12 md:gap-6 md:pt-12">
-        <EtiquetteRow label={t("dress.label")} value={t("dress.value")} />
-        <EtiquetteRow label={t("plusOnes.label")} value={t("plusOnes.value")} />
-        <EtiquetteRow label={t("late.label")} value={t("late.value")} />
+      {/* ── Etiquette fragment — 3 hanging-label rows ─────────────── */}
+      <dl className="mt-[55px] grid gap-[13px]">
+        {etiquette.map(({ key, label, value }) => (
+          <div
+            key={key}
+            className="grid grid-cols-[55px_1fr] items-baseline gap-x-[21px]"
+          >
+            <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+              {label}
+            </dt>
+            <dd className="text-[14px] leading-[1.55] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
+              {value}
+            </dd>
+          </div>
+        ))}
       </dl>
 
-      {/* ── Cluster 3: Contact (Ask) ──────────────────────────────── */}
-      <div className="mt-10 grid grid-cols-[88px_1fr] items-baseline gap-x-6 border-t border-[var(--dn-line)] pt-10 md:mt-12 md:pt-12">
+      {/* ── Contact fragment — italic serif pull ──────────────────── */}
+      <div className="mt-[55px] grid grid-cols-[55px_1fr] items-baseline gap-x-[21px]">
         <span className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
           {t("host.label")}
         </span>
-        <div className="grid gap-2 md:gap-3">
-          <a
-            href={hostHref}
-            className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.1rem,1.5vw,1.4rem)] leading-[1.3] text-[var(--dn-fg)] [text-decoration-line:underline] no-underline [text-decoration-color:var(--dn-fg-faint)] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
-          >
-            <span>{hostContact}</span>
-            <span aria-hidden className="text-[0.85em] leading-none">
-              →
-            </span>
-          </a>
-          <p className="font-mono text-[10.5px] leading-[1.6] tracking-[0.06em] text-[var(--dn-fg-faint)]">
-            {t("host.hint")}
-          </p>
-        </div>
+        <a
+          href={hostHref}
+          className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.1rem,1.4vw,1.3rem)] leading-[1.3] text-[var(--dn-fg)] italic no-underline [text-decoration-color:var(--dn-fg-faint)] [text-decoration-line:underline] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
+        >
+          <span>{hostContact}</span>
+          <span aria-hidden className="text-[0.85em] leading-none">
+            →
+          </span>
+        </a>
       </div>
     </section>
   );
 }
 
 /**
- * Logistics row — for Where / Pay. Larger value typography, optional
- * subvalue (e.g. amount), hint line, and an action row beneath.
- *
- * Layout: 88px label column + 1fr content. Label is mono micro-caps,
- * content stack is serif value → mono subvalue → mono hint → mono
- * actions. The hierarchy reads top-to-bottom: identity → fact →
- * context → affordance.
- */
-function LogisticsBlock({
-  label,
-  value,
-  holder,
-  subvalue,
-  hint,
-  children
-}: {
-  label: string;
-  value: string;
-  /**
-   * Account-holder name — sits between the primary value and the
-   * mono subvalue. Used by the Pay row so Korean bank transfers can
-   * verify recipient identity. Optional so the Where row (no holder)
-   * keeps the original value → hint cadence.
-   */
-  holder?: string;
-  subvalue?: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="grid grid-cols-[88px_1fr] items-baseline gap-x-6">
-      <span className="self-start pt-[6px] font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
-        {label}
-      </span>
-      <div className="grid gap-2 md:gap-3">
-        <p className="font-serif text-[clamp(1.2rem,1.6vw,1.5rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg)]">
-          {value}
-        </p>
-        {holder ? (
-          <p className="font-serif text-[clamp(1rem,1.2vw,1.15rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)]">
-            {holder}
-          </p>
-        ) : null}
-        {subvalue ? (
-          <p className="font-mono text-[12px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
-            {subvalue}
-          </p>
-        ) : null}
-        {hint ? (
-          <p className="font-mono text-[10.5px] leading-[1.6] tracking-[0.06em] text-[var(--dn-fg-faint)]">
-            {hint}
-          </p>
-        ) : null}
-        <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-2 md:mt-3">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Etiquette row — single-line policy fact (Wear / +1s / Late).
- *
- * Layout: 88px label column + 1fr value. No subvalue, no actions —
- * these are read-only one-liners. Value uses sans for legibility (the
- * lines are conversational, not editorial).
- */
-function EtiquetteRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[88px_1fr] items-baseline gap-x-6">
-      <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
-        {label}
-      </dt>
-      <dd className="text-[14.5px] leading-[1.55] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-/**
  * RowAction — mono micro-cap link or button. Used for the
- * Where/Pay affordances (Open map, Copy). `arrow` adds a trailing →
- * that nudges right on hover (consistent with the contact link).
+ * Address/Payment affordances (Open map, Copy). `arrow` adds a
+ * trailing → that nudges right on hover.
  */
 function RowAction({
   text,

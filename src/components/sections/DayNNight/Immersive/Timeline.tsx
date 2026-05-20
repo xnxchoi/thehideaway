@@ -384,7 +384,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,7fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
             <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
               I.
@@ -402,10 +402,17 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               The opening.body line carries the editorial voice beneath
               the lede; it sits as a quiet serif aside between the lede
               and the SurvivalKit's bottom-right anchor. */}
+          {/* Title block — RevealStage with NO max-w on the container
+              so the hero title can take full column width and grow to
+              theatrical scale (P5c v4 — golden-ratio columns + bigger
+              type). Lede and opening.body each carry their own
+              narrower max-w for prose readability; the title floats
+              free of those constraints so it reads as the act's
+              structural element. */}
           <RevealStage
             as="div"
             active={openingActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[760px] content-start gap-6 self-start max-lg:col-span-full xl:gap-8"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid content-start gap-[21px] self-start max-lg:col-span-full xl:gap-[34px]"
           >
             <RevealItem
               as="p"
@@ -415,7 +422,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="h2"
-              className="font-serif text-[clamp(4rem,9vw,9.6rem)] leading-[0.94] font-bold tracking-[-0.022em] text-[var(--dn-fg)]"
+              className="font-serif text-[clamp(5rem,12vw,13rem)] leading-[0.9] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
             >
               {t("title")}
             </RevealItem>
@@ -427,7 +434,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="p"
-              className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
+              className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.25] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
             >
               {t("opening.body")}
             </RevealItem>
@@ -692,7 +699,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,4fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
             <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
               IV.
@@ -708,7 +715,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={nightActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-7 self-end xl:gap-8"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-[21px] self-end max-lg:col-span-full xl:gap-[34px]"
           >
             <RevealItem
               as="h2"
@@ -723,7 +730,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               {t("act.night.body")}
             </RevealItem>
           </RevealStage>
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[320px] min-w-[240px] gap-2 self-end justify-self-end">
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[320px] min-w-[240px] gap-2 self-end justify-self-end max-lg:col-span-full max-lg:justify-self-start">
             <span
               aria-hidden
               className="mb-[10px] block h-px w-14 bg-[var(--dn-fg)] opacity-60"
@@ -781,7 +788,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,8fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           {/* Eyebrow — right-aligned to anchor the title-top-right
               orientation. Opening's eyebrow is left-aligned; the
               mirrored alignment is the first signal of the bookend. */}
@@ -812,10 +819,14 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               left-column title block in scale and weight so the loop
               reads bookended; the CTA replaces Opening's date/location
               strip as the act's final affordance. */}
+          {/* Right column title block — mirrors Opening's title
+              scale + structure for the bookend. justify-self-end
+              keeps the title anchored to the right edge of the wider
+              8fr column. */}
           <RevealStage
             as="div"
             active={closingActive}
-            className="col-start-2 col-end-3 row-start-2 row-end-3 grid max-w-[760px] content-start gap-6 self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start xl:gap-7"
+            className="col-start-2 col-end-3 row-start-2 row-end-3 grid content-start gap-[21px] self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start xl:gap-[34px]"
           >
             <RevealItem
               as="p"
@@ -825,7 +836,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="h2"
-              className="font-serif text-[clamp(4rem,9vw,9.6rem)] leading-[0.94] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
+              className="font-serif text-[clamp(5rem,12vw,13rem)] leading-[0.9] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
             >
               {t("title")}
             </RevealItem>
