@@ -27,8 +27,14 @@ RUN apk add --no-cache libc6-compat && \
     corepack prepare pnpm@10.30.3 --activate
 
 # Install all deps (devDeps included — Payload CLI and tsx are needed).
+# --ignore-scripts: pnpm 10+ errors on ignored postinstall scripts in CI
+# (ERR_PNPM_IGNORED_BUILDS) even when `onlyBuiltDependencies` is set,
+# because per-machine build approval isn't cached in a fresh container.
+# The migrate runner uses Payload CLI + tsx only — none of the native
+# packages (sharp, @swc/core, @parcel/watcher, esbuild, unrs-resolver)
+# are exercised here, so skipping their build scripts is safe.
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source files needed by payload.config.ts and the migration files.
 # tsconfig.json is required so path aliases (@/) resolve correctly.
