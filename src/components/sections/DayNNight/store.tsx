@@ -93,6 +93,16 @@ type SceneState = {
   /** Null until Timeline measures the DOM on mount. */
   layout: ActLayout | null;
   /**
+   * Loader-local time progress in [0, 1]. SunLoader writes this each
+   * tick during the loading phase; the Opening act's choreographed
+   * reveal reads it to fade copy in lockstep with the sun rise. After
+   * the loader completes it stays at 1, so re-entries (user scrolls
+   * back to Opening) read fully-revealed copy with no lingering hidden
+   * state. Distinct from `progress` because with anchor=0 the scene's
+   * progress is 0 throughout the loader, so it can't drive the reveal.
+   */
+  loaderProgress: number;
+  /**
    * loopProgress at which the viewport center sits on the anchor act's
    * center. Derived from layout — re-computed every time layout updates.
    * Loader handoff and Scrubber.handleJump both reference this so the
@@ -110,6 +120,7 @@ type SceneAct = {
   setProgress: (p: number) => void;
   setPhase: (p: Phase) => void;
   setLayout: (layout: ActLayout) => void;
+  setLoaderProgress: (u: number) => void;
 };
 type SceneStore = SceneState & SceneAct;
 /**
@@ -124,6 +135,7 @@ const FALLBACK_HORIZON = 0;
 const createDayCycle = (
   initial: SceneState = {
     progress: 0,
+    loaderProgress: 0,
     phase: "loading",
     layout: null,
     initialLoopPosition: FALLBACK_HORIZON,
@@ -134,6 +146,7 @@ const createDayCycle = (
     ...initial,
     setProgress: (progress) => set({ progress }),
     setPhase: (phase) => set({ phase }),
+    setLoaderProgress: (loaderProgress) => set({ loaderProgress }),
     setLayout: (layout) => {
       // Derive the loopProgress where the viewport center sits at the
       // anchor act's center:
@@ -168,6 +181,30 @@ export const useDayNNightScene = <T,>(r: (s: SceneStore) => T) => {
   const f = useContext(DayCycleCtx);
   if (!f) throw new Error("DayCycleCtx not found");
   return useStore(f, r);
+};
+
+/**
+ * Imperative handle to the scene store — exposes `.getState()`,
+ * `.setState()`, and `.subscribe()` for callers that need to read fresh
+ * values inside requestAnimationFrame loops or other non-React contexts
+ * without forcing a component re-render per tick.
+ *
+ * The hook itself is React (must run inside DayCycleProvider); the
+ * returned API is plain Zustand-vanilla. Capture once at component
+ * mount, then call methods on it imperatively for the lifetime of the
+ * effect.
+ *
+ * This existed implicitly on `useDayNNightScene` itself when the store
+ * was built with `create()` from the standard `zustand` package
+ * (pre-vanilla refactor). The refactor to `createStore` from
+ * `zustand/vanilla` + React context dropped that surface — every prior
+ * `useDayNNightScene.getState()` call site was silently breaking until
+ * this hook restored the imperative path.
+ */
+export const useDayNNightStore = () => {
+  const f = useContext(DayCycleCtx);
+  if (!f) throw new Error("DayCycleCtx not found");
+  return f;
 };
 
 /**

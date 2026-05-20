@@ -10,7 +10,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
-import { RevealItem, RevealStage } from "./Reveal";
+import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
 import { SceneView } from "./SceneView";
 
 /**
@@ -21,20 +21,19 @@ import { SceneView } from "./SceneView";
 const ANCHOR_COOKOUT = 0.279;
 const ANCHOR_DRESS = 0.478;
 const ANCHOR_NIGHT = 0.664;
-// Closing has no polaroid anchor (no parallax cluster) so it's not in
-// the ANCHOR_* group above; this is the reveal threshold for its copy.
-const ANCHOR_CLOSING = 0.88;
 
 /**
- * Reveal thresholds for the `progressThreshold` prop on `<RevealStage>`.
- * Each value sits a hair before the act's polaroid anchor so the
- * blur-in (0.85s) lands by the time the user is looking at the heading,
- * not after. Audit ref H9: replaces the prior `whileInView` triggers
- * that misfired on mount inside the GSAP-pinned horizontal track.
+ * Act indices in SECTION_KEYS order. Used with `useActRevealActive`
+ * (see Reveal.tsx) which reads the live `layout.startsFrac` to decide
+ * when each act's copy reveal should fire — anchored on the act's
+ * START position, not its CENTER (the prior static threshold model
+ * anchored on CENTER and fired too late, leaving copy hidden when the
+ * act first entered the viewport).
  */
-const REVEAL_COOKOUT = ANCHOR_COOKOUT - 0.06; // 0.219
-const REVEAL_NIGHT = ANCHOR_NIGHT - 0.06; // 0.604
-const REVEAL_CLOSING = ANCHOR_CLOSING - 0.04; // 0.84
+const ACT_INDEX_COOKOUT = 1;
+const ACT_INDEX_DRESS = 2;
+const ACT_INDEX_NIGHT = 3;
+const ACT_INDEX_CLOSING = 4;
 
 // ScrollTrigger is registered globally in TransitionProvider — see
 // readmes/DAY_N_NIGHT.md § 9 ("No new gsap.registerPlugin at module scope
@@ -255,6 +254,24 @@ interface ActSetProps {
 }
 
 function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
+  // Per-act reveal gates. Opening gates on `isPlaying` so it doesn't
+  // fire while the loader is still visible (the prior `whileInView`
+  // model triggered during the loader covering, completing Opening's
+  // stagger before the user could see it). The other 4 acts gate on a
+  // layout-aware scene-progress threshold so the blur-in lands before
+  // the heading sits at viewport center, not after. P0.2 + P0.3.
+  //
+  // The two ActSets (primary + duplicate-for-loop) each call these
+  // hooks independently; the boolean selector pattern means each ActSet
+  // re-renders only on the threshold crossing, not on every progress
+  // write. Both copies stay in sync because they read from the same
+  // store.
+  const openingActive = isPlaying;
+  const cookoutActive = useActRevealActive(ACT_INDEX_COOKOUT);
+  const dressActive = useActRevealActive(ACT_INDEX_DRESS);
+  const nightActive = useActRevealActive(ACT_INDEX_NIGHT);
+  const closingActive = useActRevealActive(ACT_INDEX_CLOSING);
+
   // The 5 acts are wrapped in a Fragment so the parent track gets them as
   // direct flex children — GSAP measures scrollWidth across them. Each
   // act keeps the same outer flex-item width but gets its own
@@ -285,6 +302,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
+            active={openingActive}
             className="m-auto grid max-w-[880px] justify-items-center gap-4"
           >
             <RevealItem
@@ -357,7 +375,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
-            progressThreshold={REVEAL_COOKOUT}
+            active={cookoutActive}
             className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] gap-[22px] self-end"
           >
             <RevealItem
@@ -457,7 +475,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               then the two columns share a second stage so they cascade in
               together. Splitting the stage means the intro doesn't have to
               wait for the columns to be 55%-visible before triggering. */}
-          <RevealStage as="div">
+          <RevealStage as="div" active={dressActive}>
             <RevealItem
               as="p"
               className="mt-8 max-w-[50ch] font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic"
@@ -468,6 +486,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </RevealStage>
           <RevealStage
             as="div"
+            active={dressActive}
             className="grid max-w-[980px] grid-cols-1 content-end gap-9 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-14"
           >
             <div className="grid max-w-[38ch] gap-[14px]">
@@ -580,7 +599,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
-            progressThreshold={REVEAL_NIGHT}
+            active={nightActive}
             className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-5 self-end"
           >
             <RevealItem
@@ -659,7 +678,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </span>
           <RevealStage
             as="div"
-            progressThreshold={REVEAL_CLOSING}
+            active={closingActive}
             className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[720px] content-center justify-items-start gap-4"
           >
             <RevealItem

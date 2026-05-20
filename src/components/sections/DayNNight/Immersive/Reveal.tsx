@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { type Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { useDayNNightScene } from "../store";
@@ -227,6 +227,61 @@ export function RevealItem({
       {children}
     </Tag>
   );
+}
+
+// ─── useActRevealActive — layout-aware reveal gate ──────────────────────────
+//
+// Phase 5b-UF / P0.2. Returns `true` once scene progress has crossed the
+// point where the act's left edge is approaching the viewport's right
+// edge — i.e. the act is about to become visible. Subtracts an
+// additional `preroll` so the 0.85s blur-in lands before the act's
+// heading reaches viewport center, not after.
+//
+// Implementation uses a Zustand boolean selector against the live
+// `layout.startsFrac[actIndex]` + `layout.viewportFrac` measurements
+// written by Timeline. Returns `false` until layout is measured —
+// keeps copy hidden over the first frame instead of flashing visible
+// before the measurement lands.
+//
+// The previous `progressThreshold` model (static numbers like 0.219)
+// fired too late because they were anchored to act CENTERS, by which
+// time the user was already reading hidden copy.
+
+interface ActRevealOptions {
+  /**
+   * How much earlier than "act left edge at viewport right edge" to
+   * fire the reveal. Expressed in loopProgress units. Default 0.02
+   * (~0.2s of typical scroll velocity).
+   */
+  preroll?: number;
+}
+
+export function useActRevealActive(
+  actIndex: number,
+  { preroll = 0.02 }: ActRevealOptions = {}
+): boolean {
+  // Sticky activation: once the threshold is crossed the reveal stays
+  // visible even if the user scrolls backward past the threshold. The
+  // raw `crossed` boolean flips both ways with `progress`; we latch it
+  // into `active` and never unset. Mirrors Motion's `whileInView` with
+  // `{ once: true }` behavior — the gold-standard UX for reveals.
+  const crossed = useDayNNightScene((r) => {
+    const layout = r.layout;
+    if (!layout) return false;
+    const start = layout.startsFrac[actIndex];
+    if (start === undefined) return false;
+    // Act first enters viewport from the right when:
+    //   loopProgress = startsFrac - viewportFrac
+    // We fire `preroll` of progress earlier so the blur-in completes
+    // before the heading sits at viewport center.
+    const threshold = start - layout.viewportFrac - preroll;
+    return r.progress >= threshold;
+  });
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    if (crossed && !active) setActive(true);
+  }, [crossed, active]);
+  return active;
 }
 
 // ─── LoaderReveal — loader-progress-driven reveal ────────────────────────────

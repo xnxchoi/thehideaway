@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
   useDayNNightScene,
+  useDayNNightStore,
   SECTION_KEYS,
   sectionAtLoop,
   type SectionKey
@@ -51,11 +52,21 @@ export function Scrubber() {
   const phase = useDayNNightScene((r) => r.phase);
   // Subscribing to `layout` re-renders the Scrubber when Timeline writes
   // a fresh measurement — so the head-tick / label CSS `left:` props
-  // recompute on resize without manual ResizeObservers here.
-  const progress = useDayNNightScene((r) => r.progress);
+  // recompute on resize without manual ResizeObservers here. We
+  // explicitly DO NOT subscribe to `progress` at the component level —
+  // the rAF tick below reads it fresh via getState() so we don't
+  // re-render the entire scrubber at 60fps.
   const layout = useDayNNightScene((r) => r.layout);
 
   const initialLoopPosition = useDayNNightScene((r) => r.initialLoopPosition);
+  // Imperative store handle for the rAF tick — see `useDayNNightStore`
+  // docstring. Captured once and used inside `apply` to read fresh
+  // progress/layout without forcing a 60fps re-render of the entire
+  // scrubber. The hook was added in P5b-P0.1 to restore the .getState()
+  // path lost in the standard→vanilla+context store refactor that broke
+  // every imperative caller (Scrubber was the only one in tree, hence
+  // the visible regression).
+  const store = useDayNNightStore();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const labelRefs = useRef<Array<HTMLButtonElement | null>>(
@@ -68,13 +79,21 @@ export function Scrubber() {
     let lastActive = -1;
 
     const apply = () => {
+      // Read fresh state every tick via the imperative store handle.
+      // Closing over `progress` (a React-scope value) would stale
+      // immediately because effect deps are `[phase, store]` — re-running
+      // this effect every progress change would recreate the rAF loop
+      // 60×/sec, much worse than the per-tick getState() read.
+      const state = store.getState();
+      const progress = state.progress;
+      const currentLayout = state.layout;
       // scene-progress IS loopProgress now — see store.ts JSDoc.
       const loopProgress = Math.max(0, Math.min(0.99999, progress));
 
       // Active section: which act contains the viewport center (mod 1).
       // sectionAtLoop falls back to 0 when layout isn't measured yet —
       // the initial paint before Timeline writes layout to the store.
-      const currentSection = sectionAtLoop(loopProgress, layout);
+      const currentSection = sectionAtLoop(loopProgress, currentLayout);
 
       if (indicatorRef.current && trackRef.current) {
         const trackWidth = trackRef.current.clientWidth;
@@ -100,7 +119,7 @@ export function Scrubber() {
 
     raf = requestAnimationFrame(apply);
     return () => cancelAnimationFrame(raf);
-  }, [phase]);
+  }, [phase, store]);
 
   // Section-start positions, as fractions of the scrubber-track width.
   // Both head ticks AND labels anchor to these same starts: labels
@@ -177,7 +196,7 @@ export function Scrubber() {
         ))}
         <div
           ref={indicatorRef}
-          className="absolute top-0 left-0 -ml-7 h-1.5 w-14 bg-[var(--dn-fg)] will-change-transform"
+          className="absolute top-0 left-0 -ml-7 h-3 w-14 rounded-full bg-[var(--dn-fg)] mix-blend-exclusion will-change-transform"
           aria-hidden
         />
       </div>
