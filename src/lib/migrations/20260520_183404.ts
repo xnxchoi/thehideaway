@@ -1,61 +1,98 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres";
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+/**
+ * Delta migration on top of 20260519_180000_ticket_orders.
+ *
+ * 20260519 already creates `ticket_orders` (core columns + FKs +
+ * indexes) and the `tickets.{gift_initial_name,gift_name_locked,order_id}`
+ * additions. This file ONLY adds what's new beyond that snapshot:
+ *
+ *   - ticket_orders.mailed_at                  (timestamp)
+ *   - ticket_orders.locale                    (enum_ticket_orders_locale)
+ *   - profile.rsvp_tier                       (enum_profile_rsvp_tier)
+ *   - _profile_v.version_rsvp_tier            (enum__profile_v_version_rsvp_tier)
+ *   - payload_locked_documents_rels.ticket_orders_id  + FK + index
+ *
+ * Re-runnable per readmes/MIGRATIONS.md:
+ *   - CREATE TYPE wrapped in DO $$ EXCEPTION WHEN duplicate_object block
+ *   - ADD COLUMN uses IF NOT EXISTS
+ *   - ADD CONSTRAINT FK wrapped in DO $$ block that checks pg_constraint
+ *   - CREATE INDEX uses IF NOT EXISTS
+ *
+ * Original Drizzle-generated body was non-idempotent and duplicated
+ * 20260519's CREATE TABLE — committed before 20260519 was baked into
+ * `pnpm micreate`'s baseline. Replaced with the additive delta below.
+ */
+
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   CREATE TYPE "public"."enum_profile_rsvp_tier" AS ENUM('host', 'past', 'guest');
-  CREATE TYPE "public"."enum__profile_v_version_rsvp_tier" AS ENUM('host', 'past', 'guest');
-  CREATE TYPE "public"."enum_ticket_orders_locale" AS ENUM('ko', 'en');
-  CREATE TABLE "ticket_orders" (
-  	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
-  	"purchaser_id" uuid NOT NULL,
-  	"event_id" uuid NOT NULL,
-  	"purchaser_name" varchar,
-  	"paid" boolean DEFAULT false,
-  	"paid_at" timestamp(3) with time zone,
-  	"password" varchar,
-  	"password_issued_at" timestamp(3) with time zone,
-  	"password_expires_at" timestamp(3) with time zone,
-  	"mailed_at" timestamp(3) with time zone,
-  	"locale" "enum_ticket_orders_locale" DEFAULT 'ko',
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-  );
-  
-  ALTER TABLE "profile" ADD COLUMN "rsvp_tier" "enum_profile_rsvp_tier" DEFAULT 'guest';
-  ALTER TABLE "_profile_v" ADD COLUMN "version_rsvp_tier" "enum__profile_v_version_rsvp_tier" DEFAULT 'guest';
-  ALTER TABLE "tickets" ADD COLUMN "gift_initial_name" varchar;
-  ALTER TABLE "tickets" ADD COLUMN "gift_name_locked" boolean DEFAULT false;
-  ALTER TABLE "tickets" ADD COLUMN "order_id" uuid;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "ticket_orders_id" uuid;
-  ALTER TABLE "ticket_orders" ADD CONSTRAINT "ticket_orders_purchaser_id_users_id_fk" FOREIGN KEY ("purchaser_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "ticket_orders" ADD CONSTRAINT "ticket_orders_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE set null ON UPDATE no action;
-  CREATE INDEX "ticket_orders_purchaser_idx" ON "ticket_orders" USING btree ("purchaser_id");
-  CREATE INDEX "ticket_orders_event_idx" ON "ticket_orders" USING btree ("event_id");
-  CREATE INDEX "ticket_orders_updated_at_idx" ON "ticket_orders" USING btree ("updated_at");
-  CREATE INDEX "ticket_orders_created_at_idx" ON "ticket_orders" USING btree ("created_at");
-  ALTER TABLE "tickets" ADD CONSTRAINT "tickets_order_id_ticket_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."ticket_orders"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_ticket_orders_fk" FOREIGN KEY ("ticket_orders_id") REFERENCES "public"."ticket_orders"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "tickets_order_idx" ON "tickets" USING btree ("order_id");
-  CREATE INDEX "payload_locked_documents_rels_ticket_orders_id_idx" ON "payload_locked_documents_rels" USING btree ("ticket_orders_id");`)
+    -- Enums ----------------------------------------------------------------
+    DO $$ BEGIN
+      CREATE TYPE "public"."enum_profile_rsvp_tier" AS ENUM ('host', 'past', 'guest');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+    DO $$ BEGIN
+      CREATE TYPE "public"."enum__profile_v_version_rsvp_tier" AS ENUM ('host', 'past', 'guest');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+    DO $$ BEGIN
+      CREATE TYPE "public"."enum_ticket_orders_locale" AS ENUM ('ko', 'en');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+    -- ticket_orders additions ----------------------------------------------
+    ALTER TABLE "ticket_orders"
+      ADD COLUMN IF NOT EXISTS "mailed_at" timestamp(3) with time zone;
+    ALTER TABLE "ticket_orders"
+      ADD COLUMN IF NOT EXISTS "locale" "enum_ticket_orders_locale" DEFAULT 'ko';
+
+    -- profile + _profile_v additions ---------------------------------------
+    ALTER TABLE "profile"
+      ADD COLUMN IF NOT EXISTS "rsvp_tier" "enum_profile_rsvp_tier" DEFAULT 'guest';
+    ALTER TABLE "_profile_v"
+      ADD COLUMN IF NOT EXISTS "version_rsvp_tier" "enum__profile_v_version_rsvp_tier" DEFAULT 'guest';
+
+    -- payload_locked_documents_rels.ticket_orders_id + FK + index ----------
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD COLUMN IF NOT EXISTS "ticket_orders_id" uuid;
+
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'payload_locked_documents_rels_ticket_orders_fk'
+      ) THEN
+        ALTER TABLE "payload_locked_documents_rels"
+          ADD CONSTRAINT "payload_locked_documents_rels_ticket_orders_fk"
+          FOREIGN KEY ("ticket_orders_id")
+          REFERENCES "public"."ticket_orders"("id")
+          ON DELETE CASCADE ON UPDATE NO ACTION;
+      END IF;
+    END $$;
+
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_ticket_orders_id_idx"
+      ON "payload_locked_documents_rels" USING btree ("ticket_orders_id");
+  `);
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "ticket_orders" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "ticket_orders" CASCADE;
-  ALTER TABLE "tickets" DROP CONSTRAINT "tickets_order_id_ticket_orders_id_fk";
-  
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_ticket_orders_fk";
-  
-  DROP INDEX "tickets_order_idx";
-  DROP INDEX "payload_locked_documents_rels_ticket_orders_id_idx";
-  ALTER TABLE "profile" DROP COLUMN "rsvp_tier";
-  ALTER TABLE "_profile_v" DROP COLUMN "version_rsvp_tier";
-  ALTER TABLE "tickets" DROP COLUMN "gift_initial_name";
-  ALTER TABLE "tickets" DROP COLUMN "gift_name_locked";
-  ALTER TABLE "tickets" DROP COLUMN "order_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "ticket_orders_id";
-  DROP TYPE "public"."enum_profile_rsvp_tier";
-  DROP TYPE "public"."enum__profile_v_version_rsvp_tier";
-  DROP TYPE "public"."enum_ticket_orders_locale";`)
+    -- FK + index on payload_locked_documents_rels --------------------------
+    DROP INDEX IF EXISTS "payload_locked_documents_rels_ticket_orders_id_idx";
+    ALTER TABLE "payload_locked_documents_rels"
+      DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_ticket_orders_fk";
+    ALTER TABLE "payload_locked_documents_rels"
+      DROP COLUMN IF EXISTS "ticket_orders_id";
+
+    -- profile + _profile_v additions ---------------------------------------
+    ALTER TABLE "_profile_v" DROP COLUMN IF EXISTS "version_rsvp_tier";
+    ALTER TABLE "profile"    DROP COLUMN IF EXISTS "rsvp_tier";
+
+    -- ticket_orders additions ----------------------------------------------
+    ALTER TABLE "ticket_orders" DROP COLUMN IF EXISTS "locale";
+    ALTER TABLE "ticket_orders" DROP COLUMN IF EXISTS "mailed_at";
+
+    -- Enums ----------------------------------------------------------------
+    DROP TYPE IF EXISTS "public"."enum_ticket_orders_locale";
+    DROP TYPE IF EXISTS "public"."enum__profile_v_version_rsvp_tier";
+    DROP TYPE IF EXISTS "public"."enum_profile_rsvp_tier";
+  `);
 }
