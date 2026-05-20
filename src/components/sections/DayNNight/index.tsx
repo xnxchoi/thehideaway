@@ -102,7 +102,7 @@ function ExitAffordance() {
       href="/"
       data-dn-chrome-pill
       aria-label="Back to The Hideaway"
-      className="group fixed top-5 left-5 z-[46] inline-flex items-center gap-[10px] rounded-full border border-[var(--dn-chrome-line)] py-[7px] pr-[14px] pl-3 font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase no-underline transition-colors hover:text-[var(--dn-chrome-fg)] md:top-8 md:left-8 xl:top-10 xl:left-12"
+      className="group fixed top-24 left-10 z-[46] inline-flex items-center gap-[10px] rounded-full border border-[var(--dn-chrome-line)] py-[7px] pr-[14px] pl-3 font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase no-underline transition-colors hover:text-[var(--dn-chrome-fg)] md:top-28 md:left-14 xl:top-32 xl:left-20"
     >
       <span
         aria-hidden

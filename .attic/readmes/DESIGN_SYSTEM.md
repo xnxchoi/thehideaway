@@ -140,7 +140,7 @@ Practical rules agents and designers can apply without re-reading the manifesto 
 ## 3. Color
 
 Hideaway's color system is built on **OKLCH** for perceptual uniformity across light and dark themes. All production
-color tokens live in [`src/styles/globals.css`](../src/styles/globals.css) under `@theme`.
+color tokens live in [`src/styles/globals.css`](../../src/styles/globals.css) under `@theme`.
 
 ### 3.1 Token taxonomy
 
@@ -1734,22 +1734,20 @@ Canonical page-error:
 
 ```tsx
 <Page width="prose">
-	<div className="flex flex-col items-center justify-center py-[var(--space-16)] text-center">
-		<span aria-hidden className="font-mono text-5xl font-light opacity-10">▲</span>
-		<h1 className="mt-[var(--space-4)] text-3xl font-light tracking-tight">
-			Something came loose.
-		</h1>
-		<p className="mt-[var(--space-2)] max-w-[32ch] font-mono text-[1.1rem] text-muted-foreground/60">
-			The page couldn't load. Try again, or head back home.
-		</p>
-		<div className="mt-[var(--space-7)] flex gap-[var(--space-3)]">
-			<RetryButton/>
-			<Link href="/" /* ghost button */>Home</Link>
-		</div>
-		<code className="mt-[var(--space-12)] font-mono text-[0.9rem] text-muted-foreground/30">
-			{errorId}
-		</code>
-	</div>
+  <div className="flex flex-col items-center justify-center py-[var(--space-16)] text-center">
+    <span aria-hidden className="font-mono text-5xl font-light opacity-10">▲</span>
+    <h1 className="mt-[var(--space-4)] text-3xl font-light tracking-tight">
+      Something came loose. </h1>
+    <p className="mt-[var(--space-2)] max-w-[32ch] font-mono text-[1.1rem] text-muted-foreground/60">
+      The page couldn't load. Try again, or head back home. </p>
+    <div className="mt-[var(--space-7)] flex gap-[var(--space-3)]">
+      <RetryButton />
+      <Link href="/" /* ghost button */>Home</Link>
+    </div>
+    <code className="mt-[var(--space-12)] font-mono text-[0.9rem] text-muted-foreground/30">
+      {errorId}
+    </code>
+  </div>
 </Page>
 ```
 

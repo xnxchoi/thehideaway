@@ -204,7 +204,7 @@ Representative tone: *"What We Lose When We Stop Reading Letters"*
 ### 5.2 Topology decision
 Adopt Inverse's exact 6-col asymmetric two-row structure. The current `ArticleFrontpage` already attempts this (`lg:grid-cols-[repeat(6,1fr)]` + lead `lg:col-[1/5]` + secondaries `lg:col-[1/3]` and `lg:col-[3/5]` row 2 + rail `lg:col-[5/-1]`) — so this is **execution refinement, not topology overhaul**. The "rethink" lever pulls hardest on chrome, type, ratios, breakpoint behavior, and the Headliners rail design.
 
-> **Design-system alignment note.** v2 — adjusted to comply with [`readmes/DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) after a deeper read. Specifically:
+> **Design-system alignment note.** v2 — adjusted to comply with...(deleted; originally Design System) after a deeper read. Specifically:
 > - All content cards use `rounded-sm` (4px). **`rounded-md` is forbidden** on cards (§6.2).
 > - Eyebrow tracking is `tracking-[0.2em]`, not `tracking-widest` (§4.6 canonical eyebrow snippet).
 > - Forbidden weights: `font-semibold`, `font-bold`, `font-extrabold` (§4.2). Hideaway does not shout.
