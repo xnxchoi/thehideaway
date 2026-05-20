@@ -1,5 +1,6 @@
 "use client";
 
+import { DayCycleProvider } from "@/components/sections/DayNNight/store";
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTheme } from "@/providers/Theme";
@@ -9,7 +10,7 @@ import { SimplifiedView } from "./SimplifiedView";
 import { ImmersiveView } from "./Immersive";
 import { ViewToggle } from "./ViewToggle";
 import { useViewPref, type DayNNightView } from "./useViewPref";
-import s from "./styles.module.scss";
+import "./dn.css";
 
 interface DayNNightLandingProps {
   initialView: DayNNightView;
@@ -70,10 +71,20 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   }, [view, setHeaderVisibility, setFXFrameVisibility]);
 
   return (
-    <div className={s.shell} data-view={view}>
+    <div
+      data-dn-shell
+      data-view={view}
+      className="relative isolate min-h-dvh bg-[var(--dn-bg)] text-[var(--dn-fg)]"
+    >
       {view === "immersive" && <ExitAffordance />}
       <ViewToggle value={view} onChange={setView} />
-      {view === "immersive" ? <ImmersiveView /> : <SimplifiedView />}
+      {view === "immersive" ? (
+        <DayCycleProvider>
+          <ImmersiveView />
+        </DayCycleProvider>
+      ) : (
+        <SimplifiedView />
+      )}
     </div>
   );
 }
@@ -86,11 +97,19 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
  */
 function ExitAffordance() {
   return (
-    <a href="/" className={s.exit} aria-label="Back to The Hideaway">
-      <span aria-hidden className={s.exitArrow}>
+    <a
+      href="/"
+      data-dn-chrome-pill
+      aria-label="Back to The Hideaway"
+      className="group fixed top-5 left-5 z-[46] inline-flex items-center gap-[10px] rounded-full border border-[var(--dn-chrome-line)] py-[7px] pr-[14px] pl-3 font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase no-underline transition-colors hover:text-[var(--dn-chrome-fg)] md:top-8 md:left-8 xl:top-10 xl:left-12"
+    >
+      <span
+        aria-hidden
+        className="-translate-y-px text-sm leading-none transition-transform group-hover:-translate-x-[3px]"
+      >
         ←
       </span>
-      <span className={s.exitLabel}>The Hideaway</span>
+      <span>The Hideaway</span>
     </a>
   );
 }

@@ -54,8 +54,7 @@ Treat it the way the codebase treats `payload-types.ts` — structured, owned, d
 
 ## 1. Manifesto
 
-The Hideaway is an **editorial platform with the quiet confidence of a private library**.
-It is not a feed. It is not a dashboard. It is a room someone built.
+The Hideaway is a editorial blog platform, a private member's club, and a online magazine, wrapped into a sin
 
 ### Aesthetic pillars
 

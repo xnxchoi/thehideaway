@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
 import { DayNightAudio } from "./DayNightAudio";
 import { Scrubber } from "./Scrubber";
 import { SunLoader } from "./SunLoader";
 import { Timeline } from "./Timeline";
-import s from "../styles.module.scss";
 
 /**
  * Immersive view orchestrator.
@@ -27,9 +27,10 @@ import s from "../styles.module.scss";
  */
 export function ImmersiveView() {
   const t = useTranslations("Event.DayNNight");
-  const phase = useDayNNightScene((r) => r.phase);
+  const phase = useDayNNightScene(useShallow((r) => r.phase));
   const [hintHidden, setHintHidden] = useState(false);
-
+  const setProgress = useDayNNightScene((r) => r.setProgress);
+  const setPhase = useDayNNightScene((r) => r.setPhase);
   // Hide the scroll hint on first scroll.
   useEffect(() => {
     if (phase !== "playing") return;
@@ -41,24 +42,27 @@ export function ImmersiveView() {
   // Reset progress to 0 on mount so a re-entry replays the loader handoff.
   useEffect(() => {
     return () => {
-      useDayNNightScene.getState().setProgress(0);
-      useDayNNightScene.getState().setPhase("loading");
+      setProgress(0);
+      setPhase("loading");
     };
   }, []);
 
   return (
-    <div className={s.immersive}>
+    <div className="relative min-h-dvh w-full [--reveal-x:50%] [--reveal-y:50%]">
       {/* Timeline owns the pinned scroll context; SceneView (sky + sun + moon)
           and the grain overlay live inside it so they share the pin. */}
       <Timeline />
-      <div
-        className={s.scrollHint}
-        data-hidden={hintHidden || phase !== "playing"}
-        aria-hidden
-      >
-        <span className={s.scrollHintLine} />
-        <span>{t("scrollHint")}</span>
-      </div>
+      {/*<div*/}
+      {/*  data-hidden={hintHidden || phase !== "playing"}*/}
+      {/*  aria-hidden*/}
+      {/*  className="ease pointer-events-none fixed bottom-20 left-1/2 z-[45] hidden -translate-x-1/2 items-center gap-[10px] font-mono text-[10px] tracking-[0.28em] text-[var(--dn-fg-mute)] uppercase transition-opacity duration-500 data-[hidden=true]:opacity-0 lg:inline-flex"*/}
+      {/*>*/}
+      {/*  <span*/}
+      {/*    data-dn-scroll-hint-line*/}
+      {/*    className="inline-block h-px w-7 bg-current"*/}
+      {/*  />*/}
+      {/*  <span>{t("scrollHint")}</span>*/}
+      {/*</div>*/}
       <Scrubber />
       {/* Background audio bed — independent of the main site's Radio.
           Renders its own chrome toggle (top-right, below the view toggle);

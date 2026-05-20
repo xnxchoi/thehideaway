@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import s from "./styles.module.scss";
 import type { DayNNightView } from "./useViewPref";
 
 interface ViewToggleProps {
@@ -17,13 +16,19 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
   // readers still hear the control's purpose; rendering it visually
   // made the pill read as a tri-state switch (label / Story / Card).
   return (
-    <div className={s.toggle} role="radiogroup" aria-label={t("label")}>
+    <div
+      data-dn-chrome-pill
+      role="radiogroup"
+      aria-label={t("label")}
+      className="fixed top-5 right-5 z-[46] inline-flex gap-0.5 rounded-full border border-[var(--dn-chrome-line)] p-[3px] md:top-8 md:right-8 xl:top-10 xl:right-12"
+    >
       <button
         type="button"
         role="radio"
         aria-checked={value === "immersive"}
         data-active={value === "immersive"}
-        className={s.toggleBtn}
+        data-dn-toggle-btn
+        className="ease cursor-pointer appearance-none rounded-full border-0 bg-transparent px-[13px] py-[7px] font-mono text-[10px] tracking-[0.16em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[background,color] duration-[250ms]"
         onClick={() => onChange("immersive")}
       >
         {t("immersive")}
@@ -33,7 +38,8 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
         role="radio"
         aria-checked={value === "simplified"}
         data-active={value === "simplified"}
-        className={s.toggleBtn}
+        data-dn-toggle-btn
+        className="ease cursor-pointer appearance-none rounded-full border-0 bg-transparent px-[13px] py-[7px] font-mono text-[10px] tracking-[0.16em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[background,color] duration-[250ms]"
         onClick={() => onChange("simplified")}
       >
         {t("simplified")}

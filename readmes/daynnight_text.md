@@ -1,37 +1,44 @@
-# Day n’ Night 
+# Summer Early Summer Late
+# May my burns and scars never fade
 
 
 ## Info
 Location: 서울시 용산구 소월로 20길 64, 3층 (3F)
 Time : 18:30  11:30
-Pictures
-![](IMG_2226.JPEG)![](IMG_8543.png)![](IMG_9520.png)![](IMG_6339.png)![](IMG_5282.png)
-Price 65,000KRW All-Inclusive (Barbecue, Beer, Wine & more )
 
-# Daytime.
+Images from the venue
+![](IMG_2226.JPEG)![](IMG_8543.png)![](IMG_9520.png)![](IMG_6339.png)![](IMG_5282.png)
+Price 65,000KRW 
+All-Inclusive (Barbecue, Beer, Wine & more )
+
+# Daytime
+
 ## Intro
+
 > 30 & Smokin’
- Fire doesn’t ask permission to burn.
-Neither did we. 
+### Tagline
+No fire asls b . 
 
  A decade of chasing, stumbling, and figuring it out and somehow, we made it to the other side still standing, still hungry. The smoke rising off this grill isn’t just heat.
 
  It’s everything we survived,  shed, and done apologizing for.
 
-We’re turning 30 looking every bit as good - come and join the scenery.
+We’ve hurt, hurt bit as good.
+Come join the scenery.
 
 
 ## Catering
 >  Food and drinks included.
-We are grilling- we have the full spread:
+
+We are  smokin', and
 Smash burgers
-![](DraggedImage.png)
+![Burgers](DraggedImage.png)
 
 Pork brine
 Potatoes… and more.
 Backyard cookouts are good ; rooftop barbecues are better.
 * barbecue operated from 18:30  20:00; subject to change.
-Beer, wine… Gin anyone?
+Beer, wine, … Gin anyone?
 
 ## Dresscode
 > Dress for your age… Direction goes both ways.
