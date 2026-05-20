@@ -5,7 +5,7 @@ Cross-session continuity doc for the **Day n Night** event landing, RSVP'd guest
 **Event date:** Sunday, 24 May 2026
 **Location:** Haebangchon / Itaewon, Seoul
 **Event slug:** `day-n-night`
-**Status:** IMPLEMENTED through Phase 4 + **Phase 5a complete (all shipped 2026-05-20)**. P4C: P4C-1 + P4C-2 + P4C-3. Phase 5a CRITICALs: C1, C2, C3, C4, C5, C6 (verified), C7. Phase 5a HIGHs: H1, H3, H5, H6, H9, H13, H14. Phase 5a P5a-Product-1: Survival Kit (placeholder copy pending host review). Phase 5b/5c remaining for polish (audit refs H2/H4/H7/H8/H10–H12 + M1–M12 + L1–L8). **Launch gate green.** See § 13 iteration log for the chronological trail.
+**Status:** Phase 5a code-floor work shipped 2026-05-20 (P4C + audit CRITICALs/HIGHs + Survival Kit scaffold). **Launch gate NOT yet green** — user walkthrough flagged regressions + polish gaps not caught by the static audit: Scrubber stopped working, reveals hidden when acts enter viewport, Opening reveal completes during loader hand-off, typography too tight, sections land awkwardly without a soft-pin, Survival Kit needs redesign. Tracked as **Phase 5b-UF** in § 14.6 (after Phase 5a) and as tasks #55-#61. See § 13 iteration log for the chronological trail.
 
 > This is the single source of truth for the surface. `DAY_N_NIGHT_AUDIT.md` and `DAY_N_NIGHT_DRESS_REDESIGN.md` have been folded in (§ 14 and § 15 respectively) and archived to `.attic/readmes/`.
 
@@ -686,6 +686,25 @@ Anything that **misleads users** or **enables abuse**. Block public RSVP send-ou
 - A Korean monolingual reader
 
 Each should be able to complete their journey without DMing.
+
+#### Phase 5b-UF — user-feedback pass (2026-05-20, post Phase 5a)
+
+After Phase 5a's code-floor work landed (commit 0e96fb8), the user walked the surface and flagged regressions + polish gaps that the audit's static lens didn't catch. Tracked as P5b-* tasks (#55-#61) so they survive context compaction.
+
+- [ ] **P5b-P0.1 — Scrubber regression**. The Scrubber suddenly stopped working. Not directly touched in the latest sweep — investigate. Likely vectors: `useShallow` selector change on `horizonLoop` in store, SunLoader rAF behavior shifts (C7 fix wrote sun JSX but the tick code already existed), or earlier SCSS→Tailwind conversion fallout. Read `Scrubber.tsx` + store; bisect against last known good (commit 5d336b2, May 19).
+- [ ] **P5b-P0.2 — Reveal thresholds misfire on entry**. H9 thresholds anchor on act-CENTER minus 0.04–0.06 (Cookout 0.219, Night 0.604, Closing 0.84). User reports reveals are still hidden when the act enters viewport — meaning by the time the threshold fires the user is already looking at hidden copy and the 0.85s blur-in arrives too late. Redrive from per-act START frac (computed from the rendered layout via `useDayNNightScene.acts[]` or similar) with a small pre-roll so the blur-in lands before the heading is visible.
+- [ ] **P5b-P0.3 — Opening reveal sync with loader hand-off**. The Opening uses `phase === "playing"` to gate its stagger. But `phase` flips during the 700ms loader fade-out (see SunLoader.tsx `playTimeout`), so the Opening's ~1s stagger starts and finishes while the loader is still on screen. User sees Opening already-revealed when the loader clears. Fix: gate on `phase === "playing"` AND a separate "loader unmounted" signal (Immersive/index.tsx owns that lifecycle).
+- [ ] **P5b-P1.1 — Section hero soft-pin**. Each act's hero (title + lede) should be screen-sized with a subtle "lock" so the user can't end up parked between sections at awkward positions. Sub-5% scrolls past the hero center pull back to the hero; >5% scrolls release through. **Not CSS snap** — incompatible with Lenis. Use GSAP ScrollTrigger snap config wired into the existing Lenis driver. Subtle — must not feel like a jail.
+- [ ] **P5b-P1.2 — Typography spacing audit + pass**. Whole-surface audit. User flag: "too tightly spaced together" across the page. Invoke `/design-system` before touching code; apply spacing recommendations consistently. Margins between blocks, line-height on body, breathing around heroes.
+- [ ] **P5b-P1.3 — Survival Kit redesign**. The dl-row layout shipped in 0e96fb8 reads as a knockoff of the existing simplified-view rhythm — "horrendous" per user. Needs its own visual identity that earns its place below the editorial header. Invoke `/frontend-design` + `/brand-voice` before rebuilding. Same 6 functional rows; different composition.
+- [ ] **P5b-P1.4 — Additional polish (TBD)**. User noted "and more I have yet to formulate words for" — reserve a follow-up pass once P0 + P1.1-P1.3 land.
+
+**Quality gates for this phase:**
+- `/frontend-design` invoked before touching design code (P1.2, P1.3)
+- `/design-system` invoked for the spacing audit (P1.2)
+- `/brand-voice` invoked for Survival Kit copy + composition (P1.3)
+- `/santa-loop` adversarial dual-review on the design-touching commits before push (P5b-Gate, #61)
+- `/strategic-compact` after every loop completion (procedural ritual locked in)
 
 #### Phase 5b — strongly recommended (~4h)
 
