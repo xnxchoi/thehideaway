@@ -24,7 +24,8 @@ only by romanisation.
 - **Phone (E.164, +82-…):** `+82 10 4637 9289`
 - **KakaoTalk ID** (the @-handle people use to find you in Kakao): `SungyoonChoi`
 - **Email:** `seanschoi@lostinseoul.com` <e.g. `concierge@hideawayseoul.com` or personal>
-- **Portrait image:** `public/assets/day-n-night/hosts/sean.jpg` <to-supply, 512×512 JPEG q80; placeholder OK first ship>
+- **Portrait image:** `public/assets/day-n-night/hosts/sean.png` <to-supply, 512×512 JPEG q80; placeholder OK first 
+  ship>
 
 ### Host 2 — Choe
 
