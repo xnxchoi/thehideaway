@@ -103,10 +103,13 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   // SimplifiedView). `embedded` ships no margin; the host grid owns
   // placement. Width is narrower than the prior dossier so the kit
   // reads as a column of editorial fragments, not a card.
+  // Widths bumped (R1) — the prior 440/480 left the kit floating in
+  // a vast empty zone with tiny-looking type. The kit now holds its
+  // column with proportional presence.
   const outerClass =
     variant === "embedded"
-      ? "grid w-full max-w-[440px] xl:max-w-[480px]"
-      : "mt-16 grid max-w-[520px] md:mt-24 md:max-w-[560px]";
+      ? "grid w-full max-w-[560px] xl:max-w-[640px]"
+      : "mt-16 grid max-w-[560px] md:mt-24 md:max-w-[640px]";
 
   // Etiquette rows — the three single-line policy facts. Pulled out
   // so the JSX stack reads linearly instead of inlining a map() with
@@ -128,14 +131,16 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       </h2>
 
       {/* ── Address fragment ──────────────────────────────────────── */}
-      <div className="grid gap-[8px]">
-        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+      {/* R1: type scaled up ~40-50% so the kit holds its column with
+          presence instead of floating tiny in whitespace. */}
+      <div className="grid gap-[10px]">
+        <p className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("address.label")}
         </p>
-        <p className="font-serif text-[clamp(1.4rem,1.8vw,1.8rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
+        <p className="font-serif text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[var(--dn-fg)]">
           {address}
         </p>
-        <div className="mt-[8px] flex flex-wrap items-baseline gap-x-[21px] gap-y-[8px]">
+        <div className="mt-[10px] flex flex-wrap items-baseline gap-x-[21px] gap-y-[10px]">
           <RowAction href={kakaoMapUrl} external arrow text={t("openMap")} />
           <RowAction
             onClick={() => copyToClipboard(address, "address")}
@@ -146,20 +151,20 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       </div>
 
       {/* ── Payment fragment ──────────────────────────────────────── */}
-      <div className="mt-[55px] grid gap-[8px]">
-        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+      <div className="mt-[55px] grid gap-[10px]">
+        <p className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("toss.label")}
         </p>
-        <p className="font-serif text-[clamp(1.4rem,1.8vw,1.8rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
+        <p className="font-serif text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[var(--dn-fg)]">
           {tossAccount}
         </p>
-        <p className="font-serif text-[clamp(1rem,1.2vw,1.15rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)]">
+        <p className="font-serif text-[clamp(1.4rem,1.6vw,1.6rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)]">
           {tossHolder}
         </p>
-        <p className="font-mono text-[12px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
+        <p className="font-mono text-[14px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
           {tossAmount}
         </p>
-        <div className="mt-[8px]">
+        <div className="mt-[10px]">
           <RowAction
             onClick={() => copyToClipboard(tossClipboard, "toss")}
             text={copyLabel("toss")}
@@ -169,16 +174,20 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       </div>
 
       {/* ── Etiquette fragment — 3 hanging-label rows ─────────────── */}
-      <dl className="mt-[55px] grid gap-[13px]">
+      {/* R1: row gap 13→21, value text scaled up to 15-17px so the
+          etiquette reads as part of the kit's body rather than as
+          metadata captions. Label col widened 55→64 to fit "+1s"
+          tracking without crowding. */}
+      <dl className="mt-[55px] grid gap-[21px]">
         {etiquette.map(({ key, label, value }) => (
           <div
             key={key}
-            className="grid grid-cols-[55px_1fr] items-baseline gap-x-[21px]"
+            className="grid grid-cols-[64px_1fr] items-baseline gap-x-[21px]"
           >
-            <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+            <dt className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
               {label}
             </dt>
-            <dd className="text-[14px] leading-[1.55] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
+            <dd className="text-[clamp(1.5rem,1.7vw,1.7rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
               {value}
             </dd>
           </div>
@@ -186,13 +195,13 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
       </dl>
 
       {/* ── Contact fragment — italic serif pull ──────────────────── */}
-      <div className="mt-[55px] grid grid-cols-[55px_1fr] items-baseline gap-x-[21px]">
-        <span className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+      <div className="mt-[55px] grid grid-cols-[64px_1fr] items-baseline gap-x-[21px]">
+        <span className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
           {t("host.label")}
         </span>
         <a
           href={hostHref}
-          className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.1rem,1.4vw,1.3rem)] leading-[1.3] text-[var(--dn-fg)] italic no-underline [text-decoration-color:var(--dn-fg-faint)] [text-decoration-line:underline] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
+          className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.5rem,1.8vw,1.8rem)] leading-[1.3] text-[var(--dn-fg)] italic [text-decoration-line:underline] no-underline [text-decoration-color:var(--dn-fg-faint)] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
         >
           <span>{hostContact}</span>
           <span aria-hidden className="text-[0.85em] leading-none">

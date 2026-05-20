@@ -444,7 +444,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               completing the diagonal composition. Embedded variant
               strips the standalone top margin and tightens the
               max-width so it fits the column. */}
-          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-end justify-self-end lg:block">
+          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-start justify-self-end lg:block">
             <SurvivalKit variant="embedded" />
           </div>
           <div className="col-start-1 col-end-2 row-start-3 row-end-4 flex gap-12 self-end font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase max-lg:col-span-full max-lg:flex-wrap max-lg:gap-6">
@@ -481,7 +481,9 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
         inert={ariaHidden ? true : undefined}
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] gap-y-[34px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          {/* R4: gap-y-[34px] on the grid creates breathing room
+              between the row-1 eyebrow and the row-2 title block. */}
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
             <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
               II.
@@ -535,13 +537,17 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           </ul>
           {/* Cookout moodboard — smash burgers + ambient food vibes.
               The polaroid cluster lives in the right portion of the
-              act, parallaxed around the Cookout anchor (0.279). */}
-          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[24%] lg:right-[6vw] lg:z-[4] lg:flex lg:gap-7">
+              act, parallaxed around the Cookout anchor (0.279).
+              R3: polaroid widths bumped (180/230/210 → 280/340/300)
+              and cluster gap bumped (gap-7 → gap-14) so the photos
+              hold their territory instead of huddling tiny in vast
+              empty zone. */}
+          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[18%] lg:right-[6vw] lg:z-[4] lg:flex lg:gap-14">
             <Polaroid
               src="/assets/day-n-night/DraggedImage.png"
               alt={t("moodboard.cookout.burger.alt")}
               caption={t("moodboard.cookout.burger.caption")}
-              width={180}
+              width={280}
               aspect={0.75}
               angle={-4}
               depth={0.7}
@@ -552,7 +558,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               src="/assets/day-n-night/IMG_8543.png"
               alt={t("moodboard.cookout.rooftop.alt")}
               caption={t("moodboard.cookout.rooftop.caption")}
-              width={230}
+              width={340}
               aspect={1.769}
               angle={5}
               depth={-0.4}
@@ -562,7 +568,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             <Polaroid
               src="/assets/day-n-night/IMG_9520.png"
               alt={t("moodboard.cookout.vibe.alt")}
-              width={210}
+              width={300}
               aspect={1.333}
               angle={-2}
               depth={1.0}
@@ -809,7 +815,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               there") above the practical-info dossier. Bottom-anchored
               so it pulls the eye downward-left, completing the diagonal
               against the upper-right title block. */}
-          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-end gap-6 self-end max-lg:col-span-full lg:flex">
+          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-start gap-6 self-start max-lg:col-span-full lg:flex">
             <p className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic">
               {t("closing.lede")}
             </p>
