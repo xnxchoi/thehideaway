@@ -262,6 +262,11 @@ export function SceneView() {
       ref={wrapRef}
       className="pointer-events-none absolute inset-0 z-0"
       aria-hidden
+      style={{
+        "--glow1": "86% 0.18 75",
+        "--glow2": "80% 0.18 65",
+        "--glow3": "70% 0.2  50"
+      }}
     >
       <div
         ref={skyRef}

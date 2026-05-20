@@ -9,6 +9,7 @@ import { useRPStore } from "@/providers/RP_Pro";
 import { SimplifiedView } from "./SimplifiedView";
 import { ImmersiveView } from "./Immersive";
 import { ViewToggle } from "./ViewToggle";
+import { ViewContext } from "./ViewContext";
 import { useViewPref, type DayNNightView } from "./useViewPref";
 import "./dn.css";
 import { Link } from "@/components/core/Link/Link";
@@ -58,40 +59,40 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   // imported anywhere — the rule never loaded.)
   useEffect(() => {
     const header = document.getElementById("rp-header");
-    if (view === "immersive") {
-      setHeaderVisibility(false);
-      setFXFrameVisibility(false);
-      document.body.setAttribute("data-dn-immersive", "true");
-      if (header) header.style.display = "none";
-      return () => {
-        setHeaderVisibility(true);
-        setFXFrameVisibility(true);
-        document.body.removeAttribute("data-dn-immersive");
-        if (header) header.style.display = "";
-      };
-    }
-    setHeaderVisibility(true);
-    setFXFrameVisibility(true);
-    document.body.removeAttribute("data-dn-immersive");
-    if (header) header.style.display = "";
+    setHeaderVisibility(false);
+    setFXFrameVisibility(false);
+    document.body.setAttribute("data-dn-immersive", "true");
+    if (header) header.style.display = "none";
+    return () => {
+      setHeaderVisibility(true);
+      setFXFrameVisibility(true);
+      document.body.removeAttribute("data-dn-immersive");
+      if (header) header.style.display = "";
+    };
   }, [view, setHeaderVisibility, setFXFrameVisibility]);
 
   return (
-    <div
-      data-dn-shell
-      data-view={view}
-      className="relative isolate min-h-dvh bg-[var(--dn-bg)] p-0 text-[var(--dn-fg)]"
-    >
-      {view === "immersive" && <ExitAffordance />}
-      <ViewToggle value={view} onChange={setView} />
-      {view === "immersive" ? (
-        <DayCycleProvider>
-          <ImmersiveView />
-        </DayCycleProvider>
-      ) : (
-        <SimplifiedView />
-      )}
-    </div>
+    <ViewContext.Provider value={{ view, setView }}>
+      <div
+        data-dn-shell
+        data-view={view}
+        className="relative isolate min-h-dvh bg-[var(--dn-bg)] p-0 text-[var(--dn-fg)]"
+      >
+        {view === "immersive" && <ExitAffordance />}
+        {/* Standalone ViewToggle only on simplified view — immersive
+            embeds its own toggle inside the bottom action pill. */}
+        {view === "simplified" && (
+          <ViewToggle value={view} onChange={setView} />
+        )}
+        {view === "immersive" ? (
+          <DayCycleProvider>
+            <ImmersiveView />
+          </DayCycleProvider>
+        ) : (
+          <SimplifiedView />
+        )}
+      </div>
+    </ViewContext.Provider>
   );
 }
 

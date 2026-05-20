@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode, useMemo } from "react";
 import { type Variants } from "motion/react";
 import * as m from "motion/react-m";
+import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
 
 /**
@@ -84,7 +85,7 @@ const STAGE_VARIANTS: Variants = {
   }
 };
 
-const STAGE_VIEWPORT = { once: true, amount: 0.55 } as const;
+const STAGE_VIEWPORT = 0.55;
 
 // ─── Tag mapping (polymorphic without `as any`) ──────────────────────────────
 
@@ -160,49 +161,52 @@ export function RevealStage({
   // stability); when no threshold is provided we hand the limiter
   // `Infinity` so the selector returns `false` and Zustand never
   // subscribes the component to meaningful changes.
-  const progressActive = useDayNNightScene(
-    (r) => r.progress >= (progressThreshold ?? Number.POSITIVE_INFINITY)
-  );
+  const progress = useDayNNightScene(useShallow((r) => r.progress));
+
   const resolvedActive =
-    active !== undefined
+    typeof active === "boolean"
       ? active
-      : progressThreshold !== undefined
-        ? progressActive
+      : typeof progressThreshold === "number"
+        ? progress >= progressThreshold
         : undefined;
 
-  const viewport =
-    amount === undefined ? STAGE_VIEWPORT : { once: true, amount };
-  const variants =
-    stagger === undefined && delay === undefined
-      ? STAGE_VARIANTS
-      : {
-          hidden: { opacity: 1 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: stagger ?? 0.18,
-              delayChildren: delay ?? 0.15
-            }
-          }
-        };
+  const variants = useMemo(
+    () => ({
+      hidden: { opacity: 1 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: stagger ?? 0.18,
+          delayChildren: delay ?? 0.15
+        }
+      }
+    }),
+    [stagger, delay]
+  );
+
   // Three trigger modes:
   //   - `active` (or `progressThreshold` → resolvedActive defined): the
   //     stage's variant is controlled by the boolean.
   //   - Otherwise: default whileInView behaviour.
   // All three modes share the same children stagger.
-  const motionProps =
-    resolvedActive !== undefined
-      ? ({
-          initial: "hidden" as const,
-          animate: resolvedActive ? ("visible" as const) : ("hidden" as const)
-        } as const)
-      : ({
-          initial: "hidden" as const,
-          whileInView: "visible" as const,
-          viewport
-        } as const);
+
   return (
-    <Tag className={className} {...motionProps} variants={variants}>
+    <Tag
+      className={className}
+      initial={"hidden"}
+      variants={variants}
+      {...(typeof resolvedActive === "boolean"
+        ? {
+            animate: resolvedActive ? "visible" : "hidden"
+          }
+        : {
+            whileInView: "visible",
+            viewport: {
+              once: true,
+              amount: amount ?? STAGE_VIEWPORT
+            }
+          })}
+    >
       {children}
     </Tag>
   );
@@ -265,17 +269,24 @@ export function useActRevealActive(
   // raw `crossed` boolean flips both ways with `progress`; we latch it
   // into `active` and never unset. Mirrors Motion's `whileInView` with
   // `{ once: true }` behavior — the gold-standard UX for reveals.
-  const crossed = useDayNNightScene((r) => {
-    const layout = r.layout;
-    if (!layout) return false;
-    const start = layout.startsFrac[actIndex];
-    if (start === undefined) return false;
+  const layout = useDayNNightScene(useShallow((r) => r.layout));
+  const progress = useDayNNightScene(useShallow((r) => r.progress));
+  const [crossed, setCrossed] = useState(false);
+  useEffect(() => {
+    let start: number | undefined, threshold: number | undefined;
+    if (layout) {
+      start = layout?.startsFrac[actIndex];
+      if (typeof start === "number") {
+        threshold = start - layout.viewportFrac - preroll;
+      }
+      if (typeof threshold === "number") {
+        setCrossed(progress >= threshold);
+      }
+    }
     // Act first enters viewport from the right when:
     //   loopProgress = startsFrac - viewportFrac
     // We fire `preroll` of progress earlier so the blur-in completes
     // before the heading sits at viewport center.
-    const threshold = start - layout.viewportFrac - preroll;
-    return r.progress >= threshold;
   });
   const [active, setActive] = useState(false);
   useEffect(() => {
@@ -347,8 +358,7 @@ export function Reveal({
   children
 }: RevealProps) {
   const Tag = MOTION_MAP[as];
-  const viewport =
-    amount === undefined ? STAGE_VIEWPORT : { once: true, amount };
+
   return (
     <Tag
       className={className}
@@ -359,7 +369,10 @@ export function Reveal({
         filter: "blur(0px)",
         transition: { duration: 0.85, ease: EASE_SOFT, delay }
       }}
-      viewport={viewport}
+      viewport={{
+        once: true,
+        amount: amount ?? STAGE_VIEWPORT
+      }}
     >
       {children}
     </Tag>

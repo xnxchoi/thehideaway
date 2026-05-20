@@ -282,6 +282,11 @@ export const enum_user_media_audience = pgEnum("enum_user_media_audience", [
   "patrons",
   "curated"
 ]);
+export const enum_profile_rsvp_tier = pgEnum("enum_profile_rsvp_tier", [
+  "host",
+  "past",
+  "guest"
+]);
 export const enum_profile_audience = pgEnum("enum_profile_audience", [
   "public",
   "any_user",
@@ -293,6 +298,10 @@ export const enum_profile_status = pgEnum("enum_profile_status", [
   "draft",
   "published"
 ]);
+export const enum__profile_v_version_rsvp_tier = pgEnum(
+  "enum__profile_v_version_rsvp_tier",
+  ["host", "past", "guest"]
+);
 export const enum__profile_v_version_audience = pgEnum(
   "enum__profile_v_version_audience",
   ["public", "any_user", "members", "patrons", "curated"]
@@ -538,6 +547,10 @@ export const enum_events_state = pgEnum("enum_events_state", [
   "open",
   "closed",
   "ended"
+]);
+export const enum_ticket_orders_locale = pgEnum("enum_ticket_orders_locale", [
+  "ko",
+  "en"
 ]);
 export const enum_tickets_status = pgEnum("enum_tickets_status", [
   "pending",
@@ -3353,6 +3366,7 @@ export const profile = pgTable(
     hero_subtitle: varchar("hero_subtitle").default(""),
     hero_gradient1: varchar("hero_gradient1").default("#FC8D8DFF"),
     hero_gradient2: varchar("hero_gradient2").default("#F3FAFCFF"),
+    rsvp_tier: enum_profile_rsvp_tier("rsvp_tier").default("guest"),
     rsvp_intro: varchar("rsvp_intro"),
     rsvp_igHandle: varchar("rsvp_ig_handle"),
     locked: boolean("locked").default(false),
@@ -3491,6 +3505,8 @@ export const _profile_v = pgTable(
     version_hero_gradient2: varchar("version_hero_gradient2").default(
       "#F3FAFCFF"
     ),
+    version_rsvp_tier:
+      enum__profile_v_version_rsvp_tier("version_rsvp_tier").default("guest"),
     version_rsvp_intro: varchar("version_rsvp_intro"),
     version_rsvp_igHandle: varchar("version_rsvp_ig_handle"),
     version_locked: boolean("version_locked").default(false),
@@ -6341,6 +6357,67 @@ export const events = pgTable(
   ]
 );
 
+export const ticket_orders = pgTable(
+  "ticket_orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    purchaser: uuid("purchaser_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    event: uuid("event_id")
+      .notNull()
+      .references(() => events.id, {
+        onDelete: "set null"
+      }),
+    purchaser_name: varchar("purchaser_name"),
+    paid: boolean("paid").default(false),
+    paid_at: timestamp("paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    password: varchar("password"),
+    password_issued_at: timestamp("password_issued_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    password_expires_at: timestamp("password_expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    mailed_at: timestamp("mailed_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    locale: enum_ticket_orders_locale("locale").default("ko"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("ticket_orders_purchaser_idx").on(columns.purchaser),
+    index("ticket_orders_event_idx").on(columns.event),
+    index("ticket_orders_updated_at_idx").on(columns.updatedAt),
+    index("ticket_orders_created_at_idx").on(columns.createdAt)
+  ]
+);
+
 export const tickets = pgTable(
   "tickets",
   {
@@ -6368,6 +6445,11 @@ export const tickets = pgTable(
     }),
     claim_token: varchar("claim_token"),
     claim_email: varchar("claim_email"),
+    gift_initial_name: varchar("gift_initial_name"),
+    gift_name_locked: boolean("gift_name_locked").default(false),
+    order: uuid("order_id").references(() => ticket_orders.id, {
+      onDelete: "set null"
+    }),
     claimed_at: timestamp("claimed_at", {
       mode: "string",
       withTimezone: true,
@@ -6419,6 +6501,7 @@ export const tickets = pgTable(
     index("tickets_purchaser_idx").on(columns.purchaser),
     index("tickets_status_idx").on(columns.status),
     uniqueIndex("tickets_claim_token_idx").on(columns.claim_token),
+    index("tickets_order_idx").on(columns.order),
     uniqueIndex("tickets_check_in_code_idx").on(columns.check_in_code),
     index("tickets_checked_in_idx").on(columns.checked_in),
     index("tickets_checked_in_by_idx").on(columns.checked_in_by),
@@ -6647,6 +6730,7 @@ export const payload_locked_documents_rels = pgTable(
     currencyID: uuid("currency_id"),
     holidaysID: uuid("holidays_id"),
     eventsID: uuid("events_id"),
+    "ticket-ordersID": uuid("ticket_orders_id"),
     ticketsID: uuid("tickets_id"),
     "payload-foldersID": uuid("payload_folders_id")
   },
@@ -6739,6 +6823,9 @@ export const payload_locked_documents_rels = pgTable(
       columns.holidaysID
     ),
     index("payload_locked_documents_rels_events_id_idx").on(columns.eventsID),
+    index("payload_locked_documents_rels_ticket_orders_id_idx").on(
+      columns["ticket-ordersID"]
+    ),
     index("payload_locked_documents_rels_tickets_id_idx").on(columns.ticketsID),
     index("payload_locked_documents_rels_payload_folders_id_idx").on(
       columns["payload-foldersID"]
@@ -6932,6 +7019,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["eventsID"]],
       foreignColumns: [events.id],
       name: "payload_locked_documents_rels_events_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["ticket-ordersID"]],
+      foreignColumns: [ticket_orders.id],
+      name: "payload_locked_documents_rels_ticket_orders_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["ticketsID"]],
@@ -9469,6 +9561,18 @@ export const relations_events = relations(events, ({ one, many }) => ({
     relationName: "exclusive_links"
   })
 }));
+export const relations_ticket_orders = relations(ticket_orders, ({ one }) => ({
+  purchaser: one(users, {
+    fields: [ticket_orders.purchaser],
+    references: [users.id],
+    relationName: "purchaser"
+  }),
+  event: one(events, {
+    fields: [ticket_orders.event],
+    references: [events.id],
+    relationName: "event"
+  })
+}));
 export const relations_tickets = relations(tickets, ({ one }) => ({
   event: one(events, {
     fields: [tickets.event],
@@ -9484,6 +9588,11 @@ export const relations_tickets = relations(tickets, ({ one }) => ({
     fields: [tickets.purchaser],
     references: [users.id],
     relationName: "purchaser"
+  }),
+  order: one(ticket_orders, {
+    fields: [tickets.order],
+    references: [ticket_orders.id],
+    relationName: "order"
   }),
   checked_in_by: one(users, {
     fields: [tickets.checked_in_by],
@@ -9722,6 +9831,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.eventsID],
       references: [events.id],
       relationName: "events"
+    }),
+    "ticket-ordersID": one(ticket_orders, {
+      fields: [payload_locked_documents_rels["ticket-ordersID"]],
+      references: [ticket_orders.id],
+      relationName: "ticket-orders"
     }),
     ticketsID: one(tickets, {
       fields: [payload_locked_documents_rels.ticketsID],
@@ -10042,8 +10156,10 @@ type DatabaseSchema = {
   enum__posts_v_version_status: typeof enum__posts_v_version_status;
   enum__posts_v_published_locale: typeof enum__posts_v_published_locale;
   enum_user_media_audience: typeof enum_user_media_audience;
+  enum_profile_rsvp_tier: typeof enum_profile_rsvp_tier;
   enum_profile_audience: typeof enum_profile_audience;
   enum_profile_status: typeof enum_profile_status;
+  enum__profile_v_version_rsvp_tier: typeof enum__profile_v_version_rsvp_tier;
   enum__profile_v_version_audience: typeof enum__profile_v_version_audience;
   enum__profile_v_version_status: typeof enum__profile_v_version_status;
   enum__profile_v_published_locale: typeof enum__profile_v_published_locale;
@@ -10101,6 +10217,7 @@ type DatabaseSchema = {
   enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
   enum_events_state: typeof enum_events_state;
+  enum_ticket_orders_locale: typeof enum_ticket_orders_locale;
   enum_tickets_status: typeof enum_tickets_status;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
@@ -10240,6 +10357,7 @@ type DatabaseSchema = {
   holidays: typeof holidays;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
+  ticket_orders: typeof ticket_orders;
   tickets: typeof tickets;
   payload_kv: typeof payload_kv;
   payload_jobs_log: typeof payload_jobs_log;
@@ -10387,6 +10505,7 @@ type DatabaseSchema = {
   relations_holidays: typeof relations_holidays;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;
+  relations_ticket_orders: typeof relations_ticket_orders;
   relations_tickets: typeof relations_tickets;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;

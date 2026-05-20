@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useWindowResize } from "@/utilities/use_window_resize";
+import { Link } from "@/components/core/Link/Link";
 import { useEffect, useRef } from "react";
 import type { useTranslations as UseTranslationsType } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -14,6 +16,19 @@ import { Polaroid, PolaroidGroup } from "./Polaroid";
 import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
 import { SceneView } from "./SceneView";
 import { SurvivalKit } from "../SurvivalKit";
+import {
+  Act,
+  ActEyebrow,
+  TITLE_HERO,
+  TITLE_SECTION,
+  TITLE_PAIR,
+  LEDE,
+  BODY_SERIF,
+  KICKER_MONO,
+  LABEL_MONO
+} from "./Act";
+import { OpeningCard } from "./OpeningCard";
+import { useStickyZone } from "./SeamBridge";
 
 /**
  * Anchors that polaroid clusters use for their parallax windows. These
@@ -337,6 +352,11 @@ export function Timeline() {
             visible to the scroll loop so the boundary is seamless. */}
         <ActSet t={t} isPlaying={isPlaying} ariaHidden />
       </div>
+      {/* Note: <SeamBridge /> is rendered at the ImmersiveView root
+          (not here) so its position:fixed escapes the GSAP-pinned wrap
+          + its overflow-hidden context. Keeping it inside this wrap
+          made the sticky overlay clipped/captured by the wrap's
+          transform during pinning. */}
     </div>
   );
 }
@@ -350,12 +370,11 @@ interface ActSetProps {
 }
 
 function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
-  // Per-act reveal gates. Opening gates on `isPlaying` so it doesn't
-  // fire while the loader is still visible (the prior `whileInView`
-  // model triggered during the loader covering, completing Opening's
-  // stagger before the user could see it). The other 4 acts gate on a
-  // layout-aware scene-progress threshold so the blur-in lands before
-  // the heading sits at viewport center, not after. P0.2 + P0.3.
+  // Per-act reveal gates. Opening fires once `phase === "playing"`
+  // (i.e. the loader has handed off); the other 4 acts gate on a
+  // layout-aware scene-progress threshold via `useActRevealActive` so
+  // the blur-in lands as each act enters frame, not when its center
+  // reaches viewport center.
   //
   // The two ActSets (primary + duplicate-for-loop) each call these
   // hooks independently; the boolean selector pattern means each ActSet
@@ -367,504 +386,347 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
   const dressActive = useActRevealActive(ACT_INDEX_DRESS);
   const nightActive = useActRevealActive(ACT_INDEX_NIGHT);
   const closingActive = useActRevealActive(ACT_INDEX_CLOSING);
-
-  // The 5 acts are wrapped in a Fragment so the parent track gets them as
-  // direct flex children — GSAP measures scrollWidth across them. Each
-  // act keeps the same outer flex-item width but gets its own
-  // internal layout class so it doesn't read as another stamp of the same
-  // header/body/footer template.
+  // True only during the sticky window (Closing title at viewport-left
+  // → Opening's left edge enters viewport). Outside this narrow window
+  // the bookend titles render as normal RevealItems and move with the
+  // GSAP track.
+  const inStickyZone = useStickyZone();
+  const bookendFade = {
+    opacity: inStickyZone ? 0 : 1,
+    transition: "opacity 200ms ease-out"
+  } as const;
+  // Trigger re-renders on viewport resize so polaroid clusters and
+  // grid columns recompute against the new width.
+  useWindowResize({ debounce: 50, detectHeightChange: false });
+  // The 5 acts share a single <Act> frame (12-col grid + tokenized
+  // padding from dn.css) so the magazine pacing reads consistently
+  // as the user scrolls the loop. Each act places its children into
+  // the grid via col-start / row-start utilities.
   return (
     <>
-      {/* Act 1 — Opening / Daybreak.
-          Asymmetric hero (P5c). Title + kicker + lede stack top-left;
-          SurvivalKit summary doc bottom-right. The two regions overlap
-          diagonally so the eye reads title-down-into-summary, not
-          column-vs-column. Eyebrow spans the top edge; date/location
-          strip spans the bottom-left.
-
-          --act-w bumped 1 → 1.5 so the asymmetric composition has
-          breathing room; the wider act also means the user spends
-          more vertical scroll inside Opening, giving the summary doc
-          longer screen time before scene transitions to Cookout. */}
-      <section
-        data-dn-act
-        style={{ "--act-w": 1.45 } as React.CSSProperties}
-        aria-label={t("opening.label")}
-        aria-hidden={ariaHidden || undefined}
-        inert={ariaHidden ? true : undefined}
-        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
+      {/* ── Act I — The Cover ─────────────────────────────────────────────
+          Poster-style cover. Mirror of Act V's composition, flipped LR:
+          eyebrow LEFT, title-block LEFT (cols 1-7), dossier (opening.body
+          + SurvivalKit) RIGHT (cols 8-13), date/location strip bottom-
+          LEFT. The bookend reads as a true reflection — same grammar,
+          opposite hand. */}
+      <Act
+        width={1.3}
+        ariaLabel={t("opening.label")}
+        ariaHidden={ariaHidden}
+        className="lg:-left-[22%]"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-16 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
-              I.
-            </span>
-            <span className="text-bold font-serif text-[3rem] capitalize italic">
-              {t("opening.label")}
-            </span>
-            <span aria-hidden className="opacity-50">
-              ·
-            </span>
-            <span>{t("opening.time")}</span>
-          </span>
-          {/* Left column — title block. Anchored to the upper-left of
-              the content area (row 2 start) so the eye lands here first.
-              The opening.body line carries the editorial voice beneath
-              the lede; it sits as a quiet serif aside between the lede
-              and the SurvivalKit's bottom-right anchor. */}
-          {/* Title block — RevealStage with NO max-w on the container
-              so the hero title can take full column width and grow to
-              theatrical scale (P5c v4 — golden-ratio columns + bigger
-              type). Lede and opening.body each carry their own
-              narrower max-w for prose readability; the title floats
-              free of those constraints so it reads as the act's
-              structural element. */}
-          {/* Title block — Visual System v1.
-              Natural left alignment (no justify-self override). Top
-              of row 2 baseline shared with the kit on the right.
-              Inner gap = 24px (sm) between kicker/title, 40px (md)
-              between title/lede, 24px between lede/body. */}
+        <ActEyebrow
+          numeral="I"
+          label={t("opening.label")}
+          time={t("opening.time")}
+          align="left"
+        />
+        {/* Opening title block — kicker + hero title + lede.
+            Reveal cascade preserved. Outer div carries grid placement
+            so the inner RevealStage can be opacity-faded only during
+            the sticky window (see useStickyZone); outside the window
+            this block moves with the GSAP track like any other Act
+            content. */}
+        <div
+          className="col-start-1 col-end-7 row-start-2 row-end-3 self-end max-lg:col-span-full"
+          style={bookendFade}
+        >
           <RevealStage
             as="div"
             active={openingActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid content-start gap-6 self-start max-lg:col-span-full"
+            className="grid content-end gap-7 xl:gap-9"
           >
-            <RevealItem
-              as="p"
-              className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase"
-            >
+            <RevealItem as="p" className={KICKER_MONO}>
               {t("opening.kicker")}
             </RevealItem>
-            <RevealItem
-              as="h2"
-              className="font-serif text-[clamp(4rem,7vw,8rem)] leading-[0.95] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
-            >
+            <RevealItem as="h2" className={TITLE_HERO}>
               {t("title")}
             </RevealItem>
-            <RevealItem
-              as="p"
-              className="mt-4 max-w-[40ch] text-[clamp(1.5rem,1.7vw,1.7rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
-            >
+            <RevealItem as="p" className={`${LEDE} max-w-[38ch]`}>
               {t("opening.lede")}
             </RevealItem>
-            <RevealItem
-              as="p"
-              className="max-w-[44ch] font-serif text-[clamp(1.6rem,2vw,2rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
-            >
-              {t("opening.body")}
-            </RevealItem>
           </RevealStage>
-          {/* Right column — SurvivalKit. Bottom-anchored so it pulls
-              the eye downward-right after reading the title block,
-              completing the diagonal composition. Embedded variant
-              strips the standalone top margin and tightens the
-              max-width so it fits the column. */}
-          {/* Kit (col 2) — natural left alignment, top-aligned at row 2.
-              Shares the title block's top baseline so the eye reads
-              title ↔ kit eyebrow as a single horizontal anchor line. */}
-          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-start lg:block">
-            <SurvivalKit variant="embedded" />
-          </div>
-          <div className="col-start-1 col-end-2 row-start-3 row-end-4 flex gap-12 self-end font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase max-lg:col-span-full max-lg:flex-wrap max-lg:gap-6">
-            <span className="inline-flex items-baseline gap-[10px]">
-              <span className="text-[var(--dn-fg-faint)]">
-                {t("date.weekday")}
-              </span>
-              <span className="text-[var(--dn-fg-mute)]">{t("date.full")}</span>
-            </span>
-            <span className="inline-flex items-baseline gap-[10px]">
-              <span className="text-[var(--dn-fg-faint)]">
-                {t("location.label")}
-              </span>
-              <span className="text-[var(--dn-fg-mute)]">
-                {t("location.neighborhood")}
-              </span>
-            </span>
-          </div>
         </div>
-      </section>
-
-      {/* Act 2 — Cookout (P5c: top-anchored against Night's bottom-anchor).
-          Heading + lede anchored TOP-LEFT of the content area (just
-          below the eyebrow), Food/Drinks list anchored BOTTOM-RIGHT.
-          The diagonal reads top-left → bottom-right ("morning lift,
-          afternoon settle"). Night does the opposite — bottom-anchored
-          on both sides ("evening weight") — so the two adjacent acts
-          read as visually distinct passes through similar material. */}
-      <section
-        data-dn-act
-        style={{ "--act-w": 1.6 } as React.CSSProperties}
-        aria-label={t("act.day.heading")}
-        aria-hidden={ariaHidden || undefined}
-        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
-        inert={ariaHidden ? true : undefined}
-      >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] gap-y-[34px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          {/* R4: gap-y-[34px] on the grid creates breathing room
-              between the row-1 eyebrow and the row-2 title block. */}
-          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
-              II.
-            </span>
-            <span className="text-bold font-serif text-[3rem] capitalize italic">
-              {t("included.heading").toLowerCase()}
-            </span>
-            <span aria-hidden className="opacity-50">
-              ·
-            </span>
-            <span>{t("act.day.time")}</span>
-          </span>
-          <RevealStage
-            as="div"
-            active={cookoutActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] content-start gap-6 self-start xl:gap-8"
-          >
-            <RevealItem
-              as="h2"
-              className="font-serif text-[clamp(3rem,6vw,5.4rem)] leading-[1] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
-            >
-              {t("act.day.heading")}
-            </RevealItem>
-            <RevealItem
-              as="p"
-              className="max-w-[48ch] text-[clamp(1.4rem,1.6vw,1.7rem)] leading-[1.5] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
-            >
-              {t("act.day.body")}
-            </RevealItem>
-          </RevealStage>
-          <ul
-            className="col-start-2 col-end-3 row-start-3 row-end-4 m-0 grid min-w-[280px] list-none gap-[18px] self-end justify-self-end p-0"
-            aria-label={t("included.heading")}
-          >
-            <li className="grid gap-1 border-t border-[var(--dn-line)] pt-[14px]">
-              <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
-                {t("included.food.label")}
-              </span>
-              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
-                {t("included.food.items")}
-              </span>
-            </li>
-            <li className="grid gap-1 border-t border-[var(--dn-line)] pt-[14px]">
-              <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
-                {t("included.drinks.label")}
-              </span>
-              <span className="font-serif text-[clamp(1.6rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
-                {t("included.drinks.items")}
-              </span>
-            </li>
-          </ul>
-          {/* Cookout moodboard — smash burgers + ambient food vibes.
-              The polaroid cluster lives in the right portion of the
-              act, parallaxed around the Cookout anchor (0.279).
-              R3: polaroid widths bumped (180/230/210 → 280/340/300)
-              and cluster gap bumped (gap-7 → gap-14) so the photos
-              hold their territory instead of huddling tiny in vast
-              empty zone. */}
-          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[22%] lg:right-[4vw] lg:z-[4] lg:flex lg:gap-10">
-            <Polaroid
-              src="/assets/day-n-night/DraggedImage.png"
-              alt={t("moodboard.cookout.burger.alt")}
-              caption={t("moodboard.cookout.burger.caption")}
-              width={220}
-              aspect={0.75}
-              angle={-4}
-              depth={0.7}
-              anchor={ANCHOR_COOKOUT}
-              priority={!ariaHidden}
-            />
-            <Polaroid
-              src="/assets/day-n-night/IMG_8543.png"
-              alt={t("moodboard.cookout.rooftop.alt")}
-              caption={t("moodboard.cookout.rooftop.caption")}
-              width={260}
-              aspect={1.769}
-              angle={5}
-              depth={-0.4}
-              anchor={ANCHOR_COOKOUT}
-              priority={!ariaHidden}
-            />
-            <Polaroid
-              src="/assets/day-n-night/IMG_9520.png"
-              alt={t("moodboard.cookout.vibe.alt")}
-              width={230}
-              aspect={1.333}
-              angle={-2}
-              depth={1.0}
-              anchor={ANCHOR_COOKOUT}
-              priority={!ariaHidden}
-            />
-          </PolaroidGroup>
+        {/* Right col — paper invitation card. Clickable surface that
+            opens the Details drawer (via DetailsContext). Mirrors
+            Closing's left dossier slot, but trades the always-visible
+            SurvivalKit for a single paper-style trigger that pulls the
+            same info into the drawer on demand. */}
+        <div className="col-start-8 col-end-13 row-start-2 row-end-3 hidden self-end justify-self-end max-lg:col-span-full lg:flex">
+          <OpeningCard />
         </div>
-      </section>
-
-      {/* Act 3 — Dress code.
-          The two options are the content; the heading is chrome. Caps
-          mono eyebrow up top, the two columns as a split-screen with a
-          thin vertical rule between them, and the secret line in italic
-          serif as a quiet aside anchored bottom-left. */}
-      <section
-        data-dn-act
-        style={{ "--act-w": 1.55 } as React.CSSProperties}
-        aria-label={t("dressCode.heading")}
-        aria-hidden={ariaHidden || undefined}
-        inert={ariaHidden ? true : undefined}
-        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
-      >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-rows-[auto_auto_1fr_auto] gap-5 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
-              III.
-            </span>
-            <span className="text-bold font-serif text-[3rem] capitalize italic">
-              {t("dressCode.heading")}
-            </span>
+        {/* Bottom-left strip — date + location. Mirrors Closing's bottom-
+            right hosts strip; same tier of editorial chrome, opposing
+            alignment. */}
+        <div className="col-start-1 col-end-5 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-start max-lg:col-span-full">
+          <span
+            aria-hidden
+            className="mr-auto mb-3 block h-px w-14 bg-[var(--dn-fg)] opacity-60"
+          />
+          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+            {t("date.full")}
           </span>
-          {/* The dressCode.intro RevealStage was removed: it rendered an
-              empty fragment and consumed a grid row + an animation
-              slot. Two-column dress code below is now the only revealed
-              content under the Dress eyebrow. */}
-          <RevealStage
-            as="div"
-            active={dressActive}
-            className="grid max-w-[980px] grid-cols-1 content-end gap-9 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-14"
-          >
-            <div className="grid max-w-[38ch] gap-[14px]">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
-                01
-              </span>
-              <RevealItem
-                as="h3"
-                className="font-serif text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] font-bold text-[var(--dn-fg)]"
-              >
+          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+            {t("location.neighborhood")}
+          </span>
+        </div>
+      </Act>
+
+      {/* ── Act II — Cookout ─────────────────────────────────────────────
+          Feature spread. Title + lede bottom-left, food/drinks menu strip
+          bottom-right, polaroid cluster floating in the right margin at
+          the shared --dn-polaroid-band height (16%). */}
+      <Act
+        width={1.55}
+        ariaLabel={t("act.day.heading")}
+        ariaHidden={ariaHidden}
+      >
+        <ActEyebrow
+          numeral="II"
+          label={t("scrubber.cookout")}
+          time={t("act.day.time")}
+          align="left"
+        />
+        <RevealStage
+          as="div"
+          active={cookoutActive}
+          className="col-start-1 col-end-8 row-start-2 row-end-3 grid max-w-[52ch] content-end gap-6 self-end max-lg:col-span-full xl:gap-8"
+        >
+          <RevealItem as="h2" className={TITLE_SECTION}>
+            {t("act.day.heading")}
+          </RevealItem>
+          <RevealItem as="p" className={`${LEDE} max-w-[46ch]`}>
+            {t("act.day.body")}
+          </RevealItem>
+        </RevealStage>
+        <ul
+          className="col-start-8 col-end-13 row-start-3 row-end-4 m-0 grid min-w-[240px] list-none gap-[18px] self-end justify-self-end p-0 max-lg:col-span-full max-lg:justify-self-start"
+          aria-label={t("included.heading")}
+        >
+          <li className="grid gap-[6px] border-t border-[var(--dn-line)] pt-[14px]">
+            <span className={LABEL_MONO}>{t("included.food.label")}</span>
+            <span className="font-serif text-[clamp(1.55rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
+              {t("included.food.items")}
+            </span>
+          </li>
+          <li className="grid gap-[6px] border-t border-[var(--dn-line)] pt-[14px]">
+            <span className={LABEL_MONO}>{t("included.drinks.label")}</span>
+            <span className="font-serif text-[clamp(1.55rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
+              {t("included.drinks.items")}
+            </span>
+          </li>
+        </ul>
+        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[16%] lg:right-[4vw] lg:z-[4] lg:flex lg:gap-10">
+          <Polaroid
+            src="/assets/day-n-night/DraggedImage.png"
+            alt={t("moodboard.cookout.burger.alt")}
+            caption={t("moodboard.cookout.burger.caption")}
+            width={220}
+            aspect={0.75}
+            angle={-4}
+            depth={0.7}
+            anchor={ANCHOR_COOKOUT}
+            priority={!ariaHidden}
+          />
+          <Polaroid
+            src="/assets/day-n-night/IMG_8543.png"
+            alt={t("moodboard.cookout.rooftop.alt")}
+            caption={t("moodboard.cookout.rooftop.caption")}
+            width={260}
+            aspect={1.769}
+            angle={5}
+            depth={-0.4}
+            anchor={ANCHOR_COOKOUT}
+            priority={!ariaHidden}
+          />
+          <Polaroid
+            src="/assets/day-n-night/IMG_9520.png"
+            alt={t("moodboard.cookout.vibe.alt")}
+            width={230}
+            aspect={1.333}
+            angle={-2}
+            depth={1.0}
+            anchor={ANCHOR_COOKOUT}
+            priority={!ariaHidden}
+          />
+        </PolaroidGroup>
+      </Act>
+
+      {/* ── Act III — Dress Code ─────────────────────────────────────────
+          Centerfold. Heading top-left (Section scale), two numbered
+          options (01 / 02) bottom-left at Pair scale, polaroid wall
+          floating right at the shared band height. */}
+      <Act
+        width={1.55}
+        ariaLabel={t("dressCode.heading")}
+        ariaHidden={ariaHidden}
+      >
+        <ActEyebrow numeral="III" label={t("scrubber.dress")} align="left" />
+        <RevealStage
+          as="div"
+          active={dressActive}
+          className="col-start-1 col-end-8 row-start-2 row-end-4 grid content-between gap-12 self-stretch max-lg:col-span-full"
+        >
+          <RevealItem as="h2" className={cn(TITLE_SECTION, "max-w-[18ch]")}>
+            {t("dressCode.heading")}
+          </RevealItem>
+          <div className="grid gap-10 lg:grid-cols-2 lg:gap-x-12">
+            <div className="grid max-w-[36ch] gap-[14px]">
+              <span className={LABEL_MONO}>01</span>
+              <RevealItem as="h3" className={TITLE_PAIR}>
                 {t("dressCode.option1.label")}
               </RevealItem>
-              <RevealItem
-                as="p"
-                className="max-w-[42ch] text-[1.4rem] leading-[1.55] font-light text-[var(--dn-fg-mute)]"
-              >
+              <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
                 {t("dressCode.option1.body")}
               </RevealItem>
             </div>
-            <div
-              aria-hidden
-              className="hidden w-px self-stretch bg-[var(--dn-line)] lg:block"
-            />
-            <div className="grid max-w-[38ch] gap-[14px]">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
-                02
-              </span>
-              <RevealItem
-                as="h3"
-                className="font-serif text-[clamp(1.8rem,2.4vw,2.4rem)] leading-[1.1] font-bold text-[var(--dn-fg)]"
-              >
+            <div className="grid max-w-[36ch] gap-[14px]">
+              <span className={LABEL_MONO}>02</span>
+              <RevealItem as="h3" className={TITLE_PAIR}>
                 {t("dressCode.option2.label")}
               </RevealItem>
-              <RevealItem
-                as="p"
-                className="max-w-[42ch] text-[1.4rem] leading-[1.55] font-light text-[var(--dn-fg-mute)]"
-              >
+              <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
                 {t("dressCode.option2.body")}
               </RevealItem>
             </div>
-          </RevealStage>
-          {/* Dress moodboard — outfit references pulled straight from the
-              dev doc's pop-culture stills. Mixed serif + marker captions
-              so the cluster feels like a film-club mood wall instead of
-              a polished catalog. Parallaxed around the Dress anchor. */}
-          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[8%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[46vw] lg:flex-wrap lg:justify-end lg:gap-6">
-            <Polaroid
-              variant="stamped"
-              overlay="card-2_front-clear"
-              src="/assets/day-n-night/DraggedImage-1.png"
-              alt={t("moodboard.dress.romeo.alt")}
-              caption={t("moodboard.dress.romeo.caption")}
-              width={250}
-              angle={-4}
-              depth={0.4}
-              anchor={ANCHOR_DRESS}
-            />
-            <Polaroid
-              variant="stamped"
-              overlay="card-4_front-clear"
-              src="/assets/day-n-night/DraggedImage-2.png"
-              alt={t("moodboard.dress.pink.alt")}
-              caption={t("moodboard.dress.pink.caption")}
-              width={230}
-              angle={3}
-              depth={-0.5}
-              anchor={ANCHOR_DRESS}
-            />
-            <Polaroid
-              variant="stamped"
-              overlay="card-4_front-clear"
-              src="/assets/day-n-night/DraggedImage-3.png"
-              alt={t("moodboard.dress.dad.alt")}
-              caption={t("moodboard.dress.dad.caption")}
-              width={220}
-              angle={-3}
-              depth={0.7}
-              anchor={ANCHOR_DRESS}
-            />
-          </PolaroidGroup>
-        </div>
-      </section>
-
-      {/* Act 4 — Night.
-          Heading takes the upper-left quadrant in a wide serif scale.
-          Lede sits beneath. YM.FM credit is anchored bottom-right as a
-          small "stamp" — caps label above a body line, with a thin
-          rule overhead. The asymmetry is the point: the night side of
-          the loop weighs differently than the cookout side. */}
-      <section
-        data-dn-act
-        style={{ "--act-w": 1.45 } as React.CSSProperties}
-        aria-label={t("act.night.label")}
-        aria-hidden={ariaHidden || undefined}
-        inert={ariaHidden ? true : undefined}
-        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
-      >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-[55px] px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
-              IV.
-            </span>
-            <span className="text-bold font-serif text-[3rem] capitalize italic">
-              {t("act.night.label")}
-            </span>
-            <span aria-hidden className="opacity-50">
-              ·
-            </span>
-            <span>{t("act.night.time")}</span>
-          </span>
-          <RevealStage
-            as="div"
-            active={nightActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[42ch] gap-[21px] self-end max-lg:col-span-full xl:gap-[34px]"
-          >
-            <RevealItem
-              as="h2"
-              className="max-w-[11ch] font-serif text-[clamp(3rem,6vw,5.4rem)] leading-[1.02] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
-            >
-              {t("act.night.heading")}
-            </RevealItem>
-            <RevealItem
-              as="p"
-              className="max-w-[38ch] text-[clamp(1.4rem,1.65vw,1.75rem)] leading-[1.45] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
-            >
-              {t("act.night.body")}
-            </RevealItem>
-          </RevealStage>
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[320px] min-w-[240px] gap-2 self-end justify-self-end max-lg:col-span-full max-lg:justify-self-start">
-            <span
-              aria-hidden
-              className="mb-[10px] block h-px w-14 bg-[var(--dn-fg)] opacity-60"
-            />
-            <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
-              {t("tribute.heading")}
-            </span>
-            <span className="font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic">
-              {t("tribute.body")}
-            </span>
           </div>
-          {/* Night moodboard — the cocktail/suit/jacket references. */}
-          <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[14%] lg:right-[5vw] lg:z-[4] lg:flex lg:max-w-[38vw] lg:gap-[26px]">
-            <Polaroid
-              src="/assets/day-n-night/DraggedImage-6.png"
-              alt={t("moodboard.night.suit.alt")}
-              caption={t("moodboard.night.suit.caption")}
-              width={230}
-              aspect={1.781}
-              angle={-5}
-              depth={0.6}
-              anchor={ANCHOR_NIGHT}
-            />
-            <Polaroid
-              src="/assets/day-n-night/DraggedImage-7.png"
-              alt={t("moodboard.night.jacket.alt")}
-              caption={t("moodboard.night.jacket.caption")}
-              width={210}
-              aspect={1.501}
-              angle={4}
-              depth={-0.5}
-              anchor={ANCHOR_NIGHT}
-            />
-          </PolaroidGroup>
-        </div>
-      </section>
+        </RevealStage>
+        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[16%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[42vw] lg:flex-wrap lg:justify-end lg:gap-6">
+          <Polaroid
+            variant="stamped"
+            overlay="card-2_front-clear"
+            src="/assets/day-n-night/DraggedImage-1.png"
+            alt={t("moodboard.dress.romeo.alt")}
+            caption={t("moodboard.dress.romeo.caption")}
+            width={250}
+            angle={-4}
+            depth={0.4}
+            anchor={ANCHOR_DRESS}
+          />
+          <Polaroid
+            variant="stamped"
+            overlay="card-4_front-clear"
+            src="/assets/day-n-night/DraggedImage-2.png"
+            alt={t("moodboard.dress.pink.alt")}
+            caption={t("moodboard.dress.pink.caption")}
+            width={230}
+            angle={3}
+            depth={-0.5}
+            anchor={ANCHOR_DRESS}
+          />
+          <Polaroid
+            variant="stamped"
+            overlay="card-4_front-clear"
+            src="/assets/day-n-night/DraggedImage-3.png"
+            alt={t("moodboard.dress.dad.alt")}
+            caption={t("moodboard.dress.dad.caption")}
+            width={220}
+            angle={-3}
+            depth={0.7}
+            anchor={ANCHOR_DRESS}
+          />
+        </PolaroidGroup>
+      </Act>
 
-      {/* Act 5 — Closing / RSVP (P5c bookend).
-          The loop's climax — same "Day n Night" title as Opening, but
-          mirrored compositionally so the bookend reads as paired, not
-          duplicate. Title block sits TOP-RIGHT (Opening had it
-          top-left); the SurvivalKit reprise sits BOTTOM-LEFT (Opening
-          had it bottom-right). The closing italic line frames the
-          SurvivalKit from above as a quiet farewell prelude to the
-          practical info.
-
-          --act-w bumped 1.4 → 1.6 so the bookend has the same lateral
-          breathing room as Opening (1.5) and the user spends comparable
-          scroll time on both ends of the loop. */}
-      <section
-        data-dn-act
-        style={{ "--act-w": 1.65 } as React.CSSProperties}
-        aria-label={t("rsvpCta.primary")}
-        aria-hidden={ariaHidden || undefined}
-        inert={ariaHidden ? true : undefined}
-        className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
-      >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,8fr)] grid-rows-[auto_1fr_auto] gap-x-16 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          {/* Eyebrow — right-aligned to anchor the title-top-right
-              orientation. Opening's eyebrow is left-aligned; the
-              mirrored alignment is the first signal of the bookend. */}
-          <span className="col-span-full inline-flex items-baseline justify-end gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
-              V.
-            </span>
-            <span className="text-bold font-serif text-[3rem] capitalize italic">
-              {t("entry.heading")}
-            </span>
-            <span aria-hidden className="opacity-50">
-              ·
-            </span>
-            <span>{t("date.short")}</span>
+      {/* ── Act IV — Night ───────────────────────────────────────────────
+          Feature spread, evening weight. Title + lede bottom-left,
+          tribute dossier bottom-right framed with a thin top rule,
+          polaroid cluster floating right at the shared band height. */}
+      <Act width={1.5} ariaLabel={t("act.night.label")} ariaHidden={ariaHidden}>
+        <ActEyebrow
+          numeral="IV"
+          label={t("scrubber.night")}
+          time={t("act.night.time")}
+          align="left"
+        />
+        <RevealStage
+          as="div"
+          active={nightActive}
+          className="col-start-1 col-end-8 row-start-2 row-end-3 grid max-w-[44ch] gap-6 self-end max-lg:col-span-full xl:gap-9"
+        >
+          <RevealItem as="h2" className={`${TITLE_SECTION} max-w-[11ch]`}>
+            {t("act.night.heading")}
+          </RevealItem>
+          <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
+            {t("act.night.body")}
+          </RevealItem>
+        </RevealStage>
+        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[320px] min-w-[240px] gap-2 self-end justify-self-end max-lg:col-span-full max-lg:justify-self-start">
+          <span
+            aria-hidden
+            className="mb-[10px] block h-px w-14 bg-[var(--dn-fg)] opacity-60"
+          />
+          <span className={LABEL_MONO}>{t("tribute.heading")}</span>
+          <span className="font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic">
+            {t("tribute.body")}
           </span>
-          {/* Left column — closing italic framing + SurvivalKit reprise.
-              The italic line sits as a quiet farewell prelude ("see you
-              there") above the practical-info dossier. Bottom-anchored
-              so it pulls the eye downward-left, completing the diagonal
-              against the upper-right title block. */}
-          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-start gap-6 self-start max-lg:col-span-full lg:flex">
-            <p className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic">
-              {t("closing.lede")}
-            </p>
-            <SurvivalKit variant="embedded" />
-          </div>
-          {/* Right column — title block + CTA. Mirrors Opening's
-              left-column title block in scale and weight so the loop
-              reads bookended; the CTA replaces Opening's date/location
-              strip as the act's final affordance. */}
-          {/* Right column title block — mirrors Opening's title
-              scale + structure for the bookend. justify-self-end
-              keeps the title anchored to the right edge of the wider
-              8fr column. */}
+        </div>
+        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[16%] lg:right-[5vw] lg:z-[4] lg:flex lg:max-w-[38vw] lg:gap-[26px]">
+          <Polaroid
+            src="/assets/day-n-night/DraggedImage-6.png"
+            alt={t("moodboard.night.suit.alt")}
+            caption={t("moodboard.night.suit.caption")}
+            width={230}
+            aspect={1.781}
+            angle={-5}
+            depth={0.6}
+            anchor={ANCHOR_NIGHT}
+          />
+          <Polaroid
+            src="/assets/day-n-night/DraggedImage-7.png"
+            alt={t("moodboard.night.jacket.alt")}
+            caption={t("moodboard.night.jacket.caption")}
+            width={210}
+            aspect={1.501}
+            angle={4}
+            depth={-0.5}
+            anchor={ANCHOR_NIGHT}
+          />
+        </PolaroidGroup>
+      </Act>
+
+      {/* ── Act V — Reserve / Back Cover ─────────────────────────────────
+          Closing spread. Eyebrow right-aligned (first signal of the
+          bookend). Right side gets the hero title mirror + closing kicker
+          + CTA. Left side gets the SurvivalKit — practical info lives
+          here, not on the cover. Hosts strip bottom-right. */}
+      <Act width={1.3} ariaLabel={t("rsvpCta.primary")} ariaHidden={ariaHidden}>
+        <ActEyebrow
+          numeral="V"
+          label={t("entry.heading")}
+          time={t("date.short")}
+          align="right"
+        />
+        <div className="col-start-1 col-end-6 row-start-2 row-end-3 hidden flex-col gap-6 self-end max-lg:col-span-full lg:flex">
+          <p className={`${BODY_SERIF} max-w-[40ch]`}>{t("closing.lede")}</p>
+          <SurvivalKit variant="embedded" />
+        </div>
+        {/* Closing title block — kicker + hero title + Reserve CTA.
+            Reveal cascade preserved. Opacity-faded only during the
+            sticky window (see useStickyZone). */}
+        <div
+          className="col-start-7 col-end-13 row-start-2 row-end-3 self-end text-right max-lg:col-span-full max-lg:text-left"
+          style={bookendFade}
+        >
           <RevealStage
             as="div"
             active={closingActive}
-            className="col-start-2 col-end-3 row-start-2 row-end-3 grid content-start gap-6 self-start max-lg:col-span-full"
+            className="grid content-end gap-7 xl:gap-9"
           >
             <RevealItem
               as="p"
-              className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase"
+              className={`${KICKER_MONO} justify-self-end max-lg:justify-self-start`}
             >
               {t("closing.kicker")}
             </RevealItem>
-            <RevealItem
-              as="h2"
-              className="font-serif text-[clamp(4rem,7vw,8rem)] leading-[0.95] font-bold tracking-[-0.025em] text-[var(--dn-fg)]"
-            >
+            <RevealItem as="h2" className={TITLE_HERO}>
               {t("title")}
             </RevealItem>
-            <RevealItem as="div">
+            <RevealItem
+              as="div"
+              className="justify-self-end max-lg:justify-self-start"
+            >
               <Link
                 href="/tickets/day-n-night"
                 className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3 md:text-sm"
@@ -877,23 +739,20 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               </Link>
             </RevealItem>
           </RevealStage>
-          {/* Hosts strip — right-aligned bottom edge. Pairs with
-              Opening's left-aligned bottom date/location strip — same
-              tier of editorial chrome, opposing alignment. */}
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:col-span-full max-lg:justify-self-start max-lg:text-left">
-            <span
-              aria-hidden
-              className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60 max-lg:ml-0"
-            />
-            <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
-              {t("footer.hosts")}
-            </span>
-            <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
-              {t("footer.rsvpClosesAt")}
-            </span>
-          </div>
         </div>
-      </section>
+        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:col-span-full max-lg:justify-self-start max-lg:text-left">
+          <span
+            aria-hidden
+            className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60 max-lg:ml-0"
+          />
+          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+            {t("footer.hosts")}
+          </span>
+          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+            {t("footer.rsvpClosesAt")}
+          </span>
+        </div>
+      </Act>
     </>
   );
 }

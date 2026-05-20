@@ -150,7 +150,7 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
           scene underneath becomes visible. */}
       <div
         aria-hidden
-        className="ease absolute inset-0 bg-faded-black transition-opacity duration-700 group-data-[hiding='true']:opacity-0"
+        className="ease absolute inset-0 bg-faded-black/99 transition-opacity duration-700 group-data-[hiding='true']:opacity-0"
       />
 
       {/* Sky clip — everything inside this absolute container is hidden
@@ -186,6 +186,12 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
         className="absolute top-1/2 left-1/2 h-px w-[min(85vw,1400px)] origin-center -translate-x-1/2 -translate-y-1/2 scale-0 bg-faded-white/85 shadow-[0_0_6px_0_oklch(85%_0.08_70/0.35),0_0_18px_0_oklch(80%_0.06_60/0.18)] transition-[transform_0.3s_cubic-bezier(0.25,0.46,0.45,0.95),opacity_0.7s_ease] group-data-[hiding='true']:opacity-0"
         aria-hidden
       />
+      <div className="relative h-px w-full overflow-hidden bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.18)]">
+        <div
+          ref={fillRef}
+          className="ease absolute inset-0 origin-left scale-x-0 bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.7)] transition-transform duration-300"
+        />
+      </div>
 
       {/* Chrome — title, label, progress bar. Anchored bottom-center so
           the type doesn't overlap the rising sun (which lives at
@@ -201,12 +207,6 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
         <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase">
           {t("loader.rising")}
         </p>
-        <div className="relative h-px w-full overflow-hidden bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.18)]">
-          <div
-            ref={fillRef}
-            className="ease absolute inset-0 origin-left scale-x-0 bg-[oklch(from_var(--dn-fg)_l_c_h_/_0.7)] transition-transform duration-300"
-          />
-        </div>
       </div>
     </div>
   );

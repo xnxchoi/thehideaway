@@ -56,6 +56,76 @@ body[data-dn-immersive="true"] #rp-header {
   }
 }
 
+/* ─── Act layout tokens ───────────────────────────────────────────────────── */
+
+/* Shared spacing rhythm for all 5 acts. Component code reads these
+   instead of declaring per-act values, which keeps the magazine pacing
+   coherent as the user scrolls the loop. */
+[data-dn-act] {
+  --dn-act-pt: clamp(72px, 8vh, 120px);
+  --dn-act-pb: clamp(72px, 8vh, 120px);
+  --dn-act-px: clamp(24px, 4vw, 80px);
+  --dn-act-gap-x: clamp(40px, 5vw, 80px);
+  --dn-act-gap-y: clamp(36px, 5vh, 64px);
+  /* Shared horizontal band for floating polaroid clusters across acts. */
+  --dn-polaroid-band: 16%;
+}
+
+/* ─── Eyebrow rule ────────────────────────────────────────────────────────── */
+
+/* Thin top rule that opens every act, magazine masthead style. Used as
+   a pseudo-element on [data-dn-eyebrow] so we don't render an extra
+   span per call site. */
+[data-dn-eyebrow] {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+  padding-top: 18px;
+}
+
+[data-dn-eyebrow]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 88px;
+  height: 1px;
+  background: var(--dn-fg);
+  opacity: 0.5;
+}
+
+[data-dn-eyebrow][data-align="right"] {
+  margin-left: auto;
+}
+
+[data-dn-eyebrow][data-align="right"]::before {
+  left: auto;
+  right: 0;
+}
+
+/* ─── Bottom-center chrome cluster ───────────────────────────────────────── */
+
+/* View toggle + audio toggle sit centered above the scrubber. CSS owns
+   positioning so each component stays positionless and conditional
+   spacing (audio absent in simplified view) is expressed declaratively. */
+
+[data-dn-view-toggle] {
+  position: fixed;
+  bottom: 28px; /* tailwind bottom-7 */
+  left: 50%;
+  z-index: 46;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 1024px) {
+  [data-dn-view-toggle] {
+    /* clears the desktop Scrubber, which sits at bottom-7. */
+    bottom: 96px;
+  }
+}
+
+
 /* ─── Chrome pill (toggle + exit) ────────────────────────────────────────── */
 
 [data-dn-chrome-pill] {
@@ -106,12 +176,11 @@ body[data-dn-immersive="true"] #rp-header {
 /* ─── Horizon glow band ───────────────────────────────────────────────────── */
 
 [data-dn-horizon-glow] {
-  --horizon-brightness: 1;
   background: radial-gradient(
     ellipse 85% 35% at center,
-    oklch(86% 0.18 75 / calc(0.95 * var(--horizon-brightness))) 0%,
-    oklch(80% 0.18 65 / calc(0.7  * var(--horizon-brightness))) 25%,
-    oklch(70% 0.2  50 / calc(0.35 * var(--horizon-brightness))) 50%,
+    oklch(var(--glow1) / calc(0.95 * var(--horizon-brightness))) 0%,
+    oklch(var(--glow2) / calc(0.7  * var(--horizon-brightness))) 25%,
+    oklch(var(--glow3) / calc(0.35 * var(--horizon-brightness))) 50%,
     transparent 78%
   );
 }

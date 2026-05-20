@@ -421,6 +421,8 @@ Pulled from project rules and CLAUDE.md:
 
 Voice and copy rules for this page live in **`readmes/VOICE.md`** — the canonical voice and translation guide. Read it before writing any user-facing string for `/day-n-night` (English or Korean).
 
+**Locked copy / voice decisions for this surface** live in **`readmes/DAY_N_NIGHT_HANDOFF.md`** § 2 — host identity (Choi & Choe), the KO ↔ EN cut-line (informational KO stays, editorial KO mirrors EN verbatim, Toss-style), YM.FM's identity + blurb, the three-track audio arc, polaroid scatter spec, tribute relocation, dead-key cleanup list. The earlier `DAY_N_NIGHT_STORYBOARD.md` was atticed 2026-05-20 (`.attic/readmes/DAY_N_NIGHT_STORYBOARD.md`) — its KO editorial polish proposals are superseded by the mirror-EN rule.
+
 For this surface specifically:
 
 - Tone: editorial, quiet, references aging youth without nostalgia.

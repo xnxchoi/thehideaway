@@ -115,12 +115,27 @@ type SceneState = {
    * at horizon, scene starts at the same loopProgress).
    */
   horizonLoop: number;
+  /**
+   * Liminal → Nighttime handoff (§ 2.9 of DAY_N_NIGHT_HANDOFF.md).
+   *
+   * False from mount until the cassette button press in the cinematic
+   * handoff sequence — at which point `<LiminalHandoff>` (§ 3.6) calls
+   * `fireLiminalHandoff()` synchronously with the click SFX frame.
+   *
+   * `<DayNNightScore>` reads this to swap its bed from the Act 1
+   * country track to the Act 2 house track. Event-driven, not
+   * scroll-driven. Once true, stays true for the session; reset on
+   * Immersive unmount so a re-entry replays the handoff.
+   */
+  liminalHandoffFired: boolean;
 };
 type SceneAct = {
   setProgress: (p: number) => void;
   setPhase: (p: Phase) => void;
   setLayout: (layout: ActLayout) => void;
   setLoaderProgress: (u: number) => void;
+  fireLiminalHandoff: () => void;
+  resetLiminalHandoff: () => void;
 };
 type SceneStore = SceneState & SceneAct;
 /**
@@ -139,7 +154,8 @@ const createDayCycle = (
     phase: "loading",
     layout: null,
     initialLoopPosition: FALLBACK_HORIZON,
-    horizonLoop: FALLBACK_HORIZON
+    horizonLoop: FALLBACK_HORIZON,
+    liminalHandoffFired: false
   }
 ) =>
   createStore<SceneStore>()((set) => ({
@@ -147,6 +163,8 @@ const createDayCycle = (
     setProgress: (progress) => set({ progress }),
     setPhase: (phase) => set({ phase }),
     setLoaderProgress: (loaderProgress) => set({ loaderProgress }),
+    fireLiminalHandoff: () => set({ liminalHandoffFired: true }),
+    resetLiminalHandoff: () => set({ liminalHandoffFired: false }),
     setLayout: (layout) => {
       // Derive the loopProgress where the viewport center sits at the
       // anchor act's center:

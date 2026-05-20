@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/core/Button";
 import type { DayNNightView } from "./useViewPref";
 
 interface ViewToggleProps {
@@ -18,11 +19,12 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
   return (
     <div
       data-dn-chrome-pill
+      data-dn-view-toggle
       role="radiogroup"
       aria-label={t("label")}
-      className="fixed top-5 right-5 z-[46] inline-flex gap-0.5 rounded-full border border-[var(--dn-chrome-line)] p-[3px] md:top-8 md:right-8 xl:top-10 xl:right-12"
+      className="inline-flex gap-0.5 rounded-full border border-[var(--dn-chrome-line)] p-[3px]"
     >
-      <button
+      <Button
         type="button"
         role="radio"
         aria-checked={value === "immersive"}
@@ -32,8 +34,8 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
         onClick={() => onChange("immersive")}
       >
         {t("immersive")}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         role="radio"
         aria-checked={value === "simplified"}
@@ -43,7 +45,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
         onClick={() => onChange("simplified")}
       >
         {t("simplified")}
-      </button>
+      </Button>
     </div>
   );
 }

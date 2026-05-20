@@ -22,14 +22,13 @@ export function SimplifiedView() {
   const t = useTranslations("Event.DayNNight");
 
   return (
-    <div className="grid min-h-dvh grid-rows-[auto_1fr_auto] content-start gap-6 p-6 md:grid-rows-[1fr_auto_1fr] md:content-stretch md:gap-8 md:p-10">
+    <div className="grid min-h-dvh grid-rows-[auto_1fr_auto] content-start gap-10 p-6 md:grid-rows-[1fr_auto_1fr] md:content-stretch md:gap-16 md:p-12">
       <header className="flex items-start justify-between gap-4 font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
         <span>
           {t("date.short")} · {t("location.neighborhood")}
         </span>
         <span>{t("date.weekday")}</span>
       </header>
-
       <div className="grid max-w-[720px] gap-6 md:max-w-[880px] md:gap-8">
         <p className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase">
           {t("opening.kicker")}
@@ -41,7 +40,8 @@ export function SimplifiedView() {
           {t("opening.lede")}
         </p>
 
-        <dl className="mt-6 grid grid-cols-1 gap-4 font-mono text-xs leading-[1.7] text-[var(--dn-fg-mute)] md:mt-8 md:max-w-[600px] md:grid-cols-2 md:gap-x-10 md:gap-y-5">
+        <dl className="mt-8 grid grid-cols-1 gap-6 font-mono text-xs leading-[1.7] text-[var(--dn-fg-mute)] md:mt-12 md:max-w-[640px] md:grid-cols-2 md:gap-x-12 md:gap-y-8">
+          {" "}
           <div className="grid grid-cols-[72px_1fr] items-baseline gap-[14px]">
             <dt className="self-start pt-0.5 text-[10px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
               {t("act.day.label")}
@@ -105,7 +105,6 @@ export function SimplifiedView() {
             DM volume the product-lens audit identified. */}
         <SurvivalKit />
       </div>
-
       <footer className="flex items-end justify-between gap-4 font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
         <span>{t("footer.hosts")}</span>
         <span>{t("footer.rsvpClosesAt")}</span>

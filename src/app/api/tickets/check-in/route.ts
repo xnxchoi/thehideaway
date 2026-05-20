@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
+import { validateCheckIn } from "./validate";
 
 export const runtime = "nodejs";
 
@@ -79,15 +80,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if (ticket.status !== "active") {
+  const validation = validateCheckIn(ticket, session.user.role);
+  if (!validation.ok) {
     return NextResponse.json(
-      { ok: false, error: "ticket-not-active", status: ticket.status },
-      { status: 409 }
+      { ok: false, error: validation.error, status: ticket.status },
+      { status: validation.httpStatus }
     );
   }
-
-  // Idempotency: already checked in.
-  if (ticket.checked_in) {
+  if (validation.alreadyCheckedIn) {
     const eventName =
       typeof ticket.event === "object" && ticket.event
         ? (ticket.event as { name?: string }).name

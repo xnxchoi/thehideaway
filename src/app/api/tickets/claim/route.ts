@@ -6,6 +6,7 @@ import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
 import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
+import { validateClaim } from "./validate";
 
 export const runtime = "nodejs";
 
@@ -84,45 +85,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if (ticket.status === "canceled") {
-    return NextResponse.json(
-      { ok: false, error: "ticket-canceled" },
-      { status: 409 }
-    );
-  }
-
   const userId = String(session.user.id);
   const existingUser = idOf(ticket.user);
 
-  if (existingUser === userId) {
-    return NextResponse.json(
-      { ok: true, ticket_id: ticket.id, already_claimed: true },
-      { status: 200 }
-    );
-  }
-
-  if (existingUser) {
-    return NextResponse.json(
-      { ok: false, error: "already-claimed" },
-      { status: 409 }
-    );
-  }
-
-  if (ticket.claim_email) {
-    const userEmail = session.user.email;
-    if (
-      !userEmail ||
-      userEmail.trim().toLowerCase() !== ticket.claim_email.trim().toLowerCase()
-    ) {
-      return NextResponse.json(
-        { ok: false, error: "email-mismatch" },
-        { status: 403 }
-      );
-    }
-  }
-
   const eventId = idOf(ticket.event);
   let event: EventLite | null = null;
+  let capLimit = 3;
+  let existingCount = 0;
   if (eventId) {
     event = (await payload
       .findByID({
@@ -132,8 +101,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         overrideAccess: true
       })
       .catch(() => null)) as EventLite | null;
-    const capLimit = event?.max_per_user ?? 3;
-    const existingForUser = await payload.count({
+    capLimit = event?.max_per_user ?? 3;
+    const countResult = await payload.count({
       collection: "tickets",
       overrideAccess: true,
       where: {
@@ -144,12 +113,37 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         ]
       }
     });
-    if ((existingForUser.totalDocs ?? 0) >= capLimit) {
-      return NextResponse.json(
-        { ok: false, error: "user-cap-reached", cap: capLimit },
-        { status: 409 }
-      );
-    }
+    existingCount = countResult.totalDocs ?? 0;
+  }
+
+  const validation = validateClaim(
+    {
+      status: ticket.status ?? null,
+      user: existingUser,
+      claim_email: ticket.claim_email ?? null
+    },
+    userId,
+    session.user.email ?? null,
+    existingCount,
+    capLimit
+  );
+
+  if (!validation.ok) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: validation.error,
+        ...(validation.error === "user-cap-reached" ? { cap: capLimit } : {})
+      },
+      { status: validation.httpStatus }
+    );
+  }
+
+  if (validation.alreadyClaimed) {
+    return NextResponse.json(
+      { ok: true, ticket_id: ticket.id, already_claimed: true },
+      { status: 200 }
+    );
   }
 
   await payload.update({
