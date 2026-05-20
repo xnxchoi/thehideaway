@@ -1,4 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isGatePublicPath } from "@/lib/gate/allowlist";
+
+/**
+ * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
+ * runtime by default. Three responsibilities, in order:
+ *
+ *   1. Soft-launch gate. Anonymous traffic outside the Day-n-Night
+ *      allowlist is rewritten to `/gate`. Tier-2 role check (for
+ *      logged-in non-staff) lives in `(frontend)/(site)/layout.tsx`,
+ *      reading the `x-pathname` header forwarded from here.
+ *   2. Per-IP rate limiting on selected `/api/*` prefixes.
+ *   3. Auth redirect for `/me`, `/prive`, `/account`, `/admin-ba`
+ *      when no Better Auth session cookie is present.
+ *
+ * To lift the gate: delete the GATE block + the catch-all matcher
+ * entry, and revert the layout role check. Rate limiting and auth
+ * redirect stay.
+ */
+
+const SESSION_COOKIE_NAMES = [
+  "better-auth.session_token",
+  "__Secure-better-auth.session_token"
+];
+
+function hasSessionCookie(req: NextRequest): boolean {
+  for (const name of SESSION_COOKIE_NAMES) {
+    if (req.cookies.get(name)) return true;
+  }
+  return false;
+}
 
 /**
  * In-memory sliding-window rate limiter.
@@ -26,14 +56,22 @@ function rateLimit(
 
   if (!entry || now > entry.resetAt) {
     store.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs };
+    return {
+      allowed: true,
+      remaining: maxRequests - 1,
+      resetAt: now + windowMs
+    };
   }
 
   entry.count++;
   if (entry.count > maxRequests) {
     return { allowed: false, remaining: 0, resetAt: entry.resetAt };
   }
-  return { allowed: true, remaining: maxRequests - entry.count, resetAt: entry.resetAt };
+  return {
+    allowed: true,
+    remaining: maxRequests - entry.count,
+    resetAt: entry.resetAt
+  };
 }
 
 let lastEviction = Date.now();
@@ -51,7 +89,7 @@ const RATE_LIMITS: [string, number, number][] = [
   ["/api/image-courier", 20, 60_000],
   ["/api/link-preview", 20, 60_000],
   ["/api/payload-jobs", 10, 60_000],
-  ["/api/notifications", 30, 60_000],
+  ["/api/notifications", 30, 60_000]
 ];
 
 function getClientIP(req: NextRequest): string {
@@ -65,7 +103,27 @@ function getClientIP(req: NextRequest): string {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // --- Rate limiting on API routes ---
+  // --- 1. Soft-launch gate ---
+  // Forward the real pathname so server components can do the role-aware
+  // tier-2 check without re-parsing the rewrite target.
+  const fwdHeaders = new Headers(request.headers);
+  fwdHeaders.set("x-pathname", pathname);
+
+  const gateAllowed =
+    isGatePublicPath(pathname) ||
+    pathname.startsWith("/_next") ||
+    hasSessionCookie(request);
+
+  if (!gateAllowed) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/gate";
+    url.search = "";
+    return NextResponse.rewrite(url, {
+      request: { headers: fwdHeaders }
+    });
+  }
+
+  // --- 2. Rate limiting on API routes ---
   if (pathname.startsWith("/api/")) {
     maybeEvict();
 
@@ -87,18 +145,15 @@ export async function proxy(request: NextRequest) {
                 ),
                 "X-RateLimit-Limit": String(max),
                 "X-RateLimit-Remaining": "0",
-                "X-RateLimit-Reset": String(Math.ceil(result.resetAt / 1000)),
-              },
+                "X-RateLimit-Reset": String(Math.ceil(result.resetAt / 1000))
+              }
             }
           );
         }
 
         const response = NextResponse.next();
         response.headers.set("X-RateLimit-Limit", String(max));
-        response.headers.set(
-          "X-RateLimit-Remaining",
-          String(result.remaining)
-        );
+        response.headers.set("X-RateLimit-Remaining", String(result.remaining));
         response.headers.set(
           "X-RateLimit-Reset",
           String(Math.ceil(result.resetAt / 1000))
@@ -128,26 +183,36 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // --- Auth redirect for protected routes ---
-  const sessionCookie =
-    request.cookies.get("better-auth.session_token") ||
-    request.cookies.get("__Secure-better-auth.session_token");
+  // --- 3. Auth redirect for protected routes ---
+  // Explicit prefix guard: the widened gate matcher above means this
+  // block now sees every path, not just the original four. Scope it
+  // back to the four protected areas.
+  const protectedPrefixes = ["/me", "/prive", "/account", "/admin-ba"];
+  const isProtected = protectedPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
 
-  if (!sessionCookie) {
+  if (isProtected && !hasSessionCookie(request)) {
     const signInUrl = new URL("/sign-in", request.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  return NextResponse.next();
+  // Default: forward with the x-pathname header set above.
+  return NextResponse.next({ request: { headers: fwdHeaders } });
 }
 
 export const config = {
   matcher: [
+    // Catch-all for the soft-launch gate. Excludes Next internals and
+    // static assets so they don't pay the proxy cost. Drop this entry
+    // when the gate is lifted; the targeted matchers below still need
+    // to fire for rate-limit + auth-redirect.
+    "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
     "/api/:path*",
     "/me/:path*",
     "/prive/:path*",
     "/account/:path*",
-    "/admin-ba/:path*",
-  ],
+    "/admin-ba/:path*"
+  ]
 };

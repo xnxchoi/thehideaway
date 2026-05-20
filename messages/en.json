@@ -126,6 +126,18 @@
     "sectionCopy": "Commentary — forthcoming. The margins are still being ruled.",
     "cardCopy": "Something here, eventually."
   },
+  "Gate": {
+    "eyebrow": "THE HIDEAWAY — SEOUL",
+    "wordmark": "The Hideaway",
+    "title": "Returning soon.",
+    "lede": "We are still ruling the margins. The room opens in stages.",
+    "footnote": "What is ready to read, you can find at our first dispatch.",
+    "ctaPrimary": "Day & Night",
+    "ctaPrimaryHref": "/day-n-night",
+    "ctaSecondary": "Sign in",
+    "ctaSecondaryHref": "/login",
+    "colophon": "An editorial house, in private rehearsal."
+  },
   "Settings": {
     "navAria": "Settings sections",
     "back": "Settings",
@@ -322,32 +334,32 @@
           "label": "NIGHT",
           "time": "20:00 → late",
           "sectionTitle": "Nightfall",
-          "announcement": "A quiet addition to the evening awaits.",
+          "announcement": "A quiet addition to the evening awaits..,",
           "dressLabel": "Dress code, after dark",
           "heading": "Sharp. Chic. Dressed to impress.",
           "body": "Same room, different mood. Cocktails come up, lights go down. You don't have to bring a suit. We won't stop you, though."
         }
       },
       "dressCode": {
-        "heading": "One rule: Don't dress your age.",
+        "heading": "Whatever\nYou\nWant",
         "option1": {
-          "label": "#throwback: looks you are a little old for...",
+          "label": "dress too young...",
           "body": "An outfit you still love, but felt like you'd outgrown? Last call. Wear it without apology. Geeks, nerds, civilians, and the next emo girl—all welcome. We'll get you the photos."
         },
         "option2": {
-          "label": "...or a tad bit young for.",
-          "body": "Dad jeans, jorts, oversized polos. Your pick. Daytime unshaven, nighttime shaken."
+          "label": "...or too extra...",
+          "body": "Tux, Backless dress, risquè shorts- I mean, we won't _not_ judge you. But we'll still love you."
         }
       },
       "included": {
         "heading": "Included",
         "food": {
           "label": "Food",
-          "items": "Smash burgers · Pork · Potatoes"
+          "items": "Barbeque spread - smoked iberico, grilled drumsticks, you name it"
         },
         "drinks": {
           "label": "Drinks",
-          "items": "Beer · Wine · Gin if you ask"
+          "items": "Beer, Wine, and Korean spirit. No soju though."
         }
       },
       "tribute": {
@@ -364,11 +376,11 @@
       },
       "closing": {
         "kicker": "More to come.",
-        "lede": "Pull up a chair. The fire's been waiting."
+        "lede": "Pull up a chair; fire's been warming up.."
       },
       "rsvpCta": {
         "primary": "Reserve",
-        "secondary": "Small list. Quiet room."
+        "secondary": "Limited to 30 seats."
       },
       "viewToggle": {
         "label": "View",
@@ -379,15 +391,15 @@
         "rising": "Loading"
       },
       "footer": {
-        "hosts": "Hosted by Sean & friend",
-        "rsvpClosesAt": "RSVPs close when the room fills."
+        "hosts": "Hosted by Choi & Choe",
+        "rsvpClosesAt": "3pm Sunday / while tickets last"
       },
       "survivalKit": {
-        "heading": "Before you come",
-        "subheading": "Six things, in plain words.",
+        "heading": "Essentials",
+        "subheading": "The what, where, who, abd when's.",
         "address": {
           "label": "Where",
-          "hint": "Tap to copy. Map opens Kakao."
+          "hint": "."
         },
         "toss": {
           "label": "Pay",

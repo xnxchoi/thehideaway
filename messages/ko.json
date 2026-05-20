@@ -127,6 +127,18 @@
     "sectionCopy": "논평 — 출간 예정. 여백을 그리는 중입니다.",
     "cardCopy": "무언가, 언젠가."
   },
+  "Gate": {
+    "eyebrow": "더 하이드어웨이 — 서울",
+    "wordmark": "The Hideaway",
+    "title": "곧 다시 문을 엽니다.",
+    "lede": "여백을 다듬는 중입니다. 방은 단계적으로 열립니다.",
+    "footnote": "지금 읽을 수 있는 것은 첫 번째 디스패치에 있습니다.",
+    "ctaPrimary": "데이 & 나이트",
+    "ctaPrimaryHref": "/day-n-night",
+    "ctaSecondary": "로그인",
+    "ctaSecondaryHref": "/login",
+    "colophon": "사적인 리허설 중인 편집의 집."
+  },
   "Settings": {
     "navAria": "설정 섹션",
     "back": "설정",
@@ -290,12 +302,12 @@
     "DayNNight": {
       "title": "Day n Night",
       "date": {
-        "weekday": "Sunday",
+        "weekday": "일요일",
         "full": "2026년 5월 24일",
         "short": "5월 24일"
       },
       "location": {
-        "label": "Location",
+        "label": "장소",
         "neighborhood": "해방촌 · 용산",
         "city": "서울",
         "address": "소월로20길 64, 3층"
@@ -305,14 +317,14 @@
         "time": "18:30 →",
         "kicker": "Smoke Low and Slow... 30 years minimum.",
         "lede": "불꽃은 허락을 구하지 않습니다.",
-        "body": "헤매고 부딪히며 보낸 10년- 어떻게든 살아남아 여기까지 왔고, 우리 곁에는 소중한 이들이 변함없이 함께하고 있습니다. 그릴 위로 피어오르는 연기는 단순한 열기가 아닙니다.\n\n살아남고, 털어내고, 흠집도 자신의 일부라고 받아들이기까지 여정에 함께한, 그리고 함께 할 모든 이들을 초대합니다. \n\n."
+        "body": "헤매고 부딪히며 보낸 10년. 어떻게든 살아남았고, 곁에는 변함없는 사람들이 남았습니다.\n\n그릴 위로 피어오르는 연기는 단순한 열기가 아닙니다.\n\n살아남고, 털어내고, 흠집까지 자신의 것으로 받아들이며 함께 걸어온 사람들을 초대합니다. 서른, 보여줄 이야기는 충분합니다. 그 옆에 서주십시오."
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
           "heading": "뒷마당 바비큐도 좋지만, 루프탑이라면 더 완벽하죠.",
-          "body": "그릴에 구운 스매시 버거, 돼지고기, 감자. 해가 떠 있는 동안 불을 피웁니다. 맥주와 와인은 그다음이죠. 정중히 묻는다면 진(Gin)을 내어드릴지도 모릅니다."
+          "body": "그릴에 구운 스매시 버거, 천천히 익힌 돼지고기, 감자. 해가 떠 있는 동안 불을 피웁니다. 맥주와 와인은 그다음에 따릅니다. 진(Gin)도 준비되어 있으니, 말씀만 주십시오."
         },
         "shift": {
           "label": "IN-BETWEEN TIMES",
@@ -330,10 +342,10 @@
         }
       },
       "dressCode": {
-        "heading": "단 하나의 규칙: 나이에 얽매이지 마세요.",
+        "heading": "단 하나의 규칙: 나이에 얽매이지 마십시오.",
         "option1": {
           "label": "#throwback: 입기엔 조금 늦었다고 생각했던...",
-          "body": "여전히 좋아하지만 나이 때문에 망설였던 옷이 있나요? 지금이 마지막 기회입니다. 변명 없이 꺼내 입으세요. 긱(Geek), 너드, 평범한 사람, 혹은 이모(Emo) 펑크까지 모두 환영합니다. 멋진 사진은 저희가 남겨드릴게요."
+          "body": "여전히 좋아하지만 나이 때문에 망설였던 옷이 있다면, 지금이 마지막 기회입니다. 변명 없이 꺼내 입으십시오. 긱(Geek), 너드, 평범한 사람, 혹은 이모(Emo) 펑크까지 모두 환영합니다. 멋진 사진은 저희가 남겨드리겠습니다."
         },
         "option2": {
           "label": "...혹은 입기엔 아직 이른 옷.",
@@ -353,7 +365,7 @@
       },
       "tribute": {
         "heading": "지워지지 않는 흉터를 지닌 모든 이에게.",
-        "body": "뜨겁게 불태워본 사람만이 아는 지혜가 있습니다. 책에서는 배울 수 없는, 온몸으로 부딪혀 얻어낸 것들이죠.\n\n우리를 단련시킨 우정, 더 나은 것을 채우기 위해 겪어야 했던 상실. 평생토록 말하지 못할 밤들, 그리고 하루가 멀다하고 추억하며 이야기할 밤들. 모난 데 없이 깨끗한 게 무슨 매력이겠어요? 조금 그을렸을지라도, 괜찮습니다. 돈주고 태닝하는 시대니까요."
+        "body": "뜨겁게 불태워본 사람만이 아는 지혜가 있습니다. 책에서는 배울 수 없는, 온몸으로 부딪혀 얻어낸 것들입니다.\n\n우리를 단련시킨 우정, 더 나은 것을 채우기 위해 겪어야 했던 상실. 평생토록 말하지 못할 밤들, 그리고 하루가 멀다하고 추억하며 이야기할 밤들. 모난 데 없이 깨끗하기만 한 것이 무슨 매력이겠습니까. 조금 그을렸을지라도, 괜찮습니다. 돈 주고 태닝하는 시대니까요."
       },
       "entry": {
         "heading": "입장",
@@ -364,12 +376,12 @@
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "아직 끝이 아닙니다.",
-        "lede": "빈자리를 당겨 앉으세요. 불꽃은 이미 준비되어 있습니다."
+        "kicker": "마지막으로, 한 가지.",
+        "lede": "자리를 끌어다 앉으십시오. 불은 이미 피워두었습니다."
       },
       "rsvpCta": {
         "primary": "예약하기",
-        "secondary": "소수 정예, 프라이빗 룸"
+        "secondary": "작은 방, 조용한 자리."
       },
       "viewToggle": {
         "label": "View",
@@ -380,19 +392,19 @@
         "rising": "Loading"
       },
       "footer": {
-        "hosts": "Hosted by Sean & friend",
-        "rsvpClosesAt": "RSVPs close when the room fills."
+        "hosts": "Sean과 친구가 함께 준비합니다.",
+        "rsvpClosesAt": "방이 차면 마감됩니다."
       },
       "survivalKit": {
         "heading": "오시기 전에",
-        "subheading": "여섯 가지만 간단히 알려드릴게요.",
+        "subheading": "오시기 전 알아두실 여섯 가지.",
         "address": {
           "label": "장소",
-          "hint": "누르면 복사돼요. 지도는 카카오맵으로 열립니다."
+          "hint": "눌러서 복사. 지도는 카카오맵으로 열립니다."
         },
         "toss": {
           "label": "결제",
-          "hint": "누르면 계좌번호가 복사돼요."
+          "hint": "눌러서 계좌번호 복사."
         },
         "dress": {
           "label": "복장",
@@ -401,33 +413,33 @@
         "host": {
           "label": "문의",
           "value": "concierge@hideawayseoul.com",
-          "hint": "여기에 없는 내용은 이메일로 물어보세요."
+          "hint": "여기에 없는 내용은 이메일로 문의해 주십시오."
         },
         "plusOnes": {
           "label": "+1",
-          "value": "예약자 본인만 입장 가능해요. 현장 동반자 입장은 어렵습니다."
+          "value": "예약자 본인만 입장하실 수 있습니다. 현장 동반자 입장은 어렵습니다."
         },
         "late": {
           "label": "늦는다면",
-          "value": "밤 9시까지 문을 열어둘게요. 그 이후엔 노크해 주세요. (음악 소리 때문에 못 들을 수도 있어요)"
+          "value": "밤 9시까지 문을 열어둡니다. 그 이후에는 노크해 주십시오. 음악 소리 때문에 듣지 못할 수도 있습니다."
         },
         "copy": "복사",
-        "copied": "복사했어요",
+        "copied": "복사됨",
         "openMap": "지도 열기"
       },
-      "scrollHint": "Scroll",
+      "scrollHint": "스크롤",
       "audio": {
-        "label": "Sound",
-        "on": "Sound on",
-        "off": "Sound off"
+        "label": "사운드",
+        "on": "소리 켜짐",
+        "off": "소리 꺼짐"
       },
       "scrubber": {
-        "navLabel": "Timeline",
-        "opening": "Opening",
-        "cookout": "Cookout",
-        "dress": "Dress",
-        "night": "Night",
-        "closing": "Reserve"
+        "navLabel": "타임라인",
+        "opening": "오프닝",
+        "cookout": "쿡아웃",
+        "dress": "드레스",
+        "night": "나이트",
+        "closing": "예약"
       },
       "moodboard": {
         "cookout": {
@@ -446,34 +458,34 @@
         },
         "dress": {
           "romeo": {
-            "alt": "Romeo and Juliet",
-            "caption": "(Romeo and Juliet)"
+            "alt": "로미오와 줄리엣",
+            "caption": "디카프리오라도, 이젠 무리입니다. 나이는 거짓말을 하지 않습니다. (Romeo and Juliet, 1997)"
           },
           "pink": {
-            "alt": "All the pink",
-            "caption": "Last chance to wear all this pink without looking like…"
+            "alt": "온통 핑크",
+            "caption": "이렇게 핑크로 도배할 마지막 기회입니다. 더 늦으면 이상해집니다."
           },
           "dad": {
-            "alt": "Steve Carrell, Crazy Stupid Love",
-            "caption": "Who's the more in-style of the two? No matter, we're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
+            "alt": "스티브 카렐, Crazy Stupid Love",
+            "caption": "더 스타일리시한 쪽은? 어쨌든, 우리가 이야기하는 건 스티브 카렐입니다. (Crazy, Stupid, Love, 2018)"
           },
           "notDads": {
             "alt": "Pulp Fiction",
-            "caption": "What a pair of nice looking people - bet they hate violence. (Pulp Fiction, 1999)"
+            "caption": "참 멀쩡해 보이는 두 사람입니다. 폭력은 끔찍이 싫어할 것 같습니다. (Pulp Fiction, 1999)"
           },
           "dude": {
             "alt": "The Dude — Big Lebowski",
-            "caption": "The Dude. Nuff said. (Big Lebowski, 1998)"
+            "caption": "더 듀드. 더 보탤 말은 없습니다. (Big Lebowski, 1998)"
           }
         },
         "night": {
           "suit": {
             "alt": "Pulp Fiction",
-            "caption": "No, you don't have to bring a suit. Won't stop you though. (Pulp Fiction)"
+            "caption": "굳이 수트를 입을 필요는 없습니다. 굳이 말리지도 않겠습니다. (Pulp Fiction)"
           },
           "jacket": {
-            "alt": "Jackets, after dark",
-            "caption": "Look, we're not saying that jackets will get you looking like this… But it won't hurt."
+            "alt": "재킷, 해가 진 후",
+            "caption": "재킷을 걸친다고 이렇게 된다는 말은 아닙니다. 다만, 손해는 없을 겁니다."
           }
         }
       }
