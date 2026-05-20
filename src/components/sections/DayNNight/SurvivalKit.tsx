@@ -6,24 +6,36 @@ import { useTranslations } from "next-intl";
 /**
  * Survival Kit — Phase 5a P5a-Product-1.
  *
- * Single block on the simplified view that absorbs the predictable host
- * DMs surfaced by the product-lens audit (§ 14.5):
+ * Composition v2: three visual clusters separated by hairline dividers,
+ * not a uniform dl table. The audit's user-lens identified this block
+ * as needing distinct visual identity (the prior dl-row v1 read as a
+ * form). The current layout treats the kit as a private dossier:
  *
- *   - "Where do I send the money?" → tap-to-copy Toss account
- *   - "What's the address? Kakao Map?" → tap-to-copy address + map link
- *   - "What do I actually wear?" → dress code in eight plain words
- *   - "Can I bring [friend]?" → +1 policy line
- *   - "What if I show up at 19:30?" → late-arrival policy line
- *   - "Anything else?" → single host-contact link
+ *   ┌──────────────────────────────────────────────────────┐
+ *   │  Eyebrow                                             │
+ *   │  Heading                                             │
+ *   │  ─────────────────────────────────────────────       │
+ *   │  WHERE                                               │
+ *   │  Sowol-ro 20-gil 64, 3F                              │
+ *   │  → Open map · Copy address                           │
+ *   │                                                      │
+ *   │  PAY                                                 │
+ *   │  Toss Bank · 1002-5436-0906                          │
+ *   │  65,000 KRW · Copy account                           │
+ *   │  ─────────────────────────────────────────────       │
+ *   │  WEAR    Dressy. Comfortable. A little brave.        │
+ *   │  +1S     Reserved guests only.                       │
+ *   │  LATE    Doors open until 21:00.                     │
+ *   │  ─────────────────────────────────────────────       │
+ *   │  ASK     concierge@hideawayseoul.com →               │
+ *   └──────────────────────────────────────────────────────┘
  *
- * Composition: six rows of label + content + optional action. The whole
- * block lives below the simplified card's RSVP CTA so it doesn't compete
- * with the editorial header — the kit reads as the "ok, now the
- * logistics" appendix that ends the page on a useful note.
+ * Cluster 1 — Logistics (Where, Pay): actions visible, larger values.
+ * Cluster 2 — Etiquette (Wear, +1s, Late): single-line policy facts.
+ * Cluster 3 — Contact (Ask): standalone, the "everything else" valve.
  *
- * Copy lives in `messages/{en,ko}.json` under `Event.DayNNight.survivalKit`.
- * The component itself is locale-blind — Korean visitors get Korean
- * lines, English visitors get English ones.
+ * Copy lives in `messages/{en,ko}.json` under
+ * `Event.DayNNight.survivalKit`. The component itself is locale-blind.
  */
 export function SurvivalKit() {
   const t = useTranslations("Event.DayNNight.survivalKit");
@@ -35,21 +47,20 @@ export function SurvivalKit() {
   const tossAmount = tDn("entry.amount");
   const hostContact = t("host.value");
   // Kakao Map query URL — works without an API key. The map app
-  // resolves the romanized address on open. Falls back gracefully on
-  // desktop where the query renders a webview map.
+  // resolves the romanized address on open.
   const kakaoMapUrl = `https://map.kakao.com/?q=${encodeURIComponent(address)}`;
-  // Toss line copied as "account · amount" so a single paste lands both
-  // pieces of information in a DM.
+  // Toss line copied as "account · amount" so a single paste lands both.
   const tossClipboard = `${tossAccount} · ${tossAmount}`;
-  // Host contact opens via mailto so the OS hands off to whatever
-  // mail client the user has — works on iOS/Android/desktop alike.
   const hostHref = hostContact.includes("@")
     ? `mailto:${hostContact}`
     : hostContact;
 
   const flashCopied = (key: string) => {
     setCopied(key);
-    setTimeout(() => setCopied((current) => (current === key ? null : current)), 1500);
+    setTimeout(
+      () => setCopied((current) => (current === key ? null : current)),
+      1500
+    );
   };
 
   const copyToClipboard = async (text: string, key: string) => {
@@ -57,178 +68,221 @@ export function SurvivalKit() {
       await navigator.clipboard.writeText(text);
       flashCopied(key);
     } catch {
-      // Clipboard API can fail in restrictive iframes or without secure
-      // context. Silent — the user can still long-press the visible
-      // text manually.
+      // Clipboard API can fail in restrictive iframes / non-HTTPS.
+      // Silent — the value is still visible for manual select-copy.
     }
   };
 
-  const copyLabel = (key: string) =>
-    copied === key ? t("copied") : t("copy");
+  const copyLabel = (key: string) => (copied === key ? t("copied") : t("copy"));
 
   return (
     <section
       aria-labelledby="survival-kit-heading"
-      className="mt-12 grid max-w-[720px] gap-6 border-t border-[var(--dn-line)] pt-10 md:mt-16 md:max-w-[880px]"
+      className="mt-16 grid max-w-[640px] md:mt-24 md:max-w-[760px]"
     >
-      <header className="grid gap-1">
-        <p className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+      {/* Heading — eyebrow + serif title, no divider above (the
+          surrounding closing italic provides the upper visual break). */}
+      <header className="mb-10 grid gap-2 md:mb-12 md:gap-3">
+        <p className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("subheading")}
         </p>
         <h2
           id="survival-kit-heading"
-          className="font-serif text-[clamp(1.6rem,2.4vw,2.2rem)] leading-[1.15] font-bold tracking-[-0.01em] text-[var(--dn-fg)]"
+          className="font-serif text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.1] font-bold tracking-[-0.015em] text-[var(--dn-fg)]"
         >
           {t("heading")}
         </h2>
       </header>
 
-      <dl className="grid gap-5 font-mono text-[12px] leading-[1.6] text-[var(--dn-fg-mute)]">
-        {/* Where — copy address + open Kakao Map */}
-        <SurvivalRow
+      {/* ── Cluster 1: Logistics (Where, Pay) ────────────────────── */}
+      <div className="grid gap-10 border-t border-[var(--dn-line)] pt-10 md:gap-12 md:pt-12">
+        <LogisticsBlock
           label={t("address.label")}
           value={address}
           hint={t("address.hint")}
-          actions={
-            <>
-              <RowButton
-                onClick={() => copyToClipboard(address, "address")}
-                aria-label={copyLabel("address")}
-              >
-                {copyLabel("address")}
-              </RowButton>
-              <RowLink href={kakaoMapUrl} external>
-                {t("openMap")}
-              </RowLink>
-            </>
-          }
-        />
+        >
+          <RowAction
+            href={kakaoMapUrl}
+            external
+            arrow
+            text={t("openMap")}
+          />
+          <RowAction
+            onClick={() => copyToClipboard(address, "address")}
+            text={copyLabel("address")}
+            ariaLabel={copyLabel("address")}
+          />
+        </LogisticsBlock>
 
-        {/* Pay — copy Toss account + amount in one paste */}
-        <SurvivalRow
+        <LogisticsBlock
           label={t("toss.label")}
           value={tossAccount}
           subvalue={tossAmount}
           hint={t("toss.hint")}
-          actions={
-            <RowButton
-              onClick={() => copyToClipboard(tossClipboard, "toss")}
-              aria-label={copyLabel("toss")}
-            >
-              {copyLabel("toss")}
-            </RowButton>
-          }
-        />
+        >
+          <RowAction
+            onClick={() => copyToClipboard(tossClipboard, "toss")}
+            text={copyLabel("toss")}
+            ariaLabel={copyLabel("toss")}
+          />
+        </LogisticsBlock>
+      </div>
 
-        {/* Wear — dress code in eight plain words */}
-        <SurvivalRow label={t("dress.label")} value={t("dress.value")} />
-
-        {/* Ask — single host-contact link */}
-        <SurvivalRow
-          label={t("host.label")}
-          value={
-            <a
-              href={hostHref}
-              className="text-[var(--dn-fg)] underline decoration-[var(--dn-fg-faint)] decoration-from-font underline-offset-4 transition-colors hover:decoration-[var(--dn-fg)]"
-            >
-              {hostContact}
-            </a>
-          }
-          hint={t("host.hint")}
-        />
-
-        {/* +1s — policy line */}
-        <SurvivalRow label={t("plusOnes.label")} value={t("plusOnes.value")} />
-
-        {/* Late — policy line */}
-        <SurvivalRow label={t("late.label")} value={t("late.value")} />
+      {/* ── Cluster 2: Etiquette (Wear, +1s, Late) ───────────────── */}
+      <dl className="mt-10 grid gap-5 border-t border-[var(--dn-line)] pt-10 md:mt-12 md:gap-6 md:pt-12">
+        <EtiquetteRow label={t("dress.label")} value={t("dress.value")} />
+        <EtiquetteRow label={t("plusOnes.label")} value={t("plusOnes.value")} />
+        <EtiquetteRow label={t("late.label")} value={t("late.value")} />
       </dl>
+
+      {/* ── Cluster 3: Contact (Ask) ──────────────────────────────── */}
+      <div className="mt-10 grid grid-cols-[88px_1fr] items-baseline gap-x-6 border-t border-[var(--dn-line)] pt-10 md:mt-12 md:pt-12">
+        <span className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+          {t("host.label")}
+        </span>
+        <div className="grid gap-2 md:gap-3">
+          <a
+            href={hostHref}
+            className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.1rem,1.5vw,1.4rem)] leading-[1.3] text-[var(--dn-fg)] no-underline underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 [text-decoration-color:var(--dn-fg-faint)] [text-decoration-line:underline] hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
+          >
+            <span>{hostContact}</span>
+            <span aria-hidden className="text-[0.85em] leading-none">
+              →
+            </span>
+          </a>
+          <p className="font-mono text-[10.5px] leading-[1.6] tracking-[0.06em] text-[var(--dn-fg-faint)]">
+            {t("host.hint")}
+          </p>
+        </div>
+      </div>
     </section>
   );
 }
 
 /**
- * A single survival-kit row. Grid: 72px label column + 1fr content
- * (matches the simplified view's `dl` rhythm) with optional actions
- * tucked to the right.
+ * Logistics row — for Where / Pay. Larger value typography, optional
+ * subvalue (e.g. amount), hint line, and an action row beneath.
+ *
+ * Layout: 88px label column + 1fr content. Label is mono micro-caps,
+ * content stack is serif value → mono subvalue → mono hint → mono
+ * actions. The hierarchy reads top-to-bottom: identity → fact →
+ * context → affordance.
  */
-function SurvivalRow({
+function LogisticsBlock({
   label,
   value,
   subvalue,
   hint,
-  actions
+  children
 }: {
   label: string;
-  value: React.ReactNode;
+  value: string;
   subvalue?: string;
   hint?: string;
-  actions?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[72px_1fr] items-baseline gap-[14px]">
-      <dt className="self-start pt-[3px] text-[10px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
+    <div className="grid grid-cols-[88px_1fr] items-baseline gap-x-6">
+      <span className="self-start pt-[6px] font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
         {label}
-      </dt>
-      <dd className="flex flex-col gap-1.5 text-[13px] tracking-normal text-[var(--dn-fg)]">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span>{value}</span>
-          {actions ? (
-            <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              {actions}
-            </span>
-          ) : null}
-        </div>
+      </span>
+      <div className="grid gap-2 md:gap-3">
+        <p className="font-serif text-[clamp(1.2rem,1.6vw,1.5rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg)]">
+          {value}
+        </p>
         {subvalue ? (
-          <span className="text-[10.5px] tracking-[0.06em] text-[var(--dn-fg-faint)]">
+          <p className="font-mono text-[12px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
             {subvalue}
-          </span>
+          </p>
         ) : null}
         {hint ? (
-          <span className="text-[10.5px] tracking-[0.06em] text-[var(--dn-fg-faint)]">
+          <p className="font-mono text-[10.5px] leading-[1.6] tracking-[0.06em] text-[var(--dn-fg-faint)]">
             {hint}
-          </span>
+          </p>
         ) : null}
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-5 gap-y-2">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Etiquette row — single-line policy fact (Wear / +1s / Late).
+ *
+ * Layout: 88px label column + 1fr value. No subvalue, no actions —
+ * these are read-only one-liners. Value uses sans for legibility (the
+ * lines are conversational, not editorial).
+ */
+function EtiquetteRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[88px_1fr] items-baseline gap-x-6">
+      <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+        {label}
+      </dt>
+      <dd className="text-[14.5px] leading-[1.55] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
+        {value}
       </dd>
     </div>
   );
 }
 
-function RowButton({
-  children,
+/**
+ * RowAction — mono micro-cap link or button. Used for the
+ * Where/Pay affordances (Open map, Copy). `arrow` adds a trailing →
+ * that nudges right on hover (consistent with the contact link).
+ */
+function RowAction({
+  text,
   onClick,
-  ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  href,
+  external,
+  arrow,
+  ariaLabel
+}: {
+  text: string;
+  onClick?: () => void;
+  href?: string;
+  external?: boolean;
+  arrow?: boolean;
+  ariaLabel?: string;
+}) {
+  const className =
+    "ease inline-flex items-baseline gap-1.5 font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase no-underline transition-[color,gap] duration-200 hover:text-[var(--dn-fg)]" +
+    (arrow ? " hover:gap-2.5" : "");
+  const inner = (
+    <>
+      <span>{text}</span>
+      {arrow ? (
+        <span aria-hidden className="text-[1em] leading-none">
+          →
+        </span>
+      ) : null}
+    </>
+  );
+  if (href) {
+    return (
+      <a
+        href={href}
+        {...(external
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : undefined)}
+        className={className}
+        aria-label={ariaLabel}
+      >
+        {inner}
+      </a>
+    );
+  }
   return (
     <button
       type="button"
       onClick={onClick}
-      className="font-mono text-[10px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase transition-colors hover:text-[var(--dn-fg)]"
-      {...rest}
+      className={className}
+      aria-label={ariaLabel}
     >
-      {children}
+      {inner}
     </button>
-  );
-}
-
-function RowLink({
-  href,
-  children,
-  external
-}: {
-  href: string;
-  children: React.ReactNode;
-  external?: boolean;
-}) {
-  return (
-    <a
-      href={href}
-      {...(external
-        ? { target: "_blank", rel: "noopener noreferrer" }
-        : undefined)}
-      className="font-mono text-[10px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase transition-colors hover:text-[var(--dn-fg)]"
-    >
-      {children}
-    </a>
   );
 }
