@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 
 // force-dynamic prevents Next.js from evaluating this module at build time.
 // getPayload() (and its DB connection) must not run until an actual request arrives.
-export const dynamic = "force-dynamic";
+
 
 // Singleton promise — built once on first request, reused for all subsequent ones.
 // Using a promise (not a value) makes this safe under concurrent first requests.

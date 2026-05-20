@@ -13,6 +13,7 @@ import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
 import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
 import { SceneView } from "./SceneView";
+import { SurvivalKit } from "../SurvivalKit";
 
 /**
  * Anchors that polaroid clusters use for their parallax windows. These
@@ -365,30 +366,46 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
   return (
     <>
       {/* Act 1 — Opening / Daybreak.
-          Centered hero. Eyebrow above, serif title below, tagline below
-          that, with a thin date+location strip anchored at the bottom. */}
+          Asymmetric hero (P5c). Title + kicker + lede stack top-left;
+          SurvivalKit summary doc bottom-right. The two regions overlap
+          diagonally so the eye reads title-down-into-summary, not
+          column-vs-column. Eyebrow spans the top edge; date/location
+          strip spans the bottom-left.
+
+          --act-w bumped 1 → 1.5 so the asymmetric composition has
+          breathing room; the wider act also means the user spends
+          more vertical scroll inside Opening, giving the summary doc
+          longer screen time before scene transitions to Cookout. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1 } as React.CSSProperties}
+        style={{ "--act-w": 1.5 } as React.CSSProperties}
         aria-label={t("opening.label")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-rows-[auto_1fr_auto] justify-items-center px-6 pt-16 pb-[84px] text-center max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
-              I
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,7fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
+              I.
             </span>
-            <span>{t("opening.label")}</span>
+            <span className="text-bold font-serif text-[3rem] capitalize italic">
+              {t("opening.label")}
+            </span>
             <span aria-hidden className="opacity-50">
               ·
             </span>
             <span>{t("opening.time")}</span>
           </span>
+          {/* Left column — title block. Anchored to the upper-left of
+              the content area (row 2 start) so the eye lands here first.
+              The opening.body line carries the editorial voice beneath
+              the lede; it sits as a quiet serif aside between the lede
+              and the SurvivalKit's bottom-right anchor. */}
           <RevealStage
             as="div"
             active={openingActive}
-            className="m-auto grid max-w-[880px] justify-items-center gap-7 xl:gap-8"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[760px] content-start gap-6 self-start max-lg:col-span-full xl:gap-8"
           >
             <RevealItem
               as="p"
@@ -398,24 +415,32 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="h2"
-              className="font-serif text-[clamp(4rem,9vw,9rem)] leading-[0.94] font-bold tracking-[-0.022em] text-[var(--dn-fg)]"
+              className="font-serif text-[clamp(4rem,9vw,9.6rem)] leading-[0.94] font-bold tracking-[-0.022em] text-[var(--dn-fg)]"
             >
               {t("title")}
             </RevealItem>
             <RevealItem
               as="p"
-              className="max-w-[32ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+              className="max-w-[40ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
             >
               {t("opening.lede")}
             </RevealItem>
             <RevealItem
               as="p"
-              className="max-w-[600px] text-start font-serif text-[clamp(2rem,3.4vw,2.4rem)] leading-[1.1] tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+              className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
             >
               {t("opening.body")}
             </RevealItem>
           </RevealStage>
-          <div className="flex gap-12 font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
+          {/* Right column — SurvivalKit. Bottom-anchored so it pulls
+              the eye downward-right after reading the title block,
+              completing the diagonal composition. Embedded variant
+              strips the standalone top margin and tightens the
+              max-width so it fits the column. */}
+          <div className="col-start-2 col-end-3 row-start-2 row-end-3 hidden self-end justify-self-end lg:block">
+            <SurvivalKit variant="embedded" />
+          </div>
+          <div className="col-start-1 col-end-2 row-start-3 row-end-4 flex gap-12 self-end font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase max-lg:col-span-full max-lg:flex-wrap max-lg:gap-6">
             <span className="inline-flex items-baseline gap-[10px]">
               <span className="text-[var(--dn-fg-faint)]">
                 {t("date.weekday")}
@@ -434,11 +459,13 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         </div>
       </section>
 
-      {/* Act 2 — Cookout.
-          Asymmetric. Heading anchored top-left, lede in a narrow column
-          beneath. Food / Drinks lists anchored bottom-right as a stack
-          of label + comma-separated items. The empty space mid-frame is
-          intentional — the sun is doing the work there. */}
+      {/* Act 2 — Cookout (P5c: top-anchored against Night's bottom-anchor).
+          Heading + lede anchored TOP-LEFT of the content area (just
+          below the eyebrow), Food/Drinks list anchored BOTTOM-RIGHT.
+          The diagonal reads top-left → bottom-right ("morning lift,
+          afternoon settle"). Night does the opposite — bottom-anchored
+          on both sides ("evening weight") — so the two adjacent acts
+          read as visually distinct passes through similar material. */}
       <section
         data-dn-act
         style={{ "--act-w": 1.15 } as React.CSSProperties}
@@ -447,12 +474,14 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
         inert={ariaHidden ? true : undefined}
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,7fr)_minmax(0,5fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
-              II
+            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
+              II.
             </span>
-            <span>{t("included.heading")}</span>
+            <span className="text-bold font-serif text-[3rem] capitalize italic">
+              {t("included.heading").toLowerCase()}
+            </span>
             <span aria-hidden className="opacity-50">
               ·
             </span>
@@ -461,7 +490,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           <RevealStage
             as="div"
             active={cookoutActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] gap-7 self-end xl:gap-8"
+            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[56ch] content-start gap-6 self-start xl:gap-8"
           >
             <RevealItem
               as="h2"
@@ -547,14 +576,17 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1.1 } as React.CSSProperties}
         aria-label={t("dressCode.heading")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
         <div className="relative grid h-full w-screen max-w-screen flex-none grid-rows-[auto_auto_1fr_auto] gap-5 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
-              III
+            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
+              III.
             </span>
-            <span>{t("dressCode.heading")}</span>
+            <span className="text-bold font-serif text-[3rem] capitalize italic">
+              {t("dressCode.heading")}
+            </span>
           </span>
           {/* The dressCode.intro RevealStage was removed: it rendered an
               empty fragment and consumed a grid row + an animation
@@ -657,14 +689,17 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         style={{ "--act-w": 1 } as React.CSSProperties}
         aria-label={t("act.night.label")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
         <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,4fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
           <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
-              IV
+            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
+              IV.
             </span>
-            <span>{t("act.night.label")}</span>
+            <span className="text-bold font-serif text-[3rem] capitalize italic">
+              {t("act.night.label")}
+            </span>
             <span aria-hidden className="opacity-50">
               ·
             </span>
@@ -726,33 +761,61 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         </div>
       </section>
 
-      {/* Act 5 — Closing / RSVP.
-          Climax of the loop. Heading scale matches the opening so the
-          loop reads bookended. Eyebrow + serif title + lede + fee
-          block + CTA stack at center-left; hosts + closing line
-          anchored bottom-right as the final word. */}
+      {/* Act 5 — Closing / RSVP (P5c bookend).
+          The loop's climax — same "Day n Night" title as Opening, but
+          mirrored compositionally so the bookend reads as paired, not
+          duplicate. Title block sits TOP-RIGHT (Opening had it
+          top-left); the SurvivalKit reprise sits BOTTOM-LEFT (Opening
+          had it bottom-right). The closing italic line frames the
+          SurvivalKit from above as a quiet farewell prelude to the
+          practical info.
+
+          --act-w bumped 1.4 → 1.6 so the bookend has the same lateral
+          breathing room as Opening (1.5) and the user spends comparable
+          scroll time on both ends of the loop. */}
       <section
         data-dn-act
-        style={{ "--act-w": 1.4 } as React.CSSProperties}
+        style={{ "--act-w": 1.6 } as React.CSSProperties}
         aria-label={t("rsvpCta.primary")}
         aria-hidden={ariaHidden || undefined}
+        inert={ariaHidden ? true : undefined}
         className="relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full"
       >
-        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,8fr)_minmax(0,4fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
-          <span className="col-span-full inline-flex items-baseline gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
-            <span className="font-serif text-[1.4em] font-medium tracking-normal text-[var(--dn-fg)] normal-case italic">
-              V
+        <div className="relative grid h-full w-screen max-w-screen flex-none grid-cols-[minmax(0,5fr)_minmax(0,7fr)] grid-rows-[auto_1fr_auto] gap-x-12 px-6 pt-16 pb-[84px] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1 md:px-12 md:pt-[88px] md:pb-24 xl:px-20 xl:pt-[104px] xl:pb-28">
+          {/* Eyebrow — right-aligned to anchor the title-top-right
+              orientation. Opening's eyebrow is left-aligned; the
+              mirrored alignment is the first signal of the bookend. */}
+          <span className="col-span-full inline-flex items-baseline justify-end gap-[10px] font-mono text-[10px] tracking-[0.28em] whitespace-nowrap text-[var(--dn-fg-mute)] uppercase xl:text-[11px]">
+            <span className="font-serif text-[3.5rem] font-medium tracking-normal text-[var(--dn-fg)] italic">
+              V.
             </span>
-            <span>{t("entry.heading")}</span>
+            <span className="text-bold font-serif text-[3rem] capitalize italic">
+              {t("entry.heading")}
+            </span>
             <span aria-hidden className="opacity-50">
               ·
             </span>
             <span>{t("date.short")}</span>
           </span>
+          {/* Left column — closing italic framing + SurvivalKit reprise.
+              The italic line sits as a quiet farewell prelude ("see you
+              there") above the practical-info dossier. Bottom-anchored
+              so it pulls the eye downward-left, completing the diagonal
+              against the upper-right title block. */}
+          <div className="col-start-1 col-end-2 row-start-2 row-end-3 hidden flex-col justify-end gap-6 self-end max-lg:col-span-full lg:flex">
+            <p className="max-w-[44ch] font-serif text-[clamp(1.6rem,2.4vw,2.1rem)] leading-[1.2] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic">
+              {t("closing.lede")}
+            </p>
+            <SurvivalKit variant="embedded" />
+          </div>
+          {/* Right column — title block + CTA. Mirrors Opening's
+              left-column title block in scale and weight so the loop
+              reads bookended; the CTA replaces Opening's date/location
+              strip as the act's final affordance. */}
           <RevealStage
             as="div"
             active={closingActive}
-            className="col-start-1 col-end-2 row-start-2 row-end-3 grid max-w-[720px] content-center justify-items-start gap-6 xl:gap-7"
+            className="col-start-2 col-end-3 row-start-2 row-end-3 grid max-w-[760px] content-start gap-6 self-start justify-self-end max-lg:col-span-full max-lg:justify-self-start xl:gap-7"
           >
             <RevealItem
               as="p"
@@ -762,27 +825,9 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             </RevealItem>
             <RevealItem
               as="h2"
-              className="font-serif text-[clamp(4rem,9vw,8.4rem)] leading-[0.94] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
+              className="font-serif text-[clamp(4rem,9vw,9.6rem)] leading-[0.94] font-bold tracking-[-0.02em] text-[var(--dn-fg)]"
             >
               {t("title")}
-            </RevealItem>
-            <RevealItem
-              as="p"
-              className="max-w-[42ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
-            >
-              {t("closing.lede")}
-            </RevealItem>
-            <RevealItem
-              as="div"
-              className="mt-2 grid gap-2.5 font-mono text-xs text-[var(--dn-fg-mute)]"
-            >
-              <span className="font-wide text-[2.4rem] font-black tracking-[0.04em] text-[var(--dn-fg)]">
-                {t("entry.amount")}
-              </span>
-              <span>{t("entry.method")}</span>
-              <span>
-                {t("entry.bank")} · {t("entry.accountHolder")}
-              </span>
             </RevealItem>
             <RevealItem as="div">
               <Link
@@ -797,10 +842,13 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
               </Link>
             </RevealItem>
           </RevealStage>
-          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right">
+          {/* Hosts strip — right-aligned bottom edge. Pairs with
+              Opening's left-aligned bottom date/location strip — same
+              tier of editorial chrome, opposing alignment. */}
+          <div className="col-start-2 col-end-3 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:col-span-full max-lg:justify-self-start max-lg:text-left">
             <span
               aria-hidden
-              className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60"
+              className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60 max-lg:ml-0"
             />
             <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
               {t("footer.hosts")}

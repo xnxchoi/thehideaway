@@ -21,7 +21,6 @@ import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { isInternalLink } from "@/utilities/isInternalLink";
 import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { index } from "@payloadcms/db-postgres/drizzle/pg-core";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";
 import { AnimationSequence } from "motion";
@@ -200,6 +199,13 @@ export const RP_Menu = () => {
         return;
       }
       const navo = navState.get();
+
+      // DEBUG: trace every toggM call
+      // eslint-disable-next-line no-console
+      console.log(
+        `[toggM] navo=${navo} needsResizing=${needsResizing}`,
+        new Error().stack?.split("\n").slice(1, 4).join(" | ")
+      );
 
       const top = t.get();
       const right = r.get();
@@ -921,7 +927,6 @@ const RP_Navigator = (
   return (
     <m.li
       className="menu__nav-item"
-      key={index + "nav_item"}
       data-is-active={isActivePath}
       data-themed="color"
       style={{ opacity }}

@@ -44,6 +44,7 @@ import React, {
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
+import { clamp } from "@/utilities/mathUtilities";
 
 type VerticalDirection = "up" | "down";
 type TransitionType =
@@ -320,7 +321,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     return pxOrigin + progress * (gutter.get() - pxOrigin);
   });
   const innerPTop = useTransform(
-    () => (1 - ssss.get()) * (mobileState.get() ? 0 : 24)
+    () => (1 - ssss.get()) * (mobileState.get() ? 0 : 14)
   );
   const _btBlur = useTransform(() => {
     const navOpen = navState.get(),
@@ -334,6 +335,14 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     return mobileState.get() ? 5 + 7 * scrub : scrub * 12;
   });
   const translate = useMotionTemplate`translate(-50%,${mainY}px)`;
+  const paddingBottom = useTransform(() => {
+    const scrub = scrubPosition.get();
+    if (scrub < 0.5) {
+      return scrub * 20;
+    } else {
+      return -20 * scrub + 20;
+    }
+  });
   const windowWidthValue = useMotionValue(window.innerWidth);
 
   const mainWidth = useTransform(() => {
@@ -521,6 +530,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
             zIndex: mainZIndex,
             width: mainWidth,
             transform: translate,
+            paddingBottom,
             left: "50%",
             boxShadow: mainBoxShadow
           }}

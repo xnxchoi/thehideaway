@@ -25,7 +25,7 @@ export function PasswordReveal({ password }: { password: string }) {
     <div className="mt-2 flex items-center gap-3">
       <p
         className={`font-mono text-2xl tracking-[0.18em] text-off-white transition-[filter] duration-200 ${
-          revealed ? "" : "select-none [filter:blur(8px)]"
+          revealed ? "" : "[filter:blur(8px)] select-none"
         }`}
         aria-hidden={!revealed}
       >

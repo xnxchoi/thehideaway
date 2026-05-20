@@ -303,35 +303,40 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "30 & Smokin'",
-        "lede": "Fire doesn't ask permission to burn. Neither did we.",
-        "body": "A decade of chasing, stumbling, and figuring it out and somehow, we made it to the other side still standing, still hungry. The smoke rising off this grill isn’t just heat.\n\nIt’s everything we survived, shed, and done apologizing for.\n\nWe’re turning 30 looking every bit as good - come and join the scenery.\n\n"
+        "lede": "No fire asks permission to burn. Neither did we.",
+        "body": "A decade of chasing, stumbling, and figuring it out. Somehow, we made it to the other side—still standing, still hungry. The smoke rising off this grill isn’t just heat.\n\nIt’s everything we survived, shed, and are done apologizing for.\n\nWe’re turning 30 looking every bit as good. Come join the scenery."
       },
       "act": {
         "day": {
           "label": "DAY",
-          "time": "18:30 → 20:00",
+          "time": "18:30 → 19:50",
           "heading": "Backyard cookouts are good. Rooftop barbecues are better.",
-          "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up — beer and wine after. Gin if you ask nice."
+          "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up. Beer and wine to follow. Gin, if you ask nicely."
+        },
+        "shift": {
+          "label": "IN-BETWEEN TIMES",
+          "time": "19:50 → 20:00",
+          "heading": "Mood shift."
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → late",
-          "sectionTitle": "Mood shift.",
-          "announcement": "Something quiet, unannounced, will be there.",
+          "sectionTitle": "Nightfall",
+          "announcement": "A quiet addition to the evening awaits.",
           "dressLabel": "Dress code, after dark",
           "heading": "Sharp. Chic. Dressed to impress.",
-          "body": "Same room, different mood. Cocktails come up. Lights come down. You don't have to bring a suit. Won't stop you, though."
+          "body": "Same room, different mood. Cocktails come up, lights go down. You don't have to bring a suit. We won't stop you, though."
         }
       },
       "dressCode": {
         "heading": "One rule: Don't dress your age.",
         "option1": {
-          "label": "#throwback: looks you are a little old for... ",
-          "body": "An outfit you still love — but felt like you're past wearing it? Last call.\n Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
+          "label": "#throwback: looks you are a little old for...",
+          "body": "An outfit you still love, but felt like you'd outgrown? Last call. Wear it without apology. Geeks, nerds, civilians, and the next emo girl—all welcome. We'll get you the photos."
         },
         "option2": {
           "label": "...or a tad bit young for.",
-          "body": "Dad jeans, jorts, oversized polos - your pick."
+          "body": "Dad jeans, jorts, oversized polos. Your pick. Daytime unshaven, nighttime shaken."
         }
       },
       "included": {
@@ -347,7 +352,7 @@
       },
       "tribute": {
         "heading": "Charred, Scarred & Thriving",
-        "body": "The friendships that forged us. The losses that left room for something better. The nights we won't talk about — and the ones we'll never stop telling."
+        "body": "There’s a particular kind of wisdom that only comes from burning. Not the kind you read about—the kind you live through.\n\nThe friendships that forged us. The losses that hollowed us out and left room for something better. The nights we won't talk about, and the ones we'll never stop telling. We are not who we were at 20; we are the epilogues. Charred at the edges, yes, but that’s where the flavor is."
       },
       "entry": {
         "heading": "Entry",
@@ -358,7 +363,7 @@
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "More to come — we won't disappoint.",
+        "kicker": "More to come.",
         "lede": "Pull up a chair. The fire's been waiting."
       },
       "rsvpCta": {
@@ -395,7 +400,7 @@
         "host": {
           "label": "Ask",
           "value": "concierge@hideawayseoul.com",
-          "hint": "Anything not covered here — write us."
+          "hint": "Anything not covered here—write us."
         },
         "plusOnes": {
           "label": "+1s",
@@ -403,7 +408,7 @@
         },
         "late": {
           "label": "Late",
-          "value": "Doors stay open until 21:00. After that, knock — we may not hear you over the music."
+          "value": "Doors stay open until 21:00. After that, knock—we may not hear you over the music."
         },
         "copy": "Copy",
         "copied": "Copied",
@@ -473,9 +478,9 @@
       }
     },
     "Guests": {
-      "eyebrow": "RSVP'd",
+      "eyebrow": "RSVP",
       "title": "Who's coming",
-      "subtitle": "The small list, in no particular order.",
+      "subtitle": "The list so far, in no particular order.",
       "tier": {
         "host": "Hosts",
         "past": "Past attendees",
@@ -486,7 +491,7 @@
         "body": "RSVPs will appear here as they come in. Check back closer to the date."
       },
       "intro": {
-        "label": "Intro"
+        "label": "Profile"
       },
       "instagram": {
         "label": "Instagram",
@@ -498,7 +503,7 @@
       },
       "actions": {
         "close": "Close",
-        "expand": "Tap to expand",
+        "expand": "Expand",
         "back": "Back to all"
       },
       "you": "That's you",
@@ -509,17 +514,17 @@
     "Gate": {
       "eyebrow": "Private event",
       "title": "Day n Night",
-      "subtitle": "Please provide the passcode.",
-      "placeholder": "Something like...",
+      "subtitle": "Please enter the passcode.",
+      "placeholder": "Passcode",
       "submit": "Enter",
       "submitting": "Checking…",
       "errors": {
         "missing": "Please enter the code.",
-        "invalid": "That code did not match. Try again, or ask the host for the current one.",
-        "noEvent": "This event surface is not configured yet. Try again shortly.",
+        "invalid": "That code didn't match. Try again, or ask the host.",
+        "noEvent": "This page isn't ready yet. Try again shortly.",
         "generic": "Something went wrong. Try again in a moment."
       },
-      "hint": "You will only need to enter this once on this device.",
+      "hint": "You'll only need to enter this once on this device.",
       "footer": "No code? Reach out to the host on the channel that pointed you here."
     },
     "Rsvp": {
@@ -538,7 +543,7 @@
           "codePlaceholder": "6-digit code",
           "submit": "Continue",
           "resend": "Resend code",
-          "error": "That code did not match. Try again."
+          "error": "That code didn't match. Try again."
         },
         "name": {
           "eyebrow": "Your name",
@@ -551,17 +556,17 @@
           "title": "How many?",
           "quantityLabel": "Tickets",
           "recipientLabel": "Recipient name (optional)",
-          "recipientHint": "Leave blank if you are claiming a ticket yourself; fill in if you are buying it for someone else.",
+          "recipientHint": "Leave this blank if the ticket is for you. If it's a gift, enter their name.",
           "submit": "Reserve",
           "submitting": "Reserving…",
-          "success": "Reserved. Check your email for next steps."
+          "success": "Reserved. Check your email for the next steps."
         }
       },
       "my": {
         "eyebrow": "Your tickets",
         "title": "Your reservation",
         "empty": "No tickets on this account yet.",
-        "outage": "We couldn't load your tickets right now. Refresh in a moment.",
+        "outage": "We couldn't load your tickets right now. Try refreshing in a moment.",
         "confirmed": "Confirmed",
         "pending": "Pending",
         "ticketCount": "{count, plural, one {# ticket} other {# tickets}}",
@@ -579,31 +584,31 @@
       "claim": {
         "eyebrow": "Claim a ticket",
         "title": "Welcome.",
-        "body": "Enter the password the buyer shared with you. The link expires 48 hours after the host confirmed the order.",
+        "body": "Enter the password the buyer shared with you. This link expires 48 hours after the host confirmed the order.",
         "passwordPlaceholder": "Password",
         "submit": "Claim",
         "errors": {
-          "expired": "This link has expired. Ask the buyer to resend.",
-          "notActivated": "This ticket has not been activated yet. The host will confirm payment shortly — keep this link, no need to ask the buyer for a new one.",
-          "invalid": "That password did not match.",
+          "expired": "This link has expired. Ask the buyer for a new one.",
+          "notActivated": "This ticket isn't active yet. The host will confirm payment shortly—keep this link, there's no need to ask the buyer for a new one.",
+          "invalid": "That password didn't match.",
           "alreadyClaimed": "This ticket has already been claimed.",
-          "emailMismatch": "This gift ticket is reserved for a specific email. Sign in with the address the purchaser specified."
+          "emailMismatch": "This ticket is reserved for a specific email. Sign in with the address the purchaser specified."
         },
         "success": {
-          "title": "You are on the list.",
-          "body": "You're set. See you on May 24."
+          "title": "You're on the list.",
+          "body": "You're all set. See you on May 24."
         }
       },
       "gate": {
         "eyebrow": "Locked",
         "title": "Enter the passcode to continue.",
-        "body": "This page is gated. Use the code shared with you privately.",
+        "body": "This page is private. Use the code shared with you.",
         "passcodeLabel": "Access code",
         "submit": "Enter",
         "submitting": "Checking…",
         "errors": {
           "invalid": "That code didn't match.",
-          "network": "Network error."
+          "network": "Network error. Try again."
         }
       },
       "status": {
@@ -614,7 +619,7 @@
       "purchased": {
         "eyebrow": "Awaiting payment",
         "reserved": "{quantity, plural, one {# ticket} other {# tickets}} reserved · {total}",
-        "instructionsFallback": "The host will reach out with payment details. Your tickets activate the moment payment is confirmed.",
+        "instructionsFallback": "The host will reach out with payment details. Your tickets will activate the moment payment is confirmed.",
         "giftLinks": {
           "eyebrow": "Gift links",
           "body": "Share these privately. Each link can be claimed once.",
@@ -642,9 +647,9 @@
     },
     "Order": {
       "PasswordMail": {
-        "subject": "Day n Night — your order is confirmed",
+        "subject": "Day n Night — Your order is confirmed",
         "heading": "Your reservation is paid.",
-        "lead": "Payment confirmed. Your {quantity, plural, one {ticket is} other {# tickets are}} active. Below is the password your recipients will need to claim their gift links.",
+        "lead": "Payment confirmed. Your {quantity, plural, one {ticket is} other {# tickets are}} now active. Below is the password your recipients will need to claim their gift links.",
         "fields": {
           "event": "Event",
           "when": "When",
@@ -660,7 +665,7 @@
         },
         "ctaLabel": "Open your order",
         "ctaFallback": "Or paste this URL into your browser:",
-        "footerNote": "Treat this password like a one-time code — anyone who has it together with a claim link can take that seat. If something looks off, reply to this email."
+        "footerNote": "Treat this password like a one-time code—anyone who has it together with a claim link can take that seat. If something looks off, reply to this email."
       }
     }
   }

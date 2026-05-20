@@ -48,21 +48,21 @@ export function ImmersiveView() {
   }, [setPhase, setProgress]);
 
   return (
-    <div className="relative min-h-dvh w-full [--reveal-x:50%] [--reveal-y:50%]">
+    <div className="relative min-h-screen w-full p-0 [--reveal-x:50%] [--reveal-y:50%] max-md:min-h-dvh">
       {/* Timeline owns the pinned scroll context; SceneView (sky + sun + moon)
           and the grain overlay live inside it so they share the pin. */}
       <Timeline />
-      {/*<div*/}
-      {/*  data-hidden={hintHidden || phase !== "playing"}*/}
-      {/*  aria-hidden*/}
-      {/*  className="ease pointer-events-none fixed bottom-20 left-1/2 z-[45] hidden -translate-x-1/2 items-center gap-[10px] font-mono text-[10px] tracking-[0.28em] text-[var(--dn-fg-mute)] uppercase transition-opacity duration-500 data-[hidden=true]:opacity-0 lg:inline-flex"*/}
-      {/*>*/}
-      {/*  <span*/}
-      {/*    data-dn-scroll-hint-line*/}
-      {/*    className="inline-block h-px w-7 bg-current"*/}
-      {/*  />*/}
-      {/*  <span>{t("scrollHint")}</span>*/}
-      {/*</div>*/}
+      <div
+        data-hidden={hintHidden || phase !== "playing"}
+        aria-hidden
+        className="ease pointer-events-none fixed bottom-1/4 left-1/2 z-[45] hidden -translate-x-1/2 items-center gap-[10px] font-mono text-[10px] tracking-[0.28em] text-[var(--dn-fg-mute)] uppercase transition-opacity duration-500 data-[hidden=true]:opacity-0 lg:inline-flex"
+      >
+        <span
+          data-dn-scroll-hint-line
+          className="inline-block h-px w-7 bg-current"
+        />
+        <span>{t("scrollHint")}</span>
+      </div>
       <Scrubber />
       {/* Background audio bed — independent of the main site's Radio.
           Renders its own chrome toggle (top-right, below the view toggle);

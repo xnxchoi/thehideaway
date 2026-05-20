@@ -13,72 +13,64 @@ export const useWindowResize = ({
   detectHeightChange = false,
   detectVisibilityChange = false
 }: resizeListenerProps = {}) => {
-  const [currentWidth, setCurrentWidth] = useState<number>(null!);
-  const [currentHeight, setCurrentHeight] = useState<number>(null!);
   const [lastTimestamp, setLastTimestamp] = useState<number>(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const lastWindowWidth = useRef<number>(null);
-  const lastWindowHeight = useRef<number>(null);
+  const lastWidthRef = useRef<number | null>(null);
+  const lastHeightRef = useRef<number | null>(null);
+
+  // Targeted selectors — avoids re-renders from unrelated store changes (e.g. fingerprint updates)
+  const isMobile = useDeviceInfo((r) => r.isMobile);
+  const isChrome = useDeviceInfo((r) => r.browser.isChrome);
+  // Mobile Chrome collapses its address bar on scroll, firing spurious height resize events.
+  const suppressHeight = isMobile && isChrome;
+
   useEffect(() => {
-    lastWindowWidth.current = currentWidth;
-    return () => {
-      lastWindowWidth.current = null;
-    };
-  }, [currentWidth]);
-  useEffect(() => {
-    lastWindowHeight.current = currentHeight;
-    return () => {
-      lastWindowHeight.current = null;
-    };
-  }, [currentHeight]);
-  const devInfo = useDeviceInfo((r) => r);
-  const browser = useDeviceInfo((r) => r.browser.isChrome);
-  useEffect(() => {
-    console.log("devInfo", devInfo);
-    const l = devInfo.isMobile && browser;
-    if (lastWindowWidth.current === null) {
-      setCurrentWidth(window.innerWidth);
-      return;
-    }
-    if (lastWindowHeight.current === null && detectHeightChange && !l) {
-      setCurrentHeight(window.innerHeight);
-      return;
+    // Initialize refs on first run (inside effect = safe from SSR)
+    lastWidthRef.current ??= window.innerWidth;
+    if (detectHeightChange && !suppressHeight) {
+      lastHeightRef.current ??= window.innerHeight;
     }
 
     function handleResize() {
-      (timeoutRef.current && clearTimeout(timeoutRef.current),
-        (timeoutRef.current = setTimeout(() => {
-          (window.innerWidth !== lastWindowWidth.current &&
-            (setCurrentWidth(window.innerWidth), setLastTimestamp(Date.now())),
-            window.innerHeight === lastWindowHeight.current ||
-              l ||
-              (setCurrentHeight(window.innerHeight),
-              setLastTimestamp(Date.now())));
-        }, debounce)));
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        let changed = false;
+
+        if (newWidth !== lastWidthRef.current) {
+          lastWidthRef.current = newWidth;
+          changed = true;
+        }
+        if (
+          detectHeightChange &&
+          !suppressHeight &&
+          newHeight !== lastHeightRef.current
+        ) {
+          lastHeightRef.current = newHeight;
+          changed = true;
+        }
+        if (changed) setLastTimestamp(Date.now());
+      }, debounce);
     }
 
-    return (
-      window.removeEventListener("resize", handleResize),
-      window.addEventListener("resize", handleResize),
-      () => {
-        window.removeEventListener("resize", handleResize);
-      }
-    );
-  }, [debounce, detectHeightChange, devInfo, browser]);
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setTimeout(() => {
-        detectVisibilityChange && setLastTimestamp(Date.now());
-      }, 50);
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
+  }, [debounce, detectHeightChange, suppressHeight]);
 
-    return (
-      window.removeEventListener("visibilitychange", handleVisibilityChange),
-      window.addEventListener("visibilitychange", handleVisibilityChange),
-      () => {
-        window.removeEventListener("visibilitychange", handleVisibilityChange);
-      }
-    );
+  useEffect(() => {
+    if (!detectVisibilityChange) return;
+    const handleVisibilityChange = () => {
+      setTimeout(() => setLastTimestamp(Date.now()), 50);
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [detectVisibilityChange]);
+
   return lastTimestamp;
 };

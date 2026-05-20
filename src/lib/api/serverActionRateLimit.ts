@@ -36,9 +36,7 @@ const limiters: Partial<
   Record<ServerActionRateLimitPreset, RateLimiterAbstract>
 > = {};
 
-function getLimiter(
-  preset: ServerActionRateLimitPreset
-): RateLimiterAbstract {
+function getLimiter(preset: ServerActionRateLimitPreset): RateLimiterAbstract {
   let limiter = limiters[preset];
   if (!limiter) {
     const cfg = PRESETS[preset];

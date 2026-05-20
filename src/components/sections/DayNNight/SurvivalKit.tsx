@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 
 /**
- * Survival Kit — Phase 5a P5a-Product-1.
+ * Survival Kit — Phase 5a P5a-Product-1 (v3: variant-aware).
  *
  * Composition v2: three visual clusters separated by hairline dividers,
  * not a uniform dl table. The audit's user-lens identified this block
@@ -36,21 +36,46 @@ import { useTranslations } from "next-intl";
  *
  * Copy lives in `messages/{en,ko}.json` under
  * `Event.DayNNight.survivalKit`. The component itself is locale-blind.
+ *
+ * ── Variants (P5c) ───────────────────────────────────────────────────
+ * `standalone` (default): the SimplifiedView usage. Outer margins live
+ * here so the kit sits below the closing italic without callers having
+ * to think about spacing.
+ *
+ * `embedded`: the Immersive Opening + Closing reprise usage. No outer
+ * margin — the surrounding act grid controls placement. Slightly
+ * tighter max-width so it fits inside an act's right (or left) column
+ * without crowding.
  */
-export function SurvivalKit() {
+interface SurvivalKitProps {
+  variant?: "standalone" | "embedded";
+}
+
+export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   const t = useTranslations("Event.DayNNight.survivalKit");
   const tDn = useTranslations("Event.DayNNight");
   const [copied, setCopied] = useState<string | null>(null);
+  // useId yields a unique, SSR-stable id per instance so the immersive
+  // view can mount multiple kits (Opening + Closing, each duplicated by
+  // the seamless-loop ActSet) without aria-labelledby id collisions.
+  const headingId = useId();
 
   const address = tDn("location.address");
   const tossAccount = tDn("entry.bank");
   const tossAmount = tDn("entry.amount");
+  // Account holder name — required for Korean bank transfers (Toss /
+  // KakaoBank etc. display the registered holder during transfer
+  // confirmation, and users verify the name before sending). Added in
+  // P5c santa-loop round 1 fix after both reviewers flagged its
+  // omission from the Closing reprise as a payment-flow regression.
+  const tossHolder = tDn("entry.accountHolder");
   const hostContact = t("host.value");
   // Kakao Map query URL — works without an API key. The map app
   // resolves the romanized address on open.
   const kakaoMapUrl = `https://map.kakao.com/?q=${encodeURIComponent(address)}`;
-  // Toss line copied as "account · amount" so a single paste lands both.
-  const tossClipboard = `${tossAccount} · ${tossAmount}`;
+  // Toss line copied as "account · holder · amount" so a single paste
+  // lands the whole payment instruction.
+  const tossClipboard = `${tossAccount} · ${tossHolder} · ${tossAmount}`;
   const hostHref = hostContact.includes("@")
     ? `mailto:${hostContact}`
     : hostContact;
@@ -75,10 +100,19 @@ export function SurvivalKit() {
 
   const copyLabel = (key: string) => (copied === key ? t("copied") : t("copy"));
 
+  // Outer container — `standalone` ships its own top margin (used in
+  // SimplifiedView where the surrounding flow needs explicit
+  // separation). `embedded` ships no margin so the host grid in
+  // Immersive's Opening + Closing acts owns placement.
+  const outerClass =
+    variant === "embedded"
+      ? "grid w-full max-w-[520px] xl:max-w-[560px]"
+      : "mt-16 grid max-w-[640px] md:mt-24 md:max-w-[760px]";
+
   return (
     <section
-      aria-labelledby="survival-kit-heading"
-      className="mt-16 grid max-w-[640px] md:mt-24 md:max-w-[760px]"
+      aria-labelledby={headingId}
+      className={outerClass}
     >
       {/* Heading — eyebrow + serif title, no divider above (the
           surrounding closing italic provides the upper visual break). */}
@@ -87,7 +121,7 @@ export function SurvivalKit() {
           {t("subheading")}
         </p>
         <h2
-          id="survival-kit-heading"
+          id={headingId}
           className="font-serif text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.1] font-bold tracking-[-0.015em] text-[var(--dn-fg)]"
         >
           {t("heading")}
@@ -101,12 +135,7 @@ export function SurvivalKit() {
           value={address}
           hint={t("address.hint")}
         >
-          <RowAction
-            href={kakaoMapUrl}
-            external
-            arrow
-            text={t("openMap")}
-          />
+          <RowAction href={kakaoMapUrl} external arrow text={t("openMap")} />
           <RowAction
             onClick={() => copyToClipboard(address, "address")}
             text={copyLabel("address")}
@@ -117,6 +146,7 @@ export function SurvivalKit() {
         <LogisticsBlock
           label={t("toss.label")}
           value={tossAccount}
+          holder={tossHolder}
           subvalue={tossAmount}
           hint={t("toss.hint")}
         >
@@ -143,7 +173,7 @@ export function SurvivalKit() {
         <div className="grid gap-2 md:gap-3">
           <a
             href={hostHref}
-            className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.1rem,1.5vw,1.4rem)] leading-[1.3] text-[var(--dn-fg)] no-underline underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 [text-decoration-color:var(--dn-fg-faint)] [text-decoration-line:underline] hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
+            className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.1rem,1.5vw,1.4rem)] leading-[1.3] text-[var(--dn-fg)] [text-decoration-line:underline] no-underline [text-decoration-color:var(--dn-fg-faint)] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
           >
             <span>{hostContact}</span>
             <span aria-hidden className="text-[0.85em] leading-none">
@@ -171,12 +201,20 @@ export function SurvivalKit() {
 function LogisticsBlock({
   label,
   value,
+  holder,
   subvalue,
   hint,
   children
 }: {
   label: string;
   value: string;
+  /**
+   * Account-holder name — sits between the primary value and the
+   * mono subvalue. Used by the Pay row so Korean bank transfers can
+   * verify recipient identity. Optional so the Where row (no holder)
+   * keeps the original value → hint cadence.
+   */
+  holder?: string;
   subvalue?: string;
   hint?: string;
   children: React.ReactNode;
@@ -190,6 +228,11 @@ function LogisticsBlock({
         <p className="font-serif text-[clamp(1.2rem,1.6vw,1.5rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg)]">
           {value}
         </p>
+        {holder ? (
+          <p className="font-serif text-[clamp(1rem,1.2vw,1.15rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)]">
+            {holder}
+          </p>
+        ) : null}
         {subvalue ? (
           <p className="font-mono text-[12px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
             {subvalue}

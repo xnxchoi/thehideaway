@@ -399,7 +399,7 @@ export function TicketEventClient({
 
   return (
     <RPage type="pages" slug={["tickets", event.slug]}>
-      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
+      <section className="mx-auto w-full max-w-7xl px-6 pt-32 pb-32 xl:px-10 xl:pt-40 xl:pb-40">
         {!gateOpen ? (
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
             <div>

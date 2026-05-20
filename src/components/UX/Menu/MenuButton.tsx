@@ -48,7 +48,7 @@ export const MenuButton = ({
     // setButtonPaddingPx(`${isMobile ? 14 : 16}`);
     mobileState.set(isMobile);
   }, [isMobile, mobileState]);
-  const px = useTransform(() => (mobileState.get() ? 14 : (16 as number)));
+  const px = useTransform(() => (mobileState.get() ? 8 : (10 as number)));
   const wd = useMotionValue(64);
   const __iconY = useTransform(() => (navState.get() ? 0 : (50 as number)));
   const _iconY = useSpring(__iconY, {
