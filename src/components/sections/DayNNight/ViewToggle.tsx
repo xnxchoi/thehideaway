@@ -20,7 +20,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
       data-dn-chrome-pill
       role="radiogroup"
       aria-label={t("label")}
-      className="fixed top-24 right-10 z-[46] inline-flex gap-0.5 rounded-full border border-[var(--dn-chrome-line)] p-[3px] md:top-28 md:right-14 xl:top-32 xl:right-20"
+      className="fixed top-5 right-5 z-[46] inline-flex gap-0.5 rounded-full border border-[var(--dn-chrome-line)] p-[3px] md:top-8 md:right-8 xl:top-10 xl:right-12"
     >
       <button
         type="button"

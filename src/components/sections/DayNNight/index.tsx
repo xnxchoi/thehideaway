@@ -52,23 +52,28 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
 
   // Immersive owns the full viewport: hide the site header and bottom FXFrame
   // so they don't overlap the ViewToggle (top) or the Scrubber (bottom).
-  // We also stamp `data-dn-immersive` on <body> so a :global SCSS rule can
-  // hide the persistent #rp-header bar — `setHeaderVisibility` alone only
-  // dims the FX layer, the bar itself remains visible.
+  // `setHeaderVisibility` alone only dims the FX layer, so we also hard-hide
+  // the #rp-header element directly. (The previous approach relied on a
+  // :global rule inside styles.module.scss, but that module is no longer
+  // imported anywhere — the rule never loaded.)
   useEffect(() => {
+    const header = document.getElementById("rp-header");
     if (view === "immersive") {
       setHeaderVisibility(false);
       setFXFrameVisibility(false);
       document.body.setAttribute("data-dn-immersive", "true");
+      if (header) header.style.display = "none";
       return () => {
         setHeaderVisibility(true);
         setFXFrameVisibility(true);
         document.body.removeAttribute("data-dn-immersive");
+        if (header) header.style.display = "";
       };
     }
     setHeaderVisibility(true);
     setFXFrameVisibility(true);
     document.body.removeAttribute("data-dn-immersive");
+    if (header) header.style.display = "";
   }, [view, setHeaderVisibility, setFXFrameVisibility]);
 
   return (
@@ -102,7 +107,7 @@ function ExitAffordance() {
       href="/"
       data-dn-chrome-pill
       aria-label="Back to The Hideaway"
-      className="group fixed top-24 left-10 z-[46] inline-flex items-center gap-[10px] rounded-full border border-[var(--dn-chrome-line)] py-[7px] pr-[14px] pl-3 font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase no-underline transition-colors hover:text-[var(--dn-chrome-fg)] md:top-28 md:left-14 xl:top-32 xl:left-20"
+      className="group fixed top-5 left-5 z-[46] inline-flex items-center gap-[10px] rounded-full border border-[var(--dn-chrome-line)] py-[7px] pr-[14px] pl-3 font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase no-underline transition-colors hover:text-[var(--dn-chrome-fg)] md:top-8 md:left-8 xl:top-10 xl:left-12"
     >
       <span
         aria-hidden
