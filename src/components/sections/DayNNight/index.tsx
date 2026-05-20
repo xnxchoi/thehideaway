@@ -11,6 +11,7 @@ import { ImmersiveView } from "./Immersive";
 import { ViewToggle } from "./ViewToggle";
 import { useViewPref, type DayNNightView } from "./useViewPref";
 import "./dn.css";
+import { Link } from "@/components/core/Link/Link";
 
 interface DayNNightLandingProps {
   initialView: DayNNightView;
@@ -97,7 +98,7 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
  */
 function ExitAffordance() {
   return (
-    <a
+    <Link
       href="/"
       data-dn-chrome-pill
       aria-label="Back to The Hideaway"
@@ -110,7 +111,7 @@ function ExitAffordance() {
         ←
       </span>
       <span>The Hideaway</span>
-    </a>
+    </Link>
   );
 }
 

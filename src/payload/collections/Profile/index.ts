@@ -267,6 +267,21 @@ export const Profile: CollectionConfig = {
               },
               fields: [
                 {
+                  type: "select",
+                  name: "tier",
+                  label: "Tier",
+                  defaultValue: "guest",
+                  options: [
+                    { label: "Host", value: "host" },
+                    { label: "Past attendee", value: "past" },
+                    { label: "Guest", value: "guest" }
+                  ],
+                  admin: {
+                    description:
+                      "Ordering bucket on the public guest list. Hosts appear first, then past attendees, then everyone else (alpha-sorted within each tier)."
+                  }
+                },
+                {
                   type: "textarea",
                   name: "intro",
                   label: "Intro",

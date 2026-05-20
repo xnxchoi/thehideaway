@@ -171,8 +171,9 @@
 	border-radius: 999px;
 	cursor: pointer;
 	transition:
-		background 0.25s ease,
-		color 0.25s ease;
+		background 0.25s,
+		color 0.25s ;
+  transition-timing-function: var(--ease-in-out-power3);
 
 	&[data-active="true"] {
 		background: var(--dn-chrome-fg);
@@ -235,7 +236,7 @@
 }
 
 .simplifiedTitle {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-family: var(--font-serif);
 	font-size: clamp(3.2rem, 9vw, 8rem);
 	font-weight: 700;
 	letter-spacing: -0.02em;
@@ -330,7 +331,7 @@
 .simplifiedClosing {
 	margin-top: 28px;
 	max-width: 38ch;
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-family: var(--font-serif);
 	font-style: italic;
 	font-size: clamp(1.05rem, 1.2vw, 1.25rem);
 	line-height: 1.4;
@@ -503,10 +504,10 @@
 	// at off-screen entry/exit.
 	transition: opacity 0.25s ease;
 	will-change: left, bottom, opacity, transform;
-
-	@media (max-width: 1023px) {
-		display: none;
-	}
+    //
+	//@media (max-width: 1023px) {
+	//	display: none;
+	//}
 }
 
 .body[data-kind="moon"] {
@@ -622,7 +623,7 @@
 // against the mono caps. Keeps the editorial methodology of compsych's
 // "001 / 002" numbered markers without copying the numeric style.
 .actEyebrowRoman {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-family: var(--font-serif);
 	font-style: italic;
 	font-weight: 500;
 	font-size: 1.4em;
@@ -646,16 +647,16 @@
 .actOpening > .actInner {
 	display: grid;
 	grid-template-rows: auto 1fr auto;
-	justify-items: center;
-	text-align: center;
+    height:100%;
 }
 
 .openingStack {
 	display: grid;
 	gap: 16px;
-	max-width: 880px;
+	max-width: 1440px;
 	margin: auto;
-	justify-items: center;
+	justify-items: normal;
+  grid-template-rows:repeat(12,1fr)
 }
 
 .openingKicker {
@@ -667,12 +668,13 @@
 }
 
 .openingTitle {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-family: var(--font-serif);
 	font-weight: 700;
-	font-size: clamp(4rem, 9vw, 9rem);
+    font-style: italic;
+	font-size: clamp(8rem, 9vw, 12rem);
 	line-height: 0.94;
 	letter-spacing: -0.022em;
-	color: var(--dn-fg);
+	color: var(--color-faded-black);
 }
 
 .openingLede {
@@ -684,11 +686,20 @@
 	letter-spacing: -0.005em;
 }
 
+.openingBody {
+  font-family: var(--font-serif);
+  max-width: 600px;
+  font-size: clamp(2rem, 3.4vw, 2.4rem);
+  text-align: start;
+  line-height: 1.1;
+  color: var(--dn-fg-mute);
+  letter-spacing: -0.005em;
+}
 .openingFoot {
 	display: flex;
 	gap: 48px;
-	font-family: var(--font-mono, ui-monospace, monospace);
-	font-size: 11px;
+	font-family: var(--font-sans);
+	font-size: 13px;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--dn-fg-faint);
@@ -716,7 +727,8 @@
 }
 
 .cookoutHead {
-	grid-column: 1 / 2;
+	grid-column: 1/-1;
+    margin-top:14px;
 	grid-row: 2 / 3;
 	align-self: end;
 	display: grid;
@@ -762,7 +774,7 @@
 }
 
 .cookoutListValue {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
+	font-family: var(--font-serif);
 	font-size: clamp(1.6rem, 1.7vw, 1.9rem);
 	font-weight: 500;
 	color: var(--dn-fg);
@@ -770,58 +782,142 @@
 }
 
 // ============================================================
-// Act 3 — Dress code (split-screen + secret aside)
+// Act 3 — Dress code (horizontal corridor + two option rooms)
 // ============================================================
+//
+// The act is a long horizontal corridor:
+//   eyebrow lead-in (0.2vw) + Room 01 (1.5vw) + Room 02 (1.5vw) = 3.2vw
+// Each room is split into three positional bands (anchor / cluster / read)
+// and animates its own reveal via GSAP scroll-progress (useScrollTimeline).
 
 .actDress {
-	--act-w: 1.1; // two-column split needs editorial overlap
+	--act-w: 3.2; // 0.2 (eyebrow) + 1.5 (room 01) + 1.5 (room 02)
 }
 
 .actDress > .actInner {
-	display: grid;
-	grid-template-rows: auto auto 1fr auto;
-	gap: 20px;
+	// Eyebrow above, corridor fills the rest.
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 
-.dressIntro {
-	margin-top: 32px;
-	max-width: 50ch;
+// Corridor — flex-row container that holds the two option rooms.
+// The corridor's width comes from its children (300vw total) inside the
+// 3.2vw .actDress > .actInner.
+.dressCorridor {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	flex: 1;
+	width: 100%;
+}
+
+// One option room — 150vw wide, three internal positional bands.
+.dressRoom {
+	position: relative;
+	flex: 0 0 150vw;
+	height: 100%;
+	// Polaroids in the Cluster band drift across room edges; let them.
+	overflow: visible;
+}
+
+// Anchor band (left half of room) — option marker + heading anchored
+// bottom-left so the heading reads as the room's first signal.
+.dressRoomAnchor {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 50vw;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	gap: 24px;
+	padding: 0 4vw 12vh 6vw;
+}
+
+// Cluster band (middle 50vw) — polaroid scatter zone. The polaroid's
+// own parallax + rotate stays intact; the GSAP timeline only tweens
+// opacity + x on the wrapping `[data-dr-tile]` div.
+.dressRoomCluster {
+	position: absolute;
+	left: 50vw;
+	top: 0;
+	bottom: 0;
+	width: 50vw;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 24px 32px;
+	padding: 8vh 4vw;
+	pointer-events: none;
+}
+
+// Read band (right half of room) — body / explainer copy anchored
+// bottom-left. Reveals AFTER the polaroids settle (timeline progress 0.55).
+.dressRoomRead {
+	position: absolute;
+	left: 100vw;
+	top: 0;
+	bottom: 0;
+	width: 50vw;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	padding: 0 6vw 12vh 4vw;
+}
+
+// Option marker — mono caps `01` / `02` with a hairline rule alongside,
+// mirroring the visual weight of .nightDressStampLabel + rule. Reads as
+// the room's chapter mark.
+.dressOptionMarker {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 14px;
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: var(--dn-fg-faint);
+}
+
+.dressOptionMarkerRule {
+	display: inline-block;
+	width: 56px;
+	height: 1px;
+	background: var(--dn-fg);
+	opacity: 0.55;
+}
+
+// Option heading — display serif, the first thing the eye lands on
+// inside the room. Larger than the prior .dressColHeading.
+.dressOptionHeading {
 	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-style: italic;
+	font-weight: 700;
+	font-size: clamp(40px, 5.4vw, 80px);
+	line-height: 0.98;
+	letter-spacing: -0.022em;
+	color: var(--dn-fg);
+	max-width: 18ch;
+}
+
+// Option body / explainer — bumped to 22-28px sans so it reads at body
+// scale, not as a caption. Reveals after the polaroids settle.
+.dressOptionBody {
+	font-size: clamp(22px, 2vw, 28px);
+	line-height: 1.5;
 	font-weight: 400;
-	font-size: clamp(1.3rem, 1.4vw, 1.55rem);
-	line-height: 1.4;
 	color: var(--dn-fg-mute);
-}
-
-.dressColsBespoke {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 36px;
-	align-content: end;
-	max-width: 980px;
-
-	@media (min-width: 1024px) {
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-		column-gap: 56px;
-	}
-}
-
-.dressColBespoke {
-	display: grid;
-	gap: 14px;
 	max-width: 38ch;
 }
 
-.dressDivider {
-	display: none;
-	width: 1px;
-	background: var(--dn-line);
-	align-self: stretch;
-
-	@media (min-width: 1024px) {
-		display: block;
-	}
+// Tile wrapper — the `<div data-dr-tile>` that wraps each <Polaroid>.
+// Provides a stable element for GSAP to tween (opacity + x) without
+// fighting Polaroid's internal Motion transforms.
+.dressTile {
+	display: inline-block;
+	pointer-events: auto;
 }
 
 // ============================================================
@@ -839,69 +935,126 @@
 	column-gap: 48px;
 }
 
-.nightHead {
+// Main column — the night's hero block. Stacks the section title above
+// the tribute (which is the thematic centerpiece, not a corner stamp).
+// Sits in row 2 (1fr) so it vertically centers in the act.
+.nightMain {
 	grid-column: 1 / 2;
 	grid-row: 2 / 3;
-	align-self: end;
+	align-self: center;
 	display: grid;
-	gap: 20px;
-	// Sized for the lede; the heading itself gets a narrower clamp
-	// below so it still stacks word-per-line for the editorial effect.
-	max-width: 42ch;
+	gap: 36px;
+	max-width: 56ch;
 }
 
-.nightHead > .actHeading {
-	// Narrow on purpose — "The room cools down" stacks vertically,
-	// reading as four beats rather than a single line. Scoped to
-	// .nightHead so Cookout's heading keeps its natural width.
-	max-width: 11ch;
+// Section title — addresses the nightfall transition itself.
+// "Mood shift." level — the heading the eye lands on first when this
+// act enters viewport. Editorial serif, big enough to anchor the act.
+.nightSectionTitle {
+	font-family: var(--font-serif);
+	font-weight: 700;
+	font-size: clamp(3.2rem, 5vw, 5.6rem);
 	line-height: 1.02;
+	letter-spacing: -0.02em;
+	color: var(--dn-fg);
+	max-width: 12ch;
 }
 
-.nightLede {
-	font-size: clamp(1.4rem, 1.65vw, 1.75rem);
-	line-height: 1.45;
-	font-weight: 300;
-	color: var(--dn-fg-mute);
-	max-width: 38ch;
-	letter-spacing: -0.005em;
+// Announcement — relocated from Dress's .actSecret. Sits between the
+// section title and the tribute as the quiet editorial voice naming the
+// unannounced thing on the night side of the loop. Italic serif at body
+// size so it reads as voice, not headline. (10px/rem — clamp resolves
+// 22px → 28px.)
+.nightAnnouncement {
+	font-family: var(--font-serif);
+	font-style: italic;
+	font-weight: 500;
+	font-size: clamp(2.2rem, 2.2vw, 2.8rem);
+	line-height: 1.4;
+	color: var(--dn-fg);
+	opacity: 0.85;
+	max-width: 36ch;
 }
 
-.nightStamp {
+// Tribute — the wisdom-from-burning paragraph. Was relegated to a tiny
+// italic-serif stamp at the bottom-right; now sits as the section's
+// main copy with proper editorial scale + an upright (non-italic) body
+// so the prose actually reads on a dark sky.
+.nightTribute {
+	display: grid;
+	gap: 18px;
+	max-width: 52ch;
+}
+
+.nightTributeHeading {
+	font-family: var(--font-serif);
+	font-weight: 700;
+	font-style: normal;
+	font-size: clamp(2.4rem, 2.8vw, 3rem);
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	color: var(--dn-fg);
+}
+
+.nightTributeBody {
+	font-family: var(--font-serif);
+	font-style: normal;
+	font-weight: 400;
+	font-size: clamp(1.9rem, 2vw, 2.2rem);
+	line-height: 1.55;
+	color: var(--dn-fg);
+	opacity: 0.9;
+	max-width: 48ch;
+}
+
+// Dress-code stamp — was the act's main heading; now an anchored
+// sub-section in the bottom-right corner. Carries the "Sharp. Chic.
+// Dressed to impress." tagline + the practical body, but at a scale
+// that makes the hierarchy clear: this is a sub-note under the
+// nightfall headline + tribute.
+.nightDressStamp {
 	grid-column: 2 / 3;
 	grid-row: 3 / 4;
 	align-self: end;
 	justify-self: end;
 	display: grid;
-	gap: 8px;
-	min-width: 240px;
-	max-width: 320px;
+	gap: 10px;
+	min-width: 280px;
+	max-width: 340px;
 }
 
-.nightStampRule {
+.nightDressStampRule {
 	display: block;
 	width: 56px;
 	height: 1px;
 	background: var(--dn-fg);
-	margin-bottom: 10px;
-	opacity: 0.6;
+	margin-bottom: 8px;
+	opacity: 0.55;
 }
 
-.nightStampKey {
+.nightDressStampLabel {
 	font-family: var(--font-mono, ui-monospace, monospace);
-	font-size: 10px;
-	letter-spacing: 0.32em;
+	font-size: 11px;
+	letter-spacing: 0.28em;
 	text-transform: uppercase;
 	color: var(--dn-fg-faint);
 }
 
-.nightStampVal {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-style: italic;
-	font-size: clamp(1.3rem, 1.4vw, 1.55rem);
-	line-height: 1.4;
+.nightDressStampHeading {
+	font-family: var(--font-serif);
+	font-weight: 600;
+	font-size: clamp(2rem, 2.4vw, 2.6rem);
+	line-height: 1.18;
+	letter-spacing: -0.005em;
+	color: var(--dn-fg);
+}
+
+.nightDressStampBody {
+	font-size: 1.9rem;
+	line-height: 1.5;
 	color: var(--dn-fg-mute);
 	font-weight: 400;
+	max-width: 32ch;
 }
 
 // ============================================================
@@ -950,7 +1103,7 @@
 }
 
 .closingFootLine {
-	font-family: var(--font-mono, ui-monospace, monospace);
+	font-family: var(--font-mono );
 	font-size: 11px;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
@@ -996,10 +1149,12 @@
 }
 
 .actHeading {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-weight: 700;
-	font-size: clamp(3rem, 6vw, 5.4rem);
-	line-height: 1;
+	font-family: var(--font-serif);
+	font-weight: 500;
+  text-wrap: balance;
+  font-style: italic;
+	font-size: clamp(5rem, 6vw, 11.4rem);
+	line-height: 1.1;
 	letter-spacing: -0.02em;
 	color: var(--dn-fg);
 }
@@ -1008,6 +1163,7 @@
 	font-size: clamp(1.4rem, 1.6vw, 1.7rem);
 	line-height: 1.5;
 	font-weight: 300;
+  margin-block: 14px;
 	letter-spacing: -0.005em;
 	color: var(--dn-fg-mute);
 	max-width: 56ch;
@@ -1017,7 +1173,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 16px 32px;
-	font-family: var(--font-mono, ui-monospace, monospace);
+	font-family: var(--font-sans);
+  margin-block: 14px;
 	font-size: 11px;
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
@@ -1038,56 +1195,15 @@
 	color: var(--dn-fg-mute);
 }
 
-// Dress code — paired columns.
-
-.dressCols {
-	display: grid;
-	gap: 32px;
-	max-width: 760px;
-
-	@media (min-width: 1024px) {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 48px;
-	}
-}
-
-.dressCol {
-	display: grid;
-	gap: 10px;
-}
-
-.dressColLabel {
-	font-family: var(--font-mono, ui-monospace, monospace);
-	font-size: 10px;
-	letter-spacing: 0.2em;
-	text-transform: uppercase;
-	color: var(--dn-fg-faint);
-}
-
-.dressColHeading {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-weight: 700;
-	font-size: clamp(1.8rem, 2.4vw, 2.4rem);
-	line-height: 1.1;
-	color: var(--dn-fg);
-}
-
-.dressColBody {
-	font-size: 1.4rem;
-	line-height: 1.55;
-	color: var(--dn-fg-mute);
-	max-width: 42ch;
-	font-weight: 300;
-}
-
 // Closing act — RSVP final.
 
 .closingStack {
 	display: grid;
 	gap: 16px;
+
 	justify-items: start;
 	align-content: center;
-	max-width: 720px;
+	max-width: clamp(650px,100%, 100vw)
 }
 
 .closingEyebrow {
@@ -1099,9 +1215,9 @@
 }
 
 .closingTitle {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-weight: 700;
-	font-size: clamp(4rem, 9vw, 8.4rem);
+	font-family: var(--font-serif);
+	font-weight: 500;
+	font-size: clamp(5rem, 9vw, 11.4rem);
 	line-height: 0.94;
 	letter-spacing: -0.02em;
 	color: var(--dn-fg);
@@ -1161,110 +1277,134 @@
 	line-height: 1;
 }
 
-// Dress-code "secret" footer line — italic serif, treated as a quiet
-// editorial aside rather than another metadata key/val.
-
-.actSecret {
-	display: block;
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-style: italic;
-	font-weight: 400;
-	font-size: clamp(1.1rem, 1.3vw, 1.3rem);
-	letter-spacing: 0;
-	text-transform: none;
-	color: var(--dn-fg-mute);
-	max-width: 44ch;
-	line-height: 1.45;
-}
-
-// Loader — spotlight backdrop + chrome.
+// Loader — opaque black-screen-with-horizon (compsych.konpo.co pattern).
 //
-// The backdrop is a radial gradient with a transparent center positioned
-// at --reveal-x/y (declared on the .immersive ancestor — both this loader
-// and the .sceneWrap inherit it). The y-default is 50% to align with
-// HORIZON_Y so the spotlight "hole" coincides with where the sun lands.
-// When the loader hands off, the whole element fades to opacity 0 while
-// the sun migrates to its scene position via its left/bottom transition.
+// Construction:
+//   - The .loader element is a near-fully-opaque dark backdrop that
+//     completely covers the scene underneath. No chrome text, no logo,
+//     no "loading" label — just a single horizontal line at the vertical
+//     center of the viewport.
+//   - The line grows from a single point at center outward, reaching
+//     ~85vw wide as load progress hits 1.0. The line sits exactly on
+//     the same y as HORIZON_Y in the scene below, so when the loader
+//     fades out at hand-off the line "becomes" the scene's horizon glow.
+//   - At handoff the whole element fades to opacity 0; the scene's own
+//     horizon glow band takes over visually at the same y-position, and
+//     the sun is already at that y from the seamless handoff math in
+//     SceneView.
+//
+// Everything is positioned in fixed coordinates so this works regardless
+// of the Timeline pin context wrapping it.
 
 .loader {
 	position: fixed;
 	inset: 0;
 	z-index: 60;
-	// Use the adaptive sky-driven token so chrome stays legible whether
-	// the loader plays against a daytime sky (dark ink wins) or a
-	// pre-dawn one (cream wins). SceneView writes --dn-fg per-frame.
-	color: var(--dn-fg);
+	pointer-events: none;
+	// Background lives on .loaderBackdrop now (NOT on .loader itself) so
+	// we can fade just the backdrop + horizon line at handoff while the
+	// rising sun stays at full opacity — bridging visually into the
+	// scene's identical sun underneath.
+}
+
+// The opaque dark fill. Sits behind everything else in the loader and
+// fades out on handoff so the scene below is revealed; the sun + clip
+// wrapper are siblings, NOT children, so they don't fade with it.
+.loaderBackdrop {
+	position: absolute;
+	inset: 0;
+	background: oklch(7% 0.004 250);
 	transition: opacity 0.7s ease;
 }
 
-.loader[data-hiding="true"] {
+.loader[data-hiding="true"] .loaderBackdrop,
+.loader[data-hiding="true"] .loaderHorizon {
 	opacity: 0;
-	pointer-events: none;
 }
 
-// Soft atmospheric halo around the chrome center. Previously a near-
-// black radial vignette designed for the prior pre-dawn opening — that
-// rendered as a hard black box covering the daytime sun on the new
-// anchor=0 (Opening) start. Now this halo just dims the periphery
-// slightly using the adaptive fg color, never the deep ink, so the
-// scene reads through.
-.loaderSpotlight {
-	position: absolute;
-	inset: 0;
-	background:
-		radial-gradient(
-			circle 360px at var(--reveal-x, 50%) var(--reveal-y, 62%),
-			transparent 0%,
-			color-mix(in oklch, var(--dn-fg) 0%, transparent) 32%,
-			color-mix(in oklch, var(--dn-fg) 4%, transparent) 70%,
-			color-mix(in oklch, var(--dn-fg) 10%, transparent) 100%
-		);
-	pointer-events: none;
-}
-
-.loaderChrome {
+// The single horizontal line — the "horizon" reveal. Sits at vertical
+// center of the viewport, centered horizontally. transform: scaleX is
+// driven by SunLoader's rAF in [0, 1] — width at full scale is the
+// `width` declared below (~85vw). The transition handles per-frame
+// smoothing so the JS only needs to write the target.
+.loaderHorizon {
 	position: absolute;
 	left: 50%;
-	bottom: 18%;
-	transform: translateX(-50%);
-	display: grid;
-	gap: 14px;
-	justify-items: center;
-	width: min(80vw, 320px);
-	text-align: center;
-}
-
-.loaderLabel {
-	font-family: var(--font-mono, ui-monospace, monospace);
-	font-size: 10px;
-	letter-spacing: 0.32em;
-	text-transform: uppercase;
-	color: var(--dn-fg-mute);
-}
-
-.loaderTitle {
-	font-family: var(--font-serif, "Adobe Caslon Pro", serif);
-	font-size: 2.4rem;
-	font-weight: 700;
-	letter-spacing: -0.01em;
-	color: var(--dn-fg);
-}
-
-.loaderBar {
-	width: 100%;
+	top: 50%;
+	width: min(85vw, 1400px);
 	height: 1px;
-	background: oklch(from var(--dn-fg) l c h / 0.18);
-	overflow: hidden;
-	position: relative;
+	background: oklch(96% 0.005 80 / 0.85);
+	// Soft warm bloom along the line — gives the horizon a sun-warm
+	// breath instead of a sterile single pixel. Stays subtle so the
+	// line itself remains the protagonist.
+	box-shadow:
+		0 0 6px 0 oklch(85% 0.08 70 / 0.35),
+		0 0 18px 0 oklch(80% 0.06 60 / 0.18);
+	transform-origin: center;
+	// Initial state — point at center. JS writes the target each frame.
+	transform: translate(-50%, -50%) scaleX(0);
+	transition:
+		transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+		opacity 0.7s ease;
 }
 
-.loaderBarFill {
+// Sky-clip wrapper — holds the rising sun and clips everything below the
+// horizon line during the loader run. On handoff the clip-path opens so
+// the sun's bottom half is naturally revealed in step with the backdrop
+// fade — bridging into the scene's identical (unclipped) sun underneath.
+.loaderSkyClip {
 	position: absolute;
 	inset: 0;
-	background: oklch(from var(--dn-fg) l c h / 0.7);
-	transform-origin: left center;
-	transform: scaleX(0);
-	transition: transform 0.3s ease;
+	pointer-events: none;
+	// Clip everything below the viewport vertical center. inset values
+	// are top right bottom left; bottom 50% leaves only the top half of
+	// the box (== top half of viewport, == above the horizon) visible.
+	clip-path: inset(0 0 50% 0);
+	transition: clip-path 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.loader[data-hiding="true"] .loaderSkyClip {
+	// Clip opens fully so the sun's bottom half emerges as the backdrop
+	// fades. By the time the loader unmounts, the loader sun is whole
+	// and matches the scene sun underneath pixel-for-pixel.
+	clip-path: inset(0 0 0% 0);
+}
+
+// Sun disk — visual mirror of .body[data-kind="sun"] in SceneView. Same
+// width/height/margin geometry, same radial gradient, same warm
+// box-shadow halo, same --body-color and --body-scale defaults so when
+// the loader unmounts the scene's sun underneath looks identical — no
+// flicker, no size pop, no halo collapse ("fried egg" jank). The only
+// JS-controlled value is the rise translate: SunLoader writes
+// translateY((1-u) * 32px * scale) so the sun emerges from beneath the
+// clip line as u → 1; scale stays at the handoff value throughout.
+.loaderSun {
+	--body-color: rgb(255 199 107);
+	--body-scale: 1.353;
+
+	position: absolute;
+	left: 50%;
+	bottom: 50%;
+	width: 64px;
+	height: 64px;
+	margin-left: -32px;
+	margin-bottom: -32px;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at center,
+		var(--body-color) 0%,
+		color-mix(in srgb, var(--body-color) 60%, transparent) 55%,
+		transparent 75%
+	);
+	filter: blur(0.5px);
+	box-shadow:
+		0 0 80px 12px color-mix(in srgb, var(--body-color) 35%, transparent),
+		0 0 200px 40px color-mix(in srgb, var(--body-color) 15%, transparent);
+	pointer-events: none;
+	// Baseline at u=0: sun pushed down by one scaled-half-height so its
+	// top edge sits at the horizon, fully below the clip → invisible.
+	// JS overwrites this every frame.
+	transform: translateY(calc(32px * var(--body-scale))) scale(var(--body-scale));
 }
 
 // Page-local audio toggle — sits in the top-right chrome stack, one row
@@ -1404,6 +1544,7 @@
 		color-mix(in srgb, var(--dn-fg) 28%, transparent) 1px,
 		transparent 1px
 	);
+  mix-blend-mode: difference;
 	background-repeat: repeat-x;
 	background-size: 9px 6px; // 1px tick + 8px gap, 6px tall (body)
 	background-position: 0 0; // body row at the TOP of the track
@@ -1432,8 +1573,9 @@
 	left: 0;
 	width: 56px;
 	height: 6px;
-	margin-left: -28px;
+	margin-left: -14px;
 	background: var(--dn-fg);
+  border-radius: 8px;
 	will-change: transform;
 	// No transition — the rAF loop writes a fresh transform every frame.
 }
@@ -1583,11 +1725,12 @@
 .grain {
 	position: absolute;
 	inset: 0;
-	z-index: 2;
+	z-index: 0;
 	pointer-events: none;
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-	mix-blend-mode: overlay;
-	opacity: 0.45;
+	background-image: url(/assets/papier.png);
+  filter:grayscale(19%);
+	mix-blend-mode: screen;
+	opacity: 0.05;
 }
 
 // ============================================================
@@ -1619,35 +1762,6 @@
 	transform-origin: center 60%;
 }
 
-.polaroidFrame {
-	background:
-		// Subtle vertical paper gradient — top a touch warmer.
-		linear-gradient(
-			to bottom,
-			oklch(96% 0.012 80) 0%,
-			oklch(93% 0.012 80) 100%
-		);
-	padding: 12px 12px 36px 12px;
-	border-radius: 2px;
-	// Drop shadow + a thin inner highlight for the paper-edge feel.
-	box-shadow:
-		0 1px 0 oklch(100% 0 0 / 0.4) inset,
-		0 8px 24px oklch(0% 0 0 / 0.18),
-		0 2px 6px oklch(0% 0 0 / 0.12);
-	position: relative;
-
-	// Subtle paper grain printed on top of the frame itself.
-	&::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.04  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
-		mix-blend-mode: multiply;
-		opacity: 0.6;
-		border-radius: inherit;
-	}
-}
 
 .polaroidPhoto {
 	position: relative;
@@ -1667,41 +1781,68 @@
 	}
 }
 
-// Caption — printed-photo voice: small italic serif below the image,
-// on the polaroid's bottom margin. Quiet, the kind of one-line
-// annotation a friend might pencil under the photo.
-.polaroidSerif {
-	margin-top: 10px;
-	font-family: var(--font-serif, "Adobe Caslon Pro", "Georgia", serif);
-	font-style: italic;
-	font-size: 12px;
-	line-height: 1.3;
-	color: oklch(28% 0.02 60);
-	text-align: center;
-	letter-spacing: 0.01em;
-	// Cut to two lines so longer captions don't blow out the card.
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
+// Stamped variant card — sizes to the texture PNG's portrait aspect.
+// The texture is a full polaroid graphic (mint frame outline + bottom
+// margin + corner doodle), NOT a transparent overlay. The photo sits
+// INSIDE the texture's "photo area" on top, providing the visible image.
+.polaroidStampedCard {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	border-radius: 4px;
+	box-shadow:
+		0 8px 24px oklch(0% 0 0 / 0.22),
+		0 2px 6px oklch(0% 0 0 / 0.15);
+}
+
+// Texture base layer — the polaroid graphic sits at the bottom of the
+// stack and provides the frame + bottom margin + corner doodle look.
+// `pointer-events: none` because polaroids are decorative.
+.polaroidStampedTexture {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1;
+	object-fit: cover;
+	user-select: none;
+}
+
+// Photo slot — positioned inside the texture's inner "photo area".
+// The percentage insets match the front-clear PNG's interior region:
+//   - top    4%  (above the inner frame border)
+//   - left   5%  (inside the left frame border)
+//   - width  90% (= 100% - 5% - 5%)
+//   - height 62% (everything above the bottom margin where the doodle lives)
+// z-index 2 puts the photo ABOVE the texture, so it shows clearly and
+// only inside the slot's bounds.
+.polaroidStampedPhotoSlot {
+	position: absolute;
+	top: 4%;
+	left: 5%;
+	width: 90%;
+	height: 62%;
+	z-index: 2;
 	overflow: hidden;
 }
 
-// Marker-pen voice: handwritten-feel, slight tilt against the polaroid's
-// rotation, a warm ink color. For the more candid annotations.
-.polaroidMarker {
-	margin-top: 8px;
-	font-family: "Permanent Marker", "Caveat", "Comic Sans MS", cursive;
-	font-size: 13px;
-	font-weight: 400;
-	line-height: 1.2;
-	color: oklch(36% 0.13 35); // warm felt-pen brown-red
-	text-align: center;
-	letter-spacing: 0.005em;
-	transform: rotate(-1.2deg);
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
+// Back-variant standalone card — the PNG provides its own frame look
+// (leather scuff, sticker, handwritten label), no inner photo.
+.polaroidBack {
+	position: relative;
+	width: 100%;
 	overflow: hidden;
+	border-radius: 4px;
+	box-shadow:
+		0 8px 24px oklch(0% 0 0 / 0.22),
+		0 2px 6px oklch(0% 0 0 / 0.15);
+}
+
+// Caption — unified printed-photo voice. Upright serif below the image,
+// on the polaroid's bottom margin. No italic (Caslon italic at ≤16px
+// loses stroke contrast on the cream card). No line-clamp — captions
+// render in full however many lines they need.
+.polaroidCaption {
+
 }
 
 // ─── Per-act moodboard placements ────────────────────────────────────────────

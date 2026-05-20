@@ -8,7 +8,8 @@ import {
   sectionAtLoop,
   type SectionKey
 } from "../store";
-
+import { Button } from "@/components/core/Button";
+import { useLenis } from "lenis/react";
 /**
  * Bottom timeline scrubber.
  *
@@ -110,7 +111,7 @@ export function Scrubber() {
   const fallbackStarts = SECTION_KEYS.map((_, i) => i / SECTION_KEYS.length);
   const headPositions = layout?.startsFrac ?? fallbackStarts;
   const labelPositions = headPositions;
-
+  const lenis = useLenis();
   const handleJump = (targetLoopPos: number): void => {
     const wrap = document.querySelector("[data-dn-wrap]");
     const trackEl = document.querySelector("[data-dn-track]");
@@ -121,10 +122,13 @@ export function Scrubber() {
       layout?.setWidth ?? (trackEl as HTMLElement).scrollWidth / 2;
     const totalScrolled = window.scrollY - pinStart;
     if (totalScrolled < 0) {
-      window.scrollTo({
-        top: pinStart + (targetLoopPos - initialLoopPosition) * setWidth,
-        behavior: "smooth"
-      });
+      const scrollToDist =
+        pinStart + (targetLoopPos - initialLoopPosition) * setWidth;
+      (lenis && lenis.scrollTo(scrollToDist)) ||
+        window.scrollTo({
+          top: scrollToDist,
+          behavior: "smooth"
+        });
       return;
     }
     if (setWidth <= 0) return;
@@ -139,11 +143,12 @@ export function Scrubber() {
     // it scales with the act track size; the prior `delta < 1` used 1px
     // which made small forward clicks effectively rewind a full loop.
     const epsilon = setWidth * 0.005;
-    const forwardDelta = delta < epsilon ? setWidth : delta;
-    window.scrollTo({
-      top: window.scrollY + forwardDelta,
-      behavior: "smooth"
-    });
+    const forwardDelta = window.scrollY + (delta < epsilon ? setWidth : delta);
+    (lenis && lenis.scrollTo(forwardDelta)) ||
+      window.scrollTo({
+        top: forwardDelta,
+        behavior: "smooth"
+      });
   };
 
   if (phase !== "playing") return null;
@@ -178,7 +183,7 @@ export function Scrubber() {
       </div>
       <div className="pointer-events-auto relative mt-[14px] h-[18px]">
         {SECTION_KEYS.map((key: SectionKey, i) => (
-          <button
+          <Button
             key={key}
             ref={(el) => {
               labelRefs.current[i] = el;
@@ -189,7 +194,7 @@ export function Scrubber() {
             onClick={() => handleJump(headPositions[i])}
           >
             {t(key)}
-          </button>
+          </Button>
         ))}
       </div>
     </nav>

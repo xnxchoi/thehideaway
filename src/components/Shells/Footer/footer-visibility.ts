@@ -51,7 +51,8 @@ export const FOOTER_HIDDEN_PATTERNS: ReadonlyArray<RegExp> = [
   /^\/essays\/[^/]+$/,
   /^\/surf\/[^/]+$/,
   // Checkout — focused transactional flow.
-  /^\/checkout(\/|$)/
+  /^\/checkout(\/|$)/,
+  /^\/day-n-night(\/|$)/
 ];
 
 /**

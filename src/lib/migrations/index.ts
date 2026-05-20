@@ -22,6 +22,9 @@ import * as migration_20260514_100000_commerce_shape_v2 from "./20260514_100000_
 import * as migration_20260514_100100_invoice_status_default_draft from "./20260514_100100_invoice_status_default_draft";
 import * as migration_20260515_120000_role_resident_cofounder from "./20260515_120000_role_resident_cofounder";
 import * as migration_20260518_180000_profile_rsvp_group from "./20260518_180000_profile_rsvp_group";
+import * as migration_20260519_120000_profile_rsvp_tier from "./20260519_120000_profile_rsvp_tier";
+import * as migration_20260519_180000_ticket_orders from "./20260519_180000_ticket_orders";
+import * as migration_20260520_140000_ticket_orders_mailed_at_locale from "./20260520_140000_ticket_orders_mailed_at_locale";
 import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
@@ -144,6 +147,21 @@ export const migrations = [
     up: migration_20260518_180000_profile_rsvp_group.up,
     down: migration_20260518_180000_profile_rsvp_group.down,
     name: "20260518_180000_profile_rsvp_group"
+  },
+  {
+    up: migration_20260519_120000_profile_rsvp_tier.up,
+    down: migration_20260519_120000_profile_rsvp_tier.down,
+    name: "20260519_120000_profile_rsvp_tier"
+  },
+  {
+    up: migration_20260519_180000_ticket_orders.up,
+    down: migration_20260519_180000_ticket_orders.down,
+    name: "20260519_180000_ticket_orders"
+  },
+  {
+    up: migration_20260520_140000_ticket_orders_mailed_at_locale.up,
+    down: migration_20260520_140000_ticket_orders_mailed_at_locale.down,
+    name: "20260520_140000_ticket_orders_mailed_at_locale"
   },
   {
     up: migration_99999999_000000_initial_seed.up,

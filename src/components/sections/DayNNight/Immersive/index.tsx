@@ -45,7 +45,7 @@ export function ImmersiveView() {
       setProgress(0);
       setPhase("loading");
     };
-  }, []);
+  }, [setPhase, setProgress]);
 
   return (
     <div className="relative min-h-dvh w-full [--reveal-x:50%] [--reveal-y:50%]">

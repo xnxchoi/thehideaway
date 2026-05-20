@@ -31,10 +31,11 @@ export const useWindowResize = ({
       lastWindowHeight.current = null;
     };
   }, [currentHeight]);
-  const devInfo = useDeviceInfo((r) => r.isMobile);
+  const devInfo = useDeviceInfo((r) => r);
   const browser = useDeviceInfo((r) => r.browser.isChrome);
   useEffect(() => {
-    const l = devInfo && browser;
+    console.log("devInfo", devInfo);
+    const l = devInfo.isMobile && browser;
     if (lastWindowWidth.current === null) {
       setCurrentWidth(window.innerWidth);
       return;

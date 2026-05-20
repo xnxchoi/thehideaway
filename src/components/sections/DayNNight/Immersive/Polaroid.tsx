@@ -1,90 +1,143 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import type { Variants } from "motion/react";
 import { useMotionValue } from "motion/react";
+import { type ReactNode, useEffect } from "react";
 import * as m from "motion/react-m";
 import Image from "next/image";
-import { ComponentProps, type ReactNode, useEffect } from "react";
 import { useDayNNightScene } from "../store";
 
 /**
- * Polaroid + PolaroidGroup — textured moodboard tiles for the immersive
- * scene. Each tile is a paper-card frame around an image, with optional
- * caption rendered in one of two voices (serif italic or marker-pen).
+ * Polaroid + PolaroidGroup — moodboard tiles for the immersive scene.
  *
- * Behaviour
- * ─────────
+ * Variants
+ * ────────
+ *   - `clean`   (default) — plain white paper-card frame with a photo and
+ *                            an optional serif caption underneath. Honors
+ *                            a per-photo `aspect` so e.g. landscape film
+ *                            stills don't get cropped.
+ *   - `stamped` — same as clean PLUS a `front-clear` texture PNG layered
+ *                  over the photo (mint-tinted frame outline + corner
+ *                  doodle from the source asset). Aspect locked to the
+ *                  texture (portrait POLAROID_ASPECT); photo cover-fits
+ *                  inside the texture's transparent window. Caption sits
+ *                  below the card in the same unified serif voice.
+ *   - `back`    — standalone decorative "back of card" texture; no photo,
+ *                  no caption. For ambient scatter in a moodboard cluster.
+ *
+ * Behaviour (shared across variants)
+ * ──────────────────────────────────
  *  1. Horizontal parallax — each tile has a `depth` in roughly [-1, 1]
- *     and an `anchor` (loopProgress where this tile "sits at rest").
- *     A rAF reads the live scene progress, computes the loop-wrapped
- *     distance from `anchor`, and writes the result into a MotionValue
- *     bound to the OUTER tile's `x`. Higher |depth| = faster apparent
- *     drift = stronger foreground feel. depth=0 disables the rAF.
- *
- *  2. Static angle — the INNER tile has `style.rotate: angleDeg`, set
- *     once at mount. The two motion layers are nested so Motion's
- *     transform composition handles parallax (translateX) and tilt
- *     (rotate) without fighting each other or the static CSS transform
- *     on the frame.
- *
+ *     and an `anchor` (loopProgress where the tile sits at rest). A rAF
+ *     reads the live scene progress, computes the loop-wrapped distance
+ *     from `anchor`, and writes the result to a MotionValue bound to
+ *     the OUTER tile's `x`. depth=0 disables the rAF.
+ *  2. Static angle — INNER tile has `style.rotate: angleDeg`, set once
+ *     at mount. The two motion layers are nested so Motion composes
+ *     parallax (translateX) and tilt (rotate) without fighting.
  *  3. Reveal entry — variants picked up by an outer PolaroidGroup. When
  *     used outside a Group the polaroid renders without an entry stage
  *     (variants are inert without a `whileInView` ancestor).
- *
- * Captions
- * ────────
- *   - `serif` (default) — printed italic serif, BELOW the image on the
- *     polaroid's bottom margin. Reads as a one-line photo label.
- *   - `marker` — handwritten-feel sans, tilted slightly against the
- *     polaroid's own rotation, warm marker ink.
- *
- * Omit `caption` for an image-only tile.
  */
 
-// ─── Polaroid ────────────────────────────────────────────────────────────────
+// ─── Texture key → asset-path maps ───────────────────────────────────────────
 
-interface PolaroidProps {
-  src: string;
-  alt?: string;
-  caption?: ReactNode;
-  captionStyle?: "serif" | "marker";
-  /** Tile width in px. Defaults to 220px (a comfortable polaroid scale). */
+type FrontOverlay = "card-2_front-clear" | "card-4_front-clear";
+type BackTexture = "card-2_back" | "card-4_back-2";
+
+/** Front-clear overlays: PNG sits on top of the photo. The transparent
+ *  middle of the asset lets the photo show through; the frame border +
+ *  corner doodle composite on top. */
+const FRONT_PATHS: Record<FrontOverlay, string> = {
+  "card-2_front-clear": "/assets/textures/photograph/card-2_front-clear@2x.png",
+  "card-4_front-clear": "/assets/textures/photograph/card-4_front-clear@2x.png"
+};
+
+/** Back-card textures: standalone full-card asset (leather scuff +
+ *  sticker + handwritten label). The CMS-style id prefix on
+ *  card-2_back is part of the asset filename on disk — keep it here so
+ *  the path map is the single source of truth and the asset doesn't
+ *  need renaming. */
+const BACK_PATHS: Record<BackTexture, string> = {
+  "card-2_back":
+    "/assets/textures/photograph/672a4022c04412b253b0af22_card-2_back@2x.png",
+  "card-4_back-2": "/assets/textures/photograph/card-4_back-2@2x.png"
+};
+
+/** Portrait card master aspect, matching the texture PNGs (≈956×1247-1268).
+ *  Stamped + back variants render at this aspect regardless of the photo's
+ *  native shape; photos `object-cover` into the transparent window. */
+const POLAROID_ASPECT = 0.76;
+
+// ─── Props (discriminated union on `variant`) ────────────────────────────────
+
+interface PolaroidCommon {
+  /** Tile width in px. Defaults to 220px. */
   width?: number;
-  /** Aspect ratio of the photo area (width / height). Defaults to 1 (square). */
-  aspect?: number;
   /** Rotation in degrees. Negative tilts left, positive tilts right. */
   angle?: number;
-  /**
-   * Parallax depth, roughly [-1, 1]. 0 = sits with the section; positive
-   * drifts right of the section as the scroll passes through; negative
-   * drifts left. Higher absolute value = faster apparent depth layering.
-   */
+  /** Parallax depth, roughly [-1, 1]. 0 = sits with the section. */
   depth?: number;
   /** Section center in loopProgress to anchor the parallax window around. */
   anchor?: number;
   /** Range in px the tile can drift horizontally. Default 90. */
   range?: number;
+  /** Hint next/image to load eagerly. Set true for above-the-fold tiles. */
+  priority?: boolean;
 }
 
-export function Polaroid({
-  src,
-  alt = "",
-  caption,
-  captionStyle = "serif",
-  width = 220,
-  aspect = 1,
-  angle = 0,
-  depth = 0,
-  anchor = 0.5,
-  range = 90
-}: PolaroidProps) {
-  // Motion-aware translateX for parallax. Motion will compose this with
-  // any other transforms on the same element (none, in our case — the
-  // inner element owns rotate).
+interface PolaroidClean extends PolaroidCommon {
+  variant?: "clean";
+  src: string;
+  alt?: string;
+  caption?: ReactNode;
+  /** Photo aspect ratio (w/h). Defaults to 1 (square). */
+  aspect?: number;
+}
+
+interface PolaroidStamped extends PolaroidCommon {
+  variant: "stamped";
+  src: string;
+  alt?: string;
+  caption?: ReactNode;
+  /** Required: which front-clear texture to layer over the photo. */
+  overlay: FrontOverlay;
+}
+
+interface PolaroidBack extends PolaroidCommon {
+  variant: "back";
+  /** Required: which back texture to render. */
+  backTexture: BackTexture;
+}
+
+export type PolaroidProps = PolaroidClean | PolaroidStamped | PolaroidBack;
+
+// ─── Reveal entry variants (shared across all polaroid variants) ─────────────
+
+const POLAROID_REVEAL_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 14, filter: "blur(8px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 1.0,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    }
+  }
+};
+
+// ─── Polaroid ────────────────────────────────────────────────────────────────
+
+export function Polaroid(props: PolaroidProps) {
+  const { width = 220, angle = 0, depth = 0, anchor = 0.5, range = 90 } = props;
+
+  // Motion-aware translateX for parallax.
   const paraX = useMotionValue(0);
   const p = useDayNNightScene((r) => r.progress);
+
   useEffect(() => {
-    if (depth === 0) return; // no work; paraX stays at 0
+    if (depth === 0) return;
     let raf = 0;
     let active = true;
     const tick = () => {
@@ -105,53 +158,97 @@ export function Polaroid({
     };
   }, [depth, anchor, range, paraX]);
 
+  // Discriminated-union narrowing inside the JSX. Each branch sees only
+  // the props that apply to its variant — no `!` non-null assertions
+  // needed because the discriminant narrows the union.
+  const variant = props.variant ?? "clean";
+
   return (
     <m.div
       className="shrink-0 will-change-transform"
       style={{ x: paraX, width }}
-      variants={{
-        hidden: { opacity: 0, y: 14, filter: "blur(8px)" },
-        visible: {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          transition: {
-            duration: 1.0,
-            ease: [0.25, 0.46, 0.45, 0.94]
-          }
-        }
-      }}
+      variants={POLAROID_REVEAL_VARIANTS}
     >
       <m.div className="origin-[center_60%]" style={{ rotate: angle }}>
-        <div
-          data-dn-polaroid-frame
-          className="relative rounded-[2px] px-3 pt-3 pb-9"
-        >
+        {variant === "back" ? (
+          // Back variant — standalone texture, no caption, no frame chrome.
+          // The PNG carries its own border / sticker / handwritten label.
           <div
-            className="relative overflow-hidden bg-[oklch(70%_0.04_80)] shadow-[0_0_0_1px_oklch(0%_0_0_/_0.08)_inset]"
-            style={{ aspectRatio: aspect }}
+            className="relative w-full overflow-hidden rounded-[4px] shadow-[0_8px_24px_oklch(0%_0_0_/_0.22),_0_2px_6px_oklch(0%_0_0_/_0.15)]"
+            style={{ aspectRatio: POLAROID_ASPECT }}
           >
             <Image
-              fill={true}
-              src={src}
-              alt={alt}
-              loading="lazy"
-              decoding="async"
-              className="object-cover contrast-[1.02] saturate-[0.92]"
+              src={BACK_PATHS[(props as PolaroidBack).backTexture]}
+              alt=""
+              fill
+              sizes={`${Math.round(width)}px`}
+              priority={props.priority ?? false}
+              className="object-cover"
             />
           </div>
-          {caption ? (
-            <figcaption
-              className={
-                captionStyle === "marker"
-                  ? "mt-2 line-clamp-2 rotate-[-1.2deg] text-center font-['Permanent_Marker',Caveat,'Comic_Sans_MS',cursive] text-[13px] leading-[1.2] font-normal tracking-[0.005em] text-[oklch(36%_0.13_35)]"
-                  : "mt-[10px] line-clamp-2 text-center font-serif text-[12px] leading-[1.3] tracking-[0.01em] text-[oklch(28%_0.02_60)] italic"
-              }
+        ) : variant === "stamped" ? (
+          // Stamped variant — the texture PNG is a full polaroid graphic
+          // (frame + bottom margin with doodle). The photo sits INSIDE the
+          // texture's "photo area" via explicit absolute positioning, above
+          // the texture in z-order. Texture provides the chrome; photo
+          // fills the inner window region exactly.
+          <>
+            <div
+              className="relative w-full overflow-hidden rounded-[4px] shadow-[0_8px_24px_oklch(0%_0_0_/_0.22),_0_2px_6px_oklch(0%_0_0_/_0.15)]"
+              style={{ aspectRatio: POLAROID_ASPECT }}
             >
-              {caption}
-            </figcaption>
-          ) : null}
-        </div>
+              <Image
+                src={FRONT_PATHS[(props as PolaroidStamped).overlay]}
+                alt=""
+                fill
+                sizes={`${Math.round(width)}px`}
+                className="pointer-events-none absolute inset-0 z-[1] object-cover select-none"
+              />
+              <div className="absolute top-[4%] left-[5%] z-[2] h-[62%] w-[90%] overflow-hidden">
+                <Image
+                  src={(props as PolaroidStamped).src}
+                  alt={(props as PolaroidStamped).alt ?? ""}
+                  fill
+                  sizes={`${Math.round(width)}px`}
+                  priority={props.priority ?? false}
+                  className="object-cover"
+                />
+              </div>
+            </div>
+            {(props as PolaroidStamped).caption ? (
+              <figcaption className="mt-[10px] text-center font-serif text-[12px] leading-[1.3] tracking-[0.01em] text-[oklch(28%_0.02_60)] italic">
+                {(props as PolaroidStamped).caption}
+              </figcaption>
+            ) : null}
+          </>
+        ) : (
+          // Clean — original path. Paper-card frame with paper gradient +
+          // grain noise via data-dn-polaroid-frame, photo at its own
+          // per-photo aspect, caption below.
+          <div
+            data-dn-polaroid-frame
+            className="relative rounded-[2px] px-3 pt-3 pb-9"
+          >
+            <div
+              className="relative overflow-hidden bg-[oklch(70%_0.04_80)] shadow-[0_0_0_1px_oklch(0%_0_0_/_0.08)_inset]"
+              style={{ aspectRatio: (props as PolaroidClean).aspect ?? 1 }}
+            >
+              <Image
+                src={(props as PolaroidClean).src}
+                alt={(props as PolaroidClean).alt ?? ""}
+                fill
+                sizes={`${Math.round(width)}px`}
+                priority={props.priority ?? false}
+                className="object-cover contrast-[1.02] saturate-[0.92]"
+              />
+            </div>
+            {(props as PolaroidClean).caption ? (
+              <figcaption className="mt-[10px] text-center font-serif text-[12px] leading-[1.3] tracking-[0.01em] text-[oklch(28%_0.02_60)] italic">
+                {(props as PolaroidClean).caption}
+              </figcaption>
+            ) : null}
+          </div>
+        )}
       </m.div>
     </m.div>
   );
@@ -161,11 +258,9 @@ export function Polaroid({
 
 interface PolaroidGroupProps {
   className?: string;
-  /** Override the in-view trigger threshold. Default 0.4 — slightly looser
-   *  than text RevealStage so the polaroids settle before the heading finishes. */
+  /** Override the in-view trigger threshold. Default 0.4. */
   amount?: number;
-  /** Override the stagger between polaroids. Default 0.12s — tighter than
-   *  text reveals so the cluster feels like one breathy entrance. */
+  /** Override the stagger between polaroids. Default 0.12s. */
   stagger?: number;
   children: ReactNode;
 }
@@ -192,50 +287,4 @@ export function PolaroidGroup({
       {children}
     </m.div>
   );
-}
-export function PolaroidTrack({}) {
-  return (
-    <m.div
-      className="relative z-1 block w-full border-t border-black antialiased select-none"
-      style={{
-        height: "800vw",
-        marginTop: "-140vh",
-        willChange: "background",
-        backgroundColor: "rgb(136, 183, 189)"
-      }}
-    >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
-        <div className="h-full">
-          <PolaroidTrackItem>
-            <div className="relative z-2 flex items-center justify-start gap-8.5 antialiased"></div>
-          </PolaroidTrackItem>
-        </div>
-      </div>
-    </m.div>
-  );
-}
-export function PolaroidTrackItem({
-  className,
-  style,
-  children,
-  ...rest
-}: ComponentProps<"div">) {
-  return (
-    <div
-      className={cn(
-        "relative flex h-screen w-[500vw] items-center justify-start pl-64 antialiased select-none",
-        className
-      )}
-      style={{
-        lineHeight: "1.35",
-        ...style
-      }}
-      {...rest}
-    >
-      {children}
-    </div>
-  );
-}
-function PolaroidCardsWrap({}: ComponentProps<"div">) {
-  return <div className="relative z-2 ml-21 flex w-full"></div>;
 }

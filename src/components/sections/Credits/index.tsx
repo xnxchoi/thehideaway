@@ -41,33 +41,56 @@ export type MemberList = {
   title: string;
   members: Credited[];
 };
-export const Credits = ({ people }: { people: MemberList["members"] }) => {
+/**
+ * Credits — editorial credits roll used by `/credits` and (newly) by
+ * `/day-n-night/guests`.
+ *
+ * `titles` is optional per-position label override so non-staff surfaces
+ * can repurpose the same component (e.g. event surfaces want
+ * "Hosts / Past Attendees / Guests" instead of "Founders / Cofounders /
+ * Guests"). When omitted, every label falls back to the original copy
+ * — existing call sites keep working unchanged.
+ *
+ * Mapping convention for non-role groupings: collapse your N buckets
+ * into N of the 7 RP_Roles slots. Untouched slots stay empty, and the
+ * internal `team.members.length > 0` filter auto-skips them — so the
+ * visible group order honours the slot order
+ * (admin → cofounder → editor → author → patron → resident → user).
+ */
+type CreditsProps = {
+  people: MemberList["members"];
+  titles?: Partial<Record<RP_Roles, string>>;
+};
+
+export const Credits = ({ people, titles }: CreditsProps) => {
+  const label = (role: RP_Roles, fallback: string) =>
+    titles?.[role] ?? fallback;
   const admin: MemberList = {
-    title: "Founders",
+    title: label("admin", "Founders"),
     members: people.filter((p) => p.position === "admin")
   };
   const cofounder: MemberList = {
-    title: "Cofounders",
+    title: label("cofounder", "Cofounders"),
     members: people.filter((p) => p.position === "cofounder")
   };
   const editor: MemberList = {
-    title: "Editors",
+    title: label("editor", "Editors"),
     members: people.filter((p) => p.position === "editor")
   };
   const author: MemberList = {
-    title: "Authors",
+    title: label("author", "Authors"),
     members: people.filter((p) => p.position === "author")
   };
   const patron: MemberList = {
-    title: "Patrons",
+    title: label("patron", "Patrons"),
     members: people.filter((p) => p.position === "patron")
   };
   const resident: MemberList = {
-    title: "Residents",
+    title: label("resident", "Residents"),
     members: people.filter((p) => p.position === "resident")
   };
   const user: MemberList = {
-    title: "Guests",
+    title: label("user", "Guests"),
     members: people.filter((p) => p.position === "user")
   };
   return CreditsInner({

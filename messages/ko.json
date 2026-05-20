@@ -1,463 +1,586 @@
-{"Highlights": {
-
+{
+  "Highlights": {
     "error": {
-
       "share": {
         "copy": "복사에 실패했어요. 다시 시도해주세요."
-      },"save":{
-        "default":  "저장에 실패했어요. 다시 시도해주세요.",
+      },
+      "save": {
+        "default": "저장에 실패했어요. 다시 시도해주세요.",
         "signin": "먼저 체크인을 해야 해요.",
         "select": "저장할 내용을 선택해주세요.",
         "empty": "저장할 내용을 선택해주세요."
       }
     },
     "share": {
-      "copy":"클립보드에 복사되었어요."
-    },"saved": "저장되었어요."
-
-},
-  "UI": {    "SignIn":{
-    "separator":"또는",
-    "providers": "패스키 || 비밀번호"
+      "copy": "클립보드에 복사되었어요."
+    },
+    "saved": "저장되었어요."
   },
+  "UI": {
+    "SignIn": {
+      "separator": "또는",
+      "providers": "패스키 || 비밀번호"
+    },
     "Justification": {
       "question": "너무 비싼데?"
     }
   },
-    "Register": {
-        "error": {
-            "password": {
-                "minLength": "비밀번호는 최소 8자 이상이어야 합니다",
-                "maxLength": "비밀번호는 최대 20자입니다",
-                "uppercase": "최소 1자 이상의 영문 대문자를 포함해야 합니다",
-                "lowercase": "최소 1자 이상의 영문 소문자를 포함해야 합니다",
-                "number": "숫자를 최소 1자 이상 포함해야 합니다",
-                "specialCharacter": "!@#$%^&* 특수문자 중 한 자 이상 포함하여야 합니다"
-            },
-            "username": {
-                "minLength": "유저명은 최소 2자 이상이어야 합니다",
-                "maxLength": "유저명은 최대 40자입니다",
-                "regex": "유저명은 영문 소문자, 숫자, _ 만 허용됩니다"
-            },
-            "portrait": {
-                "invalidFile": "이미지 파일을 선택해주세요. JPEG, JPG, PNG, WEBP 파일만 업로드 가능합니다.",
-                "maxFileSize": "최대 파일 크기는 2MB입니다."
-            },
-            "name": {
-                "minLength": "이름은 최소 2자 이상이어야 합니다",
-                "maxLength": "이름은 최대 40자입니다",
-                "specialCharacter": "특수문자는 사용할 수 없습니다"
-            }
+  "Register": {
+    "error": {
+      "password": {
+        "minLength": "비밀번호는 최소 8자 이상이어야 합니다",
+        "maxLength": "비밀번호는 최대 20자입니다",
+        "uppercase": "최소 1자 이상의 영문 대문자를 포함해야 합니다",
+        "lowercase": "최소 1자 이상의 영문 소문자를 포함해야 합니다",
+        "number": "숫자를 최소 1자 이상 포함해야 합니다",
+        "specialCharacter": "!@#$%^&* 특수문자 중 한 자 이상 포함하여야 합니다"
+      },
+      "username": {
+        "minLength": "유저명은 최소 2자 이상이어야 합니다",
+        "maxLength": "유저명은 최대 40자입니다",
+        "regex": "유저명은 영문 소문자, 숫자, _ 만 허용됩니다"
+      },
+      "portrait": {
+        "invalidFile": "이미지 파일을 선택해주세요. JPEG, JPG, PNG, WEBP 파일만 업로드 가능합니다.",
+        "maxFileSize": "최대 파일 크기는 2MB입니다."
+      },
+      "name": {
+        "minLength": "이름은 최소 2자 이상이어야 합니다",
+        "maxLength": "이름은 최대 40자입니다",
+        "specialCharacter": "특수문자는 사용할 수 없습니다"
+      }
+    }
+  },
+  "Vault": {
+    "Account": {
+      "error": {
+        "slug": {
+          "minLength": "유저명은 최소 2자 이상이어야 합니다",
+          "maxLength": "유저명은 최대 40자입니다",
+          "invalidCharacter": "유저명은 영문 소문자, 숫자 혹은 _,-,. 만 허용됩니다",
+          "exists": "이미 사용 중인 유저명입니다"
         }
-    },
-    "Vault": {
-        "Account": {
-            "error": {
-                "slug": {
-                    "minLength": "유저명은 최소 2자 이상이어야 합니다",
-                    "maxLength": "유저명은 최대 40자입니다",
-                    "invalidCharacter": "유저명은 영문 소문자, 숫자 혹은 _,-,. 만 허용됩니다",
-                    "exists": "이미 사용 중인 유저명입니다"
-                }
-            }
-        }
-    },
+      }
+    }
+  },
   "Plans": {
-        "title": "기억에서 추억으로",
-        "subtitle": "\"평생 기억할 일\"은 태생적으로 정해진 게 아니니까요.",
-        "description": "하이드어웨이는 일상의 기억을 추억으로 잇는 가교입니다."
-    },
-    "Policies": {
-        "Refunds": {
-            "headline": "총만족을 보장하기 위해, 고객 또는 선물 받은 사람이 당사 제품을 반품할 수 있는 조건은 아래와 같습니다. 아래 조건을 준수하지 않은 제품은 당사에서 거절될 수 있으며, 고객 또는 선물 받은 사람에게 반송될 수 있습니다.",
-            "period": {
-                "title": "반품 기간",
-                "body": "당사 제품은 배송 후 7일 이내에 교환 또는 환불이 가능합니다. 환불 처리는 최대 14일 소요될 수 있습니다. 제품은 원래 포장 상태로 반품되어야 하며, 적절한 판매 문서와 국제 한정 보증서가 함께 제공되어야 합니다. 개인 맞춤화되거나 맞춤 제작된 제품은 교환 또는 환불이 불가능합니다. 사용감이 존재하는 제품 또한 교환 또는 환불이 불가능합니다. 반품 또는 교환 전에 당사는 제품의 진위를 확인하고"
-            }
-        },
-        "Invoice": {
-            "refund": "The Hideaway에서 구매한 물품은 7일 이내에 교환 또는 환불이 가능합니다. 초기 수령 후 7일이 지난 물품은 환불이 보장되지 않습니다. 당사 제품은 새 것의 사용되지 않은 완전한 상태로, (해당되는 경우) 관련 부속품 및 서류를 포함하여 상자 및 배송 포장 등 모든 포장재, 시큐리티 태그 및 스티커가 부착된 채로 반품되어야 합니다. 당사는 제품이 사용된 흔적이 있는 경우, 제품 부착 시큐리티 태그가 제거되거나 여하한 방법으로 제품이 사용되거나 또는 원 상태로부터 여하한 방식으로 변경된 경우, 반품을 거절 또는 환불, 교환 금액을 인하할 수 있습니다. 여하한 방법으로 개인 맞춤화되거나 맞춤 제작된 제품 주문은 취소가 불가능하며, 이러한 제품은 교환이나 환불을 위하여 반품될 수 없습니다. 이에는 압인 또는 각인된 제품들이 포함되나 이에 한정되지 않습니다. 모든 반품에 대해서는 위와 같은 조건 충족 여부를 확인하기 위해 당사의 엄격한 품질 검사(QC)가 이루어집니다. 제품이 QC기준에 미달할 경우, 당사는 반품 수령을 거절하고 해당 제품은 귀하에게 반송될 것입니다. 제품이 QC기준을 충족할 경우 당사는 환불이나 교환 절차를 진행합니다. 본 판매 약관을 준수하지 못 할 경우 당사는 반품 제품 수령을 거절하고 귀하의 비용 부담으로 제품을 반송할 권리를 보유합니다."
-        }
-    },
-    "ComingSoon": {
-        "eyebrow": "작업 중",
-        "chips": {
-            "default": "출간 예정",
-            "draft": "원고 단계",
-            "soon": "머지않아",
-            "queued": "대기열",
-            "wetInk": "잉크 젖음",
-            "backstage": "무대 뒤",
-            "nearly": "거의",
-            "patience": "인내"
-        },
-        "dispatches": {
-            "default": "편집자 책상 어딘가, 커피 자국 아래. 꺼낼 때가 되면 꺼냅니다.",
-            "backstage": "손님 맞을 준비가 덜 됐습니다. 가구가 아직 도착 중이에요.",
-            "composing": "당신이 없는 방에서 쓰이고 있습니다. 때가 되면 문을 열어드립니다.",
-            "argued": "어른들끼리 논쟁 중입니다. 주소를 남겨주시면 누가 이겼는지 알려드리겠습니다.",
-            "honest": "시작할 때가 아니었는데 시작해버렸습니다. 마치고 나면 다시 오세요."
-        },
-        "tooltips": {
-            "composition": {
-                "line1": "집필 중.",
-                "line2": "방해 금지."
-            },
-            "wetInk": {
-                "line1": "잉크가 마르지 않았습니다.",
-                "line2": "만지지 마세요."
-            },
-            "editor": {
-                "line1": "편집자 책상 위에 있습니다.",
-                "line2": "기다려 주시기 바랍니다."
-            }
-        },
-        "toasts": {
-            "notYet": "아직입니다. — 편집자 드림",
-            "nearly": "거의. 거의로는 부족합니다.",
-            "tryLater": "다음 주에 다시 두드려 주세요.",
-            "locked": "문은 잠겨 있습니다. 일부러요."
-        },
-        "notify": {
-            "cta": "알려주세요",
-            "placeholder": "주소",
-            "ack": "접수했습니다. 서신 드리겠습니다."
-        },
-        "sectionCopy": "논평 — 출간 예정. 여백을 그리는 중입니다.",
-        "cardCopy": "무언가, 언젠가."
-    },
-    "Settings": {
-        "navAria": "설정 섹션",
-        "back": "설정",
-        "sections": {
-            "general": {
-                "label": "일반",
-                "blurb": "언어, 테마, 기타 인터페이스 환경설정."
-            },
-            "profile": {
-                "label": "프로필",
-                "blurb": "공개되는 이름, 소개, 위치, 링크."
-            },
-            "account": {
-                "label": "계정",
-                "blurb": "핸들, 로그인 이메일, 비밀번호, 주소, 구독."
-            },
-            "security": {
-                "label": "보안",
-                "blurb": "2단계 인증, 세션, 제공자, 패스키, 계정 폐쇄."
-            },
-            "notifications": {
-                "label": "알림",
-                "blurb": "어떤 알림을 — 얼마나 자주 보낼지."
-            }
-        },
-        "save": {
-            "saving": "저장 중…",
-            "saved": "저장됨",
-            "error": "저장에 실패했어요"
-        },
-        "empty": {
-            "defaultEyebrow": "준비 중"
-        },
-        "general": {
-            "title": "일반",
-            "blurb": "인터페이스 환경설정 — 언어, 테마, OS 설정에 따른 동작.",
-            "interfaceEyebrow": "인터페이스",
-            "themeLabel": "테마",
-            "themeOptions": {
-                "light": "라이트",
-                "dark": "다크"
-            },
-            "motionEyebrow": "모션",
-            "motionBlurb": "앱 내부 설정은 따로 두지 않습니다 — OS 접근성 설정을 그대로 따릅니다. 그쪽에서 켜고 끄시면 그대로 반영됩니다.",
-            "reduceMotionLabel": "모션 줄이기",
-            "reduceMotionDescription": "OS 접근성 설정에서 가져옵니다.",
-            "reduceMotionDetected": {
-                "loading": "감지 중…",
-                "on": "켜짐 — 애니메이션 최소화",
-                "off": "꺼짐 — 모든 모션"
-            }
-        }
-    },
-    "LegalFooter": {
-        "navAria": "법적 고지",
-        "businessAria": "사업자 정보",
-        "links": {
-            "privacy": "개인정보처리방침",
-            "terms": "이용약관",
-            "refund": "취소·환불",
-            "plans": "멤버십"
-        },
-        "fields": {
-            "tradeName": "상호",
-            "representative": "대표자",
-            "registration": "사업자등록번호",
-            "mailOrder": "통신판매업신고",
-            "address": "주소",
-            "phone": "전화",
-            "privacyOfficer": "개인정보보호책임자"
-        },
-        "businessName": "Restored Projects",
-        "representativeName": "TBD",
-        "address": "서울특별시 송파구 올림픽로4길 15",
-        "serviceHours": "평일 10:00–18:00 (주말 및 공휴일 휴무)",
-        "mailOrderPending": "신고 진행 중"
+    "title": "기억에서 추억으로",
+    "subtitle": "\"평생 기억할 일\"은 태생적으로 정해진 게 아니니까요.",
+    "description": "하이드어웨이는 일상의 기억을 추억으로 잇는 가교입니다."
+  },
+  "Policies": {
+    "Refunds": {
+      "headline": "총만족을 보장하기 위해, 고객 또는 선물 받은 사람이 당사 제품을 반품할 수 있는 조건은 아래와 같습니다. 아래 조건을 준수하지 않은 제품은 당사에서 거절될 수 있으며, 고객 또는 선물 받은 사람에게 반송될 수 있습니다.",
+      "period": {
+        "title": "반품 기간",
+        "body": "당사 제품은 배송 후 7일 이내에 교환 또는 환불이 가능합니다. 환불 처리는 최대 14일 소요될 수 있습니다. 제품은 원래 포장 상태로 반품되어야 하며, 적절한 판매 문서와 국제 한정 보증서가 함께 제공되어야 합니다. 개인 맞춤화되거나 맞춤 제작된 제품은 교환 또는 환불이 불가능합니다. 사용감이 존재하는 제품 또한 교환 또는 환불이 불가능합니다. 반품 또는 교환 전에 당사는 제품의 진위를 확인하고"
+      }
     },
     "Invoice": {
-        "subWordmark": "SEOUL · PARIS",
-        "tagline": "a restored project",
-        "purchasedBy": "구매자",
-        "memberSince": "{year}년부터 함께한 회원",
-        "fields": {
-            "invoiceNumber": "청구서 번호",
-            "orderNo": "주문 번호"
-        },
-        "clientCopy": "고객 보관용",
-        "table": {
-            "quantity": "수량",
-            "totalAmount": "공급가액",
-            "taxAmount": "부가세"
-        },
-        "totals": {
-            "subtotal": "소계",
-            "tax": "부가세",
-            "total": "합계"
-        },
-        "methods": {
-            "label": "결제 수단",
-            "amt": "금액",
-            "bank_transfer": "계좌이체",
-            "cash": "현금"
-        },
-        "footer": {
-            "tagline": "\"Bridging the gap between the social and the private\"",
-            "thanks": "Thank You for Your Patronage",
-            "brand": "The Hideaway, a Restored Project™"
-        },
-        "terms": "The Hideaway에서 구매하신 실물 상품은 수령일로부터 7일 이내에 한해 교환 또는 환불이 가능합니다. 수령일로부터 7일을 초과하여 접수되는 반품은 보장되지 않습니다. 환불은 원 구매자에 한해 최초 결제 수단으로만 진행됩니다. 상품은 원 포장 상태에서 판매 증빙 서류 및 국제 한정 보증서와 함께 제시되어야 합니다. 개인화 주문, 맞춤 주문, 에어드롭 또는 선물 증정 등 기성 상품이 아닌 품목은 환불 및 교환의 보장 대상에서 제외됩니다. 사용 흔적이 있는 상품 역시 반품 또는 교환 대상에서 제외됩니다. The Hideaway는 반품 또는 교환을 승인하기 전에 상품을 확인하고 정품 여부에 대한 필요한 검증을 진행할 권리를 보유합니다. 무형의 서비스, 상품, 기타 비물질적 재화는 환불 대상에서 제외됩니다.",
-        "planFallback": "멤버십",
-        "panel": {
-            "heading": "청구서",
-            "status": {
-                "paid": "결제 완료",
-                "pending": "결제 대기",
-                "void": "취소"
-            },
-            "issuedLabel": "발행일",
-            "cycleLabel": "이용 기간",
-            "lineItemHeading": "구매 항목",
-            "lineQuantityShort": "× {n}",
-            "summaryHeading": "결제 내역",
-            "paymentHeading": "결제 정보",
-            "printedLabel": "인쇄본",
-            "digitalLabel": "조회용",
-            "termsHeading": "환불 및 약관"
-        },
-        "actions": {
-            "print": {
-                "idle": "인쇄",
-                "loading": "준비 중…",
-                "error": "다시 시도"
-            },
-            "save": {
-                "idle": "PDF로 저장",
-                "saving": "저장 중…",
-                "done": "저장됨",
-                "error": "다시 시도"
-            },
-            "share": {
-                "idle": "공유",
-                "shared": "공유됨",
-                "copied": "복사됨",
-                "error": "다시 시도"
-            }
-        }
-    },
-    "Controlbar": {
-        "search": "검색",
-        "closeSearch": "검색 닫기",
-        "signIn": "체크인",
-        "account": "계정",
-        "profile": "프로필",
-        "settings": "설정",
-        "signOut": "로그아웃",
-        "notifications": "알림",
-        "theme": "테마",
-        "highlights": "하이라이트"
-    },
-    "Event": {
-        "DayNNight": {
-            "title": "Day n Night",
-            "date": {
-                "weekday": "Sunday",
-                "full": "May 24, 2026",
-                "short": "May 24"
-            },
-            "location": {
-                "label": "Location",
-                "neighborhood": "Haebangchon · Yongsan",
-                "city": "Seoul",
-                "address": "Sowol-ro 20-gil 64, 3F"
-            },
-            "opening": {
-                "label": "DAY",
-                "time": "18:30 →",
-                "kicker": "30 & Smokin'",
-                "lede": "Fire doesn't ask permission to burn. Neither did we."
-            },
-            "act": {
-                "day": {
-                    "label": "DAY",
-                    "time": "18:30 → 20:00",
-                    "heading": "Backyard cookouts are good. Rooftop barbecues are better.",
-                    "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up — beer and wine after. Gin if you ask nice."
-                },
-                "night": {
-                    "label": "NIGHT",
-                    "time": "20:00 → late",
-                    "heading": "Sharp. Chic. Dressed to impress.",
-                    "body": "Same room, different mood. Cocktails come up. Lights come down. You don't have to bring a suit. Won't stop you, though."
-                }
-            },
-            "dressCode": {
-                "heading": "Dress for your age. Direction goes both ways.",
-                "intro": "Standing at the edge of a chapter — much to look forward to, as much to cherish. Two reads on the brief. Pick one. Or do both.",
-                "option1": {
-                    "label": "An outfit you still love — but will be too old for soon",
-                    "body": "Last call. Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
-                },
-                "option2": {
-                    "label": "Daytime unshaven. Nighttime shaken — not stirred.",
-                    "body": "One outfit for both. By day: dad jeans, Malibu retiree, unbothered, uncaring. By night: a layer that walks into a quiet bar after dark without looking out of place."
-                }
-            },
-            "included": {
-                "heading": "Included",
-                "food": { "label": "Food", "items": "Smash burgers · Pork · Potatoes" },
-                "drinks": { "label": "Drinks", "items": "Beer · Wine · Gin if you ask" }
-            },
-            "tribute": {
-                "heading": "Charred, Scarred & Thriving",
-                "body": "The friendships that forged us. The losses that left room for something better. The nights we won't talk about — and the ones we'll never stop telling."
-            },
-            "entry": {
-                "heading": "Entry",
-                "amount": "65,000 KRW",
-                "perGuest": "all-inclusive · per guest",
-                "method": "Cash on arrival, or transfer",
-                "bank": "Toss Bank · 1002-5436-0906",
-                "accountHolder": "리스토어드프로젝트"
-            },
-            "closing": {
-                "kicker": "More to come — we won't disappoint.",
-                "lede": "Pull up a chair. The fire's been waiting."
-            },
-            "rsvpCta": {
-                "primary": "Reserve",
-                "secondary": "Small list. Quiet room."
-            },
-            "viewToggle": {
-                "label": "View",
-                "immersive": "Story",
-                "simplified": "Card"
-            },
-            "loader": { "rising": "Loading" },
-            "footer": {
-                "hosts": "Hosted by Sean & friend",
-                "rsvpClosesAt": "RSVPs close when the room fills."
-            },
-            "scrollHint": "Scroll",
-            "secret": "Something quiet, unannounced, will be there.",
-            "audio": {
-                "label": "Sound",
-                "on": "Sound on",
-                "off": "Sound off"
-            },
-            "scrubber": {
-                "navLabel": "Timeline",
-                "opening": "Opening",
-                "cookout": "Cookout",
-                "dress": "Dress",
-                "night": "Night",
-                "closing": "Reserve"
-            },
-            "moodboard": {
-                "cookout": {
-                    "burger": {
-                        "alt": "Smash burgers off the grill",
-                        "caption": "smash, off the grill"
-                    },
-                    "rooftop": {
-                        "alt": "Cookout vibes — rooftop, late sun",
-                        "caption": "rooftop, late sun"
-                    },
-                    "vibe": {
-                        "alt": "Cookout vibes",
-                        "caption": ""
-                    }
-                },
-                "dress": {
-                    "romeo": {
-                        "alt": "Romeo and Juliet — period costume reference",
-                        "caption": "still love. soon too old."
-                    },
-                    "pink": {
-                        "alt": "All the pink — the next emo girl",
-                        "caption": "all the pink"
-                    },
-                    "dad": {
-                        "alt": "Steve Carrell, Crazy Stupid Love — dad fit",
-                        "caption": "the dad. unbothered."
-                    },
-                    "notDads": {
-                        "alt": "Pulp Fiction — they're not dads",
-                        "caption": "(they're not dads)"
-                    },
-                    "dude": {
-                        "alt": "The Dude — Big Lebowski",
-                        "caption": "the dude."
-                    }
-                },
-                "night": {
-                    "suit": {
-                        "alt": "Pulp Fiction — suit, dressed up",
-                        "caption": "won't stop you"
-                    },
-                    "jacket": {
-                        "alt": "Jackets that walk into a quiet bar",
-                        "caption": "a layer helps."
-                    }
-                }
-            }
-        },
-        "Guests": {
-            "eyebrow": "RSVP",
-            "title": "오시는 분들",
-            "subtitle": "작은 명단, 순서 없이.",
-            "empty": {
-                "headline": "아직 등록된 분이 없습니다.",
-                "body": "RSVP가 들어오면 여기에 표시됩니다. 날짜에 가까워질수록 채워질 거예요."
-            },
-            "intro": {
-                "label": "소개"
-            },
-            "instagram": {
-                "label": "인스타그램",
-                "view": "인스타그램에서 보기"
-            },
-            "gallery": {
-                "label": "갤러리",
-                "empty": "사진이 아직 없습니다."
-            },
-            "actions": {
-                "close": "닫기",
-                "expand": "탭하여 확장",
-                "back": "전체로 돌아가기"
-            },
-            "you": "당신입니다",
-            "navigation": {
-                "back": "이벤트로 돌아가기"
-            }
-        }
+      "refund": "The Hideaway에서 구매한 물품은 7일 이내에 교환 또는 환불이 가능합니다. 초기 수령 후 7일이 지난 물품은 환불이 보장되지 않습니다. 당사 제품은 새 것의 사용되지 않은 완전한 상태로, (해당되는 경우) 관련 부속품 및 서류를 포함하여 상자 및 배송 포장 등 모든 포장재, 시큐리티 태그 및 스티커가 부착된 채로 반품되어야 합니다. 당사는 제품이 사용된 흔적이 있는 경우, 제품 부착 시큐리티 태그가 제거되거나 여하한 방법으로 제품이 사용되거나 또는 원 상태로부터 여하한 방식으로 변경된 경우, 반품을 거절 또는 환불, 교환 금액을 인하할 수 있습니다. 여하한 방법으로 개인 맞춤화되거나 맞춤 제작된 제품 주문은 취소가 불가능하며, 이러한 제품은 교환이나 환불을 위하여 반품될 수 없습니다. 이에는 압인 또는 각인된 제품들이 포함되나 이에 한정되지 않습니다. 모든 반품에 대해서는 위와 같은 조건 충족 여부를 확인하기 위해 당사의 엄격한 품질 검사(QC)가 이루어집니다. 제품이 QC기준에 미달할 경우, 당사는 반품 수령을 거절하고 해당 제품은 귀하에게 반송될 것입니다. 제품이 QC기준을 충족할 경우 당사는 환불이나 교환 절차를 진행합니다. 본 판매 약관을 준수하지 못 할 경우 당사는 반품 제품 수령을 거절하고 귀하의 비용 부담으로 제품을 반송할 권리를 보유합니다."
     }
+  },
+  "ComingSoon": {
+    "eyebrow": "작업 중",
+    "chips": {
+      "default": "출간 예정",
+      "draft": "원고 단계",
+      "soon": "머지않아",
+      "queued": "대기열",
+      "wetInk": "잉크 젖음",
+      "backstage": "무대 뒤",
+      "nearly": "거의",
+      "patience": "인내"
+    },
+    "dispatches": {
+      "default": "편집자 책상 어딘가, 커피 자국 아래. 꺼낼 때가 되면 꺼냅니다.",
+      "backstage": "손님 맞을 준비가 덜 됐습니다. 가구가 아직 도착 중이에요.",
+      "composing": "당신이 없는 방에서 쓰이고 있습니다. 때가 되면 문을 열어드립니다.",
+      "argued": "어른들끼리 논쟁 중입니다. 주소를 남겨주시면 누가 이겼는지 알려드리겠습니다.",
+      "honest": "시작할 때가 아니었는데 시작해버렸습니다. 마치고 나면 다시 오세요."
+    },
+    "tooltips": {
+      "composition": {
+        "line1": "집필 중.",
+        "line2": "방해 금지."
+      },
+      "wetInk": {
+        "line1": "잉크가 마르지 않았습니다.",
+        "line2": "만지지 마세요."
+      },
+      "editor": {
+        "line1": "편집자 책상 위에 있습니다.",
+        "line2": "기다려 주시기 바랍니다."
+      }
+    },
+    "toasts": {
+      "notYet": "아직입니다. — 편집자 드림",
+      "nearly": "거의. 거의로는 부족합니다.",
+      "tryLater": "다음 주에 다시 두드려 주세요.",
+      "locked": "문은 잠겨 있습니다. 일부러요."
+    },
+    "notify": {
+      "cta": "알려주세요",
+      "placeholder": "주소",
+      "ack": "접수했습니다. 서신 드리겠습니다."
+    },
+    "sectionCopy": "논평 — 출간 예정. 여백을 그리는 중입니다.",
+    "cardCopy": "무언가, 언젠가."
+  },
+  "Settings": {
+    "navAria": "설정 섹션",
+    "back": "설정",
+    "sections": {
+      "general": {
+        "label": "일반",
+        "blurb": "언어, 테마, 기타 인터페이스 환경설정."
+      },
+      "profile": {
+        "label": "프로필",
+        "blurb": "공개되는 이름, 소개, 위치, 링크."
+      },
+      "account": {
+        "label": "계정",
+        "blurb": "핸들, 로그인 이메일, 비밀번호, 주소, 구독."
+      },
+      "security": {
+        "label": "보안",
+        "blurb": "2단계 인증, 세션, 제공자, 패스키, 계정 폐쇄."
+      },
+      "notifications": {
+        "label": "알림",
+        "blurb": "어떤 알림을 — 얼마나 자주 보낼지."
+      }
+    },
+    "save": {
+      "saving": "저장 중…",
+      "saved": "저장됨",
+      "error": "저장에 실패했어요"
+    },
+    "empty": {
+      "defaultEyebrow": "준비 중"
+    },
+    "general": {
+      "title": "일반",
+      "blurb": "인터페이스 환경설정 — 언어, 테마, OS 설정에 따른 동작.",
+      "interfaceEyebrow": "인터페이스",
+      "themeLabel": "테마",
+      "themeOptions": {
+        "light": "라이트",
+        "dark": "다크"
+      },
+      "motionEyebrow": "모션",
+      "motionBlurb": "앱 내부 설정은 따로 두지 않습니다 — OS 접근성 설정을 그대로 따릅니다. 그쪽에서 켜고 끄시면 그대로 반영됩니다.",
+      "reduceMotionLabel": "모션 줄이기",
+      "reduceMotionDescription": "OS 접근성 설정에서 가져옵니다.",
+      "reduceMotionDetected": {
+        "loading": "감지 중…",
+        "on": "켜짐 — 애니메이션 최소화",
+        "off": "꺼짐 — 모든 모션"
+      }
+    }
+  },
+  "LegalFooter": {
+    "navAria": "법적 고지",
+    "businessAria": "사업자 정보",
+    "links": {
+      "privacy": "개인정보처리방침",
+      "terms": "이용약관",
+      "refund": "취소·환불",
+      "plans": "멤버십"
+    },
+    "fields": {
+      "tradeName": "상호",
+      "representative": "대표자",
+      "registration": "사업자등록번호",
+      "mailOrder": "통신판매업신고",
+      "address": "주소",
+      "phone": "전화",
+      "privacyOfficer": "개인정보보호책임자"
+    },
+    "businessName": "Restored Projects",
+    "representativeName": "TBD",
+    "address": "서울특별시 송파구 올림픽로4길 15",
+    "serviceHours": "평일 10:00–18:00 (주말 및 공휴일 휴무)",
+    "mailOrderPending": "신고 진행 중"
+  },
+  "Invoice": {
+    "subWordmark": "SEOUL · PARIS",
+    "tagline": "a restored project",
+    "purchasedBy": "구매자",
+    "memberSince": "{year}년부터 함께한 회원",
+    "fields": {
+      "invoiceNumber": "청구서 번호",
+      "orderNo": "주문 번호"
+    },
+    "clientCopy": "고객 보관용",
+    "table": {
+      "quantity": "수량",
+      "totalAmount": "공급가액",
+      "taxAmount": "부가세"
+    },
+    "totals": {
+      "subtotal": "소계",
+      "tax": "부가세",
+      "total": "합계"
+    },
+    "methods": {
+      "label": "결제 수단",
+      "amt": "금액",
+      "bank_transfer": "계좌이체",
+      "cash": "현금"
+    },
+    "footer": {
+      "tagline": "\"Bridging the gap between the social and the private\"",
+      "thanks": "Thank You for Your Patronage",
+      "brand": "The Hideaway, a Restored Project™"
+    },
+    "terms": "The Hideaway에서 구매하신 실물 상품은 수령일로부터 7일 이내에 한해 교환 또는 환불이 가능합니다. 수령일로부터 7일을 초과하여 접수되는 반품은 보장되지 않습니다. 환불은 원 구매자에 한해 최초 결제 수단으로만 진행됩니다. 상품은 원 포장 상태에서 판매 증빙 서류 및 국제 한정 보증서와 함께 제시되어야 합니다. 개인화 주문, 맞춤 주문, 에어드롭 또는 선물 증정 등 기성 상품이 아닌 품목은 환불 및 교환의 보장 대상에서 제외됩니다. 사용 흔적이 있는 상품 역시 반품 또는 교환 대상에서 제외됩니다. The Hideaway는 반품 또는 교환을 승인하기 전에 상품을 확인하고 정품 여부에 대한 필요한 검증을 진행할 권리를 보유합니다. 무형의 서비스, 상품, 기타 비물질적 재화는 환불 대상에서 제외됩니다.",
+    "planFallback": "멤버십",
+    "panel": {
+      "heading": "청구서",
+      "status": {
+        "paid": "결제 완료",
+        "pending": "결제 대기",
+        "void": "취소"
+      },
+      "issuedLabel": "발행일",
+      "cycleLabel": "이용 기간",
+      "lineItemHeading": "구매 항목",
+      "lineQuantityShort": "× {n}",
+      "summaryHeading": "결제 내역",
+      "paymentHeading": "결제 정보",
+      "printedLabel": "인쇄본",
+      "digitalLabel": "조회용",
+      "termsHeading": "환불 및 약관"
+    },
+    "actions": {
+      "print": {
+        "idle": "인쇄",
+        "loading": "준비 중…",
+        "error": "다시 시도"
+      },
+      "save": {
+        "idle": "PDF로 저장",
+        "saving": "저장 중…",
+        "done": "저장됨",
+        "error": "다시 시도"
+      },
+      "share": {
+        "idle": "공유",
+        "shared": "공유됨",
+        "copied": "복사됨",
+        "error": "다시 시도"
+      }
+    }
+  },
+  "Controlbar": {
+    "search": "검색",
+    "closeSearch": "검색 닫기",
+    "signIn": "체크인",
+    "account": "계정",
+    "profile": "프로필",
+    "settings": "설정",
+    "signOut": "로그아웃",
+    "notifications": "알림",
+    "theme": "테마",
+    "highlights": "하이라이트"
+  },
+  "Event": {
+    "DayNNight": {
+      "title": "Day n Night",
+      "date": {
+        "weekday": "Sunday",
+        "full": "May 24, 2026",
+        "short": "May 24"
+      },
+      "location": {
+        "label": "Location",
+        "neighborhood": "Haebangchon · Yongsan",
+        "city": "Seoul",
+        "address": "Sowol-ro 20-gil 64, 3F"
+      },
+      "opening": {
+        "label": "DAY",
+        "time": "18:30 →",
+        "kicker": "Smokin', charring, and burnin'",
+        "lede": "No fire asks for permission to burn; neither did we.",
+        "body": "\n A decade of chasing, stumbling, and figuring it out and somehow, we made it to the other side still standing, still hungry. The smoke rising off this grill isn’t just heat.\n\nIt’s everything we survived, shed, and done apologizing for.\n\nWe’re turning 30 looking every bit as good - come and join the scenery.\n\n"
+      },
+      "act": {
+        "day": {
+          "label": "DAY",
+          "time": "18:30 → 19:50",
+          "heading": "Barbecues are good- but taste better on rooftops.",
+          "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up — beer and wine after. Gin if you ask nice."
+        },
+        "shift": {
+          "label": "IN-BETWEEN TIMES",
+          "time": "19:50 -> 20:00",
+          "heading": "Mood Shift."
+        },
+        "night": {
+          "label": "NIGHT",
+          "time": "20:00 → ...",
+          "sectionTitle": "Nightfall",
+          "announcement": "Something quiet, unannounced, will be there.",
+          "dressLabel": "Dress code, after dark",
+          "heading": "Sharp. Chic. Dressed to impress.",
+          "body": "Same room, different mood. Cocktails come up. Lights come down. You don't have to bring a suit. Won't stop you, though."
+        }
+      },
+      "dressCode": {
+        "heading": "Just one rule: Don't dress your age.",
+        "option1": {
+          "label": "#throwback: looks you are a little old for... ",
+          "body": "An outfit you still love — but felt like you're past wearing it? Last call.\n Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
+        },
+        "option2": {
+          "label": "...or a tad bit young for.",
+          "body": "Dad jeans, jorts, oversized polos - your pick."
+        }
+      },
+      "included": {
+        "heading": "Included",
+        "food": {
+          "label": "Food",
+          "items": "Smash burgers · Pork · Potatoes"
+        },
+        "drinks": {
+          "label": "Drinks",
+          "items": "Beer · Wine · Gin if you ask"
+        }
+      },
+      "tribute": {
+        "heading": "Charred, Scarred & Thriving",
+        "body": "The friendships that forged us. The losses that left room for something better. The nights we won't talk about — and the ones we'll never stop telling."
+      },
+      "entry": {
+        "heading": "Entry",
+        "amount": "65,000 KRW",
+        "perGuest": "all-inclusive · per guest",
+        "method": "Cash on arrival, or transfer",
+        "bank": "Toss Bank · 1002-5436-0906",
+        "accountHolder": "리스토어드프로젝트"
+      },
+      "closing": {
+        "kicker": "More to come — we won't disappoint.",
+        "lede": "Pull up a chair. The fire's been waiting."
+      },
+      "rsvpCta": {
+        "primary": "Reserve",
+        "secondary": "Small list. Quiet room."
+      },
+      "viewToggle": {
+        "label": "View",
+        "immersive": "Story",
+        "simplified": "Card"
+      },
+      "loader": {
+        "rising": "Loading"
+      },
+      "footer": {
+        "hosts": "Hosted by Sean & friend",
+        "rsvpClosesAt": "RSVPs close when the room fills."
+      },
+      "scrollHint": "Scroll",
+      "audio": {
+        "label": "Sound",
+        "on": "Sound on",
+        "off": "Sound off"
+      },
+      "scrubber": {
+        "navLabel": "Timeline",
+        "opening": "Opening",
+        "cookout": "Cookout",
+        "dress": "Dress",
+        "night": "Night",
+        "closing": "Reserve"
+      },
+      "moodboard": {
+        "cookout": {
+          "burger": {
+            "alt": "Smash burgers off the grill",
+            "caption": "Smash burgers"
+          },
+          "rooftop": {
+            "alt": "Rooftop cookout",
+            "caption": ""
+          },
+          "vibe": {
+            "alt": "Cookout vibe",
+            "caption": ""
+          }
+        },
+        "dress": {
+          "romeo": {
+            "alt": "Romeo and Juliet",
+            "caption": "(Romeo and Juliet)"
+          },
+          "pink": {
+            "alt": "All the pink",
+            "caption": "Last chance to wear all this pink without looking like…"
+          },
+          "dad": {
+            "alt": "Steve Carrell, Crazy Stupid Love",
+            "caption": "Who's the more in-style of the two? We're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
+          },
+          "notDads": {
+            "alt": "Pulp Fiction",
+            "caption": "No.. They are not dads. (Pulp Fiction, 1999)"
+          },
+          "dude": {
+            "alt": "The Dude — Big Lebowski",
+            "caption": "The Dude. (Big Lebowski, 1998)"
+          }
+        },
+        "night": {
+          "suit": {
+            "alt": "Pulp Fiction — suit",
+            "caption": "No, you don't have to bring a suit. Won't stop you though. (Pulp Fiction)"
+          },
+          "jacket": {
+            "alt": "Jackets, after dark",
+            "caption": "Look, we're not saying that jackets will get you looking like this… But it won't hurt."
+          }
+        }
+      }
+    },
+    "Guests": {
+      "eyebrow": "RSVP",
+      "title": "오시는 분들",
+      "subtitle": "작은 명단, 순서 없이.",
+      "tier": {
+        "host": "호스트",
+        "past": "다시 오는 분들",
+        "guest": "처음 오는 분들"
+      },
+      "empty": {
+        "headline": "아직 등록된 분이 없습니다.",
+        "body": "RSVP가 들어오면 여기에 표시됩니다. 날짜에 가까워질수록 채워질 거예요."
+      },
+      "intro": {
+        "label": "소개"
+      },
+      "instagram": {
+        "label": "인스타그램",
+        "view": "인스타그램에서 보기"
+      },
+      "gallery": {
+        "label": "갤러리",
+        "empty": "사진이 아직 없습니다."
+      },
+      "actions": {
+        "close": "닫기",
+        "expand": "탭하여 확장",
+        "back": "전체로 돌아가기"
+      },
+      "you": "당신입니다",
+      "navigation": {
+        "back": "이벤트로 돌아가기"
+      }
+    },
+    "Gate": {
+      "eyebrow": "비공개 이벤트",
+      "title": "Day n Night",
+      "subtitle": "개별 전달된 코드를 입력해 주세요.",
+      "placeholder": "코드",
+      "submit": "입장",
+      "submitting": "확인 중…",
+      "errors": {
+        "missing": "코드를 입력해 주세요.",
+        "invalid": "코드가 일치하지 않아요. 다시 확인하거나 호스트에게 현재 코드를 문의해 주세요.",
+        "noEvent": "이 이벤트 페이지는 아직 준비 중입니다. 잠시 후 다시 시도해 주세요.",
+        "generic": "문제가 발생했어요. 잠시 후 다시 시도해 주세요."
+      },
+      "hint": "이 기기에서는 한 번만 입력하면 됩니다.",
+      "footer": "코드가 없다면, 안내받은 채널을 통해 호스트에게 문의해 주세요."
+    },
+    "Rsvp": {
+      "steps": {
+        "welcome": {
+          "eyebrow": "Day n Night · RSVP",
+          "title": "티켓 전 몇 가지 확인이 있어요.",
+          "body": "이메일 인증, 이름, 그리고 티켓 — 약 2분, 계정 가입은 필요 없습니다.",
+          "cta": "시작"
+        },
+        "otp": {
+          "eyebrow": "이메일 인증",
+          "title": "어떤 이메일로 보내드릴까요?",
+          "emailPlaceholder": "you@example.com",
+          "sendCode": "코드 보내기",
+          "codePlaceholder": "6자리 코드",
+          "submit": "계속",
+          "resend": "코드 재발송",
+          "error": "코드가 일치하지 않아요. 다시 시도해 주세요."
+        },
+        "name": {
+          "eyebrow": "이름",
+          "title": "입장 명단에 어떤 이름으로 올릴까요?",
+          "placeholder": "이름과 성",
+          "submit": "계속"
+        },
+        "purchase": {
+          "eyebrow": "티켓",
+          "title": "몇 장 필요하세요?",
+          "quantityLabel": "티켓 수",
+          "recipientLabel": "수령인 이름 (선택)",
+          "recipientHint": "본인 입장이라면 비워두세요. 선물용이라면 받으실 분의 이름을 입력해 주세요.",
+          "submit": "예약",
+          "submitting": "예약 중…",
+          "success": "예약이 완료되었어요. 이메일을 확인해 주세요."
+        }
+      },
+      "my": {
+        "eyebrow": "내 티켓",
+        "title": "예약 내역",
+        "empty": "아직 등록된 티켓이 없어요.",
+        "link": "링크 전송",
+        "linkSent": "전송됨",
+        "claimedBy": "{name} 님이 수령",
+        "unclaimed": "미수령",
+        "revoke": "취소",
+        "passwordHint": "호스트가 결제 확인을 마치면, 48시간 동안 유효한 비밀번호가 발급돼요. 선물 받으실 분께 함께 전달해 주세요."
+      },
+      "claim": {
+        "eyebrow": "티켓 수령",
+        "title": "환영해요.",
+        "body": "구매자가 공유해 준 비밀번호를 입력해 주세요. 링크는 호스트가 결제를 확인한 시점부터 48시간 후 만료됩니다.",
+        "passwordPlaceholder": "비밀번호",
+        "submit": "수령",
+        "errors": {
+          "expired": "링크가 만료되었어요. 구매자에게 재전송을 요청해 주세요.",
+          "invalid": "비밀번호가 일치하지 않아요.",
+          "alreadyClaimed": "이미 수령된 티켓이에요."
+        },
+        "success": {
+          "title": "명단에 등록되었어요.",
+          "body": "티켓이 이메일로 발송되었어요. 5월 24일에 만나요."
+        }
+      }
+    },
+    "Order": {
+      "PasswordMail": {
+        "subject": "Day n Night — 주문이 확정되었어요",
+        "heading": "결제가 확인되었어요.",
+        "lead": "결제가 완료되어 티켓 {quantity}장이 활성화되었어요. 아래는 선물 받으실 분들이 클레임 링크에서 입력할 비밀번호예요.",
+        "fields": {
+          "event": "이벤트",
+          "when": "일시",
+          "where": "장소",
+          "quantity": "수량",
+          "password": "주문 비밀번호",
+          "expires": "만료"
+        },
+        "passwordCaption": "주문 확정 시점부터 48시간 동안 유효해요.",
+        "share": {
+          "title": "수령 방법",
+          "body": "선물 티켓마다 개별 클레임 링크가 있어요. 받으실 분께 링크와 이 비밀번호를 함께 전달해 주세요. 받으신 분이 클레임 페이지에서 비밀번호를 입력하면 수령이 완료됩니다."
+        },
+        "ctaLabel": "주문 페이지로 이동",
+        "ctaFallback": "또는 아래 URL을 브라우저에 붙여 넣어 주세요:",
+        "footerNote": "이 비밀번호는 일회용 코드처럼 다뤄 주세요. 클레임 링크와 함께 알게 된 사람은 누구나 자리를 가져갈 수 있어요. 이상한 점이 있으면 이 메일에 회신해 주세요."
+      }
+    }
+  }
 }

@@ -1,5 +1,8 @@
 import nodemailer from "nodemailer";
+import { getTranslations } from "next-intl/server";
 import type { BasePayload } from "payload";
+
+export type MailLocale = "en" | "ko";
 
 /**
  * Ticket lifecycle mailer.
@@ -142,6 +145,18 @@ export interface RefundArgs extends TicketContext {
 export interface ReminderArgs extends TicketContext {
   qrUrl: string;
   hoursUntil: number;
+}
+
+export interface OrderPasswordArgs {
+  purchaserEmail: string;
+  locale: MailLocale;
+  eventName: string;
+  eventDate?: string | null;
+  eventLocation?: string | null;
+  quantity: number;
+  password: string;
+  expiresAt: string;
+  orderUrl: string;
 }
 
 export class TicketMailer {
@@ -302,6 +317,114 @@ export class TicketMailer {
 
     return send(this.payload, {
       to: args.recipientEmail,
+      subject,
+      html,
+      text
+    });
+  }
+
+  /**
+   * Order-password mail (P4C-2). Sent to the **purchaser** when an admin
+   * flips `ticket-orders.paid` to true. Carries the 48h password the
+   * purchaser must share with each gift recipient so they can complete
+   * `/day-n-night/claim/[token]`.
+   *
+   * Locale is per-order (snapshotted from the purchaser's session locale
+   * at order creation by the 4-step flow; admin-overridable). Strings
+   * are pulled from `messages/{en,ko}.json` under
+   * `Event.Order.PasswordMail` — same single-source-of-locale rule as
+   * the rest of the site.
+   */
+  async sendOrderPaidPassword(args: OrderPasswordArgs): Promise<boolean> {
+    const t = await getTranslations({
+      locale: args.locale,
+      namespace: "Event.Order.PasswordMail"
+    });
+
+    const fmtDate = (iso: string | null | undefined): string => {
+      if (!iso) return "—";
+      try {
+        return new Intl.DateTimeFormat(
+          args.locale === "ko" ? "ko-KR" : "en-GB",
+          {
+            dateStyle: "long",
+            timeStyle: "short",
+            timeZone: "Asia/Seoul"
+          }
+        ).format(new Date(iso));
+      } catch {
+        return iso;
+      }
+    };
+
+    const subject = t("subject");
+    const heading = t("heading");
+    const lead = t("lead", { quantity: args.quantity });
+    const fEvent = t("fields.event");
+    const fWhen = t("fields.when");
+    const fWhere = t("fields.where");
+    const fQty = t("fields.quantity");
+    const fPassword = t("fields.password");
+    const fExpires = t("fields.expires");
+    const passwordCaption = t("passwordCaption");
+    const shareTitle = t("share.title");
+    const shareBody = t("share.body");
+    const ctaLabel = t("ctaLabel");
+    const ctaFallback = t("ctaFallback");
+    const footerNote = t("footerNote");
+
+    const lines: string[] = [];
+    lines.push(
+      `<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${escape(lead)}</p>`
+    );
+    lines.push(
+      `<table style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:12px;margin:24px 0;">
+        <tr><td style="padding:6px 0;color:#888;width:38%;">${escape(fEvent)}</td><td style="padding:6px 0;">${escape(args.eventName)}</td></tr>
+        ${args.eventDate ? `<tr><td style="padding:6px 0;color:#888;">${escape(fWhen)}</td><td style="padding:6px 0;">${escape(fmtDate(args.eventDate))}</td></tr>` : ""}
+        ${args.eventLocation ? `<tr><td style="padding:6px 0;color:#888;">${escape(fWhere)}</td><td style="padding:6px 0;">${escape(args.eventLocation)}</td></tr>` : ""}
+        <tr><td style="padding:6px 0;color:#888;">${escape(fQty)}</td><td style="padding:6px 0;">${args.quantity}</td></tr>
+      </table>`
+    );
+    lines.push(
+      `<div style="background:#f7f6f3;padding:22px 24px;border-left:2px solid #1a1a1a;margin:24px 0;">
+        <p style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#888;margin:0 0 12px;">${escape(fPassword)}</p>
+        <p style="font-family:'Courier New',monospace;font-size:28px;letter-spacing:0.08em;margin:0;color:#1a1a1a;font-weight:600;">${escape(args.password)}</p>
+        <p style="font-family:'Courier New',monospace;font-size:11px;color:#888;margin:14px 0 0;">${escape(fExpires)}: ${escape(fmtDate(args.expiresAt))} · ${escape(passwordCaption)}</p>
+      </div>`
+    );
+    lines.push(
+      `<h2 style="font-size:15px;font-weight:500;margin:32px 0 8px;letter-spacing:-0.005em;">${escape(shareTitle)}</h2>`
+    );
+    lines.push(
+      `<p style="font-size:14px;line-height:1.65;color:#555;margin:0 0 24px;">${escape(shareBody)}</p>`
+    );
+    lines.push(
+      `<p style="margin:28px 0;"><a href="${args.orderUrl}" style="display:inline-block;border:1px solid #1a1a1a;padding:12px 24px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#1a1a1a;text-decoration:none;">${escape(ctaLabel)}</a></p>`
+    );
+    lines.push(
+      `<p style="font-size:13px;line-height:1.6;color:#555;margin:0 0 18px;">${escape(ctaFallback)}<br/><span style="font-family:'Courier New',monospace;font-size:12px;word-break:break-all;color:#1a1a1a;">${escape(args.orderUrl)}</span></p>`
+    );
+    lines.push(
+      `<p style="font-size:12px;line-height:1.6;color:#888;margin:24px 0 0;">${escape(footerNote)}</p>`
+    );
+
+    const html = frame(heading, lines.join("\n"));
+    const text =
+      `${subject}\n\n` +
+      `${lead}\n\n` +
+      `${fEvent}: ${args.eventName}\n` +
+      (args.eventDate ? `${fWhen}: ${fmtDate(args.eventDate)}\n` : "") +
+      (args.eventLocation ? `${fWhere}: ${args.eventLocation}\n` : "") +
+      `${fQty}: ${args.quantity}\n\n` +
+      `${fPassword}: ${args.password}\n` +
+      `${fExpires}: ${fmtDate(args.expiresAt)}\n` +
+      `${passwordCaption}\n\n` +
+      `${shareTitle}\n${shareBody}\n\n` +
+      `${ctaLabel}: ${args.orderUrl}\n\n` +
+      `${footerNote}`;
+
+    return send(this.payload, {
+      to: args.purchaserEmail,
       subject,
       html,
       text

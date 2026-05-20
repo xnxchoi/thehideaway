@@ -140,6 +140,36 @@ export const Tickets: CollectionConfig = {
       }
     },
     {
+      name: "gift_initial_name",
+      type: "text",
+      admin: {
+        description:
+          "Name the purchaser typed for the intended recipient. Surfaced on /day-n-night/my next to the unclaimed link. Editable by the purchaser until the admin sets gift_name_locked."
+      }
+    },
+    {
+      name: "gift_name_locked",
+      type: "checkbox",
+      defaultValue: false,
+      access: { update: adminOnlyField },
+      admin: {
+        description:
+          "Admin-only lock. Prevents the purchaser from changing gift_initial_name after the host has confirmed the recipient (e.g. on the door list)."
+      }
+    },
+    {
+      name: "order",
+      type: "relationship",
+      relationTo: "ticket-orders",
+      hasMany: false,
+      maxDepth: 0,
+      index: true,
+      admin: {
+        description:
+          "Parent TicketOrders row this ticket belongs to. Null for tickets created outside the 4-step purchase flow."
+      }
+    },
+    {
       name: "claimed_at",
       type: "date",
       admin: {

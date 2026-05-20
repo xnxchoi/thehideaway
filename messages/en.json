@@ -1,24 +1,24 @@
 {
   "Highlights": {
-      "error": {
-        "share": {
-          "copy": "Copy failed. Try again after some time!"
-        },
-        "save": {
-          "default":  "Failed to save for some reasons... Try again after some time!",
-
-          "signin": "Check in to save highlights.",
-          "select": "Select some text first.",
-          "empty": "You can't save an empty highlight."
-        }
-      },
+    "error": {
       "share": {
-        "copy": "Copied! Go paste it wherever you want."
-      },"saved": "Saved!"
+        "copy": "Copy failed. Try again after some time!"
+      },
+      "save": {
+        "default": "Failed to save for some reasons... Try again after some time!",
+        "signin": "Check in to save highlights.",
+        "select": "Select some text first.",
+        "empty": "You can't save an empty highlight."
+      }
+    },
+    "share": {
+      "copy": "Copied! Go paste it wherever you want."
+    },
+    "saved": "Saved!"
   },
   "UI": {
-    "SignIn":{
-      "separator":"Or check in with",
+    "SignIn": {
+      "separator": "Or check in with",
       "providers": "Password || Passkey"
     },
     "Justification": {
@@ -42,17 +42,14 @@
       "period": {
         "title": "Return Period",
         "body": "The Hideaway products purchased through The Hideaway may be exchanged or returned for a refund or merchandise credit within seven (7) days following delivery. Please allow up to fourteen (14) business days for full refund, if applicable. Merchandise must be presented in its original packaging and accompanied by the appropriate sales receipt. Engraved, embossed, special order, personalized, made to order creations and items that show sign of wear cannot be exchanged or returned. All returns and exchanges are subject to the further terms and conditions set forth below."
-
       },
       "process": {
         "title": "Return Process",
         "body": "The Customer or Gift Recipient, as the case may be, must keep a proof of return shipment and the FedEx tracking number, and The Hideaway accepts no liability in the event that such proof cannot be produced. Only merchandise received by the The Hideaway distribution center will be eligible for a refund or exchange. Upon receiving a return, The Hideaway will verify that the returned product satisfies the conditions of the return policy and, if so, then proceed with the applicable refund or exchange."
-
       },
       "conditions": {
         "title": "Return Conditions",
         "body": "The Hideaway products must be returned in a new and unused state, in perfect condition, with all protective materials in place and tags and stickers attached to them (if applicable), as well as with the original The Hideaway box and delivery package, including all accessories and documents. The Hideaway will not accept any return if the product shows signs of wear, or has been used or altered from its original condition in any way. Engraved or embossed products, as well as special order, personalized and made-to-order creations, cannot be returned to The Hideaway for exchange, merchandise credit or refund. All returns will be subject to strict Quality Control (QC) by The Hideaway to ensure that the returned products satisfy these requirements. If the products do not meet QC standards, The Hideaway will refuse the return, and the products will be sent back to the Customer or the Gift Recipient, as applicable. If the returned product satisfies Quality Control (QC), The Hideaway will proceed with the applicable refund or exchange."
-
       }
     }
   },
@@ -306,7 +303,8 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "30 & Smokin'",
-        "lede": "Fire doesn't ask permission to burn. Neither did we."
+        "lede": "Fire doesn't ask permission to burn. Neither did we.",
+        "body": "A decade of chasing, stumbling, and figuring it out and somehow, we made it to the other side still standing, still hungry. The smoke rising off this grill isn’t just heat.\n\nIt’s everything we survived, shed, and done apologizing for.\n\nWe’re turning 30 looking every bit as good - come and join the scenery.\n\n"
       },
       "act": {
         "day": {
@@ -318,13 +316,15 @@
         "night": {
           "label": "NIGHT",
           "time": "20:00 → late",
+          "sectionTitle": "Mood shift.",
+          "announcement": "Something quiet, unannounced, will be there.",
+          "dressLabel": "Dress code, after dark",
           "heading": "Sharp. Chic. Dressed to impress.",
           "body": "Same room, different mood. Cocktails come up. Lights come down. You don't have to bring a suit. Won't stop you, though."
         }
       },
       "dressCode": {
-        "heading": "Dress for your age. Direction goes both ways.",
-        "intro": "Standing at the edge of a chapter — much to look forward to, as much to cherish. Two reads on the brief. Pick one. Or do both.",
+        "heading": "One rule: Don't dress your age.",
         "option1": {
           "label": "An outfit you still love — but will be too old for soon",
           "body": "Last call. Wear it without apology. Geeks, nerds, civilians, the next emo girl — all welcome. We'll get you the photos."
@@ -336,8 +336,14 @@
       },
       "included": {
         "heading": "Included",
-        "food": { "label": "Food", "items": "Smash burgers · Pork · Potatoes" },
-        "drinks": { "label": "Drinks", "items": "Beer · Wine · Gin if you ask" }
+        "food": {
+          "label": "Food",
+          "items": "Smash burgers · Pork · Potatoes"
+        },
+        "drinks": {
+          "label": "Drinks",
+          "items": "Beer · Wine · Gin if you ask"
+        }
       },
       "tribute": {
         "heading": "Charred, Scarred & Thriving",
@@ -364,13 +370,14 @@
         "immersive": "Story",
         "simplified": "Card"
       },
-      "loader": { "rising": "Loading" },
+      "loader": {
+        "rising": "Loading"
+      },
       "footer": {
         "hosts": "Hosted by Sean & friend",
         "rsvpClosesAt": "RSVPs close when the room fills."
       },
       "scrollHint": "Scroll",
-      "secret": "Something quiet, unannounced, will be there.",
       "audio": {
         "label": "Sound",
         "on": "Sound on",
@@ -388,47 +395,47 @@
         "cookout": {
           "burger": {
             "alt": "Smash burgers off the grill",
-            "caption": "smash, off the grill"
+            "caption": "Smash burgers"
           },
           "rooftop": {
-            "alt": "Cookout vibes — rooftop, late sun",
-            "caption": "rooftop, late sun"
+            "alt": "Rooftop cookout",
+            "caption": ""
           },
           "vibe": {
-            "alt": "Cookout vibes",
+            "alt": "Cookout vibe",
             "caption": ""
           }
         },
         "dress": {
           "romeo": {
-            "alt": "Romeo and Juliet — period costume reference",
-            "caption": "still love. soon too old."
+            "alt": "Romeo and Juliet",
+            "caption": "(Romeo and Juliet)"
           },
           "pink": {
-            "alt": "All the pink — the next emo girl",
-            "caption": "all the pink"
+            "alt": "All the pink",
+            "caption": "Last chance to wear all this pink without looking like…"
           },
           "dad": {
-            "alt": "Steve Carrell, Crazy Stupid Love — dad fit",
-            "caption": "the dad. unbothered."
+            "alt": "Steve Carrell, Crazy Stupid Love",
+            "caption": "Who's the more in-style of the two? We're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
           },
           "notDads": {
-            "alt": "Pulp Fiction — they're not dads",
-            "caption": "(they're not dads)"
+            "alt": "Pulp Fiction",
+            "caption": "No.. They are not dads. (Pulp Fiction, 1999)"
           },
           "dude": {
             "alt": "The Dude — Big Lebowski",
-            "caption": "the dude."
+            "caption": "The Dude. (Big Lebowski, 1998)"
           }
         },
         "night": {
           "suit": {
-            "alt": "Pulp Fiction — suit, dressed up",
-            "caption": "won't stop you"
+            "alt": "Pulp Fiction — suit",
+            "caption": "No, you don't have to bring a suit. Won't stop you though. (Pulp Fiction)"
           },
           "jacket": {
-            "alt": "Jackets that walk into a quiet bar",
-            "caption": "a layer helps."
+            "alt": "Jackets, after dark",
+            "caption": "Look, we're not saying that jackets will get you looking like this… But it won't hurt."
           }
         }
       }
@@ -437,6 +444,11 @@
       "eyebrow": "RSVP'd",
       "title": "Who's coming",
       "subtitle": "The small list, in no particular order.",
+      "tier": {
+        "host": "Hosts",
+        "past": "Past attendees",
+        "guest": "Guests"
+      },
       "empty": {
         "headline": "No guests yet.",
         "body": "RSVPs will appear here as they come in. Check back closer to the date."
@@ -460,6 +472,108 @@
       "you": "That's you",
       "navigation": {
         "back": "Back to event"
+      }
+    },
+    "Gate": {
+      "eyebrow": "Private event",
+      "title": "Day n Night",
+      "subtitle": "Enter the code shared with you privately.",
+      "placeholder": "Code",
+      "submit": "Enter",
+      "submitting": "Checking…",
+      "errors": {
+        "missing": "Please enter the code.",
+        "invalid": "That code did not match. Try again, or ask the host for the current one.",
+        "noEvent": "This event surface is not configured yet. Try again shortly.",
+        "generic": "Something went wrong. Try again in a moment."
+      },
+      "hint": "You will only need to enter this once on this device.",
+      "footer": "No code? Reach out to the host on the channel that pointed you here."
+    },
+    "Rsvp": {
+      "steps": {
+        "welcome": {
+          "eyebrow": "Day n Night · RSVP",
+          "title": "A short steps before tickets.",
+          "body": "Email confirmation, your name, then the ticket itself. Two minutes, no account required.",
+          "cta": "Start"
+        },
+        "otp": {
+          "eyebrow": "Confirm email",
+          "title": "Where should we reach you?",
+          "emailPlaceholder": "you@example.com",
+          "sendCode": "Send code",
+          "codePlaceholder": "6-digit code",
+          "submit": "Continue",
+          "resend": "Resend code",
+          "error": "That code did not match. Try again."
+        },
+        "name": {
+          "eyebrow": "Your name",
+          "title": "What name should be on the door?",
+          "placeholder": "First and last name",
+          "submit": "Continue"
+        },
+        "purchase": {
+          "eyebrow": "Tickets",
+          "title": "How many?",
+          "quantityLabel": "Tickets",
+          "recipientLabel": "Recipient name (optional)",
+          "recipientHint": "Leave blank if you are claiming a ticket yourself; fill in if you are buying it for someone else.",
+          "submit": "Reserve",
+          "submitting": "Reserving…",
+          "success": "Reserved. Check your email for next steps."
+        }
+      },
+      "my": {
+        "eyebrow": "Your tickets",
+        "title": "Your reservation",
+        "empty": "No tickets on this account yet.",
+        "link": "Send link",
+        "linkSent": "Sent",
+        "claimedBy": "Claimed by {name}",
+        "unclaimed": "Unclaimed",
+        "revoke": "Revoke",
+        "passwordHint": "You will receive a 48-hour password when the host marks your order as paid. Share it with whoever you are gifting tickets to."
+      },
+      "claim": {
+        "eyebrow": "Claim a ticket",
+        "title": "Welcome.",
+        "body": "Enter the password the buyer shared with you. The link expires 48 hours after the host confirmed the order.",
+        "passwordPlaceholder": "Password",
+        "submit": "Claim",
+        "errors": {
+          "expired": "This link has expired. Ask the buyer to resend.",
+          "invalid": "That password did not match.",
+          "alreadyClaimed": "This ticket has already been claimed."
+        },
+        "success": {
+          "title": "You are on the list.",
+          "body": "We have emailed your ticket. See you on May 24."
+        }
+      }
+    },
+    "Order": {
+      "PasswordMail": {
+        "subject": "Day n Night — your order is confirmed",
+        "heading": "Your reservation is paid.",
+        "lead": "Payment confirmed. Your {quantity, plural, one {ticket is} other {# tickets are}} active. Below is the password your recipients will need to claim their gift links.",
+        "fields": {
+          "event": "Event",
+          "when": "When",
+          "where": "Where",
+          "quantity": "Quantity",
+          "password": "Order password",
+          "expires": "Expires"
+        },
+        "passwordCaption": "Valid for 48 hours from the moment your order was confirmed.",
+        "share": {
+          "title": "How recipients claim",
+          "body": "Each gift ticket has its own private claim link. Forward the link to the recipient and share this password so they can enter it on the claim page."
+        },
+        "ctaLabel": "Open your order",
+        "ctaFallback": "Or paste this URL into your browser:",
+        "footerNote": "Treat this password like a one-time code — anyone who has it together with a claim link can take that seat. If something looks off, reply to this email."
       }
     }
   }

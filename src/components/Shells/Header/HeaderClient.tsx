@@ -17,7 +17,7 @@ import { useTheme } from "src/providers/Theme";
 import { useVoyageur } from "src/stores/Routing/RP_Voyageur";
 import { delay, rp_lerp } from "src/utilities/rp_utils";
 import { useWindowResize } from "src/utilities/use_window_resize";
-import { SignedIn, SignedOut } from "src/lib/auth/betterauth-ui/src";
+import { SignedIn } from "src/lib/auth/betterauth-ui/src";
 import { useLenis } from "lenis/react";
 import { animate, AnimationPlaybackControls, cancelFrame, frame } from "motion";
 import {
@@ -244,10 +244,10 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     setVisible(showHeader && fxVisibility);
   }, [fxVisibility, showHeader]);
 
-  const headerTransitionDisabled = useRef(false);
+  const headerTransitionDisabled = useMotionValue(false);
   const lastResize = useWindowResize({
-    debounce: 100,
-    detectHeightChange: false
+    debounce: 50,
+    detectHeightChange: true
   });
   const animateBye = useEffectEvent(async () => {
     await delay(50);
@@ -366,19 +366,20 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     });
   });
   useEffect(() => {
+    console.log("resized!");
     instantiator();
   }, [lastResize]);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null!);
 
-  const enableScrollAnimation = useCallback(() => {
-    headerTransitionDisabled.current = false;
-  }, []);
-  const haltScrollAnimation = useCallback(() => {
-    headerTransitionDisabled.current = true;
-  }, []);
+  const enableScrollAnimation = useEffectEvent(() =>
+    headerTransitionDisabled.set(false)
+  );
+  const haltScrollAnimation = useEffectEvent(() =>
+    headerTransitionDisabled.set(true)
+  );
 
-  const setHeaderState = useCallback(
+  const setHeaderState = useEffectEvent(
     (transitionType: TransitionType, callback?: () => void) => {
       runningAnimation.current?.stop();
       runningAnimation.current = null;
@@ -418,15 +419,14 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
           return;
         }
       }
-    },
-    [getTweenPercentBasedOnScroll, scrubPosition]
+    }
   );
 
   useLenis((lenis) => {
     !initiatedScroll.current &&
       ((initiatedScroll.current = !0),
       lenis.on("scroll", (lv) => {
-        if (!headerTransitionDisabled.current && lv.animatedScroll) {
+        if (!headerTransitionDisabled.get() && lv.animatedScroll) {
           const c = lv.animatedScroll;
           c > 50 ? (tweenNumber.current = c - 50) : (tweenNumber.current = 0);
           animateOnScroll(tweenNumber.current);
@@ -434,12 +434,10 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       }));
   });
 
-  const headerDone = useCallback(() => {
+  const headerDone = useEffectEvent(() => {
     if (isWipeTransition.get()) {
       haltScrollAnimation();
-      setHeaderState("transition-wipe", () => {
-        enableScrollAnimation();
-      });
+      setHeaderState("transition-wipe", enableScrollAnimation);
       return;
     }
     if (navState.get()) {
@@ -453,41 +451,29 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       // follow-up `animate-to-previous` lerps to 0 instead of a stale target.
       tweenNumber.current = 0;
       setHeaderState("animate-to-full");
-      setTimeout(() => {
-        enableScrollAnimation();
-      }, 720);
+      setTimeout(enableScrollAnimation, 720);
       return;
     }
 
-    setHeaderState("animate-to-previous", () => {
-      enableScrollAnimation();
-    });
-  }, [
-    enableScrollAnimation,
-    haltScrollAnimation,
-    isWipeTransition,
-    navState,
-    setHeaderState,
-    transitionOutType
-  ]);
-
-  useMotionValueEvent(navState, "change", (latestValue) => {
+    setHeaderState("animate-to-previous", enableScrollAnimation);
+  });
+  const [lastTime, setLastTime] = useState(0);
+  useMotionValueEvent(navState, "change", () => {
+    setLastTime(performance.now());
+  });
+  useMotionValueEvent(transitionOutType, "change", () => {
+    setLastTime(performance.now());
+  });
+  useMotionValueEvent(transitionVariant, "change", () => {
+    setLastTime(performance.now());
+  });
+  useMotionValueEvent(isWipeTransition, "change", () => {
+    setLastTime(performance.now());
+  });
+  useEffect(() => {
     timeoutRef.current && clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(headerDone, 20);
-  });
-  useMotionValueEvent(transitionOutType, "change", (latestValue) => {
-    timeoutRef.current && clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(headerDone, 20);
-  });
-  useMotionValueEvent(transitionVariant, "change", (latestValue) => {
-    timeoutRef.current && clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(headerDone, 20);
-  });
-  useMotionValueEvent(isWipeTransition, "change", (latestValue) => {
-    timeoutRef.current && clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(headerDone, 20);
-  });
-
+  }, [lastTime]);
   const onEnter: MouseEventHandler = useCallback(() => {
     to.current && clearTimeout(to.current);
     to.current = null!;
@@ -523,7 +509,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
           data-theme={the}
           id="rp-header"
           className={cn(
-            "fixed z-[240] m-0 w-full overflow-hidden rounded-[100rem] p-0 shadow-none",
+            "fixed z-240 m-0 w-full overflow-hidden rounded-[100rem] p-0 shadow-none",
             {
               scrolling: isScrolling
             }
@@ -733,7 +719,7 @@ const FXs = ({
       }}
       ref={ref}
       className={cn(
-        "pointer-events-none fixed top-0 right-[10px] bottom-0 left-[10px] z-10 mx-auto",
+        "pointer-events-none fixed top-0 right-4 bottom-0 left-4 z-10 mx-auto",
         !fxVisibility && "opacity-0",
         className
       )}

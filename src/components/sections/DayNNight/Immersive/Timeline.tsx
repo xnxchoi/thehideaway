@@ -90,6 +90,8 @@ export function Timeline() {
   const setLayout = useDayNNightScene((r) => r.setLayout);
   const readLayout = useDayNNightScene(useShallow((r) => r.layout));
   const initialLoopPos = useDayNNightScene((r) => r.initialLoopPosition);
+  const phase = useDayNNightScene(useShallow((r) => r.phase));
+  const isPlaying = phase === "playing";
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -221,10 +223,10 @@ export function Timeline() {
         className="flex h-full will-change-transform max-lg:h-auto max-lg:flex-col"
       >
         {/* First set — the primary, accessible acts. */}
-        <ActSet t={t} />
+        <ActSet t={t} isPlaying={isPlaying} />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
-        <ActSet t={t} ariaHidden />
+        <ActSet t={t} isPlaying={isPlaying} ariaHidden />
       </div>
     </div>
   );
@@ -232,10 +234,13 @@ export function Timeline() {
 
 interface ActSetProps {
   t: Translator;
+  /** When true, the Opening's choreographed reveal fires. The duplicate
+   *  ActSet receives the same flag so both copies stay in sync. */
+  isPlaying: boolean;
   ariaHidden?: boolean;
 }
 
-function ActSet({ t, ariaHidden = false }: ActSetProps) {
+function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
   // The 5 acts are wrapped in a Fragment so the parent track gets them as
   // direct flex children — GSAP measures scrollWidth across them. Each
   // act keeps the same outer flex-item width but gets its own
@@ -285,6 +290,12 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               className="max-w-[32ch] text-[clamp(1.4rem,1.7vw,1.8rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]"
             >
               {t("opening.lede")}
+            </RevealItem>
+            <RevealItem
+              as="p"
+              className="max-w-[600px] text-start font-serif text-[clamp(2rem,3.4vw,2.4rem)] leading-[1.1] tracking-[-0.005em] text-[var(--dn-fg-mute)]"
+            >
+              {t("opening.body")}
             </RevealItem>
           </RevealStage>
           <div className="flex gap-12 font-mono text-[11px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
@@ -376,32 +387,33 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               src="/assets/day-n-night/DraggedImage.png"
               alt={t("moodboard.cookout.burger.alt")}
               caption={t("moodboard.cookout.burger.caption")}
-              captionStyle="serif"
-              width={240}
-              aspect={1.05}
+              width={180}
+              aspect={0.75}
               angle={-4}
               depth={0.7}
               anchor={ANCHOR_COOKOUT}
+              priority={!ariaHidden}
             />
             <Polaroid
               src="/assets/day-n-night/IMG_8543.png"
               alt={t("moodboard.cookout.rooftop.alt")}
               caption={t("moodboard.cookout.rooftop.caption")}
-              captionStyle="marker"
-              width={210}
-              aspect={1.2}
+              width={230}
+              aspect={1.769}
               angle={5}
               depth={-0.4}
               anchor={ANCHOR_COOKOUT}
+              priority={!ariaHidden}
             />
             <Polaroid
               src="/assets/day-n-night/IMG_9520.png"
               alt={t("moodboard.cookout.vibe.alt")}
-              width={200}
-              aspect={1}
+              width={210}
+              aspect={1.333}
               angle={-2}
               depth={1.0}
               anchor={ANCHOR_COOKOUT}
+              priority={!ariaHidden}
             />
           </PolaroidGroup>
         </div>
@@ -487,58 +499,36 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               a polished catalog. Parallaxed around the Dress anchor. */}
           <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[8%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[46vw] lg:flex-wrap lg:justify-end lg:gap-6">
             <Polaroid
+              variant="stamped"
+              overlay="card-2_front-clear"
               src="/assets/day-n-night/DraggedImage-1.png"
               alt={t("moodboard.dress.romeo.alt")}
               caption={t("moodboard.dress.romeo.caption")}
-              captionStyle="serif"
-              width={220}
-              aspect={0.78}
-              angle={-6}
-              depth={0.5}
+              width={250}
+              angle={-4}
+              depth={0.4}
               anchor={ANCHOR_DRESS}
             />
             <Polaroid
+              variant="stamped"
+              overlay="card-4_front-clear"
               src="/assets/day-n-night/DraggedImage-2.png"
               alt={t("moodboard.dress.pink.alt")}
               caption={t("moodboard.dress.pink.caption")}
-              captionStyle="marker"
-              width={200}
-              aspect={1.1}
-              angle={4}
-              depth={-0.7}
+              width={230}
+              angle={3}
+              depth={-0.5}
               anchor={ANCHOR_DRESS}
             />
             <Polaroid
+              variant="stamped"
+              overlay="card-4_front-clear"
               src="/assets/day-n-night/DraggedImage-3.png"
               alt={t("moodboard.dress.dad.alt")}
               caption={t("moodboard.dress.dad.caption")}
-              captionStyle="serif"
-              width={210}
-              aspect={1.15}
+              width={220}
               angle={-3}
-              depth={0.9}
-              anchor={ANCHOR_DRESS}
-            />
-            <Polaroid
-              src="/assets/day-n-night/DraggedImage-4.png"
-              alt={t("moodboard.dress.notDads.alt")}
-              caption={t("moodboard.dress.notDads.caption")}
-              captionStyle="marker"
-              width={200}
-              aspect={1.4}
-              angle={6}
-              depth={-0.3}
-              anchor={ANCHOR_DRESS}
-            />
-            <Polaroid
-              src="/assets/day-n-night/DraggedImage-5.png"
-              alt={t("moodboard.dress.dude.alt")}
-              caption={t("moodboard.dress.dude.caption")}
-              captionStyle="serif"
-              width={190}
-              aspect={1}
-              angle={-7}
-              depth={0.6}
+              depth={0.7}
               anchor={ANCHOR_DRESS}
             />
           </PolaroidGroup>
@@ -607,9 +597,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               src="/assets/day-n-night/DraggedImage-6.png"
               alt={t("moodboard.night.suit.alt")}
               caption={t("moodboard.night.suit.caption")}
-              captionStyle="serif"
-              width={220}
-              aspect={1.35}
+              width={230}
+              aspect={1.781}
               angle={-5}
               depth={0.6}
               anchor={ANCHOR_NIGHT}
@@ -618,9 +607,8 @@ function ActSet({ t, ariaHidden = false }: ActSetProps) {
               src="/assets/day-n-night/DraggedImage-7.png"
               alt={t("moodboard.night.jacket.alt")}
               caption={t("moodboard.night.jacket.caption")}
-              captionStyle="marker"
-              width={200}
-              aspect={1.1}
+              width={210}
+              aspect={1.501}
               angle={4}
               depth={-0.5}
               anchor={ANCHOR_NIGHT}

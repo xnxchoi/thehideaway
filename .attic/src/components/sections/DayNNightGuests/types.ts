@@ -5,6 +5,16 @@ export type GuestGalleryItem = {
   media: UserMedia;
 };
 
+/** Ordering bucket on the public guest list. */
+export type GuestTier = "host" | "past" | "guest";
+
+/** Sort order for `GuestTier`. */
+export const TIER_ORDER: Record<GuestTier, number> = {
+  host: 0,
+  past: 1,
+  guest: 2
+};
+
 export type GuestProfile = {
   /** profile.id — used as the stable key per row. */
   profileId: string;
@@ -22,4 +32,6 @@ export type GuestProfile = {
   igHandle: string | null;
   /** rsvp.gallery — up to 5 resolved UserMedia. */
   gallery: GuestGalleryItem[];
+  /** rsvp.tier — drives the three-tier ordering. */
+  tier: GuestTier;
 };

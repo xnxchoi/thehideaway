@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { type Variants } from "motion/react";
 import * as m from "motion/react-m";
+import { useDayNNightScene } from "../store";
 
 /**
  * Reveal — slow, soft, choreographed text reveal for the immersive
@@ -111,6 +112,17 @@ interface RevealStageProps {
   stagger?: number;
   /** Override the initial delay before the first child fires. Default 0.15s. */
   delay?: number;
+  /**
+   * When provided, gates the reveal on a scene-state boolean instead of
+   * viewport intersection. Use this for choreographed entrances tied to
+   * something other than scroll — e.g. the Opening copy waits for
+   * `phase === "playing"` so it animates AFTER the loader has fully
+   * transitioned out, not while it's still on screen.
+   *
+   * When omitted, the stage falls back to the default whileInView
+   * trigger (used by Cookout, Dress, Night, Closing).
+   */
+  active?: boolean;
   children: ReactNode;
 }
 
@@ -120,6 +132,7 @@ export function RevealStage({
   amount,
   stagger,
   delay,
+  active,
   children
 }: RevealStageProps) {
   const Tag = MOTION_MAP[as];
@@ -138,14 +151,23 @@ export function RevealStage({
             }
           }
         };
+  // Two trigger modes: when `active` is provided, the stage's variant is
+  // driven by that boolean (controlled). Otherwise fall back to the
+  // default whileInView behaviour (scroll-position-driven). Both modes
+  // share the same children stagger.
+  const motionProps =
+    active !== undefined
+      ? ({
+          initial: "hidden" as const,
+          animate: active ? ("visible" as const) : ("hidden" as const)
+        } as const)
+      : ({
+          initial: "hidden" as const,
+          whileInView: "visible" as const,
+          viewport
+        } as const);
   return (
-    <Tag
-      className={className}
-      initial="hidden"
-      whileInView="visible"
-      viewport={viewport}
-      variants={variants}
-    >
+    <Tag className={className} {...motionProps} variants={variants}>
       {children}
     </Tag>
   );
@@ -167,6 +189,49 @@ export function RevealItem({
   const Tag = MOTION_MAP[as];
   return (
     <Tag className={className} variants={ITEM_VARIANTS}>
+      {children}
+    </Tag>
+  );
+}
+
+// ─── LoaderReveal — loader-progress-driven reveal ────────────────────────────
+//
+// For copy that must transition IN SYNC with the loader, not after it
+// (ComPsych-style choreography). Each item declares a `threshold` in
+// loaderProgress space [0, 1]; when the store's `loaderProgress` crosses
+// that threshold the item animates from hidden → visible using the same
+// soft blur-in motion as RevealItem.
+//
+// Once loaderProgress reaches 1 it stays there for the rest of the
+// session, so scrolling back to the Opening doesn't re-trigger the
+// reveal — the item stays visible. On Immersive unmount index.tsx
+// resets loaderProgress to 0 so a fresh mount replays the choreography.
+
+interface LoaderRevealProps {
+  /** Loader progress (in [0, 1]) at which this item becomes visible. */
+  threshold: number;
+  as?: RevealTag;
+  className?: string;
+  children: ReactNode;
+}
+
+export function LoaderReveal({
+  threshold,
+  as = "div",
+  className,
+  children
+}: LoaderRevealProps) {
+  const Tag = MOTION_MAP[as];
+  // Selector returns a boolean — Zustand only re-renders when the
+  // crossing point flips, not on every loaderProgress write.
+  const visible = useDayNNightScene((r) => r.loaderProgress >= threshold);
+  return (
+    <Tag
+      className={className}
+      initial="hidden"
+      animate={visible ? "visible" : "hidden"}
+      variants={ITEM_VARIANTS}
+    >
       {children}
     </Tag>
   );

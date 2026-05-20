@@ -11,28 +11,36 @@ interface SunLoaderProps {
 }
 
 /**
- * Sun preloader — two-stage backdrop + chrome.
+ * Preloader — solid black-screen with a single horizontal "horizon" line
+ * growing from a point at the viewport center outward to ~85vw wide
+ * (compsych.konpo.co pattern).
  *
- * Stage 1 (first 40% of duration) — a wide horizontal stream of light
- *   appears at the horizon line (vertical center of viewport). The sun
- *   itself is still hidden below the horizon. Progress 0 → 0.02.
+ * Construction:
+ *   - Fully-opaque dark backdrop fixed to the viewport. Covers the scene
+ *     underneath so the Opening hero text / sky / sun never leak through.
+ *   - One element — `.loaderHorizon` — sits at the vertical center of
+ *     the viewport. JS writes `transform: scaleX(u)` each frame where
+ *     `u` is the load progress in [0, 1].
+ *   - When `u` reaches 1.0, the whole element fades to opacity 0 (CSS
+ *     transition, 700 ms). The scene below has its own horizon glow band
+ *     sitting at the same y, and the sun is already at HORIZON_Y from
+ *     the seamless handoff math, so the line "becomes" the scene's
+ *     horizon as the loader fades.
  *
- * Stage 2 (remaining 60%) — the sun rises out from below the horizon and
- *   ends at exactly the horizon line, then hands off to the scene where it
- *   continues rising further up. Progress 0.02 → 0.05.
- *
- * SceneView reads `progress` and `phase` to render the sun and horizon
- * glow consistently across both stages and into the playing phase — no
- * swap, no flash. This component is just the chrome (title + label +
- * progress bar) and the dark spotlight backdrop.
+ * Scene `progress` continues to be written each tick (so the sun, sky
+ * and act-track stay in sync with handoff math); the chrome itself is
+ * pure horizon-line.
  */
 export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
   const t = useTranslations("Event.DayNNight");
   const [hiding, setHiding] = useState(false);
+  const horizonRef = useRef<HTMLDivElement>(null);
+  const sunRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const setProgress = useDayNNightScene((r) => r.setProgress);
   const setPhase = useDayNNightScene((r) => r.setPhase);
   const initialLoopPosition = useDayNNightScene((r) => r.initialLoopPosition);
+  const setLoaderProgress = useDayNNightScene((r) => r.setProgress);
 
   const horizonLoop = useDayNNightScene(useShallow((r) => r.horizonLoop));
   useEffect(() => {
@@ -71,8 +79,38 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
         progress = stage1End + eased * (horizonLoop - stage1End);
       }
       setProgress(progress);
+      // Mirror the loader's local time u into the store so the Opening
+      // act's choreographed reveal can fade copy in lockstep with the
+      // sun rise (ComPsych-style — text comes IN during the load, not
+      // after). Stays at 1 once the rAF hits u=1; never written again
+      // after handoff.
+      setLoaderProgress(u);
+      if (horizonRef.current) {
+        // The element is `position: absolute; top: 50%; left: 50%` with
+        // baseline `transform: translate(-50%, -50%) scaleX(0)`. Each
+        // tick we write the same translate plus a fresh scaleX(u) so the
+        // line stays centered and grows from 0 → full width as u → 1.
+        horizonRef.current.style.transform = `translate(-50%, -50%) scaleX(${u})`;
+      }
       if (fillRef.current) {
         fillRef.current.style.transform = `scaleX(${u})`;
+      }
+      if (sunRef.current) {
+        // Sun rise — runs in lockstep with the horizon's widening. The
+        // sun's CENTER starts one scaled-half-height below the horizon
+        // and lands on the horizon at u=1. Combined with .loaderSkyClip
+        // (which hides everything below the horizon during the run),
+        // the visible portion grows steadily from 0 → a half-disk.
+        //
+        // Both translateY and scale match the scene's sun at the
+        // handoff position (SceneView's sampleCelestial at progress=0
+        // returns size 0.115 → scale 0.115/0.085 = 1.353). When the
+        // loader unmounts the scene sun is at the same place, same
+        // size — no jank, no halo collapse, no "fried egg" pop.
+        const SUN_BASE_HALF_PX = 32; // half of the 64px native sun height
+        const SUN_HANDOFF_SCALE = 1.353;
+        const riseY = (1 - u) * SUN_BASE_HALF_PX * SUN_HANDOFF_SCALE;
+        sunRef.current.style.transform = `translateY(${riseY}px) scale(${SUN_HANDOFF_SCALE})`;
       }
       if (u < 1) {
         raf = requestAnimationFrame(tick);
@@ -102,7 +140,14 @@ export function SunLoader({ durationMs = 2400 }: SunLoaderProps) {
       if (hideTimeout !== undefined) clearTimeout(hideTimeout);
       if (playTimeout !== undefined) clearTimeout(playTimeout);
     };
-  }, [durationMs, setProgress, setPhase]);
+  }, [
+    durationMs,
+    setProgress,
+    setPhase,
+    setLoaderProgress,
+    initialLoopPosition,
+    horizonLoop
+  ]);
 
   return (
     <div

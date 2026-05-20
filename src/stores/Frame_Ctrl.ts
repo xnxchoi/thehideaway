@@ -7,119 +7,55 @@ type LateralFrame = "right" | "left";
 export type FrameSide = VerticalFrame | LateralFrame;
 export type CornerSide = Concat<[VerticalFrame, LateralFrame]>;
 
-const vwVh = /^-?\b\d{1,3}(v(w|h))\b/;
-const vwTest = /(?<=(-?\b\d{1,3}))(vw)/;
-const vhTest = /(?<=(-?\b\d{1,3}))(vh)/;
-const viewDimensions = (viewport: string) => {
-  if (!window) return 0;
-  if (vwVh.test(viewport)) {
-    const vw = vwTest.exec(viewport);
-    const vh = vhTest.exec(viewport);
-    if (vw) {
-      return 0.01 * parseInt(vw[0], 10) * window.innerWidth;
-    }
-    if (vh) {
-      return 0.01 * parseInt(vh[0], 10) * window.innerHeight;
-    }
-  }
-  return 0;
+export type Viewport = {
+  width: number;
+  height: number;
 };
 
-// type MenuStructure = Record<FrameSide, number> & {
-// base: { [x in FrameSide]: number };
-// };
-type FSCondition = () => boolean;
 type MenuStructure = {
   fullscreen: boolean;
+  /**
+   * Cached viewport dimensions, refreshed by the orchestrating provider
+   * (see `AMG` in `providers/RP_Pro`). Consumers should read these via
+   * the `FrameContext` motion values or via `viewportEpoch` to re-derive
+   * geometry on resize.
+   */
+  viewport: Viewport;
+  /**
+   * Monotonically increasing counter. Bumped exactly once per real
+   * dimension change. Frame-aware consumers (Menu, Transition, header
+   * frames, etc.) should treat this as the single signal that frame
+   * geometry must be recalculated.
+   */
+  viewportEpoch: number;
 };
+
 type MenuStructureActions = {
-  // setFrame: (props: Partial<{ [x in FrameSide]: number | string }>) => void;
-  // setBase: (props: Partial<{ [x in FrameSide]: number }>) => void;
   setFullscreen: (l: boolean) => void;
+  syncViewport: (v: Viewport) => void;
 };
-//
-// const initMenus: MenuStructure = {
-//   top: 10,
-//   right: 10,
-//   bottom: 30,
-//   left: 10,
-//   base: {
-//     top: 10,
-//     right: 10,
-//     bottom: 30,
-//     left: 10
-//   }
-// };
+
 export type RP_BluePrint = MenuStructure & MenuStructureActions;
-export const createMenuStructure = () => {
-  return createStore<RP_BluePrint>()((set) => ({
+
+const INITIAL_VIEWPORT: Viewport = { width: 0, height: 0 };
+
+export const createMenuStructure = () =>
+  createStore<RP_BluePrint>()((set) => ({
     fullscreen: false,
-    setFullscreen: (l: boolean) => set({ fullscreen: l })
+    viewport: INITIAL_VIEWPORT,
+    viewportEpoch: 0,
+    setFullscreen: (fullscreen) => set({ fullscreen }),
+    syncViewport: (next) =>
+      set((state) => {
+        if (
+          state.viewport.width === next.width &&
+          state.viewport.height === next.height
+        ) {
+          return state;
+        }
+        return {
+          viewport: next,
+          viewportEpoch: state.viewportEpoch + 1
+        };
+      })
   }));
-};
-// fsCondition: new Map(),
-//   removeFSCondition: (id) => {
-//   set((state) => {
-//     const mm = new Map(state.fsCondition);
-//     if (mm.has(id)) {
-//       mm.delete(id);
-//     }
-//     const r = {
-//       ...state,
-//       fsCondition: mm
-//     };
-//     return r;
-//   });
-// },
-//   addFSCondition: (fs) => {
-//   const id = nanoid();
-//   set((state) => {
-//     const mm = new Map(state.fsCondition);
-//     mm.set(id, { callback: fs });
-//     const r = {
-//       ...state,
-//       fsCondition: mm
-//     };
-//     return r;
-//   });
-//   return id;
-// }
-// }));
-// export const createMenuStructure = (initState: MenuStructure = initMenus) => {
-//   return createStore<RP_BluePrint>()((set) => ({
-//     ...initState,
-//     setFrame: (props: Partial<{ [x in FrameSide]: number | string }>) =>
-//       set((state) => {
-//         const temp = { ...initMenus };
-//         for (const [key, value] of Object.entries(props)) {
-//           if (typeof value === "string") {
-//             temp[key as FrameSide] = viewDimensions(value);
-//           } else {
-//             temp[key as FrameSide] = value;
-//           }
-//         }
-//         return {
-//           ...state,
-//           ...temp
-//         };
-//       }),
-//     resetFrames: () =>
-//       set((state) => {
-//         return {
-//           ...state,
-//           left: state.base.left,
-//           right: state.base.right,
-//           top: state.base.top,
-//           bottom: state.base.bottom
-//         };
-//       }),
-//     setBase: (props: Partial<{ [x in FrameSide]: number }>) =>
-//       set((state) => {
-//         const temp = { ...initMenus.base };
-//         for (const [key, value] of Object.entries(props)) {
-//           temp[key as FrameSide] = value;
-//         }
-//         return { ...state, ...temp };
-//       })
-//   }));
-// };

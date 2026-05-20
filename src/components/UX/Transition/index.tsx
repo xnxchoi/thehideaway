@@ -1,7 +1,7 @@
 "use client";
 import { TE } from "@/constants/animations";
 import { cn } from "@/lib/utils";
-import { useRPStore } from "@/providers/RP_Pro";
+import { useMenu, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
 import { useRPTransition } from "@/providers/TransitionProvider";
@@ -368,11 +368,12 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   const [currentVariants, setCurrentVariants] = useState(
     transitionMap[transitionOutType || "FADE"]
   );
+  const viewportEpoch = useMenu((s) => s.viewportEpoch);
   useEffect(() => {
     if (navOpeningElement) {
       setScaled(1.1 * (navOpeningElement.offsetHeight / window.innerHeight));
     }
-  }, [navOpeningElement]);
+  }, [navOpeningElement, viewportEpoch]);
   const isSidebarOpen = useRPStore(useShallow((r) => r.sidebarOpen));
   useEffect(() => {
     setCurrentVariants(
@@ -406,9 +407,24 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
 
   const nsH = useMotionValue(1.1);
   useEffect(() => {
-    navOpeningElement &&
-      nsH.set(navOpeningElement.offsetHeight / window.innerHeight);
-  }, [navOpeningElement, nsH]);
+    if (!navOpeningElement || typeof window === "undefined") return;
+    const apply = () => {
+      const vh = window.innerHeight || 1;
+      nsH.set(navOpeningElement.offsetHeight / vh);
+    };
+    apply();
+    if (typeof ResizeObserver === "undefined") return;
+    let raf = 0;
+    const observer = new ResizeObserver(() => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(apply);
+    });
+    observer.observe(navOpeningElement);
+    return () => {
+      observer.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [navOpeningElement, nsH, viewportEpoch]);
   const y = useMotionValue(0);
   const scale = useMotionValue(1);
   const baseConfig = useMemo(
@@ -422,10 +438,14 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   const lastSideBar = useRef(isSidebarOpen);
   useEffect(() => {
     if (!lenis || !ref.current) return;
+    const liveRatio =
+      navOpeningElement && window.innerHeight
+        ? navOpeningElement.offsetHeight / window.innerHeight
+        : nsH.get();
     const scaleVal = isMobile
       ? 1
       : navIsOpen
-        ? 1.1 * nsH.get()
+        ? 1.1 * liveRatio
         : isSidebarOpen
           ? 0.9
           : 1;
@@ -459,7 +479,9 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
     nsH,
     navIsOpen,
     ref,
-    animate
+    animate,
+    navOpeningElement,
+    viewportEpoch
   ]);
   // useGSAP(
   //   () => {

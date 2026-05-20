@@ -290,6 +290,14 @@ type FramerAPI = {
   setActiveKey: (key: string | null | -1) => void;
   focusedKey: MotionValue<string | -1>;
   setFocusedKey: (key: string | null | -1) => void;
+  /**
+   * Viewport dimensions as motion values, kept in lockstep with the
+   * frame store's `viewport`. Fine-grained subscribers (canvas-like
+   * components, GSAP timelines) can subscribe without re-rendering on
+   * every viewport change.
+   */
+  viewportWidth: MotionValue<number>;
+  viewportHeight: MotionValue<number>;
 };
 const FrameContext = createContext<FramerAPI | undefined>(undefined);
 const MenuContext = createContext<MenuAPI | undefined>(undefined);
@@ -362,6 +370,37 @@ const AMG = ({ children }: { children: ReactNode }) => {
   const bottom = useTransform(() => (fsVal.get() ? 0 : 30) as number);
   const right = useTransform(() => (fsVal.get() ? 0 : 10) as number);
 
+  const syncViewport = useMenu((s) => s.syncViewport);
+  const viewportWidth = useMotionValue(
+    typeof window !== "undefined" ? window.innerWidth : 0
+  );
+  const viewportHeight = useMotionValue(
+    typeof window !== "undefined" ? window.innerHeight : 0
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let raf = 0;
+    const apply = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      viewportWidth.set(width);
+      viewportHeight.set(height);
+      syncViewport({ width, height });
+    };
+    const schedule = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(apply);
+    };
+    apply();
+    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("orientationchange", schedule, { passive: true });
+    return () => {
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("orientationchange", schedule);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [syncViewport, viewportHeight, viewportWidth]);
+
   return (
     <FrameContext
       value={{
@@ -374,7 +413,9 @@ const AMG = ({ children }: { children: ReactNode }) => {
         top,
         bottom,
         right,
-        navState
+        navState,
+        viewportWidth,
+        viewportHeight
       }}
     >
       {children}

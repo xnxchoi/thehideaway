@@ -4,12 +4,9 @@ import { getPayload } from "payload";
 import type { Metadata } from "next/types";
 
 import { RPage } from "@/components/UX/Transition";
-import { DayNNightGuests } from "@/components/sections/DayNNightGuests";
-import type {
-  GuestProfile,
-  GuestGalleryItem
-} from "@/components/sections/DayNNightGuests/types";
+import { Credits, type Credited } from "@/components/sections/Credits";
 import type { Profile, User, UserMedia } from "@/payload-types";
+import type { RP_Roles } from "@/stores/Notification/NotificationStore";
 
 export const metadata: Metadata = {
   title: "Day n Night — Guests",
@@ -18,14 +15,44 @@ export const metadata: Metadata = {
 };
 
 /**
- * Server fetch shape for guests.
+ * Day n Night — Guests page.
  *
- * Profile.rsvp is new — Payload types regenerate as part of the migration
- * rollout; until then, this local cast captures the shape Payload returns
- * for the new group + array.
+ * Reuses the editorial `Credits` section to render the event's RSVP'd
+ * guest list. Profiles with `rsvp.intro` set are the opt-in flag; their
+ * `rsvp.tier` (host | past | guest) maps onto three of Credits' seven
+ * role slots, so Credits' built-in empty-group filter does the work of
+ * hiding the unused buckets while preserving display order
+ * (Hosts → Past Attendees → Guests).
+ *
+ * The Credits `patronage` flag is repurposed here as the
+ * "this row is *you*, the current viewer" signal — Credits fires
+ * confetti on hover when patronage is true.
  */
+
+type EventTier = "host" | "past" | "guest";
+
+const TIER_TO_POSITION: Record<EventTier, RP_Roles> = {
+  host: "admin",
+  past: "cofounder",
+  guest: "user"
+};
+
+const TIER_TITLES: Partial<Record<RP_Roles, string>> = {
+  admin: "Hosts",
+  cofounder: "Past Attendees",
+  user: "Guests"
+};
+
+function normalizeTier(value: unknown): EventTier {
+  return value === "host" || value === "past" ? value : "guest";
+}
+
+// Profile.rsvp is project-new; payload-generated-types may lag the
+// migration. Local cast captures the shape until `pnpm generate:types`
+// refreshes payload-types.ts.
 type ProfileWithRsvp = Profile & {
   rsvp?: {
+    tier?: EventTier | null;
     intro?: string | null;
     igHandle?: string | null;
     gallery?: Array<{
@@ -38,9 +65,9 @@ type ProfileWithRsvp = Profile & {
 export default async function DayNNightGuestsPage() {
   const payload = await getPayload({ config: configPromise });
 
-  // Heuristic: a profile with rsvp.intro set is opted-in to the public guest
-  // list. Defer the per-event scoping (rsvp.events relationship) until the
-  // second event ships — see DAY_N_NIGHT.md § 7.1.
+  // Opt-in marker: any profile with a non-empty `rsvp.intro` is on the
+  // public guest list. Per-event scoping (rsvp.events relationship)
+  // is deferred until a second event ships — see DAY_N_NIGHT.md § 7.1.
   const profiles = await payload.find({
     collection: "profile",
     depth: 2,
@@ -57,64 +84,78 @@ export default async function DayNNightGuestsPage() {
 
   const docs = profiles.docs as ProfileWithRsvp[];
 
-  // Map to the narrow GuestProfile shape the client renders against.
-  // Skip rows where the author relation didn't resolve (orphaned profile).
-  const guests: GuestProfile[] = docs
-    .map((p): GuestProfile | null => {
-      const author = typeof p.author === "object" ? (p.author as User) : null;
+  // Profile.author is configured with `maxDepth: 0`, so Payload returns
+  // it as an id string regardless of the find query's depth. Resolve
+  // authors in a single follow-up fetch and join in memory.
+  const authorIds = Array.from(
+    new Set(
+      docs
+        .map((p) => (typeof p.author === "string" ? p.author : p.author?.id))
+        .filter((id): id is string => typeof id === "string")
+    )
+  );
+
+  const authorsById = new Map<string, User>();
+  if (authorIds.length > 0) {
+    const users = await payload.find({
+      collection: "users",
+      depth: 0,
+      limit: authorIds.length,
+      overrideAccess: true,
+      where: { id: { in: authorIds } }
+    });
+    for (const u of users.docs as User[]) authorsById.set(u.id, u);
+  }
+
+  const viewerId = await resolveViewerId(payload);
+
+  // Map every RSVP'd profile into the `Credited` shape. Filter out
+  // orphaned profiles (author resolution failed) and any row whose
+  // intro went missing mid-pipeline.
+  const people: Credited[] = docs
+    .map((p): Credited | null => {
+      const authorId =
+        typeof p.author === "string" ? p.author : (p.author?.id ?? null);
+      const author = authorId ? (authorsById.get(authorId) ?? null) : null;
       if (!author) return null;
 
       const intro = p.rsvp?.intro?.trim();
       if (!intro) return null;
 
-      const gallery: GuestGalleryItem[] = (p.rsvp?.gallery ?? [])
-        .map((row): GuestGalleryItem | null => {
-          const media =
-            typeof row?.media === "object" ? (row.media as UserMedia) : null;
-          if (!media) return null;
-          return {
-            id: row.id ?? media.id,
-            media
-          };
-        })
-        .filter((row): row is GuestGalleryItem => row !== null);
+      const tier = normalizeTier(p.rsvp?.tier);
+      const position = TIER_TO_POSITION[tier];
 
-      const displayName =
-        author.displayUsername ?? author.name ?? author.slug ?? "—";
-
+      // Note: `Credited.role` is the raw site-role (a non-nullable
+      // literal union on User). Credits itself groups by `position`,
+      // not `role`, so this passes through unchanged for any
+      // downstream consumer that wants the author's site-role.
       return {
-        profileId: p.id,
-        authorId: author.id,
+        id: author.id,
+        name: author.name ?? null,
+        displayUsername: author.displayUsername ?? null,
         slug: author.slug ?? null,
-        displayName,
-        portrait: author.image ?? null,
-        intro,
-        igHandle: p.rsvp?.igHandle?.trim() || null,
-        gallery
+        image: author.image ?? null,
+        bio: intro,
+        role: author.role,
+        link: author.link ?? (author.slug ? `/@${author.slug}` : null),
+        portrait: null,
+        position,
+        patronage: viewerId !== null && author.id === viewerId
       };
     })
-    .filter((row): row is GuestProfile => row !== null);
-
-  // Stable shuffle by id so the order feels "in no particular order" but
-  // doesn't change every refresh. Hash-sort: simple deterministic shuffle.
-  guests.sort((a, b) => hash(a.profileId) - hash(b.profileId));
-
-  // Current viewer id for the confetti-gate ("that's you" condition).
-  const viewerId = await resolveViewerId(payload);
+    .filter((row): row is Credited => row !== null);
 
   return (
     <RPage type="pages" slug={["day-n-night", "guests"]}>
-      <DayNNightGuests guests={guests} viewerId={viewerId} />
+      <Credits people={people} titles={TIER_TITLES} />
     </RPage>
   );
 }
 
-function hash(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return h;
-}
-
+/**
+ * Resolve the current viewer's user id (or null when signed out).
+ * Mirrors the cookie-token + headers handoff pattern Payload expects.
+ */
 async function resolveViewerId(
   payload: Awaited<ReturnType<typeof getPayload>>
 ): Promise<string | null> {

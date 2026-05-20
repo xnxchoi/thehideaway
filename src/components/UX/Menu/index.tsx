@@ -12,6 +12,7 @@ import {
   useDeviceInfo,
   useFrameFactor,
   useFrameState,
+  useMenu,
   useRPStore
 } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
@@ -172,12 +173,17 @@ export const RP_Menu = () => {
   });
 
   const er = useRef(null),
-    resizeTime = useWindowResize({ debounce: 100 }),
+    resizeTime = useWindowResize({ debounce: 100, detectHeightChange: true }),
+    viewportEpoch = useMenu((s) => s.viewportEpoch),
     lastResize = useRef(0),
     sizeAdjust = useMotionValue(resizeTime);
   useEffect(() => {
     sizeAdjust.set(resizeTime);
   }, [resizeTime, sizeAdjust]);
+  // Combined resize signal: any width/height change (incl. ones the local
+  // useWindowResize hook gates out, e.g. mobile-chrome URL-bar) reaches us
+  // through `viewportEpoch` from the centralized frame store.
+  const resizeSignal = resizeTime + viewportEpoch;
   const focusResetTO = useRef<ReturnType<typeof setTimeout>>(null!);
   useEffect(() => {
     (focusResetTO.current && clearTimeout(focusResetTO.current),
@@ -248,7 +254,7 @@ export const RP_Menu = () => {
             opacity: 1
           },
           {
-            duration: 1.2,
+            duration: needsResizing ? 0 : 1.2,
             ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
             at: 0
           }
@@ -318,7 +324,7 @@ export const RP_Menu = () => {
             y: `${yoffse}px`
           },
           {
-            duration: 1.2,
+            duration: needsResizing ? 0 : 1.2,
             ease: TWEEN_EASE[`power${navo ? 4 : 3}`].inOut,
             at: 0
           }
@@ -393,40 +399,41 @@ export const RP_Menu = () => {
     lenis && lenis[navIsOpen ? "stop" : "start"]();
     document.body.classList[navIsOpen ? "add" : "remove"]("menu__open");
     const needsResizing =
-      lastResize.current === 0 || lastResize.current !== resizeTime;
-    // toggleMenuCallback({
-    //   isNavOpen: navIsOpen,
-    //
-    //   needsResizing,
-    //   top,
-    //   right,
-    //   bottom,
-    //   left,
-    //   isAndroid,
-    //   isMobile
-    // });
+      lastResize.current === 0 || lastResize.current !== resizeSignal;
     navState.set(navIsOpen);
     toggM({ needsResizing });
     if (lastNavOpen.current !== navIsOpen || needsResizing) {
-      lastResize.current = resizeTime;
+      lastResize.current = resizeSignal;
     }
     lastNavOpen.current = navIsOpen;
     navIsOpen || setNavItemHovered(-1);
   }, [
     navIsOpen,
     navState,
-    resizeTime,
+    resizeSignal,
     isMobile,
     setNavItemHovered,
-    // toggleMenuCallback,
     lenis,
-    // top,
-    // right,
-    // bottom,
-    // left,
-    isAndroid,
-    isMobile
+    isAndroid
   ]);
+
+  // The nav window's own size can change without a `window.resize` (sticky
+  // header collapse, font swap, content reflow). A ResizeObserver on the
+  // element keeps the frame snap geometry in sync with the actual box.
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined" || !navWindow.current) return;
+    let raf = 0;
+    const tick = () => toggM({ needsResizing: true });
+    const observer = new ResizeObserver(() => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(tick);
+    });
+    observer.observe(navWindow.current);
+    return () => {
+      observer.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const onMouseEnter = useCallback(() => {
     setCursorTheme("dark");
@@ -522,16 +529,6 @@ export const RP_Menu = () => {
               <m.div
                 className={cn("menu__frame", `frame-${frame}`)}
                 id={`frame-${frame}`}
-                style={{
-                  x:
-                    frame === "top" || frame === "bottom"
-                      ? 0
-                      : `${frame === "left" ? "-" : ""}${isMobile ? 100 : 102}%`,
-                  y:
-                    frame === "left" || frame === "right"
-                      ? 0
-                      : `${frame === "top" ? "-" : ""}${isMobile ? 100 : 102}%`
-                }}
                 ref={(el) => {
                   if (el) {
                     menuFrames.current[ind] = el;
