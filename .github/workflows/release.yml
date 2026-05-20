@@ -62,20 +62,22 @@ jobs:
           # so the tag commit is reachable.
           fetch-depth: 1
 
-      - name: Enable corepack
-        # Must run BEFORE actions/setup-node so `pnpm` is on PATH when
-        # setup-node computes the `cache: pnpm` cache key. Without this,
-        # the workflow errors with "cannot find executable pnpm".
-        # corepack itself ships with the runner's pre-installed node.
-        run: |
-          corepack enable
-          pnpm --version
+      - name: Install pnpm
+        # Two ordering constraints:
+        #   (1) `cache: pnpm` on actions/setup-node needs `pnpm` on PATH
+        #       when it computes the cache key — pnpm-setup must run first.
+        #   (2) Our pinned pnpm (11.1.2, via package.json packageManager)
+        #       requires Node ≥ 22.13. corepack-enable on the runner's
+        #       default Node 20 explodes with `node:sqlite` missing.
+        # pnpm/action-setup installs pnpm as a standalone binary, so it's
+        # available before setup-node and runs under Node 24 from then on.
+        # No `version:` here — the action reads packageManager from package.json.
+        uses: pnpm/action-setup@v4
 
-      - name: Setup Node + pnpm
+      - name: Setup Node + pnpm cache
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          # pnpm comes from the `packageManager` field in package.json via corepack.
           cache: pnpm
 
       - name: Install sops + age
