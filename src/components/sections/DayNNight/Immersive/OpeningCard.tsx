@@ -3,7 +3,6 @@
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { SurvivalKit } from "../SurvivalKit";
-
 const PAPER_TEXTURE = "/assets/three/materials/paper/paper_d.png";
 
 /**
@@ -32,10 +31,13 @@ export function OpeningCard() {
   const t = useTranslations("Event.DayNNight");
 
   return (
-    <div
-      className="group relative w-full max-w-[400px] rotate-[-2deg]"
-      style={PAPER_THEME}
-    >
+    // Plain <div>. Was `<Html as="div">` from @react-three/drei —
+    // drei's Html is meant for portaling content into a Three.js
+    // Canvas scene, NOT for flowing DOM content. Used here in a normal
+    // grid cell it collapses to 0×0 (Html computes position from a
+    // 3D scene that doesn't exist). The paper card just needs to fill
+    // its parent grid cell, so a plain div is the right primitive.
+    <div className="group relative w-full rotate-[-2deg]" style={PAPER_THEME}>
       <div
         className="relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:rotate-[-0.5deg] hover:shadow-[0_42px_80px_-22px_rgba(0,0,0,0.65),_0_12px_32px_-10px_rgba(0,0,0,0.45)]"
         style={{

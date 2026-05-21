@@ -279,7 +279,9 @@ export function TapeModel({
   // longer text shows up.
   const STATIC_FONT_SHRINK = 0.7;
   const displayFontSize =
-    DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO *
+    DISPLAY_HALF_HEIGHT *
+    2 *
+    FONT_SIZE_RATIO *
     (displayOverride?.tickerMode === "static" ? STATIC_FONT_SHRINK : 1);
   const RENDER_TEX_HEIGHT = 256;
   /** Exponentially smoothed velocity (qc in original). */

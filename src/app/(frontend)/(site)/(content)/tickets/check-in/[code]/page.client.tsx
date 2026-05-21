@@ -4,6 +4,11 @@ import { useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
+import { MotionPillButton } from "@/components/core/Button";
+import { SPRING_EASE } from "@/constants/animations";
+import { cn } from "@/lib/utils";
+import * as m from "motion/react-m";
+import { AnimatePresence } from "motion/react";
 
 type State = "ready" | "forbidden" | "not_found";
 
@@ -56,23 +61,26 @@ export function CheckInClient({
 
   return (
     <RPage type="me" slug={["tickets", "check-in"]}>
-      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
-        {state === "forbidden" ? (
-          <ForbiddenView />
-        ) : state === "not_found" ? (
-          <NotFoundView />
-        ) : (
-          <ReadyView
-            ticketNumber={ticketNumber}
-            userName={userName}
-            status={status}
-            alreadyCheckedIn={alreadyCheckedIn}
-            done={done}
-            busy={busy}
-            err={err}
-            onConfirm={confirm}
-          />
-        )}
+      <section className="relative z-[100] mx-auto w-full max-w-2xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
+        <AnimatePresence mode="wait">
+          {state === "forbidden" ? (
+            <ForbiddenView key="forbidden" />
+          ) : state === "not_found" ? (
+            <NotFoundView key="not_found" />
+          ) : (
+            <ReadyView
+              key="ready"
+              ticketNumber={ticketNumber}
+              userName={userName}
+              status={status}
+              alreadyCheckedIn={alreadyCheckedIn}
+              done={done}
+              busy={busy}
+              err={err}
+              onConfirm={confirm}
+            />
+          )}
+        </AnimatePresence>
       </section>
 
       <TicketBottomBar
@@ -86,8 +94,25 @@ export function CheckInClient({
 
 function ForbiddenView() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+    <m.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex flex-col items-center justify-center py-24 text-center"
+    >
+      <m.span
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.1, scale: 1 }}
+        transition={{
+          delay: 0.1,
+          duration: 0.5,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }}
+        className="mb-4 block font-mono text-5xl"
+      >
+        ○
+      </m.span>
       <p className="text-base font-light text-foreground/70">
         Only staff can check in attendees.
       </p>
@@ -95,24 +120,44 @@ function ForbiddenView() {
         If you&apos;re trying to use your own ticket, scroll down to the QR code
         on your ticket page — staff will scan it from there.
       </p>
-      <Link
-        href="/tickets/my"
-        className="mt-7 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
-      >
-        ← My tickets
+      <Link href="/tickets/my">
+        <MotionPillButton
+          type="button"
+          size="sm"
+          className="mt-7 text-[11px] tracking-widest uppercase"
+        >
+          ← My tickets
+        </MotionPillButton>
       </Link>
-    </div>
+    </m.div>
   );
 }
 
 function NotFoundView() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+    <m.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex flex-col items-center justify-center py-24 text-center"
+    >
+      <m.span
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.1, scale: 1 }}
+        transition={{
+          delay: 0.1,
+          duration: 0.5,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }}
+        className="mb-4 block font-mono text-5xl"
+      >
+        ○
+      </m.span>
       <p className="text-base font-light text-foreground/70">
         No ticket matches this code.
       </p>
-    </div>
+    </m.div>
   );
 }
 
@@ -136,50 +181,102 @@ function ReadyView({
   onConfirm: () => void;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
-      <dl className="space-y-5 border-t border-border/20 pt-8">
-        <Field label="Ticket" value={`#${ticketNumber ?? "—"}`} mono />
-        <Field label="Holder" value={userName} />
-        <Field label="Status" value={status} mono />
-      </dl>
-
-      <div className="border-t border-border/20 pt-8 lg:border-t-0 lg:pt-0">
-        {done ? (
-          <div>
-            <p className="font-mono text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
-              Checked in {alreadyCheckedIn ? "(already)" : ""}
-            </p>
-            <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
-              You can close this page, or scan the next ticket.
-            </p>
-          </div>
-        ) : (
-          <>
-            {status !== "active" ? (
-              <p className="mb-4 font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
-                Ticket not active — confirm anyway?
-              </p>
-            ) : null}
-            {err ? (
-              <p
-                role="alert"
-                className="mb-4 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
-              >
-                {err}
-              </p>
-            ) : null}
-            <button
-              type="button"
-              onClick={onConfirm}
-              disabled={busy}
-              className="w-full border border-border/40 px-5 py-4 font-mono text-[12px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
-            >
-              {busy ? "Confirming…" : "Confirm check-in"}
-            </button>
-          </>
+    <m.div
+      initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0 }}
+      transition={{
+        type: "spring",
+        ...SPRING_EASE.power3.out,
+        visualDuration: 0.55
+      }}
+      className="flex flex-col gap-5"
+    >
+      {/* Ticket info panel */}
+      <div
+        className={cn(
+          "relative rounded-2xl p-6 xl:p-8",
+          "bg-foreground/[0.04] dark:bg-foreground/[0.05]",
+          "before:absolute before:inset-x-0 before:top-0 before:h-px",
+          "before:bg-gradient-to-r before:from-transparent before:via-foreground/20 before:to-transparent",
+          "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
         )}
+      >
+        <p className="mb-5 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+          Ticket details
+        </p>
+        <dl className="flex flex-col gap-2">
+          <Field label="Ticket" value={`#${ticketNumber ?? "—"}`} mono />
+          <Field label="Holder" value={userName} />
+          <Field label="Status" value={status} mono />
+        </dl>
       </div>
-    </div>
+
+      {/* Action panel */}
+      <div
+        className={cn(
+          "relative rounded-2xl p-6 xl:p-8",
+          "bg-foreground/[0.04] dark:bg-foreground/[0.05]",
+          "before:absolute before:inset-x-0 before:top-0 before:h-px",
+          "before:bg-gradient-to-r before:from-transparent before:via-foreground/20 before:to-transparent",
+          "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
+        )}
+      >
+        <AnimatePresence mode="wait">
+          {done ? (
+            <m.div
+              key="done"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-3"
+            >
+              <p className="font-mono text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
+                Checked in{alreadyCheckedIn ? " (already)" : ""}
+              </p>
+              <p className="font-mono text-[11px] text-muted-foreground/60">
+                You can close this page, or scan the next ticket.
+              </p>
+            </m.div>
+          ) : (
+            <m.div
+              key="confirm"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-4"
+            >
+              {status !== "active" ? (
+                <p className="font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
+                  Ticket not active — confirm anyway?
+                </p>
+              ) : null}
+              {err ? (
+                <m.p
+                  role="alert"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+                >
+                  {err}
+                </m.p>
+              ) : null}
+              <MotionPillButton
+                type="button"
+                size="md"
+                onClick={onConfirm}
+                disabled={busy}
+                className="w-full bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
+              >
+                {busy ? "Confirming…" : "Confirm check-in"}
+              </MotionPillButton>
+            </m.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </m.div>
   );
 }
 
@@ -193,7 +290,12 @@ function Field({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
+    <div
+      className={cn(
+        "relative flex items-center justify-between gap-4 rounded-lg px-4 py-3",
+        "bg-foreground/[0.025] dark:bg-foreground/[0.03]"
+      )}
+    >
       <dt className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase">
         {label}
       </dt>

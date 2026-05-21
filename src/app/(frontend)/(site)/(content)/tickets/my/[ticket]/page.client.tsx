@@ -7,6 +7,9 @@ import {
   type TicketStatus
 } from "@/components/UX/Ticket/TicketCard";
 import { ticketFontVariables } from "@/components/UX/Ticket/fonts";
+import { MotionPillButton } from "@/components/core/Button";
+import * as m from "motion/react-m";
+import { cn } from "@/lib/utils";
 
 interface Props {
   ticketId: string;
@@ -71,23 +74,37 @@ export function TicketDetailClient({
 
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
-      <div className={ticketFontVariables}>
-        {/* Top rail — back link only. The page header used to repeat
-            "Ticket · No. 0004 / Hideaway Test Salon" right above a
-            ticket that already says exactly that. The artifact is the
-            H1; chrome stays out of its way. */}
+      <div className={cn("relative z-[100]", ticketFontVariables)}>
+        {/* Back link */}
         <div className="mx-auto w-full max-w-7xl px-6 pt-6 xl:px-10 xl:pt-10">
-          <Link
-            href="/tickets/my"
-            className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+          <m.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            ← All tickets
-          </Link>
+            <Link
+              href="/tickets/my"
+              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+            >
+              ← All tickets
+            </Link>
+          </m.div>
         </div>
 
-        {/* ── Hero — landscape ticket centred ────────────────────── */}
+        {/* ── Hero — landscape ticket centred ── */}
         <section className="mx-auto w-full max-w-7xl px-6 pt-10 pb-16 xl:px-10 xl:pt-16 xl:pb-20">
-          <div className="flex justify-center">
+          <m.div
+            initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              type: "spring",
+              stiffness: 280,
+              damping: 38,
+              mass: 1,
+              delay: 0.05
+            }}
+            className="flex justify-center"
+          >
             <TicketCard
               ticketNumber={ticketNumber}
               status={status}
@@ -101,29 +118,57 @@ export function TicketDetailClient({
               ticketPrice={ticketPrice}
               paymentInstructions={paymentInstructions}
             />
-          </div>
+          </m.div>
         </section>
 
-        {/* ── Status / payment / actions ─────────────────────────── */}
-        {/* Sub-content under the artifact — long-form metadata that
-            wouldn't fit cleanly on the ticket itself. The ticket above
-            already shows event/date/location/holder/serial. */}
-        <section className="mx-auto w-full max-w-2xl px-6 pb-32 xl:pb-40">
-          <dl className="grid grid-cols-2 gap-x-10 gap-y-5 border-t border-border/20 pt-8 sm:grid-cols-3">
-            <Field
-              label="Status"
-              value={`${STATUS_LABEL[status]}${checkedIn ? " · Checked in" : ""}`}
-              mono
-            />
-            {dateLong ? <Field label="When" value={dateLong} /> : null}
-            {status === "pending" ? (
-              <Field label="Price" value={formatKRW(ticketPrice)} mono />
-            ) : null}
-          </dl>
+        {/* ── Metadata & actions ── */}
+        <m.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: 0.2,
+            duration: 0.45,
+            ease: [0.25, 0.46, 0.45, 0.94]
+          }}
+          className="mx-auto w-full max-w-2xl px-6 pb-32 xl:pb-40"
+        >
+          {/* Lifted metadata panel */}
+          <div
+            className={cn(
+              "relative rounded-2xl p-6 xl:p-8",
+              "bg-foreground/[0.04] dark:bg-foreground/[0.05]",
+              "before:absolute before:inset-x-0 before:top-0 before:h-px",
+              "before:bg-gradient-to-r before:from-transparent before:via-foreground/20 before:to-transparent",
+              "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
+            )}
+          >
+            <dl className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-3">
+              <Field
+                label="Status"
+                value={`${STATUS_LABEL[status]}${checkedIn ? " · Checked in" : ""}`}
+                mono
+              />
+              {dateLong ? <Field label="When" value={dateLong} /> : null}
+              {status === "pending" ? (
+                <Field label="Price" value={formatKRW(ticketPrice)} mono />
+              ) : null}
+            </dl>
+          </div>
 
           {/* Payment instructions — only when pending + unpaid */}
           {status === "pending" && !paid ? (
-            <div className="mt-10 border-t border-border/20 pt-8">
+            <m.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className={cn(
+                "relative mt-4 rounded-2xl p-6 xl:p-8",
+                "bg-foreground/[0.04] dark:bg-foreground/[0.05]",
+                "before:absolute before:inset-x-0 before:top-0 before:h-px",
+                "before:bg-gradient-to-r before:from-transparent before:via-foreground/20 before:to-transparent",
+                "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
+              )}
+            >
               <p className="font-mono text-[10px] tracking-[0.32em] text-muted-foreground/55 uppercase">
                 Payment
               </p>
@@ -137,30 +182,42 @@ export function TicketDetailClient({
                   activates the moment we confirm receipt.
                 </p>
               )}
-            </div>
+            </m.div>
           ) : null}
 
-          {/* Terminal-state copy — used / canceled */}
+          {/* Terminal-state copy */}
           {status === "used" ? (
-            <p className="mt-10 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+            <p className="mt-6 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
               This ticket has been used. Thanks for being there.
             </p>
           ) : status === "canceled" ? (
-            <p className="mt-10 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+            <p className="mt-6 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
               This ticket was canceled. If you think this is a mistake, reach
               out to the host.
             </p>
           ) : null}
 
           {checkedIn && eventSlug ? (
-            <Link
-              href={`/tickets/${eventSlug}/exclusive`}
-              className="mt-10 inline-block border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+            <m.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
+              className="mt-8"
             >
-              View exclusive content →
-            </Link>
+              <Link href={`/tickets/${eventSlug}/exclusive`}>
+                <MotionPillButton
+                  type="button"
+                  size="md"
+                  className="bg-foreground text-[13px] font-medium text-background"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  View exclusive content →
+                </MotionPillButton>
+              </Link>
+            </m.div>
           ) : null}
-        </section>
+        </m.section>
       </div>
     </RPage>
   );
@@ -176,15 +233,20 @@ function Field({
   mono?: boolean;
 }) {
   return (
-    <div>
+    <div
+      className={cn(
+        "flex flex-col gap-1 rounded-lg px-4 py-3",
+        "bg-foreground/[0.025] dark:bg-foreground/[0.03]"
+      )}
+    >
       <dt className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase">
         {label}
       </dt>
       <dd
         className={
           mono
-            ? "mt-1 font-mono text-sm text-foreground/80 tabular-nums"
-            : "mt-1 text-sm font-light text-foreground/80"
+            ? "mt-0.5 font-mono text-sm text-foreground/80 tabular-nums"
+            : "mt-0.5 text-sm font-light text-foreground/80"
         }
       >
         {value}

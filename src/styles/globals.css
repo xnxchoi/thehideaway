@@ -35,6 +35,12 @@
     :focus {
         outline: none;
     }
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+    }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+    }
 }
 
 /*
@@ -249,7 +255,6 @@ html.lenis body {
     --content-width: min(var(--site-width), 840px);
     --pad-header: calc(calc(100% - var(--site-width)) / 2);
 
-
     --pad-inner: 5.2rem;
 
     --halfGutter: calc(var(--gutter) * 0.5);
@@ -278,7 +283,6 @@ Gutters
 ** Color variables
 **/
 :root {
-
 
     --bg: var(--grey-black);
     --fg: var(--white);
@@ -826,7 +830,6 @@ Colors
     --card: var(--faded-white);
     --card-foreground: var(--faded-black);
 
-
     --chart-1: oklch(64.6% 0.222 41.116);
     --chart-2: oklch(6% 0.118 184.704);
     --chart-3: oklch(39.8% 0.07 227.392);
@@ -928,7 +931,6 @@ Colors
 }
 
 /*body.menu__open * {*/
-
 
 /*  --n-s-fg: var(--n-o-fg);*/
 /*  --n-s-bg: var(--n-o-bg);*/
@@ -1141,4 +1143,3 @@ input:-webkit-autofill:active {
 /*@media (min-width: 768px) {*/
 
 /*}*/
-

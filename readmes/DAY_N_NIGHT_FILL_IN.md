@@ -35,8 +35,7 @@ only by romanisation.
 - **Phone (E.164, +82-…):** ''
 - **KakaoTalk ID:** `___`
 - **Email:** `___`
-- **Portrait image:** `public/assets/day-n-night/hosts/ingyu.jpg` <to-supply>
-
+- **Portrait image:** `public/assets/day-n-night/hosts/ingyu.jpeg`
 ---
 
 ## 1. Venue
@@ -45,12 +44,12 @@ only by romanisation.
 - **Address (KR, 도로명주소):** `소월로20길 64, 3층` <confirm>
 - **Neighbourhood label:** `Haebangchon · Yongsan` / `해방촌 · 용산` <confirm>
 - **Coordinates (for the map embed):**
-  - Latitude: `___` (e.g. `37.5450`)
-  - Longitude: `___` (e.g. `126.9870`)
-- **Kakao Map search string** — what someone types into the Kakao Map search box to land on this place: `___`
+  - Latitude: `37.543933`
+  - Longitude: `126.984232`
+- **Kakao Map search string** — what someone types into the Kakao Map search box to land on this place: `_https://kko.to/0WZOd709uh_`
   *(Open Kakao Map, search for the venue, copy what you typed.)*
-- **Naver Map search string** — same idea for Naver: `___`
-- **Google Maps Place ID or URL** — copy the URL after searching the venue in Google Maps: `___`
+- **Naver Map URL (ID)** — same idea for Naver: `https://naver.me/GFB9v8Ug`
+- **Google Maps Place ID or URL** — copy the URL after searching the venue in Google Maps: `https://maps.app.goo.gl/yvEE24K8PyiffftV8`
   *(Looks like `https://maps.app.goo.gl/XXXXX` or a long `/maps/place/...` URL.)*
 
 ---
@@ -60,9 +59,9 @@ only by romanisation.
 - **Bank name:** `Toss Bank` <confirm>
 - **Bank label for the Toss deep link (한글):** `토스뱅크` <confirm — must be Korean label, not code, not English>
 - **Account number:** `1002-5436-0906` <confirm>
-- **Account number, digits only (for the deep link):** `1002543609 06` → please re-type without dashes: `___`
+- **Account number, digits only (for the deep link):** `100254360906`<confirm>
 - **Account holder (KR):** `리스토어드프로젝트` <confirm>
-- **Amount per ticket (KRW):** `65000` <confirm>
+- **Amount per ticket (KRW):** `61000` <confirm>
 - **Memo / 보내는 분 표시** (optional — what the host wants to see in the transfer line, e.g. `"DNN-" + guest_name`): `___`
 
 The Toss deep link will resolve to (template, filled with above values):

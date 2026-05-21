@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
-import { RP_Btn } from "@/components/core/Button";
+import { MotionPillButton } from "@/components/core/Button";
 import { TicketStub } from "@/components/UX/Ticket/TicketStub";
 import {
   StatusChip,
@@ -87,12 +87,19 @@ export default function MyTicketsPageClient({ tickets }: Props) {
 
   return (
     <RPage type="me" slug={["tickets"]}>
-      <section className="mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
+      <section className="relative z-[100] mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
         <AnimatePresence mode="wait">
           {total === 0 ? (
             <EmptyState key="empty" />
           ) : (
-            <div key="pager" className="flex flex-col items-center gap-12">
+            <m.div
+              key="pager"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center gap-12"
+            >
               <PagerCard ticket={tickets[index]} />
               {total > 1 ? (
                 <PagerControls
@@ -103,7 +110,7 @@ export default function MyTicketsPageClient({ tickets }: Props) {
                   onJump={setIndex}
                 />
               ) : null}
-            </div>
+            </m.div>
           )}
         </AnimatePresence>
       </section>
@@ -131,16 +138,13 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
     <AnimatePresence mode="wait">
       <m.div
         key={ticket.id}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -16 }}
-        transition={{ type: "spring", bounce: 0.15, duration: 0.45 }}
+        initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: -14, filter: "blur(3px)" }}
+        transition={{ type: "spring", bounce: 0.12, duration: 0.45 }}
         className="flex w-full flex-col items-center gap-8"
         style={{ width: "min(36rem, 100%)" }}
       >
-        {/* HTML paper-stub visual — quieter, more list-appropriate than
-            the 3D card. Per the user: 3D card is reserved for the
-            single-ticket detail/spotlight view. */}
         <ul
           className="w-full"
           style={
@@ -161,7 +165,6 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
           />
         </ul>
 
-        {/* Information block sits below the paper stub. */}
         <div className="flex w-full flex-col items-center gap-5 text-center">
           <StatusChip status={status} checkedIn={Boolean(ticket.checked_in)} />
 
@@ -206,37 +209,44 @@ function PagerControls({
 }) {
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="flex items-center gap-8">
-        <RP_Btn
+      <div className="flex items-center gap-4">
+        <MotionPillButton
+          type="button"
+          size="sm"
           onClick={onPrev}
           aria-label="Previous ticket"
-          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+          className="text-[11px] tracking-widest text-muted-foreground/60 uppercase"
         >
           ← Prev
-        </RP_Btn>
+        </MotionPillButton>
         <span className="font-mono text-[11px] text-muted-foreground/70 tabular-nums xl:text-xs">
           {padIndex(index + 1)}{" "}
           <span className="text-muted-foreground/30">/</span> {padIndex(total)}
         </span>
-        <RP_Btn
+        <MotionPillButton
+          type="button"
+          size="sm"
           onClick={onNext}
           aria-label="Next ticket"
-          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+          className="text-[11px] tracking-widest text-muted-foreground/60 uppercase"
         >
           Next →
-        </RP_Btn>
+        </MotionPillButton>
       </div>
       <div className="flex items-center gap-2">
         {Array.from({ length: total }).map((_, i) => (
-          <RP_Btn
+          <m.button
             key={i}
+            type="button"
             onClick={() => onJump(i)}
             aria-label={`Go to ticket ${i + 1}`}
             aria-current={i === index ? "true" : undefined}
+            whileTap={{ scale: 0.85 }}
+            transition={{ type: "spring", bounce: 0.2, duration: 0.2 }}
             className={
               i === index
-                ? "h-1.5 w-6 rounded-full bg-foreground/80 transition-all"
-                : "h-1.5 w-1.5 rounded-full bg-foreground/15 transition-all hover:bg-foreground/40"
+                ? "h-1.5 w-6 rounded-full bg-foreground/80 transition-all duration-300"
+                : "h-1.5 w-1.5 rounded-full bg-foreground/15 transition-all duration-300 hover:bg-foreground/40"
             }
           />
         ))}
@@ -250,12 +260,24 @@ function PagerControls({
 function EmptyState() {
   return (
     <m.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="flex flex-col items-center justify-center py-24 text-center"
     >
-      <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+      <m.span
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.1, scale: 1 }}
+        transition={{
+          delay: 0.1,
+          duration: 0.5,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }}
+        className="mb-4 block font-mono text-5xl"
+      >
+        ○
+      </m.span>
       <p className="text-base font-light text-foreground/70">No tickets yet.</p>
       <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
         Tickets arrive here once you purchase one through a private event link

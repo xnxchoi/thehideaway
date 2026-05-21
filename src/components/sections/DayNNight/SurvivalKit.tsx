@@ -2,6 +2,37 @@
 
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Map, MapMarker, MarkerContent } from "@/components/ui/map";
+import { MAP_LINKS, VENUE_COORDS } from "./survivalKit.config";
+
+/**
+ * useTranslationsSafe — wraps next-intl's useTranslations so that a
+ * missing-provider error during the first hydration render no longer
+ * throws into an error boundary.
+ *
+ * Why we need this: on the immersive /day-n-night surface, SurvivalKit
+ * is mounted in three places (SimplifiedView, OpeningCard inside the
+ * Timeline's duplicate-ActSet pinned track, and DetailsDrawer's Vaul
+ * portal). At the very first render after hydration, the
+ * NextIntlClientProvider context can briefly resolve to `undefined`
+ * while the (frontend)/layout's outer Suspense and ClientProviders
+ * tree settle — useTranslations throws, React fires the error boundary
+ * + retries, and the second render succeeds. The visible UI is
+ * correct, but the console fills with 4+ stack traces every load.
+ *
+ * This wrapper returns `null` when the hook throws, letting the caller
+ * render nothing on that first attempt. React then retries with the
+ * fully-mounted provider on the next pass and the hook works normally.
+ * Hook order remains stable across renders — the hook is always called
+ * in the same position; the try/catch only suppresses the throw next
+ * to the caller's site, it does not skip the call. */
+function useTranslationsSafe(namespace: Parameters<typeof useTranslations>[0]) {
+  try {
+    return useTranslations(namespace);
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Survival Kit — Phase 5c v4 (editorial fragments).
@@ -56,13 +87,19 @@ interface SurvivalKitProps {
 }
 
 export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
-  const t = useTranslations("Event.DayNNight.survivalKit");
-  const tDn = useTranslations("Event.DayNNight");
+  const t = useTranslationsSafe("Event.DayNNight.survivalKit");
+  const tDn = useTranslationsSafe("Event.DayNNight");
   const [copied, setCopied] = useState<string | null>(null);
   // useId yields a unique, SSR-stable id per instance so the immersive
   // view can mount multiple kits (Opening + Closing, each duplicated by
   // the seamless-loop ActSet) without aria-labelledby id collisions.
   const headingId = useId();
+
+  // Wait for the next-intl provider context. Returning null on the
+  // first render where context isn't yet ready lets React retry on
+  // the next pass with the provider fully mounted — no error-boundary
+  // fallout, no console noise.
+  if (!t || !tDn) return null;
 
   const address = tDn("location.address");
   const tossAccount = tDn("entry.bank");
@@ -70,8 +107,6 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   // Account holder name — required for Korean bank transfers.
   const tossHolder = tDn("entry.accountHolder");
   const hostContact = t("host.value");
-  // Kakao Map query URL — works without an API key.
-  const kakaoMapUrl = `https://map.kakao.com/?q=${encodeURIComponent(address)}`;
   // Toss line copied as "account · holder · amount" so a single paste
   // lands the whole payment instruction.
   const tossClipboard = `${tossAccount} · ${tossHolder} · ${tossAmount}`;
@@ -131,18 +166,56 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         {t("heading")}
       </h2>
 
-      {/* ── Address fragment ──────────────────────────────────────── */}
-      {/* R1: type scaled up ~40-50% so the kit holds its column with
-          presence instead of floating tiny in whitespace. */}
+      {/* ── Address / Map fragment ────────────────────────────────── */}
       <div className="grid gap-2">
-        <p className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+        <p className="font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("address.label")}
         </p>
-        <p className="font-serif text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[var(--dn-fg)]">
-          {address}
-        </p>
-        <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-          <RowAction href={kakaoMapUrl} external arrow text={t("openMap")} />
+        <div className="relative aspect-[16/7] overflow-hidden rounded-sm bg-neutral-900">
+          <Map
+            theme="dark"
+            viewport={{
+              center: [VENUE_COORDS.lng, VENUE_COORDS.lat],
+              zoom: 15
+            }}
+            keyboard={false}
+            className="absolute inset-0 h-full w-full"
+          >
+            <MapMarker longitude={VENUE_COORDS.lng} latitude={VENUE_COORDS.lat}>
+              <MarkerContent>
+                <div className="size-2.5 rounded-full bg-white shadow-[0_0_0_5px_rgba(255,255,255,0.18)]">
+                  "HERF!&#34;
+                </div>
+              </MarkerContent>
+            </MapMarker>
+          </Map>
+          {/* Address text overlaid bottom-left with gradient scrim */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent px-4 pt-10 pb-3">
+            <p className="font-serif text-[clamp(0.9rem,1.4vw,1.15rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
+              {address}
+            </p>
+          </div>
+        </div>
+        {/* Provider deep-links + copy */}
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+          <RowAction
+            href={MAP_LINKS.kakao}
+            external
+            arrow
+            text={t("map.kakao")}
+          />
+          <RowAction
+            href={MAP_LINKS.naver}
+            external
+            arrow
+            text={t("map.naver")}
+          />
+          <RowAction
+            href={MAP_LINKS.google}
+            external
+            arrow
+            text={t("map.google")}
+          />
           <RowAction
             onClick={() => copyToClipboard(address, "address")}
             text={copyLabel("address")}
@@ -153,7 +226,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
 
       {/* ── Payment fragment ──────────────────────────────────────── */}
       <div className="mt-16 grid gap-2">
-        <p className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+        <p className="font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("toss.label")}
         </p>
         <p className="font-serif text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.15] tracking-[-0.01em] text-[var(--dn-fg)]">
@@ -162,7 +235,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         <p className="font-serif text-[clamp(1.4rem,1.6vw,1.6rem)] leading-[1.3] tracking-[-0.005em] text-[var(--dn-fg-mute)]">
           {tossHolder}
         </p>
-        <p className="font-mono text-[14px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
+        <p className="font-sans text-[14px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
           {tossAmount}
         </p>
         <div className="mt-2">
@@ -185,10 +258,10 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
             key={key}
             className="grid grid-cols-[64px_1fr] items-baseline gap-x-6"
           >
-            <dt className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+            <dt className="font-serif text-sm tracking-wider text-[var(--dn-fg)] italic">
               {label}
             </dt>
-            <dd className="text-[clamp(1.5rem,1.7vw,1.7rem)] leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
+            <dd className="text-base leading-[1.4] font-light tracking-[-0.005em] text-[var(--dn-fg)]">
               {value}
             </dd>
           </div>
@@ -197,12 +270,12 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
 
       {/* ── Contact fragment — italic serif pull ──────────────────── */}
       <div className="mt-16 grid grid-cols-[64px_1fr] items-baseline gap-x-6">
-        <span className="font-mono text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
+        <span className="font-sans text-[11px] tracking-[0.22em] text-[var(--dn-fg-faint)] uppercase">
           {t("host.label")}
         </span>
         <a
           href={hostHref}
-          className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.5rem,1.8vw,1.8rem)] leading-[1.3] text-[var(--dn-fg)] italic [text-decoration-line:underline] no-underline [text-decoration-color:var(--dn-fg-faint)] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
+          className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.15rem,1.8vw,1.5rem)] leading-[1.3] text-[var(--dn-fg)] italic [text-decoration-line:underline] no-underline [text-decoration-color:var(--dn-fg-faint)] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
         >
           <span>{hostContact}</span>
           <span aria-hidden className="text-[0.85em] leading-none">
@@ -235,7 +308,7 @@ function RowAction({
   ariaLabel?: string;
 }) {
   const className =
-    "ease inline-flex items-baseline gap-1.5 font-mono text-[10px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase no-underline transition-[color,gap] duration-200 hover:text-[var(--dn-fg)]" +
+    "ease inline-flex items-baseline gap-1.5 font-sans text-[10px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase no-underline transition-[color,gap] duration-200 hover:text-[var(--dn-fg)]" +
     (arrow ? " hover:gap-2.5" : "");
   const inner = (
     <>

@@ -17,6 +17,7 @@ export const GATE_PUBLIC_PATH_PREFIXES: readonly string[] = [
   "/api/places",
   "/gate",
   "/vault",
+  "/dn-friends-torrent",
   "/ie-incompatible.html"
 ];
 

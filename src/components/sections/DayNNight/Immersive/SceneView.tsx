@@ -3,7 +3,7 @@
 import { rp_lerp } from "@/utilities/rp_utils";
 import { useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 import {
   HORIZON_Y,
@@ -262,11 +262,13 @@ export function SceneView() {
       ref={wrapRef}
       className="pointer-events-none absolute inset-0 z-0"
       aria-hidden
-      style={{
-        "--glow1": "86% 0.18 75",
-        "--glow2": "80% 0.18 65",
-        "--glow3": "70% 0.2 50"
-      }}
+      style={
+        {
+          "--glow1": "86% 0.18 75",
+          "--glow2": "80% 0.18 65",
+          "--glow3": "70% 0.2 50"
+        } as CSSProperties
+      }
     >
       <div
         ref={skyRef}

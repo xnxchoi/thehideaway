@@ -295,6 +295,68 @@ export function useActRevealActive(
   return active;
 }
 
+// ─── useActWindowActive — two-way act-window gate ──────────────────────────
+//
+// Sibling of `useActRevealActive` (above), but NOT sticky. Returns true
+// while the user is inside the given act's scroll window — false before
+// the act enters viewport and false after it leaves. Used by surfaces
+// that should arm on entry and disarm on exit (e.g. the dress-window's
+// SubtitleSequence + FriendsTorrent: each entry replays the subtitle
+// sequence from card 0; exit resets the photo-torrent cue).
+//
+// Window math (in loopProgress fraction space):
+//   enter = startsFrac[actIndex] - viewportFrac - preroll
+//   exit  = startsFrac[actIndex + 1] + posttail     (or 1.0 for last act)
+//
+// `entryCount` increments on every false→true edge — consumers pass it
+// as a replayKey to children that need to restart on re-entry.
+
+export interface ActWindowOptions {
+  /** How much earlier than "act left edge at viewport right edge" to
+   *  arm. Default 0.02 (~0.2s of typical scroll). */
+  preroll?: number;
+  /** How much past the next act's start to keep the window open. Default
+   *  0.0. */
+  posttail?: number;
+}
+
+export interface ActWindowState {
+  active: boolean;
+  /** Increments on every false→true edge — pass as a child replayKey. */
+  entryCount: number;
+}
+
+export function useActWindowActive(
+  actIndex: number,
+  { preroll = 0.02, posttail = 0.0 }: ActWindowOptions = {}
+): ActWindowState {
+  // Single boolean selector — Zustand uses `===` on the result so the
+  // consumer only re-renders on the window enter/exit flip, not on
+  // every rAF write to `progress`. Mirrors the LoaderReveal pattern
+  // earlier in this file.
+  const active = useDayNNightScene((r) => {
+    const l = r.layout;
+    if (!l) return false;
+    const start = l.startsFrac[actIndex];
+    if (typeof start !== "number") return false;
+    const next = l.startsFrac[actIndex + 1];
+    const enter = start - l.viewportFrac - preroll;
+    const exit = typeof next === "number" ? next + posttail : 1;
+    return r.progress >= enter && r.progress < exit;
+  });
+
+  // EntryCount accumulates every false→true edge so consumers can
+  // pass it as a replayKey to children that need to restart on
+  // re-entry. Only this counter needs state — `active` itself is a
+  // pure derivation of the boolean selector above.
+  const [entryCount, setEntryCount] = useState(0);
+  useEffect(() => {
+    if (active) setEntryCount((c) => c + 1);
+  }, [active]);
+
+  return { active, entryCount };
+}
+
 // ─── LoaderReveal — loader-progress-driven reveal ────────────────────────────
 //
 // For copy that must transition IN SYNC with the loader, not after it

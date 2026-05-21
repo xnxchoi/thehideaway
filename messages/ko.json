@@ -315,22 +315,22 @@
       "opening": {
         "label": "DAY",
         "time": "18:30 →",
-        "kicker": "Smoke Low and Slow... 30 years minimum.",
-        "lede": "No fire asks permission to burn. Neither did we.",
-        "body": "A decade of chasing, stumbling, and figuring it out. Somehow, we made it to the other side—still standing, still hungry. The smoke rising off this grill isn’t just heat.\n\nIt’s everything we survived, shed, and are done apologizing for.\n\nWe’re turning 30 looking every bit as good. Come join the scenery."
+        "kicker": "Sunday, May 24.",
+        "lede": "Cookout, then a DJ set.",
+        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them."
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "Backyard cookouts are good. Rooftop barbecues are better.",
-          "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up. Beer and wine to follow. Gin, if you ask nicely."
+          "heading": "The cookout.",
+          "body": "Grill runs from 18:30 to 19:50. Eat outside."
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → late",
-          "heading": "Sharp. Chic. Dressed to impress.",
-          "body": "Same room, different mood. Cocktails come up, lights go down. You don't have to bring a suit. We won't stop you, though.",
+          "heading": "Now the room turns.",
+          "body": "Grill cools. Lights drop. The decks come on.",
           "dj": {
             "eyebrow": "On the decks",
             "name": "YM.FM",
@@ -346,110 +346,113 @@
         "changeOfPace": "Time for a change of pace."
       },
       "dressCode": {
-        "heading": "Whatever\nYou\nWant",
-        "option1": {
-          "label": "dress too young...",
-          "body": "An outfit you still love, but felt like you'd outgrown? Last call. Wear it without apology. Geeks, nerds, civilians, and the next emo girl—all welcome. We'll get you the photos."
-        },
-        "option2": {
-          "label": "...or too extra...",
-          "body": "Tux, Backless dress, risquè shorts- I mean, we won't _not_ judge you. But we'll still love you."
+        "captions": {
+          "1": "Dress however you want;",
+          "2": "Anything goes.",
+          "3": "But if you're looking for references…",
+          "4": "Some pictures from our past parties."
         }
       },
       "included": {
-        "heading": "Included",
+        "heading": "포함된 것들",
         "food": {
-          "label": "Food",
-          "items": "Barbeque spread - smoked iberico, grilled drumsticks, you name it"
+          "label": "음식",
+          "items": "Smash burgers, smoked iberico, drumsticks, grilled sides."
         },
         "drinks": {
-          "label": "Drinks",
-          "items": "Beer, Wine, and Korean spirit. No soju though."
+          "label": "음료",
+          "items": "Beer, wine, gin. Non-alcoholic available."
         }
       },
       "tribute": {
-        "heading": "Charred, Scarred & Thriving",
-        "body": "There’s a particular kind of wisdom that only comes from burning. Not the kind you read about—the kind you live through.\n\nThe friendships that forged us. The losses that hollowed us out and left room for something better. The nights we won't talk about, and the ones we'll never stop telling. We are not who we were at 20; we are the epilogues. Charred at the edges, yes, but that’s where the flavor is."
+        "heading": "A note.",
+        "body": "Some of you have known us a long time. This dinner is for you."
       },
       "entry": {
-        "heading": "Entry",
-        "amount": "65,000 KRW",
-        "perGuest": "all-inclusive · per guest",
-        "method": "Transfer",
-        "bank": "Toss Bank · 1002-5436-0906",
+        "heading": "입장",
+        "amount": "65,000원",
+        "perGuest": "1인 기준 · 모두 포함",
+        "method": "송금",
+        "bank": "토스뱅크 · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "More to come.",
-        "lede": "Pull up a chair; fire's been warming up.."
+        "kicker": "One thing we made just for the night.",
+        "lede": "See you on the rooftop."
       },
       "rsvpCta": {
-        "primary": "Reserve",
-        "secondary": "Limited to 30 seats."
+        "primary": "예약하기",
+        "secondary": "Capped at thirty."
       },
       "viewToggle": {
-        "label": "View",
+        "label": "보기",
         "immersive": "Story",
         "simplified": "Card"
       },
       "loader": {
-        "rising": "Loading"
+        "rising": "해 뜨는 중"
       },
       "footer": {
         "hosts": "Hosted by Choi & Choe",
-        "rsvpClosesAt": "3pm Sunday / while tickets last"
+        "rsvpClosesAt": "일요일 오후 3시까지, 또는 마감까지."
       },
       "survivalKit": {
-        "heading": "Essentials",
-        "subheading": "The what, where, who, abd when's.",
+        "heading": "필수 정보",
+        "subheading": "꼭 알아둘 것들.",
         "address": {
-          "label": "Where",
-          "hint": "."
+          "label": "장소",
+          "hint": "탭하면 지도가 열려요."
         },
         "toss": {
-          "label": "Pay",
-          "hint": "Tap to copy the account number."
+          "label": "결제",
+          "hint": "탭하면 계좌번호가 복사돼요."
         },
         "dress": {
-          "label": "Wear",
-          "value": "Dressy. Comfortable. A little brave."
+          "label": "옷차림",
+          "value": "드레스코드는 없어요."
         },
         "host": {
-          "label": "Ask",
+          "label": "문의",
           "value": "concierge@hideawayseoul.com",
-          "hint": "Anything not covered here—write us."
+          "hint": "그 외 궁금한 점은 여기로요."
         },
         "plusOnes": {
-          "label": "+1s",
-          "value": "Reserved guests only. No plus-ones at the door."
+          "label": "+1",
+          "value": "예약된 분들만 입장 가능해요."
         },
         "late": {
-          "label": "Late",
-          "value": "Doors stay open until 21:00. After that, knock—we may not hear you over the music."
+          "label": "늦으면",
+          "value": "문은 21시까지 열어둬요. 그 이후엔 노크해 주세요."
         },
-        "copy": "Copy",
-        "copied": "Copied",
-        "openMap": "Open map"
+        "copy": "복사",
+        "copied": "복사됨",
+        "openMap": "맵에서 열기",
+        "map": {
+          "kakao": "카카오맵",
+          "naver": "네이버맵",
+          "google": "구글맵"
+        },
+        "ics": "캘린더 저장하기"
       },
-      "scrollHint": "Scroll",
+      "scrollHint": "스크롤",
       "audio": {
-        "label": "Sound",
-        "on": "Sound on",
-        "off": "Sound off"
+        "label": "사운드",
+        "on": "사운드 켜짐",
+        "off": "사운드 꺼짐"
       },
       "scrubber": {
-        "navLabel": "Timeline",
-        "opening": "Opening",
-        "cookout": "Cookout",
-        "dress": "Dress",
-        "night": "Night",
-        "closing": "Reserve"
+        "navLabel": "타임라인",
+        "opening": "시작",
+        "cookout": "낮",
+        "dress": "드레스",
+        "night": "밤",
+        "closing": "예약"
       },
       "moodboard": {
         "cookout": {
           "burger": {
             "alt": "Smash burgers off the grill",
-            "caption": "Smash burgers"
+            "caption": "Smash burgers."
           },
           "rooftop": {
             "alt": "Rooftop cookout",
@@ -458,28 +461,6 @@
           "vibe": {
             "alt": "Cookout vibe",
             "caption": ""
-          }
-        },
-        "dress": {
-          "romeo": {
-            "alt": "Romeo and Juliet",
-            "caption": "Yes, it's DiCaprio... But even he couldn't pull this off now. Age is a factor. (Romeo and Juliet, 1997)"
-          },
-          "pink": {
-            "alt": "All the pink",
-            "caption": "Last chance to wear all this pink without looking like…"
-          },
-          "dad": {
-            "alt": "Steve Carrell, Crazy Stupid Love",
-            "caption": "Who's the more in-style of the two? We're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
-          },
-          "notDads": {
-            "alt": "Pulp Fiction",
-            "caption": "No.. They are not dads. (Pulp Fiction, 1999)"
-          },
-          "dude": {
-            "alt": "The Dude — Big Lebowski",
-            "caption": "The Dude. (Big Lebowski, 1998)"
           }
         }
       }

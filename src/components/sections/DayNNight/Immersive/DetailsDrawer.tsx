@@ -4,7 +4,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/components/core/Link/Link";
 import { Drawer } from "@/components/ui/vaul";
 import { SurvivalKit } from "../SurvivalKit";
-
+import Ical from "ical.js";
+import { Button, PillButton } from "@/components/core/Button";
 /**
  * Details drawer — a right-side Vaul sheet surfacing the event's
  * practical info without forcing the user to scroll through the loop.
@@ -25,6 +26,7 @@ interface DetailsDrawerProps {
 
 export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
   const t = useTranslations("Event.DayNNight");
+  const survival = useTranslations("Event.DayNNight.survivalKit");
 
   return (
     <Drawer.Root
@@ -80,9 +82,8 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
                 hint={t("location.address")}
               />
               <DetailsRow
-                label="Dress"
-                value={t("dressCode.heading")}
-                hint={t("dressCode.option2.body")}
+                label={survival("dress.label")}
+                value={survival("dress.value")}
               />
               <DetailsRow
                 label="Entry"
@@ -96,7 +97,61 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
             </div>
           </div>
 
-          <footer className="border-t border-[var(--dn-line)] px-8 pt-5 pb-7">
+          <footer className="flex border-t border-[var(--dn-line)] px-8 pt-5 pb-7">
+            <PillButton
+              className="h-full min-w-fit py-6 text-balance"
+              type="button"
+              onClick={() => {
+                const f = new File(
+                  [
+                    `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ical.marudot.com//iCal Event Maker
+CALSCALE:GREGORIAN
+BEGIN:VTIMEZONE
+TZID:Asia/Seoul
+LAST-MODIFIED:20250410T142247Z
+TZURL:https://www.tzurl.org/zoneinfo-outlook/Asia/Seoul
+X-LIC-LOCATION:Asia/Seoul
+BEGIN:STANDARD
+TZNAME:KST
+TZOFFSETFROM:+0900
+TZOFFSETTO:+0900
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTAMP:20260521T093627Z
+UID:1779356138646-36356@ical.marudot.com
+DTSTART;TZID=Asia/Seoul:20260524T183000
+DTEND;TZID=Asia/Seoul:20260524T233000
+SUMMARY:Day n Night | Seoul
+DESCRIPTION:=========INVITE ONLY==============
+LOCATION:서울시 용산구 송월로20길 64\\, 3층
+ORGANIZER;CN=Sean Choi:mailto:seanschoi@lostinseoul.com
+TRANSP:OPAQUE
+CLASS:PRIVATE
+END:VEVENT
+END:VCALENDAR`
+                  ],
+                  "Day-n-Night_Seoul.ics",
+                  { type: "text/calendar" }
+                );
+                const url = URL.createObjectURL(f);
+                const anchor = document.createElement("a");
+
+                anchor.href = url;
+                anchor.download = "Day-n-Night_Seoul.ics";
+
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+
+                URL.revokeObjectURL(url);
+              }}
+            >
+              {survival("ics")}
+            </PillButton>
             <Link
               href="/tickets/day-n-night"
               className="ease inline-flex w-full cursor-pointer items-baseline justify-between gap-4 border-0 border-b border-[var(--dn-fg)] bg-transparent py-3 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap] duration-300 hover:gap-7"

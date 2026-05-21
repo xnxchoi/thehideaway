@@ -1,12 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/components/core/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
 import { RPage } from "@/components/UX/Transition";
 import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
 import { authClient } from "@/lib/auth/client";
+import { AnimatePresence, Variants } from "motion/react";
+import * as m from "motion/react-m";
+import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
+import { TextBlurIn } from "@/components/UX/Tour/TextBlurIn";
+import { MotionPillButton } from "@/components/core/Button";
+import { SPRING_EASE } from "@/constants/animations";
+import { cn } from "@/lib/utils";
 
 interface EventLite {
   id: string;
@@ -64,6 +71,91 @@ const formatKRW = (n: number): string =>
     maximumFractionDigits: 0
   }).format(n);
 
+const slideVariants: Variants = {
+  initial: (dir: number) => ({
+    y: dir > 0 ? "105%" : "-50%",
+    opacity: 0,
+    filter: "blur(6px)"
+  }),
+  animate: {
+    y: "0%",
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: {
+      type: "spring",
+      ...SPRING_EASE.power3.out,
+      visualDuration: 0.6
+    }
+  },
+  exit: (dir: number) => ({
+    y: dir > 0 ? "-40%" : "90%",
+    opacity: 0,
+    filter: "blur(3px)",
+    transition: { duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }
+  })
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }
+  }
+};
+
+/** Ordered indicator steps (skips welcome and purchased). */
+const INDICATOR_STEPS: FlowStep[] = ["otp", "name", "reserve"];
+
+function FlowStepIndicators({ current }: { current: FlowStep }) {
+  const currentIdx = INDICATOR_STEPS.indexOf(current);
+  if (currentIdx === -1) return null;
+  return (
+    <div className="flex items-center gap-2">
+      {INDICATOR_STEPS.map((s, i) => {
+        const isPast = i < currentIdx;
+        const isActive = i === currentIdx;
+        return (
+          <m.div
+            key={s}
+            layout
+            transition={{ type: "spring", ...SPRING_EASE.power2.out }}
+            className={cn(
+              "flex size-6 items-center justify-center rounded-full text-[10px] font-medium transition-colors",
+              isPast
+                ? "bg-foreground/20 text-foreground/50"
+                : isActive
+                  ? "bg-foreground text-background"
+                  : "border border-border/30 text-foreground/30"
+            )}
+          >
+            {isPast ? (
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 10 10"
+                fill="none"
+                className="text-foreground/70"
+              >
+                <path
+                  d="M2 5.2L4.1 7.5L8 3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <span>{i + 1}</span>
+            )}
+          </m.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function TicketEventClient({
   event,
   remaining,
@@ -77,7 +169,7 @@ export function TicketEventClient({
   const tStatus = useTranslations("Event.Rsvp.status");
   const tBar = useTranslations("Event.Rsvp.bar");
 
-  // ── Password gate (unchanged) ────────────────────────────────────────
+  // ── Password gate ────────────────────────────────────────────────────
   const [password, setPassword] = useState("");
   const [storedPassword, setStoredPassword] = useState<string | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
@@ -87,6 +179,12 @@ export function TicketEventClient({
   // ── Step state (4-step flow only) ────────────────────────────────────
   const useStepFlow = event.slug === STEP_FLOW_SLUG;
   const [step, setStep] = useState<FlowStep>("welcome");
+  const [dir, setDir] = useState(1);
+
+  const advanceTo = useCallback((next: FlowStep) => {
+    setDir(1);
+    setStep(next);
+  }, []);
 
   // OTP sub-state
   const [otpEmail, setOtpEmail] = useState(sessionEmail ?? "");
@@ -95,9 +193,7 @@ export function TicketEventClient({
   const [otpBusy, setOtpBusy] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
 
-  // Purchaser display name (stamped on `ticket-orders.purchaser_name`).
-  // `nameTouched` flips on the first user edit so we don't clobber typed
-  // input when the live session arrives mid-flow (see effect below).
+  // Purchaser display name
   const [purchaserName, setPurchaserNameInternal] = useState(sessionName ?? "");
   const [nameTouched, setNameTouched] = useState(false);
   const setPurchaserName = useCallback((value: string) => {
@@ -105,8 +201,7 @@ export function TicketEventClient({
     setPurchaserNameInternal(value);
   }, []);
 
-  // Live session — Better Auth flips this after `signIn.emailOtp` succeeds,
-  // which lets us treat the OTP step as "done" without a page reload.
+  // Live session — Better Auth flips this after `signIn.emailOtp` succeeds.
   const { data: liveSession } = authClient.useSession();
   const isAuthedNow =
     isAuthenticated || Boolean((liveSession?.user as { id?: string })?.id);
@@ -128,11 +223,7 @@ export function TicketEventClient({
     }
   }, [event.slug]);
 
-  // Sync purchaser name from the live session when an OTP sign-in lands
-  // mid-flow. We only overwrite when the user hasn't typed yet
-  // (`nameTouched === false`), so a user who edited their name during
-  // the OTP step keeps their input. Idempotent: re-runs are no-ops when
-  // the value is already in sync.
+  // Sync purchaser name from the live session when OTP sign-in lands mid-flow.
   const liveSessionName = (
     liveSession?.user as { name?: string | null } | undefined
   )?.name;
@@ -199,11 +290,9 @@ export function TicketEventClient({
     }
   };
 
-  // Step transitions for the 4-step flow. When the user is already
-  // authed we skip OTP because the session already proves email control.
   const advanceFromWelcome = useCallback(() => {
-    setStep(isAuthedNow ? "name" : "otp");
-  }, [isAuthedNow]);
+    advanceTo(isAuthedNow ? "name" : "otp");
+  }, [isAuthedNow, advanceTo]);
 
   const sendOtp = async () => {
     if (otpBusy || !otpEmail.trim()) return;
@@ -233,10 +322,7 @@ export function TicketEventClient({
         otp: otpCode.trim(),
         fetchOptions: { throw: true }
       });
-      // `useSession` updates asynchronously after sign-in. We advance
-      // optimistically: by the time the user fills in `name`, the
-      // session cookie is set and the purchase POST will succeed.
-      setStep("name");
+      advanceTo("name");
     } catch {
       setOtpError(t("otp.error"));
       setOtpCode("");
@@ -247,7 +333,7 @@ export function TicketEventClient({
 
   const advanceFromName = () => {
     if (!purchaserName.trim()) return;
-    setStep("reserve");
+    advanceTo("reserve");
   };
 
   const submitPurchase = async () => {
@@ -268,8 +354,6 @@ export function TicketEventClient({
           event_slug: event.slug,
           quantity,
           password: storedPassword,
-          // Only send when explicitly collected — legacy single-screen
-          // callers omit this and the server falls back to session name.
           ...(useStepFlow && purchaserName.trim()
             ? { purchaser_name: purchaserName.trim() }
             : {})
@@ -285,7 +369,7 @@ export function TicketEventClient({
         tickets: out.tickets,
         total_amount: out.total_amount
       });
-      if (useStepFlow) setStep("purchased");
+      if (useStepFlow) advanceTo("purchased");
     } catch (e) {
       setPurchaseError((e as Error).message);
     } finally {
@@ -303,9 +387,7 @@ export function TicketEventClient({
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────
-  // Right-column step panel for the 4-step flow. Legacy single-screen
-  // events just go straight to ReserveView / PurchasedView like before.
+  // ── Step panel ───────────────────────────────────────────────────────
   const stepPanel = (() => {
     if (!isOpen) {
       return (
@@ -321,11 +403,6 @@ export function TicketEventClient({
         </p>
       );
     }
-    // The `purchased` early-return covers BOTH flows: the step machine's
-    // terminal state and the legacy single-screen path converge here, so
-    // we don't need a separate `case "purchased"` branch in the switch
-    // below. `step === "purchased"` exists only to make the state
-    // sequence legible to readers — it never renders.
     if (purchased) {
       return (
         <PurchasedView
@@ -397,25 +474,58 @@ export function TicketEventClient({
     );
   })();
 
+  const stepKey = purchased ? "purchased" : step;
+
   return (
     <RPage type="pages" slug={["tickets", event.slug]}>
-      <section className="mx-auto w-full max-w-7xl px-6 pt-32 pb-32 xl:px-10 xl:pt-40 xl:pb-40">
-        {!gateOpen ? (
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+      {!gateOpen ? (
+        /* ── Gate screen — glass panel centered ── */
+        <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center p-9 md:p-16">
+          <div className="pointer-events-none absolute inset-[35px] z-[1] rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]" />
+
+          <m.div
+            initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              type: "spring",
+              ...SPRING_EASE.power3.out,
+              visualDuration: 0.55
+            }}
+            className="relative z-[10] flex w-full max-w-[384px] flex-col gap-7"
+          >
             <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+              <m.p
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+              >
                 {tGate("eyebrow")}
-              </p>
-              <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
-                {tGate("title")}
-              </h2>
-              <p className="mt-3 max-w-md font-mono text-[11px] text-muted-foreground/60">
+              </m.p>
+              <TextBlurIn
+                as="h2"
+                text={tGate("title")}
+                style={{ fontSize: "clamp(3rem, 5.5vw, 4.5rem)" }}
+                className="mt-3 leading-[1.1] font-light tracking-tight"
+                stagger={0.04}
+                delay={0.2}
+                yOffset={6}
+                blurAmount={6}
+                duration={0.7}
+              />
+              <m.p
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.35 }}
+                className="mt-3 font-mono text-[11px] leading-relaxed text-muted-foreground/60"
+              >
                 {tGate("body")}
-              </p>
+              </m.p>
             </div>
 
             <form
-              className="flex max-w-md flex-col gap-4"
+              className="flex flex-col gap-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 submitGate();
@@ -436,47 +546,101 @@ export function TicketEventClient({
                 className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
               />
               {gateError ? (
-                <p
+                <m.p
                   role="alert"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
                   className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
                 >
                   {gateError}
-                </p>
+                </m.p>
               ) : null}
-              <button
+              <MotionPillButton
                 type="submit"
+                size="md"
                 disabled={gateBusy || !password.trim()}
-                className="mt-2 self-start border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+                className="mt-1 w-full bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
               >
                 {gateBusy ? tGate("submitting") : tGate("submit")}
-              </button>
+              </MotionPillButton>
             </form>
-          </div>
-        ) : (
+          </m.div>
+
+          <Suspense>
+            <VGradientModule />
+          </Suspense>
+        </div>
+      ) : (
+        /* ── Post-gate: event grid ── */
+        <section className="relative z-[100] mx-auto w-full max-w-7xl px-6 pt-32 pb-32 xl:px-10 xl:pt-40 xl:pb-40">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16 xl:gap-20">
-            {/* Event hero — constant anchor across all steps */}
+            {/* Event hero */}
             <div>
+              <m.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                style={{ fontSize: "clamp(3.5rem, 5vw, 5.5rem)" }}
+                className="leading-[1.05] font-light tracking-tight"
+              >
+                {event.name}
+              </m.h1>
+
               {dateDisplay ? (
-                <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+                <m.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.15, duration: 0.4 }}
+                  className="mt-5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs"
+                >
                   {dateDisplay}
                   {event.location ? ` · ${event.location}` : ""}
-                </p>
+                </m.p>
               ) : null}
+
               {event.description ? (
-                <p className="mt-7 max-w-prose text-sm leading-relaxed text-foreground/80 xl:text-base">
+                <m.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="mt-7 max-w-prose text-sm leading-relaxed text-foreground/80 xl:text-base"
+                >
                   {event.description}
-                </p>
+                </m.p>
               ) : null}
             </div>
 
-            {/* Right panel: step-aware (4-step flow) or reserve/purchased
-                (legacy single-screen). */}
+            {/* Right panel */}
             <aside className="lg:sticky lg:top-32 lg:self-start">
-              <div className="border-t border-border/20 pt-8">{stepPanel}</div>
+              {useStepFlow && !purchased && isOpen && !soldOut ? (
+                <m.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="mb-6"
+                >
+                  <FlowStepIndicators current={step} />
+                </m.div>
+              ) : null}
+
+              <div className="overflow-hidden border-t border-border/20 pt-8">
+                <AnimatePresence mode="wait" custom={dir}>
+                  <m.div
+                    key={stepKey}
+                    custom={dir}
+                    variants={slideVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                  >
+                    {stepPanel}
+                  </m.div>
+                </AnimatePresence>
+              </div>
             </aside>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <TicketBottomBar
         eyebrow={gateOpen ? tBar("eyebrowOpen") : tBar("eyebrowLocked")}
@@ -492,38 +656,48 @@ export function TicketEventClient({
 }
 
 /**
- * Welcome step — first screen after the password gate clears. Sets the
- * expectation ("two minutes, no account required") and primes the user
- * for the OTP step that follows.
+ * Welcome step — first screen after the password gate clears.
  */
 function WelcomeStep({ onStart }: { onStart: () => void }) {
   const t = useTranslations("Event.Rsvp.steps.welcome");
   return (
-    <div>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        {t("eyebrow")}
-      </p>
-      <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
-        {t("title")}
-      </h2>
-      <p className="mt-4 max-w-prose font-mono text-[11px] leading-relaxed text-foreground/70">
-        {t("body")}
-      </p>
-      <button
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          {t("eyebrow")}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={t("title")}
+          style={{ fontSize: "clamp(2.4rem, 4vw, 3.6rem)" }}
+          className="mt-3 leading-[1.1] font-light tracking-tight"
+          stagger={0.05}
+          delay={0.1}
+          yOffset={6}
+          blurAmount={5}
+          duration={0.75}
+        />
+        <p className="mt-4 max-w-prose font-mono text-[11px] leading-relaxed text-foreground/70">
+          {t("body")}
+        </p>
+      </div>
+      <MotionPillButton
         type="button"
+        size="md"
         onClick={onStart}
-        className="mt-8 self-start border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+        className="self-start bg-foreground text-[13px] font-medium text-background"
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
       >
         {t("cta")}
-      </button>
+      </MotionPillButton>
     </div>
   );
 }
 
 /**
- * OTP step — collects the user's email, sends a 6-digit Better Auth code,
- * and verifies it. On verify success, advances to the name step;
- * `authClient.useSession()` flips the parent's `isAuthedNow` derivation.
+ * OTP step — collects email, sends 6-digit code, verifies.
  */
 function OtpStep({
   email,
@@ -550,114 +724,140 @@ function OtpStep({
 }) {
   const t = useTranslations("Event.Rsvp.steps.otp");
   return (
-    <div>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        {t("eyebrow")}
-      </p>
-      <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
-        {t("title")}
-      </h2>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          {t("eyebrow")}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={t("title")}
+          style={{ fontSize: "clamp(2.4rem, 4vw, 3.6rem)" }}
+          className="mt-3 leading-[1.1] font-light tracking-tight"
+          stagger={0.05}
+          delay={0.05}
+          yOffset={6}
+          blurAmount={5}
+          duration={0.7}
+        />
+      </div>
 
-      {!codeSent ? (
-        <form
-          className="mt-8 flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSend();
-          }}
-        >
-          <label htmlFor="otp-email" className="sr-only">
-            {t("emailPlaceholder")}
-          </label>
-          <input
-            id="otp-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t("emailPlaceholder")}
-            aria-label={t("emailPlaceholder")}
-            autoComplete="email"
-            spellCheck={false}
-            inputMode="email"
-            className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
-          />
-          {error ? (
-            <p
-              role="alert"
-              className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
-            >
-              {error}
-            </p>
-          ) : null}
-          <button
-            type="submit"
-            disabled={busy || !email.trim()}
-            className="mt-2 self-start border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+      <AnimatePresence mode="wait">
+        {!codeSent ? (
+          <m.form
+            key="email-form"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSend();
+            }}
           >
-            {busy ? "…" : t("sendCode")}
-          </button>
-        </form>
-      ) : (
-        <form
-          className="mt-8 flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onVerify();
-          }}
-        >
-          <label htmlFor="otp-code" className="sr-only">
-            {t("codePlaceholder")}
-          </label>
-          <input
-            id="otp-code"
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            placeholder={t("codePlaceholder")}
-            aria-label={t("codePlaceholder")}
-            autoComplete="one-time-code"
-            inputMode="numeric"
-            maxLength={6}
-            className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight tabular-nums placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
-          />
-          {error ? (
-            <p
-              role="alert"
-              className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
-            >
-              {error}
-            </p>
-          ) : null}
-          <div className="mt-2 flex items-center gap-4">
-            <button
+            <label htmlFor="otp-email" className="sr-only">
+              {t("emailPlaceholder")}
+            </label>
+            <input
+              id="otp-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("emailPlaceholder")}
+              aria-label={t("emailPlaceholder")}
+              autoComplete="email"
+              spellCheck={false}
+              inputMode="email"
+              className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
+            />
+            {error ? (
+              <m.p
+                role="alert"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+              >
+                {error}
+              </m.p>
+            ) : null}
+            <MotionPillButton
               type="submit"
-              disabled={busy || code.length < 6}
-              className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+              size="md"
+              disabled={busy || !email.trim()}
+              className="self-start bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
             >
-              {busy ? "…" : t("submit")}
-            </button>
-            <button
-              type="button"
-              onClick={onResend}
-              className="font-mono text-[11px] tracking-widest text-foreground/60 uppercase transition-colors hover:text-foreground"
-            >
-              {t("resend")}
-            </button>
-          </div>
-          <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
-            {email}
-          </p>
-        </form>
-      )}
+              {busy ? "…" : t("sendCode")}
+            </MotionPillButton>
+          </m.form>
+        ) : (
+          <m.form
+            key="code-form"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onVerify();
+            }}
+          >
+            <label htmlFor="otp-code" className="sr-only">
+              {t("codePlaceholder")}
+            </label>
+            <input
+              id="otp-code"
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              placeholder={t("codePlaceholder")}
+              aria-label={t("codePlaceholder")}
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              maxLength={6}
+              className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight tabular-nums placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
+            />
+            {error ? (
+              <m.p
+                role="alert"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+              >
+                {error}
+              </m.p>
+            ) : null}
+            <div className="flex items-center gap-4">
+              <MotionPillButton
+                type="submit"
+                size="md"
+                disabled={busy || code.length < 6}
+                className="bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
+              >
+                {busy ? "…" : t("submit")}
+              </MotionPillButton>
+              <MotionPillButton
+                type="button"
+                size="md"
+                onClick={onResend}
+                className="text-[13px] text-foreground/50"
+              >
+                {t("resend")}
+              </MotionPillButton>
+            </div>
+            <p className="font-mono text-[11px] text-muted-foreground/60">
+              {email}
+            </p>
+          </m.form>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 /**
- * Name step — captures the display name that will be stamped on the
- * `ticket-orders.purchaser_name` column and surfaced on /day-n-night/my.
- * Pre-filled from the session name when available so signed-in users
- * just confirm rather than retype.
+ * Name step — captures the display name stamped on ticket-orders.purchaser_name.
  */
 function NameStep({
   name,
@@ -670,15 +870,25 @@ function NameStep({
 }) {
   const t = useTranslations("Event.Rsvp.steps.name");
   return (
-    <div>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        {t("eyebrow")}
-      </p>
-      <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
-        {t("title")}
-      </h2>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          {t("eyebrow")}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={t("title")}
+          style={{ fontSize: "clamp(2.4rem, 4vw, 3.6rem)" }}
+          className="mt-3 leading-[1.1] font-light tracking-tight"
+          stagger={0.05}
+          delay={0.05}
+          yOffset={6}
+          blurAmount={5}
+          duration={0.7}
+        />
+      </div>
       <form
-        className="mt-8 flex flex-col gap-4"
+        className="flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           onContinue();
@@ -698,13 +908,17 @@ function NameStep({
           maxLength={120}
           className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
         />
-        <button
+        <MotionPillButton
           type="submit"
+          size="md"
           disabled={!name.trim()}
-          className="mt-2 self-start border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+          className="self-start bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
         >
           {t("submit")}
-        </button>
+        </MotionPillButton>
       </form>
     </div>
   );
@@ -723,29 +937,39 @@ function PurchasedView({
 }) {
   const t = useTranslations("Event.Rsvp.purchased");
   return (
-    <div>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        {t("eyebrow")}
-      </p>
-      <h2 className="mt-3 text-xl font-light tracking-tight xl:text-2xl">
-        {t("reserved", {
-          quantity: purchased.tickets.length,
-          total: formatKRW(purchased.total_amount)
-        })}
-      </h2>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          {t("eyebrow")}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={t("reserved", {
+            quantity: purchased.tickets.length,
+            total: formatKRW(purchased.total_amount)
+          })}
+          style={{ fontSize: "clamp(2.4rem, 4vw, 3.6rem)" }}
+          className="mt-3 leading-[1.1] font-light tracking-tight"
+          stagger={0.04}
+          delay={0.1}
+          yOffset={5}
+          blurAmount={5}
+          duration={0.75}
+        />
+      </div>
 
       {paymentInstructions ? (
-        <p className="mt-5 max-w-prose font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/75 xl:text-xs">
+        <p className="max-w-prose font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/75 xl:text-xs">
           {paymentInstructions}
         </p>
       ) : (
-        <p className="mt-5 max-w-prose font-mono text-[11px] text-muted-foreground/60">
+        <p className="max-w-prose font-mono text-[11px] text-muted-foreground/60">
           {t("instructionsFallback")}
         </p>
       )}
 
       {purchased.tickets.some((tx) => tx.claim_url) ? (
-        <div className="mt-10 border-t border-border/20 pt-6">
+        <div className="border-t border-border/20 pt-6">
           <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             {t("giftLinks.eyebrow")}
           </p>
@@ -756,29 +980,33 @@ function PurchasedView({
             {purchased.tickets
               .filter((tx) => tx.claim_url)
               .map((tx) => (
-                <li
+                <m.li
                   key={tx.id}
-                  className="flex items-center justify-between gap-3 rounded-sm border border-border/20 px-4 py-3 text-sm"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border/20 bg-foreground/[0.025] px-4 py-3"
                 >
                   <span className="font-mono text-[11px] text-foreground/70">
                     {t("giftLinks.ticketNumber", { number: tx.ticket_number })}
                   </span>
-                  <button
+                  <MotionPillButton
                     type="button"
+                    size="sm"
                     onClick={() => onCopy(tx.claim_url!)}
-                    className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
+                    className="text-[12px] text-foreground/80"
                   >
                     {copied === tx.claim_url
                       ? t("giftLinks.copied")
                       : t("giftLinks.copy")}
-                  </button>
-                </li>
+                  </MotionPillButton>
+                </m.li>
               ))}
           </ul>
         </div>
       ) : null}
 
-      <div className="mt-10">
+      <div>
         <Link
           href="/tickets/my"
           className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
@@ -811,12 +1039,26 @@ function ReserveView({
 }) {
   const t = useTranslations("Event.Rsvp.reserve");
   return (
-    <div>
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-        {t("eyebrow", { total: totalDisplay })}
-      </p>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          {t("eyebrow", { total: totalDisplay })}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={totalDisplay}
+          style={{ fontSize: "clamp(2.4rem, 4vw, 3.6rem)" }}
+          className="mt-2 leading-[1.1] font-light tracking-tight tabular-nums"
+          stagger={0.04}
+          delay={0.05}
+          yOffset={5}
+          blurAmount={5}
+          duration={0.7}
+        />
+      </div>
+
       <div
-        className="mt-4 flex items-center gap-3"
+        className="flex items-center gap-3"
         role="group"
         aria-label={t("quantityGroupLabel")}
       >
@@ -827,49 +1069,54 @@ function ReserveView({
           {Array.from({ length: maxAllowed }).map((_, i) => {
             const n = i + 1;
             return (
-              <button
+              <m.button
                 key={n}
                 type="button"
                 onClick={() => setQuantity(n)}
                 aria-pressed={quantity === n}
                 aria-label={String(n)}
-                className={`border px-3 py-1.5 font-mono text-[11px] transition-colors ${
+                whileTap={{ scale: 0.94 }}
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-full border font-mono text-[11px] transition-colors",
                   quantity === n
-                    ? "border-foreground text-foreground"
+                    ? "border-foreground bg-foreground text-background"
                     : "border-border/30 text-foreground/60 hover:border-border/60"
-                }`}
+                )}
               >
                 {n}
-              </button>
+              </m.button>
             );
           })}
         </div>
       </div>
 
       {purchaseError ? (
-        <p
+        <m.p
           role="alert"
-          className="mt-6 font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
         >
           {purchaseError}
-        </p>
+        </m.p>
       ) : null}
 
-      <button
+      <MotionPillButton
         type="button"
+        size="lg"
         onClick={onSubmit}
         disabled={purchaseBusy}
-        className="mt-8 w-full border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+        className="w-full bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
       >
         {purchaseBusy
           ? t("submitting")
           : !isAuthenticated
             ? t("signInRequired")
             : t("submit", { quantity, total: totalDisplay })}
-      </button>
+      </MotionPillButton>
 
       {!isAuthenticated ? (
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground/60">
+        <p className="font-mono text-[11px] text-muted-foreground/60">
           {t("signInRedirectHint")}
         </p>
       ) : null}

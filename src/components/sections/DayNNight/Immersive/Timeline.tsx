@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { Link } from "@/components/core/Link/Link";
 import { useEffect, useRef } from "react";
@@ -21,7 +20,6 @@ import {
   ActEyebrow,
   TITLE_HERO,
   TITLE_SECTION,
-  TITLE_PAIR,
   LEDE,
   BODY_SERIF,
   KICKER_MONO,
@@ -29,6 +27,7 @@ import {
 } from "./Act";
 import { OpeningCard } from "./OpeningCard";
 import { useStickyZone } from "./SeamBridge";
+import { View } from "@react-three/drei";
 
 /**
  * Anchors that polaroid clusters use for their parallax windows. These
@@ -36,7 +35,6 @@ import { useStickyZone } from "./SeamBridge";
  * appears to slide through frame as the user passes the section center.
  */
 const ANCHOR_COOKOUT = 0.279;
-const ANCHOR_DRESS = 0.478;
 const ANCHOR_NIGHT = 0.664;
 
 /**
@@ -48,7 +46,6 @@ const ANCHOR_NIGHT = 0.664;
  * act first entered the viewport).
  */
 const ACT_INDEX_COOKOUT = 1;
-const ACT_INDEX_DRESS = 2;
 const ACT_INDEX_NIGHT = 3;
 const ACT_INDEX_CLOSING = 4;
 
@@ -383,7 +380,6 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
   // store.
   const openingActive = isPlaying;
   const cookoutActive = useActRevealActive(ACT_INDEX_COOKOUT);
-  const dressActive = useActRevealActive(ACT_INDEX_DRESS);
   const nightActive = useActRevealActive(ACT_INDEX_NIGHT);
   const closingActive = useActRevealActive(ACT_INDEX_CLOSING);
   // True only during the sticky window (Closing title at viewport-left
@@ -448,7 +444,15 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             Closing's left dossier slot, but trades the always-visible
             SurvivalKit for a single paper-style trigger that pulls the
             same info into the drawer on demand. */}
-        <div className="col-start-8 col-end-13 row-start-2 row-end-3 hidden self-end justify-self-end max-lg:col-span-full lg:flex">
+        <div className="col-start-8 col-end-13 row-start-2 row-end-3 hidden max-w-[400px] self-end justify-self-end max-lg:col-span-full lg:flex">
+          {/* Previously wrapped in `<View>` (drei) which portaled
+              OpeningCard into the shared R3F Canvas tree — forcing the
+              card's children to be THREE primitives (which is why
+              OpeningCard used `<Html>`). The paper card has zero 3D
+              content; the View wrapper served no purpose and left the
+              `<Html>` overlay 0×0 because drei has no 3D geometry to
+              anchor its position on. Rendering as plain DOM lets the
+              parent grid cell's width flow into the card normally. */}
           <OpeningCard />
         </div>
         {/* Bottom-left strip — date + location. Mirrors Closing's bottom-
@@ -548,80 +552,19 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         </PolaroidGroup>
       </Act>
 
-      {/* ── Act III — Dress Code ─────────────────────────────────────────
-          Centerfold. Heading top-left (Section scale), two numbered
-          options (01 / 02) bottom-left at Pair scale, polaroid wall
-          floating right at the shared band height. */}
-      <Act
-        width={1.55}
-        ariaLabel={t("dressCode.heading")}
-        ariaHidden={ariaHidden}
-      >
+      {/* ── Act III — Subtitles + Friends Torrent ────────────────────────
+          PLACEHOLDER. The two-option dress block + film moodboard wall
+          were removed 2026-05-21. New shape: a fixed-bottom
+          <SubtitleSequence> renders 4 caption cards
+          (`dressCode.captions.{1..4}`) across this Act's scroll window,
+          and a <FriendsTorrent> photo glide fades in ~0.5s into card 3.
+          Both components mount at the ImmersiveView root (not in this
+          Act), so this slot stays empty and just holds its `--act-w`
+          1.55 budget so the seamless loop math doesn't shift.
+          See `FriendsTorrent.tsx` + `/dev/dn-friends-torrent` for the
+          isolated build of the torrent. */}
+      <Act width={1.55} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
         <ActEyebrow numeral="III" label={t("scrubber.dress")} align="left" />
-        <RevealStage
-          as="div"
-          active={dressActive}
-          className="col-start-1 col-end-8 row-start-2 row-end-4 grid content-between gap-12 self-stretch max-lg:col-span-full"
-        >
-          <RevealItem as="h2" className={cn(TITLE_SECTION, "max-w-[18ch]")}>
-            {t("dressCode.heading")}
-          </RevealItem>
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-x-12">
-            <div className="grid max-w-[36ch] gap-[14px]">
-              <span className={LABEL_MONO}>01</span>
-              <RevealItem as="h3" className={TITLE_PAIR}>
-                {t("dressCode.option1.label")}
-              </RevealItem>
-              <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
-                {t("dressCode.option1.body")}
-              </RevealItem>
-            </div>
-            <div className="grid max-w-[36ch] gap-[14px]">
-              <span className={LABEL_MONO}>02</span>
-              <RevealItem as="h3" className={TITLE_PAIR}>
-                {t("dressCode.option2.label")}
-              </RevealItem>
-              <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
-                {t("dressCode.option2.body")}
-              </RevealItem>
-            </div>
-          </div>
-        </RevealStage>
-        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[16%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[42vw] lg:flex-wrap lg:justify-end lg:gap-6">
-          <Polaroid
-            variant="stamped"
-            overlay="card-2_front-clear"
-            src="/assets/day-n-night/DraggedImage-1.png"
-            alt={t("moodboard.dress.romeo.alt")}
-            caption={t("moodboard.dress.romeo.caption")}
-            width={250}
-            angle={-4}
-            depth={0.4}
-            anchor={ANCHOR_DRESS}
-          />
-          <Polaroid
-            variant="stamped"
-            overlay="card-4_front-clear"
-            src="/assets/day-n-night/DraggedImage-2.png"
-            alt={t("moodboard.dress.pink.alt")}
-            caption={t("moodboard.dress.pink.caption")}
-            width={230}
-            angle={3}
-            depth={-0.5}
-            anchor={ANCHOR_DRESS}
-          />
-          <Polaroid
-            variant="stamped"
-            overlay="card-4_front-clear"
-            src="/assets/day-n-night/DraggedImage-3.png"
-            alt={t("moodboard.dress.dad.alt")}
-            caption={t("moodboard.dress.dad.caption")}
-            width={220}
-            angle={-3}
-            depth={0.7}
-            anchor={ANCHOR_DRESS}
-          />
-        </PolaroidGroup>
       </Act>
 
       {/* ── Act IV — Night ───────────────────────────────────────────────

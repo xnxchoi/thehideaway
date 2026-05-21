@@ -211,6 +211,7 @@ export const MotionPill = ({
 export const PillButton = ({
   size = "sm",
   inverted = false,
+  className,
   ...props
 }: {
   size?: "sm" | "md" | "lg";
@@ -251,7 +252,7 @@ export const PillButton = ({
         inverted
           ? "bg-button-background-inverted text-background/90 hover:border-off-foreground/80"
           : "bg-button-background text-foreground/90 hover:border-off-background/80",
-        props?.className
+        className
       )}
       onClick={onClick}
       ref={ref as RefAttributes<HTMLButtonElement>["ref"]}

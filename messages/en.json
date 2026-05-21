@@ -306,7 +306,7 @@
         "short": "May 24"
       },
       "location": {
-        "label": "Location",
+        "label": "Where",
         "neighborhood": "Haebangchon · Yongsan",
         "city": "Seoul",
         "address": "Sowol-ro 20-gil 64, 3F"
@@ -314,22 +314,22 @@
       "opening": {
         "label": "DAY",
         "time": "18:30 →",
-        "kicker": "30 & Smokin'",
-        "lede": "No fire asks permission to burn. Neither did we.",
-        "body": "A decade of chasing, stumbling, and figuring it out. Somehow, we made it to the other side—still standing, still hungry. The smoke rising off this grill isn’t just heat.\n\nIt’s everything we survived, shed, and are done apologizing for.\n\nWe’re turning 30 looking every bit as good. Come join the scenery."
+        "kicker": "Sunday, May 24.",
+        "lede": "Cookout, then a DJ set.",
+        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them."
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "Backyard cookouts are good. Rooftop barbecues are better.",
-          "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up. Beer and wine to follow. Gin, if you ask nicely."
+          "heading": "The cookout.",
+          "body": "Grill runs from 18:30 to 19:50. Eat outside."
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → late",
-          "heading": "Sharp. Chic. Dressed to impress.",
-          "body": "Same room, different mood. Cocktails come up, lights go down. You don't have to bring a suit. We won't stop you, though.",
+          "heading": "Now the room turns.",
+          "body": "Grill cools. Lights drop. The decks come on.",
           "dj": {
             "eyebrow": "On the decks",
             "name": "YM.FM",
@@ -345,46 +345,43 @@
         "changeOfPace": "Time for a change of pace."
       },
       "dressCode": {
-        "heading": "Whatever\nYou\nWant",
-        "option1": {
-          "label": "dress too young...",
-          "body": "An outfit you still love, but felt like you'd outgrown? Last call. Wear it without apology. Geeks, nerds, civilians, and the next emo girl—all welcome. We'll get you the photos."
-        },
-        "option2": {
-          "label": "...or too extra...",
-          "body": "Tux, Backless dress, risquè shorts- I mean, we won't _not_ judge you. But we'll still love you."
+        "captions": {
+          "1": "Dress however you want;",
+          "2": "Anything goes.",
+          "3": "But if you're looking for references…",
+          "4": "Some pictures from our past parties."
         }
       },
       "included": {
         "heading": "Included",
         "food": {
           "label": "Food",
-          "items": "Barbeque spread - smoked iberico, grilled drumsticks, you name it"
+          "items": "Smash burgers, smoked iberico, drumsticks, grilled sides."
         },
         "drinks": {
           "label": "Drinks",
-          "items": "Beer, Wine, and Korean spirit. No soju though."
+          "items": "Beer, wine, gin. Non-alcoholic available."
         }
       },
       "tribute": {
-        "heading": "Charred, Scarred & Thriving",
-        "body": "There’s a particular kind of wisdom that only comes from burning. Not the kind you read about—the kind you live through.\n\nThe friendships that forged us. The losses that hollowed us out and left room for something better. The nights we won't talk about, and the ones we'll never stop telling. We are not who we were at 20; we are the epilogues. Charred at the edges, yes, but that’s where the flavor is."
+        "heading": "A note.",
+        "body": "Some of you have known us a long time. This dinner is for you."
       },
       "entry": {
         "heading": "Entry",
         "amount": "65,000 KRW",
-        "perGuest": "all-inclusive · per guest",
+        "perGuest": "per guest, all inclusive",
         "method": "Transfer",
         "bank": "Toss Bank · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "More to come.",
-        "lede": "Pull up a chair; fire's been warming up.."
+        "kicker": "One thing we made just for the night.",
+        "lede": "See you on the rooftop."
       },
       "rsvpCta": {
         "primary": "Reserve",
-        "secondary": "Limited to 30 seats."
+        "secondary": "Capped at thirty."
       },
       "viewToggle": {
         "label": "View",
@@ -392,43 +389,49 @@
         "simplified": "Card"
       },
       "loader": {
-        "rising": "Loading"
+        "rising": "Sun rising"
       },
       "footer": {
         "hosts": "Hosted by Choi & Choe",
-        "rsvpClosesAt": "3pm Sunday / while tickets last"
+        "rsvpClosesAt": "Closes 3pm Sunday, or when full."
       },
       "survivalKit": {
         "heading": "Essentials",
-        "subheading": "The what, where, who, abd when's.",
+        "subheading": "What you need to know.",
         "address": {
           "label": "Where",
-          "hint": "."
+          "hint": "Tap for the map."
         },
         "toss": {
           "label": "Pay",
-          "hint": "Tap to copy the account number."
+          "hint": "Tap to copy."
         },
         "dress": {
           "label": "Wear",
-          "value": "Dressy. Comfortable. A little brave."
+          "value": "No code."
         },
         "host": {
           "label": "Ask",
           "value": "concierge@hideawayseoul.com",
-          "hint": "Anything not covered here—write us."
+          "hint": "For anything else."
         },
         "plusOnes": {
           "label": "+1s",
-          "value": "Reserved guests only. No plus-ones at the door."
+          "value": "Reserved guests only."
         },
         "late": {
           "label": "Late",
-          "value": "Doors stay open until 21:00. After that, knock—we may not hear you over the music."
+          "value": "Doors close at 21:00. Knock after."
         },
         "copy": "Copy",
         "copied": "Copied",
-        "openMap": "Open map"
+        "openMap": "Open in",
+        "map": {
+          "kakao": "Kakao Map",
+          "naver": "Naver Map",
+          "google": "Google Maps"
+        },
+        "ics": "Add to calendar"
       },
       "scrollHint": "Scroll",
       "audio": {
@@ -438,8 +441,8 @@
       },
       "scrubber": {
         "navLabel": "Timeline",
-        "opening": "Opening",
-        "cookout": "Cookout",
+        "opening": "Open",
+        "cookout": "Day",
         "dress": "Dress",
         "night": "Night",
         "closing": "Reserve"
@@ -448,7 +451,7 @@
         "cookout": {
           "burger": {
             "alt": "Smash burgers off the grill",
-            "caption": "Smash burgers"
+            "caption": "Smash burgers."
           },
           "rooftop": {
             "alt": "Rooftop cookout",
@@ -457,28 +460,6 @@
           "vibe": {
             "alt": "Cookout vibe",
             "caption": ""
-          }
-        },
-        "dress": {
-          "romeo": {
-            "alt": "Romeo and Juliet",
-            "caption": "Yes, it's DiCaprio... But even he couldn't pull this off now. Age is a factor. (Romeo and Juliet, 1997)"
-          },
-          "pink": {
-            "alt": "All the pink",
-            "caption": "Last chance to wear all this pink without looking like…"
-          },
-          "dad": {
-            "alt": "Steve Carrell, Crazy Stupid Love",
-            "caption": "Who's the more in-style of the two? We're discussing Steve Carrell here. (Crazy, Stupid, Love, 2018)"
-          },
-          "notDads": {
-            "alt": "Pulp Fiction",
-            "caption": "No.. They are not dads. (Pulp Fiction, 1999)"
-          },
-          "dude": {
-            "alt": "The Dude — Big Lebowski",
-            "caption": "The Dude. (Big Lebowski, 1998)"
           }
         }
       }
