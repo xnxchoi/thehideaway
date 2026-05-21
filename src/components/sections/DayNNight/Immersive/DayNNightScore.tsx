@@ -12,9 +12,9 @@ import { Button } from "@/components/core/Button";
  *
  * Three tracks, mixed-model transitions:
  *
- *   Act 1 — Daytime         country  /audio/day-n-night/daytime.opus
+ *   Act 1 — Daytime         country  /assets/audio/day-n-night/daytime.ogg
  *   Act 2 — Liminal/Sunset  house    /track_media/Track_3.mp3
- *   Act 3 — Nighttime       hip-hop  /audio/day-n-night/nighttime.opus
+ *   Act 3 — Nighttime       hip-hop  /assets/audio/day-n-night/nighttime.ogg
  *
  *   ─ Daytime → Sunset  : EVENT-DRIVEN. Fired by the cassette button
  *                         press inside `<LiminalHandoff>` (§ 3.6) via
@@ -44,9 +44,9 @@ import { Button } from "@/components/core/Button";
  * gives up; the rest of the page is unaffected.
  */
 
-const DAY_SRC = "/audio/day-n-night/daytime.opus";
+const DAY_SRC = "/assets/audio/day-n-night/daytime.ogg";
 const SUNSET_SRC = "/track_media/Track_3.mp3";
-const NIGHT_SRC = "/audio/day-n-night/nighttime.opus";
+const NIGHT_SRC = "/assets/audio/day-n-night/nighttime.ogg";
 
 const BASE_VOL = 0.55;
 
