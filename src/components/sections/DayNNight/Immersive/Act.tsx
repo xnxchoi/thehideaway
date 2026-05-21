@@ -98,7 +98,7 @@ export function ActEyebrow({
         data-align={align}
         className="gap-[14px] text-[var(--dn-fg)]"
       >
-        <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+        <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)]">
           №
         </span>
         <span className="font-serif text-[clamp(1.5rem,1.7vw,1.85rem)] font-medium italic">

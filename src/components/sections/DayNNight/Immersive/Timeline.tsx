@@ -662,25 +662,59 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             {t("tribute.body")}
           </span>
         </div>
-        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[16%] lg:right-[5vw] lg:z-[4] lg:flex lg:max-w-[38vw] lg:gap-[26px]">
+        {/* PLACEHOLDER — YM photos TBC. Per readmes/DAY_N_NIGHT_HANDOFF.md
+            § 2.4 / § 3.7: scatter of 5–8 polaroids around the cassette,
+            mixed widths (130–260px), broad angle spread (±10°), mixed
+            depth signs, mostly empty captions, 1–2 back cards for ambient
+            clutter. Swap to YM-specific photos when delivered to
+            public/assets/day-n-night/ym/. */}
+        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[14%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[42vw] lg:flex-wrap lg:justify-end lg:gap-7">
           <Polaroid
-            src="/assets/day-n-night/DraggedImage-6.png"
-            alt={t("moodboard.night.suit.alt")}
-            caption={t("moodboard.night.suit.caption")}
-            width={230}
-            aspect={1.781}
-            angle={-5}
+            src="/assets/day-n-night/IMG_5282.png"
+            width={240}
+            aspect={1.5}
+            angle={-7}
             depth={0.6}
             anchor={ANCHOR_NIGHT}
           />
           <Polaroid
-            src="/assets/day-n-night/DraggedImage-7.png"
-            alt={t("moodboard.night.jacket.alt")}
-            caption={t("moodboard.night.jacket.caption")}
-            width={210}
-            aspect={1.501}
-            angle={4}
-            depth={-0.5}
+            src="/assets/day-n-night/IMG_6339.png"
+            width={170}
+            aspect={1.0}
+            angle={5}
+            depth={-0.4}
+            anchor={ANCHOR_NIGHT}
+          />
+          <Polaroid
+            src="/assets/day-n-night/DraggedImage-4.png"
+            width={200}
+            aspect={1.5}
+            angle={-3}
+            depth={0.4}
+            anchor={ANCHOR_NIGHT}
+          />
+          <Polaroid
+            variant="back"
+            backTexture="card-2_back"
+            width={150}
+            angle={9}
+            depth={-0.6}
+            anchor={ANCHOR_NIGHT}
+          />
+          <Polaroid
+            src="/assets/day-n-night/DraggedImage-5.png"
+            width={220}
+            aspect={1.5}
+            angle={6}
+            depth={0.8}
+            anchor={ANCHOR_NIGHT}
+          />
+          <Polaroid
+            src="/assets/day-n-night/DraggedImage-6.png"
+            width={185}
+            aspect={1.78}
+            angle={-5}
+            depth={-0.3}
             anchor={ANCHOR_NIGHT}
           />
         </PolaroidGroup>
