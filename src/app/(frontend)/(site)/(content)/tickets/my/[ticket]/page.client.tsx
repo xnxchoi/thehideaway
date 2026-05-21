@@ -76,7 +76,7 @@ export function TicketDetailClient({
     <RPage type="me" slug={["tickets", ticketId]}>
       <div className={cn("relative z-[100]", ticketFontVariables)}>
         {/* Back link */}
-        <div className="mx-auto w-full max-w-7xl px-6 pt-6 xl:px-10 xl:pt-10">
+        <div className="mx-auto w-full max-w-11xl px-12 pt-16 xl:px-16 xl:pt-20">
           <m.div
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}

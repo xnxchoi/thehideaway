@@ -8,21 +8,11 @@ import { Button } from "@/components/core/Button";
 /**
  * Page-local audio score for the Day n Night immersive scene.
  *
- * Single-bed system: only the daytime/country track is owned here.
- * The Liminal handoff transfers playback to HideawayFM (Track_1 → 2 → 3,
- * "YM.FM" set distributed across Liminal → Nighttime), so once
- * `liminalHandoffFired` flips true this component just silences itself
- * — HideawayFM takes over the night.
+ *   Act I/II  — Daytime: country bed (daytime.ogg)
+ *   Act III+  — Liminal/Night: HideawayFM Track_1 (LiminalRadioController)
+ *   Late Closing — silence, then daytime returns at the loop wrap
  *
- *   Act I/II — Daytime       country  /assets/audio/day-n-night/daytime.ogg
- *   Act III+ — Liminal/Night  HideawayFM (Track_1 / 2 / 3, scroll-paced)
- *
- *   ─ Daytime fades out across the photo-torrent end window
- *     (DAY_FADE_IN → DAY_FADE_OUT). The fade is scroll-driven so the
- *     country bed leaves cleanly before the cassette reveals itself.
- *   ─ After the cassette handoff fires, day gain is held at zero
- *     unconditionally — there is no second bed in this component to
- *     swap to. The HideawayFM controller takes over.
+ * Gain is purely scroll-driven for the full loop cycle. See resolveDayGain.
  *
  * Missing-file path: if daytime.ogg fails to decode, the audio toggle
  * unmounts itself and the rest of the page is unaffected.
@@ -32,9 +22,7 @@ const DAY_SRC = "/assets/audio/day-n-night/daytime.ogg";
 
 const BASE_VOL = 0.55;
 
-// setTargetAtTime smoothing constants (seconds).
-const RAMP_FAST = 0.08; // per-frame scroll updates
-const RAMP_SLOW = 0.35; // event-driven handoff cut
+const RAMP_FAST = 0.08;
 
 /**
  * Daytime fade windows — scroll-driven for the full loop.
@@ -72,11 +60,18 @@ function smoothstep(a: number, b: number, x: number): number {
 }
 
 /**
- * Pure gain resolver. Pre-handoff: scroll-driven fade-out on the day
- * bed. Post-handoff: silence (HideawayFM owns the night).
+ * Pure scroll-driven gain resolver for the full loop.
+ *
+ *   0 → DAY_FADE_IN         full volume
+ *   DAY_FADE_IN → FADE_OUT  fade out (1 → 0)
+ *   FADE_OUT → RETURN_IN    silence (night / liminal / closing)
+ *   RETURN_IN → RETURN_OUT  fade back in (0 → 1) as dawn breaks
  */
-function resolveDayGain(progress: number, liminalFired: boolean): number {
-  if (liminalFired) return 0;
+function resolveDayGain(progress: number): number {
+  if (progress >= DAY_RETURN_IN) {
+    return smoothstep(DAY_RETURN_IN, DAY_RETURN_OUT, progress);
+  }
+  if (progress >= DAY_FADE_OUT) return 0;
   return 1 - smoothstep(DAY_FADE_IN, DAY_FADE_OUT, progress);
 }
 
@@ -91,9 +86,6 @@ export function DayNNightScore({
   const [failed, setFailed] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
   const dayRef = useRef<TrackPipeline | null>(null);
-  // Apply the slower ramp exactly on the handoff edge; per-frame scroll
-  // updates use the fast ramp.
-  const prevHandoffRef = useRef(false);
 
   // Spin up the AudioContext + daytime pipeline on first enable.
   useEffect(() => {
@@ -173,7 +165,6 @@ export function DayNNightScore({
   }, [enabled]);
 
   const progress = useDayNNightScene((r) => r.progress);
-  const liminalFired = useDayNNightScene((r) => r.liminalHandoffFired);
 
   useEffect(() => {
     if (!ready) return;
@@ -189,14 +180,10 @@ export function DayNNightScore({
         return;
       }
 
-      const day = resolveDayGain(progress, liminalFired);
-      const handoffEdge = liminalFired && !prevHandoffRef.current;
-      const ramp = handoffEdge ? RAMP_SLOW : RAMP_FAST;
-      prevHandoffRef.current = liminalFired;
-
+      const day = resolveDayGain(progress);
       const now = ctx.currentTime;
       try {
-        d.gain.gain.setTargetAtTime(day * BASE_VOL, now, ramp);
+        d.gain.gain.setTargetAtTime(day * BASE_VOL, now, RAMP_FAST);
       } catch {
         // Context may transition to closed between the guard above and
         // this write; swallow and let cleanup stop the rAF.
@@ -210,7 +197,7 @@ export function DayNNightScore({
       active = false;
       cancelAnimationFrame(raf);
     };
-  }, [ready, progress, liminalFired]);
+  }, [ready, progress]);
 
   if (failed) return null;
 

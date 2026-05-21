@@ -101,7 +101,7 @@ export function ClaimClient({
         </div>
       ) : (
         /* ── Valid: glass panel centered ── */
-        <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center p-9 md:p-16">
+        <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center p-19 md:p-26">
           <div className="pointer-events-none absolute inset-[35px] z-[1] rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]" />
 
           <m.div

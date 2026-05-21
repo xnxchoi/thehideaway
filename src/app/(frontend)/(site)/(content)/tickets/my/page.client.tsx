@@ -87,7 +87,7 @@ export default function MyTicketsPageClient({ tickets }: Props) {
 
   return (
     <RPage type="me" slug={["tickets"]}>
-      <section className="relative z-[100] mx-auto w-full max-w-7xl px-6 pt-16 pb-32 xl:px-10 xl:pt-20 xl:pb-40">
+      <section className="relative z-[100] mx-auto w-full max-w-7xl px-6 pt-24 pb-32 xl:px-10 xl:pt-30 xl:pb-45">
         <AnimatePresence mode="wait">
           {total === 0 ? (
             <EmptyState key="empty" />
