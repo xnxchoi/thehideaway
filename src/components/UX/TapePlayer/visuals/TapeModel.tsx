@@ -92,6 +92,14 @@ const MODEL_URL = "/assets/three/tape/player.gltf";
 const HDR_URL = "/assets/three/tape/urban_alley_01_1k.hdr";
 const VIDEO_URL = "/assets/three/tape/Display.mp4";
 
+// Module-level preload of the GLTF. Whenever this file's chunk is in
+// the bundle graph (i.e. any page that statically imports TapeModel
+// or Tape3DScene), the fetch + draco decode kicks off as soon as the
+// chunk evaluates — well before the cassette is actually mounted.
+// Without this, the parse hits the main thread on first reveal and
+// the GSAP-pinned scroll stutters audibly as the model pops in.
+useGLTF.preload(MODEL_URL);
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 /** Constant idle disk rotation speed (Gb in original). */
@@ -696,6 +704,13 @@ export function TapeModel({
   useFrame(({ camera }, delta) => {
     // Pause rendering when tab is hidden (mirrors Gl / document.hidden check)
     if (document.hidden) return;
+    // Skip all per-frame work when this tape isn't on stage. The
+    // canvas itself is still composed by R3F, but we avoid running
+    // the disk-spin, camera-reset, marquee-scroll, and override
+    // write blocks on every frame for a hidden view. Saves the main
+    // thread real cycles while the user is scrolling through other
+    // acts that don't need the cassette painted.
+    if (!inView) return;
     if (diskRef.current) {
       const isPlaying = lastTrackstatus.current === "playing";
 
@@ -838,7 +853,7 @@ export function TapeModel({
               ref={displayEmissiveRef}
               attach="emissiveMap"
               width={Math.round(
-                RENDER_TEX_HEIGHT * DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO
+                RENDER_TEX_HEIGHT * DISPLAY_HALF_HEIGHT * 1 * FONT_SIZE_RATIO
               )}
               height={RENDER_TEX_HEIGHT}
               format={RGBAFormat}

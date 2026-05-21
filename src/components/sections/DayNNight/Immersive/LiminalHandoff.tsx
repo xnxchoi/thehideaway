@@ -190,7 +190,12 @@ export function LiminalHandoff() {
       <div
         data-dn-tape-stage
         data-stage-on={stageOn || undefined}
-        className="ease pointer-events-auto absolute inset-0 origin-bottom transition-[transform,opacity] duration-[520ms] data-[stage-on]:translate-y-0 data-[stage-on]:opacity-100 [&:not([data-stage-on])]:translate-y-24 [&:not([data-stage-on])]:opacity-0"
+        // pointer-events-none — the canvas covers the full viewport but
+        // there's nothing here for the user to click; QuickActions
+        // (z-47) and the Scrubber (z-45) sit above and must remain
+        // reachable. Transitions kept on transform+opacity only so the
+        // compositor handles the reveal without re-layout.
+        className="ease pointer-events-none absolute inset-0 origin-bottom transition-[transform,opacity] duration-[520ms] data-[stage-on]:translate-y-0 data-[stage-on]:opacity-100 [&:not([data-stage-on])]:translate-y-24 [&:not([data-stage-on])]:opacity-0"
       >
         <Tape3DScene
           scrollTriggerId="dn-liminal-tape-trigger"
