@@ -18,6 +18,13 @@ interface Tape3DSceneProps {
   scrollTriggerId?: string;
   className?: string;
   style?: ComponentProps<"div">["style"];
+  /**
+   * Override the outer wrapper's sizing classes. Defaults to
+   * `"relative h-screen w-full"` which suits the Radio surface but is
+   * too tall for embedded cinematic frames. Cinematic surfaces should
+   * pass their own height/width here (e.g. `"relative h-[280px] w-full"`).
+   */
+  outerClassName?: string;
   /** See TapeModel. Defaults to the HideawayFM-driven marquee. */
   displayOverride?: TapeDisplayOverride | null;
   /** See TapeModel. Defaults to the standard Radio frame. */
@@ -61,21 +68,28 @@ export function Tape3DScene({
   scrollTriggerId = "webgl_trigger",
   className,
   style,
+  outerClassName,
   displayOverride,
   cameraOverride
 }: Tape3DSceneProps) {
   const aspectRatio = useResponsiveAspectRatio();
   const { ref, inView } = useInView({ threshold: 0.1 });
+  // When the caller overrides the outer sizing (cinematic embeds), we
+  // also drop the View's hard h-screen — otherwise the canvas keeps
+  // its full-viewport height and overflows the host frame. Callers
+  // that use the default sizing keep the existing Radio behaviour.
+  const usingCustomOuter = !!outerClassName;
 
   return (
     <div
       ref={ref}
-      className={cn("relative h-screen w-full")}
+      className={cn(outerClassName ?? "relative h-screen w-full")}
       style={{ aspectRatio, ...style }}
     >
       <View
         className={cn(
-          "absolute inset-[auto_0%_.5%] h-screen w-full",
+          "absolute inset-[auto_0%_.5%] w-full",
+          usingCustomOuter ? "h-full" : "h-screen",
           className
         )}
       >
@@ -92,7 +106,7 @@ export function Tape3DScene({
         <div
           aria-hidden
           data-dn-tape-crt
-          className="pointer-events-none absolute inset-0 z-[1] [background:repeating-linear-gradient(0deg,rgba(8,16,18,0)_0px,rgba(8,16,18,0)_2px,rgba(150,247,255,0.07)_2px,rgba(150,247,255,0.07)_3px)] [mix-blend-mode:screen]"
+          className="pointer-events-none absolute inset-0 z-[1] [mix-blend-mode:screen] [background:repeating-linear-gradient(0deg,rgba(8,16,18,0)_0px,rgba(8,16,18,0)_2px,rgba(150,247,255,0.07)_2px,rgba(150,247,255,0.07)_3px)]"
         />
       ) : null}
     </div>
