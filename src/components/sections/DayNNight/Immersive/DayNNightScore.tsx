@@ -62,6 +62,7 @@ const RAMP_SLOW = 0.35; // event-driven handoff cut
  *   0.478  Dress / sunset peak
  *   0.575  post-sunset / dusk
  *   0.664  Night center: deep night
+ *   0.876  Closing center
  *
  * Day fades out across the sunset-peak → post-sunset window per
  * § 2.3 of the handoff doc — *"Daytime → silence: during § 2.1
@@ -70,14 +71,19 @@ const RAMP_SLOW = 0.35; // event-driven handoff cut
  * scroll-driven gain on the pre-handoff path; Sunset comes in
  * via the cassette button-press event (§ 2.9), not scroll.
  *
- * Night crossfades in from Sunset post-handoff, anchored around
- * dusk → deep-night so the hiphop/house bed is established by
- * the time the YM.FM credit block lands in Act 3.
+ * Track_3 (Sunset bed) is YM.FM's set. Per § 2.2 of the handoff
+ * doc — "Liminal hands off the sound. Nighttime hands off the
+ * name" — YM.FM carries the second half of Liminal plus the
+ * first half of Night. The Sunset → Night crossfade therefore
+ * centers on the Night midpoint (0.664), so Track_3 owns the
+ * entire YM.FM half and nighttime.ogg (a different artist) only
+ * takes over once the visual moves past deep-night toward the
+ * closing pre-dawn.
  */
 const DAY_FADE_IN = 0.42;
 const DAY_FADE_OUT = 0.55;
-const NIGHT_FADE_IN = 0.55;
-const NIGHT_FADE_OUT = 0.68;
+const NIGHT_FADE_IN = 0.66;
+const NIGHT_FADE_OUT = 0.74;
 
 interface TrackPipeline {
   audio: HTMLAudioElement;
