@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
 import { Tape3DScene } from "@/components/UX/TapePlayer/visuals/Tape3DScene";
-import type { TapeCameraOverride } from "@/components/UX/TapePlayer/visuals/TapeModel";
+import type {
+  TapeCameraOverride,
+  TapeModelRotation
+} from "@/components/UX/TapePlayer/visuals/TapeModel";
 
 /**
  * Cinematic handoff between Liminal (Act III edge) and Nighttime
@@ -61,16 +64,25 @@ function resolvePhase(progress: number, fired: boolean): Phase {
   return "fire";
 }
 
-// Cinematic frame for the cassette reveal — closer than the standard
-// Radio frame and rotated so the display is roughly face-on. Tuned by
-// eye against the GLTF's default orientation; reset behaviour in
-// TapeModel will lerp smoothly between this and the default frame
-// when the cassette unmounts.
+// Cinematic frame for the cassette reveal — straight-on shot from the
+// front. Combined with FLAT_ROTATION (model y=0) so the display reads
+// face-on rather than at the GLTF's default oblique angle. Position
+// y is slightly negative to lower the eyeline; target matches so the
+// camera frames the display centrally. fov tuned by eye against the
+// 280px-tall stage to fill ~70% of the frame with cassette body.
 const CINEMATIC_FRAME: TapeCameraOverride = {
-  position: [0, -0.5, 9],
-  target: [0, -0.5, 0],
-  fov: 9
+  position: [0, 0, 28],
+  target: [0, 0, 0],
+  fov: 10
 };
+
+// Lock the cassette face-on to the viewport during caption phases.
+// The GLTF defaults to scene.rotation.y = INIT_ROT_Y (-0.6 rad ≈ -34°)
+// so the radio surface gets an angled "shelf" feel; the cinematic
+// instead wants the display reading head-on. x stays at 0 to cancel
+// the parent group's 0.1 tilt; the parent applies its own rotation
+// independently so the override doesn't need to compensate.
+const FLAT_ROTATION: TapeModelRotation = { x: 0, y: 0, z: 0 };
 
 export function LiminalHandoff() {
   const t = useTranslations("Event.DayNNight.liminal");
@@ -149,13 +161,22 @@ export function LiminalHandoff() {
 
   if (!stageMounted) return null;
 
+  // Lock model rotation flat during caption + fire phases so the
+  // display reads face-on. Once handed off, drop to null and let the
+  // existing GSAP scroll-driven rotation resume (the cassette tilts
+  // back into the angled radio pose as the user scrolls past Night).
+  const lockRotation =
+    phase === "caption-a" || phase === "caption-b" || phase === "fire";
+
   return (
     <div
       aria-hidden={phase === "off" || undefined}
-      // Stack lifted clear of the QuickActions pill (z-47) and the
-      // Scrubber (z-45). The Tape3DScene wraps a fixed-aspect div, so
-      // we constrain the host to a viewport-anchored frame here.
-      className="pointer-events-none fixed inset-x-0 bottom-[110px] z-[44] mx-auto flex justify-center md:bottom-[170px] xl:bottom-[190px]"
+      // Full-viewport host so the Tape3DScene canvas renders at native
+      // screensize — the camera position then frames the cassette
+      // within that canvas, rather than the canvas itself being
+      // letterboxed into a small DOM rect. z-44 keeps us under
+      // QuickActions (z-47) and the Scrubber (z-45) chrome.
+      className="pointer-events-none fixed inset-0 z-[44]"
       data-dn-tape-trigger-host
     >
       {/* ScrollTrigger anchor — TapeModel's GSAP timeline needs a real
@@ -169,13 +190,14 @@ export function LiminalHandoff() {
       <div
         data-dn-tape-stage
         data-stage-on={stageOn || undefined}
-        className="ease pointer-events-auto w-[min(86vw,520px)] origin-bottom transition-[transform,opacity] duration-[520ms] data-[stage-on]:translate-y-0 data-[stage-on]:opacity-100 [&:not([data-stage-on])]:translate-y-24 [&:not([data-stage-on])]:opacity-0"
+        className="ease pointer-events-auto absolute inset-0 origin-bottom transition-[transform,opacity] duration-[520ms] data-[stage-on]:translate-y-0 data-[stage-on]:opacity-100 [&:not([data-stage-on])]:translate-y-24 [&:not([data-stage-on])]:opacity-0"
       >
         <Tape3DScene
           scrollTriggerId="dn-liminal-tape-trigger"
-          outerClassName="relative h-[280px] w-full xl:h-[320px]"
+          outerClassName="relative h-full w-full"
           cameraOverride={CINEMATIC_FRAME}
           displayOverride={displayOverride}
+          modelRotation={lockRotation ? FLAT_ROTATION : null}
         />
       </div>
     </div>

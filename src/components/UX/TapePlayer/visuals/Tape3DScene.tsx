@@ -6,7 +6,8 @@ import { useInView } from "react-intersection-observer";
 import {
   TapeModel,
   type TapeCameraOverride,
-  type TapeDisplayOverride
+  type TapeDisplayOverride,
+  type TapeModelRotation
 } from "./TapeModel";
 
 interface Tape3DSceneProps {
@@ -29,6 +30,8 @@ interface Tape3DSceneProps {
   displayOverride?: TapeDisplayOverride | null;
   /** See TapeModel. Defaults to the standard Radio frame. */
   cameraOverride?: TapeCameraOverride | null;
+  /** See TapeModel. Defaults to scroll-driven rotation. */
+  modelRotation?: TapeModelRotation | null;
 }
 
 /**
@@ -70,7 +73,8 @@ export function Tape3DScene({
   style,
   outerClassName,
   displayOverride,
-  cameraOverride
+  cameraOverride,
+  modelRotation
 }: Tape3DSceneProps) {
   const aspectRatio = useResponsiveAspectRatio();
   const { ref, inView } = useInView({ threshold: 0.1 });
@@ -99,6 +103,7 @@ export function Tape3DScene({
             inView={inView}
             displayOverride={displayOverride}
             cameraOverride={cameraOverride}
+            modelRotation={modelRotation}
           />
         </Suspense>
       </View>

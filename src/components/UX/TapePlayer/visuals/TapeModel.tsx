@@ -165,6 +165,19 @@ export interface TapeCameraOverride {
   fov?: number;
 }
 
+/**
+ * Optional model rotation override. When set, the model's scene
+ * rotation is locked to `{x,y,z}` (radians) and the built-in
+ * scroll-driven rotation pipeline is short-circuited so the GSAP
+ * onUpdate doesn't fight the override. Drop to null to hand rotation
+ * back to the scroll trigger.
+ */
+export interface TapeModelRotation {
+  x: number;
+  y: number;
+  z: number;
+}
+
 interface TapeModelProps {
   scrollTriggerId: string;
   /**
@@ -177,32 +190,41 @@ interface TapeModelProps {
   displayOverride?: TapeDisplayOverride | null;
   /** See TapeCameraOverride. Defaults to (-8,-3,15) / fov 10 / target (0,0,0). */
   cameraOverride?: TapeCameraOverride | null;
+  /** See TapeModelRotation. Defaults to scroll-driven rotation. */
+  modelRotation?: TapeModelRotation | null;
 }
-
+const METAL_TEXTURE = "/assets/three/materials/brushed_metal/normal.jpg";
+useTexture.preload(METAL_TEXTURE);
 export function TapeModel({
   scrollTriggerId = "webgl_trigger",
   inView,
   displayOverride,
-  cameraOverride
+  cameraOverride,
+  modelRotation
 }: TapeModelProps) {
+  // Ref-track the rotation override so the scroll trigger callback
+  // (created once via useEffectEvent) can see live updates without
+  // re-binding. Used to short-circuit the scroll-driven rotation
+  // pipeline when the cinematic surface wants to lock the pose.
+  const modelRotationRef = useRef(modelRotation);
+  useEffect(() => {
+    modelRotationRef.current = modelRotation;
+  }, [modelRotation]);
   const controlsRef = useRef<OrbitControls_>(null!);
   const { scene } = useGLTF(MODEL_URL);
-  const texture = useTexture(
-    "/assets/three/materials/brushed_metal/normal.jpg",
-    (texture) => {
-      texture.wrapS = texture.wrapT = RepeatWrapping;
-      texture.colorSpace = NoColorSpace;
-      texture.anisotropy = 1;
-      texture.mapping = UVMapping;
-      texture.channel = 1;
-      texture.magFilter = LinearFilter;
-      texture.minFilter = LinearMipmapLinearFilter;
-      texture.repeat.set(5, 5);
-      texture.offset.set(0, -4);
-      texture.needsUpdate = true;
-      return texture;
-    }
-  );
+  const texture = useTexture(METAL_TEXTURE, (texture) => {
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.colorSpace = NoColorSpace;
+    texture.anisotropy = 1;
+    texture.mapping = UVMapping;
+    texture.channel = 1;
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.repeat.set(5, 5);
+    texture.offset.set(0, -4);
+    texture.needsUpdate = true;
+    return texture;
+  });
   /** The "Disk" mesh that spins in response to scroll velocity. */
   const diskRef = useRef<Object3D | null>(null);
   const playButtonRef = useRef<Object3D | null>(null);
@@ -537,10 +559,13 @@ export function TapeModel({
     const metalMat = metalMatRef.current;
     const triggerSelector = document.getElementById(scrollTriggerId);
     if (!triggerSelector) return;
-    // 1. Model rotation.y and position.y over scroll
-    // const modelST = ScrollTrigger.create({
+    // 1. Model rotation.y and position.y over scroll. Skipped while
+    //    a modelRotation override is active — the cinematic surface
+    //    owns the pose during caption phases, and the useFrame block
+    //    below force-writes the override each tick.
     const modelST = scroll(
       (progress: number) => {
+        if (modelRotationRef.current) return;
         scene.rotation.y = INIT_ROT_Y + progress * ((2 * Math.PI) / 6);
         scene.position.y = INIT_POS_Y + progress * 0.6;
       },
@@ -694,6 +719,15 @@ export function TapeModel({
         // 4. Mutate the ref to stop the loop. Again, no re-render!
         isResetting.current = false;
       }
+    }
+    // Model rotation override: force the locked pose every tick so
+    // any stray GSAP write (race with the ref check above) gets
+    // immediately overwritten. Position.y left at INIT_POS_Y so the
+    // tape sits at its natural baseline.
+    const rotOverride = modelRotationRef.current;
+    if (rotOverride && scene) {
+      scene.rotation.set(rotOverride.x, rotOverride.y, rotOverride.z);
+      scene.position.y = INIT_POS_Y;
     }
     // Static ticker mode (display override): freeze the marquee at x=0
     // so the caption sits centered. Skip the firstTime increment so
