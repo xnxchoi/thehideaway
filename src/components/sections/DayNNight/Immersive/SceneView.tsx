@@ -265,7 +265,7 @@ export function SceneView() {
       style={{
         "--glow1": "86% 0.18 75",
         "--glow2": "80% 0.18 65",
-        "--glow3": "70% 0.2  50"
+        "--glow3": "70% 0.2 50"
       }}
     >
       <div

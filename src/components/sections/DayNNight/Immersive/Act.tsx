@@ -39,7 +39,7 @@ export function Act({
       aria-hidden={ariaHidden || undefined}
       inert={ariaHidden ? true : undefined}
       className={cn(
-        `relative flex h-full flex-none items-stretch justify-center overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full`,
+        `relative flex h-full flex-none items-stretch overflow-hidden max-lg:h-auto max-lg:min-h-dvh max-lg:w-full`,
         className
       )}
     >

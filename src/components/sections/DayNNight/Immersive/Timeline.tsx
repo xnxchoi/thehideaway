@@ -410,12 +410,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           + SurvivalKit) RIGHT (cols 8-13), date/location strip bottom-
           LEFT. The bookend reads as a true reflection — same grammar,
           opposite hand. */}
-      <Act
-        width={1.3}
-        ariaLabel={t("opening.label")}
-        ariaHidden={ariaHidden}
-        className="lg:-left-[22%]"
-      >
+      <Act width={1.3} ariaLabel={t("opening.label")} ariaHidden={ariaHidden}>
         <ActEyebrow
           numeral="I"
           label={t("opening.label")}
