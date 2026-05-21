@@ -272,6 +272,15 @@ export function TapeModel({
   const DISPLAY_EMISSIVE_INTENSITY = 200;
   const DISPLAY_HALF_HEIGHT = 1.5;
   const FONT_SIZE_RATIO = 0.33;
+  // Static-mode captions can be wider than the marquee window
+  // (e.g. "Time for a change of pace." is ~25 chars). Shrink the
+  // glyph height so the full string fits without clipping. 0.7 was
+  // tuned against the LiminalHandoff captions; tweak if shorter or
+  // longer text shows up.
+  const STATIC_FONT_SHRINK = 0.7;
+  const displayFontSize =
+    DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO *
+    (displayOverride?.tickerMode === "static" ? STATIC_FONT_SHRINK : 1);
   const RENDER_TEX_HEIGHT = 256;
   /** Exponentially smoothed velocity (qc in original). */
   const smoothedVelocityRef = useRef(0);
@@ -540,21 +549,26 @@ export function TapeModel({
   // marquee padding.
   const overrideText = displayOverride?.text ?? null;
   const isStaticTicker = displayOverride?.tickerMode === "static";
+  // Marquee mode pads the string so there's a visual gap before it
+  // loops; static mode drops the pad so the full caption fits in the
+  // display window without being clipped by the marquee spacing.
+  const formatString = (raw: string, isStatic: boolean) =>
+    isStatic ? raw : `   ${raw}   `;
   const [playingString, setPlayingString] = useState(() => {
-    if (overrideText != null) return `   ${overrideText}   `;
+    if (overrideText != null) return formatString(overrideText, isStaticTicker);
     return track
       ? `   ${track.artist} - ${track.title}   `
       : `   Hideaway FM   `;
   });
   useEffect(() => {
     if (overrideText != null) {
-      setPlayingString(`   ${overrideText}   `);
+      setPlayingString(formatString(overrideText, isStaticTicker));
       return;
     }
     setPlayingString(
       track ? `   ${track.artist} - ${track.title}   ` : `   Hideaway FM   `
     );
-  }, [track, overrideText]);
+  }, [track, overrideText, isStaticTicker]);
 
   // useMotionValueEvent(progress, "change", (v) => {
   //   scene.rotation.y = INIT_ROT_Y + v * ((2 * Math.PI) / 6);
@@ -887,7 +901,7 @@ export function TapeModel({
                   }}
                   font={"/assets/fonts/Workbench.ttf"}
                   color={"#c5dcdc"}
-                  fontSize={DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO}
+                  fontSize={displayFontSize}
                   fillOpacity={0.6}
                 >
                   {playingString}
@@ -897,7 +911,7 @@ export function TapeModel({
                   font={"/assets/fonts/Workbench.ttf"}
                   color={"#c5dcdc"}
                   ref={textRef2}
-                  fontSize={DISPLAY_HALF_HEIGHT * 2 * FONT_SIZE_RATIO}
+                  fontSize={displayFontSize}
                   fillOpacity={0.6}
                 >
                   {playingString}
