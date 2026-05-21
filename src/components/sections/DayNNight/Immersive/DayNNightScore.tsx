@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
+import { Button } from "@/components/core/Button";
 
 /**
  * Page-local audio score for the Day n Night immersive scene
@@ -54,13 +55,27 @@ const RAMP_FAST = 0.08; // per-frame scroll updates
 const RAMP_SLOW = 0.35; // event-driven handoff cut
 
 /**
- * Scroll-driven crossfade window for Sunset → Nighttime.
+ * Scroll-driven fade windows.
  *
  * SKY_STOPS landmarks (from store.tsx) — for reference:
+ *   0.279  Cookout
  *   0.478  Dress / sunset peak
  *   0.575  post-sunset / dusk
  *   0.664  Night center: deep night
+ *
+ * Day fades out across the sunset-peak → post-sunset window per
+ * § 2.3 of the handoff doc — *"Daytime → silence: during § 2.1
+ * the country track fades out across the photo torrent; reaches
+ * zero by the end of § 2.2 (the held beat)"*. This is the only
+ * scroll-driven gain on the pre-handoff path; Sunset comes in
+ * via the cassette button-press event (§ 2.9), not scroll.
+ *
+ * Night crossfades in from Sunset post-handoff, anchored around
+ * dusk → deep-night so the hiphop/house bed is established by
+ * the time the YM.FM credit block lands in Act 3.
  */
+const DAY_FADE_IN = 0.42;
+const DAY_FADE_OUT = 0.55;
 const NIGHT_FADE_IN = 0.55;
 const NIGHT_FADE_OUT = 0.68;
 
@@ -82,9 +97,18 @@ function resolveGains(
   progress: number,
   liminalFired: boolean
 ): { day: number; sunset: number; night: number } {
+  // Pre-handoff path: Day plays through Daytime acts, scroll-driven
+  // fade to silence across the sunset window. Sunset stays muted
+  // until the cassette button-press event fires; Night stays muted
+  // until Sunset hands off. This means a user who reaches Night
+  // without the (event-driven) handoff hears silence rather than
+  // incongruous country music — graceful degrade.
   if (!liminalFired) {
-    return { day: 1, sunset: 0, night: 0 };
+    const dayWeight = 1 - smoothstep(DAY_FADE_IN, DAY_FADE_OUT, progress);
+    return { day: dayWeight, sunset: 0, night: 0 };
   }
+  // Post-handoff path: Day is gone. Sunset → Night smoothstep
+  // crossfade on scroll.
   const nightWeight = smoothstep(NIGHT_FADE_IN, NIGHT_FADE_OUT, progress);
   return {
     day: 0,
@@ -246,7 +270,7 @@ export function DayNNightScore() {
   if (failed) return null;
 
   return (
-    <button
+    <Button
       type="button"
       data-dn-chrome-pill
       data-dn-audio-toggle
@@ -265,6 +289,6 @@ export function DayNNightScore() {
       <span data-dn-audio-text className="max-[480px]:hidden">
         {t("label")}
       </span>
-    </button>
+    </Button>
   );
 }
