@@ -8,6 +8,7 @@ import { DayNNightScore } from "./DayNNightScore";
 import { DetailsContext } from "./DetailsContext";
 import { DetailsDrawer } from "./DetailsDrawer";
 import { LiminalHandoff } from "./LiminalHandoff";
+import { LiminalRadioController } from "./LiminalRadioController";
 import { QuickActions } from "./QuickActions";
 import { Scrubber } from "./Scrubber";
 import { SeamBridge } from "./SeamBridge";
@@ -84,18 +85,20 @@ export function ImmersiveView() {
           DynamicIsland-style frosted pill sitting above the Scrubber
           and ViewToggle. Reserve = inverted fill, Details = outline. */}
         <QuickActions />
-        {/* Three-track audio score — independent of the site's Radio.
-          Country (Act 1) → House (Act 2, event-driven via the cassette
-          handoff) → Hip-hop/house (Act 3, scroll-driven crossfade).
-          Toggle button positioning lives in dn.css via
-          [data-dn-audio-toggle]. See DayNNightScore.tsx. */}
+        {/* Local audio score — owns daytime.ogg only. Fades out across
+          the photo-torrent window; once the cassette handoff fires,
+          this goes silent and HideawayFM picks up the night. See
+          DayNNightScore.tsx. */}
         <DayNNightScore />
-        {/* Cinematic Liminal → Nighttime handoff (§ 2.9 / § 3.6 of
-          DAY_N_NIGHT_HANDOFF.md). Subtitle morph + cassette
-          placeholder; pressing the cassette fires the store's
-          liminal handoff, which lights up the audio score's Sunset
-          → Nighttime bed. Stateless on progress + handoff flag — safe
-          on re-entry. */}
+        {/* Pins HideawayFM to Track_1 on mount, starts playback after
+          the tape SFX window once the handoff fires, and advances
+          Track_1 → 2 → 3 at scroll thresholds. Headless. */}
+        <LiminalRadioController />
+        {/* Cinematic Liminal → Nighttime handoff. Subtitle morph +
+          cassette (TapeModel); pressing it fires the store's liminal
+          handoff, which silences the day bed and starts HideawayFM
+          after the SFX hold. Stateless on progress + handoff flag —
+          safe on re-entry. */}
         <LiminalHandoff />
         {/* Single Details drawer instance — driven by DetailsContext so
           QuickActions and OpeningCard share one drawer. */}
