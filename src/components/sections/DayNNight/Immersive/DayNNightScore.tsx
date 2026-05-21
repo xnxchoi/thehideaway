@@ -2,88 +2,54 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
 import { Button } from "@/components/core/Button";
 
 /**
- * Page-local audio score for the Day n Night immersive scene
- * (§ 3.5 of `readmes/DAY_N_NIGHT_HANDOFF.md`).
+ * Page-local audio score for the Day n Night immersive scene.
  *
- * Three tracks, mixed-model transitions:
+ * Single-bed system: only the daytime/country track is owned here.
+ * The Liminal handoff transfers playback to HideawayFM (Track_1 → 2 → 3,
+ * "YM.FM" set distributed across Liminal → Nighttime), so once
+ * `liminalHandoffFired` flips true this component just silences itself
+ * — HideawayFM takes over the night.
  *
- *   Act 1 — Daytime         country  /assets/audio/day-n-night/daytime.ogg
- *   Act 2 — Liminal/Sunset  house    /track_media/Track_3.mp3
- *   Act 3 — Nighttime       hip-hop  /assets/audio/day-n-night/nighttime.ogg
+ *   Act I/II — Daytime       country  /assets/audio/day-n-night/daytime.ogg
+ *   Act III+ — Liminal/Night  HideawayFM (Track_1 / 2 / 3, scroll-paced)
  *
- *   ─ Daytime → Sunset  : EVENT-DRIVEN. Fired by the cassette button
- *                         press inside `<LiminalHandoff>` (§ 3.6) via
- *                         the scene store's `fireLiminalHandoff()`
- *                         action — synced to the click SFX frame.
+ *   ─ Daytime fades out across the photo-torrent end window
+ *     (DAY_FADE_IN → DAY_FADE_OUT). The fade is scroll-driven so the
+ *     country bed leaves cleanly before the cassette reveals itself.
+ *   ─ After the cassette handoff fires, day gain is held at zero
+ *     unconditionally — there is no second bed in this component to
+ *     swap to. The HideawayFM controller takes over.
  *
- *   ─ Sunset → Nighttime : SCROLL-DRIVEN. ~1.5s smoothstep crossfade
- *                          on `useDayNNightScene.progress`, anchored
- *                          around the dusk → deep-night transition
- *                          so the hiphop/house bed is established by
- *                          the time the YM.FM credit block lands.
- *
- * Architecture
- * ────────────
- *   AudioContext
- *     ├── <audio daytime>   → MediaElementSource → Gain → dest
- *     ├── <audio sunset>    → MediaElementSource → Gain → dest
- *     └── <audio nighttime> → MediaElementSource → Gain → dest
- *
- * All three are `loop` + `preload="metadata"`. Playback only begins
- * once the user clicks the chrome audio toggle (autoplay policy).
- * The post-handoff state is reactive to the store flag, so the
- * future `<LiminalHandoff>` only needs to call
- * `fireLiminalHandoff()` on the cassette click frame.
- *
- * Any missing track → its pipeline disables itself and the toggle
- * gives up; the rest of the page is unaffected.
+ * Missing-file path: if daytime.ogg fails to decode, the audio toggle
+ * unmounts itself and the rest of the page is unaffected.
  */
 
 const DAY_SRC = "/assets/audio/day-n-night/daytime.ogg";
-const SUNSET_SRC = "/track_media/Track_3.mp3";
-const NIGHT_SRC = "/assets/audio/day-n-night/nighttime.ogg";
 
 const BASE_VOL = 0.55;
 
-// Time constants for setTargetAtTime smoothing (seconds).
+// setTargetAtTime smoothing constants (seconds).
 const RAMP_FAST = 0.08; // per-frame scroll updates
 const RAMP_SLOW = 0.35; // event-driven handoff cut
 
 /**
- * Scroll-driven fade windows.
+ * Daytime fade-out window — anchored to the photo-torrent end so the
+ * country bed is gone by the time the cassette translates up. Tighter
+ * than the old sunset-anchored window because the cinematic now hands
+ * off via HideawayFM rather than blending two beds at the same instant.
  *
  * SKY_STOPS landmarks (from store.tsx) — for reference:
  *   0.279  Cookout
  *   0.478  Dress / sunset peak
  *   0.575  post-sunset / dusk
- *   0.664  Night center: deep night
- *   0.876  Closing center
- *
- * Day fades out across the sunset-peak → post-sunset window per
- * § 2.3 of the handoff doc — *"Daytime → silence: during § 2.1
- * the country track fades out across the photo torrent; reaches
- * zero by the end of § 2.2 (the held beat)"*. This is the only
- * scroll-driven gain on the pre-handoff path; Sunset comes in
- * via the cassette button-press event (§ 2.9), not scroll.
- *
- * Track_3 (Sunset bed) is YM.FM's set. Per § 2.2 of the handoff
- * doc — "Liminal hands off the sound. Nighttime hands off the
- * name" — YM.FM carries the second half of Liminal plus the
- * first half of Night. The Sunset → Night crossfade therefore
- * centers on the Night midpoint (0.664), so Track_3 owns the
- * entire YM.FM half and nighttime.ogg (a different artist) only
- * takes over once the visual moves past deep-night toward the
- * closing pre-dawn.
+ *   0.664  Night center
  */
-const DAY_FADE_IN = 0.42;
-const DAY_FADE_OUT = 0.55;
-const NIGHT_FADE_IN = 0.66;
-const NIGHT_FADE_OUT = 0.74;
+const DAY_FADE_IN = 0.36;
+const DAY_FADE_OUT = 0.48;
 
 interface TrackPipeline {
   audio: HTMLAudioElement;
@@ -96,31 +62,12 @@ function smoothstep(a: number, b: number, x: number): number {
 }
 
 /**
- * Resolve the three target gains for a given scene progress + handoff
- * state. Pure function — no audio side effects.
+ * Pure gain resolver. Pre-handoff: scroll-driven fade-out on the day
+ * bed. Post-handoff: silence (HideawayFM owns the night).
  */
-function resolveGains(
-  progress: number,
-  liminalFired: boolean
-): { day: number; sunset: number; night: number } {
-  // Pre-handoff path: Day plays through Daytime acts, scroll-driven
-  // fade to silence across the sunset window. Sunset stays muted
-  // until the cassette button-press event fires; Night stays muted
-  // until Sunset hands off. This means a user who reaches Night
-  // without the (event-driven) handoff hears silence rather than
-  // incongruous country music — graceful degrade.
-  if (!liminalFired) {
-    const dayWeight = 1 - smoothstep(DAY_FADE_IN, DAY_FADE_OUT, progress);
-    return { day: dayWeight, sunset: 0, night: 0 };
-  }
-  // Post-handoff path: Day is gone. Sunset → Night smoothstep
-  // crossfade on scroll.
-  const nightWeight = smoothstep(NIGHT_FADE_IN, NIGHT_FADE_OUT, progress);
-  return {
-    day: 0,
-    sunset: 1 - nightWeight,
-    night: nightWeight
-  };
+function resolveDayGain(progress: number, liminalFired: boolean): number {
+  if (liminalFired) return 0;
+  return 1 - smoothstep(DAY_FADE_IN, DAY_FADE_OUT, progress);
 }
 
 export function DayNNightScore() {
@@ -130,13 +77,11 @@ export function DayNNightScore() {
   const [failed, setFailed] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
   const dayRef = useRef<TrackPipeline | null>(null);
-  const sunsetRef = useRef<TrackPipeline | null>(null);
-  const nightRef = useRef<TrackPipeline | null>(null);
-  // Apply the slower ramp exactly on the handoff edge; per-frame
-  // scroll updates use the fast ramp.
+  // Apply the slower ramp exactly on the handoff edge; per-frame scroll
+  // updates use the fast ramp.
   const prevHandoffRef = useRef(false);
 
-  // Spin up the AudioContext + pipelines on first enable.
+  // Spin up the AudioContext + daytime pipeline on first enable.
   useEffect(() => {
     if (!enabled) return;
 
@@ -182,13 +127,9 @@ export function DayNNightScore() {
       });
 
     let cancelled = false;
-    void Promise.all([
-      makeTrack(DAY_SRC),
-      makeTrack(SUNSET_SRC),
-      makeTrack(NIGHT_SRC)
-    ]).then(([day, sunset, night]) => {
+    void makeTrack(DAY_SRC).then((day) => {
       if (cancelled) return;
-      if (!day || !sunset || !night) {
+      if (!day) {
         setFailed(true);
         if (ctx.state !== "closed") {
           void ctx.close().catch(() => {});
@@ -196,14 +137,10 @@ export function DayNNightScore() {
         return;
       }
       dayRef.current = day;
-      sunsetRef.current = sunset;
-      nightRef.current = night;
       void ctx
         .resume()
         .then(() => {
           void day.audio.play().catch(() => {});
-          void sunset.audio.play().catch(() => {});
-          void night.audio.play().catch(() => {});
           setReady(true);
         })
         .catch(() => setFailed(true));
@@ -212,25 +149,17 @@ export function DayNNightScore() {
     return () => {
       cancelled = true;
       dayRef.current?.audio.pause();
-      sunsetRef.current?.audio.pause();
-      nightRef.current?.audio.pause();
       if (ctxRef.current && ctxRef.current.state !== "closed") {
         void ctxRef.current.close().catch(() => {});
       }
       ctxRef.current = null;
       dayRef.current = null;
-      sunsetRef.current = null;
-      nightRef.current = null;
       setReady(false);
     };
   }, [enabled]);
 
-  const { progress, liminalFired } = useDayNNightScene(
-    useShallow((r) => ({
-      progress: r.progress,
-      liminalFired: r.liminalHandoffFired
-    }))
-  );
+  const progress = useDayNNightScene((r) => r.progress);
+  const liminalFired = useDayNNightScene((r) => r.liminalHandoffFired);
 
   useEffect(() => {
     if (!ready) return;
@@ -241,14 +170,12 @@ export function DayNNightScore() {
       if (!active) return;
       const ctx = ctxRef.current;
       const d = dayRef.current;
-      const s = sunsetRef.current;
-      const n = nightRef.current;
-      if (!ctx || !d || !s || !n || ctx.state === "closed") {
+      if (!ctx || !d || ctx.state === "closed") {
         raf = requestAnimationFrame(tick);
         return;
       }
 
-      const { day, sunset, night } = resolveGains(progress, liminalFired);
+      const day = resolveDayGain(progress, liminalFired);
       const handoffEdge = liminalFired && !prevHandoffRef.current;
       const ramp = handoffEdge ? RAMP_SLOW : RAMP_FAST;
       prevHandoffRef.current = liminalFired;
@@ -256,11 +183,9 @@ export function DayNNightScore() {
       const now = ctx.currentTime;
       try {
         d.gain.gain.setTargetAtTime(day * BASE_VOL, now, ramp);
-        s.gain.gain.setTargetAtTime(sunset * BASE_VOL, now, ramp);
-        n.gain.gain.setTargetAtTime(night * BASE_VOL, now, ramp);
       } catch {
-        // Context may transition to closed between the guard above
-        // and these writes; swallow and let cleanup stop the rAF.
+        // Context may transition to closed between the guard above and
+        // this write; swallow and let cleanup stop the rAF.
       }
 
       raf = requestAnimationFrame(tick);
