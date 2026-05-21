@@ -10,55 +10,29 @@ import { useDayNNightScene } from "../store";
  * Behaviour:
  *
  *   1. Pin HideawayFM to Track_1 (YM.FM — "Shibuya Nights") the moment
- *      /day-n-night mounts. Keep it paused; the global radio is silent
- *      until the cinematic explicitly starts it.
+ *      /day-n-night mounts. Keep it paused.
  *
- *   2. Once `liminalHandoffFired` flips true, the LiminalHandoff
- *      component has already played its tape SFX. After the SFX
- *      window (PLAY_DELAY_MS), call HideawayFM.play().
+ *   2. Once `liminalHandoffFired` flips true (fired by LiminalHandoff at
+ *      progress ≥ 0.55), start Track_1 after PLAY_DELAY_MS.
  *
- *   3. Scroll-driven track distribution across Liminal → Nighttime →
- *      Closing. Each TRACK_STOPS entry maps a scene-progress threshold
- *      to a HideawayFM track index. When `progress` crosses a
- *      threshold and the current track isn't already there, call
- *      next() / previous() until the indices align.
+ *   3. Before the Closing act ends (progress ≥ RADIO_SILENCE_AT), pause
+ *      so the night fades out cleanly before daytime returns at the loop
+ *      wrap. DayNNightScore handles the daytime fade-back-in.
  *
- *   4. Restore on unmount — re-attach previous HideawayFM track? No.
- *      The page deliberately re-seeds Track_1 on mount; on unmount we
- *      simply pause so the audio doesn't follow the user off-page.
+ *   4. On unmount, pause so the radio doesn't follow the user off-page.
  */
 
-// Filename slugs we use to identify the three Day-n-Night tracks within
-// HideawayFM's catalog. The fallback roll in machine/fetchTracks.ts
-// already maps Track_1.ogg → YM.FM and Track_2/3 to subsequent slots,
-// and the prod Tracks collection mirrors that filename convention.
-const TRACK_FILE_PATTERNS = [
-  /Track[_-]?1\.(ogg|mp3)/i,
-  /Track[_-]?2\.(ogg|mp3)/i,
-  /Track[_-]?3\.(ogg|mp3)/i
-];
+const TRACK_FILE_PATTERN = /Track[_-]?1\.(ogg|mp3)/i;
 
-// Map scene-progress milestones to track index. The first stop is the
-// post-handoff baseline (Track_1 stays through the late-Liminal). 2nd
-// and 3rd stops live in the early-Night and mid-Night windows so the
-// jumps feel scroll-paced rather than time-paced.
-const TRACK_STOPS: { at: number; idx: number }[] = [
-  { at: 0.55, idx: 0 }, // Track_1 — opens the night
-  { at: 0.7, idx: 1 }, // Track_2 — mid-night
-  { at: 0.84, idx: 2 } // Track_3 — late-night, into Closing
-];
-
-// SFX hold before the radio audibly takes over. Matches the spec line
-// "after 4~5 secs, we actually set the radio state to play".
+// SFX-hold matching the old tape cassette window — keeps the audio
+// start feeling earned rather than immediate.
 const PLAY_DELAY_MS = 4500;
 
-function indexForProgress(progress: number): number {
-  let chosen = TRACK_STOPS[0]!.idx;
-  for (const stop of TRACK_STOPS) {
-    if (progress >= stop.at) chosen = stop.idx;
-  }
-  return chosen;
-}
+// Pause HideawayFM before the seamless loop wraps back to daytime.
+// This sits in the late-Closing window (~0.92 out of 1.0) so the
+// radio fades to silence a beat before DayNNightScore's daytime
+// bed fades back in at DAY_RETURN_IN (0.93).
+const RADIO_SILENCE_AT = 0.92;
 
 export function LiminalRadioController() {
   const tracks = useHideawayFM((s) => s.tracks);
@@ -69,31 +43,25 @@ export function LiminalRadioController() {
   const liminalFired = useDayNNightScene((r) => r.liminalHandoffFired);
   const progress = useDayNNightScene((r) => r.progress);
 
-  // Track-id resolution: re-derive whenever the catalog populates.
-  const dnIndicesRef = useRef<number[]>([]);
+  // Track-id resolution: seed to Track_1 on mount, keep paused.
+  const track1IndexRef = useRef<number>(-1);
   useEffect(() => {
     if (!tracks.length) return;
-    const indices = TRACK_FILE_PATTERNS.map((re) =>
-      tracks.findIndex((t) => re.test(t.url))
-    );
-    dnIndicesRef.current = indices;
-    // Seed to Track_1 immediately, seek 0, keep paused. The global
-    // radio is silent until the cinematic explicitly fires play().
-    const t1 = indices[0];
-    if (t1 != null && t1 >= 0 && t1 !== currentIndex) {
-      setCurrentIndex(t1);
+    const idx = tracks.findIndex((t) => TRACK_FILE_PATTERN.test(t.url));
+    track1IndexRef.current = idx;
+    if (idx >= 0 && idx !== currentIndex) {
+      setCurrentIndex(idx);
       setInitialSeek(0);
       controls.pause();
       void controls.refresh().catch(() => {});
     }
-    // Pause on unmount so the night doesn't follow the user off-page.
     return () => {
       controls.pause();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tracks.length]);
 
-  // Begin playback after the tape-SFX window once the handoff fires.
+  // Begin playback after the handoff delay.
   const startedRef = useRef(false);
   useEffect(() => {
     if (!liminalFired || startedRef.current) return;
@@ -104,25 +72,15 @@ export function LiminalRadioController() {
     return () => window.clearTimeout(id);
   }, [liminalFired, controls]);
 
-  // Scroll-driven track jumps. Once fired + playing, advance/regress
-  // to keep currentIndex aligned with the TRACK_STOPS table.
+  // Pause before the loop wraps back to daytime.
+  const silencedRef = useRef(false);
   useEffect(() => {
     if (!liminalFired || !startedRef.current) return;
-    const dn = dnIndicesRef.current;
-    if (dn.length !== 3) return;
-    const targetSlot = indexForProgress(progress);
-    const target = dn[targetSlot];
-    if (target == null || target < 0 || target === currentIndex) return;
-    // Use next/previous so HideawayFM's crossfade machine handles the
-    // hand-off cleanly rather than setting currentIndex directly,
-    // which would hard-cut.
-    const delta = target - currentIndex;
-    if (delta > 0) {
-      for (let i = 0; i < delta; i++) void controls.next().catch(() => {});
-    } else {
-      for (let i = 0; i < -delta; i++) void controls.previous().catch(() => {});
+    if (progress >= RADIO_SILENCE_AT && !silencedRef.current) {
+      silencedRef.current = true;
+      controls.pause();
     }
-  }, [progress, liminalFired, currentIndex, controls]);
+  }, [progress, liminalFired, controls]);
 
   return null;
 }

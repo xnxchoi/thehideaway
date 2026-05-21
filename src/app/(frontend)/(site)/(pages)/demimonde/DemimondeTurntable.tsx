@@ -6,6 +6,7 @@ import { TURNTABLE } from "./content";
 import { MarbleScene } from "./DemimondeMarble";
 import { RecordScene } from "./DemimondeRecord";
 import { Button } from "@/components/core/Button";
+import { useCanvasClaim } from "@/stores/CanvasFrameloop";
 
 /**
  * YM.FM turntable — clickable disc that toggles spin.
@@ -60,6 +61,9 @@ import { Button } from "@/components/core/Button";
  */
 export function DemimondeTurntable() {
   const [spinning, setSpinning] = useState(true);
+  // Claim continuous frameloop on the shared canvas — marble + record
+  // scenes animate via useFrame.
+  useCanvasClaim();
 
   return (
     <section

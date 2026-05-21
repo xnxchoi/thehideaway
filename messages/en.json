@@ -346,10 +346,10 @@
       },
       "dressCode": {
         "captions": {
-          "1": "Dress however you want;",
-          "2": "Anything goes.",
-          "3": "But if you're looking for references…",
-          "4": "Some pictures from our past parties."
+          "topic": "Dress code",
+          "answer": "Blue & teal.",
+          "ownIt": "Blue & teal — how you work that in is all up to you.",
+          "refs": "If you want references — here's pics from past events:"
         }
       },
       "included": {
@@ -365,7 +365,7 @@
       },
       "tribute": {
         "heading": "A note.",
-        "body": "Some of you have known us a long time. This dinner is for you."
+        "body": "Some of you have known us a long time. This dinner is for you. Pull up a chair. The fire's been waiting."
       },
       "entry": {
         "heading": "Entry",
@@ -389,7 +389,9 @@
         "simplified": "Card"
       },
       "loader": {
-        "rising": "Sun rising"
+        "enter": "Enter",
+        "enterSilent": "Enter without audio",
+        "summary": "See summary of info"
       },
       "footer": {
         "hosts": "Hosted by Choi & Choe",

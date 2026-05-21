@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
+import { useCanvasClaim } from "@/stores/CanvasFrameloop";
 import { TicketMesh } from "./TicketMesh";
 import type { TicketTextureInput } from "./makeTicketTexture";
 
@@ -74,6 +75,10 @@ export function Ticket3D({
 }: Ticket3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { ref: inViewRef, inView } = useInView({ threshold: 0.1 });
+  // Claim continuous frameloop on the shared canvas while the ticket
+  // is on screen — idle wobble + hover tilt + flip animation all
+  // rely on useFrame.
+  useCanvasClaim(inView);
 
   const setRefs = useCallback(
     (node: HTMLDivElement | null) => {

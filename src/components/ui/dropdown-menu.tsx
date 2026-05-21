@@ -102,7 +102,9 @@ export const DropOutButton = () => {
         "content-type": "application/json"
       }
     });
-    location.replace("/home");
+    // TEMPORARY (event mode): sign-out lands on the event home
+    // instead of /home. Restore to "/home" once site-wide nav returns.
+    location.replace("/day-n-night");
   }, []);
   return (
     <DropdownMenuItem variant={"destructive"} onSelect={onSelect}>

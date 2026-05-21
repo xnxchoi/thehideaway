@@ -1,11 +1,12 @@
 "use client";
 
-import type { Variants } from "motion/react";
+import type { HTMLMotionProps, Variants } from "motion/react";
 import { useMotionValue } from "motion/react";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import * as m from "motion/react-m";
 import Image from "next/image";
 import { useDayNNightScene } from "../store";
+import { cn } from "@/lib/utils";
 
 /**
  * Polaroid + PolaroidGroup — moodboard tiles for the immersive scene.
@@ -110,7 +111,11 @@ interface PolaroidBack extends PolaroidCommon {
   backTexture: BackTexture;
 }
 
-export type PolaroidProps = PolaroidClean | PolaroidStamped | PolaroidBack;
+export type PolaroidProps = Omit<
+  HTMLMotionProps<"div">,
+  keyof (PolaroidClean | PolaroidStamped | PolaroidBack) | "children"
+> &
+  (PolaroidClean | PolaroidStamped | PolaroidBack);
 
 // ─── Reveal entry variants (shared across all polaroid variants) ─────────────
 
@@ -130,11 +135,27 @@ const POLAROID_REVEAL_VARIANTS: Variants = {
 // ─── Polaroid ────────────────────────────────────────────────────────────────
 
 export function Polaroid(props: PolaroidProps) {
-  const { width = 220, angle = 0, depth = 0, anchor = 0.5, range = 90 } = props;
+  const {
+    width = 220,
+    angle = 0,
+    depth = 0,
+    anchor = 0.5,
+    range = 90,
+    className,
+    style,
+    ...rest
+  } = props;
 
   // Motion-aware translateX for parallax.
   const paraX = useMotionValue(0);
   const p = useDayNNightScene((r) => r.progress);
+  // Keep progress in a ref so the rAF loop reads the latest value
+  // without being listed as a setup dep (which would tear down and
+  // recreate the loop on every scroll tick — ~60× per second).
+  const progressRef = useRef(p);
+  useEffect(() => {
+    progressRef.current = p;
+  }, [p]);
 
   useEffect(() => {
     if (depth === 0) return;
@@ -145,7 +166,7 @@ export function Polaroid(props: PolaroidProps) {
 
       // Wrap distance from anchor along the shorter direction so
       // parallax doesn't snap at the 1 → 0 loop boundary.
-      let d = p - anchor;
+      let d = progressRef.current - anchor;
       if (d > 0.5) d -= 1;
       if (d < -0.5) d += 1;
       paraX.set(d * depth * range);
@@ -156,6 +177,9 @@ export function Polaroid(props: PolaroidProps) {
       active = false;
       cancelAnimationFrame(raf);
     };
+    // progressRef is intentionally excluded — it's mutable and read
+    // inside tick without needing a re-setup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [depth, anchor, range, paraX]);
 
   // Discriminated-union narrowing inside the JSX. Each branch sees only
@@ -165,8 +189,8 @@ export function Polaroid(props: PolaroidProps) {
 
   return (
     <m.div
-      className="shrink-0 will-change-transform"
-      style={{ x: paraX, width }}
+      className={cn("shrink-0 will-change-transform", className)}
+      style={{ x: paraX, width, ...style }}
       variants={POLAROID_REVEAL_VARIANTS}
     >
       <m.div className="origin-[center_60%]" style={{ rotate: angle }}>

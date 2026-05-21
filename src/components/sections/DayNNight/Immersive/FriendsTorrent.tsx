@@ -147,7 +147,7 @@ export function FriendsTorrent({
   return (
     <div
       className={cn(
-        `pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-700`,
+        `pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-300`,
         className
       )}
       style={{ opacity: active ? 1 : 0 }}

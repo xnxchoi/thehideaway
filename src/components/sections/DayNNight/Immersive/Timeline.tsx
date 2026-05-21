@@ -12,7 +12,12 @@ import { useShallow } from "zustand/shallow";
 import { useLenis } from "lenis/react";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
-import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
+import {
+  RevealItem,
+  RevealStage,
+  useActHalfwayActive,
+  useActRevealActive
+} from "./Reveal";
 import { SceneView } from "./SceneView";
 import { SurvivalKit } from "../SurvivalKit";
 import {
@@ -46,6 +51,7 @@ const ANCHOR_NIGHT = 0.664;
  * act first entered the viewport).
  */
 const ACT_INDEX_COOKOUT = 1;
+const ACT_INDEX_DRESS = 2;
 const ACT_INDEX_NIGHT = 3;
 const ACT_INDEX_CLOSING = 4;
 
@@ -108,7 +114,12 @@ type Translator = ReturnType<typeof UseTranslationsType>;
  * Below `lg` (1024px) the SCSS unwinds the horizontal layout into a
  * stacked vertical column; we skip the pin/scrub entirely on those widths.
  */
-export function Timeline() {
+interface TimelineProps {
+  /** True once the entry animation reaches the content beat (set by ImmersiveView). */
+  contentRevealed: boolean;
+}
+
+export function Timeline({ contentRevealed }: TimelineProps) {
   const t = useTranslations("Event.DayNNight");
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -326,7 +337,7 @@ export function Timeline() {
     <div
       ref={wrap}
       data-dn-wrap
-      className="relative z-[3] h-screen w-full overflow-hidden pb-25 max-lg:h-auto max-lg:overflow-visible lg:h-dvh"
+      className="relative z-[3] h-screen w-full overflow-clip pb-25 max-lg:h-auto max-lg:overflow-visible lg:h-dvh"
     >
       {/* Scene lives inside the pinned wrap so its `position: fixed` pieces
           remain anchored to the viewport throughout the pin. The site's
@@ -344,10 +355,10 @@ export function Timeline() {
         className="flex h-full will-change-transform max-lg:h-auto max-lg:flex-col"
       >
         {/* First set — the primary, accessible acts. */}
-        <ActSet t={t} isPlaying={isPlaying} />
+        <ActSet t={t} contentRevealed={contentRevealed} />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
-        <ActSet t={t} isPlaying={isPlaying} ariaHidden />
+        <ActSet t={t} contentRevealed={contentRevealed} ariaHidden />
       </div>
       {/* Note: <SeamBridge /> is rendered at the ImmersiveView root
           (not here) so its position:fixed escapes the GSAP-pinned wrap
@@ -360,26 +371,33 @@ export function Timeline() {
 
 interface ActSetProps {
   t: Translator;
-  /** When true, the Opening's choreographed reveal fires. The duplicate
-   *  ActSet receives the same flag so both copies stay in sync. */
-  isPlaying: boolean;
+  /** Sequenced-entry gate: true once the entry animation reaches the
+   *  content beat (200ms after phase="playing"). Controls Act I's
+   *  `openingActive` reveal. The duplicate ActSet receives the same
+   *  flag so both copies stay in sync. */
+  contentRevealed: boolean;
   ariaHidden?: boolean;
 }
 
-function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
-  // Per-act reveal gates. Opening fires once `phase === "playing"`
-  // (i.e. the loader has handed off); the other 4 acts gate on a
-  // layout-aware scene-progress threshold via `useActRevealActive` so
-  // the blur-in lands as each act enters frame, not when its center
-  // reaches viewport center.
+function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
+  // Per-act reveal gates. Opening fires once `contentRevealed` is true
+  // (i.e. the sequenced entry animation has reached the content beat);
+  // the other 4 acts gate on a layout-aware scene-progress threshold
+  // via `useActRevealActive` so the blur-in lands as each act enters
+  // frame, not when its center reaches viewport center.
   //
   // The two ActSets (primary + duplicate-for-loop) each call these
   // hooks independently; the boolean selector pattern means each ActSet
   // re-renders only on the threshold crossing, not on every progress
   // write. Both copies stay in sync because they read from the same
   // store.
-  const openingActive = isPlaying;
+  const openingActive = contentRevealed;
   const cookoutActive = useActRevealActive(ACT_INDEX_COOKOUT);
+  // Dress / Liminal splits into two halves: the FriendsTorrent +
+  // caption sequence in the first half, the YM.FM dedicated credit
+  // section in the second. Non-sticky so the section gracefully
+  // retracts if the user scrolls back into the photo-torrent half.
+  const ymRevealActive = useActHalfwayActive(ACT_INDEX_DRESS, 0.5);
   const nightActive = useActRevealActive(ACT_INDEX_NIGHT);
   const closingActive = useActRevealActive(ACT_INDEX_CLOSING);
   // True only during the sticky window (Closing title at viewport-left
@@ -389,7 +407,7 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
   const inStickyZone = useStickyZone();
   const bookendFade = {
     opacity: inStickyZone ? 0 : 1,
-    transition: "opacity 200ms ease-out"
+    transition: "opacity 500ms ease-in-out"
   } as const;
   // Trigger re-renders on viewport resize so polaroid clusters and
   // grid columns recompute against the new width.
@@ -444,6 +462,24 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             Closing's left dossier slot, but trades the always-visible
             SurvivalKit for a single paper-style trigger that pulls the
             same info into the drawer on demand. */}
+        <div className="absolute inset-0">
+          <div className="relative grid h-full w-full grid-cols-8 grid-rows-4">
+            <PolaroidGroup className="pointer-events-none absolute inset-0 z-[14] grid grid-cols-8 grid-rows-4">
+              <Polaroid
+                src={"/assets/day-n-night/hosts/ingyu.jpeg"}
+                className="col-start-2 row-start-2"
+                angle={-10}
+              ></Polaroid>
+              <Polaroid
+                overlay={"card-2_front-clear"}
+                src={"/assets/day-n-night/hosts/sean.png"}
+                variant="stamped"
+                className="col-start-5 row-start-4"
+                angle={8}
+              ></Polaroid>
+            </PolaroidGroup>
+          </div>
+        </div>
         <div className="col-start-8 col-end-13 row-start-2 row-end-3 hidden max-w-[400px] self-end justify-self-end max-lg:col-span-full lg:flex">
           {/* Previously wrapped in `<View>` (drei) which portaled
               OpeningCard into the shared R3F Canvas tree — forcing the
@@ -552,25 +588,80 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
         </PolaroidGroup>
       </Act>
 
-      {/* ── Act III — Subtitles + Friends Torrent ────────────────────────
-          PLACEHOLDER. The two-option dress block + film moodboard wall
-          were removed 2026-05-21. New shape: a fixed-bottom
-          <SubtitleSequence> renders 4 caption cards
-          (`dressCode.captions.{1..4}`) across this Act's scroll window,
-          and a <FriendsTorrent> photo glide fades in ~0.5s into card 3.
-          Both components mount at the ImmersiveView root (not in this
-          Act), so this slot stays empty and just holds its `--act-w`
-          1.55 budget so the seamless loop math doesn't shift.
-          See `FriendsTorrent.tsx` + `/dev/dn-friends-torrent` for the
-          isolated build of the torrent. */}
-      <Act width={1.55} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
+      {/* ── Act III — Liminal ────────────────────────────────────────────
+          Two-beat act. First half: <FriendsTorrent> photos overlay
+          the viewport while <SubtitleSequence> narrates 4 caption
+          cards across the bottom. Both are fixed-positioned at the
+          ImmersiveView root (not in this grid) and gated on the dress
+          window's active flag.
+          Second half: photos clear and the YM.FM credit reveals in
+          this grid. The fade is driven by `useActHalfwayActive` from
+          index.tsx so torrent and credit transition off the same
+          threshold. The LiminalHandoff cassette hangs centred in the
+          viewport throughout the second half (z-44), naming nothing —
+          the cassette is the sound, the section names the source. */}
+      {/* Act III runs WIDE — ~2× the surrounding acts — because Liminal
+          carries the longest stretch of choreography on this page: photo
+          torrent + caption sequence in the first half, YM.FM credit
+          reveal + LiminalHandoff cassette in the second. The extra
+          width gives both halves room to breathe. Pacing wins; the
+          loop math handles whatever multiplier we pick. */}
+      <Act width={3.0} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
         <ActEyebrow numeral="III" label={t("scrubber.dress")} align="left" />
+        {/* YM.FM dedicated section. Anchored to row 2 self-end so the
+            block sits below the cassette frame at the bottom of the
+            viewport — clean of the centred Tape3DScene canvas. The
+            handle is an external link to Instagram; tabIndex={-1} on
+            the aria-hidden duplicate ActSet keeps focus order sane
+            across the seamless loop. */}
+        <RevealStage
+          as="div"
+          active={ymRevealActive}
+          className="col-start-1 col-end-9 row-start-2 row-end-3 grid content-end gap-6 self-end max-lg:col-span-full xl:gap-8"
+        >
+          <RevealItem as="p" className={KICKER_MONO}>
+            {t("act.night.dj.eyebrow")}
+          </RevealItem>
+          <RevealItem as="h2" className={`${TITLE_SECTION} max-w-[8ch]`}>
+            {t("act.night.dj.name")}
+          </RevealItem>
+          <RevealItem as="div" className="grid gap-2">
+            <span
+              aria-hidden
+              className="block h-px w-12 bg-[var(--dn-fg)] opacity-60"
+            />
+            <span className={LABEL_MONO}>{t("act.night.dj.role")}</span>
+          </RevealItem>
+          <RevealItem
+            as="p"
+            className="max-w-[42ch] font-serif text-[clamp(1.2rem,1.35vw,1.5rem)] leading-[1.45] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
+          >
+            {t("act.night.dj.blurb")}
+          </RevealItem>
+          <RevealItem as="div">
+            <a
+              href="https://instagram.com/yangminwoo"
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label={`${t("act.night.dj.name")} — ${t("act.night.dj.handle")} on Instagram`}
+              tabIndex={ariaHidden ? -1 : undefined}
+              className="ease inline-flex items-baseline gap-3 border-0 border-b border-[var(--dn-fg)] py-2 pb-2 font-mono text-[12px] tracking-[0.28em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-5 hover:pr-2 md:text-[13px]"
+            >
+              <span>{t("act.night.dj.handle")}</span>
+              <span aria-hidden className="text-[1.2em] leading-none">
+                →
+              </span>
+            </a>
+          </RevealItem>
+        </RevealStage>
       </Act>
 
       {/* ── Act IV — Night ───────────────────────────────────────────────
-          Feature spread, evening weight. Title + lede bottom-left,
-          tribute dossier bottom-right framed with a thin top rule,
-          polaroid cluster floating right at the shared band height. */}
+          Feature spread, evening weight. Scene-setter heading + body
+          in the left column; polaroid cluster floating right at the
+          shared band height. The YM.FM naming beat lives in Act III
+          (Liminal's second half), not here — by the time the viewer
+          reaches Night they already know whose decks these are. */}
       <Act width={1.5} ariaLabel={t("act.night.label")} ariaHidden={ariaHidden}>
         <ActEyebrow
           numeral="IV"
@@ -590,16 +681,6 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
             {t("act.night.body")}
           </RevealItem>
         </RevealStage>
-        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[320px] min-w-[240px] gap-2 self-end justify-self-end max-lg:col-span-full max-lg:justify-self-start">
-          <span
-            aria-hidden
-            className="mb-[10px] block h-px w-14 bg-[var(--dn-fg)] opacity-60"
-          />
-          <span className={LABEL_MONO}>{t("tribute.heading")}</span>
-          <span className="font-serif text-[clamp(1.3rem,1.4vw,1.55rem)] leading-[1.4] text-[var(--dn-fg-mute)] italic">
-            {t("tribute.body")}
-          </span>
-        </div>
         {/* PLACEHOLDER — YM photos TBC. Per readmes/DAY_N_NIGHT_HANDOFF.md
             § 2.4 / § 3.7: scatter of 5–8 polaroids around the cassette,
             mixed widths (130–260px), broad angle spread (±10°), mixed
@@ -671,7 +752,10 @@ function ActSet({ t, isPlaying, ariaHidden = false }: ActSetProps) {
           align="right"
         />
         <div className="col-start-1 col-end-6 row-start-2 row-end-3 hidden flex-col gap-6 self-end max-lg:col-span-full lg:flex">
-          <p className={`${BODY_SERIF} max-w-[40ch]`}>{t("closing.lede")}</p>
+          <div className="grid gap-3">
+            <span className={LABEL_MONO}>{t("tribute.heading")}</span>
+            <p className={`${BODY_SERIF} max-w-[34ch]`}>{t("tribute.body")}</p>
+          </div>
           <SurvivalKit variant="embedded" />
         </div>
         {/* Closing title block — kicker + hero title + Reserve CTA.

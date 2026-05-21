@@ -16,7 +16,9 @@ const ItemNotFound = () => {
       >
         <LinkUnderlined
           className={"link-underlined bg-transparent hover:text-red-500"}
-          href="/home"
+          // TEMPORARY (event mode): 404 fallback points at the event
+          // landing. Restore to "/home" once site-wide nav returns.
+          href="/day-n-night"
           style={{ position: "relative", bottom: "20px" }}
         >
           Come Back.

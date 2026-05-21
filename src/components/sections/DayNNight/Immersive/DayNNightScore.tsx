@@ -37,19 +37,29 @@ const RAMP_FAST = 0.08; // per-frame scroll updates
 const RAMP_SLOW = 0.35; // event-driven handoff cut
 
 /**
- * Daytime fade-out window — anchored to the photo-torrent end so the
- * country bed is gone by the time the cassette translates up. Tighter
- * than the old sunset-anchored window because the cinematic now hands
- * off via HideawayFM rather than blending two beds at the same instant.
+ * Daytime fade windows — scroll-driven for the full loop.
+ *
+ * Fade-out: country bed leaves as Dress transitions to Liminal.
+ * Fade-in:  daytime returns as Closing ends and the sky lifts back to
+ *           dawn/daytime before the seamless loop wrap.
  *
  * SKY_STOPS landmarks (from store.tsx) — for reference:
  *   0.279  Cookout
  *   0.478  Dress / sunset peak
- *   0.575  post-sunset / dusk
  *   0.664  Night center
+ *   0.876  Closing center
+ *   0.94   dawn rising
+ *   0.98   sunrise bright
+ *   1.00   daytime (loop wrap)
  */
 const DAY_FADE_IN = 0.36;
 const DAY_FADE_OUT = 0.48;
+// Return window: daytime fades back in as Closing ends and the dawn
+// sky lifts. DAY_RETURN_IN sits a beat after RADIO_SILENCE_AT (0.92)
+// in LiminalRadioController so the radio is already silent when the
+// country bed audibly re-enters.
+const DAY_RETURN_IN = 0.93;
+const DAY_RETURN_OUT = 0.99;
 
 interface TrackPipeline {
   audio: HTMLAudioElement;
@@ -70,9 +80,13 @@ function resolveDayGain(progress: number, liminalFired: boolean): number {
   return 1 - smoothstep(DAY_FADE_IN, DAY_FADE_OUT, progress);
 }
 
-export function DayNNightScore() {
+export function DayNNightScore({
+  initialEnabled = false
+}: {
+  initialEnabled?: boolean;
+}) {
   const t = useTranslations("Event.DayNNight.audio");
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(initialEnabled);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { View } from "@react-three/drei";
 import { type ComponentProps, Suspense, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { useCanvasClaim } from "@/stores/CanvasFrameloop";
 import {
   TapeModel,
   type TapeCameraOverride,
@@ -78,6 +79,12 @@ export function Tape3DScene({
 }: Tape3DSceneProps) {
   const aspectRatio = useResponsiveAspectRatio();
   const { ref, inView } = useInView({ threshold: 0.1 });
+  // Claim continuous frameloop on the shared canvas while the cassette
+  // is actually on screen — disk-spin, marquee scroll, and camera lerps
+  // all rely on useFrame ticking. Gated on `inView` so an off-screen
+  // mount (e.g. a route that has the component in tree but scrolled
+  // out) doesn't keep the canvas at "always".
+  useCanvasClaim(inView);
   // When the caller overrides the outer sizing (cinematic embeds), we
   // also drop the View's hard h-screen — otherwise the canvas keeps
   // its full-viewport height and overflows the host frame. Callers

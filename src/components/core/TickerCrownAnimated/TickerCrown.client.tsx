@@ -1,6 +1,7 @@
 "use client";
 
 import { useRPStore } from "@/providers/RP_Pro";
+import { useCanvasClaim } from "@/stores/CanvasFrameloop";
 import { View } from "@react-three/drei";
 import { useInView, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -80,6 +81,13 @@ export function TickerCrownClient({
   // actually enters the visual viewport so it's running smoothly by the
   // time the user can see it (no first-frame snap into place).
   const inView = useInView(wrapperRef, { margin: "200px 0px" });
+  // Claim continuous frameloop on the shared canvas only while the
+  // crown is on screen. Routes that hide the header via CSS (e.g.
+  // /day-n-night sets `#rp-header { display: none }`) keep this
+  // component mounted, so we gate on inView — not mount — to let
+  // those routes drop the canvas to "demand" when nothing else
+  // is claiming.
+  useCanvasClaim(inView);
 
   // Page-transition gate — during a navigation, the outgoing page goes
   // `position: fixed` (see `RPage` / `TransitionProvider`) which removes

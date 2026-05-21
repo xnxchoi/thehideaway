@@ -3,6 +3,8 @@
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { SurvivalKit } from "../SurvivalKit";
+import { useDomCursor } from "@/components/core/cursorWrapper";
+import { useDetailsContext } from "@/components/sections/DayNNight/Immersive/DetailsContext";
 const PAPER_TEXTURE = "/assets/three/materials/paper/paper_d.png";
 
 /**
@@ -29,7 +31,11 @@ const PAPER_THEME: CSSProperties = {
 
 export function OpeningCard() {
   const t = useTranslations("Event.DayNNight");
-
+  const { onMouseEnter, onMouseLeave } = useDomCursor({
+    enterCondition: (e) => "CHECK IT OUT",
+    marquee: { enter: () => true }
+  });
+  const { setOpen } = useDetailsContext();
   return (
     // Plain <div>. Was `<Html as="div">` from @react-three/drei —
     // drei's Html is meant for portaling content into a Three.js
@@ -37,12 +43,21 @@ export function OpeningCard() {
     // grid cell it collapses to 0×0 (Html computes position from a
     // 3D scene that doesn't exist). The paper card just needs to fill
     // its parent grid cell, so a plain div is the right primitive.
-    <div className="group relative w-full rotate-[-2deg]" style={PAPER_THEME}>
+    <div
+      className="group ease relative w-full -rotate-2 duration-400 hover:rotate-2"
+      style={PAPER_THEME}
+      onClick={() => setOpen(true)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <div
-        className="relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:rotate-[-0.5deg] hover:shadow-[0_42px_80px_-22px_rgba(0,0,0,0.65),_0_12px_32px_-10px_rgba(0,0,0,0.45)]"
+        className="relative flex flex-col overflow-hidden transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_42px_80px_-22px_rgba(0,0,0,0.65),_0_12px_32px_-10px_rgba(0,0,0,0.45)]"
         style={{
           aspectRatio: "1 / 1.414",
-          backgroundColor: "#ffffff",
+          backgroundImage: "url(/assets/papier.png)",
+
+          backgroundBlendMode: "screen",
+          backgroundColor: "var(--color-faded-white)",
           boxShadow:
             "0 28px 60px -22px rgba(0,0,0,0.55), 0 8px 22px -10px rgba(0,0,0,0.35)"
         }}

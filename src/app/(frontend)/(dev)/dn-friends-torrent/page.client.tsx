@@ -44,7 +44,24 @@ export function PageClient() {
   // Memoized so SubtitleSequence's useEffect (deps include `captions`)
   // doesn't tear down the timeline on every parent re-render — most
   // notably when `torrentCued` flips mid-sequence.
-  const captions = useMemo(() => [t("1"), t("2"), t("3"), t("4")], [t]);
+  //
+  // Mirrors the production caption sequence in ImmersiveView: Q&A
+  // pair (topic + answer) → ownIt → refs (lead-in to the photos).
+  const captions = useMemo(
+    () => [
+      <div key="qa" className="grid gap-3">
+        <span className="font-mono text-[10px] tracking-[0.32em] text-white/65 uppercase md:text-[11px]">
+          {t("topic")}
+        </span>
+        <span className="font-serif text-[clamp(1.35rem,2vw,1.85rem)] leading-[1.25] text-white/95">
+          {t("answer")}
+        </span>
+      </div>,
+      t("ownIt"),
+      t("refs")
+    ],
+    [t]
+  );
 
   const [mode, setMode] = useState<Mode>("flow");
   const [active, setActive] = useState(true);

@@ -357,6 +357,37 @@ export function useActWindowActive(
   return { active, entryCount };
 }
 
+// ─── useActHalfwayActive — split an act into narrative halves ───────────────
+//
+// Fires when scroll progress reaches `fraction` of the way through the
+// given act's window. Used to gate the second-half-of-Liminal pivot:
+// FriendsTorrent + caption sequence carry the first half, then this
+// hook flips true so the photos fade and the YM.FM credit reveals.
+//
+// Returns a non-sticky boolean — re-enters false if the user scrolls
+// back before the threshold. RevealStage handles forward + reverse
+// animation symmetrically, so the YM section gracefully retracts and
+// the torrent gracefully re-emerges. Mirrors the dressWindow.active
+// shape (also two-way via `useActWindowActive`).
+//
+// Boolean selector → Zustand only re-renders the consumer on the
+// threshold crossing, not on every rAF write to `progress`.
+
+export function useActHalfwayActive(
+  actIndex: number,
+  fraction: number = 0.5
+): boolean {
+  return useDayNNightScene((r) => {
+    const l = r.layout;
+    if (!l) return false;
+    const start = l.startsFrac[actIndex];
+    const next = l.startsFrac[actIndex + 1];
+    if (typeof start !== "number" || typeof next !== "number") return false;
+    const threshold = start + (next - start) * fraction;
+    return r.progress >= threshold;
+  });
+}
+
 // ─── LoaderReveal — loader-progress-driven reveal ────────────────────────────
 //
 // For copy that must transition IN SYNC with the loader, not after it

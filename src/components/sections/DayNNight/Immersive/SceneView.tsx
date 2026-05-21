@@ -255,7 +255,7 @@ export function SceneView() {
       // Without this, the last inline value persists on .shell forever.
       shellRef.current?.style.removeProperty("--dn-fg");
     };
-  }, [c]);
+  }, [c, horizonLoop, phase, progress, sky_]);
 
   return (
     <div

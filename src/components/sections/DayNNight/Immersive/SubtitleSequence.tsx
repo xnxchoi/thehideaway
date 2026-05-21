@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 
 export interface SubtitleSequenceProps {
-  /** Ordered caption strings. Render order = play order. */
-  captions: string[];
+  /** Ordered caption nodes. Render order = play order. Each entry can
+   *  be a plain string (rendered as a single subtitle line) or an
+   *  arbitrary ReactNode (rendered as a compositional card — e.g. a
+   *  Q&A pair with stacked label + answer). */
+  captions: ReactNode[];
   /** When true, the sequence plays. When false, fades out. */
   active?: boolean;
   /** Milliseconds each caption sits fully on screen. */
@@ -151,17 +154,31 @@ export function SubtitleSequence({
 
   return (
     <div
+      data-dn-subtitle-host
       aria-live="polite"
+      // Bottom offset clears the chrome stack:
+      //   - Scrubber at bottom-7 / xl:bottom-9 (≈28–36px)
+      //   - QuickActions pill at bottom-5 mobile / lg:bottom-[92px]
+      //     desktop, ~44px tall → top edge at ~136px on desktop.
+      // Captions sit a margin above the pill's top edge so the
+      // lead-in line ("If you want references — here's pics from
+      // past events:") never collides with the Reserve/Details
+      // chips. Mobile keeps the lower 96px floor since QuickActions
+      // is much closer to the viewport bottom there.
       className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-[clamp(80px,12vh,140px)] z-[43] flex justify-center px-6",
+        "pointer-events-none fixed inset-x-0 bottom-[clamp(96px,18vh,200px)] z-[43] flex justify-center px-6",
         className
       )}
     >
-      <div className="relative h-[2.6em] w-full max-w-[60ch] text-center">
-        {captions.map((text, i) => (
+      {/* Min-height accommodates the tallest caption variant (Q&A pair
+          with stacked label + answer); single-line captions still
+          center vertically via SubtitleCard's flex layout, so there's
+          no layout shift between heterogeneous cards. */}
+      <div className="relative min-h-[5em] w-full max-w-[60ch] text-center">
+        {captions.map((content, i) => (
           <SubtitleCard
             key={i}
-            text={text}
+            content={content}
             visible={activeIndex === i}
             fadeMs={fadeMs}
           />
@@ -172,14 +189,20 @@ export function SubtitleSequence({
 }
 
 interface SubtitleCardProps {
-  text: string;
+  content: ReactNode;
   visible: boolean;
   fadeMs: number;
 }
 
-function SubtitleCard({ text, visible, fadeMs }: SubtitleCardProps) {
+function SubtitleCard({ content, visible, fadeMs }: SubtitleCardProps) {
+  // Card renders as a block so multi-line ReactNode children (e.g. the
+  // Q&A pair) stack naturally; `flex items-center justify-center` keeps
+  // single-string content centered without any conditional wrapping.
+  // String children inherit the default serif subtitle styling; node
+  // children may override via their own classNames (e.g. the topic
+  // line above the answer uses mono small-caps).
   return (
-    <span
+    <div
       className={cn(
         "absolute inset-0 flex items-center justify-center",
         "font-serif text-[clamp(1.05rem,1.6vw,1.45rem)] leading-[1.4]",
@@ -195,7 +218,7 @@ function SubtitleCard({ text, visible, fadeMs }: SubtitleCardProps) {
         willChange: "opacity"
       }}
     >
-      {text}
-    </span>
+      {content}
+    </div>
   );
 }

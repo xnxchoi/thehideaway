@@ -6,6 +6,8 @@ import { Drawer } from "@/components/ui/vaul";
 import { SurvivalKit } from "../SurvivalKit";
 import Ical from "ical.js";
 import { Button, PillButton } from "@/components/core/Button";
+import { useLenis } from "lenis/react";
+import { useEffect } from "react";
 /**
  * Details drawer — a right-side Vaul sheet surfacing the event's
  * practical info without forcing the user to scroll through the loop.
@@ -27,7 +29,11 @@ interface DetailsDrawerProps {
 export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
   const t = useTranslations("Event.DayNNight");
   const survival = useTranslations("Event.DayNNight.survivalKit");
-
+  const lenis = useLenis();
+  useEffect(() => {
+    lenis && lenis[open ? "stop" : "start"]();
+    return () => lenis?.start();
+  }, [lenis, open]);
   return (
     <Drawer.Root
       open={open}

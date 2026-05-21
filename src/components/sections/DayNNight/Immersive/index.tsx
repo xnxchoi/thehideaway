@@ -11,7 +11,7 @@ import { FriendsTorrent, type FriendsTorrentPhoto } from "./FriendsTorrent";
 import { LiminalHandoff } from "./LiminalHandoff";
 import { LiminalRadioController } from "./LiminalRadioController";
 import { QuickActions } from "./QuickActions";
-import { useActWindowActive } from "./Reveal";
+import { useActHalfwayActive, useActWindowActive } from "./Reveal";
 import { Scrubber } from "./Scrubber";
 import { SubtitleSequence } from "./SubtitleSequence";
 import { SunLoader } from "./SunLoader";
@@ -76,22 +76,62 @@ const FRIENDS_PHOTOS: FriendsTorrentPhoto[] = PAST_EVENT_FILENAMES.map((f) => ({
 export function ImmersiveView() {
   const t = useTranslations("Event.DayNNight");
   const captions = useTranslations("Event.DayNNight.dressCode.captions");
-  // MEMOIZED: a fresh array literal here would force SubtitleSequence's
+  // Three-beat caption sequence narrated above the FriendsTorrent:
+  //
+  //   1. Q&A pair       — "Dress code" (topic, mono small-caps) above
+  //                        "Blue & teal." (answer, serif). Both lines
+  //                        appear together as one card, read as label
+  //                        + value.
+  //   2. Standalone     — "Blue & teal — how you work that in is all
+  //                        up to you."
+  //   3. Lead-in        — "If you want references — here's pics from
+  //                        past events:" — the photo torrent fades in
+  //                        500ms after this card lands (see
+  //                        `handlePhotoCue` below).
+  //
+  // MEMOIZED: a fresh array literal would force SubtitleSequence's
   // useEffect (which has `captions` in its deps) to tear down + restart
-  // the timeline on every ImmersiveView re-render — including the
-  // re-render caused by the photo-cue setting `torrentCued`. Memoizing
-  // keeps the array identity stable across renders for the lifetime of
-  // the current locale, so the subtitle sequence advances unmolested.
+  // the timeline on every ImmersiveView re-render. Memoizing keeps the
+  // array identity stable across renders for the lifetime of the
+  // current locale.
   const dressCaptions = useMemo(
-    () => [captions("1"), captions("2"), captions("3"), captions("4")],
+    () => [
+      <div key="qa" className="grid gap-3">
+        <span className="font-mono text-[10px] tracking-[0.32em] text-white/65 uppercase md:text-[11px]">
+          {captions("topic")}
+        </span>
+        <span className="font-serif text-[clamp(1.35rem,2vw,1.85rem)] leading-[1.25] text-white/95">
+          {captions("answer")}
+        </span>
+      </div>,
+      captions("ownIt"),
+      captions("refs")
+    ],
     [captions]
   );
   const phase = useDayNNightScene(useShallow((r) => r.phase));
+  // Sequenced entry reveal: 0 = background only, 1 = content, 2 = chrome.
+  // Stages advance on fixed delays after phase transitions to "playing" so
+  // the first impression is: sky → Act I copy → HUD chrome.
+  const [revealStage, setRevealStage] = useState<0 | 1 | 2>(0);
+  useEffect(() => {
+    if (phase !== "playing") {
+      setRevealStage(0);
+      return;
+    }
+    const t1 = window.setTimeout(() => setRevealStage(1), 200);
+    const t2 = window.setTimeout(() => setRevealStage(2), 600);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [phase]);
   const [hintHidden, setHintHidden] = useState(false);
   // Single source of truth for the right-side Details drawer. The
   // top-right QuickActions trigger and the in-act OpeningCard both
   // consume this via DetailsContext.
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const setProgress = useDayNNightScene((r) => r.setProgress);
   const setPhase = useDayNNightScene((r) => r.setPhase);
   const resetLiminalHandoff = useDayNNightScene((r) => r.resetLiminalHandoff);
@@ -106,15 +146,23 @@ export function ImmersiveView() {
   // re-enters the act (rare, but the seamless modulo loop means it
   // happens once per cycle).
   const dressWindow = useActWindowActive(ACT_INDEX_DRESS);
+  // Second-half-of-Liminal pivot. Once scroll crosses the dress
+  // window's midpoint the torrent fades and the YM.FM credit (Act III
+  // grid content in Timeline.tsx) reveals — driven off the same hook
+  // so the two transitions stay in lockstep.
+  const dressSecondHalf = useActHalfwayActive(ACT_INDEX_DRESS, 0.5);
 
-  // Photo torrent activation. Subtitle fires `onPhotoCue` ~0.5s into
-  // card 3; we flip this to true. Resets to false whenever the dress
-  // window closes so the next entry starts with photos hidden.
+  // Photo torrent cue. SubtitleSequence fires `onPhotoCue` 500ms into
+  // the third caption ("If you want references — here's pics from past
+  // events:") — the line *introduces* the photos, so the torrent
+  // fades in directly under it. Resets on dress-window exit so the
+  // next entry starts with photos hidden and replays the lead-in.
   const [torrentCued, setTorrentCued] = useState(false);
   const handlePhotoCue = useCallback(() => setTorrentCued(true), []);
   useEffect(() => {
     if (!dressWindow.active) setTorrentCued(false);
   }, [dressWindow.active]);
+
   // Hide the scroll hint on first scroll.
   useEffect(() => {
     if (phase !== "playing") return;
@@ -135,15 +183,15 @@ export function ImmersiveView() {
   }, [setPhase, setProgress, resetLiminalHandoff]);
 
   return (
-    <DetailsContext.Provider
-      value={{ open: detailsOpen, setOpen: setDetailsOpen }}
-    >
+    <DetailsContext value={{ open: detailsOpen, setOpen: setDetailsOpen }}>
       <div className="relative min-h-screen w-full p-0 [--reveal-x:50%] [--reveal-y:50%] max-md:min-h-dvh">
         {/* Timeline owns the pinned scroll context; SceneView (sky + sun + moon)
-          and the grain overlay live inside it so they share the pin. */}
-        <Timeline />
+          and the grain overlay live inside it so they share the pin.
+          contentRevealed gates Act I's RevealStage so it only fires
+          once the entry sequence has reached the content beat (200ms). */}
+        <Timeline contentRevealed={revealStage >= 1} />
         <div
-          data-hidden={hintHidden || phase !== "playing"}
+          data-hidden={hintHidden || phase !== "playing" || revealStage < 2}
           aria-hidden
           className="ease pointer-events-none fixed bottom-1/4 left-1/2 z-[45] hidden -translate-x-1/2 items-center gap-[10px] font-mono text-[10px] tracking-[0.28em] text-[var(--dn-fg-mute)] uppercase transition-opacity duration-500 data-[hidden=true]:opacity-0 lg:inline-flex"
         >
@@ -153,25 +201,24 @@ export function ImmersiveView() {
           />
           <span>{t("scrollHint")}</span>
         </div>
-        <Scrubber />
-        {/* Bottom action island — accented Reserve + Details capsule.
-          DynamicIsland-style frosted pill sitting above the Scrubber
-          and ViewToggle. Reserve = inverted fill, Details = outline. */}
-        <QuickActions />
+        <Scrubber visible={revealStage >= 2} />
+        {/* Bottom action island — mounts at stage 2 so the m.div spring
+          entrance fires exactly when chrome should appear. */}
+        {revealStage >= 2 && <QuickActions />}
         {/* Local audio score — owns daytime.ogg only. Fades out across
           the photo-torrent window; once the cassette handoff fires,
           this goes silent and HideawayFM picks up the night. See
           DayNNightScore.tsx. */}
-        <DayNNightScore />
+        {phase === "playing" && revealStage >= 2 && (
+          <DayNNightScore initialEnabled={audioEnabled} />
+        )}
         {/* Pins HideawayFM to Track_1 on mount, starts playback after
           the tape SFX window once the handoff fires, and advances
           Track_1 → 2 → 3 at scroll thresholds. Headless. */}
         <LiminalRadioController />
-        {/* Cinematic Liminal → Nighttime handoff. Subtitle morph +
-          cassette (TapeModel); pressing it fires the store's liminal
-          handoff, which silences the day bed and starts HideawayFM
-          after the SFX hold. Stateless on progress + handoff flag —
-          safe on re-entry. */}
+        {/* Liminal → Nighttime handoff captions. Fires liminalHandoffFired
+          at progress ≥ 0.55, which LiminalRadioController uses to start
+          HideawayFM after its delay window. HTML-only — no 3D. */}
         <LiminalHandoff />
         {/* Act III dress window: photo torrent + subtitle sequence.
           Both gated on the act's scroll window via useActWindowActive,
@@ -182,13 +229,37 @@ export function ImmersiveView() {
           restart from 0 on every re-entry. */}
         <FriendsTorrent
           photos={FRIENDS_PHOTOS}
-          active={dressWindow.active && torrentCued}
+          // First half of Liminal only, AND only after the caption
+          // sequence has introduced them — the third caption ("If you
+          // want references…") triggers `onPhotoCue`, which flips
+          // `torrentCued` true and fades the layer in directly under
+          // the line that's introducing it. The midpoint pivot clears
+          // the whole layer so the YM.FM credit reads against bare sky.
+          active={dressWindow.active && torrentCued && !dressSecondHalf}
+          // Lifted out of the pinned wrap's stacking context:
+          //   • `fixed` so the layer stays viewport-anchored while
+          //     the pin scrolls the ImmersiveView root upward
+          //     (an `absolute inset-0` child would scroll off-screen
+          //     with the expanded pin-spacer).
+          //   • `z-[40]` clears Timeline (z-3) but sits below
+          //     SubtitleSequence (z-43), LiminalHandoff (z-44),
+          //     Scrubber (z-45), and QuickActions (z-47) so the
+          //     captions read on top and the chrome stays clickable.
+          className="fixed z-[40]"
         />
         <SubtitleSequence
           captions={dressCaptions}
-          active={dressWindow.active}
+          // Captions disarm at the dress midpoint so they don't keep
+          // narrating while the YM.FM credit reveals.
+          active={dressWindow.active && !dressSecondHalf}
           replayKey={dressWindow.entryCount}
           onPhotoCue={handlePhotoCue}
+          // Lead-in caption ("If you want references — here's pics
+          // from past events:") sticks on screen instead of auto-fading
+          // — so users who scroll slowly can read it, and it stays the
+          // tagline above the photo torrent until the midpoint pivot
+          // (active flips false) dismisses it.
+          lingerOnLast
         />
         {/* Single Details drawer instance — driven by DetailsContext so
           QuickActions and OpeningCard share one drawer. */}
@@ -199,8 +270,13 @@ export function ImmersiveView() {
           "Day n Night" titles never overlap, but no separate chrome
           element transitions across the seam. The wrap reads as a
           quiet beat between night and the next dawn. */}
-        {phase !== "playing" ? <SunLoader /> : null}
+        {phase !== "playing" ? (
+          <SunLoader
+            onEnter={(withAudio) => setAudioEnabled(withAudio)}
+            onSummary={() => setDetailsOpen(true)}
+          />
+        ) : null}
       </div>
-    </DetailsContext.Provider>
+    </DetailsContext>
   );
 }

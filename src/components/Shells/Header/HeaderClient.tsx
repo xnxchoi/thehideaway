@@ -604,7 +604,10 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
               id="c-side"
             >
               <Link
-                href="/home"
+                // TEMPORARY (event mode): logo points at the event
+                // landing instead of /home. Restore to "/home" after
+                // the Day n Night event closes.
+                href="/day-n-night"
                 aria-label={"Logo"}
                 className="header-main__logo z-20"
                 style={{
@@ -661,7 +664,10 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
                     }}
                   />
                 )}
-                {!isMobile && (
+                {/* TEMPORARY (event mode): cmdk SearchBar hidden while
+                    the header is focused on the Day n Night event.
+                    Restore the block below after the event closes. */}
+                {false && !isMobile && (
                   <SearchBar
                     key={"search-component"}
                     ref={commandRef}

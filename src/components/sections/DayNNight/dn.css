@@ -8,7 +8,13 @@
  *   import "./dn.css"
  *
  * All other styles live as Tailwind utility classes inline in each TSX file.
- */
+ */.maplibregl-ctrl-bottom-right {
+    bottom: 0;
+    visibility: hidden;
+    right: 0;
+    opacity: 0;
+}
+
 
 /* ─── Shell tokens ────────────────────────────────────────────────────────── */
 
@@ -303,10 +309,102 @@ body[data-dn-immersive="true"] #rp-header {
   text-decoration-color: transparent;
 }
 
+/* ─── Loader horizon shimmer ──────────────────────────────────────────────── */
+
+/* Organic flame-like flicker on the core line */
+@keyframes dn-horizon-flicker {
+  0%, 100% { opacity: 0.82; }
+  7%        { opacity: 0.95; }
+  14%       { opacity: 0.68; }
+  22%       { opacity: 0.91; }
+  30%       { opacity: 0.63; }
+  39%       { opacity: 0.98; }
+  47%       { opacity: 0.74; }
+  55%       { opacity: 0.87; }
+  63%       { opacity: 0.66; }
+  72%       { opacity: 0.93; }
+  81%       { opacity: 0.71; }
+  90%       { opacity: 0.88; }
+}
+
+/* Shimmer hot-spot sweeping left → right */
+@keyframes dn-horizon-shimmer-ltr {
+  0%   { background-position: -70% 0; }
+  100% { background-position: 170% 0; }
+}
+
+/* Shimmer hot-spot sweeping right → left (phase offset handles direction via delay) */
+@keyframes dn-horizon-shimmer-rtl {
+  0%   { background-position: 170% 0; }
+  100% { background-position: -70% 0; }
+}
+
+/* Soft glow haze breathing */
+@keyframes dn-horizon-breathe {
+  0%, 100% { opacity: 0.12; transform: scaleY(1); }
+  28%       { opacity: 0.34; transform: scaleY(2.8); }
+  56%       { opacity: 0.18; transform: scaleY(1.6); }
+  78%       { opacity: 0.38; transform: scaleY(3.2); }
+}
+
+[data-dn-loader-line] {
+  animation: dn-horizon-flicker 2.6s ease-in-out infinite;
+}
+
+/* Warm shimmer pass A — left to right, 5s period */
+[data-dn-loader-shimmer] {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(90% 0.07 74 / 0.45) 38%,
+    oklch(97% 0.04 80 / 0.90) 50%,
+    oklch(90% 0.07 74 / 0.45) 62%,
+    transparent 100%
+  );
+  background-size: 55% 100%;
+  background-repeat: no-repeat;
+  animation: dn-horizon-shimmer-ltr 5s ease-in-out infinite;
+}
+
+/* Warm shimmer pass B — right to left, slower, phase-shifted */
+[data-dn-loader-shimmer2] {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(87% 0.09 66 / 0.30) 40%,
+    oklch(94% 0.06 72 / 0.65) 50%,
+    oklch(87% 0.09 66 / 0.30) 60%,
+    transparent 100%
+  );
+  background-size: 38% 100%;
+  background-repeat: no-repeat;
+  animation: dn-horizon-shimmer-rtl 7.5s ease-in-out infinite 1.8s;
+}
+
+/* Soft atmospheric glow that breathes above/below the line */
+[data-dn-loader-glow] {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    oklch(88% 0.09 70 / 0.22) 35%,
+    oklch(91% 0.07 68 / 0.35) 50%,
+    oklch(88% 0.09 70 / 0.22) 65%,
+    transparent 100%
+  );
+  transform-origin: center;
+  animation: dn-horizon-breathe 3.8s ease-in-out infinite;
+}
+
 /* ─── Reduced-motion overrides ────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   [data-dn-scroll-hint-line] {
+    animation: none;
+  }
+  [data-dn-loader-line],
+  [data-dn-loader-shimmer],
+  [data-dn-loader-shimmer2],
+  [data-dn-loader-glow] {
     animation: none;
   }
 }

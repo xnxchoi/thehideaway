@@ -184,7 +184,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
             <MapMarker longitude={VENUE_COORDS.lng} latitude={VENUE_COORDS.lat}>
               <MarkerContent>
                 <div className="size-2.5 rounded-full bg-white shadow-[0_0_0_5px_rgba(255,255,255,0.18)]">
-                  "HERF!&#34;
+                  COME THRU
                 </div>
               </MarkerContent>
             </MapMarker>
