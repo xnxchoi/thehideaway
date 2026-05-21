@@ -9,6 +9,104 @@
 
 ---
 
+## 0.bis Status as of 2026-05-21 session close
+
+This session executed against the priority order in § 6. What landed,
+in commit order:
+
+1. **`3531b6a feat(day-n-night): lock mirror-EN copy, add dj/liminal namespaces`**
+   — Applied § 2.6 mirror-EN cut-line across `messages/{en,ko}.json`.
+   Added `act.night.dj.{eyebrow,name,role,blurb,handle,listenLabel}` per § 2.2.
+   Added `liminal.{sunsetSubtitle,changeOfPace}` per § 2.9. Deleted dead keys
+   per § 2.7 (`act.shift.*`, `act.night.sectionTitle`, `act.night.announcement`,
+   `act.night.dressLabel`, `moodboard.night.{suit,jacket}`). Event.DayNNight.*
+   = 101 keys, both locales. **§ 3.1 + § 3.2 (i18n half) + § 2.7 done.**
+
+2. **`23ef3ec feat(day-n-night): YM polaroid scatter placeholders + eyebrow refinement`**
+   — Replaced Pulp-Fiction suit/jacket pair in Night act with 6-tile scatter
+   (5 photos + 1 back card, mixed widths 150–240px, ±9° angle spread,
+   mixed depth signs, no captions). Flagged `PLACEHOLDER — YM photos TBC`.
+   `Act.tsx` eyebrow `№` glyph drops uppercase+mono. **§ 3.7 done.**
+
+3. **`c7c79a3 fix(day-n-night): scroll-driven Day fade-out for audio score graceful degrade`**
+   — `<DayNNightScore>` was already built and wired into `<ImmersiveView>`
+   prior to this session (three Web Audio gainNode pipelines: country,
+   house, hip-hop). This commit added the scroll-driven Day fade-out per
+   § 2.3 so the audio degrades gracefully even before the cassette UI
+   exists: Day 1→0 across progress 0.42 → 0.55; post-handoff Sunset→Night
+   crossfade 0.55 → 0.68 unchanged. **§ 3.5 done.**
+
+4. **`d6b5741 chore(day-n-night): minor layout polish in Act / SceneView / Timeline`**
+   — User-driven layout tweaks captured: dropped `justify-center` from
+   `Act` outer flex, dropped `lg:-left-[22%]` from Opening Act in Timeline,
+   cosmetic whitespace in SceneView CSS var literal.
+
+5. **`86a8638 feat(day-n-night): cinematic Liminal → Nighttime handoff`**
+   — New `<LiminalHandoff>` component mounted in `<ImmersiveView>`. Subtitle
+   morph (sunsetSubtitle → changeOfPace) + CSS cassette placeholder (reel
+   spools + label window "Side B · YM·FM" + play/pause button) with
+   whoosh-up entrance. Click fires `fireLiminalHandoff()` store action.
+   Click SFX synthesized inline via Web Audio (HP-filtered noise burst +
+   low-sine thump, ≤200ms — avoids needing the `cassette-click.opus`
+   asset the spec listed as a prereq). Reduced-motion path: whoosh /
+   breathe / reel-spin collapse, audio click preserved. Re-entry safe via
+   store reset on unmount + ref-latched cassette visibility.
+   **§ 3.6 done, path 1 per § 5** (3D `<Tape3DScene>` deferred to keep
+   TapePlayer ↔ HideawayFM decoupled).
+
+6. **`f364db2 fix(day-n-night): LiminalHandoff QA fixes — dead-zone trap + chrome z-stack collision`**
+   — Static QA pass on `<LiminalHandoff>` caught two blockers and fixed
+   them: (a) dropped the upper-bound phase trap — once past INVITE_IN
+   without firing, cassette stays in "invite" indefinitely; loosened
+   `disabled` to `!cassetteOn || fired` so any press after arrival
+   fires the handoff; updated wrapper aria-hidden logic; (b) lifted
+   cassette stack to `bottom-[110px]` / `md:bottom-[170px]` /
+   `xl:bottom-[190px]` so it clears the `QuickActions` pill
+   (`lg:bottom-[92px]` z-47, ~45px tall) and the `Scrubber` (z-45,
+   bottom-7/9) at every breakpoint. Cassette stays at z-44 — chrome
+   wins z-stacking when they truly overlap (they no longer do).
+
+### Live audio arc as of session close
+
+Day country → fades 0.42–0.55 to silence → cassette press in Liminal fires
+Sunset house (Track_3.mp3) → scroll into Night crossfades to hip-hop/house
+(nighttime.opus). YM.FM credit block already in Act 3 from a prior session.
+
+### Still not landed from § 3
+
+- **§ 3.3 Tribute → Act 3.4 closing handoff** — `tribute.body` "pull up a
+  chair" append + Closing-section render-site swap. Pure i18n + 1 line of
+  JSX. Quick win for the next session.
+- **§ 3.8 Friends torrent** — multi-z-depth photo glide in Liminal. Handoff
+  doc explicitly says find a reference pattern first; don't invent.
+- **§ 3.9 SurvivalKit deep-link clusters + codegen** — 3-diff sequence:
+  config + codegen scaffolding, cluster components, wire-in. Blocked on
+  the fill-in sheet (`readmes/DAY_N_NIGHT_FILL_IN.md`).
+- **§ 5 path 3: TapePlayer ↔ HideawayFM decoupling** — load-bearing refactor
+  if the 3D `<Tape3DScene>` cassette is ever to replace the CSS placeholder.
+  Currently scheduled as post-event debt.
+- **§ 2.9 unified GSAP timeline** — sky/photo/audio/cassette currently
+  drive off independent progress thresholds, not one GSAP timeline. Reads
+  the same to the user at normal scroll speeds; scrub-scrubbing would
+  reveal the looseness. Defer until photo torrent (§ 3.8) needs the
+  shared clock.
+
+### Dirty working tree at session close
+
+- `src/components/sections/DayNNight/SurvivalKit.tsx` — in-flight typography
+  pass (mono → sans on eyebrow labels, mono → serif italic on `<dt>` row
+  labels). User-owned; do not commit without checking. Will survive
+  Claude Code relaunch since git working tree is preserved.
+
+### Browser-QA bridge
+
+Session ended planning a Claude-for-Chrome bridge via `claude --chrome`
+relaunch. Anthropic officially supports Chrome and Edge only; Dia
+(Chromium fork) may or may not work — first thing the next session
+should verify is `/chrome` status after relaunch.
+
+---
+
 ## 0. Status as of this handoff (2026-05-20, late session)
 
 - **Architecture doc:** `readmes/DAY_N_NIGHT.md` — current. Last edited to add a cross-reference to the storyboard at § 11.
