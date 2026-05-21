@@ -3,7 +3,11 @@ import { cn } from "@/lib/utils";
 import { View } from "@react-three/drei";
 import { type ComponentProps, Suspense, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { TapeModel } from "./TapeModel";
+import {
+  TapeModel,
+  type TapeCameraOverride,
+  type TapeDisplayOverride
+} from "./TapeModel";
 
 interface Tape3DSceneProps {
   /**
@@ -14,6 +18,10 @@ interface Tape3DSceneProps {
   scrollTriggerId?: string;
   className?: string;
   style?: ComponentProps<"div">["style"];
+  /** See TapeModel. Defaults to the HideawayFM-driven marquee. */
+  displayOverride?: TapeDisplayOverride | null;
+  /** See TapeModel. Defaults to the standard Radio frame. */
+  cameraOverride?: TapeCameraOverride | null;
 }
 
 /**
@@ -52,7 +60,9 @@ function useResponsiveAspectRatio() {
 export function Tape3DScene({
   scrollTriggerId = "webgl_trigger",
   className,
-  style
+  style,
+  displayOverride,
+  cameraOverride
 }: Tape3DSceneProps) {
   const aspectRatio = useResponsiveAspectRatio();
   const { ref, inView } = useInView({ threshold: 0.1 });
@@ -70,9 +80,21 @@ export function Tape3DScene({
         )}
       >
         <Suspense fallback={null}>
-          <TapeModel scrollTriggerId={scrollTriggerId} inView={inView} />
+          <TapeModel
+            scrollTriggerId={scrollTriggerId}
+            inView={inView}
+            displayOverride={displayOverride}
+            cameraOverride={cameraOverride}
+          />
         </Suspense>
       </View>
+      {displayOverride?.tickerMode === "static" ? (
+        <div
+          aria-hidden
+          data-dn-tape-crt
+          className="pointer-events-none absolute inset-0 z-[1] [background:repeating-linear-gradient(0deg,rgba(8,16,18,0)_0px,rgba(8,16,18,0)_2px,rgba(150,247,255,0.07)_2px,rgba(150,247,255,0.07)_3px)] [mix-blend-mode:screen]"
+        />
+      ) : null}
     </div>
   );
 }

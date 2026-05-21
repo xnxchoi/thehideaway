@@ -137,6 +137,34 @@ function TapeRendererSetup() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Optional override for the display screen text — bypasses HideawayFM
+ * when provided. `tickerMode: "static"` freezes the marquee scroll so
+ * the text sits centered, intended to be paired with a CRT-scanline
+ * overlay rendered outside the canvas (see Tape3DScene). When the
+ * override is null/undefined, the display reverts to HideawayFM's
+ * "ARTIST - TITLE" marquee.
+ */
+export interface TapeDisplayOverride {
+  text: string;
+  tickerMode?: "marquee" | "static";
+}
+
+/**
+ * Optional camera override for cinematic surfaces. When provided,
+ * replaces the default INITIAL_CAMERA_POS / OrbitControls target so a
+ * page (e.g. Day-n-Night LiminalHandoff) can frame the tape closer
+ * with the display face-forward to the viewport.
+ */
+export interface TapeCameraOverride {
+  /** World-space camera position. Defaults to (-8, -3, 15). */
+  position?: [number, number, number];
+  /** OrbitControls look-at target. Defaults to (0, 0, 0). */
+  target?: [number, number, number];
+  /** Field of view in degrees. Defaults to 10. */
+  fov?: number;
+}
+
 interface TapeModelProps {
   scrollTriggerId: string;
   /**
@@ -145,11 +173,17 @@ interface TapeModelProps {
    * OrbitControls so they don't compete with other Views when off-screen.
    */
   inView: boolean;
+  /** See TapeDisplayOverride. Defaults to HideawayFM-driven marquee. */
+  displayOverride?: TapeDisplayOverride | null;
+  /** See TapeCameraOverride. Defaults to (-8,-3,15) / fov 10 / target (0,0,0). */
+  cameraOverride?: TapeCameraOverride | null;
 }
 
 export function TapeModel({
   scrollTriggerId = "webgl_trigger",
-  inView
+  inView,
+  displayOverride,
+  cameraOverride
 }: TapeModelProps) {
   const controlsRef = useRef<OrbitControls_>(null!);
   const { scene } = useGLTF(MODEL_URL);
@@ -176,8 +210,29 @@ export function TapeModel({
   const forwardButtonRef = useRef<Object3D | null>(null);
   const rewindButtonRef = useRef<Object3D | null>(null);
   const activeButtonRef = useRef<Object3D | null>(null);
-  const INITIAL_CAMERA_POS = useMemo(() => new Vector3(-8, -3, 15), []);
-  const INITIAL_TARGET_POS = useMemo(() => new Vector3(0, 0, 0), []);
+  // Camera override changes shift the "home" pose so reset behaviour
+  // returns to the cinematic frame instead of the default Radio one.
+  // We memoise on the override's serialized values so a stable
+  // override doesn't churn the Vector3 identity each render.
+  const overridePosKey = cameraOverride?.position?.join(",") ?? "";
+  const overrideTargetKey = cameraOverride?.target?.join(",") ?? "";
+  const overrideFov = cameraOverride?.fov ?? 10;
+  const INITIAL_CAMERA_POS = useMemo(
+    () =>
+      cameraOverride?.position
+        ? new Vector3(...cameraOverride.position)
+        : new Vector3(-8, -3, 15),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overridePosKey]
+  );
+  const INITIAL_TARGET_POS = useMemo(
+    () =>
+      cameraOverride?.target
+        ? new Vector3(...cameraOverride.target)
+        : new Vector3(0, 0, 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overrideTargetKey]
+  );
   /** Raw scroll velocity fed by Lenis (hg in original). */
   const scrollVelocityRef = useRef(0);
   const displayBounds = useRef(new Box3()),
@@ -448,14 +503,28 @@ export function TapeModel({
   const track = nowPlaying.track;
   const textRef1 = useRef<Object3D>(null),
     textRef2 = useRef<Object3D>(null);
-  const [playingString, setPlayingString] = useState(() =>
-    track ? `   ${track.artist} - ${track.title}   ` : `   Hideaway FM   `
-  );
+  // Display override takes precedence: cinematic surfaces (e.g. the
+  // Day-n-Night LiminalHandoff) can drop their own caption on the
+  // emissive screen instead of HideawayFM's track string. Spaces are
+  // preserved so static-mode text still reads cleanly without the
+  // marquee padding.
+  const overrideText = displayOverride?.text ?? null;
+  const isStaticTicker = displayOverride?.tickerMode === "static";
+  const [playingString, setPlayingString] = useState(() => {
+    if (overrideText != null) return `   ${overrideText}   `;
+    return track
+      ? `   ${track.artist} - ${track.title}   `
+      : `   Hideaway FM   `;
+  });
   useEffect(() => {
+    if (overrideText != null) {
+      setPlayingString(`   ${overrideText}   `);
+      return;
+    }
     setPlayingString(
       track ? `   ${track.artist} - ${track.title}   ` : `   Hideaway FM   `
     );
-  }, [track]);
+  }, [track, overrideText]);
 
   // useMotionValueEvent(progress, "change", (v) => {
   //   scene.rotation.y = INIT_ROT_Y + v * ((2 * Math.PI) / 6);
@@ -564,6 +633,12 @@ export function TapeModel({
     const onsc = createScrollTrigger();
     return () => onsc && onsc();
   }, [scrollTriggerId]);
+  // When the camera override changes (e.g. a cinematic surface swaps in
+  // a closer frame), trigger the existing reset-lerp so the transition
+  // is smooth rather than a hard cut.
+  useEffect(() => {
+    isResetting.current = true;
+  }, [overridePosKey, overrideTargetKey]);
   const db = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onInteract = useCallback(() => {
     db.current && clearTimeout(db.current);
@@ -620,13 +695,21 @@ export function TapeModel({
         isResetting.current = false;
       }
     }
-    firstTime.current += (delta * 5) / 10;
-    if (textRef1.current) {
-      textRef1.current.position.x = firstTime.current % textWidth.current;
-    }
-    if (textRef2.current) {
-      textRef2.current.position.x =
-        (firstTime.current % textWidth.current) - textWidth.current;
+    // Static ticker mode (display override): freeze the marquee at x=0
+    // so the caption sits centered. Skip the firstTime increment so
+    // re-entering marquee mode doesn't jump-cut to a stale offset.
+    if (isStaticTicker) {
+      if (textRef1.current) textRef1.current.position.x = 0;
+      if (textRef2.current) textRef2.current.position.x = -textWidth.current;
+    } else {
+      firstTime.current += (delta * 5) / 10;
+      if (textRef1.current) {
+        textRef1.current.position.x = firstTime.current % textWidth.current;
+      }
+      if (textRef2.current) {
+        textRef2.current.position.x =
+          (firstTime.current % textWidth.current) - textWidth.current;
+      }
     }
     // Wire RenderTexture → real Display material's emissiveMap once both refs
     // are populated (traverse runs before RenderTexture mounts its ref).
@@ -659,7 +742,7 @@ export function TapeModel({
        */}
       <PerspectiveCamera
         makeDefault={inView}
-        fov={10}
+        fov={overrideFov}
         position={INITIAL_CAMERA_POS}
         near={0.1}
         far={100}
