@@ -55,7 +55,6 @@ import { useDayNNightScene } from "../store";
 const SUBTITLE_IN = 0.4;
 const CASSETTE_IN = 0.5;
 const INVITE_IN = 0.55;
-const HANDOFF_OUT = 0.7; // above this, post-handoff visuals only
 
 type Phase = "off" | "subtitle-a" | "cassette-arriving" | "invite" | "fired";
 
@@ -64,8 +63,12 @@ function resolvePhase(progress: number, fired: boolean): Phase {
   if (progress < SUBTITLE_IN) return "off";
   if (progress < CASSETTE_IN) return "subtitle-a";
   if (progress < INVITE_IN) return "cassette-arriving";
-  if (progress < HANDOFF_OUT) return "invite";
-  return "off";
+  // No upper bound — once past INVITE_IN without firing, the cassette
+  // stays in "invite" so a user who scrolled past the choreographed
+  // moment can still press it to start the night. Trapping the user
+  // in an aria-hidden + disabled state is worse than a slightly
+  // longer-than-spec invite window.
+  return "invite";
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -184,10 +187,20 @@ export function LiminalHandoff() {
     fire();
   };
 
+  // Wrapper hides from a11y only when nothing is on stage — once the
+  // cassette has arrived (cassetteOn) it remains an interactive target
+  // regardless of phase, so we don't aria-hide it.
+  const wrapperHidden = phase === "off" && !cassetteOn;
+
   return (
     <div
-      aria-hidden={phase === "off" || undefined}
-      className="pointer-events-none fixed inset-x-0 bottom-[12vh] z-[44] flex flex-col items-center gap-7 max-md:bottom-[10vh] xl:gap-9"
+      aria-hidden={wrapperHidden || undefined}
+      // Stack lifted clear of the QuickActions pill (z-47, lg:bottom-[92px],
+      // ~45px tall) and the Scrubber (z-45, bottom-7/9, ~30px). Mobile
+      // floors at 110px so the cassette clears the bottom-5 pill on short
+      // viewports. Avoids the z-44 < QuickActions z-47 overlap that
+      // previously hid the cassette's lower edge.
+      className="pointer-events-none fixed inset-x-0 bottom-[110px] z-[44] flex flex-col items-center gap-7 md:bottom-[170px] xl:bottom-[190px] xl:gap-9"
     >
       {/* Subtitle — cinematic register, mono-caps with letter-spacing. */}
       <div className="relative flex h-[2.2em] w-[min(86vw,640px)] items-end justify-center text-center">
@@ -218,7 +231,12 @@ export function LiminalHandoff() {
         data-dn-liminal-cassette
         data-fired={fired || undefined}
         onClick={onClick}
-        disabled={!cassetteOn || (phase !== "invite" && !fired)}
+        // Only block clicks while the cassette is still off-stage. Once
+        // it has whooshed in, accept the press at any time — the
+        // "invite breathe" cue is the right-moment hint, not a hard
+        // gate. Spec'd silence beat preserved visually; the user is
+        // never trapped if they click early or late.
+        disabled={!cassetteOn || fired}
         aria-label={fired ? "Audio playing" : "Press to start the night"}
         initial={false}
         animate={
@@ -237,7 +255,7 @@ export function LiminalHandoff() {
               }
         }
         className={[
-          "pointer-events-auto group relative isolate",
+          "group pointer-events-auto relative isolate",
           "flex flex-col items-stretch gap-3 rounded-[10px]",
           "border border-[oklch(from_var(--dn-fg)_l_c_h_/_0.18)]",
           "bg-[oklch(from_var(--dn-bg)_calc(l*0.4)_c_h_/_0.92)]",
@@ -324,13 +342,7 @@ export function LiminalHandoff() {
  * static frame so users with the OS preference don't see continuous
  * rotation.
  */
-function Reel({
-  spinning,
-  reduced
-}: {
-  spinning: boolean;
-  reduced: boolean;
-}) {
+function Reel({ spinning, reduced }: { spinning: boolean; reduced: boolean }) {
   return (
     <span
       aria-hidden
