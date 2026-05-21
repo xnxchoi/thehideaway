@@ -325,20 +325,24 @@
           "heading": "Backyard cookouts are good. Rooftop barbecues are better.",
           "body": "Smash burgers off the grill, pork brine, potatoes, and whatever the smoke turns out. We grill while the sun's still up. Beer and wine to follow. Gin, if you ask nicely."
         },
-        "shift": {
-          "label": "IN-BETWEEN TIMES",
-          "time": "19:50 → 20:00",
-          "heading": "Mood shift."
-        },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → late",
-          "sectionTitle": "Nightfall",
-          "announcement": "A quiet addition to the evening awaits..,",
-          "dressLabel": "Dress code, after dark",
           "heading": "Sharp. Chic. Dressed to impress.",
-          "body": "Same room, different mood. Cocktails come up, lights go down. You don't have to bring a suit. We won't stop you, though."
+          "body": "Same room, different mood. Cocktails come up, lights go down. You don't have to bring a suit. We won't stop you, though.",
+          "dj": {
+            "eyebrow": "On the decks",
+            "name": "YM.FM",
+            "role": "Barber. Musician. Great Dude.",
+            "blurb": "A dear friend, GOAT barber, and most importantly — a killer DJ.",
+            "handle": "@yangminwoo",
+            "listenLabel": "Listen"
+          }
         }
+      },
+      "liminal": {
+        "sunsetSubtitle": "The sun is setting.",
+        "changeOfPace": "Time for a change of pace."
       },
       "dressCode": {
         "heading": "Whatever\nYou\nWant",
@@ -475,16 +479,6 @@
           "dude": {
             "alt": "The Dude — Big Lebowski",
             "caption": "The Dude. (Big Lebowski, 1998)"
-          }
-        },
-        "night": {
-          "suit": {
-            "alt": "Pulp Fiction — suit",
-            "caption": "No, you don't have to bring a suit. Won't stop you though. (Pulp Fiction)"
-          },
-          "jacket": {
-            "alt": "Jackets, after dark",
-            "caption": "Look, we're not saying that jackets will get you looking like this… But it won't hurt."
           }
         }
       }
