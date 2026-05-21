@@ -7,6 +7,7 @@ import { useDayNNightScene } from "../store";
 import { DayNNightScore } from "./DayNNightScore";
 import { DetailsContext } from "./DetailsContext";
 import { DetailsDrawer } from "./DetailsDrawer";
+import { LiminalHandoff } from "./LiminalHandoff";
 import { QuickActions } from "./QuickActions";
 import { Scrubber } from "./Scrubber";
 import { SeamBridge } from "./SeamBridge";
@@ -89,6 +90,13 @@ export function ImmersiveView() {
           Toggle button positioning lives in dn.css via
           [data-dn-audio-toggle]. See DayNNightScore.tsx. */}
         <DayNNightScore />
+        {/* Cinematic Liminal → Nighttime handoff (§ 2.9 / § 3.6 of
+          DAY_N_NIGHT_HANDOFF.md). Subtitle morph + cassette
+          placeholder; pressing the cassette fires the store's
+          liminal handoff, which lights up the audio score's Sunset
+          → Nighttime bed. Stateless on progress + handoff flag — safe
+          on re-entry. */}
+        <LiminalHandoff />
         {/* Single Details drawer instance — driven by DetailsContext so
           QuickActions and OpeningCard share one drawer. */}
         <DetailsDrawer open={detailsOpen} onOpenChange={setDetailsOpen} />
