@@ -679,10 +679,23 @@ function ActSet({
             handle is an external link to Instagram; tabIndex={-1} on
             the aria-hidden duplicate ActSet keeps focus order sane
             across the seamless loop. */}
+        {/* Mobile sentinel — placed BEFORE the YM.FM block so the mobile
+            vertical stack scrolls THROUGH the FriendsTorrent stretch
+            before the YM.FM credit reveals. On desktop the sentinel is
+            lg:hidden and the YM.FM block keeps its explicit lg: grid
+            placement, so this DOM order only governs the mobile flow. */}
+        {!ariaHidden && dressSentinelRef && (
+          <div
+            ref={dressSentinelRef}
+            className="pointer-events-none col-span-full lg:hidden"
+            style={{ minHeight: "350dvh" }}
+            aria-hidden
+          />
+        )}
         <RevealStage
           as="div"
           active={ymRevealActive}
-          className="col-start-1 col-end-9 row-start-2 row-end-3 grid content-end gap-6 self-end max-lg:col-span-full xl:gap-8"
+          className="grid content-end gap-6 self-end max-lg:col-span-full lg:col-start-1 lg:col-end-9 lg:row-start-2 lg:row-end-3 xl:gap-8"
         >
           <RevealItem as="p" className={KICKER_MONO}>
             {t("act.night.dj.eyebrow")}
@@ -719,21 +732,6 @@ function ActSet({
             </a>
           </RevealItem>
         </RevealStage>
-        {/* Mobile sentinel — a tall sizing div placed in document flow inside
-            the dress Act. On desktop it is hidden (lg:hidden) and GSAP's
-            layout gate drives FriendsTorrent visibility. On mobile, as this
-            element scrolls through the viewport, the `dressSentinelRef`
-            `useScroll` in index.tsx fires `sentinelActive`, bypassing the
-            always-false desktop gate. Only rendered in the primary ActSet
-            (not aria-hidden duplicate) to avoid duplicate ref assignment. */}
-        {!ariaHidden && dressSentinelRef && (
-          <div
-            ref={dressSentinelRef}
-            className="pointer-events-none col-span-full lg:hidden"
-            style={{ minHeight: "350dvh" }}
-            aria-hidden
-          />
-        )}
       </Act>
 
       {/* ── Act IV — Night ───────────────────────────────────────────────
