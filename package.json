@@ -44,9 +44,9 @@
     "verify:deploy-rules": "node --no-warnings --experimental-strip-types scripts/sync-deploy-rules.ts verify",
     "env:template:gen": "node --no-warnings --experimental-strip-types scripts/gen-env-template.ts gen",
     "env:template:verify": "node --no-warnings --experimental-strip-types scripts/gen-env-template.ts verify",
-    "env:edit": "sops --input-type dotenv --output-type dotenv .env.production.enc",
-    "env:decrypt": "sops --decrypt --input-type dotenv --output-type dotenv .env.production.enc",
-    "env:rotate-keys": "sops updatekeys .env.production.enc",
+    "env:edit": "SOPS_AGE_KEY_FILE=\"$HOME/.config/sops/age/keys.txt\" sops --input-type dotenv --output-type dotenv .env.production.enc",
+    "env:decrypt": "SOPS_AGE_KEY_FILE=\"$HOME/.config/sops/age/keys.txt\" sops --decrypt --input-type dotenv --output-type dotenv .env.production.enc",
+    "env:rotate-keys": "SOPS_AGE_KEY_FILE=\"$HOME/.config/sops/age/keys.txt\" sops updatekeys .env.production.enc",
     "release:cut": "bash scripts/cut-release.sh",
     "release:check": "bash scripts/cut-release.sh --check"
   },
