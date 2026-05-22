@@ -44,7 +44,7 @@ export function Act({
       )}
     >
       <div
-        className="relative grid h-full w-screen max-w-screen flex-none grid-cols-12 grid-rows-[auto_1fr_auto] max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1"
+        className="relative grid h-full w-screen max-w-screen flex-none grid-cols-12 grid-rows-[auto_1fr_auto] max-lg:h-auto max-lg:w-full max-lg:max-w-full max-lg:grid-cols-1"
         style={{
           paddingTop: "var(--dn-act-pt)",
           paddingBottom: "var(--dn-act-pb)",
