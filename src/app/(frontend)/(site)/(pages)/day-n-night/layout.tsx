@@ -16,8 +16,9 @@ const EVENT_SLUG = "day-n-night";
  *
  * Reads the HMAC-signed `event-gate.day-n-night` cookie on every request
  * and short-circuits to the gate component when it's missing or invalid.
- * All children — the landing, the guests page, future /my and /claim
- * sub-routes — sit behind this single check.
+ * The ticket route verifies the same cookie before purchase, so the
+ * unlock belongs to the event story first instead of acting as a checkout
+ * shortcut.
  *
  * The check is intentionally per-event (not per-route group) so the
  * cookie's HMAC binds to the event id. If the gate password rotates,

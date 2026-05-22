@@ -63,6 +63,7 @@ interface Props {
   isAuthenticated: boolean;
   sessionEmail: string | null;
   sessionName: string | null;
+  gateInitiallyOpen?: boolean;
 }
 
 /**
@@ -168,7 +169,8 @@ export function TicketEventClient({
   remaining,
   isAuthenticated,
   sessionEmail,
-  sessionName
+  sessionName,
+  gateInitiallyOpen = false
 }: Props) {
   const router = useTransitionRouter();
   const t = useTranslations("Event.Rsvp.steps");
@@ -181,7 +183,7 @@ export function TicketEventClient({
   // ── Password gate ────────────────────────────────────────────────────
   const [password, setPassword] = useState("");
   const [storedPassword, setStoredPassword] = useState<string | null>(null);
-  const [gateOpen, setGateOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(gateInitiallyOpen);
   const [gateError, setGateError] = useState<string | null>(null);
   const [gateBusy, setGateBusy] = useState(false);
   const [gateUnlocking, setGateUnlocking] = useState(false);
@@ -251,13 +253,14 @@ export function TicketEventClient({
 
   // Restore cached gate password on mount.
   useEffect(() => {
+    if (gateInitiallyOpen) return;
     if (typeof window === "undefined") return;
     const cached = sessionStorage.getItem(SS_KEY(event.slug));
     if (cached) {
       setStoredPassword(cached);
       setGateOpen(true);
     }
-  }, [event.slug]);
+  }, [event.slug, gateInitiallyOpen]);
 
   // Sync purchaser name from the live session when OTP sign-in lands mid-flow.
   const liveSessionName = (
@@ -376,7 +379,7 @@ export function TicketEventClient({
   };
 
   const submitPurchase = async () => {
-    if (purchaseBusy || !storedPassword) return;
+    if (purchaseBusy || (!useStepFlow && !storedPassword)) return;
     if (!isAuthedNow) {
       router.push(signInRedirectPath(`/tickets/${event.slug}`));
       return;
@@ -390,7 +393,7 @@ export function TicketEventClient({
         body: JSON.stringify({
           event_slug: event.slug,
           quantity,
-          password: storedPassword,
+          ...(storedPassword ? { password: storedPassword } : {}),
           ...(useStepFlow && purchaserName.trim()
             ? { purchaser_name: purchaserName.trim() }
             : {})

@@ -75,7 +75,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: `/${body.event_slug}`,
+    path: "/",
     expires: expiresAt
   });
   return res;

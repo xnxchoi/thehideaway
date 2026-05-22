@@ -1,14 +1,20 @@
-import { headers as nextHeaders } from "next/headers";
+import { cookies as nextCookies, headers as nextHeaders } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketEventClient } from "./page.client";
+import { DayNNightTicketRedirect } from "./redirect.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import {
+  eventGateCookieName,
+  verifyEventGateCookieValue
+} from "@/lib/event-gate";
 
 export const metadata: Metadata = { title: "Tickets" };
 
 type Params = Promise<{ event: string }>;
+const STEP_FLOW_SLUG = "day-n-night";
 
 type EventDoc = {
   id: string;
@@ -23,6 +29,7 @@ type EventDoc = {
   ticket_price?: number | null;
   payment_instructions?: string | null;
   state?: string | null;
+  gate_password?: string | null;
 };
 
 export default async function TicketEventPage(props: { params: Params }) {
@@ -48,6 +55,18 @@ export default async function TicketEventPage(props: { params: Params }) {
   const role = session?.user?.role;
   const isStaff = role === "admin" || role === "editor";
   if (event.state === "draft" && !isStaff) notFound();
+
+  let gateInitiallyOpen = false;
+  if (slug === STEP_FLOW_SLUG) {
+    if (!event.gate_password) {
+      gateInitiallyOpen = true;
+    } else {
+      const jar = await nextCookies();
+      const cookieValue = jar.get(eventGateCookieName(STEP_FLOW_SLUG))?.value;
+      gateInitiallyOpen = verifyEventGateCookieValue(cookieValue, event.id);
+      if (!gateInitiallyOpen) return <DayNNightTicketRedirect />;
+    }
+  }
 
   // Capacity remaining (don't fail if we can't compute).
   let remaining: number | null = null;
@@ -92,6 +111,7 @@ export default async function TicketEventPage(props: { params: Params }) {
       // Both null on a signed-out hit; the client step machine handles that.
       sessionEmail={session?.user?.email ?? null}
       sessionName={session?.user?.name ?? null}
+      gateInitiallyOpen={gateInitiallyOpen}
     />
   );
 }

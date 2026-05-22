@@ -13,9 +13,9 @@ import { submitEventGate, type GateActionState } from "./action";
  * Renders when the layout server-component can't verify a valid
  * `event-gate.day-n-night` cookie. On submit the server action
  * constant-time compares against `events.gate_password` and, on match,
- * issues an HMAC-signed cookie scoped to /day-n-night for 30 days. The
- * `revalidatePath` inside the action causes the layout to re-evaluate
- * and render the protected children.
+ * issues an HMAC-signed cookie for 30 days. The landing layout and
+ * ticket route both verify it so unlocking the story does not dump the
+ * visitor straight into checkout.
  *
  * Visual direction: editorial-mono, off-black canvas, no chrome. The
  * gate is intentionally low-noise — the user is here because someone

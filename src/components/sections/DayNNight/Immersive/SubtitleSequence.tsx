@@ -47,11 +47,9 @@ const DEFAULT_PHOTO_CUE_OFFSET_MS = 500;
  *
  * Renders an ordered list of short caption cards at the bottom of the
  * viewport, one at a time, with cross-fades between them. Built for the
- * Day n Night `/day-n-night` dress→friends-torrent stretch: four cards
- * narrate the dress code (`Dress however you want;` / `Anything goes.`
- * / `But if you're looking for references…` / `Some pictures from our
- * past parties.`) and the photo torrent flows in halfway through
- * card 3.
+ * Day n Night `/day-n-night` dress→friends-torrent stretch: a short
+ * ordered caption run introduces the dress cue, then calls `onPhotoCue`
+ * after the final caption clears so the photo torrent can take the frame.
  *
  * Self-contained — no store/context coupling. The consumer drives
  * activation via the `active` prop and listens for the photo cue via

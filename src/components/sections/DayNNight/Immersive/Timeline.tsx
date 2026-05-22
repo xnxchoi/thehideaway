@@ -665,8 +665,8 @@ function ActSet({
 
       {/* ── Act III — Liminal ────────────────────────────────────────────
           Two-beat act. First half: <FriendsTorrent> photos overlay
-          the viewport while <SubtitleSequence> narrates 4 caption
-          cards across the bottom. Both are fixed-positioned at the
+          the viewport after <SubtitleSequence> introduces the cue
+          across the bottom. Both are fixed-positioned at the
           ImmersiveView root (not in this grid) and gated on the dress
           window's active flag.
           Second half: photos clear and the YM.FM credit reveals in

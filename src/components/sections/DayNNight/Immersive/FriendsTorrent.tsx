@@ -20,14 +20,6 @@ export interface FriendsTorrentProps {
   photos: FriendsTorrentPhoto[];
   /** When false, the whole layer fades out (still mounted). */
   active?: boolean;
-  /**
-   * Caption cue gate. The layer only shows once this is true — both the
-   * desktop (`active`) and mobile (`sentinelRef`) visibility paths are
-   * AND-ed with it, so the torrent never appears before the dress
-   * caption sequence has finished introducing it. Defaults to `true`
-   * (ungated) for callers that don't sequence a caption run.
-   */
-  cued?: boolean;
   /** Opacity of the dark base layer behind the photos (0..1). */
   darkenOpacity?: number;
   /** Seconds per row cycle. Order: back, mid, front. Deeper = slower. */
@@ -42,16 +34,6 @@ export interface FriendsTorrentProps {
   direction?: "left" | "right";
   /** When true, atmospheric warm→cool gradient + grain replace flat black. */
   atmosphere?: boolean;
-  /**
-   * Ref to the sentinel sizing element placed in document flow alongside
-   * the fixed FriendsTorrent layer. On mobile, when this element scrolls
-   * through the viewport, FriendsTorrent becomes visible independent of
-   * the desktop GSAP layout-aware `active` gate (which is always false on
-   * mobile because `layout` is never measured). On desktop the sentinel
-   * has `display:none` via `lg:hidden`, so scrollYProgress stays ≈ 0 and
-   * this path is inert.
-   */
-  sentinelRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
 }
 
@@ -87,22 +69,13 @@ const PHOTO_PROFILES = [
  * at independent speeds. Mobile: three vertical columns scrolling at
  * independent speeds (alternating up/down for parallax depth).
  *
- * Visibility:
- *   - Desktop: driven by the `active` prop (GSAP layout-aware gate from
- *     the parent via `dressWindow.active`).
- *   - Mobile: driven by `sentinelRef` — a tall sizing div placed in
- *     document flow inside the dress act. `useScroll` tracks when it
- *     enters the viewport and flips `sentinelActive` true, bypassing the
- *     GSAP gate that is always false on mobile.
- *
- * Both paths use the same `isVisible = active || sentinelActive` merge so
- * the component renders correctly on all breakpoints without branching in
- * the parent.
+ * Visibility is deliberately dumb: the parent owns desktop scroll-window,
+ * mobile sentinel, midpoint, and subtitle-cue timing. This component only
+ * fades the mounted marquee in or out from the single `active` boolean.
  */
 export function FriendsTorrent({
   photos,
   active = true,
-  cued = true,
   darkenOpacity = 0.5,
   rowSpeeds = DEFAULT_SPEEDS,
   rowYOffsets = DEFAULT_Y,
@@ -110,34 +83,12 @@ export function FriendsTorrent({
   rowOpacities = DEFAULT_OPACITIES,
   direction = "left",
   atmosphere = true,
-  sentinelRef,
   className
 }: FriendsTorrentProps) {
   const row1 = useRef<HTMLDivElement>(null);
   const row2 = useRef<HTMLDivElement>(null);
   const row3 = useRef<HTMLDivElement>(null);
   const rowRefs = [row1, row2, row3];
-
-  const [sentinelActive, setSentinelActive] = useState(false);
-  const sentinelActiveRef = useRef(false);
-  useEffect(() => {
-    const node = sentinelRef?.current;
-    if (!node) return;
-
-    const update = (next: boolean) => {
-      if (sentinelActiveRef.current === next) return;
-      sentinelActiveRef.current = next;
-      setSentinelActive(next);
-    };
-    const observer = new IntersectionObserver(
-      ([entry]) => update(Boolean(entry?.isIntersecting)),
-      { rootMargin: "-2% 0px -2% 0px" }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [sentinelRef]);
-
-  const isVisible = (active || sentinelActive) && cued;
 
   // Desktop/mobile layout switch. Initialized false to avoid SSR mismatch
   // (safe: FriendsTorrent is hidden until the dress window is active, so
@@ -232,7 +183,8 @@ export function FriendsTorrent({
         `pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-300`,
         className
       )}
-      style={{ opacity: isVisible ? 1 : 0 }}
+      data-visible={active ? "true" : "false"}
+      style={{ opacity: active ? 1 : 0 }}
       aria-hidden
     >
       {/* Atmospheric base — sunset spillover top, indigo night bottom. */}

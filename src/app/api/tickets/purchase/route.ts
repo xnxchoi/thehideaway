@@ -14,6 +14,10 @@ import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
 import { readLocaleCookie } from "@/i18n/cookie";
 import { buildTicketManagementUrl } from "@/lib/tickets/event-loop";
 import { buildGiftClaimUrl } from "./claim-url";
+import {
+  eventGateCookieName,
+  verifyEventGateCookieValue
+} from "@/lib/event-gate";
 
 export const runtime = "nodejs";
 
@@ -25,7 +29,7 @@ const GiftSchema = z.object({
 const BodySchema = z.object({
   event_slug: z.string().min(1),
   quantity: z.number().int().min(1).max(10),
-  password: z.string().min(1),
+  password: z.string().min(1).optional(),
   /**
    * Display name to stamp on the `ticket-orders` row. Snapshotted from
    * the 4-step purchase flow's name step. Surfaced to the host (admin)
@@ -130,7 +134,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!event) {
     // Compare against a placeholder so an attacker can't distinguish
     // "event missing" from "event present, wrong password" via timing.
-    safeEqual(body.password, "_no_event_password_placeholder_");
+    safeEqual(body.password ?? "", "_no_event_password_placeholder_");
     return NextResponse.json(
       { ok: false, error: "invalid-password" },
       { status: 401 }
@@ -143,7 +147,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if (!safeEqual(body.password, event.gate_password ?? "")) {
+  const store = await nextCookies();
+  const gateCookieValue = store.get(
+    eventGateCookieName(body.event_slug)
+  )?.value;
+  const hasValidEventGate = verifyEventGateCookieValue(
+    gateCookieValue,
+    event.id
+  );
+  const hasValidPassword = body.password
+    ? safeEqual(body.password, event.gate_password ?? "")
+    : false;
+
+  if (!hasValidEventGate && !hasValidPassword) {
     return NextResponse.json(
       { ok: false, error: "invalid-password" },
       { status: 401 }

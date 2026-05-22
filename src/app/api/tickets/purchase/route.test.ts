@@ -10,12 +10,14 @@ const rollbackTransaction = vi.fn();
 const sendPurchaseReceipt = vi.fn(async () => true);
 const sendGiftInvite = vi.fn(async () => true);
 const idemPut = vi.fn(async () => undefined);
+const cookiesGet = vi.hoisted(() => vi.fn());
+const nextTicketNumberMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@payload-config", () => ({ default: {} }));
 
 vi.mock("next/headers", () => ({
   headers: vi.fn(async () => new Headers()),
-  cookies: vi.fn(async () => ({ get: vi.fn(() => undefined) }))
+  cookies: vi.fn(async () => ({ get: cookiesGet }))
 }));
 
 vi.mock("payload", () => ({
@@ -74,10 +76,7 @@ vi.mock("@/lib/api/idempotency", () => ({
 
 vi.mock("@/lib/db/sequences", () => ({
   eventPurchaseLock: vi.fn(async () => undefined),
-  nextTicketNumber: vi
-    .fn()
-    .mockResolvedValueOnce(101)
-    .mockResolvedValueOnce(102)
+  nextTicketNumber: nextTicketNumberMock
 }));
 
 vi.mock("@/lib/email/ticket-mailer", () => ({
@@ -92,9 +91,16 @@ vi.mock("@/lib/email/ticket-mailer", () => ({
 
 describe("POST /api/tickets/purchase", () => {
   beforeEach(() => {
+    process.env.PAYLOAD_SECRET = "test-payload-secret";
     find.mockReset();
     count.mockReset();
     create.mockReset();
+    cookiesGet.mockReset().mockReturnValue(undefined);
+    nextTicketNumberMock
+      .mockReset()
+      .mockResolvedValueOnce(101)
+      .mockResolvedValueOnce(102)
+      .mockResolvedValueOnce(103);
     beginTransaction.mockReset().mockResolvedValue("tx-1");
     commitTransaction.mockReset().mockResolvedValue(undefined);
     rollbackTransaction.mockReset().mockResolvedValue(undefined);
@@ -124,10 +130,7 @@ describe("POST /api/tickets/purchase", () => {
       if (collection === "ticket-orders") return { id: "order-1", ...data };
       if (collection === "tickets") {
         return {
-          id:
-            data.ticket_number === 101
-              ? "ticket-purchaser"
-              : "ticket-gift",
+          id: data.ticket_number === 101 ? "ticket-purchaser" : "ticket-gift",
           ...data
         };
       }
@@ -172,6 +175,38 @@ describe("POST /api/tickets/purchase", () => {
         claimUrl: "https://hideaway.test/day-n-night/claim/token-2"
       })
     );
+    expect(commitTransaction).toHaveBeenCalledWith("tx-1");
+    expect(rollbackTransaction).not.toHaveBeenCalled();
+  });
+
+  it("accepts a valid signed event-gate cookie without replaying the gate password", async () => {
+    const { eventGateCookieName, issueEventGateCookieValue } =
+      await import("@/lib/event-gate");
+    const { POST } = await import("./route");
+    const issued = issueEventGateCookieValue("event-1");
+    cookiesGet.mockImplementation((name: string) =>
+      name === eventGateCookieName("day-n-night")
+        ? { name, value: issued.value }
+        : undefined
+    );
+
+    const req = new NextRequest("https://hideaway.test/api/tickets/purchase", {
+      method: "POST",
+      body: JSON.stringify({
+        event_slug: "day-n-night",
+        quantity: 1,
+        purchaser_name: "Buyer Person"
+      })
+    });
+
+    const res = await POST(req);
+    const body = (await res.json()) as {
+      ok: boolean;
+      order_id: string;
+    };
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({ ok: true, order_id: "order-1" });
     expect(commitTransaction).toHaveBeenCalledWith("tx-1");
     expect(rollbackTransaction).not.toHaveBeenCalled();
   });

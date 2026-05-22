@@ -22,9 +22,9 @@ export type GateActionState = {
 
 /**
  * Validate the user-entered gate password against `events.gate_password`
- * and, on match, set an HttpOnly HMAC-signed cookie scoped to this event
- * slug. The layout reads + verifies the cookie on every request and
- * skips the gate when valid.
+ * and, on match, set an HttpOnly HMAC-signed cookie for this event. The
+ * landing layout and ticket route both verify the signed event id so one
+ * successful unlock opens the story first, then permits purchase.
  *
  * Throttling: we lean on the Payload-side rate limit applied to
  * /api/tickets/validate-gate today; that route still exists for the
@@ -85,7 +85,7 @@ export async function submitEventGate(
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/day-n-night",
+    path: "/",
     expires: expiresAt
   });
 

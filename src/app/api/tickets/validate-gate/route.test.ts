@@ -56,7 +56,7 @@ describe("POST /api/tickets/validate-gate", () => {
 
     const setCookie = res.headers.get("set-cookie");
     expect(setCookie).toContain("event-gate.day-n-night=");
-    expect(setCookie).toContain("Path=/day-n-night");
+    expect(setCookie).toContain("Path=/");
     expect(setCookie).toContain("HttpOnly");
     expect(setCookie).toContain("SameSite=lax");
   });

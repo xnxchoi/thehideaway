@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
@@ -56,6 +56,7 @@ const PAST_EVENT_FILENAMES = [
 const FRIENDS_PHOTOS: FriendsTorrentPhoto[] = PAST_EVENT_FILENAMES.map((f) => ({
   src: encodeURI(`/assets/day-n-night/past-events/${f}`)
 }));
+const TORRENT_CUE_DELAY_MS = 1200;
 
 /**
  * Immersive view orchestrator.
@@ -84,8 +85,8 @@ export function ImmersiveView() {
   //                        + value.
   //   2. Lead-in        — "If you want references — here's pics from
   //                        past events:" — the photo torrent fades in
-  //                        once this card has cleared (see
-  //                        `handlePhotoCue` below).
+  //                        behind the caption once the liminal first-half
+  //                        window has settled.
   //
   // The old standalone beat ("Blue & teal — how you work that in…")
   // was dropped — it restated the Q&A card's "Blue & teal" answer.
@@ -136,12 +137,10 @@ export function ImmersiveView() {
   const setPhase = useDayNNightScene((r) => r.setPhase);
   const resetLiminalHandoff = useDayNNightScene((r) => r.resetLiminalHandoff);
 
-  // ── Dress sentinel — mobile visibility gate ──────────────────────────
-  // On desktop, FriendsTorrent + SubtitleSequence are gated by the GSAP
-  // layout-aware `dressWindow.active` below. On mobile, GSAP never runs
-  // the horizontal layout measurement, so `dressWindow.active` is always
-  // false. The sentinel div (placed in document flow inside the dress Act
-  // by Timeline.tsx) provides a visibility signal instead.
+  // ── Dress sentinel — mobile window gate ──────────────────────────────
+  // Desktop uses the GSAP-measured act window below. Mobile does not run
+  // that horizontal layout, so this in-flow sentinel supplies the same
+  // "we are in the liminal stretch" boolean for mobile.
   const dressSentinelRef = useRef<HTMLDivElement>(null);
   const [mobileInDress, setMobileInDress] = useState(false);
   const mobileInDressRef = useRef(false);
@@ -178,17 +177,27 @@ export function ImmersiveView() {
   // so the two transitions stay in lockstep.
   const dressSecondHalf = useActHalfwayActive(ACT_INDEX_DRESS, 0.5);
 
-  // Photo torrent cue. SubtitleSequence fires `onPhotoCue` once the
-  // final caption ("If you want references — here's pics from past
-  // events:") has held and faded out — the torrent then rises into the
-  // cleared frame. Resets on dress-window exit so the next entry starts
-  // with photos hidden and replays the lead-in.
+  // Photo torrent cue. The torrent should feel like the visual field of
+  // the liminal stretch, not a reward that appears only after a long
+  // timer. Cue it shortly after the first-half window starts so the
+  // captions introduce the photos while they fade in behind them.
   const [torrentCued, setTorrentCued] = useState(false);
-  const handlePhotoCue = useCallback(() => setTorrentCued(true), []);
-  // Reset when outside the dress window on EITHER path — desktop
-  // (`dressWindow.active`) or mobile (`mobileInDress`). Watching only
-  // `dressWindow.active` left the cue permanently latched on mobile
-  // (that flag is always false there), so the torrent never re-gated.
+  const liminalFirstHalfActive =
+    (dressWindow.active && !dressSecondHalf) || mobileInDress;
+  const torrentVisible = liminalFirstHalfActive && torrentCued;
+
+  useEffect(() => {
+    if (!liminalFirstHalfActive || torrentCued) return;
+    const id = window.setTimeout(
+      () => setTorrentCued(true),
+      TORRENT_CUE_DELAY_MS
+    );
+    return () => window.clearTimeout(id);
+  }, [liminalFirstHalfActive, torrentCued]);
+
+  // Reset after leaving the liminal act entirely. Do not reset on the
+  // desktop midpoint split: scrolling backward from the YM.FM half should
+  // bring the already-cued photos back instead of replaying the intro.
   useEffect(() => {
     if (!dressWindow.active && !mobileInDress) setTorrentCued(false);
   }, [dressWindow.active, mobileInDress]);
@@ -262,22 +271,11 @@ export function ImmersiveView() {
           restart from 0 on every re-entry. */}
         <FriendsTorrent
           photos={FRIENDS_PHOTOS}
-          // First half of Liminal only, AND only after the caption
-          // sequence has introduced them — the third caption ("If you
-          // want references…") triggers `onPhotoCue`, which flips
-          // `torrentCued` true and fades the layer in directly under
-          // the line that's introducing it. The midpoint pivot clears
-          // the whole layer so the YM.FM credit reads against bare sky.
-          // On mobile, FriendsTorrent's own sentinelActive gate (driven
-          // by dressSentinelRef) takes over since dressWindow.active is
-          // always false when GSAP layout never runs.
-          active={dressWindow.active && torrentCued && !dressSecondHalf}
-          // `cued` gates the mobile (sentinel-driven) visibility path on
-          // the same caption cue: on mobile `active` is always false, so
-          // without this the torrent would appear the instant the dress
-          // sentinel scrolled in — before the caption sequence ran.
-          cued={torrentCued}
-          sentinelRef={dressSentinelRef}
+          // Single visibility contract:
+          //   liminal first half (desktop act window OR mobile sentinel)
+          //   AND intro cue delay.
+          // FriendsTorrent itself does not inspect scroll state anymore.
+          active={torrentVisible}
           // Lifted out of the pinned wrap's stacking context:
           //   • `fixed` so the layer stays viewport-anchored while
           //     the pin scrolls the ImmersiveView root upward
@@ -291,22 +289,17 @@ export function ImmersiveView() {
         />
         <SubtitleSequence
           captions={dressCaptions}
-          // Captions disarm at the dress midpoint so they don't keep
-          // narrating while the YM.FM credit reveals. On mobile,
-          // dressWindow.active is always false (GSAP never measures the
-          // horizontal layout), so mobileInDress (sentinel-driven) takes
-          // over — no midpoint concept on mobile.
-          active={(dressWindow.active && !dressSecondHalf) || mobileInDress}
+          // Captions use the same first-half window as the torrent.
+          // Desktop has a midpoint split; mobile uses the tall sentinel
+          // as one continuous liminal window.
+          active={liminalFirstHalfActive}
           replayKey={dressWindow.entryCount}
-          onPhotoCue={handlePhotoCue}
           // Give captions ~2–3× the scroll real estate they had at 1800ms
           // per card, so they don't flash by before the user can read them.
           perCardMs={3500}
-          // The lead-in caption ("If you want references — here's pics
-          // from past events:") plays out and fades like the others; the
-          // photo torrent then rises into the cleared frame (onPhotoCue
-          // fires after the final caption has faded). The caption no
-          // longer lingers as a tagline over the torrent.
+          // Captions remain above the torrent, which now fades in early
+          // enough to read as the section's visual field rather than a
+          // separate hidden state.
         />
         {/* Single Details drawer instance — driven by DetailsContext so
           QuickActions and OpeningCard share one drawer. */}
