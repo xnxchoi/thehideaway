@@ -217,8 +217,8 @@ The `dockge_data` volume persists user/session state — `down -v` removes it.
 ## One-shot first deploy
 
 For the very first deployment on a fresh VPS, `scripts/first-deploy.sh` wraps
-the seven post-provision steps (server-setup → DNS poll → certbot → repo
-clone → pre-flight → first deploy → health check) into a single command.
+the eight post-provision steps (server-setup → DNS poll → certbot →
+GitHub deploy key → ghcr.io login → repo clone → pre-flight → first deploy → health check) into a single command.
 
 ```bash
 # On the VPS as root, from the cloned repo:

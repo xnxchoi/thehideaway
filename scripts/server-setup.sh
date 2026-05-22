@@ -508,9 +508,18 @@ install -o deploy -g deploy -m 0755 -d /home/deploy/thehideaway
 # is NOT created here; the operator scp's it from the laptop after this script
 # finishes. Directory perms: root:deploy 0750 — only members of `deploy` group
 # can traverse, so the deploy user can read its own files inside but no other
-# local user can. The key file itself goes in as root:deploy 0640.
+# local user can. The key file itself goes in as root:deploy 0640 (group-readable
+# so the deploy user can read it via group membership; not world-readable).
 install -o root -g deploy -m 0750 -d /etc/age
-if [[ ! -f /etc/age/keys.txt ]]; then
+if [[ -f /etc/age/keys.txt ]]; then
+  # File already present (pre-staged by the operator before running this script).
+  # Enforce the correct ownership and mode regardless — first-deploy.sh pre-flight
+  # previously hard-coded mode 600 which would leave the file unreadable by the
+  # deploy user on subsequent deploys (deploy.sh runs as the deploy user).
+  chown root:deploy /etc/age/keys.txt
+  chmod 640 /etc/age/keys.txt
+  info "  /etc/age/keys.txt present — ownership and mode set to root:deploy 640"
+else
   warn "  /etc/age/keys.txt not yet present."
   warn "  After this script finishes, scp it from your laptop and adjust perms:"
   warn "    scp ~/.config/sops/age/keys.txt root@<host>:/etc/age/keys.txt"
@@ -661,7 +670,7 @@ echo "  4. Clone the repo and deploy:"
 echo "       su - deploy"
 echo "       cd thehideaway"
 echo "       # Encrypted env (.env.production.enc) is already in the repo;"
-echo "       # ensure the age key is at /etc/age/keys.txt (root:root 600)."
+echo "       # ensure the age key is at /etc/age/keys.txt (root:deploy 640)."
 echo "       docker network create --ipv6=true hideaway"
 echo "       ./scripts/deploy.sh v1.2.3 --migrate    # initial release"
 echo ""

@@ -93,7 +93,7 @@ three places:
 | ------------------------------------------------------ | --------------------------- |
 | `~/.config/sops/age/keys.txt` (mode 600) on the laptop | Daily-use working copy      |
 | Apple Passwords (secure note)                          | Recovery backup             |
-| `/etc/age/keys.txt` (mode 600, root) on the VPS        | Decrypt at deploy time      |
+| `/etc/age/keys.txt` (mode 640, root:deploy) on the VPS  | Decrypt at deploy time      |
 | GitHub Actions secret `SOPS_AGE_KEY`                   | CI decrypt for `pnpm build` |
 
 ### Edit a value
@@ -154,7 +154,7 @@ git add .sops.yaml .env.production.enc && git commit && git push
 
 # 5. Update the VPS and CI:
 scp ~/.config/sops/age/keys.txt root@hideawayseoul.com:/etc/age/keys.txt
-ssh root@hideawayseoul.com 'chmod 600 /etc/age/keys.txt'
+ssh root@hideawayseoul.com 'chown root:deploy /etc/age/keys.txt && chmod 640 /etc/age/keys.txt'
 # CI: paste keys.txt content into https://github.com/xnxchoi/thehideaway/settings/secrets/actions
 #     under the secret name SOPS_AGE_KEY.
 
@@ -321,9 +321,10 @@ scp -i ~/.ssh/hideaway_deploy \
 
 # On the VPS: move it into place and lock it down
 ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com << 'EOF'
-install -o root -g root -m 0750 -d /etc/age
+install -o root -g deploy -m 0750 -d /etc/age
 mv /tmp/age_key /etc/age/keys.txt
-chmod 600 /etc/age/keys.txt
+chown root:deploy /etc/age/keys.txt
+chmod 640 /etc/age/keys.txt
 echo "✓ age key installed at /etc/age/keys.txt"
 EOF
 ```
@@ -555,10 +556,10 @@ docker compose -f compose.prod.yaml exec -T postgres \
 | CI fails at "Decrypt .env.production"               | `SOPS_AGE_KEY` secret missing or stale. Recreate from `~/.config/sops/age/keys.txt`.                                                       |
 | `deploy.sh` reports `image not found on ghcr.io`    | CI hasn't finished. Check [github.com/xnxchoi/thehideaway/actions][8].                                                                     |
 | `deploy.sh` smoke test fails                        | Auto-rollback fires; check `docker compose logs payload`. Most common: `BETTER_AUTH_SECRET` or `COOKIE_DOMAIN` wrong in the encrypted env. |
-| `deploy.sh` reports `age key not found`             | `/etc/age/keys.txt` missing on the VPS. `scp` it from the laptop, `chmod 600`.                                                             |
+| `deploy.sh` reports `age key not found`             | `/etc/age/keys.txt` missing on the VPS. `scp` it from the laptop; then `chown root:deploy /etc/age/keys.txt && chmod 640 /etc/age/keys.txt`.                                                             |
 | Manual rollback fails (rollback target also broken) | Pick an older tag manually: `./scripts/deploy.sh v1.2.1`.                                                                                  |
 | `docker pull` denied on subsequent deploy           | GHCR token expired. Re-run `docker login ghcr.io` as the deploy user with a fresh classic PAT.                                             |
-| `sops` decrypt fails after age key rotation         | `/etc/age/keys.txt` on VPS is the old key. `scp` the new one and `chmod 600`.                                                              |
+| `sops` decrypt fails after age key rotation         | `/etc/age/keys.txt` on VPS is the old key. `scp` the new one; then `chown root:deploy /etc/age/keys.txt && chmod 640 /etc/age/keys.txt`.                                                              |
 | VPS fully locked out (console + SSH)                | ITEASY web console is SSH-backed (not KVM/VNC) and requires root+password. Reset the VPS from the ITEASY dashboard, then re-run § 4.       |
 
 For server-hardening details (Dockge, UFW + Docker bypass, `fail2ban`),
