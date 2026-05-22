@@ -7,7 +7,26 @@ import { SurvivalKit } from "../SurvivalKit";
 import Ical from "ical.js";
 import { Button, PillButton } from "@/components/core/Button";
 import { useLenis } from "lenis/react";
-import { useEffect } from "react";
+import { useEffect, type CSSProperties } from "react";
+
+/**
+ * The drawer renders through a Vaul portal — mounted at <body>, OUTSIDE
+ * `[data-dn-shell]` — so the `--dn-*` tokens it styles against are not
+ * inherited down the DOM tree and would resolve to nothing (text falling
+ * back to whatever the site theme inherits, borders to currentColor).
+ * Pin the immersive palette on the drawer surface itself so its colours
+ * are enforced regardless of the site light/dark theme. Mirrors the
+ * `[data-dn-shell]` token block in dn.css.
+ */
+const DRAWER_DN_THEME: CSSProperties = {
+  ["--dn-bg" as string]: "oklch(8% 0.02 280)",
+  ["--dn-fg" as string]: "oklch(96% 0.005 80)",
+  ["--dn-fg-mute" as string]: "oklch(from var(--dn-fg) l c h / 0.7)",
+  ["--dn-fg-faint" as string]: "oklch(from var(--dn-fg) l c h / 0.5)",
+  ["--dn-line" as string]: "oklch(from var(--dn-fg) l c h / 0.22)",
+  ["--dn-accent-day" as string]: "oklch(78% 0.18 60)",
+  ["--dn-accent-night" as string]: "oklch(74% 0.14 280)"
+};
 /**
  * Details drawer — a right-side Vaul sheet surfacing the event's
  * practical info without forcing the user to scroll through the loop.
@@ -47,6 +66,9 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
           aria-describedby={undefined}
           className="fixed top-0 right-0 z-[81] flex h-full w-full max-w-[480px] flex-col text-[var(--dn-fg)] shadow-[-32px_0_72px_-12px_rgba(0,0,0,0.7)] outline-none"
           style={{
+            // Pin the immersive palette — the portal renders outside
+            // `[data-dn-shell]`, so `--dn-*` would otherwise be unset.
+            ...DRAWER_DN_THEME,
             // Opaque elevated ink — visually detached from the dark sky
             // background. Slightly LIGHTER than --dn-bg so the sheet
             // reads as floating forward, not melted into the page.
