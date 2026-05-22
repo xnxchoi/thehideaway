@@ -2,6 +2,7 @@
 
 import * as m from "motion/react-m";
 import { cn } from "@/lib/utils";
+import { Caveat } from "../../../../../fonts";
 
 interface MarkerTextProps {
   text: string;
@@ -25,7 +26,11 @@ export function MarkerText({
   const words = text.split(" ");
   return (
     <m.div
-      className={cn("flex flex-wrap items-baseline gap-x-[0.38em]", className)}
+      className={cn(
+        "flex flex-wrap items-baseline gap-x-[0.38em]",
+        Caveat.className,
+        className
+      )}
       initial="hidden"
       animate={active ? "visible" : "hidden"}
       variants={{
@@ -37,7 +42,7 @@ export function MarkerText({
         <m.span
           key={`${word}-${i}`}
           variants={wordVariants}
-          className="inline-block"
+          className={cn("inline-block")}
         >
           {word}
         </m.span>

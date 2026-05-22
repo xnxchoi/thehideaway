@@ -317,8 +317,8 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
-        "lede": "Early summer day cookout.",
-        "body": "",
+        "lede": "낮에는 루프탑에서 널찍이 흩어지고, 밤에는 한 층 더 가까이 모여드는 소수의 초대 모임.",
+        "body": "Day n Night은 소수의 초대 모임입니다. 낮은 루프탑 바베큐에 과실주를 곁들이며 널찍이 흩어져 각자만의 재회와 새 만남으로 느긋한 시간을 보낸다면, 해가 지고 어스름이 내려올 즈음에는 모두 한 층 가깝게 붙어 앉아 모두와 함께 떠들고 웃으며, 서늘한 저녁 공기가 무색하리만치 따뜻하고 든든한 인연들과 함께 몇 년이고 돌아볼 추억을 만들게 됩니다.",
         "hostedBy": "Hosted by yours truly",
         "invitationLabel": "№ invitation"
       },
@@ -326,19 +326,19 @@
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "",
-          "body": "* 그릴 스테이션은 19:40까지 운영합니다."
+          "heading": "해가 남아 있을 때",
+          "body": "루프탑 바베큐와 과실주를 곁들인 채, 재회와 새 만남 사이를 느긋하게 오가게 됩니다."
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → ",
-          "heading": "Chill",
-          "body": "Cool to the touch...",
+          "heading": "어스름이 내릴 즈음",
+          "body": "해가 지면 자리는 조금 더 가까워집니다. 모두와 함께 떠들고 웃으며, 서늘한 공기도 잊을 만큼 따뜻한 밤으로 넘어갑니다.",
           "dj": {
             "eyebrow": "yang min woo",
             "name": "YM.FM",
-            "role": "Barber. Musician. Great Dude.",
-            "blurb": "A dear friend, GOAT barber, killer DJ.",
+            "role": "Barber. Musician. Friend of the house.",
+            "blurb": "해가 넘어간 뒤의 결을 맡습니다.",
             "handle": "@yangminwoo",
             "listenLabel": "Listen"
           }
@@ -351,9 +351,9 @@
       "dressCode": {
         "captions": {
           "topic": "Dress code",
-          "answer": "Blue & teal.",
-          "ownIt": "Blue & teal — how you work that in is all up to you.",
-          "refs": "If you want references — here's pics from past events:"
+          "answer": "원한다면 블루나 틸로.",
+          "ownIt": "엄격한 드레스 코드는 없고, 원한다면 색감만 가볍게 맞춰 주세요.",
+          "refs": "감이 필요하다면, 지난 밤들의 장면을 몇 장 두었습니다."
         }
       },
       "included": {
@@ -368,8 +368,8 @@
         }
       },
       "tribute": {
-        "heading": "A note.",
-        "body": "To all we've met, and will meet."
+        "heading": "Who it's for.",
+        "body": "다시 만난 얼굴들과 처음 인사하는 사람들, 그리고 몇 년 뒤에도 함께 돌아볼 밤을 만들 사람들을 위한 자리입니다."
       },
       "entry": {
         "heading": "Reserve a seat",
@@ -380,26 +380,26 @@
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "It's been a long time coming.",
-        "lede": "See you there."
+        "kicker": "루프탑에서 시작해, 밤과 조금 더 가까운 자리로 넘어갑니다.",
+        "lede": "옥상에서 뵙겠습니다."
       },
       "rsvpCta": {
-        "primary": "Reserve",
-        "secondary": "thirty."
+        "primary": "Details",
+        "secondary": "예약은 상세 안내 안에 있습니다."
       },
       "viewToggle": {
         "label": "보기",
         "immersive": "Story",
-        "simplified": "Card"
+        "simplified": "안내"
       },
       "loader": {
         "enter": "입장하기",
-        "enterSilent": "소리 없이 입장하기",
-        "summary": "요약문 보기"
+        "enterSilent": "조용히 입장하기",
+        "summary": "필수 정보"
       },
       "footer": {
-        "hosts": "Hosted by Choi & Choe",
-        "rsvpClosesAt": "일요일 오후 3시 마감."
+        "hosts": "Hosted by Sean Choi & Ingyu Choe",
+        "rsvpClosesAt": "자리가 남아 있다면 일요일 오후 3시에 마감됩니다."
       },
       "survivalKit": {
         "heading": "필수 정보",
@@ -414,7 +414,7 @@
         },
         "dress": {
           "label": "Dress Code",
-          "value": "Blue & Teal"
+          "value": "엄격한 드레스 코드는 없고, 원한다면 블루나 틸로 맞춰 주세요."
         },
         "host": {
           "label": "문의",
@@ -423,11 +423,11 @@
         },
         "plusOnes": {
           "label": "동반자",
-          "value": "티켓 보유자 본인만 입장 가능합니다."
+          "value": "티켓 한 장당 한 분만 입장합니다."
         },
         "late": {
           "label": "시간",
-          "value": "22시 전까지 입장하면 돼요."
+          "value": "오후 10시 전에는 도착해 주세요."
         },
         "copy": "복사",
         "copied": "복사되었어요.",
@@ -475,7 +475,7 @@
           }
         }
       },
-      "infoCta": "Info"
+      "infoCta": "필수 정보"
     },
     "Guests": {
       "eyebrow": "RSVP",
@@ -530,7 +530,7 @@
     "Rsvp": {
       "steps": {
         "welcome": {
-          "eyebrow": "Day n Night · RSVP",
+          "eyebrow": "RSVP",
           "title": "우선 몇 가지만 파악할게요.",
           "body": "이메일 확인과 이름만 입력하면 끝나요. 가입은 필요하지 않습니다.",
           "cta": "시작하기"
@@ -543,7 +543,9 @@
           "codePlaceholder": "6자리 숫자 코드",
           "submit": "다음",
           "resend": "코드 다시 받기",
-          "error": "코드가 맞지 않아요. 다시 확인해 주세요."
+          "error": "코드가 맞지 않아요. 다시 확인해 주세요.",
+          "sendError": "이 이메일로 코드를 보낼 수 없어요. 주소를 확인한 뒤 다시 시도해 주세요.",
+          "verifyError": "코드가 맞지 않아요. 다시 확인해 주세요."
         },
         "name": {
           "eyebrow": "이름 입력",
@@ -604,16 +606,32 @@
       },
       "gate": {
         "eyebrow": "비공개",
-        "title": "비밀번호를 입력해 주세요.",
-        "body": "초대받은 분들만 볼 수 있는 페이지예요. 전달받은 코드를 입력해 주세요.",
-        "statusLine": "블루아워 시그널",
-        "consoleEyebrow": "입장 시그널",
+        "title": "입장 코드를 입력해 주세요.",
+        "body": "코드가 확인되면 비공개 페이지가 열립니다.",
+        "statusLine": "해가 뜨기 전",
+        "consoleEyebrow": "입장",
+        "label": {
+          "enterAction": "Enter",
+          "wrongAction": "Wrong",
+          "codeWord": "Code"
+        },
         "dateFallback": "날짜 준비 중",
         "meta": {
           "private": "비공개",
           "ticket": "티켓",
           "gate": "입장",
           "sequence": "01 / RSVP"
+        },
+        "system": {
+          "latest": "최신",
+          "month": "M 05",
+          "day": "D 24",
+          "year": "Y26",
+          "access": "입장",
+          "release": "REL/0524",
+          "formId": "FORM 00-1",
+          "index": "Index",
+          "grid": "Grid"
         },
         "passcodeLabel": "비밀번호",
         "submit": "입장하기",

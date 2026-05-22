@@ -316,8 +316,8 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
-        "lede": "Early summer day cookout.",
-        "body": "",
+        "lede": "An intimate invited gathering that begins spread across the rooftop and ends drawn a little closer together.",
+        "body": "Day n Night is a private invited gathering in Haebangchon. While the light is still up, the rooftop opens into barbecue, fruit wine, reunions, and new introductions at an easy distance. By the time dusk settles in, everyone closes in a little more, and the night warms around music, conversation, and the kind of company you carry with you for years.",
         "hostedBy": "Hosted by yours truly",
         "invitationLabel": "№ invitation"
       },
@@ -325,19 +325,19 @@
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "",
-          "body": "Grill stations close at 19:40."
+          "heading": "Before dusk",
+          "body": "Barbecue and fruit wine set the tone while people drift wide across the rooftop, settling into reunions, introductions, and the slower ease of early evening."
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → ",
-          "heading": "Chill",
-          "body": "Cool to the touch...",
+          "heading": "After dusk",
+          "body": "As the light falls, the room pulls closer. Voices rise, seats close in, and the night turns warmer around drinks, music, and company worth staying for.",
           "dj": {
             "eyebrow": "yang min woo",
             "name": "YM.FM",
-            "role": "Barber. Musician. Great Dude.",
-            "blurb": "A dear friend, GOAT barber, killer DJ.",
+            "role": "Barber. Musician. Friend of the house.",
+            "blurb": "He carries the room once daylight gives way.",
             "handle": "@yangminwoo",
             "listenLabel": "Listen"
           }
@@ -350,9 +350,9 @@
       "dressCode": {
         "captions": {
           "topic": "Dress code",
-          "answer": "Blue & teal.",
-          "ownIt": "Blue & teal — how you work that in is all up to you.",
-          "refs": "If you want references — here's pics from past events:"
+          "answer": "Blue or teal, if you like.",
+          "ownIt": "No strict dress code - just a colour note if you want one.",
+          "refs": "Need a visual cue? Here are a few from past nights."
         }
       },
       "included": {
@@ -367,38 +367,38 @@
         }
       },
       "tribute": {
-        "heading": "A note.",
-        "body": "To all we've met, and will meet."
+        "heading": "Who it's for.",
+        "body": "For old friends, new introductions, and the kind of company that still feels warm years later."
       },
       "entry": {
         "heading": "Entry",
         "amount": "65,000 KRW",
         "perGuest": "per guest; entry, food and drinks included",
-        "method": "Transfer",
+        "method": "Bank transfer",
         "bank": "Toss Bank · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "One thing we made just for the night.",
+        "kicker": "It begins on the rooftop and ends a little closer to the night.",
         "lede": "See you on the rooftop."
       },
       "rsvpCta": {
-        "primary": "Reserve",
-        "secondary": "Capped at thirty."
+        "primary": "Details",
+        "secondary": "Ticket reservation is inside the details."
       },
       "viewToggle": {
         "label": "View",
         "immersive": "Story",
-        "simplified": "Card"
+        "simplified": "Guide"
       },
       "loader": {
         "enter": "Enter",
-        "enterSilent": "Enter without audio",
-        "summary": "TL;DR"
+        "enterSilent": "Enter quietly",
+        "summary": "Essentials"
       },
       "footer": {
-        "hosts": "Hosted by Choi & Choe",
-        "rsvpClosesAt": "RSVP by Sunday 3pm if tickets last."
+        "hosts": "Hosted by Sean Choi & Ingyu Choe",
+        "rsvpClosesAt": "Reservations close Sunday at 3pm, if space remains."
       },
       "survivalKit": {
         "heading": "Essentials",
@@ -413,7 +413,7 @@
         },
         "dress": {
           "label": "Wear",
-          "value": "No code."
+          "value": "No strict dress code. Blue or teal if you feel like leaning in."
         },
         "host": {
           "label": "Ask",
@@ -422,11 +422,11 @@
         },
         "plusOnes": {
           "label": "Plus one?",
-          "value": "We're sorry, but one person per ticket only."
+          "value": "One ticket, one guest."
         },
         "late": {
           "label": "Time",
-          "value": "Doors close at 10pm."
+          "value": "Please arrive before 10pm."
         },
         "copy": "Copy",
         "copied": "Copied",
@@ -474,7 +474,7 @@
           }
         }
       },
-      "infoCta": "Info"
+      "infoCta": "Essentials"
     },
     "Guests": {
       "eyebrow": "RSVP",
@@ -529,7 +529,7 @@
     "Rsvp": {
       "steps": {
         "welcome": {
-          "eyebrow": "Day n Night · RSVP",
+          "eyebrow": "RSVP",
           "title": "A few short steps before tickets.",
           "body": "Email confirmation, your name, then the ticket itself. Two minutes, no account required.",
           "cta": "Start"
@@ -542,7 +542,9 @@
           "codePlaceholder": "6-digit code",
           "submit": "Continue",
           "resend": "Resend code",
-          "error": "That code didn't match. Try again."
+          "error": "That code didn't match. Try again.",
+          "sendError": "We couldn't send a code to that email. Check the address and try again.",
+          "verifyError": "That code didn't match. Try again."
         },
         "name": {
           "eyebrow": "Your name",
@@ -603,16 +605,32 @@
       },
       "gate": {
         "eyebrow": "Locked",
-        "title": "Enter the passcode to continue.",
-        "body": "This page is private. Use the code shared with you.",
-        "statusLine": "Blue-hour signal",
-        "consoleEyebrow": "Access signal",
+        "title": "Enter the access code.",
+        "body": "A private page opens after your code clears.",
+        "statusLine": "Before sunrise",
+        "consoleEyebrow": "Access",
+        "label": {
+          "enterAction": "Enter",
+          "wrongAction": "Wrong",
+          "codeWord": "Code"
+        },
         "dateFallback": "Date pending",
         "meta": {
           "private": "Private",
           "ticket": "Ticket",
           "gate": "Gate",
           "sequence": "01 / RSVP"
+        },
+        "system": {
+          "latest": "The latest",
+          "month": "M 05",
+          "day": "D 24",
+          "year": "Y26",
+          "access": "Access",
+          "release": "REL/0524",
+          "formId": "FORM 00-1",
+          "index": "Index",
+          "grid": "Grid"
         },
         "passcodeLabel": "Access code",
         "submit": "Enter",

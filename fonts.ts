@@ -1,6 +1,15 @@
 import localFont from "next/font/local";
 import { Doto, Mrs_Saint_Delafield, Raleway_Dots } from "next/font/google";
-
+const Caveat= localFont({
+  src: [
+    {
+      path: "public/assets/fonts/Caveat/Caveat-VariableFont_wght.ttf",
+      weight: "400",
+      style: "normal"
+    }
+  ],
+  variable: "--font-marker"
+});
 const RalewayDots = Raleway_Dots({
   subsets: ["latin"],
   variable: "--font-raleway-dots",
@@ -141,4 +150,4 @@ const NarcissianNectare = localFont({
   variable: "--font-narcissianNectare",
   fallback: ["blase"]
 });
-export { Blase, Siegfried, Dots, RalewayDots, Suit, Saint, NarcissianNectare };
+export { Blase, Siegfried, Dots,Caveat, RalewayDots, Suit, Saint, NarcissianNectare };

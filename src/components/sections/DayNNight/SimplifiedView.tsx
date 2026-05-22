@@ -42,7 +42,10 @@ export function SimplifiedView() {
 
         <dl className="mt-8 grid grid-cols-1 gap-6 font-mono text-xs leading-[1.7] text-[var(--dn-fg-mute)] md:mt-12 md:max-w-[640px] md:grid-cols-2 md:gap-x-12 md:gap-y-8">
           {" "}
-          <div className="grid grid-cols-[72px_1fr] items-baseline gap-[14px]">
+          <div
+            id="entry"
+            className="grid scroll-mt-16 grid-cols-[72px_1fr] items-baseline gap-[14px]"
+          >
             <dt className="self-start pt-0.5 text-[10px] tracking-[0.18em] text-[var(--dn-fg-faint)] uppercase">
               {t("act.day.label")}
             </dt>
@@ -84,7 +87,7 @@ export function SimplifiedView() {
 
         <div className="mt-10 flex flex-col items-start gap-3 self-start md:mt-12 md:flex-row md:items-center md:gap-5">
           <Link
-            href="/tickets/day-n-night"
+            href="#entry"
             className="ease inline-flex items-center gap-[14px] border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-[26px] py-[14px] font-mono text-[11px] tracking-[0.22em] text-[var(--dn-bg)] uppercase no-underline transition-[background,color] duration-[250ms] hover:bg-transparent hover:text-[var(--dn-fg)]"
           >
             <span>{t("rsvpCta.primary")}</span>

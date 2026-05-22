@@ -31,6 +31,7 @@ import "../../styles/globals.css";
 import "./estate.scss";
 import {
   Blase,
+  Caveat,
   Dots,
   NarcissianNectare,
   Saint,
@@ -61,11 +62,12 @@ export default async function RootLayout({
     <html
       suppressHydrationWarning
       className={cn(
-        Siegfried.variable,
-        GeistSans.variable,
-        GeistMono.variable,
-        Blase.variable,
-        NarcissianNectare.variable,
+        Siegfried.className,
+        GeistSans.className,
+        GeistMono.className,
+        Blase.className,
+        NarcissianNectare.className,
+        Caveat.className,
         Suit.variable,
         Dots.variable,
         Saint.variable

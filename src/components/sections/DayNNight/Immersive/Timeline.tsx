@@ -1,7 +1,6 @@
 "use client";
 
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { Link } from "@/components/core/Link/Link";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type { useTranslations as UseTranslationsType } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -34,6 +33,8 @@ import { OpeningCard } from "./OpeningCard";
 import { useStickyZone } from "./SeamBridge";
 import * as m from "motion/react-m";
 import { MarkerText } from "./MarkerText";
+import { Button } from "@/components/core/Button";
+import { useDetailsContext } from "./DetailsContext";
 
 /**
  * Anchors that polaroid clusters use for their parallax windows. These
@@ -124,6 +125,7 @@ interface TimelineProps {
 
 export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
   const t = useTranslations("Event.DayNNight");
+  const { setOpen: setDetailsOpen } = useDetailsContext();
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const setProgress = useDayNNightScene((r) => r.setProgress);
@@ -362,6 +364,7 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
           t={t}
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
+          onOpenDetails={() => setDetailsOpen(true)}
         />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
@@ -369,6 +372,7 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
           t={t}
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
+          onOpenDetails={() => setDetailsOpen(true)}
           ariaHidden
         />
       </div>
@@ -390,13 +394,15 @@ interface ActSetProps {
   contentRevealed: boolean;
   ariaHidden?: boolean;
   dressSentinelRef?: RefObject<HTMLDivElement | null>;
+  onOpenDetails: () => void;
 }
 
 function ActSet({
   t,
   contentRevealed,
   ariaHidden = false,
-  dressSentinelRef
+  dressSentinelRef,
+  onOpenDetails
 }: ActSetProps) {
   // Per-act reveal gates. Opening fires once `contentRevealed` is true
   // (i.e. the sequenced entry animation has reached the content beat);
@@ -877,16 +883,26 @@ function ActSet({
               as="div"
               className="justify-self-end max-lg:justify-self-start"
             >
-              <Link
-                href="/tickets/day-n-night"
-                className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3 md:text-sm"
-                tabIndex={ariaHidden ? -1 : undefined}
-              >
-                <span>{t("rsvpCta.primary")}</span>
-                <span aria-hidden className="text-[1.2em] leading-none">
-                  →
+              {ariaHidden ? (
+                <span className="ease mt-3 inline-flex items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline md:text-sm">
+                  <span>{t("rsvpCta.primary")}</span>
+                  <span aria-hidden className="text-[1.2em] leading-none">
+                    →
+                  </span>
                 </span>
-              </Link>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={onOpenDetails}
+                  aria-haspopup="dialog"
+                  className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3 md:text-sm"
+                >
+                  <span>{t("rsvpCta.primary")}</span>
+                  <span aria-hidden className="text-[1.2em] leading-none">
+                    →
+                  </span>
+                </Button>
+              )}
             </RevealItem>
           </RevealStage>
         </div>

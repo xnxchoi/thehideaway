@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import * as m from "motion/react-m";
 import { Button } from "@/components/core/Button";
-import { Link } from "@/components/core/Link/Link";
 import { useDetailsContext } from "./DetailsContext";
 import { useViewContext } from "../ViewContext";
 
@@ -51,9 +50,12 @@ export function QuickActions() {
           gap: "6px"
         }}
       >
-        {/* Reserve — warm accent fill */}
-        <Link
-          href="/tickets/day-n-night"
+        {/* Details — warm accent fill, informational before transactional. */}
+        <Button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
           className="ease inline-flex cursor-pointer items-center gap-[6px] rounded-full px-[14px] py-[10px] font-mono text-[10px] font-semibold tracking-[0.1em] uppercase no-underline transition-[filter] duration-200 hover:brightness-110 lg:text-[11px]"
           style={{
             backgroundColor: "var(--dn-accent-day)",
@@ -64,7 +66,7 @@ export function QuickActions() {
           <span aria-hidden className="text-[1.05em] leading-none">
             →
           </span>
-        </Link>
+        </Button>
 
         {/* Info — subtle cream fill (opens the details drawer) */}
         <Button
