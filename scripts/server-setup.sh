@@ -195,6 +195,13 @@ Match User root
     PasswordAuthentication yes
 SSHD
 
+# `sshd -t` needs the privilege-separation directory to exist. /run is a
+# tmpfs; /run/sshd is created by the ssh service's RuntimeDirectory at start,
+# so on a freshly-booted box it may be absent and the config test fails with
+# "Missing privilege separation directory: /run/sshd". Create it first — the
+# config itself is fine.
+mkdir -p /run/sshd
+
 # Validate sshd config before reloading. Service unit name differs across
 # distros — Ubuntu/Debian use `ssh.service`, RHEL/CentOS use `sshd.service`.
 # On Ubuntu 24.04+ with socket-activated SSH, `systemctl reload` sometimes
