@@ -317,15 +317,15 @@
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
         "lede": "Early summer day cookout.",
-        "body": "최와 최, 두 사람 모두 올해 서른이 됩니다. 해방촌 루프탑에 서른 자리. 그 중 하나가 당신의 자리입니다.",
-        "hostedBy": "우리가 직접",
+        "body": "",
+        "hostedBy": "Hosted by yours truly",
         "invitationLabel": "№ invitation"
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "쿡아웃.",
+          "heading": "",
           "body": "* 그릴 스테이션은 19:40까지 운영합니다."
         },
         "night": {
