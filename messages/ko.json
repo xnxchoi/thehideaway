@@ -317,7 +317,8 @@
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
         "lede": "Cookout, then a DJ set.",
-        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them."
+        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them.",
+        "hostedBy": "우리가 직접"
       },
       "act": {
         "day": {
@@ -446,7 +447,7 @@
         "navLabel": "타임라인",
         "opening": "시작",
         "cookout": "낮",
-        "dress": "드레스",
+        "dress": "드레스 코드",
         "night": "밤",
         "closing": "예약"
       },

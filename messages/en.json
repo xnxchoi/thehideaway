@@ -316,7 +316,8 @@
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
         "lede": "Cookout, then a DJ set.",
-        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them."
+        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them.",
+        "hostedBy": "hosted by yours truly"
       },
       "act": {
         "day": {
@@ -445,7 +446,7 @@
         "navLabel": "Timeline",
         "opening": "Open",
         "cookout": "Day",
-        "dress": "Dress",
+        "dress": "Dress Code",
         "night": "Night",
         "closing": "Reserve"
       },

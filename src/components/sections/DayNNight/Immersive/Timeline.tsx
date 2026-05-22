@@ -2,7 +2,7 @@
 
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { Link } from "@/components/core/Link/Link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import type { useTranslations as UseTranslationsType } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useGSAP } from "@gsap/react";
@@ -32,7 +32,8 @@ import {
 } from "./Act";
 import { OpeningCard } from "./OpeningCard";
 import { useStickyZone } from "./SeamBridge";
-import { View } from "@react-three/drei";
+import * as m from "motion/react-m";
+import { MarkerText } from "./MarkerText";
 
 /**
  * Anchors that polaroid clusters use for their parallax windows. These
@@ -117,9 +118,11 @@ type Translator = ReturnType<typeof UseTranslationsType>;
 interface TimelineProps {
   /** True once the entry animation reaches the content beat (set by ImmersiveView). */
   contentRevealed: boolean;
+  /** Ref to the sentinel sizing div placed inside the dress Act for mobile visibility. */
+  dressSentinelRef?: RefObject<HTMLDivElement | null>;
 }
 
-export function Timeline({ contentRevealed }: TimelineProps) {
+export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
   const t = useTranslations("Event.DayNNight");
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -355,10 +358,19 @@ export function Timeline({ contentRevealed }: TimelineProps) {
         className="flex h-full will-change-transform max-lg:h-auto max-lg:flex-col"
       >
         {/* First set — the primary, accessible acts. */}
-        <ActSet t={t} contentRevealed={contentRevealed} />
+        <ActSet
+          t={t}
+          contentRevealed={contentRevealed}
+          dressSentinelRef={dressSentinelRef}
+        />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
-        <ActSet t={t} contentRevealed={contentRevealed} ariaHidden />
+        <ActSet
+          t={t}
+          contentRevealed={contentRevealed}
+          dressSentinelRef={dressSentinelRef}
+          ariaHidden
+        />
       </div>
       {/* Note: <SeamBridge /> is rendered at the ImmersiveView root
           (not here) so its position:fixed escapes the GSAP-pinned wrap
@@ -377,9 +389,15 @@ interface ActSetProps {
    *  flag so both copies stay in sync. */
   contentRevealed: boolean;
   ariaHidden?: boolean;
+  dressSentinelRef?: RefObject<HTMLDivElement | null>;
 }
 
-function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
+function ActSet({
+  t,
+  contentRevealed,
+  ariaHidden = false,
+  dressSentinelRef
+}: ActSetProps) {
   // Per-act reveal gates. Opening fires once `contentRevealed` is true
   // (i.e. the sequenced entry animation has reached the content beat);
   // the other 4 acts gate on a layout-aware scene-progress threshold
@@ -392,6 +410,31 @@ function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
   // write. Both copies stay in sync because they read from the same
   // store.
   const openingActive = contentRevealed;
+
+  const [openingStep, setOpeningStep] = useState(0);
+  useEffect(() => {
+    // Guard: only the primary (non-aria-hidden) ActSet fires the cascade.
+    // Both ActSets share the same `openingActive` signal, so without this
+    // guard both would independently schedule the timeouts and double-fire.
+    if (ariaHidden) {
+      setOpeningStep(0);
+      return;
+    }
+    if (!openingActive) {
+      setOpeningStep(0);
+      return;
+    }
+    setOpeningStep(1);
+    const t1 = window.setTimeout(() => setOpeningStep(2), 350);
+    const t2 = window.setTimeout(() => setOpeningStep(3), 700);
+    const t3 = window.setTimeout(() => setOpeningStep(4), 1100);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
+    };
+  }, [openingActive, ariaHidden]);
+
   const cookoutActive = useActRevealActive(ACT_INDEX_COOKOUT);
   // Dress / Liminal splits into two halves: the FriendsTorrent +
   // caption sequence in the first half, the YM.FM dedicated credit
@@ -462,39 +505,61 @@ function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
             Closing's left dossier slot, but trades the always-visible
             SurvivalKit for a single paper-style trigger that pulls the
             same info into the drawer on demand. */}
-        <div className="absolute inset-0">
-          <div className="relative grid h-full w-full grid-cols-8 grid-rows-4">
-            <PolaroidGroup className="pointer-events-none absolute inset-0 z-[14] grid grid-cols-8 grid-rows-4">
-              <Polaroid
-                src={"/assets/day-n-night/hosts/ingyu.jpeg"}
-                className="col-start-2 row-start-2"
-                angle={-10}
-              ></Polaroid>
-              <Polaroid
-                overlay={"card-2_front-clear"}
-                src={"/assets/day-n-night/hosts/sean.png"}
-                variant="stamped"
-                className="col-start-5 row-start-4"
-                angle={8}
-              ></Polaroid>
-            </PolaroidGroup>
-          </div>
+        {/* Polaroid cluster — absolute, programmatic reveal at step 3. */}
+        <PolaroidGroup
+          active={openingStep >= 3}
+          className="pointer-events-none absolute inset-0 z-[14]"
+        >
+          <Polaroid
+            src="/assets/day-n-night/hosts/ingyu.jpeg"
+            angle={-10}
+            width={220}
+            style={{ position: "absolute", top: "8%", left: "38%" }}
+          />
+          <Polaroid
+            overlay="card-2_front-clear"
+            src="/assets/day-n-night/hosts/sean.png"
+            variant="stamped"
+            angle={8}
+            width={200}
+            className="max-lg:!left-[50%] max-lg:!w-[38vw]"
+            style={{ position: "absolute", top: "52%", left: "62%" }}
+          />
+        </PolaroidGroup>
+        {/* "hosted by yours truly" marker text — step 4. Desktop only:
+            the absolute positioning overlaps mobile title copy on narrow viewports. */}
+        <div
+          className="pointer-events-none absolute z-[14] max-lg:hidden"
+          style={{ bottom: "16%", left: "33%" }}
+        >
+          <MarkerText
+            text={t("opening.hostedBy")}
+            active={openingStep >= 4}
+            className="font-serif text-[clamp(1rem,1.2vw,1.35rem)] text-[var(--dn-fg)] italic opacity-90"
+          />
         </div>
-        <div className="col-start-8 col-end-13 row-start-2 row-end-3 hidden max-w-[400px] self-end justify-self-end max-lg:col-span-full lg:flex">
-          {/* Previously wrapped in `<View>` (drei) which portaled
-              OpeningCard into the shared R3F Canvas tree — forcing the
-              card's children to be THREE primitives (which is why
-              OpeningCard used `<Html>`). The paper card has zero 3D
-              content; the View wrapper served no purpose and left the
-              `<Html>` overlay 0×0 because drei has no 3D geometry to
-              anchor its position on. Rendering as plain DOM lets the
-              parent grid cell's width flow into the card normally. */}
+        {/* Right col — paper invitation card, springs in at step 2. */}
+        <m.div
+          className="col-start-8 col-end-13 row-start-2 row-end-3 hidden max-w-[400px] self-end justify-self-end max-lg:col-span-full lg:flex"
+          initial={{ opacity: 0, y: 18, scale: 0.97 }}
+          animate={
+            openingStep >= 2
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 0, y: 18, scale: 0.97 }
+          }
+          transition={{ type: "spring", bounce: 0.12, duration: 0.55 }}
+        >
           <OpeningCard />
-        </div>
-        {/* Bottom-left strip — date + location. Mirrors Closing's bottom-
-            right hosts strip; same tier of editorial chrome, opposing
-            alignment. */}
-        <div className="col-start-1 col-end-5 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-start max-lg:col-span-full">
+        </m.div>
+        {/* Bottom-left strip — date + location, fades in with step 1. */}
+        <m.div
+          className="col-start-1 col-end-5 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-start max-lg:col-span-full"
+          initial={{ opacity: 0, y: 6 }}
+          animate={
+            openingStep >= 1 ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }
+          }
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: 0.65 }}
+        >
           <span
             aria-hidden
             className="mr-auto mb-3 block h-px w-14 bg-[var(--dn-fg)] opacity-60"
@@ -505,7 +570,7 @@ function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
           <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
             {t("location.neighborhood")}
           </span>
-        </div>
+        </m.div>
       </Act>
 
       {/* ── Act II — Cookout ─────────────────────────────────────────────
@@ -606,7 +671,7 @@ function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
           reveal + LiminalHandoff cassette in the second. The extra
           width gives both halves room to breathe. Pacing wins; the
           loop math handles whatever multiplier we pick. */}
-      <Act width={3.0} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
+      <Act width={4.5} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
         <ActEyebrow numeral="III" label={t("scrubber.dress")} align="left" />
         {/* YM.FM dedicated section. Anchored to row 2 self-end so the
             block sits below the cassette frame at the bottom of the
@@ -654,6 +719,21 @@ function ActSet({ t, contentRevealed, ariaHidden = false }: ActSetProps) {
             </a>
           </RevealItem>
         </RevealStage>
+        {/* Mobile sentinel — a tall sizing div placed in document flow inside
+            the dress Act. On desktop it is hidden (lg:hidden) and GSAP's
+            layout gate drives FriendsTorrent visibility. On mobile, as this
+            element scrolls through the viewport, the `dressSentinelRef`
+            `useScroll` in index.tsx fires `sentinelActive`, bypassing the
+            always-false desktop gate. Only rendered in the primary ActSet
+            (not aria-hidden duplicate) to avoid duplicate ref assignment. */}
+        {!ariaHidden && dressSentinelRef && (
+          <div
+            ref={dressSentinelRef}
+            className="pointer-events-none col-span-full lg:hidden"
+            style={{ minHeight: "350dvh" }}
+            aria-hidden
+          />
+        )}
       </Act>
 
       {/* ── Act IV — Night ───────────────────────────────────────────────
