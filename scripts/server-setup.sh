@@ -239,6 +239,16 @@ ufw allow 22/tcp    comment "SSH"
 ufw allow 80/tcp    comment "HTTP (nginx, certbot challenge)"
 ufw allow 443/tcp   comment "HTTPS (nginx)"
 
+# The `ufw allow` rules above are INPUT-chain — they admit traffic to
+# processes listening on the host itself (e.g. certbot --standalone on :80).
+# nginx runs in a container, so its traffic is FORWARDED, not INPUT. Once
+# ufw-docker (below) routes the DOCKER-USER chain through ufw, forwarded
+# traffic to published container ports is denied by default and needs
+# explicit `ufw route allow` (FORWARD-chain) rules. Without these, nginx's
+# 80/443 are unreachable — even from localhost on the host itself.
+ufw route allow proto tcp from any to any port 80  comment "HTTP → nginx container"
+ufw route allow proto tcp from any to any port 443 comment "HTTPS → nginx container"
+
 # Enable ufw without interactive prompt
 ufw --force enable
 ufw status verbose
