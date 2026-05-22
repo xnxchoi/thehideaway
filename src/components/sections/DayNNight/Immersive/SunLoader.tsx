@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import NumberFlow from "@number-flow/react";
 import { useDayNNightScene, useDayNNightStore } from "../store";
 import { Button, MotionPillButton } from "@/components/core/Button";
+import { primeDayNNightAudio } from "./DayNNightScore";
 
 const LOADER_SEEN_KEY = "dn_loader_seen";
 const LOAD_DURATION_MS = 2400;
@@ -92,6 +93,10 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
 
   const handleEnter = (withAudio: boolean) => {
     sessionStorage.setItem(LOADER_SEEN_KEY, "1");
+    // Unlock audio while the click gesture is still live — the score's
+    // own setup runs ~700ms+ later (fade timeout + mount gating), too
+    // late to satisfy the browser autoplay policy on its own.
+    if (withAudio) primeDayNNightAudio();
     setHiding(true);
     setTimeout(() => {
       setSceneProgress(store.getState().initialLoopPosition);

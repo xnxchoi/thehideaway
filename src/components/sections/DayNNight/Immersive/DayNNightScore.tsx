@@ -54,6 +54,41 @@ interface TrackPipeline {
   gain: GainNode;
 }
 
+// ── Gesture-primed AudioContext ──────────────────────────────────────
+// Browsers (iOS Safari especially) only let an AudioContext leave the
+// `suspended` state if it is created + resumed inside a user-gesture
+// handler. DayNNightScore's setup effect runs ~700ms+ after the loader's
+// "Enter" click (loader fade timeout + mount gating), well outside that
+// window — so the context stayed suspended and audio never started.
+//
+// `primeDayNNightAudio()` is called synchronously from the Enter click
+// (see SunLoader): it creates and resumes a context while the gesture
+// is still live. DayNNightScore then consumes that primed context
+// instead of constructing a fresh (suspended) one.
+let primedAudioContext: AudioContext | null = null;
+
+export function primeDayNNightAudio(): void {
+  if (primedAudioContext) return;
+  const w = window as unknown as {
+    AudioContext?: typeof AudioContext;
+    webkitAudioContext?: typeof AudioContext;
+  };
+  const Ctx = w.AudioContext ?? w.webkitAudioContext;
+  if (!Ctx) return;
+  try {
+    primedAudioContext = new Ctx();
+    void primedAudioContext.resume().catch(() => {});
+  } catch {
+    primedAudioContext = null;
+  }
+}
+
+function takePrimedAudioContext(): AudioContext | null {
+  const ctx = primedAudioContext;
+  primedAudioContext = null;
+  return ctx;
+}
+
 function smoothstep(a: number, b: number, x: number): number {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -100,7 +135,10 @@ export function DayNNightScore({
       setFailed(true);
       return;
     }
-    const ctx = new Ctx();
+    // Reuse the context primed inside the Enter-click gesture if there
+    // is one; otherwise (e.g. the user toggled the SOUND pill directly,
+    // itself a gesture) construct a fresh one.
+    const ctx = takePrimedAudioContext() ?? new Ctx();
     ctxRef.current = ctx;
 
     const makeTrack = (src: string): Promise<TrackPipeline | null> =>

@@ -66,7 +66,7 @@ export function QuickActions() {
           </span>
         </Link>
 
-        {/* Details — subtle cream fill */}
+        {/* Info — subtle cream fill (opens the details drawer) */}
         <Button
           type="button"
           onClick={() => setOpen(true)}
@@ -78,17 +78,20 @@ export function QuickActions() {
             backgroundColor: "rgba(244, 242, 235, 0.14)"
           }}
         >
-          Details
+          {t("infoCta")}
         </Button>
 
-        {/* Group-boundary spacer — wider gap before view toggle */}
-        <span aria-hidden className="w-[6px]" />
+        {/* Group-boundary spacer — wider gap before view toggle.
+            Hidden on mobile alongside the toggle itself. */}
+        <span aria-hidden className="w-[6px] max-lg:hidden" />
 
-        {/* Story / Card — active gets cream fill, paired by tight gap */}
+        {/* Story / Card — active gets cream fill, paired by tight gap.
+            Hidden below lg: the simplified "Card" view isn't offered on
+            mobile, so the toggle has nothing to switch. */}
         <div
           role="radiogroup"
           aria-label={tView("label")}
-          className="flex items-center"
+          className="flex items-center max-lg:hidden"
           style={{ gap: "3px" }}
         >
           <ViewChip
