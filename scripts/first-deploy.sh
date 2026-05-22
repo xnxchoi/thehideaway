@@ -388,10 +388,14 @@ if [[ ! -d "${DEPLOY_REPO}/.git" ]]; then
   info "Cloning ${CLONE_URL} into ${DEPLOY_REPO}..."
   if [[ -d "${DEPLOY_REPO}" && -n "$(ls -A "${DEPLOY_REPO}" 2>/dev/null)" ]]; then
     # server-setup.sh pre-creates subdirs inside the repo path — nginx/logs is
-    # a bind-mount target in compose.prod.yaml and must exist, deploy-owned,
-    # before the stack starts. `git clone` refuses a non-empty target, so clone
-    # into a temp dir and merge it in; the pre-existing gitignored subdirs stay.
+    # a bind-mount target in compose.prod.yaml and must exist before the stack
+    # starts. `git clone` refuses a non-empty target, so clone into a temp dir
+    # and merge it in; the pre-existing gitignored subdirs stay.
     warn "${DEPLOY_REPO} is non-empty (server-setup.sh pre-created subdirs) — clone-and-merge."
+    # `install -d` leaves intermediate dirs (e.g. .../thehideaway/nginx)
+    # root-owned — only the final named component gets -o/-g. Re-own the whole
+    # tree to deploy so the merge below can write into every subdir.
+    chown -R deploy:deploy "${DEPLOY_REPO}"
     CLONE_TMP="$(sudo -u deploy mktemp -d /home/deploy/.hideaway-clone.XXXXXX)"
     sudo -u deploy git clone "${CLONE_URL}" "${CLONE_TMP}"
     sudo -u deploy cp -aT "${CLONE_TMP}" "${DEPLOY_REPO}"

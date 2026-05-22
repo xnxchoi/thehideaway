@@ -511,6 +511,12 @@ install -o deploy -g deploy -m 0700 -d /home/deploy/backups
 # App repo directory (deploy user clones here)
 install -o deploy -g deploy -m 0755 -d /home/deploy/thehideaway
 
+# `install -d` gives intermediate dirs (here .../thehideaway/nginx, created
+# above as a parent of nginx/logs) default root:root ownership — only the
+# final named component gets -o/-g. Re-own the whole repo tree to deploy so
+# first-deploy.sh can clone/merge into every subdir.
+chown -R deploy:deploy /home/deploy/thehideaway
+
 # sops + age — directory only. The keys.txt private key file is sensitive and
 # is NOT created here; the operator scp's it from the laptop after this script
 # finishes. Directory perms: root:deploy 0750 — only members of `deploy` group
