@@ -13,11 +13,11 @@ The Hideaway is a **retreat from the hectic socialsphere** — a bridge between 
 
 Patrons come here to:
 
-- **convene** — not to broadcast
-- **be read, not ranked**
-- **step out of the feed**
+- **convene**  
+- **be read**
+- **step out of the loop **
 
-The voice should feel like a concierge who knows you, a librarian who curates for you, and a quiet lounge where conversation is unhurried. Never a tech product. Never a social network.
+The voice should feel like a concierge who knows you, a gallery manager who curates for you, and a quiet lounge where conversation is unhurried. Never a tech product. Never a social network. Always a quiet, welcoming accommodation for the few.
 
 ### 1.1 The tonal target
 
