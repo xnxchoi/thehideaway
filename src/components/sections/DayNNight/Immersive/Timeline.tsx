@@ -683,12 +683,19 @@ function ActSet({
             vertical stack scrolls THROUGH the FriendsTorrent stretch
             before the YM.FM credit reveals. On desktop the sentinel is
             lg:hidden and the YM.FM block keeps its explicit lg: grid
-            placement, so this DOM order only governs the mobile flow. */}
+            placement, so this DOM order only governs the mobile flow.
+
+            Height = caption-sequence runway + a guaranteed FriendsTorrent
+            window. The caption cue is timer-driven (~8s), so the sentinel
+            is sized long enough that the photos still get a generous
+            scroll stretch after the captions clear — even at a brisk
+            scroll. Lengthen/shorten this to retune the torrent's
+            screen time. */}
         {!ariaHidden && dressSentinelRef && (
           <div
             ref={dressSentinelRef}
             className="pointer-events-none col-span-full lg:hidden"
-            style={{ minHeight: "350dvh" }}
+            style={{ minHeight: "650dvh" }}
             aria-hidden
           />
         )}

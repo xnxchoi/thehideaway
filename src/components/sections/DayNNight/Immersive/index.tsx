@@ -77,18 +77,19 @@ const FRIENDS_PHOTOS: FriendsTorrentPhoto[] = PAST_EVENT_FILENAMES.map((f) => ({
 export function ImmersiveView() {
   const t = useTranslations("Event.DayNNight");
   const captions = useTranslations("Event.DayNNight.dressCode.captions");
-  // Three-beat caption sequence narrated above the FriendsTorrent:
+  // Two-beat caption sequence narrated above the FriendsTorrent:
   //
   //   1. Q&A pair       — "Dress code" (topic, mono small-caps) above
   //                        "Blue & teal." (answer, serif). Both lines
   //                        appear together as one card, read as label
   //                        + value.
-  //   2. Standalone     — "Blue & teal — how you work that in is all
-  //                        up to you."
-  //   3. Lead-in        — "If you want references — here's pics from
+  //   2. Lead-in        — "If you want references — here's pics from
   //                        past events:" — the photo torrent fades in
-  //                        500ms after this card lands (see
+  //                        once this card has cleared (see
   //                        `handlePhotoCue` below).
+  //
+  // The old standalone beat ("Blue & teal — how you work that in…")
+  // was dropped — it restated the Q&A card's "Blue & teal" answer.
   //
   // MEMOIZED: a fresh array literal would force SubtitleSequence's
   // useEffect (which has `captions` in its deps) to tear down + restart
@@ -105,7 +106,6 @@ export function ImmersiveView() {
           {captions("answer")}
         </span>
       </div>,
-      captions("ownIt"),
       captions("refs")
     ],
     [captions]

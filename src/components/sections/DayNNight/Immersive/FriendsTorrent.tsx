@@ -91,7 +91,7 @@ const PHOTO_PROFILES = [
  * Visibility:
  *   - Desktop: driven by the `active` prop (GSAP layout-aware gate from
  *     the parent via `dressWindow.active`).
- *   - Mobile: driven by `sentinelRef` — a 350dvh sizing div placed in
+ *   - Mobile: driven by `sentinelRef` — a tall sizing div placed in
  *     document flow inside the dress act. `useScroll` tracks when it
  *     enters the viewport and flips `sentinelActive` true, bypassing the
  *     GSAP gate that is always false on mobile.
