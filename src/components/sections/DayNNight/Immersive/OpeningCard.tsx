@@ -82,7 +82,7 @@ export function OpeningCard() {
             className="font-mono text-[10px] tracking-[0.32em] uppercase"
             style={{ color: "var(--dn-fg)" }}
           >
-            № invitation
+            {t("opening.invitationLabel")}
           </span>
           <span
             className="font-mono text-[10px] tracking-[0.18em] uppercase tabular-nums"

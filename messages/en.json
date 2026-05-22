@@ -315,27 +315,28 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
-        "lede": "Cookout, then a DJ set.",
-        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them.",
-        "hostedBy": "hosted by yours truly"
+        "lede": "Early summer day cookout.",
+        "body": "",
+        "hostedBy": "Hosted by yours truly",
+        "invitationLabel": "№ invitation"
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "The cookout.",
-          "body": "Grill runs from 18:30 to 19:50. Eat outside."
+          "heading": "",
+          "body": "Grill stations close at 19:40."
         },
         "night": {
           "label": "NIGHT",
-          "time": "20:00 → late",
-          "heading": "Now the room turns.",
-          "body": "Grill cools. Lights drop. The decks come on.",
+          "time": "20:00 → ",
+          "heading": "Chill",
+          "body": "Cool to the touch...",
           "dj": {
-            "eyebrow": "On the decks",
+            "eyebrow": "yang min woo",
             "name": "YM.FM",
             "role": "Barber. Musician. Great Dude.",
-            "blurb": "A dear friend, GOAT barber, and most importantly — a killer DJ.",
+            "blurb": "A dear friend, GOAT barber, killer DJ.",
             "handle": "@yangminwoo",
             "listenLabel": "Listen"
           }
@@ -356,22 +357,22 @@
       "included": {
         "heading": "Included",
         "food": {
-          "label": "Food",
-          "items": "Smash burgers, smoked iberico, drumsticks, grilled sides."
+          "label": "Catering",
+          "items": "A generous spread - grilled with love."
         },
         "drinks": {
           "label": "Drinks",
-          "items": "Beer, wine, gin. Non-alcoholic available."
+          "items": "Beer, wine, and more"
         }
       },
       "tribute": {
         "heading": "A note.",
-        "body": "Some of you have known us a long time. This dinner is for you. Pull up a chair. The fire's been waiting."
+        "body": "To all we've met, and will meet."
       },
       "entry": {
         "heading": "Entry",
         "amount": "65,000 KRW",
-        "perGuest": "per guest, all inclusive",
+        "perGuest": "per guest; entry, food and drinks included",
         "method": "Transfer",
         "bank": "Toss Bank · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
@@ -392,11 +393,11 @@
       "loader": {
         "enter": "Enter",
         "enterSilent": "Enter without audio",
-        "summary": "See summary of info"
+        "summary": "TL;DR"
       },
       "footer": {
         "hosts": "Hosted by Choi & Choe",
-        "rsvpClosesAt": "Closes 3pm Sunday, or when full."
+        "rsvpClosesAt": "RSVP by Sunday 3pm if tickets last."
       },
       "survivalKit": {
         "heading": "Essentials",
@@ -419,18 +420,18 @@
           "hint": "For anything else."
         },
         "plusOnes": {
-          "label": "+1s",
-          "value": "Reserved guests only."
+          "label": "Plus one?",
+          "value": "We're sorry, but one person per ticket only."
         },
         "late": {
-          "label": "Late",
-          "value": "Doors close at 21:00. Knock after."
+          "label": "Time",
+          "value": "Doors close at 10pm."
         },
         "copy": "Copy",
         "copied": "Copied",
         "openMap": "Open in",
         "map": {
-          "kakao": "Kakao Map",
+          "kakao": "Open in Kakao Map",
           "naver": "Naver Map",
           "google": "Google Maps"
         },
@@ -444,11 +445,11 @@
       },
       "scrubber": {
         "navLabel": "Timeline",
-        "opening": "Open",
+        "opening": "Intro",
         "cookout": "Day",
-        "dress": "Dress Code",
+        "dress": "Sunset",
         "night": "Night",
-        "closing": "Reserve"
+        "closing": "Reservations"
       },
       "moodboard": {
         "cookout": {

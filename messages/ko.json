@@ -186,9 +186,9 @@
       "reduceMotionLabel": "모션 줄이기",
       "reduceMotionDescription": "OS 접근성 설정에서 가져옵니다.",
       "reduceMotionDetected": {
-        "loading": "감지 중…",
-        "on": "켜짐 — 애니메이션 최소화",
-        "off": "꺼짐 — 모든 모션"
+        "loading": "",
+        "on": "",
+        "off": ""
       }
     }
   },
@@ -220,7 +220,7 @@
     "subWordmark": "SEOUL · PARIS",
     "tagline": "a restored project",
     "purchasedBy": "구매자",
-    "memberSince": "{year}년부터 함께한 회원",
+    "memberSince": "{year}년 부터 함께해온 회원",
     "fields": {
       "invoiceNumber": "청구서 번호",
       "orderNo": "주문 번호"
@@ -316,27 +316,28 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
-        "lede": "Cookout, then a DJ set.",
-        "body": "Choi and Choe are both turning 30 this year. Thirty seats on a Haebangchon rooftop. You're one of them.",
-        "hostedBy": "우리가 직접"
+        "lede": "Early summer day cookout.",
+        "body": "최와 최, 두 사람 모두 올해 서른이 됩니다. 해방촌 루프탑에 서른 자리. 그 중 하나가 당신의 자리입니다.",
+        "hostedBy": "우리가 직접",
+        "invitationLabel": "№ invitation"
       },
       "act": {
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "The cookout.",
-          "body": "Grill runs from 18:30 to 19:50. Eat outside."
+          "heading": "쿡아웃.",
+          "body": "* 그릴 스테이션은 19:40까지 운영합니다."
         },
         "night": {
           "label": "NIGHT",
-          "time": "20:00 → late",
-          "heading": "Now the room turns.",
-          "body": "Grill cools. Lights drop. The decks come on.",
+          "time": "20:00 → ",
+          "heading": "Chill",
+          "body": "Cool to the touch...",
           "dj": {
-            "eyebrow": "On the decks",
+            "eyebrow": "yang min woo",
             "name": "YM.FM",
             "role": "Barber. Musician. Great Dude.",
-            "blurb": "A dear friend, GOAT barber, and most importantly — a killer DJ.",
+            "blurb": "A dear friend, GOAT barber, killer DJ.",
             "handle": "@yangminwoo",
             "listenLabel": "Listen"
           }
@@ -355,35 +356,35 @@
         }
       },
       "included": {
-        "heading": "포함된 것들",
+        "heading": "Included",
         "food": {
-          "label": "음식",
-          "items": "Smash burgers, smoked iberico, drumsticks, grilled sides."
+          "label": "Catering",
+          "items": "A generous spread - grilled with love."
         },
         "drinks": {
-          "label": "음료",
-          "items": "Beer, wine, gin. Non-alcoholic available."
+          "label": "Drinks",
+          "items": "Beer, wine, and more"
         }
       },
       "tribute": {
         "heading": "A note.",
-        "body": "Some of you have known us a long time. This dinner is for you. Pull up a chair. The fire's been waiting."
+        "body": "To all we've met, and will meet."
       },
       "entry": {
-        "heading": "입장",
+        "heading": "Reserve a seat",
         "amount": "65,000원",
-        "perGuest": "1인 기준 · 모두 포함",
-        "method": "송금",
+        "perGuest": "1인 · All Inclusive",
+        "method": "송금 결제",
         "bank": "토스뱅크 · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "One thing we made just for the night.",
-        "lede": "See you on the rooftop."
+        "kicker": "It's been a long time coming.",
+        "lede": "See you there."
       },
       "rsvpCta": {
-        "primary": "예약하기",
-        "secondary": "Capped at thirty."
+        "primary": "Reserve",
+        "secondary": "thirty."
       },
       "viewToggle": {
         "label": "보기",
@@ -391,28 +392,28 @@
         "simplified": "Card"
       },
       "loader": {
-        "enter": "입장",
-        "enterSilent": "소리 없이 입장",
-        "summary": "정보 요약 보기"
+        "enter": "입장하기",
+        "enterSilent": "소리 없이 입장하기",
+        "summary": "요약문 보기"
       },
       "footer": {
         "hosts": "Hosted by Choi & Choe",
-        "rsvpClosesAt": "일요일 오후 3시까지, 또는 마감까지."
+        "rsvpClosesAt": "일요일 오후 3시 마감."
       },
       "survivalKit": {
         "heading": "필수 정보",
-        "subheading": "꼭 알아둘 것들.",
+        "subheading": "핵심만 추렸어요.",
         "address": {
           "label": "장소",
-          "hint": "탭하면 지도가 열려요."
+          "hint": "지도 앱에서 열기."
         },
         "toss": {
           "label": "결제",
-          "hint": "탭하면 계좌번호가 복사돼요."
+          "hint": "탭하여 복사하기."
         },
         "dress": {
-          "label": "옷차림",
-          "value": "드레스코드는 없어요."
+          "label": "Dress Code",
+          "value": "Blue & Teal"
         },
         "host": {
           "label": "문의",
@@ -420,42 +421,42 @@
           "hint": "그 외 궁금한 점은 여기로요."
         },
         "plusOnes": {
-          "label": "+1",
-          "value": "예약된 분들만 입장 가능해요."
+          "label": "동반자",
+          "value": "티켓 보유자 본인만 입장 가능합니다."
         },
         "late": {
-          "label": "늦으면",
-          "value": "문은 21시까지 열어둬요. 그 이후엔 노크해 주세요."
+          "label": "시간",
+          "value": "22시 전까지 입장하면 돼요."
         },
         "copy": "복사",
-        "copied": "복사됨",
-        "openMap": "맵에서 열기",
+        "copied": "복사되었어요.",
+        "openMap": "맵 앱에서 열기",
         "map": {
           "kakao": "카카오맵",
           "naver": "네이버맵",
           "google": "구글맵"
         },
-        "ics": "캘린더 저장하기"
+        "ics": "캘린더에 일정 저장하기"
       },
       "scrollHint": "스크롤",
       "audio": {
-        "label": "사운드",
-        "on": "사운드 켜짐",
-        "off": "사운드 꺼짐"
+        "label": "Sound",
+        "on": "On",
+        "off": "Off"
       },
       "scrubber": {
         "navLabel": "타임라인",
-        "opening": "시작",
-        "cookout": "낮",
-        "dress": "드레스 코드",
-        "night": "밤",
-        "closing": "예약"
+        "opening": "Intro",
+        "cookout": "Day",
+        "dress": "Sunset",
+        "night": "Night",
+        "closing": "Reservations"
       },
       "moodboard": {
         "cookout": {
           "burger": {
             "alt": "Smash burgers off the grill",
-            "caption": "Smash burgers."
+            "caption": ""
           },
           "rooftop": {
             "alt": "Rooftop cookout",
