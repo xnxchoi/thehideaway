@@ -36,7 +36,10 @@ export function QuickActions() {
       initial={{ y: "140%", opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", bounce: 0.3, visualDuration: 0.5 }}
-      className="fixed bottom-5 left-1/2 z-[47] -translate-x-1/2 lg:bottom-[92px]"
+      // `bottom-5` resolved to ~12px (10px rem) — too tight on mobile,
+      // leaving the pill colliding with the device safe area / browser
+      // chrome. Clear the home-indicator inset + a 28px margin.
+      className="fixed bottom-[calc(28px+env(safe-area-inset-bottom))] left-1/2 z-[47] -translate-x-1/2 lg:bottom-[92px]"
     >
       {/* Outer pill — hosts the four chips. */}
       <div
