@@ -50,8 +50,13 @@ if ! docker compose -f "${COMPOSE_FILE}" ps postgres 2>/dev/null | grep -q 'runn
 fi
 
 # ── Dump ──────────────────────────────────────────────────────────────────────
-docker compose -f "${COMPOSE_FILE}" exec -T postgres \
-  pg_dump -U "${DB_USER}" -Fc "${DB_NAME}" > "${BACKUP_FILE}"
+# pg_dump authenticates over the container's local socket (scram-sha-256) and
+# reads the password from PGPASSWORD. Run via `sh -c` so PGPASSWORD is set from
+# the container's own POSTGRES_PASSWORD — this script (a cron job) has no access
+# to the decrypted env on the host.
+docker compose -f "${COMPOSE_FILE}" exec -T postgres sh -c \
+  'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "${POSTGRES_USER:-postgres}" -Fc "${POSTGRES_DB:-theestate}"' \
+  > "${BACKUP_FILE}"
 
 DUMP_SIZE="$(du -sh "${BACKUP_FILE}" | cut -f1)"
 info "Backup complete — ${DUMP_SIZE} written to ${BACKUP_FILE}"

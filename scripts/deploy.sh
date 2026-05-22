@@ -208,10 +208,14 @@ run_migrations() {
   # shellcheck source=/dev/null
   set -a; . "${ENV_PLAIN}"; set +a
 
+  # pg_dump authenticates over the container's local socket, which is
+  # scram-sha-256 (POSTGRES_INITDB_ARGS --auth-local). It reads the password
+  # from PGPASSWORD — run it via `sh -c` so PGPASSWORD is set from the
+  # container's own POSTGRES_PASSWORD (env_file), keeping the secret inside
+  # the container rather than passing it through `compose exec -e`.
   info "pre-migration backup -> ${backup_file}"
-  compose exec -T postgres pg_dump \
-    -U "${POSTGRES_USER:-postgres}" \
-    -Fc "${POSTGRES_DB:-theestate}" \
+  compose exec -T postgres sh -c \
+    'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "${POSTGRES_USER:-postgres}" -Fc "${POSTGRES_DB:-theestate}"' \
     > "${backup_file}"
   info "✓ backup complete ($(du -h "${backup_file}" | awk '{print $1}'))"
 
