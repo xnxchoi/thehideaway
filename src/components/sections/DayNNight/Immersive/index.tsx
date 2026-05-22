@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useScroll, useMotionValueEvent } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
@@ -136,6 +137,22 @@ export function ImmersiveView() {
   const setPhase = useDayNNightScene((r) => r.setPhase);
   const resetLiminalHandoff = useDayNNightScene((r) => r.resetLiminalHandoff);
 
+  // ── Dress sentinel — mobile visibility gate ──────────────────────────
+  // On desktop, FriendsTorrent + SubtitleSequence are gated by the GSAP
+  // layout-aware `dressWindow.active` below. On mobile, GSAP never runs
+  // the horizontal layout measurement, so `dressWindow.active` is always
+  // false. The sentinel div (placed in document flow inside the dress Act
+  // by Timeline.tsx) provides a scroll-based visibility signal instead.
+  const dressSentinelRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: dressScrollY } = useScroll({
+    target: dressSentinelRef,
+    offset: ["start end", "end start"]
+  });
+  const [mobileInDress, setMobileInDress] = useState(false);
+  useMotionValueEvent(dressScrollY, "change", (v) => {
+    setMobileInDress(v > 0.02 && v < 0.98);
+  });
+
   // ── Act III dress-window gate ───────────────────────────────────────
   // `useActWindowActive` is two-way (not sticky like useActRevealActive)
   // — flips back to false when the user scrolls past the dress act,
@@ -189,7 +206,10 @@ export function ImmersiveView() {
           and the grain overlay live inside it so they share the pin.
           contentRevealed gates Act I's RevealStage so it only fires
           once the entry sequence has reached the content beat (200ms). */}
-        <Timeline contentRevealed={revealStage >= 1} />
+        <Timeline
+          contentRevealed={revealStage >= 1}
+          dressSentinelRef={dressSentinelRef}
+        />
         <div
           data-hidden={hintHidden || phase !== "playing" || revealStage < 2}
           aria-hidden
@@ -235,7 +255,11 @@ export function ImmersiveView() {
           // `torrentCued` true and fades the layer in directly under
           // the line that's introducing it. The midpoint pivot clears
           // the whole layer so the YM.FM credit reads against bare sky.
+          // On mobile, FriendsTorrent's own sentinelActive gate (driven
+          // by dressSentinelRef) takes over since dressWindow.active is
+          // always false when GSAP layout never runs.
           active={dressWindow.active && torrentCued && !dressSecondHalf}
+          sentinelRef={dressSentinelRef}
           // Lifted out of the pinned wrap's stacking context:
           //   • `fixed` so the layer stays viewport-anchored while
           //     the pin scrolls the ImmersiveView root upward
@@ -250,10 +274,16 @@ export function ImmersiveView() {
         <SubtitleSequence
           captions={dressCaptions}
           // Captions disarm at the dress midpoint so they don't keep
-          // narrating while the YM.FM credit reveals.
-          active={dressWindow.active && !dressSecondHalf}
+          // narrating while the YM.FM credit reveals. On mobile,
+          // dressWindow.active is always false (GSAP never measures the
+          // horizontal layout), so mobileInDress (sentinel-driven) takes
+          // over — no midpoint concept on mobile.
+          active={(dressWindow.active && !dressSecondHalf) || mobileInDress}
           replayKey={dressWindow.entryCount}
           onPhotoCue={handlePhotoCue}
+          // Give captions ~2–3× the scroll real estate they had at 1800ms
+          // per card, so they don't flash by before the user can read them.
+          perCardMs={3500}
           // Lead-in caption ("If you want references — here's pics
           // from past events:") sticks on screen instead of auto-fading
           // — so users who scroll slowly can read it, and it stays the

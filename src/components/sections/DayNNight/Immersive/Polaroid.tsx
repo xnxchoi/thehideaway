@@ -286,6 +286,9 @@ interface PolaroidGroupProps {
   amount?: number;
   /** Override the stagger between polaroids. Default 0.12s. */
   stagger?: number;
+  /** When provided, switches to programmatic animate control (true=visible,
+   *  false=hidden) instead of whileInView. */
+  active?: boolean;
   children: ReactNode;
 }
 
@@ -293,14 +296,17 @@ export function PolaroidGroup({
   className,
   amount = 0.4,
   stagger = 0.12,
+  active,
   children
 }: PolaroidGroupProps) {
+  const programmatic = typeof active === "boolean";
   return (
     <m.div
       className={className}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount }}
+      {...(programmatic
+        ? { animate: active ? "visible" : "hidden" }
+        : { whileInView: "visible", viewport: { once: true, amount } })}
       variants={{
         hidden: {},
         visible: {
