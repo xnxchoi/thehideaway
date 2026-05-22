@@ -221,10 +221,13 @@ the eight post-provision steps (server-setup → DNS poll → certbot →
 GitHub deploy key → ghcr.io login → repo clone → pre-flight → first deploy → health check) into a single command.
 
 ```bash
-# On the VPS as root, from the cloned repo:
-bash scripts/first-deploy.sh \
+# On the VPS as root, from the cloned repo. GHCR_TOKEN is read from the
+# environment — never pass it as a CLI flag (visible in `ps aux`).
+GHCR_TOKEN="$(cat ~/.ghcr-token)" \
+  bash scripts/first-deploy.sh \
     --deploy-key "ssh-ed25519 AAAA... your-pubkey" \
-    --image-tag <git-sha-or-tag>
+    --image-tag <git-sha-or-tag> \
+    --ghcr-user xnxchoi
 ```
 
 The wrapper is fully idempotent — safe to re-run after partial failures. It
@@ -256,8 +259,9 @@ If auth fails, the script exits **7** and tells you exactly where to verify
 the deploy key on GitHub. To retry just phase 5 onward:
 
 ```bash
-bash scripts/first-deploy.sh \
-    --deploy-key "..." --image-tag <sha> \
+GHCR_TOKEN="$(cat ~/.ghcr-token)" \
+  bash scripts/first-deploy.sh \
+    --deploy-key "..." --image-tag <sha> --ghcr-user xnxchoi \
     --skip-setup --skip-dns --skip-cert
 ```
 
