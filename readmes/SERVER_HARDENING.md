@@ -15,11 +15,11 @@ again as a checklist after.
 | 1  | apt update + essentials          | base packages: curl, jq, fail2ban, ufw, logrotate      |
 | 2  | swap (4 GB)                      | match RAM; cushion for Node heap + Postgres            |
 | 3  | sysctl tuning                    | TCP backlog, file descriptors, low swappiness          |
-| 4  | sshd hardening                   | pubkey-only, no root, idle timeout                     |
+| 4  | sshd hardening                   | pubkey-only (non-root); root allows password for ITEASY web console; idle timeout |
 | 5  | UFW + ufw-docker                 | firewall **and** the Docker iptables bypass closure    |
 | 6  | Docker CE                        | log rotation, live-restore, overlay2                   |
 | 7  | deploy user (scoped sudoers)     | NOPASSWD only for docker / compose / certbot / nginx   |
-| 8  | fail2ban sshd jail               | ban brute-force IPs even with pubkey-only              |
+| 8  | fail2ban sshd jail               | primary brute-force defence for root password login (maxretry=3) |
 | 9  | Certbot + reload helper          | webroot mode, post-hook delegated to a versioned script |
 | 10 | working dirs + asset tree        | manifest-driven; not hardcoded                         |
 | 11 | journald cap (500 MB)            | logs can't eat the 100 GB HDD                          |
@@ -70,6 +70,38 @@ Previous version: package installed, no jails. Daemon ran idle.
 
 **Fix:** section 8 writes `/etc/fail2ban/jail.d/sshd.local` with maxretry=3,
 findtime=10m, bantime=1h, increment-on-recidivism up to 24h.
+
+### Closed: sshd config locked out the ITEASY web console (CRITICAL)
+
+ITEASY EasyCloud's "web console" is **SSH-backed** — it is not KVM/VNC. It
+authenticates as `root` using the VPS password. Any configuration that blocks
+root SSH or requires pubkey-only for root **permanently locks out the web
+console**, which is the only out-of-band recovery path short of a full VPS
+reset.
+
+Affected options (DO NOT use any of these without the Match block below):
+- `PermitRootLogin no`
+- `PermitRootLogin prohibit-password`
+- Global `PasswordAuthentication no` without a `Match User root` override
+- Global `AuthenticationMethods publickey` — this **cannot** be overridden by
+  a `Match` block and enforces pubkey-only for all users regardless
+
+**Fix:** section 4 writes:
+
+```
+PermitRootLogin          yes
+PasswordAuthentication   no    # global default — all non-root users
+...
+Match User root
+    PasswordAuthentication yes  # root may use password (ITEASY web console)
+```
+
+This keeps the `deploy` user (and all other accounts) pubkey-only while
+allowing root to authenticate with a password. `fail2ban` (maxretry=3,
+section 8) is the primary brute-force defence for that password path.
+
+`AuthenticationMethods publickey` is intentionally **absent** from the global
+block — its presence would override the Match block and break the web console.
 
 ### Closed: UFW reset before SSH allow (lockout window)
 

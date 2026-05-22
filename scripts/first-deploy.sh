@@ -33,9 +33,9 @@
 #                            as the deploy user.
 #
 #   Environment variables:
-#     GHCR_TOKEN             (required) Fine-grained PAT with `read:packages`
-#                            scope and explicit access to the hideaway +
-#                            hideaway-migrate packages. See readmes/DEPLOY.md.
+#     GHCR_TOKEN             (required) Classic PAT (NOT fine-grained) with
+#                            `read:packages` scope. Fine-grained tokens do not
+#                            support the GitHub Packages API. See readmes/DEPLOY.md.
 #     --domain DOMAIN        (default: hideawayseoul.com) Domain to verify
 #                            DNS for and request a TLS cert for.
 #     --skip-dns             Bypass the DNS poll (useful if you know DNS is

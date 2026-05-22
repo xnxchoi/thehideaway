@@ -163,43 +163,43 @@ ssh root@hideawayseoul.com 'chmod 600 /etc/age/keys.txt'
 
 ---
 
-## § 4 — First-time launch (per VPS)
+## § 4 — First-time VPS initialization
 
-### T-minus prep
+### T-minus — gather everything before opening a terminal
 
-> Have these ready before opening any terminal session. Interrupting later to chase a missing credential is the single biggest source of wasted launch time.
+> Interrupting the sequence to chase a missing credential is the single biggest source of wasted launch time. Have every item below confirmed before you start Step 1.
 
 #### Accounts + credentials
 
-- [ ] **GitHub** access to `xnxchoi/thehideaway`
-- [ ] **Google Cloud Console** signed in as `hideawayseoul@gmail.com`
-- [ ] **Naver Developers** signed in to the app's owning Naver ID
+- [ ] **GitHub** — access to `xnxchoi/thehideaway`, signed in
+- [ ] **Google Cloud Console** — signed in as `hideawayseoul@gmail.com`
+- [ ] **Naver Developers** — signed in to the app's owning Naver ID
 - [ ] **Brevo** SMTP credentials (`app.brevo.com/settings/keys/smtp`)
 - [ ] **Mapbox** access token (`account.mapbox.com/access-tokens`)
-- [ ] **ITEasy** VPS provisioned, root SSH confirmed, public IP noted
-- [ ] **DNS provider** access to set the A record for `hideawayseoul.com`
+- [ ] **ITEASY** VPS provisioned, root SSH confirmed, public IP noted (`58.229.253.225` / `rp.hideawayseoul.com`)
+- [ ] **DNS provider** — access to set A record for `hideawayseoul.com`
 
 #### Local machine
 
 - [ ] `git` with `main` checked out and clean
-- [ ] SSH keypair for the deploy user — `ssh-keygen -t ed25519 -f ~/.ssh/hideaway_deploy`
-- [ ] `.env.production` filled with real values (work from `.env.production.example`)
-- [ ] `public/assets/{plate,rp_plaque,three}/` populated locally (\~432 MB)
+- [ ] `~/.ssh/hideaway_deploy` SSH keypair generated: `ssh-keygen -t ed25519 -f ~/.ssh/hideaway_deploy`
+- [ ] `~/.config/sops/age/keys.txt` — age private key present (mode 600)
+- [ ] `public/assets/{plate,rp_plaque,three}/` populated locally (~432 MB)
 
-Docker Desktop is **not** required — CI builds, the VPS pulls.
+> Docker Desktop is **not** required — CI builds the image; the VPS pulls it.
 
-#### GitHub side (Step 1 below walks you through these in order)
+#### GitHub side (walked through in Step 1)
 
 - [ ] `deploy` branch exists on `xnxchoi/thehideaway`
-- [ ] `ENV_PRODUCTION_B64` repo secret set
-- [ ] Fine-grained PAT created with `read:packages` scope
+- [ ] `SOPS_AGE_KEY` Actions secret set (from `~/.config/sops/age/keys.txt`)
+- [ ] **Classic** PAT with `read:packages` scope created
 - [ ] PAT has explicit access to the `hideaway` + `hideaway-migrate` packages
 
 ---
 
-### Step 1 — ghcr.io prereqs
+### Step 1 — GHCR prerequisites (do this on the laptop)
 
-**1a. Create the `deploy` branch on origin.** From your laptop, in the repo root:
+**1a. Create the `deploy` branch.**
 
 ```bash
 git checkout main && git pull
@@ -207,137 +207,163 @@ git checkout -b deploy
 git push -u origin deploy
 ```
 
-**1b. Set the `ENV_PRODUCTION_B64` repo secret.** CI needs `.env.production`
-at build time to bake `NEXT_PUBLIC_*` into the client bundle.
+**1b. Set the `SOPS_AGE_KEY` Actions secret.** CI needs the age private key to
+decrypt `.env.production.enc` when building the Docker image.
 
 ```bash
 # macOS:
-base64 -i .env.production | pbcopy
-# Linux:
-base64 -w0 .env.production | xclip -selection clipboard
+pbcopy < ~/.config/sops/age/keys.txt
 ```
 
-Paste at [https://github.com/xnxchoi/thehideaway/settings/secrets/actions][1] →
-**New repository secret** → name `ENV_PRODUCTION_B64`.
+Paste at [Settings → Secrets → Actions][1] → **New repository secret** →
+name `SOPS_AGE_KEY`.
 
-**Rotate this secret whenever `.env.production` changes** (new OAuth secret,
-new SMTP password, etc.). The workflow refuses to build if the decoded file
-still has placeholders (`CHANGE_ME`, `your_`, etc.).
+**1c. Create a classic PAT** for pulling images on the VPS.
 
-**1c. Create a fine-grained PAT.** Go to
-[https://github.com/settings/tokens?type=beta][2] → **Generate new token**:
+> **CRITICAL: Use a classic token, NOT a fine-grained token.** Fine-grained
+> PATs cannot read GitHub Packages (the API does not support them yet). Using
+> one produces a `denied: denied` error even with the correct scope selected.
 
-| Field                               | Value                                   |
-| ----------------------------------- | --------------------------------------- |
-| Token name                          | `hideawayseoul.com — ghcr.io pull`      |
-| Expiration                          | 90 days (calendar a reminder to rotate) |
-| Repository access                   | Only `xnxchoi/thehideaway`              |
-| Permissions → Repository → Contents | Read-only (for `git clone` later)       |
-| Permissions → Account → Packages    | Read-only                               |
+Go to [github.com/settings/tokens][2] → **Generate new token (classic)**:
 
-Copy the token. **It only displays once.** Save it where you'll find it later
-in this runbook.
+| Field       | Value                              |
+| ----------- | ---------------------------------- |
+| Note        | `hideawayseoul.com — ghcr.io pull` |
+| Expiration  | 90 days (calendar a rotation reminder) |
+| Scope       | `read:packages`                    |
 
-**1d. Trigger the first CI build.** From your laptop:
+Copy the token (`ghp_...`). **It only displays once.** Store it somewhere you
+can paste it in Step 5 — do NOT keep it in shell history or a world-readable
+file.
+
+**1d. Trigger the first CI build.** Push a commit on the `deploy` branch:
 
 ```bash
-bash scripts/sync-from-main.sh --yes
+git checkout deploy
+git merge main --ff-only
+git push
 ```
 
-This merges `main` → `deploy` and pushes. Watch the workflow at
-[https://github.com/xnxchoi/thehideaway/actions][3]. \~5–8 min cold cache,
-\~2–3 min thereafter. On success it publishes:
+Watch the workflow at [github.com/xnxchoi/thehideaway/actions][3].
+~5–8 min cold cache. On success it publishes:
 
 - `ghcr.io/xnxchoi/hideaway:<sha>` + `:latest`
 - `ghcr.io/xnxchoi/hideaway-migrate:<sha>` + `:latest`
 
-Verify at [https://github.com/xnxchoi?tab=packages][4].
+Verify at [github.com/xnxchoi?tab=packages][4].
 
-**1e. Grant the PAT explicit access to the new packages.** Private packages on
-ghcr.io require explicit PAT access — having `read:packages` scope alone is
-not enough.
+**1e. Grant the PAT explicit package access.** Private packages on ghcr.io
+require per-package access — `read:packages` scope alone is not enough.
 
-For each of the two packages, go to its settings:
+For each package, go to its **Settings → Manage Actions access**, then add
+your GitHub user (the one who owns the classic PAT) with **Read** access:
 
-- [https://github.com/users/xnxchoi/packages/container/hideaway/settings][5]
-- [https://github.com/users/xnxchoi/packages/container/hideaway-migrate/settings][6]
+- [hideaway package settings][5]
+- [hideaway-migrate package settings][6]
 
-Scroll to **Manage Actions access** / **Manage installed**. Add your PAT (or
-the user account that owns it) with **Read** access.
-
-> Without this, `docker pull` on the VPS returns `denied: denied` even though
-> the PAT has `read:packages`. This is the most common ghcr.io first-launch
-> failure — don't skip it.
+> Skipping this step produces `denied: denied` at `docker pull` on the VPS
+> even with a valid PAT. It is the most common first-launch failure.
 
 ---
 
 ### Step 2 — Bootstrap the repo onto the VPS
 
-The wrapper script lives in the repo, so it needs to be on the VPS before
-GitHub auth is configured for the deploy user. From your laptop, on the
-`deploy` branch:
+The wrapper scripts live in the repo, so they must be on the VPS before
+GitHub auth is configured for the deploy user. Rsync directly using your root
+SSH key — do not use `sync-repo-to-vps.sh` with extra `-e` flags (it rejects
+unknown arguments):
 
 ```bash
-git checkout deploy
-bash scripts/sync-repo-to-vps.sh --dry-run root@rp.hideawayseoul.com
+# From the repo root, on your laptop:
+
+# 0. Clear the stale host key if you reset the VPS
+ssh-keygen -R rp.hideawayseoul.com
+ssh-keygen -R 58.229.253.225
+ssh-keyscan -H rp.hideawayseoul.com >> ~/.ssh/known_hosts
+
+# 1. Dry-run: scan for anything that shouldn't transfer
+rsync -av --dry-run --progress \
+  -e "ssh -i ~/.ssh/hideaway_deploy" \
+  --exclude-from=".deployignore" \
+  . root@rp.hideawayseoul.com:/root/thehideaway/
+
+# 2. Sync for real when the dry-run looks clean
+rsync -av --progress \
+  -e "ssh -i ~/.ssh/hideaway_deploy" \
+  --exclude-from=".deployignore" \
+  . root@rp.hideawayseoul.com:/root/thehideaway/
 ```
 
-Scan the dry-run output for anything that shouldn't be transferred. If
-anything looks wrong, add it to `.deployignore` and re-run the dry-run.
-
-When it looks right:
+**Verify:**
 
 ```bash
-bash scripts/sync-repo-to-vps.sh root@rp.hideawayseoul.com
+ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com \
+  'du -sh /root/thehideaway && ls /root/thehideaway/scripts/first-deploy.sh'
 ```
 
-**Check:**
-
-```bash
-ssh root@rp.hideawayseoul.com 'du -sh /root/thehideaway && ls /root/thehideaway/scripts/first-deploy.sh'
-```
-
-Expect a few tens of MB and the path to exist.
+Expect a few tens of MB (assets are excluded by `.deployignore`) and the path
+to exist.
 
 ---
 
-### Step 3 — Stage `.env.production` and the asset tree
+### Step 3 — Stage the age private key
 
-Phase 7 of the wrapper (Step 5 below) validates both are in place. Pre-stage
-them now so Phase 7 passes on the first run.
-
-```bash
-# .env.production — into the deploy user's repo path. Phase 6 of the wrapper
-# clones on top, preserving the env file via mv-aside/restore.
-ssh deploy@rp.hideawayseoul.com 'mkdir -p ~/thehideaway && chmod 700 ~/thehideaway'
-scp .env.production deploy@rp.hideawayseoul.com:~/thehideaway/.env.production
-ssh deploy@rp.hideawayseoul.com 'chmod 600 ~/thehideaway/.env.production'
-
-# Asset tree (~432 MB) — into the bind-mount target.
-ssh deploy@rp.hideawayseoul.com 'sudo mkdir -p /opt/thehideaway/assets && sudo chown -R deploy:deploy /opt/thehideaway'
-rsync -av --progress ./public/assets/ deploy@rp.hideawayseoul.com:/opt/thehideaway/assets/
-```
-
-**Check:**
+Phase 7 of the wrapper checks that `/etc/age/keys.txt` exists and is mode
+600. Stage it now so the wrapper doesn't abort at pre-flight:
 
 ```bash
-ssh deploy@rp.hideawayseoul.com 'ls -l ~/thehideaway/.env.production && du -sh /opt/thehideaway/assets/'
+# From your laptop:
+
+# Copy the key to a temp location
+scp -i ~/.ssh/hideaway_deploy \
+  ~/.config/sops/age/keys.txt \
+  root@rp.hideawayseoul.com:/tmp/age_key
+
+# On the VPS: move it into place and lock it down
+ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com << 'EOF'
+install -o root -g root -m 0750 -d /etc/age
+mv /tmp/age_key /etc/age/keys.txt
+chmod 600 /etc/age/keys.txt
+echo "✓ age key installed at /etc/age/keys.txt"
+EOF
 ```
 
-Env file should be `-rw-------`. Asset tree should be \~432 MB.
+The `deploy` user inherits read access to `/etc/age/` via the `deploy` group
+(`server-setup.sh` creates that directory as `root:deploy 0750`).
 
 ---
 
-### Step 4 — Set the DNS A record
+### Step 4 — Stage the asset tree
+
+`server-setup.sh` creates the asset directories. The assets themselves
+(~432 MB) are never committed to git — rsync them from your laptop now.
+Phase 7.5 of the wrapper aborts if the tree is empty:
+
+```bash
+# server-setup.sh runs as part of the wrapper (Step 5), but you can
+# pre-create the asset dirs now to unblock the rsync:
+ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com \
+  'mkdir -p /opt/thehideaway/assets && chown -R root:root /opt/thehideaway'
+
+# Rsync from your laptop (as deploy if server-setup has run, or as root now)
+rsync -av --progress \
+  -e "ssh -i ~/.ssh/hideaway_deploy" \
+  ./public/assets/ \
+  root@rp.hideawayseoul.com:/opt/thehideaway/assets/
+```
+
+---
+
+### Step 5 — Set the DNS A record
 
 In your DNS provider's dashboard:
 
-| Type | Name       | Value      | TTL |
-| ---- | ---------- | ---------- | --- |
-| A    | `@` (apex) | `<vps-ip>` | 300 |
-| A    | `www`      | `<vps-ip>` | 300 |
+| Type | Name       | Value            | TTL |
+| ---- | ---------- | ---------------- | --- |
+| A    | `@` (apex) | `58.229.253.225` | 300 |
+| A    | `www`      | `58.229.253.225` | 300 |
 
-300s TTL gives faster propagation now. Raise to 3600 a few days after launch.
+300 s TTL for faster propagation now. Raise to 3600 after a few days.
 
 **Check:**
 
@@ -345,60 +371,97 @@ In your DNS provider's dashboard:
 dig +short A hideawayseoul.com @1.1.1.1
 ```
 
-Should return `<vps-ip>`. Propagation: 30s to \~30 min depending on region.
-The wrapper polls for \~10 min in Phase 3, so you can start the wrapper
-even before DNS has fully propagated.
+Should return `58.229.253.225`. Propagation: 30 s to ~30 min. The wrapper
+polls for ~10 min in Phase 3, so you can start Step 6 before DNS fully
+propagates.
 
 ---
 
-### Step 5 — Run the wrapper
+### Step 6 — Run the wrapper
+
+SSH into the VPS as root and run `first-deploy.sh`. The PAT is passed via
+`GHCR_TOKEN` — **never** as a CLI flag, because CLI args are visible in
+`ps aux` for the duration of the script (which includes a 10-min DNS poll).
 
 ```bash
-ssh root@rp.hideawayseoul.com
+# On the VPS, as root:
+ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com
+
 cd /root/thehideaway
 
-bash scripts/first-deploy.sh \
-    --deploy-key "$(cat << 'EOF'
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... deploy@hideawayseoul.com
-EOF
-)" \
-    --ghcr-user xnxchoi \
-    --ghcr-pat  ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# Write the PAT to a mode-600 file; read it inline; shred it after.
+echo "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" > ~/.ghcr-token
+chmod 600 ~/.ghcr-token
+
+GHCR_TOKEN="$(cat ~/.ghcr-token)" \
+  bash scripts/first-deploy.sh \
+    --deploy-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5... deploy@hideawayseoul.com" \
+    --image-tag  v1.2.3 \
+    --ghcr-user  xnxchoi
+
+shred -u ~/.ghcr-token   # wipe the token file
 ```
 
-Paste the full content of `~/.ssh/hideaway_deploy.pub` from your laptop
-inside the heredoc on the line where the `ssh-ed25519` placeholder is. The
-PAT is the one from Step 1c.
+Replace the `--deploy-key` value with the full content of `~/.ssh/hideaway_deploy.pub` from your laptop.
 
 The wrapper runs 8 phases:
 
 | Phase | Does                                                                                                                                                                                              |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1/8   | Sanity — root on Ubuntu, server-setup.sh present                                                                                                                                                  |
-| 2/8   | `server-setup.sh` — OS hardening, Docker, certbot, deploy user                                                                                                                                    |
-| 3/8   | DNS poll — waits for the A record to point to this machine                                                                                                                                        |
-| 4/8   | `certbot --standalone` — issues the TLS cert                                                                                                                                                      |
-| 5a/8  | **INTERACTIVE** — prints an ed25519 pubkey, pauses for you to paste it at [https://github.com/xnxchoi/thehideaway/settings/keys/new][7] (Title: hideawayseoul.com — deploy, write access **OFF**) |
-| 5b/8  | `docker login ghcr.io` with the PAT                                                                                                                                                               |
-| 6/8   | `git clone --branch deploy` into `/home/deploy/thehideaway` (preserves your pre-staged `.env.production`)                                                                                         |
-| 7/8   | Pre-flight — validates env, asset tree, image manifests on ghcr.io                                                                                                                                |
-| 8/8   | `prod.sh --full` — deploy + backup + migrate, plus a smoke test of `/privacy`                                                                                                                     |
+| 1/8   | Sanity — confirms root on Ubuntu, server-setup.sh present                                                                                                                                         |
+| 2/8   | `server-setup.sh` — OS hardening, Docker, certbot, deploy user, sops + age binaries                                                                                                               |
+| 3/8   | DNS poll — waits up to ~10 min for `hideawayseoul.com` to resolve to this machine                                                                                                                  |
+| 4/8   | `certbot --standalone` — issues TLS cert for `hideawayseoul.com` + `www`                                                                                                                           |
+| 5a/8  | **INTERACTIVE** — generates a GitHub deploy key, prints the pubkey, pauses. Paste it at [github.com/xnxchoi/thehideaway/settings/keys/new][7] (Title: `hideawayseoul.com — deploy`, write: OFF). |
+| 5b/8  | `docker login ghcr.io` as the deploy user with the PAT                                                                                                                                            |
+| 6/8   | `git clone` into `/home/deploy/thehideaway`                                                                                                                                                       |
+| 7/8   | Pre-flight: age key present, `.env.production.enc` decrypts cleanly, asset tree populated, image manifest exists on ghcr.io                                                                        |
+| 8/8   | `./scripts/deploy.sh <tag> --migrate` (pg\_dump backup + migrations + smoke test)                                                                                                                  |
 
-**Check:** wrapper prints `✓ First deploy complete.` at the end.
+**Check:** wrapper prints `✓ First deploy complete.`
+
+#### Skip flags for re-runs
+
+If the wrapper aborted partway, re-run with flags to skip completed phases:
+
+```bash
+GHCR_TOKEN="$(cat ~/.ghcr-token)" \
+  bash scripts/first-deploy.sh \
+    --deploy-key "..." \
+    --image-tag v1.2.3 \
+    --ghcr-user xnxchoi \
+    --skip-setup   \   # server-setup.sh already ran
+    --skip-dns     \   # DNS already propagated
+    --skip-cert    \   # cert already issued
+    --skip-gh-key      # deploy key already added to GitHub
+```
+
+#### Exit codes
+
+| Code | Meaning                                                     |
+| ---- | ----------------------------------------------------------- |
+| 0    | Success                                                     |
+| 2    | Misuse (missing or invalid flags)                           |
+| 3    | Pre-flight failure (age key, env schema, assets, manifest)  |
+| 4    | DNS never converged within ~10 min                          |
+| 5    | Certbot failed (port 80 in use, rate-limited, DNS not ready)|
+| 6    | Deploy or post-deploy health check failed                   |
+| 7    | GitHub SSH auth failed after deploy key was added           |
 
 ---
 
-### Step 6 — Smoke test
+### Step 7 — Smoke test
 
 From your laptop:
 
 ```bash
 for path in / /sign-in /sign-up /privacy /terms; do
-  printf "%-12s %s\n" "$path" "$(curl -s -o /dev/null -w '%{http_code}' https://hideawayseoul.com$path)"
+  printf "%-12s %s\n" "$path" \
+    "$(curl -s -o /dev/null -w '%{http_code}' https://hideawayseoul.com$path)"
 done
 ```
 
-Expected: all 200s.
+Expected: all `200`.
 
 Open `https://hideawayseoul.com/sign-in` in an incognito window. Confirm:
 
@@ -409,83 +472,35 @@ Open `https://hideawayseoul.com/sign-in` in an incognito window. Confirm:
 
 ---
 
-### Step 7 — OAuth consoles
+### Step 8 — OAuth consoles
 
-**7a. Capture production screenshots.** Naver review historically rejects
+**8a. Capture production screenshots.** Naver review historically rejects
 dev-mode (`localhost`) captures. Take fresh ones from production:
 
 ```bash
-cd /tmp/hideaway-shots  # the playwright sandbox from earlier
+cd /tmp/hideaway-shots   # the playwright sandbox from earlier
 # Edit capture.mjs: change http://localhost:3000 → https://hideawayseoul.com
 node capture.mjs
-# Output lands in <repo>/readmes/oauth-approval/screenshots/*-prod.png
+# Output: <repo>/readmes/oauth-approval/screenshots/*-prod.png
 ```
 
-**7b. Submit consoles.** **Google first** — typically auto-approves the same
-day for non-sensitive scopes.
+**8b. Submit the consoles — Google first** (typically auto-approves same day
+for non-sensitive scopes):
 
 - [ ] `readmes/oauth-approval/01-google-console.md` — phases 1–5
 - [ ] `readmes/oauth-approval/02-naver-console.md` — phases 1–3
 
-After Google approves: paste the real `GOOGLE_CLIENT_SECRET` into
-`.env.production` on the VPS, then:
+After Google approves, update the encrypted env on the laptop and deploy:
 
 ```bash
-ssh deploy@rp.hideawayseoul.com
-cd thehideaway
-./scripts/redeploy.sh    # pull :latest, recreate the stack
+pnpm env:edit      # paste the real GOOGLE_CLIENT_SECRET
+git add .env.production.enc && git commit -m "add google client secret"
+pnpm release:cut 1.2.4
+# When CI goes green:
+ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v1.2.4'
 ```
 
-Repeat for Naver after their email lands (1–3 business days typical).
-
----
-Uses `scripts/first-deploy.sh`. It now invokes `scripts/deploy.sh` directly
-in Phase 8 (no more `prod.sh` indirection) and validates the encrypted env
-via sops + the Zod schema in Phase 7 — same gates the laptop and CI run.
-
-Before running the wrapper, you need:
-
-- The release tag to exist on GHCR (run `pnpm release:cut 1.2.3` on the
-  laptop first and wait for CI green).
-- A GHCR personal access token with `read:packages` and explicit access to
-  the `hideaway` + `hideaway-migrate` packages (see § 1 of the old runbook
-  in `.attic/readmes/DEPLOY.md` if you need step-by-step PAT setup —
-  the GitHub UI hasn't changed).
-- The age private key already scp'd to `/etc/age/keys.txt` (mode 600).
-  Phase 10 of `server-setup.sh` warns if it isn't present.
-
-Then on the VPS, as root. \*\*The GHCR PAT is passed via the `GHCR_TOKEN` env
-var, NOT as a CLI flag\*\* — CLI flags are visible in `ps aux` for the duration
-of the run (which can include a 10-min DNS poll). Stash the PAT in a file
-with mode 600 and read it inline:
-
-```bash
-echo "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" > ~/.ghcr-token
-chmod 600 ~/.ghcr-token
-
-GHCR_TOKEN="$(cat ~/.ghcr-token)" \
-bash scripts/first-deploy.sh \
-    --deploy-key "ssh-ed25519 AAAA…" \
-    --image-tag v1.2.3 \
-    --ghcr-user xnxchoi
-
-shred -u ~/.ghcr-token   # or `rm` on macOS
-```
-
-The wrapper does:
-
-1. Sanity (root on Ubuntu, server-setup.sh present).
-2. `server-setup.sh` (OS hardening, Docker, certbot, deploy user, /etc/age/, sops + age).
-3. DNS poll (waits up to \~10 min for the A record).
-4. `certbot --standalone`.
-5a. GitHub deploy key (interactive — pause to paste at `/settings/keys/new`).
-5b. `docker login ghcr.io` as deploy with the PAT.
-6. `git clone --branch deploy` into `/home/deploy/thehideaway`.
-7. Pre-flight: age key present + perms, decrypt + schema validation, asset tree, image manifest on GHCR.
-8. `./scripts/deploy.sh <tag> --migrate` (handles its own pg\_dump backup), then smoke test.
-
-After the wrapper finishes, all subsequent deploys are just
-`./scripts/deploy.sh <tag>` as the deploy user.
+Repeat for Naver after their approval email arrives (1–3 business days).
 
 ---
 
@@ -517,10 +532,10 @@ Installed by `bash scripts/cron-setup.sh` (run once on the VPS as `deploy`):
 TLS renewal (`certbot renew`) is installed by `server-setup.sh` at 03:00 UTC
 as root.
 
-Pre-migration backups are taken automatically by \`./scripts/deploy.sh
-<tag> --migrate`(written to`/home/deploy/backups/pre-migrate-<ISO>.dump\`).
+Pre-migration backups are taken automatically by `./scripts/deploy.sh <tag> --migrate`
+(written to `/home/deploy/backups/pre-migrate-<ISO>.dump`).
 
-Restore:
+**Restore:**
 
 ```bash
 BACKUP_FILE=/home/deploy/backups/theestate-20260518T020000Z.dump
@@ -538,17 +553,19 @@ docker compose -f compose.prod.yaml exec -T postgres \
 | `release:cut` fails at gate 4 (deploy-rules drift)  | Run `pnpm sync:deploy-rules` and re-commit.                                                                                                |
 | `release:cut` fails at gate 4 (template drift)      | Run `pnpm env:template:gen` and re-commit.                                                                                                 |
 | CI fails at "Decrypt .env.production"               | `SOPS_AGE_KEY` secret missing or stale. Recreate from `~/.config/sops/age/keys.txt`.                                                       |
-| `deploy.sh` reports `image not found on ghcr.io`    | CI hasn't finished. Check [https://github.com/xnxchoi/thehideaway/actions][8].                                                             |
+| `deploy.sh` reports `image not found on ghcr.io`    | CI hasn't finished. Check [github.com/xnxchoi/thehideaway/actions][8].                                                                     |
 | `deploy.sh` smoke test fails                        | Auto-rollback fires; check `docker compose logs payload`. Most common: `BETTER_AUTH_SECRET` or `COOKIE_DOMAIN` wrong in the encrypted env. |
-| `deploy.sh` reports `age key not found`             | `/etc/age/keys.txt` missing on the VPS. `scp` it from the laptop, chmod 600.                                                               |
+| `deploy.sh` reports `age key not found`             | `/etc/age/keys.txt` missing on the VPS. `scp` it from the laptop, `chmod 600`.                                                             |
 | Manual rollback fails (rollback target also broken) | Pick an older tag manually: `./scripts/deploy.sh v1.2.1`.                                                                                  |
-| `Subsequent deploy` `docker pull` denied            | GHCR token expired. Re-run `docker login ghcr.io` as deploy user.                                                                          |
+| `docker pull` denied on subsequent deploy           | GHCR token expired. Re-run `docker login ghcr.io` as the deploy user with a fresh classic PAT.                                             |
+| `sops` decrypt fails after age key rotation         | `/etc/age/keys.txt` on VPS is the old key. `scp` the new one and `chmod 600`.                                                              |
+| VPS fully locked out (console + SSH)                | ITEASY web console is SSH-backed (not KVM/VNC) and requires root+password. Reset the VPS from the ITEASY dashboard, then re-run § 4.       |
 
 For server-hardening details (Dockge, UFW + Docker bypass, `fail2ban`),
 see `readmes/SERVER_HARDENING.md`.
 
 [1]:	https://github.com/xnxchoi/thehideaway/settings/secrets/actions
-[2]:	https://github.com/settings/tokens?type=beta
+[2]:	https://github.com/settings/tokens
 [3]:	https://github.com/xnxchoi/thehideaway/actions
 [4]:	https://github.com/xnxchoi?tab=packages
 [5]:	https://github.com/users/xnxchoi/packages/container/hideaway/settings
