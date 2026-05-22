@@ -256,11 +256,15 @@ fi
 
 # Extract owner/repo slug from either https or ssh form.
 REPO_SLUG=""
-if [[ "${ORIGIN_URL}" =~ ^https?://github\.com/([^/]+/[^/]+?)(\.git)?/?$ ]]; then
+if [[ "${ORIGIN_URL}" =~ ^https?://github\.com/([^/]+/[^/]+)/?$ ]]; then
   REPO_SLUG="${BASH_REMATCH[1]}"
-elif [[ "${ORIGIN_URL}" =~ ^git@github\.com:([^/]+/[^/]+?)(\.git)?$ ]]; then
+elif [[ "${ORIGIN_URL}" =~ ^git@github\.com:([^/]+/[^/]+)$ ]]; then
   REPO_SLUG="${BASH_REMATCH[1]}"
 fi
+# Bash ERE has no lazy quantifiers, so a trailing-`.git` optional group never
+# actually strips the suffix — the greedy [^/]+ swallows ".git" into the slug.
+# Strip it explicitly so CLONE_URL doesn't come out as "...thehideaway.git.git".
+REPO_SLUG="${REPO_SLUG%.git}"
 
 # Skip phase 5 if origin isn't on github.com or if explicitly skipped.
 if [[ "${SKIP_GH_KEY}" == true ]]; then
@@ -382,7 +386,19 @@ fi
 # scripts/deploy.sh later runs as deploy and needs to talk to the Docker socket).
 if [[ ! -d "${DEPLOY_REPO}/.git" ]]; then
   info "Cloning ${CLONE_URL} into ${DEPLOY_REPO}..."
-  sudo -u deploy git clone "${CLONE_URL}" "${DEPLOY_REPO}"
+  if [[ -d "${DEPLOY_REPO}" && -n "$(ls -A "${DEPLOY_REPO}" 2>/dev/null)" ]]; then
+    # server-setup.sh pre-creates subdirs inside the repo path — nginx/logs is
+    # a bind-mount target in compose.prod.yaml and must exist, deploy-owned,
+    # before the stack starts. `git clone` refuses a non-empty target, so clone
+    # into a temp dir and merge it in; the pre-existing gitignored subdirs stay.
+    warn "${DEPLOY_REPO} is non-empty (server-setup.sh pre-created subdirs) — clone-and-merge."
+    CLONE_TMP="$(sudo -u deploy mktemp -d /home/deploy/.hideaway-clone.XXXXXX)"
+    sudo -u deploy git clone "${CLONE_URL}" "${CLONE_TMP}"
+    sudo -u deploy cp -aT "${CLONE_TMP}" "${DEPLOY_REPO}"
+    rm -rf "${CLONE_TMP}"
+  else
+    sudo -u deploy git clone "${CLONE_URL}" "${DEPLOY_REPO}"
+  fi
 else
   info "Repo already cloned at ${DEPLOY_REPO} — fetching latest..."
   # Make sure the remote URL matches CLONE_URL on re-run (in case origin
