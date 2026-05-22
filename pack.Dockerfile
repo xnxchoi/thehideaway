@@ -15,19 +15,22 @@
 #   pnpm build
 #   docker build -f pack.Dockerfile -t hideaway:$(git rev-parse --short HEAD) .
 
-FROM node:24-alpine AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Debian (glibc) base — NOT Alpine. `pnpm build` runs on the glibc CI runner,
+# so .next/standalone carries glibc-linked native modules — notably sharp's
+# prebuilt binary. A musl/Alpine runtime cannot load them and fails at boot
+# with "Could not load the sharp module using the linuxmusl-x64 runtime".
 # curl: needed for the HEALTHCHECK below.
-# libc6-compat: glibc compatibility shims required by sharp and other native
-# addons. Each Docker stage starts fresh from the base image — the apk install
-# from a previous stage is NOT inherited here.
-RUN apk add --no-cache curl libc6-compat && \
-    addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
 
 RUN mkdir .next && chown nextjs:nodejs .next
 
