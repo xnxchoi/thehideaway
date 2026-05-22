@@ -76,7 +76,7 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
       <div
         data-dn-shell
         data-view={view}
-        className="relative isolate min-h-dvh bg-[var(--dn-bg)] p-0 text-[var(--dn-fg)]"
+        className="relative isolate min-h-svh bg-[var(--dn-bg)] p-0 text-[var(--dn-fg)]"
       >
         {view === "immersive" && <ExitAffordance />}
         {/* Standalone ViewToggle only on simplified view — immersive

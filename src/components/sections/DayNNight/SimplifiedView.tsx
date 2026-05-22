@@ -22,7 +22,7 @@ export function SimplifiedView() {
   const t = useTranslations("Event.DayNNight");
 
   return (
-    <div className="grid min-h-dvh grid-rows-[auto_1fr_auto] content-start gap-10 p-6 md:grid-rows-[1fr_auto_1fr] md:content-stretch md:gap-16 md:p-12">
+    <div className="grid min-h-svh grid-rows-[auto_1fr_auto] content-start gap-10 p-6 md:grid-rows-[1fr_auto_1fr] md:content-stretch md:gap-16 md:p-12">
       <header className="flex items-start justify-between gap-4 font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-faint)] uppercase">
         <span>
           {t("date.short")} · {t("location.neighborhood")}

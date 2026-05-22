@@ -205,7 +205,7 @@ export function ImmersiveView() {
 
   return (
     <DetailsContext value={{ open: detailsOpen, setOpen: setDetailsOpen }}>
-      <div className="relative min-h-screen w-full p-0 [--reveal-x:50%] [--reveal-y:50%] max-md:min-h-dvh">
+      <div className="relative min-h-svh w-full p-0 [--reveal-x:50%] [--reveal-y:50%]">
         {/* Timeline owns the pinned scroll context; SceneView (sky + sun + moon)
           and the grain overlay live inside it so they share the pin.
           contentRevealed gates Act I's RevealStage so it only fires

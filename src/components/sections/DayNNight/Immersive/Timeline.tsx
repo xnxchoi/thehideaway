@@ -340,7 +340,7 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
     <div
       ref={wrap}
       data-dn-wrap
-      className="relative z-[3] h-screen w-full overflow-clip pb-25 max-lg:h-auto max-lg:overflow-visible lg:h-dvh"
+      className="relative z-[3] h-svh w-full overflow-clip pb-25 max-lg:h-auto max-lg:overflow-visible"
     >
       {/* Scene lives inside the pinned wrap so its `position: fixed` pieces
           remain anchored to the viewport throughout the pin. The site's
@@ -704,7 +704,7 @@ function ActSet({
           <div
             ref={dressSentinelRef}
             className="pointer-events-none col-span-full lg:hidden"
-            style={{ minHeight: "650dvh" }}
+            style={{ minHeight: "650svh" }}
             aria-hidden
           />
         )}
