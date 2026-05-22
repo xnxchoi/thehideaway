@@ -357,13 +357,21 @@ function PhotoCard({ photo, rowIndex, localIdx, isDesktop }: PhotoCardProps) {
     ? "relative mr-[clamp(28px,2.8vw,56px)] shrink-0 overflow-hidden"
     : "relative mb-[clamp(8px,1.5vw,16px)] shrink-0 overflow-hidden w-full";
 
+  // Tell the optimizer the real painted size so it doesn't pick a
+  // full-viewport srcset candidate. Desktop: `w` px, padded by the
+  // largest row scale (1.2, front row). Mobile: a 33.33%-width column,
+  // 34vw with slack. Media-query form so it's correct pre-hydration,
+  // independent of the JS `isDesktop` state.
+  const displayW = Math.ceil(w * 1.2);
+
   return (
     <div className={wrapClass} style={photoStyle}>
       <NextImage
         fill={true}
         src={photo.src}
         alt={photo.alt ?? ""}
-        className="h-full w-full object-cover"
+        className="object-cover"
+        sizes={`(min-width: 1024px) ${displayW}px, 34vw`}
         loading="lazy"
         draggable={false}
       />
