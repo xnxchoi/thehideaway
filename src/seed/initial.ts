@@ -170,8 +170,8 @@ const DAY_N_NIGHT_EVENT = {
   date: "2026-05-24T18:30:00+09:00",
   end_date: "2026-05-25T00:00:00+09:00",
   location: "Haebangchon · Itaewon",
-  gate_password: process.env.DAY_N_NIGHT_GATE_PASSWORD ?? "hideaway2026",
-  capacity: 60,
+  gate_password:  "seoul2026",
+  capacity: 30,
   max_per_user: 3,
   ticket_price: 65_000,
   state: "open" as const

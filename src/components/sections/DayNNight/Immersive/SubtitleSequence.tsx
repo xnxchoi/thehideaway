@@ -84,7 +84,6 @@ export function SubtitleSequence({
   // in a ref so the timeline reads the latest value without
   // re-triggering the effect.
   const photoCueRef = useRef(onPhotoCue);
-  photoCueRef.current = onPhotoCue;
 
   useEffect(() => {
     // Clean up any in-flight tweens / timers from the prior run.
