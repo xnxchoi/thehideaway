@@ -511,43 +511,6 @@ function ActSet({
             Closing's left dossier slot, but trades the always-visible
             SurvivalKit for a single paper-style trigger that pulls the
             same info into the drawer on demand. */}
-        {/* Polaroid cluster — absolute, programmatic reveal at step 3. */}
-        <PolaroidGroup
-          active={openingStep >= 3}
-          className="pointer-events-none absolute inset-0 z-[14]"
-        >
-          <Polaroid
-            src="/assets/day-n-night/hosts/ingyu.jpeg"
-            angle={-10}
-            width={220}
-            style={{ position: "absolute", top: "8%", left: "38%" }}
-          />
-          <Polaroid
-            overlay="card-2_front-clear"
-            src="/assets/day-n-night/hosts/sean.png"
-            variant="stamped"
-            angle={8}
-            width={200}
-            className="max-lg:!left-[50%] max-lg:!w-[38vw]"
-            style={{ position: "absolute", top: "52%", left: "62%" }}
-          />
-        </PolaroidGroup>
-        {/* "hosted by yours truly" — handwritten caption for the host
-            polaroids. Anchored into the photo cluster (z-[15], above the
-            polaroids at z-[14]) so it reads as an annotation ON the host
-            photos, and scrawls in one beat after them (step 4). Shown on
-            all viewports; the mobile anchor sits in the gap between the
-            two host photos, clear of the left-aligned title copy. */}
-        <div
-          className="pointer-events-none absolute z-[15] max-lg:!top-[44%] max-lg:!left-[26%]"
-          style={{ top: "70%", left: "40%" }}
-        >
-          <MarkerText
-            text={t("opening.hostedBy")}
-            active={openingStep >= 4}
-            className="font-serif text-[clamp(1.05rem,6.4vw,1.55rem)] font-bold text-[var(--dn-fg)] italic opacity-85 lg:text-[2.4rem] lg:text-faded-black lg:opacity-90"
-          />
-        </div>
         {/* Right col — paper invitation card, springs in at step 2. */}
         <m.div
           className="col-start-8 col-end-13 row-start-2 row-end-3 hidden max-w-[400px] self-end justify-self-end max-lg:col-span-full lg:flex"
@@ -851,6 +814,39 @@ function ActSet({
           time={t("date.short")}
           align="right"
         />
+        {/* Host pair — closing placement keeps the cover clean and makes
+            "hosted by yours truly" read as one caption for both hosts. */}
+        <PolaroidGroup
+          active
+          className="pointer-events-none absolute inset-0 z-[14]"
+        >
+          <Polaroid
+            src="/assets/day-n-night/hosts/ingyu.jpeg"
+            angle={-8}
+            width={220}
+            className="max-lg:!top-[10%] max-lg:!left-[8%] max-lg:!w-[38vw]"
+            style={{ position: "absolute", top: "12%", left: "9%" }}
+          />
+          <Polaroid
+            overlay="card-2_front-clear"
+            src="/assets/day-n-night/hosts/sean.png"
+            variant="stamped"
+            angle={7}
+            width={205}
+            className="max-lg:!top-[16%] max-lg:!left-[39%] max-lg:!w-[36vw]"
+            style={{ position: "absolute", top: "20%", left: "24%" }}
+          />
+        </PolaroidGroup>
+        <div
+          className="pointer-events-none absolute z-[15] max-lg:!top-[34%] max-lg:!left-[16%]"
+          style={{ top: "47%", left: "13%" }}
+        >
+          <MarkerText
+            text={t("opening.hostedBy")}
+            active
+            className="font-serif text-[clamp(1.05rem,6.4vw,1.55rem)] font-bold text-[var(--dn-fg)] italic opacity-85 lg:text-[2.25rem] lg:text-faded-black lg:opacity-90"
+          />
+        </div>
         <div className="col-start-1 col-end-6 row-start-2 row-end-3 hidden flex-col gap-6 self-end max-lg:col-span-full lg:flex">
           <div className="grid gap-3">
             <span className={LABEL_MONO}>{t("tribute.heading")}</span>

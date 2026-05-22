@@ -142,23 +142,45 @@ export function ImmersiveView() {
   // that horizontal layout, so this in-flow sentinel supplies the same
   // "we are in the liminal stretch" boolean for mobile.
   const dressSentinelRef = useRef<HTMLDivElement>(null);
-  const [mobileInDress, setMobileInDress] = useState(false);
-  const mobileInDressRef = useRef(false);
+  const [mobileLiminalActive, setMobileLiminalActive] = useState(false);
+  const [mobileLiminalFirstHalf, setMobileLiminalFirstHalf] = useState(false);
+  const mobileLiminalStateRef = useRef({
+    active: false,
+    firstHalf: false
+  });
   useEffect(() => {
     const node = dressSentinelRef.current;
     if (!node) return;
 
-    const update = (next: boolean) => {
-      if (mobileInDressRef.current === next) return;
-      mobileInDressRef.current = next;
-      setMobileInDress(next);
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = node.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const active = rect.top < vh * 0.98 && rect.bottom > vh * 0.02;
+      // Leave a viewport-plus tail before the sentinel ends so the fixed
+      // photo layer is already gone when the in-flow YM.FM credit arrives.
+      const firstHalf = active && rect.bottom > vh * 1.2;
+      const prev = mobileLiminalStateRef.current;
+      if (prev.active === active && prev.firstHalf === firstHalf) return;
+      mobileLiminalStateRef.current = { active, firstHalf };
+      setMobileLiminalActive(active);
+      setMobileLiminalFirstHalf(firstHalf);
     };
-    const observer = new IntersectionObserver(
-      ([entry]) => update(Boolean(entry?.isIntersecting)),
-      { rootMargin: "-2% 0px -2% 0px" }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
+
+    const requestUpdate = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
   }, []);
 
   // ── Act III dress-window gate ───────────────────────────────────────
@@ -183,7 +205,7 @@ export function ImmersiveView() {
   // captions introduce the photos while they fade in behind them.
   const [torrentCued, setTorrentCued] = useState(false);
   const liminalFirstHalfActive =
-    (dressWindow.active && !dressSecondHalf) || mobileInDress;
+    (dressWindow.active && !dressSecondHalf) || mobileLiminalFirstHalf;
   const torrentVisible = liminalFirstHalfActive && torrentCued;
 
   useEffect(() => {
@@ -199,8 +221,8 @@ export function ImmersiveView() {
   // desktop midpoint split: scrolling backward from the YM.FM half should
   // bring the already-cued photos back instead of replaying the intro.
   useEffect(() => {
-    if (!dressWindow.active && !mobileInDress) setTorrentCued(false);
-  }, [dressWindow.active, mobileInDress]);
+    if (!dressWindow.active && !mobileLiminalActive) setTorrentCued(false);
+  }, [dressWindow.active, mobileLiminalActive]);
 
   // Hide the scroll hint on first scroll.
   useEffect(() => {
