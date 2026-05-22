@@ -475,12 +475,25 @@ info ".env.production.enc decrypted ($(wc -l < "${ENV_CHECK}") lines)"
 # match what the operator sees in `pnpm release:check`. Runs as root (the
 # script is in a root phase) so it can read the root-owned ENV_CHECK temp
 # file. The decrypted env never reaches the deploy user.
-if ! (cd "${DEPLOY_REPO}" && node \
-      --no-warnings --experimental-strip-types \
-      scripts/verify-env.ts "${ENV_CHECK}"); then
-  error "Env schema validation failed. Edit on the laptop:"
-  error "  pnpm env:edit  →  fix the reported keys  →  commit  →  pnpm release:cut"
-  exit 3
+#
+# The VPS is a Docker-only host and normally has no `node` — the app runs in a
+# container. The committed .env.production.enc was already validated against
+# the Zod schema by CI at release time (readmes/DEPLOY.md §5; the image is not
+# built or pushed if that gate fails). So when no host `node` is present, trust
+# the CI gate and skip — the sops decrypt above already proved the age key and
+# the encrypted file are sound, which is the load-bearing pre-flight concern.
+if command -v node >/dev/null 2>&1; then
+  if ! (cd "${DEPLOY_REPO}" && node \
+        --no-warnings --experimental-strip-types \
+        scripts/verify-env.ts "${ENV_CHECK}"); then
+    error "Env schema validation failed. Edit on the laptop:"
+    error "  pnpm env:edit  →  fix the reported keys  →  commit  →  pnpm release:cut"
+    exit 3
+  fi
+  info "env schema validated against scripts/verify-env.ts"
+else
+  warn "node not found on host — skipping local env schema re-check."
+  warn "  the env was already validated by CI at release time (DEPLOY.md §5)."
 fi
 
 # 7.5 — Asset tree — fast and strict via asset-bootstrap.sh check.
