@@ -10,6 +10,9 @@
 export const GATE_PUBLIC_PATH_PREFIXES: readonly string[] = [
   "/day-n-night",
   "/tickets",
+  "/sign-in",
+  "/sign-up",
+  "/event-entry",
   "/api/tickets",
   "/api/auth",
   "/api/health",

@@ -27,6 +27,7 @@ import * as migration_20260519_180000_ticket_orders from './20260519_180000_tick
 import * as migration_20260520_140000_ticket_orders_mailed_at_locale from './20260520_140000_ticket_orders_mailed_at_locale';
 import * as migration_20260520_183404 from './20260520_183404';
 import * as migration_99999999_000000_initial_seed from './99999999_000000_initial_seed';
+import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
   {
@@ -174,4 +175,9 @@ export const migrations = [
     down: migration_99999999_000000_initial_seed.down,
     name: '99999999_000000_initial_seed'
   },
+  {
+    up: migration_99999999_000000_initial_seed.up,
+    down: migration_99999999_000000_initial_seed.down,
+    name: "99999999_000000_initial_seed"
+  }
 ];

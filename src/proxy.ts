@@ -5,17 +5,16 @@ import { isGatePublicPath } from "@/lib/gate/allowlist";
  * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
  * runtime by default. Three responsibilities, in order:
  *
- *   1. Soft-launch gate. Anonymous traffic outside the Day-n-Night
- *      allowlist is rewritten to `/gate`. Tier-2 role check (for
- *      logged-in non-staff) lives in `(frontend)/(site)/layout.tsx`,
- *      reading the `x-pathname` header forwarded from here.
+ *   1. Event-only gate. All traffic outside the Day-n-Night
+ *      allowlist is redirected to `/day-n-night` — including
+ *      authenticated users. Only event-related paths survive.
  *   2. Per-IP rate limiting on selected `/api/*` prefixes.
  *   3. Auth redirect for `/me`, `/prive`, `/account`, `/admin-ba`
  *      when no Better Auth session cookie is present.
  *
- * To lift the gate: delete the GATE block + the catch-all matcher
- * entry, and revert the layout role check. Rate limiting and auth
- * redirect stay.
+ * To lift the gate: restore `hasSessionCookie(request)` to the
+ * gateAllowed check and change the redirect back to a `/gate` rewrite.
+ * Rate limiting and auth redirect stay.
  */
 
 const SESSION_COOKIE_NAMES = [
@@ -110,17 +109,10 @@ export async function proxy(request: NextRequest) {
   fwdHeaders.set("x-pathname", pathname);
 
   const gateAllowed =
-    isGatePublicPath(pathname) ||
-    pathname.startsWith("/_next") ||
-    hasSessionCookie(request);
+    isGatePublicPath(pathname) || pathname.startsWith("/_next");
 
   if (!gateAllowed) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/gate";
-    url.search = "";
-    return NextResponse.rewrite(url, {
-      request: { headers: fwdHeaders }
-    });
+    return NextResponse.redirect(new URL("/day-n-night", request.url));
   }
 
   // --- 2. Rate limiting on API routes ---

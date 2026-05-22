@@ -163,6 +163,20 @@ const PLANS: ReadonlyArray<SeedPlan> = [
   }
 ];
 
+const DAY_N_NIGHT_EVENT = {
+  name: "Day n Night",
+  slug: "day-n-night",
+  description: "An intimate late-night gathering at The Hideaway.",
+  date: "2026-05-24T18:30:00+09:00",
+  end_date: "2026-05-25T00:00:00+09:00",
+  location: "Haebangchon · Itaewon",
+  gate_password: process.env.DAY_N_NIGHT_GATE_PASSWORD ?? "hideaway2026",
+  capacity: 60,
+  max_per_user: 3,
+  ticket_price: 65_000,
+  state: "open" as const
+};
+
 /* ── Idempotent helpers ─────────────────────────────────────────── */
 
 const findFirst = async <
@@ -345,6 +359,27 @@ const ensurePlanWithPrice = async (
   });
 };
 
+const ensureDayNNightEvent = async (payload: Payload): Promise<string> => {
+  const existing = await payload.find({
+    collection: "events" as never,
+    where: { slug: { equals: "day-n-night" } } as never,
+    limit: 1,
+    pagination: false,
+    overrideAccess: true,
+    depth: 0,
+    select: { id: true } as never
+  });
+  const doc = existing.docs[0] as { id: string } | undefined;
+  if (doc) return doc.id;
+  const id = uuidv7();
+  const created = (await payload.create({
+    collection: "events" as never,
+    overrideAccess: true,
+    data: { id, ...DAY_N_NIGHT_EVENT } as never
+  })) as { id: string };
+  return created.id;
+};
+
 /* ── Public entry point ─────────────────────────────────────────── */
 
 /**
@@ -373,6 +408,9 @@ export async function runInitialSeed(payload: Payload): Promise<void> {
     await ensurePlanWithPrice(payload, plan, krwId);
     payload.logger.info(`[seed] plan + price ok: ${plan.name}`);
   }
+
+  const dayNNightId = await ensureDayNNightEvent(payload);
+  payload.logger.info(`[seed] day-n-night event ok: ${dayNNightId}`);
 
   payload.logger.info("[seed] done");
 }

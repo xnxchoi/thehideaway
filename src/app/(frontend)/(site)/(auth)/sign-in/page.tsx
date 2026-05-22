@@ -35,7 +35,7 @@ export default function Page() {
             </div>
             The Hideaway.
           </Link>
-          <AuthCard view="SIGN_IN" redirectTo={"/me"} />
+          <AuthCard view="SIGN_IN" redirectTo={"/event-entry"} />
           {isDev ? (
             <DevButlerButton enabled={butlerEnabled} reason={butlerReason} />
           ) : null}

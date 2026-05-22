@@ -10,74 +10,345 @@
     {
       "title": "Version control",
       "rules": [
-        { "id": "git",       "pattern": ".git",    "exclude_from": ["docker", "rsync"] },
-        { "id": "github-ci", "pattern": ".github", "exclude_from": ["rsync"], "note": "CI workflows belong on GitHub, not on the VPS" }
+        { "id": "git", "pattern": ".git", "exclude_from": ["docker", "rsync"] },
+        {
+          "id": "github-ci",
+          "pattern": ".github",
+          "exclude_from": ["rsync"],
+          "note": "CI workflows belong on GitHub, not on the VPS"
+        }
       ]
     },
     {
       "title": "IDE / editor / OS",
       "rules": [
-        { "id": "claude-cfg", "pattern": ".claude",   "exclude_from": ["rsync"] },
-        { "id": "jetbrains",  "pattern": ".idea",     "exclude_from": ["rsync"] },
-        { "id": "vscode",     "pattern": ".vscode",   "exclude_from": ["rsync"] },
-        { "id": "ds-store",   "pattern": ".DS_Store", "exclude_from": ["rsync"] }
+        { "id": "claude-cfg", "pattern": ".claude", "exclude_from": ["rsync"] },
+        { "id": "jetbrains", "pattern": ".idea", "exclude_from": ["rsync"] },
+        { "id": "vscode", "pattern": ".vscode", "exclude_from": ["rsync"] },
+        { "id": "ds-store", "pattern": ".DS_Store", "exclude_from": ["rsync"] }
       ]
     },
     {
       "title": "Build artifacts",
       "rules": [
-        { "id": "node-modules", "pattern": "node_modules", "exclude_from": ["docker", "rsync"], "note": "Docker builder stage installs fresh; rsync never benefits from shipping these." },
-        { "id": "next",         "pattern": ".next",        "exclude_from": ["rsync"], "note": "Must NOT be in .dockerignore - pack.Dockerfile explicitly COPYs .next/standalone and .next/static." },
-        { "id": "turbo",        "pattern": ".turbo",       "exclude_from": ["rsync"] },
-        { "id": "dist",         "pattern": "dist",         "exclude_from": ["rsync"] },
-        { "id": "coverage",     "pattern": "coverage",     "exclude_from": ["rsync"] }
+        {
+          "id": "node-modules",
+          "pattern": "node_modules",
+          "exclude_from": ["docker", "rsync"],
+          "note": "Docker builder stage installs fresh; rsync never benefits from shipping these."
+        },
+        {
+          "id": "next",
+          "pattern": ".next",
+          "exclude_from": ["rsync"],
+          "note": "Must NOT be in .dockerignore - pack.Dockerfile explicitly COPYs .next/standalone and .next/static."
+        },
+        { "id": "turbo", "pattern": ".turbo", "exclude_from": ["rsync"] },
+        { "id": "dist", "pattern": "dist", "exclude_from": ["rsync"] },
+        { "id": "coverage", "pattern": "coverage", "exclude_from": ["rsync"] }
       ]
     },
     {
       "title": "Code archaeology",
       "rules": [
-        { "id": "attic",     "pattern": ".attic",    "exclude_from": ["docker", "rsync"] },
-        { "id": "reference", "pattern": "reference", "exclude_from": ["docker", "rsync"], "note": "Was previously rsync-only - extending to docker keeps the image consistent with the dev exclusion intent." }
+        {
+          "id": "attic",
+          "pattern": ".attic",
+          "exclude_from": ["docker", "rsync"]
+        },
+        {
+          "id": "grave",
+          "pattern": ".grave",
+          "exclude_from": ["docker", "rsync"]
+        },
+        {
+          "id": "patches",
+          "pattern": "patches",
+          "exclude_from": ["docker", "rsync"]
+        },
+        {
+          "id": "reference",
+          "pattern": "reference",
+          "exclude_from": ["docker", "rsync"],
+          "note": "Was previously rsync-only - extending to docker keeps the image consistent with the dev exclusion intent."
+        },
+
+        {
+          "id": "deploy-manifest.json",
+          "pattern": "deploy-manifest.json",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".deployignore",
+          "pattern": ".deployignore",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "tsconfig.tsbuildinfo",
+          "pattern": "tsconfig.tsbuildinfo",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "next-env.d.ts",
+          "pattern": "next-env.d.ts",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".env.production.enc",
+          "pattern": ".env.production.enc",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "package.json",
+          "pattern": "package.json",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "pnpm-lock.yaml",
+          "pattern": "pnpm-lock.yaml",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "components.json",
+          "pattern": "components.json",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "migrate.Dockerfile",
+          "pattern": "migrate.Dockerfile",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "pack.Dockerfile",
+          "pattern": "pack.Dockerfile",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "compose.prod.yaml",
+          "pattern": "compose.prod.yaml",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".env.production.template",
+          "pattern": ".env.production.template",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".gitignore",
+          "pattern": ".gitignore",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".sops.yaml",
+          "pattern": ".sops.yaml",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "compose.dev.yaml",
+          "pattern": "compose.dev.yaml",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".dockerignore",
+          "pattern": ".dockerignore",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".env.production",
+          "pattern": ".env.production",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".env.local",
+          "pattern": ".env.local",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "pnpm-workspace.yaml",
+          "pattern": "pnpm-workspace.yaml",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "next.config.ts",
+          "pattern": "next.config.ts",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "AGENTS.md",
+          "pattern": "AGENTS.md",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "CLAUDE.md",
+          "pattern": "CLAUDE.md",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "vitest.config.ts",
+          "pattern": "vitest.config.ts",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "index.d.ts",
+          "pattern": "index.d.ts",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".env.local.example",
+          "pattern": ".env.local.example",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".env.example",
+          "pattern": ".env.example",
+          "exclude_from": ["rsync"]
+        },
+        { "id": ".env", "pattern": ".env", "exclude_from": ["rsync"] },
+        {
+          "id": "tsconfig.json",
+          "pattern": "tsconfig.json",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": ".prettierrc",
+          "pattern": ".prettierrc",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "devpostgres.sh",
+          "pattern": "devpostgres.sh",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "dev.Dockerfile",
+          "pattern": "dev.Dockerfile",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "tailwind.config.js",
+          "pattern": "tailwind.config.js",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "thehideaway.code-workspace",
+          "pattern": "thehideaway.code-workspace",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "redirects.ts",
+          "pattern": "redirects.ts",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "postcss.config.mjs",
+          "pattern": "postcss.config.mjs",
+          "exclude_from": ["rsync"]
+        },
+        {
+          "id": "eslint.config.mjs",
+          "pattern": "eslint.config.mjs",
+          "exclude_from": ["rsync"]
+        },
+        { "id": "fonts.ts", "pattern": "fonts.ts", "exclude_from": ["rsync"] }
       ]
     },
     {
       "title": "Secrets",
       "rules": [
-        { "id": "env-base",  "pattern": ".env",   "exclude_from": ["rsync"] },
-        { "id": "env-globs", "pattern": ".env.*", "exclude_from": ["rsync"], "note": ".env.production gets scp'd directly to /home/deploy/thehideaway/ with chmod 600 - never via rsync." }
+        { "id": "env-base", "pattern": ".env", "exclude_from": ["rsync"] },
+        {
+          "id": "env-globs",
+          "pattern": ".env.*",
+          "exclude_from": ["rsync"],
+          "note": ".env.production gets scp'd directly to /home/deploy/thehideaway/ with chmod 600 - never via rsync."
+        }
       ]
     },
     {
       "title": "Dormant source (Docker image only)",
       "rules": [
-        { "id": "auth-payload-legacy", "pattern": "/src/lib/auth/auth-payload/", "exclude_from": ["docker"], "note": "Legacy auth code superseded by src/lib/auth/payload-auth/." },
-        { "id": "auth-payload-keep",   "pattern": "!/src/payload/collections/Users/c/dd.js", "exclude_from": ["docker"], "note": "Negation preserved verbatim from the original .dockerignore. Path does not overlap the rule above, so this is effectively a no-op - kept to avoid behavior drift in this phase." },
-        { "id": "essay-demo",          "pattern": "/src/app/(frontend)/(site)/(content)/essays/DemoOfArchive.tsx", "exclude_from": ["docker"], "note": "Demo/archive page not shipped to prod." }
+        {
+          "id": "auth-payload-legacy",
+          "pattern": "/src/lib/auth/auth-payload/",
+          "exclude_from": ["docker"],
+          "note": "Legacy auth code superseded by src/lib/auth/payload-auth/."
+        }
       ]
     },
     {
       "title": "Runtime-managed upload directories (named volumes)",
       "rules": [
-        { "id": "uploads-media",        "pattern": "public/media/",        "exclude_from": ["docker", "rsync"], "note": "compose.prod.yaml mounts payload_media at /app/public/media." },
-        { "id": "uploads-track-media",  "pattern": "public/track_media/",  "exclude_from": ["docker", "rsync"], "note": "Named volume payload_track_media." },
-        { "id": "uploads-users",        "pattern": "public/users/",        "exclude_from": ["docker", "rsync"], "note": "Named volume payload_users." },
-        { "id": "uploads-assets-media", "pattern": "public/assets/media/", "exclude_from": ["docker"],          "note": "Assets collection upload dir (named volume payload_assets_media)." }
+        {
+          "id": "uploads-media",
+          "pattern": "public/media/",
+          "exclude_from": ["docker", "rsync"],
+          "note": "compose.prod.yaml mounts payload_media at /app/public/media."
+        },
+        {
+          "id": "uploads-track-media",
+          "pattern": "public/track_media/",
+          "exclude_from": ["docker", "rsync"],
+          "note": "Named volume payload_track_media."
+        },
+        {
+          "id": "uploads-users",
+          "pattern": "public/users/",
+          "exclude_from": ["docker", "rsync"],
+          "note": "Named volume payload_users."
+        },
+        {
+          "id": "uploads-assets-media",
+          "pattern": "public/assets/media/",
+          "exclude_from": ["docker"],
+          "note": "Assets collection upload dir (named volume payload_assets_media)."
+        }
       ]
     },
     {
       "title": "Large 3D static assets (bind-mounted at runtime)",
       "rules": [
-        { "id": "asset-plate",        "pattern": "public/assets/plate/",     "exclude_from": ["docker"], "note": "Bind-mounted from /opt/thehideaway/assets/plate on the VPS. ~432 MB combined across plate/rp_plaque/three." },
-        { "id": "asset-rp-plaque",    "pattern": "public/assets/rp_plaque/", "exclude_from": ["docker"], "note": "Bind-mounted from /opt/thehideaway/assets/rp_plaque." },
-        { "id": "asset-three",        "pattern": "public/assets/three/",     "exclude_from": ["docker"], "note": "Bind-mounted from /opt/thehideaway/assets/three." },
-        { "id": "asset-public-rsync", "pattern": "public/assets",            "exclude_from": ["rsync"],  "note": "Rsync excludes the whole assets/ tree on first-deploy bootstrap; the VPS gets these via a separate rsync to /opt/thehideaway/assets/. Smaller items under public/assets/ (SVGs, fonts) are restored later by the deploy user's git clone, which overlays the rsync'd repo dir." }
+        {
+          "id": "asset-plate",
+          "pattern": "public/assets/plate/",
+          "exclude_from": ["docker"],
+          "note": "Bind-mounted from /opt/thehideaway/assets/plate on the VPS. ~432 MB combined across plate/rp_plaque/three."
+        },
+        {
+          "id": "asset-rp-plaque",
+          "pattern": "public/assets/rp_plaque/",
+          "exclude_from": ["docker"],
+          "note": "Bind-mounted from /opt/thehideaway/assets/rp_plaque."
+        },
+        {
+          "id": "asset-three",
+          "pattern": "public/assets/three/",
+          "exclude_from": ["docker"],
+          "note": "Bind-mounted from /opt/thehideaway/assets/three."
+        },
+        {
+          "id": "asset-public-rsync",
+          "pattern": "public/assets",
+          "exclude_from": ["rsync"],
+          "note": "Rsync excludes the whole assets/ tree on first-deploy bootstrap; the VPS gets these via a separate rsync to /opt/thehideaway/assets/. Smaller items under public/assets/ (SVGs, fonts) are restored later by the deploy user's git clone, which overlays the rsync'd repo dir."
+        }
+      ]
+    },
+    {
+      "title": "eee",
+      "rules": [
+        { "id": "src", "pattern": "src", "exclude_from": ["rsync"] },
+        { "id": "e2e", "pattern": "e2e", "exclude_from": ["rsync"] },
+        { "id": "messages", "pattern": "messages", "exclude_from": ["rsync"] },
+        { "id": "nginx", "pattern": "nginx", "exclude_from": ["rsync"] },
+        { "id": "postgres", "pattern": "postgres", "exclude_from": ["rsync"] },
+        { "id": "readmes", "pattern": "readmes", "exclude_from": ["rsync"] },
+
+        { "id": "public", "pattern": "public", "exclude_from": ["rsync"] }
       ]
     },
     {
       "title": "Logs",
-      "rules": [
-        { "id": "logs", "pattern": "*.log", "exclude_from": ["rsync"] }
-      ]
+      "rules": [{ "id": "logs", "pattern": "*.log", "exclude_from": ["rsync"] }]
     }
   ]
 }

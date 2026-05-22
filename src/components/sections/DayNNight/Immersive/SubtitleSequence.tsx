@@ -117,10 +117,7 @@ export function SubtitleSequence({
     if (onPhotoCue && captions.length > 0) {
       const lastIdx = captions.length - 1;
       const fireAt =
-        lastIdx * (perCardMs + fadeMs) +
-        perCardMs +
-        fadeMs +
-        photoCueOffsetMs;
+        lastIdx * (perCardMs + fadeMs) + perCardMs + fadeMs + photoCueOffsetMs;
       const id = window.setTimeout(() => {
         photoCueRef.current?.();
       }, fireAt);

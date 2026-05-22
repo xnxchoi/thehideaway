@@ -12,6 +12,8 @@ node_modules
 
 # ── Code archaeology ────────────────────────────────────────
 .attic
+.grave
+patches
 #   Was previously rsync-only - extending to docker keeps the image consistent
 #   with the dev exclusion intent.
 reference
@@ -19,12 +21,6 @@ reference
 # ── Dormant source (Docker image only) ────────────────────────────────────────
 #   Legacy auth code superseded by src/lib/auth/payload-auth/.
 /src/lib/auth/auth-payload/
-#   Negation preserved verbatim from the original .dockerignore. Path does not
-#   overlap the rule above, so this is effectively a no-op - kept to avoid
-#   behavior drift in this phase.
-!/src/payload/collections/Users/c/dd.js
-#   Demo/archive page not shipped to prod.
-/src/app/(frontend)/(site)/(content)/essays/DemoOfArchive.tsx
 
 # ── Runtime-managed upload directories (named volumes) ────────────────────────────────────────
 #   compose.prod.yaml mounts payload_media at /app/public/media.

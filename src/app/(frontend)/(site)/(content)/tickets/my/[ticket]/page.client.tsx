@@ -74,7 +74,7 @@ export function TicketDetailClient({
 
   return (
     <RPage type="me" slug={["tickets", ticketId]}>
-      <div className={cn("relative z-[100]", ticketFontVariables)}>
+      <div className={cn("relative z-[100] py-15", ticketFontVariables)}>
         {/* Back link */}
         <div className="mx-auto w-full max-w-11xl px-12 pt-16 xl:px-16 xl:pt-20">
           <m.div

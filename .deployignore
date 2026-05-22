@@ -26,9 +26,48 @@ coverage
 
 # ── Code archaeology ────────────────────────────────────────
 .attic
+.grave
+patches
 #   Was previously rsync-only - extending to docker keeps the image consistent
 #   with the dev exclusion intent.
 reference
+deploy-manifest.json
+.deployignore
+tsconfig.tsbuildinfo
+next-env.d.ts
+.env.production.enc
+package.json
+pnpm-lock.yaml
+components.json
+migrate.Dockerfile
+pack.Dockerfile
+compose.prod.yaml
+.env.production.template
+.gitignore
+.sops.yaml
+compose.dev.yaml
+.dockerignore
+.env.production
+.env.local
+pnpm-workspace.yaml
+next.config.ts
+AGENTS.md
+CLAUDE.md
+vitest.config.ts
+index.d.ts
+.env.local.example
+.env.example
+.env
+tsconfig.json
+.prettierrc
+devpostgres.sh
+dev.Dockerfile
+tailwind.config.js
+thehideaway.code-workspace
+redirects.ts
+postcss.config.mjs
+eslint.config.mjs
+fonts.ts
 
 # ── Secrets ────────────────────────────────────────
 .env
@@ -50,6 +89,15 @@ public/users/
 #   under public/assets/ (SVGs, fonts) are restored later by the deploy user's
 #   git clone, which overlays the rsync'd repo dir.
 public/assets
+
+# ── eee ────────────────────────────────────────
+src
+e2e
+messages
+nginx
+postgres
+readmes
+public
 
 # ── Logs ────────────────────────────────────────
 *.log
