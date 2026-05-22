@@ -6,15 +6,15 @@ what actually runs; this doc orients you and explains the *why*.
 ```
 LAPTOP                          GITHUB ACTIONS               GHCR                       VPS
 ──────                          ──────────────               ────                       ───
-pnpm release:cut 0.12.0 ───────► release workflow ─────────►  hideaway:v0.12.0            ./scripts/deploy.sh v0.12.0
-  └─ tag + push                   build + push                hideaway-migrate:v0.12.0   └─ pull + rotate + smoke
+pnpm release:cut 0.15.0 ───────► release workflow ─────────►  hideaway:v0.15.0            ./scripts/deploy.sh v0.15.0
+  └─ tag + push                   build + push                hideaway-migrate:v0.15.0   └─ pull + rotate + smoke
                                                                                           └─ auto-rollback on fail
 ```
 
 Three boundaries, each crossed by exactly one script:
-1. **Laptop → GitHub** — `pnpm release:cut 0.12.0` (validation gates, semver tag, push).
+1. **Laptop → GitHub** — `pnpm release:cut 0.15.0` (validation gates, semver tag, push).
 2. **GitHub → GHCR** — `.github/workflows/release.yml` (triggered by the tag).
-3. **GHCR → VPS** — `./scripts/deploy.sh v0.12.0` (pull, rotate, smoke-test, persist tag).
+3. **GHCR → VPS** — `./scripts/deploy.sh v0.15.0` (pull, rotate, smoke-test, persist tag).
 
 ---
 
@@ -42,20 +42,20 @@ Three boundaries, each crossed by exactly one script:
 
 ```bash
 # Laptop — tag + push (triggers CI)
-pnpm release:cut 0.12.0
+pnpm release:cut 0.15.0
 
 # Watch CI: https://github.com/xnxchoi/thehideaway/actions
 # When the run goes green (~5–8 min cold cache, ~2–3 min thereafter):
-
+       
 # VPS — pull and rotate
-ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.12.0'
+ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.15.0'
 
 # If the deploy also requires migrations:
-ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.12.0 --migrate'
+ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.15.0 --migrate'
 ```
 
 `deploy.sh` does:
-1. Confirm `ghcr.io/xnxchoi/hideaway:v0.12.0` exists (manifest check).
+1. Confirm `ghcr.io/xnxchoi/hideaway:v0.15.0` exists (manifest check).
 2. Decrypt `.env.production.enc` via sops.
 3. `docker compose pull` then `up -d --wait` — compose keeps the old container alive until the new one passes its healthcheck. Zero downtime.
 4. Smoke test: `GET https://hideawayseoul.com/api/health` → expect 200, max 60s.
@@ -77,7 +77,7 @@ ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v1.2.2'
 
 ```bash
 ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh --status'
-# → currently deployed: v0.12.0
+# → currently deployed: v0.15.0
 # → rollback target:    v1.2.2
 ```
 
@@ -409,7 +409,7 @@ chmod 600 ~/.ghcr-token
 GHCR_TOKEN="$(cat ~/.ghcr-token)" \
   bash scripts/first-deploy.sh \
     --deploy-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB1JzXWlD3H5JwEzI7zPd+SEZN3aHQC0RUQWKCw5bsDJ seanschoi@Seans-MacBook-Pro.local" \
-    --image-tag  v0.12.0 \
+    --image-tag  v0.15.0 \
     --ghcr-user  xnxchoi \
      --skip-setup \
      --skip-dns \
@@ -444,7 +444,7 @@ If the wrapper aborted partway, re-run with flags to skip completed phases:
 GHCR_TOKEN="$(cat ~/.ghcr-token)" \
   bash scripts/first-deploy.sh \
     --deploy-key "..." \
-    --image-tag v0.12.0 \
+    --image-tag v0.15.0 \
     --ghcr-user xnxchoi \
     --skip-setup   \    
     --skip-dns     \    
