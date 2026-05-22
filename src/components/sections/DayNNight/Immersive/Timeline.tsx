@@ -665,13 +665,18 @@ function ActSet({
           threshold. The LiminalHandoff cassette hangs centred in the
           viewport throughout the second half (z-44), naming nothing —
           the cassette is the sound, the section names the source. */}
-      {/* Act III runs WIDE — ~2× the surrounding acts — because Liminal
-          carries the longest stretch of choreography on this page: photo
-          torrent + caption sequence in the first half, YM.FM credit
-          reveal + LiminalHandoff cassette in the second. The extra
-          width gives both halves room to breathe. Pacing wins; the
-          loop math handles whatever multiplier we pick. */}
-      <Act width={4.5} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
+      {/* Act III runs WIDE — far wider than the surrounding acts —
+          because Liminal carries the longest stretch of choreography on
+          this page: photo torrent + caption sequence in the first half,
+          YM.FM credit reveal + LiminalHandoff cassette in the second.
+          The caption cue is timer-driven (~8s), so the act must be wide
+          enough that the photo torrent still gets a generous horizontal
+          scroll stretch after the captions clear — the desktop analogue
+          of the mobile dress sentinel's height. Keep this multiplier
+          and that sentinel scaled together when retuning torrent
+          screen time. Pacing wins; the loop math handles whatever
+          multiplier we pick. */}
+      <Act width={8.4} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
         <ActEyebrow numeral="III" label={t("scrubber.dress")} align="left" />
         {/* YM.FM dedicated section. Anchored to row 2 self-end so the
             block sits below the cassette frame at the bottom of the
