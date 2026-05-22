@@ -170,7 +170,7 @@ const DAY_N_NIGHT_EVENT = {
   date: "2026-05-24T18:30:00+09:00",
   end_date: "2026-05-25T00:00:00+09:00",
   location: "Haebangchon · Itaewon",
-  gate_password:  "seoul2026",
+  gate_password: "seoul2026",
   capacity: 30,
   max_per_user: 3,
   ticket_price: 65_000,
@@ -370,7 +370,15 @@ const ensureDayNNightEvent = async (payload: Payload): Promise<string> => {
     select: { id: true } as never
   });
   const doc = existing.docs[0] as { id: string } | undefined;
-  if (doc) return doc.id;
+  if (doc) {
+    await payload.update({
+      collection: "events" as never,
+      id: doc.id,
+      overrideAccess: true,
+      data: DAY_N_NIGHT_EVENT as never
+    });
+    return doc.id;
+  }
   const id = uuidv7();
   const created = (await payload.create({
     collection: "events" as never,

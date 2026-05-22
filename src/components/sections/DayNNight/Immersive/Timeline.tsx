@@ -539,7 +539,7 @@ function ActSet({
           <MarkerText
             text={t("opening.hostedBy")}
             active={openingStep >= 4}
-            className="font-serif text-[clamp(1.05rem,1.4vw,1.5rem)] text-[var(--dn-fg)] italic opacity-90"
+            className="font-serif text-[clamp(1.05rem,6.4vw,1.55rem)] font-bold text-[var(--dn-fg)] italic opacity-85 lg:text-[2.4rem] lg:text-faded-black lg:opacity-90"
           />
         </div>
         {/* Right col — paper invitation card, springs in at step 2. */}
@@ -703,7 +703,7 @@ function ActSet({
         {!ariaHidden && dressSentinelRef && (
           <div
             ref={dressSentinelRef}
-            className="pointer-events-none col-span-full lg:hidden"
+            className="pointer-events-none relative col-span-full lg:hidden"
             style={{ minHeight: "650svh" }}
             aria-hidden
           />

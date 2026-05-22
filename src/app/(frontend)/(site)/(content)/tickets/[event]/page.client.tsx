@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/components/core/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
@@ -9,10 +9,10 @@ import { TicketBottomBar } from "@/components/UX/Ticket/TicketBottomBar";
 import { authClient } from "@/lib/auth/client";
 import { AnimatePresence, Variants } from "motion/react";
 import * as m from "motion/react-m";
-import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { TextBlurIn } from "@/components/UX/Tour/TextBlurIn";
 import { MotionPillButton } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
+import { signInRedirectPath } from "@/lib/routes/auth";
 import { cn } from "@/lib/utils";
 
 interface EventLite {
@@ -95,16 +95,6 @@ const slideVariants: Variants = {
   })
 };
 
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 10, filter: "blur(4px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }
-  }
-};
-
 /** Ordered indicator steps (skips welcome and purchased). */
 const INDICATOR_STEPS: FlowStep[] = ["otp", "name", "reserve"];
 
@@ -178,6 +168,7 @@ export function TicketEventClient({
 
   // ── Step state (4-step flow only) ────────────────────────────────────
   const useStepFlow = event.slug === STEP_FLOW_SLUG;
+  const myTicketsHref = useStepFlow ? "/day-n-night/my" : "/tickets/my";
   const [step, setStep] = useState<FlowStep>("welcome");
   const [dir, setDir] = useState(1);
 
@@ -339,9 +330,7 @@ export function TicketEventClient({
   const submitPurchase = async () => {
     if (purchaseBusy || !storedPassword) return;
     if (!isAuthedNow) {
-      router.push(
-        `/login?redirect=${encodeURIComponent(`/tickets/${event.slug}`)}`
-      );
+      router.push(signInRedirectPath(`/tickets/${event.slug}`));
       return;
     }
     setPurchaseBusy(true);
@@ -410,6 +399,7 @@ export function TicketEventClient({
           paymentInstructions={event.payment_instructions}
           copied={copied}
           onCopy={copyClaim}
+          myTicketsHref={myTicketsHref}
         />
       );
     }
@@ -479,97 +469,17 @@ export function TicketEventClient({
   return (
     <RPage type="pages" slug={["tickets", event.slug]}>
       {!gateOpen ? (
-        /* ── Gate screen — glass panel centered ── */
-        <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center p-9 md:p-16">
-          <div className="pointer-events-none absolute inset-[35px] z-[1] rounded-[35px] bg-opaque-background/55 backdrop-blur-[54px]" />
-
-          <m.div
-            initial={{ opacity: 0, y: 16, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{
-              type: "spring",
-              ...SPRING_EASE.power3.out,
-              visualDuration: 0.55
-            }}
-            className="relative z-[10] flex w-full max-w-[384px] flex-col gap-7"
-          >
-            <div>
-              <m.p
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
-              >
-                {tGate("eyebrow")}
-              </m.p>
-              <TextBlurIn
-                as="h2"
-                text={tGate("title")}
-                style={{ fontSize: "clamp(3rem, 5.5vw, 4.5rem)" }}
-                className="mt-3 leading-[1.1] font-light tracking-tight"
-                stagger={0.04}
-                delay={0.2}
-                yOffset={6}
-                blurAmount={6}
-                duration={0.7}
-              />
-              <m.p
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.35 }}
-                className="mt-3 font-mono text-[11px] leading-relaxed text-muted-foreground/60"
-              >
-                {tGate("body")}
-              </m.p>
-            </div>
-
-            <form
-              className="flex flex-col gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                submitGate();
-              }}
-            >
-              <label htmlFor="gate-passcode" className="sr-only">
-                {tGate("passcodeLabel")}
-              </label>
-              <input
-                id="gate-passcode"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={tGate("passcodeLabel")}
-                aria-label={tGate("passcodeLabel")}
-                autoComplete="off"
-                spellCheck={false}
-                className="w-full border-b border-border/30 bg-transparent pb-2 text-sm font-light tracking-tight placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
-              />
-              {gateError ? (
-                <m.p
-                  role="alert"
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
-                >
-                  {gateError}
-                </m.p>
-              ) : null}
-              <MotionPillButton
-                type="submit"
-                size="md"
-                disabled={gateBusy || !password.trim()}
-                className="mt-1 w-full bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
-              >
-                {gateBusy ? tGate("submitting") : tGate("submit")}
-              </MotionPillButton>
-            </form>
-          </m.div>
-
-          <Suspense>
-            <VGradientModule />
-          </Suspense>
-        </div>
+        <EventGateScreen
+          eventName={event.name}
+          eventSlug={event.slug}
+          dateDisplay={dateDisplay}
+          location={event.location}
+          password={password}
+          setPassword={setPassword}
+          gateBusy={gateBusy}
+          gateError={gateError}
+          onSubmit={submitGate}
+        />
       ) : (
         /* ── Post-gate: event grid ── */
         <section className="relative z-[100] mx-auto w-full max-w-7xl px-6 pt-32 pb-32 xl:px-10 xl:pt-40 xl:pb-40">
@@ -627,6 +537,8 @@ export function TicketEventClient({
                 <AnimatePresence mode="wait" custom={dir}>
                   <m.div
                     key={stepKey}
+                    data-step={stepKey}
+                    data-testid="day-n-night-rsvp-step"
                     custom={dir}
                     variants={slideVariants}
                     initial="initial"
@@ -647,11 +559,219 @@ export function TicketEventClient({
         title={event.name}
         rightAction={
           isAuthedNow
-            ? { label: tBar("myTickets"), href: "/tickets/my" }
+            ? { label: tBar("myTickets"), href: myTicketsHref }
             : { label: tBar("backHome"), href: "/" }
         }
       />
     </RPage>
+  );
+}
+
+function EventGateScreen({
+  eventName,
+  eventSlug,
+  dateDisplay,
+  location,
+  password,
+  setPassword,
+  gateBusy,
+  gateError,
+  onSubmit
+}: {
+  eventName: string;
+  eventSlug: string;
+  dateDisplay: string;
+  location: string | null;
+  password: string;
+  setPassword: (value: string) => void;
+  gateBusy: boolean;
+  gateError: string | null;
+  onSubmit: () => void;
+}) {
+  const tGate = useTranslations("Event.Rsvp.gate");
+  const isDayNNight = eventSlug === STEP_FLOW_SLUG;
+
+  return (
+    <section
+      className={cn(
+        "relative z-[100] min-h-svh overflow-hidden bg-[oklch(6%_0.04_260)] text-[oklch(96%_0.018_105)]",
+        "[--event-blue:oklch(55%_0.25_255)] [--event-cyan:oklch(84%_0.16_190)] [--event-ink:oklch(6%_0.04_260)] [--event-line:oklch(96%_0.018_105_/_0.22)] [--event-pink:oklch(70%_0.25_335)] [--event-teal:oklch(72%_0.17_205)]",
+        !isDayNNight &&
+          "[--event-blue:oklch(62%_0.2_285)] [--event-cyan:oklch(82%_0.14_75)] [--event-pink:oklch(70%_0.21_30)] [--event-teal:oklch(72%_0.16_25)]"
+      )}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-95"
+        style={{
+          background:
+            "linear-gradient(120deg, oklch(4% 0.04 260) 0%, oklch(8% 0.07 250) 35%, oklch(5% 0.05 290) 68%, oklch(4% 0.04 230) 100%), conic-gradient(from 210deg at 18% 24%, oklch(0% 0 0 / 0) 0deg, oklch(72% 0.17 205 / 0.26) 70deg, oklch(70% 0.25 335 / 0.18) 115deg, oklch(0% 0 0 / 0) 165deg), linear-gradient(110deg, oklch(0% 0 0 / 0) 0 46%, oklch(84% 0.16 190 / 0.22) 46% 46.45%, oklch(0% 0 0 / 0) 46.45% 100%)"
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.18] mix-blend-screen"
+        style={{ backgroundImage: "url('/assets/papier.png')" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.24]"
+        style={{
+          background:
+            "repeating-linear-gradient(0deg, oklch(100% 0 0 / 0.12) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, oklch(84% 0.16 190 / 0.09) 0 1px, transparent 1px 54px)"
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[-18%] bottom-[-8%] h-[44svh] origin-bottom opacity-45"
+        style={{
+          transform: "perspective(720px) rotateX(62deg)",
+          background:
+            "repeating-linear-gradient(90deg, oklch(84% 0.16 190 / 0.2) 0 1px, transparent 1px 7%), repeating-linear-gradient(0deg, oklch(70% 0.25 335 / 0.18) 0 1px, transparent 1px 14%)"
+        }}
+      />
+      <div className="relative grid min-h-svh grid-cols-1 gap-5 p-4 sm:p-5 md:p-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(330px,0.54fr)] lg:gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(390px,0.48fr)] xl:gap-7 xl:p-8">
+        <m.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            ...SPRING_EASE.power3.out,
+            visualDuration: 0.55
+          }}
+          className="relative flex min-h-[52svh] min-w-0 flex-col justify-between overflow-hidden border border-[var(--event-line)] bg-[oklch(7%_0.05_260_/_0.58)] p-4 shadow-[0_26px_90px_-42px_var(--event-cyan),inset_0_1px_0_oklch(100%_0_0_/_0.14)] backdrop-blur-xl sm:p-6 md:p-8 lg:min-h-[calc(100svh-3rem)] xl:p-10"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-75"
+            style={{
+              background:
+                "linear-gradient(145deg, oklch(84% 0.16 190 / 0.13), transparent 28%), linear-gradient(315deg, oklch(70% 0.25 335 / 0.12), transparent 42%)"
+            }}
+          />
+          <div className="relative flex min-w-0 items-start justify-between gap-4 border-b border-white/15 pb-4">
+            <p className="font-mono text-[11px] font-semibold tracking-[0.24em] text-[var(--event-cyan)] uppercase">
+              {tGate("eyebrow")}
+            </p>
+            <p className="max-w-[12rem] text-right font-mono text-[10px] leading-relaxed font-medium tracking-[0.18em] text-white/65 uppercase sm:max-w-none">
+              {dateDisplay || tGate("dateFallback")}
+              {location ? (
+                <>
+                  <br />
+                  {location}
+                </>
+              ) : null}
+            </p>
+          </div>
+
+          <div className="relative grid min-w-0 gap-5 py-8 md:py-10 xl:py-12">
+            <p className="font-mono text-[10px] font-semibold tracking-[0.28em] text-white/62 uppercase">
+              {tGate("statusLine")}
+            </p>
+            <h1 className="max-w-[10ch] min-w-0 bg-[linear-gradient(100deg,oklch(98%_0.02_105),var(--event-cyan)_34%,var(--event-pink)_72%,oklch(92%_0.08_285))] bg-clip-text text-6xl leading-[0.86] font-black break-words text-transparent text-balance uppercase drop-shadow-[0_0_28px_oklch(84%_0.16_190_/_0.22)] sm:text-7xl md:text-8xl xl:text-9xl">
+              {eventName}
+            </h1>
+            <div className="flex w-full max-w-[28rem] items-center gap-3">
+              <span className="h-px flex-1 bg-[linear-gradient(90deg,var(--event-cyan),transparent)]" />
+              <span className="h-2 w-2 rotate-45 bg-[var(--event-pink)] shadow-[0_0_18px_var(--event-pink)]" />
+              <span className="h-px flex-1 bg-[linear-gradient(90deg,transparent,var(--event-teal))]" />
+            </div>
+          </div>
+
+          <div className="relative grid grid-cols-2 border-t border-white/15 pt-4 font-mono text-[10px] font-semibold tracking-[0.2em] text-white/66 uppercase sm:grid-cols-4">
+            <span className="border-r border-white/15 pr-3 text-[var(--event-cyan)]">
+              {tGate("meta.private")}
+            </span>
+            <span className="border-r border-white/15 px-3">
+              {tGate("meta.ticket")}
+            </span>
+            <span className="border-r border-white/15 px-3 max-sm:border-r-0">
+              {tGate("meta.gate")}
+            </span>
+            <span className="pl-3 max-sm:pt-2">
+              {tGate("meta.sequence")}
+            </span>
+          </div>
+        </m.div>
+
+        <m.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            ...SPRING_EASE.power3.out,
+            visualDuration: 0.55,
+            delay: 0.08
+          }}
+          className="relative flex min-w-0 flex-col justify-end overflow-hidden border border-white/20 bg-[oklch(98%_0.018_105_/_0.08)] p-4 text-white shadow-[0_26px_86px_-42px_var(--event-pink),inset_0_1px_0_oklch(100%_0_0_/_0.2)] backdrop-blur-2xl sm:p-6 lg:min-h-[calc(100svh-3rem)] xl:p-8"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-70"
+            style={{
+              background:
+                "linear-gradient(180deg, oklch(100% 0 0 / 0.12), transparent 22%), repeating-linear-gradient(135deg, oklch(84% 0.16 190 / 0.08) 0 1px, transparent 1px 18px)"
+            }}
+          />
+          <div className="relative grid gap-7">
+            <div className="grid gap-3">
+              <p className="font-mono text-[10px] font-semibold tracking-[0.24em] text-[var(--event-cyan)] uppercase">
+                {tGate("consoleEyebrow")}
+              </p>
+              <h2 className="text-4xl leading-[0.96] font-semibold tracking-normal text-balance uppercase sm:text-5xl xl:text-6xl">
+                {tGate("title")}
+              </h2>
+              <p className="max-w-[30rem] font-mono text-[12px] leading-relaxed font-medium text-white/68">
+                {tGate("body")}
+              </p>
+            </div>
+
+            <form
+              className="grid min-w-0 gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit();
+              }}
+            >
+              <label
+                htmlFor="gate-passcode"
+                className="font-mono text-[10px] font-semibold tracking-[0.22em] text-white/72 uppercase"
+              >
+                {tGate("passcodeLabel")}
+              </label>
+              <input
+                id="gate-passcode"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••"
+                aria-label={tGate("passcodeLabel")}
+                autoComplete="off"
+                spellCheck={false}
+                className="min-h-16 w-full min-w-0 border border-white/22 bg-[oklch(4%_0.035_260_/_0.62)] px-4 font-mono text-2xl font-semibold tracking-[0.2em] text-[oklch(96%_0.018_105)] uppercase shadow-[inset_0_1px_0_oklch(100%_0_0_/_0.1),0_0_0_1px_oklch(84%_0.16_190_/_0.04)] outline-none transition-[border-color,box-shadow,background-color] duration-300 placeholder:text-white/25 focus:border-[var(--event-cyan)] focus:bg-[oklch(5%_0.045_255_/_0.78)] focus:shadow-[0_0_34px_oklch(84%_0.16_190_/_0.22),inset_0_1px_0_oklch(100%_0_0_/_0.14)] sm:text-3xl"
+              />
+              {gateError ? (
+                <m.p
+                  role="alert"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="border border-[oklch(72%_0.25_25_/_0.65)] bg-[oklch(16%_0.08_25_/_0.74)] px-3 py-2 font-mono text-[11px] font-semibold tracking-[0.12em] text-[oklch(86%_0.18_35)] uppercase"
+                >
+                  {gateError}
+                </m.p>
+              ) : null}
+              <button
+                type="submit"
+                disabled={gateBusy || !password.trim()}
+                className="min-h-16 w-full border border-white/25 bg-[linear-gradient(100deg,var(--event-cyan),var(--event-teal)_48%,var(--event-pink))] px-5 text-left font-mono text-sm font-black tracking-[0.22em] text-[var(--event-ink)] uppercase shadow-[0_18px_44px_-24px_var(--event-cyan),0_0_34px_oklch(70%_0.25_335_/_0.18)] transition-[filter,transform,opacity] duration-300 hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 sm:text-base"
+              >
+                {gateBusy ? tGate("submitting") : tGate("submit")}
+              </button>
+            </form>
+          </div>
+        </m.div>
+      </div>
+    </section>
   );
 }
 
@@ -785,7 +905,7 @@ function OtpStep({
               type="submit"
               size="md"
               disabled={busy || !email.trim()}
-              className="self-start bg-foreground text-[13px] font-medium text-background disabled:opacity-40"
+              className="min-w-[7rem] self-start bg-foreground text-[13px] font-medium whitespace-nowrap text-background disabled:opacity-40"
             >
               {busy ? "…" : t("sendCode")}
             </MotionPillButton>
@@ -928,12 +1048,14 @@ function PurchasedView({
   purchased,
   paymentInstructions,
   copied,
-  onCopy
+  onCopy,
+  myTicketsHref
 }: {
   purchased: PurchaseResult;
   paymentInstructions: string | null;
   copied: string | null;
   onCopy: (url: string) => void;
+  myTicketsHref: string;
 }) {
   const t = useTranslations("Event.Rsvp.purchased");
   return (
@@ -982,6 +1104,7 @@ function PurchasedView({
               .map((tx) => (
                 <m.li
                   key={tx.id}
+                  data-testid="gift-claim-link"
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
@@ -1008,7 +1131,8 @@ function PurchasedView({
 
       <div>
         <Link
-          href="/tickets/my"
+          href={myTicketsHref}
+          data-testid="view-my-tickets"
           className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase hover:text-foreground"
         >
           {t("viewMy")}

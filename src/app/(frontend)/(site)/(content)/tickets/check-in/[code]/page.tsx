@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { CheckInClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 export const metadata: Metadata = { title: "Check in" };
 
@@ -14,7 +15,9 @@ export default async function CheckInPage(props: { params: Params }) {
   const { code } = await props.params;
   const session = await getServerSession(await nextHeaders());
   if (!session) {
-    redirect(`/login?redirect=/tickets/check-in/${encodeURIComponent(code)}`);
+    redirect(
+      signInRedirectPath(`/tickets/check-in/${encodeURIComponent(code)}`)
+    );
   }
 
   const role = session.user.role;

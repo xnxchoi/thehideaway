@@ -5,6 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketDetailClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 export const metadata: Metadata = { title: "Ticket" };
 
@@ -24,7 +25,7 @@ export default async function TicketDetailPage(props: { params: Params }) {
 
   const session = await getServerSession(await nextHeaders());
   if (!session) {
-    redirect(`/login?redirect=/tickets/my/${ticketId}`);
+    redirect(signInRedirectPath(`/tickets/my/${ticketId}`));
   }
   const payload = await getPayload({ config });
 

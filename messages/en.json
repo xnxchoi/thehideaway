@@ -295,7 +295,8 @@
     "signOut": "Sign out",
     "notifications": "Notifications",
     "theme": "Theme",
-    "highlights": "Highlights"
+    "highlights": "Highlights",
+    "sideDrawerDescription": "Site navigation, search, notifications, and player controls."
   },
   "Event": {
     "DayNNight": {
@@ -443,6 +444,12 @@
         "on": "Sound on",
         "off": "Sound off"
       },
+      "details": {
+        "eyebrow": "Details",
+        "time": "Time",
+        "entry": "Entry",
+        "close": "Close"
+      },
       "scrubber": {
         "navLabel": "Timeline",
         "opening": "Intro",
@@ -579,22 +586,34 @@
         "body": "Enter the password the buyer shared with you. This link expires 48 hours after the host confirmed the order.",
         "passwordPlaceholder": "Password",
         "submit": "Claim",
+        "submitting": "Claiming…",
         "errors": {
           "expired": "This link has expired. Ask the buyer for a new one.",
           "notActivated": "This ticket isn't active yet. The host will confirm payment shortly—keep this link, there's no need to ask the buyer for a new one.",
           "invalid": "That password didn't match.",
           "alreadyClaimed": "This ticket has already been claimed.",
+          "authRequired": "Sign in to claim this ticket.",
           "emailMismatch": "This ticket is reserved for a specific email. Sign in with the address the purchaser specified."
         },
         "success": {
           "title": "You're on the list.",
-          "body": "You're all set. See you on May 24."
+          "body": "You're all set. See you on May 24.",
+          "cta": "Open my tickets →"
         }
       },
       "gate": {
         "eyebrow": "Locked",
         "title": "Enter the passcode to continue.",
         "body": "This page is private. Use the code shared with you.",
+        "statusLine": "Blue-hour signal",
+        "consoleEyebrow": "Access signal",
+        "dateFallback": "Date pending",
+        "meta": {
+          "private": "Private",
+          "ticket": "Ticket",
+          "gate": "Gate",
+          "sequence": "01 / RSVP"
+        },
         "passcodeLabel": "Access code",
         "submit": "Enter",
         "submitting": "Checking…",

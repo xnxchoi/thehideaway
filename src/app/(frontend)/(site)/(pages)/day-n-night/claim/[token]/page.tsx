@@ -1,9 +1,12 @@
 import configPromise from "@payload-config";
+import { cookies, headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import type { Metadata } from "next/types";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { RPage } from "@/components/UX/Transition";
+import { signInRedirectPath } from "@/lib/routes/auth";
 import { ClaimGate } from "./ClaimGate";
 
 export const metadata: Metadata = {
@@ -74,8 +77,16 @@ export default async function DayNNightClaimPage({
 }) {
   const { token } = await params;
   const t = await getTranslations("Event.Rsvp.claim");
+  const payload = await getPayload({ config: configPromise });
 
-  const state = await resolveClaim(token);
+  const viewerId = await resolveViewerId(payload);
+  if (!viewerId) {
+    redirect(
+      signInRedirectPath(`/day-n-night/claim/${encodeURIComponent(token)}`)
+    );
+  }
+
+  const state = await resolveClaim(token, payload);
 
   return (
     <RPage type="pages" slug={["day-n-night", "claim"]}>
@@ -114,11 +125,13 @@ export default async function DayNNightClaimPage({
   );
 }
 
-async function resolveClaim(token: string): Promise<ClaimState> {
+async function resolveClaim(
+  token: string,
+  payload: Awaited<ReturnType<typeof getPayload>>
+): Promise<ClaimState> {
   if (!token || token.length < 6 || token.length > 64) {
     return { kind: "not-found" };
   }
-  const payload = await getPayload({ config: configPromise });
 
   const ticketSearch = await payload
     .find({
@@ -162,4 +175,22 @@ async function resolveClaim(token: string): Promise<ClaimState> {
     orderId: order.id,
     recipientLabel: ticket.gift_initial_name?.trim() || ""
   };
+}
+
+async function resolveViewerId(
+  payload: Awaited<ReturnType<typeof getPayload>>
+): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const headerStore = await nextHeaders();
+    const headersForPayload = new Headers(headerStore);
+    const token = cookieStore.get("payload-token")?.value;
+    if (token && !headersForPayload.get("authorization")) {
+      headersForPayload.set("authorization", `JWT ${token}`);
+    }
+    const { user } = await payload.auth({ headers: headersForPayload });
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
 }

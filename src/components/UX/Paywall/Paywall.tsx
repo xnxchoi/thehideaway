@@ -1,4 +1,5 @@
 import { Link } from "@/components/core/Link/Link";
+import { signInRedirectPath } from "@/lib/routes/auth";
 import RichText from "../RichText";
 import type { GateResult } from "./gatePost";
 
@@ -98,9 +99,7 @@ export function Paywall({
     typeof needsAuthProp === "boolean"
       ? needsAuthProp
       : gate?.reason === "auth-required";
-  const loginHref = currentPath
-    ? `/login?redirect=${encodeURIComponent(currentPath)}`
-    : "/login";
+  const loginHref = signInRedirectPath(currentPath ?? "/event-entry");
 
   return (
     <>

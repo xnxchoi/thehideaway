@@ -5,7 +5,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { ExclusiveContentClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
-
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 export const metadata: Metadata = { title: "Exclusive" };
 
@@ -31,7 +31,9 @@ export default async function ExclusivePage(props: { params: Params }) {
 
   const session = await getServerSession(await nextHeaders());
   if (!session) {
-    redirect(`/login?redirect=/tickets/${encodeURIComponent(slug)}/exclusive`);
+    redirect(
+      signInRedirectPath(`/tickets/${encodeURIComponent(slug)}/exclusive`)
+    );
   }
   const payload = await getPayload({ config });
 

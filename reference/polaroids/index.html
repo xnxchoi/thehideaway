@@ -1,0 +1,117 @@
+<style>
+  html, body {
+    margin:0;
+    padding:0;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .fixed-bg {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .fixed-bg svg {
+    border-radius:2.5vh;
+    width:50%;
+    top:5%;
+    height:90%;
+    position:absolute;
+    left:25%;
+  }
+  @media (max-aspect-ratio: 1.5) {
+    .fixed-bg svg {
+      left:9%;
+      width: 82%;
+    }
+  }
+
+  main {
+    width:100vw;
+    height:100vh;
+    position:relative;
+    top:0;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    overscroll-behavior: none;
+  }
+
+  section {
+    scroll-snap-align: center;
+    position:relative;
+    left:0;
+    top:0;
+    width:100%;
+    min-height:100vh;
+  }
+
+</style>
+<script type="text/javascript">
+
+  const paths = document.querySelectorAll('.motion-paths *');
+  const xTo = gsap.quickTo('.pov-pan', 'x', {duration:1.3, ease:'expo'});
+  const yTo = gsap.quickTo('.pov-pan', 'y', {duration:1.3, ease:'expo'});
+
+  const tl = gsap.timeline({
+      scrollTrigger:{
+        scroller: 'main',
+        trigger: '#s1',
+        endTrigger: '#s6',
+        start: '0 0',
+        end: '100% 100%',
+        scrub:  1,
+      },
+      onUpdate:()=>{
+        xTo(-gsap.getProperty('.focal-point', 'x'));
+        yTo(-gsap.getProperty('.focal-point', 'y'));
+      },
+      defaults:{ duration:1, ease:'none' }
+    })
+    .to('.focal-point', { motionPath: paths[0], immediateRender: true }, 0)
+    .fromTo('.pov-scale', { x: 500, y: 500, scale: 3.2, rotate:20 }, { rotate:-5, scale:2.5, ease:'sine.inOut' }, 0)
+
+    .to('.focal-point', { motionPath: paths[1]}, 1)
+    .to('.pov-scale', { rotate:8, scale:3.3, ease:'sine.inOut' }, 1)
+
+    .to('.focal-point', { motionPath: paths[2]}, 2)
+    .to('.pov-scale', { rotate:-4, scale:2.75, ease:'sine.inOut' }, 2)
+
+    .to('.focal-point', { motionPath: paths[3]}, 3)
+    .to('.pov-scale', { rotate:5, scale:2, ease:'sine.inOut' }, 3)
+
+    .to('.focal-point', { motionPath: paths[4]}, 4)
+    .to('.pov-scale', { rotate:-5, scale:3, ease:'sine.inOut' }, 4)
+
+  gsap.set('.pov-pan', {
+    x: -gsap.getProperty('.focal-point', 'x'),
+    y: -gsap.getProperty('.focal-point', 'y')
+  })
+</script>
+<div class="fixed-bg">
+  <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+    <g class="pov-scale">
+      <g class="pov-pan">
+        <image href="https://images.unsplash.com/photo-1771681617105-745758eae89b?q=80&w=3000" width="1000"/>
+        <g class="motion-paths" fill="none">
+          <path d="M196 434c66-49 230 44 322 18"/>
+          <path d="M518 452c22-1 228 65 303 56"/>
+          <path d="M821 508s-81 263-18 399"/>
+          <path d="M803 907s-238-64-317-47"/>
+          <path d="M486 860s-160 76-298 17"/>
+        </g>
+        <circle class="focal-point" r="0"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<main>
+  <section id="s1"></section>
+  <section id="s2"></section>
+  <section id="s3"></section>
+  <section id="s4"></section>
+  <section id="s5"></section>
+  <section id="s6"></section>
+</main>

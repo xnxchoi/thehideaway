@@ -191,6 +191,7 @@
     "path-to-regexp": "^8.4.2",
     "payload": "latest",
     "pdfmake": "^0.3.7",
+    "playwright": "^1.60.0",
     "postcss": "^8.5.12",
     "postprocessing": "^6.39.1",
     "prism-react-renderer": "^2.4.1",

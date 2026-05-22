@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 export default async function EventEntryPage() {
   const session = await getServerSession(await nextHeaders());
 
   if (!session?.user?.id) {
-    redirect("/sign-in?redirect=/tickets/day-n-night");
+    redirect(signInRedirectPath("/tickets/day-n-night"));
   }
 
   const userId = session.user.id;

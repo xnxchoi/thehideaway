@@ -3,7 +3,6 @@
 import { useEffect, useState, type ReactNode, useMemo } from "react";
 import { type Variants } from "motion/react";
 import * as m from "motion/react-m";
-import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
 
 /**
@@ -71,20 +70,6 @@ const ITEM_VARIANTS: Variants = {
  * For sections with many items, this stretches the reveal into a
  * coherent ~1.0s gesture before the last child settles.
  */
-// Stage variants intentionally carry a no-op `opacity: 1` on both
-// states. Motion's `whileInView` short-circuits when the target variant
-// has no animatable properties, which would prevent the variant label
-// from propagating to children and break the choreography. The opacity
-// is benign (always 1) but its presence ensures Motion processes the
-// hidden → visible swap and dispatches `staggerChildren` to descendants.
-const STAGE_VARIANTS: Variants = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.18, delayChildren: 0.15 }
-  }
-};
-
 const STAGE_VIEWPORT = 0.55;
 
 // ─── Tag mapping (polymorphic without `as any`) ──────────────────────────────
@@ -161,7 +146,11 @@ export function RevealStage({
   // stability); when no threshold is provided we hand the limiter
   // `Infinity` so the selector returns `false` and Zustand never
   // subscribes the component to meaningful changes.
-  const progress = useDayNNightScene(useShallow((r) => r.progress));
+  const progressActive = useDayNNightScene((r) =>
+    typeof progressThreshold === "number"
+      ? r.progress >= progressThreshold
+      : false
+  );
 
   // Below `lg` the immersive view is a plain vertical scroll: the GSAP
   // horizontal track, its `layout` measurement, and the scene-progress
@@ -185,7 +174,7 @@ export function RevealStage({
     : typeof active === "boolean"
       ? active
       : typeof progressThreshold === "number"
-        ? progress >= progressThreshold
+        ? progressActive
         : undefined;
 
   const variants = useMemo(
@@ -289,24 +278,16 @@ export function useActRevealActive(
   // raw `crossed` boolean flips both ways with `progress`; we latch it
   // into `active` and never unset. Mirrors Motion's `whileInView` with
   // `{ once: true }` behavior — the gold-standard UX for reveals.
-  const layout = useDayNNightScene(useShallow((r) => r.layout));
-  const progress = useDayNNightScene(useShallow((r) => r.progress));
-  const [crossed, setCrossed] = useState(false);
-  useEffect(() => {
-    let start: number | undefined, threshold: number | undefined;
-    if (layout) {
-      start = layout?.startsFrac[actIndex];
-      if (typeof start === "number") {
-        threshold = start - layout.viewportFrac - preroll;
-      }
-      if (typeof threshold === "number") {
-        setCrossed(progress >= threshold);
-      }
-    }
+  const crossed = useDayNNightScene((r) => {
+    const layout = r.layout;
+    const start = layout?.startsFrac[actIndex];
+    if (!layout || typeof start !== "number") return false;
     // Act first enters viewport from the right when:
     //   loopProgress = startsFrac - viewportFrac
     // We fire `preroll` of progress earlier so the blur-in completes
     // before the heading sits at viewport center.
+    const threshold = start - layout.viewportFrac - preroll;
+    return r.progress >= threshold;
   });
   const [active, setActive] = useState(false);
   useEffect(() => {

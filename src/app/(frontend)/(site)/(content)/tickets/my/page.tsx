@@ -4,15 +4,15 @@ import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { signInRedirectPath } from "@/lib/routes/auth";
 import MyTicketsPageClient, { type MyTicketDoc } from "./page.client";
-
 
 export const metadata: Metadata = { title: "My Tickets" };
 
 export default async function MyTicketsPage() {
   const session = await getServerSession(await nextHeaders());
   if (!session) {
-    redirect("/login?redirect=/tickets/my");
+    redirect(signInRedirectPath("/tickets/my"));
   }
 
   const payload = await getPayload({ config });

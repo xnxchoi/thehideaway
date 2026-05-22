@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { RPage } from "@/components/UX/Transition";
+import { signInRedirectPath } from "@/lib/routes/auth";
 import { PasswordReveal } from "./PasswordReveal";
 
 // noindex,nofollow — this page renders the 48h order password as plain
@@ -37,7 +38,7 @@ export default async function DayNNightMyPage() {
 
   const viewer = await resolveViewer(payload);
   if (!viewer) {
-    redirect("/login?redirect=%2Fday-n-night%2Fmy");
+    redirect(signInRedirectPath("/day-n-night/my"));
   }
 
   // C5: distinguish a DB outage (`orders === null`) from a genuinely

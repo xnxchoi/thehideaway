@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState } from "react";
+import { Link } from "@/components/core/Link/Link";
 
 import { submitClaim, type ClaimActionState } from "./action";
 
@@ -13,16 +13,11 @@ import { submitClaim, type ClaimActionState } from "./action";
  */
 export function ClaimGate({ ticketId }: { ticketId: string }) {
   const t = useTranslations("Event.Rsvp.claim");
-  const router = useRouter();
 
   const [state, formAction, pending] = useActionState<
     ClaimActionState,
     FormData
   >(submitClaim, { ok: false });
-
-  useEffect(() => {
-    if (state.ok) router.refresh();
-  }, [state.ok, router]);
 
   if (state.ok) {
     return (
@@ -33,6 +28,12 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
         <p className="mt-3 max-w-sm text-sm leading-relaxed font-light text-off-white/75">
           {t("success.body")}
         </p>
+        <Link
+          href="/day-n-night/my"
+          className="mt-7 inline-flex border border-off-white/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white"
+        >
+          {t("success.cta")}
+        </Link>
       </div>
     );
   }
@@ -49,7 +50,9 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
             ? // Throttled re-uses the invalid copy for now — same UX hint
               // ("try again") with the i18n key already in tree.
               t("errors.invalid")
-            : t("errors.invalid")
+            : errorKey === "authRequired"
+              ? t("errors.authRequired")
+              : t("errors.invalid")
     : null;
 
   return (
@@ -85,7 +88,7 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
         disabled={pending}
         className="mt-7 border border-off-white/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {pending ? t("submit") + "…" : t("submit")}
+        {pending ? t("submitting") : t("submit")}
       </button>
     </form>
   );

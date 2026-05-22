@@ -6,6 +6,7 @@ import type { Plan, Price, Currency } from "@/payload-types";
 import { CheckoutClient } from "./CheckoutClient";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import { RPage } from "@/components/UX/Transition";
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 export const runtime = "nodejs";
 
@@ -22,7 +23,9 @@ export default async function CheckoutPage(props: {
   const headersList = await nextHeaders();
   const auth = await payload.auth({ headers: headersList });
   if (!auth.user) {
-    redirect(`/login?redirect=/checkout?plan=${encodeURIComponent(planId)}`);
+    redirect(
+      signInRedirectPath(`/checkout?plan=${encodeURIComponent(planId)}`)
+    );
   }
 
   const plan = (await payload

@@ -5,6 +5,11 @@ import config from "@payload-config";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { safeEqual } from "@/lib/api/safeEqual";
+import {
+  EVENT_GATE_TTL_MS,
+  eventGateCookieName,
+  issueEventGateCookieValue
+} from "@/lib/event-gate";
 
 export const runtime = "nodejs";
 
@@ -61,5 +66,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "invalid" }, { status: 401 });
   }
 
-  return NextResponse.json({ ok: true }, { status: 200 });
+  const res = NextResponse.json({ ok: true }, { status: 200 });
+  const { value, expiresAt } = issueEventGateCookieValue(
+    event.id,
+    EVENT_GATE_TTL_MS
+  );
+  res.cookies.set(eventGateCookieName(body.event_slug), value, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: `/${body.event_slug}`,
+    expires: expiresAt
+  });
+  return res;
 }

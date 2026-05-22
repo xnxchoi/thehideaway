@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useDayNNightScene } from "../store";
+import { useDayNNightStore } from "../store";
 import { Button } from "@/components/core/Button";
 
 /**
@@ -121,6 +121,7 @@ export function DayNNightScore({
   const [failed, setFailed] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
   const dayRef = useRef<TrackPipeline | null>(null);
+  const store = useDayNNightStore();
 
   // Spin up the AudioContext + daytime pipeline on first enable.
   useEffect(() => {
@@ -202,8 +203,6 @@ export function DayNNightScore({
     };
   }, [enabled]);
 
-  const progress = useDayNNightScene((r) => r.progress);
-
   useEffect(() => {
     if (!ready) return;
     let raf = 0;
@@ -218,7 +217,7 @@ export function DayNNightScore({
         return;
       }
 
-      const day = resolveDayGain(progress);
+      const day = resolveDayGain(store.getState().progress);
       const now = ctx.currentTime;
       try {
         d.gain.gain.setTargetAtTime(day * BASE_VOL, now, RAMP_FAST);
@@ -235,7 +234,7 @@ export function DayNNightScore({
       active = false;
       cancelAnimationFrame(raf);
     };
-  }, [ready, progress]);
+  }, [ready, store]);
 
   if (failed) return null;
 

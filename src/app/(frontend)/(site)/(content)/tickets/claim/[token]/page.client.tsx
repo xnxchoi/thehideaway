@@ -9,6 +9,7 @@ import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { TextBlurIn } from "@/components/UX/Tour/TextBlurIn";
 import { MotionPillButton } from "@/components/core/Button";
 import { SPRING_EASE } from "@/constants/animations";
+import { signInRedirectPath } from "@/lib/routes/auth";
 import { cn } from "@/lib/utils";
 import * as m from "motion/react-m";
 import { AnimatePresence } from "motion/react";
@@ -62,9 +63,7 @@ export function ClaimClient({
   const claim = async () => {
     if (busy) return;
     if (!isAuthenticated) {
-      router.push(
-        `/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`
-      );
+      router.push(signInRedirectPath(`/tickets/claim/${token}`));
       return;
     }
     setBusy(true);
@@ -253,9 +252,7 @@ function EmailMismatchView({ token }: { token: string }) {
         This gift link is restricted to a different email address. Sign in with
         the intended account to claim it.
       </p>
-      <Link
-        href={`/login?redirect=${encodeURIComponent(`/tickets/claim/${token}`)}`}
-      >
+      <Link href={signInRedirectPath(`/tickets/claim/${token}`)}>
         <MotionPillButton
           type="button"
           size="md"

@@ -32,7 +32,7 @@ const PAPER_THEME: CSSProperties = {
 export function OpeningCard() {
   const t = useTranslations("Event.DayNNight");
   const { onMouseEnter, onMouseLeave } = useDomCursor({
-    enterCondition: (e) => "CHECK IT OUT",
+    enterCondition: () => "CHECK IT OUT",
     marquee: { enter: () => true }
   });
   const { setOpen } = useDetailsContext();

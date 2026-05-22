@@ -424,12 +424,21 @@ export function useSampleCelestial(): CelestialState {
   // HORIZON_LOOP defaults to whatever the store currently holds (Timeline
   // measures the act track on mount and writes the derived value). The
   // fallback (0.2) covers SSR and pre-measurement frames.
-  const HORIZON_LOOP = useDayNNightScene((r) => r.horizonLoop);
-  const progress_ = useDayNNightScene((r) => r.progress);
-  const progress = useMotionValue(progress_);
-  useEffect(() => progress.set(progress_), [progress_, progress]);
+  const store = useDayNNightStore();
+  const initialState = store.getState();
+  const horizonLoop = useMotionValue(initialState.horizonLoop);
+  const progress = useMotionValue(initialState.progress);
+  useEffect(
+    () =>
+      store.subscribe((state) => {
+        horizonLoop.set(state.horizonLoop);
+        progress.set(state.progress);
+      }),
+    [horizonLoop, progress, store]
+  );
   const sunY = useTransform(() => {
     const t = progress.get();
+    const HORIZON_LOOP = horizonLoop.get();
     const loopProgress = clamp(t, 0, 1);
     return loopProgress < HORIZON_LOOP
       ? -0.15 + (loopProgress / HORIZON_LOOP) * (HORIZON_Y + 0.15)

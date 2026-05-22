@@ -296,7 +296,8 @@
     "signOut": "로그아웃",
     "notifications": "알림",
     "theme": "테마",
-    "highlights": "하이라이트"
+    "highlights": "하이라이트",
+    "sideDrawerDescription": "사이트 탐색, 검색, 알림, 플레이어 컨트롤"
   },
   "Event": {
     "DayNNight": {
@@ -444,6 +445,12 @@
         "on": "On",
         "off": "Off"
       },
+      "details": {
+        "eyebrow": "상세 정보",
+        "time": "시간",
+        "entry": "입장",
+        "close": "닫기"
+      },
       "scrubber": {
         "navLabel": "타임라인",
         "opening": "Intro",
@@ -580,22 +587,34 @@
         "body": "구매자가 알려준 비밀번호를 입력해 주세요. 이 링크는 호스트가 결제를 확인한 때부터 48시간 동안 쓸 수 있어요.",
         "passwordPlaceholder": "비밀번호",
         "submit": "티켓 받기",
+        "submitting": "처리하고 있어요…",
         "errors": {
           "expired": "링크가 만료됐어요. 구매자에게 다시 보내달라고 요청해 주세요.",
           "notActivated": "결제 확인 중이라 아직 티켓을 쓸 수 없어요. 호스트가 곧 확인할 예정이니, 이 링크를 그대로 가지고 계시면 돼요.",
           "invalid": "비밀번호가 맞지 않아요.",
           "alreadyClaimed": "이미 누군가 받은 티켓이에요.",
+          "authRequired": "티켓을 받으려면 로그인해 주세요.",
           "emailMismatch": "이 티켓은 정해진 사람만 받을 수 있어요. 구매자가 지정한 이메일로 로그인해 주세요."
         },
         "success": {
           "title": "명단에 올라갔어요.",
-          "body": "예약이 끝났어요. 5월 24일에 뵙겠습니다."
+          "body": "예약이 끝났어요. 5월 24일에 뵙겠습니다.",
+          "cta": "내 티켓 열기 →"
         }
       },
       "gate": {
         "eyebrow": "비공개",
         "title": "비밀번호를 입력해 주세요.",
         "body": "초대받은 분들만 볼 수 있는 페이지예요. 전달받은 코드를 입력해 주세요.",
+        "statusLine": "블루아워 시그널",
+        "consoleEyebrow": "입장 시그널",
+        "dateFallback": "날짜 준비 중",
+        "meta": {
+          "private": "비공개",
+          "ticket": "티켓",
+          "gate": "입장",
+          "sequence": "01 / RSVP"
+        },
         "passcodeLabel": "비밀번호",
         "submit": "입장하기",
         "submitting": "확인하고 있어요…",

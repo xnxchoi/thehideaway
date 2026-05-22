@@ -126,6 +126,7 @@ export interface PurchaseReceiptArgs extends TicketContext {
   quantity: number;
   totalAmount: number;
   paymentInstructions?: string | null;
+  managementUrl?: string | null;
 }
 
 export interface GiftInviteArgs extends TicketContext {
@@ -186,8 +187,10 @@ export class TicketMailer {
         `<div style="background:#f7f6f3;padding:18px 20px;border-left:2px solid #1a1a1a;margin:20px 0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escape(args.paymentInstructions)}</div>`
       );
     }
+    const managementUrl = args.managementUrl ?? `${SITE_URL}/tickets/my`;
+    const managementDisplayUrl = managementUrl.replace(/^https?:\/\//, "");
     lines.push(
-      `<p style="font-size:14px;line-height:1.6;color:#555;margin:20px 0 0;">Once payment clears, your ticket will activate automatically and a separate email will arrive with your QR check-in code. You can view your tickets at <a href="${SITE_URL}/tickets/my" style="color:#1a1a1a;">${SITE_URL.replace(/^https?:\/\//, "")}/tickets/my</a>.</p>`
+      `<p style="font-size:14px;line-height:1.6;color:#555;margin:20px 0 0;">Once payment clears, your ticket will activate automatically and a separate email will arrive with your QR check-in code. You can view your tickets at <a href="${escape(managementUrl)}" style="color:#1a1a1a;">${escape(managementDisplayUrl)}</a>.</p>`
     );
 
     const html = frame("Your reservation is held.", lines.join("\n"));
@@ -196,7 +199,7 @@ export class TicketMailer {
       `Quantity: ${args.quantity}\n` +
       `Amount: ${formatKRW(args.totalAmount)}\n` +
       (args.paymentInstructions ? `\n${args.paymentInstructions}\n` : "") +
-      `\nView at ${SITE_URL}/tickets/my`;
+      `\nView at ${managementUrl}`;
 
     return send(this.payload, {
       to: args.recipientEmail,

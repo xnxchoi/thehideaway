@@ -5,6 +5,7 @@ import { Logo } from "@/components/core/Logo";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { Suspense } from "react";
 import { DevButlerButton } from "./DevButlerButton";
+import { signInRedirectTarget } from "@/lib/routes/auth";
 
 // Server-evaluated. Both flags must be true for the button to be enabled,
 // and the button is only mounted at all when NODE_ENV !== "production".
@@ -16,7 +17,15 @@ const butlerReason = isDev
     : "Set DEV_BUTLER_PASSWORD"
   : null;
 
-export default function Page() {
+type SearchParams = Promise<{
+  redirectTo?: string | string[];
+  redirect?: string | string[];
+}>;
+
+export default async function Page(props: { searchParams?: SearchParams }) {
+  const searchParams = props.searchParams ? await props.searchParams : {};
+  const redirectTo = signInRedirectTarget(searchParams);
+
   return (
     <RPage slug={["sign-in"]} type={"account"}>
       <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center gap-10 p-9 md:p-16">
@@ -35,7 +44,7 @@ export default function Page() {
             </div>
             The Hideaway.
           </Link>
-          <AuthCard view="SIGN_IN" redirectTo={"/event-entry"} />
+          <AuthCard view="SIGN_IN" redirectTo={redirectTo} />
           {isDev ? (
             <DevButlerButton enabled={butlerEnabled} reason={butlerReason} />
           ) : null}

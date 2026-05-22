@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useScroll, useMotionValueEvent } from "motion/react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import NextImage from "next/image";
@@ -119,21 +118,24 @@ export function FriendsTorrent({
   const row3 = useRef<HTMLDivElement>(null);
   const rowRefs = [row1, row2, row3];
 
-  // Fallback ref when no sentinel is provided — points to no element in
-  // the DOM, so useScroll defaults to window scroll. The guard below
-  // (sentinelRef != null) keeps sentinelActive false in that case.
-  const _fallbackRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sentinelRef ?? _fallbackRef,
-    offset: ["start end", "end start"]
-  });
   const [sentinelActive, setSentinelActive] = useState(false);
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    // Guard: if no sentinel ref is provided, never activate via this path.
-    // On desktop the sentinel has lg:hidden (display:none), so the element
-    // has no layout and v stays ≈ 0 — sentinelActive stays false.
-    setSentinelActive(sentinelRef != null && v > 0.02 && v < 0.98);
-  });
+  const sentinelActiveRef = useRef(false);
+  useEffect(() => {
+    const node = sentinelRef?.current;
+    if (!node) return;
+
+    const update = (next: boolean) => {
+      if (sentinelActiveRef.current === next) return;
+      sentinelActiveRef.current = next;
+      setSentinelActive(next);
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => update(Boolean(entry?.isIntersecting)),
+      { rootMargin: "-2% 0px -2% 0px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [sentinelRef]);
 
   const isVisible = (active || sentinelActive) && cued;
 

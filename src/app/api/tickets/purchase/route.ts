@@ -12,6 +12,8 @@ import { beginIdempotent } from "@/lib/api/idempotency";
 import { eventPurchaseLock, nextTicketNumber } from "@/lib/db/sequences";
 import { TicketMailer, siteUrl } from "@/lib/email/ticket-mailer";
 import { readLocaleCookie } from "@/i18n/cookie";
+import { buildTicketManagementUrl } from "@/lib/tickets/event-loop";
+import { buildGiftClaimUrl } from "./claim-url";
 
 export const runtime = "nodejs";
 
@@ -304,7 +306,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       });
 
       const claimUrl = claimToken
-        ? `${siteUrl}/tickets/claim/${claimToken}`
+        ? buildGiftClaimUrl(siteUrl, event.slug, claimToken)
         : null;
 
       created.push({
@@ -347,7 +349,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       recipientName: purchaserName,
       quantity: body.quantity,
       totalAmount,
-      paymentInstructions: event.payment_instructions ?? null
+      paymentInstructions: event.payment_instructions ?? null,
+      managementUrl: buildTicketManagementUrl(siteUrl, event.slug)
     });
   }
 

@@ -4,11 +4,10 @@ import { rp_lerp } from "@/utilities/rp_utils";
 import { useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 import { type CSSProperties, useEffect, useRef } from "react";
-import { useShallow } from "zustand/shallow";
 import {
-  HORIZON_Y,
   SKY_STOPS,
-  useDayNNightScene,
+  HORIZON_Y,
+  useDayNNightStore,
   useSampleCelestial
 } from "../store";
 
@@ -48,13 +47,15 @@ export function SceneView() {
   // crossfade `--dn-fg` between cream and ink as the sky brightens or
   // darkens, so text floating on the sky stays legible across the loop.
   const shellRef = useRef<HTMLElement | null>(null);
-  const horizonLoop = useDayNNightScene(useShallow((r) => r.horizonLoop));
-  const progress = useDayNNightScene(useShallow((r) => r.progress));
-  const progressValue = useMotionValue(progress);
-  useEffect(() => {
-    progressValue.set(progress);
-  }, [progress, progressValue]);
-  const phase = useDayNNightScene(useShallow((r) => r.phase));
+  const store = useDayNNightStore();
+  const progressValue = useMotionValue(store.getState().progress);
+  useEffect(
+    () =>
+      store.subscribe((state) => {
+        progressValue.set(state.progress);
+      }),
+    [progressValue, store]
+  );
   const p_ = useTransform(progressValue, [0, 1], [0, 1]);
   const sky_ = useTransform(() => {
     const p = p_.get();
@@ -100,6 +101,8 @@ export function SceneView() {
     let raf = 0;
 
     const apply = () => {
+      const state = store.getState();
+      const { horizonLoop, phase, progress } = state;
       const sky = sky_.get();
       const rgb = (c: [number, number, number]) =>
         `rgb(${Math.round(c[0] * 255)} ${Math.round(c[1] * 255)} ${Math.round(c[2] * 255)})`;
@@ -255,7 +258,7 @@ export function SceneView() {
       // Without this, the last inline value persists on .shell forever.
       shellRef.current?.style.removeProperty("--dn-fg");
     };
-  }, [c, horizonLoop, phase, progress, sky_]);
+  }, [c, sky_, store]);
 
   return (
     <div

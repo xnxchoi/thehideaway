@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useScroll, useMotionValueEvent } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
@@ -142,16 +141,26 @@ export function ImmersiveView() {
   // layout-aware `dressWindow.active` below. On mobile, GSAP never runs
   // the horizontal layout measurement, so `dressWindow.active` is always
   // false. The sentinel div (placed in document flow inside the dress Act
-  // by Timeline.tsx) provides a scroll-based visibility signal instead.
+  // by Timeline.tsx) provides a visibility signal instead.
   const dressSentinelRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: dressScrollY } = useScroll({
-    target: dressSentinelRef,
-    offset: ["start end", "end start"]
-  });
   const [mobileInDress, setMobileInDress] = useState(false);
-  useMotionValueEvent(dressScrollY, "change", (v) => {
-    setMobileInDress(v > 0.02 && v < 0.98);
-  });
+  const mobileInDressRef = useRef(false);
+  useEffect(() => {
+    const node = dressSentinelRef.current;
+    if (!node) return;
+
+    const update = (next: boolean) => {
+      if (mobileInDressRef.current === next) return;
+      mobileInDressRef.current = next;
+      setMobileInDress(next);
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => update(Boolean(entry?.isIntersecting)),
+      { rootMargin: "-2% 0px -2% 0px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   // ── Act III dress-window gate ───────────────────────────────────────
   // `useActWindowActive` is two-way (not sticky like useActRevealActive)

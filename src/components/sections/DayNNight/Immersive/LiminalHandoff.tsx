@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
 
 /**
@@ -35,14 +34,10 @@ function resolvePhase(progress: number, fired: boolean): Phase {
 
 export function LiminalHandoff() {
   const t = useTranslations("Event.DayNNight.liminal");
-  const { progress, fired, fire } = useDayNNightScene(
-    useShallow((r) => ({
-      progress: r.progress,
-      fired: r.liminalHandoffFired,
-      fire: r.fireLiminalHandoff
-    }))
+  const phase = useDayNNightScene((r) =>
+    resolvePhase(r.progress, r.liminalHandoffFired)
   );
-  const phase = resolvePhase(progress, fired);
+  const fire = useDayNNightScene((r) => r.fireLiminalHandoff);
 
   const firedRef = useRef(false);
   useEffect(() => {

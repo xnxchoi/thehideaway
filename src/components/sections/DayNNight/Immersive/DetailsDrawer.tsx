@@ -4,8 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/components/core/Link/Link";
 import { Drawer } from "@/components/ui/vaul";
 import { SurvivalKit } from "../SurvivalKit";
-import Ical from "ical.js";
-import { Button, PillButton } from "@/components/core/Button";
+import { PillButton } from "@/components/core/Button";
 import { useLenis } from "lenis/react";
 import { useEffect, type CSSProperties } from "react";
 
@@ -63,7 +62,7 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[80] bg-black/65 backdrop-blur-[3px]" />
         <Drawer.Content
-          aria-describedby={undefined}
+          aria-describedby="day-night-details-description"
           className="fixed top-0 right-0 z-[81] flex h-full w-full max-w-[480px] flex-col text-[var(--dn-fg)] shadow-[-32px_0_72px_-12px_rgba(0,0,0,0.7)] outline-none"
           style={{
             // Pin the immersive palette — the portal renders outside
@@ -81,14 +80,20 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
           <header className="flex items-center justify-between border-b border-[var(--dn-line)] px-8 pt-8 pb-6">
             <div className="grid gap-2">
               <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
-                Details
+                {t("details.eyebrow")}
               </span>
               <Drawer.Title className="font-serif text-[clamp(1.85rem,2.4vw,2.4rem)] leading-[1.05] font-bold tracking-[-0.015em]">
                 {t("title")}
               </Drawer.Title>
+              <Drawer.Description
+                id="day-night-details-description"
+                className="sr-only"
+              >
+                {t("opening.body")}
+              </Drawer.Description>
             </div>
             <Drawer.Close
-              aria-label="Close"
+              aria-label={t("details.close")}
               className="ease inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--dn-line)] text-[var(--dn-fg-mute)] transition-colors hover:border-[var(--dn-fg)] hover:text-[var(--dn-fg)]"
             >
               <span aria-hidden className="text-base leading-none">
@@ -101,7 +106,7 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
             <dl className="grid gap-[14px]">
               <DetailsRow label={t("date.weekday")} value={t("date.full")} />
               <DetailsRow
-                label="Time"
+                label={t("details.time")}
                 value={`${t("opening.time")}  ${t("act.night.time")}`}
               />
               <DetailsRow
@@ -114,7 +119,7 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
                 value={survival("dress.value")}
               />
               <DetailsRow
-                label="Entry"
+                label={t("details.entry")}
                 value={t("entry.amount")}
                 hint={t("entry.perGuest")}
               />

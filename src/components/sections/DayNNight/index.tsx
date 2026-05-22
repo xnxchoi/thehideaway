@@ -58,6 +58,14 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   // :global rule inside styles.module.scss, but that module is no longer
   // imported anywhere — the rule never loaded.)
   useEffect(() => {
+    if (view !== "immersive") {
+      setHeaderVisibility(true);
+      setFXFrameVisibility(true);
+      document.body.removeAttribute("data-dn-immersive");
+      document.getElementById("rp-header")?.style.removeProperty("display");
+      return;
+    }
+
     const header = document.getElementById("rp-header");
     setHeaderVisibility(false);
     setFXFrameVisibility(false);

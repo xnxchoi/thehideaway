@@ -8,7 +8,6 @@ import { useCursor, useRPStore } from "@/providers/RP_Pro";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   AnimatePresence,
-  MotionValue,
   useMotionValue,
   useSpring,
   useTransform
@@ -23,6 +22,7 @@ import {
   useMemo
 } from "react";
 import { useShallow } from "zustand/shallow";
+import { useTranslations } from "next-intl";
 import { Controlbar } from "../../Shells/Controlbar";
 import {
   AccountView,
@@ -48,7 +48,7 @@ export const SIDE_DRAWER = {
 };
 const MotionDrawerContent = m.create(Drawer.Content);
 
-export const SideVaul = (props: { children: ReactNode }) => {
+export const SideVaul = (_props: { children: ReactNode }) => {
   const [open, setOpen] = useState(false);
   const toggleSideDrawer = useCallback(() => {
     setOpen((r) => !r);
@@ -63,7 +63,7 @@ export const SideVaul = (props: { children: ReactNode }) => {
     ...SPRING_EASE.power3.out,
     visualDuration: 0.5
   });
-  const [snapPoints, setSnapPoints] = useState<Array<string | number>>([]);
+  const [snapPoints] = useState<Array<string | number>>([]);
   const [direction, setDirection] = useState<
     "bottom" | "left" | "top" | "right" | undefined
   >(
@@ -79,8 +79,8 @@ export const SideVaul = (props: { children: ReactNode }) => {
   const setCursor = useCursor((r) => r.setCursorState);
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => "CLOSE",
-    onEnter: (e) => setCursorTheme("dark"),
-    onLeave: (e) => resetCursor()
+    onEnter: () => setCursorTheme("dark"),
+    onLeave: () => resetCursor()
   });
   const lastResize = useWindowResize({
     debounce: 50,
@@ -100,7 +100,6 @@ export const SideVaul = (props: { children: ReactNode }) => {
     }
   }, [heightMotion, isMobile, lastResize, widthMotion]);
   const lastOpen = useRef(open);
-  const lastRelease = useRef(0);
   const onOpenChange = useCallback((o: boolean) => {
     if (o !== lastOpen.current) {
       setOpen(o);
@@ -171,6 +170,7 @@ export const SideVaul = (props: { children: ReactNode }) => {
 };
 const Mrawer = m.create(Drawer.Content);
 export const SideDrawer = () => {
+  const t = useTranslations("Controlbar");
   const setSnapPoint = useRPStore((r) => r.setActiveSnapPoint);
   const snapPoints = useRPStore(useShallow((r) => r.snapPoints));
   const snapPoint = useRPStore(useShallow((r) => r.activeSnapPoint));
@@ -179,7 +179,7 @@ export const SideDrawer = () => {
   const setSideDrawerOpen = useRPStore((r) => r.setSideDrawerOpen);
   const setIsDraggingSideDrawer = useRPStore((r) => r.setIsDraggingSideDrawer);
   const toggleSideDrawer = useRPStore((r) => r.toggleSideDrawer);
-  const lastResize = useWindowResize({
+  useWindowResize({
     debounce: 50,
     detectHeightChange: true,
     detectVisibilityChange: false
@@ -201,8 +201,8 @@ export const SideDrawer = () => {
   const resetCursor = useCursor((r) => r.resetCursorTheme);
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => "CLOSE",
-    onEnter: (e) => setCursorTheme("dark"),
-    onLeave: (e) => resetCursor()
+    onEnter: () => setCursorTheme("dark"),
+    onLeave: () => resetCursor()
   });
   const lastOpen = useRef(open);
 
@@ -269,8 +269,7 @@ export const SideDrawer = () => {
     visualDuration: 0.5
   });
   const borderBottomRad = useTransform((): number => {
-    const mb = mobileValue.get(),
-      op = sidebarStateValue.get();
+    const mb = mobileValue.get();
     if (mb) {
       return 16;
     } else {
@@ -301,7 +300,7 @@ export const SideDrawer = () => {
       snapToSequentialPoint={true}
       modal={false}
       direction={direction}
-      onDrag={(e) => {
+      onDrag={() => {
         setIsDraggingSideDrawer(true);
       }}
       onRelease={(e) => {
@@ -373,6 +372,9 @@ export const SideDrawer = () => {
             </div>
             {/* On mobile we need an a11y title even when visually hidden */}
             <Drawer.Title className="sr-only md:hidden">Menu</Drawer.Title>
+            <Drawer.Description className="sr-only">
+              {t("sideDrawerDescription")}
+            </Drawer.Description>
             <AnimatePresence>
               {open && (
                 <>

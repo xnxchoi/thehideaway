@@ -51,7 +51,10 @@ export function LiminalRadioController() {
   const setInitialSeek = useHideawayFM((s) => s.setInitialSeek);
   const controls = useHideawayFMControls();
   const liminalFired = useDayNNightScene((r) => r.liminalHandoffFired);
-  const progress = useDayNNightScene((r) => r.progress);
+  const inZone = useDayNNightScene(
+    (r) => r.progress >= RADIO_START_AT && r.progress < RADIO_SILENCE_AT
+  );
+  const belowReset = useDayNNightScene((r) => r.progress < RADIO_RESET_BELOW);
 
   const track1IndexRef = useRef<number>(-1);
   const playTimerRef = useRef<number | null>(null);
@@ -94,8 +97,6 @@ export function LiminalRadioController() {
       return;
     }
 
-    const inZone = progress >= RADIO_START_AT && progress < RADIO_SILENCE_AT;
-
     if (inZone) {
       // Arm: schedule start if not yet started and no timer is pending.
       if (!startedRef.current && playTimerRef.current === null) {
@@ -124,12 +125,12 @@ export function LiminalRadioController() {
       }
       // Hard reset below hysteresis: clear state so the next zone entry
       // (whether a forward scroll or the next loop cycle) arms a fresh start.
-      if (progress < RADIO_RESET_BELOW) {
+      if (belowReset) {
         startedRef.current = false;
         silencedRef.current = false;
       }
     }
-  }, [progress, liminalFired, controls]);
+  }, [belowReset, inZone, liminalFired, controls]);
 
   return null;
 }

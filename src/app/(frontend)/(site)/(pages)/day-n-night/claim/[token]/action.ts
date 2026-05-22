@@ -16,6 +16,7 @@ export type ClaimActionState = {
     | "alreadyClaimed"
     | "not-found"
     | "throttled"
+    | "authRequired"
     | "emailMismatch";
 };
 
@@ -32,7 +33,7 @@ export type ClaimActionState = {
  *   4. Constant-time compare against the order password.
  *   5. On match, stamp `claimed_at`, clear `claim_token`, and (if a
  *      viewer is signed in) wire `user = viewer.id` so the ticket
- *      becomes theirs in /tickets/my.
+ *      becomes theirs in /day-n-night/my.
  */
 export async function submitClaim(
   _prev: ClaimActionState | undefined,
@@ -58,6 +59,7 @@ export async function submitClaim(
   // crackable in minutes against the previous unlimited endpoint.
   const rl = await enforceServerActionRateLimit("auth", viewerId);
   if (!rl.ok) return { ok: false, error: "throttled" };
+  if (!viewerId) return { ok: false, error: "authRequired" };
 
   const ticket = (await payload
     .findByID({
@@ -128,7 +130,7 @@ export async function submitClaim(
     data: {
       claimed_at: new Date().toISOString(),
       claim_token: null,
-      ...(viewerId ? { user: viewerId } : {})
+      user: viewerId
     } as Record<string, unknown>
   });
 
