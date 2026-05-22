@@ -141,6 +141,12 @@ vm.dirty_background_ratio  = 5
 net.netfilter.nf_conntrack_max = 131072
 SYSCTL
 
+# nf_conntrack must be loaded before its sysctl key exists in /proc.
+# On a fresh server (Docker not yet installed) the module is absent; load it
+# now and persist so it survives reboots.
+modprobe nf_conntrack 2>/dev/null || true
+echo 'nf_conntrack' > /etc/modules-load.d/conntrack.conf
+
 sysctl -p /etc/sysctl.d/99-hideaway.conf > /dev/null
 echo "  sysctl applied"
 
@@ -158,12 +164,17 @@ SSHD_CONF="/etc/ssh/sshd_config.d/99-hideaway-hardening.conf"
 cat > "${SSHD_CONF}" << 'SSHD'
 # hideawayseoul.com — sshd hardening
 # Drop-in overrides the distro defaults in /etc/ssh/sshd_config.
+#
+# NOTE: ITEASY EasyCloud's "web console" is SSH-backed (not true KVM/VNC) and
+# authenticates as root using a password. We therefore MUST keep root password
+# auth alive. The Match block below restricts password auth to root only;
+# every other user (including deploy) is pubkey-only. fail2ban (maxretry=3)
+# is the primary brute-force defence for root password login.
 
-PermitRootLogin          no
+PermitRootLogin          yes
 PasswordAuthentication   no
 ChallengeResponseAuthentication no
 PubkeyAuthentication     yes
-AuthenticationMethods    publickey
 
 MaxAuthTries             3
 LoginGraceTime           20s
@@ -177,6 +188,11 @@ AllowTcpForwarding       no
 # Disconnect idle sessions after 10 minutes
 ClientAliveInterval      60
 ClientAliveCountMax      10
+
+# Allow root to authenticate with a password so the ITEASY web console works.
+# All non-root users remain pubkey-only (PasswordAuthentication no above).
+Match User root
+    PasswordAuthentication yes
 SSHD
 
 # Validate sshd config before reloading. Service unit name differs across
@@ -465,7 +481,9 @@ fi
 # Install renewal cron if not present.
 # 03:00 UTC daily, webroot mode, post-hook delegates to the helper script.
 if ! crontab -l 2>/dev/null | grep -q 'certbot renew'; then
-  (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet --webroot -w /var/www/certbot --post-hook ${HOOK_DST}") | crontab -
+  # `crontab -l` exits 1 when no crontab exists; `|| true` prevents set -e
+  # from aborting the subshell before the echo runs.
+  (crontab -l 2>/dev/null || true; echo "0 3 * * * certbot renew --quiet --webroot -w /var/www/certbot --post-hook ${HOOK_DST}") | crontab -
   echo "  Certbot renewal cron installed (daily at 03:00 UTC)"
 fi
 
