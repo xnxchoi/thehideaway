@@ -169,16 +169,20 @@ export function ImmersiveView() {
   // so the two transitions stay in lockstep.
   const dressSecondHalf = useActHalfwayActive(ACT_INDEX_DRESS, 0.5);
 
-  // Photo torrent cue. SubtitleSequence fires `onPhotoCue` 500ms into
-  // the third caption ("If you want references — here's pics from past
-  // events:") — the line *introduces* the photos, so the torrent
-  // fades in directly under it. Resets on dress-window exit so the
-  // next entry starts with photos hidden and replays the lead-in.
+  // Photo torrent cue. SubtitleSequence fires `onPhotoCue` once the
+  // final caption ("If you want references — here's pics from past
+  // events:") has held and faded out — the torrent then rises into the
+  // cleared frame. Resets on dress-window exit so the next entry starts
+  // with photos hidden and replays the lead-in.
   const [torrentCued, setTorrentCued] = useState(false);
   const handlePhotoCue = useCallback(() => setTorrentCued(true), []);
+  // Reset when outside the dress window on EITHER path — desktop
+  // (`dressWindow.active`) or mobile (`mobileInDress`). Watching only
+  // `dressWindow.active` left the cue permanently latched on mobile
+  // (that flag is always false there), so the torrent never re-gated.
   useEffect(() => {
-    if (!dressWindow.active) setTorrentCued(false);
-  }, [dressWindow.active]);
+    if (!dressWindow.active && !mobileInDress) setTorrentCued(false);
+  }, [dressWindow.active, mobileInDress]);
 
   // Hide the scroll hint on first scroll.
   useEffect(() => {
@@ -259,6 +263,11 @@ export function ImmersiveView() {
           // by dressSentinelRef) takes over since dressWindow.active is
           // always false when GSAP layout never runs.
           active={dressWindow.active && torrentCued && !dressSecondHalf}
+          // `cued` gates the mobile (sentinel-driven) visibility path on
+          // the same caption cue: on mobile `active` is always false, so
+          // without this the torrent would appear the instant the dress
+          // sentinel scrolled in — before the caption sequence ran.
+          cued={torrentCued}
           sentinelRef={dressSentinelRef}
           // Lifted out of the pinned wrap's stacking context:
           //   • `fixed` so the layer stays viewport-anchored while
@@ -284,12 +293,11 @@ export function ImmersiveView() {
           // Give captions ~2–3× the scroll real estate they had at 1800ms
           // per card, so they don't flash by before the user can read them.
           perCardMs={3500}
-          // Lead-in caption ("If you want references — here's pics
-          // from past events:") sticks on screen instead of auto-fading
-          // — so users who scroll slowly can read it, and it stays the
-          // tagline above the photo torrent until the midpoint pivot
-          // (active flips false) dismisses it.
-          lingerOnLast
+          // The lead-in caption ("If you want references — here's pics
+          // from past events:") plays out and fades like the others; the
+          // photo torrent then rises into the cleared frame (onPhotoCue
+          // fires after the final caption has faded). The caption no
+          // longer lingers as a tagline over the torrent.
         />
         {/* Single Details drawer instance — driven by DetailsContext so
           QuickActions and OpeningCard share one drawer. */}

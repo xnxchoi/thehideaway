@@ -17,14 +17,13 @@ export interface SubtitleSequenceProps {
   /** Milliseconds for the in/out fade. */
   fadeMs?: number;
   /**
-   * Called once per sequence cycle at the moment caption[2] (zero-indexed)
-   * reaches full opacity + `photoCueOffsetMs`. Used to trigger the photo
-   * torrent fade-in slightly after card 3 enters frame, per the
-   * handoff doc's "photos begin flowing ~0.5s into the third caption"
-   * spec.
+   * Called once per sequence cycle, `photoCueOffsetMs` after the final
+   * caption has held and faded out. Used to trigger the photo torrent
+   * fade-in once the lead-in line has cleared the frame.
    */
   onPhotoCue?: () => void;
-  /** Offset within card-3's on-screen window for the photo cue. */
+  /** Extra beat after the final caption fades out before the photo cue
+   *  fires. */
   photoCueOffsetMs?: number;
   /** Bumping this number replays the sequence from card 0. */
   replayKey?: number;
@@ -42,7 +41,6 @@ export interface SubtitleSequenceProps {
 const DEFAULT_PER_CARD_MS = 1800;
 const DEFAULT_FADE_MS = 400;
 const DEFAULT_PHOTO_CUE_OFFSET_MS = 500;
-const CARD_3_INDEX = 2;
 
 /**
  * Movie-subtitle style caption sequence.
@@ -113,8 +111,16 @@ export function SubtitleSequence({
       timeouts.current.push(id);
     }
 
-    if (onPhotoCue && captions.length > CARD_3_INDEX) {
-      const fireAt = CARD_3_INDEX * (perCardMs + fadeMs) + photoCueOffsetMs;
+    // Photo cue fires once the FINAL caption has held and faded out — the
+    // torrent rises into a cleared frame, after the line that introduced
+    // it ("…here's pics from past events:"), not underneath it.
+    if (onPhotoCue && captions.length > 0) {
+      const lastIdx = captions.length - 1;
+      const fireAt =
+        lastIdx * (perCardMs + fadeMs) +
+        perCardMs +
+        fadeMs +
+        photoCueOffsetMs;
       const id = window.setTimeout(() => {
         photoCueRef.current?.();
       }, fireAt);

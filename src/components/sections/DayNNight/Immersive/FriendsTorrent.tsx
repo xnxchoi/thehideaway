@@ -21,6 +21,14 @@ export interface FriendsTorrentProps {
   photos: FriendsTorrentPhoto[];
   /** When false, the whole layer fades out (still mounted). */
   active?: boolean;
+  /**
+   * Caption cue gate. The layer only shows once this is true — both the
+   * desktop (`active`) and mobile (`sentinelRef`) visibility paths are
+   * AND-ed with it, so the torrent never appears before the dress
+   * caption sequence has finished introducing it. Defaults to `true`
+   * (ungated) for callers that don't sequence a caption run.
+   */
+  cued?: boolean;
   /** Opacity of the dark base layer behind the photos (0..1). */
   darkenOpacity?: number;
   /** Seconds per row cycle. Order: back, mid, front. Deeper = slower. */
@@ -95,6 +103,7 @@ const PHOTO_PROFILES = [
 export function FriendsTorrent({
   photos,
   active = true,
+  cued = true,
   darkenOpacity = 0.5,
   rowSpeeds = DEFAULT_SPEEDS,
   rowYOffsets = DEFAULT_Y,
@@ -126,7 +135,7 @@ export function FriendsTorrent({
     setSentinelActive(sentinelRef != null && v > 0.02 && v < 0.98);
   });
 
-  const isVisible = active || sentinelActive;
+  const isVisible = (active || sentinelActive) && cued;
 
   // Desktop/mobile layout switch. Initialized false to avoid SSR mismatch
   // (safe: FriendsTorrent is hidden until the dress window is active, so
