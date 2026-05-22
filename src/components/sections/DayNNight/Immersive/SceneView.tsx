@@ -260,7 +260,17 @@ export function SceneView() {
   return (
     <div
       ref={wrapRef}
-      className="pointer-events-none absolute inset-0 z-0"
+      // Desktop: `absolute inset-0` of the pinned, viewport-height
+      // Timeline wrap — already a small layer.
+      // Mobile: the Timeline wrap is `h-auto` (the full ~11k-px stacked
+      // column), so `absolute inset-0` would stretch the sky gradient
+      // (and the blurred horizon glow) into a page-tall composited
+      // layer. On iOS Safari that exceeds WebKit's layer/texture budget
+      // and the layer fails to paint at all — black sky, and the
+      // adaptive text loop then reads a missing sky and inks the copy
+      // black too. `max-lg:fixed` pins the scene to the viewport so its
+      // layers stay viewport-sized and iOS-safe.
+      className="pointer-events-none absolute inset-0 z-0 max-lg:fixed"
       aria-hidden
       style={
         {
