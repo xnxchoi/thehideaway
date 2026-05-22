@@ -308,9 +308,16 @@ to exist.
 
 ### Step 3 — Stage the age private key
 
-Phase 7 of the wrapper checks that `/etc/age/keys.txt` exists and is owned
-`root:deploy` with mode 640. Stage it now so the wrapper doesn't abort at
-pre-flight:
+Phase 7 of the wrapper checks that `/etc/age/keys.txt` exists. Stage it now so
+the wrapper doesn't abort at pre-flight.
+
+> **Ordering matters.** This step runs *before* the wrapper, and the `deploy`
+> user/group does not exist yet — `server-setup.sh` creates it in Phase 2 of
+> Step 6. So stage the key as `root:root 600` here. `server-setup.sh` (Phase 2)
+> and `first-deploy.sh` Phase 7.1 both detect the pre-staged file and promote
+> it to its resting state of `root:deploy 640` once the `deploy` group exists.
+> Do **not** try to `chown root:deploy` at this point — it will fail with
+> `invalid group 'deploy'`.
 
 ```bash
 # From your laptop:
@@ -320,18 +327,22 @@ scp -i ~/.ssh/hideaway_deploy \
   ~/.config/sops/age/keys.txt \
   root@rp.hideawayseoul.com:/tmp/age_key
 
-# On the VPS: move it into place and lock it down
-ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com << 'EOF'
-install -o root -g deploy -m 0750 -d /etc/age
+# On the VPS: move it into place as root:root 600. `bash -s` + `set -euo
+# pipefail` makes the remote block abort loudly on the first failure instead
+# of printing a false "✓" after a broken step.
+ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com 'bash -s' << 'EOF'
+set -euo pipefail
+install -o root -g root -m 0700 -d /etc/age
 mv /tmp/age_key /etc/age/keys.txt
-chown root:deploy /etc/age/keys.txt
-chmod 640 /etc/age/keys.txt
-echo "✓ age key installed at /etc/age/keys.txt"
+chmod 600 /etc/age/keys.txt
+echo "✓ age key staged at /etc/age/keys.txt (root:root 600)"
 EOF
 ```
 
-The `deploy` user inherits read access to `/etc/age/` via the `deploy` group
-(`server-setup.sh` creates that directory as `root:deploy 0750`).
+After Step 6 has run, the key ends up `root:deploy 640` and the directory
+`root:deploy 0750`, so the `deploy` user inherits read access via the `deploy`
+group. Until then, only root can read it — which is correct, since nothing
+else needs it before `server-setup.sh` runs.
 
 ---
 
