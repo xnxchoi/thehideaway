@@ -98,7 +98,7 @@ cmd_rollback() {
 
 decrypt_env() {
   [[ -f "${AGE_KEY_FILE}" ]] \
-    || die "age key not found at ${AGE_KEY_FILE} (mode 600). See readmes/DEPLOY.md."
+    || die "age key not found at ${AGE_KEY_FILE} (expected root:deploy 640). See readmes/DEPLOY.md."
   [[ -f "${ENV_ENC}" ]] \
     || die "${ENV_ENC} not found in $(pwd). Pull / sync the repo first."
 

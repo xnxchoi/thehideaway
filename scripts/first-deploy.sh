@@ -399,28 +399,23 @@ fi
 # ── Phase 7: Pre-flight ──────────────────────────────────────────────────────
 heading "Phase 7/8: Pre-flight (age key, encrypted env, assets, image manifest)"
 
-# 7.1 — age private key is present and readable by the deploy group.
-# Accepted modes: 640 (root:deploy, preferred) or 600 (root:root, less permissive
-# but still readable by root and acceptable if deploy group access is not needed
-# for this specific run). Mode 640 is the correct long-term state because
-# scripts/deploy.sh runs as the deploy user and reads the key via group membership.
+# 7.1 — age private key present, owned root:deploy, mode 640.
+# scripts/deploy.sh runs as the (non-root) deploy user and reads this key via
+# `deploy` group membership, so root:deploy 640 is the only correct resting
+# state. Any other ownership or mode is corrected here — a plain `scp` as root
+# typically leaves the file root:root 600, which the deploy user cannot read.
 AGE_KEY_FILE="/etc/age/keys.txt"
 if [[ ! -f "${AGE_KEY_FILE}" ]]; then
   error "${AGE_KEY_FILE} not found."
   error "scp the key from your laptop, then set ownership and mode:"
   error "  scp ~/.config/sops/age/keys.txt root@${DOMAIN}:${AGE_KEY_FILE}"
-  error "  ssh root@${DOMAIN} "chown root:deploy ${AGE_KEY_FILE} && chmod 640 ${AGE_KEY_FILE}""
+  error "  ssh root@${DOMAIN} 'chown root:deploy ${AGE_KEY_FILE} && chmod 640 ${AGE_KEY_FILE}'"
   exit 3
 fi
-AGE_KEY_MODE="$(stat -c %a "${AGE_KEY_FILE}")"
-if [[ "${AGE_KEY_MODE}" != "640" && "${AGE_KEY_MODE}" != "600" ]]; then
-  warn "${AGE_KEY_FILE} mode is ${AGE_KEY_MODE} — setting to root:deploy 640."
-  chown root:deploy "${AGE_KEY_FILE}"
-  chmod 640 "${AGE_KEY_FILE}"
-elif [[ "${AGE_KEY_MODE}" == "600" ]]; then
-  # 600 means root:root — the deploy user cannot read it on subsequent deploys.
-  # Promote to root:deploy 640 so scripts/deploy.sh (running as deploy) can decrypt.
-  warn "${AGE_KEY_FILE} is mode 600 — promoting to root:deploy 640 for deploy user access."
+AGE_KEY_OWNER="$(stat -c '%U:%G' "${AGE_KEY_FILE}")"
+AGE_KEY_MODE="$(stat -c '%a' "${AGE_KEY_FILE}")"
+if [[ "${AGE_KEY_OWNER}" != "root:deploy" || "${AGE_KEY_MODE}" != "640" ]]; then
+  warn "${AGE_KEY_FILE} is ${AGE_KEY_OWNER} ${AGE_KEY_MODE} — correcting to root:deploy 640."
   chown root:deploy "${AGE_KEY_FILE}"
   chmod 640 "${AGE_KEY_FILE}"
 fi

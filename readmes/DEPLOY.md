@@ -308,8 +308,9 @@ to exist.
 
 ### Step 3 — Stage the age private key
 
-Phase 7 of the wrapper checks that `/etc/age/keys.txt` exists and is mode
-600. Stage it now so the wrapper doesn't abort at pre-flight:
+Phase 7 of the wrapper checks that `/etc/age/keys.txt` exists and is owned
+`root:deploy` with mode 640. Stage it now so the wrapper doesn't abort at
+pre-flight:
 
 ```bash
 # From your laptop:
