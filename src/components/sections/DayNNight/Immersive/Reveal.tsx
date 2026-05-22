@@ -163,8 +163,26 @@ export function RevealStage({
   // subscribes the component to meaningful changes.
   const progress = useDayNNightScene(useShallow((r) => r.progress));
 
-  const resolvedActive =
-    typeof active === "boolean"
+  // Below `lg` the immersive view is a plain vertical scroll: the GSAP
+  // horizontal track, its `layout` measurement, and the scene-progress
+  // thresholds that desktop reveals gate on never apply (`layout` is
+  // only measured in the desktop matchMedia branch of Timeline). Falling
+  // through to `active`/`progressThreshold` here leaves every
+  // layout-gated act reveal stuck in the `hidden` variant — opacity 0
+  // on entry. On compact widths, drop the scene gate and reveal on
+  // viewport intersection instead.
+  const [isCompact, setIsCompact] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsCompact(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsCompact(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  const resolvedActive = isCompact
+    ? undefined
+    : typeof active === "boolean"
       ? active
       : typeof progressThreshold === "number"
         ? progress >= progressThreshold
@@ -203,7 +221,9 @@ export function RevealStage({
             whileInView: "visible",
             viewport: {
               once: true,
-              amount: amount ?? STAGE_VIEWPORT
+              // Compact stages can be taller than 55% of a phone
+              // viewport; a gentler threshold ensures the reveal fires.
+              amount: amount ?? (isCompact ? 0.3 : STAGE_VIEWPORT)
             }
           })}
     >

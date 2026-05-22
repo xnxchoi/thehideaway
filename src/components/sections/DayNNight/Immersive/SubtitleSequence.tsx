@@ -201,24 +201,31 @@ function SubtitleCard({ content, visible, fadeMs }: SubtitleCardProps) {
   // String children inherit the default serif subtitle styling; node
   // children may override via their own classNames (e.g. the topic
   // line above the answer uses mono small-caps).
+  // The caption sits on an opaque paper panel with inverted (dark) ink
+  // rather than white text floating on the photo torrent — over a busy
+  // FriendsTorrent background a drop-shadow alone was not legible.
+  // Ink + surface tokens match the OpeningCard paper treatment so the
+  // caption reads as the same physical object class.
   return (
     <div
-      className={cn(
-        "absolute inset-0 flex items-center justify-center",
-        "font-serif text-[clamp(1.05rem,1.6vw,1.45rem)] leading-[1.4]",
-        "tracking-[0.005em] text-white/95",
-        // Soft text-shadow so the caption stays legible over any
-        // background brightness (matches the directional vignette in
-        // FriendsTorrent's right/warm edge).
-        "drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
-      )}
+      className="absolute inset-0 flex items-center justify-center"
       style={{
         opacity: visible ? 1 : 0,
         transition: `opacity ${fadeMs}ms ease-out`,
         willChange: "opacity"
       }}
     >
-      {content}
+      <div
+        className={cn(
+          "rounded-2xl px-7 py-5",
+          "bg-[oklch(95%_0.01_85)] text-[oklch(18%_0.012_280)]",
+          "font-serif text-[clamp(1.3rem,2.6vw,1.8rem)] leading-[1.4]",
+          "tracking-[0.005em]",
+          "shadow-[0_18px_50px_-16px_rgba(0,0,0,0.78)]"
+        )}
+      >
+        {content}
+      </div>
     </div>
   );
 }

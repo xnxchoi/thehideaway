@@ -97,11 +97,11 @@ export function ImmersiveView() {
   // current locale.
   const dressCaptions = useMemo(
     () => [
-      <div key="qa" className="grid gap-3">
-        <span className="font-mono text-[10px] tracking-[0.32em] text-white/65 uppercase md:text-[11px]">
+      <div key="qa" className="grid gap-2.5">
+        <span className="font-mono text-[12px] tracking-[0.32em] uppercase opacity-55 md:text-[13px]">
           {captions("topic")}
         </span>
-        <span className="font-serif text-[clamp(1.35rem,2vw,1.85rem)] leading-[1.25] text-white/95">
+        <span className="font-serif text-[clamp(1.65rem,2.8vw,2.15rem)] leading-[1.2]">
           {captions("answer")}
         </span>
       </div>,
