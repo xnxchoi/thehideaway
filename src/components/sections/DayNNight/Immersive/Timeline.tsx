@@ -526,16 +526,20 @@ function ActSet({
             style={{ position: "absolute", top: "52%", left: "62%" }}
           />
         </PolaroidGroup>
-        {/* "hosted by yours truly" marker text — step 4. Desktop only:
-            the absolute positioning overlaps mobile title copy on narrow viewports. */}
+        {/* "hosted by yours truly" — handwritten caption for the host
+            polaroids. Anchored into the photo cluster (z-[15], above the
+            polaroids at z-[14]) so it reads as an annotation ON the host
+            photos, and scrawls in one beat after them (step 4). Shown on
+            all viewports; the mobile anchor sits in the gap between the
+            two host photos, clear of the left-aligned title copy. */}
         <div
-          className="pointer-events-none absolute z-[14] max-lg:hidden"
-          style={{ bottom: "16%", left: "33%" }}
+          className="pointer-events-none absolute z-[15] max-lg:!top-[44%] max-lg:!left-[26%]"
+          style={{ top: "70%", left: "40%" }}
         >
           <MarkerText
             text={t("opening.hostedBy")}
             active={openingStep >= 4}
-            className="font-serif text-[clamp(1rem,1.2vw,1.35rem)] text-[var(--dn-fg)] italic opacity-90"
+            className="font-serif text-[clamp(1.05rem,1.4vw,1.5rem)] text-[var(--dn-fg)] italic opacity-90"
           />
         </div>
         {/* Right col — paper invitation card, springs in at step 2. */}
