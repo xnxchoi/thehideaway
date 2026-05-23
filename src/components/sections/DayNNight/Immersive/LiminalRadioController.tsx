@@ -7,13 +7,13 @@ import { YMFM_PLAY_EVENT, YMFM_STATE_EVENT } from "./YMFMCredit";
 /**
  * Page-local YM.FM controller.
  *
- * Track_1.ogg is part of the Day n Night score, not the global station
+ * Track_1 is part of the Day n Night score, not the global station
  * queue. Keeping it local avoids fighting HideawayFM's seed/current-track
  * lifecycle while still using the same fade discipline as AmbientAudio:
  * every entry ramps from silence to headroom, every exit fades before pause.
  */
 
-const TRACK_SRC = "/track_media/Track_1.ogg";
+const TRACK_SOURCES = ["/track_media/Track_1.mp3", "/track_media/Track_1.ogg"];
 const HEADROOM = 0.38;
 const FADE_IN_MS = 1200;
 const FADE_OUT_MS = 900;
@@ -21,6 +21,54 @@ const FADE_OUT_MS = 900;
 const RADIO_START_AT = 0.55;
 const RADIO_SILENCE_AT = 0.92;
 const RADIO_RESET_BELOW = 0.45;
+
+let primedTrack: HTMLAudioElement | null = null;
+
+function createTrackAudio(): HTMLAudioElement {
+  let sourceIndex = 0;
+  const audio = new Audio(TRACK_SOURCES[0]);
+  audio.preload = "auto";
+  audio.loop = true;
+  audio.volume = 0;
+  audio.addEventListener(
+    "error",
+    () => {
+      sourceIndex += 1;
+      const nextSrc = TRACK_SOURCES[sourceIndex];
+      if (!nextSrc) return;
+      audio.src = nextSrc;
+      audio.load();
+    },
+    { once: true }
+  );
+  return audio;
+}
+
+export function primeLiminalRadioAudio(): void {
+  try {
+    if (primedTrack) return;
+    const audio = createTrackAudio();
+    primedTrack = audio;
+    void audio
+      .play()
+      .then(() => {
+        if (primedTrack !== audio) return;
+        audio.pause();
+        audio.currentTime = 0;
+      })
+      .catch(() => {
+        if (primedTrack === audio) primedTrack = null;
+      });
+  } catch {
+    primedTrack = null;
+  }
+}
+
+function takePrimedTrack(): HTMLAudioElement | null {
+  const audio = primedTrack;
+  primedTrack = null;
+  return audio;
+}
 
 function dispatchPlaying(playing: boolean) {
   window.dispatchEvent(
@@ -53,7 +101,7 @@ function fadeVolume(
   return () => cancelAnimationFrame(raf);
 }
 
-export function LiminalRadioController() {
+export function LiminalRadioController({ enabled }: { enabled: boolean }) {
   const liminalFired = useDayNNightScene((r) => r.liminalHandoffFired);
   const inZone = useDayNNightScene(
     (r) => r.progress >= RADIO_START_AT && r.progress < RADIO_SILENCE_AT
@@ -65,12 +113,10 @@ export function LiminalRadioController() {
   const playTimerRef = useRef<number | null>(null);
   const startedRef = useRef(false);
   const silencedRef = useRef(false);
+  const manualPlayRef = useRef(false);
 
   useEffect(() => {
-    const audio = new Audio(TRACK_SRC);
-    audio.preload = "auto";
-    audio.loop = true;
-    audio.volume = 0;
+    const audio = takePrimedTrack() ?? createTrackAudio();
     audioRef.current = audio;
 
     return () => {
@@ -115,17 +161,22 @@ export function LiminalRadioController() {
   };
 
   useEffect(() => {
-    const onPlayRequest = () => play();
+    const onPlayRequest = () => {
+      manualPlayRef.current = true;
+      play();
+    };
     window.addEventListener(YMFM_PLAY_EVENT, onPlayRequest);
     return () => window.removeEventListener(YMFM_PLAY_EVENT, onPlayRequest);
   });
 
   useEffect(() => {
-    if (!liminalFired) {
+    const canAutoPlay = enabled || manualPlayRef.current;
+    if (!canAutoPlay || !liminalFired) {
       if (playTimerRef.current !== null) {
         window.clearTimeout(playTimerRef.current);
         playTimerRef.current = null;
       }
+      if (!canAutoPlay && startedRef.current && !silencedRef.current) pause();
       return;
     }
 
@@ -146,9 +197,10 @@ export function LiminalRadioController() {
       if (belowReset) {
         startedRef.current = false;
         silencedRef.current = false;
+        manualPlayRef.current = false;
       }
     }
-  }, [belowReset, inZone, liminalFired]);
+  }, [belowReset, enabled, inZone, liminalFired]);
 
   return null;
 }

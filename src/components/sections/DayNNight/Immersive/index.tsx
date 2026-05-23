@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useShallow } from "zustand/shallow";
 import { useDayNNightScene } from "../store";
+import { DayNNightCursorTone } from "./DayNNightCursorTone";
 import { DayNNightScore } from "./DayNNightScore";
 import { DetailsContext } from "./DetailsContext";
 import { DetailsDrawer } from "./DetailsDrawer";
@@ -196,10 +197,11 @@ export function ImmersiveView({ rsvpState, isSignedIn }: ImmersiveViewProps) {
           this goes silent and HideawayFM picks up the night. See
           DayNNightScore.tsx. */}
         {phase === "playing" && <DayNNightScore enabled={audioEnabled} />}
+        {phase === "playing" && <DayNNightCursorTone />}
         {/* Local YM.FM controller for Track_1. It can auto-enter after
           the liminal handoff or start immediately from the YM.FM
           caption button, always fading in/out from silence. */}
-        <LiminalRadioController />
+        <LiminalRadioController enabled={audioEnabled} />
         {/* Liminal → Nighttime handoff captions. Fires liminalHandoffFired
           at progress ≥ 0.55, which LiminalRadioController uses to start
           HideawayFM after its delay window. HTML-only — no 3D. */}

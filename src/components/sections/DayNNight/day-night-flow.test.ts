@@ -12,6 +12,8 @@ const friendsPhotosSource = readLocal("./friendsPhotos.ts");
 const quickActionsSource = readLocal("./Immersive/QuickActions.tsx");
 const scoreSource = readLocal("./Immersive/DayNNightScore.tsx");
 const sunLoaderSource = readLocal("./Immersive/SunLoader.tsx");
+const liminalRadioSource = readLocal("./Immersive/LiminalRadioController.tsx");
+const cursorToneSource = readLocal("./Immersive/DayNNightCursorTone.tsx");
 const timelineSource = readLocal("./Immersive/Timeline.tsx");
 const cssSource = readLocal("./dn.css");
 const friendsPhotosRouteSource = readFileSync(
@@ -129,6 +131,26 @@ describe("Day n Night main flow contract", () => {
     expect(scoreSource).toContain("new Audio(DAY_SRC)");
     expect(scoreSource).toContain("takePrimedDayTrack()");
     expect(scoreSource).toContain(".then(() => day.audio.play())");
+  });
+
+  it("primes YM.FM audio from the same music gesture and uses MP3 first", () => {
+    expect(sunLoaderSource).toContain("primeLiminalRadioAudio()");
+    expect(liminalRadioSource).toContain("export function primeLiminalRadioAudio");
+    expect(liminalRadioSource).toContain('"/track_media/Track_1.mp3"');
+    expect(liminalRadioSource).toContain('"/track_media/Track_1.ogg"');
+    expect(immersiveSource).toContain(
+      "<LiminalRadioController enabled={audioEnabled} />"
+    );
+    expect(liminalRadioSource).toContain(
+      "const canAutoPlay = enabled || manualPlayRef.current"
+    );
+  });
+
+  it("keeps the cursor dark on bright Day n Night skies and light at night", () => {
+    expect(immersiveSource).toContain("<DayNNightCursorTone />");
+    expect(cursorToneSource).toContain("progress >= 0.58 && progress < 0.94");
+    expect(cursorToneSource).toContain('return "dark"');
+    expect(cursorToneSource).toContain('return "light"');
   });
 
   it("routes signed-in RSVP actions to the Day n Night ticket manager", () => {
