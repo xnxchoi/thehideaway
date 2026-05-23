@@ -55,8 +55,10 @@ describe("Day n Night RSVP visual contract", () => {
 
   it("moves to reserve after successful passkey verification", () => {
     expect(source).toContain("authClient.passkey.addPasskey");
+    expect(source).toContain("setPasskeyCreated(true)");
     expect(source).toContain('advanceTo("reserve")');
-    expect(source).toContain("void refetchPasskeys?.()");
+    expect(source).not.toContain("setInterval");
+    expect(source).not.toContain("void refetchPasskeys?.()");
   });
 
   it("uses browser-recognizable fields for the one-time password save step", () => {

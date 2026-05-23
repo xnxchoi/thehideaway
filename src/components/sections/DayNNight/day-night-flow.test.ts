@@ -78,6 +78,19 @@ describe("Day n Night main flow contract", () => {
     );
   });
 
+  it("expires the once-per-session loader marker after fifteen minutes", () => {
+    expect(sunLoaderSource).toContain(
+      "const LOADER_SEEN_TTL_MS = 15 * 60 * 1000"
+    );
+    expect(sunLoaderSource).toContain("Date.now() - seenAt");
+    expect(sunLoaderSource).toContain(
+      "sessionStorage.setItem(LOADER_SEEN_KEY, String(Date.now()))"
+    );
+    expect(sunLoaderSource).not.toContain(
+      'sessionStorage.setItem(LOADER_SEEN_KEY, "1")'
+    );
+  });
+
   it("lets mobile acts use the full phone width instead of desktop grid columns", () => {
     expect(cssSource).toContain("@media (max-width: 1023px)");
     expect(cssSource).toContain("[data-dn-act] > div > *");
@@ -103,10 +116,19 @@ describe("Day n Night main flow contract", () => {
     expect(quickActionsSource).toContain("MusicChip");
     expect(quickActionsSource).toContain("AudioBars");
     expect(enMessages.Event.DayNNight.audio.label).toBe("Music");
+    expect(quickActionsSource).not.toContain('tAudio("track")');
+    expect(quickActionsSource).not.toContain("data-dn-audio-track");
     expect(quickActionsSource).not.toContain('role="radiogroup"');
     expect(scoreSource).not.toContain("data-dn-audio-toggle");
     expect(cssSource).toContain("top: 13px");
     expect(cssSource).toContain("right: 20px");
+  });
+
+  it("primes the daytime media element during the loader click gesture", () => {
+    expect(scoreSource).toContain("let primedDayTrack");
+    expect(scoreSource).toContain("new Audio(DAY_SRC)");
+    expect(scoreSource).toContain("takePrimedDayTrack()");
+    expect(scoreSource).toContain(".then(() => day.audio.play())");
   });
 
   it("routes signed-in RSVP actions to the Day n Night ticket manager", () => {

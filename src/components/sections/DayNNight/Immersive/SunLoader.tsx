@@ -8,7 +8,29 @@ import { Button, MotionPillButton } from "@/components/core/Button";
 import { DAY_SRC, primeDayNNightAudio } from "./DayNNightScore";
 
 const LOADER_SEEN_KEY = "dn_loader_seen";
+const LOADER_SEEN_TTL_MS = 15 * 60 * 1000;
 const LOAD_DURATION_MS = 2400;
+
+function hasFreshLoaderSeen(): boolean {
+  if (typeof window === "undefined") return false;
+
+  const seenAt = Number(sessionStorage.getItem(LOADER_SEEN_KEY));
+  if (!Number.isFinite(seenAt)) {
+    sessionStorage.removeItem(LOADER_SEEN_KEY);
+    return false;
+  }
+
+  if (Date.now() - seenAt > LOADER_SEEN_TTL_MS) {
+    sessionStorage.removeItem(LOADER_SEEN_KEY);
+    return false;
+  }
+
+  return true;
+}
+
+function markLoaderSeen(): void {
+  sessionStorage.setItem(LOADER_SEEN_KEY, String(Date.now()));
+}
 
 interface SunLoaderProps {
   /** Called once the exit transition completes. */
@@ -32,8 +54,7 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
   const store = useDayNNightStore();
 
   // Synchronous check — avoids a flash of loader chrome on SPA re-entry.
-  const skipLoader =
-    typeof window !== "undefined" && !!sessionStorage.getItem(LOADER_SEEN_KEY);
+  const skipLoader = hasFreshLoaderSeen();
 
   // Skip path: already seen this session — hand off without showing chrome.
   useEffect(() => {
@@ -114,7 +135,7 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
   const ready = progressDone && audioReady;
 
   const handleEnter = (withAudio: boolean) => {
-    sessionStorage.setItem(LOADER_SEEN_KEY, "1");
+    markLoaderSeen();
     // Unlock audio while the click gesture is still live — the score's
     // own setup runs ~700ms+ later (fade timeout + mount gating), too
     // late to satisfy the browser autoplay policy on its own.

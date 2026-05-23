@@ -64,9 +64,9 @@ interface TrackPipeline {
 // is still live. DayNNightScore then consumes that primed context
 // instead of constructing a fresh (suspended) one.
 let primedAudioContext: AudioContext | null = null;
+let primedDayTrack: HTMLAudioElement | null = null;
 
 export function primeDayNNightAudio(): void {
-  if (primedAudioContext) return;
   const w = window as unknown as {
     AudioContext?: typeof AudioContext;
     webkitAudioContext?: typeof AudioContext;
@@ -74,10 +74,28 @@ export function primeDayNNightAudio(): void {
   const Ctx = w.AudioContext ?? w.webkitAudioContext;
   if (!Ctx) return;
   try {
-    primedAudioContext = new Ctx();
+    primedAudioContext = primedAudioContext ?? new Ctx();
     void primedAudioContext.resume().catch(() => {});
+
+    if (primedDayTrack) return;
+    const audio = new Audio(DAY_SRC);
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.volume = 0;
+    primedDayTrack = audio;
+    void audio
+      .play()
+      .then(() => {
+        if (primedDayTrack !== audio) return;
+        audio.pause();
+        audio.currentTime = 0;
+      })
+      .catch(() => {
+        if (primedDayTrack === audio) primedDayTrack = null;
+      });
   } catch {
     primedAudioContext = null;
+    primedDayTrack = null;
   }
 }
 
@@ -85,6 +103,12 @@ function takePrimedAudioContext(): AudioContext | null {
   const ctx = primedAudioContext;
   primedAudioContext = null;
   return ctx;
+}
+
+function takePrimedDayTrack(): HTMLAudioElement | null {
+  const audio = primedDayTrack;
+  primedDayTrack = null;
+  return audio;
 }
 
 function smoothstep(a: number, b: number, x: number): number {
@@ -136,9 +160,13 @@ export function DayNNightScore({ enabled }: { enabled: boolean }) {
 
     const makeTrack = (src: string): Promise<TrackPipeline | null> =>
       new Promise((resolve) => {
-        const audio = new Audio(src);
+        const audio =
+          src === DAY_SRC
+            ? (takePrimedDayTrack() ?? new Audio(src))
+            : new Audio(src);
         audio.loop = true;
-        audio.preload = "metadata";
+        audio.preload = "auto";
+        audio.volume = 1;
         let settled = false;
         const onLoad = () => {
           if (settled) return;
@@ -158,9 +186,14 @@ export function DayNNightScore({ enabled }: { enabled: boolean }) {
           settled = true;
           resolve(null);
         };
+        if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          queueMicrotask(onLoad);
+          return;
+        }
         audio.addEventListener("canplaythrough", onLoad, { once: true });
         audio.addEventListener("loadeddata", onLoad, { once: true });
         audio.addEventListener("error", onFail, { once: true });
+        audio.load();
       });
 
     let cancelled = false;
@@ -176,8 +209,8 @@ export function DayNNightScore({ enabled }: { enabled: boolean }) {
       dayRef.current = day;
       void ctx
         .resume()
+        .then(() => day.audio.play())
         .then(() => {
-          void day.audio.play().catch(() => {});
           setReady(true);
         })
         .catch(() => setFailed(true));

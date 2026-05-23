@@ -334,9 +334,9 @@ export function TicketEventClient({
   const [generatedLogin, setGeneratedLogin] = useState<GeneratedLogin | null>(
     null
   );
-  const { data: passkeys, refetch: refetchPasskeys } =
-    authClient.useListPasskeys();
-  const hasPasskey = Boolean(passkeys?.length);
+  const { data: passkeys } = authClient.useListPasskeys();
+  const [passkeyCreated, setPasskeyCreated] = useState(false);
+  const hasPasskey = passkeyCreated || Boolean(passkeys?.length);
   const indicatorSteps = useMemo<FlowStep[]>(
     () =>
       isAuthenticated
@@ -449,33 +449,6 @@ export function TicketEventClient({
     setPasskeyError(null);
     advanceTo("reserve");
   }, [advanceTo, hasPasskey, isAuthedNow, step, useStepFlow]);
-
-  useEffect(() => {
-    if (!useStepFlow || step !== "passkey" || !isAuthedNow || hasPasskey) {
-      setPasskeyChecking(false);
-      return;
-    }
-
-    let cancelled = false;
-    setPasskeyChecking(true);
-
-    const checkForPasskey = async () => {
-      try {
-        await refetchPasskeys?.();
-      } catch {
-        if (!cancelled) setPasskeyError(t("passkey.checkFailed"));
-      }
-    };
-
-    void checkForPasskey();
-    const interval = window.setInterval(checkForPasskey, 1500);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-      setPasskeyChecking(false);
-    };
-  }, [hasPasskey, isAuthedNow, refetchPasskeys, step, t, useStepFlow]);
 
   const isOpen = event.state === "open";
   const soldOut = remaining !== null && remaining <= 0;
@@ -651,10 +624,10 @@ export function TicketEventClient({
         return;
       }
 
+      setPasskeyCreated(true);
       setSessionBootstrapped(true);
       setPasskeyChecking(false);
       advanceTo("reserve");
-      void refetchPasskeys?.();
     } catch {
       setPasskeyError(t("passkey.failed"));
     } finally {
