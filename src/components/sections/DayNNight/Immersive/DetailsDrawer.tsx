@@ -42,11 +42,17 @@ const DRAWER_DN_THEME: CSSProperties = {
 interface DetailsDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isSignedIn: boolean;
 }
 
-export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
+export function DetailsDrawer({
+  open,
+  onOpenChange,
+  isSignedIn
+}: DetailsDrawerProps) {
   const t = useTranslations("Event.DayNNight");
   const survival = useTranslations("Event.DayNNight.survivalKit");
+  const rsvpHref = isSignedIn ? "/day-n-night/my" : "/tickets/day-n-night";
   const lenis = useLenis();
   useEffect(() => {
     lenis && lenis[open ? "stop" : "start"]();
@@ -186,7 +192,7 @@ END:VCALENDAR`
               {survival("ics")}
             </PillButton>
             <Link
-              href="/tickets/day-n-night"
+              href={rsvpHref}
               className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-6 py-4 font-mono text-[12px] tracking-[0.28em] text-[var(--dn-bg)] uppercase no-underline transition-transform duration-300 hover:-translate-y-px"
             >
               <span>{t("rsvpCta.register")}</span>

@@ -852,6 +852,11 @@ export function TicketEventClient({
       <ReserveView
         quantity={quantity}
         setQuantity={setQuantity}
+        senderName={senderName}
+        setSenderName={(value) => {
+          setSenderTouched(true);
+          setSenderName(value);
+        }}
         maxAllowed={maxAllowed}
         totalDisplay={totalDisplay}
         purchaseError={purchaseError}

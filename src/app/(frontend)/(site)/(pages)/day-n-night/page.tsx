@@ -130,6 +130,7 @@ export default async function DayNNightPage() {
     : viewerOrder
       ? "pending"
       : "none";
+  const isSignedIn = Boolean(session?.user?.id);
   const guestNames = orderDocs
     .map((order) => order.purchaser_name?.trim())
     .filter((name): name is string => Boolean(name));
@@ -147,6 +148,7 @@ export default async function DayNNightPage() {
         initialView={initialView}
         rsvpCount={orders?.totalDocs ?? orderDocs.length}
         rsvpState={rsvpState}
+        isSignedIn={isSignedIn}
         guestNames={guestNames}
       />
     </RPage>

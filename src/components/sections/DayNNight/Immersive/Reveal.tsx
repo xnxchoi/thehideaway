@@ -306,7 +306,8 @@ export function useActRevealActive(
 //
 // Window math (in loopProgress fraction space):
 //   enter = startsFrac[actIndex] - viewportFrac - preroll
-//   exit  = startsFrac[actIndex + 1] + posttail     (or 1.0 for last act)
+//   exit  = startsFrac[actIndex + 1] - viewportFrac + posttail
+//           (or 1.0 for last act)
 //
 // `entryCount` increments on every false→true edge — consumers pass it
 // as a replayKey to children that need to restart on re-entry.
@@ -341,7 +342,8 @@ export function useActWindowActive(
     if (typeof start !== "number") return false;
     const next = l.startsFrac[actIndex + 1];
     const enter = start - l.viewportFrac - preroll;
-    const exit = typeof next === "number" ? next + posttail : 1;
+    const exit =
+      typeof next === "number" ? next - l.viewportFrac + posttail : 1;
     return r.progress >= enter && r.progress < exit;
   });
 
@@ -368,7 +370,8 @@ export function useActProgress(
     if (typeof start !== "number") return 0;
     const next = l.startsFrac[actIndex + 1];
     const enter = start - l.viewportFrac - preroll;
-    const exit = typeof next === "number" ? next + posttail : 1;
+    const exit =
+      typeof next === "number" ? next - l.viewportFrac + posttail : 1;
     const span = exit - enter;
     if (span <= 0) return 0;
     return Math.max(0, Math.min(1, (r.progress - enter) / span));

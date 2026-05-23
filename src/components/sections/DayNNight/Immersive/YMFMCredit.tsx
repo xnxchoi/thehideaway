@@ -13,7 +13,13 @@ export const YMFM_STATE_EVENT = "day-n-night:ymfm-state";
 
 type YmFmStateEvent = CustomEvent<{ playing: boolean }>;
 
-export function YMFMCredit({ className }: { className?: string }) {
+export function YMFMCredit({
+  className,
+  embeddedInAct = false
+}: {
+  className?: string;
+  embeddedInAct?: boolean;
+}) {
   const t = useTranslations("Event.DayNNight.act.night.dj");
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -37,10 +43,18 @@ export function YMFMCredit({ className }: { className?: string }) {
       <div
         className="grid h-full w-full grid-cols-12 grid-rows-[auto_1fr_auto] max-lg:grid-cols-1"
         style={{
-          paddingTop: "var(--dn-act-pt, clamp(72px, 8vh, 120px))",
-          paddingBottom: "var(--dn-act-pb, clamp(72px, 8vh, 120px))",
-          paddingLeft: "var(--dn-act-px, clamp(24px, 4vw, 80px))",
-          paddingRight: "var(--dn-act-px, clamp(24px, 4vw, 80px))",
+          paddingTop: embeddedInAct
+            ? undefined
+            : "var(--dn-act-pt, clamp(72px, 8vh, 120px))",
+          paddingBottom: embeddedInAct
+            ? undefined
+            : "var(--dn-act-pb, clamp(72px, 8vh, 120px))",
+          paddingLeft: embeddedInAct
+            ? undefined
+            : "var(--dn-act-px, clamp(24px, 4vw, 80px))",
+          paddingRight: embeddedInAct
+            ? undefined
+            : "var(--dn-act-px, clamp(24px, 4vw, 80px))",
           columnGap: "var(--dn-act-gap-x, clamp(40px, 5vw, 80px))",
           rowGap: "var(--dn-act-gap-y, clamp(36px, 5vh, 64px))"
         }}

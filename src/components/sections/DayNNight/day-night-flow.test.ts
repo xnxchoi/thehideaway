@@ -51,11 +51,16 @@ describe("Day n Night main flow contract", () => {
 
   it("keeps FriendsTorrent for friends and moves YM.FM to the music act", () => {
     expect(immersiveSource).toContain("FriendsTorrent");
-    expect(immersiveSource).toContain("YMFMCredit");
+    expect(timelineSource).toContain("YMFMCredit");
     expect(immersiveSource).toContain("ACT_INDEX_DRESS");
-    expect(immersiveSource).toContain("ACT_INDEX_NIGHT");
-    expect(immersiveSource).toContain("const nightWindow = useActWindowActive");
-    expect(immersiveSource).toContain("const ymfmVisible = nightWindow.active");
+    expect(immersiveSource).not.toContain("ACT_INDEX_NIGHT");
+    expect(immersiveSource).not.toContain(
+      "const nightWindow = useActWindowActive"
+    );
+    expect(immersiveSource).not.toContain(
+      "const ymfmVisible = nightWindow.active"
+    );
+    expect(timelineSource).toContain("embeddedInAct");
   });
 
   it("uses the new detailed offerings inside the restored timeline", () => {
@@ -102,5 +107,12 @@ describe("Day n Night main flow contract", () => {
     expect(scoreSource).not.toContain("data-dn-audio-toggle");
     expect(cssSource).toContain("top: 13px");
     expect(cssSource).toContain("right: 20px");
+  });
+
+  it("routes signed-in RSVP actions to the Day n Night ticket manager", () => {
+    expect(landingSource).toContain("isSignedIn");
+    expect(immersiveSource).toContain("isSignedIn={isSignedIn}");
+    expect(quickActionsSource).toContain("isSignedIn || isPending || isRsvped");
+    expect(quickActionsSource).toContain('"/day-n-night/my"');
   });
 });

@@ -6,10 +6,10 @@ import * as m from "motion/react-m";
 import { useShallow } from "zustand/shallow";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
-import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useDetailsContext } from "./DetailsContext";
 import { useDayNNightScene } from "../store";
 import { AudioBars } from "./AudioBars";
+import type { DayNNightRsvpState } from "../MainLanding";
 
 const FG = "rgb(244, 242, 235)"; // resolved --dn-fg cream
 
@@ -24,19 +24,32 @@ const FG = "rgb(244, 242, 235)"; // resolved --dn-fg cream
 interface QuickActionsProps {
   audioEnabled: boolean;
   onAudioToggle: () => void;
+  rsvpState: DayNNightRsvpState;
+  isSignedIn: boolean;
 }
 
 export function QuickActions({
   audioEnabled,
-  onAudioToggle
+  onAudioToggle,
+  rsvpState,
+  isSignedIn
 }: QuickActionsProps) {
   const t = useTranslations("Event.DayNNight");
+  const tMain = useTranslations("Event.DayNNight.main");
   const tAudio = useTranslations("Event.DayNNight.audio");
   const { open, setOpen } = useDetailsContext();
-  const sessionUserId = useRPSession(useShallow((r) => r.id as string | null));
   const loaderProgress = useDayNNightScene(useShallow((r) => r.loaderProgress));
-  const isRsvped = Boolean(sessionUserId);
-  const rsvpLabel = isRsvped ? t("rsvpCta.rsvped") : t("rsvpCta.rsvp");
+  const isRsvped = rsvpState === "confirmed";
+  const isPending = rsvpState === "pending";
+  const rsvpLabel = isRsvped
+    ? t("rsvpCta.rsvped")
+    : isPending
+      ? tMain("rsvp.checkStatus")
+      : t("rsvpCta.rsvp");
+  const rsvpHref =
+    isSignedIn || isPending || isRsvped
+      ? "/day-n-night/my"
+      : "/tickets/day-n-night";
   const rsvpStrength = Math.max(0.42, Math.min(1, loaderProgress));
   const rsvpStyle = {
     ["--dn-rsvp-strength" as string]: (0.42 + rsvpStrength * 0.58).toFixed(3),
@@ -94,7 +107,7 @@ export function QuickActions({
         </Button>
 
         <Link
-          href="/tickets/day-n-night"
+          href={rsvpHref}
           className="dn-rsvp-link group/dn-rsvp relative inline-flex cursor-pointer items-center gap-[8px] overflow-hidden rounded-full p-px font-mono text-[10px] font-semibold tracking-[0.14em] uppercase no-underline [perspective:760px] lg:text-[11px]"
           aria-label={rsvpLabel}
           data-rsvped={isRsvped ? "true" : "false"}

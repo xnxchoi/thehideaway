@@ -30,6 +30,7 @@ import * as m from "motion/react-m";
 import { MarkerText } from "./MarkerText";
 import { Link } from "@/components/core/Link/Link";
 import type { DayNNightRsvpState } from "../MainLanding";
+import { YMFMCredit } from "./YMFMCredit";
 
 /**
  * Act indices in SECTION_KEYS order. Used with `useActRevealActive`
@@ -40,7 +41,6 @@ import type { DayNNightRsvpState } from "../MainLanding";
  * act first entered the viewport).
  */
 const ACT_INDEX_COOKOUT = 1;
-const ACT_INDEX_NIGHT = 3;
 const ACT_INDEX_CLOSING = 4;
 
 // ScrollTrigger is registered globally in TransitionProvider — see
@@ -108,12 +108,14 @@ interface TimelineProps {
   /** Ref to the sentinel sizing div placed inside the dress Act for mobile visibility. */
   dressSentinelRef?: RefObject<HTMLDivElement | null>;
   rsvpState: DayNNightRsvpState;
+  isSignedIn: boolean;
 }
 
 export function Timeline({
   contentRevealed,
   dressSentinelRef,
-  rsvpState
+  rsvpState,
+  isSignedIn
 }: TimelineProps) {
   const t = useTranslations("Event.DayNNight");
   const wrap = useRef<HTMLDivElement>(null);
@@ -355,6 +357,7 @@ export function Timeline({
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
           rsvpState={rsvpState}
+          isSignedIn={isSignedIn}
         />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
@@ -363,6 +366,7 @@ export function Timeline({
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
           rsvpState={rsvpState}
+          isSignedIn={isSignedIn}
           ariaHidden
         />
       </div>
@@ -385,6 +389,7 @@ interface ActSetProps {
   ariaHidden?: boolean;
   dressSentinelRef?: RefObject<HTMLDivElement | null>;
   rsvpState: DayNNightRsvpState;
+  isSignedIn: boolean;
 }
 
 function ActSet({
@@ -392,13 +397,16 @@ function ActSet({
   contentRevealed,
   ariaHidden = false,
   dressSentinelRef,
-  rsvpState
+  rsvpState,
+  isSignedIn
 }: ActSetProps) {
   const mainT = useTranslations("Event.DayNNight.main");
   const rsvpCta =
     rsvpState === "pending" ? mainT("rsvp.checkStatus") : mainT("rsvp.cta");
   const rsvpHref =
-    rsvpState === "pending" ? "/day-n-night/my" : "/tickets/day-n-night";
+    isSignedIn || rsvpState === "pending"
+      ? "/day-n-night/my"
+      : "/tickets/day-n-night";
   const rsvpBody =
     rsvpState === "pending" ? mainT("rsvp.pendingBody") : mainT("rsvp.body");
   // Per-act reveal gates. Opening fires once `contentRevealed` is true
@@ -469,7 +477,6 @@ function ActSet({
   }, [openingActive, ariaHidden]);
 
   const cookoutActive = useActRevealActive(ACT_INDEX_COOKOUT);
-  const nightActive = useActRevealActive(ACT_INDEX_NIGHT);
   const closingActive = useActRevealActive(ACT_INDEX_CLOSING);
   // True only during the sticky window (Closing title at viewport-left
   // → Opening's left edge enters viewport). Outside this narrow window
@@ -644,31 +651,17 @@ function ActSet({
       </Act>
 
       {/* ── Act IV — Music by YM.FM ──────────────────────────────────────
-          The old night spread becomes the headliner beat. YMFMCredit
-          overlays this act with the original cinematic credit treatment. */}
+          The credit lives inside the measured act so it scrolls out with
+          the track instead of sitting as a fixed overlay above RSVP. */}
       <Act
         width={1.5}
         ariaLabel={mainT("music.eyebrow")}
         ariaHidden={ariaHidden}
       >
-        <ActEyebrow
-          numeral="IV"
-          label={t("scrubber.night")}
-          time={t("act.night.time")}
-          align="left"
+        <YMFMCredit
+          embeddedInAct
+          className="col-span-12 row-start-1 row-end-4"
         />
-        <RevealStage
-          as="div"
-          active={nightActive}
-          className="col-start-1 col-end-8 row-start-2 row-end-3 grid max-w-[44ch] gap-6 self-end max-lg:col-span-full xl:gap-9"
-        >
-          <RevealItem as="h2" className={`${TITLE_SECTION} max-w-[11ch]`}>
-            YM.FM
-          </RevealItem>
-          <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
-            {mainT("music.body")}
-          </RevealItem>
-        </RevealStage>
       </Act>
 
       {/* ── Act V — RSVP / Back Cover ────────────────────────────────────

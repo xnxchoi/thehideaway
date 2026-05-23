@@ -564,7 +564,7 @@ function CreditsRsvp({
             RSVP
           </h2>
           <p className="mt-5 max-w-[34ch] text-sm leading-relaxed text-white/68">
-            {rsvpState === "pending" ? t("pendingBody") : t("body")}
+            {rsvpState === "pending" ? t("rsvp.pendingBody") : t("rsvp.body")}
           </p>
           <ReactiveRsvpButton href={href}>{cta}</ReactiveRsvpButton>
         </div>

@@ -15,7 +15,6 @@ import { useActWindowActive } from "./Reveal";
 import { Scrubber } from "./Scrubber";
 import { SunLoader } from "./SunLoader";
 import { Timeline } from "./Timeline";
-import { YMFMCredit } from "./YMFMCredit";
 import { ViewToggle } from "../ViewToggle";
 import { useViewContext } from "../ViewContext";
 import { useRuntimeFriendsPhotos } from "../friendsPhotos";
@@ -25,7 +24,6 @@ import type { DayNNightRsvpState } from "../MainLanding";
 // removed ACT_INDEX_DRESS that lived in Timeline.tsx before the
 // dress JSX block was stripped.
 const ACT_INDEX_DRESS = 2;
-const ACT_INDEX_NIGHT = 3;
 
 /**
  * Immersive view orchestrator.
@@ -45,9 +43,10 @@ const ACT_INDEX_NIGHT = 3;
  */
 interface ImmersiveViewProps {
   rsvpState: DayNNightRsvpState;
+  isSignedIn: boolean;
 }
 
-export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
+export function ImmersiveView({ rsvpState, isSignedIn }: ImmersiveViewProps) {
   const t = useTranslations("Event.DayNNight");
   const mainT = useTranslations("Event.DayNNight.main");
   const { view, setView } = useViewContext();
@@ -134,10 +133,6 @@ export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
   const dressWindow = useActWindowActive(ACT_INDEX_DRESS, {
     preroll: -0.075
   });
-  const nightWindow = useActWindowActive(ACT_INDEX_NIGHT, {
-    preroll: -0.075
-  });
-  const ymfmVisible = nightWindow.active;
   const torrentVisible = dressWindow.active || mobileLiminalActive;
   // Hide the scroll hint on first scroll.
   useEffect(() => {
@@ -169,6 +164,7 @@ export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
           contentRevealed={revealStage >= 1}
           dressSentinelRef={dressSentinelRef}
           rsvpState={rsvpState}
+          isSignedIn={isSignedIn}
         />
         <div
           data-hidden={hintHidden || phase !== "playing" || revealStage < 2}
@@ -190,6 +186,8 @@ export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
             <QuickActions
               audioEnabled={audioEnabled}
               onAudioToggle={() => setAudioEnabled((enabled) => !enabled)}
+              rsvpState={rsvpState}
+              isSignedIn={isSignedIn}
             />
           </>
         )}
@@ -205,7 +203,7 @@ export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
         {/* Liminal → Nighttime handoff captions. Fires liminalHandoffFired
           at progress ≥ 0.55, which LiminalRadioController uses to start
           HideawayFM after its delay window. HTML-only — no 3D. */}
-        <LiminalHandoff suppress={torrentVisible || ymfmVisible} />
+        <LiminalHandoff suppress={torrentVisible} />
         {/* Act III friends window: previous-event photo torrent.
           Both gated on the act's scroll window via useActWindowActive,
           mounted here at the ImmersiveView root (NOT inside Timeline's
@@ -219,22 +217,13 @@ export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
           active={torrentVisible}
           className="fixed z-[40]"
         />
-        {/* YM.FM foreground act layer.
-
-          This lives beside the other fixed layers, not inside Timeline's
-          Act IV grid. That preserves the original cinematic credit style
-          while mapping the content flow to Music by YM.FM. */}
-        <div
-          data-dn-ymfm-credit
-          data-visible={ymfmVisible ? "true" : "false"}
-          aria-hidden={!ymfmVisible}
-          className="pointer-events-none fixed inset-0 z-[46] translate-y-5 opacity-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] data-[visible=true]:translate-y-0 data-[visible=true]:opacity-100"
-        >
-          <YMFMCredit />
-        </div>
         {/* Single Details drawer instance — driven by DetailsContext so
           QuickActions and OpeningCard share one drawer. */}
-        <DetailsDrawer open={detailsOpen} onOpenChange={setDetailsOpen} />
+        <DetailsDrawer
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          isSignedIn={isSignedIn}
+        />
         {/* SeamBridge overlay removed 2026-05-21. The bookend fade at
           the loop's wrap is now handled solely by Timeline's
           `bookendFade` (driven by `useStickyZone`) so the two

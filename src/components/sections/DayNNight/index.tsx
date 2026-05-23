@@ -20,6 +20,7 @@ interface DayNNightLandingProps {
   initialView: DayNNightView;
   rsvpCount: number;
   rsvpState: DayNNightRsvpState;
+  isSignedIn: boolean;
   guestNames: string[];
 }
 
@@ -32,7 +33,8 @@ interface DayNNightLandingProps {
  */
 export function DayNNightLanding({
   initialView,
-  rsvpState
+  rsvpState,
+  isSignedIn
 }: DayNNightLandingProps) {
   const { view, setView } = useViewPref({ initial: initialView });
   const setPageTheme = useTheme(useShallow((r) => r.setPageTheme));
@@ -93,7 +95,7 @@ export function DayNNightLanding({
         )}
         {view === "immersive" ? (
           <DayCycleProvider>
-            <ImmersiveView rsvpState={rsvpState} />
+            <ImmersiveView rsvpState={rsvpState} isSignedIn={isSignedIn} />
           </DayCycleProvider>
         ) : (
           <SimplifiedView />
