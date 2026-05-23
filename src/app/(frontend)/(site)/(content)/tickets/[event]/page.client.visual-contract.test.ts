@@ -142,9 +142,14 @@ describe("Day n Night RSVP visual contract", () => {
     expect(source).toContain("payment_submitted_at");
     expect(source).toContain("paymentSubmitBusy");
     expect(purchasedSource).toContain('data-testid="ticket-payment-submitted"');
+    expect(purchasedSource).toContain(
+      'data-testid="ticket-payment-photo-request"'
+    );
     expect(purchasedSource).toContain('t("paymentSubmitted.cta")');
     expect(purchasedSource).toContain('t("paymentSubmitted.doneTitle")');
+    expect(purchasedSource).toContain('t("paymentSubmitted.photoTitle")');
     expect(purchasedSource).toContain("onPaymentSubmitted");
+    expect(purchasedSource).toContain("onContactSupport");
   });
 
   it("gives the Day n Night purchase screen a navigation rail after price", () => {

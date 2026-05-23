@@ -28,6 +28,9 @@ vi.mock("next/headers", () => ({
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
+  }),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
   })
 }));
 
@@ -68,22 +71,29 @@ describe("/tickets/[event] Day n Night gate routing", () => {
     mocks.clientProps.length = 0;
     mocks.count.mockResolvedValue({ totalDocs: 0 });
     mocks.find.mockReset();
+    mocks.find.mockImplementation(async ({ collection }) => {
+      if (collection === "events") return { docs: [baseEvent] };
+      if (collection === "ticket-orders") return { docs: [] };
+      return { docs: [] };
+    });
     mocks.getServerSession.mockResolvedValue({
       user: { id: "user-1", role: "user", email: "a@b.com", name: "A" }
     });
   });
 
   it("opens the Day n Night ticket flow on direct hits even when stale seed data still has a passcode", async () => {
-    mocks.find.mockResolvedValue({ docs: [baseEvent] });
-
     const props = await renderTicketClientProps();
 
     expect(props.gateInitiallyOpen).toBe(true);
   });
 
   it("does not render a ticket-owned gate for Day n Night when the event has no passcode configured", async () => {
-    mocks.find.mockResolvedValue({
-      docs: [{ ...baseEvent, gate_password: null }]
+    mocks.find.mockImplementation(async ({ collection }) => {
+      if (collection === "events") {
+        return { docs: [{ ...baseEvent, gate_password: null }] };
+      }
+      if (collection === "ticket-orders") return { docs: [] };
+      return { docs: [] };
     });
 
     const props = await renderTicketClientProps();
@@ -92,12 +102,34 @@ describe("/tickets/[event] Day n Night gate routing", () => {
   });
 
   it("keeps legacy event ticket flows gated when they still have a passcode", async () => {
-    mocks.find.mockResolvedValue({
-      docs: [{ ...baseEvent, slug: "legacy-event", gate_password: "secret" }]
+    mocks.find.mockImplementation(async ({ collection }) => {
+      if (collection === "events") {
+        return {
+          docs: [
+            { ...baseEvent, slug: "legacy-event", gate_password: "secret" }
+          ]
+        };
+      }
+      return { docs: [] };
     });
 
     const props = await renderTicketClientProps("legacy-event");
 
     expect(props.gateInitiallyOpen).toBe(false);
+  });
+
+  it("redirects signed-in Day n Night purchasers from register to their tickets", async () => {
+    mocks.find.mockImplementation(async ({ collection }) => {
+      if (collection === "events") return { docs: [baseEvent] };
+      if (collection === "ticket-orders") {
+        return { docs: [{ id: "order-1", purchaser: "user-1" }] };
+      }
+      return { docs: [] };
+    });
+
+    await expect(renderTicketPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/day-n-night/my"
+    );
+    expect(mocks.clientProps).toHaveLength(0);
   });
 });

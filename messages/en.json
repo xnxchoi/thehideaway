@@ -868,7 +868,10 @@
           "doneTitle": "Transfer submitted",
           "doneBody": "The host has this order in the review queue. Your tickets activate after the transfer is matched.",
           "doneCta": "Submitted",
-          "error": "We couldn't mark this transfer as sent. Try again or contact us."
+          "error": "We couldn't mark this transfer as sent. Try again or contact us.",
+          "photoTitle": "Send a transfer screenshot too.",
+          "photoBody": "After the transfer, send a photo or screenshot of the receipt so the host can match it faster.",
+          "photoCta": "Send photo"
         },
         "summary": {
           "eyebrow": "Reservation summary",

@@ -1,5 +1,5 @@
 import { headers as nextHeaders } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -53,6 +53,27 @@ export default async function TicketEventPage(props: { params: Params }) {
 
   const gateInitiallyOpen =
     slug === STEP_FLOW_SLUG ? true : !event.gate_password;
+
+  if (slug === STEP_FLOW_SLUG && session?.user?.id) {
+    const existingOrder = await payload
+      .find({
+        collection: "ticket-orders",
+        where: {
+          and: [
+            { event: { equals: event.id } },
+            { purchaser: { equals: String(session.user.id) } }
+          ]
+        },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true
+      })
+      .catch(() => null);
+
+    if (existingOrder?.docs?.length) {
+      redirect("/day-n-night/my");
+    }
+  }
 
   // Capacity remaining (don't fail if we can't compute).
   let remaining: number | null = null;

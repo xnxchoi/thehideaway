@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   ArrowUpRight,
+  Camera,
   Copy,
   ExternalLink,
   Instagram,
@@ -1930,6 +1931,32 @@ function PurchasedView({
                 {paymentSubmitError}
               </m.p>
             ) : null}
+
+            <div className="grid gap-2 rounded-xl border border-border/25 bg-muted/10 p-3">
+              <div className="flex items-start gap-3">
+                <Camera
+                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <div className="grid gap-1">
+                  <p className="font-sans text-xs font-medium tracking-tight text-foreground">
+                    {t("paymentSubmitted.photoTitle")}
+                  </p>
+                  <p className="font-sans text-xs leading-relaxed text-muted-foreground">
+                    {t("paymentSubmitted.photoBody")}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onContactSupport}
+                data-testid="ticket-payment-photo-request"
+                className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-full border border-border/35 px-4 font-sans text-xs font-medium text-foreground transition-colors hover:border-border/70 hover:bg-muted/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <Camera className="size-3.5" aria-hidden="true" />
+                {t("paymentSubmitted.photoCta")}
+              </button>
+            </div>
           </div>
         </section>
 
