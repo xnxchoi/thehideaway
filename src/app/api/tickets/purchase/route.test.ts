@@ -146,7 +146,16 @@ describe("POST /api/tickets/purchase", () => {
     });
   });
 
-  it("keeps an ungated Day n Night purchase inside the event-owned manage and claim loop", async () => {
+  it("keeps a gated Day n Night purchase inside the event-owned manage and claim loop", async () => {
+    const { eventGateCookieName, issueEventGateCookieValue } =
+      await import("@/lib/event-gate");
+    const issued = issueEventGateCookieValue("event-1");
+    cookiesGet.mockImplementation((name: string) =>
+      name === eventGateCookieName("day-n-night")
+        ? { name, value: issued.value }
+        : undefined
+    );
+
     const { POST } = await import("./route");
     const req = new NextRequest("https://hideaway.test/api/tickets/purchase", {
       method: "POST",
@@ -196,6 +205,26 @@ describe("POST /api/tickets/purchase", () => {
     expect(rollbackTransaction).not.toHaveBeenCalled();
   });
 
+  it("rejects Day n Night purchase attempts that skipped the RSVP gate", async () => {
+    const { POST } = await import("./route");
+    const req = new NextRequest("https://hideaway.test/api/tickets/purchase", {
+      method: "POST",
+      body: JSON.stringify({
+        event_slug: "day-n-night",
+        quantity: 1,
+        purchaser_name: "Buyer Person",
+        sender_name: "Bank Sender"
+      })
+    });
+
+    const res = await POST(req);
+    const body = (await res.json()) as { ok: boolean; error: string };
+
+    expect(res.status).toBe(401);
+    expect(body).toEqual({ ok: false, error: "invalid-password" });
+    expect(beginTransaction).not.toHaveBeenCalled();
+  });
+
   it("requires a passkey before Day n Night purchase", async () => {
     find.mockImplementation(async ({ collection }) => {
       if (collection === "events") {
@@ -229,6 +258,7 @@ describe("POST /api/tickets/purchase", () => {
       body: JSON.stringify({
         event_slug: "day-n-night",
         quantity: 1,
+        password: "seoul2026",
         purchaser_name: "Buyer Person"
       })
     });
@@ -239,6 +269,49 @@ describe("POST /api/tickets/purchase", () => {
     expect(res.status).toBe(403);
     expect(body).toEqual({ ok: false, error: "passkey-required" });
     expect(beginTransaction).not.toHaveBeenCalled();
+  });
+
+  it("keeps events without a configured gate open to purchase", async () => {
+    find.mockImplementation(async ({ collection }) => {
+      if (collection === "events") {
+        return {
+          docs: [
+            {
+              id: "event-open",
+              name: "Open Event",
+              slug: "open-event",
+              gate_password: null,
+              capacity: 100,
+              max_per_user: 3,
+              ticket_price: 65000,
+              payment_instructions: "Wire the host.",
+              date: "2026-05-24T18:30:00.000Z",
+              location: "Haebangchon",
+              state: "open"
+            }
+          ]
+        };
+      }
+      return { docs: [] };
+    });
+
+    const { POST } = await import("./route");
+    const req = new NextRequest("https://hideaway.test/api/tickets/purchase", {
+      method: "POST",
+      body: JSON.stringify({
+        event_slug: "open-event",
+        quantity: 1,
+        purchaser_name: "Buyer Person"
+      })
+    });
+
+    const res = await POST(req);
+    const body = (await res.json()) as { ok: boolean; order_id: string };
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({ ok: true, order_id: "order-1" });
+    expect(commitTransaction).toHaveBeenCalledWith("tx-1");
+    expect(rollbackTransaction).not.toHaveBeenCalled();
   });
 
   it("still accepts a valid signed event-gate cookie for gated legacy events", async () => {

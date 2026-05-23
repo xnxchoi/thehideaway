@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   clientProps: [] as unknown[],
   count: vi.fn(),
+  cookiesGet: vi.fn(),
   find: vi.fn(),
   getServerSession: vi.fn()
 }));
@@ -22,6 +23,7 @@ vi.mock("@/lib/auth/getServerSession", () => ({
 }));
 
 vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => ({ get: mocks.cookiesGet })),
   headers: vi.fn(async () => new Headers())
 }));
 
@@ -69,6 +71,8 @@ describe("/tickets/[event] Day n Night gate routing", () => {
   beforeEach(() => {
     vi.resetModules();
     mocks.clientProps.length = 0;
+    process.env.PAYLOAD_SECRET = "test-payload-secret";
+    mocks.cookiesGet.mockReset().mockReturnValue(undefined);
     mocks.count.mockResolvedValue({ totalDocs: 0 });
     mocks.find.mockReset();
     mocks.find.mockImplementation(async ({ collection }) => {
@@ -81,20 +85,21 @@ describe("/tickets/[event] Day n Night gate routing", () => {
     });
   });
 
-  it("opens the Day n Night ticket flow on direct hits even when stale seed data still has a passcode", async () => {
+  it("keeps the Day n Night ticket flow gated on direct hits without a signed gate cookie", async () => {
     const props = await renderTicketClientProps();
 
-    expect(props.gateInitiallyOpen).toBe(true);
+    expect(props.gateInitiallyOpen).toBe(false);
   });
 
-  it("does not render a ticket-owned gate for Day n Night when the event has no passcode configured", async () => {
-    mocks.find.mockImplementation(async ({ collection }) => {
-      if (collection === "events") {
-        return { docs: [{ ...baseEvent, gate_password: null }] };
-      }
-      if (collection === "ticket-orders") return { docs: [] };
-      return { docs: [] };
-    });
+  it("opens the Day n Night ticket flow after the story gate has issued a signed cookie", async () => {
+    const { eventGateCookieName, issueEventGateCookieValue } =
+      await import("@/lib/event-gate");
+    const issued = issueEventGateCookieValue(baseEvent.id);
+    mocks.cookiesGet.mockImplementation((name: string) =>
+      name === eventGateCookieName("day-n-night")
+        ? { name, value: issued.value }
+        : undefined
+    );
 
     const props = await renderTicketClientProps();
 

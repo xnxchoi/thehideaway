@@ -31,14 +31,14 @@ The brand undercurrent is "change" — paired thematically with the unreleased p
 /day-n-night/my                       ← purchaser order management (bound ticket QR wallet + links + 48h password state)
 /day-n-night/claim/[token]            ← gift-ticket redemption (gated by order password)
 
-/tickets/day-n-night                  ← open purchase page (slug=day-n-night)
+/tickets/day-n-night                  ← gated RSVP registration page (slug=day-n-night)
 /tickets/day-n-night/exclusive        ← post-event content (existing pattern)
 /tickets/my/[ticketId]                ← existing per-ticket QR/check-in page
 ```
 
 **Why both `/day-n-night` and `/tickets/day-n-night`?** The promo surface needs full visual freedom (R3F, horizontal scroll, custom loader); the purchase flow already has a polished, production-tested implementation. Cleanest reuse without mutating working code.
 
-**Promo → ticketing handoff:** the "RSVP" CTA on `/day-n-night` deep-links to `/tickets/day-n-night`. As of 2026-05-23, the Day n Night purchase flow is not passcode-gated; historical `events.gate_password` seed values are ignored for this slug.
+**Promo → ticketing handoff:** the "RSVP" CTA on `/day-n-night` deep-links to `/tickets/day-n-night`. As of 2026-05-24, the registration page is passcode-gated again; direct hits stay locked unless the user enters `events.gate_password` or already holds the signed `event-gate.day-n-night` cookie.
 
 ---
 
@@ -86,7 +86,7 @@ The existing `/tickets/[event]/page.tsx` provides the reusable Events + Tickets 
 
 | Collection                                                                               | Role                                                                                                                                                                                                |
 | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `events` ([Events/index.ts](<src/payload/collections/(consumption)/Events/index.ts>))    | Event row keyed by `slug=day-n-night`. `gate_password` is historical seed data for this slug and is ignored by the Day n Night purchase flow; `payment_instructions` carries the Toss bank details. |
+| `events` ([Events/index.ts](<src/payload/collections/(consumption)/Events/index.ts>))    | Event row keyed by `slug=day-n-night`. `gate_password` gates the RSVP registration page and purchase API; `payment_instructions` carries the Toss bank details. |
 | `tickets` ([Tickets/index.ts](<src/payload/collections/(consumption)/Tickets/index.ts>)) | One row per individual ticket. Existing `claim_token` + `claim_email` + `paid` flag cover gift redemption. `onTicketPaid` hook already sends activation email via Brevo.                            |
 | `users` / `profile`                                                                      | Account + public profile. Profile gets a small `rsvp` group (see § 7.1).                                                                                                                            |
 | `notifications`                                                                          | Payment-confirmation notification fires when admin flips `paid`.                                                                                                                                    |
@@ -100,7 +100,7 @@ The existing `/tickets/[event]/page.tsx` provides the reusable Events + Tickets 
 | Initial recipient name on gift tickets             | `Tickets.gift_initial_name` text (editable by purchaser) + `Tickets.gift_name_locked` checkbox (admin-only).                                                                                                                                                                                   | DONE — same migration                                                                              |
 | RSVP profile fields                                | `Profile.rsvp` group: `tier` enum (`host` \| `past` \| `guest`, default `guest`), `intro` (textarea, 200 char), `igHandle` (camelCase), `gallery` (array of `userMedia`, max 5).                                                                                                               | DONE — migrations `20260518_180000_profile_rsvp_group.ts` + `20260519_120000_profile_rsvp_tier.ts` |
 | View-preference cookie                             | `day-n-night.view-pref` — `"immersive" \| "simplified"`. Client write, server read.                                                                                                                                                                                                            | DONE                                                                                               |
-| **Event-gate password layer (retired 2026-05-23)** | Former HMAC-SHA256-signed HttpOnly cookie scoped to `/day-n-night`. The public story surface and `/tickets/day-n-night` purchase flow are now open. Helpers/UI remain on disk only as archaeology.                                                                                             | RETIRED                                                                                            |
+| **RSVP registration gate**                         | HMAC-SHA256-signed HttpOnly cookie via `src/lib/event-gate.ts`, issued after `/api/tickets/validate-gate` accepts `events.gate_password`. The public story surface remains open; `/tickets/day-n-night` is locked again.                                                                        | ACTIVE                                                                                             |
 
 ### Migrations
 
@@ -136,13 +136,13 @@ Notes:
 
 ---
 
-## 4.5 Event-gate password layer
+## 4.5 RSVP registration gate
 
-A second, surface-wide password layer landed after the original spec was written. It is now retired. As of 2026-05-23, the Day n Night ticket purchase flow is also ungated.
+A second, surface-wide password layer landed after the original spec was written. The story-surface gate was retired on 2026-05-23, but the RSVP registration page was re-gated on 2026-05-24.
 
 | Surface                | Gate                                                                                    | Persistence |
 | ---------------------- | --------------------------------------------------------------------------------------- | ----------- |
-| `/tickets/day-n-night` | Open purchase flow. Historical `events.gate_password` values are ignored for this slug. | None        |
+| `/tickets/day-n-night` | Locked until `events.gate_password` validates or a signed `event-gate.day-n-night` cookie is present. | HttpOnly cookie |
 | `/day-n-night/*`       | Public story surface. No password gate.                                                 | None        |
 
 ### Pieces
@@ -157,7 +157,7 @@ A second, surface-wide password layer landed after the original spec was written
 
 ### Operational
 
-- The generic `/tickets/[event]` gate remains available for other event slugs. Day n Night is explicitly allowlisted as ungated in the page route and purchase API.
+- The generic `/tickets/[event]` gate now covers Day n Night again. The page route checks the signed cookie server-side, and the purchase API accepts either that cookie or the submitted passcode.
 
 ### Known weaknesses (Phase 5)
 
@@ -332,7 +332,7 @@ The server creates a credential account for first-time buyers as the bootstrap f
 
 ### Phase 1 — Foundation — ✅ DONE
 
-1. ✅ New `events` row seeded for `day-n-night` (`gate_password` is historical only and no longer gates purchase).
+1. ✅ New `events` row seeded for `day-n-night` (`gate_password` gates RSVP registration and purchase).
 2. ✅ i18n namespace `Event.DayNNight.*` added to both `en.json` and `ko.json`.
 3. ✅ Route `/day-n-night/page.tsx` + `page.client.tsx` with RPage wrap.
 4. ✅ Cookie-driven view selection (`day-n-night.view-pref`).
@@ -366,14 +366,14 @@ Credits got one backwards-compatible API change: a new optional `titles?: Partia
 
 1. ✅ `ticket-orders` collection + migration (`20260519_180000_ticket_orders.ts`).
 2. ✅ `Tickets.order` FK + `Tickets.gift_initial_name` + `Tickets.gift_name_locked` — same migration.
-3. ✅ Extend `/tickets/[event]/page.client.tsx` with Day n Night's step flow (welcome → name → contact when needed → purchase). The generic client gate remains for other event slugs; Day n Night is allowlisted open at the page and purchase API layers.
+3. ✅ Extend `/tickets/[event]/page.client.tsx` with Day n Night's step flow (welcome → name → contact when needed → purchase). The generic client gate now fronts Day n Night again; the page and purchase API no longer bypass this slug.
 4. ✅ Order password generation + 48h expiry on admin `paid` flip (`issueOrderPaidPassword` hook).
 5. ✅ `/day-n-night/my` — purchaser dashboard, server-fetches the viewer's orders + sibling tickets, surfaces the 48h password to the purchaser once.
 6. ✅ `/day-n-night/claim/[token]` — recipient claim flow. Server resolves five render states (not-found, not-activated, expired, already-claimed, ready); `ClaimGate` client component runs the server action that constant-time-validates the password, stamps `claimed_at`, binds the ticket to the viewer if signed in.
 7. ❌ Password-mail email template via TicketMailer pattern. **Persistence ships but email does not.** The hook stamps the password; the mailer side hasn't been written. Template, transactional fire from inside `issueOrderPaidPassword`, and an idempotency stamp (a `mailed_at` column) are the remaining work.
 8. ❌ Notification fire on admin payment confirmation. Not started.
 
-Additional Phase 4 deliverable that _did_ ship and wasn't in the original plan: the event-gate password layer at `/day-n-night/*` (§ 4.5). It has since been retired; Day n Night story and purchase surfaces are open.
+Additional Phase 4 deliverable that _did_ ship and wasn't in the original plan: the event-gate password layer at `/day-n-night/*` (§ 4.5). The story-surface gate has since been retired; the RSVP registration gate is active.
 
 ### Phase 5 — Pre-launch must-fix + polish (target ≤ May 22) — ⏳ IN PROGRESS
 

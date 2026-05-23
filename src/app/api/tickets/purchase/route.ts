@@ -21,7 +21,6 @@ import {
 
 export const runtime = "nodejs";
 
-const UNGATED_PURCHASE_SLUGS = new Set(["day-n-night"]);
 const PASSKEY_REQUIRED_PURCHASE_SLUGS = new Set(["day-n-night"]);
 
 const GiftSchema = z.object({
@@ -156,7 +155,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if (!UNGATED_PURCHASE_SLUGS.has(event.slug ?? body.event_slug)) {
+  const eventSlug = event.slug ?? body.event_slug;
+  const requiresGate =
+    Boolean(event.gate_password) || eventSlug === "day-n-night";
+  if (requiresGate) {
     const store = await nextCookies();
     const gateCookieValue = store.get(
       eventGateCookieName(body.event_slug)
@@ -176,14 +178,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
   } else if (body.password) {
-    safeEqual(
-      body.password,
-      event.gate_password ?? "_ungated_event_password_placeholder_"
-    );
+    safeEqual(body.password, "_ungated_event_password_placeholder_");
   }
 
   const userId = String(session.user.id);
-  if (PASSKEY_REQUIRED_PURCHASE_SLUGS.has(event.slug ?? body.event_slug)) {
+  if (PASSKEY_REQUIRED_PURCHASE_SLUGS.has(eventSlug)) {
     const passkeyResult = await payload.find({
       collection: "passkeys",
       overrideAccess: true,

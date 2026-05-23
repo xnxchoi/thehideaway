@@ -458,13 +458,14 @@ export function TicketEventClient({
   // Restore cached gate password on mount.
   useEffect(() => {
     if (gateInitiallyOpen) return;
+    if (useStepFlow) return;
     if (typeof window === "undefined") return;
     const cached = sessionStorage.getItem(SS_KEY(event.slug));
     if (cached) {
       setStoredPassword(cached);
       setGateOpen(true);
     }
-  }, [event.slug, gateInitiallyOpen]);
+  }, [event.slug, gateInitiallyOpen, useStepFlow]);
 
   // Sync purchaser name from the live session when sign-in lands mid-flow.
   const liveSessionUser = liveSession?.user as
@@ -1146,7 +1147,7 @@ const EventGateAtmosphere = memo(function EventGateAtmosphere({
       <EventGateGradient
         className={cn(
           "pointer-events-none absolute inset-0 scale-110 opacity-45 brightness-[0.42] saturate-[0.72]",
-          !isDayNNight && "hue-rotate-[28deg] saturate-[0.9]"
+          !isDayNNight && "hue-rotate-28 saturate-[0.9]"
         )}
       />
       <div

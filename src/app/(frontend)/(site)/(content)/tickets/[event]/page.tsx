@@ -1,10 +1,14 @@
-import { headers as nextHeaders } from "next/headers";
+import { cookies as nextCookies, headers as nextHeaders } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketEventClient } from "./page.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import {
+  eventGateCookieName,
+  verifyEventGateCookieValue
+} from "@/lib/event-gate";
 
 export const metadata: Metadata = { title: "Tickets" };
 
@@ -52,7 +56,12 @@ export default async function TicketEventPage(props: { params: Params }) {
   if (event.state === "draft" && !isStaff) notFound();
 
   const gateInitiallyOpen =
-    slug === STEP_FLOW_SLUG ? true : !event.gate_password;
+    slug === STEP_FLOW_SLUG
+      ? verifyEventGateCookieValue(
+          (await nextCookies()).get(eventGateCookieName(slug))?.value,
+          event.id
+        )
+      : !event.gate_password;
 
   if (slug === STEP_FLOW_SLUG && session?.user?.id) {
     const existingOrder = await payload
