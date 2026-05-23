@@ -746,7 +746,7 @@ function ActSet({
               {t("closing.kicker")}
             </RevealItem>
             <RevealItem as="h2" className={TITLE_HERO}>
-              <span className="max-lg:block max-lg:text-[clamp(5.5rem,17.75vw,7.125rem)] max-lg:leading-[0.78] max-lg:font-normal max-lg:tracking-[-0.025em] max-lg:text-[var(--color-off-white)]">
+              <span className="max-lg:block max-lg:text-[clamp(88px,17.75vw,114px)] max-lg:leading-[0.78] max-lg:font-normal max-lg:tracking-[-0.025em] max-lg:text-[var(--color-off-white)]">
                 RSVP
               </span>
             </RevealItem>
@@ -762,7 +762,7 @@ function ActSet({
             >
               {!ariaHidden && <GuestListCaption />}
               {ariaHidden ? (
-                <span className="ease font-wide mt-3 inline-flex items-baseline gap-[18px] border-0 bg-transparent py-[18px] pb-4 text-[17px] font-semibold tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline">
+                <span className="ease mt-3 inline-flex items-baseline gap-[18px] border-0 bg-transparent py-[18px] pb-4 font-wide text-[17px] font-semibold tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline">
                   <span>{rsvpCta}</span>
                   <span aria-hidden className="text-[1.2em] leading-none">
                     →
@@ -771,7 +771,7 @@ function ActSet({
               ) : (
                 <Link
                   href={rsvpHref}
-                  className="ease font-wide mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 bg-transparent py-[18px] pb-4 text-[17px] font-semibold tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3"
+                  className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 bg-transparent py-[18px] pb-4 font-wide text-[17px] font-semibold tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3"
                 >
                   <span>{rsvpCta}</span>
                   <span aria-hidden className="text-[1.2em] leading-none">

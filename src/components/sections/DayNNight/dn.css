@@ -163,7 +163,7 @@ body[data-dn-immersive="true"] #rp-header {
 
 [data-dn-view-toggle] {
   position: fixed;
-  top: 20px;
+  top: 13px;
   right: 20px;
   z-index: 46;
 }
