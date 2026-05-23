@@ -28,17 +28,17 @@ The brand undercurrent is "change" — paired thematically with the unreleased p
 ```
 /day-n-night                          ← root landing (simplified ↔ immersive)
 /day-n-night/guests                   ← RSVP'd credits
-/day-n-night/my                       ← purchaser order management (links + 48h password state)
+/day-n-night/my                       ← purchaser order management (bound ticket QR wallet + links + 48h password state)
 /day-n-night/claim/[token]            ← gift-ticket redemption (gated by order password)
 
-/tickets/day-n-night                  ← gated purchase page (slug=day-n-night)
+/tickets/day-n-night                  ← open purchase page (slug=day-n-night)
 /tickets/day-n-night/exclusive        ← post-event content (existing pattern)
 /tickets/my/[ticketId]                ← existing per-ticket QR/check-in page
 ```
 
-**Why both `/day-n-night` and `/tickets/day-n-night`?** The promo surface needs full visual freedom (R3F, horizontal scroll, custom loader); the gated purchase flow already has a polished, production-tested implementation. Cleanest reuse without mutating working code.
+**Why both `/day-n-night` and `/tickets/day-n-night`?** The promo surface needs full visual freedom (R3F, horizontal scroll, custom loader); the purchase flow already has a polished, production-tested implementation. Cleanest reuse without mutating working code.
 
-**Promo → ticketing handoff:** the "RSVP" CTA on `/day-n-night` deep-links to `/tickets/day-n-night`. The gate password is shared via the same channels the user already uses (DM / private invite).
+**Promo → ticketing handoff:** the "RSVP" CTA on `/day-n-night` deep-links to `/tickets/day-n-night`. As of 2026-05-23, the Day n Night purchase flow is not passcode-gated; historical `events.gate_password` seed values are ignored for this slug.
 
 ---
 
@@ -47,6 +47,7 @@ The brand undercurrent is "change" — paired thematically with the unreleased p
 ### 2.1 Root landing
 
 Two co-existing views, switchable via:
+
 - **Cookie** (`day-n-night.view-pref`) — set by the toggle, read server-side.
 - **Heuristic** — first visit → immersive; subsequent visits → simplified (per spec, "users will want to see [simplified] as the event date draws near").
 - **Toggle** — small switch component, top-right, persists choice.
@@ -62,19 +63,19 @@ Direct adaptation of [Credits/index.tsx](src/components/sections/Credits/index.t
 - **Desktop:** GSAP-ticker vertical looping scroll, centermost item is "active." Hover → set active. Click → focus modal.
 - **Mobile:** horizontal snap scroll, snapped index = active. Tap → focus.
 - **Active profile popover** — name + portrait + 200-word intro. Focus state expands to instagram handle + up to 5 photos. Photo gallery: swipable on mobile, 5-up grid on desktop (matches `petragarmon.com/en/talent`).
-- **Confetti gate** — the Credits component already triggers confetti per-person via a boolean. Our gate condition: `Credited.patronage = (viewerId === author.id)` — it's *your* profile in focus.
+- **Confetti gate** — the Credits component already triggers confetti per-person via a boolean. Our gate condition: `Credited.patronage = (viewerId === author.id)` — it's _your_ profile in focus.
 
 **Data source:** Profile rows with `rsvp.intro` set (opt-in marker). `rsvp.tier` (`host` / `past` / `guest`) maps onto Credits' position slots.
 
 ### 2.3 Ticketing flow (`/tickets/day-n-night`)
 
-The existing `/tickets/[event]/page.tsx` already implements the gate-password flow. The 4-step spec maps onto it as follows:
+The existing `/tickets/[event]/page.tsx` provides the reusable Events + Tickets purchase shell. The Day n Night 4-step spec maps onto it as follows:
 
-| Spec step | Implementation |
-|-----------|----------------|
-| 1. Welcome | New screen inside the existing page, shown before gate input. |
-| 2. Email confirm via Brevo | New: Better Auth `emailOTP` plugin (already wired) → 6-digit code, no account required. |
-| 3. Take name | New step inside the gated purchase form. |
+| Spec step                                                               | Implementation                                                                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1. Welcome                                                              | First screen inside the existing page.                                                                            |
+| 2. Email confirm via Brevo                                              | New: Better Auth `emailOTP` plugin (already wired) → 6-digit code, no account required.                           |
+| 3. Take name                                                            | Step inside the purchase form.                                                                                    |
 | 4. Ticket purchase + URL generation + admin confirmation + 48h password | Reuses existing Tickets collection + onTicketPaid hook. **New** order-group + order-password concept (see § 7.2). |
 
 ---
@@ -83,27 +84,28 @@ The existing `/tickets/[event]/page.tsx` already implements the gate-password fl
 
 ### Reused (no changes)
 
-| Collection | Role |
-|-----------|------|
-| `events` ([Events/index.ts](src/payload/collections/(consumption)/Events/index.ts)) | Event row keyed by `slug=day-n-night`. `gate_password` is the per-event purchase gate; `payment_instructions` carries the Toss bank details. |
-| `tickets` ([Tickets/index.ts](src/payload/collections/(consumption)/Tickets/index.ts)) | One row per individual ticket. Existing `claim_token` + `claim_email` + `paid` flag cover gift redemption. `onTicketPaid` hook already sends activation email via Brevo. |
-| `users` / `profile` | Account + public profile. Profile gets a small `rsvp` group (see § 7.1). |
-| `notifications` | Payment-confirmation notification fires when admin flips `paid`. |
+| Collection                                                                               | Role                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `events` ([Events/index.ts](<src/payload/collections/(consumption)/Events/index.ts>))    | Event row keyed by `slug=day-n-night`. `gate_password` is historical seed data for this slug and is ignored by the Day n Night purchase flow; `payment_instructions` carries the Toss bank details. |
+| `tickets` ([Tickets/index.ts](<src/payload/collections/(consumption)/Tickets/index.ts>)) | One row per individual ticket. Existing `claim_token` + `claim_email` + `paid` flag cover gift redemption. `onTicketPaid` hook already sends activation email via Brevo.                            |
+| `users` / `profile`                                                                      | Account + public profile. Profile gets a small `rsvp` group (see § 7.1).                                                                                                                            |
+| `notifications`                                                                          | Payment-confirmation notification fires when admin flips `paid`.                                                                                                                                    |
 
 ### New (this feature)
 
-| Concept | Implementation | Status |
-|---------|---------------|--------|
-| Order grouping | New `ticket-orders` collection (option B from §7.2). Columns: `purchaser`, `event`, `purchaser_name`, `paid`, `paid_at`, `password`, `password_issued_at`, `password_expires_at`. `Tickets.order` is the FK. | DONE — migration `20260519_180000_ticket_orders.ts` |
-| Per-order 48h password | Generated inside `ticket-orders` `afterChange` hook (`issueOrderPaidPassword`) the moment an admin flips `paid` to true. 8 chars from an ambiguity-safe alphabet (no 0/O/1/l/I); 48h TTL stamped on `password_expires_at`. **Mail-out not yet wired** — password is persisted but not emailed. | DONE (persistence) / PENDING (mail) |
-| Initial recipient name on gift tickets | `Tickets.gift_initial_name` text (editable by purchaser) + `Tickets.gift_name_locked` checkbox (admin-only). | DONE — same migration |
-| RSVP profile fields | `Profile.rsvp` group: `tier` enum (`host` \| `past` \| `guest`, default `guest`), `intro` (textarea, 200 char), `igHandle` (camelCase), `gallery` (array of `userMedia`, max 5). | DONE — migrations `20260518_180000_profile_rsvp_group.ts` + `20260519_120000_profile_rsvp_tier.ts` |
-| View-preference cookie | `day-n-night.view-pref` — `"immersive" \| "simplified"`. Client write, server read. | DONE |
-| **Event-gate password layer (retired 2026-05-23)** | Former HMAC-SHA256-signed HttpOnly cookie scoped to `/day-n-night`. The public story surface is now open; `/tickets/day-n-night` keeps its own passcode gate. Helpers/UI remain on disk only as archaeology. | RETIRED |
+| Concept                                            | Implementation                                                                                                                                                                                                                                                                                 | Status                                                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Order grouping                                     | New `ticket-orders` collection (option B from §7.2). Columns: `purchaser`, `event`, `purchaser_name`, `paid`, `paid_at`, `password`, `password_issued_at`, `password_expires_at`. `Tickets.order` is the FK.                                                                                   | DONE — migration `20260519_180000_ticket_orders.ts`                                                |
+| Per-order 48h password                             | Generated inside `ticket-orders` `afterChange` hook (`issueOrderPaidPassword`) the moment an admin flips `paid` to true. 8 chars from an ambiguity-safe alphabet (no 0/O/1/l/I); 48h TTL stamped on `password_expires_at`. **Mail-out not yet wired** — password is persisted but not emailed. | DONE (persistence) / PENDING (mail)                                                                |
+| Initial recipient name on gift tickets             | `Tickets.gift_initial_name` text (editable by purchaser) + `Tickets.gift_name_locked` checkbox (admin-only).                                                                                                                                                                                   | DONE — same migration                                                                              |
+| RSVP profile fields                                | `Profile.rsvp` group: `tier` enum (`host` \| `past` \| `guest`, default `guest`), `intro` (textarea, 200 char), `igHandle` (camelCase), `gallery` (array of `userMedia`, max 5).                                                                                                               | DONE — migrations `20260518_180000_profile_rsvp_group.ts` + `20260519_120000_profile_rsvp_tier.ts` |
+| View-preference cookie                             | `day-n-night.view-pref` — `"immersive" \| "simplified"`. Client write, server read.                                                                                                                                                                                                            | DONE                                                                                               |
+| **Event-gate password layer (retired 2026-05-23)** | Former HMAC-SHA256-signed HttpOnly cookie scoped to `/day-n-night`. The public story surface and `/tickets/day-n-night` purchase flow are now open. Helpers/UI remain on disk only as archaeology.                                                                                             | RETIRED                                                                                            |
 
 ### Migrations
 
 Per CLAUDE.md's load-bearing migration policy (`readmes/MIGRATIONS.md`):
+
 - Every new column wrapped in `IF NOT EXISTS` / `DO $$` guard.
 - Every constraint/index re-runnable.
 - Mirror Payload's schema shape; let `pnpm generate:schema` produce the SQL and only edit the generated migration to add safeguards.
@@ -124,6 +126,7 @@ Event.Rsvp.*                           ← 4-step purchase flow + my + claim (st
 ```
 
 Notes:
+
 - "Day n Night" is kept English in both locales per the original spec exemption.
 - Adding a new key requires a same-diff edit to both locale files. Missing keys fail loudly at runtime via `MISSING_MESSAGE` per `next-intl` defaults.
 
@@ -135,12 +138,12 @@ Notes:
 
 ## 4.5 Event-gate password layer
 
-A second, surface-wide password layer landed after the original spec was written. It is now retired. The shared-event password only gates `/tickets/day-n-night`.
+A second, surface-wide password layer landed after the original spec was written. It is now retired. As of 2026-05-23, the Day n Night ticket purchase flow is also ungated.
 
-| Surface | Gate | Persistence |
-|---------|------|-------------|
-| `/tickets/day-n-night` | `events.gate_password` entered into the existing client gate. | `sessionStorage` — re-prompts every browser session. |
-| `/day-n-night/*` | Public story surface. No password gate. | None |
+| Surface                | Gate                                                                                    | Persistence |
+| ---------------------- | --------------------------------------------------------------------------------------- | ----------- |
+| `/tickets/day-n-night` | Open purchase flow. Historical `events.gate_password` values are ignored for this slug. | None        |
+| `/day-n-night/*`       | Public story surface. No password gate.                                                 | None        |
 
 ### Pieces
 
@@ -154,7 +157,7 @@ A second, surface-wide password layer landed after the original spec was written
 
 ### Operational
 
-- The existing `/tickets/[event]` gate (sessionStorage) is unchanged.
+- The generic `/tickets/[event]` gate remains available for other event slugs. Day n Night is explicitly allowlisted as ungated in the page route and purchase API.
 
 ### Known weaknesses (Phase 5)
 
@@ -164,7 +167,7 @@ A second, surface-wide password layer landed after the original spec was written
 
 ## 5. Theme
 
-Force **dark** on the immersive view (matches the night-mode endpoint of the day→night transition); allow the user's theme on the simplified view. Wired via the existing client-component-with-`useTheme`-side-effect pattern from [plans/page.client.tsx](src/app/(frontend)/(site)/(pages)/plans/page.client.tsx).
+Force **dark** on the immersive view (matches the night-mode endpoint of the day→night transition); allow the user's theme on the simplified view. Wired via the existing client-component-with-`useTheme`-side-effect pattern from [plans/page.client.tsx](<src/app/(frontend)/(site)/(pages)/plans/page.client.tsx>).
 
 ---
 
@@ -209,27 +212,28 @@ Location: `src/components/UX/Preloader/SunLoader.tsx`. Route-scoped (only mounts
 
 The immersive timeline is composed of 5 acts laid out horizontally inside a pinned track. Each act has its own `--act-w` (CSS var multiplied against `100vw`). The Timeline measures resulting widths in `setLayout`; no JS table to keep in sync.
 
-| Act | `--act-w` | Notes |
-|---|---|---|
-| Opening | 1.0 | Loader handoff lands here. `.openingStack` carries the display title. |
-| Cookout | 1.0 | Polaroid moodboard + body copy. |
-| **Dress** | **3.2** | Horizontal-parallax corridor: eyebrow lead-in (0.2 vw) + Room 01 (1.5 vw) + Room 02 (1.5 vw). See § 15 for full design rationale. |
-| Night | 1.0 | "Mood shift." section + announcement line ("Something quiet, unannounced…") + tribute block. |
-| Closing | 1.0 | RSVP CTA + footer. **Structurally broken — see § 14 C6.** |
+| Act       | `--act-w` | Notes                                                                                                                             |
+| --------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Opening   | 1.0       | Loader handoff lands here. `.openingStack` carries the display title.                                                             |
+| Cookout   | 1.0       | Polaroid moodboard + body copy.                                                                                                   |
+| **Dress** | **3.2**   | Horizontal-parallax corridor: eyebrow lead-in (0.2 vw) + Room 01 (1.5 vw) + Room 02 (1.5 vw). See § 15 for full design rationale. |
+| Night     | 1.0       | "Mood shift." section + announcement line ("Something quiet, unannounced…") + tribute block.                                      |
+| Closing   | 1.0       | RSVP CTA + footer. **Structurally broken — see § 14 C6.**                                                                         |
 
 ### 6.6 Polaroid texture system
 
 `src/components/sections/DayNNight/Immersive/Polaroid.tsx` is a discriminated-union component with three variants:
 
-| Variant | Use | Renders |
-|---|---|---|
-| `clean` (default) | Cookout / Night moodboards | Plain paper-card frame, per-photo aspect, serif caption below. |
-| `stamped` | Dress rooms | Photo + mint-tinted `card-N_front-clear@2x.png` overlay on top (frame border + corner doodle). Locked to portrait 0.76 aspect; photo `object-cover` into the texture's transparent window. Serif caption below the card. |
-| `back` | Dress rooms (ambient) | Standalone "back of card" texture; no photo, no caption. Decorative scatter. |
+| Variant           | Use                        | Renders                                                                                                                                                                                                                  |
+| ----------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `clean` (default) | Cookout / Night moodboards | Plain paper-card frame, per-photo aspect, serif caption below.                                                                                                                                                           |
+| `stamped`         | Dress rooms                | Photo + mint-tinted `card-N_front-clear@2x.png` overlay on top (frame border + corner doodle). Locked to portrait 0.76 aspect; photo `object-cover` into the texture's transparent window. Serif caption below the card. |
+| `back`            | Dress rooms (ambient)      | Standalone "back of card" texture; no photo, no caption. Decorative scatter.                                                                                                                                             |
 
 Master polaroid aspect: `POLAROID_ASPECT = 0.76` (matches the texture PNGs, ≈956×1247–1268).
 
 Texture assets live at `public/assets/textures/photograph/`:
+
 - `card-2_front-clear@2x.png`, `card-4_front-clear@2x.png` — overlay variants
 - `card-4_back-2@2x.png` — back variant
 - `672a4022c04412b253b0af22_card-2_back@2x.png` — back variant (CMS-id prefix retained on disk; the path map in `Polaroid.tsx` is the single source of truth, so the asset isn't renamed)
@@ -248,6 +252,7 @@ Known issue (Phase 5 H9): Cookout / Night / Closing still use `whileInView` and 
 ### 6.8 Performance budget
 
 Per global rules (web/performance.md):
+
 - LCP < 2.5s. Hero is the sun + initial copy — preload nothing heavy; the R3F scene is below LCP-critical content (or the sun is the LCP and we accept the cost).
 - Bundle: < 150kb gzipped JS for landing page. R3F + drei is heavy — load via `dynamic(() => import(...), { ssr: false })` and only on immersive view.
 - Motion stays on compositor-friendly properties (transform, opacity, filter).
@@ -266,10 +271,12 @@ All five decisions in this section have been resolved. Outcomes summarised inlin
 Original arguments:
 
 **A.** Extend `Tickets` with a `rsvp_profile` group.
+
 - Pro: per-event scoping; deleting the ticket cleans up.
 - Con: duplicates identity data; if the user has 3 tickets across 3 events, 3 copies.
 
 **B.** Extend `Profile` with an `rsvp` group, surfaced for the current event.
+
 - Pro: one source of truth per user; reusable for future events.
 - Con: future-event leak if not scoped; need a way to mark "show on day-n-night."
 
@@ -280,31 +287,34 @@ Original arguments:
 Original arguments:
 
 **A. In-place denormalization on `Tickets`:**
+
 ```
 Tickets.order_group_id: text (uuid v7)
 Tickets.order_password: text (denormalized — same value across siblings)
 Tickets.order_password_expires_at: date
 Tickets.order_password_issued_at: date
 ```
+
 Pro: no new collection. Con: password update is a multi-row write; consistency burden.
 
 **B. New `TicketOrders` collection:**
+
 ```
 TicketOrders.id, purchaser, password, password_expires_at, password_issued_at, paid, paid_at
 Tickets.order: relationship<ticket-orders>
 ```
+
 Pro: clean parent-child semantics; password updates are single-row. Con: new collection + migration + new admin UI surface.
 
 ### 7.3 Anonymous email-first or sign-in-required for ticketing?
 
-**RESOLVED (recommendation only — not yet implemented):** Auto-create account on first OTP verify. Carries into Phase 4 as the "OTP step" of the 4-step purchase flow (pending).
+**RESOLVED (implemented 2026-05-23):** The Day n Night flow collects name + email, creates or updates the buyer account, signs that buyer in for the current browser, shows the generated password once for password-manager/private-key-style saving, then requires passkey creation before purchase. Existing credential-account emails must sign in with passkey or contact the host.
 
-Better Auth's `emailOTP` plugin (already wired, [options.ts:190](src/lib/auth/options.ts#L190)) supports anonymous OTP. Flow:
-1. User enters email → OTP sent.
-2. User enters OTP → account auto-created (passwordless) or session bound to email.
-3. User continues purchase as authenticated user.
+The server creates a credential account for first-time buyers as the bootstrap for browser password managers and the passkey ceremony. The generated password is returned to the client exactly once after the account is created and sign-in succeeds; it is not emailed, persisted in client storage, or shown again after the buyer confirms it is saved. The save step uses real `username` / `new-password` fields plus a submit button so browsers can recognize a new account for `hideawayseoul.com`; where available, the client also calls the Credential Management API on that same user action. Because transactional mail is not reliable enough to carry account recovery, durable access is passkey-first:
 
-The purchaser ends up with a real account they can use to view `/day-n-night/my` later. Cheapest path; reuses everything.
+- `/day-n-night/my` — canonical Day n Night ticket/order dashboard.
+- `/sign-in?redirectTo=/day-n-night/my` — return path for users checking tickets later with passkey.
+- `concierge@hideawayseoul.com` — manual fallback if passkey setup/sign-in is unavailable.
 
 ### 7.4 Confetti trigger on the guests page
 
@@ -322,7 +332,7 @@ The purchaser ends up with a real account they can use to view `/day-n-night/my`
 
 ### Phase 1 — Foundation — ✅ DONE
 
-1. ✅ New `events` row seeded for `day-n-night` (`gate_password = "sunshine-2026"`).
+1. ✅ New `events` row seeded for `day-n-night` (`gate_password` is historical only and no longer gates purchase).
 2. ✅ i18n namespace `Event.DayNNight.*` added to both `en.json` and `ko.json`.
 3. ✅ Route `/day-n-night/page.tsx` + `page.client.tsx` with RPage wrap.
 4. ✅ Cookie-driven view selection (`day-n-night.view-pref`).
@@ -356,14 +366,14 @@ Credits got one backwards-compatible API change: a new optional `titles?: Partia
 
 1. ✅ `ticket-orders` collection + migration (`20260519_180000_ticket_orders.ts`).
 2. ✅ `Tickets.order` FK + `Tickets.gift_initial_name` + `Tickets.gift_name_locked` — same migration.
-3. ❌ Extend `/tickets/[event]/page.client.tsx` with 4-step flow (welcome → OTP → name → purchase). **NOT STARTED** — biggest remaining piece. The existing client gate uses sessionStorage and a single password+quantity form; rebuilding it as 4 steps without breaking the live `/tickets/[event]` surface for *other* events needs its own focused pass.
+3. ✅ Extend `/tickets/[event]/page.client.tsx` with Day n Night's step flow (welcome → name → contact when needed → purchase). The generic client gate remains for other event slugs; Day n Night is allowlisted open at the page and purchase API layers.
 4. ✅ Order password generation + 48h expiry on admin `paid` flip (`issueOrderPaidPassword` hook).
 5. ✅ `/day-n-night/my` — purchaser dashboard, server-fetches the viewer's orders + sibling tickets, surfaces the 48h password to the purchaser once.
 6. ✅ `/day-n-night/claim/[token]` — recipient claim flow. Server resolves five render states (not-found, not-activated, expired, already-claimed, ready); `ClaimGate` client component runs the server action that constant-time-validates the password, stamps `claimed_at`, binds the ticket to the viewer if signed in.
 7. ❌ Password-mail email template via TicketMailer pattern. **Persistence ships but email does not.** The hook stamps the password; the mailer side hasn't been written. Template, transactional fire from inside `issueOrderPaidPassword`, and an idempotency stamp (a `mailed_at` column) are the remaining work.
 8. ❌ Notification fire on admin payment confirmation. Not started.
 
-Additional Phase 4 deliverable that *did* ship and wasn't in the original plan: the event-gate password layer at `/day-n-night/*` (§ 4.5). HMAC-signed 30-day cookie, route-group layout, server action.
+Additional Phase 4 deliverable that _did_ ship and wasn't in the original plan: the event-gate password layer at `/day-n-night/*` (§ 4.5). It has since been retired; Day n Night story and purchase surfaces are open.
 
 ### Phase 5 — Pre-launch must-fix + polish (target ≤ May 22) — ⏳ IN PROGRESS
 
@@ -372,12 +382,12 @@ Phase 5 is the close-out lane. It bundles **two distinct workstreams** under a s
 1. **Phase 4 close-out (P4C)** — the three ❌ items from Phase 4 that the spec needs but never shipped: the 4-step purchase flow rebuild (`/tickets/[event]/page.client.tsx`), the password mail-out (`issueOrderPaidPassword` → Brevo template + `mailed_at` idempotency stamp), and the admin-paid `notifications` row. **Without these the paid-ticketing path is non-functional**, so they ship with — not after — Phase 5a.
 2. **Audit-driven fixes (5a/5b/5c)** — the tranches in § 14.6.
 
-| Tranche | Scope | Effort |
-|---|---|---|
-| **P4C** | 4-step purchase flow + password mail-out + admin-paid notification | ~6 h |
-| **Phase 5a** — mandatory before going live | Every § 14 CRITICAL + the security-floor HIGHs (rate-limit, robots/noindex, claim_email enforcement, i18n gaps on `/my` + `/guests`, Survival Kit block on simplified view, Closing-act structural fix) | ~6 h |
-| **Phase 5b** — strongly recommended | HMAC binding to password hash, claim-state collapse, scrubber centersFrac, openingStack/openingTitle visual fixes, `rsvp.consented` opt-in, gate "DM Sean" affordance, 48h → 7-day TTL OR reissue button, `/guests` discoverability link, payment confirmation loop commitment | ~4 h |
-| **Phase 5c** — polish | Extract shared helpers, Timeline.tsx per-act split, dead-SCSS sweep, single-rAF polaroid consolidation, `pnpm generate:types` + remove inline casts, LOW-tier hygiene, one Korean-coded moodboard reference | ~4 h (post-launch acceptable) |
+| Tranche                                    | Scope                                                                                                                                                                                                                                                                          | Effort                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
+| **P4C**                                    | 4-step purchase flow + password mail-out + admin-paid notification                                                                                                                                                                                                             | ~6 h                          |
+| **Phase 5a** — mandatory before going live | Every § 14 CRITICAL + the security-floor HIGHs (rate-limit, robots/noindex, claim_email enforcement, i18n gaps on `/my` + `/guests`, Survival Kit block on simplified view, Closing-act structural fix)                                                                        | ~6 h                          |
+| **Phase 5b** — strongly recommended        | HMAC binding to password hash, claim-state collapse, scrubber centersFrac, openingStack/openingTitle visual fixes, `rsvp.consented` opt-in, gate "DM Sean" affordance, 48h → 7-day TTL OR reissue button, `/guests` discoverability link, payment confirmation loop commitment | ~4 h                          |
+| **Phase 5c** — polish                      | Extract shared helpers, Timeline.tsx per-act split, dead-SCSS sweep, single-rAF polaroid consolidation, `pnpm generate:types` + remove inline casts, LOW-tier hygiene, one Korean-coded moodboard reference                                                                    | ~4 h (post-launch acceptable) |
 
 **Launch gate:** P4C + Phase 5a both green → public RSVP send-out unblocked. See § 14 for every finding and the detailed action plan.
 
@@ -424,6 +434,7 @@ For this surface specifically:
 - Dress-code copy (§10 Q2) is a brand-voice exercise — class B (atmospheric) in VOICE.md §3.1.1 terms; allow tone, but run it past §3.4's three checks.
 
 A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Specific known issues (see § 14 product-risk section):
+
 - "Something quiet, unannounced, will be there" translates poorly to Korean — reads ominous/evasive, not editorial-mysterious. Either cut or rewrite Korean.
 - `act.day.body` and `cookout.heading` Korean strings still contain English fragments — spot-check `ko.json` for English bleed.
 - Address `Sowol-ro 20-gil 64, 3F` is romanized; Koreans use 도로명주소 (소월로20길 64, 3층). Show both, or link to Kakao Map.
@@ -457,7 +468,7 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
 - **2026-05-19 (afternoon)** — Phase 3 redone via Credits reuse. Added an optional `titles?: Partial<Record<RP_Roles, string>>` prop to `Credits` (backwards-compatible — falls back to original "Founders / Cofounders / …" labels when the prop is omitted). Wrote `/day-n-night/guests/page.tsx` to server-fetch RSVP profiles, resolve authors in a follow-up query (Profile.author is `maxDepth: 0`), map each into `Credited`. PRP plan saved at `.claude/PRPs/plans/event-guests-into-credits.plan.md`. Santa-loop dual review converged on NICE after fixing a `role` field nullability widening; one out-of-scope follow-up spawned (Credits desktop confetti `gsap.ticker.add` leak on hover).
 
 - **2026-05-19 (evening)** — Phase 4 partial:
-  - Event-gate password layer at `/day-n-night/*` (HMAC cookie, 30d) — new layer not in the original spec. See § 4.5.
+  - Event-gate password layer at `/day-n-night/*` (HMAC cookie, 30d) — new layer not in the original spec. Retired 2026-05-23; see § 4.5.
   - `ticket-orders` collection + re-runnable migration + `issueOrderPaidPassword` afterChange hook (generates an 8-char password from an ambiguity-safe alphabet + stamps 48h expiry the moment admin flips `paid`).
   - `Tickets.gift_initial_name`, `Tickets.gift_name_locked`, `Tickets.order` FK — same migration.
   - `/day-n-night/my` — purchaser dashboard (server fetch, surfaces password once).
@@ -512,16 +523,16 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
 
 ### Carry-overs to next session
 
-| Item | What's missing |
-|------|----------------|
-| Phase 5a (must-fix) | See § 14 action plan. ~6 h. Includes claim_email enforcement, rate-limits, robots noindex, /my + /guests i18n wiring, Closing-act structural fix, Survival Kit block, false-promise copy fixes (C3, C4). |
-| Phase 5b (recommended) | See § 14. ~4 h. HMAC binding to password hash, claim-state collapse, scrubber centers, openingStack fix, rsvp.consented, gate help link, TTL extension, /guests discoverability. |
-| 4-step purchase flow | Welcome → emailOTP → name → existing purchase. `/tickets/[event]/page.client.tsx` rewrite — careful, this is shared with other events. |
-| Password mail-out | The password is stamped server-side but never mailed. Need a Brevo template + transactional fire from inside `issueOrderPaidPassword` + a `mailed_at` idempotency stamp. |
-| Admin-payment notification | Fire a `notifications` row when admin marks paid (mirrors the existing per-ticket `onTicketPaid` notification). |
-| Reduced-motion variant on immersive | Deferred from Phase 2. DressRoom already gates on `prefers-reduced-motion`; the other acts don't. |
-| Phase 5c (polish) | See § 14. Timeline.tsx split, dead SCSS sweep, single-rAF polaroids, generate:types + remove casts, LOW-tier hygiene. |
-| `Credits` desktop confetti `gsap.ticker.add` leak | Spawned as a side task; pre-existing in Credits, now visible because we set `patronage=true` on the viewer's own row. |
+| Item                                              | What's missing                                                                                                                                                                                           |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 5a (must-fix)                               | See § 14 action plan. ~6 h. Includes claim_email enforcement, rate-limits, robots noindex, /my + /guests i18n wiring, Closing-act structural fix, Survival Kit block, false-promise copy fixes (C3, C4). |
+| Phase 5b (recommended)                            | See § 14. ~4 h. HMAC binding to password hash, claim-state collapse, scrubber centers, openingStack fix, rsvp.consented, gate help link, TTL extension, /guests discoverability.                         |
+| 4-step purchase flow                              | Welcome → emailOTP → name → existing purchase. `/tickets/[event]/page.client.tsx` rewrite — careful, this is shared with other events.                                                                   |
+| Password mail-out                                 | The password is stamped server-side but never mailed. Need a Brevo template + transactional fire from inside `issueOrderPaidPassword` + a `mailed_at` idempotency stamp.                                 |
+| Admin-payment notification                        | Fire a `notifications` row when admin marks paid (mirrors the existing per-ticket `onTicketPaid` notification).                                                                                          |
+| Reduced-motion variant on immersive               | Deferred from Phase 2. DressRoom already gates on `prefers-reduced-motion`; the other acts don't.                                                                                                        |
+| Phase 5c (polish)                                 | See § 14. Timeline.tsx split, dead SCSS sweep, single-rAF polaroids, generate:types + remove casts, LOW-tier hygiene.                                                                                    |
+| `Credits` desktop confetti `gsap.ticker.add` leak | Spawned as a side task; pre-existing in Credits, now visible because we set `patronage=true` on the viewer's own row.                                                                                    |
 
 ---
 
@@ -531,7 +542,7 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
 
 ### 14.0 TL;DR — what will go wrong if we ship as-is
 
-1. **Two pieces of false information will mislead users.** The `/claim` "expired" copy is shown for a "not yet activated" state ("Ask the buyer to resend" — but there's nothing to resend, the host just hasn't marked paid yet). And the claim success copy says *"We have emailed your ticket"* — no email is sent.
+1. **Two pieces of false information will mislead users.** The `/claim` "expired" copy is shown for a "not yet activated" state ("Ask the buyer to resend" — but there's nothing to resend, the host just hasn't marked paid yet). And the claim success copy says _"We have emailed your ticket"_ — no email is sent.
 2. **A purchaser cannot trust a gift-ticket restriction.** The Tickets schema declares a `claim_email` field meant to scope a gift to one recipient; the claim action never checks it. Anyone with the URL + 48h password can claim.
 3. **The 48h order password and 30-day gate cookie have no rate-limit and no abuse alert.** Both passwords are crackable via parallel server-action POSTs.
 4. **The `/my` page is search-indexable and renders the password as plain HTML.** Browser screenshots, history sync, and any indexing crawl exposes it.
@@ -541,83 +552,83 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
 
 ### 14.1 CRITICAL (6) — block ship
 
-| # | Domain | File | Issue | User harm |
-|---|---|---|---|---|
-| C1 | Security | `claim/[token]/action.ts` (full body) | `claim_email` declared on Tickets but never enforced in `submitClaim` | Purchaser who intended to restrict a gift to one email gets no protection. Stolen URL + password = redirected ticket. |
-| C2 | Security | `claim/[token]/action.ts:30` | No rate-limit on `submitClaim`; 48h password is ~46 bits at 10 req/s | Brute-force feasible across parallel attackers. |
-| C3 | Code | `claim/[token]/page.tsx:99–106` | `not-activated` and `expired` both render `t("errors.expired")` ("Ask the buyer to resend") | Recipient hits an unactivated link, DMs buyer to "resend"; both DM Sean. False instruction. |
-| C4 | Code | `claim/[token]` success copy | `messages/{en,ko}.json Event.Rsvp.claim.success.body` says *"We have emailed your ticket"* — `submitClaim` sends no email | False promise; user waits for email that never arrives. |
-| C5 | Security | `my/page.tsx:39–48` | `orders` fetch can fail silently (`.catch(() => null)`); UI renders empty list when DB is down. (Line numbers re-anchored against current source from the audit's original 52–62 citation.) | Buyer thinks orders vanished. Add explicit error state. |
-| C6 | Visual + Code | `Timeline.tsx` closing act + `styles.module.scss` | Closing act skips `.actInner`, applies invalid `grid-cols-[1/3]` Tailwind, doesn't use `.actEyebrow`/`.closingStack`/`.closingTitle` — those classes are now dead | Closing screen has wrong top padding, footer collapses, eyebrow loses caps/tracking. The user's "quirks" complaint lands hardest here. |
+| #   | Domain        | File                                              | Issue                                                                                                                                                                                       | User harm                                                                                                                              |
+| --- | ------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | Security      | `claim/[token]/action.ts` (full body)             | `claim_email` declared on Tickets but never enforced in `submitClaim`                                                                                                                       | Purchaser who intended to restrict a gift to one email gets no protection. Stolen URL + password = redirected ticket.                  |
+| C2  | Security      | `claim/[token]/action.ts:30`                      | No rate-limit on `submitClaim`; 48h password is ~46 bits at 10 req/s                                                                                                                        | Brute-force feasible across parallel attackers.                                                                                        |
+| C3  | Code          | `claim/[token]/page.tsx:99–106`                   | `not-activated` and `expired` both render `t("errors.expired")` ("Ask the buyer to resend")                                                                                                 | Recipient hits an unactivated link, DMs buyer to "resend"; both DM Sean. False instruction.                                            |
+| C4  | Code          | `claim/[token]` success copy                      | `messages/{en,ko}.json Event.Rsvp.claim.success.body` says _"We have emailed your ticket"_ — `submitClaim` sends no email                                                                   | False promise; user waits for email that never arrives.                                                                                |
+| C5  | Security      | `my/page.tsx:39–48`                               | `orders` fetch can fail silently (`.catch(() => null)`); UI renders empty list when DB is down. (Line numbers re-anchored against current source from the audit's original 52–62 citation.) | Buyer thinks orders vanished. Add explicit error state.                                                                                |
+| C6  | Visual + Code | `Timeline.tsx` closing act + `styles.module.scss` | Closing act skips `.actInner`, applies invalid `grid-cols-[1/3]` Tailwind, doesn't use `.actEyebrow`/`.closingStack`/`.closingTitle` — those classes are now dead                           | Closing screen has wrong top padding, footer collapses, eyebrow loses caps/tracking. The user's "quirks" complaint lands hardest here. |
 
 ### 14.2 HIGH (14) — fix before launch
 
 #### Security / abuse
 
-| # | File | Issue | Fix |
-|---|---|---|---|
-| H1 | `DayNNightGate/action.ts:34` | No rate-limit on gate POST. 30-day cookie means one crack = persistent access | In-action `RateLimiterMemory` keyed by IP (10 req / 60 s) |
-| H2 | `event-gate.ts:32–41` | HMAC is keyed on `eventId` only — password rotation does **not** invalidate existing cookies | Add password hash (or `password_version` counter) to HMAC message: `${eventId}.${expiresAtMs}.${passwordHash}` |
-| H3 | `my/page.tsx` + `src/app/robots.ts` | `/my` not in robots disallow; password rendered as plain HTML in DOM | Add `/day-n-night/` to disallow list. Set `metadata.robots = "noindex, nofollow"` on `/my` and `/claim/[token]`. Add reveal-on-click affordance (`filter: blur` toggled by button) |
-| H4 | `claim/[token]/page.tsx:97–109` | Four distinct error states (not-found / not-activated / expired / already-claimed) are individually rendered → enables token-state mapping | Collapse `not-activated` + `not-found` + `expired` into one render kind (still distinguish `already-claimed` so a double-click doesn't confuse). Keep the internal `kind` enum for analytics. |
+| #   | File                                | Issue                                                                                                                                      | Fix                                                                                                                                                                                           |
+| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| H1  | `DayNNightGate/action.ts:34`        | No rate-limit on gate POST. 30-day cookie means one crack = persistent access                                                              | In-action `RateLimiterMemory` keyed by IP (10 req / 60 s)                                                                                                                                     |
+| H2  | `event-gate.ts:32–41`               | HMAC is keyed on `eventId` only — password rotation does **not** invalidate existing cookies                                               | Add password hash (or `password_version` counter) to HMAC message: `${eventId}.${expiresAtMs}.${passwordHash}`                                                                                |
+| H3  | `my/page.tsx` + `src/app/robots.ts` | `/my` not in robots disallow; password rendered as plain HTML in DOM                                                                       | Add `/day-n-night/` to disallow list. Set `metadata.robots = "noindex, nofollow"` on `/my` and `/claim/[token]`. Add reveal-on-click affordance (`filter: blur` toggled by button)            |
+| H4  | `claim/[token]/page.tsx:97–109`     | Four distinct error states (not-found / not-activated / expired / already-claimed) are individually rendered → enables token-state mapping | Collapse `not-activated` + `not-found` + `expired` into one render kind (still distinguish `already-claimed` so a double-click doesn't confuse). Keep the internal `kind` enum for analytics. |
 
 #### Code / type / i18n
 
-| # | File | Issue | Fix |
-|---|---|---|---|
-| H5 | `my/page.tsx:108, 111, 119, 150` | Five hardcoded English strings (Confirmed, Pending, ticket/tickets, Order password, Claimed) | Add `Event.Rsvp.my.{confirmed, pending, ticketCount, orderPassword, claimed}` to both locale files. Use ICU plural for ticket count. |
-| H6 | `guests/page.tsx:40–44` | `TIER_TITLES` hardcoded English (Hosts / Past Attendees / Guests) — the Korean keys already exist at `Event.Guests.tier.*` but are never read | `const t = await getTranslations("Event.Guests"); const TIER_TITLES = { admin: t("tier.host"), cofounder: t("tier.past"), user: t("tier.guest") };` |
-| H7 | `ClaimGate.tsx:82` | `pending ? t("submit") + "…"` — appends raw ellipsis to a translated string | Add `Event.Rsvp.claim.submitting`; use it for the pending label |
-| H8 | `DayNNightGate/action.ts:19` | `GateActionState.error = "throttled"` declared but never returned + no i18n key | Either remove the union member or implement rate-limit + add `Event.Gate.errors.throttled` |
+| #   | File                             | Issue                                                                                                                                         | Fix                                                                                                                                                 |
+| --- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| H5  | `my/page.tsx:108, 111, 119, 150` | Five hardcoded English strings (Confirmed, Pending, ticket/tickets, Order password, Claimed)                                                  | Add `Event.Rsvp.my.{confirmed, pending, ticketCount, orderPassword, claimed}` to both locale files. Use ICU plural for ticket count.                |
+| H6  | `guests/page.tsx:40–44`          | `TIER_TITLES` hardcoded English (Hosts / Past Attendees / Guests) — the Korean keys already exist at `Event.Guests.tier.*` but are never read | `const t = await getTranslations("Event.Guests"); const TIER_TITLES = { admin: t("tier.host"), cofounder: t("tier.past"), user: t("tier.guest") };` |
+| H7  | `ClaimGate.tsx:82`               | `pending ? t("submit") + "…"` — appends raw ellipsis to a translated string                                                                   | Add `Event.Rsvp.claim.submitting`; use it for the pending label                                                                                     |
+| H8  | `DayNNightGate/action.ts:19`     | `GateActionState.error = "throttled"` declared but never returned + no i18n key                                                               | Either remove the union member or implement rate-limit + add `Event.Gate.errors.throttled`                                                          |
 
 #### Visual / layout
 
-| # | File | Issue | Fix |
-|---|---|---|---|
-| H9 | `Timeline.tsx` Cookout/Night/Closing RevealStages | `whileInView` reveals inside a GSAP-pinned horizontal track may fire on mount instead of on arrival — `useScrollTimeline.ts:19` already documents this caveat for DressRoom | Migrate Cookout/Night/Closing reveals to the `active` prop driven by `useDayNNightScene.progress` threshold, mirroring how the Loader uses `loaderProgress` |
-| H10 | `Scrubber.tsx:27, 114–115` | Docstring says labels sit at section CENTER; code uses `layout.startsFrac` (section START). With variable-width acts, "Closing" label drifts left of its act | Use `layout.centersFrac` for `labelPositions`, or update doc-comment to match start-anchored intent |
-| H11 | `styles.module.scss` `.openingStack` | `grid-template-rows: repeat(12, 1fr)` constrains the title to 1/12 viewport height — clips display type on shorter screens, breaks editorial rhythm | Switch to `grid-auto-rows: auto` + explicit `gap` |
-| H12 | `styles.module.scss` `.openingTitle` | Uses `--color-faded-black` (always near-black) instead of `--dn-fg` (per-frame adaptive) | Replace with `var(--dn-fg)` |
-| H13 | Cross-route | `/my` is `max-w-3xl` while Gate and `/claim` are `max-w-md` | Standardize: gate/claim stay `max-w-md` (single-action screens). `/my` is a list — use `max-w-2xl` so it feels related but earns its width |
-| H14 | `my/page.tsx:110, 124` | `text-off-white/35` on ticket-count, `/45` on passwordHint — both below the `/55` legibility floor for informative UI text on dark surfaces | Bump both to `/55` minimum |
+| #   | File                                              | Issue                                                                                                                                                                       | Fix                                                                                                                                                         |
+| --- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| H9  | `Timeline.tsx` Cookout/Night/Closing RevealStages | `whileInView` reveals inside a GSAP-pinned horizontal track may fire on mount instead of on arrival — `useScrollTimeline.ts:19` already documents this caveat for DressRoom | Migrate Cookout/Night/Closing reveals to the `active` prop driven by `useDayNNightScene.progress` threshold, mirroring how the Loader uses `loaderProgress` |
+| H10 | `Scrubber.tsx:27, 114–115`                        | Docstring says labels sit at section CENTER; code uses `layout.startsFrac` (section START). With variable-width acts, "Closing" label drifts left of its act                | Use `layout.centersFrac` for `labelPositions`, or update doc-comment to match start-anchored intent                                                         |
+| H11 | `styles.module.scss` `.openingStack`              | `grid-template-rows: repeat(12, 1fr)` constrains the title to 1/12 viewport height — clips display type on shorter screens, breaks editorial rhythm                         | Switch to `grid-auto-rows: auto` + explicit `gap`                                                                                                           |
+| H12 | `styles.module.scss` `.openingTitle`              | Uses `--color-faded-black` (always near-black) instead of `--dn-fg` (per-frame adaptive)                                                                                    | Replace with `var(--dn-fg)`                                                                                                                                 |
+| H13 | Cross-route                                       | `/my` is `max-w-3xl` while Gate and `/claim` are `max-w-md`                                                                                                                 | Standardize: gate/claim stay `max-w-md` (single-action screens). `/my` is a list — use `max-w-2xl` so it feels related but earns its width                  |
+| H14 | `my/page.tsx:110, 124`                            | `text-off-white/35` on ticket-count, `/45` on passwordHint — both below the `/55` legibility floor for informative UI text on dark surfaces                                 | Bump both to `/55` minimum                                                                                                                                  |
 
 ### 14.3 MEDIUM (12) — Phase 5b
 
-| # | File | Issue |
-|---|---|---|
-| M1 | `guests/page.tsx:78–80` | `rsvp.intro` non-empty is the only opt-in marker. Add `rsvp.consented` boolean (user-set, defaults false) so a host editing a profile can't accidentally surface someone publicly |
-| M2 | `guests/page.tsx`, `my/page.tsx`, `claim/[token]/action.ts` | Three near-identical copies of `resolveViewerId` / `resolveViewer`. Extract to `src/lib/payload/resolveViewerId.ts` |
-| M3 | `my/page.tsx:56` | `depth: 1` on tickets populates `event` with `gate_password` into server HTML. Set `depth: 0` — page only reads scalar fields |
-| M4 | `ClaimGate.tsx:61` vs `DayNNightGate/index.tsx:75` | Password `maxLength` mismatch (50 vs 200). Pick one documented ceiling per password type; mirror server-side trim |
-| M5 | `Timeline.tsx` | 706 LOC in one file — past project ceiling. Extract per-act components: `OpeningAct`, `CookoutAct`, `DressAct`, `NightAct`, `ClosingAct`. Timeline.tsx drops to pin machinery only |
-| M6 | `styles.module.scss` | ~120 lines of dead classes (`.actHeader`, `.actLabel`, `.actLabelStrong`, `.actTime`, `.actBody`, `.actLede`, `.actFooter`, `.actFooterItem`, `.closingStack`, `.closingTitle`, `.dressMoodboard`, `.loaderRing`). Remove and add a stop-the-line comment about which acts use bespoke layouts |
-| M7 | `Polaroid.tsx` | N polaroids × 1 rAF each = N rAF callbacks/frame. Consolidate to one shared rAF that broadcasts via a MotionValue selector |
-| M8 | `guests/page.tsx:53–63` | `ProfileWithRsvp` is a local cast over `Profile`. Run `pnpm generate:types` and remove the cast as soon as the migration is in CI |
-| M9 | `DayNNightGate/index.tsx` | The hint copy currently doesn't tell a user where to find the password or what to do if they don't have it. Add a `mailto:` or DM contact link on the gate page |
-| M10 | Product | 48h TTL on order password creates an avoidable failure mode — recipient delays → "expired" → DMs buyer → DMs Sean. Extend to 7 days OR add a "reissue this order's password" button on `/my` |
-| M11 | Product — `/guests` discoverability | The page exists and is unlinked from the landing. Add a subtle "Who's coming →" link on simplified view (and Closing act on immersive) |
-| M12 | Cross-route | Inline `as { id: string; ... }` casts on Payload returns (in `my/page.tsx:50, 65–70`) are fragile. Document with `// TODO(types)` until `payload-types.ts` regenerates |
+| #   | File                                                        | Issue                                                                                                                                                                                                                                                                                          |
+| --- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1  | `guests/page.tsx:78–80`                                     | `rsvp.intro` non-empty is the only opt-in marker. Add `rsvp.consented` boolean (user-set, defaults false) so a host editing a profile can't accidentally surface someone publicly                                                                                                              |
+| M2  | `guests/page.tsx`, `my/page.tsx`, `claim/[token]/action.ts` | Three near-identical copies of `resolveViewerId` / `resolveViewer`. Extract to `src/lib/payload/resolveViewerId.ts`                                                                                                                                                                            |
+| M3  | `my/page.tsx:56`                                            | `depth: 1` on tickets populates `event` with `gate_password` into server HTML. Set `depth: 0` — page only reads scalar fields                                                                                                                                                                  |
+| M4  | `ClaimGate.tsx:61` vs `DayNNightGate/index.tsx:75`          | Password `maxLength` mismatch (50 vs 200). Pick one documented ceiling per password type; mirror server-side trim                                                                                                                                                                              |
+| M5  | `Timeline.tsx`                                              | 706 LOC in one file — past project ceiling. Extract per-act components: `OpeningAct`, `CookoutAct`, `DressAct`, `NightAct`, `ClosingAct`. Timeline.tsx drops to pin machinery only                                                                                                             |
+| M6  | `styles.module.scss`                                        | ~120 lines of dead classes (`.actHeader`, `.actLabel`, `.actLabelStrong`, `.actTime`, `.actBody`, `.actLede`, `.actFooter`, `.actFooterItem`, `.closingStack`, `.closingTitle`, `.dressMoodboard`, `.loaderRing`). Remove and add a stop-the-line comment about which acts use bespoke layouts |
+| M7  | `Polaroid.tsx`                                              | N polaroids × 1 rAF each = N rAF callbacks/frame. Consolidate to one shared rAF that broadcasts via a MotionValue selector                                                                                                                                                                     |
+| M8  | `guests/page.tsx:53–63`                                     | `ProfileWithRsvp` is a local cast over `Profile`. Run `pnpm generate:types` and remove the cast as soon as the migration is in CI                                                                                                                                                              |
+| M9  | `DayNNightGate/index.tsx`                                   | The hint copy currently doesn't tell a user where to find the password or what to do if they don't have it. Add a `mailto:` or DM contact link on the gate page                                                                                                                                |
+| M10 | Product                                                     | 48h TTL on order password creates an avoidable failure mode — recipient delays → "expired" → DMs buyer → DMs Sean. Extend to 7 days OR add a "reissue this order's password" button on `/my`                                                                                                   |
+| M11 | Product — `/guests` discoverability                         | The page exists and is unlinked from the landing. Add a subtle "Who's coming →" link on simplified view (and Closing act on immersive)                                                                                                                                                         |
+| M12 | Cross-route                                                 | Inline `as { id: string; ... }` casts on Payload returns (in `my/page.tsx:50, 65–70`) are fragile. Document with `// TODO(types)` until `payload-types.ts` regenerates                                                                                                                         |
 
 ### 14.4 LOW (8) — Phase 5c
 
-| # | File | Issue |
-|---|---|---|
-| L1 | `issueOrderPaidPassword.ts:69` | Modulo bias on `buf[i] % 54` — 40 of 54 chars are ~2.4% more likely. < 0.1 bit entropy loss; not exploitable. Add rejection sampling when convenient |
-| L2 | `event-gate.ts:21` | `PAYLOAD_SECRET` doubles as HMAC key. A future rotation strands attendees mid-session. Consider dedicated `EVENT_GATE_SECRET` with fallback |
-| L3 | `DayNNightGate/action.ts:79` | Cookie `path: "/day-n-night"` matches `/day-n-nightclub` too (RFC 6265 prefix). Cosmetic, no current impact |
-| L4 | `Timeline.tsx` closing eyebrow | Uses `"block w-full"` Tailwind instead of `s.actEyebrow` → loses mono caps + tracking. Confirms the C6 layout regression |
-| L5 | `styles.module.scss:507–511` | Commented-out `@media (max-width: 1023px) { display: none; }` inside `.body` — dead comment block |
-| L6 | `styles.module.scss:657, 1106` | `var(--font-mono )` trailing space inside parens — lints clean but offends linters |
-| L7 | `claim/[token]/page.tsx:80` | `RPage slug={["day-n-night", "claim"]}` drops the `[token]` segment — page transitions may key incorrectly between distinct claim URLs |
-| L8 | `guests/page.tsx:11–14` | Metadata `description` hardcoded English only |
+| #   | File                           | Issue                                                                                                                                                |
+| --- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1  | `issueOrderPaidPassword.ts:69` | Modulo bias on `buf[i] % 54` — 40 of 54 chars are ~2.4% more likely. < 0.1 bit entropy loss; not exploitable. Add rejection sampling when convenient |
+| L2  | `event-gate.ts:21`             | `PAYLOAD_SECRET` doubles as HMAC key. A future rotation strands attendees mid-session. Consider dedicated `EVENT_GATE_SECRET` with fallback          |
+| L3  | `DayNNightGate/action.ts:79`   | Cookie `path: "/day-n-night"` matches `/day-n-nightclub` too (RFC 6265 prefix). Cosmetic, no current impact                                          |
+| L4  | `Timeline.tsx` closing eyebrow | Uses `"block w-full"` Tailwind instead of `s.actEyebrow` → loses mono caps + tracking. Confirms the C6 layout regression                             |
+| L5  | `styles.module.scss:507–511`   | Commented-out `@media (max-width: 1023px) { display: none; }` inside `.body` — dead comment block                                                    |
+| L6  | `styles.module.scss:657, 1106` | `var(--font-mono )` trailing space inside parens — lints clean but offends linters                                                                   |
+| L7  | `claim/[token]/page.tsx:80`    | `RPage slug={["day-n-night", "claim"]}` drops the `[token]` segment — page transitions may key incorrectly between distinct claim URLs               |
+| L8  | `guests/page.tsx:11–14`        | Metadata `description` hardcoded English only                                                                                                        |
 
 ### 14.5 Product risk — beyond bug-class
 
-The above is what reviewers find when reading code. The **product-lens** finds what the user *experiences*. These are not bugs; they're decisions made implicitly that will produce specific complaints.
+The above is what reviewers find when reading code. The **product-lens** finds what the user _experiences_. These are not bugs; they're decisions made implicitly that will produce specific complaints.
 
 #### Top 5 user-anxiety moments (ranked by likelihood × intensity)
 
-1. **"Is this real or am I about to get scammed?"** — Korean reader sees a personal Toss account number for a stranger and "Cash on arrival, or transfer." Post-2020 voice-phishing awareness in Korea triggers immediate pause. Worse: the URL is password-gated, which both *enhances* exclusivity and *amplifies* scam pattern-match.
+1. **"Is this real or am I about to get scammed?"** — Korean reader sees a personal Toss account number for a stranger and "Cash on arrival, or transfer." Post-2020 voice-phishing awareness in Korea triggers immediate pause. Worse: the URL is password-gated, which both _enhances_ exclusivity and _amplifies_ scam pattern-match.
 2. **"Will I be the only person here?"** — `/guests` is built but unlinked. The user can't verify they're not walking into an empty room or a stranger's birthday.
 3. **"What do I actually wear?"** — Dress section is editorial-poetic. "Throwback" / "Forward" room labels are art-director cool but tell a new guest nothing prescriptive. Night act's "Sharp. Chic. Dressed to impress." contradicts the laid-back daytime polaroid moodboard.
 4. **"Did my transfer arrive?"** — No transaction receipt. Buyer transfers, then... silence. The only confirmation path is Sean manually flipping `paid` in admin → recipient sees `/my` update. But the recipient doesn't know `/my` exists.
@@ -643,7 +654,7 @@ The above is what reviewers find when reading code. The **product-lens** finds w
 
 #### Unintended communications
 
-- **"This is complicated."** — Password gate + 2-view toggle + immersive scroll + cash transfer + (hidden) `/my` + (hidden) `/guests` + (hidden) `/claim`. To Sean, this is "one URL." To the guest, this is a quest. Korean event culture especially favors *legibility* (clear time, place, RSVP form, done).
+- **"This is complicated."** — Password gate + 2-view toggle + immersive scroll + cash transfer + (hidden) `/my` + (hidden) `/guests` + (hidden) `/claim`. To Sean, this is "one URL." To the guest, this is a quest. Korean event culture especially favors _legibility_ (clear time, place, RSVP form, done).
 - **"You should already know."** — The gate page assumes the password is known; `/my` assumes the dashboard's existence is known. Every surface presumes prior knowledge → when wrong, the user feels stupid.
 - **"Cash to a personal Toss account."** — Brand says editorial-curated. Payment method says backyard. The mismatch suggests "this might be a side project."
 - **"This is for an expat / W-Seoul crowd."** — Polaroid moodboard is all Western film stills. To a Seoul-resident attendee from a different cohort: they're at the periphery of the in-joke. Mixing one Korean reference broadens the welcome at no cost.
@@ -683,6 +694,7 @@ Anything that **misleads users** or **enables abuse**. Block public RSVP send-ou
 - [x] **P5a-Product-1 (Survival Kit)** ✅ shipped 2026-05-20. New `SurvivalKit.tsx` mounted below the RSVP CTA in `SimplifiedView`. Six rows: (1) tap-to-copy address + Kakao Map link; (2) tap-to-copy Toss account + amount (single paste lands both); (3) dress code in one plain sentence; (4) single host-contact mailto; (5) +1 policy line; (6) late-arrival policy line. All copy in `Event.DayNNight.survivalKit.*` in both locales. Clipboard fails are silent — user can long-press the visible text as fallback. ⚠️ Korean + English copy values are placeholders pending user review (host owns final content).
 
 **Gate:** After Phase 5a, do one human walkthrough as each persona:
+
 - A first-time guest who got the URL via DM (no prior knowledge)
 - A buyer who just transferred and is waiting for confirmation
 - A gift recipient with a click-through URL
@@ -692,7 +704,7 @@ Each should be able to complete their journey without DMing.
 
 #### Phase 5b-UF — user-feedback pass (2026-05-20, post Phase 5a)
 
-After Phase 5a's code-floor work landed (commit 0e96fb8), the user walked the surface and flagged regressions + polish gaps that the audit's static lens didn't catch. Tracked as P5b-* tasks (#55-#61) so they survive context compaction.
+After Phase 5a's code-floor work landed (commit 0e96fb8), the user walked the surface and flagged regressions + polish gaps that the audit's static lens didn't catch. Tracked as P5b-\* tasks (#55-#61) so they survive context compaction.
 
 - [ ] **P5b-P0.1 — Scrubber regression**. The Scrubber suddenly stopped working. Not directly touched in the latest sweep — investigate. Likely vectors: `useShallow` selector change on `horizonLoop` in store, SunLoader rAF behavior shifts (C7 fix wrote sun JSX but the tick code already existed), or earlier SCSS→Tailwind conversion fallout. Read `Scrubber.tsx` + store; bisect against last known good (commit 5d336b2, May 19).
 - [ ] **P5b-P0.2 — Reveal thresholds misfire on entry**. H9 thresholds anchor on act-CENTER minus 0.04–0.06 (Cookout 0.219, Night 0.604, Closing 0.84). User reports reveals are still hidden when the act enters viewport — meaning by the time the threshold fires the user is already looking at hidden copy and the 0.85s blur-in arrives too late. Redrive from per-act START frac (computed from the rendered layout via `useDayNNightScene.acts[]` or similar) with a small pre-roll so the blur-in lands before the heading is visible.
@@ -703,6 +715,7 @@ After Phase 5a's code-floor work landed (commit 0e96fb8), the user walked the su
 - [ ] **P5b-P1.4 — Additional polish (TBD)**. User noted "and more I have yet to formulate words for" — reserve a follow-up pass once P0 + P1.1-P1.3 land.
 
 **Quality gates for this phase:**
+
 - `/frontend-design` invoked before touching design code (P1.2, P1.3)
 - `/design-system` invoked for the spacing audit (P1.2)
 - `/brand-voice` invoked for Survival Kit copy + composition (P1.3)
@@ -750,7 +763,7 @@ The product **works** and the page **looks good**. Four categories of risk remai
 3. **Security floor (C1, C2, H1, H3) is too low** for a paid event with a 30-day cookie and password-claimable gift tickets. Adding rate-limit + `claim_email` enforcement + noindex is < 1h of work and dramatically raises the floor.
 4. **Information architecture is host-centric not guest-centric.** The fix is the **Survival Kit block** on simplified view. Without it, Sean will spend May 22–24 answering DMs about address, payment, and dress code. With it, he gets to enjoy the event.
 
-**Launch gate:** P4C + Phase 5a both green → surface is launchable end-to-end (promo + ticketing). Phase 5a alone (without P4C) makes the *promo* surface launchable but leaves the ticketing path broken. Phase 5b is the difference between "the page works" and "the page reads as a finished product." Phase 5c is post-launch hygiene.
+**Launch gate:** P4C + Phase 5a both green → surface is launchable end-to-end (promo + ticketing). Phase 5a alone (without P4C) makes the _promo_ surface launchable but leaves the ticketing path broken. Phase 5b is the difference between "the page works" and "the page reads as a finished product." Phase 5c is post-launch hygiene.
 
 ---
 
@@ -762,18 +775,18 @@ The product **works** and the page **looks good**. Four categories of risk remai
 
 Redesigned the **Dress** act of the immersive timeline into a horizontal-parallax corridor with two option "rooms" (≥150vw each), promoted polaroids to the protagonist of each room, applied existing polaroid-texture PNGs (mint-tinted frames + back-card stickers) as a typed variant system, unified all polaroid captions to one serif style, and relocated the "Something quiet, unannounced" line out of Dress into Night below "Mood shift."
 
-User story: *as a visitor, I want the Dress section to feel like flipping through someone's moodboard for the night rather than reading two squashed columns of body copy.*
+User story: _as a visitor, I want the Dress section to feel like flipping through someone's moodboard for the night rather than reading two squashed columns of body copy._
 
 ### 15.2 Architectural decisions
 
-| Decision | Choice |
-|---|---|
-| Act width | `.actDress { --act-w: 3.2; }` — 1.5 (room 01) + 1.5 (room 02) + 0.2 (eyebrow lead-in). Anchor (`ANCHOR_DRESS = 0.478`) **does not move** — widening the act doesn't shift the sun. |
-| Reveal driver | Per-room GSAP child timeline with `horizontal: true` ScrollTrigger. **Fallback:** if `horizontal: true` doesn't fire inside the parent pinned track, drive timeline progress from `useDayNNightScene.getState().progress` in rAF — mirror the `LoaderReveal` pattern. The shipped DressRoom uses the `useScrollTimeline` hook which abstracts this. |
-| Polaroid system | Discriminated-union variants (`clean` \| `stamped` \| `back`) — see § 6.6. |
-| Caption voice | Unified serif, normal weight, no italic, no line-clamp. Marker-pen voice (`captionStyle="marker"`) permanently retired. |
-| Per-room layout | 3 internal positional bands (Anchor → Cluster → Read), each ~50vw of the room's 150vw width. Polaroids absolute-positioned inside the Cluster band. |
-| Reduced motion | DressRoom gates its GSAP timeline on `matchMedia("(prefers-reduced-motion: reduce)").matches`; when true, sets heading/body/polaroids to fully visible synchronously. |
+| Decision        | Choice                                                                                                                                                                                                                                                                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Act width       | `.actDress { --act-w: 3.2; }` — 1.5 (room 01) + 1.5 (room 02) + 0.2 (eyebrow lead-in). Anchor (`ANCHOR_DRESS = 0.478`) **does not move** — widening the act doesn't shift the sun.                                                                                                                                                                  |
+| Reveal driver   | Per-room GSAP child timeline with `horizontal: true` ScrollTrigger. **Fallback:** if `horizontal: true` doesn't fire inside the parent pinned track, drive timeline progress from `useDayNNightScene.getState().progress` in rAF — mirror the `LoaderReveal` pattern. The shipped DressRoom uses the `useScrollTimeline` hook which abstracts this. |
+| Polaroid system | Discriminated-union variants (`clean` \| `stamped` \| `back`) — see § 6.6.                                                                                                                                                                                                                                                                          |
+| Caption voice   | Unified serif, normal weight, no italic, no line-clamp. Marker-pen voice (`captionStyle="marker"`) permanently retired.                                                                                                                                                                                                                             |
+| Per-room layout | 3 internal positional bands (Anchor → Cluster → Read), each ~50vw of the room's 150vw width. Polaroids absolute-positioned inside the Cluster band.                                                                                                                                                                                                 |
+| Reduced motion  | DressRoom gates its GSAP timeline on `matchMedia("(prefers-reduced-motion: reduce)").matches`; when true, sets heading/body/polaroids to fully visible synchronously.                                                                                                                                                                               |
 
 ### 15.3 Implementation phases (as shipped)
 
@@ -783,22 +796,22 @@ User story: *as a visitor, I want the Dress section to feel like flipping throug
 
 ### 15.4 Acceptance criteria (all met at ship time)
 
-| # | Criterion |
-|---|---|
-| 1 | Kicker reads "III · One rule: Don't dress your age." |
-| 2 | No intro paragraph in Dress |
-| 3 | All polaroid captions unified (serif normal, no clipping, no marker) |
-| 4 | Polaroids visually larger (≥220px width) |
-| 5 | Each option room ≥150vw wide |
-| 6 | Heading reveals before body; body reveals on scroll progress |
-| 7 | "Something quiet, unannounced..." in Night |
-| 8 | Stamped polaroids show mint frame + doodle |
-| 9 | Each room has 1 ambient back card |
-| 10 | All polaroids 0.76 portrait aspect |
-| 11 | Dress act total width = 3.2 × 100vw (`--act-w: 3.2`) |
-| 12 | Reduced-motion users see instant reveals |
-| 13 | Loader → Opening handoff visually unchanged (regression) |
-| 14 | Cookout / Night / Closing layouts visually unchanged (regression) |
+| #   | Criterion                                                            |
+| --- | -------------------------------------------------------------------- |
+| 1   | Kicker reads "III · One rule: Don't dress your age."                 |
+| 2   | No intro paragraph in Dress                                          |
+| 3   | All polaroid captions unified (serif normal, no clipping, no marker) |
+| 4   | Polaroids visually larger (≥220px width)                             |
+| 5   | Each option room ≥150vw wide                                         |
+| 6   | Heading reveals before body; body reveals on scroll progress         |
+| 7   | "Something quiet, unannounced..." in Night                           |
+| 8   | Stamped polaroids show mint frame + doodle                           |
+| 9   | Each room has 1 ambient back card                                    |
+| 10  | All polaroids 0.76 portrait aspect                                   |
+| 11  | Dress act total width = 3.2 × 100vw (`--act-w: 3.2`)                 |
+| 12  | Reduced-motion users see instant reveals                             |
+| 13  | Loader → Opening handoff visually unchanged (regression)             |
+| 14  | Cookout / Night / Closing layouts visually unchanged (regression)    |
 
 ### 15.5 Notes / risks (post-ship)
 

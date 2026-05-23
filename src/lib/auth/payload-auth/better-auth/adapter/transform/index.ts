@@ -319,6 +319,19 @@ export const createTransform = (
     return value;
   }
 
+  function getUuidV7Date(id: unknown): Date | null {
+    if (typeof id !== "string") return null;
+
+    const normalized = id.replace(/-/g, "");
+    if (!/^[0-9a-fA-F]{32}$/.test(normalized)) return null;
+    if (normalized[12] !== "7") return null;
+
+    const timestampMs = Number.parseInt(normalized.slice(0, 12), 16);
+    if (!Number.isFinite(timestampMs)) return null;
+
+    return new Date(timestampMs);
+  }
+
   /**
    * Transforms input data from better-auth to Payload CMS format
    *
@@ -525,6 +538,13 @@ export const createTransform = (
         return;
       }
     });
+
+    if (model === "session" && result.createdAt === undefined) {
+      const createdAt = getUuidV7Date(result.id);
+      if (createdAt) {
+        result.createdAt = createdAt;
+      }
+    }
 
     return result as T;
   }

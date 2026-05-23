@@ -11,7 +11,6 @@ import {
 } from "../store";
 import { Button } from "@/components/core/Button";
 import { useLenis } from "lenis/react";
-import { useActWindowActive } from "./Reveal";
 
 /**
  * Bottom timeline scrubber.
@@ -49,12 +48,15 @@ function ringDistance(i: number, active: number, length: number): number {
   return Math.min(d, length - d);
 }
 
-const ACT_INDEX_DRESS = 2;
-
-export function Scrubber({ visible = true }: { visible?: boolean }) {
+export function Scrubber({
+  visible = true,
+  suppressed = false
+}: {
+  visible?: boolean;
+  suppressed?: boolean;
+}) {
   const t = useTranslations("Event.DayNNight.scrubber");
   const phase = useDayNNightScene((r) => r.phase);
-  const dressWindow = useActWindowActive(ACT_INDEX_DRESS);
   // Subscribing to `layout` re-renders the Scrubber when Timeline writes
   // a fresh measurement — so the head-tick / label CSS `left:` props
   // recompute on resize without manual ResizeObservers here. We
@@ -180,7 +182,7 @@ export function Scrubber({ visible = true }: { visible?: boolean }) {
   return (
     <nav
       className="pointer-events-none fixed right-0 bottom-7 left-0 z-[45] px-14 transition-opacity duration-700 max-lg:hidden xl:bottom-9 xl:px-20 2xl:px-28"
-      style={{ opacity: !visible || dressWindow.active ? 0 : 1 }}
+      style={{ opacity: !visible || suppressed ? 0 : 1 }}
       aria-label={t("navLabel")}
     >
       <div

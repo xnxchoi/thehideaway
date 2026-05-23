@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useDayNNightStore } from "../store";
 import { Button } from "@/components/core/Button";
+import { AudioBars } from "./AudioBars";
 
 /**
  * Page-local audio score for the Day n Night immersive scene.
@@ -18,9 +19,9 @@ import { Button } from "@/components/core/Button";
  * unmounts itself and the rest of the page is unaffected.
  */
 
-const DAY_SRC = "/assets/audio/day-n-night/daytime.ogg";
+export const DAY_SRC = "/assets/audio/day-n-night/daytime.ogg";
 
-const BASE_VOL = 0.55;
+const BASE_VOL = 0.38;
 
 const RAMP_FAST = 0.08;
 
@@ -111,9 +112,11 @@ function resolveDayGain(progress: number): number {
 }
 
 export function DayNNightScore({
-  initialEnabled = false
+  initialEnabled = false,
+  chromeVisible = true
 }: {
   initialEnabled?: boolean;
+  chromeVisible?: boolean;
 }) {
   const t = useTranslations("Event.DayNNight.audio");
   const [enabled, setEnabled] = useState(initialEnabled);
@@ -236,7 +239,7 @@ export function DayNNightScore({
     };
   }, [ready, store]);
 
-  if (failed) return null;
+  if (failed || !chromeVisible) return null;
 
   return (
     <Button
@@ -248,13 +251,9 @@ export function DayNNightScore({
       onClick={() => setEnabled((v) => !v)}
       aria-label={enabled ? t("off") : t("on")}
       aria-pressed={enabled}
+      data-active={enabled && ready ? "true" : "false"}
     >
-      <span
-        aria-hidden
-        className="ease -translate-y-px text-[13px] leading-none opacity-45 transition-opacity duration-[250ms] group-data-[on]:opacity-100"
-      >
-        ♪
-      </span>
+      <AudioBars active={enabled && ready} className="text-current" />
       <span data-dn-audio-text className="max-[480px]:hidden">
         {t("label")}
       </span>

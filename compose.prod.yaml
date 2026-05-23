@@ -45,6 +45,7 @@ services:
       - .env.production
     environment:
       DATABASE_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      HOSTNAME: "::"
       NODE_ENV: production
     depends_on:
       postgres:

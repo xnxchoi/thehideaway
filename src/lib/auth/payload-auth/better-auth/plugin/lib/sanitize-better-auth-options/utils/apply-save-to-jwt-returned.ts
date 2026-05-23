@@ -37,12 +37,22 @@ export function applySaveToJwtReturned({
   flattened.forEach((field) => {
     const saveToJWT = (field as any).saveToJWT;
     const isJoin = (field as any).type === "join";
+    const betterAuthFieldKey =
+      (field as any).custom?.betterAuthFieldKey || field.name;
+
+    // Better Auth's fresh-session middleware reads session.createdAt /
+    // session.updatedAt. Hiding these from parsed session output makes
+    // sensitive operations, including passkey enrollment, always look stale.
+    if (
+      modelKey === baModelKey.session &&
+      (betterAuthFieldKey === "createdAt" || betterAuthFieldKey === "updatedAt")
+    ) {
+      return;
+    }
 
     // Default Payload behavior: only fields with saveToJWT === true are included in JWT.
     // For BetterAuth cookie cache, explicitly mark joins and saveToJWT false as non-returned.
     if (saveToJWT === false || (isJoin && saveToJWT !== true)) {
-      const betterAuthFieldKey =
-        (field as any).custom?.betterAuthFieldKey || field.name;
       updatedAdditionalFields[betterAuthFieldKey] = {
         ...updatedAdditionalFields[betterAuthFieldKey],
         returned: false

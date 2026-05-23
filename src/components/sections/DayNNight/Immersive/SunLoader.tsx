@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import NumberFlow from "@number-flow/react";
 import { useDayNNightScene, useDayNNightStore } from "../store";
 import { Button, MotionPillButton } from "@/components/core/Button";
-import { primeDayNNightAudio } from "./DayNNightScore";
+import { DAY_SRC, primeDayNNightAudio } from "./DayNNightScore";
 
 const LOADER_SEEN_KEY = "dn_loader_seen";
 const LOAD_DURATION_MS = 2400;
@@ -21,7 +21,8 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
   const t = useTranslations("Event.DayNNight");
   const [hiding, setHiding] = useState(false);
   const [count, setCount] = useState(0);
-  const [ready, setReady] = useState(false);
+  const [progressDone, setProgressDone] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
   const horizonRef = useRef<HTMLDivElement>(null);
   const sunRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -43,6 +44,19 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
 
   useEffect(() => {
     if (skipLoader) return;
+
+    const audio = new Audio(DAY_SRC);
+    let audioSettled = false;
+    const markAudioReady = () => {
+      if (audioSettled) return;
+      audioSettled = true;
+      setAudioReady(true);
+    };
+    audio.preload = "auto";
+    audio.addEventListener("canplaythrough", markAudioReady, { once: true });
+    audio.addEventListener("loadeddata", markAudioReady, { once: true });
+    audio.addEventListener("error", markAudioReady, { once: true });
+    audio.load();
 
     let raf: number;
     const start = performance.now();
@@ -82,14 +96,22 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
         raf = requestAnimationFrame(tick);
       } else {
         setPhase("loaded");
-        setReady(true);
+        setProgressDone(true);
       }
     };
 
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      audio.pause();
+      audio.removeEventListener("canplaythrough", markAudioReady);
+      audio.removeEventListener("loadeddata", markAudioReady);
+      audio.removeEventListener("error", markAudioReady);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skipLoader]);
+
+  const ready = progressDone && audioReady;
 
   const handleEnter = (withAudio: boolean) => {
     sessionStorage.setItem(LOADER_SEEN_KEY, "1");
@@ -97,11 +119,11 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
     // own setup runs ~700ms+ later (fade timeout + mount gating), too
     // late to satisfy the browser autoplay policy on its own.
     if (withAudio) primeDayNNightAudio();
+    onEnter(withAudio);
     setHiding(true);
     setTimeout(() => {
       setSceneProgress(store.getState().initialLoopPosition);
       setPhase("playing");
-      onEnter(withAudio);
     }, 700);
   };
 
@@ -127,7 +149,7 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
       {/* Dark backdrop */}
       <div
         aria-hidden
-        className="ease absolute inset-0 bg-faded-black/99 transition-opacity duration-700 group-data-[hiding='true']:opacity-0"
+        className="ease pointer-events-none absolute inset-0 bg-faded-black/99 transition-opacity duration-700 group-data-[hiding='true']:opacity-0"
       />
 
       {/* Sky clip — hides sun below the horizon during rise */}

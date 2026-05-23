@@ -94,6 +94,15 @@ export const TicketOrders: CollectionConfig = {
       }
     },
     {
+      type: "text",
+      name: "sender_name",
+      label: "Bank sender name",
+      admin: {
+        description:
+          "Name the purchaser says will appear on the bank transfer. Used by hosts to match pending Toss transfers."
+      }
+    },
+    {
       type: "checkbox",
       name: "paid",
       label: "Paid",

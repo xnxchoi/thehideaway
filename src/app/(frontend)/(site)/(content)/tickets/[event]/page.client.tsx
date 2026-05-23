@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type MouseEvent,
   type ReactNode
 } from "react";
 import { useTranslations } from "next-intl";
@@ -26,6 +27,15 @@ import { EventGateGradient } from "@/components/UX/Gradient/EventGateGradient";
 import { useRPStore } from "@/providers/RP_Pro";
 import { ViewportMask } from "@/components/sections/DayNNight/ViewportMask";
 import { prepareDayNNightPurchaserAction } from "./actions";
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogRoot,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Copy, ExternalLink, Instagram, Mail, Phone } from "lucide-react";
+import { BANK } from "@/components/sections/DayNNight/survivalKit.config";
 
 interface EventLite {
   id: string;
@@ -52,12 +62,16 @@ interface PurchasedTicket {
 interface PurchaseResult {
   tickets: PurchasedTicket[];
   total_amount: number;
+  purchaser_id?: string | null;
+  purchaser_name?: string | null;
+  sender_name?: string | null;
 }
 
 interface Props {
   event: EventLite;
   remaining: number | null;
   isAuthenticated: boolean;
+  sessionUserId: string | null;
   sessionEmail: string | null;
   sessionName: string | null;
   gateInitiallyOpen?: boolean;
@@ -75,7 +89,56 @@ const PAPER_TEXTURE_STYLE = { backgroundImage: "url('/assets/papier.png')" };
 /** Steps in the Day n Night purchase flow. `welcome` is the entry; `purchased`
  * is the terminal success view. `contact` silently provisions the ticket
  * purchaser session for invitees who are not already signed in. */
-type FlowStep = "welcome" | "name" | "contact" | "reserve" | "purchased";
+type FlowStep =
+  | "welcome"
+  | "name"
+  | "contact"
+  | "credential"
+  | "passkey"
+  | "reserve"
+  | "purchased";
+
+type GeneratedLogin = {
+  email: string;
+  password: string;
+};
+
+type ContactChannelKey = "seanPhone" | "ingyuPhone" | "email" | "instagram";
+
+const CONTACT_CHANNELS: {
+  key: ContactChannelKey;
+  href: string;
+  icon: typeof Phone;
+  external?: boolean;
+}[] = [
+  {
+    key: "seanPhone",
+    href: "tel:+821046379289",
+    icon: Phone
+  },
+  {
+    key: "ingyuPhone",
+    href: "tel:+821025296700",
+    icon: Phone
+  },
+  {
+    key: "email",
+    href: "mailto:seanschoi@hideawayseoul.com",
+    icon: Mail
+  },
+  {
+    key: "instagram",
+    href: "https://www.instagram.com/geekid/",
+    icon: Instagram,
+    external: true
+  }
+];
+
+type PasswordCredentialConstructor = new (data: {
+  id: string;
+  name?: string;
+  password: string;
+}) => Credential;
 
 const SS_KEY = (slug: string) => `tickets:gate:${slug}`;
 
@@ -85,6 +148,76 @@ const formatKRW = (n: number): string =>
     currency: "KRW",
     maximumFractionDigits: 0
   }).format(n);
+
+function normalizePaymentMemoPart(value: string | null | undefined): string {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/_/g, "-")
+    .slice(0, 80);
+}
+
+function buildPaymentMemo({
+  senderName,
+  purchaserName,
+  purchaserId,
+  ticketCount
+}: {
+  senderName: string | null | undefined;
+  purchaserName: string | null | undefined;
+  purchaserId: string | null | undefined;
+  ticketCount: number;
+}): string {
+  const sender = normalizePaymentMemoPart(senderName) || "sender";
+  const name = normalizePaymentMemoPart(purchaserName) || "guest";
+  const id = normalizePaymentMemoPart(purchaserId) || "unknown";
+  return `${sender}_${name}_${id}_ticket_${ticketCount}`;
+}
+
+function buildTossPaymentHref({
+  amount,
+  memo
+}: {
+  amount: number;
+  memo: string;
+}): string {
+  const params = new URLSearchParams({
+    bank: BANK.nameKo,
+    accountNo: BANK.accountNoDigits,
+    amount: String(amount),
+    origin: "qr",
+    memo
+  });
+
+  return `supertoss://send?${params.toString()}`;
+}
+
+async function storePasswordCredential({
+  email,
+  name,
+  password
+}: {
+  email: string;
+  name: string;
+  password: string;
+}): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const passwordCredential = (
+    window as typeof window & {
+      PasswordCredential?: PasswordCredentialConstructor;
+    }
+  ).PasswordCredential;
+  if (!passwordCredential || !navigator.credentials?.store) return false;
+
+  await navigator.credentials.store(
+    new passwordCredential({
+      id: email,
+      name,
+      password
+    })
+  );
+  return true;
+}
 
 const slideVariants: Variants = {
   initial: (dir: number) => ({
@@ -168,6 +301,7 @@ export function TicketEventClient({
   event,
   remaining,
   isAuthenticated,
+  sessionUserId,
   sessionEmail,
   sessionName,
   gateInitiallyOpen = false
@@ -195,9 +329,22 @@ export function TicketEventClient({
   const signInHref = signInRedirectPath(`/tickets/${event.slug}`);
   const [step, setStep] = useState<FlowStep>("welcome");
   const [dir, setDir] = useState(1);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const openSupport = useCallback(() => setSupportOpen(true), []);
+  const [generatedLogin, setGeneratedLogin] = useState<GeneratedLogin | null>(
+    null
+  );
+  const { data: passkeys, refetch: refetchPasskeys } =
+    authClient.useListPasskeys();
+  const hasPasskey = Boolean(passkeys?.length);
   const indicatorSteps = useMemo<FlowStep[]>(
-    () => (isAuthenticated ? ["name", "reserve"] : ["name", "contact", "reserve"]),
-    [isAuthenticated]
+    () =>
+      isAuthenticated
+        ? hasPasskey
+          ? ["name", "reserve"]
+          : ["name", "passkey", "reserve"]
+        : ["name", "contact", "credential", "passkey", "reserve"],
+    [hasPasskey, isAuthenticated]
   );
 
   useEffect(() => {
@@ -228,6 +375,11 @@ export function TicketEventClient({
   const [contactError, setContactError] = useState<string | null>(null);
   const [contactNeedsLogin, setContactNeedsLogin] = useState(false);
   const [sessionBootstrapped, setSessionBootstrapped] = useState(false);
+  const [credentialBusy, setCredentialBusy] = useState(false);
+  const [credentialError, setCredentialError] = useState<string | null>(null);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [passkeyChecking, setPasskeyChecking] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const updateContactEmail = useCallback((value: string) => {
     setContactError(null);
     setContactNeedsLogin(false);
@@ -245,13 +397,16 @@ export function TicketEventClient({
   // Live session — Better Auth flips this after the contact step or a
   // normal sign-in succeeds.
   const { data: liveSession } = authClient.useSession();
+  const liveSessionUserId = (
+    liveSession?.user as { id?: string | null } | undefined
+  )?.id;
   const isAuthedNow =
-    isAuthenticated ||
-    sessionBootstrapped ||
-    Boolean((liveSession?.user as { id?: string })?.id);
+    isAuthenticated || sessionBootstrapped || Boolean(liveSessionUserId);
 
   // ── Purchase state ───────────────────────────────────────────────────
   const [quantity, setQuantity] = useState(1);
+  const [senderName, setSenderName] = useState(sessionName ?? "");
+  const [senderTouched, setSenderTouched] = useState(false);
   const [purchaseBusy, setPurchaseBusy] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [purchased, setPurchased] = useState<PurchaseResult | null>(null);
@@ -277,7 +432,50 @@ export function TicketEventClient({
     if (!liveSessionName) return;
     if (liveSessionName === purchaserName) return;
     setPurchaserNameInternal(liveSessionName);
+    setSenderName((current) => current || liveSessionName);
   }, [liveSessionName, nameTouched, purchaserName]);
+
+  useEffect(() => {
+    if (senderTouched) return;
+    setSenderName(purchaserName);
+  }, [purchaserName, senderTouched]);
+
+  useEffect(() => {
+    if (!useStepFlow || step !== "passkey" || !isAuthedNow || !hasPasskey) {
+      return;
+    }
+    setPasskeyBusy(false);
+    setPasskeyChecking(false);
+    setPasskeyError(null);
+    advanceTo("reserve");
+  }, [advanceTo, hasPasskey, isAuthedNow, step, useStepFlow]);
+
+  useEffect(() => {
+    if (!useStepFlow || step !== "passkey" || !isAuthedNow || hasPasskey) {
+      setPasskeyChecking(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPasskeyChecking(true);
+
+    const checkForPasskey = async () => {
+      try {
+        await refetchPasskeys?.();
+      } catch {
+        if (!cancelled) setPasskeyError(t("passkey.checkFailed"));
+      }
+    };
+
+    void checkForPasskey();
+    const interval = window.setInterval(checkForPasskey, 1500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      setPasskeyChecking(false);
+    };
+  }, [hasPasskey, isAuthedNow, refetchPasskeys, step, t, useStepFlow]);
 
   const isOpen = event.state === "open";
   const soldOut = remaining !== null && remaining <= 0;
@@ -344,7 +542,11 @@ export function TicketEventClient({
 
   const advanceFromName = () => {
     if (!purchaserName.trim()) return;
-    advanceTo(isAuthedNow ? "reserve" : "contact");
+    if (!isAuthedNow) {
+      advanceTo("contact");
+      return;
+    }
+    advanceTo(hasPasskey ? "reserve" : "passkey");
   };
 
   const continueFromContact = async () => {
@@ -361,8 +563,13 @@ export function TicketEventClient({
       });
 
       if (result.ok) {
+        setGeneratedLogin({
+          email: result.email,
+          password: result.password
+        });
         setSessionBootstrapped(true);
-        advanceTo("reserve");
+        setCredentialError(null);
+        advanceTo("credential");
         return;
       }
 
@@ -379,6 +586,81 @@ export function TicketEventClient({
     }
   };
 
+  const continueFromCredential = async () => {
+    if (!generatedLogin) {
+      advanceTo(hasPasskey ? "reserve" : "passkey");
+      return;
+    }
+
+    setCredentialBusy(true);
+    setCredentialError(null);
+
+    try {
+      await storePasswordCredential({
+        email: generatedLogin.email,
+        name: purchaserName.trim() || generatedLogin.email,
+        password: generatedLogin.password
+      });
+    } catch {
+      // Browser-managed password save is best-effort; the user can still
+      // save manually from the displayed field before continuing.
+    }
+
+    try {
+      const result = await authClient.signIn.email({
+        email: generatedLogin.email,
+        password: generatedLogin.password,
+        rememberMe: true,
+        fetchOptions: { throw: true }
+      });
+
+      if ("error" in result) {
+        setCredentialError(t("credential.refreshError"));
+        return;
+      }
+
+      setSessionBootstrapped(true);
+      setGeneratedLogin(null);
+      advanceTo(hasPasskey ? "reserve" : "passkey");
+    } catch {
+      setCredentialError(t("credential.refreshError"));
+    } finally {
+      setCredentialBusy(false);
+    }
+  };
+
+  const createPasskey = async () => {
+    if (passkeyBusy) return;
+    setPasskeyBusy(true);
+    setPasskeyError(null);
+
+    try {
+      if (typeof window === "undefined" || !("PublicKeyCredential" in window)) {
+        setPasskeyError(t("passkey.unsupported"));
+        return;
+      }
+
+      const response = await authClient.passkey.addPasskey({
+        name: "Day n Night",
+        fetchOptions: { throw: true }
+      });
+
+      if (response?.error) {
+        setPasskeyError(t("passkey.failed"));
+        return;
+      }
+
+      setSessionBootstrapped(true);
+      setPasskeyChecking(false);
+      advanceTo("reserve");
+      void refetchPasskeys?.();
+    } catch {
+      setPasskeyError(t("passkey.failed"));
+    } finally {
+      setPasskeyBusy(false);
+    }
+  };
+
   const mapPurchaseError = useCallback(
     (error?: string) => {
       switch (error) {
@@ -392,6 +674,8 @@ export function TicketEventClient({
           return tErrors("soldOut");
         case "user-cap-reached":
           return tErrors("userCapReached");
+        case "passkey-required":
+          return tErrors("passkeyRequired");
         case "bad-request":
           return tErrors("badRequest");
         default:
@@ -403,6 +687,7 @@ export function TicketEventClient({
 
   const submitPurchase = async () => {
     if (purchaseBusy || (!useStepFlow && !storedPassword)) return;
+    if (useStepFlow && !senderName.trim()) return;
     if (!isAuthedNow) {
       router.push(signInHref);
       return;
@@ -419,6 +704,9 @@ export function TicketEventClient({
           ...(storedPassword ? { password: storedPassword } : {}),
           ...(useStepFlow && purchaserName.trim()
             ? { purchaser_name: purchaserName.trim() }
+            : {}),
+          ...(useStepFlow && senderName.trim()
+            ? { sender_name: senderName.trim() }
             : {})
         })
       });
@@ -430,7 +718,10 @@ export function TicketEventClient({
       }
       setPurchased({
         tickets: out.tickets,
-        total_amount: out.total_amount
+        total_amount: out.total_amount,
+        purchaser_id: out.purchaser_id ?? liveSessionUserId ?? sessionUserId,
+        purchaser_name: out.purchaser_name ?? (purchaserName.trim() || null),
+        sender_name: out.sender_name ?? (senderName.trim() || null)
       });
       if (useStepFlow) advanceTo("purchased");
     } catch {
@@ -470,10 +761,15 @@ export function TicketEventClient({
       return (
         <PurchasedView
           purchased={purchased}
-          paymentInstructions={event.payment_instructions}
+          purchaserName={purchased.purchaser_name ?? purchaserName}
+          senderName={purchased.sender_name ?? senderName}
+          purchaserId={
+            purchased.purchaser_id ?? liveSessionUserId ?? sessionUserId
+          }
           copied={copied}
           onCopy={copyClaim}
           myTicketsHref={myTicketsHref}
+          onContactSupport={openSupport}
         />
       );
     }
@@ -490,7 +786,36 @@ export function TicketEventClient({
               error={contactError}
               needsLogin={contactNeedsLogin}
               signInHref={signInHref}
+              onContactSupport={openSupport}
               onContinue={continueFromContact}
+            />
+          );
+        case "credential":
+          return generatedLogin ? (
+            <CredentialStep
+              login={generatedLogin}
+              purchaserName={purchaserName}
+              busy={credentialBusy}
+              error={credentialError}
+              onContinue={continueFromCredential}
+            />
+          ) : (
+            <PasskeyStep
+              busy={passkeyBusy}
+              checking={passkeyChecking}
+              error={passkeyError}
+              onContactSupport={openSupport}
+              onCreate={createPasskey}
+            />
+          );
+        case "passkey":
+          return (
+            <PasskeyStep
+              busy={passkeyBusy}
+              checking={passkeyChecking}
+              error={passkeyError}
+              onContactSupport={openSupport}
+              onCreate={createPasskey}
             />
           );
         case "name":
@@ -507,6 +832,11 @@ export function TicketEventClient({
             <ReserveView
               quantity={quantity}
               setQuantity={setQuantity}
+              senderName={senderName}
+              setSenderName={(value) => {
+                setSenderTouched(true);
+                setSenderName(value);
+              }}
               maxAllowed={maxAllowed}
               totalDisplay={totalDisplay}
               purchaseError={purchaseError}
@@ -539,6 +869,15 @@ export function TicketEventClient({
       slug={["tickets", event.slug]}
       headerVisibility={!useStepFlow}
     >
+      <Link
+        href="/"
+        aria-label={tBar("backHome")}
+        className="fixed top-5 left-5 z-40 inline-flex h-9 items-center gap-2 rounded-full border border-border/35 bg-background/80 px-3.5 font-sans text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-xl transition-colors hover:border-border/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        <span aria-hidden>←</span>
+        <span>{tBar("backHome").replace(/^←\s*/, "")}</span>
+      </Link>
+
       {!gateOpen ? (
         <EventGateScreen
           eventSlug={event.slug}
@@ -633,6 +972,10 @@ export function TicketEventClient({
           }
         />
       ) : null}
+
+      {useStepFlow ? (
+        <ContactSupportModal open={supportOpen} onOpenChange={setSupportOpen} />
+      ) : null}
     </RPage>
   );
 }
@@ -658,6 +1001,21 @@ function DayNNightRsvpStage({
 }) {
   const tWelcome = useTranslations("Event.Rsvp.steps.welcome");
   const showProgress = !purchased && isOpen && !soldOut;
+  const stepRef = useRef<HTMLDivElement>(null);
+
+  const focusStepInput = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      const input = stepRef.current?.querySelector<HTMLElement>(
+        "[data-autofocus-after-transition='true']"
+      );
+      input?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  useEffect(() => {
+    const id = window.setTimeout(focusStepInput, 680);
+    return () => window.clearTimeout(id);
+  }, [focusStepInput, stepKey]);
 
   return (
     <m.section
@@ -673,7 +1031,7 @@ function DayNNightRsvpStage({
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,oklch(from_var(--foreground)_l_c_h_/_0.08),transparent_34%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,oklch(from_var(--foreground)_l_c_h/0.08),transparent_34%)]"
       />
       <header className="relative z-10 flex shrink-0 items-center justify-between gap-4 px-2 pt-2 sm:px-8 sm:pt-4 md:px-14">
         <span className="text-[11px] font-medium tracking-[0.12em] text-foreground/30 uppercase select-none">
@@ -701,6 +1059,7 @@ function DayNNightRsvpStage({
               initial="initial"
               animate="animate"
               exit="exit"
+              ref={stepRef}
               className="relative flex w-full flex-col gap-8"
             >
               {children}
@@ -834,7 +1193,7 @@ function EventGateScreen({
   return (
     <section
       className={cn(
-        "relative isolate z-[100] min-h-svh overflow-hidden bg-black text-white",
+        "relative isolate z-100 min-h-svh overflow-hidden bg-black text-white",
         "[--gate-accent:oklch(92%_0.012_80)] [--gate-ink:oklch(7%_0.02_250)] [--gate-paper:oklch(98%_0.008_95)]",
         !isDayNNight && "[--gate-accent:oklch(90%_0.018_75)]"
       )}
@@ -1005,6 +1364,7 @@ function ContactStep({
   error,
   needsLogin,
   signInHref,
+  onContactSupport,
   onContinue
 }: {
   email: string;
@@ -1013,6 +1373,7 @@ function ContactStep({
   error: string | null;
   needsLogin: boolean;
   signInHref: string;
+  onContactSupport: () => void;
   onContinue: () => void;
 }) {
   const t = useTranslations("Event.Rsvp.steps.contact");
@@ -1058,6 +1419,7 @@ function ContactStep({
           placeholder={t("emailPlaceholder")}
           aria-label={t("emailPlaceholder")}
           autoComplete="email"
+          data-autofocus-after-transition="true"
           spellCheck={false}
           inputMode="email"
           className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
@@ -1082,15 +1444,248 @@ function ContactStep({
             {busy ? "…" : t("submit")}
           </MotionPillButton>
           {needsLogin ? (
-            <Link
-              href={signInHref}
-              className="inline-flex h-12 items-center rounded-full border border-border/50 px-5 font-sans text-sm text-foreground transition-colors hover:border-foreground sm:h-14 sm:text-base"
-            >
-              {t("signIn")}
-            </Link>
+            <>
+              <Link
+                href={signInHref}
+                className="inline-flex h-12 items-center rounded-full border border-border/50 px-5 font-sans text-sm text-foreground transition-colors hover:border-foreground sm:h-14 sm:text-base"
+              >
+                {t("signIn")}
+              </Link>
+              <button
+                type="button"
+                onClick={onContactSupport}
+                className="inline-flex h-12 items-center rounded-full border border-border/30 px-5 font-sans text-sm text-muted-foreground transition-colors hover:border-border/60 hover:text-foreground sm:h-14 sm:text-base"
+              >
+                {t("contactHost")}
+              </button>
+            </>
           ) : null}
         </div>
       </m.form>
+    </div>
+  );
+}
+
+function CredentialStep({
+  login,
+  purchaserName,
+  busy,
+  error,
+  onContinue
+}: {
+  login: GeneratedLogin;
+  purchaserName: string;
+  busy: boolean;
+  error: string | null;
+  onContinue: () => void;
+}) {
+  const t = useTranslations("Event.Rsvp.steps.credential");
+  const [copied, setCopied] = useState(false);
+
+  const copyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(login.password);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="flex w-full flex-col gap-7">
+      <div className="flex flex-col gap-2.5">
+        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
+          {t("eyebrow")}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={t("title")}
+          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+          className="leading-[0.95] font-extrabold tracking-[-0.025em] text-balance text-foreground"
+          stagger={0.05}
+          delay={0.05}
+          yOffset={6}
+          blurAmount={5}
+          duration={0.7}
+        />
+        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
+          {t("body")}
+        </p>
+      </div>
+
+      <form
+        autoComplete="on"
+        className="grid gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onContinue();
+        }}
+      >
+        <div className="grid gap-3 rounded-2xl border border-border/40 bg-background/45 p-4">
+          <label
+            htmlFor="generated-login-email"
+            className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground uppercase"
+          >
+            {t("emailLabel")}
+          </label>
+          <input
+            id="generated-login-email"
+            name="username"
+            type="email"
+            value={login.email}
+            readOnly
+            autoComplete="username"
+            className="h-11 w-full border-b border-border/40 bg-transparent font-sans text-sm text-foreground outline-none"
+          />
+
+          <label
+            htmlFor="generated-login-password"
+            className="mt-2 font-sans text-[10px] tracking-[0.22em] text-muted-foreground uppercase"
+          >
+            {t("passwordLabel")}
+          </label>
+          <div className="flex items-end gap-2">
+            <input
+              id="generated-login-password"
+              name="password"
+              type="text"
+              value={login.password}
+              readOnly
+              autoComplete="new-password"
+              data-autofocus-after-transition="true"
+              onFocus={(event) => event.currentTarget.select()}
+              className="h-12 min-w-0 flex-1 border-b border-border/40 bg-transparent font-mono text-sm text-foreground outline-none selection:bg-foreground selection:text-background"
+            />
+            <button
+              type="button"
+              onClick={copyPassword}
+              className="h-10 rounded-full border border-border/30 px-4 font-sans text-xs text-muted-foreground transition-colors hover:border-border/60 hover:text-foreground"
+            >
+              {copied ? t("copied") : t("copy")}
+            </button>
+          </div>
+        </div>
+
+        <p className="font-sans text-xs leading-relaxed text-muted-foreground">
+          {t("mobileHint")}
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <MotionPillButton
+            type="submit"
+            size="md"
+            disabled={busy}
+            className="h-12 min-w-52 self-start bg-foreground px-7 text-sm font-medium whitespace-nowrap text-background sm:h-14 sm:text-base"
+          >
+            {busy ? "…" : t("saved")}
+          </MotionPillButton>
+        </div>
+      </form>
+
+      {error ? (
+        <m.p
+          role="alert"
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-sans text-xs leading-relaxed text-destructive"
+        >
+          {error}
+        </m.p>
+      ) : null}
+
+      <p className="sr-only" aria-live="polite">
+        {copied ? t("copied") : ""}
+      </p>
+      <input
+        type="text"
+        value={purchaserName}
+        readOnly
+        autoComplete="name"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+      />
+    </div>
+  );
+}
+
+function PasskeyStep({
+  busy,
+  checking,
+  error,
+  onContactSupport,
+  onCreate
+}: {
+  busy: boolean;
+  checking: boolean;
+  error: string | null;
+  onContactSupport: () => void;
+  onCreate: () => void;
+}) {
+  const t = useTranslations("Event.Rsvp.steps.passkey");
+  return (
+    <div className="flex w-full flex-col gap-8">
+      <div className="flex flex-col gap-2.5">
+        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
+          {t("eyebrow")}
+        </p>
+        <TextBlurIn
+          as="h2"
+          text={t("title")}
+          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
+          className="leading-[0.95] font-extrabold tracking-[-0.025em] text-balance text-foreground"
+          stagger={0.05}
+          delay={0.05}
+          yOffset={6}
+          blurAmount={5}
+          duration={0.7}
+        />
+        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
+          {t("body")}
+        </p>
+      </div>
+
+      <div className="grid gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <MotionPillButton
+            type="button"
+            size="md"
+            disabled={busy}
+            onClick={onCreate}
+            className="h-12 min-w-44 self-start bg-foreground px-7 text-sm font-medium whitespace-nowrap text-background disabled:opacity-40 sm:h-14 sm:text-base"
+          >
+            {busy ? t("creating") : t("submit")}
+          </MotionPillButton>
+          <button
+            type="button"
+            onClick={onContactSupport}
+            className="inline-flex h-12 items-center rounded-full border border-border/30 px-5 font-sans text-sm text-muted-foreground transition-colors hover:border-border/60 hover:text-foreground sm:h-14 sm:text-base"
+          >
+            {t("contactHost")}
+          </button>
+        </div>
+        {error ? (
+          <m.p
+            role="alert"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-sans text-xs leading-relaxed text-destructive"
+          >
+            {error}
+          </m.p>
+        ) : null}
+        {checking ? (
+          <m.p
+            aria-live="polite"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-sans text-xs leading-relaxed text-muted-foreground"
+          >
+            {t("checking")}
+          </m.p>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -1144,6 +1739,7 @@ function NameStep({
           placeholder={t("placeholder")}
           aria-label={t("placeholder")}
           autoComplete="name"
+          data-autofocus-after-transition="true"
           maxLength={120}
           className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
         />
@@ -1165,22 +1761,66 @@ function NameStep({
 
 function PurchasedView({
   purchased,
-  paymentInstructions,
+  purchaserName,
+  senderName,
+  purchaserId,
   copied,
   onCopy,
-  myTicketsHref
+  myTicketsHref,
+  onContactSupport
 }: {
   purchased: PurchaseResult;
-  paymentInstructions: string | null;
+  purchaserName: string | null;
+  senderName: string | null;
+  purchaserId: string | null;
   copied: string | null;
   onCopy: (url: string) => void;
   myTicketsHref: string;
+  onContactSupport: () => void;
 }) {
   const t = useTranslations("Event.Rsvp.purchased");
+  const [paymentCopied, setPaymentCopied] = useState(false);
+  const [showPaymentFallback, setShowPaymentFallback] = useState(false);
+  const paymentMemo = buildPaymentMemo({
+    senderName,
+    purchaserName,
+    purchaserId,
+    ticketCount: purchased.tickets.length
+  });
+  const paymentHref = buildTossPaymentHref({
+    amount: purchased.total_amount,
+    memo: paymentMemo
+  });
+  const paymentClipboardText = [
+    `${t("payment.account")}: ${BANK.nameKo} ${BANK.accountNo}`,
+    `${t("payment.holder")}: ${BANK.holder}`,
+    `${t("payment.amount")}: ${formatKRW(purchased.total_amount)}`
+  ].join("\n");
+
+  const copyPaymentDetails = async () => {
+    try {
+      await navigator.clipboard.writeText(paymentClipboardText);
+      setPaymentCopied(true);
+      window.setTimeout(() => setPaymentCopied(false), 2000);
+    } catch {
+      // Bank app deep-link support varies by browser; the visible fallback
+      // below keeps all transfer details available if copying is blocked.
+    }
+  };
+
+  const handlePaymentClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    setShowPaymentFallback(false);
+    void copyPaymentDetails();
+
+    window.setTimeout(() => setShowPaymentFallback(true), 1500);
+    window.location.href = paymentHref;
+  };
+
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="flex flex-col gap-2.5">
-        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
+      <div className="flex flex-col gap-3">
+        <p className="font-sans text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
           {t("eyebrow")}
         </p>
         <TextBlurIn
@@ -1197,18 +1837,97 @@ function PurchasedView({
           blurAmount={5}
           duration={0.75}
         />
+        <p className="max-w-md font-sans text-sm leading-relaxed text-muted-foreground">
+          {t("nextStep")}
+        </p>
       </div>
 
-      <div className="grid gap-6">
-        {paymentInstructions ? (
-          <p className="font-sans text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
-            {paymentInstructions}
+      <div className="grid gap-7">
+        <section className="grid gap-5 border-y border-border/35 py-6">
+          <div className="grid gap-1.5">
+            <p className="font-sans text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+              {t("payment.eyebrow")}
+            </p>
+            <p className="font-sans text-sm leading-relaxed text-muted-foreground">
+              {t("payment.body")}
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <dl className="grid gap-3 font-sans text-xs text-muted-foreground">
+              <div className="grid gap-1">
+                <dt>{t("payment.amount")}</dt>
+                <dd className="font-sans text-2xl font-semibold tracking-tight text-foreground tabular-nums sm:text-3xl">
+                  {formatKRW(purchased.total_amount)}
+                </dd>
+              </div>
+              <div className="grid gap-1 border-t border-border/25 pt-3">
+                <dt>{t("payment.account")}</dt>
+                <dd className="text-sm text-foreground">
+                  {BANK.nameKo} {BANK.accountNo}
+                </dd>
+              </div>
+              <div className="grid gap-1 border-t border-border/25 pt-3">
+                <dt>{t("payment.sender")}</dt>
+                <dd className="text-sm text-foreground">{senderName}</dd>
+              </div>
+            </dl>
+
+            <a
+              href={paymentHref}
+              onClick={handlePaymentClick}
+              data-testid="ticket-make-payment"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-foreground/20 bg-foreground px-6 font-sans text-sm font-medium text-background transition-colors hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:h-14"
+            >
+              {t("payment.makePayment")}
+              <ExternalLink className="size-4" aria-hidden="true" />
+            </a>
+          </div>
+
+          {showPaymentFallback ? (
+            <div className="grid gap-3 border-t border-border/25 pt-4">
+              <p className="font-sans text-xs leading-relaxed text-muted-foreground">
+                {t("payment.fallback")}
+              </p>
+              <button
+                type="button"
+                onClick={copyPaymentDetails}
+                className="inline-flex h-9 w-fit items-center gap-2 rounded-full border border-border/40 px-3.5 font-sans text-xs font-medium text-foreground transition-colors hover:border-border/70 hover:bg-muted/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <Copy className="size-3.5" aria-hidden="true" />
+                {paymentCopied ? t("payment.copied") : t("payment.copyDetails")}
+              </button>
+            </div>
+          ) : null}
+        </section>
+
+        <div className="grid gap-3 border-b border-border/35 pb-5">
+          <p className="font-sans text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+            {t("summary.eyebrow")}
           </p>
-        ) : (
-          <p className="font-sans text-sm text-muted-foreground">
-            {t("instructionsFallback")}
-          </p>
-        )}
+          <dl className="grid gap-2 font-sans text-xs text-muted-foreground">
+            <div className="flex items-center justify-between gap-4">
+              <dt>{t("payment.amount")}</dt>
+              <dd className="text-right text-foreground">
+                {formatKRW(purchased.total_amount)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <dt>{t("payment.account")}</dt>
+              <dd className="text-right text-foreground">
+                {BANK.nameKo} {BANK.accountNo}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <dt>{t("summary.tickets")}</dt>
+              <dd className="text-right text-foreground">
+                {t("summary.ticketCount", {
+                  quantity: purchased.tickets.length
+                })}
+              </dd>
+            </div>
+          </dl>
+        </div>
 
         {purchased.tickets.some((tx) => tx.claim_url) ? (
           <div className="border-t border-border/40 pt-6">
@@ -1251,23 +1970,100 @@ function PurchasedView({
           </div>
         ) : null}
 
-        <div>
-          <Link
-            href={myTicketsHref}
-            data-testid="view-my-tickets"
-            className="font-sans text-xs tracking-widest text-muted-foreground uppercase hover:text-foreground"
-          >
-            {t("viewMy")}
-          </Link>
+        <div className="grid gap-3 border-t border-border/35 pt-5">
+          <p className="max-w-sm font-sans text-xs leading-relaxed text-muted-foreground">
+            {t("accountHint")}
+          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              href={myTicketsHref}
+              data-testid="view-my-tickets"
+              className="font-sans text-xs tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
+            >
+              {t("viewMy")}
+            </Link>
+            <button
+              type="button"
+              onClick={onContactSupport}
+              data-testid="ticket-support-link"
+              className="font-sans text-xs tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
+            >
+              {t("contactHost")}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+function ContactSupportModal({
+  open,
+  onOpenChange
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const t = useTranslations("Event.Rsvp.support");
+
+  return (
+    <DialogRoot open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="max-h-[min(92svh,680px)] overflow-y-auto border border-border/35 bg-background/95 p-5 text-foreground shadow-[0_24px_90px_rgba(0,0,0,0.38)] outline-border/30! backdrop-blur-xl sm:max-w-[440px] sm:p-6"
+        data-testid="ticket-contact-dialog"
+      >
+        <div className="grid gap-5">
+          <div className="grid gap-2">
+            <DialogTitle className="font-sans text-2xl font-light tracking-tight">
+              {t("title")}
+            </DialogTitle>
+            <DialogDescription className="font-sans text-sm leading-relaxed text-muted-foreground">
+              {t("body")}
+            </DialogDescription>
+          </div>
+
+          <div className="grid gap-2.5">
+            {CONTACT_CHANNELS.map((channel) => {
+              const Icon = channel.icon;
+              return (
+                <a
+                  key={channel.key}
+                  href={channel.href}
+                  target={channel.external ? "_blank" : undefined}
+                  rel={channel.external ? "noreferrer noopener" : undefined}
+                  data-testid={`ticket-support-${channel.key}`}
+                  className="group grid min-h-16 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border/25 bg-muted/10 px-3.5 py-3 text-left transition-colors hover:border-border/60 hover:bg-muted/20"
+                >
+                  <span className="flex size-10 items-center justify-center rounded-full border border-border/25 bg-background/70 text-foreground transition-colors group-hover:border-border/60">
+                    <Icon className="size-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-sans text-sm font-medium text-foreground">
+                      {t(`actions.${channel.key}.label`)}
+                    </span>
+                    <span className="mt-0.5 block truncate font-sans text-xs text-muted-foreground">
+                      {t(`actions.${channel.key}.value`)}
+                    </span>
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+
+          <DialogClose className="h-11 rounded-full border border-border/30 px-5 font-sans text-sm text-muted-foreground transition-colors hover:border-border/60 hover:text-foreground">
+            {t("close")}
+          </DialogClose>
+        </div>
+      </DialogContent>
+    </DialogRoot>
+  );
+}
+
 function ReserveView({
   quantity,
   setQuantity,
+  senderName,
+  setSenderName,
   maxAllowed,
   totalDisplay,
   purchaseError,
@@ -1277,6 +2073,8 @@ function ReserveView({
 }: {
   quantity: number;
   setQuantity: (n: number) => void;
+  senderName: string;
+  setSenderName: (value: string) => void;
   maxAllowed: number;
   totalDisplay: string;
   purchaseError: string | null;
@@ -1306,7 +2104,7 @@ function ReserveView({
 
       <div className="grid gap-6">
         <div
-          className="grid gap-3"
+          className="grid gap-3 border-b border-border/30 pb-5"
           role="group"
           aria-label={t("quantityGroupLabel")}
         >
@@ -1338,6 +2136,24 @@ function ReserveView({
           </div>
         </div>
 
+        <label className="grid gap-3 border-b border-border/30 pb-5">
+          <span className="font-sans text-xs tracking-[0.18em] text-muted-foreground uppercase">
+            {t("senderLabel")}
+          </span>
+          <span className="font-sans text-xs leading-relaxed text-muted-foreground">
+            {t("senderHint")}
+          </span>
+          <input
+            type="text"
+            value={senderName}
+            onChange={(e) => setSenderName(e.target.value)}
+            placeholder={t("senderPlaceholder")}
+            autoComplete="name"
+            maxLength={120}
+            className="h-14 w-full border-b border-border/50 bg-transparent font-sans text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
+          />
+        </label>
+
         {purchaseError ? (
           <m.p
             role="alert"
@@ -1353,7 +2169,7 @@ function ReserveView({
           type="button"
           size="lg"
           onClick={onSubmit}
-          disabled={purchaseBusy}
+          disabled={purchaseBusy || !senderName.trim()}
           className="h-14 w-full bg-foreground text-sm font-medium text-background disabled:opacity-40 sm:h-16 sm:text-base"
         >
           {purchaseBusy

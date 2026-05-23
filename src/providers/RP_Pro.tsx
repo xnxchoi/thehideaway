@@ -104,7 +104,7 @@ const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
     const os = uap.getOS() as UAParser.IOS & { name: OSNames };
     const device = uap.getDevice();
     const { isInApp, appName } = InAppSpy();
-    const uaParsed = uap.getResult();
+    const isKakaoTalkUA = /kakaotalk/i.test(navigator.userAgent);
     const majorBrowsers = {
       chrome: browser.name === "Chrome",
       firefox: browser.name === "Firefox",
@@ -119,7 +119,7 @@ const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
         browser.name === "Twitter" ||
         appName === "Twitter" ||
         /twitter/i.test(navigator.userAgent),
-      kakaotalk: browser.name === "KakaoTalk",
+      kakaotalk: browser.name === "KakaoTalk" || isKakaoTalkUA,
       weChat: browser.name === "WeChat" || appName === "WeChat",
       naver: browser.name === "Naver",
       threads: appName === "Threads",
@@ -170,7 +170,9 @@ const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
       },
       browser: {
         type: inApp ? "inapp" : browser.type || "Unknown",
-        name: browser.name || appName || "Unknown",
+        name: isKakaoTalkUA
+          ? "KakaoTalk"
+          : browser.name || appName || "Unknown",
         inApp,
         isChrome: majorBrowsers.chrome,
         isSafari: majorBrowsers.safari
@@ -202,7 +204,7 @@ const Thumbprint = ({ children }: { children: ReactNode }) => {
       .then((res) => {
         setFingerprint(res.thumbmark);
       })
-      .catch((e) => {
+      .catch(() => {
         /**flimsy fallback to account for errors; this is done out of necessity as
          **/
         setFingerprint(createId());
@@ -320,7 +322,7 @@ export const useMenu = <T,>(selector: (store: RP_BluePrint) => T): T => {
   }
   return useStore(store, selector);
 };
-export const useFrameState = <T,>() => {
+export const useFrameState = () => {
   const store = useContext(FrameContext);
   if (!store)
     throw new Error("useFrameState must be used within a MenuProvider");

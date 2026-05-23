@@ -14,19 +14,21 @@ import { useViewPref, type DayNNightView } from "./useViewPref";
 import { ViewportMask } from "./ViewportMask";
 import "./dn.css";
 import { Link } from "@/components/core/Link/Link";
+import type { DayNNightRsvpState } from "./MainLanding";
 
 interface DayNNightLandingProps {
   initialView: DayNNightView;
+  rsvpCount: number;
+  rsvpState: DayNNightRsvpState;
+  guestNames: string[];
 }
 
 /**
  * Day n Night landing — top-level entry.
  *
- * Owns the simplified ↔ immersive view state (cookie-backed), the dark-theme
- * lock for the immersive view, and the floating ViewToggle.
- *
- * The two views are rendered conditionally so the immersive R3F scene only
- * mounts when actually selected — keeps cold simplified loads light.
+ * Owns the original immersive visual shell while the act copy now maps
+ * to the canonical five-part content flow: Intro, Details, Our friends,
+ * Music by YM.FM, RSVP.
  */
 export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   const { view, setView } = useViewPref({ initial: initialView });
@@ -52,12 +54,6 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
     };
   }, [view, setPageTheme, clearPageTheme]);
 
-  // Immersive owns the full viewport: hide the site header and bottom FXFrame
-  // so they don't overlap the ViewToggle (top) or the Scrubber (bottom).
-  // `setHeaderVisibility` alone only dims the FX layer, so we also hard-hide
-  // the #rp-header element directly. (The previous approach relied on a
-  // :global rule inside styles.module.scss, but that module is no longer
-  // imported anywhere — the rule never loaded.)
   useEffect(() => {
     if (view !== "immersive") {
       setHeaderVisibility(true);
@@ -89,8 +85,6 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
       >
         {view === "immersive" && <ViewportMask />}
         {view === "immersive" && <ExitAffordance />}
-        {/* Standalone ViewToggle only on simplified view — immersive
-            embeds its own toggle inside the bottom action pill. */}
         {view === "simplified" && (
           <ViewToggle value={view} onChange={setView} />
         )}
@@ -106,12 +100,6 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
   );
 }
 
-/**
- * Exit affordance — the only persistent "way out" once the site header is
- * hidden under immersive. Discreet wordmark in the top-left that routes
- * back to the site index. Mirrors the visual weight of ViewToggle (small,
- * mono, on a translucent pill) so the two read as a matched pair.
- */
 function ExitAffordance() {
   return (
     <Link

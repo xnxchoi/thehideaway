@@ -236,14 +236,8 @@ pnpm format           # Prettier
 Docker-based (dev.Dockerfile, prod.Dockerfile) behind Nginx reverse proxy. Full guide: `readmes/DEPLOYMENT.md`.
 
 ### Feature Dev Docs
-Cross-session continuity documents for complex subsystems live in `readmes/`:
-- `HIGHLIGHTR.md` — Text annotation system (architecture, iteration log, known issues)
-- `NOTIFICATIONS.md` — Notification system (polling today, SSE upgrade path documented)
-- `DEPLOYMENT.md` — Docker deployment guide
-- `BREVO_SETUP.md` — Email service setup
-- `tour-flow/` — Onboarding tour development docs
-
-**Read the relevant `readmes/*.md` file before working on any of these subsystems.**
+Cross-session continuity documents for complex subsystems live in `readmes/`.
+Read the relevant `readmes/*.md` file before working on any of these subsystems.
 
 ---
 
@@ -295,7 +289,6 @@ component shipped its own locale logic instead of asking next-intl.
 messages/
 ├── en.json        Authoritative English copy. Group by area: `Settings`,
 ├── ko.json        `LegalFooter`, `Highlights`, etc.
-└── ...
 
 src/i18n/
 ├── locales.ts     Active locales (en, ko)
@@ -431,16 +424,7 @@ The governing tone: *sparse, intentional, typographically confident*. Features s
 
 ## Responsive Breakpoints
 
-Mobile-first. **Never stop at `lg:`** — every grid and spacing value needs an `xl:` variant.
-
-| Breakpoint | Screen Width | Context                          |
-| ---------- | ------------ | -------------------------------- |
-| `sm:`      | 640px        | Large phone / small tablet       |
-| `md:`      | 768px        | Tablet                           |
-| `lg:`      | 1024px       | Small laptop                     |
-| `xl:`      | 1280px       | MacBook 13–14"                   |
-| `2xl:`     | 1536px       | MacBook Pro 16" / large monitors |
-
+Mobile-first.
 ### Grid column targets
 
 | Content type                                     | sm  | md  | lg  | xl  | 2xl |
@@ -457,8 +441,6 @@ Mobile-first. **Never stop at `lg:`** — every grid and spacing value needs an 
 className="gap-4 xl:gap-5"      // standard grids
 className="gap-5 xl:gap-6"      // larger card grids
 ```
-
----
 
 ## Typography
 > The code below is a starting reference, not a binding enforcement. Pick the role that fits the surface; never mix all four faces on one screen.

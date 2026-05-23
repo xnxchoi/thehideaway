@@ -21,6 +21,9 @@ import {
 
 export const runtime = "nodejs";
 
+const UNGATED_PURCHASE_SLUGS = new Set(["day-n-night"]);
+const PASSKEY_REQUIRED_PURCHASE_SLUGS = new Set(["day-n-night"]);
+
 const GiftSchema = z.object({
   email: z.string().email().optional(),
   name: z.string().min(1).max(120).optional()
@@ -38,6 +41,12 @@ const BodySchema = z.object({
    * fall back to the session user's name.
    */
   purchaser_name: z.string().trim().min(1).max(120).optional(),
+  /**
+   * Name expected to appear as the bank-transfer sender. Snapshotted on the
+   * order so the host can reconcile pending transfers without relying on
+   * email or free-form follow-up.
+   */
+  sender_name: z.string().trim().min(1).max(120).optional(),
   /**
    * Optional per-extra-ticket recipient details. Index 0 corresponds to
    * the first gift ticket (i.e. the second ticket overall — index 0 is
@@ -147,26 +156,53 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const store = await nextCookies();
-  const gateCookieValue = store.get(
-    eventGateCookieName(body.event_slug)
-  )?.value;
-  const hasValidEventGate = verifyEventGateCookieValue(
-    gateCookieValue,
-    event.id
-  );
-  const hasValidPassword = body.password
-    ? safeEqual(body.password, event.gate_password ?? "")
-    : false;
+  if (!UNGATED_PURCHASE_SLUGS.has(event.slug ?? body.event_slug)) {
+    const store = await nextCookies();
+    const gateCookieValue = store.get(
+      eventGateCookieName(body.event_slug)
+    )?.value;
+    const hasValidEventGate = verifyEventGateCookieValue(
+      gateCookieValue,
+      event.id
+    );
+    const hasValidPassword = body.password
+      ? safeEqual(body.password, event.gate_password ?? "")
+      : false;
 
-  if (!hasValidEventGate && !hasValidPassword) {
-    return NextResponse.json(
-      { ok: false, error: "invalid-password" },
-      { status: 401 }
+    if (!hasValidEventGate && !hasValidPassword) {
+      return NextResponse.json(
+        { ok: false, error: "invalid-password" },
+        { status: 401 }
+      );
+    }
+  } else if (body.password) {
+    safeEqual(
+      body.password,
+      event.gate_password ?? "_ungated_event_password_placeholder_"
     );
   }
 
   const userId = String(session.user.id);
+  if (PASSKEY_REQUIRED_PURCHASE_SLUGS.has(event.slug ?? body.event_slug)) {
+    const passkeyResult = await payload.find({
+      collection: "passkeys",
+      overrideAccess: true,
+      pagination: false,
+      limit: 1,
+      depth: 0,
+      where: {
+        user: { equals: userId }
+      }
+    });
+
+    if (!passkeyResult.docs.length) {
+      return NextResponse.json(
+        { ok: false, error: "passkey-required" },
+        { status: 403 }
+      );
+    }
+  }
+
   const cap = event.max_per_user ?? 3;
 
   // ── Money-resilient ticket mint ──────────────────────────────────────
@@ -217,6 +253,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // the legacy single-screen purchase still produces a labeled order.
   const orderPurchaserName =
     body.purchaser_name ?? session.user.name?.trim() ?? null;
+  const orderSenderName = body.sender_name ?? orderPurchaserName;
 
   let created: CreatedTicket[];
   let orderId: string;
@@ -287,6 +324,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         purchaser: userId,
         event: event.id,
         purchaser_name: orderPurchaserName,
+        sender_name: orderSenderName,
         locale: orderLocale,
         paid: false
       } as never
@@ -354,6 +392,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const purchaserName = session.user.name ?? null;
 
   if (purchaserEmail) {
+    const managementUrl = buildTicketManagementUrl(siteUrl, event.slug);
     await mailer.sendPurchaseReceipt({
       ticketId: created[0]?.id ?? "",
       ticketNumber: created[0]?.ticket_number ?? null,
@@ -366,7 +405,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       quantity: body.quantity,
       totalAmount,
       paymentInstructions: event.payment_instructions ?? null,
-      managementUrl: buildTicketManagementUrl(siteUrl, event.slug)
+      managementUrl
     });
   }
 
@@ -390,6 +429,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     {
       ok: true,
       order_id: orderId,
+      purchaser_id: userId,
+      purchaser_name: orderPurchaserName,
+      sender_name: orderSenderName,
       tickets: created,
       total_amount: totalAmount
     },

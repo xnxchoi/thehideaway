@@ -40,6 +40,7 @@ export function Act({
       inert={ariaHidden ? true : undefined}
       className={cn(
         `relative flex h-full flex-none items-stretch overflow-hidden max-lg:h-auto max-lg:min-h-svh max-lg:w-full`,
+        ariaHidden ? "max-lg:hidden" : "",
         className
       )}
     >

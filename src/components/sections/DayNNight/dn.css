@@ -8,13 +8,13 @@
  *   import "./dn.css"
  *
  * All other styles live as Tailwind utility classes inline in each TSX file.
- */.maplibregl-ctrl-bottom-right {
-    bottom: 0;
-    visibility: hidden;
-    right: 0;
-    opacity: 0;
+ */
+.maplibregl-ctrl-bottom-right {
+  bottom: 0;
+  visibility: hidden;
+  right: 0;
+  opacity: 0;
 }
-
 
 /* ─── Shell tokens ────────────────────────────────────────────────────────── */
 
@@ -28,8 +28,8 @@
   --dn-chrome-fg: oklch(96% 0.005 80);
   --dn-chrome-fg-mute: oklch(72% 0.012 80);
   --dn-chrome-line: oklch(28% 0.012 280);
-  --dn-accent-day: oklch(78% 0.18 60);
-  --dn-accent-night: oklch(74% 0.14 280);
+  --dn-accent-day: oklch(56% 0.08 50);
+  --dn-accent-night: oklch(46% 0.075 255);
   --dn-progress: 0;
   /* Critical: overflow:clip preserves GSAP ScrollTrigger pin spacers on
      WebKit. overflow:hidden collapses them. */
@@ -49,6 +49,29 @@
 
 body[data-dn-immersive="true"] #rp-header {
   display: none !important;
+}
+
+@keyframes dnCreditsRoll {
+  from {
+    transform: translate3d(0, 38%, 0);
+  }
+  to {
+    transform: translate3d(0, -38%, 0);
+  }
+}
+
+@keyframes dnConfetti {
+  0% {
+    transform: translate3d(0, -12px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(26px, 110vh, 0) rotate(580deg);
+    opacity: 0;
+  }
 }
 
 /* ─── Act width multiplier ────────────────────────────────────────────────── */
@@ -75,6 +98,28 @@ body[data-dn-immersive="true"] #rp-header {
   --dn-act-gap-y: clamp(36px, 5vh, 64px);
   /* Shared horizontal band for floating polaroid clusters across acts. */
   --dn-polaroid-band: 16%;
+}
+
+@media (max-width: 1023px) {
+  [data-dn-act] {
+    --dn-act-pt: clamp(104px, 14svh, 136px);
+    --dn-act-pb: calc(120px + env(safe-area-inset-bottom));
+    --dn-act-px: clamp(22px, 6.2vw, 34px);
+    --dn-act-gap-y: clamp(24px, 4svh, 42px);
+  }
+
+  [data-dn-act] > div {
+    align-content: start;
+    grid-template-rows: none;
+    min-height: 100svh;
+  }
+
+  [data-dn-act] > div > * {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 /* ─── Eyebrow rule ────────────────────────────────────────────────────────── */
@@ -131,7 +176,6 @@ body[data-dn-immersive="true"] #rp-header {
   }
 }
 
-
 /* ─── Chrome pill (toggle + exit) ────────────────────────────────────────── */
 
 [data-dn-chrome-pill] {
@@ -185,7 +229,7 @@ body[data-dn-immersive="true"] #rp-header {
   background: radial-gradient(
     ellipse 85% 35% at center,
     oklch(var(--glow1) / calc(0.95 * var(--horizon-brightness))) 0%,
-    oklch(var(--glow2) / calc(0.7  * var(--horizon-brightness))) 25%,
+    oklch(var(--glow2) / calc(0.7 * var(--horizon-brightness))) 25%,
     oklch(var(--glow3) / calc(0.35 * var(--horizon-brightness))) 50%,
     transparent 78%
   );
@@ -204,7 +248,7 @@ body[data-dn-immersive="true"] #rp-header {
   );
   transform: scale(var(--body-scale));
   box-shadow:
-    0 0  80px 12px color-mix(in srgb, var(--body-color) 35%, transparent),
+    0 0 80px 12px color-mix(in srgb, var(--body-color) 35%, transparent),
     0 0 200px 40px color-mix(in srgb, var(--body-color) 15%, transparent);
   transition: opacity 0.25s ease;
   will-change: left, bottom, opacity, transform;
@@ -216,8 +260,8 @@ body[data-dn-immersive="true"] #rp-header {
   margin-left: -24px;
   margin-bottom: -24px;
   box-shadow:
-    0 0  60px  6px color-mix(in srgb, var(--body-color) 18%, transparent),
-    0 0 140px 24px color-mix(in srgb, var(--body-color)  8%, transparent);
+    0 0 60px 6px color-mix(in srgb, var(--body-color) 18%, transparent),
+    0 0 140px 24px color-mix(in srgb, var(--body-color) 8%, transparent);
 }
 
 /* ─── Film grain overlay ──────────────────────────────────────────────────── */
@@ -232,8 +276,8 @@ body[data-dn-immersive="true"] #rp-header {
   background: radial-gradient(
     circle 360px at var(--reveal-x, 50%) var(--reveal-y, 62%),
     transparent 0%,
-    color-mix(in oklch, var(--dn-fg)  0%, transparent)  32%,
-    color-mix(in oklch, var(--dn-fg)  4%, transparent)  70%,
+    color-mix(in oklch, var(--dn-fg) 0%, transparent) 32%,
+    color-mix(in oklch, var(--dn-fg) 4%, transparent) 70%,
     color-mix(in oklch, var(--dn-fg) 10%, transparent) 100%
   );
 }
@@ -260,9 +304,9 @@ body[data-dn-immersive="true"] #rp-header {
     oklch(93% 0.012 80) 100%
   );
   box-shadow:
-    0  1px  0 oklch(100% 0 0 / 0.4) inset,
-    0  8px 24px oklch(0% 0 0 / 0.18),
-    0  2px  6px oklch(0% 0 0 / 0.12);
+    0 1px 0 oklch(100% 0 0 / 0.4) inset,
+    0 8px 24px oklch(0% 0 0 / 0.18),
+    0 2px 6px oklch(0% 0 0 / 0.12);
 }
 
 /* Paper grain on the polaroid surface */
@@ -313,38 +357,84 @@ body[data-dn-immersive="true"] #rp-header {
 
 /* Organic flame-like flicker on the core line */
 @keyframes dn-horizon-flicker {
-  0%, 100% { opacity: 0.82; }
-  7%        { opacity: 0.95; }
-  14%       { opacity: 0.68; }
-  22%       { opacity: 0.91; }
-  30%       { opacity: 0.63; }
-  39%       { opacity: 0.98; }
-  47%       { opacity: 0.74; }
-  55%       { opacity: 0.87; }
-  63%       { opacity: 0.66; }
-  72%       { opacity: 0.93; }
-  81%       { opacity: 0.71; }
-  90%       { opacity: 0.88; }
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  7% {
+    opacity: 0.95;
+  }
+  14% {
+    opacity: 0.68;
+  }
+  22% {
+    opacity: 0.91;
+  }
+  30% {
+    opacity: 0.63;
+  }
+  39% {
+    opacity: 0.98;
+  }
+  47% {
+    opacity: 0.74;
+  }
+  55% {
+    opacity: 0.87;
+  }
+  63% {
+    opacity: 0.66;
+  }
+  72% {
+    opacity: 0.93;
+  }
+  81% {
+    opacity: 0.71;
+  }
+  90% {
+    opacity: 0.88;
+  }
 }
 
 /* Shimmer hot-spot sweeping left → right */
 @keyframes dn-horizon-shimmer-ltr {
-  0%   { background-position: -70% 0; }
-  100% { background-position: 170% 0; }
+  0% {
+    background-position: -70% 0;
+  }
+  100% {
+    background-position: 170% 0;
+  }
 }
 
 /* Shimmer hot-spot sweeping right → left (phase offset handles direction via delay) */
 @keyframes dn-horizon-shimmer-rtl {
-  0%   { background-position: 170% 0; }
-  100% { background-position: -70% 0; }
+  0% {
+    background-position: 170% 0;
+  }
+  100% {
+    background-position: -70% 0;
+  }
 }
 
 /* Soft glow haze breathing */
 @keyframes dn-horizon-breathe {
-  0%, 100% { opacity: 0.12; transform: scaleY(1); }
-  28%       { opacity: 0.34; transform: scaleY(2.8); }
-  56%       { opacity: 0.18; transform: scaleY(1.6); }
-  78%       { opacity: 0.38; transform: scaleY(3.2); }
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scaleY(1);
+  }
+  28% {
+    opacity: 0.34;
+    transform: scaleY(2.8);
+  }
+  56% {
+    opacity: 0.18;
+    transform: scaleY(1.6);
+  }
+  78% {
+    opacity: 0.38;
+    transform: scaleY(3.2);
+  }
 }
 
 [data-dn-loader-line] {
@@ -357,7 +447,7 @@ body[data-dn-immersive="true"] #rp-header {
     90deg,
     transparent 0%,
     oklch(90% 0.07 74 / 0.45) 38%,
-    oklch(97% 0.04 80 / 0.90) 50%,
+    oklch(97% 0.04 80 / 0.9) 50%,
     oklch(90% 0.07 74 / 0.45) 62%,
     transparent 100%
   );
@@ -371,9 +461,9 @@ body[data-dn-immersive="true"] #rp-header {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    oklch(87% 0.09 66 / 0.30) 40%,
+    oklch(87% 0.09 66 / 0.3) 40%,
     oklch(94% 0.06 72 / 0.65) 50%,
-    oklch(87% 0.09 66 / 0.30) 60%,
+    oklch(87% 0.09 66 / 0.3) 60%,
     transparent 100%
   );
   background-size: 38% 100%;

@@ -14,7 +14,7 @@ const InputSchema = z.object({
 });
 
 type ActionResult =
-  | { ok: true }
+  | { ok: true; email: string; password: string }
   | { ok: false; reason: "existing-account-login-required" | "failed" };
 
 function splitName(name: string): { firstName: string; lastName: string } {
@@ -131,7 +131,7 @@ export async function prepareDayNNightPurchaserAction(
         password
       }
     });
-    return { ok: true };
+    return { ok: true, email: input.email, password };
   } catch {
     return { ok: false, reason: "failed" };
   }

@@ -34,10 +34,10 @@ export const BANK = {
   accountNo: "1002-5436-0906",
   accountNoDigits: "100254360906",
   holder: "리스토어드프로젝트",
-  amountKrw: 61000,
+  amountKrw: 65000,
   /** Toss deep link — opens the Toss app prefilled for transfer. */
   tossDeepLink:
-    "supertoss://send?bank=토스뱅크&accountNo=100254360906&amount=61000&origin=qr"
+    "supertoss://send?bank=토스뱅크&accountNo=100254360906&amount=65000&origin=qr"
 } as const;
 
 // ── Hosts (Cluster C) ──────────────────────────────────────────────────

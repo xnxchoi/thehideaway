@@ -179,6 +179,7 @@ export function FriendsTorrent({
 
   return (
     <div
+      data-dn-friends-torrent
       className={cn(
         `pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-300`,
         className
@@ -187,13 +188,15 @@ export function FriendsTorrent({
       style={{ opacity: active ? 1 : 0 }}
       aria-hidden
     >
-      {/* Atmospheric base — sunset spillover top, indigo night bottom. */}
+      {/* Atmospheric base — dark blue shadow, low ember rooftop spillover. */}
       {atmosphere ? (
         <div
           className="absolute inset-0"
           style={{
             background: [
-              "linear-gradient(180deg, oklch(22% 0.08 45) 0%, oklch(14% 0.06 290) 45%, oklch(8% 0.04 280) 100%)",
+              "radial-gradient(circle at 18% 18%, oklch(44% 0.08 255 / 0.2) 0%, transparent 36%)",
+              "radial-gradient(circle at 80% 22%, oklch(52% 0.09 48 / 0.18) 0%, transparent 36%)",
+              "linear-gradient(135deg, oklch(9% 0.04 255) 0%, oklch(8% 0.032 242) 46%, oklch(7.5% 0.026 42) 100%)",
               `linear-gradient(180deg, rgba(0,0,0,${darkenOpacity * 0.6}), rgba(0,0,0,${darkenOpacity}))`
             ].join(", ")
           }}
@@ -281,7 +284,8 @@ export function FriendsTorrent({
         style={{
           background: [
             "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 12%, transparent 88%, rgba(0,0,0,0.55) 100%)",
-            "linear-gradient(to right, oklch(10% 0.04 280 / 0.85) 0%, transparent 18%, transparent 82%, oklch(18% 0.08 40 / 0.7) 100%)"
+            "linear-gradient(to right, oklch(8% 0.045 255 / 0.88) 0%, transparent 18%, transparent 82%, oklch(12% 0.06 42 / 0.68) 100%)",
+            "linear-gradient(90deg, oklch(48% 0.08 255 / 0.1), transparent 38%, oklch(54% 0.09 48 / 0.12))"
           ].join(", ")
         }}
       />

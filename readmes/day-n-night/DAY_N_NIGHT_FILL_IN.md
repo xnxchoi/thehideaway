@@ -61,7 +61,7 @@ only by romanisation.
 - **Account number:** `1002-5436-0906` <confirm>
 - **Account number, digits only (for the deep link):** `100254360906`<confirm>
 - **Account holder (KR):** `리스토어드프로젝트` <confirm>
-- **Amount per ticket (KRW):** `61000` <confirm>
+- **Amount per ticket (KRW):** `65000`
 - **Memo / 보내는 분 표시** (optional — what the host wants to see in the transfer line, e.g. `"DNN-" + guest_name`): `___`
 
 The Toss deep link will resolve to (template, filled with above values):

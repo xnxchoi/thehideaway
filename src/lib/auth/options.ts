@@ -145,7 +145,12 @@ const options: BetterAuthOptionsType = {
   },
   session: {
     cookieCache: {
-      enabled: true,
+      // Better Auth's compact session cache stores freshness metadata outside
+      // `session.session.updatedAt`, but `freshSessionMiddleware` checks that
+      // nested field. Passkey enrollment uses that middleware, so relying on
+      // the cache makes newly signed-in sessions look stale. Keep freshness
+      // checks database-backed instead of disabling the freshness requirement.
+      enabled: false,
       maxAge: 5 * 60 // Cache duration in seconds
     }
   },

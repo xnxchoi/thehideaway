@@ -497,11 +497,6 @@ body[data-dn-rsvp="true"]::-webkit-scrollbar {
 }
 
 @media screen and (pointer: fine) {
-  body[data-dn-rsvp="true"] .rp__cursor {
-    display: none !important;
-    opacity: 0 !important;
-  }
-
   body[data-dn-rsvp="true"] nextjs-portal {
     display: none !important;
   }

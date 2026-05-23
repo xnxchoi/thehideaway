@@ -2920,6 +2920,10 @@ export interface TicketOrder {
    */
   purchaser_name?: string | null;
   /**
+   * Name the purchaser says will appear on the bank transfer. Used by hosts to match pending Toss transfers.
+   */
+  sender_name?: string | null;
+  /**
    * Admin-only. Flip this after confirming the bank transfer. Triggers password issuance + email.
    */
   paid?: boolean | null;
@@ -4744,6 +4748,7 @@ export interface TicketOrdersSelect<T extends boolean = true> {
   purchaser?: T;
   event?: T;
   purchaser_name?: T;
+  sender_name?: T;
   paid?: T;
   paid_at?: T;
   password?: T;

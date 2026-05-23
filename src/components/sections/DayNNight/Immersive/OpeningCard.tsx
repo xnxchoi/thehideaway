@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { SurvivalKit } from "../SurvivalKit";
 import { useDomCursor } from "@/components/core/cursorWrapper";
 import { useDetailsContext } from "@/components/sections/DayNNight/Immersive/DetailsContext";
+import { useLenis } from "lenis/react";
 const PAPER_TEXTURE = "/assets/three/materials/paper/paper_d.png";
 
 /**
@@ -31,8 +32,10 @@ const PAPER_THEME: CSSProperties = {
 
 export function OpeningCard() {
   const t = useTranslations("Event.DayNNight");
+
   const { onMouseEnter, onMouseLeave } = useDomCursor({
     enterCondition: () => "CHECK IT OUT",
+
     marquee: { enter: () => true }
   });
   const { setOpen } = useDetailsContext();

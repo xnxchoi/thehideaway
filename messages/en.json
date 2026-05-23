@@ -301,6 +301,84 @@
   "Event": {
     "DayNNight": {
       "title": "Day n Night",
+      "main": {
+        "nav": {
+          "intro": "Intro (소개)",
+          "details": "Details (상세)",
+          "friends": "Our friends",
+          "music": "Music by YM.FM",
+          "rsvp": "RSVP"
+        },
+        "intro": {
+          "eyebrow": "Sunday, May 24",
+          "date": "18:30 until late",
+          "place": "Haebangchon",
+          "lede": "A cookout turns into a room, and the room turns into a night.",
+          "theme": "Blue & orange",
+          "price": "65,000 KRW",
+          "hosts": "Hosted by Sean Choi & In Gyu Choe"
+        },
+        "details": {
+          "eyebrow": "Details (상세)",
+          "title": "What you are walking into.",
+          "body": "A private rooftop-to-room gathering with food, drinks, music, and just enough structure to let the night move.",
+          "themeLabel": "Theme",
+          "theme": "Day into night. Blue and orange if you feel like leaning in.",
+          "dressLabel": "Dress",
+          "dress": "No strict dress code. The color note helps the room feel like one night.",
+          "timeLabel": "Time",
+          "time": "Sunday, May 24 · 18:30 until late",
+          "locationLabel": "Location",
+          "location": "Sowol-ro 20-gil 64, 3F · Haebangchon, Yongsan",
+          "contactLabel": "Contact",
+          "contact": "Hosts: Sean Choi and In Gyu Choe",
+          "priceLabel": "Entry",
+          "price": "65,000 KRW · food, drinks, and entry included"
+        },
+        "offerings": {
+          "potatoes": {
+            "label": "Before the Grill",
+            "body": "Brown-butter potatoes with sea salt and herbs. Simple, warm, rich."
+          },
+          "grill": {
+            "label": "From the Grill",
+            "body": "Iberico pluma, ribs, and select Spanish pork cuts, grilled simply and served with the confidence expensive meat deserves. Buffalo wings and shrimp bring the loose rooftop energy back into the room."
+          },
+          "pasta": {
+            "label": "Pasta",
+            "body": "A simple aglio e olio, late if the night asks for it."
+          },
+          "ferments": {
+            "label": "Ferments & Wine",
+            "body": "Korean fruit and rice ferments, including I Am The Moon, Super Potion makgeolli, Isega, Maesil Wonju, and a little champagne."
+          },
+          "cocktails": {
+            "label": "House Pours",
+            "body": "Cranberry highballs, lemon highballs, a light Seoul spritz, plum-and-soda pours, and whatever simple mix the room keeps asking for."
+          },
+          "nonAlcoholic": {
+            "label": "No Proof",
+            "body": "Sparkling water, lemonade, and juice."
+          }
+        },
+        "friends": {
+          "eyebrow": "Our friends",
+          "title": "Our friends",
+          "caption": "snaps from our shindigs in the past"
+        },
+        "music": {
+          "eyebrow": "Music by YM.FM",
+          "kicker": "Introducing the headliner",
+          "body": "A dear friend, GOAT barber, and most importantly — a killer DJ. YM.FM does not play background music; he turns the room into the reason you stayed.",
+          "assetNote": "Drop YM.FM photos in /public/assets/daynnight before final image packing."
+        },
+        "rsvp": {
+          "body": "Reserve your place and get added to the night.",
+          "pendingBody": "Your reservation is in. Check status from here.",
+          "cta": "RSVP",
+          "checkStatus": "Check status"
+        }
+      },
       "date": {
         "weekday": "Sunday",
         "full": "May 24, 2026",
@@ -326,7 +404,17 @@
           "label": "DAY",
           "time": "18:30 → 19:50",
           "heading": "Before dusk",
-          "body": "Barbecue and fruit wine set the tone while people drift wide across the rooftop, settling into reunions, introductions, and the slower ease of early evening."
+          "body": "Barbecue and fruit wine set the tone while people drift wide across the rooftop, settling into reunions, introductions, and the slower ease of early evening.",
+          "details": {
+            "foodLabel": "Catering",
+            "foodBody": "A generous rooftop spread: grilled mains, small bites, fruit, and enough food to stay a while.",
+            "drinkLabel": "Drinks",
+            "drinkBody": "Beer, wine, fruit wine, and simple pours throughout the evening.",
+            "dressLabel": "Dress code",
+            "dressBody": "Blue & orange. Not strict, but it helps the room feel like one night.",
+            "arrivalLabel": "Arrival",
+            "arrivalBody": "Come early for the rooftop. Stay late for the room."
+          }
         },
         "night": {
           "label": "NIGHT",
@@ -338,8 +426,18 @@
             "name": "YM.FM",
             "role": "Barber. Musician. Friend of the house.",
             "blurb": "He carries the room once daylight gives way.",
-            "handle": "@yangminwoo",
-            "listenLabel": "Listen"
+            "handle": "@yangminwoo__",
+            "listenTitle": "Listen to YM.FM",
+            "listenLabel": "Play",
+            "playingLabel": "Playing",
+            "infoLabel": "Track info",
+            "trackLabel": "Track",
+            "albumLabel": "Album",
+            "artistLabel": "Artist",
+            "trackTitle": "Don't Wanna Know",
+            "album": "Hideaway Ambience",
+            "artist": "YM.FM",
+            "trackNote": "The first collaborative album from YM.FM and The Hideaway. Easy summer listening, best paired with a Vesper."
           }
         }
       },
@@ -350,10 +448,15 @@
       "dressCode": {
         "captions": {
           "topic": "Dress code",
-          "answer": "Blue or teal, if you like.",
+          "answer": "Blue & orange, if you like.",
           "ownIt": "No strict dress code - just a colour note if you want one.",
           "refs": "Need a visual cue? Here are a few from past nights."
         }
+      },
+      "guestsTease": {
+        "label": "Guest list",
+        "body": "See who's coming. RSVP and get added to the list.",
+        "cta": "See who's coming"
       },
       "included": {
         "heading": "Included",
@@ -376,14 +479,16 @@
         "perGuest": "per guest; entry, food and drinks included",
         "method": "Bank transfer",
         "bank": "Toss Bank · 1002-5436-0906",
-        "accountHolder": "리스토어드프로젝트"
+        "accountHolder": "Restored Project"
       },
       "closing": {
-        "kicker": "It begins on the rooftop and ends a little closer to the night.",
+        "kicker": "Reserve your place.",
         "lede": "See you on the rooftop."
       },
       "rsvpCta": {
         "primary": "Details",
+        "rsvp": "RSVP",
+        "rsvped": "RSVP'd",
         "register": "Register",
         "secondary": "Ticket reservation is inside the details."
       },
@@ -414,7 +519,7 @@
         },
         "dress": {
           "label": "Wear",
-          "value": "No strict dress code. Blue or teal if you feel like leaning in."
+          "value": "No strict dress code. Blue and orange if you feel like leaning in."
         },
         "host": {
           "label": "Ask",
@@ -431,12 +536,16 @@
         },
         "copy": "Copy",
         "copied": "Copied",
+        "copyPayment": "Copy payment",
+        "paymentCopied": "Payment copied",
         "openMap": "Open in",
         "map": {
-          "kakao": "Open in Kakao Map",
-          "naver": "Naver Map",
-          "google": "Google Maps",
-          "reset": "Back to venue"
+          "kakao": "Kakao",
+          "naver": "Naver",
+          "google": "Google",
+          "copyAddress": "Copy address",
+          "addressCopied": "Address copied",
+          "reset": "Recenter"
         },
         "ics": "Add to calendar"
       },
@@ -455,10 +564,10 @@
       "scrubber": {
         "navLabel": "Timeline",
         "opening": "Intro",
-        "cookout": "Day",
-        "dress": "Sunset",
-        "night": "Night",
-        "closing": "Reservations"
+        "cookout": "Details",
+        "dress": "Our friends",
+        "night": "Music by YM.FM",
+        "closing": "RSVP"
       },
       "moodboard": {
         "cookout": {
@@ -481,7 +590,7 @@
     "InAppBrowserEscape": {
       "eyebrow": "Open properly",
       "title": "This page needs your real browser.",
-      "description": "Hi {name}. The Hideaway does not render reliably inside {app}. Try opening it in your browser first. If that handoff is blocked, copy the link below and paste it into Safari or Chrome.",
+      "description": "{app}'s in-app browser does not support tech on our site.",
       "labels": {
         "guest": "guest",
         "currentAppFallback": "In-app browser"
@@ -490,6 +599,7 @@
         "primaryKicker": "Best effort",
         "primary": "Open in browser",
         "primaryUnavailable": "This app does not expose a reliable external-open route, so copying the link is the dependable fallback.",
+        "primaryUnavailableIos": "iOS does not let every in-app browser force Safari open. Copying the link is the dependable fallback.",
         "secondaryKicker": "Guaranteed fallback",
         "copy": "Copy link",
         "copied": "Link copied",
@@ -501,8 +611,8 @@
         "body": "If the first button does nothing, copy this full link and open it in Safari or Chrome."
       },
       "tips": {
-        "fallbackLabel": "Why this exists",
-        "fallbackBody": "Many in-app browsers strip features, block payment flows, and ignore some external-open requests. Copying the URL remains the safe path.",
+        "fallbackLabel": "Notice",
+        "fallbackBody": "This in-app browser does not support tech on our site.",
         "deviceLabel": "Device note",
         "ios": "On iPhone, Safari is the most reliable fallback once you leave the in-app browser.",
         "android": "On Android, Chrome or your default browser is the most reliable fallback once you leave the in-app browser.",
@@ -511,6 +621,32 @@
       "toast": {
         "title": "Link copied",
         "description": "Paste it into your browser."
+      },
+      "kakao": {
+        "eyebrow": "Leave KakaoTalk",
+        "title": "Open this in your browser.",
+        "description": "KakaoTalk's in-app browser does not support tech on our site.",
+        "actions": {
+          "primaryKicker": "Try first",
+          "primary": "Open in browser",
+          "primaryUnavailable": "If KakaoTalk blocks the browser handoff, copying the link is the reliable fallback.",
+          "primaryUnavailableIos": "iOS does not let every in-app browser force Safari open. Copying the link is the reliable fallback.",
+          "secondaryKicker": "Reliable fallback",
+          "copy": "Copy link",
+          "copied": "Link copied",
+          "copyShort": "Copy",
+          "copiedShort": "Copied"
+        },
+        "manual": {
+          "kicker": "Manual handoff",
+          "body": "If KakaoTalk blocks the external browser handoff, copy this full link and paste it into Safari or Chrome."
+        },
+        "tips": {
+          "fallbackLabel": "Notice",
+          "fallbackBody": "KakaoTalk browser does not fully support tech used on our site.",
+          "deviceLabel": "Device note",
+          "generic": "If the app keeps intercepting, copy - paste it manually."
+        }
       }
     },
     "Guests": {
@@ -524,7 +660,7 @@
       },
       "empty": {
         "headline": "No guests yet.",
-        "body": "RSVPs will appear here as they come in. Check back closer to the date."
+        "body": "RSVPs will appear here as they come in. Reserve your spot to get added to the list."
       },
       "intro": {
         "label": "Profile"
@@ -544,6 +680,7 @@
       },
       "you": "That's you",
       "navigation": {
+        "label": "Day n Night guest navigation",
         "back": "Back to event"
       }
     },
@@ -578,8 +715,33 @@
           "emailPlaceholder": "you@example.com",
           "submit": "Continue",
           "continueError": "We couldn't continue with that email. Check the address and try again.",
-          "existingAccount": "This email already belongs to an account. Sign in to continue.",
-          "signIn": "Sign in"
+          "existingAccount": "This email already belongs to an account. Sign in with passkey to continue, or contact us if this device cannot use one.",
+          "signIn": "Sign in",
+          "contactHost": "Contact us"
+        },
+        "credential": {
+          "eyebrow": "Account created",
+          "title": "Save this password now.",
+          "body": "This is your Hideaway password. We can only show it once. Save it like a private key before you continue.",
+          "emailLabel": "Sign-in email",
+          "passwordLabel": "One-time password view",
+          "mobileHint": "This works best on the mobile device you carry. Use the button below so your browser or password manager has a chance to save this account for hideawayseoul.com.",
+          "saved": "I saved it · continue",
+          "copy": "Copy password",
+          "copied": "Copied",
+          "refreshError": "We couldn't refresh this sign-in session. Try continue again, or contact us if this keeps happening."
+        },
+        "passkey": {
+          "eyebrow": "Secure access",
+          "title": "Create a passkey.",
+          "body": "Next, create a passkey for this account. We'll check for it automatically and move on once it's registered.",
+          "submit": "Create passkey",
+          "creating": "Creating…",
+          "checking": "Checking for your passkey. You'll move on automatically once it appears.",
+          "contactHost": "Contact us",
+          "unsupported": "This browser or device cannot create a passkey. Contact us and we'll help you finish the reservation.",
+          "checkFailed": "We couldn't check for the passkey. Try again, or contact us if this keeps happening.",
+          "failed": "Passkey setup did not finish. Try again, or contact us if this device cannot create one."
         },
         "otp": {
           "eyebrow": "Confirm email",
@@ -627,6 +789,13 @@
         "claimedBy": "Claimed by {name}",
         "unclaimed": "Unclaimed",
         "revoke": "Revoke",
+        "walletTitle": "Entry wallet",
+        "walletBody": "Tickets bound to this account appear here. Active tickets include the QR code the door scans for entry.",
+        "walletEmpty": "Tickets bound to this account appear here after purchase or claim.",
+        "qrHint": "This QR opens your unique check-in link. Keep it ready at the door.",
+        "pendingTicketHint": "This ticket activates after the host confirms payment.",
+        "checkedInHint": "This ticket has already been checked in.",
+        "openTicket": "Open full ticket →",
         "passwordHint": "You will receive a 48-hour password when the host marks your order as paid. Share it with whoever you are gifting tickets to."
       },
       "claim": {
@@ -693,6 +862,7 @@
         "eventNotOpen": "Reservations are not open right now.",
         "soldOut": "No tickets remain for this event.",
         "userCapReached": "You've reached the ticket limit for this event.",
+        "passkeyRequired": "Create a passkey before reserving. If your device can't create one, contact us.",
         "badRequest": "We couldn't process that request. Check the form and try again.",
         "generic": "We couldn't complete the reservation. Try again in a moment."
       },
@@ -702,9 +872,28 @@
         "soldOut": "Sold out"
       },
       "purchased": {
-        "eyebrow": "Awaiting payment",
+        "eyebrow": "Reservation held",
         "reserved": "{quantity, plural, one {# ticket} other {# tickets}} reserved · {total}",
-        "instructionsFallback": "The host will reach out with payment details. Your tickets will activate the moment payment is confirmed.",
+        "nextStep": "Your reservation is saved. Send the transfer now; the host will activate your tickets after matching the payment.",
+        "instructionsFallback": "Your reservation is saved. Send the transfer now; the host will activate your tickets after matching the payment.",
+        "payment": {
+          "eyebrow": "Bank transfer",
+          "body": "Open Toss with the account and amount filled. We'll attach the matching note in the payment link and copy the essentials as a fallback.",
+          "makePayment": "Make Payment",
+          "amount": "Amount",
+          "account": "Account",
+          "holder": "Account holder",
+          "memo": "Memo",
+          "sender": "Sender name",
+          "fallback": "If Toss did not open, use the copied account and amount to transfer manually.",
+          "copyDetails": "Copy details",
+          "copied": "Copied"
+        },
+        "summary": {
+          "eyebrow": "Reservation summary",
+          "tickets": "Tickets",
+          "ticketCount": "{quantity, plural, one {# ticket} other {# tickets}}"
+        },
         "giftLinks": {
           "eyebrow": "Gift links",
           "body": "Share these privately. Each link can be claimed once.",
@@ -712,12 +901,40 @@
           "copy": "Copy link",
           "copied": "Copied"
         },
-        "viewMy": "View my tickets →"
+        "accountHint": "Use your passkey to sign in later and check these tickets. If passkey access fails, contact us.",
+        "viewMy": "View my tickets →",
+        "contactHost": "Contact us →"
+      },
+      "support": {
+        "title": "Contact us",
+        "body": "Use the fastest route available on this device.",
+        "close": "Close",
+        "actions": {
+          "seanPhone": {
+            "label": "Host · Sean Choi",
+            "value": "+82 10 4637 9289"
+          },
+          "ingyuPhone": {
+            "label": "Host · In Gyu Choe",
+            "value": "+82 10 2529 6700"
+          },
+          "email": {
+            "label": "Mail",
+            "value": "seanschoi@hideawayseoul.com"
+          },
+          "instagram": {
+            "label": "Instagram · In Gyu",
+            "value": "@geekid"
+          }
+        }
       },
       "reserve": {
         "eyebrow": "Reserve · {total}",
         "quantityLabel": "Quantity",
         "quantityGroupLabel": "Number of tickets",
+        "senderLabel": "Bank sender name",
+        "senderHint": "Enter the exact name that will appear on the transfer. This helps the host confirm your payment quickly.",
+        "senderPlaceholder": "Name shown by your bank",
         "submit": "Request {quantity} · {total}",
         "submitting": "Reserving…",
         "signInRequired": "Sign in to continue",

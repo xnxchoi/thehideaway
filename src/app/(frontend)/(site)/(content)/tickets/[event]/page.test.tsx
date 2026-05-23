@@ -73,12 +73,12 @@ describe("/tickets/[event] Day n Night gate routing", () => {
     });
   });
 
-  it("keeps the Day n Night ticket flow closed on direct hits when the event still has a passcode", async () => {
+  it("opens the Day n Night ticket flow on direct hits even when stale seed data still has a passcode", async () => {
     mocks.find.mockResolvedValue({ docs: [baseEvent] });
 
     const props = await renderTicketClientProps();
 
-    expect(props.gateInitiallyOpen).toBe(false);
+    expect(props.gateInitiallyOpen).toBe(true);
   });
 
   it("does not render a ticket-owned gate for Day n Night when the event has no passcode configured", async () => {
@@ -89,5 +89,15 @@ describe("/tickets/[event] Day n Night gate routing", () => {
     const props = await renderTicketClientProps();
 
     expect(props.gateInitiallyOpen).toBe(true);
+  });
+
+  it("keeps legacy event ticket flows gated when they still have a passcode", async () => {
+    mocks.find.mockResolvedValue({
+      docs: [{ ...baseEvent, slug: "legacy-event", gate_password: "secret" }]
+    });
+
+    const props = await renderTicketClientProps("legacy-event");
+
+    expect(props.gateInitiallyOpen).toBe(false);
   });
 });

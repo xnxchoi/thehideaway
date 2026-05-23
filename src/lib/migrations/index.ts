@@ -27,6 +27,9 @@ import * as migration_20260519_180000_ticket_orders from "./20260519_180000_tick
 import * as migration_20260520_140000_ticket_orders_mailed_at_locale from "./20260520_140000_ticket_orders_mailed_at_locale";
 import * as migration_20260520_183404 from "./20260520_183404";
 import * as migration_20260522_190000_day_n_night_event_open from "./20260522_190000_day_n_night_event_open";
+import * as migration_20260523_120000_day_n_night_event_upsert from "./20260523_120000_day_n_night_event_upsert";
+import * as migration_20260523_203000_passkey_credential_ids_varchar from "./20260523_203000_passkey_credential_ids_varchar";
+import * as migration_20260523_204500_ticket_order_sender_name from "./20260523_204500_ticket_order_sender_name";
 import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
@@ -174,6 +177,21 @@ export const migrations = [
     up: migration_20260522_190000_day_n_night_event_open.up,
     down: migration_20260522_190000_day_n_night_event_open.down,
     name: "20260522_190000_day_n_night_event_open"
+  },
+  {
+    up: migration_20260523_120000_day_n_night_event_upsert.up,
+    down: migration_20260523_120000_day_n_night_event_upsert.down,
+    name: "20260523_120000_day_n_night_event_upsert"
+  },
+  {
+    up: migration_20260523_203000_passkey_credential_ids_varchar.up,
+    down: migration_20260523_203000_passkey_credential_ids_varchar.down,
+    name: "20260523_203000_passkey_credential_ids_varchar"
+  },
+  {
+    up: migration_20260523_204500_ticket_order_sender_name.up,
+    down: migration_20260523_204500_ticket_order_sender_name.down,
+    name: "20260523_204500_ticket_order_sender_name"
   },
   {
     up: migration_99999999_000000_initial_seed.up,

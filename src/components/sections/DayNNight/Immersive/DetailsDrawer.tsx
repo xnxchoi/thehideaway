@@ -23,8 +23,8 @@ const DRAWER_DN_THEME: CSSProperties = {
   ["--dn-fg-mute" as string]: "oklch(from var(--dn-fg) l c h / 0.7)",
   ["--dn-fg-faint" as string]: "oklch(from var(--dn-fg) l c h / 0.5)",
   ["--dn-line" as string]: "oklch(from var(--dn-fg) l c h / 0.22)",
-  ["--dn-accent-day" as string]: "oklch(78% 0.18 60)",
-  ["--dn-accent-night" as string]: "oklch(74% 0.14 280)"
+  ["--dn-accent-day" as string]: "oklch(56% 0.08 50)",
+  ["--dn-accent-night" as string]: "oklch(46% 0.075 255)"
 };
 /**
  * Details drawer — a right-side Vaul sheet surfacing the event's
@@ -160,7 +160,7 @@ DTSTART;TZID=Asia/Seoul:20260524T183000
 DTEND;TZID=Asia/Seoul:20260524T233000
 SUMMARY:Day n Night | Seoul
 DESCRIPTION:=========INVITE ONLY==============
-LOCATION:서울시 용산구 송월로20길 64\\, 3층
+LOCATION:서울시 용산구 소월로20길 64\\, 3층
 ORGANIZER;CN=Sean Choi:mailto:seanschoi@lostinseoul.com
 TRANSP:OPAQUE
 CLASS:PRIVATE
@@ -190,6 +190,18 @@ END:VCALENDAR`
               className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-6 py-4 font-mono text-[12px] tracking-[0.28em] text-[var(--dn-bg)] uppercase no-underline transition-transform duration-300 hover:-translate-y-px"
             >
               <span>{t("rsvpCta.register")}</span>
+              <span
+                aria-hidden
+                className="text-[1.2em] leading-none transition-transform duration-300 group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </Link>
+            <Link
+              href="/day-n-night/guests"
+              className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-line)] px-6 py-3.5 font-mono text-[11px] tracking-[0.24em] text-[var(--dn-fg-mute)] uppercase no-underline transition-colors duration-300 hover:border-[var(--dn-fg)] hover:text-[var(--dn-fg)]"
+            >
+              <span>{t("guestsTease.cta")}</span>
               <span
                 aria-hidden
                 className="text-[1.2em] leading-none transition-transform duration-300 group-hover:translate-x-1"

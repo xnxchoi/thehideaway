@@ -302,6 +302,84 @@
   "Event": {
     "DayNNight": {
       "title": "Day n Night",
+      "main": {
+        "nav": {
+          "intro": "Intro (소개)",
+          "details": "Details (상세)",
+          "friends": "Our friends",
+          "music": "Music by YM.FM",
+          "rsvp": "RSVP"
+        },
+        "intro": {
+          "eyebrow": "Sunday, May 24",
+          "date": "18:30 until late",
+          "place": "Haebangchon",
+          "lede": "A cookout turns into a room, and the room turns into a night.",
+          "theme": "Blue & orange",
+          "price": "65,000원",
+          "hosts": "Hosted by Sean Choi & In Gyu Choe"
+        },
+        "details": {
+          "eyebrow": "Details (상세)",
+          "title": "What you are walking into.",
+          "body": "A private rooftop-to-room gathering with food, drinks, music, and just enough structure to let the night move.",
+          "themeLabel": "테마",
+          "theme": "Day into night. Blue and orange if you feel like leaning in.",
+          "dressLabel": "드레스 코드",
+          "dress": "필수는 아닙니다. 색감만 맞춰 주시면 방 전체가 하나의 밤처럼 보입니다.",
+          "timeLabel": "시간",
+          "time": "5월 24일 일요일 · 18:30부터 늦게까지",
+          "locationLabel": "장소",
+          "location": "소월로20길 64, 3층 · 해방촌, 용산",
+          "contactLabel": "문의",
+          "contact": "Hosts: Sean Choi and In Gyu Choe",
+          "priceLabel": "입장",
+          "price": "65,000원 · 음식, 주류, 입장 포함"
+        },
+        "offerings": {
+          "potatoes": {
+            "label": "Before the Grill",
+            "body": "Brown-butter potatoes with sea salt and herbs. Simple, warm, rich."
+          },
+          "grill": {
+            "label": "From the Grill",
+            "body": "Iberico pluma, ribs, and select Spanish pork cuts, grilled simply and served with the confidence expensive meat deserves. Buffalo wings and shrimp bring the loose rooftop energy back into the room."
+          },
+          "pasta": {
+            "label": "Pasta",
+            "body": "A simple aglio e olio, late if the night asks for it."
+          },
+          "ferments": {
+            "label": "Ferments & Wine",
+            "body": "Korean fruit and rice ferments, including I Am The Moon, Super Potion makgeolli, Isega, Maesil Wonju, and a little champagne."
+          },
+          "cocktails": {
+            "label": "House Pours",
+            "body": "Cranberry highballs, lemon highballs, a light Seoul spritz, plum-and-soda pours, and whatever simple mix the room keeps asking for."
+          },
+          "nonAlcoholic": {
+            "label": "No Proof",
+            "body": "Sparkling water, lemonade, and juice."
+          }
+        },
+        "friends": {
+          "eyebrow": "Our friends",
+          "title": "Our friends",
+          "caption": "snaps from our shindigs in the past"
+        },
+        "music": {
+          "eyebrow": "Music by YM.FM",
+          "kicker": "Introducing the headliner",
+          "body": "A dear friend, GOAT barber, and most importantly — a killer DJ. YM.FM does not play background music; he turns the room into the reason you stayed.",
+          "assetNote": "Drop YM.FM photos in /public/assets/daynnight before final image packing."
+        },
+        "rsvp": {
+          "body": "예약하고 게스트 리스트에 이름을 올려 주세요.",
+          "pendingBody": "예약이 접수되었습니다. 여기에서 상태를 확인할 수 있습니다.",
+          "cta": "RSVP",
+          "checkStatus": "상태 확인"
+        }
+      },
       "date": {
         "weekday": "일요일",
         "full": "2026년 5월 24일",
@@ -317,8 +395,8 @@
         "label": "DAY",
         "time": "18:30 →",
         "kicker": "Sunday, May 24.",
-        "lede": "낮에는 루프탑에서 널찍이 흩어지고, 밤에는 한 층 더 가까이 모여드는 소수의 초대 모임.",
-        "body": "Day n Night은 소수의 초대 모임입니다. 낮은 루프탑 바베큐에 과실주를 곁들이며 널찍이 흩어져 각자만의 재회와 새 만남으로 느긋한 시간을 보낸다면, 해가 지고 어스름이 내려올 즈음에는 모두 한 층 가깝게 붙어 앉아 모두와 함께 떠들고 웃으며, 서늘한 저녁 공기가 무색하리만치 따뜻하고 든든한 인연들과 함께 몇 년이고 돌아볼 추억을 만들게 됩니다.",
+        "lede": "An intimate invited gathering that begins spread across the rooftop and ends drawn a little closer together.",
+        "body": "Day n Night is a private invited gathering in Haebangchon. While the light is still up, the rooftop opens into barbecue, fruit wine, reunions, and new introductions at an easy distance. By the time dusk settles in, everyone closes in a little more, and the night warms around music, conversation, and the kind of company you carry with you for years.",
         "hostedBy": "Hosted by yours truly",
         "invitationLabel": "№ invitation"
       },
@@ -326,21 +404,41 @@
         "day": {
           "label": "DAY",
           "time": "18:30 → 19:50",
-          "heading": "해가 남아 있을 때",
-          "body": "루프탑 바베큐와 과실주를 곁들인 채, 재회와 새 만남 사이를 느긋하게 오가게 됩니다."
+          "heading": "Before dusk",
+          "body": "Barbecue and fruit wine set the tone while people drift wide across the rooftop, settling into reunions, introductions, and the slower ease of early evening.",
+          "details": {
+            "foodLabel": "음식",
+            "foodBody": "그릴 메뉴, 작은 안주, 과일을 포함한 루프탑 식사가 준비됩니다.",
+            "drinkLabel": "주류",
+            "drinkBody": "맥주, 와인, 과실주와 간단한 주류가 준비됩니다.",
+            "dressLabel": "드레스 코드",
+            "dressBody": "Blue & orange. 필수는 아니지만 맞춰 입어 주시면 좋습니다.",
+            "arrivalLabel": "도착",
+            "arrivalBody": "루프탑 시간부터 오셔도 좋고, 늦어도 오후 10시 전에는 도착해 주세요."
+          }
         },
         "night": {
           "label": "NIGHT",
           "time": "20:00 → ",
-          "heading": "어스름이 내릴 즈음",
-          "body": "해가 지면 자리는 조금 더 가까워집니다. 모두와 함께 떠들고 웃으며, 서늘한 공기도 잊을 만큼 따뜻한 밤으로 넘어갑니다.",
+          "heading": "After dusk",
+          "body": "As the light falls, the room pulls closer. Voices rise, seats close in, and the night turns warmer around drinks, music, and company worth staying for.",
           "dj": {
             "eyebrow": "yang min woo",
             "name": "YM.FM",
             "role": "Barber. Musician. Friend of the house.",
-            "blurb": "해가 넘어간 뒤의 결을 맡습니다.",
-            "handle": "@yangminwoo",
-            "listenLabel": "Listen"
+            "blurb": "He carries the room once daylight gives way.",
+            "handle": "@yangminwoo__",
+            "listenTitle": "YM.FM 듣기",
+            "listenLabel": "재생",
+            "playingLabel": "재생 중",
+            "infoLabel": "트랙 정보",
+            "trackLabel": "트랙",
+            "albumLabel": "앨범",
+            "artistLabel": "아티스트",
+            "trackTitle": "Don't Wanna Know",
+            "album": "Hideaway Ambience",
+            "artist": "YM.FM",
+            "trackNote": "YM.FM과 The Hideaway의 첫 협업 앨범입니다. 여름에 편하게 듣기 좋은 음악이며, Vesper와 잘 어울립니다."
           }
         }
       },
@@ -350,43 +448,50 @@
       },
       "dressCode": {
         "captions": {
-          "topic": "Dress code",
-          "answer": "원한다면 블루나 틸로.",
-          "ownIt": "엄격한 드레스 코드는 없고, 원한다면 색감만 가볍게 맞춰 주세요.",
-          "refs": "감이 필요하다면, 지난 밤들의 장면을 몇 장 두었습니다."
+          "topic": "드레스 코드",
+          "answer": "Blue & orange, 가능하면 맞춰 주세요.",
+          "ownIt": "필수는 아닙니다. 색감만 참고해 주세요.",
+          "refs": "스타일 참고용으로 이전 이벤트 사진을 확인해 보세요."
         }
       },
+      "guestsTease": {
+        "label": "게스트 리스트",
+        "body": "참석 예정자를 확인하세요. RSVP를 완료하면 리스트에 추가됩니다.",
+        "cta": "참석자 보기"
+      },
       "included": {
-        "heading": "Included",
+        "heading": "포함 사항",
         "food": {
-          "label": "Catering",
-          "items": "A generous spread - grilled with love."
+          "label": "음식",
+          "items": "그릴 메뉴와 간단한 음식이 준비됩니다."
         },
         "drinks": {
-          "label": "Drinks",
-          "items": "Beer, wine, and more"
+          "label": "주류",
+          "items": "맥주, 와인 외 주류가 준비됩니다."
         }
       },
       "tribute": {
         "heading": "Who it's for.",
-        "body": "다시 만난 얼굴들과 처음 인사하는 사람들, 그리고 몇 년 뒤에도 함께 돌아볼 밤을 만들 사람들을 위한 자리입니다."
+        "body": "For old friends, new introductions, and the kind of company that still feels warm years later."
       },
       "entry": {
-        "heading": "Reserve a seat",
+        "heading": "입장",
         "amount": "65,000원",
-        "perGuest": "1인 · All Inclusive",
-        "method": "송금 결제",
+        "perGuest": "1인 기준 · 입장, 음식, 주류 포함",
+        "method": "계좌이체",
         "bank": "토스뱅크 · 1002-5436-0906",
         "accountHolder": "리스토어드프로젝트"
       },
       "closing": {
-        "kicker": "루프탑에서 시작해, 밤과 조금 더 가까운 자리로 넘어갑니다.",
-        "lede": "옥상에서 뵙겠습니다."
+        "kicker": "Reserve your place.",
+        "lede": "See you on the rooftop."
       },
       "rsvpCta": {
-        "primary": "Details",
-        "register": "Register",
-        "secondary": "예약은 상세 안내 안에 있습니다."
+        "primary": "상세 정보",
+        "rsvp": "RSVP",
+        "rsvped": "RSVP 완료",
+        "register": "예약하기",
+        "secondary": "예약은 상세 정보 안에서 진행됩니다."
       },
       "viewToggle": {
         "label": "보기",
@@ -400,52 +505,56 @@
       },
       "footer": {
         "hosts": "Hosted by Sean Choi & Ingyu Choe",
-        "rsvpClosesAt": "자리가 남아 있다면 일요일 오후 3시에 마감됩니다."
+        "rsvpClosesAt": "자리가 남아 있다면 일요일 오후 3시에 예약이 마감됩니다."
       },
       "survivalKit": {
         "heading": "필수 정보",
-        "subheading": "핵심만 추렸어요.",
+        "subheading": "필요한 정보만 정리했습니다.",
         "address": {
           "label": "장소",
-          "hint": "지도 앱에서 열기."
+          "hint": "지도 앱에서 열기"
         },
         "toss": {
           "label": "결제",
-          "hint": "탭하여 복사하기."
+          "hint": "눌러서 복사"
         },
         "dress": {
-          "label": "Dress Code",
-          "value": "엄격한 드레스 코드는 없고, 원한다면 블루나 틸로 맞춰 주세요."
+          "label": "착장",
+          "value": "필수 드레스 코드는 없습니다. 가능하면 blue and orange를 참고해 주세요."
         },
         "host": {
           "label": "문의",
           "value": "concierge@hideawayseoul.com",
-          "hint": "그 외 궁금한 점은 여기로요."
+          "hint": "그 외 문의는 이 주소로 보내 주세요."
         },
         "plusOnes": {
           "label": "동반자",
-          "value": "티켓 한 장당 한 분만 입장합니다."
+          "value": "티켓 1장당 1명 입장입니다."
         },
         "late": {
           "label": "시간",
           "value": "오후 10시 전에는 도착해 주세요."
         },
         "copy": "복사",
-        "copied": "복사되었어요.",
-        "openMap": "맵 앱에서 열기",
+        "copied": "복사됨",
+        "copyPayment": "결제 정보 복사",
+        "paymentCopied": "결제 정보 복사됨",
+        "openMap": "지도 앱에서 열기",
         "map": {
-          "kakao": "카카오맵",
-          "naver": "네이버맵",
-          "google": "구글맵",
-          "reset": "원 위치로 돌아가기"
+          "kakao": "카카오",
+          "naver": "네이버",
+          "google": "Google",
+          "copyAddress": "주소 복사",
+          "addressCopied": "주소 복사됨",
+          "reset": "위치 다시 보기"
         },
-        "ics": "캘린더에 일정 저장하기"
+        "ics": "캘린더에 추가"
       },
-      "scrollHint": "스크롤",
+      "scrollHint": "Scroll",
       "audio": {
-        "label": "Sound",
-        "on": "On",
-        "off": "Off"
+        "label": "사운드",
+        "on": "사운드 켜짐",
+        "off": "사운드 꺼짐"
       },
       "details": {
         "eyebrow": "상세 정보",
@@ -456,16 +565,16 @@
       "scrubber": {
         "navLabel": "타임라인",
         "opening": "Intro",
-        "cookout": "Day",
-        "dress": "Sunset",
-        "night": "Night",
-        "closing": "Reservations"
+        "cookout": "Details",
+        "dress": "Our friends",
+        "night": "Music by YM.FM",
+        "closing": "RSVP"
       },
       "moodboard": {
         "cookout": {
           "burger": {
             "alt": "Smash burgers off the grill",
-            "caption": ""
+            "caption": "Smash burgers."
           },
           "rooftop": {
             "alt": "Rooftop cookout",
@@ -480,18 +589,19 @@
       "infoCta": "필수 정보"
     },
     "InAppBrowserEscape": {
-      "eyebrow": "제대로 열기",
-      "title": "이 페이지는 기본 브라우저에서 여는 편이 안정적입니다.",
-      "description": "{name}님, 현재 {app} 안에서는 The Hideaway가 안정적으로 동작하지 않을 수 있습니다. 먼저 브라우저에서 열어 보시고, 그 동작이 막혀 있다면 아래 링크를 복사해 Safari나 Chrome에 붙여 넣어 주세요.",
+      "eyebrow": "브라우저에서 열기",
+      "title": "기본 브라우저에서 열어 주세요.",
+      "description": "{app} 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
       "labels": {
         "guest": "게스트",
         "currentAppFallback": "인앱 브라우저"
       },
       "actions": {
-        "primaryKicker": "우선 시도",
+        "primaryKicker": "먼저 시도",
         "primary": "브라우저에서 열기",
-        "primaryUnavailable": "이 앱은 외부 브라우저로 넘기는 확실한 경로가 없어 링크 복사가 가장 안정적인 방법입니다.",
-        "secondaryKicker": "확실한 방법",
+        "primaryUnavailable": "외부 브라우저 열기가 막히면 링크 복사가 가장 안정적입니다.",
+        "primaryUnavailableIos": "iOS에서는 인앱 브라우저가 Safari를 강제로 열 수 없는 경우가 있습니다. 링크 복사가 가장 안정적입니다.",
+        "secondaryKicker": "안정적인 방법",
         "copy": "링크 복사",
         "copied": "링크 복사됨",
         "copyShort": "복사",
@@ -499,33 +609,59 @@
       },
       "manual": {
         "kicker": "직접 열기",
-        "body": "첫 버튼이 반응하지 않으면 아래 전체 링크를 복사해 Safari나 Chrome에 붙여 넣어 주세요."
+        "body": "첫 버튼이 반응하지 않으면 전체 링크를 복사해 Safari나 Chrome에 붙여 넣어 주세요."
       },
       "tips": {
-        "fallbackLabel": "왜 필요한가요",
-        "fallbackBody": "많은 인앱 브라우저는 기능을 제한하고, 결제 흐름을 막거나, 외부 브라우저 열기 요청을 무시합니다. 그래서 URL 복사가 가장 안전한 경로입니다.",
+        "fallbackLabel": "안내",
+        "fallbackBody": "이 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
         "deviceLabel": "기기 안내",
-        "ios": "iPhone에서는 인앱 브라우저를 벗어난 뒤 Safari로 여는 것이 가장 안정적입니다.",
-        "android": "Android에서는 인앱 브라우저를 벗어난 뒤 Chrome 또는 기본 브라우저로 여는 것이 가장 안정적입니다.",
+        "ios": "iPhone에서는 앱을 벗어난 뒤 Safari에서 여는 것이 가장 안정적입니다.",
+        "android": "Android에서는 Chrome 또는 기본 브라우저에서 여는 것이 가장 안정적입니다.",
         "generic": "앱이 계속 링크를 가로채면 URL을 복사해 기본 브라우저에 직접 붙여 넣어 주세요."
       },
       "toast": {
-        "title": "링크를 복사했어요",
+        "title": "링크를 복사했습니다",
         "description": "브라우저에 붙여 넣어 주세요."
+      },
+      "kakao": {
+        "eyebrow": "카카오톡에서 열림",
+        "title": "브라우저에서 열어 주세요.",
+        "description": "카카오톡 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
+        "actions": {
+          "primaryKicker": "먼저 시도",
+          "primary": "브라우저에서 열기",
+          "primaryUnavailable": "카카오톡은 링크 복사가 가장 안정적입니다.",
+          "primaryUnavailableIos": "iOS에서는 직접 복사가 안정적입니다.",
+          "secondaryKicker": "안정적인 방법",
+          "copy": "링크 복사",
+          "copied": "링크 복사됨",
+          "copyShort": "복사됨",
+          "copiedShort": "복사됨"
+        },
+        "manual": {
+          "kicker": "직접 열기",
+          "body": "복사한 링크를 직접 브라우저 주소창에 붙여넣어 주세요."
+        },
+        "tips": {
+          "fallbackLabel": "안내",
+          "fallbackBody": "카카오톡 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
+          "deviceLabel": "기기 안내",
+          "generic": "URL을 복사하여 브라우저 주소창에 붙여넣어 주세요."
+        }
       }
     },
     "Guests": {
       "eyebrow": "RSVP",
-      "title": "함께하는 사람들",
-      "subtitle": "순서와 관계없이, 함께할 분들입니다.",
+      "title": "참석자",
+      "subtitle": "현재 참석 예정자입니다.",
       "tier": {
         "host": "호스트",
-        "past": "다시 찾아주신 분들",
-        "guest": "처음 뵙는 분들"
+        "past": "기존 참석자",
+        "guest": "게스트"
       },
       "empty": {
-        "headline": "아직 참석자가 없어요.",
-        "body": "명단이 업데이트되면 이곳에 보일 거예요. 조금 뒤에 다시 확인해 주세요."
+        "headline": "아직 참석자가 없습니다.",
+        "body": "RSVP가 들어오면 이곳에 표시됩니다. 예약을 완료하면 리스트에 추가됩니다."
       },
       "intro": {
         "label": "소개"
@@ -536,133 +672,166 @@
       },
       "gallery": {
         "label": "Gallery",
-        "empty": "아직 올라온 사진이 없어요."
+        "empty": "아직 사진이 없습니다."
       },
       "actions": {
         "close": "닫기",
-        "expand": "펼쳐보기",
+        "expand": "확대",
         "back": "전체 보기"
       },
-      "you": "나의 프로필이에요",
+      "you": "내 프로필입니다",
       "navigation": {
+        "label": "Day n Night 참석자 내비게이션",
         "back": "이벤트로 돌아가기"
       }
     },
     "Gate": {
-      "eyebrow": "프라이빗 이벤트",
+      "eyebrow": "비공개 이벤트",
       "title": "Day n Night",
-      "subtitle": "입장을 위해 패스코드를 입력해 주세요.",
-      "placeholder": "패스코드 입력",
+      "subtitle": "패스코드를 입력해 주세요.",
+      "placeholder": "패스코드",
       "submit": "입장하기",
-      "submitting": "확인하고 있어요…",
+      "submitting": "확인 중…",
       "errors": {
         "missing": "코드를 입력해 주세요.",
-        "invalid": "코드가 맞지 않아요. 다시 확인하거나 호스트에게 물어보세요.",
-        "noEvent": "이 페이지는 아직 준비 중이에요. 잠시 뒤에 다시 시도해 주세요.",
-        "generic": "문제가 생겼어요. 잠시 뒤에 다시 시도해 주세요."
+        "invalid": "코드가 맞지 않습니다. 다시 확인하거나 호스트에게 문의해 주세요.",
+        "noEvent": "페이지가 아직 준비되지 않았습니다. 잠시 뒤 다시 시도해 주세요.",
+        "generic": "문제가 발생했습니다. 잠시 뒤 다시 시도해 주세요."
       },
-      "hint": "이 기기에서는 한 번만 입력하면 돼요.",
-      "footer": "코드가 없으신가요? 초대받은 채널을 통해 호스트에게 문의해 주세요."
+      "hint": "이 기기에서는 한 번만 입력하면 됩니다.",
+      "footer": "코드가 없다면 초대받은 채널에서 호스트에게 문의해 주세요."
     },
     "Rsvp": {
       "steps": {
         "welcome": {
           "eyebrow": "RSVP",
-          "title": "우선 몇 가지만 파악할게요.",
-          "body": "이름과 연락받을 이메일만 적으면 돼요. 인증 코드는 필요하지 않습니다.",
+          "title": "예약을 시작합니다.",
+          "body": "이름, 연락받을 이메일, 티켓 정보를 입력해 주세요. 이메일 인증 코드는 필요하지 않습니다.",
           "cta": "시작하기"
         },
         "contact": {
           "eyebrow": "연락처",
-          "title": "결제 안내는 어디로 보내드릴까요?",
-          "body": "이 주소로 예약을 연결하고, 이후 결제 안내도 보내드릴게요.",
+          "title": "결제 안내를 받을 이메일을 입력해 주세요.",
+          "body": "이 이메일로 예약 정보와 결제 안내를 보내드립니다.",
           "emailPlaceholder": "you@example.com",
-          "submit": "다음",
-          "continueError": "이 이메일로는 계속 진행할 수 없어요. 주소를 확인한 뒤 다시 시도해 주세요.",
-          "existingAccount": "이미 계정이 있는 이메일이에요. 계속하려면 로그인해 주세요.",
-          "signIn": "로그인"
+          "submit": "계속",
+          "continueError": "이 이메일로 진행할 수 없습니다. 주소를 확인하고 다시 시도해 주세요.",
+          "existingAccount": "이미 계정이 있는 이메일입니다. 패스키로 로그인하거나, 이 기기에서 진행할 수 없으면 문의해 주세요.",
+          "signIn": "로그인",
+          "contactHost": "문의하기"
+        },
+        "credential": {
+          "eyebrow": "계정 생성 완료",
+          "title": "이 비밀번호를 저장해 주세요.",
+          "body": "이 비밀번호는 한 번만 표시됩니다. 계속하기 전에 저장해 주세요.",
+          "emailLabel": "로그인 이메일",
+          "passwordLabel": "일회성 비밀번호 보기",
+          "mobileHint": "항상 사용하는 모바일 기기에서 진행하는 것을 권장합니다. 아래 버튼을 누르면 브라우저 또는 비밀번호 관리자가 이 계정을 저장할 수 있습니다.",
+          "saved": "저장했습니다 · 계속",
+          "copy": "비밀번호 복사",
+          "copied": "복사됨",
+          "refreshError": "로그인 세션을 새로 고칠 수 없습니다. 다시 시도하거나 문의해 주세요."
+        },
+        "passkey": {
+          "eyebrow": "보안 로그인",
+          "title": "패스키를 만들어 주세요.",
+          "body": "이 계정에 패스키를 등록해 주세요. 등록이 확인되면 다음 단계로 이동합니다.",
+          "submit": "패스키 만들기",
+          "creating": "생성 중…",
+          "checking": "패스키 등록 여부를 확인 중입니다. 확인되면 자동으로 넘어갑니다.",
+          "contactHost": "문의하기",
+          "unsupported": "이 브라우저나 기기에서는 패스키를 만들 수 없습니다. 문의해 주시면 예약을 도와드리겠습니다.",
+          "checkFailed": "패스키를 확인할 수 없습니다. 다시 시도하거나 문의해 주세요.",
+          "failed": "패스키 설정이 완료되지 않았습니다. 다시 시도하거나 문의해 주세요."
         },
         "otp": {
           "eyebrow": "이메일 확인",
-          "title": "어디로 연락드릴까요?",
+          "title": "연락받을 이메일을 입력해 주세요.",
           "emailPlaceholder": "you@example.com",
           "sendCode": "코드 받기",
-          "codePlaceholder": "6자리 숫자 코드",
-          "submit": "다음",
+          "codePlaceholder": "6자리 코드",
+          "submit": "계속",
           "resend": "코드 다시 받기",
-          "error": "코드가 맞지 않아요. 다시 확인해 주세요.",
-          "sendError": "이 이메일로 코드를 보낼 수 없어요. 주소를 확인한 뒤 다시 시도해 주세요.",
-          "verifyError": "코드가 맞지 않아요. 다시 확인해 주세요."
+          "error": "코드가 맞지 않습니다. 다시 확인해 주세요.",
+          "sendError": "이 이메일로 코드를 보낼 수 없습니다. 주소를 확인하고 다시 시도해 주세요.",
+          "verifyError": "코드가 맞지 않습니다. 다시 확인해 주세요."
         },
         "name": {
-          "eyebrow": "이름 입력",
-          "title": "입장 명단에 올릴 이름을 알려주세요.",
-          "placeholder": "이름",
-          "submit": "다음"
+          "eyebrow": "이름",
+          "title": "입장 명단에 올릴 이름을 입력해 주세요.",
+          "placeholder": "성함",
+          "submit": "계속"
         },
         "purchase": {
-          "eyebrow": "티켓 수량",
-          "title": "티켓은 몇 장 필요한가요?",
+          "eyebrow": "티켓",
+          "title": "몇 장 예약하시겠어요?",
           "quantityLabel": "티켓 수",
           "recipientLabel": "받는 사람 이름 (선택)",
-          "recipientHint": "본인이 쓴다면 비워두세요. 선물할 거라면 받는 분의 이름을 적어주세요.",
+          "recipientHint": "본인 티켓이면 비워 두세요. 선물이라면 받는 분의 이름을 입력해 주세요.",
           "submit": "예약하기",
-          "submitting": "예약하고 있어요…",
-          "success": "예약이 끝났어요. 다음 안내를 위해 이메일을 확인해 주세요."
+          "submitting": "예약 중…",
+          "success": "예약이 완료되었습니다. 다음 안내를 이메일로 확인해 주세요."
         }
       },
       "my": {
         "eyebrow": "내 티켓",
         "title": "예약 내역",
-        "empty": "아직 등록된 티켓이 없어요.",
-        "outage": "지금은 티켓 내역을 불러올 수 없어요. 잠시 뒤에 다시 시도해 주세요.",
-        "confirmed": "확정됨",
-        "pending": "확인 중",
+        "empty": "이 계정에 등록된 티켓이 없습니다.",
+        "outage": "현재 티켓을 불러올 수 없습니다. 잠시 뒤 새로고침해 주세요.",
+        "confirmed": "확정",
+        "pending": "대기 중",
         "ticketCount": "티켓 {count}장",
         "orderPassword": "주문 비밀번호",
         "passwordReveal": "눌러서 보기",
         "passwordHide": "숨기기",
-        "claimed": "받기 완료",
+        "claimed": "수령 완료",
         "link": "링크 보내기",
-        "linkSent": "보냈어요",
-        "claimedBy": "{name} 님이 받았어요",
-        "unclaimed": "아직 안 받았어요",
-        "revoke": "취소하기",
-        "passwordHint": "결제가 확인되면 48시간 동안 쓸 수 있는 비밀번호가 나와요. 선물 받는 분에게 이 번호를 꼭 같이 알려주세요."
+        "linkSent": "전송됨",
+        "claimedBy": "{name}님이 수령했습니다",
+        "unclaimed": "미수령",
+        "revoke": "취소",
+        "walletTitle": "입장 티켓",
+        "walletBody": "이 계정에 연결된 티켓이 여기에 표시됩니다. 활성화된 티켓에는 입장 확인용 QR 코드가 함께 표시됩니다.",
+        "walletEmpty": "구매하거나 수령한 티켓이 이 계정에 연결되면 여기에 표시됩니다.",
+        "qrHint": "이 QR은 본인에게 연결된 고유 입장 확인 링크입니다. 입장 시 바로 보여 주세요.",
+        "pendingTicketHint": "호스트가 결제를 확인하면 티켓이 활성화됩니다.",
+        "checkedInHint": "이미 입장 처리된 티켓입니다.",
+        "openTicket": "전체 티켓 보기 →",
+        "passwordHint": "호스트가 결제 확인을 완료하면 48시간 동안 사용할 수 있는 비밀번호가 발급됩니다. 선물 받는 분에게 함께 전달해 주세요."
       },
       "claim": {
         "eyebrow": "티켓 받기",
-        "title": "환영해요.",
-        "body": "구매자가 알려준 비밀번호를 입력해 주세요. 이 링크는 호스트가 결제를 확인한 때부터 48시간 동안 쓸 수 있어요.",
+        "title": "티켓을 확인합니다.",
+        "body": "구매자가 전달한 비밀번호를 입력해 주세요. 링크는 결제 확인 후 48시간 동안 사용할 수 있습니다.",
         "passwordPlaceholder": "비밀번호",
         "submit": "티켓 받기",
-        "submitting": "처리하고 있어요…",
+        "submitting": "처리 중…",
         "errors": {
-          "expired": "링크가 만료됐어요. 구매자에게 다시 보내달라고 요청해 주세요.",
-          "notActivated": "결제 확인 중이라 아직 티켓을 쓸 수 없어요. 호스트가 곧 확인할 예정이니, 이 링크를 그대로 가지고 계시면 돼요.",
-          "invalid": "비밀번호가 맞지 않아요.",
-          "alreadyClaimed": "이미 누군가 받은 티켓이에요.",
+          "expired": "링크가 만료되었습니다. 구매자에게 새 링크를 요청해 주세요.",
+          "notActivated": "아직 결제 확인 중입니다. 확인이 완료되면 이 링크로 티켓을 받을 수 있습니다.",
+          "invalid": "비밀번호가 맞지 않습니다.",
+          "alreadyClaimed": "이미 수령된 티켓입니다.",
           "authRequired": "티켓을 받으려면 로그인해 주세요.",
-          "emailMismatch": "이 티켓은 정해진 사람만 받을 수 있어요. 구매자가 지정한 이메일로 로그인해 주세요."
+          "emailMismatch": "이 티켓은 지정된 사람만 받을 수 있습니다. 구매자가 지정한 이메일로 로그인해 주세요."
         },
         "success": {
-          "title": "명단에 올라갔어요.",
-          "body": "예약이 끝났어요. 5월 24일에 뵙겠습니다.",
-          "cta": "내 티켓 열기 →"
+          "title": "명단에 추가되었습니다.",
+          "body": "예약이 완료되었습니다. 5월 24일에 뵙겠습니다.",
+          "cta": "내 티켓 보기 →"
         }
       },
       "gate": {
         "eyebrow": "비공개",
         "title": "입장 코드를 입력해 주세요.",
         "body": "코드가 확인되면 비공개 페이지가 열립니다.",
-        "statusLine": "해가 뜨기 전",
+        "statusLine": "예약 전 확인",
         "consoleEyebrow": "입장",
         "label": {
           "enterAction": "Enter",
           "wrongAction": "Wrong",
           "codeWord": "Code"
         },
-        "dateFallback": "날짜 준비 중",
+        "dateFallback": "날짜 확인 중",
         "meta": {
           "private": "비공개",
           "ticket": "티켓",
@@ -680,49 +849,97 @@
           "index": "Index",
           "grid": "Grid"
         },
-        "passcodeLabel": "비밀번호",
+        "passcodeLabel": "패스코드",
         "submit": "입장하기",
-        "submitting": "확인하고 있어요…",
+        "submitting": "확인 중…",
         "errors": {
-          "invalid": "코드가 맞지 않아요.",
-          "network": "네트워크에 문제가 생겼어요. 다시 시도해 주세요."
+          "invalid": "코드가 맞지 않습니다.",
+          "network": "네트워크 문제가 발생했습니다. 다시 시도해 주세요."
         }
       },
       "errors": {
-        "unauthorized": "세션을 확인할 수 없어요. 로그인한 뒤 다시 시도해 주세요.",
-        "invalidPassword": "이 초대는 이벤트 페이지에서 다시 열어야 해요.",
-        "eventNotOpen": "지금은 예약을 받고 있지 않아요.",
-        "soldOut": "이 이벤트는 모두 매진됐어요.",
-        "userCapReached": "이 이벤트에서 예약 가능한 최대 수량에 도달했어요.",
-        "badRequest": "요청을 처리할 수 없어요. 입력 내용을 확인한 뒤 다시 시도해 주세요.",
-        "generic": "예약을 완료하지 못했어요. 잠시 뒤에 다시 시도해 주세요."
+        "unauthorized": "세션을 확인할 수 없습니다. 로그인 후 다시 시도해 주세요.",
+        "invalidPassword": "이 초대는 이벤트 페이지에서 다시 열어야 합니다.",
+        "eventNotOpen": "현재 예약을 받고 있지 않습니다.",
+        "soldOut": "매진되었습니다.",
+        "userCapReached": "예약 가능한 최대 수량에 도달했습니다.",
+        "passkeyRequired": "예약 전에 패스키를 만들어 주세요. 이 기기에서 만들 수 없다면 문의해 주세요.",
+        "badRequest": "요청을 처리할 수 없습니다. 입력 내용을 확인하고 다시 시도해 주세요.",
+        "generic": "예약을 완료하지 못했습니다. 잠시 뒤 다시 시도해 주세요."
       },
       "status": {
-        "ended": "끝난 이벤트예요.",
-        "closed": "지금은 티켓을 살 수 없어요.",
-        "soldOut": "모두 매진됐어요"
+        "ended": "종료된 이벤트입니다.",
+        "closed": "현재 티켓을 구매할 수 없습니다.",
+        "soldOut": "매진"
       },
       "purchased": {
-        "eyebrow": "결제 대기 중",
+        "eyebrow": "예약 완료",
         "reserved": "티켓 {quantity}장 예약됨 · {total}",
-        "instructionsFallback": "결제 방법을 호스트가 따로 알려드릴 거예요. 결제가 확인되면 티켓을 바로 쓸 수 있게 돼요.",
+        "nextStep": "예약이 저장되었습니다. 아래 버튼으로 이체를 진행해 주세요. 입금 확인 후 티켓이 활성화됩니다.",
+        "instructionsFallback": "예약이 저장되었습니다. 아래 버튼으로 이체를 진행해 주세요. 입금 확인 후 티켓이 활성화됩니다.",
+        "payment": {
+          "eyebrow": "계좌 이체",
+          "body": "토스 앱을 열어 계좌와 금액을 자동 입력합니다. 확인용 메모는 결제 링크에 포함하고, 계좌와 금액은 예비용으로 복사합니다.",
+          "makePayment": "결제하기",
+          "amount": "금액",
+          "account": "계좌",
+          "holder": "예금주",
+          "memo": "메모",
+          "sender": "입금자명",
+          "fallback": "토스가 열리지 않았다면 복사된 계좌와 금액으로 직접 이체해 주세요.",
+          "copyDetails": "정보 복사",
+          "copied": "복사됨"
+        },
+        "summary": {
+          "eyebrow": "예약 요약",
+          "tickets": "티켓",
+          "ticketCount": "티켓 {quantity}장"
+        },
         "giftLinks": {
           "eyebrow": "선물용 링크",
-          "body": "받는 분에게 개별적으로 보내주세요. 각 링크는 한 번만 받을 수 있어요.",
+          "body": "받는 분에게 개별적으로 보내 주세요. 각 링크는 한 번만 사용할 수 있습니다.",
           "ticketNumber": "티켓 #{number}",
           "copy": "링크 복사",
-          "copied": "복사했어요"
+          "copied": "복사됨"
         },
-        "viewMy": "내 티켓 보기 →"
+        "accountHint": "나중에 티켓을 확인할 때는 패스키로 로그인해 주세요. 패스키 로그인이 되지 않으면 문의해 주세요.",
+        "viewMy": "내 티켓 보기 →",
+        "contactHost": "문의하기 →"
+      },
+      "support": {
+        "title": "문의하기",
+        "body": "가장 빠르게 연결되는 방법을 선택해 주세요.",
+        "close": "닫기",
+        "actions": {
+          "seanPhone": {
+            "label": "Host · Sean Choi",
+            "value": "+82 10 4637 9289"
+          },
+          "ingyuPhone": {
+            "label": "Host · In Gyu Choe",
+            "value": "+82 10 2529 6700"
+          },
+          "email": {
+            "label": "Mail",
+            "value": "seanschoi@hideawayseoul.com"
+          },
+          "instagram": {
+            "label": "Instagram · In Gyu",
+            "value": "@geekid"
+          }
+        }
       },
       "reserve": {
         "eyebrow": "예약 · {total}",
         "quantityLabel": "수량",
         "quantityGroupLabel": "티켓 수량",
+        "senderLabel": "입금자명",
+        "senderHint": "이체 내역에 표시될 이름을 정확히 입력해 주세요. 입금 확인에 사용됩니다.",
+        "senderPlaceholder": "은행 앱에 표시되는 이름",
         "submit": "{quantity}장 예약하기 · {total}",
-        "submitting": "예약하고 있어요…",
-        "signInRequired": "계속하려면 로그인이 필요해요",
-        "signInRedirectHint": "로그인 화면으로 이동할게요."
+        "submitting": "예약 중…",
+        "signInRequired": "계속하려면 로그인이 필요합니다",
+        "signInRedirectHint": "로그인 화면으로 이동합니다."
       },
       "bar": {
         "eyebrowOpen": "티켓",
@@ -733,9 +950,9 @@
     },
     "Order": {
       "PasswordMail": {
-        "subject": "Day n Night — 예약이 확정됐어요",
-        "heading": "결제가 확인됐어요.",
-        "lead": "입금이 확인되어 티켓 {quantity}장을 쓸 수 있게 됐어요. 티켓을 선물 받는 분이 링크를 열 때 입력해야 하는 비밀번호를 아래에서 확인해 주세요.",
+        "subject": "Day n Night — 예약이 확정되었습니다",
+        "heading": "결제가 확인되었습니다.",
+        "lead": "입금 확인이 완료되어 티켓 {quantity}장을 사용할 수 있습니다. 선물 티켓을 받는 분이 링크에서 입력해야 하는 비밀번호를 아래에서 확인해 주세요.",
         "fields": {
           "event": "이벤트",
           "when": "일시",
@@ -744,14 +961,14 @@
           "password": "주문 비밀번호",
           "expires": "만료일"
         },
-        "passwordCaption": "주문이 확정된 시간부터 48시간 동안 쓸 수 있어요.",
+        "passwordCaption": "주문 확정 시점부터 48시간 동안 사용할 수 있습니다.",
         "share": {
-          "title": "티켓을 선물 받는 방법",
-          "body": "선물 티켓마다 고유한 링크가 있어요. 받는 분에게 링크와 아래 비밀번호를 함께 보내주세요. 받는 분이 페이지에서 비밀번호를 입력하면 바로 티켓을 받을 수 있습니다."
+          "title": "선물 티켓 수령 방법",
+          "body": "선물 티켓마다 고유 링크가 있습니다. 받는 분에게 링크와 비밀번호를 함께 보내 주세요. 받는 분이 페이지에서 비밀번호를 입력하면 티켓을 받을 수 있습니다."
         },
         "ctaLabel": "주문 내역 보기",
-        "ctaFallback": "또는 아래 주소를 브라우저에 붙여넣어 주세요:",
-        "footerNote": "이 비밀번호는 한 번만 쓸 수 있는 일회용 코드와 같아요. 링크와 비밀번호를 아는 사람은 누구나 티켓을 가져갈 수 있으니 조심해 주세요. 이상한 점이 있다면 이 메일로 답장해 주시면 됩니다."
+        "ctaFallback": "또는 아래 주소를 브라우저에 붙여 넣어 주세요:",
+        "footerNote": "이 비밀번호는 일회용 코드와 같습니다. 링크와 비밀번호를 아는 사람은 티켓을 받을 수 있으니 주의해 주세요. 문제가 있으면 이 메일에 답장해 주세요."
       }
     }
   }

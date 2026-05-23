@@ -32,7 +32,7 @@ function resolvePhase(progress: number, fired: boolean): Phase {
   return "fire";
 }
 
-export function LiminalHandoff() {
+export function LiminalHandoff({ suppress = false }: { suppress?: boolean }) {
   const t = useTranslations("Event.DayNNight.liminal");
   const phase = useDayNNightScene((r) =>
     resolvePhase(r.progress, r.liminalHandoffFired)
@@ -46,7 +46,7 @@ export function LiminalHandoff() {
     fire();
   }, [phase, fire]);
 
-  if (phase === "off" || phase === "post-fire") return null;
+  if (suppress || phase === "off" || phase === "post-fire") return null;
 
   const caption =
     phase === "caption-a" ? t("sunsetSubtitle") : t("changeOfPace");

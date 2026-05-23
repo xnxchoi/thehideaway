@@ -1,9 +1,13 @@
 import { cookies } from "next/headers";
+import { headers as nextHeaders } from "next/headers";
 import type { Metadata } from "next";
+import { getPayload } from "payload";
+import config from "@payload-config";
 import { RPage } from "@/components/UX/Transition";
 import { DayNNightLanding } from "@/components/sections/DayNNight";
 import { DAY_N_NIGHT_VIEW_COOKIE } from "@/components/sections/DayNNight/useViewPref";
 import type { DayNNightView } from "@/components/sections/DayNNight/useViewPref";
+import { getServerSession } from "@/lib/auth/getServerSession";
 
 const PAGE_TITLE = "Day n Night · Haebangchon, May 24";
 const PAGE_DESCRIPTION =
@@ -61,7 +65,7 @@ const eventSchema = {
   },
   offers: {
     "@type": "Offer",
-    price: "60000",
+    price: "65000",
     priceCurrency: "KRW",
     availability: "https://schema.org/InStock",
     url: "https://hideawayseoul.com/tickets/day-n-night"
@@ -81,6 +85,54 @@ export default async function DayNNightPage() {
   const raw = store.get(DAY_N_NIGHT_VIEW_COOKIE)?.value;
   const initialView: DayNNightView =
     raw === "simplified" ? "simplified" : "immersive";
+  const session = await getServerSession(await nextHeaders());
+  const payload = await getPayload({ config });
+  const eventResult = await payload
+    .find({
+      collection: "events",
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      where: { slug: { equals: "day-n-night" } }
+    })
+    .catch(() => null);
+  const event = eventResult?.docs?.[0] as { id?: string } | undefined;
+  const eventId = event?.id ?? null;
+
+  const orders = eventId
+    ? await payload
+        .find({
+          collection: "ticket-orders",
+          depth: 0,
+          limit: 48,
+          overrideAccess: true,
+          sort: "createdAt",
+          where: { event: { equals: eventId } }
+        })
+        .catch(() => null)
+    : null;
+  const orderDocs = (orders?.docs ?? []) as Array<{
+    purchaser?: string | { id?: string } | null;
+    purchaser_name?: string | null;
+    paid?: boolean | null;
+  }>;
+  const viewerOrder = session?.user?.id
+    ? orderDocs.find((order) => {
+        const purchaser =
+          typeof order.purchaser === "string"
+            ? order.purchaser
+            : order.purchaser?.id;
+        return purchaser === String(session.user.id);
+      })
+    : null;
+  const rsvpState = viewerOrder?.paid
+    ? "confirmed"
+    : viewerOrder
+      ? "pending"
+      : "none";
+  const guestNames = orderDocs
+    .map((order) => order.purchaser_name?.trim())
+    .filter((name): name is string => Boolean(name));
 
   return (
     <RPage type="pages" slug={["day-n-night"]}>
@@ -91,7 +143,12 @@ export default async function DayNNightPage() {
         // pattern with no XSS surface.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
       />
-      <DayNNightLanding initialView={initialView} />
+      <DayNNightLanding
+        initialView={initialView}
+        rsvpCount={orders?.totalDocs ?? orderDocs.length}
+        rsvpState={rsvpState}
+        guestNames={guestNames}
+      />
     </RPage>
   );
 }

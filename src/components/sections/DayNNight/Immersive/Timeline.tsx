@@ -11,12 +11,7 @@ import { useShallow } from "zustand/shallow";
 import { useLenis } from "lenis/react";
 import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
-import {
-  RevealItem,
-  RevealStage,
-  useActHalfwayActive,
-  useActRevealActive
-} from "./Reveal";
+import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
 import { SceneView } from "./SceneView";
 import { SurvivalKit } from "../SurvivalKit";
 import {
@@ -33,16 +28,7 @@ import { OpeningCard } from "./OpeningCard";
 import { useStickyZone } from "./SeamBridge";
 import * as m from "motion/react-m";
 import { MarkerText } from "./MarkerText";
-import { Button } from "@/components/core/Button";
-import { useDetailsContext } from "./DetailsContext";
-
-/**
- * Anchors that polaroid clusters use for their parallax windows. These
- * match the SKY_STOPS section centers in store.ts so each cluster
- * appears to slide through frame as the user passes the section center.
- */
-const ANCHOR_COOKOUT = 0.279;
-const ANCHOR_NIGHT = 0.664;
+import { Link } from "@/components/core/Link/Link";
 
 /**
  * Act indices in SECTION_KEYS order. Used with `useActRevealActive`
@@ -53,7 +39,6 @@ const ANCHOR_NIGHT = 0.664;
  * act first entered the viewport).
  */
 const ACT_INDEX_COOKOUT = 1;
-const ACT_INDEX_DRESS = 2;
 const ACT_INDEX_NIGHT = 3;
 const ACT_INDEX_CLOSING = 4;
 
@@ -125,7 +110,6 @@ interface TimelineProps {
 
 export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
   const t = useTranslations("Event.DayNNight");
-  const { setOpen: setDetailsOpen } = useDetailsContext();
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const setProgress = useDayNNightScene((r) => r.setProgress);
@@ -364,7 +348,6 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
           t={t}
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
-          onOpenDetails={() => setDetailsOpen(true)}
         />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
@@ -372,7 +355,6 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
           t={t}
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
-          onOpenDetails={() => setDetailsOpen(true)}
           ariaHidden
         />
       </div>
@@ -394,16 +376,15 @@ interface ActSetProps {
   contentRevealed: boolean;
   ariaHidden?: boolean;
   dressSentinelRef?: RefObject<HTMLDivElement | null>;
-  onOpenDetails: () => void;
 }
 
 function ActSet({
   t,
   contentRevealed,
   ariaHidden = false,
-  dressSentinelRef,
-  onOpenDetails
+  dressSentinelRef
 }: ActSetProps) {
+  const mainT = useTranslations("Event.DayNNight.main");
   // Per-act reveal gates. Opening fires once `contentRevealed` is true
   // (i.e. the sequenced entry animation has reached the content beat);
   // the other 4 acts gate on a layout-aware scene-progress threshold
@@ -416,6 +397,36 @@ function ActSet({
   // write. Both copies stay in sync because they read from the same
   // store.
   const openingActive = contentRevealed;
+  const detailItems = [
+    {
+      label: mainT("details.themeLabel"),
+      body: mainT("details.theme")
+    },
+    {
+      label: mainT("details.dressLabel"),
+      body: mainT("details.dress")
+    },
+    {
+      label: mainT("details.timeLabel"),
+      body: mainT("details.time")
+    },
+    {
+      label: mainT("details.priceLabel"),
+      body: mainT("details.price")
+    },
+    {
+      label: mainT("offerings.grill.label"),
+      body: mainT("offerings.grill.body")
+    },
+    {
+      label: mainT("offerings.ferments.label"),
+      body: mainT("offerings.ferments.body")
+    },
+    {
+      label: mainT("offerings.cocktails.label"),
+      body: mainT("offerings.cocktails.body")
+    }
+  ];
 
   const [openingStep, setOpeningStep] = useState(0);
   useEffect(() => {
@@ -442,11 +453,6 @@ function ActSet({
   }, [openingActive, ariaHidden]);
 
   const cookoutActive = useActRevealActive(ACT_INDEX_COOKOUT);
-  // Dress / Liminal splits into two halves: the FriendsTorrent +
-  // caption sequence in the first half, the YM.FM dedicated credit
-  // section in the second. Non-sticky so the section gracefully
-  // retracts if the user scrolls back into the photo-torrent half.
-  const ymRevealActive = useActHalfwayActive(ACT_INDEX_DRESS, 0.5);
   const nightActive = useActRevealActive(ACT_INDEX_NIGHT);
   const closingActive = useActRevealActive(ACT_INDEX_CLOSING);
   // True only during the sticky window (Closing title at viewport-left
@@ -498,10 +504,16 @@ function ActSet({
             <RevealItem as="p" className={KICKER_MONO}>
               {t("opening.kicker")}
             </RevealItem>
-            <RevealItem as="h2" className={TITLE_HERO}>
+            <RevealItem
+              as="h2"
+              className={`${TITLE_HERO} max-lg:!text-[clamp(3rem,13.5vw,3.95rem)] max-lg:!leading-[0.94]`}
+            >
               {t("title")}
             </RevealItem>
-            <RevealItem as="p" className={`${LEDE} max-w-[38ch]`}>
+            <RevealItem
+              as="p"
+              className={`${LEDE} max-w-[38ch] max-lg:!text-[clamp(1.2rem,5.5vw,1.55rem)] max-lg:!leading-[1.34]`}
+            >
               {t("opening.lede")}
             </RevealItem>
           </RevealStage>
@@ -546,186 +558,83 @@ function ActSet({
         </m.div>
       </Act>
 
-      {/* ── Act II — Cookout ─────────────────────────────────────────────
-          Feature spread. Title + lede bottom-left, food/drinks menu strip
-          bottom-right, polaroid cluster floating in the right margin at
-          the shared --dn-polaroid-band height (16%). */}
+      {/* ── Act II — Details ─────────────────────────────────────────────
+          The old practical-notes spread stays visually intact, but its
+          content is now the full event detail rail requested for the
+          simplified five-part flow. */}
       <Act
         width={1.55}
-        ariaLabel={t("act.day.heading")}
+        ariaLabel={mainT("details.eyebrow")}
         ariaHidden={ariaHidden}
       >
         <ActEyebrow
           numeral="II"
           label={t("scrubber.cookout")}
-          time={t("act.day.time")}
-          align="left"
+          time={t("date.short")}
+          align="right"
         />
         <RevealStage
           as="div"
           active={cookoutActive}
-          className="col-start-1 col-end-8 row-start-2 row-end-3 grid max-w-[52ch] content-end gap-6 self-end max-lg:col-span-full xl:gap-8"
+          className="col-start-1 col-end-7 row-start-2 row-end-3 grid max-w-[48ch] content-center gap-6 self-center max-lg:col-span-full xl:gap-8"
         >
           <RevealItem as="h2" className={TITLE_SECTION}>
-            {t("act.day.heading")}
+            {mainT("details.title")}
           </RevealItem>
           <RevealItem as="p" className={`${LEDE} max-w-[46ch]`}>
-            {t("act.day.body")}
+            {mainT("details.body")}
           </RevealItem>
         </RevealStage>
         <ul
-          className="col-start-8 col-end-13 row-start-3 row-end-4 m-0 grid min-w-[240px] list-none gap-[18px] self-end justify-self-end p-0 max-lg:col-span-full max-lg:justify-self-start"
-          aria-label={t("included.heading")}
+          className="col-start-8 col-end-13 row-start-2 row-end-4 m-0 grid max-w-[34rem] min-w-[280px] list-none content-center gap-[14px] self-center justify-self-end p-0 max-lg:col-span-full max-lg:max-w-none max-lg:justify-self-start"
+          aria-label={mainT("details.eyebrow")}
         >
-          <li className="grid gap-[6px] border-t border-[var(--dn-line)] pt-[14px]">
-            <span className={LABEL_MONO}>{t("included.food.label")}</span>
-            <span className="font-serif text-[clamp(1.55rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
-              {t("included.food.items")}
-            </span>
-          </li>
-          <li className="grid gap-[6px] border-t border-[var(--dn-line)] pt-[14px]">
-            <span className={LABEL_MONO}>{t("included.drinks.label")}</span>
-            <span className="font-serif text-[clamp(1.55rem,1.7vw,1.9rem)] font-medium tracking-[-0.01em] text-[var(--dn-fg)]">
-              {t("included.drinks.items")}
-            </span>
-          </li>
+          {detailItems.map((item, index) => (
+            <li
+              key={item.label}
+              className="grid gap-[6px] border-t border-[var(--dn-line)] pt-[12px] odd:lg:ml-0 even:lg:ml-12"
+            >
+              <span className={LABEL_MONO}>{item.label}</span>
+              <span
+                className={
+                  index === 4
+                    ? "font-serif text-[clamp(1.16rem,1.34vw,1.42rem)] leading-[1.3] font-medium tracking-[-0.01em] text-[var(--dn-fg)]"
+                    : "font-serif text-[clamp(1.05rem,1.22vw,1.32rem)] leading-[1.32] font-medium tracking-[-0.01em] text-[var(--dn-fg-mute)]"
+                }
+              >
+                {item.body}
+              </span>
+            </li>
+          ))}
         </ul>
-        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[16%] lg:right-[4vw] lg:z-[4] lg:flex lg:gap-10">
-          <Polaroid
-            src="/assets/day-n-night/DraggedImage.png"
-            alt={t("moodboard.cookout.burger.alt")}
-            caption={t("moodboard.cookout.burger.caption")}
-            width={220}
-            aspect={0.75}
-            angle={-4}
-            depth={0.7}
-            anchor={ANCHOR_COOKOUT}
-            priority={!ariaHidden}
-          />
-          <Polaroid
-            src="/assets/day-n-night/IMG_8543.png"
-            alt={t("moodboard.cookout.rooftop.alt")}
-            caption={t("moodboard.cookout.rooftop.caption")}
-            width={260}
-            aspect={1.769}
-            angle={5}
-            depth={-0.4}
-            anchor={ANCHOR_COOKOUT}
-            priority={!ariaHidden}
-          />
-          <Polaroid
-            src="/assets/day-n-night/IMG_9520.png"
-            alt={t("moodboard.cookout.vibe.alt")}
-            width={230}
-            aspect={1.333}
-            angle={-2}
-            depth={1.0}
-            anchor={ANCHOR_COOKOUT}
-            priority={!ariaHidden}
-          />
-        </PolaroidGroup>
       </Act>
 
-      {/* ── Act III — Liminal ────────────────────────────────────────────
-          Two-beat act. First half: <FriendsTorrent> photos overlay
-          the viewport after <SubtitleSequence> introduces the cue
-          across the bottom. Both are fixed-positioned at the
-          ImmersiveView root (not in this grid) and gated on the dress
-          window's active flag.
-          Second half: photos clear and the YM.FM credit reveals in
-          this grid. The fade is driven by `useActHalfwayActive` from
-          index.tsx so torrent and credit transition off the same
-          threshold. The LiminalHandoff cassette hangs centred in the
-          viewport throughout the second half (z-44), naming nothing —
-          the cassette is the sound, the section names the source. */}
-      {/* Act III runs WIDE — far wider than the surrounding acts —
-          because Liminal carries the longest stretch of choreography on
-          this page: photo torrent + caption sequence in the first half,
-          YM.FM credit reveal + LiminalHandoff cassette in the second.
-          The caption cue is timer-driven (~8s), so the act must be wide
-          enough that the photo torrent still gets a generous horizontal
-          scroll stretch after the captions clear — the desktop analogue
-          of the mobile dress sentinel's height. Keep this multiplier
-          and that sentinel scaled together when retuning torrent
-          screen time. Pacing wins; the loop math handles whatever
-          multiplier we pick. */}
-      <Act width={8.4} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
+      {/* ── Act III — Our friends ────────────────────────────────────────
+          Previous-event photos live in a fixed foreground layer owned by
+          index.tsx. The act keeps the original liminal photo-torrent feel,
+          but no longer hands off to YM.FM inside the same section. */}
+      <Act width={3.0} ariaLabel={t("scrubber.dress")} ariaHidden={ariaHidden}>
         <ActEyebrow numeral="III" label={t("scrubber.dress")} align="left" />
-        {/* YM.FM dedicated section. Anchored to row 2 self-end so the
-            block sits below the cassette frame at the bottom of the
-            viewport — clean of the centred Tape3DScene canvas. The
-            handle is an external link to Instagram; tabIndex={-1} on
-            the aria-hidden duplicate ActSet keeps focus order sane
-            across the seamless loop. */}
-        {/* Mobile sentinel — placed BEFORE the YM.FM block so the mobile
-            vertical stack scrolls THROUGH the FriendsTorrent stretch
-            before the YM.FM credit reveals. On desktop the sentinel is
-            lg:hidden and the YM.FM block keeps its explicit lg: grid
-            placement, so this DOM order only governs the mobile flow.
-
-            Height = caption-sequence runway + a guaranteed FriendsTorrent
-            window. The caption cue is timer-driven (~8s), so the sentinel
-            is sized long enough that the photos still get a generous
-            scroll stretch after the captions clear — even at a brisk
-            scroll. Lengthen/shorten this to retune the torrent's
-            screen time. */}
+        {/* Mobile sentinel — in-flow runway for the short photo pass before
+            the fixed YM.FM foreground section reveals. */}
         {!ariaHidden && dressSentinelRef && (
           <div
             ref={dressSentinelRef}
             className="pointer-events-none relative col-span-full lg:hidden"
-            style={{ minHeight: "650svh" }}
+            style={{ minHeight: "180svh" }}
             aria-hidden
           />
         )}
-        <RevealStage
-          as="div"
-          active={ymRevealActive}
-          className="grid content-end gap-6 self-end max-lg:col-span-full lg:col-start-1 lg:col-end-9 lg:row-start-2 lg:row-end-3 xl:gap-8"
-        >
-          <RevealItem as="p" className={KICKER_MONO}>
-            {t("act.night.dj.eyebrow")}
-          </RevealItem>
-          <RevealItem as="h2" className={`${TITLE_SECTION} max-w-[8ch]`}>
-            {t("act.night.dj.name")}
-          </RevealItem>
-          <RevealItem as="div" className="grid gap-2">
-            <span
-              aria-hidden
-              className="block h-px w-12 bg-[var(--dn-fg)] opacity-60"
-            />
-            <span className={LABEL_MONO}>{t("act.night.dj.role")}</span>
-          </RevealItem>
-          <RevealItem
-            as="p"
-            className="max-w-[42ch] font-serif text-[clamp(1.2rem,1.35vw,1.5rem)] leading-[1.45] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic"
-          >
-            {t("act.night.dj.blurb")}
-          </RevealItem>
-          <RevealItem as="div">
-            <a
-              href="https://instagram.com/yangminwoo"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label={`${t("act.night.dj.name")} — ${t("act.night.dj.handle")} on Instagram`}
-              tabIndex={ariaHidden ? -1 : undefined}
-              className="ease inline-flex items-baseline gap-3 border-0 border-b border-[var(--dn-fg)] py-2 pb-2 font-mono text-[12px] tracking-[0.28em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-5 hover:pr-2 md:text-[13px]"
-            >
-              <span>{t("act.night.dj.handle")}</span>
-              <span aria-hidden className="text-[1.2em] leading-none">
-                →
-              </span>
-            </a>
-          </RevealItem>
-        </RevealStage>
       </Act>
 
-      {/* ── Act IV — Night ───────────────────────────────────────────────
-          Feature spread, evening weight. Scene-setter heading + body
-          in the left column; polaroid cluster floating right at the
-          shared band height. The YM.FM naming beat lives in Act III
-          (Liminal's second half), not here — by the time the viewer
-          reaches Night they already know whose decks these are. */}
-      <Act width={1.5} ariaLabel={t("act.night.label")} ariaHidden={ariaHidden}>
+      {/* ── Act IV — Music by YM.FM ──────────────────────────────────────
+          The old night spread becomes the headliner beat. YMFMCredit
+          overlays this act with the original cinematic credit treatment. */}
+      <Act
+        width={1.5}
+        ariaLabel={mainT("music.eyebrow")}
+        ariaHidden={ariaHidden}
+      >
         <ActEyebrow
           numeral="IV"
           label={t("scrubber.night")}
@@ -738,76 +647,24 @@ function ActSet({
           className="col-start-1 col-end-8 row-start-2 row-end-3 grid max-w-[44ch] gap-6 self-end max-lg:col-span-full xl:gap-9"
         >
           <RevealItem as="h2" className={`${TITLE_SECTION} max-w-[11ch]`}>
-            {t("act.night.heading")}
+            YM.FM
           </RevealItem>
           <RevealItem as="p" className={`${LEDE} max-w-[40ch]`}>
-            {t("act.night.body")}
+            {mainT("music.body")}
           </RevealItem>
         </RevealStage>
-        {/* PLACEHOLDER — YM photos TBC. Per readmes/DAY_N_NIGHT_HANDOFF.md
-            § 2.4 / § 3.7: scatter of 5–8 polaroids around the cassette,
-            mixed widths (130–260px), broad angle spread (±10°), mixed
-            depth signs, mostly empty captions, 1–2 back cards for ambient
-            clutter. Swap to YM-specific photos when delivered to
-            public/assets/day-n-night/ym/. */}
-        <PolaroidGroup className="hidden lg:pointer-events-none lg:absolute lg:top-[14%] lg:right-[4vw] lg:z-[4] lg:flex lg:max-w-[42vw] lg:flex-wrap lg:justify-end lg:gap-7">
-          <Polaroid
-            src="/assets/day-n-night/IMG_5282.png"
-            width={240}
-            aspect={1.5}
-            angle={-7}
-            depth={0.6}
-            anchor={ANCHOR_NIGHT}
-          />
-          <Polaroid
-            src="/assets/day-n-night/IMG_6339.png"
-            width={170}
-            aspect={1.0}
-            angle={5}
-            depth={-0.4}
-            anchor={ANCHOR_NIGHT}
-          />
-          <Polaroid
-            src="/assets/day-n-night/DraggedImage-4.png"
-            width={200}
-            aspect={1.5}
-            angle={-3}
-            depth={0.4}
-            anchor={ANCHOR_NIGHT}
-          />
-          <Polaroid
-            variant="back"
-            backTexture="card-2_back"
-            width={150}
-            angle={9}
-            depth={-0.6}
-            anchor={ANCHOR_NIGHT}
-          />
-          <Polaroid
-            src="/assets/day-n-night/DraggedImage-5.png"
-            width={220}
-            aspect={1.5}
-            angle={6}
-            depth={0.8}
-            anchor={ANCHOR_NIGHT}
-          />
-          <Polaroid
-            src="/assets/day-n-night/DraggedImage-6.png"
-            width={185}
-            aspect={1.78}
-            angle={-5}
-            depth={-0.3}
-            anchor={ANCHOR_NIGHT}
-          />
-        </PolaroidGroup>
       </Act>
 
-      {/* ── Act V — Reserve / Back Cover ─────────────────────────────────
+      {/* ── Act V — RSVP / Back Cover ────────────────────────────────────
           Closing spread. Eyebrow right-aligned (first signal of the
-          bookend). Right side gets the hero title mirror + closing kicker
-          + CTA. Left side gets the SurvivalKit — practical info lives
-          here, not on the cover. Hosts strip bottom-right. */}
-      <Act width={1.3} ariaLabel={t("rsvpCta.primary")} ariaHidden={ariaHidden}>
+          bookend). Right side gets RSVP as the final action; left side
+          keeps the SurvivalKit to preserve the old practical artifact. */}
+      <Act
+        width={1.3}
+        ariaLabel={mainT("nav.rsvp")}
+        ariaHidden={ariaHidden}
+        className="max-lg:min-h-[118svh]"
+      >
         <ActEyebrow
           numeral="V"
           label={t("entry.heading")}
@@ -824,7 +681,7 @@ function ActSet({
             src="/assets/day-n-night/hosts/ingyu.jpeg"
             angle={-8}
             width={220}
-            className="max-lg:!top-[10%] max-lg:!left-[8%] max-lg:!w-[38vw]"
+            className="max-lg:!top-[8%] max-lg:!left-[6%] max-lg:!w-[34vw]"
             style={{ position: "absolute", top: "12%", left: "9%" }}
           />
           <Polaroid
@@ -833,18 +690,18 @@ function ActSet({
             variant="stamped"
             angle={7}
             width={205}
-            className="max-lg:!top-[16%] max-lg:!left-[39%] max-lg:!w-[36vw]"
+            className="max-lg:!top-[12%] max-lg:!left-[38%] max-lg:!w-[32vw]"
             style={{ position: "absolute", top: "20%", left: "24%" }}
           />
         </PolaroidGroup>
         <div
-          className="pointer-events-none absolute z-[15] max-lg:!top-[34%] max-lg:!left-[16%]"
+          className="pointer-events-none absolute z-[15] max-lg:!top-[27%] max-lg:!left-[12%]"
           style={{ top: "47%", left: "13%" }}
         >
           <MarkerText
             text={t("opening.hostedBy")}
             active
-            className="font-serif text-[clamp(1.05rem,6.4vw,1.55rem)] font-bold text-[var(--dn-fg)] italic opacity-85 lg:text-[2.25rem] lg:text-faded-black lg:opacity-90"
+            className="font-serif text-[clamp(0.95rem,5.2vw,1.35rem)] font-bold text-[var(--dn-fg)] italic opacity-85 lg:text-[2.25rem] lg:text-faded-black lg:opacity-90"
           />
         </div>
         <div className="col-start-1 col-end-6 row-start-2 row-end-3 hidden flex-col gap-6 self-end max-lg:col-span-full lg:flex">
@@ -858,7 +715,7 @@ function ActSet({
             Reveal cascade preserved. Opacity-faded only during the
             sticky window (see useStickyZone). */}
         <div
-          className="col-start-7 col-end-13 row-start-2 row-end-3 self-end text-right max-lg:col-span-full max-lg:text-left"
+          className="col-start-7 col-end-13 row-start-2 row-end-3 self-end text-right max-lg:col-span-full max-lg:self-start max-lg:pt-[32svh] max-lg:text-left"
           style={bookendFade}
         >
           <RevealStage
@@ -873,48 +730,77 @@ function ActSet({
               {t("closing.kicker")}
             </RevealItem>
             <RevealItem as="h2" className={TITLE_HERO}>
-              {t("title")}
+              <span className="max-lg:block max-lg:text-[clamp(3.15rem,17vw,5.25rem)] max-lg:leading-[0.9]">
+                RSVP
+              </span>
+            </RevealItem>
+            <RevealItem
+              as="p"
+              className={`${LEDE} max-w-[28ch] justify-self-end text-right max-lg:justify-self-start max-lg:text-left`}
+            >
+              {mainT("rsvp.body")}
             </RevealItem>
             <RevealItem
               as="div"
-              className="justify-self-end max-lg:justify-self-start"
+              className="grid justify-items-end gap-4 max-lg:justify-items-start"
             >
+              {!ariaHidden && <GuestListCaption />}
               {ariaHidden ? (
                 <span className="ease mt-3 inline-flex items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline md:text-sm">
-                  <span>{t("rsvpCta.primary")}</span>
+                  <span>{mainT("rsvp.cta")}</span>
                   <span aria-hidden className="text-[1.2em] leading-none">
                     →
                   </span>
                 </span>
               ) : (
-                <Button
-                  type="button"
-                  onClick={onOpenDetails}
-                  aria-haspopup="dialog"
+                <Link
+                  href="/tickets/day-n-night"
                   className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3 md:text-sm"
                 >
-                  <span>{t("rsvpCta.primary")}</span>
+                  <span>{mainT("rsvp.cta")}</span>
                   <span aria-hidden className="text-[1.2em] leading-none">
                     →
                   </span>
-                </Button>
+                </Link>
               )}
             </RevealItem>
           </RevealStage>
         </div>
-        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:col-span-full max-lg:justify-self-start max-lg:text-left">
+        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:col-span-full max-lg:mt-8 max-lg:w-full max-lg:max-w-[min(22rem,100%)] max-lg:gap-2 max-lg:justify-self-start max-lg:pb-[calc(8.5rem+env(safe-area-inset-bottom))] max-lg:text-left">
           <span
             aria-hidden
             className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60 max-lg:ml-0"
           />
-          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase max-lg:block max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:font-sans max-lg:text-xs max-lg:leading-[1.45] max-lg:tracking-normal max-lg:normal-case">
             {t("footer.hosts")}
           </span>
-          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase max-lg:block max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:font-sans max-lg:text-xs max-lg:leading-[1.45] max-lg:tracking-normal max-lg:normal-case">
             {t("footer.rsvpClosesAt")}
           </span>
         </div>
       </Act>
     </>
+  );
+}
+
+function GuestListCaption() {
+  const t = useTranslations("Event.DayNNight.guestsTease");
+
+  return (
+    <div className="grid max-w-[min(25rem,100%)] justify-items-start gap-3 border border-[oklch(42%_0.07_255/0.42)] bg-[linear-gradient(135deg,oklch(94%_0.012_245/0.96),oklch(94%_0.022_58/0.92))] px-5 py-4 text-left text-[oklch(18%_0.012_250)] shadow-[0_18px_50px_-16px_rgba(0,0,0,0.78)] max-lg:px-4 max-lg:py-3.5">
+      <p className="m-0 bg-gradient-to-r from-[oklch(36%_0.075_255)] to-[oklch(45%_0.09_48)] bg-clip-text font-mono text-[10px] leading-[1.4] tracking-[0.28em] text-transparent uppercase">
+        {t("label")}
+      </p>
+      <p className="m-0 max-w-[30ch] font-serif text-[clamp(1.1rem,1.8vw,1.55rem)] leading-[1.25] tracking-[0.005em]">
+        {t("body")}
+      </p>
+      <Link
+        href="/day-n-night/guests"
+        className="inline-flex items-baseline gap-3 border-b border-[oklch(35%_0.07_255/0.58)] pb-1 font-mono text-[10px] tracking-[0.24em] text-[oklch(24%_0.04_255)] uppercase no-underline transition-[gap,border-color,color] duration-200 hover:gap-5 hover:border-[oklch(45%_0.09_48)] hover:text-[oklch(34%_0.07_48)]"
+      >
+        <span>{t("cta")}</span>
+        <span aria-hidden>→</span>
+      </Link>
+    </div>
   );
 }

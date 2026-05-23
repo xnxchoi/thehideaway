@@ -4,7 +4,8 @@ import {PostgresSchemaHook} from "node_modules/@payloadcms/drizzle/dist/postgres
 
 const nanoIdFields =
   /((version_)?(((user)|(target)|(post)|(author)|(impersonated_by)|(inviter)|(cited)|(recipient)|(allow_list)|(owner))s?))(_?id)/i;
-const fieldsVarcharPreserve = /^(source|provider|account)_id$/i;
+const fieldsVarcharPreserve =
+  /^(source|provider|account|credential|passkey_credential)_id$/i;
 const JOB_TABLES = new Set([
   "payload_jobs_log",
 ]);

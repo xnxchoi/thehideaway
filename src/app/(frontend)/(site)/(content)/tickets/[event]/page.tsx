@@ -52,7 +52,7 @@ export default async function TicketEventPage(props: { params: Params }) {
   if (event.state === "draft" && !isStaff) notFound();
 
   const gateInitiallyOpen =
-    slug === STEP_FLOW_SLUG ? !event.gate_password : false;
+    slug === STEP_FLOW_SLUG ? true : !event.gate_password;
 
   // Capacity remaining (don't fail if we can't compute).
   let remaining: number | null = null;
@@ -92,6 +92,7 @@ export default async function TicketEventPage(props: { params: Params }) {
       }}
       remaining={remaining}
       isAuthenticated={Boolean(session)}
+      sessionUserId={session?.user?.id ? String(session.user.id) : null}
       // Pre-fill the Day n Night RSVP flow from the session,
       // so an already-authenticated user just confirms rather than retypes.
       // Both null on a signed-out hit; the client step machine handles that.

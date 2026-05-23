@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const sendMail = vi.fn(async () => ({}));
+const sendMail = vi.fn(async (_args: unknown) => ({}));
 
 vi.mock("nodemailer", () => ({
   default: {
@@ -31,7 +31,7 @@ describe("TicketMailer", () => {
     });
 
     expect(sendMail).toHaveBeenCalledTimes(1);
-    const sent = sendMail.mock.calls[0]?.[0] as {
+    const sent = sendMail.mock.calls[0]?.[0] as unknown as {
       html: string;
       text: string;
     };

@@ -1,10 +1,21 @@
 "use client";
 
 import type { Map as MapLibreMap } from "maplibre-gl";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent
+} from "react";
 import { useTranslations } from "next-intl";
 import { Map, MapMarker, MarkerContent } from "@/components/ui/map";
 import { MAP_LINKS, VENUE_COORDS } from "./survivalKit.config";
+import { Button } from "@/components/core/Button";
+import type { IconType } from "react-icons";
+import { SiGooglemaps, SiKakao, SiNaver } from "react-icons/si";
+import * as m from "motion/react-m";
 
 const VENUE_VIEWPORT = {
   center: [VENUE_COORDS.lng, VENUE_COORDS.lat] as [number, number],
@@ -13,7 +24,8 @@ const VENUE_VIEWPORT = {
   pitch: 0
 } as const;
 
-const MAP_RESET_IDLE_MS = 400;
+const MAP_RESET_MOUSE_IDLE_MS = 400;
+const MAP_RESET_TOUCH_IDLE_MS = 10000;
 
 type VenueViewport = {
   center: [number, number];
@@ -120,6 +132,8 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoResettingRef = useRef(false);
+  const mapPointerInsideRef = useRef(false);
+  const mapMovedAwayRef = useRef(false);
   const [showVenueReset, setShowVenueReset] = useState(false);
   // useId yields a unique, SSR-stable id per instance so the immersive
   // view can mount multiple kits (Opening + Closing, each duplicated by
@@ -159,24 +173,70 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
     [clearMapResetTimer]
   );
 
-  const scheduleVenueReset = useCallback(() => {
-    clearMapResetTimer();
-    resetTimerRef.current = setTimeout(() => {
-      resetVenueViewport();
-    }, MAP_RESET_IDLE_MS);
-  }, [clearMapResetTimer, resetVenueViewport]);
+  const scheduleVenueReset = useCallback(
+    (delay = MAP_RESET_MOUSE_IDLE_MS) => {
+      clearMapResetTimer();
+      if (!mapMovedAwayRef.current) return;
+
+      resetTimerRef.current = setTimeout(() => {
+        if (mapPointerInsideRef.current && delay !== MAP_RESET_TOUCH_IDLE_MS) {
+          return;
+        }
+        resetVenueViewport();
+      }, delay);
+    },
+    [clearMapResetTimer, resetVenueViewport]
+  );
 
   const handleMapViewportChange = useCallback(
     (viewport: VenueViewport) => {
       if (autoResettingRef.current) return;
 
       const movedAway = !isVenueViewport(viewport);
+      mapMovedAwayRef.current = movedAway;
       setShowVenueReset(movedAway);
 
       if (!movedAway) clearMapResetTimer();
     },
     [clearMapResetTimer]
   );
+
+  const handleMapPointerEnter = useCallback(() => {
+    mapPointerInsideRef.current = true;
+    clearMapResetTimer();
+  }, [clearMapResetTimer]);
+
+  const handleMapPointerLeave = useCallback(() => {
+    mapPointerInsideRef.current = false;
+    scheduleVenueReset(MAP_RESET_MOUSE_IDLE_MS);
+  }, [scheduleVenueReset]);
+
+  const handleMapPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (event.pointerType !== "touch") {
+        mapPointerInsideRef.current = true;
+      }
+      clearMapResetTimer();
+    },
+    [clearMapResetTimer]
+  );
+
+  const handleMapPointerEnd = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (event.pointerType === "touch") {
+        scheduleVenueReset(MAP_RESET_TOUCH_IDLE_MS);
+        return;
+      }
+      if (!mapPointerInsideRef.current) {
+        scheduleVenueReset(MAP_RESET_MOUSE_IDLE_MS);
+      }
+    },
+    [scheduleVenueReset]
+  );
+
+  const handleMapWheel = useCallback(() => {
+    clearMapResetTimer();
+  }, [clearMapResetTimer]);
 
   useEffect(() => () => clearMapResetTimer(), [clearMapResetTimer]);
 
@@ -217,7 +277,15 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
     }
   };
 
-  const copyLabel = (key: string) => (copied === key ? t("copied") : t("copy"));
+  const copyLabel = (key: string) => {
+    if (key === "address") {
+      return copied === key ? t("map.addressCopied") : t("map.copyAddress");
+    }
+    if (key === "toss") {
+      return copied === key ? t("paymentCopied") : t("copyPayment");
+    }
+    return copied === key ? t("copied") : t("copy");
+  };
 
   // Outer container — `standalone` ships its own top margin (used in
   // SimplifiedView). `embedded` ships no margin; the host grid owns
@@ -258,15 +326,17 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         </p>
         <div
           className="relative aspect-[16/7] overflow-hidden rounded-sm bg-neutral-900"
-          onPointerDownCapture={clearMapResetTimer}
-          onPointerUpCapture={scheduleVenueReset}
-          onPointerCancelCapture={scheduleVenueReset}
-          onWheelCapture={scheduleVenueReset}
+          onPointerEnter={handleMapPointerEnter}
+          onPointerLeave={handleMapPointerLeave}
+          onPointerDownCapture={handleMapPointerDown}
+          onPointerUpCapture={handleMapPointerEnd}
+          onPointerCancelCapture={handleMapPointerEnd}
+          onWheelCapture={handleMapWheel}
         >
           <Map
             ref={mapRef}
             theme="dark"
-            initialViewState={VENUE_VIEWPORT}
+            initialState={VENUE_VIEWPORT}
             onViewportChange={handleMapViewportChange}
             keyboard={false}
             className="absolute inset-0 h-full w-full"
@@ -280,7 +350,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
               </MarkerContent>
             </MapMarker>
           </Map>
-          <div
+          <m.div
             className={
               "pointer-events-none absolute top-3 right-3 z-20 transition-all duration-200 " +
               (showVenueReset
@@ -288,54 +358,51 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
                 : "-translate-y-1 opacity-0")
             }
           >
-            <button
+            <Button
               type="button"
               onClick={() => resetVenueViewport(360)}
-              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border px-3 py-2 font-sans text-[10px] tracking-[0.16em] text-[var(--dn-fg)] uppercase transition-[border-color,background-color,color,transform] duration-200 hover:-translate-y-px"
+              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border px-3.5 py-2.5 font-sans text-[11px] tracking-[0.12em] text-white/84 uppercase shadow-[0_16px_40px_rgba(0,0,0,0.42)] transition-[border-color,background-color,color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] hover:text-white hover:shadow-[0_18px_44px_rgba(0,0,0,0.5)] active:scale-[0.985]"
               style={{
-                borderColor:
-                  "color-mix(in oklch, var(--dn-fg) 15%, transparent)",
-                backgroundColor:
-                  "color-mix(in oklch, var(--dn-bg) 76%, transparent)",
-                boxShadow: "0 14px 35px rgba(0, 0, 0, 0.28)"
+                borderColor: "rgba(71, 107, 143, 0.28)",
+                backgroundColor: "rgba(2, 8, 14, 0.78)"
               }}
             >
               <span
                 aria-hidden
                 className="inline-block size-1.5 rounded-full"
-                style={{
-                  backgroundColor:
-                    "color-mix(in oklch, var(--dn-fg) 70%, transparent)"
-                }}
+                style={{ backgroundColor: "rgba(137, 73, 39, 0.82)" }}
               />
               <span>{t("map.reset")}</span>
-            </button>
-          </div>
+            </Button>
+          </m.div>
           {/* Address text overlaid bottom-left with gradient scrim */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent px-4 pt-10 pb-3">
-            <p className="font-serif text-[clamp(0.9rem,1.4vw,1.15rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/76 to-transparent px-4 pt-14 pb-4">
+            <p className="font-serif text-[clamp(1rem,1.7vw,1.32rem)] leading-[1.16] tracking-[-0.01em] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.75)]">
               {address}
             </p>
           </div>
         </div>
         {/* Provider deep-links + copy */}
         <div className="mt-2 flex flex-wrap items-center gap-2.5">
-          <RowAction
+          <MapAppAction
             href={MAP_LINKS.kakao}
-            external
-            arrow
+            icon={SiKakao}
+            accent="#5C2E22"
+            iconTone="#A66B4B"
             text={t("map.kakao")}
           />
-          <RowAction
+          <MapAppAction
             href={MAP_LINKS.naver}
-            external
-            arrow
+            icon={SiNaver}
+            accent="#1B334F"
+            iconTone="#7894B3"
             text={t("map.naver")}
           />
-          <RowAction
+          <MapAppAction
             href={MAP_LINKS.google}
-            external
-            arrow
+            icon={SiGooglemaps}
+            accent="#24384F"
+            iconTone="#8A9BAD"
             text={t("map.google")}
           />
           <RowAction
@@ -397,7 +464,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         </span>
         <a
           href={hostHref}
-          className="ease inline-flex w-fit items-center gap-3 rounded-full border px-5 py-3 font-serif text-[clamp(1.05rem,1.7vw,1.35rem)] leading-[1.2] text-[var(--dn-fg)] italic no-underline transition-[border-color,background-color,transform,gap] duration-200 hover:gap-4 hover:-translate-y-px"
+          className="ease inline-flex w-fit items-center gap-3 rounded-full border px-5 py-3 font-serif text-[clamp(1.05rem,1.7vw,1.35rem)] leading-[1.2] text-[var(--dn-fg)] italic no-underline transition-[border-color,background-color,transform,gap] duration-200 hover:-translate-y-px hover:gap-4"
           style={{
             borderColor: "color-mix(in oklch, var(--dn-fg) 12%, transparent)",
             backgroundColor:
@@ -411,6 +478,62 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         </a>
       </div>
     </section>
+  );
+}
+
+/**
+ * MapAppAction — branded external map launcher. Each provider keeps the same
+ * dark pill body, icon capsule, and tiny accent rule so the row reads as one
+ * control family while still carrying app identity.
+ */
+function MapAppAction({
+  text,
+  href,
+  icon: Icon,
+  accent,
+  iconTone
+}: {
+  text: string;
+  href: string;
+  icon: IconType;
+  accent: string;
+  iconTone: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full border px-3.5 py-2.5 font-sans text-[11px] leading-none font-medium tracking-[0.1em] text-white/82 uppercase no-underline shadow-[0_10px_30px_rgba(0,0,0,0.16)] transition-[border-color,background-color,color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] hover:text-white hover:shadow-[0_14px_34px_rgba(0,0,0,0.24)] focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:outline-none active:scale-[0.985]"
+      style={{
+        borderColor: "rgba(255, 255, 255, 0.12)",
+        backgroundColor: "rgba(2, 6, 12, 0.56)"
+      }}
+    >
+      <span
+        aria-hidden
+        className="absolute inset-y-2 left-1 w-px rounded-full opacity-55 transition-opacity duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:opacity-80"
+        style={{ backgroundColor: accent }}
+      />
+      <span
+        aria-hidden
+        className="grid size-5 place-items-center rounded-full transition-[background-color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:scale-[1.04]"
+        style={{
+          backgroundColor: `${accent}1F`,
+          boxShadow: `inset 0 0 0 1px ${accent}42`,
+          color: iconTone
+        }}
+      >
+        <Icon className="size-3.5" />
+      </span>
+      <span>{text}</span>
+      <span
+        aria-hidden
+        className="inline-block w-[0.8em] text-[0.9em] leading-none text-white/40 transition-[color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:translate-x-0.5 group-hover:text-white/68"
+      >
+        →
+      </span>
+    </a>
   );
 }
 
@@ -434,17 +557,19 @@ function RowAction({
   ariaLabel?: string;
 }) {
   const className =
-    "ease inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-sans text-[10px] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase no-underline transition-[border-color,background-color,color,transform,gap] duration-200 hover:-translate-y-px hover:text-[var(--dn-fg)]" +
-    (arrow ? " hover:gap-2.5" : "");
+    "group inline-flex items-center gap-2 rounded-full border px-3.5 py-2.5 font-sans text-[11px] leading-none font-medium tracking-[0.1em] text-white/82 uppercase no-underline shadow-[0_10px_30px_rgba(0,0,0,0.14)] transition-[border-color,background-color,color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] hover:text-white hover:shadow-[0_14px_34px_rgba(0,0,0,0.22)] active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:outline-none";
   const style = {
-    borderColor: "color-mix(in oklch, var(--dn-fg) 12%, transparent)",
-    backgroundColor: "color-mix(in oklch, var(--dn-bg) 82%, transparent)"
+    borderColor: "rgba(255, 255, 255, 0.12)",
+    backgroundColor: "rgba(2, 6, 12, 0.5)"
   } as const;
   const inner = (
     <>
       <span>{text}</span>
       {arrow ? (
-        <span aria-hidden className="text-[1em] leading-none">
+        <span
+          aria-hidden
+          className="inline-block w-[0.8em] text-[1em] leading-none text-white/45 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:translate-x-0.5"
+        >
           →
         </span>
       ) : null}

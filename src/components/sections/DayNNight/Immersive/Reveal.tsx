@@ -301,9 +301,8 @@ export function useActRevealActive(
 // Sibling of `useActRevealActive` (above), but NOT sticky. Returns true
 // while the user is inside the given act's scroll window — false before
 // the act enters viewport and false after it leaves. Used by surfaces
-// that should arm on entry and disarm on exit (e.g. the dress-window's
-// SubtitleSequence + FriendsTorrent: each entry replays the subtitle
-// sequence from card 0; exit resets the photo-torrent cue).
+// that should arm on entry and disarm on exit (e.g. the friends-window's
+// FriendsTorrent: exit clears the fixed foreground layer).
 //
 // Window math (in loopProgress fraction space):
 //   enter = startsFrac[actIndex] - viewportFrac - preroll
@@ -358,34 +357,21 @@ export function useActWindowActive(
   return { active, entryCount };
 }
 
-// ─── useActHalfwayActive — split an act into narrative halves ───────────────
-//
-// Fires when scroll progress reaches `fraction` of the way through the
-// given act's window. Used to gate the second-half-of-Liminal pivot:
-// FriendsTorrent + caption sequence carry the first half, then this
-// hook flips true so the photos fade and the YM.FM credit reveals.
-//
-// Returns a non-sticky boolean — re-enters false if the user scrolls
-// back before the threshold. RevealStage handles forward + reverse
-// animation symmetrically, so the YM section gracefully retracts and
-// the torrent gracefully re-emerges. Mirrors the dressWindow.active
-// shape (also two-way via `useActWindowActive`).
-//
-// Boolean selector → Zustand only re-renders the consumer on the
-// threshold crossing, not on every rAF write to `progress`.
-
-export function useActHalfwayActive(
+export function useActProgress(
   actIndex: number,
-  fraction: number = 0.5
-): boolean {
+  { preroll = 0.02, posttail = 0.0 }: ActWindowOptions = {}
+): number {
   return useDayNNightScene((r) => {
     const l = r.layout;
-    if (!l) return false;
+    if (!l) return 0;
     const start = l.startsFrac[actIndex];
+    if (typeof start !== "number") return 0;
     const next = l.startsFrac[actIndex + 1];
-    if (typeof start !== "number" || typeof next !== "number") return false;
-    const threshold = start + (next - start) * fraction;
-    return r.progress >= threshold;
+    const enter = start - l.viewportFrac - preroll;
+    const exit = typeof next === "number" ? next + posttail : 1;
+    const span = exit - enter;
+    if (span <= 0) return 0;
+    return Math.max(0, Math.min(1, (r.progress - enter) / span));
   });
 }
 

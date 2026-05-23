@@ -6,8 +6,10 @@ import { getTranslations } from "next-intl/server";
 
 import { RPage } from "@/components/UX/Transition";
 import { Credits, type Credited } from "@/components/sections/Credits";
+import { Link } from "@/components/core/Link/Link";
 import type { Profile, User, UserMedia } from "@/payload-types";
 import type { RP_Roles } from "@/stores/Notification/NotificationStore";
+import { GuestsChrome } from "./GuestsChrome";
 
 export const metadata: Metadata = {
   title: "Day n Night — Guests",
@@ -59,6 +61,8 @@ type ProfileWithRsvp = Profile & {
 
 export default async function DayNNightGuestsPage() {
   const payload = await getPayload({ config: configPromise });
+  const tGuests = await getTranslations("Event.Guests");
+  const tDn = await getTranslations("Event.DayNNight");
   const tTier = await getTranslations("Event.Guests.tier");
   // Tier titles read through next-intl so Korean visitors see Korean
   // section headers. Single source of truth: `messages/{en,ko}.json`
@@ -150,8 +154,36 @@ export default async function DayNNightGuestsPage() {
     .filter((row): row is Credited => row !== null);
 
   return (
-    <RPage type="pages" slug={["day-n-night", "guests"]}>
-      <Credits people={people} titles={TIER_TITLES} />
+    <RPage
+      type="pages"
+      slug={["day-n-night", "guests"]}
+      headerVisibility={false}
+    >
+      <GuestsChrome />
+      {people.length > 0 ? (
+        <Credits people={people} titles={TIER_TITLES} />
+      ) : (
+        <section className="flex min-h-screen items-center justify-center bg-black px-6 py-28 text-white">
+          <div className="grid max-w-xl gap-6 text-center">
+            <p className="m-0 font-mono text-[10px] tracking-[0.28em] text-white/55 uppercase">
+              {tGuests("eyebrow")}
+            </p>
+            <h1 className="m-0 font-serif text-[clamp(3.5rem,8vw,7rem)] leading-[0.92] font-bold tracking-[-0.035em]">
+              {tGuests("empty.headline")}
+            </h1>
+            <p className="m-0 mx-auto max-w-[38ch] text-base leading-[1.7] text-white/68">
+              {tGuests("empty.body")}
+            </p>
+            <Link
+              href="/tickets/day-n-night"
+              className="mx-auto mt-2 inline-flex items-center gap-3 rounded-full border border-white bg-white px-6 py-3 font-mono text-[11px] tracking-[0.22em] text-black uppercase no-underline transition-transform hover:-translate-y-px"
+            >
+              <span>{tDn("rsvpCta.register")}</span>
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </section>
+      )}
     </RPage>
   );
 }
