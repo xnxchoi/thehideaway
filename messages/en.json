@@ -551,9 +551,9 @@
       },
       "scrollHint": "Scroll",
       "audio": {
-        "label": "Sound",
-        "on": "Sound on",
-        "off": "Sound off"
+        "label": "Music",
+        "on": "Music on",
+        "off": "Music off"
       },
       "details": {
         "eyebrow": "Details",

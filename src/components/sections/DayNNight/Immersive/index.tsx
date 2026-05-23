@@ -7,7 +7,7 @@ import { useDayNNightScene } from "../store";
 import { DayNNightScore } from "./DayNNightScore";
 import { DetailsContext } from "./DetailsContext";
 import { DetailsDrawer } from "./DetailsDrawer";
-import { FriendsTorrent, type FriendsTorrentPhoto } from "./FriendsTorrent";
+import { FriendsTorrent } from "./FriendsTorrent";
 import { LiminalHandoff } from "./LiminalHandoff";
 import { LiminalRadioController } from "./LiminalRadioController";
 import { QuickActions } from "./QuickActions";
@@ -18,43 +18,13 @@ import { Timeline } from "./Timeline";
 import { YMFMCredit } from "./YMFMCredit";
 import { ViewToggle } from "../ViewToggle";
 import { useViewContext } from "../ViewContext";
+import { useRuntimeFriendsPhotos } from "../friendsPhotos";
 
 // Act III ("dress" slot) index in SECTION_KEYS order. Mirrors the
 // removed ACT_INDEX_DRESS that lived in Timeline.tsx before the
 // dress JSX block was stripped.
 const ACT_INDEX_DRESS = 2;
 const ACT_INDEX_NIGHT = 3;
-
-// Past-event photos for the FriendsTorrent. Keep this as a module-scope
-// manifest so the render path is deterministic and easy to verify.
-const PAST_EVENT_FILENAMES = [
-  "KakaoTalk_Image_2026-05-21-03-03-19_001.jpeg",
-  "KakaoTalk_Image_2026-05-21-03-03-19_002.jpeg",
-  "KakaoTalk_Image_2026-05-21-03-03-19_003.jpeg",
-  "KakaoTalk_Image_2026-05-21-03-03-20_004.jpeg",
-  "partypic - 1.png",
-  "partypic - 2.png",
-  "partypic - 3.png",
-  "partypic - 4.png",
-  "partypic - 6.png",
-  "partypic - 7.png",
-  "partypic - 8.png",
-  "partypic - 9.png",
-  "partypic - 10.png",
-  "partypic - 11.png",
-  "partypic - 12.png",
-  "partypic - 13.png",
-  "partypica - 2.png",
-  "partypica - 3.png",
-  "partypica - 4.png",
-  "partypica - 5.png"
-] as const;
-
-const FRIENDS_PHOTOS: FriendsTorrentPhoto[] = PAST_EVENT_FILENAMES.map(
-  (filename) => ({
-    src: encodeURI(`/assets/day-n-night/past-events/${filename}`)
-  })
-);
 
 /**
  * Immersive view orchestrator.
@@ -99,7 +69,7 @@ export function ImmersiveView() {
   // consume this via DetailsContext.
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const friendsPhotos = useRuntimeFriendsPhotos(FRIENDS_PHOTOS);
+  const friendsPhotos = useRuntimeFriendsPhotos();
   const setProgress = useDayNNightScene((r) => r.setProgress);
   const setPhase = useDayNNightScene((r) => r.setPhase);
   const resetLiminalHandoff = useDayNNightScene((r) => r.resetLiminalHandoff);
@@ -221,9 +191,7 @@ export function ImmersiveView() {
           the photo-torrent window; once the cassette handoff fires,
           this goes silent and HideawayFM picks up the night. See
           DayNNightScore.tsx. */}
-        {phase === "playing" && (
-          <DayNNightScore enabled={audioEnabled} />
-        )}
+        {phase === "playing" && <DayNNightScore enabled={audioEnabled} />}
         {/* Local YM.FM controller for Track_1. It can auto-enter after
           the liminal handoff or start immediately from the YM.FM
           caption button, always fading in/out from silence. */}
@@ -276,28 +244,4 @@ export function ImmersiveView() {
       </div>
     </DetailsContext>
   );
-}
-
-function useRuntimeFriendsPhotos(fallback: FriendsTorrentPhoto[]) {
-  const [photos, setPhotos] = useState(fallback);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void fetch("/api/day-n-night/friends-photos", {
-      cache: "no-store"
-    })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload: { photos?: FriendsTorrentPhoto[] } | null) => {
-        if (cancelled || !payload?.photos?.length) return;
-        setPhotos(payload.photos);
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return photos;
 }

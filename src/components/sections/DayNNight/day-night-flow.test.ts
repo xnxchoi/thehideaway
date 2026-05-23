@@ -5,15 +5,24 @@ const readLocal = (path: string) =>
   readFileSync(new URL(path, import.meta.url), "utf8");
 
 const landingSource = readLocal("./index.tsx");
+const mainLandingSource = readLocal("./MainLanding.tsx");
 const immersiveSource = readLocal("./Immersive/index.tsx");
 const friendsTorrentSource = readLocal("./Immersive/FriendsTorrent.tsx");
+const friendsPhotosSource = readLocal("./friendsPhotos.ts");
 const quickActionsSource = readLocal("./Immersive/QuickActions.tsx");
 const scoreSource = readLocal("./Immersive/DayNNightScore.tsx");
 const sunLoaderSource = readLocal("./Immersive/SunLoader.tsx");
 const timelineSource = readLocal("./Immersive/Timeline.tsx");
 const cssSource = readLocal("./dn.css");
 const friendsPhotosRouteSource = readFileSync(
-  new URL("../../../app/api/day-n-night/friends-photos/route.ts", import.meta.url),
+  new URL(
+    "../../../app/api/day-n-night/friends-photos/route.ts",
+    import.meta.url
+  ),
+  "utf8"
+);
+const gateAllowlistSource = readFileSync(
+  new URL("../../../lib/gate/allowlist.ts", import.meta.url),
   "utf8"
 );
 const enMessages = JSON.parse(
@@ -75,16 +84,21 @@ describe("Day n Night main flow contract", () => {
     expect(friendsTorrentSource).toContain("title?: ReactNode");
     expect(friendsTorrentSource).toContain("caption?: ReactNode");
     expect(immersiveSource).toContain("useRuntimeFriendsPhotos");
-    expect(immersiveSource).toContain("/api/day-n-night/friends-photos");
+    expect(mainLandingSource).toContain("useRuntimeFriendsPhotos");
+    expect(friendsPhotosSource).toContain("/api/day-n-night/friends-photos");
     expect(friendsPhotosRouteSource).toContain("readdir");
-    expect(friendsPhotosRouteSource).toContain("public/assets/day-n-night/past-events");
+    expect(friendsPhotosRouteSource).toContain(
+      "public/assets/day-n-night/past-events"
+    );
+    expect(gateAllowlistSource).toContain('"/api/day-n-night"');
   });
 
   it("puts layout controls in the top chrome and music in the bottom pill", () => {
     expect(immersiveSource).toContain("<ViewToggle");
     expect(quickActionsSource).toContain("MusicChip");
     expect(quickActionsSource).toContain("AudioBars");
-    expect(quickActionsSource).not.toContain("role=\"radiogroup\"");
+    expect(enMessages.Event.DayNNight.audio.label).toBe("Music");
+    expect(quickActionsSource).not.toContain('role="radiogroup"');
     expect(scoreSource).not.toContain("data-dn-audio-toggle");
     expect(cssSource).toContain("top: 64px");
     expect(cssSource).toContain("right: 20px");

@@ -108,11 +108,7 @@ function resolveDayGain(progress: number): number {
   return 1 - smoothstep(DAY_FADE_IN, DAY_FADE_OUT, progress);
 }
 
-export function DayNNightScore({
-  enabled
-}: {
-  enabled: boolean;
-}) {
+export function DayNNightScore({ enabled }: { enabled: boolean }) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);

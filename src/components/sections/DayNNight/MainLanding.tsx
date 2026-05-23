@@ -7,10 +7,8 @@ import * as m from "motion/react-m";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import {
-  FriendsTorrent,
-  type FriendsTorrentPhoto
-} from "./Immersive/FriendsTorrent";
+import { FriendsTorrent } from "./Immersive/FriendsTorrent";
+import { useRuntimeFriendsPhotos } from "./friendsPhotos";
 
 export type DayNNightRsvpState = "none" | "pending" | "confirmed";
 
@@ -19,32 +17,6 @@ type DayNNightMainPageProps = {
   rsvpState: DayNNightRsvpState;
   guestNames: string[];
 };
-
-const PAST_EVENT_FILENAMES = [
-  "KakaoTalk_Image_2026-05-21-03-03-19_001.jpeg",
-  "KakaoTalk_Image_2026-05-21-03-03-19_002.jpeg",
-  "KakaoTalk_Image_2026-05-21-03-03-19_003.jpeg",
-  "KakaoTalk_Image_2026-05-21-03-03-20_004.jpeg",
-  "partypic - 1.png",
-  "partypic - 2.png",
-  "partypic - 3.png",
-  "partypic - 4.png",
-  "partypic - 6.png",
-  "partypic - 7.png",
-  "partypic - 8.png",
-  "partypic - 9.png",
-  "partypic - 10.png",
-  "partypic - 11.png",
-  "partypic - 12.png",
-  "partypic - 13.png"
-] as const;
-
-const FRIENDS_PHOTOS: FriendsTorrentPhoto[] = PAST_EVENT_FILENAMES.map(
-  (filename) => ({
-    src: encodeURI(`/assets/day-n-night/past-events/${filename}`),
-    alt: "Past Hideaway gathering"
-  })
-);
 
 const NAV_KEYS = ["intro", "details", "friends", "music", "rsvp"] as const;
 const OFFERING_KEYS = [
@@ -396,6 +368,7 @@ function ScrollSyncedFriends() {
   const t = useTranslations("Event.DayNNight.main");
   const ref = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const friendsPhotos = useRuntimeFriendsPhotos();
 
   const updateProgress = () => {
     const node = ref.current;
@@ -437,11 +410,11 @@ function ScrollSyncedFriends() {
           transform: `translate3d(${24 - progress * 34}vw, 0, 0)`
         }}
       >
-        {[...FRIENDS_PHOTOS, ...FRIENDS_PHOTOS.slice(0, 6)].map((photo, i) => (
+        {[...friendsPhotos, ...friendsPhotos.slice(0, 6)].map((photo, i) => (
           <Image
             key={`${photo.src}-${i}`}
             src={photo.src}
-            alt=""
+            alt={photo.alt ?? ""}
             width={720}
             height={480}
             sizes="(min-width: 1280px) 26vw, (min-width: 768px) 34vw, 52vw"
@@ -473,6 +446,7 @@ function TorrentRsvp({ rsvpState }: { rsvpState: DayNNightRsvpState }) {
   const t = useTranslations("Event.DayNNight.main");
   const ref = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const friendsPhotos = useRuntimeFriendsPhotos();
 
   const updateProgress = () => {
     const node = ref.current;
@@ -511,7 +485,7 @@ function TorrentRsvp({ rsvpState }: { rsvpState: DayNNightRsvpState }) {
         }}
       >
         <FriendsTorrent
-          photos={FRIENDS_PHOTOS}
+          photos={friendsPhotos}
           active
           darkenOpacity={0.68}
           className="absolute inset-0"

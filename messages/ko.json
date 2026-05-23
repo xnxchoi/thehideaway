@@ -552,9 +552,9 @@
       },
       "scrollHint": "Scroll",
       "audio": {
-        "label": "사운드",
-        "on": "사운드 켜짐",
-        "off": "사운드 꺼짐"
+        "label": "음악",
+        "on": "음악 켜짐",
+        "off": "음악 꺼짐"
       },
       "details": {
         "eyebrow": "상세 정보",
