@@ -152,6 +152,7 @@ export default async function DayNNightMyPage() {
                     const o = order as {
                       id: string;
                       paid?: boolean;
+                      payment_submitted_at?: string | null;
                       password?: string | null;
                       password_expires_at?: string | null;
                     };
@@ -163,7 +164,11 @@ export default async function DayNNightMyPage() {
                       >
                         <div className="flex items-center justify-between gap-4">
                           <span className="font-mono text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
-                            {o.paid ? t("confirmed") : t("pending")}
+                            {o.paid
+                              ? t("confirmed")
+                              : o.payment_submitted_at
+                                ? t("submitted")
+                                : t("pending")}
                           </span>
                           {/* H14: opacity bumped from /35 to /55 — clears
                               the legibility floor for informative UI text. */}

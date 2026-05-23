@@ -34,7 +34,16 @@ import {
   DialogRoot,
   DialogTitle
 } from "@/components/ui/dialog";
-import { Copy, ExternalLink, Instagram, Mail, Phone } from "lucide-react";
+import {
+  ArrowUpRight,
+  Copy,
+  ExternalLink,
+  Instagram,
+  Mail,
+  MessageCircle,
+  Phone,
+  TicketCheck
+} from "lucide-react";
 import { BANK } from "@/components/sections/DayNNight/survivalKit.config";
 
 interface EventLite {
@@ -60,11 +69,13 @@ interface PurchasedTicket {
 }
 
 interface PurchaseResult {
+  order_id: string;
   tickets: PurchasedTicket[];
   total_amount: number;
   purchaser_id?: string | null;
   purchaser_name?: string | null;
   sender_name?: string | null;
+  payment_submitted_at?: string | null;
 }
 
 interface Props {
@@ -74,6 +85,8 @@ interface Props {
   sessionUserId: string | null;
   sessionEmail: string | null;
   sessionName: string | null;
+  sessionFirstName: string | null;
+  sessionLastName: string | null;
   gateInitiallyOpen?: boolean;
 }
 
@@ -93,15 +106,9 @@ type FlowStep =
   | "welcome"
   | "name"
   | "contact"
-  | "credential"
   | "passkey"
   | "reserve"
   | "purchased";
-
-type GeneratedLogin = {
-  email: string;
-  password: string;
-};
 
 type ContactChannelKey = "seanPhone" | "ingyuPhone" | "email" | "instagram";
 
@@ -155,6 +162,17 @@ function normalizePaymentMemoPart(value: string | null | undefined): string {
     .replace(/\s+/g, "-")
     .replace(/_/g, "-")
     .slice(0, 80);
+}
+
+function splitDisplayName(name: string | null | undefined): {
+  firstName: string;
+  lastName: string;
+} {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" ")
+  };
 }
 
 function buildPaymentMemo({
@@ -304,6 +322,8 @@ export function TicketEventClient({
   sessionUserId,
   sessionEmail,
   sessionName,
+  sessionFirstName,
+  sessionLastName,
   gateInitiallyOpen = false
 }: Props) {
   const router = useTransitionRouter();
@@ -312,6 +332,7 @@ export function TicketEventClient({
   const tStatus = useTranslations("Event.Rsvp.status");
   const tBar = useTranslations("Event.Rsvp.bar");
   const tErrors = useTranslations("Event.Rsvp.errors");
+  const tPurchased = useTranslations("Event.Rsvp.purchased");
   const setHeaderVisibility = useRPStore((r) => r.setHeaderVisibility);
   const setFXFrameVisibility = useRPStore((r) => r.setFXFrameVisibility);
 
@@ -326,14 +347,12 @@ export function TicketEventClient({
   // ── Step state (4-step flow only) ────────────────────────────────────
   const useStepFlow = event.slug === STEP_FLOW_SLUG;
   const myTicketsHref = useStepFlow ? "/day-n-night/my" : "/tickets/my";
+  const storyHref = useStepFlow ? "/day-n-night" : "/";
   const signInHref = signInRedirectPath(`/tickets/${event.slug}`);
   const [step, setStep] = useState<FlowStep>("welcome");
   const [dir, setDir] = useState(1);
   const [supportOpen, setSupportOpen] = useState(false);
   const openSupport = useCallback(() => setSupportOpen(true), []);
-  const [generatedLogin, setGeneratedLogin] = useState<GeneratedLogin | null>(
-    null
-  );
   const { data: passkeys } = authClient.useListPasskeys();
   const [passkeyCreated, setPasskeyCreated] = useState(false);
   const hasPasskey = passkeyCreated || Boolean(passkeys?.length);
@@ -343,7 +362,7 @@ export function TicketEventClient({
         ? hasPasskey
           ? ["name", "reserve"]
           : ["name", "passkey", "reserve"]
-        : ["name", "contact", "credential", "passkey", "reserve"],
+        : ["name", "contact", "passkey", "reserve"],
     [hasPasskey, isAuthenticated]
   );
 
@@ -371,12 +390,11 @@ export function TicketEventClient({
 
   // Contact step state
   const [contactEmail, setContactEmailInternal] = useState(sessionEmail ?? "");
+  const [accountPassword, setAccountPassword] = useState("");
   const [contactBusy, setContactBusy] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
   const [contactNeedsLogin, setContactNeedsLogin] = useState(false);
   const [sessionBootstrapped, setSessionBootstrapped] = useState(false);
-  const [credentialBusy, setCredentialBusy] = useState(false);
-  const [credentialError, setCredentialError] = useState<string | null>(null);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [passkeyChecking, setPasskeyChecking] = useState(false);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
@@ -385,14 +403,34 @@ export function TicketEventClient({
     setContactNeedsLogin(false);
     setContactEmailInternal(value);
   }, []);
-
-  // Purchaser display name
-  const [purchaserName, setPurchaserNameInternal] = useState(sessionName ?? "");
-  const [nameTouched, setNameTouched] = useState(false);
-  const setPurchaserName = useCallback((value: string) => {
-    setNameTouched(true);
-    setPurchaserNameInternal(value);
+  const updateAccountPassword = useCallback((value: string) => {
+    setContactError(null);
+    setContactNeedsLogin(false);
+    setAccountPassword(value);
   }, []);
+
+  // Purchaser legal-ish name. Kept split for account storage, joined only
+  // where existing ticket/order surfaces expect a display string.
+  const fallbackSessionName = splitDisplayName(sessionName);
+  const [purchaserFirstName, setPurchaserFirstNameInternal] = useState(
+    sessionFirstName ?? fallbackSessionName.firstName
+  );
+  const [purchaserLastName, setPurchaserLastNameInternal] = useState(
+    sessionLastName ?? fallbackSessionName.lastName
+  );
+  const [nameTouched, setNameTouched] = useState(false);
+  const setPurchaserFirstName = useCallback((value: string) => {
+    setNameTouched(true);
+    setPurchaserFirstNameInternal(value);
+  }, []);
+  const setPurchaserLastName = useCallback((value: string) => {
+    setNameTouched(true);
+    setPurchaserLastNameInternal(value);
+  }, []);
+  const purchaserName = useMemo(
+    () => [purchaserFirstName, purchaserLastName].filter(Boolean).join(" "),
+    [purchaserFirstName, purchaserLastName]
+  );
 
   // Live session — Better Auth flips this after the contact step or a
   // normal sign-in succeeds.
@@ -410,6 +448,10 @@ export function TicketEventClient({
   const [purchaseBusy, setPurchaseBusy] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [purchased, setPurchased] = useState<PurchaseResult | null>(null);
+  const [paymentSubmitBusy, setPaymentSubmitBusy] = useState(false);
+  const [paymentSubmitError, setPaymentSubmitError] = useState<string | null>(
+    null
+  );
   const [copied, setCopied] = useState<string | null>(null);
 
   // Restore cached gate password on mount.
@@ -424,16 +466,25 @@ export function TicketEventClient({
   }, [event.slug, gateInitiallyOpen]);
 
   // Sync purchaser name from the live session when sign-in lands mid-flow.
-  const liveSessionName = (
-    liveSession?.user as { name?: string | null } | undefined
-  )?.name;
+  const liveSessionUser = liveSession?.user as
+    | {
+        name?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+      }
+    | undefined;
   useEffect(() => {
     if (nameTouched) return;
-    if (!liveSessionName) return;
-    if (liveSessionName === purchaserName) return;
-    setPurchaserNameInternal(liveSessionName);
-    setSenderName((current) => current || liveSessionName);
-  }, [liveSessionName, nameTouched, purchaserName]);
+    if (!liveSessionUser) return;
+    const fallback = splitDisplayName(liveSessionUser.name);
+    const nextFirstName = liveSessionUser.firstName ?? fallback.firstName;
+    const nextLastName = liveSessionUser.lastName ?? fallback.lastName;
+    if (!nextFirstName && !nextLastName) return;
+    setPurchaserFirstNameInternal(nextFirstName);
+    setPurchaserLastNameInternal(nextLastName);
+    const nextName = [nextFirstName, nextLastName].filter(Boolean).join(" ");
+    setSenderName((current) => current || nextName);
+  }, [liveSessionUser, nameTouched]);
 
   useEffect(() => {
     if (senderTouched) return;
@@ -514,7 +565,7 @@ export function TicketEventClient({
   }, [advanceTo]);
 
   const advanceFromName = () => {
-    if (!purchaserName.trim()) return;
+    if (!purchaserFirstName.trim() || !purchaserLastName.trim()) return;
     if (!isAuthedNow) {
       advanceTo("contact");
       return;
@@ -523,30 +574,68 @@ export function TicketEventClient({
   };
 
   const continueFromContact = async () => {
-    if (contactBusy || !contactEmail.trim() || !purchaserName.trim()) return;
+    if (
+      contactBusy ||
+      !contactEmail.trim() ||
+      !purchaserFirstName.trim() ||
+      !purchaserLastName.trim() ||
+      accountPassword.length < 8
+    ) {
+      return;
+    }
 
     setContactBusy(true);
     setContactError(null);
     setContactNeedsLogin(false);
 
+    const signInWithPassword = async (): Promise<boolean> => {
+      const result = await authClient.signIn.email({
+        email: contactEmail.trim(),
+        password: accountPassword,
+        rememberMe: true,
+        fetchOptions: { throw: true }
+      });
+
+      if ("error" in result) return false;
+
+      await storePasswordCredential({
+        email: contactEmail.trim(),
+        name: purchaserName || contactEmail.trim(),
+        password: accountPassword
+      }).catch(() => false);
+
+      setSessionBootstrapped(true);
+      return true;
+    };
+
     try {
       const result = await prepareDayNNightPurchaserAction({
         email: contactEmail.trim(),
-        name: purchaserName.trim()
+        firstName: purchaserFirstName.trim(),
+        lastName: purchaserLastName.trim(),
+        password: accountPassword
       });
 
       if (result.ok) {
-        setGeneratedLogin({
-          email: result.email,
-          password: result.password
-        });
-        setSessionBootstrapped(true);
-        setCredentialError(null);
-        advanceTo("credential");
+        const signedIn = await signInWithPassword().catch(() => false);
+        if (!signedIn) {
+          setContactError(t("contact.signInError"));
+          return;
+        }
+        advanceTo(hasPasskey ? "reserve" : "passkey");
         return;
       }
 
       if (result.reason === "existing-account-login-required") {
+        try {
+          const signedIn = await signInWithPassword();
+          if (signedIn) {
+            advanceTo(hasPasskey ? "reserve" : "passkey");
+            return;
+          }
+        } catch {
+          // Fall through to the explicit existing-account guidance below.
+        }
         setContactNeedsLogin(true);
         return;
       }
@@ -556,50 +645,6 @@ export function TicketEventClient({
       setContactError(t("contact.continueError"));
     } finally {
       setContactBusy(false);
-    }
-  };
-
-  const continueFromCredential = async () => {
-    if (!generatedLogin) {
-      advanceTo(hasPasskey ? "reserve" : "passkey");
-      return;
-    }
-
-    setCredentialError(null);
-
-    try {
-      await storePasswordCredential({
-        email: generatedLogin.email,
-        name: purchaserName.trim() || generatedLogin.email,
-        password: generatedLogin.password
-      });
-    } catch {
-      // Browser-managed password save is best-effort; the user can still
-      // save manually from the displayed field before continuing.
-    }
-
-    setCredentialBusy(true);
-
-    try {
-      const result = await authClient.signIn.email({
-        email: generatedLogin.email,
-        password: generatedLogin.password,
-        rememberMe: true,
-        fetchOptions: { throw: true }
-      });
-
-      if ("error" in result) {
-        setCredentialError(t("credential.refreshError"));
-        return;
-      }
-
-      setSessionBootstrapped(true);
-      setGeneratedLogin(null);
-      advanceTo(hasPasskey ? "reserve" : "passkey");
-    } catch {
-      setCredentialError(t("credential.refreshError"));
-    } finally {
-      setCredentialBusy(false);
     }
   };
 
@@ -691,17 +736,56 @@ export function TicketEventClient({
         return;
       }
       setPurchased({
+        order_id: out.order_id,
         tickets: out.tickets,
         total_amount: out.total_amount,
         purchaser_id: out.purchaser_id ?? liveSessionUserId ?? sessionUserId,
         purchaser_name: out.purchaser_name ?? (purchaserName.trim() || null),
-        sender_name: out.sender_name ?? (senderName.trim() || null)
+        sender_name: out.sender_name ?? (senderName.trim() || null),
+        payment_submitted_at: out.payment_submitted_at ?? null
       });
+      setPaymentSubmitError(null);
       if (useStepFlow) advanceTo("purchased");
     } catch {
       setPurchaseError(tErrors("generic"));
     } finally {
       setPurchaseBusy(false);
+    }
+  };
+
+  const markPaymentSubmitted = async () => {
+    if (!purchased?.order_id || paymentSubmitBusy) return;
+
+    setPaymentSubmitBusy(true);
+    setPaymentSubmitError(null);
+
+    try {
+      const res = await fetch("/api/tickets/payment-submitted", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: purchased.order_id
+        })
+      });
+      const out = await res.json();
+
+      if (!res.ok || !out.ok) {
+        setPaymentSubmitError(tPurchased("paymentSubmitted.error"));
+        return;
+      }
+
+      setPurchased((current) =>
+        current
+          ? {
+              ...current,
+              payment_submitted_at: out.payment_submitted_at ?? null
+            }
+          : current
+      );
+    } catch {
+      setPaymentSubmitError(tPurchased("paymentSubmitted.error"));
+    } finally {
+      setPaymentSubmitBusy(false);
     }
   };
 
@@ -743,6 +827,9 @@ export function TicketEventClient({
           copied={copied}
           onCopy={copyClaim}
           myTicketsHref={myTicketsHref}
+          paymentSubmitBusy={paymentSubmitBusy}
+          paymentSubmitError={paymentSubmitError}
+          onPaymentSubmitted={markPaymentSubmitted}
           onContactSupport={openSupport}
         />
       );
@@ -756,30 +843,14 @@ export function TicketEventClient({
             <ContactStep
               email={contactEmail}
               setEmail={updateContactEmail}
+              password={accountPassword}
+              setPassword={updateAccountPassword}
               busy={contactBusy}
               error={contactError}
               needsLogin={contactNeedsLogin}
               signInHref={signInHref}
               onContactSupport={openSupport}
               onContinue={continueFromContact}
-            />
-          );
-        case "credential":
-          return generatedLogin ? (
-            <CredentialStep
-              login={generatedLogin}
-              purchaserName={purchaserName}
-              busy={credentialBusy}
-              error={credentialError}
-              onContinue={continueFromCredential}
-            />
-          ) : (
-            <PasskeyStep
-              busy={passkeyBusy}
-              checking={passkeyChecking}
-              error={passkeyError}
-              onContactSupport={openSupport}
-              onCreate={createPasskey}
             />
           );
         case "passkey":
@@ -795,8 +866,10 @@ export function TicketEventClient({
         case "name":
           return (
             <NameStep
-              name={purchaserName}
-              setName={setPurchaserName}
+              firstName={purchaserFirstName}
+              lastName={purchaserLastName}
+              setFirstName={setPurchaserFirstName}
+              setLastName={setPurchaserLastName}
               onContinue={advanceFromName}
             />
           );
@@ -816,6 +889,15 @@ export function TicketEventClient({
               purchaseError={purchaseError}
               purchaseBusy={purchaseBusy}
               isAuthenticated={isAuthedNow}
+              navLinks={
+                useStepFlow
+                  ? {
+                      myTicketsHref,
+                      storyHref,
+                      onContactSupport: openSupport
+                    }
+                  : null
+              }
               onSubmit={submitPurchase}
             />
           );
@@ -835,6 +917,7 @@ export function TicketEventClient({
         purchaseError={purchaseError}
         purchaseBusy={purchaseBusy}
         isAuthenticated={isAuthedNow}
+        navLinks={null}
         onSubmit={submitPurchase}
       />
     );
@@ -1339,6 +1422,8 @@ function WelcomeStep({ onStart }: { onStart: () => void }) {
 function ContactStep({
   email,
   setEmail,
+  password,
+  setPassword,
   busy,
   error,
   needsLogin,
@@ -1348,6 +1433,8 @@ function ContactStep({
 }: {
   email: string;
   setEmail: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
   busy: boolean;
   error: string | null;
   needsLogin: boolean;
@@ -1392,17 +1479,37 @@ function ContactStep({
         </label>
         <input
           id="contact-email"
+          name="username"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t("emailPlaceholder")}
           aria-label={t("emailPlaceholder")}
-          autoComplete="email"
+          autoComplete="username"
           data-autofocus-after-transition="true"
           spellCheck={false}
           inputMode="email"
           className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
         />
+        <label htmlFor="contact-password" className="sr-only">
+          {t("passwordPlaceholder")}
+        </label>
+        <input
+          id="contact-password"
+          name="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("passwordPlaceholder")}
+          aria-label={t("passwordPlaceholder")}
+          autoComplete="new-password"
+          minLength={8}
+          maxLength={128}
+          className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
+        />
+        <p className="font-sans text-xs leading-relaxed text-muted-foreground">
+          {t("passwordHint")}
+        </p>
         {error ? (
           <m.p
             role="alert"
@@ -1417,7 +1524,7 @@ function ContactStep({
           <MotionPillButton
             type="submit"
             size="md"
-            disabled={busy || !email.trim()}
+            disabled={busy || !email.trim() || password.length < 8}
             className="h-12 min-w-36 self-start bg-foreground px-7 text-sm font-medium whitespace-nowrap text-background disabled:opacity-40 sm:h-14 sm:text-base"
           >
             {busy ? "…" : t("submit")}
@@ -1441,150 +1548,6 @@ function ContactStep({
           ) : null}
         </div>
       </m.form>
-    </div>
-  );
-}
-
-function CredentialStep({
-  login,
-  purchaserName,
-  busy,
-  error,
-  onContinue
-}: {
-  login: GeneratedLogin;
-  purchaserName: string;
-  busy: boolean;
-  error: string | null;
-  onContinue: () => void;
-}) {
-  const t = useTranslations("Event.Rsvp.steps.credential");
-  const [copied, setCopied] = useState(false);
-
-  const copyPassword = async () => {
-    try {
-      await navigator.clipboard.writeText(login.password);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setCopied(false);
-    }
-  };
-
-  return (
-    <div className="flex w-full flex-col gap-7">
-      <div className="flex flex-col gap-2.5">
-        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
-          {t("eyebrow")}
-        </p>
-        <TextBlurIn
-          as="h2"
-          text={t("title")}
-          style={{ fontSize: "clamp(3rem, 5.5vw, 4.75rem)" }}
-          className="leading-[0.95] font-extrabold tracking-[-0.025em] text-balance text-foreground"
-          stagger={0.05}
-          delay={0.05}
-          yOffset={6}
-          blurAmount={5}
-          duration={0.7}
-        />
-        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
-          {t("body")}
-        </p>
-      </div>
-
-      <form
-        autoComplete="on"
-        className="grid gap-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onContinue();
-        }}
-      >
-        <div className="grid gap-3 rounded-2xl border border-border/40 bg-background/45 p-4">
-          <label
-            htmlFor="generated-login-email"
-            className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground uppercase"
-          >
-            {t("emailLabel")}
-          </label>
-          <input
-            id="generated-login-email"
-            name="username"
-            type="email"
-            value={login.email}
-            readOnly
-            autoComplete="username"
-            className="h-11 w-full border-b border-border/40 bg-transparent font-sans text-sm text-foreground outline-none"
-          />
-
-          <label
-            htmlFor="generated-login-password"
-            className="mt-2 font-sans text-[10px] tracking-[0.22em] text-muted-foreground uppercase"
-          >
-            {t("passwordLabel")}
-          </label>
-          <div className="flex items-end gap-2">
-            <input
-              id="generated-login-password"
-              name="password"
-              type="text"
-              value={login.password}
-              readOnly
-              autoComplete="new-password"
-              data-autofocus-after-transition="true"
-              onFocus={(event) => event.currentTarget.select()}
-              className="h-12 min-w-0 flex-1 border-b border-border/40 bg-transparent font-mono text-sm text-foreground outline-none selection:bg-foreground selection:text-background"
-            />
-            <button
-              type="button"
-              onClick={copyPassword}
-              className="h-10 rounded-full border border-border/30 px-4 font-sans text-xs text-muted-foreground transition-colors hover:border-border/60 hover:text-foreground"
-            >
-              {copied ? t("copied") : t("copy")}
-            </button>
-          </div>
-        </div>
-
-        <p className="font-sans text-xs leading-relaxed text-muted-foreground">
-          {t("mobileHint")}
-        </p>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <MotionPillButton
-            type="submit"
-            size="md"
-            disabled={busy}
-            className="h-12 min-w-52 self-start bg-foreground px-7 text-sm font-medium whitespace-nowrap text-background sm:h-14 sm:text-base"
-          >
-            {busy ? "…" : t("saved")}
-          </MotionPillButton>
-        </div>
-      </form>
-
-      {error ? (
-        <m.p
-          role="alert"
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="font-sans text-xs leading-relaxed text-destructive"
-        >
-          {error}
-        </m.p>
-      ) : null}
-
-      <p className="sr-only" aria-live="polite">
-        {copied ? t("copied") : ""}
-      </p>
-      <input
-        type="text"
-        value={purchaserName}
-        readOnly
-        autoComplete="name"
-        className="sr-only"
-        tabIndex={-1}
-        aria-hidden
-      />
     </div>
   );
 }
@@ -1673,12 +1636,16 @@ function PasskeyStep({
  * Name step — captures the display name stamped on ticket-orders.purchaser_name.
  */
 function NameStep({
-  name,
-  setName,
+  firstName,
+  lastName,
+  setFirstName,
+  setLastName,
   onContinue
 }: {
-  name: string;
-  setName: (v: string) => void;
+  firstName: string;
+  lastName: string;
+  setFirstName: (v: string) => void;
+  setLastName: (v: string) => void;
   onContinue: () => void;
 }) {
   const t = useTranslations("Event.Rsvp.steps.name");
@@ -1707,25 +1674,45 @@ function NameStep({
           onContinue();
         }}
       >
-        <label htmlFor="purchaser-name" className="sr-only">
-          {t("placeholder")}
-        </label>
-        <input
-          id="purchaser-name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("placeholder")}
-          aria-label={t("placeholder")}
-          autoComplete="name"
-          data-autofocus-after-transition="true"
-          maxLength={120}
-          className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
-        />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="grid gap-2">
+            <span className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground uppercase">
+              {t("firstNameLabel")}
+            </span>
+            <input
+              id="purchaser-first-name"
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder={t("firstNamePlaceholder")}
+              aria-label={t("firstNameLabel")}
+              autoComplete="given-name"
+              data-autofocus-after-transition="true"
+              maxLength={80}
+              className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
+            />
+          </label>
+          <label className="grid gap-2">
+            <span className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground uppercase">
+              {t("lastNameLabel")}
+            </span>
+            <input
+              id="purchaser-last-name"
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder={t("lastNamePlaceholder")}
+              aria-label={t("lastNameLabel")}
+              autoComplete="family-name"
+              maxLength={80}
+              className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
+            />
+          </label>
+        </div>
         <MotionPillButton
           type="submit"
           size="md"
-          disabled={!name.trim()}
+          disabled={!firstName.trim() || !lastName.trim()}
           className="h-12 min-w-36 self-start bg-foreground px-7 text-sm font-medium text-background disabled:opacity-40 sm:h-14 sm:text-base"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1746,6 +1733,9 @@ function PurchasedView({
   copied,
   onCopy,
   myTicketsHref,
+  paymentSubmitBusy,
+  paymentSubmitError,
+  onPaymentSubmitted,
   onContactSupport
 }: {
   purchased: PurchaseResult;
@@ -1755,11 +1745,15 @@ function PurchasedView({
   copied: string | null;
   onCopy: (url: string) => void;
   myTicketsHref: string;
+  paymentSubmitBusy: boolean;
+  paymentSubmitError: string | null;
+  onPaymentSubmitted: () => void;
   onContactSupport: () => void;
 }) {
   const t = useTranslations("Event.Rsvp.purchased");
   const [paymentCopied, setPaymentCopied] = useState(false);
   const [showPaymentFallback, setShowPaymentFallback] = useState(false);
+  const paymentSubmitted = Boolean(purchased.payment_submitted_at);
   const paymentMemo = buildPaymentMemo({
     senderName,
     purchaserName,
@@ -1878,6 +1872,65 @@ function PurchasedView({
               </button>
             </div>
           ) : null}
+
+          <div
+            className={cn(
+              "grid gap-3 border-t border-border/25 pt-4",
+              paymentSubmitted ? "text-foreground" : "text-muted-foreground"
+            )}
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className={cn(
+                  "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border",
+                  paymentSubmitted
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border/40 text-muted-foreground"
+                )}
+                aria-hidden="true"
+              >
+                <TicketCheck className="size-3.5" />
+              </span>
+              <div className="grid gap-1">
+                <p className="font-sans text-sm font-medium tracking-tight">
+                  {paymentSubmitted
+                    ? t("paymentSubmitted.doneTitle")
+                    : t("paymentSubmitted.title")}
+                </p>
+                <p className="font-sans text-xs leading-relaxed text-muted-foreground">
+                  {paymentSubmitted
+                    ? t("paymentSubmitted.doneBody")
+                    : t("paymentSubmitted.body")}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onPaymentSubmitted}
+              disabled={paymentSubmitBusy || paymentSubmitted}
+              data-testid="ticket-payment-submitted"
+              className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-full border border-border/40 px-4 font-sans text-xs font-medium text-foreground transition-colors hover:border-border/70 hover:bg-muted/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-55"
+            >
+              <TicketCheck className="size-3.5" aria-hidden="true" />
+              {paymentSubmitted
+                ? t("paymentSubmitted.doneCta")
+                : paymentSubmitBusy
+                  ? t("paymentSubmitted.submitting")
+                  : t("paymentSubmitted.cta")}
+            </button>
+
+            {paymentSubmitError ? (
+              <m.p
+                role="alert"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-sans text-xs leading-relaxed text-destructive"
+              >
+                {paymentSubmitError}
+              </m.p>
+            ) : null}
+          </div>
         </section>
 
         <div className="grid gap-3 border-b border-border/35 pb-5">
@@ -2048,6 +2101,7 @@ function ReserveView({
   purchaseError,
   purchaseBusy,
   isAuthenticated,
+  navLinks,
   onSubmit
 }: {
   quantity: number;
@@ -2059,6 +2113,11 @@ function ReserveView({
   purchaseError: string | null;
   purchaseBusy: boolean;
   isAuthenticated: boolean;
+  navLinks: {
+    myTicketsHref: string;
+    storyHref: string;
+    onContactSupport: () => void;
+  } | null;
   onSubmit: () => void;
 }) {
   const t = useTranslations("Event.Rsvp.reserve");
@@ -2080,6 +2139,39 @@ function ReserveView({
           duration={0.7}
         />
       </div>
+
+      {navLinks ? (
+        <nav
+          aria-label={t("navigationLabel")}
+          className="grid grid-cols-3 border-y border-border/30"
+        >
+          <Link
+            href={navLinks.myTicketsHref}
+            data-testid="reserve-nav-my-tickets"
+            className="group flex min-h-16 flex-col justify-center gap-2 border-r border-border/30 px-3 py-3 font-sans text-[10px] font-medium tracking-[0.16em] text-muted-foreground uppercase transition-colors hover:bg-muted/20 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <TicketCheck className="size-4 transition-transform group-hover:-translate-y-0.5" />
+            <span>{t("nav.myTickets")}</span>
+          </Link>
+          <Link
+            href={navLinks.storyHref}
+            data-testid="reserve-nav-story"
+            className="group flex min-h-16 flex-col justify-center gap-2 border-r border-border/30 px-3 py-3 font-sans text-[10px] font-medium tracking-[0.16em] text-muted-foreground uppercase transition-colors hover:bg-muted/20 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <span>{t("nav.story")}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={navLinks.onContactSupport}
+            data-testid="reserve-nav-contact"
+            className="group flex min-h-16 flex-col justify-center gap-2 px-3 py-3 text-left font-sans text-[10px] font-medium tracking-[0.16em] text-muted-foreground uppercase transition-colors hover:bg-muted/20 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <MessageCircle className="size-4 transition-transform group-hover:-translate-y-0.5" />
+            <span>{t("nav.contact")}</span>
+          </button>
+        </nav>
+      ) : null}
 
       <div className="grid gap-6">
         <div

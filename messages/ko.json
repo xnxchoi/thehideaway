@@ -675,12 +675,15 @@
         },
         "contact": {
           "eyebrow": "연락처",
-          "title": "결제 안내를 받을 이메일을 입력해 주세요.",
-          "body": "이 이메일로 예약 정보와 결제 안내를 보내드립니다.",
+          "title": "티켓 로그인 정보를 만들어 주세요.",
+          "body": "다른 기기에서도 열 수 있는 이메일과 비밀번호를 입력해 주세요. 이 계정으로 예약과 결제 안내를 저장합니다.",
           "emailPlaceholder": "you@example.com",
+          "passwordPlaceholder": "비밀번호 만들기",
+          "passwordHint": "8자 이상으로 입력해 주세요. 계속하면 브라우저가 저장할 수 있습니다.",
           "submit": "계속",
           "continueError": "이 이메일로 진행할 수 없습니다. 주소를 확인하고 다시 시도해 주세요.",
-          "existingAccount": "이미 계정이 있는 이메일입니다. 패스키로 로그인하거나, 이 기기에서 진행할 수 없으면 문의해 주세요.",
+          "signInError": "계정은 만들어졌지만 자동 로그인에 실패했습니다. 방금 만든 비밀번호로 로그인해 주세요.",
+          "existingAccount": "이미 계정이 있는 이메일입니다. 해당 계정의 비밀번호를 입력해 계속하거나, 로그인 또는 문의해 주세요.",
           "signIn": "로그인",
           "contactHost": "문의하기"
         },
@@ -723,7 +726,10 @@
         "name": {
           "eyebrow": "이름",
           "title": "입장 명단에 올릴 이름을 입력해 주세요.",
-          "placeholder": "성함",
+          "firstNameLabel": "이름",
+          "firstNamePlaceholder": "이름",
+          "lastNameLabel": "성",
+          "lastNamePlaceholder": "성",
           "submit": "계속"
         },
         "purchase": {
@@ -743,6 +749,7 @@
         "empty": "이 계정에 등록된 티켓이 없습니다.",
         "outage": "현재 티켓을 불러올 수 없습니다. 잠시 뒤 새로고침해 주세요.",
         "confirmed": "확정",
+        "submitted": "이체 접수",
         "pending": "대기 중",
         "ticketCount": "티켓 {count}장",
         "orderPassword": "주문 비밀번호",
@@ -854,6 +861,16 @@
           "copyDetails": "정보 복사",
           "copied": "복사됨"
         },
+        "paymentSubmitted": {
+          "title": "이체 후",
+          "body": "이체를 완료했다면 여기서 알려 주세요. 호스트가 확인할 주문으로 올라갑니다.",
+          "cta": "이체 완료 알리기",
+          "submitting": "전송 중…",
+          "doneTitle": "이체 완료 접수됨",
+          "doneBody": "호스트가 확인할 주문으로 접수되었습니다. 입금이 매칭되면 티켓이 활성화됩니다.",
+          "doneCta": "접수됨",
+          "error": "이체 완료 상태를 저장하지 못했습니다. 다시 시도하거나 문의해 주세요."
+        },
         "summary": {
           "eyebrow": "예약 요약",
           "tickets": "티켓",
@@ -895,6 +912,12 @@
       },
       "reserve": {
         "eyebrow": "예약 · {total}",
+        "navigationLabel": "구매 화면 이동",
+        "nav": {
+          "myTickets": "내 티켓",
+          "story": "이벤트",
+          "contact": "문의"
+        },
         "quantityLabel": "수량",
         "quantityGroupLabel": "티켓 수량",
         "senderLabel": "입금자명",

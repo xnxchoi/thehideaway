@@ -22,6 +22,9 @@ import { onOrderPaid } from "./hooks/onOrderPaid";
  *      All sibling Tickets stay valid past the 48h window — the password
  *      only gates the `/day-n-night/claim/[token]` URL for unredeemed
  *      gift tickets.
+ *   4. Purchaser can mark the transfer as sent from the success screen.
+ *      That stamps `payment_submitted_at` only; hosts still manually verify
+ *      Toss and flip `paid`.
  */
 
 // Field-level admin guard for the lifecycle fields. The collection-level
@@ -57,7 +60,14 @@ export const TicketOrders: CollectionConfig = {
   access: orderAccess,
   admin: {
     useAsTitle: "id",
-    defaultColumns: ["purchaser", "event", "paid", "paid_at", "createdAt"]
+    defaultColumns: [
+      "purchaser",
+      "event",
+      "payment_submitted_at",
+      "paid",
+      "paid_at",
+      "createdAt"
+    ]
   },
   fields: [
     {
@@ -113,6 +123,18 @@ export const TicketOrders: CollectionConfig = {
       admin: {
         description:
           "Admin-only. Flip this after confirming the bank transfer. Triggers password issuance + email."
+      }
+    },
+    {
+      type: "date",
+      name: "payment_submitted_at",
+      label: "Payment submitted at",
+      access: {
+        update: adminOnlyField
+      },
+      admin: {
+        description:
+          "Stamped when the purchaser says the bank transfer has been sent. This is not payment confirmation; admins still verify Toss and flip Paid."
       }
     },
     {

@@ -2928,6 +2928,10 @@ export interface TicketOrder {
    */
   paid?: boolean | null;
   /**
+   * Stamped when the purchaser says the bank transfer has been sent. This is not payment confirmation; admins still verify Toss and flip Paid.
+   */
+  payment_submitted_at?: string | null;
+  /**
    * Set automatically when `paid` is flipped to true.
    */
   paid_at?: string | null;
@@ -4750,6 +4754,7 @@ export interface TicketOrdersSelect<T extends boolean = true> {
   purchaser_name?: T;
   sender_name?: T;
   paid?: T;
+  payment_submitted_at?: T;
   paid_at?: T;
   password?: T;
   password_issued_at?: T;

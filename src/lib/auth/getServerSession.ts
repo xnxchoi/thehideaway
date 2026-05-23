@@ -4,6 +4,8 @@ export interface ServerSessionUser {
   id: string;
   email?: string | null;
   name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   username?: string | null;
   role?: string | null;
 }

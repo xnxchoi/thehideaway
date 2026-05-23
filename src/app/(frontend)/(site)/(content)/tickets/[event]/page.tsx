@@ -98,6 +98,8 @@ export default async function TicketEventPage(props: { params: Params }) {
       // Both null on a signed-out hit; the client step machine handles that.
       sessionEmail={session?.user?.email ?? null}
       sessionName={session?.user?.name ?? null}
+      sessionFirstName={session?.user?.firstName ?? null}
+      sessionLastName={session?.user?.lastName ?? null}
       gateInitiallyOpen={gateInitiallyOpen}
     />
   );

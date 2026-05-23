@@ -674,12 +674,15 @@
         },
         "contact": {
           "eyebrow": "Contact",
-          "title": "Where should we send the payment details?",
-          "body": "We'll use this address for your reservation and the follow-up payment instructions.",
+          "title": "Create your ticket login.",
+          "body": "Use an email and password you can open from any device. We'll save this account for your reservation and payment instructions.",
           "emailPlaceholder": "you@example.com",
+          "passwordPlaceholder": "Create a password",
+          "passwordHint": "Minimum 8 characters. Your browser can save it after you continue.",
           "submit": "Continue",
           "continueError": "We couldn't continue with that email. Check the address and try again.",
-          "existingAccount": "This email already belongs to an account. Sign in with passkey to continue, or contact us if this device cannot use one.",
+          "signInError": "We created the account, but couldn't sign you in automatically. Try signing in with the password you just chose.",
+          "existingAccount": "This email already belongs to an account. Enter that account's password to continue, sign in, or contact us if you cannot access it.",
           "signIn": "Sign in",
           "contactHost": "Contact us"
         },
@@ -722,7 +725,10 @@
         "name": {
           "eyebrow": "Your name",
           "title": "What name should be on the door?",
-          "placeholder": "First and last name",
+          "firstNameLabel": "First name",
+          "firstNamePlaceholder": "First name",
+          "lastNameLabel": "Last name",
+          "lastNamePlaceholder": "Last name",
           "submit": "Continue"
         },
         "purchase": {
@@ -742,6 +748,7 @@
         "empty": "No tickets on this account yet.",
         "outage": "We couldn't load your tickets right now. Try refreshing in a moment.",
         "confirmed": "Confirmed",
+        "submitted": "Payment sent",
         "pending": "Pending",
         "ticketCount": "{count, plural, one {# ticket} other {# tickets}}",
         "orderPassword": "Order password",
@@ -853,6 +860,16 @@
           "copyDetails": "Copy details",
           "copied": "Copied"
         },
+        "paymentSubmitted": {
+          "title": "After transfer",
+          "body": "Once the bank transfer is sent, mark it here so the host knows this order is ready to verify.",
+          "cta": "I sent the transfer",
+          "submitting": "Sending…",
+          "doneTitle": "Transfer submitted",
+          "doneBody": "The host has this order in the review queue. Your tickets activate after the transfer is matched.",
+          "doneCta": "Submitted",
+          "error": "We couldn't mark this transfer as sent. Try again or contact us."
+        },
         "summary": {
           "eyebrow": "Reservation summary",
           "tickets": "Tickets",
@@ -894,6 +911,12 @@
       },
       "reserve": {
         "eyebrow": "Reserve · {total}",
+        "navigationLabel": "Purchase navigation",
+        "nav": {
+          "myTickets": "My tickets",
+          "story": "Event",
+          "contact": "Contact"
+        },
         "quantityLabel": "Quantity",
         "quantityGroupLabel": "Number of tickets",
         "senderLabel": "Bank sender name",

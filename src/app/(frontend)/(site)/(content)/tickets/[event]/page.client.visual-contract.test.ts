@@ -4,6 +4,9 @@ import { readFileSync } from "node:fs";
 const source = readFileSync(new URL("./page.client.tsx", import.meta.url), {
   encoding: "utf8"
 });
+const actionSource = readFileSync(new URL("./actions.ts", import.meta.url), {
+  encoding: "utf8"
+});
 
 const getFunctionSource = (name: string) => {
   const start = source.indexOf(`function ${name}`);
@@ -19,7 +22,6 @@ describe("Day n Night RSVP visual contract", () => {
   const stageSource = getFunctionSource("DayNNightRsvpStage");
   const stepSources = [
     getFunctionSource("ContactStep"),
-    getFunctionSource("CredentialStep"),
     getFunctionSource("PasskeyStep"),
     getFunctionSource("NameStep"),
     getFunctionSource("PurchasedView"),
@@ -37,7 +39,7 @@ describe("Day n Night RSVP visual contract", () => {
     expect(stageSource).not.toContain("max-w-xl");
   });
 
-  it("keeps RSVP steps in a single-column tour flow", () => {
+  it("keeps RSVP steps in a compact tour flow", () => {
     expect(stepSources).not.toContain("lg:grid-cols");
     expect(stepSources).not.toContain("xl:grid-cols");
     expect(stepSources).toContain("flex w-full flex-col gap-8");
@@ -61,24 +63,42 @@ describe("Day n Night RSVP visual contract", () => {
     expect(source).not.toContain("void refetchPasskeys?.()");
   });
 
-  it("uses browser-recognizable fields for the one-time password save step", () => {
-    const credentialSource = getFunctionSource("CredentialStep");
+  it("uses browser-recognizable fields for user-created ticket passwords", () => {
+    const contactSource = getFunctionSource("ContactStep");
     const storeIndex = source.indexOf("await storePasswordCredential");
-    const busyIndex = source.indexOf("setCredentialBusy(true)");
-    expect(credentialSource).toContain('name="username"');
-    expect(credentialSource).toContain('autoComplete="username"');
-    expect(credentialSource).toContain('name="password"');
-    expect(credentialSource).toContain('autoComplete="new-password"');
-    expect(credentialSource).toContain('type="text"');
-    expect(credentialSource).toContain("copyPassword");
+    const signInIndex = source.indexOf("authClient.signIn.email");
+    expect(contactSource).toContain('name="username"');
+    expect(contactSource).toContain('autoComplete="username"');
+    expect(contactSource).toContain('name="password"');
+    expect(contactSource).toContain('autoComplete="new-password"');
+    expect(contactSource).toContain('type="password"');
     expect(source).toContain("authClient.signIn.email");
     expect(source).toContain("fetchOptions: { throw: true }");
-    expect(credentialSource).not.toContain(
-      'type={revealed ? "text" : "password"}'
-    );
-    expect(credentialSource).toContain("onContinue");
+    expect(source).toContain("prepareDayNNightPurchaserAction");
     expect(storeIndex).toBeGreaterThan(-1);
-    expect(busyIndex).toBeGreaterThan(storeIndex);
+    expect(storeIndex).toBeGreaterThan(signInIndex);
+  });
+
+  it("does not attach a new password to an existing account by email alone", () => {
+    const existingGuardIndex = actionSource.indexOf("if (existing?.id)");
+    const createUserIndex = actionSource.indexOf("payload.create");
+    const hashIndex = actionSource.indexOf("hashPassword(input.password)");
+
+    expect(actionSource).toContain('reason: "existing-account-login-required"');
+    expect(existingGuardIndex).toBeGreaterThan(-1);
+    expect(createUserIndex).toBeGreaterThan(existingGuardIndex);
+    expect(hashIndex).toBeGreaterThan(existingGuardIndex);
+  });
+
+  it("separates first and last name before account creation", () => {
+    const nameSource = getFunctionSource("NameStep");
+
+    expect(nameSource).toContain('autoComplete="given-name"');
+    expect(nameSource).toContain('autoComplete="family-name"');
+    expect(nameSource).toContain('t("firstNameLabel")');
+    expect(nameSource).toContain('t("lastNameLabel")');
+    expect(source).toContain("firstName: purchaserFirstName.trim()");
+    expect(source).toContain("lastName: purchaserLastName.trim()");
   });
 
   it("uses a support modal instead of direct support mailto links", () => {
@@ -113,6 +133,32 @@ describe("Day n Night RSVP visual contract", () => {
     expect(purchasedSource).toContain("paymentClipboardText");
     expect(purchasedSource).not.toContain('t("payment.memo")');
     expect(purchasedSource).toContain('t("payment.sender")');
+  });
+
+  it("lets purchasers mark the transfer as sent after payment", () => {
+    const purchasedSource = getFunctionSource("PurchasedView");
+
+    expect(source).toContain("/api/tickets/payment-submitted");
+    expect(source).toContain("payment_submitted_at");
+    expect(source).toContain("paymentSubmitBusy");
+    expect(purchasedSource).toContain('data-testid="ticket-payment-submitted"');
+    expect(purchasedSource).toContain('t("paymentSubmitted.cta")');
+    expect(purchasedSource).toContain('t("paymentSubmitted.doneTitle")');
+    expect(purchasedSource).toContain("onPaymentSubmitted");
+  });
+
+  it("gives the Day n Night purchase screen a navigation rail after price", () => {
+    const reserveSource = getFunctionSource("ReserveView");
+
+    expect(source).toContain("const storyHref = useStepFlow ?");
+    expect(reserveSource).toContain("navLinks");
+    expect(reserveSource).toContain('aria-label={t("navigationLabel")}');
+    expect(reserveSource).toContain('data-testid="reserve-nav-my-tickets"');
+    expect(reserveSource).toContain('data-testid="reserve-nav-story"');
+    expect(reserveSource).toContain('data-testid="reserve-nav-contact"');
+    expect(reserveSource).toContain('t("nav.myTickets")');
+    expect(reserveSource).toContain('t("nav.story")');
+    expect(reserveSource).toContain('t("nav.contact")');
   });
 
   it("asks for the bank sender name before purchase", () => {
