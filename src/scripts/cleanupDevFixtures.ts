@@ -23,6 +23,13 @@ import { READER_FIXTURE_USERNAMES } from "@/lib/auth/dev/seedReaders";
 
 const FIXTURE_USERNAMES = [BUTLER_DEV_USERNAME, ...READER_FIXTURE_USERNAMES];
 
+function uuidArray(ids: string[]): ReturnType<typeof sql> {
+  return sql`ARRAY[${sql.join(
+    ids.map((id) => sql`${id}::uuid`),
+    sql.raw(", ")
+  )}]`;
+}
+
 async function shutdownDb(
   payload: Awaited<ReturnType<typeof getPayload>>
 ): Promise<void> {
@@ -91,7 +98,7 @@ async function main(): Promise<void> {
     const ops: Array<{ label: string; query: ReturnType<typeof sql> }> = [
       {
         label: "posts",
-        query: sql`DELETE FROM posts WHERE author_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM posts WHERE author_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         // SECURITY: the `parent_id IS NULL` arm is scoped to fixture
@@ -102,39 +109,39 @@ async function main(): Promise<void> {
         // refuses to run in production without FORCE_PROD=1, that escape
         // hatch makes the over-broad query a real data-loss vector.
         label: "_posts_v (orphan + fixture-authored)",
-        query: sql`DELETE FROM _posts_v WHERE version_author_id = ANY(${fixtureIds}::uuid[]) OR (parent_id IS NULL AND version_author_id = ANY(${fixtureIds}::uuid[])) RETURNING id`
+        query: sql`DELETE FROM _posts_v WHERE version_author_id = ANY(${uuidArray(fixtureIds)}) OR (parent_id IS NULL AND version_author_id = ANY(${uuidArray(fixtureIds)})) RETURNING id`
       },
       {
         label: "profile",
-        query: sql`DELETE FROM profile WHERE author_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM profile WHERE author_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "user_media",
-        query: sql`DELETE FROM user_media WHERE author_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM user_media WHERE author_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "bookmarks",
-        query: sql`DELETE FROM bookmarks WHERE user_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM bookmarks WHERE user_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "follows (as follower or target)",
-        query: sql`DELETE FROM follows WHERE user_id = ANY(${fixtureIds}::uuid[]) OR target_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM follows WHERE user_id = ANY(${uuidArray(fixtureIds)}) OR target_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "notifications (recipient)",
-        query: sql`DELETE FROM notifications WHERE recipient_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM notifications WHERE recipient_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "citations (author)",
-        query: sql`DELETE FROM citations WHERE author_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM citations WHERE author_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "responses (comment author)",
-        query: sql`DELETE FROM responses WHERE author_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM responses WHERE author_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       },
       {
         label: "user_views",
-        query: sql`DELETE FROM user_views WHERE user_id = ANY(${fixtureIds}::uuid[]) RETURNING id`
+        query: sql`DELETE FROM user_views WHERE user_id = ANY(${uuidArray(fixtureIds)}) RETURNING id`
       }
     ];
 
@@ -158,13 +165,13 @@ async function main(): Promise<void> {
     // 3) Drop the credential accounts (Better Auth's `accounts` table).
     //    Done before users so the FK doesn't fire as we delete users.
     await payload.db.drizzle.execute(sql`
-      DELETE FROM accounts WHERE user_id = ANY(${fixtureIds}::uuid[])
+      DELETE FROM accounts WHERE user_id = ANY(${uuidArray(fixtureIds)})
     `);
     console.log(`[cleanup:dev-fixtures] accounts: deleted for fixture users.`);
 
     // 4) Finally, the user rows themselves.
     const deletedUsers = await payload.db.drizzle.execute(sql`
-      DELETE FROM users WHERE id = ANY(${fixtureIds}::uuid[]) RETURNING id
+      DELETE FROM users WHERE id = ANY(${uuidArray(fixtureIds)}) RETURNING id
     `);
     const usersDeleted = Array.isArray(deletedUsers) ? deletedUsers.length : 0;
     console.log(
@@ -175,11 +182,11 @@ async function main(): Promise<void> {
   } finally {
     await shutdownDb(payload);
   }
-
-  process.exit(0);
 }
 
-main().catch((err: unknown) => {
-  console.error("[cleanup:dev-fixtures] fatal:", err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((err: unknown) => {
+    console.error("[cleanup:dev-fixtures] fatal:", err);
+    process.exit(1);
+  });
