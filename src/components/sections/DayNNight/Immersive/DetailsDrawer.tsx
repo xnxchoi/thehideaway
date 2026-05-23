@@ -130,9 +130,9 @@ export function DetailsDrawer({ open, onOpenChange }: DetailsDrawerProps) {
             </div>
           </div>
 
-          <footer className="flex border-t border-[var(--dn-line)] px-8 pt-5 pb-7">
+          <footer className="flex flex-col gap-3 border-t border-[var(--dn-line)] px-8 pt-5 pb-7">
             <PillButton
-              className="h-full min-w-fit py-6 text-balance"
+              className="min-w-fit py-6 text-balance"
               type="button"
               onClick={() => {
                 const f = new File(
@@ -187,10 +187,13 @@ END:VCALENDAR`
             </PillButton>
             <Link
               href="/tickets/day-n-night"
-              className="ease inline-flex w-full cursor-pointer items-baseline justify-between gap-4 border-0 border-b border-[var(--dn-fg)] bg-transparent py-3 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap] duration-300 hover:gap-7"
+              className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-6 py-4 font-mono text-[12px] tracking-[0.28em] text-[var(--dn-bg)] uppercase no-underline transition-transform duration-300 hover:-translate-y-px"
             >
-              <span>{t("rsvpCta.primary")}</span>
-              <span aria-hidden className="text-[1.2em] leading-none">
+              <span>{t("rsvpCta.register")}</span>
+              <span
+                aria-hidden
+                className="text-[1.2em] leading-none transition-transform duration-300 group-hover:translate-x-1"
+              >
                 →
               </span>
             </Link>

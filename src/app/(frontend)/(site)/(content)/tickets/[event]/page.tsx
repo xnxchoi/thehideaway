@@ -1,15 +1,10 @@
-import { cookies as nextCookies, headers as nextHeaders } from "next/headers";
+import { headers as nextHeaders } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { TicketEventClient } from "./page.client";
-import { DayNNightTicketRedirect } from "./redirect.client";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import {
-  eventGateCookieName,
-  verifyEventGateCookieValue
-} from "@/lib/event-gate";
 
 export const metadata: Metadata = { title: "Tickets" };
 
@@ -56,17 +51,8 @@ export default async function TicketEventPage(props: { params: Params }) {
   const isStaff = role === "admin" || role === "editor";
   if (event.state === "draft" && !isStaff) notFound();
 
-  let gateInitiallyOpen = false;
-  if (slug === STEP_FLOW_SLUG) {
-    if (!event.gate_password) {
-      gateInitiallyOpen = true;
-    } else {
-      const jar = await nextCookies();
-      const cookieValue = jar.get(eventGateCookieName(STEP_FLOW_SLUG))?.value;
-      gateInitiallyOpen = verifyEventGateCookieValue(cookieValue, event.id);
-      if (!gateInitiallyOpen) return <DayNNightTicketRedirect />;
-    }
-  }
+  const gateInitiallyOpen =
+    slug === STEP_FLOW_SLUG ? !event.gate_password : false;
 
   // Capacity remaining (don't fail if we can't compute).
   let remaining: number | null = null;
@@ -106,7 +92,7 @@ export default async function TicketEventPage(props: { params: Params }) {
       }}
       remaining={remaining}
       isAuthenticated={Boolean(session)}
-      // Pre-fill the 4-step flow's OTP + name steps from the session,
+      // Pre-fill the Day n Night RSVP flow from the session,
       // so an already-authenticated user just confirms rather than retypes.
       // Both null on a signed-out hit; the client step machine handles that.
       sessionEmail={session?.user?.email ?? null}

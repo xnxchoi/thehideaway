@@ -384,6 +384,7 @@
       },
       "rsvpCta": {
         "primary": "Details",
+        "register": "Register",
         "secondary": "Ticket reservation is inside the details."
       },
       "viewToggle": {
@@ -531,8 +532,18 @@
         "welcome": {
           "eyebrow": "RSVP",
           "title": "A few short steps before tickets.",
-          "body": "Email confirmation, your name, then the ticket itself. Two minutes, no account required.",
+          "body": "Your name, a contact email, then the ticket itself. Two minutes, no email code required.",
           "cta": "Start"
+        },
+        "contact": {
+          "eyebrow": "Contact",
+          "title": "Where should we send the payment details?",
+          "body": "We'll use this address for your reservation and the follow-up payment instructions.",
+          "emailPlaceholder": "you@example.com",
+          "submit": "Continue",
+          "continueError": "We couldn't continue with that email. Check the address and try again.",
+          "existingAccount": "This email already belongs to an account. Sign in to continue.",
+          "signIn": "Sign in"
         },
         "otp": {
           "eyebrow": "Confirm email",
@@ -639,6 +650,15 @@
           "invalid": "That code didn't match.",
           "network": "Network error. Try again."
         }
+      },
+      "errors": {
+        "unauthorized": "We couldn't confirm your session. Sign in and try again.",
+        "invalidPassword": "This invitation needs to be reopened from the event page.",
+        "eventNotOpen": "Reservations are not open right now.",
+        "soldOut": "No tickets remain for this event.",
+        "userCapReached": "You've reached the ticket limit for this event.",
+        "badRequest": "We couldn't process that request. Check the form and try again.",
+        "generic": "We couldn't complete the reservation. Try again in a moment."
       },
       "status": {
         "ended": "This event has ended.",

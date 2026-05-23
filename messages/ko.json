@@ -385,6 +385,7 @@
       },
       "rsvpCta": {
         "primary": "Details",
+        "register": "Register",
         "secondary": "예약은 상세 안내 안에 있습니다."
       },
       "viewToggle": {
@@ -532,8 +533,18 @@
         "welcome": {
           "eyebrow": "RSVP",
           "title": "우선 몇 가지만 파악할게요.",
-          "body": "이메일 확인과 이름만 입력하면 끝나요. 가입은 필요하지 않습니다.",
+          "body": "이름과 연락받을 이메일만 적으면 돼요. 인증 코드는 필요하지 않습니다.",
           "cta": "시작하기"
+        },
+        "contact": {
+          "eyebrow": "연락처",
+          "title": "결제 안내는 어디로 보내드릴까요?",
+          "body": "이 주소로 예약을 연결하고, 이후 결제 안내도 보내드릴게요.",
+          "emailPlaceholder": "you@example.com",
+          "submit": "다음",
+          "continueError": "이 이메일로는 계속 진행할 수 없어요. 주소를 확인한 뒤 다시 시도해 주세요.",
+          "existingAccount": "이미 계정이 있는 이메일이에요. 계속하려면 로그인해 주세요.",
+          "signIn": "로그인"
         },
         "otp": {
           "eyebrow": "이메일 확인",
@@ -640,6 +651,15 @@
           "invalid": "코드가 맞지 않아요.",
           "network": "네트워크에 문제가 생겼어요. 다시 시도해 주세요."
         }
+      },
+      "errors": {
+        "unauthorized": "세션을 확인할 수 없어요. 로그인한 뒤 다시 시도해 주세요.",
+        "invalidPassword": "이 초대는 이벤트 페이지에서 다시 열어야 해요.",
+        "eventNotOpen": "지금은 예약을 받고 있지 않아요.",
+        "soldOut": "이 이벤트는 모두 매진됐어요.",
+        "userCapReached": "이 이벤트에서 예약 가능한 최대 수량에 도달했어요.",
+        "badRequest": "요청을 처리할 수 없어요. 입력 내용을 확인한 뒤 다시 시도해 주세요.",
+        "generic": "예약을 완료하지 못했어요. 잠시 뒤에 다시 시도해 주세요."
       },
       "status": {
         "ended": "끝난 이벤트예요.",

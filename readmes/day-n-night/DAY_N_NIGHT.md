@@ -31,7 +31,7 @@ The brand undercurrent is "change" — paired thematically with the unreleased p
 /day-n-night/my                       ← purchaser order management (links + 48h password state)
 /day-n-night/claim/[token]            ← gift-ticket redemption (gated by order password)
 
-/tickets/day-n-night                  ← existing gated purchase page (slug=day-n-night)
+/tickets/day-n-night                  ← gated purchase page (slug=day-n-night)
 /tickets/day-n-night/exclusive        ← post-event content (existing pattern)
 /tickets/my/[ticketId]                ← existing per-ticket QR/check-in page
 ```
@@ -99,7 +99,7 @@ The existing `/tickets/[event]/page.tsx` already implements the gate-password fl
 | Initial recipient name on gift tickets | `Tickets.gift_initial_name` text (editable by purchaser) + `Tickets.gift_name_locked` checkbox (admin-only). | DONE — same migration |
 | RSVP profile fields | `Profile.rsvp` group: `tier` enum (`host` \| `past` \| `guest`, default `guest`), `intro` (textarea, 200 char), `igHandle` (camelCase), `gallery` (array of `userMedia`, max 5). | DONE — migrations `20260518_180000_profile_rsvp_group.ts` + `20260519_120000_profile_rsvp_tier.ts` |
 | View-preference cookie | `day-n-night.view-pref` — `"immersive" \| "simplified"`. Client write, server read. | DONE |
-| **Event-gate password layer (new — not in original spec)** | HMAC-SHA256-signed HttpOnly cookie scoped to `/day-n-night`, 30-day TTL. Server action constant-time-compares against `events.gate_password` and issues the signed cookie. Route-group `layout.tsx` gates *everything* under `/day-n-night/*` (landing, guests, my, claim). Helpers in `src/lib/event-gate.ts`; UI in `src/components/sections/DayNNightGate/`. | DONE |
+| **Event-gate password layer (retired 2026-05-23)** | Former HMAC-SHA256-signed HttpOnly cookie scoped to `/day-n-night`. The public story surface is now open; `/tickets/day-n-night` keeps its own passcode gate. Helpers/UI remain on disk only as archaeology. | RETIRED |
 
 ### Migrations
 
@@ -135,37 +135,30 @@ Notes:
 
 ## 4.5 Event-gate password layer
 
-A second, surface-wide password layer landed after the original spec was written. It is **distinct from `events.gate_password` as used by `/tickets/[event]`**, even though it reads the same database column.
+A second, surface-wide password layer landed after the original spec was written. It is now retired. The shared-event password only gates `/tickets/day-n-night`.
 
 | Surface | Gate | Persistence |
 |---------|------|-------------|
-| `/tickets/day-n-night` (existing) | Same `events.gate_password` value entered into the existing client gate. | `sessionStorage` — re-prompts every browser session. |
-| `/day-n-night/*` (new) | Same `events.gate_password` value, validated by a server action that issues an HMAC-signed cookie. | HttpOnly cookie `event-gate.day-n-night`, 30-day TTL, scoped to `/day-n-night`. |
+| `/tickets/day-n-night` | `events.gate_password` entered into the existing client gate. | `sessionStorage` — re-prompts every browser session. |
+| `/day-n-night/*` | Public story surface. No password gate. | None |
 
 ### Pieces
 
 - **`src/lib/event-gate.ts`** — `issueEventGateCookieValue()` and `verifyEventGateCookieValue()`. Cookie format is `<expiresAtMs>.<hex-hmac>`; HMAC is computed over `eventId + expiresAtMs` using `PAYLOAD_SECRET`. Rotating the secret invalidates every outstanding cookie.
-- **`src/components/sections/DayNNightGate/`** — `index.tsx` (the editorial-mono gate UI as a client component using `useActionState`) and `action.ts` (the `"use server"` action that does the constant-time compare + cookie issuance + `revalidatePath`).
-- **`src/app/(frontend)/(site)/(pages)/day-n-night/layout.tsx`** — route-group layout that runs on every request to `/day-n-night/*`. It looks up the event row, verifies the cookie, and short-circuits to `<DayNNightGate />` when the cookie is missing/tampered/expired. Falls open (renders children) when the event row doesn't exist or `gate_password` is null, so seeding the row doesn't brick the page.
+- **`src/components/sections/DayNNightGate/`** — former editorial-mono gate UI and server action. Left on disk as recovery / reference code after the landing gate was removed.
+- **`src/app/(frontend)/(site)/(pages)/day-n-night/layout.tsx`** — pass-through route-group layout; the public landing no longer checks the signed gate cookie.
 
 ### Design notes
 
-- The raw password is **never persisted client-side** — the cookie carries an HMAC tied to the event id, not the password itself.
-- Tampering with `expiresAtMs` invalidates the HMAC (constant-time check), so the cookie can't be back-dated or extended.
-- Cookie path is `/day-n-night` (not `/`), so it doesn't leak to other surfaces.
-- `path` is intentionally not `/` so logging into another invite-only surface in the future can use a separately scoped cookie.
+- The retired implementation never persisted the raw password client-side; the cookie carried an HMAC tied to the event id instead.
 
 ### Operational
 
-- Seed the event row with a gate password before the surface goes live (Payload admin → Events → day-n-night → Gate password). Without a value, the gate is open by design.
-- Rotating the password invalidates `/day-n-night` access only after existing cookies expire (30 days). Rotating `PAYLOAD_SECRET` invalidates them immediately.
-- The existing `/tickets/[event]` gate (sessionStorage) is unchanged. Both layers can run with the same password.
+- The existing `/tickets/[event]` gate (sessionStorage) is unchanged.
 
 ### Known weaknesses (Phase 5)
 
-- **No rate-limit on the POST.** A 30-day cookie means one successful brute-force = persistent access. See § 14 H1.
-- **HMAC is keyed on `eventId` only** — password rotation does not invalidate existing cookies. See § 14 H2.
-- Cookie `path: "/day-n-night"` also matches `/day-n-nightclub` per RFC 6265 prefix rules. Cosmetic, no current impact (no sibling route). See § 14 L3.
+- Historical note only: these weaknesses applied to the retired landing-gate implementation.
 
 ---
 

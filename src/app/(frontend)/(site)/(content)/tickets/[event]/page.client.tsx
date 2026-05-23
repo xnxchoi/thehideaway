@@ -19,16 +19,12 @@ import { AnimatePresence, Variants } from "motion/react";
 import * as m from "motion/react-m";
 import { TextBlurIn } from "@/components/UX/Tour/TextBlurIn";
 import { MotionPillButton } from "@/components/core/Button";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot
-} from "@/components/ui/input-otp";
 import { SPRING_EASE } from "@/constants/animations";
 import { signInRedirectPath } from "@/lib/routes/auth";
 import { cn } from "@/lib/utils";
 import { EventGateGradient } from "@/components/UX/Gradient/EventGateGradient";
 import { useRPStore } from "@/providers/RP_Pro";
+import { prepareDayNNightPurchaserAction } from "./actions";
 
 interface EventLite {
   id: string;
@@ -75,10 +71,10 @@ const STEP_FLOW_SLUG = "day-n-night";
 const NOISE_TEXTURE_STYLE = { backgroundImage: "url('/assets/noise.png')" };
 const PAPER_TEXTURE_STYLE = { backgroundImage: "url('/assets/papier.png')" };
 
-/** Steps in the 4-step purchase flow. `welcome` is the entry; `purchased`
- * is the terminal success view. `otp` is skipped when the user already
- * has an authenticated session. */
-type FlowStep = "welcome" | "otp" | "name" | "reserve" | "purchased";
+/** Steps in the Day n Night purchase flow. `welcome` is the entry; `purchased`
+ * is the terminal success view. `contact` silently provisions the ticket
+ * purchaser session for invitees who are not already signed in. */
+type FlowStep = "welcome" | "name" | "contact" | "reserve" | "purchased";
 
 const SS_KEY = (slug: string) => `tickets:gate:${slug}`;
 
@@ -113,15 +109,18 @@ const slideVariants: Variants = {
   })
 };
 
-/** Ordered indicator steps (skips welcome and purchased). */
-const INDICATOR_STEPS: FlowStep[] = ["otp", "name", "reserve"];
-
-function FlowStepIndicators({ current }: { current: FlowStep }) {
-  const currentIdx = INDICATOR_STEPS.indexOf(current);
+function FlowStepIndicators({
+  current,
+  steps
+}: {
+  current: FlowStep;
+  steps: FlowStep[];
+}) {
+  const currentIdx = steps.indexOf(current);
   if (currentIdx === -1) return null;
   return (
     <div className="flex items-center gap-2">
-      {INDICATOR_STEPS.map((s, i) => {
+      {steps.map((s, i) => {
         const isPast = i < currentIdx;
         const isActive = i === currentIdx;
         return (
@@ -177,6 +176,7 @@ export function TicketEventClient({
   const tGate = useTranslations("Event.Rsvp.gate");
   const tStatus = useTranslations("Event.Rsvp.status");
   const tBar = useTranslations("Event.Rsvp.bar");
+  const tErrors = useTranslations("Event.Rsvp.errors");
   const setHeaderVisibility = useRPStore((r) => r.setHeaderVisibility);
   const setFXFrameVisibility = useRPStore((r) => r.setFXFrameVisibility);
 
@@ -191,8 +191,13 @@ export function TicketEventClient({
   // ── Step state (4-step flow only) ────────────────────────────────────
   const useStepFlow = event.slug === STEP_FLOW_SLUG;
   const myTicketsHref = useStepFlow ? "/day-n-night/my" : "/tickets/my";
+  const signInHref = signInRedirectPath(`/tickets/${event.slug}`);
   const [step, setStep] = useState<FlowStep>("welcome");
   const [dir, setDir] = useState(1);
+  const indicatorSteps = useMemo<FlowStep[]>(
+    () => (isAuthenticated ? ["name", "reserve"] : ["name", "contact", "reserve"]),
+    [isAuthenticated]
+  );
 
   useEffect(() => {
     if (!useStepFlow) return;
@@ -216,19 +221,16 @@ export function TicketEventClient({
     setStep(next);
   }, []);
 
-  // OTP sub-state
-  const [otpEmail, setOtpEmail] = useState(sessionEmail ?? "");
-  const [otpCodeSent, setOtpCodeSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [otpBusy, setOtpBusy] = useState(false);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const updateOtpEmail = useCallback((value: string) => {
-    setOtpError(null);
-    setOtpEmail(value);
-  }, []);
-  const updateOtpCode = useCallback((value: string) => {
-    setOtpError(null);
-    setOtpCode(value);
+  // Contact step state
+  const [contactEmail, setContactEmailInternal] = useState(sessionEmail ?? "");
+  const [contactBusy, setContactBusy] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [contactNeedsLogin, setContactNeedsLogin] = useState(false);
+  const [sessionBootstrapped, setSessionBootstrapped] = useState(false);
+  const updateContactEmail = useCallback((value: string) => {
+    setContactError(null);
+    setContactNeedsLogin(false);
+    setContactEmailInternal(value);
   }, []);
 
   // Purchaser display name
@@ -239,10 +241,13 @@ export function TicketEventClient({
     setPurchaserNameInternal(value);
   }, []);
 
-  // Live session — Better Auth flips this after `signIn.emailOtp` succeeds.
+  // Live session — Better Auth flips this after the contact step or a
+  // normal sign-in succeeds.
   const { data: liveSession } = authClient.useSession();
   const isAuthedNow =
-    isAuthenticated || Boolean((liveSession?.user as { id?: string })?.id);
+    isAuthenticated ||
+    sessionBootstrapped ||
+    Boolean((liveSession?.user as { id?: string })?.id);
 
   // ── Purchase state ───────────────────────────────────────────────────
   const [quantity, setQuantity] = useState(1);
@@ -262,7 +267,7 @@ export function TicketEventClient({
     }
   }, [event.slug, gateInitiallyOpen]);
 
-  // Sync purchaser name from the live session when OTP sign-in lands mid-flow.
+  // Sync purchaser name from the live session when sign-in lands mid-flow.
   const liveSessionName = (
     liveSession?.user as { name?: string | null } | undefined
   )?.name;
@@ -333,55 +338,72 @@ export function TicketEventClient({
   };
 
   const advanceFromWelcome = useCallback(() => {
-    advanceTo(isAuthedNow ? "name" : "otp");
-  }, [isAuthedNow, advanceTo]);
-
-  const sendOtp = async () => {
-    if (otpBusy || !otpEmail.trim()) return;
-    setOtpBusy(true);
-    setOtpError(null);
-    try {
-      await authClient.emailOtp.sendVerificationOtp({
-        email: otpEmail.trim(),
-        type: "sign-in",
-        fetchOptions: { throw: true }
-      });
-      setOtpCodeSent(true);
-    } catch {
-      setOtpError(t("otp.sendError"));
-    } finally {
-      setOtpBusy(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    if (otpBusy || otpCode.trim().length < 6) return;
-    setOtpBusy(true);
-    setOtpError(null);
-    try {
-      await authClient.signIn.emailOtp({
-        email: otpEmail.trim(),
-        otp: otpCode.trim(),
-        fetchOptions: { throw: true }
-      });
-      advanceTo("name");
-    } catch {
-      setOtpError(t("otp.verifyError"));
-      setOtpCode("");
-    } finally {
-      setOtpBusy(false);
-    }
-  };
+    advanceTo("name");
+  }, [advanceTo]);
 
   const advanceFromName = () => {
     if (!purchaserName.trim()) return;
-    advanceTo("reserve");
+    advanceTo(isAuthedNow ? "reserve" : "contact");
   };
+
+  const continueFromContact = async () => {
+    if (contactBusy || !contactEmail.trim() || !purchaserName.trim()) return;
+
+    setContactBusy(true);
+    setContactError(null);
+    setContactNeedsLogin(false);
+
+    try {
+      const result = await prepareDayNNightPurchaserAction({
+        email: contactEmail.trim(),
+        name: purchaserName.trim()
+      });
+
+      if (result.ok) {
+        setSessionBootstrapped(true);
+        advanceTo("reserve");
+        return;
+      }
+
+      if (result.reason === "existing-account-login-required") {
+        setContactNeedsLogin(true);
+        return;
+      }
+
+      setContactError(t("contact.continueError"));
+    } catch {
+      setContactError(t("contact.continueError"));
+    } finally {
+      setContactBusy(false);
+    }
+  };
+
+  const mapPurchaseError = useCallback(
+    (error?: string) => {
+      switch (error) {
+        case "unauthorized":
+          return tErrors("unauthorized");
+        case "invalid-password":
+          return tErrors("invalidPassword");
+        case "event-not-open":
+          return tErrors("eventNotOpen");
+        case "sold-out":
+          return tErrors("soldOut");
+        case "user-cap-reached":
+          return tErrors("userCapReached");
+        case "bad-request":
+          return tErrors("badRequest");
+        default:
+          return tErrors("generic");
+      }
+    },
+    [tErrors]
+  );
 
   const submitPurchase = async () => {
     if (purchaseBusy || (!useStepFlow && !storedPassword)) return;
     if (!isAuthedNow) {
-      router.push(signInRedirectPath(`/tickets/${event.slug}`));
+      router.push(signInHref);
       return;
     }
     setPurchaseBusy(true);
@@ -401,7 +423,7 @@ export function TicketEventClient({
       });
       const out = await res.json();
       if (!res.ok || !out.ok) {
-        setPurchaseError(`Purchase failed: ${out.error ?? res.status}`);
+        setPurchaseError(mapPurchaseError(out.error));
         setPurchaseBusy(false);
         return;
       }
@@ -410,8 +432,8 @@ export function TicketEventClient({
         total_amount: out.total_amount
       });
       if (useStepFlow) advanceTo("purchased");
-    } catch (e) {
-      setPurchaseError((e as Error).message);
+    } catch {
+      setPurchaseError(tErrors("generic"));
     } finally {
       setPurchaseBusy(false);
     }
@@ -458,23 +480,16 @@ export function TicketEventClient({
       switch (step) {
         case "welcome":
           return <WelcomeStep onStart={advanceFromWelcome} />;
-        case "otp":
+        case "contact":
           return (
-            <OtpStep
-              email={otpEmail}
-              setEmail={updateOtpEmail}
-              codeSent={otpCodeSent}
-              code={otpCode}
-              setCode={updateOtpCode}
-              busy={otpBusy}
-              error={otpError}
-              onSend={sendOtp}
-              onVerify={verifyOtp}
-              onResend={() => {
-                setOtpCodeSent(false);
-                setOtpCode("");
-                setOtpError(null);
-              }}
+            <ContactStep
+              email={contactEmail}
+              setEmail={updateContactEmail}
+              busy={contactBusy}
+              error={contactError}
+              needsLogin={contactNeedsLogin}
+              signInHref={signInHref}
+              onContinue={continueFromContact}
             />
           );
         case "name":
@@ -538,6 +553,7 @@ export function TicketEventClient({
           step={step}
           stepKey={stepKey}
           dir={dir}
+          indicatorSteps={indicatorSteps}
           isOpen={isOpen}
           soldOut={soldOut}
           purchased={Boolean(purchased)}
@@ -624,6 +640,7 @@ function DayNNightRsvpStage({
   step,
   stepKey,
   dir,
+  indicatorSteps,
   isOpen,
   soldOut,
   purchased,
@@ -632,6 +649,7 @@ function DayNNightRsvpStage({
   step: FlowStep;
   stepKey: FlowStep;
   dir: number;
+  indicatorSteps: FlowStep[];
   isOpen: boolean;
   soldOut: boolean;
   purchased: boolean;
@@ -660,7 +678,7 @@ function DayNNightRsvpStage({
           {tWelcome("eyebrow")}
         </span>
         {showProgress ? (
-          <FlowStepIndicators current={step} />
+          <FlowStepIndicators current={step} steps={indicatorSteps} />
         ) : (
           <span className="h-6 w-6" aria-hidden />
         )}
@@ -976,32 +994,26 @@ function WelcomeStep({ onStart }: { onStart: () => void }) {
 }
 
 /**
- * OTP step — collects email, sends 6-digit code, verifies.
+ * Contact step — collects the email we will bind to the reservation.
  */
-function OtpStep({
+function ContactStep({
   email,
   setEmail,
-  codeSent,
-  code,
-  setCode,
   busy,
   error,
-  onSend,
-  onVerify,
-  onResend
+  needsLogin,
+  signInHref,
+  onContinue
 }: {
   email: string;
   setEmail: (v: string) => void;
-  codeSent: boolean;
-  code: string;
-  setCode: (v: string) => void;
   busy: boolean;
   error: string | null;
-  onSend: () => void;
-  onVerify: () => void;
-  onResend: () => void;
+  needsLogin: boolean;
+  signInHref: string;
+  onContinue: () => void;
 }) {
-  const t = useTranslations("Event.Rsvp.steps.otp");
+  const t = useTranslations("Event.Rsvp.steps.contact");
   return (
     <div className="flex w-full flex-col gap-8">
       <div className="flex flex-col gap-2.5">
@@ -1019,126 +1031,64 @@ function OtpStep({
           blurAmount={5}
           duration={0.7}
         />
+        <p className="font-sans text-[15px] leading-relaxed text-muted-foreground">
+          {needsLogin ? t("existingAccount") : t("body")}
+        </p>
       </div>
-
-      <AnimatePresence mode="wait">
-        {!codeSent ? (
-          <m.form
-            key="email-form"
-            initial={{ opacity: 0, y: 8 }}
+      <m.form
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="flex flex-col gap-5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onContinue();
+        }}
+      >
+        <label htmlFor="contact-email" className="sr-only">
+          {t("emailPlaceholder")}
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("emailPlaceholder")}
+          aria-label={t("emailPlaceholder")}
+          autoComplete="email"
+          spellCheck={false}
+          inputMode="email"
+          className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
+        />
+        {error ? (
+          <m.p
+            role="alert"
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.25 }}
-            className="flex flex-col gap-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onSend();
-            }}
+            className="font-sans text-xs leading-relaxed text-destructive"
           >
-            <label htmlFor="otp-email" className="sr-only">
-              {t("emailPlaceholder")}
-            </label>
-            <input
-              id="otp-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t("emailPlaceholder")}
-              aria-label={t("emailPlaceholder")}
-              autoComplete="email"
-              spellCheck={false}
-              inputMode="email"
-              className="h-16 w-full border-b border-border/50 bg-transparent text-lg font-light tracking-tight text-foreground outline-none placeholder:text-muted-foreground/55 focus:border-foreground"
-            />
-            {error ? (
-              <m.p
-                role="alert"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="font-sans text-xs leading-relaxed text-destructive"
-              >
-                {error}
-              </m.p>
-            ) : null}
-            <MotionPillButton
-              type="submit"
-              size="md"
-              disabled={busy || !email.trim()}
-              className="h-12 min-w-36 self-start bg-foreground px-7 text-sm font-medium whitespace-nowrap text-background disabled:opacity-40 sm:h-14 sm:text-base"
-            >
-              {busy ? "…" : t("sendCode")}
-            </MotionPillButton>
-          </m.form>
-        ) : (
-          <m.form
-            key="code-form"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.25 }}
-            className="flex flex-col gap-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onVerify();
-            }}
+            {error}
+          </m.p>
+        ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          <MotionPillButton
+            type="submit"
+            size="md"
+            disabled={busy || !email.trim()}
+            className="h-12 min-w-36 self-start bg-foreground px-7 text-sm font-medium whitespace-nowrap text-background disabled:opacity-40 sm:h-14 sm:text-base"
           >
-            <label htmlFor="otp-code" className="sr-only">
-              {t("codePlaceholder")}
-            </label>
-            <InputOTP
-              id="otp-code"
-              value={code}
-              onChange={(value) =>
-                setCode(value.replace(/\D/g, "").slice(0, 6))
-              }
-              aria-label={t("codePlaceholder")}
-              autoComplete="one-time-code"
-              inputMode="numeric"
-              maxLength={6}
-              containerClassName="w-full justify-between gap-2"
+            {busy ? "…" : t("submit")}
+          </MotionPillButton>
+          {needsLogin ? (
+            <Link
+              href={signInHref}
+              className="inline-flex h-12 items-center rounded-full border border-border/50 px-5 font-sans text-sm text-foreground transition-colors hover:border-foreground sm:h-14 sm:text-base"
             >
-              <InputOTPGroup className="grid w-full grid-cols-6 gap-2">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <InputOTPSlot
-                    key={index}
-                    index={index}
-                    className="h-12 w-full rounded-full border border-foreground/20 bg-foreground/[0.025] font-sans text-lg font-medium text-foreground shadow-none first:rounded-full first:border last:rounded-full data-[active=true]:border-foreground data-[active=true]:bg-transparent data-[active=true]:ring-0 sm:h-14"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            {error ? (
-              <m.p
-                role="alert"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="font-sans text-xs leading-relaxed text-destructive"
-              >
-                {error}
-              </m.p>
-            ) : null}
-            <div className="flex flex-wrap items-center gap-3">
-              <MotionPillButton
-                type="submit"
-                size="md"
-                disabled={busy || code.length < 6}
-                className="h-12 bg-foreground px-7 text-sm font-medium text-background disabled:opacity-40 sm:h-14 sm:text-base"
-              >
-                {busy ? "…" : t("submit")}
-              </MotionPillButton>
-              <MotionPillButton
-                type="button"
-                size="md"
-                onClick={onResend}
-                className="h-12 px-5 text-sm text-muted-foreground sm:h-14 sm:text-base"
-              >
-                {t("resend")}
-              </MotionPillButton>
-            </div>
-            <p className="font-sans text-xs text-muted-foreground">{email}</p>
-          </m.form>
-        )}
-      </AnimatePresence>
+              {t("signIn")}
+            </Link>
+          ) : null}
+        </div>
+      </m.form>
     </div>
   );
 }
