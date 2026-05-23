@@ -72,7 +72,7 @@ export function QuickActions({
         }}
       >
         <MusicChip
-          label={tAudio("label")}
+          trackTitle={tAudio("track")}
           enabled={audioEnabled}
           onClick={onAudioToggle}
           ariaLabel={audioEnabled ? tAudio("off") : tAudio("on")}
@@ -234,13 +234,18 @@ export function QuickActions({
 }
 
 interface MusicChipProps {
-  label: string;
+  trackTitle: string;
   enabled: boolean;
   onClick: () => void;
   ariaLabel: string;
 }
 
-function MusicChip({ label, enabled, onClick, ariaLabel }: MusicChipProps) {
+function MusicChip({
+  trackTitle,
+  enabled,
+  onClick,
+  ariaLabel
+}: MusicChipProps) {
   return (
     <Button
       type="button"
@@ -248,8 +253,8 @@ function MusicChip({ label, enabled, onClick, ariaLabel }: MusicChipProps) {
       aria-label={ariaLabel}
       aria-pressed={enabled}
       data-dn-audio-toggle
-      data-on={enabled || undefined}
-      className="inline-flex cursor-pointer appearance-none items-center gap-2 rounded-full border px-[12px] py-[10px] font-mono text-[10px] font-medium tracking-[0.12em] uppercase transition-[background-color,color,border-color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] active:scale-[0.985] lg:px-[14px] lg:text-[11px]"
+      data-on={enabled ? "true" : "false"}
+      className="group/music inline-flex w-[44px] cursor-pointer appearance-none items-center justify-start gap-2 overflow-hidden rounded-full border px-[12px] py-[10px] font-mono text-[10px] font-medium tracking-[0.12em] uppercase transition-[width,background-color,color,border-color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:w-[150px] hover:scale-[1.015] active:scale-[0.985] data-[on=true]:w-[150px] lg:w-[46px] lg:hover:w-[158px] lg:data-[on=true]:w-[158px]"
       style={{
         backgroundColor: enabled
           ? "rgba(244, 242, 235, 0.16)"
@@ -261,8 +266,11 @@ function MusicChip({ label, enabled, onClick, ariaLabel }: MusicChipProps) {
       }}
     >
       <AudioBars active={enabled} className="text-current" />
-      <span data-dn-audio-text className="max-[480px]:hidden">
-        {label}
+      <span
+        data-dn-audio-track
+        className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover/music:max-w-[9rem] group-hover/music:opacity-100 group-data-[on=true]/music:max-w-[9rem] group-data-[on=true]/music:opacity-100"
+      >
+        {trackTitle}
       </span>
     </Button>
   );

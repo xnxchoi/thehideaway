@@ -19,6 +19,7 @@ import { YMFMCredit } from "./YMFMCredit";
 import { ViewToggle } from "../ViewToggle";
 import { useViewContext } from "../ViewContext";
 import { useRuntimeFriendsPhotos } from "../friendsPhotos";
+import type { DayNNightRsvpState } from "../MainLanding";
 
 // Act III ("dress" slot) index in SECTION_KEYS order. Mirrors the
 // removed ACT_INDEX_DRESS that lived in Timeline.tsx before the
@@ -42,7 +43,11 @@ const ACT_INDEX_NIGHT = 3;
  *   5. Scrubber    — bottom timeline with section jump labels.
  *   6. SunLoader   — covers everything during load, hands off seamlessly.
  */
-export function ImmersiveView() {
+interface ImmersiveViewProps {
+  rsvpState: DayNNightRsvpState;
+}
+
+export function ImmersiveView({ rsvpState }: ImmersiveViewProps) {
   const t = useTranslations("Event.DayNNight");
   const mainT = useTranslations("Event.DayNNight.main");
   const { view, setView } = useViewContext();
@@ -163,6 +168,7 @@ export function ImmersiveView() {
         <Timeline
           contentRevealed={revealStage >= 1}
           dressSentinelRef={dressSentinelRef}
+          rsvpState={rsvpState}
         />
         <div
           data-hidden={hintHidden || phase !== "playing" || revealStage < 2}

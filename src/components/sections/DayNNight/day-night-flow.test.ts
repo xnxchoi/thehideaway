@@ -100,7 +100,7 @@ describe("Day n Night main flow contract", () => {
     expect(enMessages.Event.DayNNight.audio.label).toBe("Music");
     expect(quickActionsSource).not.toContain('role="radiogroup"');
     expect(scoreSource).not.toContain("data-dn-audio-toggle");
-    expect(cssSource).toContain("top: 64px");
+    expect(cssSource).toContain("top: 20px");
     expect(cssSource).toContain("right: 20px");
   });
 });

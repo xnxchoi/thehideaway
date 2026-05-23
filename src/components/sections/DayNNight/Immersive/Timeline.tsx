@@ -29,6 +29,7 @@ import { useStickyZone } from "./SeamBridge";
 import * as m from "motion/react-m";
 import { MarkerText } from "./MarkerText";
 import { Link } from "@/components/core/Link/Link";
+import type { DayNNightRsvpState } from "../MainLanding";
 
 /**
  * Act indices in SECTION_KEYS order. Used with `useActRevealActive`
@@ -106,9 +107,14 @@ interface TimelineProps {
   contentRevealed: boolean;
   /** Ref to the sentinel sizing div placed inside the dress Act for mobile visibility. */
   dressSentinelRef?: RefObject<HTMLDivElement | null>;
+  rsvpState: DayNNightRsvpState;
 }
 
-export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
+export function Timeline({
+  contentRevealed,
+  dressSentinelRef,
+  rsvpState
+}: TimelineProps) {
   const t = useTranslations("Event.DayNNight");
   const wrap = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -348,6 +354,7 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
           t={t}
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
+          rsvpState={rsvpState}
         />
         {/* Second set — duplicate, marked aria-hidden. Hidden from AT but
             visible to the scroll loop so the boundary is seamless. */}
@@ -355,6 +362,7 @@ export function Timeline({ contentRevealed, dressSentinelRef }: TimelineProps) {
           t={t}
           contentRevealed={contentRevealed}
           dressSentinelRef={dressSentinelRef}
+          rsvpState={rsvpState}
           ariaHidden
         />
       </div>
@@ -376,15 +384,23 @@ interface ActSetProps {
   contentRevealed: boolean;
   ariaHidden?: boolean;
   dressSentinelRef?: RefObject<HTMLDivElement | null>;
+  rsvpState: DayNNightRsvpState;
 }
 
 function ActSet({
   t,
   contentRevealed,
   ariaHidden = false,
-  dressSentinelRef
+  dressSentinelRef,
+  rsvpState
 }: ActSetProps) {
   const mainT = useTranslations("Event.DayNNight.main");
+  const rsvpCta =
+    rsvpState === "pending" ? mainT("rsvp.checkStatus") : mainT("rsvp.cta");
+  const rsvpHref =
+    rsvpState === "pending" ? "/day-n-night/my" : "/tickets/day-n-night";
+  const rsvpBody =
+    rsvpState === "pending" ? mainT("rsvp.pendingBody") : mainT("rsvp.body");
   // Per-act reveal gates. Opening fires once `contentRevealed` is true
   // (i.e. the sequenced entry animation has reached the content beat);
   // the other 4 acts gate on a layout-aware scene-progress threshold
@@ -730,15 +746,15 @@ function ActSet({
               {t("closing.kicker")}
             </RevealItem>
             <RevealItem as="h2" className={TITLE_HERO}>
-              <span className="max-lg:block max-lg:text-[clamp(3.15rem,17vw,5.25rem)] max-lg:leading-[0.9]">
+              <span className="max-lg:block max-lg:text-[clamp(5.5rem,17.75vw,7.125rem)] max-lg:leading-[0.78] max-lg:font-normal max-lg:tracking-[-0.025em] max-lg:text-[var(--color-off-white)]">
                 RSVP
               </span>
             </RevealItem>
             <RevealItem
               as="p"
-              className={`${LEDE} max-w-[28ch] justify-self-end text-right max-lg:justify-self-start max-lg:text-left`}
+              className={`${LEDE} max-w-[28ch] justify-self-end text-right max-lg:mt-2.5 max-lg:mb-[21px] max-lg:justify-self-start max-lg:text-left max-lg:text-base max-lg:text-[oklch(0.96_0.005_80/0.85)]`}
             >
-              {mainT("rsvp.body")}
+              {rsvpBody}
             </RevealItem>
             <RevealItem
               as="div"
@@ -746,18 +762,18 @@ function ActSet({
             >
               {!ariaHidden && <GuestListCaption />}
               {ariaHidden ? (
-                <span className="ease mt-3 inline-flex items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline md:text-sm">
-                  <span>{mainT("rsvp.cta")}</span>
+                <span className="ease font-wide mt-3 inline-flex items-baseline gap-[18px] border-0 bg-transparent py-[18px] pb-4 text-[17px] font-semibold tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline">
+                  <span>{rsvpCta}</span>
                   <span aria-hidden className="text-[1.2em] leading-none">
                     →
                   </span>
                 </span>
               ) : (
                 <Link
-                  href="/tickets/day-n-night"
-                  className="ease mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 border-b border-[var(--dn-fg)] bg-transparent py-[18px] pb-4 font-mono text-[13px] tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3 md:text-sm"
+                  href={rsvpHref}
+                  className="ease font-wide mt-3 inline-flex cursor-pointer items-baseline gap-[18px] border-0 bg-transparent py-[18px] pb-4 text-[17px] font-semibold tracking-[0.32em] text-[var(--dn-fg)] uppercase no-underline transition-[gap,padding] duration-300 hover:gap-7 hover:pr-3"
                 >
-                  <span>{mainT("rsvp.cta")}</span>
+                  <span>{rsvpCta}</span>
                   <span aria-hidden className="text-[1.2em] leading-none">
                     →
                   </span>
@@ -766,7 +782,7 @@ function ActSet({
             </RevealItem>
           </RevealStage>
         </div>
-        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:col-span-full max-lg:mt-8 max-lg:w-full max-lg:max-w-[min(22rem,100%)] max-lg:gap-2 max-lg:justify-self-start max-lg:pb-[calc(8.5rem+env(safe-area-inset-bottom))] max-lg:text-left">
+        <div className="col-start-9 col-end-13 row-start-3 row-end-4 grid max-w-[280px] gap-3 self-end justify-self-end text-right max-lg:absolute max-lg:top-[29%] max-lg:left-[12%] max-lg:z-[16] max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:gap-2 max-lg:justify-self-start max-lg:pb-0 max-lg:text-left">
           <span
             aria-hidden
             className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60 max-lg:ml-0"

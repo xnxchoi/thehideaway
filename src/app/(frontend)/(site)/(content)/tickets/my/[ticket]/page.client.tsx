@@ -117,6 +117,7 @@ export function TicketDetailClient({
               checkInUrl={checkInUrl}
               ticketPrice={ticketPrice}
               paymentInstructions={paymentInstructions}
+              finish={eventSlug === "day-n-night" ? "metallic" : "paper"}
             />
           </m.div>
         </section>

@@ -30,7 +30,10 @@ interface DayNNightLandingProps {
  * to the canonical five-part content flow: Intro, Details, Our friends,
  * Music by YM.FM, RSVP.
  */
-export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
+export function DayNNightLanding({
+  initialView,
+  rsvpState
+}: DayNNightLandingProps) {
   const { view, setView } = useViewPref({ initial: initialView });
   const setPageTheme = useTheme(useShallow((r) => r.setPageTheme));
   const clearPageTheme = useTheme(useShallow((r) => r.clearPageTheme));
@@ -90,7 +93,7 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
         )}
         {view === "immersive" ? (
           <DayCycleProvider>
-            <ImmersiveView />
+            <ImmersiveView rsvpState={rsvpState} />
           </DayCycleProvider>
         ) : (
           <SimplifiedView />

@@ -553,6 +553,7 @@
       "scrollHint": "Scroll",
       "audio": {
         "label": "음악",
+        "track": "DAYTIME.OGG",
         "on": "음악 켜짐",
         "off": "음악 꺼짐"
       },

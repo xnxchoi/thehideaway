@@ -163,21 +163,21 @@ body[data-dn-immersive="true"] #rp-header {
 
 [data-dn-view-toggle] {
   position: fixed;
-  top: 64px;
+  top: 20px;
   right: 20px;
   z-index: 46;
 }
 
 @media (min-width: 1024px) {
   [data-dn-view-toggle] {
-    top: 84px;
+    top: 32px;
     right: 32px;
   }
 }
 
 @media (min-width: 1280px) {
   [data-dn-view-toggle] {
-    top: 96px;
+    top: 40px;
     right: 48px;
   }
 }
