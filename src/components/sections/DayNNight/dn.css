@@ -157,22 +157,28 @@ body[data-dn-immersive="true"] #rp-header {
 
 /* ─── Bottom-center chrome cluster ───────────────────────────────────────── */
 
-/* View toggle + audio toggle sit centered above the scrubber. CSS owns
-   positioning so each component stays positionless and conditional
-   spacing (audio absent in simplified view) is expressed declaratively. */
+/* Layout/view toggle sits in the top chrome; the music toggle lives in
+   QuickActions' bottom pill. CSS owns the fixed corner position so the
+   same component works in immersive and simplified views. */
 
 [data-dn-view-toggle] {
   position: fixed;
-  bottom: 28px; /* tailwind bottom-7 */
-  left: 50%;
+  top: 64px;
+  right: 20px;
   z-index: 46;
-  transform: translateX(-50%);
 }
 
 @media (min-width: 1024px) {
   [data-dn-view-toggle] {
-    /* clears the desktop Scrubber, which sits at bottom-7. */
-    bottom: 96px;
+    top: 84px;
+    right: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  [data-dn-view-toggle] {
+    top: 96px;
+    right: 48px;
   }
 }
 

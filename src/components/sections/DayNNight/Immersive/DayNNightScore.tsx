@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
 import { useDayNNightStore } from "../store";
-import { Button } from "@/components/core/Button";
-import { AudioBars } from "./AudioBars";
 
 /**
  * Page-local audio score for the Day n Night immersive scene.
@@ -112,14 +109,10 @@ function resolveDayGain(progress: number): number {
 }
 
 export function DayNNightScore({
-  initialEnabled = false,
-  chromeVisible = true
+  enabled
 }: {
-  initialEnabled?: boolean;
-  chromeVisible?: boolean;
+  enabled: boolean;
 }) {
-  const t = useTranslations("Event.DayNNight.audio");
-  const [enabled, setEnabled] = useState(initialEnabled);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
@@ -239,24 +232,6 @@ export function DayNNightScore({
     };
   }, [ready, store]);
 
-  if (failed || !chromeVisible) return null;
-
-  return (
-    <Button
-      type="button"
-      data-dn-chrome-pill
-      data-dn-audio-toggle
-      data-on={enabled || undefined}
-      className="group ease fixed top-16 right-5 z-[46] inline-flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-[var(--dn-chrome-line)] px-[14px] py-[7px] font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[color,border-color] duration-[250ms] hover:text-[var(--dn-chrome-fg)] data-[on]:border-[oklch(from_var(--dn-chrome-fg)_l_c_h_/_0.4)] data-[on]:text-[var(--dn-chrome-fg)] md:top-[84px] md:right-8 xl:top-24 xl:right-12"
-      onClick={() => setEnabled((v) => !v)}
-      aria-label={enabled ? t("off") : t("on")}
-      aria-pressed={enabled}
-      data-active={enabled && ready ? "true" : "false"}
-    >
-      <AudioBars active={enabled && ready} className="text-current" />
-      <span data-dn-audio-text className="max-[480px]:hidden">
-        {t("label")}
-      </span>
-    </Button>
-  );
+  void failed;
+  return null;
 }
