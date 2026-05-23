@@ -592,7 +592,6 @@ export function TicketEventClient({
       return;
     }
 
-    setCredentialBusy(true);
     setCredentialError(null);
 
     try {
@@ -605,6 +604,8 @@ export function TicketEventClient({
       // Browser-managed password save is best-effort; the user can still
       // save manually from the displayed field before continuing.
     }
+
+    setCredentialBusy(true);
 
     try {
       const result = await authClient.signIn.email({

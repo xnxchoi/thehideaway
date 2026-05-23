@@ -61,6 +61,8 @@ describe("Day n Night RSVP visual contract", () => {
 
   it("uses browser-recognizable fields for the one-time password save step", () => {
     const credentialSource = getFunctionSource("CredentialStep");
+    const storeIndex = source.indexOf("await storePasswordCredential");
+    const busyIndex = source.indexOf("setCredentialBusy(true)");
     expect(credentialSource).toContain('name="username"');
     expect(credentialSource).toContain('autoComplete="username"');
     expect(credentialSource).toContain('name="password"');
@@ -73,6 +75,8 @@ describe("Day n Night RSVP visual contract", () => {
       'type={revealed ? "text" : "password"}'
     );
     expect(credentialSource).toContain("onContinue");
+    expect(storeIndex).toBeGreaterThan(-1);
+    expect(busyIndex).toBeGreaterThan(storeIndex);
   });
 
   it("uses a support modal instead of direct support mailto links", () => {

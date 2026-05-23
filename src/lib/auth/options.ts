@@ -19,6 +19,7 @@ import { username } from "better-auth/plugins/username";
 const emailService = new BetterAuthEmailService();
 
 const appURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL!;
+const appHost = new URL(appURL).hostname;
 const trustedOrigins = [appURL];
 if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
   trustedOrigins.push(process.env.NEXT_PUBLIC_PRODUCTION_URL);
@@ -206,7 +207,7 @@ export const betterAuthPlugins = [
     }
   }),
   passkey({
-    rpID: new URL("http://localhost:3000").hostname,
+    rpID: appHost,
     rpName: "The Hideaway",
     origin: appURL
   }),
