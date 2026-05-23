@@ -1,9 +1,36 @@
 "use client";
 
-import { useId, useState } from "react";
+import type { Map as MapLibreMap } from "maplibre-gl";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Map, MapMarker, MarkerContent } from "@/components/ui/map";
 import { MAP_LINKS, VENUE_COORDS } from "./survivalKit.config";
+
+const VENUE_VIEWPORT = {
+  center: [VENUE_COORDS.lng, VENUE_COORDS.lat] as [number, number],
+  zoom: 15,
+  bearing: 0,
+  pitch: 0
+} as const;
+
+const MAP_RESET_IDLE_MS = 400;
+
+type VenueViewport = {
+  center: [number, number];
+  zoom: number;
+  bearing: number;
+  pitch: number;
+};
+
+function isVenueViewport(viewport: VenueViewport) {
+  return (
+    Math.abs(viewport.center[0] - VENUE_VIEWPORT.center[0]) < 0.00008 &&
+    Math.abs(viewport.center[1] - VENUE_VIEWPORT.center[1]) < 0.00008 &&
+    Math.abs(viewport.zoom - VENUE_VIEWPORT.zoom) < 0.12 &&
+    Math.abs(viewport.bearing - VENUE_VIEWPORT.bearing) < 0.75 &&
+    Math.abs(viewport.pitch - VENUE_VIEWPORT.pitch) < 0.75
+  );
+}
 
 /**
  * useTranslationsSafe — wraps next-intl's useTranslations so that a
@@ -90,10 +117,68 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
   const t = useTranslationsSafe("Event.DayNNight.survivalKit");
   const tDn = useTranslationsSafe("Event.DayNNight");
   const [copied, setCopied] = useState<string | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoResettingRef = useRef(false);
+  const [showVenueReset, setShowVenueReset] = useState(false);
   // useId yields a unique, SSR-stable id per instance so the immersive
   // view can mount multiple kits (Opening + Closing, each duplicated by
   // the seamless-loop ActSet) without aria-labelledby id collisions.
   const headingId = useId();
+
+  const clearMapResetTimer = useCallback(() => {
+    if (!resetTimerRef.current) return;
+    clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = null;
+  }, []);
+
+  const resetVenueViewport = useCallback(
+    (duration = 460) => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      clearMapResetTimer();
+      autoResettingRef.current = true;
+      setShowVenueReset(false);
+      map.stop();
+
+      map.easeTo({
+        center: VENUE_VIEWPORT.center,
+        zoom: VENUE_VIEWPORT.zoom,
+        bearing: VENUE_VIEWPORT.bearing,
+        pitch: VENUE_VIEWPORT.pitch,
+        duration,
+        essential: true
+      });
+
+      map.once("moveend", () => {
+        autoResettingRef.current = false;
+        setShowVenueReset(false);
+      });
+    },
+    [clearMapResetTimer]
+  );
+
+  const scheduleVenueReset = useCallback(() => {
+    clearMapResetTimer();
+    resetTimerRef.current = setTimeout(() => {
+      resetVenueViewport();
+    }, MAP_RESET_IDLE_MS);
+  }, [clearMapResetTimer, resetVenueViewport]);
+
+  const handleMapViewportChange = useCallback(
+    (viewport: VenueViewport) => {
+      if (autoResettingRef.current) return;
+
+      const movedAway = !isVenueViewport(viewport);
+      setShowVenueReset(movedAway);
+
+      if (!movedAway) clearMapResetTimer();
+    },
+    [clearMapResetTimer]
+  );
+
+  useEffect(() => () => clearMapResetTimer(), [clearMapResetTimer]);
 
   // Wait for the next-intl provider context. Returning null on the
   // first render where context isn't yet ready lets React retry on
@@ -171,13 +256,18 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         <p className="font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
           {t("address.label")}
         </p>
-        <div className="relative aspect-[16/7] overflow-hidden rounded-sm bg-neutral-900">
+        <div
+          className="relative aspect-[16/7] overflow-hidden rounded-sm bg-neutral-900"
+          onPointerDownCapture={clearMapResetTimer}
+          onPointerUpCapture={scheduleVenueReset}
+          onPointerCancelCapture={scheduleVenueReset}
+          onWheelCapture={scheduleVenueReset}
+        >
           <Map
+            ref={mapRef}
             theme="dark"
-            viewport={{
-              center: [VENUE_COORDS.lng, VENUE_COORDS.lat],
-              zoom: 15
-            }}
+            initialViewState={VENUE_VIEWPORT}
+            onViewportChange={handleMapViewportChange}
             keyboard={false}
             className="absolute inset-0 h-full w-full"
           >
@@ -190,6 +280,37 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
               </MarkerContent>
             </MapMarker>
           </Map>
+          <div
+            className={
+              "pointer-events-none absolute top-3 right-3 z-20 transition-all duration-200 " +
+              (showVenueReset
+                ? "translate-y-0 opacity-100"
+                : "-translate-y-1 opacity-0")
+            }
+          >
+            <button
+              type="button"
+              onClick={() => resetVenueViewport(360)}
+              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border px-3 py-2 font-sans text-[10px] tracking-[0.16em] text-[var(--dn-fg)] uppercase transition-[border-color,background-color,color,transform] duration-200 hover:-translate-y-px"
+              style={{
+                borderColor:
+                  "color-mix(in oklch, var(--dn-fg) 15%, transparent)",
+                backgroundColor:
+                  "color-mix(in oklch, var(--dn-bg) 76%, transparent)",
+                boxShadow: "0 14px 35px rgba(0, 0, 0, 0.28)"
+              }}
+            >
+              <span
+                aria-hidden
+                className="inline-block size-1.5 rounded-full"
+                style={{
+                  backgroundColor:
+                    "color-mix(in oklch, var(--dn-fg) 70%, transparent)"
+                }}
+              />
+              <span>{t("map.reset")}</span>
+            </button>
+          </div>
           {/* Address text overlaid bottom-left with gradient scrim */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent px-4 pt-10 pb-3">
             <p className="font-serif text-[clamp(0.9rem,1.4vw,1.15rem)] leading-[1.2] tracking-[-0.01em] text-[var(--dn-fg)]">
@@ -198,7 +319,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
           </div>
         </div>
         {/* Provider deep-links + copy */}
-        <div className="mt-1 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2.5">
           <RowAction
             href={MAP_LINKS.kakao}
             external
@@ -239,7 +360,7 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         <p className="font-sans text-[14px] tracking-[0.08em] text-[var(--dn-fg-mute)]">
           {tossAmount}
         </p>
-        <div className="mt-2">
+        <div className="mt-3">
           <RowAction
             onClick={() => copyToClipboard(tossClipboard, "toss")}
             text={copyLabel("toss")}
@@ -276,7 +397,12 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
         </span>
         <a
           href={hostHref}
-          className="ease inline-flex w-fit items-baseline gap-2 font-serif text-[clamp(1.15rem,1.8vw,1.5rem)] leading-[1.3] text-[var(--dn-fg)] italic [text-decoration-line:underline] no-underline [text-decoration-color:var(--dn-fg-faint)] underline-offset-[6px] transition-[text-decoration-color,gap] duration-200 hover:gap-3 hover:[text-decoration-color:var(--dn-fg)]"
+          className="ease inline-flex w-fit items-center gap-3 rounded-full border px-5 py-3 font-serif text-[clamp(1.05rem,1.7vw,1.35rem)] leading-[1.2] text-[var(--dn-fg)] italic no-underline transition-[border-color,background-color,transform,gap] duration-200 hover:gap-4 hover:-translate-y-px"
+          style={{
+            borderColor: "color-mix(in oklch, var(--dn-fg) 12%, transparent)",
+            backgroundColor:
+              "color-mix(in oklch, var(--dn-bg) 78%, transparent)"
+          }}
         >
           <span>{hostContact}</span>
           <span aria-hidden className="text-[0.85em] leading-none">
@@ -289,9 +415,8 @@ export function SurvivalKit({ variant = "standalone" }: SurvivalKitProps) {
 }
 
 /**
- * RowAction — mono micro-cap link or button. Used for the
- * Address/Payment affordances (Open map, Copy). `arrow` adds a
- * trailing → that nudges right on hover.
+ * RowAction — compact pill link or button. Used for the
+ * Address/Payment affordances (Open map, Copy).
  */
 function RowAction({
   text,
@@ -309,8 +434,12 @@ function RowAction({
   ariaLabel?: string;
 }) {
   const className =
-    "ease inline-flex items-baseline gap-1.5 font-sans text-[10px] tracking-[0.22em] text-[var(--dn-fg-mute)] uppercase no-underline transition-[color,gap] duration-200 hover:text-[var(--dn-fg)]" +
+    "ease inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-sans text-[10px] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase no-underline transition-[border-color,background-color,color,transform,gap] duration-200 hover:-translate-y-px hover:text-[var(--dn-fg)]" +
     (arrow ? " hover:gap-2.5" : "");
+  const style = {
+    borderColor: "color-mix(in oklch, var(--dn-fg) 12%, transparent)",
+    backgroundColor: "color-mix(in oklch, var(--dn-bg) 82%, transparent)"
+  } as const;
   const inner = (
     <>
       <span>{text}</span>
@@ -330,6 +459,7 @@ function RowAction({
           : undefined)}
         className={className}
         aria-label={ariaLabel}
+        style={style}
       >
         {inner}
       </a>
@@ -341,6 +471,7 @@ function RowAction({
       onClick={onClick}
       className={className}
       aria-label={ariaLabel}
+      style={style}
     >
       {inner}
     </button>

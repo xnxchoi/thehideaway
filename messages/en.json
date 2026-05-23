@@ -435,7 +435,8 @@
         "map": {
           "kakao": "Open in Kakao Map",
           "naver": "Naver Map",
-          "google": "Google Maps"
+          "google": "Google Maps",
+          "reset": "Back to venue"
         },
         "ics": "Add to calendar"
       },
@@ -476,6 +477,41 @@
         }
       },
       "infoCta": "Essentials"
+    },
+    "InAppBrowserEscape": {
+      "eyebrow": "Open properly",
+      "title": "This page needs your real browser.",
+      "description": "Hi {name}. The Hideaway does not render reliably inside {app}. Try opening it in your browser first. If that handoff is blocked, copy the link below and paste it into Safari or Chrome.",
+      "labels": {
+        "guest": "guest",
+        "currentAppFallback": "In-app browser"
+      },
+      "actions": {
+        "primaryKicker": "Best effort",
+        "primary": "Open in browser",
+        "primaryUnavailable": "This app does not expose a reliable external-open route, so copying the link is the dependable fallback.",
+        "secondaryKicker": "Guaranteed fallback",
+        "copy": "Copy link",
+        "copied": "Link copied",
+        "copyShort": "Copy",
+        "copiedShort": "Copied"
+      },
+      "manual": {
+        "kicker": "Manual handoff",
+        "body": "If the first button does nothing, copy this full link and open it in Safari or Chrome."
+      },
+      "tips": {
+        "fallbackLabel": "Why this exists",
+        "fallbackBody": "Many in-app browsers strip features, block payment flows, and ignore some external-open requests. Copying the URL remains the safe path.",
+        "deviceLabel": "Device note",
+        "ios": "On iPhone, Safari is the most reliable fallback once you leave the in-app browser.",
+        "android": "On Android, Chrome or your default browser is the most reliable fallback once you leave the in-app browser.",
+        "generic": "If the app keeps intercepting links, copy the URL and paste it into your main browser manually."
+      },
+      "toast": {
+        "title": "Link copied",
+        "description": "Paste it into your browser."
+      }
     },
     "Guests": {
       "eyebrow": "RSVP",

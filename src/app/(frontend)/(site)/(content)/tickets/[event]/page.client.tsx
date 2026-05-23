@@ -24,6 +24,7 @@ import { signInRedirectPath } from "@/lib/routes/auth";
 import { cn } from "@/lib/utils";
 import { EventGateGradient } from "@/components/UX/Gradient/EventGateGradient";
 import { useRPStore } from "@/providers/RP_Pro";
+import { ViewportMask } from "@/components/sections/DayNNight/ViewportMask";
 import { prepareDayNNightPurchaserAction } from "./actions";
 
 interface EventLite {
@@ -663,8 +664,9 @@ function DayNNightRsvpStage({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed inset-0 z-[1000] flex h-svh w-screen flex-col overflow-hidden bg-background/5 px-4 py-8 text-foreground sm:px-10 sm:py-14"
+      className="fixed inset-0 z-[1000] flex h-svh w-screen flex-col overflow-hidden bg-background/5 px-4 py-8 text-foreground [--dn-bg:oklch(8%_0.02_280)] [--dn-fg:oklch(96%_0.005_80)] sm:px-10 sm:py-14"
     >
+      <ViewportMask />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-background"

@@ -11,6 +11,7 @@ import { ImmersiveView } from "./Immersive";
 import { ViewToggle } from "./ViewToggle";
 import { ViewContext } from "./ViewContext";
 import { useViewPref, type DayNNightView } from "./useViewPref";
+import { ViewportMask } from "./ViewportMask";
 import "./dn.css";
 import { Link } from "@/components/core/Link/Link";
 
@@ -86,6 +87,7 @@ export function DayNNightLanding({ initialView }: DayNNightLandingProps) {
         data-view={view}
         className="relative isolate min-h-svh bg-[var(--dn-bg)] p-0 text-[var(--dn-fg)]"
       >
+        {view === "immersive" && <ViewportMask />}
         {view === "immersive" && <ExitAffordance />}
         {/* Standalone ViewToggle only on simplified view — immersive
             embeds its own toggle inside the bottom action pill. */}
