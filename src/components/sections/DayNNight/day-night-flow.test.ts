@@ -6,9 +6,16 @@ const readLocal = (path: string) =>
 
 const landingSource = readLocal("./index.tsx");
 const immersiveSource = readLocal("./Immersive/index.tsx");
+const friendsTorrentSource = readLocal("./Immersive/FriendsTorrent.tsx");
+const quickActionsSource = readLocal("./Immersive/QuickActions.tsx");
+const scoreSource = readLocal("./Immersive/DayNNightScore.tsx");
 const sunLoaderSource = readLocal("./Immersive/SunLoader.tsx");
 const timelineSource = readLocal("./Immersive/Timeline.tsx");
 const cssSource = readLocal("./dn.css");
+const friendsPhotosRouteSource = readFileSync(
+  new URL("../../../app/api/day-n-night/friends-photos/route.ts", import.meta.url),
+  "utf8"
+);
 const enMessages = JSON.parse(
   readFileSync(new URL("../../../../messages/en.json", import.meta.url), "utf8")
 );
@@ -62,5 +69,24 @@ describe("Day n Night main flow contract", () => {
     expect(cssSource).toContain("[data-dn-act] > div > *");
     expect(cssSource).toContain("grid-column: 1 / -1 !important");
     expect(cssSource).toContain("grid-row: auto !important");
+  });
+
+  it("explains the friends torrent and loads deploy-time folder additions", () => {
+    expect(friendsTorrentSource).toContain("title?: ReactNode");
+    expect(friendsTorrentSource).toContain("caption?: ReactNode");
+    expect(immersiveSource).toContain("useRuntimeFriendsPhotos");
+    expect(immersiveSource).toContain("/api/day-n-night/friends-photos");
+    expect(friendsPhotosRouteSource).toContain("readdir");
+    expect(friendsPhotosRouteSource).toContain("public/assets/day-n-night/past-events");
+  });
+
+  it("puts layout controls in the top chrome and music in the bottom pill", () => {
+    expect(immersiveSource).toContain("<ViewToggle");
+    expect(quickActionsSource).toContain("MusicChip");
+    expect(quickActionsSource).toContain("AudioBars");
+    expect(quickActionsSource).not.toContain("role=\"radiogroup\"");
+    expect(scoreSource).not.toContain("data-dn-audio-toggle");
+    expect(cssSource).toContain("top: 64px");
+    expect(cssSource).toContain("right: 20px");
   });
 });

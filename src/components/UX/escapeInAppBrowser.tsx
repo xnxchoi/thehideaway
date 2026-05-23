@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeviceInfo } from "@/providers/RP_Pro";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   DialogRoot,
@@ -10,26 +10,11 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { Check, Copy, ExternalLink } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useLenis } from "lenis/react";
 import { toast } from "sonner";
 
-import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { usePathname } from "next/navigation";
-import { useShallow } from "zustand/shallow";
-
-type EscapePlan = {
-  href: string | null;
-};
-
-const ANDROID_DIRECT_ESCAPE_APPS = new Set([
-  "Threads",
-  "Twitter",
-  "Telegram",
-  "Facebook",
-  "Instagram",
-  "Facebook Messenger"
-]);
 
 export function EscapeInAppBrowser() {
   const browser = useDeviceInfo((r) => r.browser);
@@ -48,7 +33,6 @@ function InAppBrowserEscapeDialog({
   pathname: string;
 }) {
   const t = useTranslations("Event.InAppBrowserEscape");
-  const name = useRPSession(useShallow((l) => l.name));
   const [open, setOpen] = useState(true);
   const [copied, setCopied] = useState(false);
   const lenis = useLenis();
@@ -67,7 +51,6 @@ function InAppBrowserEscapeDialog({
     lenis?.[open ? "stop" : "start"]();
   }, [lenis, open]);
 
-  const os = useDeviceInfo((r) => r.os);
   const browserLabel =
     browserName && browserName !== "Unknown"
       ? browserName
@@ -76,52 +59,13 @@ function InAppBrowserEscapeDialog({
     eyebrow: isKakaoTalk ? t("kakao.eyebrow") : t("eyebrow"),
     title: isKakaoTalk ? t("kakao.title") : t("title"),
     description: isKakaoTalk
-      ? t("kakao.description", {
-          name: name || t("labels.guest"),
-          app: browserLabel
-        })
+      ? t("kakao.description")
       : t("description", {
-          name: name || t("labels.guest"),
           app: browserLabel
         }),
-    manualBody: isKakaoTalk ? t("kakao.manual.body") : t("manual.body"),
-    manualKicker: isKakaoTalk ? t("kakao.manual.kicker") : t("manual.kicker"),
-    primaryKicker: isKakaoTalk
-      ? t("kakao.actions.primaryKicker")
-      : t("actions.primaryKicker"),
-    primary: isKakaoTalk ? t("kakao.actions.primary") : t("actions.primary"),
-    primaryUnavailable: isKakaoTalk
-      ? t("kakao.actions.primaryUnavailable")
-      : t("actions.primaryUnavailable"),
-    primaryUnavailableIos: isKakaoTalk
-      ? t("kakao.actions.primaryUnavailableIos")
-      : t("actions.primaryUnavailableIos"),
-    secondaryKicker: isKakaoTalk
-      ? t("kakao.actions.secondaryKicker")
-      : t("actions.secondaryKicker"),
     copy: isKakaoTalk ? t("kakao.actions.copy") : t("actions.copy"),
-    copied: isKakaoTalk ? t("kakao.actions.copied") : t("actions.copied"),
-    copyShort: isKakaoTalk
-      ? t("kakao.actions.copyShort")
-      : t("actions.copyShort"),
-    copiedShort: isKakaoTalk
-      ? t("kakao.actions.copiedShort")
-      : t("actions.copiedShort"),
-    fallbackLabel: isKakaoTalk
-      ? t("kakao.tips.fallbackLabel")
-      : t("tips.fallbackLabel"),
-    fallbackBody: isKakaoTalk
-      ? t("kakao.tips.fallbackBody")
-      : t("tips.fallbackBody"),
-    deviceLabel: isKakaoTalk
-      ? t("kakao.tips.deviceLabel")
-      : t("tips.deviceLabel"),
-    ios: t("tips.ios")
+    copied: isKakaoTalk ? t("kakao.actions.copied") : t("actions.copied")
   };
-  const escapePlan = useMemo(
-    () => resolveEscapePlan(targetURL, browserName, os.isIOS, os.isAndroid),
-    [browserName, os.isAndroid, os.isIOS, targetURL]
-  );
 
   const flashCopied = useCallback(() => {
     setCopied(true);
@@ -136,7 +80,7 @@ function InAppBrowserEscapeDialog({
         description: t("toast.description")
       });
     } catch {
-      // Restrictive in-app browsers can block clipboard; the URL remains visible.
+      // Restrictive in-app browsers can block clipboard access.
     }
   }, [flashCopied, t, targetURL]);
 
@@ -187,111 +131,10 @@ function InAppBrowserEscapeDialog({
                   <Copy className="size-4 text-white/70" />
                 )}
               </button>
-
-              <div className="grid gap-3 border border-white/10 bg-black/28 p-4">
-                <p className="text-sm leading-6 text-white/68">
-                  {copy.manualBody}
-                </p>
-                <div className="border border-white/8 bg-black/35 px-4 py-3 font-mono text-[11px] leading-5 break-all text-white/82 sm:text-xs">
-                  {targetURL}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:col-span-2 sm:grid-cols-[1.1fr_0.9fr]">
-              <div className="border border-white/10 bg-white/[0.04] px-4 py-4">
-                <p className="mt-2 text-sm leading-6 text-white/68">
-                  {copy.fallbackBody}
-                </p>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <div className="grid gap-1">
-                  <p className="font-sans text-[11px] tracking-[0.24em] text-white/58 uppercase">
-                    {copy.deviceLabel}
-                  </p>
-                  <p className="text-sm leading-6 text-white/68">
-                    {os.isIOS ? copy.ios : os.isAndroid}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={copyLink}
-                  className="shrink-0 border border-white/12 bg-white/[0.06] px-3.5 py-2 font-sans text-[10px] tracking-[0.18em] text-white uppercase transition-[transform,border-color] duration-200 hover:-translate-y-px hover:border-white/24"
-                >
-                  {copied ? copy.copiedShort : copy.copyShort}
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </DialogContent>
     </DialogRoot>
   );
-}
-
-function resolveEscapePlan(
-  targetURL: string,
-  browserName: string,
-  isIOS: boolean,
-  isAndroid: boolean
-): EscapePlan {
-  if (isAndroid) {
-    return { href: buildAndroidEscapeUrl(targetURL, browserName) };
-  }
-
-  if (isIOS) {
-    return { href: buildIOSEscapeUrl(targetURL, browserName) };
-  }
-
-  return { href: null };
-}
-
-function buildIOSEscapeUrl(targetURL: string, browserName: string) {
-  try {
-    if (browserName === "KakaoTalk") {
-      return `kakaotalk://web/openExternal?url=${encodeURIComponent(withHttps(targetURL))}`;
-    }
-
-    if (browserName === "Line") {
-      return appendQueryParam(targetURL, "openExternalBrowser", "1");
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function buildAndroidEscapeUrl(targetURL: string, browserName: string) {
-  try {
-    if (browserName === "KakaoTalk") {
-      return `kakaotalk://web/openExternal?url=${encodeURIComponent(targetURL)}`;
-    }
-
-    if (browserName === "Line") {
-      return appendQueryParam(targetURL, "openExternalBrowser", "1");
-    }
-
-    if (ANDROID_DIRECT_ESCAPE_APPS.has(browserName)) {
-      return `intent://${targetURL.replace(/https?:\/\//i, "")}#Intent;scheme=https;end`;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function withHttps(url: string) {
-  if (url.startsWith("http://")) {
-    throw new Error("iOS external browser escape requires https.");
-  }
-
-  return url.startsWith("https://") ? url : `https://${url}`;
-}
-
-function appendQueryParam(url: string, key: string, value: string) {
-  const next = new URL(url);
-  next.searchParams.set(key, value);
-  return next.toString();
 }

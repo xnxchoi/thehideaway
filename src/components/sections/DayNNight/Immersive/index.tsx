@@ -16,6 +16,8 @@ import { Scrubber } from "./Scrubber";
 import { SunLoader } from "./SunLoader";
 import { Timeline } from "./Timeline";
 import { YMFMCredit } from "./YMFMCredit";
+import { ViewToggle } from "../ViewToggle";
+import { useViewContext } from "../ViewContext";
 
 // Act III ("dress" slot) index in SECTION_KEYS order. Mirrors the
 // removed ACT_INDEX_DRESS that lived in Timeline.tsx before the
@@ -72,6 +74,8 @@ const FRIENDS_PHOTOS: FriendsTorrentPhoto[] = PAST_EVENT_FILENAMES.map(
  */
 export function ImmersiveView() {
   const t = useTranslations("Event.DayNNight");
+  const mainT = useTranslations("Event.DayNNight.main");
+  const { view, setView } = useViewContext();
   const phase = useDayNNightScene(useShallow((r) => r.phase));
   // Sequenced entry reveal: 0 = background only, 1 = content, 2 = chrome.
   // Stages advance on fixed delays after phase transitions to "playing" so
@@ -95,6 +99,7 @@ export function ImmersiveView() {
   // consume this via DetailsContext.
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const friendsPhotos = useRuntimeFriendsPhotos(FRIENDS_PHOTOS);
   const setProgress = useDayNNightScene((r) => r.setProgress);
   const setPhase = useDayNNightScene((r) => r.setPhase);
   const resetLiminalHandoff = useDayNNightScene((r) => r.resetLiminalHandoff);
@@ -203,16 +208,21 @@ export function ImmersiveView() {
         <Scrubber visible={revealStage >= 2} suppressed={torrentVisible} />
         {/* Bottom action island — mounts at stage 2 so the m.div spring
           entrance fires exactly when chrome should appear. */}
-        {revealStage >= 2 && <QuickActions />}
+        {revealStage >= 2 && (
+          <>
+            <ViewToggle value={view} onChange={setView} />
+            <QuickActions
+              audioEnabled={audioEnabled}
+              onAudioToggle={() => setAudioEnabled((enabled) => !enabled)}
+            />
+          </>
+        )}
         {/* Local audio score — owns daytime.ogg only. Fades out across
           the photo-torrent window; once the cassette handoff fires,
           this goes silent and HideawayFM picks up the night. See
           DayNNightScore.tsx. */}
         {phase === "playing" && (
-          <DayNNightScore
-            initialEnabled={audioEnabled}
-            chromeVisible={revealStage >= 2}
-          />
+          <DayNNightScore enabled={audioEnabled} />
         )}
         {/* Local YM.FM controller for Track_1. It can auto-enter after
           the liminal handoff or start immediately from the YM.FM
@@ -229,7 +239,9 @@ export function ImmersiveView() {
           The YM.FM feature now owns the next visual act rather than
           interrupting the friends window. */}
         <FriendsTorrent
-          photos={FRIENDS_PHOTOS}
+          photos={friendsPhotos}
+          title={mainT("friends.eyebrow")}
+          caption={mainT("friends.caption")}
           active={torrentVisible}
           className="fixed z-[40]"
         />
@@ -264,4 +276,28 @@ export function ImmersiveView() {
       </div>
     </DetailsContext>
   );
+}
+
+function useRuntimeFriendsPhotos(fallback: FriendsTorrentPhoto[]) {
+  const [photos, setPhotos] = useState(fallback);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetch("/api/day-n-night/friends-photos", {
+      cache: "no-store"
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { photos?: FriendsTorrentPhoto[] } | null) => {
+        if (cancelled || !payload?.photos?.length) return;
+        setPhotos(payload.photos);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return photos;
 }

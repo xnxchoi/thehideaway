@@ -593,34 +593,14 @@
       "title": "기본 브라우저에서 열어 주세요.",
       "description": "{app} 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
       "labels": {
-        "guest": "게스트",
         "currentAppFallback": "인앱 브라우저"
       },
       "actions": {
-        "primaryKicker": "먼저 시도",
-        "primary": "브라우저에서 열기",
-        "primaryUnavailable": "외부 브라우저 열기가 막히면 링크 복사가 가장 안정적입니다.",
-        "primaryUnavailableIos": "iOS에서는 인앱 브라우저가 Safari를 강제로 열 수 없는 경우가 있습니다. 링크 복사가 가장 안정적입니다.",
-        "secondaryKicker": "안정적인 방법",
         "copy": "링크 복사",
-        "copied": "링크 복사됨",
-        "copyShort": "복사",
-        "copiedShort": "복사됨"
-      },
-      "manual": {
-        "kicker": "직접 열기",
-        "body": "첫 버튼이 반응하지 않으면 전체 링크를 복사해 Safari나 Chrome에 붙여 넣어 주세요."
-      },
-      "tips": {
-        "fallbackLabel": "안내",
-        "fallbackBody": "이 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
-        "deviceLabel": "기기 안내",
-        "ios": "iPhone에서는 앱을 벗어난 뒤 Safari에서 여는 것이 가장 안정적입니다.",
-        "android": "Android에서는 Chrome 또는 기본 브라우저에서 여는 것이 가장 안정적입니다.",
-        "generic": "앱이 계속 링크를 가로채면 URL을 복사해 기본 브라우저에 직접 붙여 넣어 주세요."
+        "copied": "곧, 브라우저에서 다시 봐요!"
       },
       "toast": {
-        "title": "링크를 복사했습니다",
+        "title": "곧, 브라우저에서 다시 봐요!",
         "description": "브라우저에 붙여 넣어 주세요."
       },
       "kakao": {
@@ -628,25 +608,8 @@
         "title": "브라우저에서 열어 주세요.",
         "description": "카카오톡 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
         "actions": {
-          "primaryKicker": "먼저 시도",
-          "primary": "브라우저에서 열기",
-          "primaryUnavailable": "카카오톡은 링크 복사가 가장 안정적입니다.",
-          "primaryUnavailableIos": "iOS에서는 직접 복사가 안정적입니다.",
-          "secondaryKicker": "안정적인 방법",
           "copy": "링크 복사",
-          "copied": "링크 복사됨",
-          "copyShort": "복사됨",
-          "copiedShort": "복사됨"
-        },
-        "manual": {
-          "kicker": "직접 열기",
-          "body": "복사한 링크를 직접 브라우저 주소창에 붙여넣어 주세요."
-        },
-        "tips": {
-          "fallbackLabel": "안내",
-          "fallbackBody": "카카오톡 인앱 브라우저는 저희 사이트의 일부 기능을 지원하지 않습니다.",
-          "deviceLabel": "기기 안내",
-          "generic": "URL을 복사하여 브라우저 주소창에 붙여넣어 주세요."
+          "copied": "곧, 브라우저에서 다시 봐요!"
         }
       }
     },

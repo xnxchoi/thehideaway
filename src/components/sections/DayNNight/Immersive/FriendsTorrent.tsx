@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import NextImage from "next/image";
@@ -18,6 +18,8 @@ export interface FriendsTorrentPhoto {
 
 export interface FriendsTorrentProps {
   photos: FriendsTorrentPhoto[];
+  title?: ReactNode;
+  caption?: ReactNode;
   /** When false, the whole layer fades out (still mounted). */
   active?: boolean;
   /** Opacity of the dark base layer behind the photos (0..1). */
@@ -75,6 +77,8 @@ const PHOTO_PROFILES = [
  */
 export function FriendsTorrent({
   photos,
+  title,
+  caption,
   active = true,
   darkenOpacity = 0.5,
   rowSpeeds = DEFAULT_SPEEDS,
@@ -186,7 +190,7 @@ export function FriendsTorrent({
       )}
       data-visible={active ? "true" : "false"}
       style={{ opacity: active ? 1 : 0 }}
-      aria-hidden
+      aria-hidden={!active}
     >
       {/* Atmospheric base — dark blue shadow, low ember rooftop spillover. */}
       {atmosphere ? (
@@ -289,6 +293,21 @@ export function FriendsTorrent({
           ].join(", ")
         }}
       />
+
+      {(title || caption) && (
+        <div className="absolute right-6 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] left-6 z-10 grid max-w-[min(30rem,calc(100vw-3rem))] gap-3 text-[oklch(96%_0.005_80)] md:right-auto md:bottom-12 md:left-10 lg:bottom-16 lg:left-14">
+          {title ? (
+            <p className="m-0 font-mono text-[10px] leading-[1.4] tracking-[0.32em] text-white/62 uppercase md:text-[11px]">
+              {title}
+            </p>
+          ) : null}
+          {caption ? (
+            <p className="m-0 max-w-[34ch] font-serif text-[clamp(1.35rem,3.4vw,2.65rem)] leading-[1.05] font-bold tracking-[-0.02em] text-white [text-shadow:0_16px_50px_rgba(0,0,0,0.84)] md:max-w-[22ch]">
+              {caption}
+            </p>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

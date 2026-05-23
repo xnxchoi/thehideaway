@@ -592,34 +592,14 @@
       "title": "This page needs your real browser.",
       "description": "{app}'s in-app browser does not support tech on our site.",
       "labels": {
-        "guest": "guest",
         "currentAppFallback": "In-app browser"
       },
       "actions": {
-        "primaryKicker": "Best effort",
-        "primary": "Open in browser",
-        "primaryUnavailable": "This app does not expose a reliable external-open route, so copying the link is the dependable fallback.",
-        "primaryUnavailableIos": "iOS does not let every in-app browser force Safari open. Copying the link is the dependable fallback.",
-        "secondaryKicker": "Guaranteed fallback",
         "copy": "Copy link",
-        "copied": "Link copied",
-        "copyShort": "Copy",
-        "copiedShort": "Copied"
-      },
-      "manual": {
-        "kicker": "Manual handoff",
-        "body": "If the first button does nothing, copy this full link and open it in Safari or Chrome."
-      },
-      "tips": {
-        "fallbackLabel": "Notice",
-        "fallbackBody": "This in-app browser does not support tech on our site.",
-        "deviceLabel": "Device note",
-        "ios": "On iPhone, Safari is the most reliable fallback once you leave the in-app browser.",
-        "android": "On Android, Chrome or your default browser is the most reliable fallback once you leave the in-app browser.",
-        "generic": "If the app keeps intercepting links, copy the URL and paste it into your main browser manually."
+        "copied": "see you on the other side!"
       },
       "toast": {
-        "title": "Link copied",
+        "title": "see you on the other side!",
         "description": "Paste it into your browser."
       },
       "kakao": {
@@ -627,25 +607,8 @@
         "title": "Open this in your browser.",
         "description": "KakaoTalk's in-app browser does not support tech on our site.",
         "actions": {
-          "primaryKicker": "Try first",
-          "primary": "Open in browser",
-          "primaryUnavailable": "If KakaoTalk blocks the browser handoff, copying the link is the reliable fallback.",
-          "primaryUnavailableIos": "iOS does not let every in-app browser force Safari open. Copying the link is the reliable fallback.",
-          "secondaryKicker": "Reliable fallback",
           "copy": "Copy link",
-          "copied": "Link copied",
-          "copyShort": "Copy",
-          "copiedShort": "Copied"
-        },
-        "manual": {
-          "kicker": "Manual handoff",
-          "body": "If KakaoTalk blocks the external browser handoff, copy this full link and paste it into Safari or Chrome."
-        },
-        "tips": {
-          "fallbackLabel": "Notice",
-          "fallbackBody": "KakaoTalk browser does not fully support tech used on our site.",
-          "deviceLabel": "Device note",
-          "generic": "If the app keeps intercepting, copy - paste it manually."
+          "copied": "see you on the other side!"
         }
       }
     },

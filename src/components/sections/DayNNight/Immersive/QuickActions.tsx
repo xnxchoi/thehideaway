@@ -9,7 +9,7 @@ import { Link } from "@/components/core/Link/Link";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useDetailsContext } from "./DetailsContext";
 import { useDayNNightScene } from "../store";
-import { useViewContext } from "../ViewContext";
+import { AudioBars } from "./AudioBars";
 
 const FG = "rgb(244, 242, 235)"; // resolved --dn-fg cream
 
@@ -21,14 +21,20 @@ const FG = "rgb(244, 242, 235)"; // resolved --dn-fg cream
  * This version makes the CTA feel like a brighter lead object while the
  * utility controls tuck into a darker instrument cluster behind it.
  */
-export function QuickActions() {
+interface QuickActionsProps {
+  audioEnabled: boolean;
+  onAudioToggle: () => void;
+}
+
+export function QuickActions({
+  audioEnabled,
+  onAudioToggle
+}: QuickActionsProps) {
   const t = useTranslations("Event.DayNNight");
-  const tView = useTranslations("Event.DayNNight.viewToggle");
+  const tAudio = useTranslations("Event.DayNNight.audio");
   const { open, setOpen } = useDetailsContext();
-  const { view, setView } = useViewContext();
   const sessionUserId = useRPSession(useShallow((r) => r.id as string | null));
   const loaderProgress = useDayNNightScene(useShallow((r) => r.loaderProgress));
-  const isImmersive = view === "immersive";
   const isRsvped = Boolean(sessionUserId);
   const rsvpLabel = isRsvped ? t("rsvpCta.rsvped") : t("rsvpCta.rsvp");
   const rsvpStrength = Math.max(0.42, Math.min(1, loaderProgress));
@@ -65,25 +71,12 @@ export function QuickActions() {
           gap: "6px"
         }}
       >
-        <div
-          role="radiogroup"
-          aria-label={tView("label")}
-          className="flex items-center rounded-full border border-white/6 bg-black/12 p-[3px] max-lg:hidden"
-          style={{ gap: "3px" }}
-        >
-          <ViewChip
-            label={tView("immersive")}
-            active={isImmersive}
-            onClick={() => setView("immersive")}
-          />
-          <ViewChip
-            label={tView("simplified")}
-            active={!isImmersive}
-            onClick={() => setView("simplified")}
-          />
-        </div>
-
-        <span aria-hidden className="w-[6px] max-lg:hidden" />
+        <MusicChip
+          label={tAudio("label")}
+          enabled={audioEnabled}
+          onClick={onAudioToggle}
+          ariaLabel={audioEnabled ? tAudio("off") : tAudio("on")}
+        />
 
         <Button
           type="button"
@@ -240,27 +233,37 @@ export function QuickActions() {
   );
 }
 
-interface ViewChipProps {
+interface MusicChipProps {
   label: string;
-  active: boolean;
+  enabled: boolean;
   onClick: () => void;
+  ariaLabel: string;
 }
 
-function ViewChip({ label, active, onClick }: ViewChipProps) {
+function MusicChip({ label, enabled, onClick, ariaLabel }: MusicChipProps) {
   return (
     <Button
       type="button"
-      role="radio"
-      aria-checked={active}
       onClick={onClick}
-      className="inline-flex cursor-pointer appearance-none items-center rounded-full px-[12px] py-[9px] font-mono text-[10px] tracking-[0.12em] uppercase transition-[background-color,color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] active:scale-[0.985] lg:text-[11px]"
+      aria-label={ariaLabel}
+      aria-pressed={enabled}
+      data-dn-audio-toggle
+      data-on={enabled || undefined}
+      className="inline-flex cursor-pointer appearance-none items-center gap-2 rounded-full border px-[12px] py-[10px] font-mono text-[10px] font-medium tracking-[0.12em] uppercase transition-[background-color,color,border-color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] active:scale-[0.985] lg:px-[14px] lg:text-[11px]"
       style={{
-        backgroundColor: active ? "rgba(244, 242, 235, 0.18)" : "transparent",
-        color: active ? FG : "rgba(244, 242, 235, 0.52)",
-        fontWeight: active ? 600 : 500
+        backgroundColor: enabled
+          ? "rgba(244, 242, 235, 0.16)"
+          : "rgba(244, 242, 235, 0.06)",
+        borderColor: enabled
+          ? "rgba(244, 242, 235, 0.26)"
+          : "rgba(244, 242, 235, 0.1)",
+        color: enabled ? FG : "rgba(244, 242, 235, 0.58)"
       }}
     >
-      {label}
+      <AudioBars active={enabled} className="text-current" />
+      <span data-dn-audio-text className="max-[480px]:hidden">
+        {label}
+      </span>
     </Button>
   );
 }
