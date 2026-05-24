@@ -77,7 +77,6 @@ export function TicketWallet({ tickets }: Props) {
                 checkInUrl={ticket.checkInUrl}
                 ticketPrice={ticket.ticketPrice}
                 paymentInstructions={ticket.paymentInstructions}
-                finish="metallic"
               />
               <div className="flex flex-col gap-3 border-t border-off-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="max-w-md font-mono text-[10px] leading-relaxed tracking-widest text-off-white/65 uppercase">
