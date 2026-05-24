@@ -19,7 +19,9 @@ export default async function MyTicketsPage() {
   const userId = String(session.user.id);
   const found = await payload.find({
     collection: "tickets",
-    where: { user: { equals: userId } },
+    where: {
+      or: [{ user: { equals: userId } }, { purchaser: { equals: userId } }]
+    },
     depth: 1,
     limit: 200,
     sort: "-createdAt",

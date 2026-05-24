@@ -1,5 +1,5 @@
 import configPromise from "@payload-config";
-import { cookies, headers as nextHeaders } from "next/headers";
+import { headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import type { Where } from "payload";
 import type { Metadata } from "next/types";
@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { RPage } from "@/components/UX/Transition";
+import { getServerSession } from "@/lib/auth/getServerSession";
 import { signInRedirectPath } from "@/lib/routes/auth";
 import { getServerSideURL } from "@/utilities/getURL";
 import { PasswordReveal } from "./PasswordReveal";
@@ -39,10 +40,11 @@ export default async function DayNNightMyPage() {
   const t = await getTranslations("Event.Rsvp.my");
   const payload = await getPayload({ config: configPromise });
 
-  const viewer = await resolveViewer(payload);
-  if (!viewer) {
+  const session = await getServerSession(await nextHeaders());
+  if (!session) {
     redirect(signInRedirectPath("/day-n-night/my"));
   }
+  const viewer = session.user;
 
   const eventResult = await payload
     .find({
@@ -232,42 +234,6 @@ export default async function DayNNightMyPage() {
       </main>
     </RPage>
   );
-}
-
-async function resolveViewer(
-  payload: Awaited<ReturnType<typeof getPayload>>
-): Promise<{
-  id: string;
-  name?: string | null;
-  username?: string | null;
-  email?: string | null;
-} | null> {
-  try {
-    const cookieStore = await cookies();
-    const headerStore = await nextHeaders();
-    const headersForPayload = new Headers(headerStore);
-    const token = cookieStore.get("payload-token")?.value;
-    if (token && !headersForPayload.get("authorization")) {
-      headersForPayload.set("authorization", `JWT ${token}`);
-    }
-    const { user } = await payload.auth({ headers: headersForPayload });
-    const authUser = user as {
-      id: string;
-      name?: string | null;
-      username?: string | null;
-      email?: string | null;
-    } | null;
-    return authUser
-      ? {
-          id: authUser.id,
-          name: authUser.name ?? null,
-          username: authUser.username ?? null,
-          email: authUser.email ?? null
-        }
-      : null;
-  } catch {
-    return null;
-  }
 }
 
 function buildWalletTickets({
