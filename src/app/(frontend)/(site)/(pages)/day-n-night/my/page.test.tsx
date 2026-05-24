@@ -119,6 +119,7 @@ describe("/day-n-night/my", () => {
     expect(mocks.find).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: "ticket-orders",
+        overrideAccess: true,
         where: { purchaser: { equals: "user-1" } }
       })
     );

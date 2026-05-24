@@ -68,7 +68,11 @@ export default async function DayNNightMyPage() {
       collection: "ticket-orders",
       depth: 1,
       limit: 50,
-      overrideAccess: false, // honour collection access rule (purchaser-only)
+      // We already resolved the viewer through Better Auth above. Payload's
+      // collection access cannot see that session here because this server
+      // component does not pass a Payload `req.user`, so keep the purchaser
+      // boundary explicit in the where clause and bypass collection access.
+      overrideAccess: true,
       where: { purchaser: { equals: viewer.id } },
       sort: "-createdAt"
     })
