@@ -21,11 +21,19 @@ const SESSION_COOKIE_NAMES = [
   "__Secure-better-auth.session_token"
 ];
 
+const TEMPORARILY_LOCKED_PATH_PREFIXES = ["/plans"] as const;
+
 function hasSessionCookie(req: NextRequest): boolean {
   for (const name of SESSION_COOKIE_NAMES) {
     if (req.cookies.get(name)) return true;
   }
   return false;
+}
+
+function isTemporarilyLockedPath(pathname: string): boolean {
+  return TEMPORARILY_LOCKED_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+  );
 }
 
 /**
@@ -106,6 +114,15 @@ export async function proxy(request: NextRequest) {
   // tier-2 check without re-parsing the rewrite target.
   const fwdHeaders = new Headers(request.headers);
   fwdHeaders.set("x-pathname", pathname);
+
+  if (isTemporarilyLockedPath(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/gate";
+    url.search = "";
+    return NextResponse.rewrite(url, {
+      request: { headers: fwdHeaders }
+    });
+  }
 
   const gateAllowed =
     isGatePublicPath(pathname) ||
