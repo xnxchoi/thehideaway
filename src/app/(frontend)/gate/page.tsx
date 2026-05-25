@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { Button } from "@/components/core/Button";
+import { Link } from "@/components/core/Link/Link";
 
 export const metadata: Metadata = {
   title: "The Hideaway — Returning soon",
@@ -60,12 +61,14 @@ export default async function GatePage() {
           </p>
 
           <div className="mt-12 flex flex-wrap items-center gap-3">
-            <Link
-              href={t("ctaPrimaryHref")}
-              className="border border-foreground/70 bg-foreground px-5 py-2.5 font-mono text-[11px] tracking-widest text-background uppercase transition-colors hover:bg-foreground/90"
-            >
-              {t("ctaPrimary")}
-            </Link>
+            <form action={t("ctaPrimaryHref")}>
+              <Button
+                type="submit"
+                className="border border-foreground/70 bg-foreground px-5 py-2.5 font-mono text-[11px] tracking-widest text-background uppercase transition-colors hover:bg-foreground/90"
+              >
+                {t("ctaPrimary")}
+              </Button>
+            </form>
             <Link
               href={t("ctaSecondaryHref")}
               className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"

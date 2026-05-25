@@ -131,11 +131,11 @@
     "wordmark": "The Hideaway",
     "title": "Returning soon.",
     "lede": "We are still ruling the margins. The room opens in stages.",
-    "footnote": "What is ready to read, you can find at our first dispatch.",
-    "ctaPrimary": "Day & Night",
-    "ctaPrimaryHref": "/day-n-night",
+    "footnote": "What is ready to read, you can find at home.",
+    "ctaPrimary": "Home",
+    "ctaPrimaryHref": "/home",
     "ctaSecondary": "Sign in",
-    "ctaSecondaryHref": "/login",
+    "ctaSecondaryHref": "/sign-in",
     "colophon": "An editorial house, in private rehearsal."
   },
   "Settings": {
