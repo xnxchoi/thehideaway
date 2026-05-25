@@ -35,7 +35,7 @@ export const Main = ({ children }: { children: ReactNode }) => {
           style={{
             position: "fixed",
             inset: 0,
-            zIndex: navIsOpen ? 120 : 40,
+            zIndex: navIsOpen ? 247 : 40,
             width: "100vw",
             height: "100vh"
           }}

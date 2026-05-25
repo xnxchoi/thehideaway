@@ -22,11 +22,13 @@ import {
 import { useShallow } from "zustand/shallow";
 import { TWEEN_EASE } from "@/constants/animations";
 import { useFrameFactor, useRPStore } from "@/providers/RP_Pro";
+import { useCanvasClaim } from "@/stores/CanvasFrameloop";
 import fragmentShader from "./shaders/fragment.glsl";
 import vertexShader from "./shaders/vertex.glsl";
 
 export function VGradient() {
   const navIsOpen = useRPStore((l) => l.navIsOpen);
+  useCanvasClaim(navIsOpen);
 
   return (
     <View
