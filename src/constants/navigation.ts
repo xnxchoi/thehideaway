@@ -3,66 +3,58 @@ import type { PayloadLinkProps } from "@/components/core/Link/types";
 export type NavLink = PayloadLinkProps<"custom"> & {
   url: string;
   label: string;
+  environment?: "all" | "dev";
 };
 
-const link = (href: string, label: string): NavLink => ({
+const link = (
+  href: string,
+  label: string,
+  environment: NavLink["environment"] = "all"
+): NavLink => ({
   type: "custom",
   url: href,
   newTab: false,
-  label
+  label,
+  environment
 });
 
-// ─── TEMPORARY EVENT MODE ───────────────────────────────────────────────
-// While the Day n Night event is the only surface we want guests pushed
-// toward, the header / menu / sidedrawer nav collapses to event-only
-// links. The full site nav lives below in commented-out form — swap the
-// two blocks (move the comment markers) to restore site-wide nav after
-// the event closes.
-
-/**
- * RPMenu — full-screen overlay navigation. EVENT MODE: only the event
- * landing + reserve CTA.
- */
 export const MENU_LINKS: NavLink[] = [
-  link("/day-n-night", "Day & Night"),
-  link("/tickets/day-n-night", "Reserve")
+  link("/", "Reception"),
+  link("/essays", "Essays"),
+  link("/radio", "Radio"),
+  link("/search", "Search"),
+  link("/plans", "Membership"),
+  link("/the-team", "The Team")
 ];
 
-/**
- * SideDrawer — site navigation & ambient utility (⌘B). EVENT MODE: same
- * shape as the menu for consistency across surfaces.
- */
 export const SIDE_DRAWER_LINKS: NavLink[] = [
-  link("/day-n-night", "Day & Night"),
-  link("/tickets/day-n-night", "Reserve")
+  link("/", "Reception"),
+  link("/essays", "Essays"),
+  link("/surf", "Surf"),
+  link("/radio", "Radio"),
+  link("/users", "Directory"),
+  link("/plans", "Membership"),
+  link("/the-team", "The Team")
 ];
 
-/**
- * Dev-only links appended to RPMenu in development.
- */
 export const DEV_LINKS: NavLink[] = [
-  link("/dev", "DEV"),
-  link("/dodo", "DoDo")
+  link("/dev", "DEV", "dev"),
+  link("/dodo", "DoDo", "dev")
 ];
 
-// ─── POST-EVENT SITE NAV (commented-out for restoration) ─────────────
-// Restore by swapping these arrays for the EVENT-MODE ones above.
-//
-// export const MENU_LINKS: NavLink[] = [
-//   link("/", "Reception"),
-//   link("/essays", "Essays"),
-//   link("/radio", "Radio"),
-//   link("/search", "Search"),
-//   link("/plans", "Membership"),
-//   link("/the-team", "The Team")
-// ];
-//
-// export const SIDE_DRAWER_LINKS: NavLink[] = [
-//   link("/", "Reception"),
-//   link("/essays", "Essays"),
-//   link("/surf", "Surf"),
-//   link("/radio", "Radio"),
-//   link("/users", "Directory"),
-//   link("/plans", "Membership"),
-//   link("/the-team", "The Team")
-// ];
+const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
+
+export function shouldShowDevNavigationLinks(hostname?: string): boolean {
+  const runtimeHostname =
+    hostname ??
+    (typeof window !== "undefined" ? window.location.hostname : undefined);
+
+  return runtimeHostname ? LOCAL_DEV_HOSTS.has(runtimeHostname) : false;
+}
+
+export function getMenuLinksForRuntime(hostname?: string): NavLink[] {
+  return [
+    ...MENU_LINKS,
+    ...(shouldShowDevNavigationLinks(hostname) ? DEV_LINKS : [])
+  ];
+}

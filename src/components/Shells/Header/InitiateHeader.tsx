@@ -1,5 +1,5 @@
 "use client";
-import { DEV_LINKS, MENU_LINKS, type NavLink } from "src/constants/navigation";
+import { getMenuLinksForRuntime, type NavLink } from "src/constants/navigation";
 import { useRPStore } from "src/providers/RP_Pro";
 import {
   getMenuPagePreviewKey,
@@ -18,10 +18,7 @@ export const InitiateHeader = ({ header }: { header: Header }) => {
     (store) => store.setNavigationPreviewMediaByKey
   );
   const links: NavLink[] = useMemo(
-    () => [
-      ...MENU_LINKS,
-      ...(process.env.NODE_ENV === "development" ? DEV_LINKS : [])
-    ],
+    () => getMenuLinksForRuntime(),
     []
   );
   useEffect(() => {

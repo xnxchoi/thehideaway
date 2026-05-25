@@ -99,7 +99,7 @@ export function Paywall({
     typeof needsAuthProp === "boolean"
       ? needsAuthProp
       : gate?.reason === "auth-required";
-  const loginHref = signInRedirectPath(currentPath ?? "/event-entry");
+  const loginHref = signInRedirectPath(currentPath ?? "/me");
 
   return (
     <>

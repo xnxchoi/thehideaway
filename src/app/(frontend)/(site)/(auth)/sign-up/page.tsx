@@ -27,7 +27,7 @@ export default function Page() {
             The Hideaway.
           </Link>
           <ConsentGate>
-            <AuthCard view="SIGN_UP" redirectTo="/event-entry" />
+            <AuthCard view="SIGN_UP" redirectTo="/me" />
           </ConsentGate>
         </div>
         <Suspense>

@@ -1,4 +1,4 @@
-const DEFAULT_SIGN_IN_RETURN_TO = "/event-entry";
+const DEFAULT_SIGN_IN_RETURN_TO = "/me";
 
 type SearchParamValue = string | string[] | undefined;
 

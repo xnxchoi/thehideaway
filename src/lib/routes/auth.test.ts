@@ -28,7 +28,7 @@ describe("auth route helpers", () => {
   });
 
   it("rejects external or protocol-relative return targets", () => {
-    expect(normalizeLocalReturnTo("https://evil.test")).toBe("/event-entry");
-    expect(normalizeLocalReturnTo("//evil.test")).toBe("/event-entry");
+    expect(normalizeLocalReturnTo("https://evil.test")).toBe("/me");
+    expect(normalizeLocalReturnTo("//evil.test")).toBe("/me");
   });
 });
