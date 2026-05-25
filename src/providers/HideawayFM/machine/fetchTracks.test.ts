@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { pickSeed } from "./fetchTracks";
+import { fetchTracks, MANUAL_RADIO_TRACKS, pickSeed } from "./fetchTracks";
 import type { PersistedSeed, SeedResult } from "./fetchTracks";
 import type { RP_Track } from "../types";
 import { SESSION_RESUME_TTL_MIN } from "../constants";
@@ -22,6 +22,90 @@ const TRACKS: RP_Track[] = [
   makeTrack({ id: "t2", duration: 300 }),
   makeTrack({ id: "t3", duration: 180 })
 ];
+
+describe("fetchTracks", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("falls back to the manual radio roll when Payload has no tracks", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({ docs: [] })
+      })
+    );
+
+    await expect(fetchTracks()).resolves.toEqual(MANUAL_RADIO_TRACKS);
+  });
+
+  it("falls back to the manual radio roll when Payload tracks are not playable", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          docs: [
+            {
+              id: "payload-track-1",
+              title: "Draft Track",
+              artist: "YM.FM",
+              duration: 0,
+              url: null,
+              album: null
+            }
+          ]
+        })
+      })
+    );
+
+    await expect(fetchTracks()).resolves.toEqual(MANUAL_RADIO_TRACKS);
+  });
+
+  it("prefers playable Payload tracks when present", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          docs: [
+            {
+              id: "payload-track-1",
+              title: "Payload Track",
+              artist: "YM.FM",
+              duration: 144,
+              url: "/media/payload-track.mp3",
+              album: {
+                id: "album-1",
+                title: "Payload Album",
+                slug: "payload-album",
+                cover: null
+              },
+              slug: "payload-track"
+            }
+          ]
+        })
+      })
+    );
+
+    await expect(fetchTracks()).resolves.toEqual([
+      {
+        id: "payload-track-1",
+        title: "Payload Track",
+        artist: "YM.FM",
+        album: "Payload Album",
+        albumId: "album-1",
+        albumSlug: "payload-album",
+        slug: "payload-track",
+        duration: 144,
+        url: "/api/tracks/stream/payload-track-1",
+        cover: null
+      }
+    ]);
+  });
+});
 
 describe("pickSeed", () => {
   describe("empty tracks", () => {

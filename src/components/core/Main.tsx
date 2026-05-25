@@ -11,26 +11,33 @@ export const Main = ({ children }: { children: ReactNode }) => {
   const mainRef = useRef<HTMLElement>(null!);
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   // Frameloop resolution — priority order:
-  //   1. Tour active           → "never"   (highest priority; the
-  //                                          registration tour's heavy
+  //   1. Menu open             → "always"  (the menu preview gradient
+  //                                          renders through the shared
+  //                                          canvas and must keep ticking)
+  //   2. Tour active           → "never"   (the registration tour's heavy
   //                                          DOM animations risk a
   //                                          WebGL context-loss on
   //                                          weak GPUs)
-  //   2. Any 3D consumer       → "always"  (consumers call
+  //   3. Any 3D consumer       → "always"  (consumers call
   //                                          useCanvasClaim() while
   //                                          mounted; see
   //                                          stores/CanvasFrameloop.ts)
-  //   3. No claims             → "demand"  (idle — only renders on
+  //   4. No claims             → "demand"  (idle — only renders on
   //                                          explicit invalidate())
   const regActive = useTourStore((s) => s.regActive);
   const resolvedFrameloop = useResolvedFrameloop();
-  const frameloop = regActive ? "never" : resolvedFrameloop;
+  const frameloop = navIsOpen
+    ? "always"
+    : regActive
+      ? "never"
+      : resolvedFrameloop;
   return (
     <main ref={mainRef} className={"root"}>
       {children}
       <Suspense>
         <MainInternal
           eventSource={mainRef}
+          data-frameloop={frameloop}
           frameloop={frameloop}
           style={{
             position: "fixed",

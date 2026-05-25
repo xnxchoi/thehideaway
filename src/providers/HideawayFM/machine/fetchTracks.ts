@@ -11,14 +11,11 @@
  * so the seed never lands inside a natural outro, which otherwise makes the
  * station feel stale the instant it opens.
  *
- * Errors are soft: a failed fetch resolves to `[]` so the provider can still
- * render its empty-state. The provider is the one that decides how to report
- * the error to the user — this module stays pure and side-effect-light.
+ * Errors are soft: a failed fetch resolves to the bundled manual roll so the
+ * provider can still mount the player without requiring seeded Payload docs.
  */
 
 import type { Album, Media, Track } from "@/payload-types";
-import { getRadio } from "@/providers/getRadio";
-import { uuidv7 } from "uuidv7";
 
 import { SESSION_RESUME_TTL_MIN } from "../constants";
 import type { RP_Track } from "../types";
@@ -46,96 +43,83 @@ const SEEK_WINDOW = 0.7;
 const TTL_MS = SESSION_RESUME_TTL_MIN * 60 * 1000;
 
 /**
- * Static fallback roll. Used when running in dev (no Payload media seeded)
- * or when a production fetch returns zero tracks — keeps the player audible
- * instead of dropping to an empty-state. IDs are deterministic so React keys
- * stay stable across renders. `duration` is a placeholder — Howler reports
- * the real value once the source loads.
+ * Static manual roll. Used when running in dev (no Payload media seeded) or
+ * when a production fetch returns zero playable tracks. Keep this client-safe:
+ * no server actions, filesystem metadata reads, or runtime UUIDs. The player
+ * gates on `tracks.length`, so this array is what keeps `/radio` mountable.
  */
-const FALLBACK_DURATION_SEC = 300;
-const FALLBACK_TITLES = [
-  "Shibuya Nights",
-  "Part 2",
-  "Part 3",
-  "Part 4",
-  "Part 5",
-  "Part 6",
-  "Part 7",
-  "Part 8",
-  "Part 9"
-] as const;
-const FALLBACK_TRACKS: RP_Track[] = [
+export const MANUAL_RADIO_TRACKS: RP_Track[] = [
   {
-    id: uuidv7(),
-    album: "",
-    duration: 60,
-    title: "Shibuya Nights",
-    url: `/track_media/Track_1.ogg`,
+    id: "manual-radio-track-001",
+    album: "Hideaway Ambience",
+    duration: 96.522,
+    title: "Don't Wanna Know",
+    url: "/track_media/Track_1.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
-    title: "Part 2",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_2.ogg`,
+    id: "manual-radio-track-002",
+    title: "Gin Fizz Shibuya",
+    album: "Hideaway Ambience",
+    duration: 127.269,
+    url: "/track_media/Track_2.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
-    title: "Part 3",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_3.ogg`,
+    id: "manual-radio-track-003",
+    title: "Funk Confessions",
+    album: "Hideaway Ambience",
+    duration: 90.54,
+    url: "/track_media/Track_3.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
-    title: "Part 4",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_4.ogg`,
+    id: "manual-radio-track-004",
+    title: "Cooled Breeze",
+    album: "Hideaway Ambience",
+    duration: 62.563,
+    url: "/track_media/Track_4.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
-    title: "Part 5",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_5.ogg`,
+    id: "manual-radio-track-005",
+    title: "Parisienne Tabac",
+    album: "Hideaway Ambience",
+    duration: 108.878,
+    url: "/track_media/Track_5.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
-    title: "Part 6",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_6.ogg`,
+    id: "manual-radio-track-006",
+    title: "Pigalle Nights",
+    album: "Hideaway Ambience",
+    duration: 90.514,
+    url: "/track_media/Track_6.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
-    title: "Part 7",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_7.ogg`,
+    id: "manual-radio-track-007",
+    title: "Rex",
+    album: "Hideaway Ambience",
+    duration: 160.157,
+    url: "/track_media/Track_7.mp3",
     artist: "YM.FM"
   },
   {
-    id: uuidv7(),
+    id: "manual-radio-track-008",
     title: "Part 8",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_8.ogg`,
-    artist: "YM.FM"
+    album: "Hideaway Ambience",
+    duration: 28.029,
+    url: "/track_media/Track_8.mp3",
+    artist: "The Estate"
   },
   {
-    id: uuidv7(),
+    id: "manual-radio-track-009",
     title: "Part 9",
-    album: "",
-    duration: 60,
-    url: `/track_media/Track_9.ogg`,
-    artist: "YM.FM"
+    album: "Hideaway Ambience",
+    duration: 35.422,
+    url: "/track_media/Track_9.mp3",
+    artist: "The Estate"
   }
 ];
 
@@ -172,18 +156,15 @@ const toRPTrack = (track: Track): RP_Track | null => {
   };
 };
 
-const withFallback = async (tracks: RP_Track[]) =>
-  tracks.length > 0 && process.env.NODE_ENV !== "development"
-    ? tracks
-    : await getRadio(
-        FALLBACK_TRACKS.map((r) => ({ artist: r.artist, url: r.url, id: r.id }))
-      );
+const manualRadioTracks = (): RP_Track[] =>
+  MANUAL_RADIO_TRACKS.map((track) => ({ ...track }));
+
+const withManualFallback = (tracks: RP_Track[]) =>
+  tracks.length > 0 ? tracks : manualRadioTracks();
 
 export async function fetchTracks(): Promise<RP_Track[]> {
   if (process.env.NODE_ENV === "development") {
-    return await getRadio(
-      FALLBACK_TRACKS.map((r) => ({ artist: r.artist, url: r.url, id: r.id }))
-    );
+    return manualRadioTracks();
   }
 
   try {
@@ -198,7 +179,7 @@ export async function fetchTracks(): Promise<RP_Track[]> {
           `[HideawayFM] fetchTracks failed: ${response.status} ${response.statusText}`
         );
       }
-      return await withFallback([]);
+      return withManualFallback([]);
     }
 
     const payload = (await response.json()) as PayloadListResponse<Track>;
@@ -210,12 +191,12 @@ export async function fetchTracks(): Promise<RP_Track[]> {
       return acc;
     }, []);
 
-    return await withFallback(mapped);
+    return withManualFallback(mapped);
   } catch (error: unknown) {
     if (process.env.NODE_ENV !== "production") {
       console.error("[HideawayFM] fetchTracks threw", error);
     }
-    return await withFallback([]);
+    return withManualFallback([]);
   }
 }
 
