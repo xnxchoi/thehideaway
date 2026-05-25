@@ -91,6 +91,24 @@ describe("/tickets/[event] Day n Night gate routing", () => {
     expect(props.gateInitiallyOpen).toBe(false);
   });
 
+  it("shows the ended Day n Night state without asking for the event gate", async () => {
+    mocks.find.mockImplementation(async ({ collection }) => {
+      if (collection === "events") {
+        return { docs: [{ ...baseEvent, state: "ended" }] };
+      }
+      if (collection === "ticket-orders") return { docs: [] };
+      return { docs: [] };
+    });
+
+    const props = (await renderTicketClientProps()) as {
+      gateInitiallyOpen?: boolean;
+      event?: { state?: string };
+    };
+
+    expect(props.gateInitiallyOpen).toBe(true);
+    expect(props.event?.state).toBe("ended");
+  });
+
   it("opens the Day n Night ticket flow after the story gate has issued a signed cookie", async () => {
     const { eventGateCookieName, issueEventGateCookieValue } =
       await import("@/lib/event-gate");

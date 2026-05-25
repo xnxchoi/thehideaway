@@ -5,7 +5,7 @@ Cross-session continuity doc for the **Day n Night** event landing, RSVP'd guest
 **Event date:** Sunday, 24 May 2026
 **Location:** Haebangchon / Itaewon, Seoul
 **Event slug:** `day-n-night`
-**Status:** Phase 5a code-floor + **Phase 5b-UF user-feedback pass** both shipped 2026-05-20 (P4C + audit CRITICALs/HIGHs + Survival Kit scaffold + Scrubber-regression fix + reveal-threshold rebuild + Opening-loader sync + section-hero soft-pin + typography spacing pass + Survival Kit redesign + santa-loop dual-review round 1 fixes). Pushed to origin/main at commit `fce85bf`. Awaiting user walkthrough for any remaining items ("and more I have yet to formulate words for"). See § 13 iteration log for the chronological trail.
+**Status:** Event archived 2026-05-25 after the Sunday, 24 May 2026 run. The `events` row is now moved to `state='ended'` by migration `20260525_000000_day_n_night_event_ended`, which blocks new reservations while leaving attendee-only post-event surfaces available. See § 13 iteration log for the chronological trail.
 
 > This is the single source of truth for the surface. `DAY_N_NIGHT_AUDIT.md` and `DAY_N_NIGHT_DRESS_REDESIGN.md` have been folded in (§ 14 and § 15 respectively) and archived to `.attic/readmes/`.
 
@@ -38,7 +38,7 @@ The brand undercurrent is "change" — paired thematically with the unreleased p
 
 **Why both `/day-n-night` and `/tickets/day-n-night`?** The promo surface needs full visual freedom (R3F, horizontal scroll, custom loader); the purchase flow already has a polished, production-tested implementation. Cleanest reuse without mutating working code.
 
-**Promo → ticketing handoff:** the "RSVP" CTA on `/day-n-night` deep-links to `/tickets/day-n-night`. As of 2026-05-24, the registration page is passcode-gated again; direct hits stay locked unless the user enters `events.gate_password` or already holds the signed `event-gate.day-n-night` cookie.
+**Promo → ticketing handoff:** the "RSVP" CTA on `/day-n-night` deep-links to `/tickets/day-n-night`. From 2026-05-25 onward, the event is archived as `state='ended'`; the registration page shows the ended state instead of prompting for the old event gate.
 
 ---
 
@@ -142,7 +142,7 @@ A second, surface-wide password layer landed after the original spec was written
 
 | Surface                | Gate                                                                                    | Persistence |
 | ---------------------- | --------------------------------------------------------------------------------------- | ----------- |
-| `/tickets/day-n-night` | Locked until `events.gate_password` validates or a signed `event-gate.day-n-night` cookie is present. | HttpOnly cookie |
+| `/tickets/day-n-night` | Archived after 2026-05-24; while `events.state='ended'`, the page shows the ended state and does not ask for the old gate password. If reopened, it locks until `events.gate_password` validates or a signed `event-gate.day-n-night` cookie is present. | HttpOnly cookie while open |
 | `/day-n-night/*`       | Public story surface. No password gate.                                                 | None        |
 
 ### Pieces
@@ -458,6 +458,8 @@ A dedicated voice pass against `VOICE.md` should run before Phase 5a ships. Spec
 - Iteration log: append below per session.
 
 ### Iteration log
+
+- **2026-05-25** — Event archived after the 2026-05-24 run. Added migration `20260525_000000_day_n_night_event_ended` to move `events.slug='day-n-night'` from `open` to `ended`; `/tickets/day-n-night` now bypasses the old gate when the event is no longer accepting reservations so visitors see the ended state directly. Purchase API already rejects non-`open` events.
 
 - **2026-05-18** — Plan drafted. Reuse scope confirmed (Events + Tickets infrastructure). Phase 1 starts this session pending two confirmations: (a) the "shippable simplified + scaffolded immersive" cut for today vs pushing further, (b) closure of the four open decisions in § 7.
 

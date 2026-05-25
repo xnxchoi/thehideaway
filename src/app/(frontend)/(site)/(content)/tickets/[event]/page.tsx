@@ -55,8 +55,10 @@ export default async function TicketEventPage(props: { params: Params }) {
   const isStaff = role === "admin" || role === "editor";
   if (event.state === "draft" && !isStaff) notFound();
 
-  const gateInitiallyOpen =
-    slug === STEP_FLOW_SLUG
+  const eventAcceptsReservations = event.state === "open";
+  const gateInitiallyOpen = !eventAcceptsReservations
+    ? true
+    : slug === STEP_FLOW_SLUG
       ? verifyEventGateCookieValue(
           (await nextCookies()).get(eventGateCookieName(slug))?.value,
           event.id
