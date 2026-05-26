@@ -1,4 +1,3 @@
-import { slugField } from "@/payload/fields";
 import { CollectionConfig } from "payload";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 
@@ -30,7 +29,20 @@ export const ProductCategory: CollectionConfig = {
       type: "text",
       required: true
     },
-    ...slugField("name")
+    {
+      name: "slug",
+      type: "text",
+      required: true,
+      unique: true,
+      index: true
+    },
+    {
+      name: "sort",
+      type: "number",
+      defaultValue: 0,
+      index: true,
+      admin: { position: "sidebar" }
+    }
   ]
 };
 export const ProductSubCategory: CollectionConfig = {
@@ -51,6 +63,12 @@ export const ProductSubCategory: CollectionConfig = {
       type: "text",
       required: true
     },
-    ...slugField("name")
+    {
+      name: "slug",
+      type: "text",
+      required: true,
+      unique: true,
+      index: true
+    }
   ]
 };

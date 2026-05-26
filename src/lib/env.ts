@@ -185,6 +185,18 @@ const schema = z.object({
         "Extra trusted origin for Better Auth (only set when staging/preview hosts share prod cookies)."
       )
     ),
+  NEXT_PUBLIC_LOSTINSEOUL_URL: z
+    .string()
+    .url()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "urls",
+        "LOSTINSEOUL storefront origin routed into the same Next/Payload app.",
+        "https://lostinseoul.com"
+      )
+    ),
   PAYLOAD_PUBLIC_SERVER_URL: z
     .string()
     .url()
@@ -318,6 +330,81 @@ const schema = z.object({
         "optional",
         "misc",
         "Bank-transfer detail string shown on the manual-checkout success screen."
+      )
+    ),
+
+  // ── LOSTINSEOUL / PortOne checkout ───────────────────────────────────
+  PORTONE_CLIENT_KEY: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "PortOne Global client key for LOSTINSEOUL checkout.",
+        "https://admin.portone.cloud/"
+      )
+    ),
+  PORTONE_SECRET_KEY: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "PortOne Global server secret for signing and webhook reconciliation.",
+        "https://admin.portone.cloud/"
+      )
+    ),
+  PORTONE_API_JWT: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "Bearer JWT for PortOne server APIs such as refunds.",
+        "https://docs.portone.cloud/reference/post_api-refund-portone-order-ref"
+      )
+    ),
+  PORTONE_ENVIRONMENT: z
+    .enum(["sandbox", "production"])
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "PortOne checkout environment. Defaults to sandbox when unset."
+      )
+    ),
+  PORTONE_DEFAULT_CHANNEL: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "Default PortOne payment channel key for checkout payloads."
+      )
+    ),
+  PORTONE_DEFAULT_METHOD: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "Default PortOne payment method for checkout payloads."
+      )
+    ),
+  PORTONE_WEBHOOK_SECRET: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "Shared secret accepted by the LOSTINSEOUL PortOne webhook endpoint."
       )
     ),
 

@@ -113,6 +113,14 @@ export interface Config {
     'exchange-rate': ExchangeRate;
     currency: Currency;
     holidays: Holiday;
+    'product-category': ProductCategory;
+    'product-sub': ProductSub;
+    'product-drops': ProductDrop;
+    products: Product;
+    'product-order-campaigns': ProductOrderCampaign;
+    'product-carts': ProductCart;
+    'product-orders': ProductOrder;
+    'product-payments': ProductPayment;
     events: Event;
     'ticket-orders': TicketOrder;
     tickets: Ticket;
@@ -215,6 +223,14 @@ export interface Config {
     'exchange-rate': ExchangeRateSelect<false> | ExchangeRateSelect<true>;
     currency: CurrencySelect<false> | CurrencySelect<true>;
     holidays: HolidaysSelect<false> | HolidaysSelect<true>;
+    'product-category': ProductCategorySelect<false> | ProductCategorySelect<true>;
+    'product-sub': ProductSubSelect<false> | ProductSubSelect<true>;
+    'product-drops': ProductDropsSelect<false> | ProductDropsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-order-campaigns': ProductOrderCampaignsSelect<false> | ProductOrderCampaignsSelect<true>;
+    'product-carts': ProductCartsSelect<false> | ProductCartsSelect<true>;
+    'product-orders': ProductOrdersSelect<false> | ProductOrdersSelect<true>;
+    'product-payments': ProductPaymentsSelect<false> | ProductPaymentsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
     tickets: TicketsSelect<false> | TicketsSelect<true>;
@@ -2809,6 +2825,312 @@ export interface Holiday {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-category".
+ */
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-sub".
+ */
+export interface ProductSub {
+  id: string;
+  name: string;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * LOSTINSEOUL seasonal drops and collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-drops".
+ */
+export interface ProductDrop {
+  id: string;
+  title: string;
+  slug: string;
+  active: boolean;
+  kicker?: string | null;
+  lede?: string | null;
+  hero_media?: (string | null) | Media;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * LOSTINSEOUL storefront products.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  name: string;
+  /**
+   * URL-safe product slug used at /products/{slug}.
+   */
+  slug: string;
+  active: boolean;
+  storefront: string;
+  drop?: (string | null) | ProductDrop;
+  category?: (string | null) | ProductCategory;
+  /**
+   * Short catalog/card copy.
+   */
+  summary?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Product detail accordion copy.
+   */
+  details?: string | null;
+  /**
+   * Care instructions.
+   */
+  care?: string | null;
+  /**
+   * Shipping and returns copy.
+   */
+  shipping_returns?: string | null;
+  hero_media?: (string | null) | Media;
+  /**
+   * Product gallery images shown on detail pages.
+   */
+  gallery?: (string | Media)[] | null;
+  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
+  unit_amount: number;
+  compare_at_amount?: number | null;
+  stock_state: 'in_stock' | 'out_of_stock' | 'pre_order' | 'on_request';
+  inventory?: number | null;
+  max_order_quantity: number;
+  min_order_quantity: number;
+  /**
+   * Array of { id, sku, label, size, color, amount?, inventory?, stock_state? }.
+   */
+  variants?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  standard_enabled: boolean;
+  request_to_order_enabled: boolean;
+  private_order_enabled: boolean;
+  private_preset_price_enabled: boolean;
+  /**
+   * Optional private-order price. Blank means the buyer requests a quote first.
+   */
+  private_unit_amount?: number | null;
+  private_tier_gate: 'anyone' | 'resident' | 'patron' | 'cofounder' | 'staff';
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Request-to-order campaigns that convert paid commitments into orders.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-order-campaigns".
+ */
+export interface ProductOrderCampaign {
+  id: string;
+  title: string;
+  product: string | Product;
+  state: 'draft' | 'open' | 'met' | 'failed' | 'converted' | 'canceled';
+  minimum_commitments: number;
+  maximum_commitments?: number | null;
+  /**
+   * System-maintained count of paid commitments.
+   */
+  paid_commitments?: number | null;
+  deadline: string;
+  /**
+   * Controls buyer-facing commitment progress display.
+   */
+  progress_visibility: 'hidden' | 'percentage' | 'count';
+  /**
+   * Optional array of product variant ids eligible for this campaign.
+   */
+  eligible_variants?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Buyer-facing explanation for failed-campaign refunds or manual refunds.
+   */
+  refund_policy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Synced authenticated carts for LOSTINSEOUL.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-carts".
+ */
+export interface ProductCart {
+  id: string;
+  user: string | User;
+  storefront: string;
+  status: 'active' | 'converted' | 'abandoned';
+  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
+  lines:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * LOSTINSEOUL orders, commitments, and private quotes.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-orders".
+ */
+export interface ProductOrder {
+  id: string;
+  order_ref: string;
+  user: string | User;
+  storefront: string;
+  order_mode: 'standard_purchase' | 'request_to_order' | 'private_order';
+  status:
+    | 'draft'
+    | 'quote_requested'
+    | 'quote_ready'
+    | 'pending_payment'
+    | 'paid'
+    | 'committed'
+    | 'confirmed'
+    | 'converted'
+    | 'failed'
+    | 'canceled'
+    | 'refunded';
+  payment_status: 'unpaid' | 'pending' | 'paid' | 'pending_manual' | 'failed' | 'refunded' | 'partially_refunded';
+  fulfillment_status: 'unfulfilled' | 'reserved' | 'in_production' | 'fulfilled' | 'canceled';
+  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
+  subtotal_amount: number;
+  total_amount: number;
+  campaign?: (string | null) | ProductOrderCampaign;
+  lines:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  shipping?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  contact?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Private-order quote state: amount, currency, expires_at, notes.
+   */
+  quote?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  paid_at?: string | null;
+  expires_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * PortOne and manual payment records for LOSTINSEOUL.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-payments".
+ */
+export interface ProductPayment {
+  id: string;
+  payment_ref: string;
+  order: string | ProductOrder;
+  user: string | User;
+  provider: 'portone' | 'manual';
+  status: 'initiated' | 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded' | 'manual_pending';
+  amount: number;
+  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
+  portone_order_ref?: string | null;
+  portone_transaction_ref?: string | null;
+  payment_channel?: string | null;
+  payment_method?: string | null;
+  request_payload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  events?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  paid_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events".
  */
 export interface Event {
@@ -3308,6 +3630,38 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'holidays';
         value: string | Holiday;
+      } | null)
+    | ({
+        relationTo: 'product-category';
+        value: string | ProductCategory;
+      } | null)
+    | ({
+        relationTo: 'product-sub';
+        value: string | ProductSub;
+      } | null)
+    | ({
+        relationTo: 'product-drops';
+        value: string | ProductDrop;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'product-order-campaigns';
+        value: string | ProductOrderCampaign;
+      } | null)
+    | ({
+        relationTo: 'product-carts';
+        value: string | ProductCart;
+      } | null)
+    | ({
+        relationTo: 'product-orders';
+        value: string | ProductOrder;
+      } | null)
+    | ({
+        relationTo: 'product-payments';
+        value: string | ProductPayment;
       } | null)
     | ({
         relationTo: 'events';
@@ -4710,6 +5064,156 @@ export interface HolidaysSelect<T extends boolean = true> {
       };
   period?: T;
   country?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-category_select".
+ */
+export interface ProductCategorySelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-sub_select".
+ */
+export interface ProductSubSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-drops_select".
+ */
+export interface ProductDropsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  active?: T;
+  kicker?: T;
+  lede?: T;
+  hero_media?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  active?: T;
+  storefront?: T;
+  drop?: T;
+  category?: T;
+  summary?: T;
+  description?: T;
+  details?: T;
+  care?: T;
+  shipping_returns?: T;
+  hero_media?: T;
+  gallery?: T;
+  currency?: T;
+  unit_amount?: T;
+  compare_at_amount?: T;
+  stock_state?: T;
+  inventory?: T;
+  max_order_quantity?: T;
+  min_order_quantity?: T;
+  variants?: T;
+  standard_enabled?: T;
+  request_to_order_enabled?: T;
+  private_order_enabled?: T;
+  private_preset_price_enabled?: T;
+  private_unit_amount?: T;
+  private_tier_gate?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-order-campaigns_select".
+ */
+export interface ProductOrderCampaignsSelect<T extends boolean = true> {
+  title?: T;
+  product?: T;
+  state?: T;
+  minimum_commitments?: T;
+  maximum_commitments?: T;
+  paid_commitments?: T;
+  deadline?: T;
+  progress_visibility?: T;
+  eligible_variants?: T;
+  refund_policy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-carts_select".
+ */
+export interface ProductCartsSelect<T extends boolean = true> {
+  user?: T;
+  storefront?: T;
+  status?: T;
+  currency?: T;
+  lines?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-orders_select".
+ */
+export interface ProductOrdersSelect<T extends boolean = true> {
+  order_ref?: T;
+  user?: T;
+  storefront?: T;
+  order_mode?: T;
+  status?: T;
+  payment_status?: T;
+  fulfillment_status?: T;
+  currency?: T;
+  subtotal_amount?: T;
+  total_amount?: T;
+  campaign?: T;
+  lines?: T;
+  shipping?: T;
+  contact?: T;
+  quote?: T;
+  paid_at?: T;
+  expires_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-payments_select".
+ */
+export interface ProductPaymentsSelect<T extends boolean = true> {
+  payment_ref?: T;
+  order?: T;
+  user?: T;
+  provider?: T;
+  status?: T;
+  amount?: T;
+  currency?: T;
+  portone_order_ref?: T;
+  portone_transaction_ref?: T;
+  payment_channel?: T;
+  payment_method?: T;
+  request_payload?: T;
+  events?: T;
+  paid_at?: T;
   updatedAt?: T;
   createdAt?: T;
 }

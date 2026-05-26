@@ -7,6 +7,11 @@ import { NaverIcon } from "@/lib/auth/betterauth-ui/src/components/provider-icon
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const router = useTransitionRouter();
+  const hidePasskeys =
+    typeof window !== "undefined" &&
+    ["lostinseoul.com", "www.lostinseoul.com"].includes(
+      window.location.hostname
+    );
 
   return (
     <AuthUIProvider
@@ -17,7 +22,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       signUp={{
         fields: ["name", "email", "password", "location", "bio", "link"]
       }}
-      passkey={true}
+      passkey={!hidePasskeys}
       credentials={{
         forgotPassword: true,
         confirmPassword: false,

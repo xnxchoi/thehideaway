@@ -12,8 +12,12 @@ import type { NextRequest } from "next/server";
  * fallback) against the configured server URL.
  */
 export function isSameOrigin(req: NextRequest): boolean {
-  const allowed = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!allowed) return false;
+  const allowedOrigins = [
+    process.env.NEXT_PUBLIC_SERVER_URL,
+    process.env.NEXT_PUBLIC_LOSTINSEOUL_URL,
+    process.env.NEXT_PUBLIC_PRODUCTION_URL
+  ].filter((origin): origin is string => Boolean(origin));
+  if (allowedOrigins.length === 0) return false;
 
   const candidate =
     req.headers.get("origin") ?? req.headers.get("referer") ?? "";
@@ -21,11 +25,13 @@ export function isSameOrigin(req: NextRequest): boolean {
 
   try {
     const candidateUrl = new URL(candidate);
-    const allowedUrl = new URL(allowed);
-    return (
-      candidateUrl.host === allowedUrl.host &&
-      candidateUrl.protocol === allowedUrl.protocol
-    );
+    return allowedOrigins.some((allowed) => {
+      const allowedUrl = new URL(allowed);
+      return (
+        candidateUrl.host === allowedUrl.host &&
+        candidateUrl.protocol === allowedUrl.protocol
+      );
+    });
   } catch {
     return false;
   }
