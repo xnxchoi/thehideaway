@@ -16,8 +16,31 @@ import {
 } from "better-auth/client/plugins";
 import {createAuthClient} from "better-auth/react";
 
+function readAuthBaseURL(): string {
+	const primary = `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}`;
+	if (typeof window === "undefined") return primary;
+
+	const candidates = [
+		primary,
+		process.env.NEXT_PUBLIC_SERVER_URL,
+		process.env.NEXT_PUBLIC_LOSTINSEOUL_URL,
+		process.env.NEXT_PUBLIC_PRODUCTION_URL
+	].filter(Boolean) as string[];
+
+	const current = window.location.origin;
+	for (const candidate of candidates) {
+		try {
+			if (new URL(candidate).origin === current) return current;
+		} catch {
+			// Ignore malformed env values; server env validation reports them.
+		}
+	}
+
+	return primary;
+}
+
 export const authClient = createAuthClient({
-	baseURL: `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}`,
+	baseURL: readAuthBaseURL(),
 	plugins: [
 		twoFactorClient({
 			onTwoFactorRedirect() {

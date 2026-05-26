@@ -31,6 +31,92 @@
       "previous": "Previous"
     }
   },
+  "LOSTINSEOUL": {
+    "nav": {
+      "cart": "Cart",
+      "back": "Back",
+      "shop": "Shop",
+      "archive": "Archive"
+    },
+    "home": {
+      "announcement": "Limited runs, Seoul dispatch",
+      "eyebrow": "Storefront",
+      "title": "LOSTINSEOUL",
+      "lede": "Objects, editions, and small commitments from the city. Some can be bought now. Some only happen if enough people commit.",
+      "products": "Available now",
+      "empty": "No products are open right now.",
+      "collection": "Collection",
+      "year": "2026",
+      "objects": "Objects",
+      "incoming": "Incoming"
+    },
+    "actions": {
+      "view": "View product",
+      "watchVideo": "Watch video",
+      "add": "Add to cart",
+      "added": "Added",
+      "requestQuote": "Request quote"
+    },
+    "video": {
+      "close": "Close",
+      "play": "Play",
+      "pause": "Pause",
+      "progress": "Video progress",
+      "mute": "Mute",
+      "unmute": "Unmute"
+    },
+    "modes": {
+      "standard": "Buy",
+      "request": "Commit",
+      "private": "Private"
+    },
+    "product": {
+      "campaign": "Request to order",
+      "progress": "Progress",
+      "details": "Details",
+      "care": "Care",
+      "shipping": "Shipping and returns",
+      "privateQuote": "Notes for a private order"
+    },
+    "cart": {
+      "title": "Cart",
+      "empty": "Your cart is empty.",
+      "checkout": "Checkout",
+      "remove": "Remove",
+      "total": "Total"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "contact": "Contact",
+      "shipping": "Shipping",
+      "payment": "Payment",
+      "portone": "Card / global",
+      "manual": "Manual",
+      "submit": "Place order",
+      "pending": "Creating order",
+      "failed": "Could not create the order.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "note": "Delivery note"
+    },
+    "payment": {
+      "successEyebrow": "Order received",
+      "successTitle": "We have it.",
+      "failureEyebrow": "Payment failed",
+      "failureTitle": "Try once more.",
+      "continue": "Continue",
+      "retry": "Return to cart"
+    },
+    "order": {
+      "title": "Order",
+      "back": "Back to store",
+      "status": "Status",
+      "payment": "Payment",
+      "total": "Total"
+    }
+  },
   "Plans": {
     "title": "Life is only meaningful in retrospect.",
     "subtitle": "Memories are the product of two things - action and recollection.",

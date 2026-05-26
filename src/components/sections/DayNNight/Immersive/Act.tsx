@@ -97,9 +97,9 @@ export function ActEyebrow({
       <span
         data-dn-eyebrow
         data-align={align}
-        className="gap-[14px] text-[var(--dn-fg)]"
+        className="gap-[14px] text-(--dn-fg)"
       >
-        <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-faint)]">
+        <span className="font-sans text-[11px] tracking-[0.32em] text-(--dn-fg-faint)">
           №
         </span>
         <span className="font-serif text-[clamp(1.5rem,1.7vw,1.85rem)] font-medium italic">
@@ -107,7 +107,7 @@ export function ActEyebrow({
         </span>
         <span
           aria-hidden
-          className="font-serif text-[clamp(1.5rem,1.7vw,1.85rem)] text-[var(--dn-fg-faint)] italic"
+          className="font-serif text-[clamp(1.5rem,1.7vw,1.85rem)] text-(--dn-fg-faint) italic"
         >
           —
         </span>
@@ -116,13 +116,10 @@ export function ActEyebrow({
         </span>
         {time && (
           <>
-            <span
-              aria-hidden
-              className="font-mono text-[11px] text-[var(--dn-fg-faint)]"
-            >
+            <span aria-hidden className="text-[11px] text-(--dn-fg-faint)">
               ·
             </span>
-            <span className="font-mono text-[clamp(11px,0.9vw,13px)] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase tabular-nums">
+            <span className="text-[clamp(11px,0.9vw,13px)] tracking-[0.18em] text-(--dn-fg-mute) uppercase tabular-nums">
               {time}
             </span>
           </>

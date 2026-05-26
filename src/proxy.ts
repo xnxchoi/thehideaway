@@ -23,6 +23,47 @@ const SESSION_COOKIE_NAMES = [
 
 const TEMPORARILY_LOCKED_PATH_PREFIXES = ["/plans"] as const;
 
+const LOST_HOSTS = new Set(["lostinseoul.com", "www.lostinseoul.com"]);
+
+function isLostHost(host: string | null | undefined): boolean {
+  if (!host) return false;
+  const normalized = host.split(":")[0]?.toLowerCase();
+  if (normalized && LOST_HOSTS.has(normalized)) return true;
+
+  const configured = process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
+  if (!configured) return false;
+  try {
+    return normalized === new URL(configured).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
+function lostInternalPath(pathname: string): string | null {
+  if (pathname === "/") return "/lostinseoul";
+  if (pathname === "/lostinseoul" || pathname.startsWith("/lostinseoul/")) {
+    return pathname;
+  }
+
+  const storefrontPrefixes = [
+    "/collections",
+    "/products",
+    "/cart",
+    "/checkout",
+    "/orders",
+    "/payment"
+  ];
+  if (
+    storefrontPrefixes.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    )
+  ) {
+    return `/lostinseoul${pathname}`;
+  }
+
+  return null;
+}
+
 function hasSessionCookie(req: NextRequest): boolean {
   for (const name of SESSION_COOKIE_NAMES) {
     if (req.cookies.get(name)) return true;
@@ -95,7 +136,8 @@ const RATE_LIMITS: [string, number, number][] = [
   ["/api/image-courier", 20, 60_000],
   ["/api/link-preview", 20, 60_000],
   ["/api/payload-jobs", 10, 60_000],
-  ["/api/notifications", 30, 60_000]
+  ["/api/notifications", 30, 60_000],
+  ["/api/lost", 40, 60_000]
 ];
 
 function getClientIP(req: NextRequest): string {
@@ -107,7 +149,13 @@ function getClientIP(req: NextRequest): string {
 }
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const originalPathname = request.nextUrl.pathname;
+  const lostRewritePathname = isLostHost(
+    request.nextUrl.hostname || request.headers.get("host")
+  )
+    ? lostInternalPath(originalPathname)
+    : null;
+  const pathname = lostRewritePathname ?? originalPathname;
 
   // --- 1. Soft-launch gate ---
   // Forward the real pathname so server components can do the role-aware
@@ -180,10 +228,15 @@ export async function proxy(request: NextRequest) {
     // CORS for configured server URL (API routes only)
     const origin = request.headers.get("origin");
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+    const lostUrl = process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
 
-    if (serverUrl && origin === serverUrl) {
+    const allowedOrigin =
+      [serverUrl, lostUrl].filter(Boolean).find((url) => url === origin) ??
+      null;
+
+    if (allowedOrigin) {
       const response = NextResponse.next();
-      response.headers.set("Access-Control-Allow-Origin", serverUrl);
+      response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
       response.headers.set(
         "Access-Control-Allow-Methods",
         "GET, POST, PUT, DELETE, OPTIONS"
@@ -202,7 +255,14 @@ export async function proxy(request: NextRequest) {
   // Explicit prefix guard: the widened gate matcher above means this
   // block now sees every path, not just the original four. Scope it
   // back to the four protected areas.
-  const protectedPrefixes = ["/me", "/prive", "/account", "/admin-ba"];
+  const protectedPrefixes = [
+    "/me",
+    "/prive",
+    "/account",
+    "/admin-ba",
+    "/lostinseoul/checkout",
+    "/lostinseoul/orders"
+  ];
   const isProtected = protectedPrefixes.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
@@ -211,6 +271,12 @@ export async function proxy(request: NextRequest) {
     const signInUrl = new URL("/sign-in", request.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
+  }
+
+  if (lostRewritePathname) {
+    const url = request.nextUrl.clone();
+    url.pathname = lostRewritePathname;
+    return NextResponse.rewrite(url, { request: { headers: fwdHeaders } });
   }
 
   // Default: forward with the x-pathname header set above.

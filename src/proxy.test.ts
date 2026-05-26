@@ -2,8 +2,12 @@ import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 import { proxy } from "./proxy";
 
-function makeRequest(pathname: string, cookie?: string): NextRequest {
-  return new NextRequest(`https://hideaway.test${pathname}`, {
+function makeRequest(
+  pathname: string,
+  cookie?: string,
+  origin = "https://hideaway.test"
+): NextRequest {
+  return new NextRequest(`${origin}${pathname}`, {
     headers: cookie ? { cookie } : undefined
   });
 }
@@ -47,6 +51,24 @@ describe("proxy navigation gate", () => {
 
     expect(res.headers.get("x-middleware-rewrite")).toBe(
       "https://hideaway.test/gate"
+    );
+  });
+
+  it("host-routes lostinseoul.com root into the internal storefront route", async () => {
+    const res = await proxy(makeRequest("/", undefined, "https://lostinseoul.com"));
+
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul"
+    );
+  });
+
+  it("host-routes lostinseoul.com products without exposing the internal prefix", async () => {
+    const res = await proxy(
+      makeRequest("/products/coat", undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul/products/coat"
     );
   });
 });

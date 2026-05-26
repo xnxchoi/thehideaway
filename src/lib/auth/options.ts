@@ -24,6 +24,9 @@ const trustedOrigins = [appURL];
 if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
   trustedOrigins.push(process.env.NEXT_PUBLIC_PRODUCTION_URL);
 }
+if (process.env.NEXT_PUBLIC_LOSTINSEOUL_URL) {
+  trustedOrigins.push(process.env.NEXT_PUBLIC_LOSTINSEOUL_URL);
+}
 
 const options: BetterAuthOptionsType = {
   appName: "hideaway-validator",

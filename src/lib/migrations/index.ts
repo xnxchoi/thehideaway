@@ -32,6 +32,7 @@ import * as migration_20260523_203000_passkey_credential_ids_varchar from "./202
 import * as migration_20260523_204500_ticket_order_sender_name from "./20260523_204500_ticket_order_sender_name";
 import * as migration_20260524_011500_ticket_order_payment_submitted from "./20260524_011500_ticket_order_payment_submitted";
 import * as migration_20260525_000000_day_n_night_event_ended from "./20260525_000000_day_n_night_event_ended";
+import * as migration_20260526_120000_lostinseoul_commerce_v1 from "./20260526_120000_lostinseoul_commerce_v1";
 import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
@@ -209,5 +210,10 @@ export const migrations = [
     up: migration_20260525_000000_day_n_night_event_ended.up,
     down: migration_20260525_000000_day_n_night_event_ended.down,
     name: "20260525_000000_day_n_night_event_ended"
+  },
+  {
+    up: migration_20260526_120000_lostinseoul_commerce_v1.up,
+    down: migration_20260526_120000_lostinseoul_commerce_v1.down,
+    name: "20260526_120000_lostinseoul_commerce_v1"
   }
 ];

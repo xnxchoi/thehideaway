@@ -3,11 +3,11 @@
 import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import {
-  useDayNNightScene,
-  useDayNNightStore,
   SECTION_KEYS,
   sectionAtLoop,
-  type SectionKey
+  type SectionKey,
+  useDayNNightScene,
+  useDayNNightStore
 } from "../store";
 import { Button } from "@/components/core/Button";
 import { useLenis } from "lenis/react";

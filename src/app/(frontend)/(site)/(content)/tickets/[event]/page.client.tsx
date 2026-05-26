@@ -282,7 +282,7 @@ function FlowStepIndicators({
             layout
             transition={{ type: "spring", ...SPRING_EASE.power2.out }}
             className={cn(
-              "flex size-6 items-center justify-center rounded-full text-[10px] font-medium transition-colors",
+              "flex size-6 items-center justify-center rounded-full text-small font-medium transition-colors",
               isPast
                 ? "bg-foreground/20 text-foreground/50"
                 : isActive
@@ -966,7 +966,7 @@ export function TicketEventClient({
         </DayNNightRsvpStage>
       ) : (
         /* ── Legacy post-gate: event grid ── */
-        <section className="relative z-[100] mx-auto w-full max-w-7xl px-6 pt-32 pb-32 xl:px-10 xl:pt-40 xl:pb-40">
+        <section className="relative z-100 mx-auto w-full max-w-7xl px-6 pt-32 pb-32 xl:px-10 xl:pt-40 xl:pb-40">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16 xl:gap-20">
             <div>
               <m.h1
@@ -1086,7 +1086,7 @@ function DayNNightRsvpStage({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed inset-0 z-[1000] flex h-svh w-screen flex-col overflow-hidden bg-background/5 px-4 py-8 text-foreground [--dn-bg:oklch(8%_0.02_280)] [--dn-fg:oklch(96%_0.005_80)] sm:px-10 sm:py-14"
+      className="fixed inset-0 z-1000 flex h-svh w-screen flex-col overflow-hidden bg-background/5 px-4 py-8 text-foreground [--dn-bg:oklch(8%_0.02_280)] [--dn-fg:oklch(96%_0.005_80)] sm:px-10 sm:py-14"
     >
       <ViewportMask />
       <div
@@ -1112,7 +1112,7 @@ function DayNNightRsvpStage({
         className="relative z-10 flex flex-1 items-center justify-center overflow-hidden px-2 py-8 sm:px-8 md:px-14"
         style={{ perspective: "1500px" }}
       >
-        <div className="w-full max-w-[460px]">
+        <div className="w-full max-w-184">
           <AnimatePresence mode="wait" custom={dir}>
             <m.div
               key={stepKey}

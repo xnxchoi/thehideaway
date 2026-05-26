@@ -1,7 +1,7 @@
 "use client";
 
 import { useDomCursor } from "@/components/core/cursorWrapper";
-import { useLinkPaths } from "@/components/core/Link/Link";
+import { MotionLink, useLinkPaths } from "@/components/core/Link/Link";
 import { RPLinkPropsWithRef } from "@/components/core/Link/types";
 import { useTransitionSetter } from "@/components/UX/Transition/useTransitionSetter";
 import { EASING, TWEEN_EASE } from "@/constants/animations";
@@ -199,13 +199,6 @@ export const RP_Menu = () => {
         return;
       }
       const navo = navState.get();
-
-      // DEBUG: trace every toggM call
-      // eslint-disable-next-line no-console
-      console.log(
-        `[toggM] navo=${navo} needsResizing=${needsResizing}`,
-        new Error().stack?.split("\n").slice(1, 4).join(" | ")
-      );
 
       const top = t.get();
       const right = r.get();
@@ -963,4 +956,3 @@ const RP_Navigator = (
     </m.li>
   );
 };
-const MotionLink = m.create(NextLink);

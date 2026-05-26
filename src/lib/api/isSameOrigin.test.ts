@@ -16,14 +16,18 @@ const SITE = "https://hideawayseoul.com";
 
 describe("isSameOrigin", () => {
   let orig: string | undefined;
+  let lostOrig: string | undefined;
 
   beforeEach(() => {
     orig = process.env.NEXT_PUBLIC_SERVER_URL;
+    lostOrig = process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
     process.env.NEXT_PUBLIC_SERVER_URL = SITE;
+    process.env.NEXT_PUBLIC_LOSTINSEOUL_URL = "https://lostinseoul.com";
   });
 
   afterEach(() => {
     process.env.NEXT_PUBLIC_SERVER_URL = orig;
+    process.env.NEXT_PUBLIC_LOSTINSEOUL_URL = lostOrig;
   });
 
   it("accepts a matching origin header", async () => {
@@ -34,6 +38,11 @@ describe("isSameOrigin", () => {
   it("accepts a matching referer header when origin is absent", async () => {
     const { isSameOrigin } = await import("./isSameOrigin");
     expect(isSameOrigin(makeReq(undefined, `${SITE}/some/path`))).toBe(true);
+  });
+
+  it("accepts the LOSTINSEOUL storefront origin", async () => {
+    const { isSameOrigin } = await import("./isSameOrigin");
+    expect(isSameOrigin(makeReq("https://lostinseoul.com"))).toBe(true);
   });
 
   it("rejects a different host", async () => {
