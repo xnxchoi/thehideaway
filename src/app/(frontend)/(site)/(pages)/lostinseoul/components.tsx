@@ -8,13 +8,17 @@ import {
   type ReactNode
 } from "react";
 import {
+  ArrowElbowDownRightIcon,
   ArrowsOutSimpleIcon,
+  MagnifyingGlassIcon,
   PauseIcon,
   PlayIcon,
   SpeakerHighIcon,
-  SpeakerXIcon
+  SpeakerXIcon,
+  XIcon
 } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import type Lenis from "lenis";
 import { useLenis } from "lenis/react";
@@ -29,11 +33,13 @@ import {
 } from "@/lib/lenis/runtime";
 import { cn } from "@/lib/utils";
 import type { LostProductCard } from "@/lib/lost-commerce/queries";
+import type { LostOrderMode } from "@/lib/lost-commerce/types";
 import { LostCartOverlay } from "./cart-overlay";
 import { LostHeroScene } from "./hero-three";
 
-export const LOST_EASE = "cubic-bezier(0.6,0,0.3,1)";
-export const LOST_PANEL = "#e7e7e3";
+const LOST_ENTRY_MIN_MS = 1100;
+const LOST_ENTRY_FAILSAFE_MS = 2600;
+const LOST_ENTRY_EXIT_MS = 1520;
 
 type ChromeLinkProps = ComponentProps<typeof Link> & {
   children: ReactNode;
@@ -88,29 +94,38 @@ export function LostCursorBridge() {
   const resetCursorTheme = useCursor((store) => store.resetCursorTheme);
 
   useEffect(() => {
+    const getPageCursorTheme = () =>
+      document.documentElement.getAttribute("data-theme") === "light"
+        ? "dark"
+        : "light";
     const applyCursorTheme = () => {
       const inVideo = document.body.dataset.lostVideoOpen === "true";
       const inBag = document.body.dataset.lostBagOpen === "true";
-      const nextTheme = inVideo || inBag ? "dark" : "light";
+      const pageTheme = getPageCursorTheme();
+      const nextTheme = inVideo ? "dark" : inBag ? "light" : pageTheme;
+      setBaseCursorTheme(pageTheme);
       document.body.dataset.lostCursorTheme = nextTheme;
       setCursorTheme(nextTheme);
     };
 
     setCursorState(null);
-    setBaseCursorTheme("light");
     applyCursorTheme();
     window.addEventListener("scroll", applyCursorTheme, { passive: true });
     window.addEventListener("resize", applyCursorTheme);
-    const videoObserver = new MutationObserver(applyCursorTheme);
-    videoObserver.observe(document.body, {
+    const cursorObserver = new MutationObserver(applyCursorTheme);
+    cursorObserver.observe(document.body, {
       attributeFilter: ["data-lost-video-open", "data-lost-bag-open"],
+      attributes: true
+    });
+    cursorObserver.observe(document.documentElement, {
+      attributeFilter: ["data-theme", "class"],
       attributes: true
     });
 
     return () => {
       window.removeEventListener("scroll", applyCursorTheme);
       window.removeEventListener("resize", applyCursorTheme);
-      videoObserver.disconnect();
+      cursorObserver.disconnect();
       delete document.body.dataset.lostCursorTheme;
       setCursorState(null);
       resetCursorTheme();
@@ -120,89 +135,89 @@ export function LostCursorBridge() {
   return null;
 }
 
-export function LostCommerceChromeStyles() {
+export function LostEntrySequence() {
+  const shouldReduceMotion = useReducedMotion();
+  const [phase, setPhase] = useState<"loading" | "ending" | "ready">(
+    shouldReduceMotion ? "ready" : "loading"
+  );
+
+  useEffect(() => {
+    document.body.dataset.lostEntry = phase;
+    return () => {
+      delete document.body.dataset.lostEntry;
+    };
+  }, [phase]);
+
+  useEffect(() => {
+    if (shouldReduceMotion) {
+      setPhase("ready");
+      return undefined;
+    }
+
+    let minElapsed = false;
+    let sceneReady = false;
+    let isCancelled = false;
+    let readyTimer = 0;
+
+    const finishIfReady = () => {
+      if (isCancelled || !minElapsed || !sceneReady) return;
+      setPhase("ending");
+      readyTimer = window.setTimeout(() => {
+        setPhase("ready");
+      }, LOST_ENTRY_EXIT_MS);
+    };
+
+    const markSceneReady = () => {
+      const canvas = document.querySelector<HTMLCanvasElement>(
+        ".lost-hero-canvas[data-lost-oflyn-models='loaded'], .lost-hero-canvas[data-lost-oflyn-models='failed']"
+      );
+      if (!canvas) return;
+      sceneReady = true;
+      finishIfReady();
+    };
+
+    const minTimer = window.setTimeout(() => {
+      minElapsed = true;
+      finishIfReady();
+    }, LOST_ENTRY_MIN_MS);
+    const failsafeTimer = window.setTimeout(() => {
+      sceneReady = true;
+      finishIfReady();
+    }, LOST_ENTRY_FAILSAFE_MS);
+    const observer = new MutationObserver(markSceneReady);
+    observer.observe(document.body, {
+      attributeFilter: ["data-lost-oflyn-models"],
+      attributes: true,
+      subtree: true
+    });
+    markSceneReady();
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(minTimer);
+      window.clearTimeout(failsafeTimer);
+      window.clearTimeout(readyTimer);
+      observer.disconnect();
+    };
+  }, [shouldReduceMotion]);
+
   return (
-    <style>
-      {`
-        body:has(.lost-commerce-root) #rp-header,
-        body:has(.lost-commerce-root) footer,
-        body:has(.lost-commerce-root) .menu__frame,
-        body:has(.lost-commerce-root) .menu__frame-corner,
-        body:has(.lost-commerce-root) .menu__corner-svg,
-        body:has(.lost-commerce-root) .menu__preview-preview,
-        body:has(.lost-commerce-root) .pt_mask,
-        body:has(.lost-commerce-root) .pt_cornerstones,
-        body:has(.lost-commerce-root) .scroll-indicator,
-        body:has(.lost-commerce-root) [class*="z-239"],
-        body:has(.lost-commerce-root) [class*="z-[248]"],
-        body:has(.lost-commerce-root) [class*="top-fx-bottom"] {
-          display: none !important;
-        }
-        body:has(.lost-commerce-root) {
-          background: #000;
-        }
-        .lost-commerce-root {
-          --lost-bg: #050505;
-          --lost-paper: #f2f1ea;
-          --lost-paper-soft: #e7e7e3;
-          --lost-dark: #080806;
-          --lost-ink: #e7e7e3;
-          --lost-paper-ink: #080806;
-          --lost-line: rgba(231, 231, 227, 0.14);
-          --lost-paper-line: rgba(8, 8, 6, 0.14);
-          --lost-muted: rgba(231, 231, 227, 0.62);
-          --lost-paper-muted: rgba(8, 8, 6, 0.62);
-          --lost-panel: #e7e7e3;
-          --lost-hero-ink: #080806;
-          --lost-hero-muted: rgba(8, 8, 6, 0.62);
-          --lost-hero-line: rgba(8, 8, 6, 0.16);
-          --lost-hero-glass: rgba(242, 241, 234, 0.28);
-          --lost-hero-glass-hover: rgba(242, 241, 234, 0.42);
-          --lost-hero-halo: rgba(242, 241, 234, 0.5);
-          background: var(--lost-paper);
-          color: var(--lost-paper-ink);
-        }
-        body[data-lost-video-open="true"] .lost-commerce-root,
-        body[data-lost-bag-open="true"] .lost-commerce-root {
-          --lost-hero-ink: #e7e7e3;
-          --lost-hero-muted: rgba(231, 231, 227, 0.68);
-          --lost-hero-line: rgba(231, 231, 227, 0.15);
-          --lost-hero-glass: rgba(8, 8, 6, 0.34);
-          --lost-hero-glass-hover: rgba(8, 8, 6, 0.48);
-          --lost-hero-halo: rgba(8, 8, 6, 0.38);
-        }
-        body:has(.lost-commerce-root) .rp__cursor {
-          z-index: 1301 !important;
-        }
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="light"] {
-          color: #080806 !important;
-        }
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="light"] svg circle,
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="light"] svg * {
-          stroke: #080806 !important;
-        }
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="light"] svg circle:last-child {
-          fill: #080806 !important;
-        }
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="dark"] {
-          color: #e7e7e3 !important;
-        }
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="dark"] svg circle,
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="dark"] svg * {
-          stroke: #e7e7e3 !important;
-        }
-        body:has(.lost-commerce-root) .rp__cursor[data-theme="dark"] svg circle:last-child {
-          fill: #e7e7e3 !important;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .lost-commerce-root *,
-          .lost-bag-surface * {
-            animation-duration: 1ms !important;
-            transition-duration: 1ms !important;
-          }
-        }
-      `}
-    </style>
+    <AnimatePresence>
+      {phase !== "ready" ? (
+        <m.div
+          animate={{ y: phase === "ending" ? "-100%" : "0%" }}
+          aria-hidden
+          className="fixed inset-0 z-[1400] overflow-hidden bg-[var(--black)] text-[var(--white)]"
+          data-lost-entry-loader
+          exit={{ opacity: 0 }}
+          initial={{ y: "0%" }}
+          transition={{
+            duration: phase === "ending" ? 1.35 : 0,
+            ease: [0.6, 0, 0.3, 1]
+          }}
+        />
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -237,7 +252,9 @@ export function LostTopBar({
       className={cn(
         "h-[1.5rem] border-x border-t",
         reverse && "border-t-0 border-b",
-        pale ? "border-white/15" : "border-black/15"
+        pale
+          ? "border-[oklch(from_var(--white)_l_c_h_/_0.15)]"
+          : "border-[oklch(from_var(--black)_l_c_h_/_0.15)]"
       )}
     />
   );
@@ -254,7 +271,7 @@ export function LostBrandWord({
     <span
       className={cn(
         "font-mono text-[1.2rem] leading-none font-bold tracking-[0.24em] uppercase md:text-[1.6rem]",
-        dark ? "text-black" : "text-[var(--lost-hero-ink)]",
+        dark ? "text-[var(--fg)]" : "text-[var(--lost-hero-ink)]",
         "transition-colors duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]",
         className
       )}
@@ -266,7 +283,10 @@ export function LostBrandWord({
 
 export function LostAnnouncementBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky top-0 z-40 border-b border-white/12 bg-[#101010]/90 px-4 py-4 text-center font-mono text-[1rem] leading-none tracking-[0.22em] text-white/70 uppercase backdrop-blur-md">
+    <div
+      className="sticky top-0 z-40 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-bg)_l_c_h_/_0.42)] px-4 py-4 text-center font-mono text-[1rem] leading-none tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] uppercase shadow-[0_1px_0_oklch(from_var(--n-s-fg)_l_c_h_/_0.05)_inset] backdrop-blur-xl"
+      data-lost-entry-chrome
+    >
       {children}
     </div>
   );
@@ -275,9 +295,14 @@ export function LostAnnouncementBar({ children }: { children: ReactNode }) {
 type LostHeaderProps = {
   backLabel: string;
   cartLabel: string;
+  clearSearchLabel: string;
   checkoutLabel: string;
   emptyLabel: string;
   removeLabel: string;
+  searchLabel: string;
+  searchPlaceholder: string;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   totalLabel: string;
   shopLabel: string;
   archiveLabel: string;
@@ -288,19 +313,31 @@ export function LostHeader({
   archiveLabel,
   backLabel,
   cartLabel,
+  clearSearchLabel,
   checkoutLabel,
   drops,
   emptyLabel,
   removeLabel,
+  searchLabel,
+  searchPlaceholder,
+  searchQuery,
+  setSearchQuery,
   shopLabel,
   totalLabel
 }: LostHeaderProps) {
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-20 z-50 px-4 md:px-14">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-4">
+    <header
+      className="pointer-events-none sticky top-[4.9rem] z-50 h-0 px-4 md:px-14"
+      data-lost-header
+    >
+      <div
+        className="flex items-start justify-end gap-4 lg:justify-between"
+        data-lost-header-grid
+      >
         <nav
           className="pointer-events-auto hidden gap-1 lg:flex"
           aria-label="LOSTINSEOUL"
+          data-lost-entry-chrome
         >
           <LostChromeLink href="/lostinseoul">{shopLabel}</LostChromeLink>
           {drops.slice(0, 2).map((drop) => (
@@ -314,15 +351,18 @@ export function LostHeader({
           <LostChromeLink href="#products">{archiveLabel}</LostChromeLink>
         </nav>
 
-        <Link
-          aria-label="LOSTINSEOUL home"
-          className="pointer-events-auto pt-5"
-          href="/lostinseoul"
+        <div
+          className="pointer-events-auto flex min-w-0 justify-end gap-1"
+          data-lost-header-actions
+          data-lost-entry-chrome
         >
-          <LostBrandWord />
-        </Link>
-
-        <div className="pointer-events-auto flex justify-end gap-1">
+          <LostSearchBar
+            clearLabel={clearSearchLabel}
+            label={searchLabel}
+            onChange={setSearchQuery}
+            placeholder={searchPlaceholder}
+            value={searchQuery}
+          />
           <LostCartOverlay
             backLabel={backLabel}
             cartLabel={cartLabel}
@@ -333,7 +373,192 @@ export function LostHeader({
           />
         </div>
       </div>
+      <LostHeaderLogo />
     </header>
+  );
+}
+
+function LostHeaderLogo() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
+    <Link
+      aria-label="LOSTINSEOUL home"
+      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-50 flex items-center justify-center"
+      data-lost-entry-logo
+      href="/lostinseoul"
+    >
+      <LostBrandWord />
+    </Link>,
+    document.body
+  );
+}
+
+function LostBlurAppear({
+  className,
+  interval = 200,
+  lines,
+  text
+}: {
+  className?: string;
+  interval?: number;
+  lines?: string[];
+  text: string;
+}) {
+  const containerRef = useRef<HTMLSpanElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
+  const [active, setActive] = useState(Boolean(shouldReduceMotion));
+  const hasLines = Boolean(lines?.length);
+  const [visibleLineCount, setVisibleLineCount] = useState(
+    shouldReduceMotion || !hasLines ? (lines?.length ?? 0) : 0
+  );
+
+  useEffect(() => {
+    setActive(Boolean(shouldReduceMotion));
+    setVisibleLineCount(
+      shouldReduceMotion || !hasLines ? (lines?.length ?? 0) : 0
+    );
+  }, [hasLines, lines?.length, shouldReduceMotion, text]);
+
+  useEffect(() => {
+    if (shouldReduceMotion) return undefined;
+    const element = containerRef.current;
+    if (!element) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setActive(true);
+        observer.unobserve(element);
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [shouldReduceMotion]);
+
+  useEffect(() => {
+    if (!active || shouldReduceMotion || !hasLines) return undefined;
+
+    setVisibleLineCount(1);
+    const timer = window.setInterval(() => {
+      setVisibleLineCount((current) => {
+        const next = current + 1;
+        if (next >= (lines?.length ?? 0)) {
+          window.clearInterval(timer);
+          return lines?.length ?? current;
+        }
+        return next;
+      });
+    }, interval);
+
+    return () => window.clearInterval(timer);
+  }, [active, hasLines, interval, lines?.length, shouldReduceMotion]);
+
+  return (
+    <span
+      className={cn(
+        "lost-blur-appear",
+        hasLines && "lost-blur-appear--lines",
+        active && "is-blur-text",
+        className
+      )}
+      ref={containerRef}
+    >
+      {hasLines
+        ? lines?.map((line, index) => (
+            <span
+              className={cn(
+                "lost-blur-token",
+                index < visibleLineCount && "is-visible"
+              )}
+              key={`${line}-${index}`}
+            >
+              {line}
+            </span>
+          ))
+        : text}
+    </span>
+  );
+}
+
+function getLostBlurLines(text: string) {
+  const lines = text
+    .split(/(?<=[.!?。！？])\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return lines.length > 1 ? lines : [text];
+}
+
+function LostSearchBar({
+  clearLabel,
+  label,
+  onChange,
+  placeholder,
+  value
+}: {
+  clearLabel: string;
+  label: string;
+  onChange: (query: string) => void;
+  placeholder: string;
+  value: string;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const hasValue = value.trim().length > 0;
+
+  return (
+    <form
+      action="#products"
+      className="group/search grid min-h-16 w-16 grid-cols-[auto_1fr_auto] items-center overflow-hidden rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] text-[var(--lost-hero-ink)] backdrop-blur-md transition-[width,background-color,border-color,color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)] focus-within:w-[min(25rem,calc(100vw-11rem))] hover:bg-[var(--lost-hero-glass-hover)] md:w-[22rem] lg:w-[24rem]"
+      onSubmit={(event) => {
+        event.preventDefault();
+        document
+          .getElementById("products")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }}
+      role="search"
+    >
+      <Button
+        aria-label={label}
+        className="grid size-16 shrink-0 place-items-center border-0 bg-transparent p-0 text-[var(--lost-hero-ink)] transition-colors duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]"
+        onClick={() => inputRef.current?.focus()}
+        type="button"
+      >
+        <MagnifyingGlassIcon aria-hidden className="size-6" weight="regular" />
+      </Button>
+      <input
+        aria-label={label}
+        className="h-full min-w-0 bg-transparent pr-3 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] outline-none placeholder:text-[var(--lost-hero-muted)] max-md:w-0 max-md:opacity-0 max-md:transition-[width,opacity] max-md:duration-500 max-md:ease-[cubic-bezier(0.6,0,0.3,1)] max-md:group-focus-within/search:w-full max-md:group-focus-within/search:opacity-100"
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        ref={inputRef}
+        type="search"
+        value={value}
+      />
+      {hasValue ? (
+        <Button
+          aria-label={clearLabel}
+          className="grid size-16 shrink-0 place-items-center border-0 bg-transparent p-0 text-[var(--lost-hero-muted)] transition-colors duration-300 ease-[cubic-bezier(0.6,0,0.3,1)] hover:text-[var(--lost-hero-ink)] max-md:size-12"
+          onClick={() => {
+            onChange("");
+            inputRef.current?.focus();
+          }}
+          type="button"
+        >
+          <XIcon aria-hidden className="size-5" weight="regular" />
+        </Button>
+      ) : null}
+    </form>
   );
 }
 
@@ -402,12 +627,12 @@ export function LostHero({
 
   return (
     <section
-      className="relative grid min-h-[100svh] overflow-hidden bg-black"
+      className="relative grid min-h-svh overflow-hidden bg-background"
       data-lost-video-transition={videoTransitioning ? "open" : "closed"}
     >
       <div
         data-lost-stage
-        className="col-span-full row-span-full grid min-h-[100svh]"
+        className="col-span-full row-span-full grid min-h-svh"
       >
         <LostHeroScene imageUrl={imageUrl} videoUrl={videoUrl} />
       </div>
@@ -417,10 +642,10 @@ export function LostHero({
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[linear-gradient(180deg,oklch(from_var(--white)_l_c_h_/_0.08),transparent)]"
       />
 
-      <div className="pointer-events-none col-span-full row-span-full grid min-h-[100svh] grid-rows-[1fr_auto_1fr] px-4 pt-32 pb-10 md:px-14 md:pt-36 md:pb-16">
+      <div className="pointer-events-none col-span-full row-span-full grid min-h-svh grid-rows-[1fr_auto_1fr] px-4 pt-32 pb-10 md:px-14 md:pt-36 md:pb-16">
         <div />
         <m.div
           animate={
@@ -428,7 +653,7 @@ export function LostHero({
               ? { opacity: 0, y: 0 }
               : { opacity: [0.9, 0.68, 0.9], y: [0, -5, 0] }
           }
-          className="grid grid-cols-2 items-center gap-4 font-mono text-[1.2rem] leading-none font-bold tracking-tight text-white uppercase md:grid-cols-4 md:px-6 md:text-[1.6rem]"
+          className="grid grid-cols-2 items-center gap-4 font-mono text-[1.2rem] leading-none font-bold tracking-tight text-background uppercase md:grid-cols-4 md:px-6 md:text-[1.6rem]"
           data-hero-text-container
           transition={{
             duration: videoTransitioning ? 0.8 : 8,
@@ -437,19 +662,40 @@ export function LostHero({
             repeatType: "loop"
           }}
         >
-          <span className="text-[var(--lost-hero-ink)] transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_24px_var(--lost-hero-halo)]">
+          <span className="text-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_24px_var(--lost-hero-halo)]">
             {title}
           </span>
-          <span className="justify-self-end text-[var(--lost-hero-muted)] transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_18px_var(--lost-hero-halo)] md:justify-self-center">
+          <span className="justify-self-end text-nav-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_18px_var(--lost-hero-halo)] md:justify-self-center">
             {eyebrow}
           </span>
-          <span className="hidden justify-self-center text-[var(--lost-hero-muted)] transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_18px_var(--lost-hero-halo)] md:block">
+          <span className="hidden justify-self-center text-nav-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_18px_var(--lost-hero-halo)] md:block">
             {collectionLabel}
           </span>
-          <span className="hidden justify-self-end text-[var(--lost-hero-ink)] transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_24px_var(--lost-hero-halo)] md:block">
+          <span className="hidden justify-self-end text-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_24px_var(--lost-hero-halo)] md:block">
             {yearLabel}
           </span>
         </m.div>
+        <Button
+          aria-label={watchLabel}
+          className={cn(
+            "pointer-events-auto absolute top-[calc(50%+2.45rem)] left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] p-0 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] shadow-[0_1.2rem_4.8rem_var(--lost-hero-halo)] backdrop-blur-xl transition-[color,transform,background-color,border-color] duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)] hover:bg-[var(--lost-hero-glass-hover)]",
+            videoTransitioning && "scale-0"
+          )}
+          id="open-video-button"
+          onClick={openVideo}
+          type="button"
+        >
+          <span className="grid size-16 place-items-center rounded-[3px] border-r border-[var(--lost-hero-line)] bg-[oklch(from_var(--lost-hero-glass)_l_c_h_/_0.45)] backdrop-blur-xl transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]">
+            <ArrowsOutSimpleIcon
+              aria-hidden
+              className="size-6"
+              weight="regular"
+            />
+          </span>
+          <span className="hidden min-h-16 items-center px-5 backdrop-blur-xl md:flex">
+            {watchLabel}
+          </span>
+        </Button>
         <div
           className={cn(
             "grid items-end justify-items-center transition-opacity duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)]",
@@ -474,27 +720,6 @@ export function LostHero({
         </div>
       </div>
 
-      <Button
-        aria-label={watchLabel}
-        className={cn(
-          "absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 border-0 bg-transparent p-0 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] transition-[color,transform] duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)]",
-          videoTransitioning && "scale-0"
-        )}
-        id="open-video-button"
-        onClick={openVideo}
-        type="button"
-      >
-        <span className="grid size-16 place-items-center rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] backdrop-blur-md transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]">
-          <ArrowsOutSimpleIcon
-            aria-hidden
-            className="size-6"
-            weight="regular"
-          />
-        </span>
-        <span className="flex min-h-16 items-center rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] px-5 backdrop-blur-md transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]">
-          {watchLabel}
-        </span>
-      </Button>
       {videoUrl ? (
         <LostVideoPlayer
           closeLabel={closeLabel}
@@ -633,7 +858,7 @@ function LostVideoPlayer({
     <m.div
       aria-hidden={!open}
       className={cn(
-        "group fixed inset-0 z-[1250] grid h-dvh w-dvw bg-black/90 text-white opacity-0 backdrop-blur-[5px] transition-opacity duration-1000 ease-in-out",
+        "group fixed inset-0 z-[1250] grid h-dvh w-dvw bg-[oklch(from_var(--black)_l_c_h_/_0.9)] text-[var(--white)] opacity-0 backdrop-blur-[5px] transition-opacity duration-1000 ease-in-out",
         open ? "pointer-events-auto opacity-100" : "pointer-events-none"
       )}
       data-lost-video-player={open ? "open" : "closed"}
@@ -660,7 +885,7 @@ function LostVideoPlayer({
       >
         <Button
           aria-label={muted ? unmuteLabel : muteLabel}
-          className="pointer-events-auto grid size-18 place-items-center rounded-[4px] border border-white/10 bg-white/[0.08] p-0 text-white backdrop-blur-md transition-[opacity,background-color] duration-200 ease-in-out hover:bg-white/[0.13]"
+          className="pointer-events-auto grid size-18 place-items-center rounded-[4px] border border-[oklch(from_var(--white)_l_c_h_/_0.1)] bg-[oklch(from_var(--white)_l_c_h_/_0.08)] p-0 text-[var(--white)] backdrop-blur-md transition-[opacity,background-color] duration-200 ease-in-out hover:bg-[oklch(from_var(--white)_l_c_h_/_0.13)]"
           onClick={toggleMute}
           type="button"
         >
@@ -678,7 +903,7 @@ function LostVideoPlayer({
       >
         <Button
           aria-label={playing ? pauseLabel : playLabel}
-          className="pointer-events-auto grid size-18 place-items-center rounded-[4px] border border-white/10 bg-white/[0.08] p-0 text-white backdrop-blur-md transition-[opacity,background-color] duration-200 ease-in-out hover:bg-white/[0.13]"
+          className="pointer-events-auto grid size-18 place-items-center rounded-[4px] border border-[oklch(from_var(--white)_l_c_h_/_0.1)] bg-[oklch(from_var(--white)_l_c_h_/_0.08)] p-0 text-[var(--white)] backdrop-blur-md transition-[opacity,background-color] duration-200 ease-in-out hover:bg-[oklch(from_var(--white)_l_c_h_/_0.13)]"
           onClick={togglePlay}
           type="button"
         >
@@ -688,7 +913,7 @@ function LostVideoPlayer({
             <PlayIcon aria-hidden className="size-7" weight="regular" />
           )}
         </Button>
-        <div className="pointer-events-none flex min-h-18 items-center rounded-[4px] border border-white/10 bg-white/[0.08] px-4 font-mono text-[1.1rem] leading-none text-white tabular-nums backdrop-blur-md">
+        <div className="pointer-events-none flex min-h-18 items-center rounded-[4px] border border-[oklch(from_var(--white)_l_c_h_/_0.1)] bg-[oklch(from_var(--white)_l_c_h_/_0.08)] px-4 font-mono text-[1.1rem] leading-none text-[var(--white)] tabular-nums backdrop-blur-md">
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
       </div>
@@ -710,10 +935,12 @@ export function LostStatement({
   return (
     <section className="relative grid bg-[var(--lost-paper)] px-4 py-24 text-center text-[var(--lost-paper-ink)] md:px-14 md:py-40">
       <p className="mx-auto max-w-[89.4rem] text-[2.4rem] leading-[1.08] font-medium tracking-tight md:text-[3.8rem]">
-        {lede}
+        <LostBlurAppear lines={getLostBlurLines(lede)} text={lede} />
       </p>
       <p className="mt-8 font-mono text-[1.1rem] leading-none tracking-[0.22em] text-[var(--lost-paper-muted)] uppercase">
-        {count.toString().padStart(2, "0")} {objectsLabel}
+        <LostBlurAppear
+          text={`${count.toString().padStart(2, "0")} ${objectsLabel}`}
+        />
       </p>
     </section>
   );
@@ -723,52 +950,112 @@ type LostProductSectionProps = {
   cartLabel: string;
   emptyLabel: string;
   incomingLabel: string;
+  privateModeLabel: string;
   products: LostProductCard[];
   productsLabel: string;
+  requestModeLabel: string;
+  searchLabel: string;
+  searchNoResultsLabel: string;
+  searchQuery: string;
+  searchResultsLabel: string;
+  standardModeLabel: string;
+  viewProductLabel: string;
 };
 
 export function LostProductSection({
   cartLabel,
   emptyLabel,
   incomingLabel,
+  privateModeLabel,
   products,
-  productsLabel
+  productsLabel,
+  requestModeLabel,
+  searchLabel,
+  searchNoResultsLabel,
+  searchQuery,
+  searchResultsLabel,
+  standardModeLabel,
+  viewProductLabel
 }: LostProductSectionProps) {
+  const searching = searchQuery.trim().length > 0;
+  const modeLabels: Record<LostOrderMode, string> = {
+    private_order: privateModeLabel,
+    request_to_order: requestModeLabel,
+    standard_purchase: standardModeLabel
+  };
+
   return (
     <section
       id="products"
-      className="relative border-t border-[var(--lost-paper-line)] bg-[var(--lost-paper)] px-4 py-14 text-[var(--lost-paper-ink)] md:px-14 md:py-20"
+      className="relative grid gap-y-8 border-t border-[var(--lost-paper-line)] bg-[var(--lost-paper)] px-4 pt-14 pb-32 text-[var(--lost-paper-ink)] md:px-14 md:pt-20 md:pb-40"
     >
-      <div className="mb-8 grid gap-6">
-        <LostTopBar />
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="font-mono text-[1.1rem] leading-none tracking-[0.22em] text-[var(--lost-paper-muted)] uppercase">
-            {productsLabel}
+      <LostTopBar />
+      <div className="grid gap-y-10">
+        <div className="grid items-center gap-y-8 md:flex md:justify-between">
+          <h2 className="font-mono text-[1.6rem] leading-none font-bold tracking-[0.08em] text-[var(--lost-paper-ink)] uppercase md:text-[2rem]">
+            <LostBlurAppear text={productsLabel} />
           </h2>
-          <p className="font-mono text-[1.1rem] leading-none text-black/45">
-            {cartLabel} / 00
-          </p>
+          <div className="hidden w-fit gap-1 md:flex">
+            <Link
+              aria-label={productsLabel}
+              className="lost-frost-button lost-frost-button--icon"
+              href="#products"
+            >
+              <ArrowElbowDownRightIcon
+                aria-hidden
+                className="size-7"
+                weight="regular"
+              />
+            </Link>
+            <Link className="lost-frost-button" href="#products">
+              {productsLabel}
+            </Link>
+          </div>
         </div>
+        <p className="justify-self-end font-mono text-[1.1rem] leading-none text-[var(--lost-paper-muted)]">
+          <LostBlurAppear
+            text={
+              searching
+                ? `${searchResultsLabel} / ${products.length.toString().padStart(2, "0")}`
+                : `${cartLabel} / 00`
+            }
+          />
+        </p>
       </div>
 
-      {products.length === 0 ? (
-        <div className="grid gap-3 md:grid-cols-3">
-          {[0, 1, 2].map((index) => (
-            <LostEmptyProductCard
-              emptyLabel={emptyLabel}
-              incomingLabel={incomingLabel}
-              index={index}
-              key={index}
+      <div className="grid gap-y-8">
+        {products.length === 0 ? (
+          <div className="grid gap-3 md:grid-cols-3">
+            {[0, 1, 2].map((index) => (
+              <LostEmptyProductCard
+                emptyLabel={searching ? searchNoResultsLabel : emptyLabel}
+                incomingLabel={searching ? searchLabel : incomingLabel}
+                index={index}
+                key={index}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <LostProductTile
+                key={product.id}
+                modeLabels={modeLabels}
+                product={product}
+                viewProductLabel={viewProductLabel}
+              />
+            ))}
+          </div>
+        )}
+        <div className="flex justify-center md:hidden">
+          <Link className="lost-frost-button" href="#products">
+            <LostBlurAppear
+              interval={120}
+              text={searching ? searchResultsLabel : productsLabel}
             />
-          ))}
+          </Link>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <LostProductTile key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+      </div>
     </section>
   );
 }
@@ -783,25 +1070,25 @@ function LostEmptyProductCard({
   index: number;
 }) {
   return (
-    <div className="group relative min-h-[32rem] overflow-hidden rounded-[4px] border border-[var(--lost-paper-line)] bg-black/[0.035]">
+    <div className="group relative min-h-[32rem] overflow-hidden rounded-[4px] border border-[var(--lost-paper-line)] bg-[oklch(from_var(--fg)_l_c_h_/_0.035)]">
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(130deg,rgba(8,34,255,0.18),rgba(242,241,234,0.42)_42%,rgba(8,8,6,0.1))] opacity-90"
+        className="absolute inset-0 bg-[linear-gradient(130deg,rgba(8,34,255,0.18),oklch(from_var(--bg)_l_c_h_/_0.42)_42%,oklch(from_var(--fg)_l_c_h_/_0.1))] opacity-90"
       />
       <div
         aria-hidden
-        className="absolute inset-x-8 top-16 h-16 bg-black/75 transition-transform duration-500 group-hover:translate-x-3"
+        className="absolute inset-x-8 top-16 h-16 bg-foreground/75 transition-transform duration-500 group-hover:translate-x-3"
       />
       <div className="absolute inset-x-4 bottom-4 flex items-end justify-between">
         <div>
-          <p className="font-mono text-[1rem] leading-none tracking-[0.2em] text-black/45 uppercase">
+          <p className="font-mono text-[1rem] leading-none tracking-[0.2em] text-[oklch(from_var(--fg)_l_c_h_/_0.45)] uppercase">
             {incomingLabel}
           </p>
-          <p className="mt-2 text-[1.6rem] leading-tight font-medium text-black">
+          <p className="mt-2 text-[1.6rem] leading-tight font-medium text-[var(--fg)]">
             {emptyLabel}
           </p>
         </div>
-        <span className="font-mono text-[1.1rem] leading-none text-black/45">
+        <span className="font-mono text-[1.1rem] leading-none text-[oklch(from_var(--fg)_l_c_h_/_0.45)]">
           0{index + 1}
         </span>
       </div>
@@ -809,34 +1096,675 @@ function LostEmptyProductCard({
   );
 }
 
-function LostProductTile({ product }: { product: LostProductCard }) {
+function LostProductTile({
+  modeLabels,
+  product,
+  viewProductLabel
+}: {
+  modeLabels: Record<LostOrderMode, string>;
+  product: LostProductCard;
+  viewProductLabel: string;
+}) {
+  const href = `/lostinseoul/products/${product.slug}`;
+  const storyImages =
+    product.galleryPreview.length > 0
+      ? product.galleryPreview
+      : product.imageUrl
+        ? [{ url: product.imageUrl, alt: product.imageAlt ?? product.name }]
+        : [];
+  const progressCount = Math.max(storyImages.length, 1);
+
   return (
-    <Link
-      className="group block"
-      href={`/lostinseoul/products/${product.slug}`}
+    <article
+      aria-label={product.name}
+      className="group grid gap-y-8"
+      data-product-card
     >
-      <div className="relative aspect-[580/725] overflow-hidden rounded-[4px] border border-[var(--lost-paper-line)] bg-black/[0.035]">
-        {product.imageUrl ? (
-          <img
-            alt={product.imageAlt ?? product.name}
-            className="h-full w-full object-cover opacity-85 transition duration-500 ease-[cubic-bezier(0.6,0,0.3,1)] group-hover:scale-[1.035] group-hover:opacity-100"
-            src={product.imageUrl}
-          />
-        ) : (
-          <div className="flex h-full items-end bg-[linear-gradient(145deg,rgba(8,34,255,0.18),rgba(242,241,234,0.38)_40%,rgba(8,8,6,0.14))] p-4 font-serif text-[7rem] leading-none font-bold text-black/10">
-            {product.name.slice(0, 1)}
+      <div className="lost-product-story grid overflow-hidden rounded-[4px]">
+        <Link
+          className="col-span-full row-span-full grid overflow-hidden rounded-[4px]"
+          href={href}
+        >
+          <div className="lost-product-story-image col-span-full row-span-full">
+            {storyImages.length > 0 ? (
+              storyImages.map((image, index) => (
+                <figure
+                  aria-hidden={index > 0}
+                  className={cn(
+                    "col-span-full row-span-full",
+                    index === 0 && "is-visible",
+                    index === 1 && "is-hover"
+                  )}
+                  data-story-image-item-image={index + 1}
+                  key={`${image.url}-${index}`}
+                >
+                  <img
+                    alt={index === 0 ? (image.alt ?? product.name) : ""}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    src={image.url}
+                  />
+                </figure>
+              ))
+            ) : (
+              <div className="flex h-full items-end bg-[linear-gradient(145deg,oklch(from_var(--fg)_l_c_h_/_0.14),oklch(from_var(--bg)_l_c_h_/_0.38)_40%,oklch(from_var(--fg)_l_c_h_/_0.08))] p-4 font-serif text-[7rem] leading-none font-bold text-[oklch(from_var(--fg)_l_c_h_/_0.1)]">
+                {product.name.slice(0, 1)}
+              </div>
+            )}
           </div>
-        )}
-        <span className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div
+            className="z-[3] col-span-full row-span-full grid content-start gap-y-5 px-4 pt-6"
+            data-product-card-top-left
+          >
+            <div
+              className="grid gap-x-3"
+              style={{
+                gridTemplateColumns: `repeat(${progressCount}, minmax(0, 1fr))`
+              }}
+            >
+              {Array.from({ length: progressCount }).map((_, index) => (
+                <span
+                  aria-hidden
+                  className={cn(
+                    "lost-product-progress-bar",
+                    index === 0 && "is-active"
+                  )}
+                  data-story-image-item-progress={index + 1}
+                  key={index}
+                />
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2 self-start justify-self-start">
+              {product.modes.map((mode) => (
+                <span
+                  className="lost-product-tag"
+                  key={`${product.id}-${mode}`}
+                  role="presentation"
+                >
+                  <span>{modeLabels[mode]}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </Link>
+        <Link
+          className="lost-product-quick-panel col-span-full row-span-full self-end"
+          href={href}
+        >
+          <span className="font-mono text-[1.2rem] leading-none font-bold tracking-[0.08em] uppercase">
+            {viewProductLabel}
+          </span>
+          {product.modes.length > 0 ? (
+            <span className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 font-mono text-[1.1rem] leading-none text-[oklch(from_var(--black)_l_c_h_/_0.62)] uppercase">
+              {product.modes.map((mode) => (
+                <span key={`${product.id}-quick-${mode}`}>
+                  {modeLabels[mode]}
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </Link>
       </div>
-      <div className="grid grid-cols-[1fr_auto] gap-3 py-4">
-        <h3 className="text-[1.4rem] leading-tight font-medium tracking-tight text-black">
-          {product.name}
-        </h3>
-        <p className="font-mono text-[1.1rem] leading-tight text-black/55 tabular-nums">
-          {product.price}
+
+      <div className="grid grid-cols-[auto_auto] justify-between gap-5">
+        <div className="grid content-start gap-y-5">
+          <h3 className="font-mono text-[1.5rem] leading-none font-bold tracking-[0.05em] text-[var(--lost-paper-ink)] uppercase">
+            {product.name}
+          </h3>
+          <p
+            aria-label={product.price}
+            className="font-mono text-[1.3rem] leading-none text-[var(--lost-paper-muted)] tabular-nums"
+            role="status"
+          >
+            {product.price}
+          </p>
+        </div>
+        <div className="grid content-start gap-y-2">
+          <Link
+            aria-label={viewProductLabel}
+            className="lost-frost-button lost-frost-button--icon justify-self-end"
+            href={href}
+          >
+            <ArrowElbowDownRightIcon
+              aria-hidden
+              className="size-7"
+              weight="regular"
+            />
+          </Link>
+          <div className="flex gap-x-1 justify-self-end">
+            {product.modes.slice(0, 3).map((mode) => (
+              <Link
+                aria-label={modeLabels[mode]}
+                className="lost-product-swatch"
+                href={href}
+                key={`${product.id}-swatch-${mode}`}
+              >
+                <span aria-hidden data-mode={mode} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+const LOST_FOCUS_POSITIONS = [
+  { left: "15%", top: "40%" },
+  { left: "64%", top: "40%" },
+  { left: "50%", top: "53%" },
+  { left: "32%", top: "40%" },
+  { left: "81%", top: "40%" }
+];
+
+function useLostUkiyoImage(imageUrl: string, wrapperClass: string) {
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (shouldReduceMotion) return undefined;
+
+    let cancelled = false;
+    let parallax: { destroy: () => void } | null = null;
+
+    void import("ukiyojs")
+      .then(({ default: Ukiyo }) => {
+        const image = imageRef.current;
+        if (cancelled || !image) return;
+
+        parallax = new Ukiyo(image, {
+          scale: 1.2,
+          speed: 1.2,
+          wrapperClass,
+          willChange: true
+        });
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+      parallax?.destroy();
+      parallax = null;
+    };
+  }, [imageUrl, shouldReduceMotion, wrapperClass]);
+
+  return imageRef;
+}
+
+function LostFocusParallaxMedia({
+  hasFocusProducts,
+  imageUrl
+}: {
+  hasFocusProducts: boolean;
+  imageUrl: string;
+}) {
+  const imageRef = useLostUkiyoImage(imageUrl, "lost-focus-ukiyo");
+
+  return (
+    <figure className="lost-focus-media col-span-full row-span-full overflow-hidden">
+      <img
+        alt=""
+        className={cn(
+          "ukiyo h-full w-full object-cover",
+          !hasFocusProducts && "is-empty"
+        )}
+        loading="lazy"
+        ref={imageRef}
+        src={imageUrl}
+      />
+    </figure>
+  );
+}
+
+function LostCollectionPreviewFigure({
+  active,
+  imageUrl,
+  leaving
+}: {
+  active: boolean;
+  imageUrl?: string | null;
+  leaving: boolean;
+}) {
+  const imageRef = useLostUkiyoImage(
+    imageUrl ?? "lost-collection-empty",
+    "lost-collection-ukiyo"
+  );
+
+  return (
+    <figure
+      className={cn(
+        "lost-collection-video",
+        active && "is-active-next",
+        leaving && "is-active-prev"
+      )}
+      data-collection-video
+    >
+      {imageUrl ? (
+        <img
+          alt=""
+          aria-hidden
+          className="ukiyo h-full w-full object-cover"
+          loading="lazy"
+          ref={imageRef}
+          src={imageUrl}
+        />
+      ) : null}
+    </figure>
+  );
+}
+
+export function LostFocusProductSection({
+  focusTitleLabel,
+  imageUrl,
+  products,
+  productsLabel,
+  viewProductLabel
+}: {
+  focusTitleLabel: string;
+  imageUrl: string;
+  products: LostProductCard[];
+  productsLabel: string;
+  viewProductLabel: string;
+}) {
+  const focusProducts = products.slice(0, 5);
+  const hasFocusProducts = focusProducts.length > 0;
+
+  return (
+    <article
+      aria-label={focusTitleLabel}
+      className={cn(
+        "lost-focus-section relative grid grid-cols-[1.6rem_auto_1.6rem] grid-rows-[2.4rem_1.5rem_auto_1.5rem_2.4rem] gap-y-4 bg-[var(--n-s-bg)] text-[var(--n-s-fg)] md:grid-cols-[7rem_auto_7rem] md:grid-rows-[3.2rem_1.5rem_auto_1.5rem_3.2rem] md:gap-y-8",
+        !hasFocusProducts && "is-empty"
+      )}
+    >
+      <LostFocusParallaxMedia
+        hasFocusProducts={hasFocusProducts}
+        imageUrl={imageUrl}
+      />
+      <div className="z-[2] col-start-2 row-start-2">
+        <LostTopBar pale />
+      </div>
+      <div className="relative z-[2] col-start-2 row-start-3">
+        <div className="grid min-h-[46rem] grid-cols-5 items-start gap-x-3 md:sticky md:top-[14rem] md:h-fit md:min-h-0 md:grid-cols-12 md:gap-x-5">
+          <h3 className="col-span-4 self-start font-mono text-[1.3rem] leading-none font-bold tracking-[0.12em] text-[var(--n-s-fg)] uppercase md:text-[1.6rem]">
+            <LostBlurAppear text={focusTitleLabel} />
+          </h3>
+          <div
+            className={cn(
+              "col-span-full flex justify-between self-end md:col-span-5 md:col-start-8 md:self-start",
+              !hasFocusProducts && "md:self-start"
+            )}
+          >
+            <Link
+              className="lost-frost-button lost-frost-button--icon"
+              href="#products"
+            >
+              <ArrowElbowDownRightIcon
+                aria-hidden
+                className="size-7"
+                weight="regular"
+              />
+            </Link>
+            <Link className="lost-frost-button" href="#products">
+              {productsLabel}
+            </Link>
+          </div>
+        </div>
+      </div>
+      <div className="col-span-full row-span-full">
+        {focusProducts.map((product, index) => (
+          <div
+            className="lost-focus-pin group/focus absolute z-[3] hidden h-12 w-12 items-center justify-center md:grid"
+            key={product.id}
+            style={LOST_FOCUS_POSITIONS[index]}
+          >
+            <Link
+              aria-label={viewProductLabel}
+              className="lost-focus-pin__target"
+              href={`/lostinseoul/products/${product.slug}`}
+            >
+              <span />
+            </Link>
+            <div className="lost-focus-card">
+              {product.imageUrl ? (
+                <figure aria-hidden className="overflow-hidden rounded-[4px]">
+                  <img
+                    alt=""
+                    className="aspect-[260/147] w-[16.25rem] object-cover"
+                    loading="lazy"
+                    src={product.imageUrl}
+                  />
+                </figure>
+              ) : null}
+              <article aria-label={product.name}>
+                <div className="flex items-start justify-between gap-3">
+                  <h4 className="font-mono text-[1.2rem] leading-none font-bold tracking-[0.06em] text-[var(--black)] uppercase">
+                    {product.name}
+                  </h4>
+                  <Link
+                    aria-label={viewProductLabel}
+                    className="lost-frost-button lost-frost-button--icon !min-h-12 !w-12 !border-[oklch(from_var(--black)_l_c_h_/_0.15)] !bg-[oklch(from_var(--black)_l_c_h_/_0.06)] !text-[var(--black)]"
+                    href={`/lostinseoul/products/${product.slug}`}
+                  >
+                    <ArrowElbowDownRightIcon
+                      aria-hidden
+                      className="size-5"
+                      weight="regular"
+                    />
+                  </Link>
+                </div>
+                <p className="mt-2 font-mono text-[1.2rem] leading-none text-[oklch(from_var(--black)_l_c_h_/_0.6)]">
+                  {product.price}
+                </p>
+              </article>
+            </div>
+          </div>
+        ))}
+      </div>
+      {focusProducts.length > 0 ? (
+        <div className="z-[2] col-start-2 row-start-3 grid content-end gap-2 self-end md:hidden">
+          {focusProducts.slice(0, 3).map((product) => (
+            <Link
+              className="lost-focus-mobile-card"
+              href={`/lostinseoul/products/${product.slug}`}
+              key={`${product.id}-mobile-focus`}
+            >
+              <span>{product.name}</span>
+              <span>{product.price}</span>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+      <div className="z-[2] col-start-2 row-start-4">
+        <LostTopBar pale reverse />
+      </div>
+    </article>
+  );
+}
+
+export function LostVideoCollections({
+  collectionsEyebrowLabel,
+  collectionsTitleLabel,
+  drops,
+  fallbackImageUrl,
+  products,
+  productsLabel
+}: {
+  collectionsEyebrowLabel: string;
+  collectionsTitleLabel: string;
+  drops: Array<{ title: string; slug: string; kicker?: string; lede?: string }>;
+  fallbackImageUrl: string;
+  products: LostProductCard[];
+  productsLabel: string;
+}) {
+  const collectionItems =
+    drops.length > 0
+      ? drops.slice(0, 4).map((drop, index) => ({
+          href: `/lostinseoul/collections/${drop.slug}`,
+          imageUrl: products[index]?.imageUrl ?? products[0]?.imageUrl,
+          title: drop.title
+        }))
+      : products.slice(0, 4).map((product) => ({
+          href: `/lostinseoul/products/${product.slug}`,
+          imageUrl: product.imageUrl,
+          title: product.name
+        }));
+  const visibleCollectionItems =
+    collectionItems.length > 0
+      ? collectionItems
+      : [
+          {
+            href: "#products",
+            imageUrl: fallbackImageUrl,
+            title: productsLabel
+          },
+          {
+            href: "#products",
+            imageUrl: fallbackImageUrl,
+            title: collectionsEyebrowLabel
+          },
+          {
+            href: "#products",
+            imageUrl: fallbackImageUrl,
+            title: collectionsTitleLabel
+          }
+        ];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [previousIndex, setPreviousIndex] = useState<number | null>(null);
+  const activeItem =
+    visibleCollectionItems[activeIndex] ?? visibleCollectionItems[0];
+  const activateCollection = (index: number) => {
+    if (index === activeIndex) return;
+    setPreviousIndex(activeIndex);
+    setActiveIndex(index);
+  };
+
+  useEffect(() => {
+    if (previousIndex === null) return undefined;
+
+    const timeout = window.setTimeout(() => {
+      setPreviousIndex(null);
+    }, 1000);
+
+    return () => window.clearTimeout(timeout);
+  }, [previousIndex]);
+
+  return (
+    <section className="lost-collections-section grid gap-y-[3.2rem] bg-[var(--n-s-bg)] pt-[2.4rem] pb-[8rem] text-[var(--n-s-fg)] md:pt-[6.4rem] md:pb-[19.2rem] md:pl-[7rem]">
+      <div className="mx-4 md:mx-0 md:mr-[7rem]">
+        <LostTopBar pale />
+      </div>
+      <div className="px-4 md:px-0">
+        <span className="font-mono text-[1.4rem] leading-none font-bold tracking-[0.1em] text-[var(--n-s-fg)] uppercase">
+          <LostBlurAppear text={collectionsEyebrowLabel} />
+        </span>
+      </div>
+      <div className="grid gap-x-5 gap-y-[1.6rem] md:grid-cols-12 md:grid-rows-2 md:gap-y-0">
+        <div className="z-[2] grid gap-y-[2.4rem] px-4 md:col-span-6 md:col-start-1 md:row-span-1 md:row-start-1 md:gap-y-[4rem] md:self-start md:px-0">
+          <h2 className="max-w-[73rem] text-[3.6rem] leading-[0.98] font-medium tracking-tight text-[var(--n-s-fg)] md:text-[8rem]">
+            <LostBlurAppear
+              lines={getLostBlurLines(collectionsTitleLabel)}
+              text={collectionsTitleLabel}
+            />
+          </h2>
+          <div className="flex w-fit gap-1">
+            <Link
+              aria-label={productsLabel}
+              className="lost-frost-button lost-frost-button--icon"
+              href="#products"
+            >
+              <ArrowElbowDownRightIcon
+                aria-hidden
+                className="size-7"
+                weight="regular"
+              />
+            </Link>
+            <Link className="lost-frost-button" href="#products">
+              {productsLabel}
+            </Link>
+          </div>
+        </div>
+
+        <div className="z-[2] flex gap-2 self-end overflow-x-auto px-4 pt-[4.6rem] md:col-span-6 md:col-start-1 md:row-span-1 md:row-start-2 md:px-0 md:pt-0">
+          {visibleCollectionItems.map((item, index) => (
+            <Button
+              aria-label={item.title}
+              className={cn(
+                "lost-collection-thumb",
+                index === activeIndex && "is-active"
+              )}
+              key={`${item.href}-${index}`}
+              onClick={() => activateCollection(index)}
+              type="button"
+            >
+              {item.imageUrl ? (
+                <img alt="" aria-hidden src={item.imageUrl} />
+              ) : null}
+              <span
+                aria-hidden
+                className="lost-collection-thumb-label"
+                data-collection-link-svg
+              >
+                {item.title}
+              </span>
+              <span
+                aria-hidden
+                className="lost-collection-thumb-enter"
+                data-collection-link-icon
+              >
+                <ArrowElbowDownRightIcon className="size-7" weight="regular" />
+              </span>
+            </Button>
+          ))}
+        </div>
+
+        <div className="lost-collection-preview col-span-full grid aspect-[375/281] md:row-span-full md:aspect-[801/700] md:h-[43.75rem] md:justify-self-end">
+          {visibleCollectionItems.map((item, index) => (
+            <LostCollectionPreviewFigure
+              active={index === activeIndex}
+              imageUrl={item.imageUrl}
+              key={`${item.href}-${index}-preview`}
+              leaving={index === previousIndex}
+            />
+          ))}
+          {activeItem ? (
+            <>
+              <div className="lost-collection-tags">
+                {visibleCollectionItems.map((item, index) => (
+                  <div
+                    className={cn(
+                      "lost-collection-tag",
+                      index === activeIndex && "is-active",
+                      index === previousIndex && "is-inactive"
+                    )}
+                    key={`${item.href}-${index}-tag`}
+                  >
+                    <span className="lost-product-tag">{item.title}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                aria-label={activeItem.title}
+                className="lost-collection-mobile-link lost-frost-button lost-frost-button--icon !bg-[var(--white)] !text-[var(--black)]"
+                href={activeItem.href}
+              >
+                <ArrowElbowDownRightIcon
+                  aria-hidden
+                  className="size-7"
+                  weight="regular"
+                />
+              </Link>
+            </>
+          ) : null}
+          <div aria-hidden className="lost-video-mask-left" />
+          <div aria-hidden className="lost-video-mask-right" />
+          <div aria-hidden className="lost-video-mask-vertical" />
+          <div aria-hidden className="lost-video-mask-horizontal-top" />
+          <div aria-hidden className="lost-video-mask-horizontal-bottom" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function LostFooter({
+  archiveLabel,
+  footerContactLabel,
+  footerCopyrightLabel,
+  footerInfoLabel,
+  footerMediaLabel,
+  footerPrivacyLabel,
+  footerReturnsLabel,
+  footerTermsLabel,
+  shopLabel
+}: {
+  archiveLabel: string;
+  footerContactLabel: string;
+  footerCopyrightLabel: string;
+  footerInfoLabel: string;
+  footerMediaLabel: string;
+  footerPrivacyLabel: string;
+  footerReturnsLabel: string;
+  footerTermsLabel: string;
+  shopLabel: string;
+}) {
+  return (
+    <footer className="lost-footer relative grid content-start items-start gap-y-10 bg-[var(--black)] text-[var(--white)]">
+      <div className="z-[2] grid gap-y-12 px-4 pt-32 md:px-14 md:pt-60">
+        <div className="grid gap-y-10 md:grid-cols-12 md:gap-5">
+          <nav
+            className="grid gap-y-6 md:col-span-5"
+            aria-label={footerInfoLabel}
+          >
+            <h3 className="font-mono text-[1.3rem] leading-none font-bold tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.5)] uppercase">
+              {footerInfoLabel}
+            </h3>
+            <ul className="grid gap-y-4">
+              <li>
+                <Link className="lost-footer-link" href="/lostinseoul">
+                  {shopLabel}
+                </Link>
+              </li>
+              <li>
+                <Link className="lost-footer-link" href="#products">
+                  {archiveLabel}
+                </Link>
+              </li>
+              <li>
+                <Link className="lost-footer-link" href="/privacy">
+                  {footerPrivacyLabel}
+                </Link>
+              </li>
+              <li>
+                <Link className="lost-footer-link" href="/terms">
+                  {footerTermsLabel}
+                </Link>
+              </li>
+              <li>
+                <Link className="lost-footer-link" href="/refund">
+                  {footerReturnsLabel}
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          <nav
+            aria-label={footerMediaLabel}
+            className="grid gap-y-6 justify-self-end text-right md:col-span-5 md:col-start-6 md:justify-self-start md:text-left"
+          >
+            <h3 className="font-mono text-[1.3rem] leading-none font-bold tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.5)] uppercase md:hidden">
+              {footerMediaLabel}
+            </h3>
+            <ul className="grid gap-y-4">
+              {["Instagram", "Threads", "YouTube"].map((label) => (
+                <li key={label}>
+                  <Link className="lost-footer-link" href="/lostinseoul">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <Link
+            className="lost-frost-button md:col-span-2 md:col-start-11 md:self-start md:justify-self-end"
+            href="mailto:contact@lostinseoul.com"
+          >
+            {footerContactLabel}
+          </Link>
+        </div>
+        <LostTopBar pale />
+      </div>
+      <div className="sticky bottom-0 z-0 grid gap-y-8 px-4 pb-20 md:px-14 md:pb-10">
+        <div
+          aria-hidden
+          className="h-12 w-12 rounded-full border border-[oklch(from_var(--white)_l_c_h_/_0.25)] md:h-24 md:w-24"
+        />
+        <div className="justify-self-end overflow-hidden font-mono text-[clamp(4.8rem,18vw,24rem)] leading-[0.78] font-bold tracking-[0.04em] text-[var(--white)] uppercase">
+          LOSTINSEOUL
+        </div>
+        <p className="font-mono text-[1.2rem] leading-none text-[oklch(from_var(--white)_l_c_h_/_0.5)]">
+          {footerCopyrightLabel}
         </p>
       </div>
-    </Link>
+    </footer>
   );
 }

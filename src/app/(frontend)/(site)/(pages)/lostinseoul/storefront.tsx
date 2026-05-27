@@ -1,14 +1,21 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import type { LostProductCard } from "@/lib/lost-commerce/queries";
 import {
   LostAnnouncementBar,
-  LostCommerceChromeStyles,
   LostCursorBridge,
+  LostEntrySequence,
+  LostFooter,
+  LostFocusProductSection,
   LostHeader,
   LostHero,
   LostLenisBridge,
+  LostVideoCollections,
   LostProductSection,
   LostStatement
 } from "./components";
+import "./index.css";
 
 type Props = {
   title: string;
@@ -18,10 +25,16 @@ type Props = {
   productsLabel: string;
   emptyLabel: string;
   cartLabel: string;
+  searchLabel: string;
+  searchPlaceholder: string;
+  clearSearchLabel: string;
+  searchResultsLabel: string;
+  searchNoResultsLabel: string;
   backLabel: string;
   checkoutLabel: string;
   removeLabel: string;
   totalLabel: string;
+  viewProductLabel: string;
   watchLabel: string;
   closeVideoLabel: string;
   playVideoLabel: string;
@@ -34,12 +47,26 @@ type Props = {
   yearLabel: string;
   objectsLabel: string;
   incomingLabel: string;
+  focusTitleLabel: string;
+  collectionsEyebrowLabel: string;
+  collectionsTitleLabel: string;
+  standardModeLabel: string;
+  requestModeLabel: string;
+  privateModeLabel: string;
+  footerInfoLabel: string;
+  footerMediaLabel: string;
+  footerContactLabel: string;
+  footerPrivacyLabel: string;
+  footerTermsLabel: string;
+  footerReturnsLabel: string;
+  footerCopyrightLabel: string;
   products: LostProductCard[];
   drops: Array<{ title: string; slug: string; kicker?: string; lede?: string }>;
 };
 
 const FALLBACK_HERO = "/assets/env_hdr1.webp";
 const FALLBACK_HERO_VIDEO = "/assets/lostinseoul/oflyn/hero-reference.mp4";
+const FALLBACK_FOCUS_IMAGE = "/assets/media/unsplash-omRMbFSqN6A.webp";
 
 export function LostStorefront({
   announcement,
@@ -47,11 +74,22 @@ export function LostStorefront({
   backLabel,
   cartLabel,
   checkoutLabel,
+  clearSearchLabel,
   closeVideoLabel,
   collectionLabel,
   drops,
   emptyLabel,
   eyebrow,
+  focusTitleLabel,
+  collectionsEyebrowLabel,
+  collectionsTitleLabel,
+  footerContactLabel,
+  footerCopyrightLabel,
+  footerInfoLabel,
+  footerMediaLabel,
+  footerPrivacyLabel,
+  footerReturnsLabel,
+  footerTermsLabel,
   incomingLabel,
   lede,
   muteVideoLabel,
@@ -61,30 +99,65 @@ export function LostStorefront({
   products,
   productsLabel,
   removeLabel,
+  searchLabel,
+  searchNoResultsLabel,
+  searchPlaceholder,
+  searchResultsLabel,
   shopLabel,
   title,
   totalLabel,
   unmuteVideoLabel,
+  viewProductLabel,
   watchLabel,
-  yearLabel
+  yearLabel,
+  standardModeLabel,
+  requestModeLabel,
+  privateModeLabel
 }: Props) {
   const featureImage = products[0]?.imageUrl ?? FALLBACK_HERO;
+  const focusImage = products[0]?.imageUrl ?? FALLBACK_FOCUS_IMAGE;
   const featureVideo = products[0]?.heroVideoUrl ?? FALLBACK_HERO_VIDEO;
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredProducts = useMemo(() => {
+    const needle = searchQuery.trim().toLowerCase();
+    if (!needle) return products;
+
+    return products.filter((product) => {
+      const searchable = [
+        product.name,
+        product.summary,
+        product.price,
+        product.stockState,
+        product.campaign?.title,
+        ...product.modes
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(needle);
+    });
+  }, [products, searchQuery]);
 
   return (
-    <main className="lost-commerce-root relative z-[1001] min-h-screen bg-[var(--lost-paper)] text-[var(--lost-paper-ink)] selection:bg-black selection:text-[var(--lost-paper)]">
+    <main className="lost-commerce-root relative z-[1001] min-h-screen bg-[var(--lost-paper)] text-[var(--lost-paper-ink)] selection:bg-[var(--fg)] selection:text-[var(--bg)]">
       <LostLenisBridge />
       <LostCursorBridge />
-      <LostCommerceChromeStyles />
+      <LostEntrySequence />
       <LostAnnouncementBar>{announcement}</LostAnnouncementBar>
       <LostHeader
         archiveLabel={archiveLabel}
         backLabel={backLabel}
         cartLabel={cartLabel}
+        clearSearchLabel={clearSearchLabel}
         checkoutLabel={checkoutLabel}
         drops={drops}
         emptyLabel={emptyLabel}
         removeLabel={removeLabel}
+        searchLabel={searchLabel}
+        searchPlaceholder={searchPlaceholder}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
         shopLabel={shopLabel}
         totalLabel={totalLabel}
       />
@@ -112,8 +185,42 @@ export function LostStorefront({
         cartLabel={cartLabel}
         emptyLabel={emptyLabel}
         incomingLabel={incomingLabel}
+        products={filteredProducts}
+        productsLabel={productsLabel}
+        privateModeLabel={privateModeLabel}
+        requestModeLabel={requestModeLabel}
+        searchLabel={searchLabel}
+        searchNoResultsLabel={searchNoResultsLabel}
+        searchQuery={searchQuery}
+        searchResultsLabel={searchResultsLabel}
+        standardModeLabel={standardModeLabel}
+        viewProductLabel={viewProductLabel}
+      />
+      <LostFocusProductSection
+        focusTitleLabel={focusTitleLabel}
+        imageUrl={focusImage}
         products={products}
         productsLabel={productsLabel}
+        viewProductLabel={viewProductLabel}
+      />
+      <LostVideoCollections
+        collectionsEyebrowLabel={collectionsEyebrowLabel}
+        collectionsTitleLabel={collectionsTitleLabel}
+        drops={drops}
+        fallbackImageUrl={featureImage}
+        products={products}
+        productsLabel={productsLabel}
+      />
+      <LostFooter
+        archiveLabel={archiveLabel}
+        footerContactLabel={footerContactLabel}
+        footerCopyrightLabel={footerCopyrightLabel}
+        footerInfoLabel={footerInfoLabel}
+        footerMediaLabel={footerMediaLabel}
+        footerPrivacyLabel={footerPrivacyLabel}
+        footerReturnsLabel={footerReturnsLabel}
+        footerTermsLabel={footerTermsLabel}
+        shopLabel={shopLabel}
       />
     </main>
   );

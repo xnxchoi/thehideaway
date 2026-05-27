@@ -1,2 +1,102 @@
-import{g as o}from"./toolsDwuruNPu.js";class h extends HTMLElement{constructor(){super(),this.handleIntersect=this.handleIntersect.bind(this)}connectedCallback(){if(o(this)!==null)return;const e=this.querySelector("[data-split]");e&&(this.hasAttribute("data-split-lines")?this.splitTextNodesByLines(e):this.splitTextNodes(e)),this.observer=new IntersectionObserver(this.handleIntersect,{root:null,threshold:.1}),this.observer.observe(this)}disconnectedCallback(){this.observer&&this.observer.disconnect()}handleIntersect(s){s.forEach(e=>{e.isIntersecting&&(this.hasAttribute("data-split")?this.startRemovingBlur():this.classList.add("is-blur-text"),this.observer&&this.observer.unobserve(this))})}splitTextNodes(s){Array.from(s.childNodes).forEach(e=>{if(e.nodeType===Node.TEXT_NODE){const t=this.processTextNode(e);s.replaceChild(t,e)}else e.nodeType===Node.ELEMENT_NODE&&this.splitTextNodes(e)})}splitTextNodesByLines(s){const e=[];let t=document.createElement("span");t.classList.add("line"),Array.from(s.childNodes).forEach(r=>{r.nodeType===Node.TEXT_NODE?r.textContent.split(`
-`).forEach((i,a)=>{a>0&&(t.childNodes.length>0&&e.push(t),t=document.createElement("span"),t.classList.add("linegggg"));const l=document.createTextNode(i);t.appendChild(l)}):r.nodeType===Node.ELEMENT_NODE&&t.appendChild(r.cloneNode(!0))}),t.childNodes.length>0&&e.push(t),s.innerHTML="",e.forEach(r=>{s.appendChild(r)})}processTextNode(s){const e=document.createDocumentFragment();return s.textContent.split(/(\s+)/).forEach(r=>{if(/\S/.test(r)){const n=document.createElement("span");n.classList.add("special-span"),n.classList.add("blur"),n.textContent=r,e.appendChild(n)}else e.appendChild(document.createTextNode(r))}),e}startRemovingBlur(){this.hasAttribute("data-split-lines")?this.startRemovingBlurByLines():this.startRemovingBlurByWords()}startRemovingBlurByWords(){const s=Array.from(this.querySelectorAll("p span.blur"));if(s.length===0)return;const e=setInterval(()=>{const t=s.filter(n=>n.classList.contains("blur"));if(t.length===0){setTimeout(()=>{var n;(n=this.querySelector("[data-text-icon]"))==null||n.classList.add("is-active")},100),clearInterval(e);return}const r=Math.floor(Math.random()*t.length);t[r].classList.remove("blur")},100)}startRemovingBlurByLines(){this.classList.add("is-blur-text");const s=Array.from(this.querySelectorAll("p .linegggg span"));if(s.length===0)return;s.forEach(t=>t.classList.add("blur","special-span"));const e=setInterval(()=>{const t=s.filter(n=>n.classList.contains("blur"));let r=0;if(t.length===0){setTimeout(()=>{var n;(n=this.querySelector("[data-text-icon]"))==null||n.classList.add("is-active")},100),clearInterval(e);return}t[r].classList.remove("blur"),r++,r>=t.length&&(r=0)},200)}}export{h as default};
+import { g as o } from "./tools.js";
+
+class h extends HTMLElement {
+  constructor() {
+    super(), this.handleIntersect = this.handleIntersect.bind(this);
+  }
+  
+  connectedCallback() {
+    if (o(this) !== null) return;
+    const e = this.querySelector("[data-split]");
+    e && (this.hasAttribute("data-split-lines") ? this.splitTextNodesByLines(e) : this.splitTextNodes(e)), this.observer = new IntersectionObserver(this.handleIntersect, {
+      root: null,
+      threshold: .1
+    }), this.observer.observe(this);
+  }
+  
+  disconnectedCallback() {
+    this.observer && this.observer.disconnect();
+  }
+  
+  handleIntersect(s) {
+    s.forEach(e => {
+      e.isIntersecting && (this.hasAttribute("data-split") ? this.startRemovingBlur() : this.classList.add("is-blur-text"), this.observer && this.observer.unobserve(this));
+    });
+  }
+  
+  splitTextNodes(s) {
+    Array.from(s.childNodes).forEach(e => {
+      if (e.nodeType === Node.TEXT_NODE) {
+        const t = this.processTextNode(e);
+        s.replaceChild(t, e);
+      } else e.nodeType === Node.ELEMENT_NODE && this.splitTextNodes(e);
+    });
+  }
+  
+  splitTextNodesByLines(s) {
+    const e = [];
+    let t = document.createElement("span");
+    t.classList.add("line"), Array.from(s.childNodes).forEach(r => {
+      r.nodeType === Node.TEXT_NODE ? r.textContent.split(`
+`).forEach((i, a) => {
+        a > 0 && (t.childNodes.length > 0 && e.push(t), t = document.createElement("span"), t.classList.add("linegggg"));
+        const l = document.createTextNode(i);
+        t.appendChild(l);
+      }) : r.nodeType === Node.ELEMENT_NODE && t.appendChild(r.cloneNode(!0));
+    }), t.childNodes.length > 0 && e.push(t), s.innerHTML = "", e.forEach(r => {
+      s.appendChild(r);
+    });
+  }
+  
+  processTextNode(s) {
+    const e = document.createDocumentFragment();
+    return s.textContent.split(/(\s+)/).forEach(r => {
+      if (/\S/.test(r)) {
+        const n = document.createElement("span");
+        n.classList.add("special-span"), n.classList.add("blur"), n.textContent = r, e.appendChild(n);
+      } else e.appendChild(document.createTextNode(r));
+    }), e;
+  }
+  
+  startRemovingBlur() {
+    this.hasAttribute("data-split-lines") ? this.startRemovingBlurByLines() : this.startRemovingBlurByWords();
+  }
+  
+  startRemovingBlurByWords() {
+    const s = Array.from(this.querySelectorAll("p span.blur"));
+    if (s.length === 0) return;
+    const e = setInterval(() => {
+      const t = s.filter(n => n.classList.contains("blur"));
+      if (t.length === 0) {
+        setTimeout(() => {
+          var n;
+          (n = this.querySelector("[data-text-icon]")) == null || n.classList.add("is-active");
+        }, 100), clearInterval(e);
+        return;
+      }
+      const r = Math.floor(Math.random() * t.length);
+      t[r].classList.remove("blur");
+    }, 100);
+  }
+  
+  startRemovingBlurByLines() {
+    this.classList.add("is-blur-text");
+    const s = Array.from(this.querySelectorAll("p .linegggg span"));
+    if (s.length === 0) return;
+    s.forEach(t => t.classList.add("blur", "special-span"));
+    const e = setInterval(() => {
+      const t = s.filter(n => n.classList.contains("blur"));
+      let r = 0;
+      if (t.length === 0) {
+        setTimeout(() => {
+          var n;
+          (n = this.querySelector("[data-text-icon]")) == null || n.classList.add("is-active");
+        }, 100), clearInterval(e);
+        return;
+      }
+      t[r].classList.remove("blur"), r++, r >= t.length && (r = 0);
+    }, 200);
+  }
+}
+
+export { h as default };

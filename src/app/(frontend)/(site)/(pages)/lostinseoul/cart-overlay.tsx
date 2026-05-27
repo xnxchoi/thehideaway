@@ -25,6 +25,23 @@ type CartLine = ReturnType<typeof useLostCart>["lines"][number];
 
 const CLOSE_MS = 760;
 const REVEAL_MS = 680;
+const DEFAULT_FRAME_SCALE = 0.62;
+
+function setLostBagRootTransform(active: boolean) {
+  const root = document.querySelector<HTMLElement>(".lost-commerce-root");
+  if (!root) return;
+  root.style.transform = active
+    ? "translate3d(var(--lost-bag-frame-x), var(--lost-bag-frame-y), 0) scale(var(--lost-bag-frame-scale))"
+    : "translate3d(0, 0, 0) scale(1)";
+  root.style.filter = active ? "brightness(0.8) contrast(1.08)" : "none";
+}
+
+function clearLostBagRootTransform() {
+  const root = document.querySelector<HTMLElement>(".lost-commerce-root");
+  if (!root) return;
+  root.style.removeProperty("transform");
+  root.style.removeProperty("filter");
+}
 
 export function LostCartOverlay({
   backLabel,
@@ -119,6 +136,32 @@ function useCartRootTransform(
   useEffect(() => {
     if (!mounted) return;
 
+    const syncFrameToAperture = () => {
+      const aperture = document.querySelector<HTMLElement>(
+        "[data-lost-bag-aperture]"
+      );
+      if (!aperture || aperture.offsetParent === null) return;
+
+      const rect = aperture.getBoundingClientRect();
+      if (rect.width <= 0) return;
+
+      const scale = rect.width / window.innerWidth || DEFAULT_FRAME_SCALE;
+      const height = window.innerHeight * scale;
+      const rootStyle = document.documentElement.style;
+      rootStyle.setProperty("--lost-bag-frame-x", `${rect.left}px`);
+      rootStyle.setProperty("--lost-bag-frame-y", `${rect.top}px`);
+      rootStyle.setProperty("--lost-bag-frame-width", `${rect.width}px`);
+      rootStyle.setProperty("--lost-bag-frame-height", `${height}px`);
+      rootStyle.setProperty(
+        "--lost-bag-frame-right",
+        `${window.innerWidth - rect.right}px`
+      );
+      rootStyle.setProperty(
+        "--lost-bag-frame-bottom",
+        `${window.innerHeight - rect.top - height}px`
+      );
+      rootStyle.setProperty("--lost-bag-frame-scale", scale.toString());
+    };
     const clearCloseTimer = () => {
       if (!closeTimerRef.current) return;
       clearTimeout(closeTimerRef.current);
@@ -138,6 +181,12 @@ function useCartRootTransform(
     if (!open) {
       clearOpenStart();
       document.body.dataset.lostBagOpen = "false";
+      setLostBagRootTransform(false);
+      document.dispatchEvent(
+        new CustomEvent("lost:bag-frame", {
+          detail: { closeMs: CLOSE_MS, open: false }
+        })
+      );
       if (
         document.body.dataset.lostBagState === "open" ||
         document.body.dataset.lostBagState === "preopen"
@@ -154,6 +203,7 @@ function useCartRootTransform(
             getLostLenis()?.start();
             stoppedLenisRef.current = false;
           }
+          clearLostBagRootTransform();
         }, CLOSE_MS);
       }
       return;
@@ -167,6 +217,7 @@ function useCartRootTransform(
       getLostLenis()?.stop();
       stoppedLenisRef.current = true;
     }
+    setLostBagRootTransform(false);
     document.documentElement.style.setProperty(
       "--lost-bag-scroll-y",
       `${getLostScrollY()}px`
@@ -174,11 +225,29 @@ function useCartRootTransform(
     document.documentElement.style.overflow = "hidden";
     document.body.dataset.lostBagOpen = "true";
     document.body.dataset.lostBagState = "preopen";
+    syncFrameToAperture();
+    window.addEventListener("resize", syncFrameToAperture);
+    document.dispatchEvent(
+      new CustomEvent("lost:bag-frame", {
+        detail: { open: true, revealMs: REVEAL_MS }
+      })
+    );
     document.querySelector(".lost-commerce-root")?.getBoundingClientRect();
 
     const startOpenTransform = () => {
       if (document.body.dataset.lostBagState !== "preopen") return;
       document.body.dataset.lostBagState = "open";
+      const settleOpenGeometry = () => {
+        if (document.body.dataset.lostBagState !== "open") return;
+        syncFrameToAperture();
+        setLostBagRootTransform(true);
+      };
+      settleOpenGeometry();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(settleOpenGeometry);
+      });
+      window.setTimeout(settleOpenGeometry, 140);
+      window.setTimeout(settleOpenGeometry, REVEAL_MS + 40);
       document.querySelector(".lost-commerce-root")?.getBoundingClientRect();
       clearOpenStart();
     };
@@ -191,7 +260,9 @@ function useCartRootTransform(
       openTimerRef.current = null;
     }, 80);
 
-    return undefined;
+    return () => {
+      window.removeEventListener("resize", syncFrameToAperture);
+    };
   }, [
     closeTimerRef,
     mounted,
@@ -210,6 +281,12 @@ function useCartRootTransform(
       if (openTimerRef.current) window.clearTimeout(openTimerRef.current);
       document.body.dataset.lostBagOpen = "false";
       document.body.dataset.lostBagState = "idle";
+      document.dispatchEvent(
+        new CustomEvent("lost:bag-frame", {
+          detail: { closeMs: CLOSE_MS, open: false }
+        })
+      );
+      setLostBagRootTransform(false);
       document.documentElement.style.removeProperty("--lost-bag-scroll-y");
       document.documentElement.style.overflow =
         previousOverflowRef.current ?? "";
@@ -217,6 +294,7 @@ function useCartRootTransform(
         getLostLenis()?.start();
         stoppedLenisRef.current = false;
       }
+      clearLostBagRootTransform();
     };
   }, [
     closeTimerRef,
@@ -283,15 +361,16 @@ function LostBagSurface({
   totalLabel: string;
 }) {
   return (
-    <article
+    <div
+      role="dialog"
+      aria-modal="true"
       aria-hidden={!open}
       data-open={open ? "true" : "false"}
       className={cn(
-        "lost-bag-surface fixed inset-0 z-[1200] grid grid-rows-[11.5rem_calc(100svh_-_17.1rem)_5.6rem] gap-5 overflow-hidden px-4 text-[var(--lost-bag-ink)] [--lost-bag-bg:#080806] [--lost-bag-fg:#e7e7e3] [--lost-bag-ink:#e7e7e3] [--lost-bag-line:rgba(231,231,227,0.15)] [--lost-bag-muted:rgba(231,231,227,0.62)] [--lost-bag-soft:rgba(231,231,227,0.08)] [--lost-bag-strong-ink:#080806] [--lost-bag-strong:#f2f1ea] lg:grid-cols-12 lg:grid-rows-[18.9rem_auto_7rem] lg:px-28",
+        "lost-bag-surface fixed inset-0 z-[1200] grid grid-rows-[11.5rem_calc(100svh_-_17.1rem)_5.6rem] gap-5 overflow-hidden px-4 text-[var(--lost-bag-ink)] [--lost-bag-bg:var(--n-s-bg)] [--lost-bag-fg:var(--n-s-fg)] [--lost-bag-ink:var(--n-s-fg)] [--lost-bag-line:oklch(from_var(--n-s-fg)_l_c_h_/_0.15)] [--lost-bag-muted:oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] [--lost-bag-soft:oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] [--lost-bag-strong-ink:var(--n-s-bg)] [--lost-bag-strong:var(--n-s-fg)] lg:grid-cols-12 lg:grid-rows-[18.9rem_auto_7rem] lg:px-28",
         open ? "pointer-events-auto" : "pointer-events-none"
       )}
     >
-      {open ? <LostBagBackdrop /> : null}
       <LostBagHeader
         backLabel={backLabel}
         cartLabel={cartLabel}
@@ -314,55 +393,7 @@ function LostBagSurface({
       <p className="relative z-10 hidden self-center justify-self-center overflow-hidden text-[1.2rem] leading-none text-[var(--lost-bag-muted)] lg:block">
         {totalLabel} {formatLostMoney(total, currency)}
       </p>
-    </article>
-  );
-}
-
-function LostBagBackdrop() {
-  const transition = {
-    duration: REVEAL_MS / 1000,
-    ease: [0.6, 0, 0.3, 1]
-  } as const;
-
-  return (
-    <>
-      <m.div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[15svh]"
-        initial={{ y: "-100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "-100%" }}
-        style={{ backgroundColor: "var(--lost-bag-bg)" }}
-        transition={transition}
-      />
-      <m.div
-        aria-hidden
-        className="absolute inset-x-0 top-[80svh] bottom-0"
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        style={{ backgroundColor: "var(--lost-bag-bg)" }}
-        transition={transition}
-      />
-      <m.div
-        aria-hidden
-        className="absolute top-[15svh] bottom-[20svh] left-0 w-[3.5vw]"
-        initial={{ x: "-100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "-100%" }}
-        style={{ backgroundColor: "var(--lost-bag-bg)" }}
-        transition={transition}
-      />
-      <m.div
-        aria-hidden
-        className="absolute top-[15svh] right-0 bottom-[20svh] w-[33vw]"
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        style={{ backgroundColor: "var(--lost-bag-bg)" }}
-        transition={transition}
-      />
-    </>
+    </div>
   );
 }
 
@@ -403,7 +434,7 @@ function LostBagAperture({ onClose }: { onClose: () => void }) {
   return (
     <section
       aria-label="cart preview"
-      className="relative z-10 hidden grid-rows-[1.5rem_1fr] gap-10 self-end overflow-hidden lg:col-span-8 lg:row-start-2 lg:grid lg:h-full"
+      className="relative z-10 hidden grid-rows-[1.5rem_calc(100svh*var(--lost-bag-frame-scale,0.62))] gap-10 overflow-hidden lg:col-span-8 lg:row-start-2 lg:grid"
     >
       <div
         aria-hidden
@@ -572,6 +603,15 @@ function LostBagTransformStyles() {
   return (
     <style>
       {`
+        :root {
+          --lost-bag-frame-x: 3.5vw;
+          --lost-bag-frame-y: 15svh;
+          --lost-bag-frame-width: 62vw;
+          --lost-bag-frame-height: 62svh;
+          --lost-bag-frame-right: 34.5vw;
+          --lost-bag-frame-bottom: 23svh;
+          --lost-bag-frame-scale: 0.62;
+        }
         .lost-commerce-root {
           filter: brightness(1) contrast(1);
           transform: translate3d(0, 0, 0) scale(1);
@@ -589,12 +629,13 @@ function LostBagTransformStyles() {
           right: 0;
           top: calc(var(--lost-bag-scroll-y, 0px) * -1);
           width: 100vw;
+          height: 100svh;
           min-height: 100svh;
           overflow: hidden;
           will-change: transform, filter;
         }
         body[data-lost-bag-state="open"] .lost-commerce-root {
-          transform: translate3d(3.5vw, 15svh, 0) scale(0.62);
+          transform: translate3d(var(--lost-bag-frame-x), var(--lost-bag-frame-y), 0) scale(var(--lost-bag-frame-scale));
           filter: brightness(0.8) contrast(1.08);
         }
         body[data-lost-bag-state="preopen"] .lost-commerce-root,
@@ -603,8 +644,17 @@ function LostBagTransformStyles() {
           filter: none;
         }
         @media (max-width: 767px) {
+          :root {
+            --lost-bag-frame-x: 4vw;
+            --lost-bag-frame-y: 17svh;
+            --lost-bag-frame-width: 92vw;
+            --lost-bag-frame-height: 92svh;
+            --lost-bag-frame-right: 4vw;
+            --lost-bag-frame-bottom: -9svh;
+            --lost-bag-frame-scale: 0.92;
+          }
           body[data-lost-bag-state="open"] .lost-commerce-root {
-            transform: translate3d(4vw, 17svh, 0) scale(0.92);
+            transform: translate3d(var(--lost-bag-frame-x), var(--lost-bag-frame-y), 0) scale(var(--lost-bag-frame-scale));
           }
         }
         @media (prefers-reduced-motion: reduce) {

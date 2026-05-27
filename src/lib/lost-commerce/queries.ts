@@ -3,7 +3,7 @@ import { getPayload } from "payload";
 import { formatLostMoney } from "./format";
 import type { LostCurrency, LostOrderMode } from "./types";
 
-type AnyDoc = Record<string, any>;
+type AnyDoc = Record<string, unknown>;
 
 export type LostProductCard = {
   id: string;
@@ -15,6 +15,7 @@ export type LostProductCard = {
   price: string;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  galleryPreview: Array<{ url: string; alt?: string | null }>;
   heroVideoUrl?: string | null;
   modes: LostOrderMode[];
   stockState?: string | null;
@@ -39,15 +40,43 @@ export type LostProductDetail = LostProductCard & {
   privateUnitAmount?: number | null;
 };
 
-function mediaView(
-  media: unknown
-): { url?: string | null; alt?: string | null; mimeType?: string | null } {
+function stringValue(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function numberValue(value: unknown, fallback = 0): number {
+  return typeof value === "number" ? value : Number(value ?? fallback);
+}
+
+function progressVisibilityValue(
+  value: unknown
+): LostCampaignView["progressVisibility"] {
+  return value === "percentage" || value === "count" || value === "hidden"
+    ? value
+    : "hidden";
+}
+
+function mediaView(media: unknown): {
+  url?: string | null;
+  alt?: string | null;
+  mimeType?: string | null;
+} {
   if (!media || typeof media === "string") return {};
   const doc = media as AnyDoc;
+  const rawUrl = typeof doc.url === "string" ? doc.url : null;
+  const filename = typeof doc.filename === "string" ? doc.filename : null;
+  const url =
+    rawUrl?.includes("/api/media/file/") && filename
+      ? `/media/${filename}`
+      : (rawUrl ?? (filename ? `/media/${filename}` : null));
   return {
-    url: doc.url ?? (doc.filename ? `/media/${doc.filename}` : null),
-    alt: doc.alt ?? doc.filename ?? null,
-    mimeType: doc.mimeType ?? null
+    url,
+    alt: nullableString(doc.alt) ?? filename,
+    mimeType: nullableString(doc.mimeType)
   };
 }
 
@@ -70,33 +99,55 @@ function modes(product: AnyDoc): LostOrderMode[] {
 }
 
 function card(product: AnyDoc, campaign?: AnyDoc | null): LostProductCard {
+  const productId = stringValue(product.id);
+  const productName = stringValue(product.name);
   const hero = mediaView(product.hero_media);
-  const galleryImage = Array.isArray(product.gallery)
-    ? product.gallery.map(mediaView).find(isImage)
-    : null;
-  const currency = (product.currency ?? "KRW") as LostCurrency;
-  const unitAmount = Number(product.unit_amount ?? 0);
+  const galleryImages = Array.isArray(product.gallery)
+    ? product.gallery
+        .map(mediaView)
+        .filter(isImage)
+        .filter((item): item is typeof item & { url: string } =>
+          Boolean(item.url)
+        )
+    : [];
+  const galleryImage = galleryImages[0];
+  const currency = stringValue(product.currency, "KRW") as LostCurrency;
+  const unitAmount = numberValue(product.unit_amount);
+  const primaryImage = isImage(hero) && hero.url ? hero : galleryImage;
+  const galleryPreview = [
+    ...(primaryImage?.url
+      ? [{ url: primaryImage.url, alt: primaryImage.alt ?? productName }]
+      : []),
+    ...galleryImages.map((item) => ({ url: item.url, alt: item.alt }))
+  ].filter(
+    (item, index, items) =>
+      items.findIndex((candidate) => candidate.url === item.url) === index
+  );
+
   return {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    summary: product.summary,
+    id: productId,
+    name: productName,
+    slug: stringValue(product.slug),
+    summary: nullableString(product.summary),
     currency,
     unitAmount,
     price: formatLostMoney(unitAmount, currency),
-    imageUrl: isImage(hero) ? hero.url : galleryImage?.url,
-    imageAlt: (isImage(hero) ? hero.alt : galleryImage?.alt) ?? product.name,
+    imageUrl: primaryImage?.url,
+    imageAlt: primaryImage?.alt ?? productName,
+    galleryPreview: galleryPreview.slice(0, 5),
     heroVideoUrl: isVideo(hero) ? hero.url : null,
     modes: modes(product),
-    stockState: product.stock_state,
+    stockState: nullableString(product.stock_state),
     campaign: campaign
       ? {
-          id: campaign.id,
-          title: campaign.title,
-          minimumCommitments: Number(campaign.minimum_commitments ?? 0),
-          paidCommitments: Number(campaign.paid_commitments ?? 0),
-          deadline: campaign.deadline,
-          progressVisibility: campaign.progress_visibility ?? "hidden"
+          id: stringValue(campaign.id),
+          title: stringValue(campaign.title),
+          minimumCommitments: numberValue(campaign.minimum_commitments),
+          paidCommitments: numberValue(campaign.paid_commitments),
+          deadline: stringValue(campaign.deadline),
+          progressVisibility: progressVisibilityValue(
+            campaign.progress_visibility
+          )
         }
       : null
   };
@@ -152,17 +203,17 @@ export async function getLostHomeData(): Promise<{
 
   const products = await Promise.all(
     (productsResult.docs as AnyDoc[]).map(async (product) =>
-      card(product, await activeCampaignFor(product.id))
+      card(product, await activeCampaignFor(stringValue(product.id)))
     )
   );
 
   return {
     products,
     drops: (dropsResult.docs as AnyDoc[]).map((drop) => ({
-      title: drop.title,
-      slug: drop.slug,
-      kicker: drop.kicker,
-      lede: drop.lede
+      title: stringValue(drop.title),
+      slug: stringValue(drop.slug),
+      kicker: nullableString(drop.kicker) ?? undefined,
+      lede: nullableString(drop.lede) ?? undefined
     }))
   };
 }
@@ -195,10 +246,10 @@ export async function getLostProductBySlug(
     : [];
 
   return {
-    ...card(product, await activeCampaignFor(product.id)),
-    details: product.details,
-    care: product.care,
-    shippingReturns: product.shipping_returns,
+    ...card(product, await activeCampaignFor(stringValue(product.id))),
+    details: nullableString(product.details),
+    care: nullableString(product.care),
+    shippingReturns: nullableString(product.shipping_returns),
     gallery,
     privatePresetPriceEnabled: Boolean(product.private_preset_price_enabled),
     privateUnitAmount:
@@ -244,14 +295,14 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
 
   const products = await Promise.all(
     (productResult.docs as AnyDoc[]).map(async (product) =>
-      card(product, await activeCampaignFor(product.id))
+      card(product, await activeCampaignFor(stringValue(product.id)))
     )
   );
 
   return {
-    title: drop.title,
-    kicker: drop.kicker,
-    lede: drop.lede,
+    title: stringValue(drop.title),
+    kicker: nullableString(drop.kicker) ?? undefined,
+    lede: nullableString(drop.lede) ?? undefined,
     products
   };
 }

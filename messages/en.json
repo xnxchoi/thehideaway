@@ -36,7 +36,12 @@
       "cart": "Cart",
       "back": "Back",
       "shop": "Shop",
-      "archive": "Archive"
+      "archive": "Archive",
+      "search": "Search",
+      "searchPlaceholder": "Find objects",
+      "clearSearch": "Clear search",
+      "searchResults": "Results",
+      "searchNoResults": "No matching objects."
     },
     "home": {
       "announcement": "Limited runs, Seoul dispatch",
@@ -48,7 +53,10 @@
       "collection": "Collection",
       "year": "2026",
       "objects": "Objects",
-      "incoming": "Incoming"
+      "incoming": "Incoming",
+      "focusTitle": "Selected objects",
+      "collectionsEyebrow": "Editions",
+      "collectionsTitle": "Limited runs, live commitments"
     },
     "actions": {
       "view": "View product",
@@ -76,7 +84,10 @@
       "details": "Details",
       "care": "Care",
       "shipping": "Shipping and returns",
-      "privateQuote": "Notes for a private order"
+      "directPurchase": "Direct purchase",
+      "privateQuote": "Notes for a private order",
+      "related": "Same collection",
+      "collectionPush": "Collection Memory"
     },
     "cart": {
       "title": "Cart",
@@ -84,6 +95,15 @@
       "checkout": "Checkout",
       "remove": "Remove",
       "total": "Total"
+    },
+    "footer": {
+      "info": "Information",
+      "media": "Media",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "returns": "Returns",
+      "copyright": "LOSTINSEOUL 2026"
     },
     "checkout": {
       "title": "Checkout",

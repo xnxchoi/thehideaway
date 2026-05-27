@@ -6,15 +6,15 @@
       },
       "save": {
         "default": "저장에 실패했어요. 다시 시도해주세요.",
-        "signin": "먼저 체크인을 해야 해요.",
+        "signin": "저장하려면 계정에 체크인이 필요합니다",
         "select": "저장할 내용을 선택해주세요.",
         "empty": "저장할 내용을 선택해주세요."
       }
     },
     "share": {
-      "copy": "클립보드에 복사되었어요."
+      "copy": "클립보드에 내용을 복사했습니다."
     },
-    "saved": "저장되었어요."
+    "saved": "저장되었습니다."
   },
   "UI": {
     "SignIn": {
@@ -27,68 +27,88 @@
   },
   "LOSTINSEOUL": {
     "nav": {
-      "cart": "카트",
-      "back": "뒤로",
-      "shop": "숍",
-      "archive": "아카이브"
+      "cart": "CART",
+      "back": "BACK",
+      "shop": "Shop",
+      "archive": "Archives",
+      "search": "검색",
+      "searchPlaceholder": "...",
+      "clearSearch": "검색어 리셋",
+      "searchResults": "검색 결과",
+      "searchNoResults": "일치하는 결과가 없습니다"
     },
     "home": {
-      "announcement": "한정 수량, 서울 발송",
-      "eyebrow": "스토어",
+      "announcement": "A RESTORED PROJECT™",
+      "eyebrow": "BOUTIQUE",
       "title": "LOSTINSEOUL",
-      "lede": "서울에서 고른 오브젝트와 에디션입니다. 바로 구매 가능한 것도, 충분한 주문 약속이 모여야 진행되는 것도 있습니다.",
-      "products": "구매 가능",
-      "empty": "현재 열린 상품이 없습니다.",
+      "lede": "LOST WITH CARE",
+      "products": "Products",
+      "empty": "--- - - --- -",
       "collection": "컬렉션",
       "year": "2026",
-      "objects": "오브젝트",
-      "incoming": "입고 예정"
+      "objects": "Restorations",
+      "incoming": "En Route",
+      "focusTitle": "Selected Objects",
+      "collectionsEyebrow": "Editions",
+      "collectionsTitle": "Limited Runs"
     },
     "actions": {
       "view": "상품 보기",
-      "watchVideo": "영상 보기",
+      "watchVideo": "영상 시청하기",
       "add": "카트에 담기",
-      "added": "담겼습니다",
+      "added": "카트에 담았습니다.",
       "requestQuote": "견적 요청"
     },
     "video": {
       "close": "닫기",
       "play": "재생",
       "pause": "일시정지",
-      "progress": "영상 진행률",
+      "progress": "시점",
       "mute": "음소거",
       "unmute": "음소거 해제"
     },
     "modes": {
-      "standard": "구매",
-      "request": "약속",
-      "private": "프라이빗"
+      "standard": "구매하기",
+      "request": "예약 구매하기",
+      "private": "프라이빗 오더"
     },
     "product": {
       "campaign": "주문 요청",
-      "progress": "진행률",
+      "progress": "진행도",
       "details": "상세",
       "care": "관리",
       "shipping": "배송 및 반품",
-      "privateQuote": "프라이빗 오더 요청 사항"
+      "directPurchase": "바로 결제",
+      "privateQuote": "프라이빗 오더 요청 사항",
+      "related": "같은 컬렉션",
+      "collectionPush": "Collection Memory"
     },
     "cart": {
       "title": "카트",
       "empty": "카트가 비어 있습니다.",
-      "checkout": "결제",
+      "checkout": "결제하기",
       "remove": "삭제",
       "total": "합계"
+    },
+    "footer": {
+      "info": "Info",
+      "media": "Media",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "returns": "Returns",
+      "copyright": "LOSTINSEOUL 2026"
     },
     "checkout": {
       "title": "결제",
       "contact": "연락처",
       "shipping": "배송",
       "payment": "결제 수단",
-      "portone": "카드 / 글로벌",
+      "portone": "국내 카드 결제 / 해외 카드 결제",
       "manual": "수동",
       "submit": "주문하기",
-      "pending": "주문 생성 중",
-      "failed": "주문을 생성하지 못했습니다.",
+      "pending": "주문 접수 중",
+      "failed": "주문 접수에 실패했습니다.",
       "name": "이름",
       "email": "이메일",
       "phone": "전화번호",
@@ -96,10 +116,10 @@
       "note": "배송 메모"
     },
     "payment": {
-      "successEyebrow": "주문 접수",
-      "successTitle": "접수되었습니다.",
+      "successEyebrow": "주문 완료",
+      "successTitle": "주문이 접수되었습니다.",
       "failureEyebrow": "결제 실패",
-      "failureTitle": "다시 시도해주세요.",
+      "failureTitle": "결제에 실패했습니다.",
       "continue": "계속",
       "retry": "카트로 돌아가기"
     },
@@ -115,11 +135,11 @@
     "error": {
       "password": {
         "minLength": "비밀번호는 최소 8자 이상이어야 합니다",
-        "maxLength": "비밀번호는 최대 20자입니다",
-        "uppercase": "최소 1자 이상의 영문 대문자를 포함해야 합니다",
-        "lowercase": "최소 1자 이상의 영문 소문자를 포함해야 합니다",
-        "number": "숫자를 최소 1자 이상 포함해야 합니다",
-        "specialCharacter": "!@#$%^&* 특수문자 중 한 자 이상 포함하여야 합니다"
+        "maxLength": "비밀번호의 최대 길이는 20자입니다.",
+        "uppercase": "최소 1자 이상의 영어 대문자를 포함하여 주십시오.",
+        "lowercase": "최소 1자 이상의 영어 소문자를 포함하여 주십시오.",
+        "number": "최소 1자 이상 숫자를 포함하여 주십시오.",
+        "specialCharacter": "특수문자 !@#$%^&* 중 한 자 이상 포함하여 주심시오."
       },
       "username": {
         "minLength": "유저명은 최소 2자 이상이어야 합니다",
@@ -150,9 +170,9 @@
     }
   },
   "Plans": {
-    "title": "기억에서 추억으로",
-    "subtitle": "\"평생 기억할 일\"은 태생적으로 정해진 게 아니니까요.",
-    "description": "하이드어웨이는 일상의 기억을 추억으로 잇는 가교입니다."
+    "title": "하이드어웨이는 공유 가능한 사유의 공간을 추구합니다.",
+    "subtitle": "",
+    "description": " 일상의 기억을 추억으로 잇는 가교입니다."
   },
   "Policies": {
     "Refunds": {

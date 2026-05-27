@@ -51,6 +51,14 @@ import {
 import { useShallow } from "zustand/shallow";
 
 const B = "navWindow";
+const LOST_BAG_FRAME_CLOSE_MS = 760;
+const LOST_BAG_FRAME_REVEAL_MS = 680;
+const LOST_BAG_FRAME_OVERLAP = "2px";
+type LostBagFrameEvent = CustomEvent<{
+  closeMs?: number;
+  open: boolean;
+  revealMs?: number;
+}>;
 
 export const RP_Menu = () => {
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
@@ -124,6 +132,9 @@ export const RP_Menu = () => {
   const menuFrames = useRef<Array<HTMLDivElement>>([]);
   const menuCorners = useRef<Array<HTMLDivElement>>([]);
   const menuSVgs = useRef<Array<HTMLDivElement>>([]);
+  const lostBagFrameStyles = useRef<
+    Array<{ element: HTMLElement; style: string | null }>
+  >([]);
 
   /**
    * Cursor Functions
@@ -196,6 +207,13 @@ export const RP_Menu = () => {
   const toggM = useEffectEvent(
     ({ needsResizing }: { needsResizing?: boolean }) => {
       if (!er.current || !navWindow.current) {
+        return;
+      }
+      if (
+        document.querySelector(".lost-commerce-root") &&
+        (document.body.dataset.lostBagFrame === "open" ||
+          document.body.dataset.lostBagFrame === "closing")
+      ) {
         return;
       }
       const navo = navState.get();
@@ -440,6 +458,132 @@ export const RP_Menu = () => {
   const onMouseLeave = useCallback(() => {
     resetCursorTheme();
   }, [resetCursorTheme]);
+
+  useEffect(() => {
+    const captureLostBagStyles = () => {
+      if (lostBagFrameStyles.current.length) return;
+      lostBagFrameStyles.current = [
+        ...menuFrames.current,
+        ...menuCorners.current,
+        ...menuSVgs.current
+      ]
+        .filter(Boolean)
+        .map((element) => ({
+          element,
+          style: element.getAttribute("style")
+        }));
+    };
+    const restoreLostBagStyles = () => {
+      lostBagFrameStyles.current.forEach(({ element, style }) => {
+        if (style === null) {
+          element.removeAttribute("style");
+          return;
+        }
+        element.setAttribute("style", style);
+      });
+      lostBagFrameStyles.current = [];
+      document.body.dataset.lostBagFrame = "idle";
+    };
+    const resetCornersForLostBag = () => {
+      menuCorners.current.forEach((corner) => {
+        if (!corner) return;
+        corner.style.opacity = "0";
+        corner.style.pointerEvents = "none";
+      });
+      menuSVgs.current.forEach((svg) => {
+        if (!svg) return;
+        svg.style.transform = "scale(0)";
+      });
+    };
+    const prepareFrame = (
+      frame: HTMLDivElement | undefined,
+      styles: Record<string, string>
+    ) => {
+      if (!frame) return;
+      Object.assign(frame.style, styles);
+      frame.style.opacity = "1";
+      frame.style.outline = `${LOST_BAG_FRAME_OVERLAP} solid var(--n-s-bg)`;
+      frame.style.pointerEvents = "none";
+      frame.style.backgroundColor = "var(--n-s-bg)";
+      frame.style.willChange = "transform";
+    };
+    const onLostBagFrame = (event: Event) => {
+      if (!document.querySelector(".lost-commerce-root")) return;
+      const detail = (event as LostBagFrameEvent).detail;
+      const durationMs = detail.open
+        ? (detail.revealMs ?? LOST_BAG_FRAME_REVEAL_MS)
+        : (detail.closeMs ?? LOST_BAG_FRAME_CLOSE_MS);
+      const transition = {
+        duration: durationMs / 1000,
+        ease: [0.6, 0, 0.3, 1] as const
+      };
+      const frameControls: Promise<unknown>[] = [];
+      const animateFrame = (
+        frame: HTMLDivElement | undefined,
+        keyframes: Record<string, string | number>
+      ) => {
+        if (!frame) return;
+        frameControls.push(animate(frame, keyframes, transition).finished);
+      };
+
+      if (detail.open) {
+        captureLostBagStyles();
+        document.body.dataset.lostBagFrame = "open";
+        resetCornersForLostBag();
+        prepareFrame(menuFrames.current[0], {
+          bottom: "",
+          height: `calc(var(--lost-bag-frame-y, 15svh) + ${LOST_BAG_FRAME_OVERLAP})`,
+          left: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          right: "",
+          top: "0",
+          width: `calc(100% + (${LOST_BAG_FRAME_OVERLAP} * 2))`
+        });
+        prepareFrame(menuFrames.current[1], {
+          bottom: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          height: "auto",
+          left: "",
+          right: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          top: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          width: `calc(var(--lost-bag-frame-right, 34.5vw) + ${LOST_BAG_FRAME_OVERLAP})`
+        });
+        prepareFrame(menuFrames.current[2], {
+          bottom: "0",
+          height: "auto",
+          left: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          right: "",
+          top: `calc(var(--lost-bag-frame-y, 15svh) + var(--lost-bag-frame-height, 62svh) - ${LOST_BAG_FRAME_OVERLAP})`,
+          width: `calc(100% + (${LOST_BAG_FRAME_OVERLAP} * 2))`
+        });
+        prepareFrame(menuFrames.current[3], {
+          bottom: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          height: "auto",
+          left: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          right: "",
+          top: `calc(-1 * ${LOST_BAG_FRAME_OVERLAP})`,
+          width: `calc(var(--lost-bag-frame-x, 3.5vw) + ${LOST_BAG_FRAME_OVERLAP})`
+        });
+        animateFrame(menuFrames.current[0], { y: 0, opacity: 1 });
+        animateFrame(menuFrames.current[1], { x: 0, opacity: 1 });
+        animateFrame(menuFrames.current[2], { y: 0, opacity: 1 });
+        animateFrame(menuFrames.current[3], { x: 0, opacity: 1 });
+        return;
+      }
+
+      document.body.dataset.lostBagFrame = "closing";
+      animateFrame(menuFrames.current[0], { y: "-100%" });
+      animateFrame(menuFrames.current[1], { x: "100%" });
+      animateFrame(menuFrames.current[2], { y: "100%" });
+      animateFrame(menuFrames.current[3], { x: "-100%" });
+      void Promise.all(frameControls).then(restoreLostBagStyles);
+    };
+
+    document.addEventListener("lost:bag-frame", onLostBagFrame);
+    return () => {
+      document.removeEventListener("lost:bag-frame", onLostBagFrame);
+      restoreLostBagStyles();
+    };
+  }, []);
+
   return (
     <>
       <div

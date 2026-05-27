@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import {
   BlendFunction,
   BloomEffect,
+  CopyPass,
   Effect,
   EffectComposer,
   EffectPass,
@@ -21,10 +22,10 @@ type Props = {
 const OFLYN_SCENE = "/assets/lostinseoul/oflyn/scene.glb";
 const OFLYN_SHADOWS = "/assets/lostinseoul/oflyn/shadows.png";
 const OFLYN_NORMAL = "/assets/lostinseoul/oflyn/normal.jpg";
-const LOST_BLUE = 0x2358ff;
-const LOST_WALL = 0xf2f1ea;
-const LOST_BENCH = 0x171713;
-const LOST_STAGE = 0x050505;
+const LOST_RED = 0xff2323ff;
+const LOST_WALL_FALLBACK = "#f7f8f8";
+const LOST_BLACK_FALLBACK = "#000000";
+const LOST_WHITE_FALLBACK = "#ffffff";
 const TARGET_VIDEO_RATIO = 21 / 9;
 const VIDEO_ZOOM_DURATION = 1000;
 
@@ -36,23 +37,85 @@ uniform vec3 uVignetteColor;
 uniform float uMaxDistort;
 uniform float uBendAmount;
 
-float random2d(vec2 coord) {
-  return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+const int iterations = 5;
+
+vec2 barrelDistortion(vec2 coord, float amt) {
+  vec2 cc = coord - 0.5;
+  float dist = dot(cc, cc);
+  return coord + cc * dist * amt;
 }
 
-void mainUv(inout vec2 uv) {
-  vec2 center = uv - 0.5;
-  float dist = dot(center, center);
-  uv += center * dist * uBendAmount * uMaxDistort;
+float sat(float t) {
+  return clamp(t, 0.0, 1.0);
+}
+
+float linterp(float t) {
+  return sat(1.0 - abs(2.0 * t - 1.0));
+}
+
+float remap(float t, float a, float b) {
+  return sat((t - a) / (b - a));
+}
+
+vec4 spectrum_offset(float t) {
+  vec4 ret;
+  float lo = step(t, 0.5);
+  float hi = 1.0 - lo;
+  float w = linterp(remap(t, 1.0 / 6.0, 5.0 / 6.0));
+  ret = vec4(lo, 1.0, hi, 1.0) * vec4(1.0 - w, w, 1.0 - w, 1.0);
+  return pow(ret, vec4(1.0 / 2.2));
+}
+
+float random(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 443.8975);
+  p3 += dot(p3, p3.yzx + 19.19);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float blendSoftLight(float base, float blend) {
+  return blend < 0.5
+    ? 2.0 * base * blend + base * base * (1.0 - 2.0 * blend)
+    : sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend);
+}
+
+vec3 blendSoftLight(vec3 base, vec3 blend) {
+  return vec3(
+    blendSoftLight(base.r, blend.r),
+    blendSoftLight(base.g, blend.g),
+    blendSoftLight(base.b, blend.b)
+  );
+}
+
+vec3 blendSoftLight(vec3 base, vec3 blend, float opacity) {
+  return blendSoftLight(base, blend) * opacity + base * (1.0 - opacity);
 }
 
 void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-  vec2 center = uv - 0.5;
-  float vignette = 1.0 - dot(center, center) * uVignetteStrength;
-  vec3 bloom = texture2D(bloomTexture, uv).rgb;
-  float noise = random2d(gl_FragCoord.xy) - 0.5;
-  vec3 color = inputColor.rgb + bloom * 0.18 + noise * uNoiseStrength;
-  outputColor = vec4(mix(uVignetteColor, color, clamp(vignette, 0.0, 1.0)), inputColor.a);
+  vec4 sumcol = vec4(0.0);
+  vec4 sumw = vec4(0.0);
+  float reci_num_iter_f = 1.0 / float(iterations);
+
+  for (int i = 0; i < iterations; i++) {
+    float t = float(i) * reci_num_iter_f;
+    vec4 w = spectrum_offset(t);
+    sumw += w;
+    sumcol += w * texture2D(
+      bloomTexture,
+      barrelDistortion(uv, uBendAmount * uMaxDistort * t)
+    );
+  }
+
+  outputColor = vec4(sumcol / sumw);
+
+  vec2 uv2 = uv;
+  uv2 *= 1.0 - vUv.yx;
+  float vig = uv2.x * uv2.y * 20.0;
+  vig = pow(vig, uVignetteStrength);
+  outputColor = mix(vec4(uVignetteColor, 1.0), outputColor, vig);
+
+  float noise = random(uv) - 0.5;
+  outputColor.rgb = blendSoftLight(outputColor.rgb, vec3(noise), uNoiseStrength);
+  outputColor.a += noise * uNoiseStrength;
 }`;
 
 const mirrorVertexShader = `
@@ -89,6 +152,7 @@ void main() {
 
 const groundFragmentShader = `
 uniform sampler2D tDiffuse;
+uniform sampler2D tBlurred;
 uniform sampler2D tBake;
 uniform sampler2D tNormal;
 uniform vec3 baseColor;
@@ -101,9 +165,10 @@ void main() {
   vec3 coord = vUv.xyz / vUv.w;
   vec3 normalColor = texture2D(tNormal, meshUV * 10.0).rgb;
   vec3 normal = normalize(vec3(normalColor.r * 2.0 - 1.0, normalColor.b, normalColor.g * 2.0 - 1.0));
-  vec2 normalUv = coord.xy + coord.z * normal.xz * 0.042;
+  vec2 normalUv = coord.xy + coord.z * normal.xz * 0.065;
   vec3 bake = texture2D(tBake, meshUV).rgb;
-  vec3 reflection = texture2D(tDiffuse, normalUv).rgb * reflectionStrength;
+  vec3 blurredReflection = texture2D(tBlurred, normalUv).rgb;
+  vec3 reflection = blurredReflection * bake * reflectionStrength;
   float shade = 0.925 + bake.r * textureStrength + (normalColor.r - 0.5) * 0.018;
   vec3 color = baseColor * shade + reflection;
   gl_FragColor = vec4(color, 1.0);
@@ -235,10 +300,10 @@ function findSceneObject(
   return match;
 }
 
-function makeBlackStage() {
+function makeBlackStage(color: THREE.Color) {
   const group = new THREE.Group();
   const material = new THREE.MeshBasicMaterial({
-    color: LOST_STAGE,
+    color,
     depthWrite: true,
     side: THREE.DoubleSide
   });
@@ -267,7 +332,7 @@ function makeBlackStage() {
   right.rotation.y = -Math.PI / 2;
   group.add(right);
 
-  return group;
+  return { group, material };
 }
 
 function createTexturedSurfaceMaterial({
@@ -339,7 +404,7 @@ function createCablePulseMaterial() {
     side: THREE.DoubleSide,
     transparent: true,
     uniforms: {
-      energyColor: { value: new THREE.Color(LOST_BLUE) },
+      energyColor: { value: new THREE.Color(LOST_RED) },
       glowSpread: { value: 9.5 },
       glowStrength: { value: 3.8 },
       numberOfPulses: { value: 8 },
@@ -349,6 +414,159 @@ function createCablePulseMaterial() {
     },
     vertexShader: cableVertexShader
   });
+}
+
+const reflectorBlurVertexShader = `
+attribute vec2 position;
+varying vec2 vUv;
+
+void main() {
+  vUv = position;
+  gl_Position = vec4(2.0 * position - 1.0, 0.0, 1.0);
+}`;
+
+const reflectorBlurFragmentShader = `
+precision highp float;
+uniform sampler2D inputBuffer;
+uniform float blurStrength;
+varying vec2 vUv;
+
+const float PI2 = 6.28318530718;
+const float BLUR_SAMPLES = 10.0;
+
+vec4 blur(sampler2D image, vec2 uv) {
+  vec4 color = texture2D(image, uv);
+  for (float d = 0.0; d < PI2; d += PI2 / BLUR_SAMPLES) {
+    color += texture2D(image, uv + vec2(cos(d), sin(d)) * blurStrength);
+  }
+  color /= BLUR_SAMPLES * 1.095;
+  return color;
+}
+
+void main() {
+  gl_FragColor = blur(inputBuffer, vUv);
+}`;
+
+class GroundReflectorBlurPass {
+  private readonly camera = new THREE.Camera();
+  private readonly geometry = new THREE.BufferGeometry();
+  private readonly material: THREE.RawShaderMaterial;
+  private readonly screen: THREE.Mesh;
+  private readonly targetA = new THREE.WebGLRenderTarget(1, 1, {
+    depthBuffer: false,
+    magFilter: THREE.LinearFilter,
+    minFilter: THREE.LinearFilter,
+    type: THREE.HalfFloatType
+  });
+  private readonly targetB = this.targetA.clone();
+  private readonly targetC = this.targetA.clone();
+  private readonly size = new THREE.Vector2();
+  private strength = 60;
+  private readonly strengthTarget = 60;
+
+  constructor() {
+    this.geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array([-2, 0, 0, -2, 2, 2]), 2)
+    );
+    this.material = new THREE.RawShaderMaterial({
+      depthTest: false,
+      depthWrite: false,
+      fragmentShader: reflectorBlurFragmentShader,
+      uniforms: {
+        blurStrength: { value: 0.0028 },
+        inputBuffer: { value: null }
+      },
+      vertexShader: reflectorBlurVertexShader
+    });
+    this.screen = new THREE.Mesh(this.geometry, this.material);
+    this.screen.frustumCulled = false;
+    this.screen.matrixAutoUpdate = false;
+    this.screen.matrixWorldAutoUpdate = false;
+    this.targetA.texture.name = "Lost.GroundReflectorBlur.A";
+    this.targetB.texture.name = "Lost.GroundReflectorBlur.B";
+    this.targetC.texture.name = "Lost.GroundReflectorBlur.C";
+  }
+
+  render(
+    renderer: THREE.WebGLRenderer,
+    input: THREE.Texture | THREE.WebGLRenderTarget
+  ) {
+    this.syncSize(renderer);
+    const currentTarget = renderer.getRenderTarget();
+    const currentSortObjects = renderer.sortObjects;
+    const currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
+    const inputTexture =
+      input instanceof THREE.WebGLRenderTarget ? input.texture : input;
+
+    renderer.sortObjects = false;
+    renderer.shadowMap.autoUpdate = false;
+    this.material.uniforms.inputBuffer.value = inputTexture;
+    this.strength += (this.strengthTarget - this.strength) / 6;
+
+    const blurA = mapRange(this.strength, 30, 100, 0, 0.01);
+    const blurB = mapRange(this.strength, 50, 100, 0, 0.01);
+    const blurC = mapRange(this.strength, 0, 100, 0, 0.015);
+
+    if (blurA > 0) {
+      this.material.uniforms.blurStrength.value = blurA;
+      renderer.setRenderTarget(this.targetA);
+      renderer.clear();
+      renderer.render(this.screen, this.camera);
+      this.material.uniforms.inputBuffer.value = this.targetA.texture;
+    }
+    if (blurB > 0) {
+      this.material.uniforms.blurStrength.value = blurB;
+      renderer.setRenderTarget(this.targetB);
+      renderer.clear();
+      renderer.render(this.screen, this.camera);
+      this.material.uniforms.inputBuffer.value = this.targetB.texture;
+    }
+
+    this.material.uniforms.blurStrength.value = blurC;
+    renderer.setRenderTarget(this.targetC);
+    renderer.clear();
+    renderer.render(this.screen, this.camera);
+    renderer.setRenderTarget(currentTarget);
+    renderer.sortObjects = currentSortObjects;
+    renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
+
+    return this.targetC.texture;
+  }
+
+  dispose() {
+    this.targetA.dispose();
+    this.targetB.dispose();
+    this.targetC.dispose();
+    this.geometry.dispose();
+    this.material.dispose();
+  }
+
+  private syncSize(renderer: THREE.WebGLRenderer) {
+    renderer.getDrawingBufferSize(this.size);
+    this.targetA.setSize(
+      Math.max(1, Math.round(this.size.x * 0.15)),
+      Math.max(1, Math.round(this.size.y * 0.15))
+    );
+    this.targetB.setSize(
+      Math.max(1, Math.round(this.size.x * 0.07)),
+      Math.max(1, Math.round(this.size.y * 0.07))
+    );
+    this.targetC.setSize(
+      Math.max(1, Math.round(this.size.x * 0.3)),
+      Math.max(1, Math.round(this.size.y * 0.3))
+    );
+  }
+}
+
+function mapRange(
+  value: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number
+) {
+  return outMin + ((value - inMin) * (outMax - outMin)) / (inMax - inMin);
 }
 
 class SourceReflector {
@@ -365,6 +583,7 @@ class SourceReflector {
   private readonly virtualCamera = new THREE.PerspectiveCamera();
   private readonly renderTarget: THREE.WebGLRenderTarget;
   private readonly material: THREE.ShaderMaterial;
+  private readonly blurPass: GroundReflectorBlurPass | null;
   private readonly originalMaterial: THREE.Material | THREE.Material[] | null;
   private readonly dynamicUpdate: boolean;
   private readonly updateInterval: number;
@@ -376,7 +595,7 @@ class SourceReflector {
     mesh,
     mirror,
     normalTexture,
-    baseColor = new THREE.Color(LOST_WALL),
+    baseColor = new THREE.Color(LOST_WALL_FALLBACK),
     reflectionStrength = 0.035,
     resolution = 1024,
     shadowsTexture,
@@ -414,6 +633,7 @@ class SourceReflector {
             baseColor: { value: baseColor },
             reflectionStrength: { value: reflectionStrength },
             tBake: { value: shadowsTexture ?? null },
+            tBlurred: { value: this.renderTarget.texture },
             tDiffuse: { value: this.renderTarget.texture },
             tNormal: { value: normalTexture ?? null },
             textureMatrix: { value: this.textureMatrix },
@@ -427,8 +647,14 @@ class SourceReflector {
       vertexShader: ground ? groundVertexShader : mirrorVertexShader
     });
     this.mesh.material = this.material;
+    this.blurPass = ground ? new GroundReflectorBlurPass() : null;
     this.dynamicUpdate = !ground;
     this.updateInterval = ground ? 1000 / 24 : 1000 / 30;
+  }
+
+  setBaseColor(color: THREE.Color) {
+    const uniform = this.material.uniforms.baseColor;
+    if (uniform?.value instanceof THREE.Color) uniform.value.copy(color);
   }
 
   render(
@@ -538,6 +764,12 @@ class SourceReflector {
     renderer.setRenderTarget(this.renderTarget);
     renderer.clear();
     renderer.render(renderScene, this.virtualCamera);
+    if (this.blurPass) {
+      this.material.uniforms.tBlurred.value = this.blurPass.render(
+        renderer,
+        this.renderTarget
+      );
+    }
     renderer.xr.enabled = currentXr;
     renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
     renderer.setRenderTarget(currentTarget);
@@ -546,6 +778,7 @@ class SourceReflector {
 
   dispose() {
     this.renderTarget.dispose();
+    this.blurPass?.dispose();
     this.material.dispose();
     if (this.originalMaterial) this.mesh.material = this.originalMaterial;
   }
@@ -559,21 +792,52 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     if (!canvas) return;
 
     let disposed = false;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const colorCanvas = document.createElement("canvas");
+    colorCanvas.width = 1;
+    colorCanvas.height = 1;
+    const colorContext = colorCanvas.getContext("2d", {
+      willReadFrequently: true
+    });
+    const cssColor = (property: string, fallback: string) => {
+      const root = canvas.closest<HTMLElement>(".lost-commerce-root");
+      const styles = getComputedStyle(root ?? document.documentElement);
+      return styles.getPropertyValue(property).trim() || fallback;
+    };
+    const cssColorToThree = (
+      color: string,
+      fallback: string,
+      target = new THREE.Color()
+    ) => {
+      if (!colorContext) return target.set(fallback);
+      colorContext.clearRect(0, 0, 1, 1);
+      colorContext.fillStyle = fallback;
+      colorContext.fillStyle = color;
+      colorContext.fillRect(0, 0, 1, 1);
+      const [r, g, b] = colorContext.getImageData(0, 0, 1, 1).data;
+      return target.setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
+    };
+    const colorFromVar = (
+      property: string,
+      fallback: string,
+      target = new THREE.Color()
+    ) => cssColorToThree(cssColor(property, fallback), fallback, target);
+    const sceneBgColor = colorFromVar("--bg", LOST_WALL_FALLBACK);
+    const sceneBlackColor = colorFromVar("--opaque-black", LOST_BLACK_FALLBACK);
+    const sceneWhiteColor = colorFromVar("--opaque-white", LOST_WHITE_FALLBACK);
     const renderer = new THREE.WebGLRenderer({
       alpha: false,
       antialias: true,
       canvas,
       powerPreference: "high-performance"
     });
-    renderer.setClearColor(0x000000, 1);
+    renderer.setClearColor(sceneBlackColor, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.02;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = sceneBlackColor.clone();
 
     const camera = new THREE.PerspectiveCamera(66, 1, 0.1, 100);
     const initialCameraPosition = new THREE.Vector3(18.35, 2, 0.06);
@@ -606,18 +870,21 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     let videoTexture: THREE.VideoTexture | null = null;
 
     const whiteMaterial = new THREE.MeshBasicMaterial({
-      color: 0xe8e8e8,
+      color: sceneWhiteColor,
       side: THREE.DoubleSide
     });
     const wallMaterial = createTexturedSurfaceMaterial({
-      baseColor: LOST_WALL,
+      baseColor: sceneBgColor,
       normalTexture,
       shadowsTexture
     });
     const blackMaterial = new THREE.MeshBasicMaterial({
-      color: LOST_BENCH,
+      color: sceneBlackColor,
       side: THREE.DoubleSide
     });
+    const wallMaterials = [wallMaterial];
+    const whiteMaterials = [whiteMaterial];
+    const blackMaterials = [blackMaterial];
     const cableMaterial = createCablePulseMaterial();
     const mediaMaterial = new THREE.MeshBasicMaterial({
       map: imageTexture,
@@ -627,6 +894,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
 
     const reflectors: SourceReflector[] = [];
     let modelGroup: THREE.Group | null = new THREE.Group();
+    let stageMaterial: THREE.MeshBasicMaterial | null = null;
     let videoPlane: THREE.Mesh | null = null;
     const zoom = {
       active: false,
@@ -672,7 +940,9 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
             return;
           }
           if (name === "banc") {
-            object.material = blackMaterial.clone();
+            const material = blackMaterial.clone();
+            blackMaterials.push(material);
+            object.material = material;
             object.visible = true;
             return;
           }
@@ -681,11 +951,15 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
             return;
           }
           if (name === "wall") {
-            object.material = wallMaterial.clone();
+            const material = wallMaterial.clone();
+            wallMaterials.push(material);
+            object.material = material;
             return;
           }
           if (name === "emissive") {
-            object.material = whiteMaterial.clone();
+            const material = whiteMaterial.clone();
+            whiteMaterials.push(material);
+            object.material = material;
             return;
           }
           if (name === "cables") {
@@ -697,7 +971,9 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
           }
         });
 
-        modelGroup.add(makeBlackStage());
+        const stage = makeBlackStage(sceneBlackColor);
+        stageMaterial = stage.material;
+        modelGroup.add(stage.group);
 
         const right = findSceneObject(loadedScene, "right");
         const left = findSceneObject(loadedScene, "left");
@@ -737,12 +1013,12 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
         }
 
         const ground = new SourceReflector({
-          baseColor: new THREE.Color(LOST_WALL),
+          baseColor: sceneBgColor.clone(),
           ground: true,
           height: 24,
           mirror: 0.02,
           normalTexture,
-          reflectionStrength: 0.082,
+          reflectionStrength: 0.38,
           resolution: 1536,
           shadowsTexture,
           textureStrength: 0.1,
@@ -753,6 +1029,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
         reflectors.push(ground);
 
         modelGroup.add(loadedScene);
+        syncPostTheme();
         canvas.dataset.lostOflynModels = "loaded";
       })
       .catch(() => {
@@ -772,15 +1049,20 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     });
     const bloomPass = new EffectPass(camera, bloom);
     composer.addPass(bloomPass);
+    const copyPass = new CopyPass();
+    composer.addPass(copyPass);
+    const vignetteColor = sceneBgColor.clone();
+    const vignetteTargetColor = sceneBgColor.clone();
+    const vignetteColorUniform = new THREE.Uniform(vignetteColor);
     const finalPass = new EffectPass(
       camera,
       new Effect("lost-source-final", finalPassShader, {
         blendFunction: BlendFunction.NORMAL,
         uniforms: new Map<string, THREE.Uniform>([
-          ["bloomTexture", new THREE.Uniform(bloom.texture)],
-          ["uNoiseStrength", new THREE.Uniform(0.025)],
+          ["bloomTexture", new THREE.Uniform(copyPass.texture)],
+          ["uNoiseStrength", new THREE.Uniform(0.07)],
           ["uVignetteStrength", new THREE.Uniform(0.42)],
-          ["uVignetteColor", new THREE.Uniform(new THREE.Color(0x000000))],
+          ["uVignetteColor", vignetteColorUniform],
           ["uMaxDistort", new THREE.Uniform(1.46)],
           ["uBendAmount", new THREE.Uniform(-0.032)]
         ])
@@ -793,7 +1075,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     const current = { x: 0, y: 0, scroll: 0 };
 
     const playVideo = () => {
-      if (!video || reducedMotion.matches || document.hidden) return;
+      if (!video || document.hidden) return;
       if (document.body.dataset.lostBagOpen === "true") return;
       void video
         .play()
@@ -808,11 +1090,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     };
     const syncVideoState = () => {
       if (!video) return;
-      if (
-        reducedMotion.matches ||
-        document.hidden ||
-        document.body.dataset.lostBagOpen === "true"
-      ) {
+      if (document.hidden || document.body.dataset.lostBagOpen === "true") {
         pauseVideo();
       } else {
         playVideo();
@@ -843,12 +1121,46 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
     };
+    const applySceneTheme = () => {
+      colorFromVar("--bg", LOST_WALL_FALLBACK, sceneBgColor);
+      colorFromVar("--black", LOST_BLACK_FALLBACK, sceneBlackColor);
+      colorFromVar("--white", LOST_WHITE_FALLBACK, sceneWhiteColor);
+
+      renderer.setClearColor(sceneBlackColor, 1);
+      if (scene.background instanceof THREE.Color) {
+        scene.background.copy(sceneBlackColor);
+      }
+      wallMaterials.forEach((material) => {
+        material.uniforms.baseColor.value.copy(sceneBgColor);
+      });
+      blackMaterials.forEach((material) => {
+        material.color.copy(sceneBlackColor);
+      });
+      whiteMaterials.forEach((material) => {
+        material.color.copy(sceneWhiteColor);
+      });
+      stageMaterial?.color.copy(sceneBlackColor);
+      reflectors.forEach((reflector) => reflector.setBaseColor(sceneBgColor));
+    };
+    const syncPostTheme = () => {
+      applySceneTheme();
+      const darkFrame =
+        document.body.dataset.lostVideoOpen === "true" ||
+        document.body.dataset.lostBagOpen === "true";
+      colorFromVar(
+        darkFrame ? "--n-s-bg" : "--bg",
+        darkFrame ? LOST_BLACK_FALLBACK : LOST_WALL_FALLBACK,
+        vignetteTargetColor
+      );
+
+      canvas.dataset.lostPostTheme = darkFrame ? "dark" : "light";
+    };
     const onPointerMove = (event: PointerEvent) => {
       pointer.x = (event.clientX / window.innerWidth - 0.5) * 2;
       pointer.y = (event.clientY / window.innerHeight - 0.5) * 2;
     };
     const startVideoZoom = (open: boolean) => {
-      if (!videoPlane || reducedMotion.matches) return;
+      if (!videoPlane) return;
       zoom.active = true;
       zoom.open = open;
       zoom.progress = 0;
@@ -878,6 +1190,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
       startVideoZoom(requestedOpen);
     };
     const bagObserver = new MutationObserver(syncVideoState);
+    const postThemeObserver = new MutationObserver(syncPostTheme);
 
     if (video) {
       video.addEventListener("loadedmetadata", activateVideoTexture);
@@ -911,8 +1224,9 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
       current.scroll = scroll;
       current.x = sourceDamp(current.x, pointer.x, 0.1, deltaMs);
       current.y = sourceDamp(current.y, pointer.y, 0.1, deltaMs);
+      vignetteColorUniform.value.lerp(vignetteTargetColor, 0.1);
 
-      const motion = reducedMotion.matches ? 0 : 1;
+      const motion = 1;
       cableMaterial.uniforms.time.value = elapsed;
       const breathingX = Math.sin(elapsed * 0.6) * 0.02 * motion;
       const breathingY = Math.cos(elapsed * 0.6) * 0.02 * motion;
@@ -961,13 +1275,21 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     };
 
     resize();
+    syncPostTheme();
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", onPointerMove);
     document.addEventListener("lost:watch-video", onWatchVideo);
     document.addEventListener("visibilitychange", syncVideoState);
-    reducedMotion.addEventListener("change", syncVideoState);
     bagObserver.observe(document.body, {
       attributeFilter: ["data-lost-bag-open"],
+      attributes: true
+    });
+    postThemeObserver.observe(document.body, {
+      attributeFilter: ["data-lost-video-open", "data-lost-bag-open"],
+      attributes: true
+    });
+    postThemeObserver.observe(document.documentElement, {
+      attributeFilter: ["data-theme", "class"],
       attributes: true
     });
     raf = window.requestAnimationFrame(render);
@@ -979,8 +1301,8 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
       window.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("lost:watch-video", onWatchVideo);
       document.removeEventListener("visibilitychange", syncVideoState);
-      reducedMotion.removeEventListener("change", syncVideoState);
       bagObserver.disconnect();
+      postThemeObserver.disconnect();
       pauseVideo();
       if (video) {
         video.removeAttribute("src");
@@ -1004,7 +1326,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
   return (
     <canvas
       aria-hidden
-      className="lost-hero-canvas col-span-full row-span-full h-full max-h-[100svh] w-full bg-black"
+      className="lost-hero-canvas col-span-full row-span-full h-full max-h-[100svh] w-full bg-[var(--black)]"
       data-lost-hero-media={videoUrl ? "video" : "image"}
       ref={canvasRef}
     />

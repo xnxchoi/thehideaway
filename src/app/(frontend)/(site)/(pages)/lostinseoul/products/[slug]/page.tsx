@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
-import { getLostProductBySlug } from "@/lib/lost-commerce/queries";
+import {
+  getLostHomeData,
+  getLostProductBySlug
+} from "@/lib/lost-commerce/queries";
 import { LostProductDetailClient } from "./product.client";
 
 type PageProps = {
@@ -24,6 +27,10 @@ export default async function LostProductPage({ params }: PageProps) {
   const { slug } = await params;
   const product = await getLostProductBySlug(slug).catch(() => null);
   if (!product) notFound();
+  const data = await getLostHomeData().catch(() => ({ products: [] }));
+  const relatedProducts = data.products
+    .filter((item) => item.id !== product.id)
+    .slice(0, 3);
 
   const t = await getTranslations("LOSTINSEOUL");
 
@@ -31,9 +38,11 @@ export default async function LostProductPage({ params }: PageProps) {
     <RPage slug={["lostinseoul", "products", slug]} type="pages">
       <LostProductDetailClient
         product={product}
+        relatedProducts={relatedProducts}
         labels={{
           back: t("nav.back"),
           cart: t("nav.cart"),
+          allProducts: t("home.products"),
           standard: t("modes.standard"),
           request: t("modes.request"),
           private: t("modes.private"),
@@ -45,7 +54,11 @@ export default async function LostProductPage({ params }: PageProps) {
           details: t("product.details"),
           care: t("product.care"),
           shipping: t("product.shipping"),
-          privateQuote: t("product.privateQuote")
+          directPurchase: t("product.directPurchase"),
+          privateQuote: t("product.privateQuote"),
+          related: t("product.related"),
+          collectionPush: t("product.collectionPush"),
+          viewProduct: t("actions.view")
         }}
       />
     </RPage>

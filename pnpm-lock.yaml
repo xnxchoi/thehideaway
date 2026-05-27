@@ -539,6 +539,9 @@ importers:
       ua-parser-js:
         specifier: ^2.0.9
         version: 2.0.9
+      ukiyojs:
+        specifier: 4.2.0
+        version: 4.2.0
       use-context-selector:
         specifier: ^2.0.0
         version: 2.0.0(react@19.2.5)(scheduler@0.27.0)
@@ -8603,6 +8606,10 @@ packages:
   uint8array-extras@1.5.0:
     resolution: {integrity: sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A==}
     engines: {node: '>=18'}
+
+  ukiyojs@4.2.0:
+    resolution: {integrity: sha512-Y3rmK+Kdq4JooPk1mEsYIOFUOlH6uDZm4NGQW37knbPlFgV9WmMmsYuimnBsubd++gLrfDPKzqEzz1rg5lMAbQ==}
+    engines: {node: '>=16'}
 
   unbox-primitive@1.1.0:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
@@ -17250,6 +17257,8 @@ snapshots:
   ufo@1.6.3: {}
 
   uint8array-extras@1.5.0: {}
+
+  ukiyojs@4.2.0: {}
 
   unbox-primitive@1.1.0:
     dependencies:

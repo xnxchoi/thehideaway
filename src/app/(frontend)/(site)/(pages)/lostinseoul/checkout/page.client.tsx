@@ -78,7 +78,17 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
           address: formData.get("address"),
           note: formData.get("note")
         },
-        lines: lines.map(({ productName, productSlug, price, unitAmount, currency, imageUrl, ...line }) => line)
+        lines: lines.map(
+          ({
+            productName,
+            productSlug,
+            price,
+            unitAmount,
+            currency,
+            imageUrl,
+            ...line
+          }) => line
+        )
       })
     });
     const data = await response.json().catch(() => null);
@@ -99,9 +109,9 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f0e8] px-6 py-8 text-[#161412] xl:px-10">
+    <main className="min-h-screen bg-[var(--bg)] px-6 py-8 text-[var(--fg)] xl:px-10">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-10 flex items-center justify-between border-b border-black/15 pb-4">
+        <div className="mb-10 flex items-center justify-between border-b border-[oklch(from_var(--fg)_l_c_h_/_0.15)] pb-4">
           <Link className="text-sm font-medium" href="/lostinseoul/cart">
             {labels.back}
           </Link>
@@ -111,7 +121,7 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
         </div>
 
         {lines.length === 0 ? (
-          <p className="py-24 text-center text-sm text-black/65">
+          <p className="py-24 text-center text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
             {labels.empty}
           </p>
         ) : (
@@ -128,19 +138,19 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                   {labels.contact}
                 </legend>
                 <input
-                  className="min-h-12 border border-black/20 bg-transparent px-3 text-sm outline-none"
+                  className="min-h-12 border border-[oklch(from_var(--fg)_l_c_h_/_0.2)] bg-transparent px-3 text-sm outline-none"
                   name="name"
                   placeholder={labels.name}
                   required
                 />
                 <input
-                  className="min-h-12 border border-black/20 bg-transparent px-3 text-sm outline-none"
+                  className="min-h-12 border border-[oklch(from_var(--fg)_l_c_h_/_0.2)] bg-transparent px-3 text-sm outline-none"
                   name="email"
                   placeholder={labels.email}
                   required
                 />
                 <input
-                  className="min-h-12 border border-black/20 bg-transparent px-3 text-sm outline-none"
+                  className="min-h-12 border border-[oklch(from_var(--fg)_l_c_h_/_0.2)] bg-transparent px-3 text-sm outline-none"
                   name="phone"
                   placeholder={labels.phone}
                 />
@@ -150,25 +160,27 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                   {labels.shipping}
                 </legend>
                 <input
-                  className="min-h-12 border border-black/20 bg-transparent px-3 text-sm outline-none"
+                  className="min-h-12 border border-[oklch(from_var(--fg)_l_c_h_/_0.2)] bg-transparent px-3 text-sm outline-none"
                   name="address"
                   placeholder={labels.address}
                   required
                 />
                 <textarea
-                  className="min-h-24 border border-black/20 bg-transparent p-3 text-sm outline-none"
+                  className="min-h-24 border border-[oklch(from_var(--fg)_l_c_h_/_0.2)] bg-transparent p-3 text-sm outline-none"
                   name="note"
                   placeholder={labels.note}
                 />
               </fieldset>
             </div>
 
-            <aside className="border border-black/15 p-5">
+            <aside className="border border-[oklch(from_var(--fg)_l_c_h_/_0.15)] p-5">
               <h2 className="text-lg font-medium">{labels.payment}</h2>
-              <div className="mt-4 grid grid-cols-2 border border-black/20">
+              <div className="mt-4 grid grid-cols-2 border border-[oklch(from_var(--fg)_l_c_h_/_0.2)]">
                 <Button
-                  className={`min-h-11 border-r border-black/15 text-sm ${
-                    provider === "portone" ? "bg-black text-[#f5f0e8]" : ""
+                  className={`min-h-11 border-r border-[oklch(from_var(--fg)_l_c_h_/_0.15)] text-sm ${
+                    provider === "portone"
+                      ? "bg-[var(--fg)] text-[var(--bg)]"
+                      : ""
                   }`}
                   onClick={() => setProvider("portone")}
                   type="button"
@@ -177,7 +189,9 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                 </Button>
                 <Button
                   className={`min-h-11 text-sm ${
-                    provider === "manual" ? "bg-black text-[#f5f0e8]" : ""
+                    provider === "manual"
+                      ? "bg-[var(--fg)] text-[var(--bg)]"
+                      : ""
                   }`}
                   onClick={() => setProvider("manual")}
                   type="button"
@@ -185,29 +199,35 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                   {labels.manual}
                 </Button>
               </div>
-              <div className="mt-6 divide-y divide-black/15">
+              <div className="mt-6 divide-y divide-[oklch(from_var(--fg)_l_c_h_/_0.15)]">
                 {lines.map((line) => (
-                  <div className="flex justify-between py-3" key={line.productId}>
-                    <span className="text-sm text-black/70">
+                  <div
+                    className="flex justify-between py-3"
+                    key={line.productId}
+                  >
+                    <span className="text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.7)]">
                       {line.productName} x {line.quantity}
                     </span>
-                    <span className="font-mono text-[11px] text-black/65">
-                      {formatLostMoney(line.unitAmount * line.quantity, line.currency)}
+                    <span className="font-mono text-[11px] text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
+                      {formatLostMoney(
+                        line.unitAmount * line.quantity,
+                        line.currency
+                      )}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-sm text-black/65">
+              <p className="mt-5 text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
                 {labels.total} {formatLostMoney(total, currency)}
               </p>
               <Button
-                className="mt-5 min-h-12 w-full bg-black px-4 text-sm font-medium text-[#f5f0e8]"
+                className="mt-5 min-h-12 w-full bg-[var(--fg)] px-4 text-sm font-medium text-[var(--bg)]"
                 disabled={state === "pending"}
               >
                 {state === "pending" ? labels.pending : labels.submit}
               </Button>
               {state === "failed" ? (
-                <p className="mt-3 text-sm text-red-700">{labels.failed}</p>
+                <p className="mt-3 text-sm text-destructive">{labels.failed}</p>
               ) : null}
             </aside>
           </form>

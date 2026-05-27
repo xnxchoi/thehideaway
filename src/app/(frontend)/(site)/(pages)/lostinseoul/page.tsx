@@ -27,10 +27,16 @@ export default async function LOSTINSEOULPage() {
         productsLabel={t("home.products")}
         emptyLabel={t("home.empty")}
         cartLabel={t("nav.cart")}
+        searchLabel={t("nav.search")}
+        searchPlaceholder={t("nav.searchPlaceholder")}
+        clearSearchLabel={t("nav.clearSearch")}
+        searchResultsLabel={t("nav.searchResults")}
+        searchNoResultsLabel={t("nav.searchNoResults")}
         backLabel={t("nav.back")}
         checkoutLabel={t("cart.checkout")}
         removeLabel={t("cart.remove")}
         totalLabel={t("cart.total")}
+        viewProductLabel={t("actions.view")}
         watchLabel={t("actions.watchVideo")}
         closeVideoLabel={t("video.close")}
         playVideoLabel={t("video.play")}
@@ -43,6 +49,19 @@ export default async function LOSTINSEOULPage() {
         yearLabel={t("home.year")}
         objectsLabel={t("home.objects")}
         incomingLabel={t("home.incoming")}
+        focusTitleLabel={t("home.focusTitle")}
+        collectionsEyebrowLabel={t("home.collectionsEyebrow")}
+        collectionsTitleLabel={t("home.collectionsTitle")}
+        standardModeLabel={t("modes.standard")}
+        requestModeLabel={t("modes.request")}
+        privateModeLabel={t("modes.private")}
+        footerInfoLabel={t("footer.info")}
+        footerMediaLabel={t("footer.media")}
+        footerContactLabel={t("footer.contact")}
+        footerPrivacyLabel={t("footer.privacy")}
+        footerTermsLabel={t("footer.terms")}
+        footerReturnsLabel={t("footer.returns")}
+        footerCopyrightLabel={t("footer.copyright")}
         products={data.products}
         drops={data.drops}
       />
