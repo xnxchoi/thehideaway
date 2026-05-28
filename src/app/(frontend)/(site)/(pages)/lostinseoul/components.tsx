@@ -41,10 +41,18 @@ import {
   type LostCollectionMotionState
 } from "./collection-motion";
 import {
+  getLostBagAnnouncementChromeState,
+  getLostBagAnnouncementChromeTransition,
   getLostBagChromeTransition,
   getLostBagRegularChromeState
 } from "./cart-frame";
 import { LostCartOverlay } from "./cart-overlay";
+import {
+  getLostCursorSurfaceTheme,
+  getLostPageCursorTheme,
+  resolveLostCursorTheme,
+  type LostCursorTheme
+} from "./cursor-theme";
 import {
   getLostEntryElementState,
   getLostEntryTransition,
@@ -112,23 +120,45 @@ export function LostCursorBridge() {
   const resetCursorTheme = useCursor((store) => store.resetCursorTheme);
 
   useEffect(() => {
-    const getPageCursorTheme = () =>
-      document.documentElement.getAttribute("data-theme") === "light"
-        ? "dark"
-        : "light";
+    const pointerRef = { current: null as { x: number; y: number } | null };
+    const getPointCursorTheme = (): LostCursorTheme | null => {
+      const point = pointerRef.current;
+      if (!point) return null;
+
+      const target = document.elementFromPoint(point.x, point.y);
+      const surface = target?.closest<HTMLElement>("[data-lost-cursor-theme]");
+
+      return getLostCursorSurfaceTheme(
+        surface?.dataset.lostCursorTheme,
+        surface === document.body
+      );
+    };
     const applyCursorTheme = () => {
-      const inVideo = document.body.dataset.lostVideoOpen === "true";
-      const inBag = document.body.dataset.lostBagOpen === "true";
-      const pageTheme = getPageCursorTheme();
-      const nextTheme = inVideo ? "dark" : inBag ? "light" : pageTheme;
+      const pageTheme = getLostPageCursorTheme(
+        document.documentElement.getAttribute("data-theme")
+      );
+      const nextTheme = resolveLostCursorTheme({
+        bagOpen: document.body.dataset.lostBagOpen === "true",
+        pageTheme,
+        pointTheme: getPointCursorTheme(),
+        videoOpen: document.body.dataset.lostVideoOpen === "true"
+      });
       setBaseCursorTheme(pageTheme);
       document.body.dataset.lostCursorTheme = nextTheme;
       setCursorTheme(nextTheme);
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      pointerRef.current = {
+        x: event.clientX,
+        y: event.clientY
+      };
+      applyCursorTheme();
     };
 
     setCursorState(null);
     applyCursorTheme();
     window.addEventListener("resize", applyCursorTheme);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
     const cursorObserver = new MutationObserver(applyCursorTheme);
     cursorObserver.observe(document.body, {
       attributeFilter: ["data-lost-video-open", "data-lost-bag-open"],
@@ -141,6 +171,7 @@ export function LostCursorBridge() {
 
     return () => {
       window.removeEventListener("resize", applyCursorTheme);
+      window.removeEventListener("pointermove", onPointerMove);
       cursorObserver.disconnect();
       delete document.body.dataset.lostCursorTheme;
       setCursorState(null);
@@ -298,20 +329,21 @@ export function LostAnnouncementBar({
 }) {
   const entryPhase = useLostEntryPhase();
   const chromeState = getLostEntryElementState("chrome", entryPhase);
+  const announcementState =
+    entryPhase === "ready"
+      ? getLostBagAnnouncementChromeState(bagOpen)
+      : chromeState;
 
   return (
     <m.div
-      animate={{
-        ...chromeState,
-        opacity: bagOpen ? 0 : chromeState.opacity
-      }}
+      animate={announcementState}
       className="relative z-40 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-bg)_l_c_h_/_0.42)] px-4 py-4 text-center font-mono text-[1rem] leading-none tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] uppercase shadow-[0_1px_0_oklch(from_var(--n-s-fg)_l_c_h_/_0.05)_inset] backdrop-blur-xl"
       data-lost-announcement
       data-lost-entry-chrome
       initial={false}
       transition={
         entryPhase === "ready"
-          ? getLostBagChromeTransition(bagOpen)
+          ? getLostBagAnnouncementChromeTransition(bagOpen)
           : getLostEntryTransition("chrome", entryPhase)
       }
     >
@@ -454,7 +486,7 @@ function LostHeaderLogo({ bagOpen }: { bagOpen: boolean }) {
 
   return createPortal(
     <div
-      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-50 flex -translate-x-1/2 items-center justify-center overflow-hidden"
+      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-50 flex items-center justify-center overflow-hidden"
       data-lost-entry-logo
     >
       <m.div
@@ -921,6 +953,7 @@ function LostVideoPlayer({
         open ? "pointer-events-auto opacity-100" : "pointer-events-none"
       )}
       data-lost-video-player={open ? "open" : "closed"}
+      data-lost-cursor-theme={open ? "light" : undefined}
       inert={!open}
       initial={false}
       transition={{ duration: 1, ease: "easeInOut" }}
@@ -1456,6 +1489,7 @@ export function LostFocusProductSection({
         "lost-focus-section relative grid grid-cols-[1.6rem_auto_1.6rem] grid-rows-[2.4rem_1.5rem_auto_1.5rem_2.4rem] gap-y-4 bg-[var(--n-s-bg)] text-[var(--n-s-fg)] md:grid-cols-[7rem_auto_7rem] md:grid-rows-[3.2rem_1.5rem_auto_1.5rem_3.2rem] md:gap-y-8",
         !hasFocusProducts && "is-empty"
       )}
+      data-lost-cursor-theme="light"
     >
       <LostFocusParallaxMedia
         hasFocusProducts={hasFocusProducts}
@@ -1630,7 +1664,10 @@ export function LostVideoCollections({
   }, [previousIndex]);
 
   return (
-    <section className="lost-collections-section grid gap-y-[3.2rem] bg-[var(--n-s-bg)] pt-[2.4rem] pb-[8rem] text-[var(--n-s-fg)] md:pt-[6.4rem] md:pb-[19.2rem] md:pl-[7rem]">
+    <section
+      className="lost-collections-section grid gap-y-[3.2rem] bg-[var(--n-s-bg)] pt-[2.4rem] pb-[8rem] text-[var(--n-s-fg)] md:pt-[6.4rem] md:pb-[19.2rem] md:pl-[7rem]"
+      data-lost-cursor-theme="light"
+    >
       <div className="mx-4 md:mx-0 md:mr-[7rem]">
         <LostTopBar pale />
       </div>

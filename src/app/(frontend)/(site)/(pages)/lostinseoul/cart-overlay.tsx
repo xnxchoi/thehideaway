@@ -509,6 +509,7 @@ function LostBagSurface({
       aria-hidden={!open || !isPresent}
       animate={{ opacity: 1 }}
       data-open={open ? "true" : "false"}
+      data-lost-cursor-theme="light"
       exit={{
         opacity: 1,
         transition: getLostBagSurfaceTransition(false)

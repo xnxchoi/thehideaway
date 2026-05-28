@@ -33,6 +33,8 @@ export type LostBagRootMotionTarget = {
 export const LOST_BAG_TIMELINE_MS = 1100;
 export const LOST_BAG_CHROME_MS = 200;
 export const LOST_BAG_CHROME_CLOSE_DELAY_MS = 600;
+export const LOST_BAG_ANNOUNCEMENT_CLOSE_DELAY_MS =
+  LOST_BAG_TIMELINE_MS - LOST_BAG_CHROME_MS;
 export const LOST_BAG_SURFACE_Z_INDEX = 1200;
 export const LOST_BAG_CLOSING_ROOT_Z_INDEX = LOST_BAG_SURFACE_Z_INDEX + 1;
 
@@ -120,6 +122,20 @@ export function getLostBagRegularChromeState(bagOpen: boolean) {
   return {
     opacity: chrome.opacity,
     y: chrome.y
+  };
+}
+
+export function getLostBagAnnouncementChromeState(bagOpen: boolean) {
+  return getLostBagRegularChromeState(bagOpen);
+}
+
+export function getLostBagAnnouncementChromeTransition(bagOpen: boolean) {
+  if (bagOpen) return getLostBagChromeTransition(true);
+
+  return {
+    delay: LOST_BAG_ANNOUNCEMENT_CLOSE_DELAY_MS / 1000,
+    duration: LOST_BAG_CHROME_MS / 1000,
+    ease: lostBagSourceChoreography.desktop.timeline.ease
   };
 }
 

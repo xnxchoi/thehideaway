@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   getLostBagChromeTransition,
+  getLostBagAnnouncementChromeState,
+  getLostBagAnnouncementChromeTransition,
   getLostBagFallbackFrameMetrics,
   getLostBagFixedDocumentMinHeight,
   getLostBagFrameMetrics,
@@ -73,6 +75,26 @@ describe("lostinseoul cart frame geometry", () => {
     expect(getLostBagRegularChromeState(false)).toEqual({
       opacity: 1,
       y: "0%"
+    });
+  });
+
+  it("keeps the announcement banner synchronized with the regular header wipe", () => {
+    expect(getLostBagAnnouncementChromeState(true)).toEqual(
+      getLostBagRegularChromeState(true)
+    );
+    expect(getLostBagAnnouncementChromeState(false)).toEqual(
+      getLostBagRegularChromeState(false)
+    );
+  });
+
+  it("defers the announcement banner return until the cart frame is nearly restored", () => {
+    expect(getLostBagAnnouncementChromeTransition(true)).toEqual(
+      getLostBagChromeTransition(true)
+    );
+    expect(getLostBagAnnouncementChromeTransition(false)).toEqual({
+      delay: 0.9,
+      duration: 0.2,
+      ease: lostBagPower2InOut
     });
   });
 
